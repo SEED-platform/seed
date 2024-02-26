@@ -25,7 +25,7 @@ angular.module('BE.seed.controller.organization_add_access_level_modal', [])
     ) {
       $scope.new_access_level_names = angular.copy(current_access_level_names);
       $scope.is_modified = () => !_.isEqual(current_access_level_names, $scope.new_access_level_names);
-      $scope.warning = null;
+      $scope.num_alis_to_delete = 0;
       $scope.enable_save = true;
 
       /*
@@ -52,23 +52,18 @@ angular.module('BE.seed.controller.organization_add_access_level_modal', [])
       // A deleted level may mean deleting part of the tree itself
       check_for_deletions = () => {
         // if no levels are being deleted, no warning
+        $scope.enable_save = true;
         num_levels_to_delete = current_access_level_names.length - $scope.new_access_level_names.length;
         if (num_levels_to_delete <= 0 ) {
-          $scope.warning = null;
-          $scope.enable_save = true;
           return
         }
 
         // Get num alis that will be deleted
         depths_to_delete = _.range(current_access_level_names.length-num_levels_to_delete+1, current_access_level_names.length+1)
-        num_alis_to_delete = depths_to_delete.reduce((acc, curr) => acc + get_num_alis_at_depth(curr), 0)
+        $scope.num_alis_to_delete = depths_to_delete.reduce((acc, curr) => acc + get_num_alis_at_depth(curr), 0)
 
         // if no alis are being deleted, no warning
-        if (num_alis_to_delete <= 0){
-          $scope.warning = null;
-          $scope.enable_save = true;
-        } else {
-          $scope.warning = `Are you sure you want to delete Access Levels? There are ${num_alis_to_delete} access level instances that will also be deleted.`
+        if ($scope.num_alis_to_delete > 0){
           $scope.enable_save = false;
         }
       };

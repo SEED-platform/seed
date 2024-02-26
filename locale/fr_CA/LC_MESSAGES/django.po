@@ -517,6 +517,9 @@ msgstr "Besoin de configurer votre programme?"
 msgid "CONFIRMING_DELETE_PROFILE"
 msgstr "Êtes-vous sûr de vouloir supprimer le profil"
 
+msgid "CONFIRM_ACCESS_LEVEL_DELETE"
+msgstr "Êtes-vous sûr de vouloir supprimer ce niveau d'accès? Cette action supprimera également {num_access_levels} instances de niveau d'accès."
+
 msgid "CONFIRM_AND_START_MATCHING"
 msgstr "Confirmer et commencer l'appariement"
 

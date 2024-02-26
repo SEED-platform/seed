@@ -22,9 +22,9 @@
   </div>
 </div>
 <div class="modal-footer">
-  <span ng-show="warning !== null" style="display: flex; align-items:flex-start">
-    <input type="checkbox" ng-model="enable_save" name="enable-save"/>
-    <label for="enable-save">{$ warning $}</label>
+  <span ng-show="num_alis_to_delete > 0" style="display: flex; align-items:flex-start">
+    <input type="checkbox" ng-model="enable_save" id="enable-save" name="enable-save"/>
+    <label for="enable-save" translate="CONFIRM_ACCESS_LEVEL_DELETE" translate-values="{num_access_levels: num_alis_to_delete}" class="confirm-label"></label>
   </span>
   <button type="button" class="btn btn-default" ng-click="cancel()" translate>Cancel</button>
   <button type="button" class="btn btn-primary" ng-click="save_access_level_names()" ng-disabled="!is_modified() || !enable_save" translate>Save</button>

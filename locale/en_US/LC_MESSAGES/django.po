@@ -511,6 +511,9 @@ msgstr "Need to configure your Program?"
 msgid "CONFIRMING_DELETE_PROFILE"
 msgstr "Are you sure you want to delete the profile"
 
+msgid "CONFIRM_ACCESS_LEVEL_DELETE"
+msgstr "Are you sure you want to delete this access level? This action will also delete {num_access_levels} access level instances."
+
 msgid "CONFIRM_AND_START_MATCHING"
 msgstr "Confirm mappings &amp; start matching"
 
