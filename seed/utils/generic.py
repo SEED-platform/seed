@@ -45,6 +45,9 @@ def split_model_fields(obj, fields):
 def median(lst):
     if not lst:
         return
+    # ensure list of not a bunch of "None"
+    if set(lst) is {None}:
+        return
     index = (len(lst) - 1) // 2
     if len(lst) % 2:
         #
