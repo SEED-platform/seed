@@ -615,9 +615,10 @@ class atsub(TestCase):
         #     # xmls.append(response)
         #     xmls.append(sub.get('xml_url'))
 
-        x = self.at.batch_get_city_submission_xmls(city_id)
+        xmls, messages = self.at.batch_get_city_submission_xmls(city_id)
 
-        breakpoint()
+
+        assert True
 
 
 

@@ -47,12 +47,12 @@ class AuditTemplate(object):
     def __init__(self, org_id):
         self.org_id = org_id
 
+    @require_token
     def get_building(self, audit_template_building_id):
-        token, message = self.get_api_token()
-        if not token:
-            return None, message
-        return self.get_building_xml(audit_template_building_id, token)
+        """Entry point for AuditTemplateViewSet"""
+        return self.get_building_xml(audit_template_building_id, self.token)
 
+    
     def get_building_xml(self, audit_template_building_id, token):
         url = f'{self.API_URL}/building_sync/download/rp/buildings/{audit_template_building_id}.xml?token={token}'
         headers = {'accept': 'application/xml'}
@@ -66,20 +66,21 @@ class AuditTemplate(object):
 
         return response, ""
 
-    @require_token
     def batch_get_city_submission_xmls(self, city_id):
         """
         1. get_city_submissions 
         2. iterate through submissions to get corresponding xmls
         """
         
-        submissions, _ = self.get_city_submissions(city_id, self.token)
+        submissions, messages = self.get_city_submissions(city_id)
+        if not submissions:
+            return None, messages
+
         xmls = []
         for sub in submissions.json():
             xml, _ = self.get_submission(sub['id'], 'xml')
-            # xml, _ = self.get_submission_xml(sub, token)
             xmls.append(xml)
-        breakpoint()
+        return xmls, ''
 
 
     @require_token
@@ -129,11 +130,10 @@ class AuditTemplate(object):
 
         return response, ""
 
+    @require_token
     def get_buildings(self, cycle_id):
-        token, message = self.get_api_token()
-        if not token:
-            return None, message
-        url = f'{self.API_URL}/rp/buildings?token={token}'
+        """Entry point for AuditTemplateViewSet"""
+        url = f'{self.API_URL}/rp/buildings?token={self.token}'
         headers = {'accept': 'application/xml'}
 
         return _get_buildings.delay(cycle_id, url, headers)
@@ -155,9 +155,12 @@ class AuditTemplate(object):
         if not org.at_organization_token or not org.audit_template_user or not org.audit_template_password:
             return None, 'An Audit Template organization token, user email and password are required!'
         
+        # DEBUGGING LGOS
         if self.token:
             print('>>> EXISTING TOKEN')
             return self.token, ""
+        else: 
+            print('>>> GET TOKEN')
         
         url = f'{self.API_URL}/users/authenticate'
         # Send data as form-data to handle special characters like '%'
@@ -181,18 +184,16 @@ class AuditTemplate(object):
             raise validation_client.ValidationClientException(f"Expected JSON response from Audit Template: {response.text}")
 
         # instead of pinging AT for tokens every time, use existing token.
-        self.token = response_body['token']
-        return response_body['token'], ""
+        self.token = response_body.get('token')
+        return self.token, ""
 
+    @require_token
     def batch_export_to_audit_template(self, view_ids):
-        token, message = self.get_api_token()
-        if not token:
-            return None, message
         progress_data = ProgressData(func_name='batch_export_to_audit_template', unique_id=view_ids[0])
         progress_data.total = len(view_ids)
         progress_data.save()
 
-        _batch_export_to_audit_template.delay(self.org_id, view_ids, token, progress_data.key)
+        _batch_export_to_audit_template.delay(self.org_id, view_ids, self.token, progress_data.key)
 
         return progress_data.result(), []
 
@@ -375,12 +376,13 @@ def _batch_get_building_xml(org_id, cycle_id, token, properties, progress_key):
     for property in properties:
         audit_template_building_id = property["audit_template_building_id"]
         xml, _ = AuditTemplate(org_id).get_building_xml(property['audit_template_building_id'], token)
-        result.append({
-            'property_view': property['property_view'],
-            'audit_template_building_id': audit_template_building_id,
-            'xml': xml.text,
-            'updated_at': property['updated_at']
-        })
+        if hasattr(xml, 'text'):
+            result.append({
+                'property_view': property['property_view'],
+                'audit_template_building_id': audit_template_building_id,
+                'xml': xml.text,
+                'updated_at': property['updated_at']
+            })
         progress_data.step('Getting XML for buildings...')
 
     # Call the PropertyViewSet to update the property view with xml data
