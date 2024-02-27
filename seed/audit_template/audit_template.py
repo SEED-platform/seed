@@ -16,6 +16,7 @@ from django.db.models import Q
 from lxml import etree
 from lxml.builder import ElementMaker
 from quantityfield.units import ureg
+from functools import wraps
 
 from seed.building_sync import validation_client
 from seed.building_sync.mappings import BUILDINGSYNC_URI, NAMESPACES
@@ -26,11 +27,22 @@ from seed.views.v3.properties import PropertyViewSet
 
 _log = logging.getLogger(__name__)
 
+def require_token(fn):
+    """Decorator to get an AT api token"""
+    @wraps(fn)
+    def wrapper(self, *args, **kwargs):
+        if not self.token:
+            token, message = self.get_api_token()
+            if not token:
+                return None, message 
+        return fn(self, *args, **kwargs)
+    return wrapper
 
 class AuditTemplate(object):
 
     HOST = settings.AUDIT_TEMPLATE_HOST
     API_URL = f'{HOST}/api/v2'
+    token = None
 
     def __init__(self, org_id):
         self.org_id = org_id
@@ -54,7 +66,25 @@ class AuditTemplate(object):
 
         return response, ""
 
-    def get_submission(self, audit_template_submission_id: int, report_format: str = 'pdf') -> Tuple[Any, str]:
+    @require_token
+    def batch_get_city_submission_xmls(self, city_id):
+        """
+        1. get_city_submissions 
+        2. iterate through submissions to get corresponding xmls
+        """
+        
+        submissions, _ = self.get_city_submissions(city_id, self.token)
+        xmls = []
+        for sub in submissions.json():
+            xml, _ = self.get_submission(sub['id'], 'xml')
+            # xml, _ = self.get_submission_xml(sub, token)
+            xmls.append(xml)
+        breakpoint()
+
+
+    @require_token
+    def get_submission(self, audit_template_submission_id: int, report_format: str = 'pdf'):
+    # def get_submission(self, audit_template_submission_id: int, report_format: str = 'pdf') -> Tuple[Any, str]:
         """Download an Audit Template submission report.
 
         Args:
@@ -65,10 +95,6 @@ class AuditTemplate(object):
             requests.response: Result from Audit Template website
         """
         # supporting 'JSON', PDF', and 'XML' formats only for now
-        token, message = self.get_api_token()
-        if not token:
-            return None, message
-
         # validate format
         if report_format.lower() not in ['json', 'xml', 'pdf']:
             report_format = 'pdf'
@@ -77,12 +103,27 @@ class AuditTemplate(object):
         accept_type = 'application/' + report_format.lower()
         headers = {'accept': accept_type}
 
-        url = f'{self.API_URL}/rp/submissions/{audit_template_submission_id}.{report_format}?token={token}'
+        url = f'{self.API_URL}/rp/submissions/{audit_template_submission_id}.{report_format}?token={self.token}'
         try:
             response = requests.request("GET", url, headers=headers)
 
             if response.status_code != 200:
                 return None, f'Expected 200 response from Audit Template get_submission but got {response.status_code!r}: {response.content!r}'
+        except Exception as e:
+            return None, f'Unexpected error from Audit Template: {e}'
+
+        return response, ""
+
+    @require_token
+    def get_city_submissions(self, city_id):
+        """Return all submissions for a city"""
+        
+        headers = {'accept': 'application/xml'}
+        url =f'{self.API_URL}/rp/cities/{city_id}?token={self.token}'
+        try:
+            response = requests.request("GET", url, headers=headers)
+            if response.status_code != 200:
+                return None, f'Expected 200 response from Audit Template cities but got {response.stutus_code}: {response.content}'
         except Exception as e:
             return None, f'Unexpected error from Audit Template: {e}'
 
@@ -113,6 +154,11 @@ class AuditTemplate(object):
         org = Organization.objects.get(pk=self.org_id)
         if not org.at_organization_token or not org.audit_template_user or not org.audit_template_password:
             return None, 'An Audit Template organization token, user email and password are required!'
+        
+        if self.token:
+            print('>>> EXISTING TOKEN')
+            return self.token, ""
+        
         url = f'{self.API_URL}/users/authenticate'
         # Send data as form-data to handle special characters like '%'
         form_data = {
@@ -134,6 +180,8 @@ class AuditTemplate(object):
         except ValueError:
             raise validation_client.ValidationClientException(f"Expected JSON response from Audit Template: {response.text}")
 
+        # instead of pinging AT for tokens every time, use existing token.
+        self.token = response_body['token']
         return response_body['token'], ""
 
     def batch_export_to_audit_template(self, view_ids):

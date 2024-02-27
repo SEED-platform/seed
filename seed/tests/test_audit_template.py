@@ -547,3 +547,78 @@ class ExportToAuditTemplate(TestCase):
         self.assertEqual(self.view4.id, details[0]['view_id'])
         self.assertEqual(exp, details[0]['message'])
         self.assertEqual('4444', self.state4.audit_template_building_id)
+
+
+class atsub(TestCase):
+# class AuditTemplateSubmissionImport(TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        from django.conf import settings    
+        if settings.AUDIT_TEMPLATE_HOST != 'https://staging.labworks.org':
+            print(">>> Unable to run test, must be run against staging server.\n >>> Change local_untracked.py to AUDIT_TEMPLATE_HOST = 'https://staging.labworks.org'")
+            assert False
+
+    
+    def setUp(self):
+        settings.AUDIT_TEMPLATE_HOST = 'https://staging.labworks.org'
+        self.user_details = {
+            'username': 'test_user@demo.com',
+            'password': 'test_pass',
+        }
+        self.user = User.objects.create_superuser(
+            email='test_user@demo.com', **self.user_details
+        )
+        self.org, _, _ = create_organization(self.user)
+        self.org.at_organization_token = 'LQssSnjk6fhBzh3X72v6'
+        self.org.audit_template_user = '179d-stage@nrel.gov'
+        self.org.audit_template_password = 'thb4fva_krp7fam7JHK'
+        self.org.save()
+        self.at = AuditTemplate(self.org.id)
+
+        self.cycle_factory = FakeCycleFactory(organization=self.org, user=self.user)
+
+        self.cycle = self.cycle_factory.get_cycle(
+            start=datetime(2010, 10, 10, tzinfo=timezone.get_current_timezone())
+        )
+
+        self.client.login(**self.user_details)
+        self.property_factory = FakePropertyFactory(organization=self.org)
+        self.view_factory = FakePropertyViewFactory(organization=self.org)
+        self.state_factory = FakePropertyStateFactory(organization=self.org)
+
+        self.state1 = self.state_factory.get_property_state(audit_template_building_id=1)
+        self.state2 = self.state_factory.get_property_state(audit_template_building_id=2)
+        self.state3 = self.state_factory.get_property_state(audit_template_building_id=3)
+        self.state4 = self.state_factory.get_property_state()
+
+        self.view1 = self.view_factory.get_property_view(cycle=self.cycle, state=self.state1)
+        self.view2 = self.view_factory.get_property_view(cycle=self.cycle, state=self.state2)
+        self.view3 = self.view_factory.get_property_view(cycle=self.cycle, state=self.state3)
+        self.view4 = self.view_factory.get_property_view(cycle=self.cycle, state=self.state4)
+
+        self.get_buildings_url = reverse('api:v3:audit_template-get-buildings')
+        self.batch_get_xml_url = reverse('api:v3:audit_template-batch-get-building-xml')
+
+    def test_atsubs(self):
+        # WHERE IS CITY ID FOUND?
+        city_id = 36
+        # response, errors = self.at.get_city_submissions(city_id)
+        # if response.status_code != 200:
+        #     assert False
+        # subs = response.json()
+        # xmls = []
+        # breakpoint()
+        # for sub in subs:
+        #     response, _ = self.at.get_submission_xml(sub)
+        #     # xmls.append(response)
+        #     xmls.append(sub.get('xml_url'))
+
+        x = self.at.batch_get_city_submission_xmls(city_id)
+
+        breakpoint()
+
+
+
+
