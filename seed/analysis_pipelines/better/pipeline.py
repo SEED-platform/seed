@@ -414,6 +414,11 @@ def _process_results(self, analysis_id):
     # gather all columns to store
     BETTER_VALID_MODEL_E_COL = 'better_valid_model_electricity'
     BETTER_VALID_MODEL_F_COL = 'better_valid_model_fuel'
+
+    # if user is org owner, columns can be created, otherwise set the 'missing_columns' flag for later
+    can_create = analysis.organization.is_owner(analysis.user.id)
+    missing_columns = False
+
     column_data_paths = [
         # Combined Savings
         ExtraDataColumnPath(
@@ -523,19 +528,28 @@ def _process_results(self, analysis_id):
         # check if the column exists with the bare minimum required pieces of data. For example,
         # don't check column_description and display_name because they may be changed by
         # the user at a later time.
-        column, created = Column.objects.get_or_create(
-            is_extra_data=True,
-            column_name=column_data_path.column_name,
-            organization=analysis.organization,
-            table_name='PropertyState',
-        )
+        # if column doesn't exist, and user has permission to create, then create
+        try:
+            Column.objects.get(
+                is_extra_data=True,
+                column_name=column_data_path.column_name,
+                organization=analysis.organization,
+                table_name='PropertyState',
+            )
+        except:
+            if can_create:
+                column, created = Column.objects.create(
+                    is_extra_data=True,
+                    column_name=column_data_path.column_name,
+                    organization=analysis.organization,
+                    table_name='PropertyState',
+                )
+                column.display_name = column_data_path.column_display_name
+                column.column_description = column_data_path.column_display_name
+                column.save()
+            else:
+                missing_columns = True
 
-        # add in the other fields of the columns only if it is a new column.
-        if created:
-            column.display_name = column_data_path.column_display_name
-            column.column_description = column_data_path.column_display_name
-
-        column.save()
 
     # Update the original PropertyView's PropertyState with analysis results of interest
     analysis_property_views = analysis.analysispropertyview_set.prefetch_related('property', 'cycle').all()
@@ -596,9 +610,11 @@ def _process_results(self, analysis_id):
             else:
                 cleaned_results[col_name] = value
 
-        original_property_state = property_view_by_apv_id[analysis_property_view.id].state
-        original_property_state.extra_data.update(cleaned_results)
-        original_property_state.save()
+        # if no columns are missing, save back to property
+        if not missing_columns:
+            original_property_state = property_view_by_apv_id[analysis_property_view.id].state
+            original_property_state.extra_data.update(cleaned_results)
+            original_property_state.save()
 
 
 @shared_task(bind=True)

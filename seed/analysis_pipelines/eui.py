@@ -231,27 +231,42 @@ def _run_analysis(self, meter_readings_by_analysis_property_view, analysis_id):
     # displayname and description if the column already exists because
     # the user might have changed them which would re-create new columns
     # here.
-    column, created = Column.objects.get_or_create(
-        is_extra_data=True,
-        column_name='analysis_eui',
-        organization=analysis.organization,
-        table_name='PropertyState',
-    )
-    if created:
-        column.display_name = 'Fractional EUI (kBtu/sqft)'
-        column.column_description = 'Fractional EUI (kBtu/sqft)'
-        column.save()
 
-    column, created = Column.objects.get_or_create(
-        is_extra_data=True,
-        column_name='analysis_eui_coverage',
-        organization=analysis.organization,
-        table_name='PropertyState',
-    )
-    if created:
-        column.display_name = 'EUI Coverage (% of the year)'
-        column.column_description = 'EUI Coverage (% of the year)'
-        column.save()
+    # if user is org owner, columns can be created, otherwise set the 'missing_columns' flag for later
+    can_create = analysis.organization.is_owner(analysis.user.id)
+    missing_columns = False
+
+    column_meta = [
+        {   'column_name': 'analysis_eui',
+            'display_name': 'Fractional EUI (kBtu/sqft)',
+            'description': 'Fractional EUI (kBtu/sqft)'
+        }, {
+            'column_name': 'analysis_eui_coverage',
+            'display_name': 'EUI Coverage (% of the year)',
+            'description': 'EUI Coverage (% of the year)'
+        }
+    ]
+
+    for col in column_meta:
+        try:
+            Column.objects.get(
+                column_name=col["column_name"],
+                organization=analysis.organization,
+                table_name='PropertyState',
+            )
+        except:
+            if can_create:
+                column = Column.objects.create(
+                    is_extra_data=True,
+                    column_name=col["column_name"],
+                    organization=analysis.organization,
+                    table_name='PropertyState',
+                )
+                column.display_name = col["display_name"]
+                column.column_description = col["description"]
+                column.save()
+            else:
+                missing_columns = True
 
     # fix the meter readings dict b/c celery messes with it when serializing
     meter_readings_by_analysis_property_view = {
@@ -281,10 +296,12 @@ def _run_analysis(self, meter_readings_by_analysis_property_view, analysis_id):
         }
         analysis_property_view.save()
 
-        property_view = property_views_by_apv_id[analysis_property_view.id]
-        property_view.state.extra_data.update({'analysis_eui': eui['eui']})
-        property_view.state.extra_data.update({'analysis_eui_coverage': eui['coverage']})
-        property_view.state.save()
+        # only save to property view if columns exist
+        if not missing_columns:
+            property_view = property_views_by_apv_id[analysis_property_view.id]
+            property_view.state.extra_data.update({'analysis_eui': eui['eui']})
+            property_view.state.extra_data.update({'analysis_eui_coverage': eui['coverage']})
+            property_view.state.save()
 
     # all done!
     pipeline.set_analysis_status_to_completed()
