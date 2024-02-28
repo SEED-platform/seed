@@ -579,8 +579,13 @@ class atsub(TestCase):
 
         self.cycle_factory = FakeCycleFactory(organization=self.org, user=self.user)
 
-        self.cycle = self.cycle_factory.get_cycle(
-            start=datetime(2010, 10, 10, tzinfo=timezone.get_current_timezone())
+        self.cycle2018 = self.cycle_factory.get_cycle(
+            start=datetime(2018, 1, 1, tzinfo=timezone.get_current_timezone()),
+            end=datetime(2019, 1, 1, tzinfo=timezone.get_current_timezone()),
+        )
+        self.cycle2020 = self.cycle_factory.get_cycle(
+            start=datetime(2020, 1, 1, tzinfo=timezone.get_current_timezone()),
+            end=datetime(2021, 1, 1, tzinfo=timezone.get_current_timezone()),
         )
 
         self.client.login(**self.user_details)
@@ -588,34 +593,21 @@ class atsub(TestCase):
         self.view_factory = FakePropertyViewFactory(organization=self.org)
         self.state_factory = FakePropertyStateFactory(organization=self.org)
 
-        self.state1 = self.state_factory.get_property_state(audit_template_building_id=1)
-        self.state2 = self.state_factory.get_property_state(audit_template_building_id=2)
-        self.state3 = self.state_factory.get_property_state(audit_template_building_id=3)
+        self.state1 = self.state_factory.get_property_state(custom_id_1='ABC123')
+        self.state2 = self.state_factory.get_property_state(custom_id_1='ABC123')
+        self.state3 = self.state_factory.get_property_state(custom_id_1='no_match')
         self.state4 = self.state_factory.get_property_state()
 
-        self.view1 = self.view_factory.get_property_view(cycle=self.cycle, state=self.state1)
-        self.view2 = self.view_factory.get_property_view(cycle=self.cycle, state=self.state2)
-        self.view3 = self.view_factory.get_property_view(cycle=self.cycle, state=self.state3)
-        self.view4 = self.view_factory.get_property_view(cycle=self.cycle, state=self.state4)
-
-        self.get_buildings_url = reverse('api:v3:audit_template-get-buildings')
-        self.batch_get_xml_url = reverse('api:v3:audit_template-batch-get-building-xml')
+        self.view1 = self.view_factory.get_property_view(cycle=self.cycle2018, state=self.state1)
+        self.view2 = self.view_factory.get_property_view(cycle=self.cycle2020, state=self.state2)
+        self.view3 = self.view_factory.get_property_view(cycle=self.cycle2018, state=self.state3)
+        self.view4 = self.view_factory.get_property_view(cycle=self.cycle2020, state=self.state4)
 
     def test_atsubs(self):
         # WHERE IS CITY ID FOUND?
         city_id = 36
-        # response, errors = self.at.get_city_submissions(city_id)
-        # if response.status_code != 200:
-        #     assert False
-        # subs = response.json()
-        # xmls = []
-        # breakpoint()
-        # for sub in subs:
-        #     response, _ = self.at.get_submission_xml(sub)
-        #     # xmls.append(response)
-        #     xmls.append(sub.get('xml_url'))
 
-        xmls, messages = self.at.batch_get_city_submission_xmls(city_id)
+        xmls, messages = self.at.batch_get_city_submission_xml(city_id)
 
 
         assert True

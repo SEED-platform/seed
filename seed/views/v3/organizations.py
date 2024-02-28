@@ -150,6 +150,7 @@ def _dict_org(request, organizations):
             'audit_template_password': o.audit_template_password,
             'at_host_url': settings.AUDIT_TEMPLATE_HOST,
             'audit_template_report_type': o.audit_template_report_type,
+            'audit_template_city_id': o.audit_template_city_id,
             'salesforce_enabled': o.salesforce_enabled,
             'ubid_threshold': o.ubid_threshold,
             'inventory_count': o.property_set.count() + o.taxlot_set.count()
@@ -609,6 +610,10 @@ class OrganizationViewSet(viewsets.ViewSet):
         audit_template_report_type = posted_org.get('audit_template_report_type', False)
         if audit_template_report_type != org.audit_template_report_type:
             org.audit_template_report_type = audit_template_report_type
+
+        audit_template_city_id = posted_org.get('audit_template_city_id', False)
+        if audit_template_city_id != org.audit_template_city_id:
+            org.audit_template_city_id = audit_template_city_id
 
         salesforce_enabled = posted_org.get('salesforce_enabled', False)
         if salesforce_enabled != org.salesforce_enabled:

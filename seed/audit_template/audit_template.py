@@ -66,18 +66,50 @@ class AuditTemplate(object):
 
         return response, ""
 
-    def batch_get_city_submission_xmls(self, city_id):
+    def batch_get_city_submission_xml(self, city_id):
         """
         1. get_city_submissions 
         2. iterate through submissions to get corresponding xmls
         """
         
-        submissions, messages = self.get_city_submissions(city_id)
+        response, messages = self.get_city_submissions(city_id)
+        if not response:
+            return None, messages
+        submissions = response.json()
+        custom_ids = list(set([sub['tax_id'] for sub in submissions]))
+        # views to update 
+        # NEED TO SPECIFY CYCLE, based on updated_at?
+        # would be nice to have audit date
+        # audit_date is not a relavent fields in the xml. what should we use?
+        # Metering Year Start Dates?
+        
+        # views = PropertyView.objects.filter(state__custom_id_1__in=custom_ids)
+
+        # filering for cycles that contain {updated_at} makes the query more difficult
+        # without placing dates it could be a simple .filter(state__custom_id_1__in=custom_ids)
+        # however that could return multiple views across many cycles 
+        # filtering by custom_id and {updated_at} will require looping through results to query views 
+        views = []
+        for sub in submissions:
+            custom_id = sub['tax_id']
+            # breakpoint()
+            # date = datetime(sub['updated_at'])
+            view = PropertyView.objects.filter(
+                state__custom_id_1=custom_id,
+                # cycle__start__lte=date,
+                # cycle__end__gte=date
+            ).first()
+            views.append(view)
+
+        # breakpoint()
+
+        
+        
         if not submissions:
             return None, messages
 
         xmls = []
-        for sub in submissions.json():
+        for sub in submissions:
             xml, _ = self.get_submission(sub['id'], 'xml')
             xmls.append(xml)
         return xmls, ''

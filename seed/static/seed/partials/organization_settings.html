@@ -175,6 +175,25 @@
           </form>
         </div>
       </div>
+
+      <div class="section_content_container">
+        <div class="section_content with_padding">
+          <h3 translate>Audit Template City ID</h3>
+          <form class="form-horizontal" role="form">
+            <div class="form-group">
+              <div class="col-sm-4">
+                <p translate>SEED will import submission data for the following City ID</p>
+                <div class="input-group">
+                  <input type="number" class="form-control" ng-model="org.audit_template_city_id" ng-disabled="::!auth.requires_owner" />
+                  <span class="input-group-btn">
+                    <button class="btn btn-default" type="button" ng-click="get_city_submission_data()">FETCH</button>
+                  </span>
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
     </uib-tab>
 
     <uib-tab index="3" heading="{$:: 'Default Display Fields' | translate $}">

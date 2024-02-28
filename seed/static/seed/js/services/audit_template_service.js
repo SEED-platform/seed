@@ -39,14 +39,20 @@ angular.module('BE.seed.service.audit_template', []).factory('audit_template_ser
       .then((response) => response.data)
       .catch((response) => response.data);
 
-    const analyses_factory = {
+    const batch_get_city_submission_xml_and_update = (org_id, city_id) => $http
+      .put(`/api/v3/audit_template/batch_get_city_submission_xml/?organization_id=${org_id}`, {city_id: city_id})
+      .then((response) => response)
+      .catch((response) => response);
+
+    const audit_template_factory = {
       get_building_xml,
       batch_get_building_xml_and_update,
       get_buildings,
       update_building_with_xml,
-      batch_export_to_audit_template
+      batch_export_to_audit_template,
+      batch_get_city_submission_xml_and_update,
     };
 
-    return analyses_factory;
+    return audit_template_factory;
   }
 ]);
