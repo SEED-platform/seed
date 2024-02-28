@@ -455,6 +455,32 @@ class AccountsViewTests(TestCase):
             })
         self.assertEqual(ou.role_level, ROLE_MEMBER)
 
+    def test_update_access_level_instance(self):
+        # Setup
+        u = User.objects.create(username='b@b.com', email='b@be.com')
+        self.org.add_member(u, role=ROLE_VIEWER, access_level_instance_id=self.org.root.id)
+        org_user = OrganizationUser.objects.get(user=u)
+
+        self.org.access_level_names = ["root", "child"]
+        self.org.save()
+        child_ali = self.org.add_new_access_level_instance(self.org.root.id, "child")
+
+        # Action
+        resp = self.client.put(
+            reverse_lazy("api:v3:user-access-level-instance", args=[org_user.id]) + '?organization_id=' + str(
+                self.org.id),
+            data=json.dumps(
+                {
+                    'access_level_instance_id': child_ali.id
+                }
+            ),
+            content_type='application/json',
+        )
+
+        # Assertion
+        assert resp.status_code == 200
+        assert OrganizationUser.objects.get(pk=org_user.pk).access_level_instance_id == child_ali.id
+
     def test_allowed_to_update_role_if_not_last_owner(self):
         u = User.objects.create(username='b@b.com', email='b@be.com')
         self.org.add_member(u, role=ROLE_OWNER, access_level_instance_id=self.org.root.id)
