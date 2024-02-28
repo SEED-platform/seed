@@ -403,9 +403,15 @@ def _run_analysis(self, loc_data_by_analysis_property_view, analysis_id):
     progress_data = pipeline.set_analysis_status_to_running()
     progress_data.step('Calculating EEEJ Indicators')
     analysis = Analysis.objects.get(id=analysis_id)
-    # if user is org owner, columns can be created, otherwise set the 'missing_columns' flag for later
+    # if user is at root level and has role member or owner, columns can be created
+    # otherwise set the 'missing_columns' flag for later
     missing_columns = False
-    can_create = analysis.organization.is_owner(analysis.user.id)
+    can_create = False
+    if (
+        analysis.organization.is_user_ali_root(analysis.user.id)
+        and (analysis.organization.is_owner(analysis.user.id) or analysis.organization.has_role_member(analysis.user.id))
+       ):
+        can_create = True
 
     # make sure we have the extra data columns we need
     column_meta = [

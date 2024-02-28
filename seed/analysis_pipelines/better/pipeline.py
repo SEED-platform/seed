@@ -415,9 +415,15 @@ def _process_results(self, analysis_id):
     BETTER_VALID_MODEL_E_COL = 'better_valid_model_electricity'
     BETTER_VALID_MODEL_F_COL = 'better_valid_model_fuel'
 
-    # if user is org owner, columns can be created, otherwise set the 'missing_columns' flag for later
-    can_create = analysis.organization.is_owner(analysis.user.id)
+    # if user is at root level and has role member or owner, columns can be created
+    # otherwise set the 'missing_columns' flag for later
     missing_columns = False
+    can_create = False
+    if (
+        analysis.organization.is_user_ali_root(analysis.user.id)
+        and (analysis.organization.is_owner(analysis.user.id) or analysis.organization.has_role_member(analysis.user.id))
+       ):
+        can_create = True
 
     column_data_paths = [
         # Combined Savings

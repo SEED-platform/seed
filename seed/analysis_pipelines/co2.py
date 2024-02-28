@@ -350,9 +350,16 @@ def _run_analysis(self, meter_readings_by_analysis_property_view, analysis_id):
     # displayname and description if the column already exists because
     # the user might have changed them which would re-create new columns
     # here.
-    # if user is org owner, columns can be created, otherwise set the 'missing_columns' flag for later
-    can_create = analysis.organization.is_owner(analysis.user.id)
+
+    # if user is at root level and has role member or owner, columns can be created
+    # otherwise set the 'missing_columns' flag for later
     missing_columns = False
+    can_create = False
+    if (
+        analysis.organization.is_user_ali_root(analysis.user.id)
+        and (analysis.organization.is_owner(analysis.user.id) or analysis.organization.has_role_member(analysis.user.id))
+       ):
+        can_create = True
 
     column_meta = [
         {   'column_name': 'analysis_co2',
@@ -447,7 +454,12 @@ def _run_analysis(self, meter_readings_by_analysis_property_view, analysis_id):
         if save_co2_results:
             # only save to property view if columns exist
             if not missing_columns:
-                # Convert the analysis results which reports in kgCO2e to MtCO2e which is the canonical database field units
+                # store the extra_data columns from the analysis
+                property_view.state.extra_data.update({
+                    'analysis_co2': co2['average_annual_kgco2e'],
+                    'analysis_co2_coverage': co2['annual_coverage_percent']
+                })
+                # Also Convert the analysis results which reports in kgCO2e to MtCO2e which is the canonical database field units
                 property_view.state.total_ghg_emissions = co2['average_annual_kgco2e'] / 1000
                 property_view.state.total_ghg_emissions_intensity = co2['average_annual_kgco2e'] / property_view.state.gross_floor_area.magnitude
                 property_view.state.save()

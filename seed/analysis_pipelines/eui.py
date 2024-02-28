@@ -232,8 +232,14 @@ def _run_analysis(self, meter_readings_by_analysis_property_view, analysis_id):
     # the user might have changed them which would re-create new columns
     # here.
 
-    # if user is org owner, columns can be created, otherwise set the 'missing_columns' flag for later
-    can_create = analysis.organization.is_owner(analysis.user.id)
+    # if user is at root level and has role member or owner, columns can be created
+    # otherwise set the 'missing_columns' flag for later
+    can_create = False
+    if (
+        analysis.organization.is_user_ali_root(analysis.user.id)
+        and (analysis.organization.is_owner(analysis.user.id) or analysis.organization.has_role_member(analysis.user.id))
+       ):
+        can_create = True
     missing_columns = False
 
     column_meta = [

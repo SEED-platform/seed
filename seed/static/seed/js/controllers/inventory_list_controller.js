@@ -1599,7 +1599,8 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
         resolve: {
           inventory_ids: () => ($scope.inventory_type === 'properties' ? selectedViewIds : []),
           cycles: () => cycles.cycles,
-          current_cycle: () => $scope.cycle.selected_cycle
+          current_cycle: () => $scope.cycle.selected_cycle,
+          user:  () => $scope.menu.user
         }
       });
       modalInstance.result.then(

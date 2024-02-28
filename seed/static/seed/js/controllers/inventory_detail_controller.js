@@ -551,7 +551,8 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
         resolve: {
           inventory_ids: () => [$scope.inventory.view_id],
           current_cycle: () => $scope.cycle,
-          cycles: () => cycle_service.get_cycles().then((result) => result.cycles)
+          cycles: () => cycle_service.get_cycles().then((result) => result.cycles),
+          user: () => $scope.menu.user
         }
       });
     };
