@@ -18,7 +18,6 @@ from seed.analysis_pipelines.pipeline import (
     analysis_pipeline_task,
     task_create_analysis_property_views
 )
-
 from seed.models import (
     Analysis,
     AnalysisMessage,
@@ -72,7 +71,7 @@ def _get_data_for_census_tract_fetch(property_view_ids, organization, can_create
             organization=organization,
             table_name='PropertyState',
         )
-    except:
+    except Exception:
         # does user have permission to create?
         if can_create_columns:
             column = Column.objects.create(
@@ -409,7 +408,8 @@ def _run_analysis(self, loc_data_by_analysis_property_view, analysis_id):
 
     # make sure we have the extra data columns we need
     column_meta = [
-        {   'column_name': 'analysis_dac',
+        {
+            'column_name': 'analysis_dac',
             'display_name': 'Disadvantaged Community',
             'description': 'Property located in a Disadvantaged Community as defined by CEJST'
         }, {
@@ -442,7 +442,7 @@ def _run_analysis(self, loc_data_by_analysis_property_view, analysis_id):
                 organization=analysis.organization,
                 table_name='PropertyState',
             )
-        except:
+        except Exception:
             if analysis.can_create:
                 column = Column.objects.create(
                     is_extra_data=True,

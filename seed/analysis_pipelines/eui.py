@@ -237,7 +237,8 @@ def _run_analysis(self, meter_readings_by_analysis_property_view, analysis_id):
     missing_columns = False
 
     column_meta = [
-        {   'column_name': 'analysis_eui',
+        {
+            'column_name': 'analysis_eui',
             'display_name': 'Fractional EUI (kBtu/sqft)',
             'description': 'Fractional EUI (kBtu/sqft)'
         }, {
@@ -254,7 +255,7 @@ def _run_analysis(self, meter_readings_by_analysis_property_view, analysis_id):
                 organization=analysis.organization,
                 table_name='PropertyState',
             )
-        except:
+        except Exception:
             if analysis.can_create:
                 column = Column.objects.create(
                     is_extra_data=True,

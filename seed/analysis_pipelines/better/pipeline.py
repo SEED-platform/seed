@@ -536,7 +536,7 @@ def _process_results(self, analysis_id):
                 organization=analysis.organization,
                 table_name='PropertyState',
             )
-        except:
+        except Exception:
             if analysis.can_create:
                 column, created = Column.objects.create(
                     is_extra_data=True,
@@ -549,7 +549,6 @@ def _process_results(self, analysis_id):
                 column.save()
             else:
                 missing_columns = True
-
 
     # Update the original PropertyView's PropertyState with analysis results of interest
     analysis_property_views = analysis.analysispropertyview_set.prefetch_related('property', 'cycle').all()
