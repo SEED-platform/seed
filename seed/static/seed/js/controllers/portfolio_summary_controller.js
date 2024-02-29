@@ -446,7 +446,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
         const [a, b] = baseline_first ? [baseline, current] : [current, baseline];
         const c = {...b};
         Object.keys(a).forEach(key => {
-          if (a_null = a[key] !== null || a[key] !== undefined) {
+          if (a[key] !== null && a[key] !== undefined) {
             c[key] = a[key]
           }
         });
