@@ -537,7 +537,7 @@ def _process_results(self, analysis_id):
                 table_name='PropertyState',
             )
         except Exception:
-            if analysis.can_create:
+            if analysis.can_create():
                 column, created = Column.objects.create(
                     is_extra_data=True,
                     column_name=column_data_path.column_name,

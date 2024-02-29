@@ -375,7 +375,7 @@ def _run_analysis(self, meter_readings_by_analysis_property_view, analysis_id):
                 table_name='PropertyState',
             )
         except Exception:
-            if analysis.can_create:
+            if analysis.can_create():
                 column = Column.objects.create(
                     is_extra_data=True,
                     column_name=col["column_name"],

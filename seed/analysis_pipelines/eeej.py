@@ -337,7 +337,7 @@ class EEEJPipeline(AnalysisPipeline):
         analysis = Analysis.objects.get(id=self._analysis_id)
 
         # check that we have the data we need to retrieve census tract for each property
-        loc_data_by_property_view, errors_by_property_view_id = _get_data_for_census_tract_fetch(property_view_ids, analysis.organization, analysis.can_create)
+        loc_data_by_property_view, errors_by_property_view_id = _get_data_for_census_tract_fetch(property_view_ids, analysis.organization, analysis.can_create())
 
         if not loc_data_by_property_view:
             AnalysisMessage.log_and_create(
@@ -443,7 +443,7 @@ def _run_analysis(self, loc_data_by_analysis_property_view, analysis_id):
                 table_name='PropertyState',
             )
         except Exception:
-            if analysis.can_create:
+            if analysis.can_create():
                 column = Column.objects.create(
                     is_extra_data=True,
                     column_name=col["column_name"],
