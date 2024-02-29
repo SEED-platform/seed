@@ -211,7 +211,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
 
           get_paginated_properties(page, per_page, cycle_priority[1], access_level_instance_id, false, property_ids).then((result1) => {
             properties = result1.results;
-            // if results0 returns fewer (or no) properties than retults1, use results1 for ui-grid oconfig
+            // if results0 returns fewer (or no) properties than retults1, use results1 for ui-grid config
             if (result1.pagination.num_pages > $scope.inventory_pagination.num_pages) {
               baseline_first = !baseline_first
               $scope.inventory_pagination = result1.pagination
