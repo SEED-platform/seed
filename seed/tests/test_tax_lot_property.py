@@ -276,6 +276,7 @@ class TestTaxLotProperty(DataMappingBaseTestCase):
         state.extra_data['area_str'] = 'string'
         state.extra_data['area_str_int'] = '123'
         state.extra_data['area_str_float'] = '12.3'
+        state.save()
 
         obj_dict = TaxLotProperty.extra_data_to_dict_with_mapping(
             state.extra_data,
