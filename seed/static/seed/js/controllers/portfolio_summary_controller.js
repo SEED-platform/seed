@@ -211,7 +211,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
 
           get_paginated_properties(page, per_page, cycle_priority[1], access_level_instance_id, false, property_ids).then((result1) => {
             properties = result1.results;
-            // if results0 returns fewer (or no) properties than retults1, use results1 for ui-grid config
+            // if result0 returns fewer (or no) properties than retult1, use result1 for ui-grid config
             if (result1.pagination.num_pages > $scope.inventory_pagination.num_pages) {
               baseline_first = !baseline_first
               $scope.inventory_pagination = result1.pagination
@@ -442,7 +442,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
       };
 
       const combine_properties = (current, baseline) => {
-        // Given 2 properties, find non null values and combine into a single property
+        // Given 2 properties, find non null values and combine into a single property (favoring baseline if baseline_first)
         const [a, b] = baseline_first ? [baseline, current] : [current, baseline];
         const c = {...b};
         Object.keys(a).forEach(key => {
