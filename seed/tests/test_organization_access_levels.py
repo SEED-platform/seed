@@ -94,7 +94,7 @@ class TestOrganizationViews(AccessLevelBaseTestCase):
         )
         assert raw_result.status_code == 400
 
-    def test_edit_access_level_names_too_few(self):
+    def test_edit_access_level_names_delete_root(self):
         # get try to clear access_level_names
         url = reverse_lazy('api:v3:organization-access_levels-access-level-names', args=[self.org.id])
         raw_result = self.client.post(
@@ -104,6 +104,7 @@ class TestOrganizationViews(AccessLevelBaseTestCase):
         )
         assert raw_result.status_code == 400
 
+    def test_edit_access_level_names_delete_level(self):
         # get try to add too few levels
         url = reverse_lazy('api:v3:organization-access_levels-access-level-names', args=[self.org.id])
         raw_result = self.client.post(
@@ -111,17 +112,10 @@ class TestOrganizationViews(AccessLevelBaseTestCase):
             data=json.dumps({"access_level_names": ["just one"]}),
             content_type='application/json',
         )
-        assert raw_result.status_code == 400
 
-        # adding multiple works
-        url = reverse_lazy('api:v3:organization-access_levels-access-level-names', args=[self.org.id])
-        raw_result = self.client.post(
-            url,
-            data=json.dumps({"access_level_names": ["one", "two"]}),
-            content_type='application/json',
-        )
         assert raw_result.status_code == 200
-        assert Organization.objects.get(pk=self.org.id).access_level_names == ["one", "two"]
+        assert AccessLevelInstance.objects.count() == 1
+        assert AccessLevelInstance.objects.first().name == "root"
 
     def test_edit_access_level_names_duplicates(self):
         url = reverse_lazy('api:v3:organization-access_levels-access-level-names', args=[self.org.id])

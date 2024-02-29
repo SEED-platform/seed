@@ -125,7 +125,7 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
       inventory_payload.taxlot.access_level_instance;
 
     $scope.ali_path = {};
-    if (typeof (ali) === 'object') {
+    if (typeof ali === 'object') {
       $scope.ali_path = ali.path;
     }
 

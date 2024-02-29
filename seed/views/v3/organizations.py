@@ -997,7 +997,6 @@ class OrganizationViewSet(viewsets.ViewSet):
         # get data
         cycles = Cycle.objects.filter(id__in=params["cycle_ids"])
         data = self.get_raw_report_data(pk, access_level_instance, cycles, params["x_var"], params["y_var"])
-
         chart_data = []
         property_counts = []
         for datum in data:
@@ -1035,13 +1034,15 @@ class OrganizationViewSet(viewsets.ViewSet):
             grouped_uses[str(b['y']).lower()].append(b)
 
         # Now iterate over use groups to make each chart item
+        # Only include non-None values
         for use, buildings_in_uses in grouped_uses.items():
-            x = [b['x'] for b in buildings_in_uses]
-            chart_data.append({
-                'x': sum(x) if x_var == "Count" else median(x),
-                'y': use.capitalize(),
-                'yr_e': yr_e
-            })
+            x = [b['x'] for b in buildings_in_uses if b['x'] is not None]
+            if x:
+                chart_data.append({
+                    'x': sum(x) if x_var == "Count" else median(x),
+                    'y': use.capitalize(),
+                    'yr_e': yr_e
+                })
         return chart_data
 
     def aggregate_year_built(self, yr_e, x_var, buildings):
@@ -1053,7 +1054,7 @@ class OrganizationViewSet(viewsets.ViewSet):
 
         # Now iterate over decade groups to make each chart item
         for decade, buildings_in_decade in grouped_decades.items():
-            x = [b['x'] for b in buildings_in_decade]
+            x = [b['x'] for b in buildings_in_decade if b['x'] is not None]
             chart_data.append({
                 'x': sum(x) if x_var == "Count" else median(x),
                 'y': '%s-%s' % (decade, '%s9' % str(decade)[:-1]),  # 1990-1999
@@ -1081,6 +1082,8 @@ class OrganizationViewSet(viewsets.ViewSet):
         # Group buildings in this year_ending group into ranges
         grouped_ranges = defaultdict(list)
         for b in buildings:
+            if b['y'] is None:
+                continue
             area = b['y']
             # make sure anything greater than the biggest bin gets put in
             # the biggest bin
@@ -1089,7 +1092,7 @@ class OrganizationViewSet(viewsets.ViewSet):
 
         # Now iterate over range groups to make each chart item
         for range_floor, buildings_in_range in grouped_ranges.items():
-            x = [b['x'] for b in buildings_in_range]
+            x = [b['x'] for b in buildings_in_range if b['x'] is not None]
             chart_data.append({
                 'x': sum(x) if x_var == "Count" else median(x),
                 'y': y_display_map[range_floor],
