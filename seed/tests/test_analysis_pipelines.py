@@ -1153,7 +1153,7 @@ class TestEeejPipeline(TestCase):
 
     def test_get_data_for_census_tract_fetch(self):
         pvids = [self.property_view.id]
-        loc_data_by_property_view, errors_by_property_view_id = _get_data_for_census_tract_fetch(pvids, self.org)
+        loc_data_by_property_view, errors_by_property_view_id = _get_data_for_census_tract_fetch(pvids, self.org, True)
         self.assertEqual(errors_by_property_view_id, {})
         self.assertEqual(loc_data_by_property_view, {self.property_view.id: {'latitude': None, 'longitude': None, 'geocoding_confidence': None, 'tract': None, 'valid_coords': False, 'location': '730 Garcia Street, Boring, Oregon, 97080'}})
 
