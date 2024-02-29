@@ -70,7 +70,7 @@ class TaxLotProperty(models.Model):
         if fields:
             for field in fields:
                 value = instance.get(field, None)
-                if units.get(field):
+                if value is not None and units.get(field):
                     value = value * ureg(units[field])
 
                 if field in mappings:
