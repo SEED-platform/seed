@@ -234,12 +234,6 @@ def _run_analysis(self, meter_readings_by_analysis_property_view, analysis_id):
 
     # if user is at root level and has role member or owner, columns can be created
     # otherwise set the 'missing_columns' flag for later
-    can_create = False
-    if (
-        analysis.organization.is_user_ali_root(analysis.user.id)
-        and (analysis.organization.is_owner(analysis.user.id) or analysis.organization.has_role_member(analysis.user.id))
-       ):
-        can_create = True
     missing_columns = False
 
     column_meta = [
@@ -261,7 +255,7 @@ def _run_analysis(self, meter_readings_by_analysis_property_view, analysis_id):
                 table_name='PropertyState',
             )
         except:
-            if can_create:
+            if analysis.can_create:
                 column = Column.objects.create(
                     is_extra_data=True,
                     column_name=col["column_name"],

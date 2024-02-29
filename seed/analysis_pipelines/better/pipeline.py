@@ -418,12 +418,6 @@ def _process_results(self, analysis_id):
     # if user is at root level and has role member or owner, columns can be created
     # otherwise set the 'missing_columns' flag for later
     missing_columns = False
-    can_create = False
-    if (
-        analysis.organization.is_user_ali_root(analysis.user.id)
-        and (analysis.organization.is_owner(analysis.user.id) or analysis.organization.has_role_member(analysis.user.id))
-       ):
-        can_create = True
 
     column_data_paths = [
         # Combined Savings
@@ -543,7 +537,7 @@ def _process_results(self, analysis_id):
                 table_name='PropertyState',
             )
         except:
-            if can_create:
+            if analysis.can_create:
                 column, created = Column.objects.create(
                     is_extra_data=True,
                     column_name=column_data_path.column_name,

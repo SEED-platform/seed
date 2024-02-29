@@ -336,9 +336,9 @@ class EEEJPipeline(AnalysisPipeline):
     def _prepare_analysis(self, property_view_ids, start_analysis=True):
         # current implementation will *always* start the analysis immediately
         analysis = Analysis.objects.get(id=self._analysis_id)
-        can_create = analysis.organization.is_owner(analysis.user.id)
+
         # check that we have the data we need to retrieve census tract for each property
-        loc_data_by_property_view, errors_by_property_view_id = _get_data_for_census_tract_fetch(property_view_ids, analysis.organization, can_create)
+        loc_data_by_property_view, errors_by_property_view_id = _get_data_for_census_tract_fetch(property_view_ids, analysis.organization, analysis.can_create)
 
         if not loc_data_by_property_view:
             AnalysisMessage.log_and_create(
@@ -406,12 +406,6 @@ def _run_analysis(self, loc_data_by_analysis_property_view, analysis_id):
     # if user is at root level and has role member or owner, columns can be created
     # otherwise set the 'missing_columns' flag for later
     missing_columns = False
-    can_create = False
-    if (
-        analysis.organization.is_user_ali_root(analysis.user.id)
-        and (analysis.organization.is_owner(analysis.user.id) or analysis.organization.has_role_member(analysis.user.id))
-       ):
-        can_create = True
 
     # make sure we have the extra data columns we need
     column_meta = [
@@ -449,7 +443,7 @@ def _run_analysis(self, loc_data_by_analysis_property_view, analysis_id):
                 table_name='PropertyState',
             )
         except:
-            if can_create:
+            if analysis.can_create:
                 column = Column.objects.create(
                     is_extra_data=True,
                     column_name=col["column_name"],
