@@ -23,6 +23,7 @@ from seed.models import (
     TaxLotProperty,
     TaxLotView
 )
+from seed.serializers.pint import DEFAULT_UNITS
 from seed.tasks import set_update_to_now
 from seed.test_helpers.fake import (
     FakePropertyFactory,
@@ -220,7 +221,7 @@ class TestTaxLotProperty(DataMappingBaseTestCase):
         record_level_keys = list(data['features'][0]['properties'].keys())
 
         self.assertIn('Address Line 1', record_level_keys)
-        self.assertTrue('Gross Floor Area', record_level_keys)
+        self.assertIn('Gross Floor Area', record_level_keys)
 
         # ids 52 up to and including 102
         self.assertEqual(len(data['features']), 51)
@@ -248,6 +249,52 @@ class TestTaxLotProperty(DataMappingBaseTestCase):
         for tv in TaxLotView.objects.filter(id__in=taxlot_view_ids):
             self.assertGreater(tv.state.updated, before_refresh)
             self.assertGreater(tv.taxlot.updated, before_refresh)
+
+    def test_extra_data_unit_conversion(self):
+        def create_column(column_name):
+            Column.objects.create(
+                is_extra_data=True,
+                column_name=column_name,
+                organization=self.org,
+                table_name='PropertyState',
+                data_type='area',
+            )
+
+        column_names = ['area_int', 'area_float', 'area_bool', 'area_none', 'area_str', 'area_str_int', 'area_str_float']
+        mapping = {}
+        units = {}
+        for column_name in column_names:
+            create_column(column_name)
+            mapping[column_name] = column_name
+            units[column_name] = DEFAULT_UNITS['area']
+
+        state = self.property_view.state
+        state.extra_data['area_int'] = 123
+        state.extra_data['area_float'] = 12.3
+        state.extra_data['area_bool'] = True
+        state.extra_data['area_none'] = None
+        state.extra_data['area_str'] = 'string'
+        state.extra_data['area_str_int'] = '123'
+        state.extra_data['area_str_float'] = '12.3'
+        state.save()
+
+        obj_dict = TaxLotProperty.extra_data_to_dict_with_mapping(
+            state.extra_data,
+            mapping,
+            fields=list(mapping.keys()),
+            units=units
+        )
+        self.assertEqual(obj_dict['area_int'].m, 123)
+        self.assertEqual(str(obj_dict['area_int'].u), 'foot ** 2')
+        self.assertEqual(obj_dict['area_float'].m, 12.3)
+        self.assertEqual(str(obj_dict['area_float'].u), 'foot ** 2')
+        self.assertEqual(obj_dict['area_bool'], True)
+        self.assertIsNone(obj_dict['area_none'])
+        self.assertEqual(obj_dict['area_str'], 'string')
+        self.assertEqual(obj_dict['area_str_int'].m, 123)
+        self.assertEqual(str(obj_dict['area_str_int'].u), 'foot ** 2')
+        self.assertEqual(obj_dict['area_str_float'].m, 12.3)
+        self.assertEqual(str(obj_dict['area_str_float'].u), 'foot ** 2')
 
     def tearDown(self):
         for x in self.properties:

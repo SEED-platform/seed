@@ -147,7 +147,7 @@ class TestAnalysisPipeline(TestCase):
 
         # the status should not have changed
         self.analysis.refresh_from_db()
-        self.assertTrue(Analysis.RUNNING, self.analysis.status)
+        self.assertEqual(Analysis.RUNNING, self.analysis.status)
 
     def test_prepare_analysis_is_successful_when_analysis_status_is_valid(self):
         # Setup
@@ -744,7 +744,7 @@ class TestBsyncrPipeline(TestCase):
             analysis=self.analysis_b,
             analysis_property_view=None,
         )
-        self.assertTrue('No files were able to be prepared for the analysis', analysis_message.user_message)
+        self.assertEqual('No files were able to be prepared for the analysis', analysis_message.user_message)
 
     def test_start_analysis_is_successful_when_inputs_are_valid(self):
         # Setup

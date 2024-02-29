@@ -67,12 +67,22 @@ class TaxLotProperty(models.Model):
         """
         data = {}
 
+        def check_and_convert_numeric(value):
+            if isinstance(value, (int, float)) and not isinstance(value, bool):
+                return True, value
+            if isinstance(value, str):
+                try:
+                    return True, float(value)
+                except ValueError:
+                    pass
+            return False, value
+
         if fields:
             for field in fields:
                 value = instance.get(field, None)
-                if units.get(field):
+                is_numeric, value = check_and_convert_numeric(value)
+                if is_numeric and units.get(field):
                     value = value * ureg(units[field])
-
                 if field in mappings:
                     data[mappings[field]] = value
                 else:
