@@ -83,7 +83,7 @@ angular.module('BE.seed.controller.members', []).controller('members_controller'
       user.role = $scope.user_edits.role
       user.access_level_instance_id = $scope.user_edits.access_level_instance.id
       user.access_level_instance_name = $scope.user_edits.access_level_instance.name
-      user.access_level = $scope.user_edits.role
+      user.access_level = $scope.user_edits.access_level
 
       // reset user edits
       $scope.user_id_being_edited = null;
