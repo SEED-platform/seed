@@ -196,3 +196,6 @@ class Analysis(models.Model):
         :returns: bool
         """
         return self.status in [self.FAILED, self.STOPPED, self.COMPLETED]
+
+    def can_create(self):
+        return self.organization.is_user_ali_root(self.user.id) and (self.organization.is_owner(self.user.id) or self.organization.has_role_member(self.user.id))

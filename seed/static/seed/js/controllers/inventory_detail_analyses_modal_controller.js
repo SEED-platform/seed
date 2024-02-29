@@ -15,12 +15,14 @@ angular.module('BE.seed.controller.inventory_detail_analyses_modal', []).control
   'inventory_ids',
   'current_cycle',
   'cycles',
+  'user',
   // eslint-disable-next-line func-names
-  function ($scope, $log, $uibModalInstance, Notification, analyses_service, inventory_ids, current_cycle, cycles) {
+  function ($scope, $log, $uibModalInstance, Notification, analyses_service, inventory_ids, current_cycle, cycles, user) {
     $scope.inventory_count = inventory_ids.length;
     // used to disable buttons on submit
     $scope.waiting_for_server = false;
     $scope.cycles = cycles;
+    $scope.user = user;
 
     $scope.new_analysis = {
       name: null,
@@ -76,8 +78,12 @@ angular.module('BE.seed.controller.inventory_detail_analyses_modal', []).control
 
         case 'CO2':
           $scope.new_analysis.configuration = {
-            save_co2_results: true
+            save_co2_results: false
           };
+          // only root users can create columns
+          if (user.is_ali_root && ['member', 'owner'].includes(user.organization.user_role)) {
+            $scope.new_analysis.configuration.save_co2_results = true
+          }
           break;
 
         case 'BETTER':

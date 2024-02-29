@@ -344,6 +344,30 @@ class Organization(models.Model):
             user=user, role_level=ROLE_OWNER, organization=self,
         ).exists()
 
+    def has_role_member(self, user):
+        """
+        Return True if the user has a relation to this org, with a role of
+        member.
+        """
+        return OrganizationUser.objects.filter(
+            user=user, role_level=ROLE_MEMBER, organization=self,
+        ).exists()
+
+    def is_user_ali_root(self, user):
+        """
+        Return True if the user's ali is at the root of the organization
+        """
+        is_root = False
+
+        ou = OrganizationUser.objects.filter(
+            user=user, organization=self,
+        )
+        if ou.count() > 0:
+            ou = ou.first()
+            if ou.access_level_instance == self.root:
+                is_root = True
+        return is_root
+
     def get_exportable_fields(self):
         """Default to parent definition of exportable fields."""
         if self.parent_org:
