@@ -221,7 +221,7 @@ class TestTaxLotProperty(DataMappingBaseTestCase):
         record_level_keys = list(data['features'][0]['properties'].keys())
 
         self.assertIn('Address Line 1', record_level_keys)
-        self.assertTrue('Gross Floor Area', record_level_keys)
+        self.assertIn('Gross Floor Area', record_level_keys)
 
         # ids 52 up to and including 102
         self.assertEqual(len(data['features']), 51)
@@ -284,17 +284,17 @@ class TestTaxLotProperty(DataMappingBaseTestCase):
             fields=list(mapping.keys()),
             units=units
         )
-        self.assertTrue(obj_dict['area_int'].m, 123)
-        self.assertTrue(str(obj_dict['area_int'].u), 'foot ** 2')
-        self.assertTrue(obj_dict['area_float'].m, 12.3)
-        self.assertTrue(str(obj_dict['area_float'].u), 'foot ** 2')
-        self.assertTrue(obj_dict['area_bool'], True)
+        self.assertEqual(obj_dict['area_int'].m, 123)
+        self.assertEqual(str(obj_dict['area_int'].u), 'foot ** 2')
+        self.assertEqual(obj_dict['area_float'].m, 12.3)
+        self.assertEqual(str(obj_dict['area_float'].u), 'foot ** 2')
+        self.assertEqual(obj_dict['area_bool'], True)
         self.assertIsNone(obj_dict['area_none'])
-        self.assertTrue(obj_dict['area_str'], 'string')
-        self.assertTrue(obj_dict['area_str_int'].m, 123)
-        self.assertTrue(str(obj_dict['area_str_int'].u), 'foot ** 2')
-        self.assertTrue(obj_dict['area_str_float'].m, 12.3)
-        self.assertTrue(str(obj_dict['area_str_float'].u), 'foot ** 2')
+        self.assertEqual(obj_dict['area_str'], 'string')
+        self.assertEqual(obj_dict['area_str_int'].m, 123)
+        self.assertEqual(str(obj_dict['area_str_int'].u), 'foot ** 2')
+        self.assertEqual(obj_dict['area_str_float'].m, 12.3)
+        self.assertEqual(str(obj_dict['area_str_float'].u), 'foot ** 2')
 
     def tearDown(self):
         for x in self.properties:

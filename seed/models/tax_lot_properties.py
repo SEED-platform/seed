@@ -68,13 +68,13 @@ class TaxLotProperty(models.Model):
         data = {}
 
         def check_and_convert_numeric(value):
-            if isinstance(value, bool):
-                return False, value
-            for cast in (int, float, complex):
+            if isinstance(value, (int, float)) and not isinstance(value, bool):
+                return True, value
+            if isinstance(value, str):
                 try:
-                    return True, cast(value)
-                except Exception:
-                    continue
+                    return True, float(value)
+                except ValueError:
+                    pass
             return False, value
 
         if fields:
