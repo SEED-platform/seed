@@ -36,23 +36,30 @@ angular.module('BE.seed.controller.new_member_modal', []).controller('new_member
       $scope.potential_level_instances = access_level_instances_by_depth[new_level_instance_depth];
     };
 
-    $scope.roles = [
-      {
-        name: $translate.instant('Owner'),
-        value: 'owner'
-      },
-      {
-        name: $translate.instant('Member'),
-        value: 'member'
-      },
-      {
-        name: $translate.instant('Viewer'),
-        value: 'viewer'
+    OWNER = {
+      name: $translate.instant('Owner'),
+      value: 'owner'
+    }
+    MEMBER = {
+      name: $translate.instant('Member'),
+      value: 'member'
+    }
+    VIEWER = {
+      name: $translate.instant('Viewer'),
+      value: 'viewer'
+    }
+    $scope.get_roles = () => {
+      const level_instance_depth = parseInt($scope.level_name_index, 10) + 1;
+      if(level_instance_depth == 1){
+        return [OWNER, MEMBER, VIEWER]
+      } else{
+        return [MEMBER, VIEWER]
       }
-    ];
+    }
+
     $scope.user = {
       organization,
-      role: $scope.roles[1].value
+      role: MEMBER
     };
 
     /**
