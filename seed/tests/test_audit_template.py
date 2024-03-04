@@ -574,14 +574,15 @@ class atsub(TestCase):
         self.org.at_organization_token = 'LQssSnjk6fhBzh3X72v6'
         self.org.audit_template_user = '179d-stage@nrel.gov'
         self.org.audit_template_password = 'thb4fva_krp7fam7JHK'
+        self.org.audit_template_city_id = 36
         self.org.save()
         self.at = AuditTemplate(self.org.id)
 
         self.cycle_factory = FakeCycleFactory(organization=self.org, user=self.user)
 
-        self.cycle2018 = self.cycle_factory.get_cycle(
-            start=datetime(2018, 1, 1, tzinfo=timezone.get_current_timezone()),
-            end=datetime(2019, 1, 1, tzinfo=timezone.get_current_timezone()),
+        self.cycle2023 = self.cycle_factory.get_cycle(
+            start=datetime(2023, 1, 1, tzinfo=timezone.get_current_timezone()),
+            end=datetime(2024, 1, 1, tzinfo=timezone.get_current_timezone()),
         )
         self.cycle2020 = self.cycle_factory.get_cycle(
             start=datetime(2020, 1, 1, tzinfo=timezone.get_current_timezone()),
@@ -593,24 +594,39 @@ class atsub(TestCase):
         self.view_factory = FakePropertyViewFactory(organization=self.org)
         self.state_factory = FakePropertyStateFactory(organization=self.org)
 
-        self.state1 = self.state_factory.get_property_state(custom_id_1='ABC123')
-        self.state2 = self.state_factory.get_property_state(custom_id_1='ABC123')
-        self.state3 = self.state_factory.get_property_state(custom_id_1='no_match')
-        self.state4 = self.state_factory.get_property_state()
+        self.state1 = self.state_factory.get_property_state(address_line_1='old address 1', custom_id_1='ABC123')
+        self.state2 = self.state_factory.get_property_state(address_line_1='old address 2', custom_id_1='ABC123')
+        self.state3 = self.state_factory.get_property_state(address_line_1='old address 3', custom_id_1='not_a_match')
+        self.state4 = self.state_factory.get_property_state(address_line_1='old address 4')
 
-        self.view1 = self.view_factory.get_property_view(cycle=self.cycle2018, state=self.state1)
+        self.view1 = self.view_factory.get_property_view(cycle=self.cycle2023, state=self.state1)
         self.view2 = self.view_factory.get_property_view(cycle=self.cycle2020, state=self.state2)
-        self.view3 = self.view_factory.get_property_view(cycle=self.cycle2018, state=self.state3)
+        self.view3 = self.view_factory.get_property_view(cycle=self.cycle2023, state=self.state3)
         self.view4 = self.view_factory.get_property_view(cycle=self.cycle2020, state=self.state4)
 
     def test_atsubs(self):
-        # WHERE IS CITY ID FOUND?
-        city_id = 36
 
-        xmls, messages = self.at.batch_get_city_submission_xml(city_id)
+        assert self.view1.state.address_line_1 == 'old address 1'
+        assert self.view2.state.address_line_1 == 'old address 2'
+        assert self.view3.state.address_line_1 == 'old address 3'
+        assert self.view4.state.address_line_1 == 'old address 4'
 
+        assert not self.view1.state.audit_template_building_id
+        assert not self.view1.state.extra_data
 
-        assert True
+        self.at.batch_get_city_submission_xml()
+
+        for view in [self.view1, self.view2, self.view3, self.view4]:
+            view.refresh_from_db()
+        
+        # view1's state is the only state that matches the AT response's tax_id (custom_id_1) and cycle dates
+        assert self.view1.state.address_line_1 == 'ABC Street'
+        assert self.view2.state.address_line_1 == 'old address 2'
+        assert self.view3.state.address_line_1 == 'old address 3'
+        assert self.view4.state.address_line_1 == 'old address 4'
+
+        assert self.view1.state.extra_data
+        assert self.view1.state.audit_template_building_id == '1182'
 
 
 

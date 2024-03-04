@@ -17,6 +17,7 @@ from lxml import etree
 from lxml.builder import ElementMaker
 from quantityfield.units import ureg
 from functools import wraps
+from dateutil import parser
 
 from seed.building_sync import validation_client
 from seed.building_sync.mappings import BUILDINGSYNC_URI, NAMESPACES
@@ -46,6 +47,7 @@ class AuditTemplate(object):
 
     def __init__(self, org_id):
         self.org_id = org_id
+        self.org = Organization.objects.get(id=self.org_id)
 
     @require_token
     def get_building(self, audit_template_building_id):
@@ -66,53 +68,61 @@ class AuditTemplate(object):
 
         return response, ""
 
-    def batch_get_city_submission_xml(self, city_id):
+    def batch_get_city_submission_xml(self):
         """
         1. get_city_submissions 
-        2. iterate through submissions to get corresponding xmls
+        2. find views using custom_id_1 and cycle start/end bounds
+        3. get xmls corresponding to submissions matching a view
+        4. group data by cycles 
+        5. update views in cycle batches
         """
+        progress_data = ProgressData(func_name='batch_get_city_submission_xml', unique_id=self.org_id)
         
-        response, messages = self.get_city_submissions(city_id)
+        response, messages = self.get_city_submissions(self.org.audit_template_city_id)
         if not response:
             return None, messages
         submissions = response.json()
-        custom_ids = list(set([sub['tax_id'] for sub in submissions]))
-        # views to update 
+
         # NEED TO SPECIFY CYCLE, based on updated_at?
         # would be nice to have audit date
         # audit_date is not a relavent fields in the xml. what should we use?
         # Metering Year Start Dates?
-        
-        # views = PropertyView.objects.filter(state__custom_id_1__in=custom_ids)
 
         # filering for cycles that contain {updated_at} makes the query more difficult
         # without placing dates it could be a simple .filter(state__custom_id_1__in=custom_ids)
         # however that could return multiple views across many cycles 
         # filtering by custom_id and {updated_at} will require looping through results to query views 
-        views = []
+
+        xml_data_by_cycle = {}
         for sub in submissions:
             custom_id = sub['tax_id']
-            # breakpoint()
-            # date = datetime(sub['updated_at'])
+            # What if updated_at is None? default cycle?
+            updated_at = parser.parse(sub['updated_at'])
+
             view = PropertyView.objects.filter(
                 state__custom_id_1=custom_id,
-                # cycle__start__lte=date,
-                # cycle__end__gte=date
+                cycle__start__lte=updated_at,
+                cycle__end__gte=updated_at
             ).first()
-            views.append(view)
 
-        # breakpoint()
+            if view:
+                xml, _ = self.get_submission(sub['id'], 'xml')
 
-        
-        
-        if not submissions:
-            return None, messages
+            if hasattr(xml, 'text'):
+                if not xml_data_by_cycle.get(view.cycle.id): 
+                    xml_data_by_cycle[view.cycle.id] = []
 
-        xmls = []
-        for sub in submissions:
-            xml, _ = self.get_submission(sub['id'], 'xml')
-            xmls.append(xml)
-        return xmls, ''
+                xml_data_by_cycle[view.cycle.id].append({
+                'property_view': view.id,
+                'matching_field': custom_id,
+                'xml': xml.text,
+                'updated_at': sub['updated_at']
+            })
+                
+        property_view_set = PropertyViewSet()
+        # Update is cycle based, going to have to iterate through cycles in found views
+        for cycle, xmls in xml_data_by_cycle.items(): 
+            property_view_set.batch_update_with_building_sync(xmls, self.org_id, cycle, progress_data.key)
 
 
     @require_token
@@ -183,23 +193,15 @@ class AuditTemplate(object):
         return progress_data.result()
 
     def get_api_token(self):
-        org = Organization.objects.get(pk=self.org_id)
-        if not org.at_organization_token or not org.audit_template_user or not org.audit_template_password:
+        if not self.org.at_organization_token or not self.org.audit_template_user or not self.org.audit_template_password:
             return None, 'An Audit Template organization token, user email and password are required!'
-        
-        # DEBUGGING LGOS
-        if self.token:
-            print('>>> EXISTING TOKEN')
-            return self.token, ""
-        else: 
-            print('>>> GET TOKEN')
         
         url = f'{self.API_URL}/users/authenticate'
         # Send data as form-data to handle special characters like '%'
         form_data = {
-            'organization_token': (None, org.at_organization_token),
-            'email': (None, org.audit_template_user),
-            'password': (None, org.audit_template_password),
+            'organization_token': (None, self.org.at_organization_token),
+            'email': (None, self.org.audit_template_user),
+            'password': (None, self.org.audit_template_password),
         }
         headers = {'Accept': 'application/xml'}
 
@@ -230,15 +232,14 @@ class AuditTemplate(object):
         return progress_data.result(), []
 
     def export_to_audit_template(self, state, token):
-        org = Organization.objects.get(pk=self.org_id)
         url = f'{self.API_URL}/building_sync/upload'
-        display_field = getattr(state, org.property_display_field)
+        display_field = getattr(state, self.org.property_display_field)
 
         if state.audit_template_building_id:
             return None, ['info', f'{display_field}: Existing Audit Template Property']
 
         try:
-            xml_string, messages = self.build_xml(state, org.audit_template_report_type, display_field)
+            xml_string, messages = self.build_xml(state, self.org.audit_template_report_type, display_field)
             if not xml_string:
                 return None, messages
         except Exception as e:
@@ -411,7 +412,7 @@ def _batch_get_building_xml(org_id, cycle_id, token, properties, progress_key):
         if hasattr(xml, 'text'):
             result.append({
                 'property_view': property['property_view'],
-                'audit_template_building_id': audit_template_building_id,
+                'matching_field': audit_template_building_id,
                 'xml': xml.text,
                 'updated_at': property['updated_at']
             })
