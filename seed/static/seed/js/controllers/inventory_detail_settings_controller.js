@@ -56,6 +56,9 @@ angular.module('BE.seed.controller.inventory_detail_settings', []).controller('i
             _.forEach($scope.gridApi.grid.rows, (row) => {
               if (row.entity.visible === false) row.setSelected(false);
               else row.setSelected(true);
+              if ($scope.menu.user.organization.user_role == 'viewer'){
+                row.enableSelection = false;
+              }
             });
           });
         });

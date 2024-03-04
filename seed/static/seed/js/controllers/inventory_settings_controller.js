@@ -107,6 +107,9 @@ angular.module('BE.seed.controller.inventory_settings', []).controller('inventor
         if (row.entity.visible !== false) {
           row.setSelected(true);
         }
+        if ($scope.menu.user.organization.user_role == 'viewer'){
+          row.enableSelection = false;
+        }
       });
     };
 

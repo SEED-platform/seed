@@ -65,7 +65,7 @@
               <select class="form-control" id="xSelect" ng-model="configs.chart_xaxis" ng-change="update()" ng-options="operator.id as operator.display_name for operator in x_axis_options"></select>
             </div>
 
-            <div class="button-grid chart-buttons">
+            <div ng-show="menu.user.organization.user_role !== 'viewer'" class="button-grid chart-buttons">
               <div class="flex-button-child"><button type="button" class="btn btn-primary" ng-click="open_update_labels_modal()" ng-disabled="!visibleIds().length" translate>Update Property Labels</button></div>
             </div>
           </div>

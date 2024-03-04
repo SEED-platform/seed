@@ -320,7 +320,7 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
 
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('requires_member')
+    @has_perm_class('requires_viewer')
     @action(detail=False, methods=['get'])
     def stats(self, request):
         org_id = self.get_organization(request)

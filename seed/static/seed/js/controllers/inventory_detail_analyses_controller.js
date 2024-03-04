@@ -11,7 +11,7 @@ angular.module('BE.seed.controller.inventory_detail_analyses', []).controller('i
   'inventory_service',
   'inventory_payload',
   'analyses_payload',
-  'users_payload',
+  // 'users_payload',
   'organization_payload',
   'views_payload',
   'urls',
@@ -30,7 +30,7 @@ angular.module('BE.seed.controller.inventory_detail_analyses', []).controller('i
     inventory_service,
     inventory_payload,
     analyses_payload,
-    users_payload,
+    // users_payload,
     organization_payload,
     views_payload,
     urls,
@@ -46,7 +46,7 @@ angular.module('BE.seed.controller.inventory_detail_analyses', []).controller('i
     $scope.cycle = inventory_payload.cycle;
     // WARNING: $scope.org is used by "child" controller - analysis_details_controller
     $scope.org = organization_payload.organization;
-    $scope.users = users_payload.users;
+    // $scope.users = users_payload.users;
     $scope.analyses = analyses_payload.analyses;
     $scope.inventory = {
       view_id: $stateParams.view_id

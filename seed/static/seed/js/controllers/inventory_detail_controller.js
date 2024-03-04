@@ -28,7 +28,7 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
   'inventory_payload',
   'views_payload',
   'analyses_payload',
-  'users_payload',
+  // 'users_payload',
   'columns',
   'derived_columns_payload',
   'profiles',
@@ -66,7 +66,7 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
     inventory_payload,
     views_payload,
     analyses_payload,
-    users_payload,
+    // users_payload,
     columns,
     derived_columns_payload,
     profiles,
@@ -162,7 +162,7 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
         return 0;
       })[0];
     }
-    $scope.users = users_payload.users;
+    // $scope.users = users_payload.users;
 
     // handle popovers cleared on scrolling
     [document.getElementsByClassName('ui-view-container')[0], document.getElementById('pin')].forEach((el) => {

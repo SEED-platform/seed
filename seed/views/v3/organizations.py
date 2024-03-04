@@ -752,7 +752,7 @@ class OrganizationViewSet(viewsets.ViewSet):
 
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('requires_member')
+    @has_perm_class('requires_viewer')
     @action(detail=True, methods=['GET'])
     def matching_criteria_columns(self, request, pk=None):
         """
