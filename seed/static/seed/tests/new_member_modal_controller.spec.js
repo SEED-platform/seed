@@ -63,7 +63,7 @@ describe('controller: new_member_modal_controller', () => {
     ctrl_scope.$digest();
 
     // assertions
-    expect(ctrl_scope.user.role).toEqual('member');
+    expect(ctrl_scope.user.role).toEqual(MEMBER);
   });
 
   it('should call the user service to add a new user to the org', () => {
@@ -82,7 +82,7 @@ describe('controller: new_member_modal_controller', () => {
       first_name: 'JB',
       last_name: 'Smooth',
       email: 'jb.smooth@be.com',
-      role: ctrl_scope.roles[1].value,
+      role: MEMBER,
       organization: { organization_id: 1 }
     });
   });
