@@ -92,7 +92,7 @@ angular.module('BE.seed.controller.members', []).controller('members_controller'
      * update_user: updates a users role and access level instance
      */
     $scope.update_user = (user, user_edits) => {
-      // 1. update role 
+      // 1. update role
       // 2. update ali
       organization_service.update_role(user.user_id, $scope.org.id, user_edits.role)
         .then(() => {
