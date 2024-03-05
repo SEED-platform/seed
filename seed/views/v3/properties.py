@@ -1514,7 +1514,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
 
         return self._update_with_building_sync(the_file, file_type, organization_id, cycle_id, pk)
 
-    def batch_update_with_building_sync(self, properties, org_id, cycle_id, progress_key):
+    def batch_update_with_building_sync(self, properties, org_id, cycle_id, progress_key, finish=True):
         """
         Update a list of PropertyViews with a building file. Currently only supports BuildingSync.
         """
@@ -1533,7 +1533,8 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
 
             progress_data.step('Updating Properties...')
 
-        progress_data.finish_with_success(results)
+        if finish:
+            progress_data.finish_with_success(results)
 
     def _update_with_building_sync(self, the_file, file_type, organization_id, cycle_id, view_id, at_updated=False):
         try:

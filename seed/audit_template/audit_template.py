@@ -77,52 +77,19 @@ class AuditTemplate(object):
         5. update views in cycle batches
         """
         progress_data = ProgressData(func_name='batch_get_city_submission_xml', unique_id=self.org_id)
+
         
         response, messages = self.get_city_submissions(self.org.audit_template_city_id)
         if not response:
             return None, messages
         submissions = response.json()
+        # Progress data is difficult to calculate as not all submissions will need an xml
+        progress_data.total = len(submissions) * 2
+        progress_data.save()
+        _batch_get_city_submission_xml.delay(self.org_id, submissions, progress_data.key)
 
-        # NEED TO SPECIFY CYCLE, based on updated_at?
-        # would be nice to have audit date
-        # audit_date is not a relavent fields in the xml. what should we use?
-        # Metering Year Start Dates?
-
-        # filering for cycles that contain {updated_at} makes the query more difficult
-        # without placing dates it could be a simple .filter(state__custom_id_1__in=custom_ids)
-        # however that could return multiple views across many cycles 
-        # filtering by custom_id and {updated_at} will require looping through results to query views 
-
-        xml_data_by_cycle = {}
-        for sub in submissions:
-            custom_id = sub['tax_id']
-            # What if updated_at is None? default cycle?
-            updated_at = parser.parse(sub['updated_at'])
-
-            view = PropertyView.objects.filter(
-                state__custom_id_1=custom_id,
-                cycle__start__lte=updated_at,
-                cycle__end__gte=updated_at
-            ).first()
-
-            if view:
-                xml, _ = self.get_submission(sub['id'], 'xml')
-
-            if hasattr(xml, 'text'):
-                if not xml_data_by_cycle.get(view.cycle.id): 
-                    xml_data_by_cycle[view.cycle.id] = []
-
-                xml_data_by_cycle[view.cycle.id].append({
-                'property_view': view.id,
-                'matching_field': custom_id,
-                'xml': xml.text,
-                'updated_at': sub['updated_at']
-            })
-                
-        property_view_set = PropertyViewSet()
-        # Update is cycle based, going to have to iterate through cycles in found views
-        for cycle, xmls in xml_data_by_cycle.items(): 
-            property_view_set.batch_update_with_building_sync(xmls, self.org_id, cycle, progress_data.key)
+        return progress_data.result()
+       
 
 
     @require_token
@@ -421,6 +388,66 @@ def _batch_get_building_xml(org_id, cycle_id, token, properties, progress_key):
     # Call the PropertyViewSet to update the property view with xml data
     property_view_set = PropertyViewSet()
     property_view_set.batch_update_with_building_sync(result, org_id, cycle_id, progress_data.key)
+
+
+@shared_task 
+def _batch_get_city_submission_xml(org_id, submissions, progress_key):
+    """
+    1. find views using custom_id_1 and cycle start/end bounds
+    2. get xmls corresponding to submissions matching a view
+    3. group data by cycles 
+    4. update views in cycle batches
+    """
+    audit_template = AuditTemplate(org_id)
+    progress_data = ProgressData.from_key(progress_key)
+
+    # NEED TO SPECIFY CYCLE, based on updated_at?
+    # would be nice to have audit_date
+    # audit_date is not a relavent fields in the xml. what should we use?
+    # WHERE IS AUDIT_DATE
+    # Metering Year Start Dates?
+
+    # filering for cycles that contain {updated_at} makes the query more difficult
+    # without placing dates it could be a simple .filter(state__custom_id_1__in=custom_ids)
+    # however that could return multiple views across many cycles 
+    # filtering by custom_id and {updated_at} will require looping through results to query views 
+
+    xml_data_by_cycle = {}
+    for sub in submissions:
+        custom_id = sub['tax_id']
+        # What if updated_at is None? default cycle?
+        updated_at = parser.parse(sub['updated_at'])
+
+        view = PropertyView.objects.filter(
+            state__custom_id_1=custom_id,
+            cycle__start__lte=updated_at,
+            cycle__end__gte=updated_at
+            # updated_at__lte=updated_at  # only update old views?
+        ).first()
+
+        if view:
+            progress_data.step('Getting XML for submissions...')
+            xml, _ = audit_template.get_submission(sub['id'], 'xml')
+
+        if hasattr(xml, 'text'):
+            if not xml_data_by_cycle.get(view.cycle.id): 
+                xml_data_by_cycle[view.cycle.id] = []
+
+            xml_data_by_cycle[view.cycle.id].append({
+            'property_view': view.id,
+            'matching_field': custom_id,
+            'xml': xml.text,
+            'updated_at': sub['updated_at']
+        })
+            
+    property_view_set = PropertyViewSet()
+    # Update is cycle based, going to have update in cycle specific batches
+    for cycle, xmls in xml_data_by_cycle.items(): 
+        # does progress_data need to be recursively passed?
+        property_view_set.batch_update_with_building_sync(xmls, org_id, cycle, progress_data.key, finish=False)
+
+    progress_data.finish_with_success('Completed Audit Template Submission import and update')
+
 
 
 @shared_task
