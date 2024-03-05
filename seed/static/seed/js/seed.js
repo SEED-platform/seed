@@ -2357,11 +2357,11 @@ SEED_app.config([
               return inventory_service.get_column_list_profiles('Detail View Profile', inventory_type);
             }
           ],
-          users_payload: [
-            'organization_service',
-            'user_service',
-            (organization_service, user_service) => organization_service.get_organization_users({ org_id: user_service.get_organization().id })
-          ],
+          // users_payload: [
+          //   'organization_service',
+          //   'user_service',
+          //   (organization_service, user_service) => organization_service.get_organization_users({ org_id: user_service.get_organization().id })
+          // ],
           current_profile: [
             '$stateParams',
             'inventory_service',
@@ -2504,11 +2504,11 @@ SEED_app.config([
             'organization_service',
             (user_service, organization_service) => organization_service.get_organization(user_service.get_organization().id)
           ],
-          users_payload: [
-            'user_service',
-            'organization_service',
-            (user_service, organization_service) => organization_service.get_organization_users({ org_id: user_service.get_organization().id })
-          ],
+          // users_payload: [
+          //   'user_service',
+          //   'organization_service',
+          //   (user_service, organization_service) => organization_service.get_organization_users({ org_id: user_service.get_organization().id })
+          // ],
           views_payload: [
             '$stateParams',
             'user_service',
@@ -2679,7 +2679,7 @@ SEED_app.config([
           users_payload: [
             'organization_service',
             'user_service',
-            (organization_service, user_service) => organization_service.get_organization_users({ org_id: user_service.get_organization().id })
+            (organization_service, user_service) => organization_service.get_organization_users_limited({ org_id: user_service.get_organization().id })
           ],
           organization_payload: [
             'user_service',

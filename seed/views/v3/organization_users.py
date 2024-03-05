@@ -60,6 +60,35 @@ class OrganizationUserViewSet(viewsets.ViewSet):
 
     @api_endpoint_class
     @ajax_request_class
+    @has_perm_class('requires_viewer')
+    @action(detail=False, methods=['GET'])
+    def limited(self, request, organization_pk):
+        """
+        Retrieve all users belonging to an org, but return limited info about the user (id, email, firstname, lastname)
+        """
+        try:
+            org = Organization.objects.get(pk=organization_pk)
+        except ObjectDoesNotExist:
+            return JsonResponse({'status': 'error',
+                                 'message': 'Could not retrieve organization at organization_pk = ' + str(organization_pk)},
+                                status=status.HTTP_404_NOT_FOUND)
+        users = []
+        for u in org.organizationuser_set.all():
+            user = u.user
+
+            user_orgs = OrganizationUser.objects.filter(user=user).count()
+
+            users.append({
+                'email': user.email,
+                'first_name': user.first_name,
+                'last_name': user.last_name,
+                'user_id': user.pk,
+            })
+
+        return JsonResponse({'status': 'success', 'users': users})
+
+    @api_endpoint_class
+    @ajax_request_class
     @has_perm_class('requires_owner')
     @action(detail=True, methods=['PUT'])
     def add(self, request, organization_pk, pk):

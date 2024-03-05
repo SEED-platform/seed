@@ -37,6 +37,8 @@ angular.module('BE.seed.service.organization', []).factory('organization_service
 
     organization_factory.get_organization_users = (org) => $http.get(`/api/v3/organizations/${org.org_id}/users/`).then((response) => response.data);
 
+    organization_factory.get_organization_users_limited = (org) => $http.get(`/api/v3/organizations/${org.org_id}/users/limited`).then((response) => response.data);
+
     organization_factory.add_user_to_org = (org_user) => $http.put(`/api/v3/organizations/${org_user.organization.org_id}/users/${org_user.user.user_id}/add/`).then((response) => response.data);
 
     organization_factory.remove_user = (user_id, org_id) => $http.delete(`/api/v3/organizations/${org_id}/users/${user_id}/remove/`).then((response) => response.data);

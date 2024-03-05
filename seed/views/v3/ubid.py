@@ -284,7 +284,7 @@ class UbidViewSet(ModelViewSetWithoutPatch, OrgMixin):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
-    @has_hierarchy_access(body_ali_id='access_level_instance_id')
+    @has_hierarchy_access(body_property_state_id='property')
     def create(self, request):
         org_id = self.get_organization(request)
         serializer = UbidModelSerializer(data=request.data)
