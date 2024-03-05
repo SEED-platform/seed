@@ -76,8 +76,6 @@ class OrganizationUserViewSet(viewsets.ViewSet):
         for u in org.organizationuser_set.all():
             user = u.user
 
-            user_orgs = OrganizationUser.objects.filter(user=user).count()
-
             users.append({
                 'email': user.email,
                 'first_name': user.first_name,
