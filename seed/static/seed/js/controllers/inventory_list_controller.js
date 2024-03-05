@@ -1642,7 +1642,8 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
               ($state, $stateParams, inventory_service) => (record.inventory_type === 'properties' ? inventory_service.get_property(record.view_id) : inventory_service.get_taxlot(record.view_id))
             ],
             organization_payload: () => organization_payload,
-            notes: ['note_service', (note_service) => note_service.get_notes($scope.organization.id, record.inventory_type, record.view_id)]
+            notes: ['note_service', (note_service) => note_service.get_notes($scope.organization.id, record.inventory_type, record.view_id)],
+            menu: () => $scope.menu
           }
         })
         .result.then((notes_count) => {
