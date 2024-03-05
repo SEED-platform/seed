@@ -77,8 +77,7 @@ angular.module('BE.seed.controller.members', []).controller('members_controller'
 
       // update user
       user = $scope.users.find(x => x.user_id == $scope.user_id_being_edited);
-      $scope.update_role(user, $scope.user_edits.role);
-      $scope.update_ali(user, $scope.user_edits.access_level_instance.id)
+      $scope.update_user(user, $scope.user_edits)
 
       user.role = $scope.user_edits.role
       user.access_level_instance_id = $scope.user_edits.access_level_instance.id
@@ -88,6 +87,21 @@ angular.module('BE.seed.controller.members', []).controller('members_controller'
       // reset user edits
       $scope.user_id_being_edited = null;
       $scope.user_edits = {};
+    }
+    /**
+     * update_user: updates a users role and access level instance
+     */
+    $scope.update_user = (user, user_edits) => {
+      // 1. update role 
+      // 2. update ali
+      organization_service.update_role(user.user_id, $scope.org.id, user_edits.role)
+        .then(() => {
+          refreshRoleStatus();
+          return organization_service.update_ali(user.user_id, $scope.org.id, user_edits.access_level_instance.id)
+        })
+        .catch((data) => {
+          $scope.$emit('app_error', data);
+        })
     }
 
     $scope.cancel_user_edits = () => {
@@ -114,32 +128,6 @@ angular.module('BE.seed.controller.members', []).controller('members_controller'
         });
     };
 
-    /**
-     * saves the changed ali for the user
-     * @param  {obj} user
-     */
-    $scope.update_ali = (user, ali_id) => {
-      organization_service
-        .update_ali(user.user_id, $scope.org.id, ali_id)
-        .catch((data) => {
-          $scope.$emit('app_error', data);
-        });
-    };
-
-    /**
-     * saves the changed role for the user
-     * @param  {obj} user
-     */
-    $scope.update_role = (user, role) => {
-      organization_service
-        .update_role(user.user_id, $scope.org.id, role)
-        .then((data) => {
-          refreshRoleStatus();
-        })
-        .catch((data) => {
-          $scope.$emit('app_error', data);
-        });
-    };
 
     /**
      * new_member_modal open an AngularUI modal to add/invite a new member
