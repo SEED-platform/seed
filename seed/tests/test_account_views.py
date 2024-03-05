@@ -467,7 +467,7 @@ class AccountsViewTests(TestCase):
 
         # Action
         resp = self.client.put(
-            reverse_lazy("api:v3:user-access-level-instance", args=[org_user.id]) + '?organization_id=' + str(
+            reverse_lazy("api:v3:user-access-level-instance", args=[u.id]) + '?organization_id=' + str(
                 self.org.id),
             data=json.dumps(
                 {
