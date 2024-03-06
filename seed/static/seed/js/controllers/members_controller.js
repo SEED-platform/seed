@@ -109,6 +109,15 @@ angular.module('BE.seed.controller.members', []).controller('members_controller'
       $scope.user_edits = {};
     }
 
+    $scope.get_roles = (user) => {
+      user_in_root = user.access_level == $scope.org.access_level_names[0]
+      if(user_in_root){
+        return ['owner', 'member', 'viewer']
+      } else{
+        return ['member', 'viewer']
+      }
+    }
+
     /**
      * remove_member: removes a user from the org
      *

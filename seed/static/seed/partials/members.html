@@ -90,9 +90,8 @@
                 <div class="row" ng-if="user_id_being_edited == u.user_id">
                   <div class="form-group">
                     <div class="col-sm-12" ng-switch="can_edit(u)">
-                      <select ng-switch-when="owner" class="form-control input-sm hide_transition" ng-model="user_edits.role" ng-options="role for role in ::ownerRoles"></select>
-                      <select ng-switch-when="member" class="form-control input-sm hide_transition" ng-model="user_edits.role" ng-options="role for role in ::memberRoles"></select>
-                        <span ng-switch-default style="padding-left: 15px">{$:: u.role | translate $}</span>
+                      <select ng-switch-when="owner|member" ng-switch-when-separator="|" class="form-control input-sm hide_transition" ng-model="u.role" ng-options="role for role in ::get_roles(u)" ng-change="update_role(u)"></select>
+                      <span ng-switch-default style="padding-left: 15px">{$:: u.role | translate $}</span>
                     </div>
                   </div>
                 </div>

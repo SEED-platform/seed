@@ -317,6 +317,12 @@ class UserViewSet(viewsets.ViewSet, OrgMixin):
                 'message': 'an organization must have at least one owner'
             }, status=status.HTTP_409_CONFLICT)
 
+        if role == ROLE_OWNER and user.access_level_instance != user.organization.root:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Owners must belong to the root ali.'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
         user.role_level = role
         user.save()
 
