@@ -785,6 +785,14 @@ SEED_app.config([
               return note_service.get_notes(organization_id, $stateParams.inventory_type, $stateParams.view_id);
             }
           ],
+          auth_payload: [
+            'auth_service',
+            'user_service',
+            (auth_service, user_service) => {
+              const organization_id = user_service.get_organization().id;
+              return auth_service.is_authorized(organization_id, ['requires_member']);
+            }
+          ],
           $uibModalInstance: () => undefined
         }
       })

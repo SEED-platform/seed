@@ -12,14 +12,14 @@ angular.module('BE.seed.controller.notes', []).controller('notes_controller', [
   'inventory_payload',
   'organization_payload',
   'notes',
-  'menu',
+  'auth_payload',
   // eslint-disable-next-line func-names
-  function ($scope, $uibModalInstance, urls, note_service, inventory_type, view_id, inventory_payload, organization_payload, notes, menu) {
+  function ($scope, $uibModalInstance, urls, note_service, inventory_type, view_id, inventory_payload, organization_payload, notes, auth_payload) {
     $scope.inventory_type = inventory_type;
     $scope.notes = notes;
-    $scope.menu = menu;
     $scope.org_id = organization_payload.organization.org_id;
     $scope.urls = urls;
+    $scope.auth = auth_payload.auth;
 
     $scope.inventory_name = note_service.inventory_display_name(inventory_type === 'properties' ? 'property' : 'taxlot', organization_payload.organization, inventory_payload.state);
 

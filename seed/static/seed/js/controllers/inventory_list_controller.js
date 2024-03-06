@@ -1643,7 +1643,14 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
             ],
             organization_payload: () => organization_payload,
             notes: ['note_service', (note_service) => note_service.get_notes($scope.organization.id, record.inventory_type, record.view_id)],
-            menu: () => $scope.menu
+            auth_payload: [
+              'auth_service',
+              'user_service',
+              (auth_service, user_service) => {
+                const organization_id = user_service.get_organization().id;
+                return auth_service.is_authorized(organization_id, ['requires_member']);
+              }
+            ]
           }
         })
         .result.then((notes_count) => {
