@@ -58,6 +58,7 @@ class OrganizationUserViewSet(viewsets.ViewSet):
                 user_info.update({
                     'number_of_orgs': user_orgs,
                     'role': get_js_role(u.role_level),
+                    'access_level_instance_id': u.access_level_instance.id,
                     'access_level_instance_name': u.access_level_instance.name,
                     'access_level': org.access_level_names[u.access_level_instance.depth - 1],
                 })
