@@ -2687,7 +2687,7 @@ SEED_app.config([
           users_payload: [
             'organization_service',
             'user_service',
-            (organization_service, user_service) => organization_service.get_organization_users_limited({ org_id: user_service.get_organization().id })
+            (organization_service, user_service) => organization_service.get_organization_users({ org_id: user_service.get_organization().id })
           ],
           organization_payload: [
             'user_service',

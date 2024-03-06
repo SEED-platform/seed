@@ -13,6 +13,7 @@ from seed.decorators import ajax_request_class
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.lib.superperms.orgs.models import (
+    ROLE_MEMBER,
     ROLE_OWNER,
     Organization,
     OrganizationUser
@@ -28,7 +29,7 @@ class OrganizationUserViewSet(viewsets.ViewSet):
 
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('requires_member')
+    @has_perm_class('requires_viewer')
     def list(self, request, organization_pk):
         """
         Retrieve all users belonging to an org.
@@ -39,49 +40,29 @@ class OrganizationUserViewSet(viewsets.ViewSet):
             return JsonResponse({'status': 'error',
                                  'message': 'Could not retrieve organization at organization_pk = ' + str(organization_pk)},
                                 status=status.HTTP_404_NOT_FOUND)
+
+        org_user = OrganizationUser.objects.get(user=self.request.user, organization=org)
+        is_member = org_user.role_level >= ROLE_MEMBER
+
         users = []
         for u in org.organizationuser_set.all():
             user = u.user
-
-            user_orgs = OrganizationUser.objects.filter(user=user).count()
-
-            users.append({
-                'email': user.email,
-                'first_name': user.first_name,
-                'last_name': user.last_name,
-                'number_of_orgs': user_orgs,
-                'user_id': user.pk,
-                'role': get_js_role(u.role_level),
-                'access_level_instance_name': u.access_level_instance.name,
-                'access_level': org.access_level_names[u.access_level_instance.depth - 1],
-            })
-
-        return JsonResponse({'status': 'success', 'users': users})
-
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class('requires_viewer')
-    @action(detail=False, methods=['GET'])
-    def limited(self, request, organization_pk):
-        """
-        Retrieve all users belonging to an org, but return limited info about the user (id, email, firstname, lastname)
-        """
-        try:
-            org = Organization.objects.get(pk=organization_pk)
-        except ObjectDoesNotExist:
-            return JsonResponse({'status': 'error',
-                                 'message': 'Could not retrieve organization at organization_pk = ' + str(organization_pk)},
-                                status=status.HTTP_404_NOT_FOUND)
-        users = []
-        for u in org.organizationuser_set.all():
-            user = u.user
-
-            users.append({
+            user_info = {
                 'email': user.email,
                 'first_name': user.first_name,
                 'last_name': user.last_name,
                 'user_id': user.pk,
-            })
+            }
+            if is_member:
+                user_orgs = OrganizationUser.objects.filter(user=user).count()
+                user_info.update({
+                    'number_of_orgs': user_orgs,
+                    'role': get_js_role(u.role_level),
+                    'access_level_instance_name': u.access_level_instance.name,
+                    'access_level': org.access_level_names[u.access_level_instance.depth - 1],
+                })
+
+            users.append(user_info)
 
         return JsonResponse({'status': 'success', 'users': users})
 
