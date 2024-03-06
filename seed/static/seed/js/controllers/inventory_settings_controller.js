@@ -324,6 +324,9 @@ angular.module('BE.seed.controller.inventory_settings', []).controller('inventor
     $scope.isModified = () => modified_service.isModified();
 
     $scope.togglePinned = (row) => {
+      if ($scope.menu.user.organization.user_role == 'viewer') {
+        return
+      }
       row.entity.pinnedLeft = !row.entity.pinnedLeft;
       if (row.entity.pinnedLeft) {
         row.entity.visible = true;
