@@ -28,7 +28,7 @@
         <span>Detail Column List Profile:</span>
         <select class="form-control input-sm" ng-model="currentProfile" ng-options="option.name for option in profiles track by option.id"></select>
 
-        <span ng-if="menu.user.is_ali_root" class="">
+        <span ng-if="menu.user.is_ali_root && menu.user.organization.user_role !== 'viewer'">
           <button class="btn btn-success" type="button" ng-click="saveProfile()" ng-disabled="!currentProfile || !isModified()" tooltip-placement="bottom" uib-tooltip="Save">
             <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
           </button>

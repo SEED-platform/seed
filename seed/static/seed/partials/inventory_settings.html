@@ -23,7 +23,7 @@
         <span>Column List Profile: </span>
         <select class="form-control input-sm" ng-model="currentProfile" ng-options="option.name for option in profiles track by option.id"></select>
 
-        <span ng-if="menu.user.is_ali_root" class="">
+        <span ng-if="menu.user.is_ali_root && menu.user.organization.user_role !== 'viewer'">
           <button
             class="btn btn-success"
             type="button"
@@ -55,7 +55,7 @@
     <h3 ng-if="inventory_type === 'properties'" translate>Add Shared Properties</h3>
     <div class="checkbox">
       <label>
-        <input type="checkbox" ng-model="showSharedBuildings" ng-change="saveShowSharedBuildings()" />
+        <input type="checkbox" ng-model="showSharedBuildings" ng-change="saveShowSharedBuildings()" ng-disabled="menu.user.organization.user_role === 'viewer'" />
         <span ng-if="inventory_type === 'taxlots'" translate>INCLUDE_SHARED_TAXLOTS</span>
         <span ng-if="inventory_type === 'properties'" translate>INCLUDE_SHARED_PROPERTIES</span>
       </label>

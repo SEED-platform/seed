@@ -56,7 +56,7 @@ angular.module('BE.seed.controller.inventory_detail_settings', []).controller('i
             _.forEach($scope.gridApi.grid.rows, (row) => {
               if (row.entity.visible === false) row.setSelected(false);
               else row.setSelected(true);
-              if ($scope.menu.user.organization.user_role == 'viewer'){
+              if ($scope.menu.user.organization.user_role === 'viewer') {
                 row.enableSelection = false;
               }
             });
@@ -153,8 +153,8 @@ angular.module('BE.seed.controller.inventory_detail_settings', []).controller('i
         const element = angular.element(selector)[0];
         if (element) height += element.offsetHeight;
       });
-      angular.element('#grid-container').css('height', `calc(100vh - ${height + 2}px)`);
-      angular.element('#grid-container > div').css('height', `calc(100vh - ${height + 4}px)`);
+      angular.element('#grid-container').css('height', `calc(100vh - ${height}px)`);
+      angular.element('#grid-container > div').css('height', `calc(100vh - ${height + 2}px)`);
       $scope.gridApi.core.handleWindowResize();
     };
 
@@ -274,7 +274,7 @@ angular.module('BE.seed.controller.inventory_detail_settings', []).controller('i
       gridMenuShowHideColumns: false,
       minRowsToShow: 30,
       rowTemplate:
-        '<div grid="grid" class="ui-grid-draggable-row" draggable="true"><div ng-repeat="(colRenderIndex, col) in colContainer.renderedColumns track by col.colDef.name" class="ui-grid-cell" ng-class="{ \'ui-grid-row-header-cell\': col.isRowHeader, \'custom\': true }" ui-grid-cell></div></div>',
+        '<div grid="grid" class="ui-grid-draggable-row" ng-attr-draggable="{$ grid.appScope.menu.user.organization.user_role !== \'viewer\' $}"><div ng-repeat="(colRenderIndex, col) in colContainer.renderedColumns track by col.colDef.name" class="ui-grid-cell" ng-class="{ \'ui-grid-row-header-cell\': col.isRowHeader, \'custom\': true }" ui-grid-cell></div></div>',
       columnDefs: [
         {
           name: 'displayName',
@@ -292,6 +292,7 @@ angular.module('BE.seed.controller.inventory_detail_settings', []).controller('i
 
         gridApi.selection.on.rowSelectionChanged($scope, rowSelectionChanged);
         gridApi.selection.on.rowSelectionChangedBatch($scope, rowSelectionChanged);
+        gridApi.dragndrop.setDragDisabled($scope.menu.user.organization.user_role === 'viewer');
         gridApi.draggableRows.on.rowDropped($scope, modified_service.setModified);
 
         _.delay($scope.updateHeight, 150);
