@@ -42,7 +42,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
       spinner_utility
     ) {
       $scope.organization = organization_payload.organization;
-      const viewer = $scope.menu.user.organization.user_role === 'viewer'
+      const viewer = $scope.menu.user.organization.user_role === 'viewer';
       $scope.write_permission = ($scope.menu.user.is_ali_root || !$scope.menu.user.is_ali_leaf) && !viewer;
       // Ii there a better way to convert string units to displayUnits?
       const area_units = $scope.organization.display_units_area.replace('**2', '²');
