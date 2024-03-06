@@ -322,6 +322,44 @@ class UserViewSet(viewsets.ViewSet, OrgMixin):
 
         return JsonResponse({'status': 'success'})
 
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('requires_owner')
+    @action(detail=True, methods=['PUT'])
+    def access_level_instance(self, request, pk=None):
+        user_id = int(pk)
+        organization_id = self.get_organization(request)
+
+        # get user
+        try:
+            user = OrganizationUser.objects.get(user_id=user_id, organization_id=organization_id)
+        except OrganizationUser.DoesNotExist:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'No such user'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        # get ali
+        access_level_instance_id = request.data.get("access_level_instance_id")
+        if access_level_instance_id is None:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Must be an `access_level_instance_id`'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            access_level_instance = AccessLevelInstance.objects.get(organization_id=organization_id, id=access_level_instance_id)
+        except AccessLevelInstance.DoesNotExist:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'No such access_level_instance'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        # set user ali
+        user.access_level_instance = access_level_instance
+        user.save()
+
+        return JsonResponse({'status': 'success'})
+
     @swagger_auto_schema(
         responses={
             200: user_response_schema,
