@@ -11,6 +11,7 @@ from inspect import signature
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponseForbidden, JsonResponse
+from django.utils.datastructures import MultiValueDictKeyError
 from rest_framework import status
 
 from seed.data_importer.models import ImportFile, ImportRecord
@@ -238,12 +239,32 @@ def has_perm_class(perm_name: str, requires_org: bool = True):
     return decorator
 
 
-def assert_hierarchy_access(request, property_id_kwarg=None, property_view_id_kwarg=None, param_property_view_id=None, taxlot_view_id_kwarg=None, import_file_id_kwarg=None, param_import_file_id=None, import_record_id_kwarg=None, body_ali_id=None, body_import_file_id=None, body_property_id=None, analysis_id_kwarg=None, ubid_id_kwarg=None, body_import_record_id=None, param_import_record_id=None, goal_id_kwarg=None, *args, **kwargs):
+def assert_hierarchy_access(
+    request,
+    property_id_kwarg=None,
+    property_view_id_kwarg=None,
+    param_property_view_id=None,
+    taxlot_view_id_kwarg=None,
+    import_file_id_kwarg=None,
+    param_import_file_id=None,
+    import_record_id_kwarg=None,
+    body_ali_id=None,
+    body_import_file_id=None,
+    body_property_id=None,
+    analysis_id_kwarg=None,
+    ubid_id_kwarg=None,
+    body_import_record_id=None,
+    body_property_state_id=None,
+    body_taxlot_state_id=None,
+    param_import_record_id=None,
+    goal_id_kwarg=None,
+    *args,
+    **kwargs
+):
 
     """Helper function to has_hierarchy_access"""
     body = request.data
     params = request.GET
-
     try:
         if property_id_kwarg and property_id_kwarg in kwargs:
             property = Property.objects.get(pk=kwargs[property_id_kwarg])
@@ -252,6 +273,15 @@ def assert_hierarchy_access(request, property_id_kwarg=None, property_view_id_kw
         elif body_property_id and body_property_id in body:
             property = Property.objects.get(pk=body[body_property_id])
             requests_ali = property.access_level_instance
+
+        elif body_property_state_id and body_property_state_id in body:
+            # there should only be one property_view with a specific property state
+            property_view = PropertyView.objects.get(state_id=body[body_property_state_id])
+            requests_ali = property_view.property.access_level_instance
+
+        elif body_taxlot_state_id and body_taxlot_state_id in body:
+            taxlot_view = TaxLotView.objects.get(state_id=body[body_taxlot_state_id])
+            requests_ali = taxlot_view.taxlot.access_level_instance
 
         elif property_view_id_kwarg and property_view_id_kwarg in kwargs:
             property_view = PropertyView.objects.get(pk=kwargs[property_view_id_kwarg])
@@ -319,7 +349,7 @@ def assert_hierarchy_access(request, property_id_kwarg=None, property_view_id_kw
             property_view = PropertyView.objects.get(pk=request.GET['property_view_id'])
             requests_ali = property_view.property.access_level_instance
 
-    except ObjectDoesNotExist:
+    except (ObjectDoesNotExist, MultiValueDictKeyError):
         return JsonResponse({
             'status': 'error',
             'message': 'No such resource.'
@@ -333,17 +363,77 @@ def assert_hierarchy_access(request, property_id_kwarg=None, property_view_id_kw
         }, status=status.HTTP_404_NOT_FOUND)
 
 
-def has_hierarchy_access(property_id_kwarg=None, property_view_id_kwarg=None, param_property_view_id=None, taxlot_view_id_kwarg=None, import_file_id_kwarg=None, param_import_file_id=None, import_record_id_kwarg=None, body_ali_id=None, body_import_file_id=None, body_property_id=None, analysis_id_kwarg=None, ubid_id_kwarg=None, body_import_record_id=None, param_import_record_id=None, goal_id_kwarg=None):
+def has_hierarchy_access(
+    property_id_kwarg=None,
+    property_view_id_kwarg=None,
+    param_property_view_id=None,
+    taxlot_view_id_kwarg=None,
+    import_file_id_kwarg=None,
+    param_import_file_id=None,
+    import_record_id_kwarg=None,
+    body_ali_id=None,
+    body_import_file_id=None,
+    body_property_id=None,
+    analysis_id_kwarg=None,
+    ubid_id_kwarg=None,
+    body_import_record_id=None,
+    body_property_state_id=None,
+    body_taxlot_state_id=None,
+    param_import_record_id=None,
+    goal_id_kwarg=None
+):
     """Must be called after has_perm_class"""
     def decorator(fn):
         if 'self' in signature(fn).parameters:
             @wraps(fn)
             def _wrapped(self, request, *args, **kwargs):
-                return assert_hierarchy_access(request, property_id_kwarg, property_view_id_kwarg, param_property_view_id, taxlot_view_id_kwarg, import_file_id_kwarg, param_import_file_id, import_record_id_kwarg, body_ali_id, body_import_file_id, body_property_id, analysis_id_kwarg, ubid_id_kwarg, body_import_record_id, param_import_record_id, goal_id_kwarg, *args, **kwargs) or fn(self, request, *args, **kwargs)
+                return assert_hierarchy_access(
+                    request,
+                    property_id_kwarg,
+                    property_view_id_kwarg,
+                    param_property_view_id,
+                    taxlot_view_id_kwarg,
+                    import_file_id_kwarg,
+                    param_import_file_id,
+                    import_record_id_kwarg,
+                    body_ali_id,
+                    body_import_file_id,
+                    body_property_id,
+                    analysis_id_kwarg,
+                    ubid_id_kwarg,
+                    body_import_record_id,
+                    body_property_state_id,
+                    body_taxlot_state_id,
+                    param_import_record_id,
+                    goal_id_kwarg,
+                    *args,
+                    **kwargs
+                ) or fn(self, request, *args, **kwargs)
         else:
             @wraps(fn)
             def _wrapped(request, *args, **kwargs):
-                return assert_hierarchy_access(request, property_id_kwarg, property_view_id_kwarg, param_property_view_id, taxlot_view_id_kwarg, import_file_id_kwarg, param_import_file_id, import_record_id_kwarg, body_ali_id, body_import_file_id, body_property_id, analysis_id_kwarg, ubid_id_kwarg, body_import_record_id, param_import_record_id, goal_id_kwarg, *args, **kwargs) or fn(request, *args, **kwargs)
+                return assert_hierarchy_access(
+                    request,
+                    property_id_kwarg,
+                    property_view_id_kwarg,
+                    param_property_view_id,
+                    taxlot_view_id_kwarg,
+                    import_file_id_kwarg,
+                    param_import_file_id,
+                    import_record_id_kwarg,
+                    body_ali_id,
+                    body_import_file_id,
+                    body_property_id,
+                    analysis_id_kwarg,
+                    ubid_id_kwarg,
+                    body_import_record_id,
+                    body_property_state_id,
+                    body_taxlot_state_id,
+                    param_import_record_id,
+                    goal_id_kwarg,
+                    *args,
+                    **kwargs
+                ) or fn(request, *args, **kwargs)
 
         return _wrapped
 

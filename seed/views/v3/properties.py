@@ -297,7 +297,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         )
     )
     @ajax_request_class
-    @has_perm_class('requires_member')
+    @has_perm_class('requires_viewer')
     @has_hierarchy_access(property_view_id_kwarg="pk")
     @action(detail=True, methods=['POST'])
     def meter_usage(self, request, pk):
@@ -342,7 +342,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         return {'status': 'success', 'analyses': analyses}
 
     @ajax_request_class
-    @has_perm_class('requires_member')
+    @has_perm_class('requires_viewer')
     @has_hierarchy_access(property_view_id_kwarg="pk")
     @action(detail=True, methods=['POST'])
     def sensor_usage(self, request, pk):

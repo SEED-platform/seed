@@ -3179,7 +3179,7 @@ tags-input .tags .tag-item .remove-button {
   opacity: 0.5 !important;
 }
 
-.ui-grid-draggable-row {
+.ui-grid-draggable-row[draggable='true'] {
   cursor: grab;
   height: 30px;
 }

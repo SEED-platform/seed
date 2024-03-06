@@ -421,7 +421,6 @@ class UbidViewCrudTests(TestCase):
         response = self.client.post(
             reverse('api:v3:ubid-list') + '?organization_id=' + str(self.org.id),
             data=json.dumps({
-                'access_level_instance_id': self.level_instance.id,
                 'ubid': 'A+A-2-2-2-2',
                 'preferred': True,
                 'property': self.property_state.id,
@@ -442,30 +441,27 @@ class UbidViewCrudTests(TestCase):
         response = self.client.post(
             reverse('api:v3:ubid-list') + '?organization_id=' + str(self.org.id),
             data=json.dumps({
-                'access_level_instance_id': self.level_instance.id,
                 'test': 1,
                 'not_valid': 'data'
             }),
             content_type='application/json'
         )
-        self.assertEqual(400, response.status_code)
+        self.assertEqual(404, response.status_code)
         response = self.client.post(
             reverse('api:v3:ubid-list') + '?organization_id=' + str(self.org.id),
             data=json.dumps({
-                'access_level_instance_id': self.level_instance.id,
                 'ubid': 'A+A-1-1-1-1',
                 'not_valid': 'no taxlot or property'
             }),
             content_type='application/json'
         )
-        self.assertEqual(400, response.status_code)
+        self.assertEqual(404, response.status_code)
         self.assertEqual(4, UbidModel.objects.count())
 
         # 2 Preferred Ubids
         response = self.client.post(
             reverse('api:v3:ubid-list') + '?organization_id=' + str(self.org.id),
             data=json.dumps({
-                'access_level_instance_id': self.level_instance.id,
                 'ubid': 'B+B-1-1-1-1',
                 'preferred': True,
                 'property': self.property_state.id,
@@ -858,7 +854,6 @@ class UbidViewPermissionTests(AccessLevelBaseTestCase, DeleteModelsTestCase):
     def test_ubids_create(self):
         url = reverse_lazy('api:v3:ubid-list') + "?organization_id=" + str(self.org.id)
         params = json.dumps({
-            'access_level_instance_id': self.child_level_instance.id,
             'ubid': "C+C-0-0-0-0",
             'property': self.child_property_state.id
         })
@@ -868,11 +863,10 @@ class UbidViewPermissionTests(AccessLevelBaseTestCase, DeleteModelsTestCase):
         response = self.client.post(url, params, content_type='application/json')
         assert response.status_code == 201
 
-        # child cannot with root id
+        # child cannot with root property_state id
         params = json.dumps({
-            'access_level_instance_id': self.root_level_instance.id,
             'ubid': "C+C-0-0-0-0",
-            'property': self.child_property_state.id
+            'property': self.root_property_state.id
         })
         response = self.client.post(url, params, content_type='application/json')
         assert response.status_code == 404
@@ -880,7 +874,6 @@ class UbidViewPermissionTests(AccessLevelBaseTestCase, DeleteModelsTestCase):
         # root can
         self.login_as_root_member()
         params = json.dumps({
-            'access_level_instance_id': self.root_level_instance.id,
             'ubid': "D+D-0-0-0-0",
             'property': self.child_property_state.id
         })
@@ -892,9 +885,8 @@ class UbidViewPermissionTests(AccessLevelBaseTestCase, DeleteModelsTestCase):
 
         self.login_as_child_member()
         params = json.dumps({
-            'access_level_instance_id': self.root_level_instance.id,
             'ubid': "C+C-0-0-0-0",
-            'taxlot': self.child_taxlot_state.id
+            'taxlot': self.root_taxlot_state.id
         })
         response = self.client.post(url, params, content_type='application/json')
         assert response.status_code == 404

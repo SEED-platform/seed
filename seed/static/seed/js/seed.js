@@ -785,6 +785,14 @@ SEED_app.config([
               return note_service.get_notes(organization_id, $stateParams.inventory_type, $stateParams.view_id);
             }
           ],
+          auth_payload: [
+            'auth_service',
+            'user_service',
+            (auth_service, user_service) => {
+              const organization_id = user_service.get_organization().id;
+              return auth_service.is_authorized(organization_id, ['requires_member']);
+            }
+          ],
           $uibModalInstance: () => undefined
         }
       })
@@ -2357,11 +2365,11 @@ SEED_app.config([
               return inventory_service.get_column_list_profiles('Detail View Profile', inventory_type);
             }
           ],
-          users_payload: [
-            'organization_service',
-            'user_service',
-            (organization_service, user_service) => organization_service.get_organization_users({ org_id: user_service.get_organization().id })
-          ],
+          // users_payload: [
+          //   'organization_service',
+          //   'user_service',
+          //   (organization_service, user_service) => organization_service.get_organization_users({ org_id: user_service.get_organization().id })
+          // ],
           current_profile: [
             '$stateParams',
             'inventory_service',
@@ -2504,11 +2512,11 @@ SEED_app.config([
             'organization_service',
             (user_service, organization_service) => organization_service.get_organization(user_service.get_organization().id)
           ],
-          users_payload: [
-            'user_service',
-            'organization_service',
-            (user_service, organization_service) => organization_service.get_organization_users({ org_id: user_service.get_organization().id })
-          ],
+          // users_payload: [
+          //   'user_service',
+          //   'organization_service',
+          //   (user_service, organization_service) => organization_service.get_organization_users({ org_id: user_service.get_organization().id })
+          // ],
           views_payload: [
             '$stateParams',
             'user_service',

@@ -11,20 +11,32 @@ angular
     'cycles_payload',
     'organization_payload',
     'organization_service',
-    'users_payload',
+    // 'users_payload',
     'auth_payload',
     'messages_payload',
     'urls',
     'analyses_service',
     'Notification',
     // eslint-disable-next-line func-names
-    function ($scope, analyses_payload, cycles_payload, organization_payload, organization_service, users_payload, auth_payload, messages_payload, urls, analyses_service, Notification) {
+    function (
+      $scope,
+      analyses_payload,
+      cycles_payload,
+      organization_payload,
+      organization_service,
+      //users_payload,
+      auth_payload,
+      messages_payload,
+      urls,
+      analyses_service,
+      Notification
+    ) {
       $scope.org = organization_payload.organization;
       $scope.auth = auth_payload.auth;
       $scope.analyses = analyses_payload.analyses;
       $scope.views = analyses_payload.views;
       $scope.original_views = analyses_payload.original_views;
-      $scope.users = users_payload.users;
+      // $scope.users = users_payload.users;
       $scope.messages = messages_payload.messages;
       $scope.cycles = cycles_payload.cycles;
 

@@ -14,7 +14,7 @@
 
 <div class="inventory-list-controls">
   <form name="listControlsForm" class="form-inline" role="form" ng-submit="submitNewLabelForm(newLabelForm.$valid)" novalidate>
-    <div class="form-group">
+    <div ng-show="menu.user.organization.user_role !== 'viewer'" class="form-group">
       <div uib-dropdown class="btn-group">
         <button id="btnInventoryActions" type="button" uib-dropdown-toggle class="btn btn-default btn-sm">{$:: 'Actions' | translate $} <span class="caret"></span></button>
         <ul id="inventory-actions-dropdown" uib-dropdown-menu class="dropdown-menu" role="menu" aria-labelledby="btnInventoryActions">

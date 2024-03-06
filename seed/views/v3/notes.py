@@ -34,15 +34,15 @@ _log = logging.getLogger(__name__)
 )
 @method_decorator(
     name='create',
-    decorator=[has_perm_class('requires_viewer'), has_hierarchy_access(taxlot_view_id_kwarg="taxlot_pk", property_view_id_kwarg="property_pk")]
+    decorator=[has_perm_class('requires_member'), has_hierarchy_access(taxlot_view_id_kwarg="taxlot_pk", property_view_id_kwarg="property_pk")]
 )
 @method_decorator(
     name='update',
-    decorator=[has_perm_class('requires_viewer'), has_hierarchy_access(taxlot_view_id_kwarg="taxlot_pk", property_view_id_kwarg="property_pk")]
+    decorator=[has_perm_class('requires_member'), has_hierarchy_access(taxlot_view_id_kwarg="taxlot_pk", property_view_id_kwarg="property_pk")]
 )
 @method_decorator(
     name='destroy',
-    decorator=[has_perm_class('requires_viewer'), has_hierarchy_access(taxlot_view_id_kwarg="taxlot_pk", property_view_id_kwarg="property_pk")]
+    decorator=[has_perm_class('requires_member'), has_hierarchy_access(taxlot_view_id_kwarg="taxlot_pk", property_view_id_kwarg="property_pk")]
 )
 class NoteViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
     """API endpoint for viewing and creating notes.
