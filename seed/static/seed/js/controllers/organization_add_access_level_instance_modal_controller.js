@@ -7,15 +7,18 @@ angular.module('BE.seed.controller.organization_add_access_level_instance_modal'
     '$scope',
     '$state',
     '$uibModalInstance',
+    'ah_service',
     'organization_service',
     'org_id',
     'level_names',
     'access_level_tree',
     'Notification',
+    // eslint-disable-next-line func-names
     function (
       $scope,
       $state,
       $uibModalInstance,
+      ah_service,
       organization_service,
       org_id,
       level_names,
@@ -28,19 +31,9 @@ angular.module('BE.seed.controller.organization_add_access_level_instance_modal'
       $scope.potential_parents = [];
       $scope.new_level_instance_name = '';
 
-      /* Build out access_level_instances_by_depth recursively */
-      const access_level_instances_by_depth = {};
-      const calculate_access_level_instances_by_depth = function (tree, depth = 1) {
-        if (tree == undefined) return;
-        if (access_level_instances_by_depth[depth] == undefined) access_level_instances_by_depth[depth] = [];
-        tree.forEach((ali) => {
-          access_level_instances_by_depth[depth].push({ id: ali.id, name: ali.data.name });
-          calculate_access_level_instances_by_depth(ali.children, depth + 1);
-        });
-      };
-      calculate_access_level_instances_by_depth(access_level_tree, 1);
+      const access_level_instances_by_depth = ah_service.calculate_access_level_instances_by_depth(access_level_tree);
 
-      $scope.change_selected_level_index = function () {
+      $scope.change_selected_level_index = () => {
         const new_level_instance_depth = parseInt($scope.selected_level_index, 10);
         $scope.potential_parents = access_level_instances_by_depth[new_level_instance_depth];
         $scope.parent = null;
@@ -52,13 +45,13 @@ angular.module('BE.seed.controller.organization_add_access_level_instance_modal'
         $scope.change_selected_level_index();
       }
 
-      $scope.create_new_level_instance = function () {
+      $scope.create_new_level_instance = () => {
         organization_service.create_organization_access_level_instance(org_id, $scope.parent.id, $scope.new_level_instance_name)
-          .then((_) => $uibModalInstance.close())
+          .then(() => $uibModalInstance.close())
           .catch((err) => { Notification.error(err); });
       };
 
-      $scope.cancel = function () {
+      $scope.cancel = () => {
         $uibModalInstance.dismiss('cancel');
       };
     }]);

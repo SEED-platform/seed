@@ -6,30 +6,21 @@ angular.module('BE.seed.controller.new_member_modal', []).controller('new_member
   '$scope',
   '$uibModalInstance',
   'organization',
+  'ah_service',
   'user_service',
   '$timeout',
   '$translate',
   'access_level_tree',
   'level_names',
   // eslint-disable-next-line func-names
-  function ($scope, $uibModalInstance, organization, user_service, $timeout, $translate, access_level_tree, level_names) {
+  function ($scope, $uibModalInstance, organization, ah_service, user_service, $timeout, $translate, access_level_tree, level_names) {
     $scope.access_level_tree = access_level_tree;
     $scope.level_names = level_names;
     $scope.level_name_index = null;
     $scope.potential_level_instances = [];
     $scope.error_message = null;
 
-    /* Build out access_level_instances_by_depth recursively */
-    const access_level_instances_by_depth = {};
-    const calculate_access_level_instances_by_depth = (tree, depth = 1) => {
-      if (tree === undefined) return;
-      if (access_level_instances_by_depth[depth] === undefined) access_level_instances_by_depth[depth] = [];
-      for (const ali of tree) {
-        access_level_instances_by_depth[depth].push({ id: ali.id, name: ali.data.name });
-        calculate_access_level_instances_by_depth(ali.children, depth + 1);
-      }
-    };
-    calculate_access_level_instances_by_depth(access_level_tree, 1);
+    const access_level_instances_by_depth = ah_service.calculate_access_level_instances_by_depth(access_level_tree);
 
     $scope.change_selected_level_index = () => {
       const new_level_instance_depth = parseInt($scope.level_name_index, 10) + 1;

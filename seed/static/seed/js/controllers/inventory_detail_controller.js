@@ -125,7 +125,7 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
       inventory_payload.taxlot.access_level_instance;
 
     $scope.ali_path = {};
-    if (typeof (ali) === 'object') {
+    if (typeof ali === 'object') {
       $scope.ali_path = ali.path;
     }
 
@@ -551,7 +551,8 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
         resolve: {
           inventory_ids: () => [$scope.inventory.view_id],
           current_cycle: () => $scope.cycle,
-          cycles: () => cycle_service.get_cycles().then((result) => result.cycles)
+          cycles: () => cycle_service.get_cycles().then((result) => result.cycles),
+          user: () => $scope.menu.user
         }
       });
     };

@@ -137,12 +137,12 @@
             <table id="ali-detail-table" class="table table-striped table_highlight_first" style="width: fit-content">
               <thead>
               <tr>
-                <th ng-repeat="(level, name) in organization.access_level_names">{$:: 'Level' | translate $} {$ level+1 $} - {$ name $}</th>
+                <th ng-repeat="(level, name) in organization.access_level_names">{$:: 'Level' | translate $} {$ level+1 $} - {$:: name $}</th>
               </tr>
               </thead>
               <tbody>
               <tr>
-                <td style="border: 1px solid #ddd;" ng-repeat="(level, name) in organization.access_level_names">{$ ali_path[name] $}</td>
+                <td style="border: 1px solid #ddd;" ng-repeat="(level, name) in organization.access_level_names">{$:: ali_path[name] $}</td>
               </tr>
               </tbody>
             </table>
