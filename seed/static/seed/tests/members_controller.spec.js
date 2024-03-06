@@ -108,7 +108,7 @@ describe('controller: members_controller', () => {
 
     // act
     ctrl_scope.$digest();
-    ctrl_scope.update_role({ user_id: 2, role: 'viewer' }, 'viewer');
+    ctrl_scope.update_user({ user_id: 2 }, { role: 'viewer' });
 
     // assertions
     expect(mock_organization_service.update_role).toHaveBeenCalledWith(2, 4, 'viewer');
