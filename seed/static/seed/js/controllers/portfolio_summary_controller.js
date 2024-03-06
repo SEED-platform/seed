@@ -42,7 +42,8 @@ angular.module('BE.seed.controller.portfolio_summary', [])
       spinner_utility
     ) {
       $scope.organization = organization_payload.organization;
-      $scope.write_permission = $scope.menu.user.is_ali_root || !$scope.menu.user.is_ali_leaf;
+      const viewer = $scope.menu.user.organization.user_role === 'viewer'
+      $scope.write_permission = ($scope.menu.user.is_ali_root || !$scope.menu.user.is_ali_leaf) && !viewer;
       // Ii there a better way to convert string units to displayUnits?
       const area_units = $scope.organization.display_units_area.replace('**2', '²');
       const eui_units = $scope.organization.display_units_eui.replace('**2', '²');
@@ -530,7 +531,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
             editDropdownOptionsArray: $scope.question_options,
             editDropdownIdLabel: 'value',
             enableCellEdit: $scope.write_permission,
-            cellClass: () => $scope.write_permission && 'cell-dropdown',
+            cellClass: () => $scope.write_permission && 'cell-edit',
             // if user has write permission show a dropdown indicator
             width: 350,
             cellTemplate: `
@@ -547,9 +548,8 @@ angular.module('BE.seed.controller.portfolio_summary', [])
             displayName: 'Resolution',
             enableFiltering: false,
             enableSorting: false,
-            enableCellEdit: true,
-            editableCellTemplate: 'ui-grid/cellTitleValidator',
-            cellClass: 'cell-edit',
+            enableCellEdit: !viewer,
+            cellClass: !viewer && 'cell-edit',
             width: 300
           },
           {
@@ -557,9 +557,8 @@ angular.module('BE.seed.controller.portfolio_summary', [])
             displayName: 'Historical Notes',
             enableFiltering: false,
             enableSorting: false,
-            enableCellEdit: true,
-            editableCellTemplate: 'ui-grid/cellTitleValidator',
-            cellClass: 'cell-edit',
+            enableCellEdit: !viewer,
+            cellClass: !viewer && 'cell-edit',
             width: 300
           },
           {
@@ -571,7 +570,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
             editDropdownOptionsArray: [{ id: 1, value: true }, { id: 2, value: false }],
             editDropdownIdLabel: 'value',
             enableCellEdit: $scope.write_permission,
-            cellClass: () => $scope.write_permission && 'cell-dropdown',
+            cellClass: () => $scope.write_permission && 'cell-edit',
             // if user has write permission show a dropdown indicator
             cellTemplate: `
               <div class='ui-grid-cell-contents' ng-class="row.entity.goal_note.passed_checks ? 'cell-pass' : 'cell-fail'">
@@ -590,7 +589,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
             editDropdownOptionsArray: [{ id: 1, value: true }, { id: 2, value: false }],
             editDropdownIdLabel: 'value',
             enableCellEdit: $scope.write_permission,
-            cellClass: () => $scope.write_permission && 'cell-dropdown',
+            cellClass: () => $scope.write_permission && 'cell-edit',
             // if user has write permission show a dropdown indicator
             cellTemplate: `
               <div class='ui-grid-cell-contents' ng-class="row.entity.goal_note.new_or_acquired && 'cell-pass'">

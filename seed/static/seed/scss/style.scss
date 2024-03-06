@@ -5428,11 +5428,8 @@ tags-input .tags .tag-item {
   word-wrap: break-word;
 }
 
-.cell-dropdown {
-  cursor: copy;
-}
 .cell-edit {
-  cursor: cell;
+  cursor: copy;
 }
 .cell-dropdown-indicator {
   display: flex;
