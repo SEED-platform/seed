@@ -32,9 +32,11 @@ angular.module('BE.seed.controller.data_upload_modal', []).controller('data_uplo
   'uploader_service',
   '$state',
   'audit_template_service',
+  'auth_service',
   'dataset_service',
   'mapping_service',
   'matching_service',
+  'organization_service',
   'inventory_service',
   'spinner_utility',
   'step',
@@ -54,9 +56,11 @@ angular.module('BE.seed.controller.data_upload_modal', []).controller('data_uplo
     uploader_service,
     $state,
     audit_template_service,
+    auth_service,
     dataset_service,
     mapping_service,
     matching_service,
+    organization_service,
     inventory_service,
     spinner_utility,
     step,
@@ -91,7 +95,18 @@ angular.module('BE.seed.controller.data_upload_modal', []).controller('data_uplo
      *  newly created data set
      * file: the file being upload file.filename is the file's name
      */
-    $scope.organization = organization;
+    $scope.organization = organization
+    // it would be better to resolve these from the calling controller, but
+    // this modal is multi-purpose and called from all kinds of places
+    // get full organization payload (to get inventory count)
+    organization_service.get_organization(organization.id).then((data) => {
+      $scope.organization = data.organization;
+    });
+    // get auth (to display column settings link)
+    auth_service.is_authorized(organization.id, ['requires_viewer', 'requires_owner']).then((data) => {
+      $scope.auth = data.auth;
+    });
+
     $scope.dataset = {
       name: '',
       disabled() {

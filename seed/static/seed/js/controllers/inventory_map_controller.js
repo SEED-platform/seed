@@ -44,17 +44,24 @@ angular.module('BE.seed.controller.inventory_map', []).controller('inventory_map
     };
 
     const chunk = 250;
-    const fetchRecords = (fn, page = 1) => fn(page, chunk, undefined, undefined).then((data) => {
-      $scope.progress = {
-        current: data.pagination.end,
-        total: data.pagination.total,
-        percent: Math.round((data.pagination.end / data.pagination.total) * 100)
-      };
-      if (data.pagination.has_next) {
-        return fetchRecords(fn, page + 1).then((newData) => data.results.concat(newData));
-      }
-      return data.results;
-    });
+    const fetchRecords = async (fn) => {
+      pagination = await fn(1, chunk, undefined, undefined).then(data => data.pagination);
+
+      $scope.progress = {current: 0, total: pagination.total, percent:0};
+
+      page_numbers = [...Array(pagination.num_pages).keys()]
+      page_promises = page_numbers.map(page => {
+        return fn(page, chunk, undefined, undefined).then(data => {
+          num_data = data.pagination.end - data.pagination.start + 1;
+          $scope.progress.current += num_data;
+          $scope.progress.percent += Math.round((num_data / data.pagination.total) * 100)
+          return data.results
+        })
+      })
+
+      return Promise.all(page_promises).then(pages => [].concat(...pages))
+    }
+
 
     $scope.progress = {};
     const loadingModal = $uibModal.open({
@@ -388,7 +395,7 @@ angular.module('BE.seed.controller.inventory_map', []).controller('inventory_map
         stopEvent: false,
         autoPan: true,
         autoPanMargin: 75,
-        offset: [0, -135]
+        offset: [0, -10]
       });
       $scope.map.addOverlay(popupOverlay);
 

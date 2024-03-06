@@ -15,28 +15,19 @@ Docker then you will not need to do this.
     CELERY_RESULT_BACKEND = CELERY_BROKER_URL
 
 If you are using a password, then in your local_untracked.py configuration, add the password to
-the CACHES configuration option. Your final configuration should look like the following in your
+the CELERY_BROKER_URL. Your final configuration should look like the following in your
 local_untracked.py file
 
 .. code-block:: python
 
+    CELERY_BROKER_URL = 'redis://:password@127.0.0.1:6379/1'
     CACHES = {
         'default': {
-            'BACKEND': 'redis_cache.cache.RedisCache',
-            'LOCATION': "127.0.0.1:6379",
-            'OPTIONS': {
-                'DB': 1,
-                'PASSWORD': 'password',
-            },
-            'TIMEOUT': 300
+            'BACKEND': 'django_redis.cache.RedisCache',
+            'LOCATION': CELERY_BROKER_URL,
         }
     }
 
-    CELERY_BROKER_URL = 'redis://:%s@%s/%s' % (
-        CACHES['default']['OPTIONS']['PASSWORD'],
-        CACHES['default']['LOCATION'],
-        CACHES['default']['OPTIONS']['DB']
-    )
     CELERY_RESULT_BACKEND = CELERY_BROKER_URL
     CELERY_TASK_DEFAULT_QUEUE = 'seed-local'
     CELERY_TASK_QUEUES = (
@@ -46,6 +37,14 @@ local_untracked.py file
             routing_key=CELERY_TASK_DEFAULT_QUEUE
         ),
     )
+
+Version 2.21.0
+--------------
+- There are no special migrations needed for this version. Simply run `./manage.py migrate`.
+
+Version 2.20.1
+--------------
+- There are no special migrations needed for this version. Simply run `./manage.py migrate`.
 
 Version 2.20.0
 --------------
@@ -215,9 +214,7 @@ Max OSX
 Version 2.5.2
 -------------
 
-- There are no manual migrations that are needed. The `./manage.py migrate` command may take awhile
-to run since the migration requires the recalculation of all the normalized addresses to parse
-bldg correct and to cast the result as a string and not a bytestring.
+- There are no manual migrations that are needed. The `./manage.py migrate` command may take awhile to run since the migration requires the recalculation of all the normalized addresses to parse bldg correct and to cast the result as a string and not a bytestring.
 
 Version 2.5.1
 -------------

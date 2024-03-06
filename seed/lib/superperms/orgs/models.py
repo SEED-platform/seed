@@ -166,11 +166,15 @@ class Organization(models.Model):
     )
 
     MEASUREMENT_CHOICES_GHG = (
+        ('kgCO2e/year', 'kgCO2e/year'),
         ('MtCO2e/year', 'MtCO2e/year'),
     )
 
     MEASUREMENT_CHOICES_GHG_INTENSITY = (
         ('kgCO2e/ft**2/year', 'kgCO2e/ft²/year'),
+        ('MtCO2e/ft**2/year', 'MtCO2e/ft²/year'),
+        ('kgCO2e/m**2/year', 'kgCO2e/m²/year'),
+        ('MtCO2e/m**2/year', 'MtCO2e/m²/year'),
     )
 
     US = 1
@@ -340,6 +344,30 @@ class Organization(models.Model):
             user=user, role_level=ROLE_OWNER, organization=self,
         ).exists()
 
+    def has_role_member(self, user):
+        """
+        Return True if the user has a relation to this org, with a role of
+        member.
+        """
+        return OrganizationUser.objects.filter(
+            user=user, role_level=ROLE_MEMBER, organization=self,
+        ).exists()
+
+    def is_user_ali_root(self, user):
+        """
+        Return True if the user's ali is at the root of the organization
+        """
+        is_root = False
+
+        ou = OrganizationUser.objects.filter(
+            user=user, organization=self,
+        )
+        if ou.count() > 0:
+            ou = ou.first()
+            if ou.access_level_instance == self.root:
+                is_root = True
+        return is_root
+
     def get_exportable_fields(self):
         """Default to parent definition of exportable fields."""
         if self.parent_org:
@@ -386,8 +414,11 @@ class Organization(models.Model):
 
         return new_access_level_instance
 
-    def get_access_tree(self) -> dict:
-        return AccessLevelInstance.dump_bulk(self.root)
+    def get_access_tree(self, from_ali=None) -> list:
+        if from_ali is None:
+            from_ali = self.root
+
+        return AccessLevelInstance.dump_bulk(from_ali)
 
     def __str__(self):
         return 'Organization: {0}({1})'.format(self.name, self.pk)
@@ -422,7 +453,7 @@ def presave_organization(sender, instance, **kwargs):
         _assert_alns_are_valid(instance)
         _update_alis_path_keys(instance, previous_access_level_names)
 
-    taken_names = Column.objects.filter(display_name__in=instance.access_level_names).values_list("display_name", flat=True)
+    taken_names = Column.objects.filter(organization=instance, display_name__in=instance.access_level_names).values_list("display_name", flat=True)
     if len(taken_names) > 0:
         raise ValueError(f"{taken_names} are column names.")
 
@@ -437,7 +468,7 @@ def _assert_alns_are_valid(org):
     columns_with_same_names = Column.objects.filter(organization=org, display_name__in=alns)
     if columns_with_same_names.count() > 0:
         repeated_names = set(columns_with_same_names.values_list("display_name", flat=True))
-        raise ValueError(f"Organiation's access_level_names must not be column names: {list(repeated_names)}")
+        raise ValueError(f"Access level names cannot match SEED column names: {list(repeated_names)}")
 
 
 def _update_alis_path_keys(org, previous_access_level_names):

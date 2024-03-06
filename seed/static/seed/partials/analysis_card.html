@@ -2,7 +2,7 @@
   <h1 class="grow">{$:: analysis.name $} <small>Run #{$:: analysis.views[0] $}</small></h1>
   <!-- <span class="link" ui-sref="analysis(::{organization_id: org.id, analysis_id: analysis.id})">Analysis {$:: analysis.name $}</span> -->
   <span>
-    <i class="fa-solid fa-arrows-rotate fa-pulse fa-fw" style="padding-right: 0" ng-if="!analysis._finished_with_tasks"></i>
+    <i class="fa-solid fa-arrows-rotate fa-spin-pulse fa-fw" style="padding-right: 0" ng-if="!analysis._finished_with_tasks"></i>
     {$ analysis.status $}
   </span>
   <span ng-if="allowActions">

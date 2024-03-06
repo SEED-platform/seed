@@ -74,6 +74,8 @@ class AccountsViewTests(TestCase):
             'parent_id': self.org.pk,
             'display_units_eui': 'kBtu/ft**2/year',
             'display_units_area': 'ft**2',
+            'display_units_ghg': 'MtCO2e/year',
+            'display_units_ghg_intensity': 'kgCO2e/ft**2/year',
             'display_decimal_places': 2,
             'cycles': [{
                 'name': self.cal_year_name,
@@ -181,6 +183,8 @@ class AccountsViewTests(TestCase):
                 'parent_id': self.org.pk,
                 'display_units_eui': 'kBtu/ft**2/year',
                 'display_units_area': 'ft**2',
+                'display_units_ghg': 'MtCO2e/year',
+                'display_units_ghg_intensity': 'kgCO2e/ft**2/year',
                 'display_decimal_places': 2,
                 'cycles': [{
                     'name': self.cal_year_name,
@@ -213,6 +217,8 @@ class AccountsViewTests(TestCase):
             'parent_id': self.org.pk,
             'display_units_eui': 'kBtu/ft**2/year',
             'display_units_area': 'ft**2',
+            'display_units_ghg': 'MtCO2e/year',
+            'display_units_ghg_intensity': 'kgCO2e/ft**2/year',
             'display_decimal_places': 2,
             'cycles': [{
                 'name': self.cal_year_name,
@@ -448,6 +454,32 @@ class AccountsViewTests(TestCase):
                 'status': 'success'
             })
         self.assertEqual(ou.role_level, ROLE_MEMBER)
+
+    def test_update_access_level_instance(self):
+        # Setup
+        u = User.objects.create(username='b@b.com', email='b@be.com')
+        self.org.add_member(u, role=ROLE_VIEWER, access_level_instance_id=self.org.root.id)
+        org_user = OrganizationUser.objects.get(user=u)
+
+        self.org.access_level_names = ["root", "child"]
+        self.org.save()
+        child_ali = self.org.add_new_access_level_instance(self.org.root.id, "child")
+
+        # Action
+        resp = self.client.put(
+            reverse_lazy("api:v3:user-access-level-instance", args=[u.id]) + '?organization_id=' + str(
+                self.org.id),
+            data=json.dumps(
+                {
+                    'access_level_instance_id': child_ali.id
+                }
+            ),
+            content_type='application/json',
+        )
+
+        # Assertion
+        assert resp.status_code == 200
+        assert OrganizationUser.objects.get(pk=org_user.pk).access_level_instance_id == child_ali.id
 
     def test_allowed_to_update_role_if_not_last_owner(self):
         u = User.objects.create(username='b@b.com', email='b@be.com')
@@ -1052,7 +1084,7 @@ class AuthViewTests(TestCase):
 
     def test__get_default_org(self):
         """test seed.views.main._get_default_org"""
-        org_id, org_name, org_role, ali_name, ali_id = _get_default_org(self.user)
+        org_id, org_name, org_role, ali_name, ali_id, is_ali_root, is_ali_leaf = _get_default_org(self.user)
 
         # check standard case
         self.assertEqual(org_id, self.org.id)
@@ -1070,7 +1102,7 @@ class AuthViewTests(TestCase):
             username='tester@be.com',
             email='tester@be.com',
         )
-        org_id, org_name, org_role, ali_name, ali_id = _get_default_org(other_user)
+        org_id, org_name, org_role, ali_name, ali_id, is_ali_root, is_ali_leaf = _get_default_org(other_user)
         self.assertEqual(org_id, '')
         self.assertEqual(org_name, '')
         self.assertEqual(org_role, '')
@@ -1082,7 +1114,7 @@ class AuthViewTests(TestCase):
         self.assertEqual(other_user.default_organization, self.org)
         # _get_default_org should remove the user from the org and set the
         # next available org as default or set to ''
-        org_id, org_name, org_role, ali_name, ali_id = _get_default_org(other_user)
+        org_id, org_name, org_role, ali_name, ali_id, is_ali_root, is_ali_leaf = _get_default_org(other_user)
         self.assertEqual(org_id, '')
         self.assertEqual(org_name, '')
         self.assertEqual(org_role, '')

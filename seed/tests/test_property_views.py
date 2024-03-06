@@ -38,7 +38,6 @@ from seed.models import (
     Column,
     ColumnMappingProfile,
     InventoryDocument,
-    Label,
     Meter,
     MeterReading,
     Note,
@@ -47,6 +46,7 @@ from seed.models import (
     PropertyState,
     PropertyView,
     Scenario,
+    StatusLabel,
     TaxLotProperty,
     TaxLotView
 )
@@ -105,6 +105,13 @@ class PropertyViewTests(DataMappingBaseTestCase):
             start=datetime(2010, 10, 10, tzinfo=get_current_timezone()))
         self.column_list_factory = FakeColumnListProfileFactory(organization=self.org)
         self.client.login(**user_details)
+
+        # create tree
+        self.org.access_level_names = ["1st Gen", "2nd Gen", "3rd Gen"]
+        mom_ali = self.org.add_new_access_level_instance(self.org.root.id, "mom")
+        self.me_ali = self.org.add_new_access_level_instance(mom_ali.id, "me")
+        self.sister_ali = self.org.add_new_access_level_instance(mom_ali.id, "sister")
+        self.org.save()
 
     def test_create_property(self):
         state = self.property_state_factory.get_property_state()
@@ -549,7 +556,7 @@ class PropertyViewTests(DataMappingBaseTestCase):
         summary = response.json()
 
         expected_summary = {
-            'view_id': None,
+            'view_id': view_1.id,
             'match_merged_count': 0,
             'match_link_count': 1,
         }
@@ -558,6 +565,58 @@ class PropertyViewTests(DataMappingBaseTestCase):
         refreshed_view_1 = PropertyView.objects.get(state_id=ps_1.id)
         view_2 = PropertyView.objects.get(state_id=ps_2.id)
         self.assertEqual(refreshed_view_1.property_id, view_2.property_id)
+
+    def test_property_match_merge_link_links_different_alis(self):
+        base_details = {
+            'pm_property_id': '123MatchID',
+            'no_default_data': False,
+        }
+
+        ps_1 = self.property_state_factory.get_property_state(**base_details)
+        prprty = self.property_factory.get_property(access_level_instance=self.me_ali)
+        view_1 = PropertyView.objects.create(
+            property=prprty, cycle=self.cycle, state=ps_1
+        )
+
+        cycle_2 = self.cycle_factory.get_cycle(
+            start=datetime(2018, 10, 10, tzinfo=get_current_timezone()))
+        ps_2 = self.property_state_factory.get_property_state(**base_details)
+        prprty_2 = self.property_factory.get_property(access_level_instance=self.sister_ali)
+        PropertyView.objects.create(
+            property=prprty_2, cycle=cycle_2, state=ps_2
+        )
+
+        url = reverse('api:v3:properties-match-merge-link', args=[view_1.id])
+        url += f'?organization_id={self.org.pk}'
+        response = self.client.post(url, content_type='application/json')
+
+        assert response.status_code == 400
+        assert response.json()["message"] == 'This property shares matching criteria with at least one property in a different ali. This should not happen. Please contact your system administrator.'
+
+    def test_property_match_merge_link_merges_but_different_alis(self):
+        base_details = {
+            'pm_property_id': '123MatchID',
+            'no_default_data': False,
+        }
+
+        ps_1 = self.property_state_factory.get_property_state(**base_details)
+        prprty = self.property_factory.get_property(access_level_instance=self.me_ali)
+        view_1 = PropertyView.objects.create(
+            property=prprty, cycle=self.cycle, state=ps_1
+        )
+
+        ps_2 = self.property_state_factory.get_property_state(**base_details)
+        prprty_2 = self.property_factory.get_property(access_level_instance=self.sister_ali)
+        PropertyView.objects.create(
+            property=prprty_2, cycle=self.cycle, state=ps_2
+        )
+
+        url = reverse('api:v3:properties-match-merge-link', args=[view_1.id])
+        url += f'?organization_id={self.org.pk}'
+        response = self.client.post(url, content_type='application/json')
+
+        assert response.status_code == 400
+        assert response.json()["message"] == 'This property shares matching criteria with at least one property in a different ali. This should not happen. Please contact your system administrator.'
 
     def test_get_links_for_a_single_property(self):
         # Create 2 linked property sets
@@ -697,7 +756,7 @@ class PropertyViewTestsPermissions(AccessLevelBaseTestCase):
         self.view = self.property_view_factory.get_property_view(cycle=self.cycle)
         self.taxlot_view = self.taxlot_view_factory.get_taxlot_view(cycle=self.cycle)
         self.property = Property.objects.create(organization=self.org, access_level_instance=self.org.root)
-        self.label = Label.objects.create(color="red", name="test_label", super_organization=self.org,)
+        self.label = StatusLabel.objects.create(color="red", name="test_label", super_organization=self.org,)
         self.view.labels.add(self.label)
         self.view.property = self.property
         self.view.save()
@@ -876,7 +935,7 @@ class PropertyViewTestsPermissions(AccessLevelBaseTestCase):
             property=self.property_2, cycle=self.cycle, state=self.state_2
         )
         merged_state = merge_properties([self.view.state.pk, self.state_2.pk], self.org.pk, 'Manual Match')
-        _, _, view_id = match_merge_link(merged_state.propertyview_set.first().id, 'PropertyState')
+        _, _, view_id = match_merge_link(merged_state.id, 'PropertyState', self.org.root, self.cycle)
         view_id = PropertyView.objects.first().id
         url = reverse('api:v3:properties-unmerge', args=[view_id]) + '?organization_id={}'.format(self.org.pk)
 
@@ -1157,6 +1216,81 @@ class PropertyViewTestsPermissions(AccessLevelBaseTestCase):
         assert resp.status_code == 404
 
 
+class PropertyUpdateCausesMergesAndLinkTests(AccessLevelBaseTestCase):
+    def setUp(self):
+        super().setUp()
+        self.cycle = self.cycle_factory.get_cycle(
+            start=datetime(2010, 10, 10, tzinfo=get_current_timezone()))
+
+        self.state_1 = self.property_state_factory.get_property_state(
+            address_line_1='1 property state',
+            pm_property_id='5766973'  # this allows the Property to be targeted for PM meter additions
+        )
+        self.property_1 = self.property_factory.get_property()
+        self.view_1 = PropertyView.objects.create(
+            property=self.property_1, cycle=self.cycle, state=self.state_1
+        )
+
+        self.state_2 = self.property_state_factory.get_property_state(address_line_1='2 property state')
+        self.property_2 = self.property_factory.get_property()
+        self.view_2 = PropertyView.objects.create(
+            property=self.property_2, cycle=self.cycle, state=self.state_2
+        )
+
+    def test_properties_update_causes_merge(self):
+        url = reverse('api:v3:properties-detail', args=[self.view_2.id]) + f'?organization_id={self.org.pk}'
+        param = json.dumps({"state": {"pm_property_id": "5766973"}})
+
+        response = self.client.put(url, param, content_type='application/json')
+
+        assert response.status_code == 200
+        assert Property.objects.count() == 1
+        assert PropertyView.objects.count() == 1
+
+    def test_properties_update_causes_link(self):
+        self.view_1.cycle = self.cycle_factory.get_cycle(
+            start=datetime(2020, 10, 10, tzinfo=get_current_timezone()))
+        self.view_1.save()
+
+        url = reverse('api:v3:properties-detail', args=[self.view_2.id]) + f'?organization_id={self.org.pk}'
+        param = json.dumps({"state": {"pm_property_id": "5766973"}})
+
+        response = self.client.put(url, param, content_type='application/json')
+
+        assert response.status_code == 200
+        assert PropertyView.objects.count() == 2
+        assert list(PropertyView.objects.values_list("property", flat=True)) == [self.property_1.id, self.property_1.id]
+
+    def test_properties_update_causes_merge_different_ali(self):
+        self.property_1.access_level_instance = self.child_level_instance
+        self.property_1.save()
+
+        url = reverse('api:v3:properties-detail', args=[self.view_2.id]) + f'?organization_id={self.org.pk}'
+        param = json.dumps({"state": {"pm_property_id": "5766973"}})
+
+        response = self.client.put(url, param, content_type='application/json')
+
+        assert response.status_code == 400
+        assert Property.objects.count() == 2
+        assert PropertyView.objects.count() == 2
+
+    def test_properties_update_causes_link_different_ali(self):
+        self.property_1.access_level_instance = self.child_level_instance
+        self.property_1.save()
+        self.view_1.cycle = self.cycle_factory.get_cycle(
+            start=datetime(2020, 10, 10, tzinfo=get_current_timezone()))
+        self.view_1.save()
+
+        url = reverse('api:v3:properties-detail', args=[self.view_2.id]) + f'?organization_id={self.org.pk}'
+        param = json.dumps({"state": {"pm_property_id": "5766973"}})
+
+        response = self.client.put(url, param, content_type='application/json')
+
+        assert response.status_code == 400
+        assert PropertyView.objects.count() == 2
+        assert list(PropertyView.objects.values_list("property", flat=True)) == [self.property_1.id, self.property_2.id]
+
+
 class PropertyMergeViewTests(DataMappingBaseTestCase):
     def setUp(self):
         user_details = {
@@ -1192,6 +1326,13 @@ class PropertyMergeViewTests(DataMappingBaseTestCase):
 
         self.import_record = ImportRecord.objects.create(owner=self.user, last_modified_by=self.user, super_organization=self.org, access_level_instance=self.org.root)
 
+        # create tree
+        self.org.access_level_names = ["1st Gen", "2nd Gen", "3rd Gen"]
+        mom_ali = self.org.add_new_access_level_instance(self.org.root.id, "mom")
+        self.me_ali = self.org.add_new_access_level_instance(mom_ali.id, "me")
+        self.sister_ali = self.org.add_new_access_level_instance(mom_ali.id, "sister")
+        self.org.save()
+
     def test_properties_merge_without_losing_labels(self):
         # Create 3 Labels
         label_factory = FakeStatusLabelFactory(organization=self.org)
@@ -1216,6 +1357,79 @@ class PropertyMergeViewTests(DataMappingBaseTestCase):
         self.assertEqual(view.labels.count(), 3)
         label_names = list(view.labels.values_list('name', flat=True))
         self.assertCountEqual(label_names, [label_1.name, label_2.name, label_3.name])
+
+    def test_properties_merge_mismatched_alis(self):
+        # set properties alis
+        self.property_1.access_level_instance = self.me_ali
+        self.property_1.save()
+        self.property_2.access_level_instance = self.sister_ali
+        self.property_2.save()
+
+        # Merge the properties
+        url = reverse('api:v3:properties-merge') + '?organization_id={}'.format(self.org.pk)
+        post_params = json.dumps({
+            'property_view_ids': [self.view_2.pk, self.view_1.pk]
+        })
+        response = self.client.post(url, post_params, content_type='application/json')
+
+        assert response.status_code == 400
+        assert Property.objects.count() == 2
+
+    def test_properties_merge_causes_link(self):
+        self.state_2.custom_id_1 = 1
+        self.state_2.save()
+
+        # create a state in a new cycle whose matching_criteria are the combo of state 1 and 2s.
+        self.other_cycle = self.cycle_factory.get_cycle(
+            start=datetime(2020, 10, 10, tzinfo=get_current_timezone()))
+        self.state_3 = self.property_state_factory.get_property_state()
+        self.property_3 = self.property_factory.get_property()
+        self.view_3 = PropertyView.objects.create(
+            property=self.property_3, cycle=self.other_cycle, state=self.state_3
+        )
+        self.state_3.pm_property_id = self.state_1.pm_property_id
+        self.state_3.custom_id_1 = self.state_2.custom_id_1
+        self.state_3.save()
+
+        # Merge the properties
+        url = reverse('api:v3:properties-merge') + '?organization_id={}'.format(self.org.pk)
+        post_params = json.dumps({
+            'property_view_ids': [self.view_2.pk, self.view_1.pk]
+        })
+        response = self.client.post(url, post_params, content_type='application/json')
+
+        assert response.status_code == 200
+        assert response.json() == {'status': 'success', 'match_merged_count': 0, 'match_link_count': 1}
+        views = PropertyView.objects.all()
+        assert views.count() == 2
+        assert list(views.values_list("property_id", flat=True)) == [self.property_3.id, self.property_3.id]
+
+    def test_properties_merge_causes_link_mismatched_alis(self):
+        self.state_2.custom_id_1 = 1
+        self.state_2.save()
+
+        # create a state in a new cycle whose matching_criteria are the combo of state 1 and 2s.
+        self.other_cycle = self.cycle_factory.get_cycle(
+            start=datetime(2020, 10, 10, tzinfo=get_current_timezone()))
+        self.state_3 = self.property_state_factory.get_property_state()
+        self.property_3 = self.property_factory.get_property(access_level_instance=self.sister_ali)
+        self.view_3 = PropertyView.objects.create(
+            property=self.property_3, cycle=self.other_cycle, state=self.state_3
+        )
+        self.state_3.pm_property_id = self.state_1.pm_property_id
+        self.state_3.custom_id_1 = self.state_2.custom_id_1
+        self.state_3.save()
+
+        # Merge the properties
+        url = reverse('api:v3:properties-merge') + '?organization_id={}'.format(self.org.pk)
+        post_params = json.dumps({
+            'property_view_ids': [self.view_2.pk, self.view_1.pk]
+        })
+        response = self.client.post(url, post_params, content_type='application/json')
+
+        assert response.status_code == 400
+        views = PropertyView.objects.all()
+        assert views.count() == 3
 
     def test_properties_merge_without_losing_notes(self):
         note_factory = FakeNoteFactory(organization=self.org, user=self.user)

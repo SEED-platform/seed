@@ -52,6 +52,7 @@ class OrganizationUserViewSet(viewsets.ViewSet):
                 'number_of_orgs': user_orgs,
                 'user_id': user.pk,
                 'role': get_js_role(u.role_level),
+                'access_level_instance_id': u.access_level_instance.id,
                 'access_level_instance_name': u.access_level_instance.name,
                 'access_level': org.access_level_names[u.access_level_instance.depth - 1],
             })
@@ -70,8 +71,7 @@ class OrganizationUserViewSet(viewsets.ViewSet):
         user = User.objects.get(pk=pk)
 
         try:
-            _orguser, created = org.add_member(user, access_level_instance_id=org.root)
-            _orguser.save()
+            created = org.add_member(user, org.root.id)
         except IntegrityError as e:
             return JsonResponse({
                 'status': 'error',

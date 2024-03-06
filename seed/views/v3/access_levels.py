@@ -8,7 +8,6 @@ import os
 
 import xlrd
 from django.core.exceptions import ObjectDoesNotExist
-from django.db.models import Max
 from django.http import JsonResponse
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status, viewsets
@@ -46,9 +45,31 @@ class AccessLevelViewSet(viewsets.ViewSet):
                                  'message': 'Could not retrieve organization at pk = ' + str(organization_pk)},
                                 status=status.HTTP_404_NOT_FOUND)
 
+        user_ali = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
+
+        access_level_tree = []
+        curr = access_level_tree
+
+        # nest each ancestor underneath each other.
+        # remember, we shouldn't see our aunts.
+        for a in user_ali.get_ancestors():
+            curr.append({
+                'id': a.pk,
+                'data': {
+                    'name': a.name,
+                    'organization': org.id,
+                    'path': a.path,
+                },
+                'children': [],
+            })
+            curr = curr[0]["children"]
+
+        # once we get to ourselves, we can see the whole tree
+        curr.extend(org.get_access_tree(from_ali=user_ali))
+
         return Response({
             "access_level_names": org.access_level_names,
-            "access_level_tree": org.get_access_tree(),
+            "access_level_tree": access_level_tree,
         },
             status=status.HTTP_200_OK,
         )
@@ -127,7 +148,7 @@ class AccessLevelViewSet(viewsets.ViewSet):
         org.add_new_access_level_instance(parent_id, name)
         result = {
             "access_level_names": org.access_level_names,
-            "access_level_tree": org.get_access_tree(),
+            "access_level_tree": org.get_access_tree(from_ali=org.root),  # root as requires owner.
         }
 
         status_code = status.HTTP_201_CREATED
@@ -168,14 +189,20 @@ class AccessLevelViewSet(viewsets.ViewSet):
                 'status': 'error',
                 'message': 'Query param `access_level_names` must be a list of strings'
             }, status=status.HTTP_400_BAD_REQUEST)
-
-        # assert access_level_names is deep enough
-        depth = AccessLevelInstance.objects.filter(organization=org).aggregate(max_depth=Max('depth')).get("max_depth", 0)
-        if len(new_access_level_names) < depth:
+        if len(new_access_level_names) < 1:
             return JsonResponse({
                 'status': 'error',
-                'message': 'Query param `access_level_names` is shorter than depth of existing tree'
+                'message': 'There must be at least one access level.'
             }, status=status.HTTP_400_BAD_REQUEST)
+        if any([n == "" for n in new_access_level_names]):
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Access Level Instance may not be ""'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        # delete alis at deleted depths
+        depth = len(new_access_level_names)
+        AccessLevelInstance.objects.filter(organization=org, depth__gt=depth).delete()
 
         # save names
         org.access_level_names = new_access_level_names
@@ -257,18 +284,22 @@ class AccessLevelViewSet(viewsets.ViewSet):
             # but not the other way around
             wrong_headers = False
             # handle having the root level in file or not
-            level_names = org.access_level_names
+            level_names = org.access_level_names.copy()
             if headers[0] != level_names[0]:
                 level_names.pop(0)
 
             for idx, name in enumerate(headers):
+                if idx >= len(level_names):
+                    wrong_headers = True
+                    break
                 if level_names[idx] != name:
                     wrong_headers = True
+                    break
 
             if wrong_headers:
                 return JsonResponse({
                     'success': False,
-                    'message': "Import File %s's headers did not match the access level names." % the_file.name
+                    'message': "Import File %s's headers did not match the Access Level names defined in SEED. Click the 'Edit/Add Access Levels' button to review your defined access levels before uploading the file. " % the_file.name
                 })
 
         # save the file
@@ -276,7 +307,7 @@ class AccessLevelViewSet(viewsets.ViewSet):
             for chunk in the_file.chunks():
                 temp_file.write(chunk)
 
-        return JsonResponse({'success': True, "tempfile": temp_file.name})
+        return JsonResponse({'success': True, 'tempfile': temp_file.name})
 
     @swagger_auto_schema(
         manual_parameters=[
@@ -315,7 +346,7 @@ class AccessLevelViewSet(viewsets.ViewSet):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_owner')
-    @action(detail=True, methods=['PATCH'])
+    @action(detail=True, methods=['PUT'])
     @swagger_auto_schema(
         manual_parameters=[
             AutoSchemaHelper.query_org_id_field(),

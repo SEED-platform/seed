@@ -75,6 +75,8 @@
       window.BE.initial_org_name = "{{ initial_org_name }}";
       window.BE.access_level_instance_id = "{{ access_level_instance_id }}";
       window.BE.access_level_instance_name = "{{ access_level_instance_name }}";
+      window.BE.is_ali_root = {{ is_ali_root|yesno:"true,false" }};
+      window.BE.is_ali_leaf = {{ is_ali_leaf|yesno:"true,false" }};
 
       {# js CSRF config #}
       window.BE.csrf_token = "{{ csrf_token }}";

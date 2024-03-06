@@ -1,0 +1,123 @@
+<div class="page_header_container" ng-cloak>
+    <div class="page_header">
+        <div class="left page_action_container"></div>
+        <div class="page_title">
+            <h1 translate>Portfolio Summary</h1>
+        </div>
+        <div class="right page_action_container"></div>
+    </div>
+</div>
+
+<div class="section_nav_container">
+    <div class="section_nav" ng-include="::urls.static_url + 'seed/partials/insights_nav.html'"></div>
+</div>
+<div class="portfolio-summary-wrapper">
+    <div class="goals-header-text" >
+        {$:: 'The portfolio summary page compares 2 cycles to calculate progress toward an Energy Use Intensity reduction goal.' | translate $}
+        <span ng-if="write_permission">{$:: 'Cycle selection and goal details can be customized by clicking the Configure Goals button below.' | translate $}</span>
+    </div>
+    <div class="goal-actions-wrapper">
+        <div class="goal-select-wrapper">
+            <label class="goal-select-label" for="goal-select" ng-show="goal" translate>
+                GOAL
+            </label>
+            <div class="goal-selection" ng-show="goal">
+                <select name="goal-select" id="goal-select"
+                    ng-options="goal as goal.name for goal in goals" ng-model="goal">
+                </select>
+            </div>
+            <button class="btn btn-primary portfolio-summary-btn" type="submit" ng-click="open_goal_editor_modal()" ng-if="write_permission">
+                {$:: 'Configure Goals' | translate $}
+            </button>
+        </div>
+    </div>
+    <!-- GOAL DETAILS -->
+    <div class="goal-details-container" ng-if="valid">
+        <div class="goal-details-column" style="margin-left: 10px;">
+            <div ng-repeat="detail in goal_details.slice(0, 3)" class="goal-detail">
+                <div class="goal-detail-key" style="width: 100px">
+                    {$ detail[0] $}:
+                </div>
+                <div class="goal-detail-value" uib-tooltip="{$ (detail[1].length > 25) ? detail[1] : '' $}">
+                    {$ detail[1] $}
+                </div>
+            </div>
+        </div>
+        <div class="goal-details-column">
+            <div ng-repeat="detail in goal_details.slice(3)" class="goal-detail">
+                <div class="goal-detail-key">
+                    {$ detail[0] $}:
+                </div>
+                <div class="goal-detail-value" uib-tooltip="{$ (detail[1].length > 25) ? detail[1] : '' $}">
+                    {$ detail[1] $}
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+    <div id="portfolio-summary-selection-wrapper" class="row">
+
+        <!-- Summary Table-->
+        <div id="portfolio-summary" class="col-sm-10x" ng-if="summary_loading || summary_valid">
+            <h3 style="margin-top:0;" translate>
+                Portfolio Summary
+            </h3>
+            <div ng-if="summary_valid" ui-grid="summaryGridOptions" ui-grid-resize-columns ui-grid-group-columns style="height:60px"></div>
+            <div class="portfolio-summary-loading" ng-if="summary_loading">
+                <h4>{$:: 'Loading Summary Data...' | translate $}</h4>
+                <uib-progress class="progress-striped active">
+                    <uib-bar value="100" type="info"></uib-bar>
+                </uib-progress>
+            </div>
+        </div>
+
+    </div>
+    <!-- Data Table container -->
+    <!-- Pagination -->
+    <div class="portfolio-summary-item-count" ng-if="data_valid">
+        <div class="form-group" ng-if="data_valid">
+            <button class="btn btn-primary portfolio-summary-btn" ng-click="toggle_access_level_instances()">
+                {$ show_access_level_instances ? 'Hide' : 'Show' $} Access Levels
+            </button>
+        </div>
+        <div>
+            {$ inventory_pagination.start $}-{$ inventory_pagination.end $}<span ng-if="inventory_pagination.num_pages > 1"> of
+                {$ inventory_pagination.total $}</span>
+            <i ng-if="selectedCount > 0">
+                <span>({$ selected_display $}</span><span ng-if="selectedCount < inventory_pagination.total"> - <a
+                    ng-click="select_all()" translate>Select All</a></span><span
+                    ng-if="selectedCount === inventory_pagination.total"> - <a ng-click="select_none()" translate>Select
+                        None</a></span><span>)</span>
+                    </i>
+                    <button ng-click="page_change(inventory_pagination.page - 1)" ng-disabled="!inventory_pagination.has_previous"
+                    class="btn btn-default btn-sm">
+                    <i class="fa-solid fa-chevron-left"></i>
+                </button>
+                <button ng-click="page_change(inventory_pagination.page + 1)" ng-disabled="!inventory_pagination.has_next"
+                    class="btn btn-default btn-sm">
+                <i class="fa-solid fa-chevron-right"></i>
+            </button>
+        </div>
+    </div>
+    <!-- Data Table -->
+    <div id="portfolio-summary-grid" ng-if="data_valid" style="overflow-x: scroll;">
+        <div class="portfolioSummary-gridOptions-wrapper" ng-style="{'heightx': gridHeight}">
+            <div
+                ui-grid="gridOptions"
+                ui-grid-save-state
+                ui-grid-resize-columns
+                ui-grid-group-columns
+                ui-grid-exporter
+                ui-grid-edit
+            ></div>
+        </div>
+
+    </div>
+    <div class="portfolio-summary-loading" ng-if="data_loading" style="margin:100px 20px;">
+        <h4>Loading Data...</h4>
+        <uib-progress class="progress-striped active" >
+            <uib-bar value="100" type="info"></uib-bar>
+        </uib-progress>
+    </div>
+</div>

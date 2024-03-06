@@ -350,27 +350,43 @@ def _run_analysis(self, meter_readings_by_analysis_property_view, analysis_id):
     # displayname and description if the column already exists because
     # the user might have changed them which would re-create new columns
     # here.
-    column, created = Column.objects.get_or_create(
-        is_extra_data=True,
-        column_name='analysis_co2',
-        organization=analysis.organization,
-        table_name='PropertyState',
-    )
-    if created:
-        column.display_name = 'Average Annual CO2 (kgCO2e)',
-        column.column_description = 'Average Annual CO2 (kgCO2e)',
-        column.save()
 
-    column, created = Column.objects.get_or_create(
-        is_extra_data=True,
-        column_name='analysis_co2_coverage',
-        organization=analysis.organization,
-        table_name='PropertyState',
-    )
-    if created:
-        column.display_name = 'Average Annual CO2 Coverage (% of the year)'
-        column.column_description = 'Average Annual CO2 Coverage (% of the year)'
-        column.save()
+    # if user is at root level and has role member or owner, columns can be created
+    # otherwise set the 'missing_columns' flag for later
+    missing_columns = False
+
+    column_meta = [
+        {
+            'column_name': 'analysis_co2',
+            'display_name': 'Average Annual CO2 (kgCO2e)',
+            'description': 'Average Annual CO2 (kgCO2e)'
+        }, {
+            'column_name': 'analysis_co2_coverage',
+            'display_name': 'Average Annual CO2 Coverage (% of the year)',
+            'description': 'Average Annual CO2 Coverage (% of the year)'
+        }
+    ]
+
+    for col in column_meta:
+        try:
+            Column.objects.get(
+                column_name=col["column_name"],
+                organization=analysis.organization,
+                table_name='PropertyState',
+            )
+        except Exception:
+            if analysis.can_create():
+                column = Column.objects.create(
+                    is_extra_data=True,
+                    column_name=col["column_name"],
+                    organization=analysis.organization,
+                    table_name='PropertyState',
+                )
+                column.display_name = col["display_name"]
+                column.column_description = col["description"]
+                column.save()
+            else:
+                missing_columns = True
 
     # fix the meter readings dict b/c celery messes with it when serializing
     meter_readings_by_analysis_property_view = {
@@ -431,10 +447,17 @@ def _run_analysis(self, meter_readings_by_analysis_property_view, analysis_id):
         }
         analysis_property_view.save()
         if save_co2_results:
-            # Convert the analysis results which reports in kgCO2e to MtCO2e which is the canonical database field units
-            property_view.state.total_ghg_emissions = co2['average_annual_kgco2e'] / 1000
-            property_view.state.total_ghg_emissions_intensity = co2['average_annual_kgco2e'] / property_view.state.gross_floor_area.magnitude
-            property_view.state.save()
+            # only save to property view if columns exist
+            if not missing_columns:
+                # store the extra_data columns from the analysis
+                property_view.state.extra_data.update({
+                    'analysis_co2': co2['average_annual_kgco2e'],
+                    'analysis_co2_coverage': co2['annual_coverage_percent']
+                })
+                # Also Convert the analysis results which reports in kgCO2e to MtCO2e which is the canonical database field units
+                property_view.state.total_ghg_emissions = co2['average_annual_kgco2e'] / 1000
+                property_view.state.total_ghg_emissions_intensity = co2['average_annual_kgco2e'] / property_view.state.gross_floor_area.magnitude
+                property_view.state.save()
 
     # all done!
     pipeline.set_analysis_status_to_completed()

@@ -24,7 +24,7 @@ SMTP_ENV_VARS = ['EMAIL_HOST', 'EMAIL_PORT', 'EMAIL_HOST_USER',
 # The optional vars will set the SERVER_EMAIL information as needed
 OPTIONAL_ENV_VARS = ['AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY', 'AWS_SES_REGION_NAME',
                      'AWS_SES_REGION_ENDPOINT', 'SERVER_EMAIL', 'SENTRY_JS_DSN', 'SENTRY_RAVEN_DSN',
-                     'REDIS_PASSWORD', 'REDIS_HOST', 'REDIS_AWS_ELASTICACHE', 'REDIS_URL', 'DJANGO_EMAIL_BACKEND',
+                     'REDIS_PASSWORD', 'REDIS_HOST', 'REDIS_AWS_ELASTICACHE', 'DJANGO_EMAIL_BACKEND',
                      'POSTGRES_HOST'] + SMTP_ENV_VARS
 
 for loc in ENV_VARS + OPTIONAL_ENV_VARS:
@@ -34,16 +34,20 @@ for loc in ENV_VARS:
     if not locals().get(loc):
         raise Exception("%s Not defined as env variables" % loc)
 
-DEBUG = False
+DEBUG = os.environ.get('Debug', False)
 COMPRESS_ENABLED = False
 # COMPRESS_STORAGE = 'compressor.storage.GzipCompressorFileStorage'
 # COMPRESS_OFFLINE = True
 
 # Make sure to disable secure cookies and csrf when using Cloudflare
-SESSION_COOKIE_SECURE = False
-CSRF_COOKIE_SECURE = False
+SESSION_COOKIE_SECURE = os.environ.get('SESSION_COOKIE_SECURE', False)
+CSRF_COOKIE_SECURE = os.environ.get('CSRF_COOKIE_SECURE', False)
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS_ENV = os.environ.get('ALLOWED_HOSTS')
+if ALLOWED_HOSTS_ENV:
+    ALLOWED_HOSTS = ALLOWED_HOSTS_ENV.split(',')
+else:
+    ALLOWED_HOSTS = ['*']
 
 # By default we are using SES as our email client. If you would like to use
 # another backend (e.g., SMTP), then please update this model to support both and
@@ -73,56 +77,33 @@ DATABASES = {
 
 # Redis / Celery config
 if 'REDIS_AWS_ELASTICACHE' in os.environ:
+    CELERY_BROKER_URL = f"rediss://:{os.environ.get('REDIS_PASSWORD')}@{os.environ.get('REDIS_HOST')}:6379/1?ssl_cert_reqs=required"
+
     CACHES = {
         'default': {
             'BACKEND': 'django_redis.cache.RedisCache',
-            'LOCATION': os.environ.get('REDIS_URL'),
-            'OPTIONS': {
-                'DB': 1,
-                "CLIENT_CLASS": "django_redis.client.DefaultClient",
-                'PASSWORD': os.environ.get('REDIS_PASSWORD')
-            },
-            'TIMEOUT': 300
+            'LOCATION': CELERY_BROKER_URL,
         }
     }
-    CELERY_BROKER_URL = 'rediss://:%s@%s/%s' % (
-        CACHES['default']['OPTIONS']['PASSWORD'],
-        CACHES['default']['LOCATION'],
-        CACHES['default']['OPTIONS']['DB']
-    )
 elif 'REDIS_PASSWORD' in os.environ:
-    CACHES = {
-        'default': {
-            'BACKEND': 'redis_cache.cache.RedisCache',
-            'LOCATION': f"{os.environ.get('REDIS_HOST', 'db-redis')}:6379",
-            'OPTIONS': {
-                'DB': 1,
-                'PASSWORD': REDIS_PASSWORD,  # noqa F405
-            },
-            'TIMEOUT': 300
-        }
-    }
-    CELERY_BROKER_URL = 'redis://:%s@%s/%s' % (
-        CACHES['default']['OPTIONS']['PASSWORD'],
-        CACHES['default']['LOCATION'],
-        CACHES['default']['OPTIONS']['DB']
-    )
-else:
-    CACHES = {
-        'default': {
-            'BACKEND': 'redis_cache.cache.RedisCache',
-            'LOCATION': os.environ.get('REDIS_HOST', 'db-redis:6379'),
-            'OPTIONS': {
-                'DB': 1
-            },
-            'TIMEOUT': 300
-        }
-    }
-    CELERY_BROKER_URL = 'redis://%s/%s' % (
-        CACHES['default']['LOCATION'], CACHES['default']['OPTIONS']['DB']
-    )
+    CELERY_BROKER_URL = f"redis://:{os.environ.get('REDIS_PASSWORD')}@{os.environ.get('REDIS_HOST', 'db-redis')}:6379/1"
 
-CELERY_BROKER_TRANSPORT = 'redis'
+    CACHES = {
+        'default': {
+            'BACKEND': 'django_redis.cache.RedisCache',
+            'LOCATION': CELERY_BROKER_URL,
+        }
+    }
+else:
+    CELERY_BROKER_URL = f"redis://{os.environ.get('REDIS_HOST', 'db-redis')}:6379/1"
+
+    CACHES = {
+        'default': {
+            'BACKEND': 'django_redis.cache.RedisCache',
+            'LOCATION': CELERY_BROKER_URL,
+        }
+    }
+
 CELERY_RESULT_BACKEND = CELERY_BROKER_URL
 CELERY_TASK_DEFAULT_QUEUE = 'seed-docker'
 CELERY_TASK_QUEUES = (
@@ -145,7 +126,7 @@ LOGGING = {
     'loggers': {
         'django': {
             'handlers': ['console'],
-            'level': os.getenv('DJANGO_LOG_LEVEL', 'DEBUG'),
+            'level': os.getenv('DJANGO_LOG_LEVEL', 'ERROR'),
         },
     },
 }

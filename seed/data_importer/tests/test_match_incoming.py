@@ -883,6 +883,8 @@ class TestMatchingImportIntegration(DataMappingBaseTestCase):
             'property_initial_incoming': 10,
             'property_merges_against_existing': 1,
             'property_merges_against_existing_errors': 0,
+            'property_links_against_existing': 0,
+            'property_links_against_existing_errors': 0,
             'property_merges_between_existing': 0,
             'property_merges_within_file': 2,
             'property_merges_within_file_errors': 0,
@@ -894,6 +896,8 @@ class TestMatchingImportIntegration(DataMappingBaseTestCase):
             'tax_lot_initial_incoming': 0,
             'tax_lot_merges_against_existing': 0,
             'tax_lot_merges_against_existing_errors': 0,
+            'tax_lot_links_against_existing': 0,
+            'tax_lot_links_against_existing_errors': 0,
             'tax_lot_merges_between_existing': 0,
             'tax_lot_merges_within_file': 0,
             'tax_lot_merges_within_file_errors': 0,
@@ -1036,6 +1040,8 @@ class TestMatchingImportIntegration(DataMappingBaseTestCase):
             'property_merges_between_existing': 0,
             'property_merges_within_file': 0,
             'property_merges_within_file_errors': 0,
+            'property_links_against_existing': 0,
+            'property_links_against_existing_errors': 0,
             'property_new': 0,
             'property_new_errors': 0,
             'tax_lot_duplicates_against_existing': 1,
@@ -1044,6 +1050,8 @@ class TestMatchingImportIntegration(DataMappingBaseTestCase):
             'tax_lot_initial_incoming': 10,
             'tax_lot_merges_against_existing': 1,
             'tax_lot_merges_against_existing_errors': 0,
+            'tax_lot_links_against_existing': 0,
+            'tax_lot_links_against_existing_errors': 0,
             'tax_lot_merges_between_existing': 0,
             'tax_lot_merges_within_file': 2,
             'tax_lot_merges_within_file_errors': 0,
@@ -1394,7 +1402,7 @@ class TestMultiCycleImport(DataMappingBaseTestCase):
         self.property_state_factory.get_property_state(**base_details)
 
         base_details['property_name'] = 'p_default_b'
-        base_details['year_ending'] = date(2023, 4, 10)
+        base_details['year_ending'] = date(2000, 4, 10)
         self.property_state_factory.get_property_state(**base_details)
 
         # Properties with missing year_ending will be placed in default cycle

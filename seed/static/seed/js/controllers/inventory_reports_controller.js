@@ -54,10 +54,6 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
     /* Setup models from "From" and "To" selectors */
     $scope.cycles = cycles.cycles;
 
-    /* Model for pulldowns, initialized in init below */
-    $scope.fromCycle = {};
-    $scope.toCycle = {};
-
     const translateAxisLabel = (label, units) => {
       let str = '';
       str += $translate.instant(label);
@@ -98,14 +94,22 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
 
     const filtered_columns = _.filter(columns, (column) => _.includes(acceptable_column_types, column.data_type));
 
-    $scope.xAxisVars = _.map(filtered_columns, (column) => ({
+    $scope.xAxisVars =[
+      {
+        name: "Count",
+        label: "Count",
+        varName: "Count",
+        axisLabel: "Count",
+      },
+      ... _.map(filtered_columns, (column) => ({
       name: $translate.instant(column.displayName), // short name for variable, used in pulldown
       label: $translate.instant(column.displayName), // full name for variable
       varName: column.column_name, // name of variable, to be sent to server
       axisLabel: parse_axis_label(column) // label to be used in charts, should include units
       // axisType: 'Measure', //DimpleJS property for axis type
       // axisTickFormat: ',.0f' //DimpleJS property for axis tick format
-    }));
+      }))
+    ];
 
     const acceptable_y_column_names = ['gross_floor_area', 'property_type', 'year_built'];
     const filtered_y_columns = _.filter(columns, (column) => _.includes(acceptable_y_column_names, column.column_name));
@@ -122,15 +126,6 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
     // Chart titles
     $scope.chart1Title = '';
     $scope.chart2Title = '';
-
-    // Datepickers
-    const initStartDate = new Date();
-    initStartDate.setYear(initStartDate.getFullYear() - 1);
-    $scope.startDate = initStartDate;
-    $scope.startDatePickerOpen = false;
-    $scope.endDate = new Date();
-    $scope.endDatePickerOpen = false;
-    $scope.invalidDates = false; // set this to true when startDate >= endDate;
 
     // Series
     // the following variable keeps track of which
@@ -252,34 +247,33 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
     // specific styling for scatter chart
     $scope.scatterChart.options.scales.x.suggestedMin = 0;
 
+    $scope.cycle_selection = '';
+    $scope.selected_cycles = [];
+    $scope.available_cycles = () => $scope.cycles.filter(({ id }) => !$scope.selected_cycles.includes(id));
+    $scope.select_cycle = () => {
+      const selection = $scope.cycle_selection;
+      $scope.cycle_selection = '';
+      if (!$scope.selected_cycles) {
+        $scope.selected_cycles = [];
+      }
+      $scope.selected_cycles.push(selection);
+    };
+
+    $scope.get_cycle_display = (id) => {
+      const record = _.find($scope.cycles, { id });
+      if (record) {
+        return record.name;
+      }
+    };
+
+    $scope.click_remove_cycle = (id) => {
+      $scope.selected_cycles = $scope.selected_cycles.filter((item) => item !== id);
+    };
+
     /* END NEW CHART STUFF */
 
     /* UI HANDLERS */
     /* ~~~~~~~~~~~ */
-
-    // Handle datepicker open/close events
-    $scope.openStartDatePicker = ($event) => {
-      $event.preventDefault();
-      $event.stopPropagation();
-      $scope.startDatePickerOpen = !$scope.startDatePickerOpen;
-    };
-    $scope.openEndDatePicker = ($event) => {
-      $event.preventDefault();
-      $event.stopPropagation();
-      $scope.endDatePickerOpen = !$scope.endDatePickerOpen;
-    };
-
-    $scope.$watch('startDate', () => {
-      $scope.checkInvalidDate();
-    });
-
-    $scope.$watch('endDate', () => {
-      $scope.checkInvalidDate();
-    });
-
-    $scope.checkInvalidDate = () => {
-      $scope.invalidDates = $scope.endDate < $scope.startDate;
-    };
 
     /* Update data used by the chart. This will force the charts to re-render */
     $scope.updateChartData = () => {
@@ -374,8 +368,7 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
             yVar: $scope.chartData.yAxisVarName,
             yLabel: $scope.chartData.yAxisTitle
           }),
-          cycle_start: () => $scope.fromCycle.selected_cycle.start,
-          cycle_end: () => $scope.toCycle.selected_cycle.end
+          cycles: () => $scope.selected_cycles,
         }
       });
     };
@@ -398,7 +391,7 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
       $scope.chartIsLoading = true;
 
       inventory_reports_service
-        .get_report_data(xVar, yVar, $scope.fromCycle.selected_cycle.start, $scope.toCycle.selected_cycle.end)
+        .get_report_data(xVar, yVar, $scope.selected_cycles)
         .then(
           (data) => {
             data = data.data;
@@ -462,7 +455,7 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
       const yVar = $scope.yAxisSelectedItem.varName;
       $scope.aggChartIsLoading = true;
       inventory_reports_service
-        .get_aggregated_report_data(xVar, yVar, $scope.fromCycle.selected_cycle.start, $scope.toCycle.selected_cycle.end)
+        .get_aggregated_report_data(xVar, yVar, $scope.selected_cycles)
         .then(
           (data) => {
             data = data.aggregated_data;
@@ -506,9 +499,7 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
       // Save axis and cycle selections
       localStorage.setItem(localStorageXAxisKey, JSON.stringify($scope.xAxisSelectedItem));
       localStorage.setItem(localStorageYAxisKey, JSON.stringify($scope.yAxisSelectedItem));
-
-      localStorage.setItem(localStorageFromCycleKey, JSON.stringify($scope.fromCycle.selected_cycle));
-      localStorage.setItem(localStorageToCycleKey, JSON.stringify($scope.toCycle.selected_cycle));
+      localStorage.setItem(localStorageSelectedCycles, JSON.stringify($scope.selected_cycles));
     }
 
     /*  Generate an array of color objects to be used as part of chart configuration
@@ -536,19 +527,13 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
       return colorsArr;
     }
 
-    var localStorageFromCycleKey = `${base_storage_key}.fromcycle`;
-    var localStorageToCycleKey = `${base_storage_key}.tocycle`;
+    var localStorageSelectedCycles = `${base_storage_key}.SelectedCycles`;
 
     /* Call the update method so the page initializes
        with the values set in the scope */
     function init() {
       // Initialize pulldowns
-      $scope.fromCycle = {
-        selected_cycle: JSON.parse(localStorage.getItem(localStorageFromCycleKey)) || _.head($scope.cycles)
-      };
-      $scope.toCycle = {
-        selected_cycle: JSON.parse(localStorage.getItem(localStorageToCycleKey)) || _.last($scope.cycles)
-      };
+      $scope.selected_cycles = JSON.parse(localStorage.getItem(localStorageSelectedCycles)) || []
 
       // Attempt to load selections
       $scope.updateChartData();

@@ -11,6 +11,8 @@ import subprocess
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
+from django.core.cache import cache
+from django.db import connection
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
 from rest_framework import status
@@ -54,9 +56,11 @@ def _get_default_org(user):
         org_user_role = get_js_role(ou.role_level) if ou else ""
         ali_name = ou.access_level_instance.name
         ali_id = ou.access_level_instance.id
-        return org_id, org_name, org_user_role, ali_name, ali_id
+        is_ali_root = ou.access_level_instance == ou.organization.root
+        is_ali_leaf = ou.access_level_instance.is_leaf()
+        return org_id, org_name, org_user_role, ali_name, ali_id, is_ali_root, is_ali_leaf
     else:
-        return "", "", "", "", ""
+        return "", "", "", "", "", "", ""
 
 
 @login_required
@@ -68,7 +72,7 @@ def home(request):
         * **username**: the request user's username (first and last name)
     """
     username = request.user.first_name + " " + request.user.last_name
-    initial_org_id, initial_org_name, initial_org_user_role, access_level_instance_name, access_level_instance_id = _get_default_org(
+    initial_org_id, initial_org_name, initial_org_user_role, access_level_instance_name, access_level_instance_id, is_ali_root, is_ali_leaf = _get_default_org(
         request.user
     )
     debug = settings.DEBUG
@@ -114,6 +118,37 @@ def celery_queue(request):
                     results[method] = {'total': 0}
 
     return JsonResponse(results)
+
+
+def health_check(request):
+    """
+    Perform a health check without requiring authentication
+    """
+    try:
+        postgres_status = connection.ensure_connection() is None
+    except Exception:
+        postgres_status = False
+
+    try:
+        ping_result = getattr(app.control.inspect(), 'ping')()
+        celery_keys = list(ping_result.keys()) if ping_result else []
+        celery_status = False if not len(celery_keys) else ping_result.get(celery_keys[0], {}).get('ok') == 'pong'
+    except Exception:
+        celery_status = False
+
+    try:
+        redis_status = 'redis-ping' not in cache
+    except Exception:
+        redis_status = False
+
+    success = postgres_status and celery_status and redis_status
+
+    return JsonResponse({
+        'status': 'healthy' if success else 'unhealthy',
+        'postgres': 'success' if postgres_status else 'error',
+        'celery': 'success' if celery_status else 'error',
+        'redis': 'success' if redis_status else 'error',
+    }, status=(200 if success else 418))
 
 
 @api_endpoint

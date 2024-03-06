@@ -381,21 +381,26 @@ def _process_results(self, analysis_id):
     progress_data.step('Processing results')
 
     # store all measure recommendations
+    #
+    # Updated measure list 10/21/2023. There were several added and 4 removed/renamed which include removal of:
+    #   'Check Fossil Baseload', 'Decrease Ventilation', 'Eliminate Electric Heating', 'Upgrade Windows',
+    # The data will still exist in the database for historic reason, but new runs will not include those.
     ee_measure_names = [
-        'Upgrade Windows',
-        'Reduce Plug Loads',
         'Add/Fix Economizers',
-        'Decrease Ventilation',
-        'Reduce Lighting Load',
-        'Check Fossil Baseload',
-        'Decrease Infiltration',
+        'Add Wall/Ceiling/Roof Insulation',
         'Decrease Heating Setpoints',
-        'Eliminate Electric Heating',
+        'Decrease Infiltration',
+        'Ensure Adequate Ventilation Rate',
         'Increase Cooling Setpoints',
-        'Reduce Equipment Schedules',
-        'Add Wall/Ceiling Insulation',
         'Increase Cooling System Efficiency',
-        'Increase Heating System Efficiency'
+        'Increase Heating System Efficiency',
+        'Reduce Equipment Schedules',
+        'Reduce Lighting Load',
+        'Reduce Plug Loads',
+        'Upgrade Windows to Improve Thermal Efficiency',
+        'Upgrade Windows to Reduce Solar Heat Gain',
+        'Upgrade to Sustainable Resources for Water Heating',
+        'Use High Efficiency Heat Pump for Heating',
     ]
     ee_measure_column_data_paths = [
         ExtraDataColumnPath(
@@ -409,6 +414,11 @@ def _process_results(self, analysis_id):
     # gather all columns to store
     BETTER_VALID_MODEL_E_COL = 'better_valid_model_electricity'
     BETTER_VALID_MODEL_F_COL = 'better_valid_model_fuel'
+
+    # if user is at root level and has role member or owner, columns can be created
+    # otherwise set the 'missing_columns' flag for later
+    missing_columns = False
+
     column_data_paths = [
         # Combined Savings
         ExtraDataColumnPath(
@@ -518,19 +528,27 @@ def _process_results(self, analysis_id):
         # check if the column exists with the bare minimum required pieces of data. For example,
         # don't check column_description and display_name because they may be changed by
         # the user at a later time.
-        column, created = Column.objects.get_or_create(
-            is_extra_data=True,
-            column_name=column_data_path.column_name,
-            organization=analysis.organization,
-            table_name='PropertyState',
-        )
-
-        # add in the other fields of the columns only if it is a new column.
-        if created:
-            column.display_name = column_data_path.column_display_name
-            column.column_description = column_data_path.column_display_name
-
-        column.save()
+        # if column doesn't exist, and user has permission to create, then create
+        try:
+            Column.objects.get(
+                is_extra_data=True,
+                column_name=column_data_path.column_name,
+                organization=analysis.organization,
+                table_name='PropertyState',
+            )
+        except Exception:
+            if analysis.can_create():
+                column, created = Column.objects.create(
+                    is_extra_data=True,
+                    column_name=column_data_path.column_name,
+                    organization=analysis.organization,
+                    table_name='PropertyState',
+                )
+                column.display_name = column_data_path.column_display_name
+                column.column_description = column_data_path.column_display_name
+                column.save()
+            else:
+                missing_columns = True
 
     # Update the original PropertyView's PropertyState with analysis results of interest
     analysis_property_views = analysis.analysispropertyview_set.prefetch_related('property', 'cycle').all()
@@ -591,9 +609,11 @@ def _process_results(self, analysis_id):
             else:
                 cleaned_results[col_name] = value
 
-        original_property_state = property_view_by_apv_id[analysis_property_view.id].state
-        original_property_state.extra_data.update(cleaned_results)
-        original_property_state.save()
+        # if no columns are missing, save back to property
+        if not missing_columns:
+            original_property_state = property_view_by_apv_id[analysis_property_view.id].state
+            original_property_state.extra_data.update(cleaned_results)
+            original_property_state.save()
 
 
 @shared_task(bind=True)

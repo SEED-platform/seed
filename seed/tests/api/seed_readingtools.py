@@ -134,7 +134,7 @@ def check_progress(main_url, header, progress_key):
             headers=header
         )
         print("... {} ...".format(progress_result.json()['progress']))
-    except [urllib3.exceptions.ProtocolError, RemoteDisconnected, requests.exceptions.ConnectionError]:
+    except (urllib3.exceptions.ProtocolError, RemoteDisconnected, requests.exceptions.ConnectionError):
         print("Server is not responding... trying again in a few seconds")
         progress_result = None
     except Exception:
