@@ -2282,6 +2282,58 @@ class PropertySensorViewTests(AccessLevelBaseTestCase, DataMappingBaseTestCase):
             ]
         )
 
+    def test_delete_data_logger(self):
+        dl_1 = DataLogger.objects.create(**{
+            "property_id": self.property_1.id,
+            "display_name": "moo",
+        })
+        s1 = Sensor.objects.create(**{
+            "data_logger": dl_1,
+            "display_name": "s1",
+            "sensor_type": "first",
+            "units": "one",
+            "column_name": "sensor 1"
+        })
+        SensorReading.objects.create(**{
+            "reading": 0.0,
+            "timestamp": str(datetime(2000, 1, 1, tzinfo=timezone(TIME_ZONE))),
+            "sensor": s1,
+            "is_occupied": False
+        })
+
+        dl_2 = DataLogger.objects.create(**{
+            "property_id": self.property_1.id,
+            "display_name": "bark",
+        })
+        s2 = Sensor.objects.create(**{
+            "data_logger": dl_2,
+            "display_name": "s2",
+            "sensor_type": "second",
+            "units": "two",
+            "column_name": "sensor 2"
+        })
+        SensorReading.objects.create(**{
+            "reading": 0.0,
+            "timestamp": str(datetime(2000, 1, 1, tzinfo=timezone(TIME_ZONE))),
+            "sensor": s2,
+            "is_occupied": False
+        })
+
+        assert DataLogger.objects.count() == 2
+        assert Sensor.objects.count() == 2
+        assert SensorReading.objects.count() == 2
+
+        # Action
+        url = reverse('api:v3:data_logger-detail', kwargs={'pk': dl_1.id})
+        url += f'?organization_id={self.org.pk}'
+        result = self.client.delete(url, content_type="application/json")
+
+        # Assertion
+        assert result.status_code == 204
+        assert DataLogger.objects.count() == 1
+        assert Sensor.objects.count() == 1
+        assert SensorReading.objects.count() == 1
+
 
 class PropertyMeterViewTests(DataMappingBaseTestCase):
     def setUp(self):

@@ -23,6 +23,11 @@ angular.module('BE.seed.service.sensor', []).factory('sensor_service', [
       }
     }).then((response) => response.data);
 
+    sensor_factory.delete_data_logger = (data_logger_id, organization_id) => {
+      let url = `/api/v3/data_loggers/${data_logger_id}?organization_id=${organization_id}`;
+      return $http.delete(url).then(resp => resp.data);
+    };
+
     sensor_factory.get_sensors = (property_view_id, organization_id) => $http.get(`/api/v3/properties/${property_view_id}/sensors/`, { params: { organization_id } }).then((response) => response.data);
 
     sensor_factory.property_sensor_usage = (property_view_id, organization_id, interval, showOnlyOccupiedReadings, excluded_sensor_ids, page, per_page) => {
