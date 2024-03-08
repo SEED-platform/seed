@@ -6,7 +6,7 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('seed', '0214_move_filtergroup_labels'),
+        ('seed', '0213_move_filtergroup_labels'),
     ]
 
     operations = [
