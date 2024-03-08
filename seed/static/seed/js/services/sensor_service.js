@@ -28,11 +28,16 @@ angular.module('BE.seed.service.sensor', []).factory('sensor_service', [
       return $http.delete(url).then(resp => resp.data);
     };
 
+    sensor_factory.delete_sensor = (view_id, sensor_id, organization_id) => {
+      let url = `/api/v3/properties/${view_id}/sensors/${sensor_id}?organization_id=${organization_id}`;
+      return $http.delete(url).then(resp => resp.data);
+    };
+
     sensor_factory.get_sensors = (property_view_id, organization_id) => $http.get(`/api/v3/properties/${property_view_id}/sensors/`, { params: { organization_id } }).then((response) => response.data);
 
     sensor_factory.property_sensor_usage = (property_view_id, organization_id, interval, showOnlyOccupiedReadings, excluded_sensor_ids, page, per_page) => {
       if (_.isUndefined(excluded_sensor_ids)) excluded_sensor_ids = [];
-      let url = `/api/v3/properties/${property_view_id}/sensor_usage/?organization_id=${organization_id}`;
+      let url = `/api/v3/properties/${property_view_id}/sensors/usage/?organization_id=${organization_id}`;
       if (page != null) {
         url += `&page=${page}`;
       }

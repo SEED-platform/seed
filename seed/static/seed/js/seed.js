@@ -121,6 +121,7 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.sample_data_modal',
   'BE.seed.controller.security',
   'BE.seed.controller.sensor_readings_upload_modal',
+  'BE.seed.controller.sensor_delete_modal',
   'BE.seed.controller.sensors_upload_modal',
   'BE.seed.controller.settings_profile_modal',
   'BE.seed.controller.show_populated_columns_modal',
