@@ -151,7 +151,7 @@ class TestColumns(TestCase):
             'Ewok': ('TaxLotState', 'Hattin', '', True),
         }
         self.assertDictEqual(expected, test_mapping)
-        self.assertTrue(test_mapping['Ewok'], 'Hattin')
+        self.assertEqual(test_mapping['Ewok'][1], 'Hattin')
 
         c_wookiee = Column.objects.filter(column_name='Wookiee')[0]
         # Since the raw column is wookiee, then it should NOT be extra data
