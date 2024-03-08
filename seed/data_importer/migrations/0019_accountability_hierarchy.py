@@ -10,13 +10,13 @@ def set_import_records_ali(apps, schema_editor):
     AccessLevelInstance = apps.get_model('orgs', 'AccessLevelInstance')
 
     if ImportRecord.objects.filter(super_organization=None).exists():
-        raise ValueError(f"Some ImportRecords have no super_organization, and are orphaned. This shouldn't have happened and these ImportRecords cannot be migrated. Please add a super_organization or delete the orphaned ImportRecords and try again.")
+        raise ValueError("Some ImportRecords have no super_organization, and are orphaned. This shouldn't have happened and these ImportRecords cannot be migrated. Please add a super_organization or delete the orphaned ImportRecords and try again.")
 
     root_alis = {ali.organization_id: ali for ali in AccessLevelInstance.objects.filter(depth=1)}
 
     for import_record in ImportRecord.objects.all().iterator():
         import_record.access_level_instance = root_alis[import_record.super_organization_id]
-        import_record.save()
+        import_record.save(update_fields=['access_level_instance'])
 
 
 class Migration(migrations.Migration):

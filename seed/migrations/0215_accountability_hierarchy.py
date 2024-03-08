@@ -14,7 +14,7 @@ def assign_properties_to_root_access_level(apps, schema_editor):
 
     for property in Property.objects.all().iterator():
         property.access_level_instance = root_alis[property.organization_id]
-        property.save()
+        property.save(update_fields=['access_level_instance'])
 
 
 @transaction.atomic
@@ -26,7 +26,7 @@ def assign_taxlots_to_root_access_level(apps, schema_editor):
 
     for taxlot in TaxLot.objects.all().iterator():
         taxlot.access_level_instance = root_alis[taxlot.organization_id]
-        taxlot.save()
+        taxlot.save(update_fields=['access_level_instance'])
 
 
 @transaction.atomic
@@ -35,13 +35,13 @@ def assign_analyses_to_root_access_level(apps, schema_editor):
     AccessLevelInstance = apps.get_model('orgs', 'AccessLevelInstance')
 
     if Analysis.objects.filter(organization=None).exists():
-        raise ValueError(f"Some Analyses have no organization, and are orphaned. This shouldn't have happened and these Analyses cannot be migrated. Please add an organization or delete the orphaned analyses and try again.")
+        raise ValueError("Some Analyses have no organization, and are orphaned. This shouldn't have happened and these Analyses cannot be migrated. Please add an organization or delete the orphaned analyses and try again.")
 
     root_alis = {ali.organization_id: ali for ali in AccessLevelInstance.objects.filter(depth=1)}
 
     for analysis in Analysis.objects.all().iterator():
         analysis.access_level_instance = root_alis[analysis.organization_id]
-        analysis.save()
+        analysis.save(update_fields=['access_level_instance'])
 
 
 class Migration(migrations.Migration):
