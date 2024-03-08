@@ -2,7 +2,40 @@
 
 import django.core.validators
 import django.db.models.deletion
-from django.db import migrations, models
+from django.db import migrations, models, transaction
+
+
+@transaction.atomic
+def assign_properties_to_root_access_level(apps, schema_editor):
+    Property = apps.get_model('seed', 'Property')
+    AccessLevelInstance = apps.get_model('orgs', 'AccessLevelInstance')
+
+    for property in Property.objects.all().iterator():
+        property.access_level_instance = AccessLevelInstance.objects.get(organization=property.organization, depth=1)
+        property.save()
+
+
+@transaction.atomic
+def assign_taxlots_to_root_access_level(apps, schema_editor):
+    TaxLot = apps.get_model('seed', 'TaxLot')
+    AccessLevelInstance = apps.get_model('orgs', 'AccessLevelInstance')
+
+    for taxlot in TaxLot.objects.all().iterator():
+        taxlot.access_level_instance = AccessLevelInstance.objects.get(organization=taxlot.organization, depth=1)
+        taxlot.save()
+
+
+@transaction.atomic
+def assign_analyses_to_root_access_level(apps, schema_editor):
+    Analysis = apps.get_model('seed', 'Analysis')
+    AccessLevelInstance = apps.get_model('orgs', 'AccessLevelInstance')
+
+    if Analysis.objects.filter(organization=None).exists():
+        raise ValueError(f"Some Analyses have no organization, and are orphaned. This shouldn't have happened and these Analyses cannot be migrated. Please add an organization or delete the orphaned analyses and try again.")
+
+    for analysis in Analysis.objects.all().iterator():
+        analysis.access_level_instance = AccessLevelInstance.objects.get(organization=analysis.organization, depth=1)
+        analysis.save()
 
 
 class Migration(migrations.Migration):
@@ -32,14 +65,12 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='analysis',
             name='access_level_instance',
-            field=models.ForeignKey(default=1, on_delete=django.db.models.deletion.CASCADE, related_name='analyses', to='orgs.accesslevelinstance'),
-            preserve_default=False,
+            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, related_name='analyses', to='orgs.accesslevelinstance'),
         ),
         migrations.AddField(
             model_name='property',
             name='access_level_instance',
-            field=models.ForeignKey(default=1, on_delete=django.db.models.deletion.CASCADE, related_name='properties', to='orgs.accesslevelinstance'),
-            preserve_default=False,
+            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, related_name='properties', to='orgs.accesslevelinstance'),
         ),
         migrations.AddField(
             model_name='propertystate',
@@ -54,8 +85,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='taxlot',
             name='access_level_instance',
-            field=models.ForeignKey(default=1, on_delete=django.db.models.deletion.CASCADE, related_name='taxlots', to='orgs.accesslevelinstance'),
-            preserve_default=False,
+            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, related_name='taxlots', to='orgs.accesslevelinstance'),
         ),
         migrations.AddField(
             model_name='taxlotstate',
@@ -86,5 +116,32 @@ class Migration(migrations.Migration):
                 ('goal', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='seed.goal')),
                 ('property', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='seed.property')),
             ],
+        ),
+        migrations.RunPython(
+            code=assign_properties_to_root_access_level,
+            reverse_code=migrations.RunPython.noop,
+        ),
+        migrations.RunPython(
+            code=assign_taxlots_to_root_access_level,
+            reverse_code=migrations.RunPython.noop,
+        ),
+        migrations.RunPython(
+            code=assign_analyses_to_root_access_level,
+            reverse_code=migrations.RunPython.noop,
+        ),
+        migrations.AlterField(
+            model_name='property',
+            name='access_level_instance',
+            field=models.ForeignKey(null=False, on_delete=django.db.models.deletion.CASCADE, related_name='properties', to='orgs.accesslevelinstance'),
+        ),
+        migrations.AlterField(
+            model_name='taxlot',
+            name='access_level_instance',
+            field=models.ForeignKey(null=False, on_delete=django.db.models.deletion.CASCADE, related_name='taxlots', to='orgs.accesslevelinstance'),
+        ),
+        migrations.AlterField(
+            model_name='analysis',
+            name='access_level_instance',
+            field=models.ForeignKey(null=False, on_delete=django.db.models.deletion.CASCADE, related_name='analyses', to='orgs.accesslevelinstance'),
         ),
     ]
