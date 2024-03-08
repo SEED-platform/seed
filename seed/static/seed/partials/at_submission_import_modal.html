@@ -1,0 +1,30 @@
+<div class="modal-header" >
+    <h4 class="modal-title" translate>Import Audit Template Submission Data</h4>
+</div>
+
+<div class="modal-body no_bottom_padding">
+    <div style="padding-bottom: 20px;">
+        Update inventory with Audit Template Submissions for City {$ org.audit_template_city_id $}
+    </div>
+
+    <div class="progress_bar_container" ng-show="status.in_progress">
+        <div class="progress_bar_copy_top">Progress</div>
+        <uib-progressbar class="progress-striped active" value="status.progress" type="success"></uib-progressbar>
+        <div class="progress_bar_copy_bottom">{$ status.progress | number:0 $}% {$:: 'Complete' | translate $} {$ status.status_message ? ': ' + status.status_message : '' $}</div>
+    </div>
+    <div ng-show="status.complete">
+        <div>
+            Properties updates: {$ status.result.success $} 
+        </div>
+        <div>
+            Properties failed to update: {$ status.result.failure $}
+        </div>
+    </div>
+</div>
+
+<div class="modal-footer">
+    <button type="button" class="btn btn-default" ng-show="!status.complete" ng-click="close()" translate>Cancel</button>
+    <button type="submit" class="btn btn-primary" ng-show="!status.complete" ng-click="get_submissions()">FETCH</button>
+    <button type="button" class="btn btn-primary" ng-show="status.complete" ng-click="close()">Close</button>
+
+</div>

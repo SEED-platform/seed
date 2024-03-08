@@ -628,6 +628,30 @@ class atsub(TestCase):
         assert self.view1.state.extra_data
         assert self.view1.state.audit_template_building_id == '1182'
 
+    def test_atsubs_view(self):
 
+        self.view1.state.address_line_1 = 'old address 1'
+        self.view1.state.save()
+
+        assert self.view1.state.address_line_1 == 'old address 1'
+        assert self.view2.state.address_line_1 == 'old address 2'
+        assert self.view3.state.address_line_1 == 'old address 3'
+        assert self.view4.state.address_line_1 == 'old address 4'
+
+        url = reverse('api:v3:audit_template-batch-get-city-submission-xml') + '?organization_id=%s' % self.org.id
+        params = {'city_id': self.org.audit_template_city_id}
+        response = self.client.put(
+            url,
+            params,
+            content_type='application/json'
+            )
+
+        # assert something for the response
+        for view in [self.view1, self.view2, self.view3, self.view4]:
+            view.refresh_from_db()
+        assert self.view1.state.address_line_1 == 'ABC Street'
+        assert self.view2.state.address_line_1 == 'old address 2'
+        assert self.view3.state.address_line_1 == 'old address 3'
+        assert self.view4.state.address_line_1 == 'old address 4'
 
 

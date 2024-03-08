@@ -37,6 +37,7 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.analysis',
   'BE.seed.controller.analysis_details',
   'BE.seed.controller.analysis_run',
+  'BE.seed.controller.at_submission_import_modal',
   'BE.seed.controller.column_mapping_profile_modal',
   'BE.seed.controller.column_mappings',
   'BE.seed.controller.column_settings',

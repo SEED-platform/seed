@@ -118,7 +118,7 @@
           <h3 translate>Audit Template Organization Token</h3>
           <form class="form-horizontal" role="form">
             <div class="form-group">
-              <div class="col-sm-4">
+              <div class="col-sm-5">
                 <p translate="AT_TOKEN_TEXT" translate-values="{ link: org.at_host_url }"></p>
                 <input type="text" class="form-control" ng-model="org.at_organization_token" ng-disabled="::!auth.requires_owner" />
               </div>
@@ -132,7 +132,7 @@
           <h3 translate>Audit Template Email</h3>
           <form class="form-horizontal" role="form">
             <div class="form-group">
-              <div class="col-sm-4">
+              <div class="col-sm-5">
                 <p translate="AT_EMAIL_TEXT" translate-values="{ link: org.at_host_url }"></p>
                 <input type="text" class="form-control" ng-model="org.audit_template_user" ng-disabled="::!auth.requires_owner" />
               </div>
@@ -146,7 +146,7 @@
           <h3 translate>Audit Template Password</h3>
           <form class="form-horizontal" role="form">
             <div class="form-group">
-              <div class="col-sm-4">
+              <div class="col-sm-5">
                 <p translate="AT_PASS_TEXT" translate-values="{ link: org.at_host_url }"></p>
                 <div class="input-group">
                   <input type="{$ secrets['pwd'] $}" class="form-control" ng-model="org.audit_template_password" ng-disabled="::!auth.requires_owner" />
@@ -165,7 +165,7 @@
           <h3 translate>Audit Template Report Type</h3>
           <form class="form-horizontal" role="form">
             <div class="form-group">
-              <div class="col-sm-4">
+              <div class="col-sm-5">
                 <p translate>SEED Properties will be exported to Audit Template with the Organization Report Type</p>
                 <select ng-model="org.audit_template_report_type" ng-disabled="::!auth.requires_owner" class="settings-dropdown">
                   <option ng-repeat="report_type in audit_template_report_types" value="{$ report_type $}">{$ report_type$}</option>
@@ -181,7 +181,7 @@
           <h3 translate>Audit Template City ID</h3>
           <form class="form-horizontal" role="form">
             <div class="form-group">
-              <div class="col-sm-4">
+              <div class="col-sm-5">
                 <p translate>SEED will import submission data for the following City ID</p>
                 <div class="input-group">
                   <input type="number" class="form-control" ng-model="org.audit_template_city_id" ng-disabled="::!auth.requires_owner" />
@@ -189,6 +189,55 @@
                     <button class="btn btn-default" type="button" ng-click="get_city_submission_data()">FETCH</button>
                   </span>
                 </div>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div class="section_header_container has_btm_margin">
+        <div class="section_header">
+          <h2><i class="fa-solid fa-clock"></i> Schedule Weekly Update </h2>
+        </div>
+      </div>
+
+
+      <div class="section_content_container">
+        <div class="section_content with_padding">
+          <form class="form-horizontal" role="form">
+            <div class="form-group">
+              <div class="col-sm-5">
+                <div>
+                  If you would like to automatically update inventory with Audit Template submission data for the selected Audit Template City ID, configure fields below.
+                </div>
+                <div style="margin: 10px; color: gray;"><i>timezone: {$ timezone $}</i></div>
+                <table class="time-table">
+                  <thead>
+                    <tr>
+                      <th>Day</th>
+                      <th style="white-space: nowrap; padding: 10px;">Hour (24)</th>
+                      <th></th>
+                      <th style="padding: 10px;">Minute</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <th style="padding-right: 10px;">
+                        <select ng-model="at_conf.at_update_day" ng-options="day for day in days_of_week" ng-disabled="::!auth.requires_owner" class="settings-dropdown" style="width: 100px;">
+                          <option value="">Select a day</option>
+                        </select>
+                      </th>
+                      <th>
+                        <input type="number" class="form-control" id="ah_update_at_hourx" ng-model="at_conf.update_at_hour" ng-disabled="::!auth.requires_owner" min="0" max="23" />
+                      </th>
+                      <th> : </th>
+                      <th>
+                        <input type="number" class="form-control" id="ah_update_at_minutex" ng-model="at_conf.update_at_minute"ng-disabled="::!auth.requires_owner" min="0" max="59" />
+                      </th>
+                    </tr>
+                  </tbody>
+                </table>
+                <button type="button" class="btn btn-info" ng-click="reset_at_update()">{$:: 'Reset' | translate$}</button>
               </div>
             </div>
           </form>

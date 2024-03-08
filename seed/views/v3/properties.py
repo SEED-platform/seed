@@ -1535,6 +1535,8 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
 
         if finish:
             progress_data.finish_with_success(results)
+        else:
+            return results
 
     def _update_with_building_sync(self, the_file, file_type, organization_id, cycle_id, view_id, at_updated=False):
         try:

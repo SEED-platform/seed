@@ -9,7 +9,6 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
   'organization_payload',
   'auth_payload',
   'analyses_service',
-  'audit_template_service',
   'organization_service',
   'salesforce_mapping_service',
   'salesforce_config_service',
@@ -29,7 +28,6 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
     organization_payload,
     auth_payload,
     analyses_service,
-    audit_template_service,
     organization_service,
     salesforce_mapping_service,
     salesforce_config_service,
@@ -481,14 +479,22 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
     /*
     * fetch Audit Template city submission data 
     */ 
-   $scope.get_city_submission_data = () => {
-    console.log('TESTING')
-    console.log($scope.org.audit_template_city_id)
-    audit_template_service.batch_get_city_submission_xml_and_update($scope.org.id, $scope.org.audit_template_city_id)
-      .then(response => {
-        console.log('>>>', response)
-      })
-   }
+    $scope.get_city_submission_data = () => {
+      $uibModal.open({
+        templateUrl: `${urls.static_url}seed/partials/at_submission_import_modal.html`,
+        controller: 'at_submission_import_modal_controller',
+        backdrop: 'static',
+        resolve: {
+        org: () => $scope.org
+        }
+      });
+    }
+
+    $scope.days_of_week = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Satruday']
+    $scope.at_conf = {}
+    $scope.reset_at_update = () => $scope.at_conf = {}
+
+
 
     $scope.audit_template_report_types = [
       'ASHRAE Level 2 Report',

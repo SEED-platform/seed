@@ -269,12 +269,13 @@ class AuditTemplateViewSet(viewsets.ViewSet, OrgMixin):
                 'success': False,
                 'message': 'City ID argument required'
             }, status=400)
-        
-        at = AuditTemplate(self.get_organization(request))
-        at.batch_get_city_submission_xml
-        
 
-        return JsonResponse({
-            'success': True,
-            'message': 'test success'
-        })
+        at = AuditTemplate(self.get_organization(request))
+        progress_data, message = at.batch_get_city_submission_xml()
+
+        if progress_data is None:
+            return JsonResponse({
+                'success': False,
+                'message': message or 'Unexpected Error'
+            }, status=400)
+        return JsonResponse(progress_data)
