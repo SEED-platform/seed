@@ -29,9 +29,10 @@ def assign_users_to_root_access_level(apps, schema_editor):
     OrganizationUser = apps.get_model('orgs', 'OrganizationUser')
     AccessLevelInstance = apps.get_model('orgs', 'AccessLevelInstance')
 
+    root_alis = {ali.organization_id: ali for ali in AccessLevelInstance.objects.filter(depth=1)}
+
     for user in OrganizationUser.objects.all():
-        root = AccessLevelInstance.objects.get(organization=user.organization, depth=1)
-        user.access_level_instance = root
+        user.access_level_instance = root_alis[user.organization_id]
         user.save()
 
 
