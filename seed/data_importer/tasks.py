@@ -1452,6 +1452,9 @@ def _save_raw_data_create_tasks(file_pk, progress_key):
             _log.debug(f'Error reading XLSX file: {str(e)}')
             return progress_data.finish_with_error('Failed to parse XLSX file. Please review your import file - all headers should be present and non-numeric.')
 
+    if any('{' in header or '}' in header for header in parser.headers):
+        return progress_data.finish_with_error('Failed to import. Please review your import file - headers cannot contain braces: { }')
+
     import_file.has_generated_headers = False
     if hasattr(parser, 'has_generated_headers'):
         import_file.has_generated_headers = parser.has_generated_headers
