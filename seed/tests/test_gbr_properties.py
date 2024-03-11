@@ -5,7 +5,7 @@ from django.urls import reverse_lazy
 from seed.tests.util import AccessLevelBaseTestCase, DeleteModelsTestCase
 
 
-class GBRPropertiesViewPermisionsTests(AccessLevelBaseTestCase, DeleteModelsTestCase):
+class GBRPropertiesViewPermissionsTests(AccessLevelBaseTestCase, DeleteModelsTestCase):
     def setUp(self):
         super().setUp()
         self.root_property = self.property_factory.get_property(access_level_instance=self.root_level_instance)

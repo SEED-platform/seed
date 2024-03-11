@@ -67,7 +67,7 @@ class DataView(models.Model):
         #                       'Average': 123,
         #                       'Count': 123,
         #                       'Maximum': 123,
-        #                       'Minumum': 123,
+        #                       'Minimum': 123,
         #                       'Sum': 123,
         #                       'views_by_default_field: {
         #                           view.state.default_field || state.id: 123,
@@ -223,7 +223,7 @@ class DataView(models.Model):
             return round(type_to_aggregate[aggregation], 2)
 
     def _evaluate_derived_column(self, states, aggregation, column):
-        # to evluate a derived_column: DerivedColumn.evaluate(propertyState)
+        # to evaluate a derived_column: DerivedColumn.evaluate(propertyState)
         values = []
 
         for state in states:

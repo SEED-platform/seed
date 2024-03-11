@@ -155,7 +155,7 @@ class ColumnListProfilesView(DeleteModelsTestCase):
         self.assertEqual(result['data']['columns'][0]['pinned'], True)
 
 
-class ColumnsListProfileViewPermisionsTests(AccessLevelBaseTestCase, DeleteModelsTestCase):
+class ColumnsListProfileViewPermissionsTests(AccessLevelBaseTestCase, DeleteModelsTestCase):
     def setUp(self):
         super().setUp()
 

@@ -160,7 +160,7 @@ class TestTaxLotProperty(DataMappingBaseTestCase):
 
         self.assertTrue(notes_string in data[1])
 
-    def test_xlxs_export(self):
+    def test_xlsx_export(self):
         for i in range(50):
             p = self.property_view_factory.get_property_view()
             self.properties.append(p.id)

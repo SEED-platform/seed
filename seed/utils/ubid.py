@@ -165,7 +165,7 @@ def merge_ubid_models(old_state_ids, new_state_id, StateClass):
 
 
 def find_preferred(old_states, new_state):
-    # The preferred ubid will be the first prefered ubid founnd on a list of states.
+    # The preferred ubid will be the first preferred ubid found on a list of states.
     # Where new_state is priority, and old_states[0] is least priority
     ordered_states = list(old_states)
     ordered_states.insert(0, new_state)

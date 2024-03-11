@@ -1105,7 +1105,7 @@
     "The password link was invalid, possibly because it has already been used.  Please request a new password reset.": "The password link was invalid, possibly because it has already been used.  Please request a new password reset.",
     "There is also a link to the SEED-Platform Users forum, where you can connect with other users.": "There is also a link to the SEED-Platform Users forum, where you can connect with other users.",
     "There was an error loading the page": "There was an error loading the page",
-    "This action replaces any of your current columns with the comma-delmited columns you provided. Would you like to continue?": "This action replaces any of your current columns with the comma-delmited columns you provided. Would you like to continue?",
+    "This action replaces any of your current columns with the comma-delimited columns you provided. Would you like to continue?": "This action replaces any of your current columns with the comma-delimited columns you provided. Would you like to continue?",
     "This action updates properties within the selected cycle with data from the Audit Template account associated with this organization. Only Properties with Audit Template Building IDs corresponding to those saved in Audit Template will be updated.": "This action updates properties within the selected cycle with data from the Audit Template account associated with this organization. Only Properties with Audit Template Building IDs corresponding to those saved in Audit Template will be updated.",
     "This cycle name is already taken.": "This cycle name is already taken.",
     "This email link is invalid.": "This email link is invalid.",

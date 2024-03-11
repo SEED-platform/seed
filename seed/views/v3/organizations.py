@@ -842,7 +842,9 @@ class OrganizationViewSet(viewsets.ViewSet):
 
         return result
 
-    def get_raw_report_data(self, organization_id, access_level_instance, cycles, x_var, y_var, addtional_columns=[]):
+    def get_raw_report_data(self, organization_id, access_level_instance, cycles, x_var, y_var, additional_columns=None):
+        if additional_columns is None:
+            additional_columns = []
         all_property_views = PropertyView.objects.select_related(
             'property', 'state'
         ).filter(
@@ -861,7 +863,7 @@ class OrganizationViewSet(viewsets.ViewSet):
             for property_view in property_views:
                 property_pk = property_view.property_id
                 count_total.append(property_pk)
-                result = self.get_data(property_view, x_var, y_var, addtional_columns)
+                result = self.get_data(property_view, x_var, y_var, additional_columns)
                 if result:
                     result['yr_e'] = cycle.end.strftime('%Y')
                     de_unitted_result = apply_display_unit_preferences(organization, result)

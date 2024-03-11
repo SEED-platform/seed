@@ -30,7 +30,7 @@ class GoalSerializer(serializers.ModelSerializer):
             raise ValidationError('Cycles must be unique.')
 
         if baseline_cycle.end > current_cycle.end:
-            raise ValidationError('Baseline Cycle must preceed Current Cycle.')
+            raise ValidationError('Baseline Cycle must precede Current Cycle.')
 
         if not all([
             getattr(baseline_cycle, 'organization', None) == organization,
@@ -39,7 +39,7 @@ class GoalSerializer(serializers.ModelSerializer):
         ]):
             raise ValidationError('Organization mismatch.')
 
-        # non Null columns must be uniuqe
+        # non Null columns must be unique
         eui_columns = [data.get('eui_column1'), data.get('eui_column2'), data.get('eui_column3')]
         unique_columns = {column for column in eui_columns if column is not None}
         if len(unique_columns) < len([column for column in eui_columns if column is not None]):

@@ -3427,7 +3427,7 @@ msgstr "Il y a aussi un lien vers le forum SEED-Platform Users, où vous pouvez 
 msgid "There was an error loading the page"
 msgstr "Une erreur s'est produite lors du chargement de la page"
 
-msgid "This action replaces any of your current columns with the comma-delmited columns you provided. Would you like to continue?"
+msgid "This action replaces any of your current columns with the comma-delimited columns you provided. Would you like to continue?"
 msgstr "Cette action remplace n'importe laquelle de vos colonnes actuelles par les colonnes délimitées par des virgules que vous avez fournies. Voulez-vous continuer?"
 
 msgid "This action updates properties within the selected cycle with data from the Audit Template account associated with this organization. Only Properties with Audit Template Building IDs corresponding to those saved in Audit Template will be updated."

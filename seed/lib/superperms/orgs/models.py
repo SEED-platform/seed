@@ -463,7 +463,7 @@ def _assert_alns_are_valid(org):
     alns = org.access_level_names
 
     if len(set(alns)) != len(alns):  # if not unique
-        raise ValueError("Organiation's access_level_names must be unique.")
+        raise ValueError("Organization's access_level_names must be unique.")
 
     columns_with_same_names = Column.objects.filter(organization=org, display_name__in=alns)
     if columns_with_same_names.count() > 0:

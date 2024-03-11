@@ -442,7 +442,7 @@ def filter_duplicate_states(unmatched_states, sub_progress_key):
         elif len(present_ali_ids) == 1:
             canonical_state = states_with_ali[0]
 
-        # More than one ali was speficied! all are of these duplicates are invalid
+        # More than one ali was specified! all are of these duplicates are invalid
         else:
             errors_state_ids += [s["id"] for s in states]
             continue

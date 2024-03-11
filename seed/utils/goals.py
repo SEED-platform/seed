@@ -11,9 +11,9 @@ from django.db.models.functions import Cast, Coalesce
 
 def get_eui_expression(goal):
     """
-    goal.eui_columnx is designed to only accept columns of data_type=eui (columns like site_eui, or source_eui)
+    goal.eui_column is designed to only accept columns of data_type=eui (columns like site_eui, or source_eui)
     however the user may choose to use an extra_data column that has been typed on the frontend as 'eui'.
-    This frontend change does not effect the db, and extra_data fields are stored as JSON objects
+    This frontend change does not affect the db, and extra_data fields are stored as JSON objects
     extra_data = {Name: value} where value can be any type.
 
     This function dynamically finds the highest priority eui column and sets its type to Integer
