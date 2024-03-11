@@ -18,6 +18,7 @@ from seed.utils.api_schema import swagger_auto_schema_org_query_param
 
 
 class DataLoggerViewSet(viewsets.ViewSet, OrgMixin):
+    model = DataLogger
     raise_exception = True
 
     @swagger_auto_schema_org_query_param
@@ -146,3 +147,30 @@ class DataLoggerViewSet(viewsets.ViewSet, OrgMixin):
         return JsonResponse({
             'status': 'success',
         }, status=status.HTTP_204_NO_CONTENT)
+
+    @swagger_auto_schema_org_query_param
+    @ajax_request_class
+    def update(self, request, pk):
+        org_id = self.get_organization(request)
+        data = request.data
+
+        # get data logger
+        data_logger_query = DataLogger.objects.filter(property__organization_id=org_id, pk=pk)
+        if data_logger_query.count() != 1:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'No such DataLogger found.'
+            }, status=status.HTTP_404_NOT_FOUND)
+
+        # update
+        try:
+            data_logger_query.update(**data)
+        except IntegrityError:
+            return JsonResponse({
+                'status': 'error',
+                'message': f'There is already a datalogger with name "{data["display_name"]}".'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        return JsonResponse({
+            'status': 'success',
+        }, status=status.HTTP_200_OK)

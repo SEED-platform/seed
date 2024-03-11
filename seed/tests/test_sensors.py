@@ -289,3 +289,44 @@ class PropertySensorViewTests(TestCase):
         assert DataLogger.objects.count() == 1
         assert Sensor.objects.count() == 1
         assert SensorReading.objects.count() == 1
+
+    def test_update_data_logger(self):
+        # Set Up
+        dl = DataLogger.objects.create(**{
+            "property_id": self.property_1.id,
+            "display_name": "moo",
+        })
+
+        # Action
+        url = reverse('api:v3:data_logger-detail', kwargs={'pk': dl.id})
+        url += f'?organization_id={self.org.pk}'
+        params = json.dumps({
+            "display_name": "quack"
+        })
+        result = self.client.put(url, params, content_type="application/json")
+
+        # Assert
+        assert result.status_code == 200
+        assert DataLogger.objects.first().display_name == "quack"
+
+    def test_update_data_logger_duplicate_display_name(self):
+        # Set Up
+        DataLogger.objects.create(**{
+            "property_id": self.property_1.id,
+            "display_name": "quack",
+        })
+        dl = DataLogger.objects.create(**{
+            "property_id": self.property_1.id,
+            "display_name": "moo",
+        })
+
+        # Action
+        url = reverse('api:v3:data_logger-detail', kwargs={'pk': dl.id})
+        url += f'?organization_id={self.org.pk}'
+        params = json.dumps({
+            "display_name": "quack"
+        })
+        result = self.client.put(url, params, content_type="application/json")
+
+        # Assert
+        assert result.status_code == 400
