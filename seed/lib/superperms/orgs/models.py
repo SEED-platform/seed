@@ -410,7 +410,6 @@ class Organization(models.Model):
             raise UserWarning('Cannot create child at an unnamed level')
 
         new_access_level_instance = parent.add_child(organization=self, name=name)
-        new_access_level_instance.save()
 
         return new_access_level_instance
 
@@ -498,7 +497,7 @@ def post_save_organization(sender, instance, created, **kwargs):
     Give new Orgs a Accountability Hierarchy root.
     """
     if created:
-        if instance.access_level_names == []:
+        if not instance.access_level_names:
             instance.access_level_names = [instance.name]
 
         root = AccessLevelInstance.add_root(organization=instance, name="root")

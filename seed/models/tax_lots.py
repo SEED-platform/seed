@@ -59,16 +59,17 @@ class TaxLot(models.Model):
 
 @receiver(pre_save, sender=TaxLot)
 def set_default_access_level_instance(sender, instance, **kwargs):
-    """If ALI not set, put this TaxLot   as the root."""
+    """If ALI not set, put this TaxLot as the root."""
     if instance.access_level_instance_id is None:
         root = AccessLevelInstance.objects.get(organization_id=instance.organization_id, depth=1)
         instance.access_level_instance_id = root.id
 
     bad_taxlotproperty = TaxLotProperty.objects \
         .filter(taxlot_view__taxlot=instance) \
-        .exclude(property_view__property__access_level_instance=instance.access_level_instance)
-    if bad_taxlotproperty.count() > 0:
-        raise ValidationError("cannot change property's ALI to Ali different that related properties.")
+        .exclude(property_view__property__access_level_instance=instance.access_level_instance) \
+        .exists()
+    if bad_taxlotproperty:
+        raise ValidationError("cannot change property's ALI to AlI different than related properties.")
 
 
 class TaxLotState(models.Model):

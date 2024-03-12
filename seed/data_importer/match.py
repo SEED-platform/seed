@@ -409,7 +409,7 @@ def filter_duplicate_states(unmatched_states, sub_progress_key):
     flag the corresponding -States with DATA_STATE_DELETE.
 
     :param unmatched_states: QS
-    :return: canonical_state_ids, duplicate_count
+    :return: canonical_state_ids, errors_state_ids, duplicate_count
     """
     sub_progress_data = update_sub_progress_total(4, sub_progress_key)
     sub_progress_data.step('Matching Data (1/6): Filtering Duplicate States')

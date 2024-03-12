@@ -506,7 +506,7 @@ def _process_ali_data(model, raw_data, import_file_ali, ah_mappings):
     org_alns = model.organization.access_level_names
 
     # if org only has root, just assign it to root, they won't have any ali info
-    if AccessLevelInstance.objects.filter(organization=model.organization).count() <= 1:
+    if AccessLevelInstance.objects.filter(organization=model.organization).count() == 1:
         model.raw_access_level_instance = model.organization.root
         return
 

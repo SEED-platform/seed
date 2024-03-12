@@ -143,9 +143,10 @@ def set_default_access_level_instance(sender, instance, **kwargs):
 
     bad_taxlotproperty = TaxLotProperty.objects \
         .filter(property_view__property=instance) \
-        .exclude(taxlot_view__taxlot__access_level_instance=instance.access_level_instance)
-    if bad_taxlotproperty.count() > 0:
-        raise ValidationError("cannot change property's ALI to Ali different that related taxlots.")
+        .exclude(taxlot_view__taxlot__access_level_instance=instance.access_level_instance) \
+        .exists()
+    if bad_taxlotproperty:
+        raise ValidationError("cannot change property's ALI to AlI different than related taxlots.")
 
 
 @receiver(post_save, sender=Property)

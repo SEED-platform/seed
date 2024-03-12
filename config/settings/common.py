@@ -149,7 +149,6 @@ COMPRESS_FILTERS = {
     ],
     'js': [
         'compressor.filters.jsmin.JSMinFilter',
-        'compressor.filters.yuglify.YUglifyJSFilter',
     ]
 }
 STATICFILES_DIRS = [

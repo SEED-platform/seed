@@ -225,7 +225,8 @@ def _validate_permissions(perm_name, request, requires_org):
 def has_perm_class(perm_name: str, requires_org: bool = True):
     """Proceed if user from request has ``perm_name``."""
     def decorator(fn):
-        if 'self' in signature(fn).parameters:
+        params = list(signature(fn).parameters)
+        if params and params[0] == 'self':
             @wraps(fn)
             def _wrapped(self, request, *args, **kwargs):
                 return _validate_permissions(perm_name, request, requires_org) or fn(self, request, *args, **kwargs)
@@ -384,7 +385,8 @@ def has_hierarchy_access(
 ):
     """Must be called after has_perm_class"""
     def decorator(fn):
-        if 'self' in signature(fn).parameters:
+        params = list(signature(fn).parameters)
+        if params and params[0] == 'self':
             @wraps(fn)
             def _wrapped(self, request, *args, **kwargs):
                 return assert_hierarchy_access(
