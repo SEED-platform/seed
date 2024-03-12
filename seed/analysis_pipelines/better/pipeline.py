@@ -562,7 +562,7 @@ def _process_results(self, analysis_id):
         for data_path in column_data_paths:
             value = get_json_path(data_path.json_path, raw_better_results)
             if value is not None:
-                # some of the ee_measures return an empty string, which should be falsey
+                # some of the ee_measures return an empty string, which should be falsy
                 if 'ee_measures' in data_path.json_path and value == '':
                     value = 0.0 * data_path.unit_multiplier  # to be consistent
                 else:

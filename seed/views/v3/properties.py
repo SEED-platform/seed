@@ -1614,7 +1614,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             blob = ContentFile(property['xml'], name=f'at_{property["audit_template_building_id"]}_{formatted_time}.xml')
             response = self._update_with_building_sync(blob, 1, org_id, cycle_id, property['property_view'], property['updated_at'])
             response = json.loads(response.content)
-            results['success' if response['success'] else 'faulure'] += 1
+            results['success' if response['success'] else 'failure'] += 1
 
             progress_data.step('Updating Properties...')
 

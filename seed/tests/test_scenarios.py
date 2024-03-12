@@ -109,7 +109,7 @@ class TestScenarios(AccessLevelBaseTestCase, DeleteModelsTestCase):
         measures = property_state.measure_set.all()
         property_measures = PropertyMeasure.objects.filter(measure__in=measures)
 
-        # assign property_measures to scneario
+        # assign property_measures to scenario
         for pm in property_measures:
             pm.scenario_set.set([scenario])
 

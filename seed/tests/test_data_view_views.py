@@ -229,7 +229,7 @@ class DataViewViewTests(TestCase):
         expected = 'Data Validation Error'
         self.assertEqual(expected, data['message'])
 
-    def test_data_view_retreive_endpoint(self):
+    def test_data_view_retrieve_endpoint(self):
         response = self.client.get(
             reverse('api:v3:data_views-detail', args=[self.data_view1.id]) + '?organization_id=' + str(self.org.id)
         )
@@ -326,7 +326,7 @@ class DataViewEvaluationTests(AccessLevelBaseTestCase, TestCase):
         ureg.eui = ureg.eui = ureg.kilobritish_thermal_unit / ureg.ft**2 / ureg.year
 
         # generate property states that are either 'Office' or 'Retail' for filter groups
-        # generate property views that are attatched to a property and a property-state
+        # generate property views that are attached to a property and a property-state
         self.state10 = self.property_state_factory.get_property_state(property_name='state10', property_type='office', site_eui=10 * ureg.eui, total_ghg_emissions=100, extra_data={'extra_col': 1000})
         self.state11 = self.property_state_factory.get_property_state(property_name='state11', property_type='office', site_eui=11 * ureg.eui, total_ghg_emissions=110, extra_data={'extra_col': 1100})
         self.state12 = self.property_state_factory.get_property_state(property_name='state12', property_type='retail', site_eui=12 * ureg.eui, total_ghg_emissions=120, extra_data={'extra_col': 1200})
@@ -851,7 +851,7 @@ class DataViewInventoryTests(TestCase):
         ureg.eui = ureg.eui = ureg.kilobritish_thermal_unit / ureg.ft**2 / ureg.year
 
         # generate property states that are either 'Office' or 'Retail' for filter groups
-        # generate property views that are attatched to a property and a property-state
+        # generate property views that are attached to a property and a property-state
         self.state10 = self.property_state_factory.get_property_state(property_name='state10', property_type='office', site_eui=10 * ureg.eui, total_ghg_emissions=100, extra_data={'extra_col': 1000})
         self.state11 = self.property_state_factory.get_property_state(property_name='state11', property_type='office', site_eui=11 * ureg.eui, total_ghg_emissions=110, extra_data={'extra_col': 1100})
         self.state12 = self.property_state_factory.get_property_state(property_name='state12', property_type='retail', site_eui=12 * ureg.eui, total_ghg_emissions=120, extra_data={'extra_col': 1200})
@@ -1008,7 +1008,7 @@ class DataViewInventoryTests(TestCase):
         self.assertEqual(sorted(exp), sorted(list(data[str(self.fg_exc.id)].values())))
 
 
-class DataViewViewSetPermisionsTests(AccessLevelBaseTestCase):
+class DataViewViewSetPermissionsTests(AccessLevelBaseTestCase):
     def setUp(self):
         super().setUp()
         self.cycle = FakeCycleFactory(organization=self.org, user=self.root_owner_user).get_cycle(name="Cycle A", end=datetime(2022, 1, 1, tzinfo=pytz.UTC))

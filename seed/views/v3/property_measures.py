@@ -168,7 +168,7 @@ class PropertyMeasureViewSet(SEEDOrgNoPatchNoCreateModelViewSet):
         try:
             # property_state = PropertyView.objects.get(pk=property_pk).state
             # Can't use property_view to find measures on historical property_states.
-            # When New scenarios and measures are created the pervious property_state looses its connection
+            # When New scenarios and measures are created the previous property_state looses its connection
             # to a property_view.
             property_measure = PropertyMeasure.objects.get(pk=pk, scenario=scenario_pk)
         except (PropertyMeasure.DoesNotExist, PropertyView.DoesNotExist):

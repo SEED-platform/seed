@@ -369,7 +369,7 @@ class DefaultColumnsViewTests(DeleteModelsTestCase):
         self.assertEqual(result['message'], 'Cannot find column in org=%s with pk=-999' % self.org.id)
 
 
-class ColumnsViewPermisionsTests(AccessLevelBaseTestCase, DeleteModelsTestCase):
+class ColumnsViewPermissionsTests(AccessLevelBaseTestCase, DeleteModelsTestCase):
     def setUp(self):
         super().setUp()
         self.column = Column.objects.create(column_name='test', organization=self.org, table_name='PropertyState', is_extra_data=True)

@@ -530,7 +530,7 @@ class TestMappingExampleData(DataMappingBaseTestCase):
 
 # For some reason if you comment out the next two test cases (TestMappingPropertiesOnly and
 # TestMappingTaxLotsOnly), the test_views_matching.py file will fail. I cannot figure out
-# what is causing this and it is really annoying. Inherenting from DataMappingBaseTestCase
+# what is causing this and it is really annoying. Inheriting from DataMappingBaseTestCase
 # will delete all the model data upon completion, Maybe because FAKE_MAPPINGS
 # is not a copy, rather a pointer?
 

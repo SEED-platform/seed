@@ -261,7 +261,7 @@ class TestMapping(DataMappingBaseTestCase):
         self.assertAlmostEqual(state.gross_floor_area, (100 * ureg('m**2')).to('ft**2'))
 
 
-class TestMappingAcccessLevelInstance(DataMappingBaseTestCase):
+class TestMappingAccessLevelInstance(DataMappingBaseTestCase):
     def setUp(self):
         selfvars = self.set_up(ASSESSED_RAW)
         self.user, self.org, self.import_file, self.import_record, self.cycle = selfvars

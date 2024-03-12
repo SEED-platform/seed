@@ -111,7 +111,7 @@ class GBRPropertyViewSet(SEEDOrgCreateUpdateModelViewSet):
         if not (user_ali == property_ali or property_ali.is_descendant_of(user_ali)):
             return JsonResponse({
                 'success': False,
-                'message': "no accces to this access_level_instance"
+                'message': "no access to this access_level_instance"
             }, status=status.HTTP_403_FORBIDDEN)
 
         # save property

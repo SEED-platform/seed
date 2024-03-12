@@ -157,7 +157,7 @@ class ColumnMappingProfileViewSet(OrgMixin, ViewSet):
     @action(detail=True, methods=['GET'])
     def csv(self, request, pk=None):
         """Export a column list profile in a CSV format. This format is supported in the py-seed library when setting up
-        new mappings programatically."""
+        new mappings programmatically."""
         response = HttpResponse(content_type='text/csv')
         response['Content-Disposition'] = f'attachment; filename="column_mapping_profile_{pk}.csv"'
 

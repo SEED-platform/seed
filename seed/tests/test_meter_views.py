@@ -244,7 +244,7 @@ class TestMetersPermissions(AccessLevelBaseTestCase, DeleteModelsTestCase):
     def test_get_meters_delete_permissions(self):
         meter_url = reverse('api:v3:property-meters-detail', kwargs={'property_pk': self.property_view.id, 'pk': self.meter.id}) + "?organization_id=" + str(self.org.id)
 
-        # child user cannot delte meters in root
+        # child user cannot delete meters in root
         self.login_as_child_member()
         response = self.client.delete(meter_url)
         assert response.status_code == 404
@@ -254,7 +254,7 @@ class TestMetersPermissions(AccessLevelBaseTestCase, DeleteModelsTestCase):
         response = self.client.delete(meter_url)
         assert response.status_code == 204
 
-    def test_create_meter_permisions(self):
+    def test_create_meter_permissions(self):
         url = reverse('api:v3:property-meters-list', kwargs={'property_pk': self.property_view.id}) + "?organization_id=" + str(self.org.id)
         payload = {'type': 'Electric', 'source': 'Manual Entry', 'source_id': '1234567890'}
 
@@ -268,7 +268,7 @@ class TestMetersPermissions(AccessLevelBaseTestCase, DeleteModelsTestCase):
         response = self.client.post(url, data=json.dumps(payload), content_type='application/json')
         assert response.status_code == 404
 
-    def test_update_meter_permisions(self):
+    def test_update_meter_permissions(self):
         url = reverse('api:v3:property-meters-detail', kwargs={'property_pk': self.property_view.id, 'pk': self.meter.id}) + "?organization_id=" + str(self.org.id)
         payload = {'type': 'Electric', 'source': 'Manual Entry', 'source_id': 'boo'}
 

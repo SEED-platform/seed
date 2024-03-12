@@ -126,7 +126,7 @@ class TestOrganizationViews(AccessLevelBaseTestCase):
         )
         assert raw_result.status_code == 400
 
-    def test_edit_access_level_names_column_name_colision(self):
+    def test_edit_access_level_names_column_name_collision(self):
         url = reverse_lazy('api:v3:organization-access_levels-access-level-names', args=[self.org.id])
         raw_result = self.client.post(
             url,
