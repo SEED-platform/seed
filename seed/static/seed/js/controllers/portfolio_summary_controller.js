@@ -8,6 +8,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
     '$state',
     '$stateParams',
     '$uibModal',
+    '$window',
     'urls',
     'ah_service',
     'inventory_service',
@@ -27,6 +28,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
       $state,
       $stateParams,
       $uibModal,
+      $window,
       urls,
       ah_service,
       inventory_service,
@@ -214,8 +216,8 @@ angular.module('BE.seed.controller.portfolio_summary', [])
             properties = result1.results;
             // if result0 returns fewer properties than result1, use result1 for ui-grid config
             if (result1.pagination.num_pages > $scope.inventory_pagination.num_pages) {
-              baseline_first = !baseline_first
-              $scope.inventory_pagination = result1.pagination
+              baseline_first = !baseline_first;
+              $scope.inventory_pagination = result1.pagination;
             }
             combined_result[cycle_priority[1].id] = properties;
             get_all_labels();
@@ -302,7 +304,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
           const labels = _.filter(current_labels, (label) => !_.isEmpty(label.is_applied));
 
           // load saved label filter
-          const ids = inventory_service.loadSelectedLabels(localStorageLabelKey);
+          // const ids = inventory_service.loadSelectedLabels(localStorageLabelKey);
           // $scope.selected_labels = _.filter(labels, (label) => _.includes(ids, label.id));
 
           if (key === 'baseline') {
@@ -415,10 +417,12 @@ angular.module('BE.seed.controller.portfolio_summary', [])
         // labels are related to property views, but cross cycles displays based on property
         // create a lookup between property_view.id to property.id
         $scope.property_lookup = {};
-        flat_properties.forEach((p) => $scope.property_lookup[p.property_view_id] = p.id);
+        for (const p of flat_properties) {
+          $scope.property_lookup[p.property_view_id] = p.id;
+        }
         const unique_ids = [...new Set(flat_properties.map((property) => property.id))];
         const combined_properties = [];
-        unique_ids.forEach((id) => {
+        for (const id of unique_ids) {
           // find matching properties
           const baseline = baseline_properties.find((p) => p.id === id) || {};
           const current = current_properties.find((p) => p.id === id) || {};
@@ -438,17 +442,17 @@ angular.module('BE.seed.controller.portfolio_summary', [])
           property.sqft_change = percentage(property.current_sqft, property.baseline_sqft);
           set_eui_goal(baseline, current, property, preferred_columns);
           combined_properties.push(property);
-        });
+        }
         return combined_properties;
       };
 
       const combine_properties = (current, baseline) => {
-        // Given 2 properties, find non null values and combine into a single property (favoring baseline if baseline_first)
+        // Given 2 properties, find non-null values and combine into a single property (favoring baseline if baseline_first)
         const [a, b] = baseline_first ? [baseline, current] : [current, baseline];
-        const c = {...b};
-        Object.keys(a).forEach(key => {
+        const c = { ...b };
+        Object.keys(a).forEach((key) => {
           if (a[key] !== null && a[key] !== undefined) {
-            c[key] = a[key]
+            c[key] = a[key];
           }
         });
         return c;
@@ -670,6 +674,18 @@ angular.module('BE.seed.controller.portfolio_summary', [])
         });
       };
 
+      $scope.updateHeight = () => {
+        let height = 0;
+        for (const selector of ['.header', '.page_header_container', '.section_nav_container', '.goals-header-text', '.goal-actions-wrapper', '.goal-details-container', '#portfolio-summary-selection-wrapper', '.portfolio-summary-item-count']) {
+          const [element] = angular.element(selector);
+          height += element?.offsetHeight ?? 0;
+        }
+        angular.element('#portfolioSummary-gridOptions-wrapper').css('height', `calc(100vh - ${height}px)`);
+        $scope.summaryGridApi.core.handleWindowResize();
+        $scope.gridApi.core.handleWindowResize();
+        $scope.gridApi.grid.refresh();
+      };
+
       $scope.toggle_access_level_instances = () => {
         $scope.show_access_level_instances = !$scope.show_access_level_instances;
         $scope.gridOptions.columnDefs.forEach((col) => {
@@ -861,7 +877,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
           data: 'data',
           columnDefs: selected_columns(),
           enableFiltering: true,
-          enableHorizontalScrollbar: 1,
+          enableHorizontalScrollbar: uiGridConstants.scrollbars.WHEN_NEEDED,
           cellWidth: 200,
           enableGridMenu: true,
           exporterMenuCsv: false,
@@ -874,6 +890,14 @@ angular.module('BE.seed.controller.portfolio_summary', [])
           }],
           onRegisterApi: (gridApi) => {
             $scope.gridApi = gridApi;
+
+            _.delay($scope.updateHeight, 150);
+
+            const debouncedHeightUpdate = _.debounce($scope.updateHeight, 150);
+            angular.element($window).on('resize', debouncedHeightUpdate);
+            $scope.$on('$destroy', () => {
+              angular.element($window).off('resize', debouncedHeightUpdate);
+            });
 
             gridApi.core.on.sortChanged($scope, () => {
               spinner_utility.show();
@@ -939,14 +963,17 @@ angular.module('BE.seed.controller.portfolio_summary', [])
           {
             field: 'eui_change',
             displayName: 'EUI % Improvement',
-            cellClass: (grid, row, col, rowRenderIndex, colRenderIndex) => (row.entity.eui_change >= $scope.goal.target_percentage ? 'above-target' : 'below-target')
+            cellClass: (grid, row) => (row.entity.eui_change >= $scope.goal.target_percentage ? 'above-target' : 'below-target')
           }
         ];
         apply_defaults(baseline_cols, default_baseline, default_styles);
         apply_defaults(current_cols, default_current, default_styles);
         apply_defaults(calc_cols);
 
-        return [...baseline_cols, ...current_cols, ...calc_cols];
+        return [...baseline_cols, ...current_cols, ...calc_cols].map((col) => ({
+          ...col,
+          minWidth: 50
+        }));
       };
 
       const format_summary = (summary) => {
@@ -971,7 +998,13 @@ angular.module('BE.seed.controller.portfolio_summary', [])
         $scope.summaryGridOptions = {
           data: 'summary_data',
           columnDefs: summary_selected_columns(),
-          enableSorting: false
+          enableHorizontalScrollbar: uiGridConstants.scrollbars.WHEN_NEEDED,
+          enableVerticalScrollbar: uiGridConstants.scrollbars.NEVER,
+          enableSorting: false,
+          minRowsToShow: 1,
+          onRegisterApi: (gridApi) => {
+            $scope.summaryGridApi = gridApi;
+          }
         };
       };
     }]);
