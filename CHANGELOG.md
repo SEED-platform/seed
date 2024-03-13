@@ -1,3 +1,57 @@
+# SEED Version 2.22.0
+
+<!-- Release notes generated using configuration in .github/release.yml at develop -->
+
+## What's Changed
+### New Features 🎉
+* Support unicode characters by replacing unidecode with new normalize method by @nllong in https://github.com/SEED-platform/seed/pull/4484
+* Redis backend update by @axelstudios in https://github.com/SEED-platform/seed/pull/4376
+### Improvements 📈
+* Sort cycles by start_date on property insights page by @kflemin in https://github.com/SEED-platform/seed/pull/4441
+* Fixed FontAwesome v6.5 alignment by @axelstudios in https://github.com/SEED-platform/seed/pull/4444
+* Fixes text alignment following FontAwesome changes by @axelstudios in https://github.com/SEED-platform/seed/pull/4465
+* Sensor reading performance improvement by @axelstudios in https://github.com/SEED-platform/seed/pull/4464
+* Move program setup to modal on insights pages by @kflemin in https://github.com/SEED-platform/seed/pull/4468
+* Retrieve all map data at once by @haneslinger in https://github.com/SEED-platform/seed/pull/4469
+* Change unique name constraint on derived column so it's within inventory type by @haneslinger in https://github.com/SEED-platform/seed/pull/4472
+* Add JSON response to GET Audit Template submission by @kflemin in https://github.com/SEED-platform/seed/pull/4477
+* Labels: Added complex filtering logic by @ebeers-png in https://github.com/SEED-platform/seed/pull/4449
+### Maintenance 🧹
+* Update developer documentation dependencies by @nllong in https://github.com/SEED-platform/seed/pull/4485
+* Delete PropertyStateViewSet by @haneslinger in https://github.com/SEED-platform/seed/pull/4292
+### Bug Fixes 🐛
+* Display x-axis label for ranked distance to compliance by @kflemin in https://github.com/SEED-platform/seed/pull/4442
+* Fix multi-cycle test for new year by @perryr16 in https://github.com/SEED-platform/seed/pull/4459
+* Fix and optimize sensors by @haneslinger in https://github.com/SEED-platform/seed/pull/4461
+* Restore column filters when unpinning by @axelstudios in https://github.com/SEED-platform/seed/pull/4473
+* Fix importing diesel meter readings by @axelstudios in https://github.com/SEED-platform/seed/pull/4476
+* Add bulk meter reading error handling for duplicate date-pairs by @perryr16 in https://github.com/SEED-platform/seed/pull/4467
+* Allow omitted fields on the mapping page to be unfilled by @haneslinger in https://github.com/SEED-platform/seed/pull/4471
+* Default label to show in list by @haneslinger in https://github.com/SEED-platform/seed/pull/4448
+* Show spinner on label creation by @perryr16 in https://github.com/SEED-platform/seed/pull/4458
+* Catch invalid organization id preventing 500s by @perryr16 in https://github.com/SEED-platform/seed/pull/4475
+* Fix inventory list timing console errors by @perryr16 in https://github.com/SEED-platform/seed/pull/4478
+* Fix inventory list double refresh on load by @perryr16 in https://github.com/SEED-platform/seed/pull/4480
+* Apply GHG and GHGI unit versions to canonical columns by @perryr16 in https://github.com/SEED-platform/seed/pull/4462
+* Fix inventory loading if no previous sort settings exist in localStorage by @axelstudios in https://github.com/SEED-platform/seed/pull/4497
+* Fix simple modal service by @kflemin in https://github.com/SEED-platform/seed/pull/4505
+* Handle errors when filtering columns with special characters by @perryr16 in https://github.com/SEED-platform/seed/pull/4511
+* Fix program setup's new program button action by @perryr16 in https://github.com/SEED-platform/seed/pull/4499
+* Ignore duplicates when adding labels by @kflemin in https://github.com/SEED-platform/seed/pull/4523
+* Fix 403 error for viewer role by @kflemin in https://github.com/SEED-platform/seed/pull/4526
+* Inventory List - Ignore incomplete filters containing just an operator by @kflemin in https://github.com/SEED-platform/seed/pull/4527
+* Inventory Map - Fix positioning of the popup tooltip to be closer to the pin by @kflemin in https://github.com/SEED-platform/seed/pull/4528
+* Update error message on overlapping reading import by @perryr16 in https://github.com/SEED-platform/seed/pull/4533
+* Fix Redis compatibility with boto3 by @axelstudios in https://github.com/SEED-platform/seed/pull/4534
+* Reject import file if it contains braces by @perryr16 in https://github.com/SEED-platform/seed/pull/4537
+* Update default dates on data quality rules by @nllong in https://github.com/SEED-platform/seed/pull/4538
+* Apply unit conversion to extra data by @perryr16 in https://github.com/SEED-platform/seed/pull/4496
+* Fix unit conversion for non-numeric values by @perryr16 in https://github.com/SEED-platform/seed/pull/4555
+* Fix property insights categorical axis by @haneslinger in https://github.com/SEED-platform/seed/pull/4565
+
+
+**Full Changelog**: https://github.com/SEED-platform/seed/compare/v2.21.0...v2.22.0
+
 # SEED Version 2.21.0
 
 <!-- Release notes generated using configuration in .github/release.yml at develop -->
