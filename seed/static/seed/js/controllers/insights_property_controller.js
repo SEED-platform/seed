@@ -313,7 +313,7 @@ angular.module('BE.seed.controller.insights_property', []).controller('insights_
         item.x = _.find(prop, (v, k) => k.endsWith(`_${String($scope.configs.chart_xaxis)}`));
 
         // is x axis categorical?
-        if ($scope.x_categorical === false && Number.isNaN(item.x)) {
+        if ($scope.x_categorical === false && isNaN(item.x)) {
           $scope.x_categorical = true;
         }
 
