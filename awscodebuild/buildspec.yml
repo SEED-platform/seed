@@ -11,7 +11,7 @@ phases:
     commands:
       - echo Build started on `date`
       - echo Building the Docker image...
-      - make IMAGE_REPO_NAME="${IMAGE_REPO_NAME}" build
+      - make IMAGE_REPO_NAME="${IMAGE_REPO_NAME}" NGINX_LISTEN_OPTS="${NGINX_LISTEN_OPTS}" build
   post_build:
     commands:
       - echo Build completed on `date`
