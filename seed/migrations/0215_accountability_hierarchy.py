@@ -44,6 +44,17 @@ def assign_analyses_to_root_access_level(apps, schema_editor):
         analysis.save(update_fields=['access_level_instance'])
 
 
+@transaction.atomic
+def backfill_historical_notes(apps, schema_editor):
+    Property = apps.get_model('seed', 'Property')
+    HistoricalNote = apps.get_model('seed', 'HistoricalNote')
+
+    properties_ids = Property.objects.filter(historical_note__isnull=True).values_list('id', flat=True)
+
+    historical_notes_to_create = [HistoricalNote(property_id=property_id, text='') for property_id in properties_ids]
+    HistoricalNote.objects.bulk_create(historical_notes_to_create)
+
+
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -134,6 +145,9 @@ class Migration(migrations.Migration):
         migrations.RunPython(
             code=assign_analyses_to_root_access_level,
             reverse_code=migrations.RunPython.noop,
+        ),
+        migrations.RunPython(
+            code=backfill_historical_notes,
         ),
         migrations.AlterField(
             model_name='property',
