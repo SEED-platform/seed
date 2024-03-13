@@ -687,7 +687,6 @@ class DataViewEvaluationTests(TestCase):
         )
         data = json.loads(response.content)
         cycle5_data = data['data']['columns_by_id'][str(self.site_eui.id)]['filter_groups_by_id'][str(self.dc_filter_group.id)]['cycles_by_id'][str(self.cycle5.id)]
-        # breakpoint()
         self.assertIsNone(cycle5_data['Average'])
         self.assertEqual(0, cycle5_data['Count'])
         self.assertIsNone(cycle5_data['Minimum'])

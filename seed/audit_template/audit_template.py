@@ -13,11 +13,13 @@ import requests
 from celery import shared_task
 from django.conf import settings
 from django.db.models import Q
+from django.utils.timezone import get_current_timezone
 from lxml import etree
 from lxml.builder import ElementMaker
 from quantityfield.units import ureg
 from functools import wraps
 from dateutil import parser
+from django_celery_beat.models import CrontabSchedule, PeriodicTask
 
 from seed.building_sync import validation_client
 from seed.building_sync.mappings import BUILDINGSYNC_URI, NAMESPACES
@@ -27,6 +29,8 @@ from seed.models import PropertyView
 from seed.views.v3.properties import PropertyViewSet
 
 _log = logging.getLogger(__name__)
+
+AUTO_SYNC_NAME = "audit_template_sync_org-"
 
 def require_token(fn):
     """Decorator to get an AT api token"""
@@ -38,6 +42,56 @@ def require_token(fn):
                 return None, message 
         return fn(self, *args, **kwargs)
     return wrapper
+
+def schedule_sync(data, org_id):
+    timezone = get_current_timezone()
+
+    if 'update_at_hour' in data and 'update_at_minute' in data:
+        logging.error('>>> creating schedule')
+        # create crontab schedule
+        schedule, _ = CrontabSchedule.objects.get_or_create(
+            minute=data['update_at_minute'],
+            hour=data['update_at_hour'],
+            day_of_week='*',
+            day_of_month='*',
+            month_of_year='*',
+            timezone=timezone
+        )
+
+        # then schedule task (create/update with new crontab)
+        tasks = PeriodicTask.objects.filter(name=AUTO_SYNC_NAME + str(org_id))
+        if not tasks:
+            logging.error('>>> creating task %s', schedule)
+            PeriodicTask.objects.create(
+                crontab=schedule,
+                name=AUTO_SYNC_NAME + str(org_id),
+                task='seed.tasks.sync_audit_template',
+                args=json.dumps([org_id])
+            )
+        else:
+            task = tasks.first()
+            # update crontab (if changed)
+            task.crontab = schedule
+            task.save()
+
+            # Cleanup orphaned/unused crontab schedules
+            CrontabSchedule.objects.exclude(id__in=PeriodicTask.objects.values_list('crontab_id', flat=True)).delete()
+
+def toggle_audit_template_sync(audit_template_sync_enabled, org_id):
+    """ when audit_template_sync_enabled value is toggled, also toggle the auto sync
+        task status if it exists
+    """
+    tasks = PeriodicTask.objects.filter(name=AUTO_SYNC_NAME + str(org_id))
+    if tasks:
+        task = tasks.first()
+        task.enabled = bool(audit_template_sync_enabled)
+        task.save()
+        logging.error('>>> TOGGLE AT SYNC - task.enabled = %s', task.enabled)
+    else: 
+        logging.error('>>> TOGGLE AT SYNC - enabled = %s', audit_template_sync_enabled)
+
+
+
 
 class AuditTemplate(object):
 

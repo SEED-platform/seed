@@ -201,8 +201,22 @@
         </div>
       </div>
 
-
       <div class="section_content_container">
+        <div class="section_content with_padding">
+          <h3 translate>Enable Audit Template Auto Sync</h3>
+          <form class="form-horizontal" role="form">
+            <div class="form-group">
+              <div class="col-sm-4">
+                <input type="checkbox" class="form-control" style="width: 34px" ng-model="org.audit_template_sync_enabled"
+                  ng-disabled="::!auth.requires_owner" />
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+
+
+      <div class="section_content_container" ng-if="org.audit_template_sync_enabled">
         <div class="section_content with_padding">
           <form class="form-horizontal" role="form">
             <div class="form-group">
@@ -223,16 +237,17 @@
                   <tbody>
                     <tr>
                       <th style="padding-right: 10px;">
-                        <select ng-model="at_conf.at_update_day" ng-options="day for day in days_of_week" ng-disabled="::!auth.requires_owner" class="settings-dropdown" style="width: 100px;">
+                        <select ng-model="at_conf.update_at_day" ng-disabled="::!auth.requires_owner" class="settings-dropdown" style="width: 100px;">
                           <option value="">Select a day</option>
+                          <option ng-repeat="(idx, day) in days_of_week" ng-value="idx">{$ day[idx] $}</option>
                         </select>
                       </th>
                       <th>
-                        <input type="number" class="form-control" id="ah_update_at_hourx" ng-model="at_conf.update_at_hour" ng-disabled="::!auth.requires_owner" min="0" max="23" />
+                        <input type="number" class="form-control" id="ah_update_at_hour" ng-model="at_conf.update_at_hour" ng-disabled="::!auth.requires_owner" min="0" max="23" />
                       </th>
                       <th> : </th>
                       <th>
-                        <input type="number" class="form-control" id="ah_update_at_minutex" ng-model="at_conf.update_at_minute"ng-disabled="::!auth.requires_owner" min="0" max="59" />
+                        <input type="number" class="form-control" id="ah_update_at_minute" ng-model="at_conf.update_at_minute"ng-disabled="::!auth.requires_owner" min="0" max="59" />
                       </th>
                     </tr>
                   </tbody>

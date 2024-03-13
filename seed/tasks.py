@@ -444,6 +444,16 @@ def sync_salesforce(org_id):
         # send email with errors
         send_salesforce_error_log(org_id, messages)
 
+@shared_task
+def sync_audit_template(org_id):
+    org = Organization.objects.get(org_id)
+    # this is where you call 
+    # at = AuditTemplate(org_id)
+    # at.batch_get_city_submission_xml()
+    import logging
+    logging.error('>>> SYNC AUDIT TEMPLATE TASK - orgid %s', org.id)
+
+
 
 @shared_task
 def set_update_to_now(property_view_ids, taxlot_view_ids, progress_key):

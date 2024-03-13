@@ -549,8 +549,9 @@ class ExportToAuditTemplate(TestCase):
         self.assertEqual('4444', self.state4.audit_template_building_id)
 
 
-class atsub(TestCase):
-# class AuditTemplateSubmissionImport(TestCase):
+
+# CAN ONLY BE RUN WITH LIVE DATA
+class AuditTemplateSubmissionImport(TestCase):
 
     @classmethod
     def setUpClass(cls):
@@ -638,7 +639,7 @@ class atsub(TestCase):
         assert self.view3.state.address_line_1 == 'old address 3'
         assert self.view4.state.address_line_1 == 'old address 4'
 
-        url = reverse('api:v3:audit_template-batch-get-city-submission-xml') + '?organization_id=%s' % self.org.id
+        url = reverse('api:v3:audit_template-batch-get-city-submission-xml') + f'?organization_id={self.org.id}'
         params = {'city_id': self.org.audit_template_city_id}
         response = self.client.put(
             url,

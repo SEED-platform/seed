@@ -44,6 +44,7 @@ from .filter_group import *  # noqa
 from .events import *  # noqa
 from .ubid_models import *  # noqa
 from .uniformat import *  # noqa
+from .audit_template_configs import *  # noqa
 
 from .certification import (    # noqa
     GreenAssessment,

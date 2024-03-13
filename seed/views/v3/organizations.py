@@ -72,6 +72,7 @@ from seed.utils.organizations import (
 from seed.utils.properties import pair_unpair_property_taxlot
 from seed.utils.salesforce import toggle_salesforce_sync
 from seed.utils.users import get_js_role
+from seed.audit_template.audit_template import toggle_audit_template_sync
 
 _log = logging.getLogger(__name__)
 
@@ -151,6 +152,7 @@ def _dict_org(request, organizations):
             'at_host_url': settings.AUDIT_TEMPLATE_HOST,
             'audit_template_report_type': o.audit_template_report_type,
             'audit_template_city_id': o.audit_template_city_id,
+            'audit_template_sync_enabled': o.audit_template_sync_enabled,
             'salesforce_enabled': o.salesforce_enabled,
             'ubid_threshold': o.ubid_threshold,
             'inventory_count': o.property_set.count() + o.taxlot_set.count()
@@ -614,6 +616,12 @@ class OrganizationViewSet(viewsets.ViewSet):
         audit_template_city_id = posted_org.get('audit_template_city_id', False)
         if audit_template_city_id != org.audit_template_city_id:
             org.audit_template_city_id = audit_template_city_id
+
+        audit_template_sync_enabled = posted_org.get('audit_template_sync_enabled', False)
+        if audit_template_sync_enabled != org.audit_template_sync_enabled:
+            org.audit_template_sync_enabled = audit_template_sync_enabled
+            # if audit_template_sync_enabled was toggled, must start/stop auto sync functionality
+            toggle_audit_template_sync(audit_template_sync_enabled, org.id)
 
         salesforce_enabled = posted_org.get('salesforce_enabled', False)
         if salesforce_enabled != org.salesforce_enabled:
