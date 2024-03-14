@@ -5111,11 +5111,12 @@ ul.r-list {
 
 .portfolio-summary-wrapper {
   display: flex;
+  flex: 1;
   flex-direction: column;
 
   .goals-header-text {
-    padding: 10px;
-    padding-bottom: 0;
+    min-height: 30px;
+    padding: 10px 10px 0;
   }
 
   .goal-actions-wrapper {
@@ -5153,7 +5154,7 @@ ul.r-list {
   }
 
   #portfolio-summary-selection-wrapper {
-    margin: 10px 7px;
+    padding: 20px 24px 0;
     display: flex;
 
     #portfolio-summary-selections {
@@ -5193,8 +5194,12 @@ ul.r-list {
     #portfolio-summary {
       width: 100%;
       padding-bottom: 30px;
-      margin: 0 16px 10px;
       border-bottom: 1px solid rgb(199, 199, 199);
+
+      h3 {
+        margin: 0;
+        padding-bottom: 10px;
+      }
     }
   }
 
@@ -5204,7 +5209,9 @@ ul.r-list {
   }
 
   #portfolio-summary-grid {
-    margin: 0 24px;
+    display: flex;
+    flex: 1;
+    padding: 0 24px;
   }
 
   #portfolio-summary-grid,
@@ -5241,12 +5248,10 @@ ul.r-list {
       background: #ca8f8f;
     }
 
-    .portfolioSummary-gridOptions-wrapper {
-      height: calc(100vh - 490px);
-
-      .ui-grid {
-        height: 100%;
-      }
+    #portfolioSummary-gridOptions-wrapper {
+      display: flex;
+      overflow-x: hidden;
+      width: 100%;
     }
   }
 
@@ -5261,9 +5266,10 @@ ul.r-list {
   }
 
   .portfolio-summary-item-count {
+    height: 64px;
     margin: 0 24px;
-    margin-top: 2px;
 
+    align-items: center;
     justify-content: space-between;
     display: flex;
   }
@@ -5275,7 +5281,7 @@ ul.r-list {
     border-radius: 5px;
     background: rgb(241, 241, 241);
     width: fit-content;
-    margin: 0 0 16px 25px;
+    margin: 0 24px;
 
     .goal-details-column {
       .goal-detail {
@@ -5431,11 +5437,13 @@ tags-input .tags .tag-item {
 .cell-edit {
   cursor: copy;
 }
+
 .cell-dropdown-indicator {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-right: 3px;
+
   i {
     color: gray;
   }
@@ -5445,14 +5453,17 @@ tags-input .tags .tag-item {
   padding: 10px;
   color: #c24e00;
 }
+
 .confirm-label {
   padding-left: 5px;
   text-align: left;
 }
+
 .cell-pass {
   background-color: #d0e6d4;
   border-top: 1px solid #d4d4d4;
 }
+
 .cell-fail {
   background-color: #fefbd1;
   border-top: 1px solid #d4d4d4;
