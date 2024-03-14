@@ -8,8 +8,8 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('orgs', '0030_auto_20240313_0836'),
-        ('seed', '0214_delete_filtergroup_labels'),
+        ('orgs', '0031_org_audit_template_fields'),
+        ('seed', '0215_accountability_hierarchy'),
     ]
 
     operations = [
