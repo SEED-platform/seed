@@ -40,7 +40,14 @@ local_untracked.py file
 
 Version 2.22.0
 --------------
-- There are no special migrations needed for this version. Simply run `./manage.py migrate`.
+- Run ``./manage.py migrate``.
+- There is a Redis dependency update in this release that requires users and deployments to modify their settings' ``CACHES`` config.
+   #. Update your dependencies with pip install -r requirements/base.txt
+   #. Update the CACHES BACKEND property to django_redis.cache.RedisCache
+   #. Update the CACHES LOCATION property to match the redis-py native URL notation for connection strings, including the redis protocol and database number. e.g. redis://localhost:6379/1
+
+   Since the CELERY_BROKER_URL setting must also be in the same format, it may be helpful to configure that setting first and then reference it in the caches LOCATION parameter.
+- See the `PR for an example migration <https://github.com/SEED-platform/seed/pull/4376#issue-1972716522>`_.
 
 Version 2.21.0
 --------------
