@@ -41,23 +41,24 @@
         <option value="select_all" ng-disabled="selectedCount === inventory_pagination.total">{$:: 'Select All' | translate $} ({$ inventory_pagination.total $})</option>
         <option value="select_none" ng-disabled="selectedCount < 1">{$:: 'Select None' | translate $}</option>
         <optgroup label="{$:: 'Selected ' + (inventory_type === 'properties' ? 'Properties' : 'Taxlots') | translate $} ({$ selected_display $})">
-          <option value="open_merge_modal" ng-disabled="selectedParentCount < 2" translate>Merge</option>
-          <option value="open_delete_modal" ng-disabled="selectedCount === 0" translate>Delete</option>
-          <option value="open_export_modal" ng-disabled="selectedCount === 0" translate>Export</option>
-          <option value="open_export_to_audit_template_modal" ng-if="::inventory_type === 'properties'" ng-disabled="selectedCount === 0" translate>Export to Audit Template</option>
-          <option value="open_update_labels_modal" ng-disabled="selectedCount === 0" translate>Add/Remove Labels</option>
-          <option value="run_data_quality_check" ng-disabled="selectedCount === 0" translate>Data Quality Check</option>
-          <option value="open_postoffice_modal" ng-disabled="selectedCount === 0" translate>Email</option>
-          <option value="open_analyses_modal" ng-disabled="selectedCount === 0" translate>Run Analysis</option>
-          <option value="open_set_update_to_now_modal" ng-disabled="selectedCount === 0" translate>Set Update Time to Now</option>
-          <option value="open_geocode_modal" ng-disabled="selectedCount === 0" translate>Geocode</option>
-          <option value="open_ubid_decode_modal" ng-disabled="selectedCount === 0" translate>Decode UBID</option>
+          <option ng-show="menu.user.organization.user_role !== 'viewer'" value="open_merge_modal" ng-disabled="selectedParentCount < 2" translate>Merge</option>
+          <option ng-show="menu.user.organization.user_role !== 'viewer'" value="open_delete_modal" ng-disabled="selectedCount === 0" translate>Delete</option>
+          <option ng-show="menu.user.organization.user_role !== 'viewer'" value="open_export_modal" ng-disabled="selectedCount === 0" translate>Export</option>
+          <option ng-show="menu.user.organization.user_role !== 'viewer'"value="open_export_to_audit_template_modal" ng-if="::inventory_type === 'properties'" ng-disabled="selectedCount === 0" translate>Export to Audit Template</option>
+          <option ng-show="menu.user.organization.user_role !== 'viewer'" value="open_update_labels_modal" ng-disabled="selectedCount === 0" translate>Add/Remove Labels</option>
+          <option ng-show="menu.user.organization.user_role !== 'viewer'" value="run_data_quality_check" ng-disabled="selectedCount === 0" translate>Data Quality Check</option>
+          <option ng-show="menu.user.organization.user_role !== 'viewer'" value="open_postoffice_modal" ng-disabled="selectedCount === 0" translate>Email</option>
+          <option ng-show="menu.user.organization.user_role !== 'viewer'" value="open_analyses_modal" ng-disabled="selectedCount === 0" translate>Run Analysis</option>
+          <option ng-show="menu.user.organization.user_role !== 'viewer'" value="open_set_update_to_now_modal" ng-disabled="selectedCount === 0" translate>Set Update Time to Now</option>
+          <option ng-show="menu.user.organization.user_role !== 'viewer'" value="open_geocode_modal" ng-disabled="selectedCount === 0" translate>Geocode</option>
+          <option ng-show="menu.user.organization.user_role !== 'viewer'" value="open_ubid_decode_modal" ng-disabled="selectedCount === 0" translate>Decode UBID</option>
           <option value="open_ubid_jaccard_index_modal" ng-disabled="selectedCount > 2" translate>Compare UBIDs</option>
-          <option value="open_ubid_admin_modal" ng-disabled="selectedCount !== 1" translate>Add/Update UBID</option>
-          <option value="update_salesforce" ng-disabled="!organization.salesforce_enabled || selectedCount === 0" translate>Update Salesforce</option>
+          <option ng-show="menu.user.organization.user_role !== 'viewer'" value="open_ubid_admin_modal" ng-disabled="selectedCount !== 1" translate>Add/Update UBID</option>
+          <option ng-show="menu.user.organization.user_role !== 'viewer'" value="update_salesforce" ng-disabled="!organization.salesforce_enabled || selectedCount === 0" translate>Update Salesforce</option>
         </optgroup>
         <optgroup label="{$:: 'Options' | translate $}">
-          <option value="open_show_populated_columns_modal" ng-disabled="data.length === 0" translate>Only Show Populated Columns</option>
+          <option ng-show="menu.user.organization.user_role !== 'viewer'" value="open_show_populated_columns_modal" ng-if="menu.user.is_ali_root" ng-disabled="data.length === 0" translate>Only Show Populated Columns</option>
+          <option value="toggle_access_level_instances" ng-disabled="data.length === 0">{$ show_access_level_instances ? 'Hide' : 'Show' $} Access Level Names</option>
         </optgroup>
       </select>
     </div>
@@ -127,7 +128,7 @@
       <select class="form-control input-sm grow" ng-model="currentFilterGroupId" ng-change="check_for_filter_group_changes(currentFilterGroupId, {$currentFilterGroupId$})">
         <option ng-repeat="group in filterGroups track by group.id" value="{$ group.id $}">{$ group.name $}</option>
       </select>
-      <div class="btn-group">
+      <div class="btn-group" ng-if="menu.user.is_ali_root">
         <button
           class="btn btn-success"
           type="button"

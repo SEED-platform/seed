@@ -127,8 +127,8 @@ angular.module('BE.seed.controller.inventory_detail_sensors', []).controller('in
         enableHiding: false,
         cellTemplate:
           '<div style="display: flex; justify-content: space-around; align-content: center">' +
-          '<button type="button" class="btn-primary" style="border-radius: 4px;" ng-click="grid.appScope.open_sensors_upload_modal(row.entity)" translate>UPLOAD_SENSORS_BUTTON</button>' +
-          '<button type="button" class="btn-primary" style="border-radius: 4px;" ng-click="grid.appScope.open_sensor_readings_upload_modal(row.entity)" translate>UPLOAD_SENSOR_READINGS_BUTTON</button>' +
+          '<button type="button" ng-show="grid.appScope.menu.user.organization.user_role !== \'viewer\'" class="btn-primary" style="border-radius: 4px;" ng-click="grid.appScope.open_sensors_upload_modal(row.entity)" translate>UPLOAD_SENSORS_BUTTON</button>' +
+          '<button type="button" ng-show="grid.appScope.menu.user.organization.user_role !== \'viewer\'" class="btn-primary" style="border-radius: 4px;" ng-click="grid.appScope.open_sensor_readings_upload_modal(row.entity)" translate>UPLOAD_SENSOR_READINGS_BUTTON</button>' +
           '</div>',
         enableColumnMenu: false,
         enableColumnMoving: false,

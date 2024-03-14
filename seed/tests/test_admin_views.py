@@ -110,7 +110,8 @@ class AdminViewsTest(TestCase):
             'first_name': 'New',
             'last_name': 'User',
             'email': 'new_user@testserver',
-            'role_level': 'ROLE_MEMBER'
+            'role': 'member',
+            'access_level_instance_id': org.root.id,
         }
 
         res = self._post_json(self.add_user_url + f'?organization_id={org.pk}', data)
@@ -125,6 +126,23 @@ class AdminViewsTest(TestCase):
         self.assertTrue(self._is_org_owner(self.admin_user, org))
         self.assertEqual(Organization.objects.count(), 1)
 
+    def test_add_owner_existing_org_to_non_root(self):
+        org, _, _ = create_organization(self.admin_user, name='Existing Org')
+        org.access_level_names += ["2nd gen", "3rd_gen"]
+        org.save()
+        child = org.add_new_access_level_instance(org.root.id, "child")
+
+        data = {
+            'first_name': 'New',
+            'last_name': 'User',
+            'email': 'new_user@testserver',
+            'role': 'owner',
+            'access_level_instance_id': child.id,
+        }
+
+        res = self._post_json(self.add_user_url + f'?organization_id={org.pk}', data)
+        self.assertEqual(res.body['status'], 'error')
+
     def test_add_user_new_org(self):
         """
         Create a new user and a new org at the same time.
@@ -136,7 +154,6 @@ class AdminViewsTest(TestCase):
                 'organization_id': org.id,
                 'email': 'new_owner@testserver'}
         res = self._post_json(self.add_user_url, data)
-
         self.assertEqual(res.body['status'], 'success')
         user = User.objects.get(username=data['email'])
         self.assertEqual(user.email, data['email'])

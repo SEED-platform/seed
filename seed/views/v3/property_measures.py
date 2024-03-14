@@ -10,6 +10,10 @@ from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
 
 from seed.decorators import ajax_request_class
+from seed.lib.superperms.orgs.decorators import (
+    has_hierarchy_access,
+    has_perm_class
+)
 from seed.models import PropertyMeasure, PropertyView
 from seed.serializers.scenarios import PropertyMeasureSerializer
 from seed.utils.api import api_endpoint_class
@@ -34,6 +38,8 @@ class PropertyMeasureViewSet(SEEDOrgNoPatchNoCreateModelViewSet):
 
     @api_endpoint_class
     @ajax_request_class
+    @has_perm_class('can_view_data')
+    @has_hierarchy_access(property_view_id_kwarg="property_pk")
     def list(self, request, property_pk=None, scenario_pk=None):
         """
         Where property_pk is the associated PropertyView.id
@@ -60,6 +66,8 @@ class PropertyMeasureViewSet(SEEDOrgNoPatchNoCreateModelViewSet):
 
     @api_endpoint_class
     @ajax_request_class
+    @has_perm_class('can_view_data')
+    @has_hierarchy_access(property_view_id_kwarg="property_pk")
     def retrieve(self, request, property_pk=None, scenario_pk=None, pk=None):
         """
         Where property_pk is the associated PropertyView.id
@@ -102,6 +110,8 @@ class PropertyMeasureViewSet(SEEDOrgNoPatchNoCreateModelViewSet):
     )
     @api_endpoint_class
     @ajax_request_class
+    @has_perm_class('can_view_data')
+    @has_hierarchy_access(property_view_id_kwarg="property_pk")
     def update(self, request, property_pk=None, scenario_pk=None, pk=None):
         """
         Where property_pk is the associated PropertyView.id
@@ -152,11 +162,13 @@ class PropertyMeasureViewSet(SEEDOrgNoPatchNoCreateModelViewSet):
 
     @api_endpoint_class
     @ajax_request_class
+    @has_perm_class('can_view_data')
+    @has_hierarchy_access(property_view_id_kwarg="property_pk")
     def destroy(self, request, property_pk=None, scenario_pk=None, pk=None):
         try:
             # property_state = PropertyView.objects.get(pk=property_pk).state
             # Can't use property_view to find measures on historical property_states.
-            # When New scenarios and measures are created the pervious property_state looses its connection
+            # When New scenarios and measures are created the previous property_state looses its connection
             # to a property_view.
             property_measure = PropertyMeasure.objects.get(pk=pk, scenario=scenario_pk)
         except (PropertyMeasure.DoesNotExist, PropertyView.DoesNotExist):

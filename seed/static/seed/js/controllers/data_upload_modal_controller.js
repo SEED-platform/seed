@@ -32,9 +32,11 @@ angular.module('BE.seed.controller.data_upload_modal', []).controller('data_uplo
   'uploader_service',
   '$state',
   'audit_template_service',
+  'auth_service',
   'dataset_service',
   'mapping_service',
   'matching_service',
+  'organization_service',
   'inventory_service',
   'spinner_utility',
   'step',
@@ -54,9 +56,11 @@ angular.module('BE.seed.controller.data_upload_modal', []).controller('data_uplo
     uploader_service,
     $state,
     audit_template_service,
+    auth_service,
     dataset_service,
     mapping_service,
     matching_service,
+    organization_service,
     inventory_service,
     spinner_utility,
     step,
@@ -91,7 +95,18 @@ angular.module('BE.seed.controller.data_upload_modal', []).controller('data_uplo
      *  newly created data set
      * file: the file being upload file.filename is the file's name
      */
-    $scope.organization = organization;
+    $scope.organization = organization
+    // it would be better to resolve these from the calling controller, but
+    // this modal is multi-purpose and called from all kinds of places
+    // get full organization payload (to get inventory count)
+    organization_service.get_organization(organization.id).then((data) => {
+      $scope.organization = data.organization;
+    });
+    // get auth (to display column settings link)
+    auth_service.is_authorized(organization.id, ['requires_viewer', 'requires_owner']).then((data) => {
+      $scope.auth = data.auth;
+    });
+
     $scope.dataset = {
       name: '',
       disabled() {
@@ -374,8 +389,13 @@ angular.module('BE.seed.controller.data_upload_modal', []).controller('data_uplo
           $scope.uploader.progress = (25 * progress.loaded) / progress.total;
           break;
 
+        case 'ali_upload_complete':
+          // access level instances file upload complete
+          save_access_level_instances_data(file.stored_filename, file.organization_id);
+          break;
+
         case 'upload_complete':
-          var current_step = $scope.step.number;
+          const current_step = $scope.step.number;
           $scope.uploader.status_message = 'upload complete';
           $scope.dataset.filename = file.filename;
           $scope.source_type = file.source_type;
@@ -637,9 +657,34 @@ angular.module('BE.seed.controller.data_upload_modal', []).controller('data_uplo
     };
 
     /**
+     * save_access_level_instances_data: saves Access Level Instances data
+     * @param {string} filename - the name of the import file
+     * @param organization_id
+     *
+     */
+    const save_access_level_instances_data = (filename, organization_id) => {
+      $scope.uploader.status_message = 'saving data';
+      $scope.uploader.progress = 0;
+      uploader_service.save_access_level_instance_data(filename, organization_id).then((data) => {
+        const progress = _.clamp(data.progress, 0, 100);
+        uploader_service.check_progress_loop(data.progress_key, progress, 1 - (progress / 100), (progress_data) => {
+          $scope.uploader.status_message = 'saving complete';
+          $scope.uploader.progress = 100;
+          $scope.access_level_issues = progress_data.message;
+          $scope.step.number = 21;
+        }, (data) => {
+          $log.error(data.message);
+          if (_.has(data, 'stacktrace')) $log.error(data.stacktrace);
+          $scope.step_12_error_message = data.data ? data.data.message : data.message;
+          $scope.step.number = 12;
+        }, $scope.uploader);
+      });
+    };
+
+    /**
      * save_raw_assessed_data: saves Assessed data
      *
-     * @param {string} file_id: the id of the import file
+     * @param {string} file_id - the id of the import file
      * @param cycle_id
      * @param is_meter_data
      * @param multiple_cycle_upload
@@ -721,10 +766,14 @@ angular.module('BE.seed.controller.data_upload_modal', []).controller('data_uplo
                 $scope.property_initial_incoming = result_data.properties.initial_incoming;
                 $scope.property_duplicates_against_existing = result_data.properties.duplicates_against_existing;
                 $scope.property_duplicates_within_file = result_data.properties.duplicates_within_file;
+                $scope.property_duplicates_within_file_errors = result_data.properties.duplicates_within_file_errors;
                 $scope.property_merges_against_existing = result_data.properties.merges_against_existing;
+                $scope.property_merges_against_existing_errors = result_data.properties.merges_against_existing_errors;
                 $scope.property_merges_between_existing = result_data.properties.merges_between_existing;
                 $scope.property_merges_within_file = result_data.properties.merges_within_file;
+                $scope.property_merges_within_file_errors = result_data.properties.merges_within_file_errors;
                 $scope.property_new = result_data.properties.new;
+                $scope.property_new_errors = result_data.properties.new_errors;
 
                 $scope.properties_geocoded_high_confidence = result_data.properties.geocoded_high_confidence;
                 $scope.properties_geocoded_low_confidence = result_data.properties.geocoded_low_confidence;
@@ -734,10 +783,14 @@ angular.module('BE.seed.controller.data_upload_modal', []).controller('data_uplo
                 $scope.tax_lot_initial_incoming = result_data.tax_lots.initial_incoming;
                 $scope.tax_lot_duplicates_against_existing = result_data.tax_lots.duplicates_against_existing;
                 $scope.tax_lot_duplicates_within_file = result_data.tax_lots.duplicates_within_file;
+                $scope.tax_lot_duplicates_within_file_errors = result_data.tax_lots.duplicates_within_file_errors;
                 $scope.tax_lot_merges_against_existing = result_data.tax_lots.merges_against_existing;
+                $scope.tax_lot_merges_against_existing_errors = result_data.tax_lots.merges_against_existing_errors;
                 $scope.tax_lot_merges_between_existing = result_data.tax_lots.merges_between_existing;
                 $scope.tax_lot_merges_within_file = result_data.tax_lots.merges_within_file;
+                $scope.tax_lot_merges_within_file_errors = result_data.tax_lots.merges_within_file_errors;
                 $scope.tax_lot_new = result_data.tax_lots.new;
+                $scope.tax_lot_new_errors = result_data.tax_lots.new_errors;
 
                 $scope.tax_lots_geocoded_high_confidence = result_data.tax_lots.geocoded_high_confidence;
                 $scope.tax_lots_geocoded_low_confidence = result_data.tax_lots.geocoded_low_confidence;
@@ -864,6 +917,15 @@ angular.module('BE.seed.controller.data_upload_modal', []).controller('data_uplo
         }
       }
       saveAs(new Blob([data.join('\r\n')], { type: 'text/csv' }), 'import_issues.csv');
+    };
+
+    $scope.export_access_level_issues = (issues) => {
+      const data = ['Instance Name,Message'];
+      angular.forEach(issues, (value, key) => {
+        data.push(`"${key}","${value.message}"`);
+      });
+
+      saveAs(new Blob([data.join('\r\n')], { type: 'text/csv' }), 'access_level_instance_issues.csv');
     };
 
     $scope.export_meter_data = (results, new_file_name) => {

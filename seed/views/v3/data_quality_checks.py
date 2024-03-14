@@ -16,6 +16,7 @@ from seed.data_importer.tasks import do_checks
 from seed.decorators import ajax_request_class
 from seed.lib.mcm.cleaners import normalize_unicode_and_characters
 from seed.lib.superperms.orgs.decorators import has_perm_class
+from seed.lib.superperms.orgs.models import AccessLevelInstance
 from seed.models import PropertyView, TaxLotView
 from seed.models.data_quality import DataQualityCheck
 from seed.utils.api import OrgMixin, api_endpoint_class
@@ -78,14 +79,19 @@ class DataQualityCheckViewSet(viewsets.ViewSet, OrgMixin):
         body = request.data
         property_view_ids = body['property_view_ids']
         taxlot_view_ids = body['taxlot_view_ids']
+        access_level_instance = AccessLevelInstance.objects.get(pk=self.request.access_level_instance_id)
 
         property_state_ids = PropertyView.objects.filter(
             id__in=property_view_ids,
-            property__organization_id=organization_id
+            property__organization_id=organization_id,
+            property__access_level_instance__lft__gte=access_level_instance.lft,
+            property__access_level_instance__rgt__lte=access_level_instance.rgt,
         ).values_list('state_id', flat=True)
         taxlot_state_ids = TaxLotView.objects.filter(
             id__in=taxlot_view_ids,
-            taxlot__organization_id=organization_id
+            taxlot__organization_id=organization_id,
+            taxlot__access_level_instance__lft__gte=access_level_instance.lft,
+            taxlot__access_level_instance__rgt__lte=access_level_instance.rgt,
         ).values_list('state_id', flat=True)
 
         # For now, organization_id is the only key currently used to identify DataQualityChecks

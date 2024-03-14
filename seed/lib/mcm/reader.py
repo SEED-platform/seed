@@ -400,7 +400,7 @@ class ExcelParser(object):
 
         :param sheet: xlrd Sheet
         :param header_row: the row index to start with
-        :returns: Generator yeilding a row as Dict
+        :returns: Generator yielding a row as Dict
         """
 
         # save off the headers into a member variable. Only do this once. If XLSDictReader is

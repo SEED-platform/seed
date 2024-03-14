@@ -230,7 +230,7 @@ class TestXMLHelpers(TestCase):
         # tree should remain valid as well after inserting
         self.xmlschema.validate(etree.tostring(self.tree).decode())
 
-    def test_update_tree_changes_text_on_nonexisting_element(self):
+    def test_update_tree_changes_text_on_nonexistent_element(self):
         # -- Setup
         # auc:PremisesName does not exist in the tree
         xpath = '/'.join([

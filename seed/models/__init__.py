@@ -44,6 +44,8 @@ from .filter_group import *  # noqa
 from .events import *  # noqa
 from .ubid_models import *  # noqa
 from .uniformat import *  # noqa
+from .goals import * # noqa
+from .goal_notes import * # noqa
 
 from .certification import (    # noqa
     GreenAssessment,

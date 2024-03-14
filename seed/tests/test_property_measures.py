@@ -15,7 +15,7 @@ from seed.test_helpers.fake import (
     FakePropertyStateFactory,
     FakePropertyViewFactory
 )
-from seed.tests.util import DeleteModelsTestCase
+from seed.tests.util import AccessLevelBaseTestCase, DeleteModelsTestCase
 from seed.utils.organizations import create_organization
 
 
@@ -78,7 +78,7 @@ class TestPropertyMeasures(DeleteModelsTestCase):
         url = reverse_lazy(
             'api:v3:property-measures-list',
             args=[property_view.id, 1234567]
-        )
+        ) + f"?organization_id={self.org.id}"
         response = self.client.get(url, **self.headers)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()['status'], 'success')
@@ -88,7 +88,7 @@ class TestPropertyMeasures(DeleteModelsTestCase):
         url = reverse_lazy(
             'api:v3:property-measures-list',
             args=[property_view.id, scenario0.id]
-        )
+        ) + f"?organization_id={self.org.id}"
         response = self.client.get(url, **self.headers)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()['status'], 'success')
@@ -100,7 +100,7 @@ class TestPropertyMeasures(DeleteModelsTestCase):
         url = reverse_lazy(
             'api:v3:property-measures-list',
             args=[property_view.id, scenario1.id]
-        )
+        ) + f"?organization_id={self.org.id}"
         response = self.client.get(url, **self.headers)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()['status'], 'success')
@@ -112,7 +112,7 @@ class TestPropertyMeasures(DeleteModelsTestCase):
         url = reverse_lazy(
             'api:v3:property-measures-detail',
             args=[property_view.id, scenario1.id, property_measure2.id]
-        )
+        ) + f"?organization_id={self.org.id}"
         response = self.client.get(url, **self.headers)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()['status'], 'success')
@@ -121,7 +121,7 @@ class TestPropertyMeasures(DeleteModelsTestCase):
         url = reverse_lazy(
             'api:v3:property-measures-detail',
             args=[property_view.id, scenario1.id, 1234]
-        )
+        ) + f"?organization_id={self.org.id}"
         response = self.client.get(url, **self.headers)
         self.assertEqual(response.status_code, 404)
         self.assertEqual(response.json()['status'], 'error')
@@ -158,7 +158,7 @@ class TestPropertyMeasures(DeleteModelsTestCase):
         url = reverse_lazy(
             'api:v3:property-measures-detail',
             args=[property_view.id, scenario0.id, property_measure1.id]
-        )
+        ) + f"?organization_id={self.org.id}"
 
         response = self.client.put(
             url,
@@ -202,7 +202,7 @@ class TestPropertyMeasures(DeleteModelsTestCase):
         url = reverse_lazy(
             'api:v3:property-measures-detail',
             args=[property_view.id, scenario0.id, property_measure0.id]
-        )
+        ) + f"?organization_id={self.org.id}"
 
         response = self.client.put(
             url,
@@ -221,7 +221,7 @@ class TestPropertyMeasures(DeleteModelsTestCase):
         url = reverse_lazy(
             'api:v3:property-measures-detail',
             args=[property_view.id, scenario0.id, 99999]
-        )
+        ) + f"?organization_id={self.org.id}"
 
         response = self.client.put(
             url,
@@ -236,7 +236,7 @@ class TestPropertyMeasures(DeleteModelsTestCase):
         url = reverse_lazy(
             'api:v3:property-measures-detail',
             args=[9999, scenario0.id, property_measure0.id]
-        )
+        ) + f"?organization_id={self.org.id}"
 
         response = self.client.put(
             url,
@@ -246,7 +246,7 @@ class TestPropertyMeasures(DeleteModelsTestCase):
         )
         self.assertEqual(response.status_code, 404)
         self.assertEqual(response.json()['status'], 'error')
-        self.assertEqual(response.json()['message'], 'No Property Measure found with given pks')
+        self.assertEqual(response.json()['message'], 'No such resource.')
 
     def test_delete_property_measure(self):
         """
@@ -272,7 +272,10 @@ class TestPropertyMeasures(DeleteModelsTestCase):
         self.assertEqual(PropertyMeasure.objects.count(), 2)
 
         response = self.client.delete(
-            reverse_lazy('api:v3:property-measures-detail', args=[property_view.id, scenario.id, property_measure0.id]),
+            reverse_lazy(
+                'api:v3:property-measures-detail',
+                args=[property_view.id, scenario.id, property_measure0.id]
+            ) + f"?organization_id={self.org.id}",
             **self.headers
         )
         self.assertEqual(response.status_code, 200)
@@ -281,9 +284,91 @@ class TestPropertyMeasures(DeleteModelsTestCase):
         self.assertEqual(PropertyMeasure.objects.count(), 1)
 
         response = self.client.delete(
-            reverse_lazy('api:v3:property-measures-detail', args=[property_view.id, scenario.id, 9999]),
+            reverse_lazy(
+                'api:v3:property-measures-detail', args=[property_view.id, scenario.id, 9999]
+            ) + f"?organization_id={self.org.id}",
             **self.headers
         )
         self.assertEqual(response.status_code, 404)
         self.assertEqual(response.json()['status'], 'error')
         self.assertEqual(response.json()['message'], 'No Property Measure found with given pks')
+
+
+class TestPropertyMeasuresPermissions(AccessLevelBaseTestCase):
+    def setUp(self):
+        super().setUp()
+        self.property_view = self.property_view_factory.get_property_view()
+        self.property_state = self.property_view.state
+        self.scenario = Scenario.objects.create(property_state=self.property_state, name='scenario')
+        self.measures = Measure.objects.all()
+        self.property_measure = PropertyMeasure.objects.create(
+            measure=self.measures[5],
+            property_state=self.property_state,
+            description="Property Measure"
+        )
+        self.property_measure.scenario_set.add(self.scenario.id)
+
+    def test_measures_list(self):
+        url = reverse_lazy(
+            'api:v3:property-measures-list',
+            args=[self.property_view.id, self.scenario.id]
+        ) + f"?organization_id={self.org.id}"
+
+        # child member cannot
+        self.login_as_child_member()
+        resp = self.client.get(url, content_type='application/json')
+        assert resp.status_code == 404
+
+        # root member can
+        self.login_as_root_member()
+        resp = self.client.get(url, content_type='application/json')
+        assert resp.status_code == 200
+
+    def test_measures_get(self):
+        url = reverse_lazy(
+            'api:v3:property-measures-detail',
+            args=[self.property_view.id, self.scenario.id, self.property_measure.id]
+        ) + f"?organization_id={self.org.id}"
+
+        # child member cannot
+        self.login_as_child_member()
+        resp = self.client.get(url, content_type='application/json')
+        assert resp.status_code == 404
+
+        # root member can
+        self.login_as_root_member()
+        resp = self.client.get(url, content_type='application/json')
+        assert resp.status_code == 200
+
+    def test_measures_edit(self):
+        url = reverse_lazy(
+            'api:v3:property-measures-detail',
+            args=[self.property_view.id, self.scenario.id, self.property_measure.id]
+        ) + f"?organization_id={self.org.id}"
+        body = json.dumps({'description': 'updated desc', 'implementation_status': 7})
+
+        # child member cannot
+        self.login_as_child_member()
+        resp = self.client.put(url, body, content_type='application/json')
+        assert resp.status_code == 404
+
+        # root member can
+        self.login_as_root_member()
+        resp = self.client.put(url, body, content_type='application/json')
+        assert resp.status_code == 200
+
+    def test_measures_delete(self):
+        url = reverse_lazy(
+            'api:v3:property-measures-detail',
+            args=[self.property_view.id, self.scenario.id, self.property_measure.id]
+        ) + f"?organization_id={self.org.id}"
+
+        # child member cannot
+        self.login_as_child_member()
+        resp = self.client.delete(url, content_type='application/json')
+        assert resp.status_code == 404
+
+        # root member can
+        self.login_as_root_member()
+        resp = self.client.delete(url, content_type='application/json')
+        assert resp.status_code == 200

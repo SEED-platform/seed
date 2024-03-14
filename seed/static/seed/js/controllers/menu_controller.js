@@ -163,11 +163,10 @@ angular.module('BE.seed.controller.menu', []).controller('menu_controller', [
      * sets the users primary organization, reloads/refreshed the page
      * @param {obj} org
      */
-    $scope.set_user_org = (org) => {
+    $scope.set_user_org = async (org) => {
       $scope.mouseout_org();
-      user_service.set_organization(org);
+      await user_service.set_organization(org);
       $scope.menu.user.organization = org;
-      console.log($scope.menu.user.organization);
       $state.reload();
       init();
     };
@@ -240,6 +239,9 @@ angular.module('BE.seed.controller.menu', []).controller('menu_controller', [
             $scope.menu.user.organizations = data.organizations;
             // get the default org for the user
             $scope.menu.user.organization = _.find(data.organizations, { id: _.toInteger(user_service.get_organization().id) });
+            $scope.menu.user.access_level_instance_name = user_service.get_access_level_instance().name;
+            $scope.menu.user.is_ali_root = user_service.get_access_level_instance().is_ali_root;
+            $scope.menu.user.is_ali_leaf = user_service.get_access_level_instance().is_ali_leaf;
             set_auth($scope.menu.user.organization.id);
           })
           .catch((error) => {

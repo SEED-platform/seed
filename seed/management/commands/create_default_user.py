@@ -73,7 +73,7 @@ class Command(BaseCommand):
             self.stdout.write(
                 'Org <%s> already exists, adding user' % options['organization'], ending='\n'
             )
-            org.add_member(u, ROLE_OWNER)
+            org.add_member(u, org.root.id, ROLE_OWNER)
         else:
             self.stdout.write(
                 'Creating org <%s> ...' % options['organization'],

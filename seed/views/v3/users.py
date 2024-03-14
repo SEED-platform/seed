@@ -9,6 +9,7 @@ import logging
 from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth.tokens import default_token_generator
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
+from django.db import IntegrityError
 from django.http import JsonResponse
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import serializers, status, viewsets
@@ -21,6 +22,7 @@ from seed.lib.superperms.orgs.decorators import PERMS, has_perm_class
 from seed.lib.superperms.orgs.models import (
     ROLE_MEMBER,
     ROLE_OWNER,
+    AccessLevelInstance,
     Organization,
     OrganizationUser
 )
@@ -171,35 +173,42 @@ class UserViewSet(viewsets.ViewSet, OrgMixin):
         last_name = body['last_name']
         email = body['email']
         username = body['email']
+        access_level_instance_id = body.get("access_level_instance_id")
+        role = body.get('role', 'owner')
         user, created = User.objects.get_or_create(username=username.lower())
 
         if org_id:
             org = Organization.objects.get(pk=org_id)
             org_created = False
+            if access_level_instance_id is None:
+                return JsonResponse({
+                    'status': 'error',
+                    'message': 'if using an existing org, you must provide a `access_level_instance_id`'
+                }, status=status.HTTP_400_BAD_REQUEST)
         else:
             org, _, _ = create_organization(user, org_name)
+            access_level_instance_id = AccessLevelInstance.objects.get(organization=org, depth=1).id
             org_created = True
 
         # Add the user to the org.  If this is the org's first user,
         # the user becomes the owner/admin automatically.
         # see Organization.add_member()
+
+        try:
+            role = get_role_from_js(role)
+        except Exception:
+            return JsonResponse({
+                'status': 'error', 'message': 'valid arguments for role are [viewer, member, owner]'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
         if not org.is_member(user):
-            org.add_member(user)
-
-        if body.get('role'):
-            # check if this is a dict, if so, grab the value out of 'value'
-            role = body['role']
             try:
-                get_role_from_js(role)
-            except Exception:
-                return JsonResponse({'status': 'error', 'message': 'valid arguments for role are [viewer, member, '
-                                                                   'owner]'},
-                                    status=status.HTTP_400_BAD_REQUEST)
-
-            OrganizationUser.objects.filter(
-                organization_id=org.pk,
-                user_id=user.pk
-            ).update(role_level=get_role_from_js(role))
+                org.add_member(user, access_level_instance_id, role)
+            except IntegrityError as e:
+                return JsonResponse({
+                    'status': 'error',
+                    'message': str(e)
+                }, status=status.HTTP_400_BAD_REQUEST)
 
         if created:
             user.set_unusable_password()
@@ -308,7 +317,51 @@ class UserViewSet(viewsets.ViewSet, OrgMixin):
                 'message': 'an organization must have at least one owner'
             }, status=status.HTTP_409_CONFLICT)
 
+        if role == ROLE_OWNER and user.access_level_instance != user.organization.root:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Owners must belong to the root ali.'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
         user.role_level = role
+        user.save()
+
+        return JsonResponse({'status': 'success'})
+
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('requires_owner')
+    @action(detail=True, methods=['PUT'])
+    def access_level_instance(self, request, pk=None):
+        user_id = int(pk)
+        organization_id = self.get_organization(request)
+
+        # get user
+        try:
+            user = OrganizationUser.objects.get(user_id=user_id, organization_id=organization_id)
+        except OrganizationUser.DoesNotExist:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'No such user'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        # get ali
+        access_level_instance_id = request.data.get("access_level_instance_id")
+        if access_level_instance_id is None:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Must be an `access_level_instance_id`'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            access_level_instance = AccessLevelInstance.objects.get(organization_id=organization_id, id=access_level_instance_id)
+        except AccessLevelInstance.DoesNotExist:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'No such access_level_instance'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        # set user ali
+        user.access_level_instance = access_level_instance
         user.save()
 
         return JsonResponse({'status': 'success'})
@@ -605,7 +658,18 @@ class UserViewSet(viewsets.ViewSet, OrgMixin):
             return content
         user.default_organization_id = self.get_organization(request)
         user.save()
-        return {'status': 'success'}
+
+        ou = OrganizationUser.objects.get(user=user, organization_id=user.default_organization_id)
+        return {
+            'status': 'success',
+            "user": {
+                "id": ou.id,
+                "access_level_instance": {
+                    "id": ou.access_level_instance.id,
+                    "name": ou.access_level_instance.name,
+                }
+            }
+        }
 
     @has_perm_class('requires_superuser', False)
     @ajax_request_class

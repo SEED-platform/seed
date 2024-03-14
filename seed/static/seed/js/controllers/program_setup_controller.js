@@ -220,7 +220,7 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
               $scope.compliance_metrics_error.push(`${key}: ${error}`);
             }
           } else {
-            // success. the ID would already be saved so this block seems unnecesary
+            // success. the ID would already be saved so this block seems unnecessary
             if (!$scope.selected_compliance_metric.id) {
               $scope.selected_compliance_metric.id = data.id;
             }

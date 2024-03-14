@@ -16,23 +16,38 @@ from rest_framework import serializers, status
 from rest_framework.parsers import MultiPartParser
 
 from seed.lib.superperms.orgs.decorators import has_perm_class
+from seed.lib.superperms.orgs.models import AccessLevelInstance
 from seed.models import BuildingFile, Cycle
 from seed.serializers.building_file import BuildingFileSerializer
 from seed.serializers.properties import PropertyViewAsStateSerializer
-from seed.utils.api_schema import (
-    AutoSchemaHelper,
-    swagger_auto_schema_org_query_param
-)
+from seed.utils.api_schema import AutoSchemaHelper
 from seed.utils.viewsets import SEEDOrgReadOnlyModelViewSet
 
 
-@method_decorator(swagger_auto_schema_org_query_param, name='list')
-@method_decorator(swagger_auto_schema_org_query_param, name='retrieve')
+@method_decorator(
+    name='list',
+    decorator=[has_perm_class('requires_viewer')]
+)
+@method_decorator(
+    name='retrieve',
+    decorator=[has_perm_class('requires_viewer')]
+)
 class BuildingFileViewSet(SEEDOrgReadOnlyModelViewSet):
     model = BuildingFile
     orgfilter = 'property_state__organization'
     parser_classes = (MultiPartParser,)
     pagination_class = None
+
+    def get_queryset(self):
+        if hasattr(self.request, 'access_level_instance_id'):
+            access_level_instance = AccessLevelInstance.objects.get(pk=self.request.access_level_instance_id)
+            return BuildingFile.objects.filter(
+                property_state__propertyview__property__access_level_instance__lft__gte=access_level_instance.lft,
+                property_state__propertyview__property__access_level_instance__rgt__lte=access_level_instance.rgt,
+            )
+
+        else:
+            return BuildingFile.objects.filter(pk=-1)
 
     def get_serializer_class(self):
         if self.action == 'create':
@@ -65,6 +80,8 @@ class BuildingFileViewSet(SEEDOrgReadOnlyModelViewSet):
         """
         Create a new property from a building file
         """
+        access_level_instance = AccessLevelInstance.objects.get(pk=self.request.access_level_instance_id)
+
         if len(request.FILES) == 0:
             return JsonResponse({
                 'success': False,
@@ -120,7 +137,7 @@ class BuildingFileViewSet(SEEDOrgReadOnlyModelViewSet):
                                 file_type=file_type,
                             )
 
-                        p_status_tmp, property_state_tmp, property_view, messages_tmp = building_file.process(organization_id, cycle)
+                        p_status_tmp, property_state_tmp, property_view, messages_tmp = building_file.process(organization_id, cycle, access_level_instance=access_level_instance)
 
                         # append errors to overall messages
                         for i in messages_tmp['errors']:
@@ -143,7 +160,7 @@ class BuildingFileViewSet(SEEDOrgReadOnlyModelViewSet):
                 file_type=file_type,
             )
 
-            p_status, property_state, property_view, messages = building_file.process(organization_id, cycle)
+            p_status, property_state, property_view, messages = building_file.process(organization_id, cycle, access_level_instance=access_level_instance)
 
         if p_status and property_state:
             if len(messages['warnings']) > 0:

@@ -11,13 +11,14 @@ import re
 from os import path
 
 from django.contrib.gis.db import models as geomodels
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import Case, Value, When
 from django.db.models.signals import m2m_changed, post_save, pre_save
 from django.dispatch import receiver
 
 from seed.data_importer.models import ImportFile
-from seed.lib.superperms.orgs.models import Organization
+from seed.lib.superperms.orgs.models import AccessLevelInstance, Organization
 from seed.models.cycles import Cycle
 from seed.models.models import (
     DATA_STATE,
@@ -46,6 +47,7 @@ class TaxLot(models.Model):
     # NOTE: we have been calling this the organization. We
     # should stay consistent, although I prefer the name organization (!super_org)
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
+    access_level_instance = models.ForeignKey(AccessLevelInstance, on_delete=models.CASCADE, null=False, related_name="taxlots")
 
     # Track when the entry was created and when it was updated
     created = models.DateTimeField(auto_now_add=True)
@@ -53,6 +55,21 @@ class TaxLot(models.Model):
 
     def __str__(self):
         return 'TaxLot - %s' % self.pk
+
+
+@receiver(pre_save, sender=TaxLot)
+def set_default_access_level_instance(sender, instance, **kwargs):
+    """If ALI not set, put this TaxLot as the root."""
+    if instance.access_level_instance_id is None:
+        root = AccessLevelInstance.objects.get(organization_id=instance.organization_id, depth=1)
+        instance.access_level_instance_id = root.id
+
+    bad_taxlotproperty = TaxLotProperty.objects \
+        .filter(taxlot_view__taxlot=instance) \
+        .exclude(property_view__property__access_level_instance=instance.access_level_instance) \
+        .exists()
+    if bad_taxlotproperty:
+        raise ValidationError("cannot change property's ALI to AlI different than related properties.")
 
 
 class TaxLotState(models.Model):
@@ -67,6 +84,8 @@ class TaxLotState(models.Model):
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
     data_state = models.IntegerField(choices=DATA_STATE, default=DATA_STATE_UNKNOWN)
     merge_state = models.IntegerField(choices=MERGE_STATE, default=MERGE_STATE_UNKNOWN, null=True)
+    raw_access_level_instance = models.ForeignKey(AccessLevelInstance, null=True, on_delete=models.SET_NULL)
+    raw_access_level_instance_error = models.TextField(null=True)
 
     custom_id_1 = models.CharField(max_length=255, null=True, blank=True, db_collation='natural_sort')
 
@@ -135,7 +154,13 @@ class TaxLotState(models.Model):
             if self.organization is None:
                 _log.error("organization is None")
 
-            taxlot = TaxLot.objects.create(organization=self.organization)
+            if self.raw_access_level_instance is None:
+                _log.error("Could not promote this taxlot: no raw_access_level_instance")
+                return None
+
+            taxlot = TaxLot.objects.create(organization=self.organization, access_level_instance=self.raw_access_level_instance)
+            self.raw_access_level_instance = None
+            self.raw_access_level_instance_error = None
 
             tlv = TaxLotView.objects.create(taxlot=taxlot, cycle=cycle, state=self)
 

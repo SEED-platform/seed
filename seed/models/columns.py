@@ -21,6 +21,7 @@ from django.utils.translation import gettext_lazy as _
 from past.builtins import basestring
 
 from seed.lib.superperms.orgs.models import Organization as SuperOrganization
+from seed.lib.superperms.orgs.models import OrganizationUser
 from seed.models.column_mappings import ColumnMapping
 from seed.models.models import Unit
 
@@ -110,6 +111,8 @@ class Column(models.Model):
         'import_file',
         'long_lat',
         'merge_state',
+        'raw_access_level_instance_error',
+        'raw_access_level_instance_id',
         'source_type',
         'updated',
     ] + EXCLUDED_COLUMN_RETURN_FIELDS
@@ -950,7 +953,7 @@ class Column(models.Model):
 
         # Take the existing object and return the same object with the db column objects added to
         # the dictionary (to_column_object and from_column_object)
-        mappings = Column._column_fields_to_columns(mappings, organization)
+        mappings = Column._column_fields_to_columns(mappings, organization, user)
         for mapping in mappings:
             if isinstance(mapping, dict):
                 try:
@@ -1007,7 +1010,7 @@ class Column(models.Model):
         return True
 
     @staticmethod
-    def _column_fields_to_columns(fields, organization):
+    def _column_fields_to_columns(fields, organization, user):
         """
         List of dictionaries to process into column objects. This method will create the columns
         if they did not previously exist. Note that fields are probably mutable, but the method
@@ -1041,115 +1044,47 @@ class Column(models.Model):
         Returns:
             dict with lists of columns to which is mappable.
         """
-
-        def select_col_obj(column_name, table_name, organization_column):
-            if organization_column:
-                return [organization_column]
-            else:
-                # Try for "global" column definitions, e.g., BEDES. - Note the BEDES are not
-                # loaded into the database as of 9/8/2016 so not sure if this code is ever
-                # exercised
-                obj = Column.objects.filter(organization=None, column_name=column_name).first()
-
-                if obj:
-                    # create organization mapped column
-                    obj.pk = None
-                    obj.id = None
-                    obj.organization = organization
-                    obj.save()
-
-                    return [obj]
-                else:
-                    if table_name:
-                        obj, _ = Column.objects.get_or_create(
-                            organization=organization,
-                            column_name=column_name,
-                            table_name=table_name,
-                            is_extra_data=is_extra_data,
-                        )
-                        return [obj]
-                    else:
-                        obj, _ = Column.objects.get_or_create(
-                            organization=organization,
-                            column_name=column_name,
-                            is_extra_data=is_extra_data,
-                        )
-                        return [obj]
-
         # Container to store the dicts with the Column object
         new_data = []
+        org_user = OrganizationUser.objects.get(organization=organization, user=user)
+        is_root_user = org_user.access_level_instance == organization.root
 
         for field in fields:
             new_field = field
+            is_ah_data = any([
+                field['to_field'] == name for name in organization.access_level_names
+            ])
+            is_extra_data = not any([
+                field['to_table_name'] == c['table_name'] and field['to_field'] == c['column_name']
+                for c in Column.DATABASE_COLUMNS
+            ])
 
-            # Check if the extra_data field in the model object is a database column
-            is_extra_data = True
-            for c in Column.DATABASE_COLUMNS:
-                if field['to_table_name'] == c['table_name'] and field['to_field'] == c[
-                        'column_name']:
-                    is_extra_data = False
-                    break
+            to_col_params = {
+                "organization": organization,
+                "column_name": field['to_field'],
+                "table_name": '' if is_ah_data else field['to_table_name'],
+                "is_extra_data": is_extra_data,
+            }
+            if is_root_user or is_ah_data:
+                to_org_col, _ = Column.objects.get_or_create(**to_col_params)
+            else:
+                try:
+                    to_org_col = Column.objects.get(**to_col_params)
+                except Column.DoesNotExist:
+                    raise PermissionError(f"user does not have permission to create column {field['to_field']}")
 
-            try:
-                to_org_col, _ = Column.objects.get_or_create(
-                    organization=organization,
-                    column_name=field['to_field'],
-                    table_name=field['to_table_name'],
-                    is_extra_data=is_extra_data
-                )
-            except Column.MultipleObjectsReturned:
-                _log.debug("More than one to_column found for {}.{}".format(field['to_table_name'],
-                                                                            field['to_field']))
-                # raise Exception("Cannot handle more than one to_column returned for {}.{}".format(
-                #     field['to_field'], field['to_table_name']))
+            # the from column is the field in the import file, thus the table_name needs to be
+            # blank. Eventually need to handle passing in import_file_id
+            from_org_col, _ = Column.objects.update_or_create(
+                organization=organization,
+                table_name='',
+                column_name=field['from_field'],
+                is_extra_data=False,  # Column objects representing raw/header rows are NEVER extra data
+                defaults={'units_pint': field.get('from_units', None)}
+            )
 
-                # TODO: write something to remove the duplicate columns
-                to_org_col = Column.objects.filter(organization=organization,
-                                                   column_name=field['to_field'],
-                                                   table_name=field['to_table_name'],
-                                                   is_extra_data=is_extra_data).first()
-                _log.debug("Grabbing the first to_column")
-
-            try:
-                # the from column is the field in the import file, thus the table_name needs to be
-                # blank. Eventually need to handle passing in import_file_id
-                from_org_col, _ = Column.objects.update_or_create(
-                    organization=organization,
-                    table_name='',
-                    column_name=field['from_field'],
-                    is_extra_data=False,  # Column objects representing raw/header rows are NEVER extra data
-                    defaults={'units_pint': field.get('from_units', None)}
-                )
-            except Column.MultipleObjectsReturned:
-                # We want to avoid the ambiguity of having multiple Column objects for a specific raw column.
-                # To do that, delete all multiples along with any associated ColumnMapping objects.
-                _log.debug(
-                    "More than one from_column found for {}.{}".format(field['to_table_name'],
-                                                                       field['to_field']))
-
-                all_from_cols = Column.objects.filter(
-                    organization=organization,
-                    table_name='',
-                    column_name=field['from_field'],
-                    is_extra_data=False
-                )
-
-                ColumnMapping.objects.filter(column_raw__id__in=models.Subquery(all_from_cols.values('id'))).delete()
-                all_from_cols.delete()
-
-                from_org_col = Column.objects.create(
-                    organization=organization,
-                    table_name='',
-                    units_pint=field.get('from_units', None),
-                    column_name=field['from_field'],
-                    column_description=field['from_field'],
-                    is_extra_data=False  # Column objects representing raw/header rows are NEVER extra data
-                )
-                _log.debug("Creating a new from_column")
-
-            new_field['to_column_object'] = select_col_obj(field['to_field'],
-                                                           field['to_table_name'], to_org_col)
-            new_field['from_column_object'] = select_col_obj(field['from_field'], "", from_org_col)
+            new_field['to_column_object'] = [to_org_col]
+            new_field['from_column_object'] = [from_org_col]
             new_data.append(new_field)
 
         return new_data
@@ -1612,6 +1547,15 @@ def validate_model(sender, **kwargs):
 
     if 'raw' in kwargs and not kwargs['raw']:
         instance.full_clean()
+
+    if instance.display_name is not None and instance.organization is not None:
+        if instance.display_name in instance.organization.access_level_names:
+            raise IntegrityError("This display name is already an access level name and cannot be used.")
+
+    if instance.organization_id:
+        org = SuperOrganization.objects.get(pk=instance.organization_id)
+        if instance.display_name in org.access_level_names:
+            raise ValidationError("This display name is an organization access level name.")
 
 
 pre_save.connect(validate_model, sender=Column)
