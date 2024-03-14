@@ -22,6 +22,7 @@ from django.urls import reverse_lazy
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 
+from seed.audit_template.audit_template import AuditTemplate
 from seed.decorators import lock_and_track
 from seed.lib.mcm.utils import batch
 from seed.lib.progress_data.progress_data import ProgressData
@@ -446,12 +447,20 @@ def sync_salesforce(org_id):
 
 @shared_task
 def sync_audit_template(org_id):
-    org = Organization.objects.get(org_id)
-    # this is where you call 
-    # at = AuditTemplate(org_id)
-    # at.batch_get_city_submission_xml()
     import logging
-    logging.error('>>> SYNC AUDIT TEMPLATE TASK - orgid %s', org.id)
+    logging.error('>>> called sync_audit_template with org_id %s', org_id)
+    try:
+        org = Organization.objects.get(id=org_id)
+    except Organization.DoesNotExist:
+        logging.error('>>> org dne')
+        return
+    
+    if not org.audit_template_city_id:
+        logging.error('>>> atcityid dne')
+        return
+
+    at = AuditTemplate(org_id)
+    at.batch_get_city_submission_xml()
 
 
 

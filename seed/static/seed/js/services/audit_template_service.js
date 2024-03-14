@@ -59,8 +59,8 @@ angular.module('BE.seed.service.audit_template', []).factory('audit_template_ser
 
     audit_template_factory.upsert_audit_template_config = (org_id, data) => {
       return data.id 
-        ? audit_template_factory.create_audit_template_config(org_id, data)
-        : audit_template_factory.update_audit_template_config(org_id, data)
+        ? audit_template_factory.update_audit_template_config(org_id, data)
+        : audit_template_factory.create_audit_template_config(org_id, data)
     }
 
     audit_template_factory.create_audit_template_config = (org_id, data) => $http
@@ -75,24 +75,14 @@ angular.module('BE.seed.service.audit_template', []).factory('audit_template_ser
       })
 
     audit_template_factory.update_audit_template_config = (org_id, data) => $http
-      .put(`/api/v3/audit_template_configs/${data.id}/?organization_id=${org_id}`, data)
-      .then((response) => {
-        console.log('service', response)
-        return response.data.data
-      })
-      .catch((response) => {
-        console.log('service fail', response)
-        return response.data.data
-      })
+        .put(`/api/v3/audit_template_configs/${data.id}/?organization_id=${org_id}`, data)
+        .then((response) => response.data.data)
+        .catch((response) => response.data)
 
     audit_template_factory.delete_audit_template_config = (org_id, config_id) => $http
       .delete(`/api/v3/audit_template_configs/${config_id}/?organization_id=${org_id}`)
-      .then((response) => {
-        console.log(response)
-      })
-      .catch((response) => {
-        console.log('fail', response)
-      })
+      .then((response) => response.data)
+      .catch((response) => response.data)
 
     return audit_template_factory;
   }

@@ -44,6 +44,7 @@ def require_token(fn):
     return wrapper
 
 def schedule_sync(data, org_id):
+    logging.error('>>> SCHEDULE SYNC')
     timezone = get_current_timezone()
 
     if 'update_at_hour' in data and 'update_at_minute' in data:

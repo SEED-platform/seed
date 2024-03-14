@@ -81,12 +81,13 @@ class AuditTemplateConfigViewSet(viewsets.ViewSet, OrgMixin):
     ])
     @has_perm_class('requires_owner')
     def update(self, request, pk):
+        logging.error('>>> UPDATE')
         org_id = self.get_organization(self.request)
 
         try:
             atc = AuditTemplateConfig.objects.get(pk=pk)
             old_data = AuditTemplateConfigSerializer(atc).data
-        except AuditTemplateConfig.DoesNotExis:
+        except AuditTemplateConfig.DoesNotExist:
             return JsonResponse({
                 'status': 'error',
                 'message': 'No such resource.'

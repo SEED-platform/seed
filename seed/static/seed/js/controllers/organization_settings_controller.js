@@ -512,8 +512,10 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
       {5: 'Friday'},
       {6: 'Saturday'}
     ]
-    $scope.at_conf = {}
-    $scope.reset_at_update = () => $scope.at_conf = {}
+
+    $scope.reset_at_update = () => {
+      $scope.at_conf = $scope.at_conf.id ? {id: $scope.at_conf.id} : {}
+    }
     const validate_at_conf = () => {
       const valid_day = $scope.at_conf.update_at_day >= 0 && $scope.at_conf.update_at_day <= 6;
       const valid_hr = $scope.at_conf.update_at_hour >= 0 && $scope.at_conf.update_at_hour <= 23;
