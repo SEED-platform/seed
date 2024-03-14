@@ -323,7 +323,7 @@ def _parse_analysis_property_view_id(filepath):
     analysis_property_view_id_elem = input_file_tree.xpath(id_xpath, namespaces=NAMESPACES)
 
     if len(analysis_property_view_id_elem) != 1:
-        raise AnalysisPipelineException(f'Expected BuildlingSync file to have exactly one "{PREMISES_ID_NAME}" PremisesIdentifier')
+        raise AnalysisPipelineException(f'Expected BuildingSync file to have exactly one "{PREMISES_ID_NAME}" PremisesIdentifier')
     return int(analysis_property_view_id_elem[0].text)
 
 

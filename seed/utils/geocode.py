@@ -256,7 +256,7 @@ def _address_geocoding_results(id_addresses, mapquest_api_key):
 
         response = requests.get(request_url)
         try:
-            # Catch the invalide API key error before parsing the response
+            # Catch the invalid API key error before parsing the response
             if response.status_code == 401:
                 raise MapQuestAPIKeyError(f'Failed geocoding property states due to MapQuest error. API Key is invalid with message: {response.content}.')
 

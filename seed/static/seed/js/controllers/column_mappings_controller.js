@@ -374,7 +374,7 @@ angular.module('BE.seed.controller.column_mappings', []).controller('column_mapp
             '<div class="modal-header">' +
             '<h3 class="modal-title" translate>Replacing Existing Columns</h3>' +
             '</div>' +
-            '<div class="modal-body" translate>This action replaces any of your current columns with the comma-delmited columns you provided. Would you like to continue?</div>' +
+            '<div class="modal-body" translate>This action replaces any of your current columns with the comma-delimited columns you provided. Would you like to continue?</div>' +
             '<div class="modal-footer">' +
             '<button type="button" class="btn btn-warning" ng-click="$dismiss()" translate>Cancel</button>' +
             '<button type="button" class="btn btn-primary" ng-click="$close()" autofocus translate>Yes</button>' +

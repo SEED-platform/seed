@@ -15,6 +15,7 @@ from rest_framework.decorators import action
 
 from seed.decorators import ajax_request_class, require_organization_id_class
 from seed.lib.superperms.orgs.decorators import has_perm_class
+from seed.lib.superperms.orgs.models import AccessLevelInstance
 from seed.models import Column, DerivedColumn, PropertyView, TaxLotView
 from seed.serializers.derived_columns import DerivedColumnSerializer
 from seed.utils.api import OrgMixin, api_endpoint_class
@@ -233,10 +234,13 @@ class DerivedColumnViewSet(viewsets.ViewSet, OrgMixin):
         }
         inventory_name, view_model = inventory_map[derived_column.inventory_type]
 
+        access_level_instance = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
         inventory_views = view_model.objects.filter(**{
             f'{inventory_name}_id__in': inventory_ids,
             f'{inventory_name}__organization': org,
             'cycle_id': cycle_id,
+            f'{inventory_name}__access_level_instance__lft__gte': access_level_instance.lft,
+            f'{inventory_name}__access_level_instance__rgt__lte': access_level_instance.rgt,
         }).prefetch_related('state', inventory_name)
 
         results = []

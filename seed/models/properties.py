@@ -13,6 +13,7 @@ from os import path
 
 from django.conf import settings
 from django.contrib.gis.db import models as geomodels
+from django.core.exceptions import ValidationError
 from django.db import IntegrityError, models, transaction
 from django.db.models import Case, Value, When
 from django.db.models.signals import (
@@ -30,7 +31,7 @@ from quantityfield.units import ureg
 from seed.data_importer.models import ImportFile
 # from seed.utils.cprofile import cprofile
 from seed.lib.mcm.cleaners import date_cleaner
-from seed.lib.superperms.orgs.models import Organization
+from seed.lib.superperms.orgs.models import AccessLevelInstance, Organization
 from seed.models.cycles import Cycle
 from seed.models.models import (
     DATA_STATE,
@@ -73,6 +74,7 @@ class Property(models.Model):
     The property can also reference a parent property.
     """
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
+    access_level_instance = models.ForeignKey(AccessLevelInstance, on_delete=models.CASCADE, null=False, related_name="properties")
 
     # Handle properties that may have multiple properties (e.g., buildings)
     parent_property = models.ForeignKey('Property', on_delete=models.CASCADE, blank=True, null=True)
@@ -132,6 +134,28 @@ class Property(models.Model):
                         target_meter.copy_readings(source_meter, overlaps_possible=True)
 
 
+@receiver(pre_save, sender=Property)
+def set_default_access_level_instance(sender, instance, **kwargs):
+    """If ALI not set, put this Property as the root."""
+    if instance.access_level_instance_id is None:
+        root = AccessLevelInstance.objects.get(organization_id=instance.organization_id, depth=1)
+        instance.access_level_instance_id = root.id
+
+    bad_taxlotproperty = TaxLotProperty.objects \
+        .filter(property_view__property=instance) \
+        .exclude(taxlot_view__taxlot__access_level_instance=instance.access_level_instance) \
+        .exists()
+    if bad_taxlotproperty:
+        raise ValidationError("cannot change property's ALI to AlI different than related taxlots.")
+
+
+@receiver(post_save, sender=Property)
+def post_save_property(sender, instance, created, **kwargs):
+    if created:
+        from seed.models import HistoricalNote
+        HistoricalNote.objects.get_or_create(property=instance)
+
+
 class PropertyState(models.Model):
     """Store a single property. This contains all the state information about the property
 
@@ -159,6 +183,8 @@ class PropertyState(models.Model):
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
     data_state = models.IntegerField(choices=DATA_STATE, default=DATA_STATE_UNKNOWN)
     merge_state = models.IntegerField(choices=MERGE_STATE, default=MERGE_STATE_UNKNOWN, null=True)
+    raw_access_level_instance = models.ForeignKey(AccessLevelInstance, null=True, on_delete=models.SET_NULL)
+    raw_access_level_instance_error = models.TextField(null=True)
 
     jurisdiction_property_id = models.TextField(null=True, blank=True, db_collation='natural_sort')
 
@@ -360,7 +386,13 @@ class PropertyState(models.Model):
                     _log.error("Could not promote this property")
                     return None
             else:
-                prop = Property.objects.create(organization=self.organization)
+                if self.raw_access_level_instance is None:
+                    _log.error("Could not promote this property: no raw_access_level_instance")
+                    return None
+
+                prop = Property.objects.create(organization=self.organization, access_level_instance=self.raw_access_level_instance)
+                self.raw_access_level_instance = None
+                self.raw_access_level_instance_error = None
 
             pv = PropertyView.objects.create(property=prop, cycle=cycle, state=self)
 

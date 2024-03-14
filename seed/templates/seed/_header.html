@@ -12,8 +12,12 @@
   </div>
   <div class="add_menu_container">
     <div class="btn-group org-dropdown" uib-dropdown is-open="status.isopen">
-      <button id="btnUserOrgs" type="button" class="btn btn-default" uib-dropdown-toggle ng-disabled="disabled">
-        <div><span style="color: #808080">Current Organization:</span> {$ menu.user.organization.name $} <span class="caret"></span></div>
+      <button id="btnUserOrgs" type="button" class="btn btn-default" uib-dropdown-toggle ng-disabled="disabled" style="display: flex; align-items: center">
+        <div style="padding-right: 5px">
+          <span style="color:#808080">Current Organization:</span> {$ menu.user.organization.name $}
+          <span style="color:#808080; padding-left: 5px">Access Level:</span> {$ menu.user.access_level_instance_name $}
+        </div>
+        <span class="caret"></span>
       </button>
       <ul class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="btnUserOrgs" ng-mousemove="track_mouse($event)">
         <li ng-if="!menu.user.organizations.length" style="text-align: center"><span class="glyphicon glyphicon-refresh spinning"></span> <span translate>Loading...</span></li>
@@ -33,6 +37,7 @@
       <ul uib-dropdown-menu class="dropdown-menu pull-right justify-left" role="menu" aria-labelledby="btnCreateNew">
         <li class="dropdown-header" translate>Organization Settings</li>
         <li class="divider"></li>
+        <li><a ui-sref="organization_access_level_tree({organization_id: menu.user.organization.id})" ui-sref-active="active" translate>Access Level Tree</a></li>
         <li>
           <a ui-sref="organization_column_mappings({organization_id: menu.user.organization.id, inventory_type: 'properties'})" ng-if="auth.requires_owner" ui-sref-active="active" translate
             >Column Mappings</a
@@ -55,10 +60,11 @@
             >Data Quality</a
           >
         </li>
-        <li><a ui-sref="organization_derived_columns({organization_id: menu.user.organization.id, inventory_type: 'properties'})" ui-sref-active="active" translate>Derived Columns</a></li>
-        <li><a ui-sref="organization_email_templates({organization_id: menu.user.organization.id})" ui-sref-active="active" translate>Email Templates</a></li>
+        <li><a ui-sref="organization_derived_columns({organization_id: menu.user.organization.id, inventory_type: 'properties'})" ng-if="menu.user.organization.is_parent && auth.requires_owner" ui-sref-active="active" translate>Derived Columns</a></li>
+        <li><a ui-sref="organization_email_templates({organization_id: menu.user.organization.id})" ng-if="menu.user.organization.is_parent && auth.requires_owner" ui-sref-active="active" translate>Email Templates</a></li>
         <li><a ui-sref="organization_labels({organization_id: menu.user.organization.id})" ng-if="auth.requires_owner" ui-sref-active="active" translate>Labels</a></li>
         <li><a ui-sref="organization_members({organization_id: menu.user.organization.id})" ui-sref-active="active" translate>Members</a></li>
+        <li><a ui-sref="programs({organization_id: menu.user.organization.id})" ng-if="menu.user.organization.is_parent && auth.requires_owner"ui-sref-active="active" translate>Program Setup</a></li>
         <li><a ui-sref="organization_settings({organization_id: menu.user.organization.id})" ng-if="auth.requires_owner" ui-sref-active="active" translate>Settings</a></li>
         <li>
           <a ui-sref="organization_sharing({organization_id: menu.user.organization.id})" ng-if="menu.user.organization.is_parent && auth.requires_owner" ui-sref-active="active" translate>Sharing</a>
@@ -68,7 +74,6 @@
             >Sub-Organizations</a
           >
         </li>
-
         <!--<li>
                     <a data-toggle="modal" data-target="#newProjectModalIndex" ng-click="open_create_project_modal()">Project</a>
                 </li>

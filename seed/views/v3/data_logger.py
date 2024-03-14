@@ -10,7 +10,10 @@ from rest_framework import viewsets
 
 from config.settings.common import TIME_ZONE
 from seed.decorators import ajax_request_class
-from seed.lib.superperms.orgs.decorators import has_perm_class
+from seed.lib.superperms.orgs.decorators import (
+    has_hierarchy_access,
+    has_perm_class
+)
 from seed.models import DataLogger, PropertyView
 from seed.utils.api import OrgMixin
 from seed.utils.api_schema import swagger_auto_schema_org_query_param
@@ -22,6 +25,7 @@ class DataLoggerViewSet(viewsets.ViewSet, OrgMixin):
     @swagger_auto_schema_org_query_param
     @ajax_request_class
     @has_perm_class('requires_viewer')
+    @has_hierarchy_access()
     def list(self, request):
         """
         Retrieves data_loggers for the property
@@ -51,6 +55,8 @@ class DataLoggerViewSet(viewsets.ViewSet, OrgMixin):
 
     @swagger_auto_schema_org_query_param
     @ajax_request_class
+    @has_perm_class('requires_member')
+    @has_hierarchy_access()
     def create(self, request):
         """
         create data_logger

@@ -11,6 +11,7 @@ from datetime import date
 from django.test import TestCase
 
 from seed.landing.models import SEEDUser as User
+from seed.lib.superperms.orgs.models import AccessLevelInstance
 from seed.models import Cycle
 from seed.utils.api import get_api_endpoints
 from seed.utils.organizations import create_organization
@@ -195,12 +196,14 @@ class TestApi(TestCase):
         r = self.client.get('/api/v3/organizations/', follow=True, **self.headers)
         r = json.loads(r.content)
         organization_id = self.get_org_id(r, self.user.username)
+        root = AccessLevelInstance.objects.get(organization_id=organization_id, depth=1)
         new_user = {
             'organization_id': organization_id,
             'first_name': 'Brienne',
             'last_name': 'Tarth',
             'email': 'test+1@demo.com',
             'role': 'member',
+            "access_level_instance_id": root.id,
         }
 
         r = self.client.post('/api/v3/users/?organization_id=' + str(organization_id),

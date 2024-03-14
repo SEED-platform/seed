@@ -62,7 +62,10 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       column_filters = null,
       column_sorts = null,
       ids_only = null,
-      shown_column_ids = null
+      shown_column_ids = null,
+      access_level_instance_id = null,
+      include_property_ids,
+      goal_id = null,
     ) => {
       organization_id = organization_id == undefined ? user_service.get_organization().id : organization_id;
 
@@ -97,16 +100,26 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
             params.cycle = lastCycleId;
           }
 
+          const data = {
+            // Pass the specific ids if they exist
+            include_view_ids,
+            exclude_view_ids,
+            include_property_ids,
+            // Pass the current profile (if one exists) to limit the column data that is returned
+            profile_id
+          };
+          // add access_level_instance if it exists
+          if (access_level_instance_id) {
+            data.access_level_instance_id = access_level_instance_id;
+          }
+          if (goal_id) {
+            data.goal_id = goal_id
+          }
+
           return $http
             .post(
               '/api/v3/properties/filter/',
-              {
-                // Pass the specific ids if they exist
-                include_view_ids,
-                exclude_view_ids,
-                // Pass the current profile (if one exists) to limit the column data that is returned
-                profile_id
-              },
+              data,
               {
                 params
               }
@@ -1204,6 +1217,12 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
         organization_id: user_service.get_organization().id
       }
     });
+
+    inventory_service.filter_by_property = (cycle_id, property_ids) => $http.post('/api/v3/properties/filter_by_property/', {
+      organization_id: user_service.get_organization().id,
+      cycle: cycle_id,
+      property_ids
+    }).then((response) => response.data);
 
     return inventory_service;
   }

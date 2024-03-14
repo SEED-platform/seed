@@ -52,6 +52,17 @@ describe('controller: members_controller', () => {
           can_remove_member: true
         }
       },
+      access_level_tree: {
+        access_level_names: ['my org'],
+        access_level_tree: [{
+          id: 1,
+          data: {
+            name: 'root',
+            organization: 4,
+            path: { 'my org': 'root' }
+          }
+        }]
+      },
       user_profile_payload: [
         'user_service',
         (user_service) => user_service.get_user_profile()
@@ -97,7 +108,7 @@ describe('controller: members_controller', () => {
 
     // act
     ctrl_scope.$digest();
-    ctrl_scope.update_role({ user_id: 2, role: 'viewer' });
+    ctrl_scope.update_user({ user_id: 2 }, { role: 'viewer' });
 
     // assertions
     expect(mock_organization_service.update_role).toHaveBeenCalledWith(2, 4, 'viewer');

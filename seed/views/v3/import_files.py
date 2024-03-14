@@ -27,7 +27,10 @@ from seed.data_importer.tasks import \
 from seed.decorators import ajax_request_class
 from seed.lib.mappings import mapper as simple_mapper
 from seed.lib.mcm import mapper, reader
-from seed.lib.superperms.orgs.decorators import has_perm_class
+from seed.lib.superperms.orgs.decorators import (
+    has_hierarchy_access,
+    has_perm_class
+)
 from seed.lib.superperms.orgs.models import OrganizationUser
 from seed.lib.xml_mapping import mapper as xml_mapper
 from seed.models import (
@@ -143,6 +146,8 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
 
     @api_endpoint_class
     @ajax_request_class
+    @has_perm_class('requires_viewer')
+    @has_hierarchy_access(import_file_id_kwarg="pk")
     def retrieve(self, request, pk=None):
         """
         Retrieves details about an ImportFile.
@@ -184,6 +189,7 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_viewer')
+    @has_hierarchy_access(import_file_id_kwarg="pk")
     @action(detail=True, methods=['GET'])
     def check_meters_tab_exists(self, request, pk=None):
         """
@@ -228,6 +234,7 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_member')
+    @has_hierarchy_access(body_import_file_id="import_file_id")
     @action(detail=False, methods=['POST'])
     def reuse_inventory_file_for_meters(self, request):
         org_id = self.get_organization(request)
@@ -262,6 +269,7 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_viewer')
+    @has_hierarchy_access(import_file_id_kwarg="pk")
     @action(detail=True, methods=['GET'])
     def first_five_rows(self, request, pk=None):
         """
@@ -299,6 +307,7 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_viewer')
+    @has_hierarchy_access(import_file_id_kwarg="pk")
     @action(detail=True, methods=['GET'])
     def raw_column_names(self, request, pk=None):
         """
@@ -332,6 +341,7 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
+    @has_hierarchy_access(import_file_id_kwarg="pk")
     @action(detail=True, methods=['POST'], url_path='mapping_results')
     def mapping_results(self, request, pk=None):
         """
@@ -414,6 +424,9 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
                         units=extra_data_units
                     ).items()
                 )
+                if prop.raw_access_level_instance is not None:
+                    prop_dict.update(prop.raw_access_level_instance.path)
+                prop_dict["raw_access_level_instance_error"] = prop.raw_access_level_instance_error
 
                 prop_dict = apply_display_unit_preferences(org, prop_dict)
                 property_results.append(prop_dict)
@@ -442,6 +455,9 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
                         fields=tax_lot.extra_data.keys(),
                     ).items()
                 )
+                if tax_lot.raw_access_level_instance is not None:
+                    tax_lot_dict.update(tax_lot.raw_access_level_instance.path)
+                tax_lot_dict["raw_access_level_instance_error"] = tax_lot.raw_access_level_instance_error
 
                 tax_lot_dict = apply_display_unit_preferences(org, tax_lot_dict)
                 tax_lot_results.append(tax_lot_dict)
@@ -493,6 +509,7 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
+    @has_hierarchy_access(import_file_id_kwarg="pk")
     @action(detail=True, methods=['POST'])
     def map(self, request, pk=None):
         """
@@ -523,6 +540,7 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
+    @has_hierarchy_access(import_file_id_kwarg="pk")
     @action(detail=True, methods=['POST'])
     def start_system_matching_and_geocoding(self, request, pk=None):
         """
@@ -547,6 +565,7 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
+    @has_hierarchy_access(import_file_id_kwarg="pk")
     @action(detail=True, methods=['POST'])
     def start_data_quality_checks(self, request, pk=None):
         """
@@ -576,6 +595,7 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
+    @has_hierarchy_access(import_file_id_kwarg="pk")
     @action(detail=True, methods=['POST'])
     def validate_use_cases(self, request, pk=None):
         """
@@ -605,6 +625,7 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
+    @has_hierarchy_access(import_file_id_kwarg="pk")
     @action(detail=True, methods=['POST'])
     def start_save_data(self, request, pk=None):
         """
@@ -660,6 +681,7 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
+    @has_hierarchy_access(import_file_id_kwarg="pk")
     @action(detail=True, methods=['POST'])
     def mapping_done(self, request, pk=None):
         """
@@ -699,6 +721,7 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_member')
+    @has_hierarchy_access(import_file_id_kwarg="pk")
     @action(detail=True, methods=['GET'])
     def matching_and_geocoding_results(self, request, pk=None):
         """
@@ -837,10 +860,14 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
                 'initial_incoming': import_file.matching_results_data.get('property_initial_incoming', None),
                 'duplicates_against_existing': import_file.matching_results_data.get('property_duplicates_against_existing', None),
                 'duplicates_within_file': import_file.matching_results_data.get('property_duplicates_within_file', None),
+                'duplicates_within_file_errors': import_file.matching_results_data.get('property_duplicates_within_file_errors', None),
                 'merges_against_existing': import_file.matching_results_data.get('property_merges_against_existing', None),
+                'merges_against_existing_errors': import_file.matching_results_data.get('property_merges_against_existing_errors', None),
                 'merges_between_existing': import_file.matching_results_data.get('property_merges_between_existing', None),
                 'merges_within_file': import_file.matching_results_data.get('property_merges_within_file', None),
+                'merges_within_file_errors': import_file.matching_results_data.get('property_merges_within_file_errors', None),
                 'new': import_file.matching_results_data.get('property_new', None),
+                'new_errors': import_file.matching_results_data.get('property_new_errors', None),
                 'geocoded_high_confidence': property_geocode_results.get('high_confidence'),
                 'geocoded_low_confidence': property_geocode_results.get('low_confidence'),
                 'geocoded_census_geocoder': property_geocode_results.get('census_geocoder'),
@@ -851,10 +878,14 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
                 'initial_incoming': import_file.matching_results_data.get('tax_lot_initial_incoming', None),
                 'duplicates_against_existing': import_file.matching_results_data.get('tax_lot_duplicates_against_existing', None),
                 'duplicates_within_file': import_file.matching_results_data.get('tax_lot_duplicates_within_file', None),
+                'duplicates_within_file_errors': import_file.matching_results_data.get('tax_lot_duplicates_within_file_errors', None),
                 'merges_against_existing': import_file.matching_results_data.get('tax_lot_merges_against_existing', None),
+                'merges_against_existing_errors': import_file.matching_results_data.get('tax_lot_merges_against_existing_errors', None),
                 'merges_between_existing': import_file.matching_results_data.get('tax_lot_merges_between_existing', None),
                 'merges_within_file': import_file.matching_results_data.get('tax_lot_merges_within_file', None),
+                'merges_within_file_errors': import_file.matching_results_data.get('tax_lot_merges_within_file_errors', None),
                 'new': import_file.matching_results_data.get('tax_lot_new', None),
+                'new_errors': import_file.matching_results_data.get('tax_lot_new_errors', None),
                 'geocoded_high_confidence': tax_lot_geocode_results.get('high_confidence'),
                 'geocoded_low_confidence': tax_lot_geocode_results.get('low_confidence'),
                 'geocoded_census_geocoder': tax_lot_geocode_results.get('census_geocoder'),
@@ -867,6 +898,7 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_member')
+    @has_hierarchy_access(import_file_id_kwarg="pk")
     @action(detail=True, methods=['GET'])
     def mapping_suggestions(self, request, pk):
         """
@@ -959,6 +991,7 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
+    @has_hierarchy_access(import_file_id_kwarg="pk")
     def destroy(self, request, pk):
         """
         Deletes an import file
@@ -1002,6 +1035,7 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
     )
     @ajax_request_class
     @has_perm_class('requires_member')
+    @has_hierarchy_access(param_property_view_id="view_id")
     @action(detail=True, methods=['GET'])
     def greenbutton_meters_preview(self, request, pk):
         """
@@ -1045,6 +1079,7 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
 
     @ajax_request_class
     @has_perm_class('requires_member')
+    @has_hierarchy_access(param_property_view_id="view_id")
     @action(detail=True, methods=['GET'])
     def sensors_preview(self, request, pk):
         """
@@ -1083,6 +1118,7 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
 
     @ajax_request_class
     @has_perm_class('requires_member')
+    @has_hierarchy_access(import_file_id_kwarg="pk")
     @action(detail=True, methods=['GET'])
     def sensor_readings_preview(self, request, pk):
         org_id = self.get_organization(request)
@@ -1120,6 +1156,7 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
     )
     @ajax_request_class
     @has_perm_class('requires_member')
+    @has_hierarchy_access(import_file_id_kwarg="pk")
     @action(detail=True, methods=['GET'])
     def pm_meters_preview(self, request, pk):
         """

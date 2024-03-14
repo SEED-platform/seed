@@ -4,11 +4,38 @@
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
+from django.utils.decorators import method_decorator
+
+from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.models import GreenAssessmentURL
 from seed.serializers.certification import GreenAssessmentURLSerializer
 from seed.utils.viewsets import SEEDOrgModelViewSet
 
 
+@method_decorator(
+    name='update',
+    decorator=[
+        has_perm_class('requires_root_member_access'),
+    ]
+)
+@method_decorator(
+    name='destroy',
+    decorator=[
+        has_perm_class('requires_root_member_access'),
+    ]
+)
+@method_decorator(
+    name='retrieve',
+    decorator=[
+        has_perm_class('requires_root_member_access'),
+    ]
+)
+@method_decorator(
+    name='list',
+    decorator=[
+        has_perm_class('requires_root_member_access'),
+    ]
+)
 class GreenAssessmentURLViewSet(SEEDOrgModelViewSet):
 
     """API endpoint for viewing and creating green assessment urls.

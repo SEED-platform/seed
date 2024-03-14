@@ -155,6 +155,9 @@
         <div class="alert alert-danger" ng-show="duplicates_present" translate>
           Please review SEED column names or the column names of the file being imported. Duplicate values are not allowed in either case.
         </div>
+        <div class="alert alert-danger" ng-show="disallowed_creation_present" translate>
+          You do not have access to create columns.
+        </div>
         <div class="alert alert-danger" ng-show="derived_column_match" translate>
           Please review SEED column names or the column names of the file being imported. Column names that match an existing Derived Column name are not allowed.
         </div>
@@ -199,17 +202,17 @@
           </thead>
           <tbody id="mapped-table">
             <tr ng-repeat="col in mappings">
-              <td style="text-align: right" ng-class="{'danger': !col.isOmitted && (col.is_duplicate || col.suggestion === '')}" ng-attr-id="mapped-row-isOmitted-{$:: $index $}">
+              <td style="text-align: right" ng-class="{'danger': !col.isOmitted && (col.is_duplicate || col.suggestion === '' || col.is_disallowed_creation)}" ng-attr-id="mapped-row-isOmitted-{$:: $index $}">
                 <input type="checkbox" ng-model="col.isOmitted" ng-disabled="import_file.matching_done" />
               </td>
-              <td style="text-align: right" ng-class="{'danger': col.is_duplicate || (!col.isOmitted && col.suggestion === ''), 'omitted': col.isOmitted}" ng-attr-id="mapped-row-type-{$:: $index $}">
+              <td style="text-align: right" ng-class="{'danger': col.is_duplicate || (!col.isOmitted && col.suggestion === '' || col.is_disallowed_creation), 'omitted': col.isOmitted}" ng-attr-id="mapped-row-type-{$:: $index $}">
                 <select ng-model="col.suggestion_table_name" ng-change="updateInventoryTypeDropdown(); change(col)" ng-disabled="import_file.matching_done || col.isOmitted">
                   <option disabled ng-if="col.suggestion_table_name===undefined" value="{$ undefined $}"></option>
                   <option value="PropertyState" translate>Property</option>
                   <option value="TaxLotState" ng-if="!mappingBuildingSync" translate>Tax Lot</option>
                 </select>
               </td>
-              <td ng-class="{'danger': col.is_duplicate || (!col.isOmitted && col.suggestion === ''), 'omitted': col.isOmitted}" ng-attr-id="mapped-row-input-{$:: $index $}">
+              <td ng-class="{'danger': col.is_duplicate || (!col.isOmitted && col.suggestion === '' || col.is_disallowed_creation), 'omitted': col.isOmitted}" ng-attr-id="mapped-row-input-{$:: $index $}">
                 <input
                   type="text"
                   uib-typeahead="column.display_name for column in (col.suggestion_table_name === 'PropertyState' ? mappable_property_columns : mappable_taxlot_columns) | filter:{display_name:$viewValue} | limitTo:20"
@@ -249,7 +252,7 @@
                   <option value="kgCO2e/m**2/year" translate>kgCO2e/m**2/year</option>
                 </select>
               </td>
-              <td ng-class="{'danger': col.is_duplicate || (!col.isOmitted && col.suggestion === ''), 'omitted': col.isOmitted}">
+              <td ng-class="{'danger': col.is_duplicate || (!col.isOmitted && col.suggestion === '' || col.is_disallowed_creation), 'omitted': col.isOmitted}">
                 <strong ng-attr-id="mapped-header-{$:: $index $}">{$:: col.name $}</strong>
               </td>
               <td ng-repeat="cell_value in ::col.raw_data track by $index" ng-class="{'omitted': col.isOmitted}">{$:: cell_value $}</td>
@@ -276,7 +279,7 @@
       </div>
       <div class="right_60 section_action_container section_action_btn">
         <button type="button" class="btn btn-default" ng-click="open_data_quality_modal()">
-          <i class="fa-solid fa-spinner fa-pulse fa-fw" style="padding-right: 0" ng-if="!data_quality_results_ready"></i>
+          <i class="fa-solid fa-spinner fa-spin-pulse fa-fw" style="padding-right: 0" ng-if="!data_quality_results_ready"></i>
           <span ng-if="data_quality_results_ready && data_quality_errors > 0"> {$ data_quality_errors $} <i class="fa-solid fa-triangle-exclamation" style="color: #ffb7b7"></i> </span>
           <span ng-if="data_quality_results_ready && data_quality_warnings > 0"> {$ data_quality_warnings $} <i class="fa-solid fa-triangle-exclamation" style="color: #fdf4bf"></i> </span>
           {$:: 'Data Quality Results' | translate $}

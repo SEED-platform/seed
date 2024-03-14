@@ -53,11 +53,11 @@ class DataViewSerializer(serializers.ModelSerializer):
             instance.save()
 
             # if new parameters are provided, delete previous ones so we can create the new params
-            paramters_data = validated_data.get('parameters')
-            if paramters_data:
+            parameters_data = validated_data.get('parameters')
+            if parameters_data:
                 DataViewParameter.objects.filter(data_view=instance).delete()
 
-                for parameter in paramters_data:
+                for parameter in parameters_data:
                     DataViewParameter.objects.create(data_view=instance, **parameter)
 
             return instance

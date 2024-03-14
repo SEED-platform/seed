@@ -1,0 +1,11 @@
+<uib-accordion>
+    <div uib-accordion-group ng-if="!angular.equals({}, access_level_issues)" class="panel-danger" is-open="errors[$index].open">
+        <uib-accordion-heading>
+            <b translate>Access Level Instances Errors</b>
+            <i class="pull-right glyphicon" ng-class="{'glyphicon-chevron-down': errors[$index].open, 'glyphicon-chevron-right': !errors[$index].open}"></i>
+        </uib-accordion-heading>
+        <div class="clean-list">
+            <div ng-repeat="(key, error) in access_level_issues" class="row">{$ key $} - {$ error.message $}</div>
+        </div>
+    </div>
+</uib-accordion>

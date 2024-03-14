@@ -133,8 +133,8 @@ angular.module('BE.seed.controller.merge_modal', []).controller('merge_modal_con
               $scope.close();
             },
             (err) => {
-              $log.error(err);
-              Notification.error('Failed to merge properties');
+              $log.error(err.data.message);
+              Notification.error('Failed to merge properties: ' + err.data.message);
             }
           )
           .finally(() => {
