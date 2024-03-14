@@ -2136,6 +2136,25 @@ class PropertySensorViewTests(AccessLevelBaseTestCase, DataMappingBaseTestCase):
         result = self.client.get(url, data)
         assert result.status_code == 404
 
+    def test_data_loggers_delete_permissions(self):
+        dl = DataLogger.objects.create(**{
+            "property_id": self.property_1.id,
+            "display_name": "moo",
+        })
+
+        url = reverse('api:v3:data_logger-detail', kwargs={'pk': dl.id})
+        url += f'?organization_id={self.org.pk}'
+
+        # child user cannot
+        self.login_as_child_member()
+        result = self.client.delete(url)
+        assert result.status_code == 404
+
+        # root users can get data logger in root
+        self.login_as_root_member()
+        result = self.client.delete(url)
+        assert result.status_code == 204
+
     def test_property_sensors_endpoint_returns_a_list_of_sensors_of_a_view(self):
         dl_a = DataLogger.objects.create(**{
             "property_id": self.property_1.id,
