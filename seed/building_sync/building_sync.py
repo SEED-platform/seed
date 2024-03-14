@@ -485,7 +485,7 @@ class BuildingSync(object):
         if not bsync_element.tag.endswith('BuildingSync'):
             raise ParsingError('Expected BuildingSync element as root element in xml')
 
-        # first check for a version attribute in the buldingsync tag
+        # first check for a version attribute in the buildingsync tag
         if "version" in bsync_element.attrib:
             return bsync_element.attrib["version"]
 

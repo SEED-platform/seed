@@ -4,8 +4,9 @@
  */
 describe('controller: new_member_modal_controller', () => {
   // globals set up and used in each test scenario
-  let mock_user_service; let controller; let
-    modal_state;
+  let mock_user_service;
+  let controller;
+  let modal_state;
   let ctrl_scope;
   beforeEach(() => {
     module('BE.seed');
@@ -30,14 +31,23 @@ describe('controller: new_member_modal_controller', () => {
     controller = controller('new_member_modal_controller', {
       $scope: ctrl_scope,
       $uibModalInstance: {
-        close: function () {
+        close: () => {
           modal_state = 'close';
         },
-        dismiss: function () {
+        dismiss: () => {
           modal_state = 'dismiss';
         }
       },
-      organization: { organization_id: 1 }
+      organization: { organization_id: 1 },
+      access_level_tree: [{
+        id: '1',
+        data: {
+          name: 'root',
+          organization: '1',
+          path: { 'my org': 'root' }
+        }
+      }],
+      level_names: ['my org']
     });
   }
 
@@ -53,7 +63,7 @@ describe('controller: new_member_modal_controller', () => {
     ctrl_scope.$digest();
 
     // assertions
-    expect(ctrl_scope.user.role.value).toEqual('member');
+    expect(ctrl_scope.user.role).toEqual(MEMBER);
   });
 
   it('should call the user service to add a new user to the org', () => {
@@ -72,10 +82,8 @@ describe('controller: new_member_modal_controller', () => {
       first_name: 'JB',
       last_name: 'Smooth',
       email: 'jb.smooth@be.com',
-      role: ctrl_scope.roles[1].value,
-      organization: {
-        organization_id: 1
-      }
+      role: MEMBER,
+      organization: { organization_id: 1 }
     });
   });
 });

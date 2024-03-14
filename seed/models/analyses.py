@@ -10,7 +10,7 @@ from django.db import models
 
 from seed.analysis_pipelines.utils import get_json_path
 from seed.landing.models import SEEDUser as User
-from seed.lib.superperms.orgs.models import Organization
+from seed.lib.superperms.orgs.models import AccessLevelInstance, Organization
 
 logger = logging.getLogger(__name__)
 
@@ -61,6 +61,7 @@ class Analysis(models.Model):
     status = models.IntegerField(default=PENDING_CREATION, choices=STATUS_TYPES)
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
+    access_level_instance = models.ForeignKey(AccessLevelInstance, on_delete=models.CASCADE, null=False, related_name="analyses", blank=False)
     configuration = models.JSONField(default=dict, blank=True)
     # parsed_results can contain any results gathered from the resulting file(s)
     # that are applicable to the entire analysis (i.e., all properties involved).
@@ -195,3 +196,6 @@ class Analysis(models.Model):
         :returns: bool
         """
         return self.status in [self.FAILED, self.STOPPED, self.COMPLETED]
+
+    def can_create(self):
+        return self.organization.is_user_ali_root(self.user.id) and (self.organization.is_owner(self.user.id) or self.organization.has_role_member(self.user.id))

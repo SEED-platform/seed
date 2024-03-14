@@ -18,6 +18,7 @@ from seed.test_helpers.fake import (
     FakeNoteFactory,
     FakePropertyFactory
 )
+from seed.tests.util import AccessLevelBaseTestCase
 from seed.utils.organizations import create_organization
 
 
@@ -89,7 +90,7 @@ class EventTests(TransactionTestCase):
 
         # Action
         response = self.client.get(
-            reverse('api:v3:property-events-list', kwargs={'property_pk': self.property.id}),
+            reverse('api:v3:property-events-list', kwargs={'property_pk': self.property.id}) + f'?organization_id={self.org.pk}',
             **self.headers
         )
 
@@ -149,3 +150,22 @@ class EventTests(TransactionTestCase):
             },
             set(response.json()["data"][2].keys())
         )
+
+
+class EventPermissionsTests(AccessLevelBaseTestCase):
+    def setUp(self):
+        super().setUp()
+        self.property = self.property_factory.get_property()
+
+    def tests_list(self):
+        url = reverse('api:v3:property-events-list', kwargs={'property_pk': self.property.id}) + f'?organization_id={self.org.pk}'
+
+        # root member can
+        self.login_as_root_member()
+        resp = self.client.get(url, content_type='application/json')
+        assert resp.status_code == 200
+
+        # child member cannot
+        self.login_as_child_member()
+        resp = self.client.get(url, content_type='application/json')
+        assert resp.status_code == 404

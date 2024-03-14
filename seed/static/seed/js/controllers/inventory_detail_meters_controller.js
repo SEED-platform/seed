@@ -17,7 +17,7 @@ angular.module('BE.seed.controller.inventory_detail_meters', []).controller('inv
   'property_meter_usage',
   'spinner_utility',
   'urls',
-  'user_service',
+  // 'user_service',
   'organization_payload',
   // eslint-disable-next-line func-names
   function (
@@ -35,7 +35,7 @@ angular.module('BE.seed.controller.inventory_detail_meters', []).controller('inv
     property_meter_usage,
     spinner_utility,
     urls,
-    user_service,
+    // user_service,
     organization_payload
   ) {
     spinner_utility.show();
@@ -61,7 +61,7 @@ angular.module('BE.seed.controller.inventory_detail_meters', []).controller('inv
 
     resetSelections();
 
-    const deleteButton = '<button type="button" class="btn-primary" style="border-radius: 4px;" ng-click="grid.appScope.open_meter_deletion_modal(row.entity)" translate>Delete</button>';
+    const deleteButton = '<button type="button" ng-show="grid.appScope.menu.user.organization.user_role !== \'viewer\'" class="btn-primary" style="border-radius: 4px;" ng-click="grid.appScope.open_meter_deletion_modal(row.entity)" translate>Delete</button>';
 
     $scope.meterGridOptions = {
       data: 'sorted_meters',

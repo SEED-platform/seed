@@ -29,11 +29,15 @@ from seed.data_importer.models import ImportFile, ImportRecord
 from seed.data_importer.tasks import save_raw_data
 from seed.decorators import ajax_request_class
 from seed.landing.models import SEEDUser as User
-from seed.lib.superperms.orgs.decorators import has_perm_class
+from seed.lib.superperms.orgs.decorators import (
+    has_hierarchy_access,
+    has_perm_class
+)
 from seed.lib.superperms.orgs.models import (
     ROLE_MEMBER,
     ROLE_OWNER,
     ROLE_VIEWER,
+    AccessLevelInstance,
     Organization,
     OrganizationUser
 )
@@ -155,7 +159,8 @@ def _dict_org(request, organizations):
             'audit_template_sync_enabled': o.audit_template_sync_enabled,
             'salesforce_enabled': o.salesforce_enabled,
             'ubid_threshold': o.ubid_threshold,
-            'inventory_count': o.property_set.count() + o.taxlot_set.count()
+            'inventory_count': o.property_set.count() + o.taxlot_set.count(),
+            'access_level_names': o.access_level_names,
         }
         orgs.append(org)
 
@@ -190,6 +195,7 @@ def _dict_org_brief(request, organizations):
             'user_role': user_role,
             'display_decimal_places': o.display_decimal_places,
             'salesforce_enabled': o.salesforce_enabled,
+            'access_level_names': o.access_level_names,
         }
         orgs.append(org)
 
@@ -201,7 +207,7 @@ class OrganizationViewSet(viewsets.ViewSet):
     authz_org_id_kwarg = 'pk'
 
     @ajax_request_class
-    @has_perm_class('can_modify_data')
+    @has_perm_class('requires_owner')
     @action(detail=True, methods=['DELETE'])
     def columns(self, request, pk=None):
         """
@@ -260,6 +266,7 @@ class OrganizationViewSet(viewsets.ViewSet):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_member')
+    @has_hierarchy_access(param_import_file_id='import_file_id')
     @action(detail=True, methods=['POST'])
     def column_mappings(self, request, pk=None):
         """
@@ -289,17 +296,18 @@ class OrganizationViewSet(viewsets.ViewSet):
                 'message': 'No organization found'
             }, status=status.HTTP_404_NOT_FOUND)
 
-        result = Column.create_mappings(
-            request.data.get('mappings', []),
-            organization,
-            request.user,
-            import_file_id
-        )
+        try:
+            Column.create_mappings(
+                request.data.get('mappings', []),
+                organization,
+                request.user,
+                import_file_id
+            )
+        except PermissionError as e:
+            return JsonResponse({'status': 'error', "message": str(e)})
 
-        if result:
-            return JsonResponse({'status': 'success'})
         else:
-            return JsonResponse({'status': 'error'})
+            return JsonResponse({'status': 'success'})
 
     @swagger_auto_schema(
         manual_parameters=[AutoSchemaHelper.query_boolean_field(
@@ -757,7 +765,7 @@ class OrganizationViewSet(viewsets.ViewSet):
 
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('requires_member')
+    @has_perm_class('requires_viewer')
     @action(detail=True, methods=['GET'])
     def matching_criteria_columns(self, request, pk=None):
         """
@@ -847,11 +855,15 @@ class OrganizationViewSet(viewsets.ViewSet):
 
         return result
 
-    def get_raw_report_data(self, organization_id, cycles, x_var, y_var, addtional_columns=[]):
+    def get_raw_report_data(self, organization_id, access_level_instance, cycles, x_var, y_var, additional_columns=None):
+        if additional_columns is None:
+            additional_columns = []
         all_property_views = PropertyView.objects.select_related(
             'property', 'state'
         ).filter(
             property__organization_id=organization_id,
+            property__access_level_instance__lft__gte=access_level_instance.lft,
+            property__access_level_instance__rgt__lte=access_level_instance.rgt,
             cycle_id__in=cycles
         ).order_by('id')
         organization = Organization.objects.get(pk=organization_id)
@@ -864,7 +876,7 @@ class OrganizationViewSet(viewsets.ViewSet):
             for property_view in property_views:
                 property_pk = property_view.property_id
                 count_total.append(property_pk)
-                result = self.get_data(property_view, x_var, y_var, addtional_columns)
+                result = self.get_data(property_view, x_var, y_var, additional_columns)
                 if result:
                     result['yr_e'] = cycle.end.strftime('%Y')
                     de_unitted_result = apply_display_unit_preferences(organization, result)
@@ -913,6 +925,7 @@ class OrganizationViewSet(viewsets.ViewSet):
     def report(self, request, pk=None):
         """Retrieve a summary report for charting x vs y
         """
+        access_level_instance = AccessLevelInstance.objects.get(pk=self.request.access_level_instance_id)
         params = {
             "x_var": request.query_params.get("x_var", None),
             "y_var": request.query_params.get("y_var", None),
@@ -928,7 +941,7 @@ class OrganizationViewSet(viewsets.ViewSet):
             )
 
         cycles = Cycle.objects.filter(id__in=params["cycle_ids"])
-        data = self.get_raw_report_data(pk, cycles, params['x_var'], params['y_var'])
+        data = self.get_raw_report_data(pk, access_level_instance, cycles, params['x_var'], params['y_var'])
         data = {
             "chart_data": sum([d["chart_data"] for d in data], []),
             "property_counts": [d["property_counts"] for d in data]
@@ -970,6 +983,8 @@ class OrganizationViewSet(viewsets.ViewSet):
     def report_aggregated(self, request, pk=None):
         """Retrieve a summary report for charting x vs y aggregated by y_var
         """
+        access_level_instance = AccessLevelInstance.objects.get(pk=self.request.access_level_instance_id)
+
         # get params
         params = {
             "x_var": request.query_params.get("x_var", None),
@@ -996,8 +1011,7 @@ class OrganizationViewSet(viewsets.ViewSet):
 
         # get data
         cycles = Cycle.objects.filter(id__in=params["cycle_ids"])
-        data = self.get_raw_report_data(pk, cycles, params["x_var"], params["y_var"])
-
+        data = self.get_raw_report_data(pk, access_level_instance, cycles, params["x_var"], params["y_var"])
         chart_data = []
         property_counts = []
         for datum in data:
@@ -1035,13 +1049,15 @@ class OrganizationViewSet(viewsets.ViewSet):
             grouped_uses[str(b['y']).lower()].append(b)
 
         # Now iterate over use groups to make each chart item
+        # Only include non-None values
         for use, buildings_in_uses in grouped_uses.items():
-            x = [b['x'] for b in buildings_in_uses]
-            chart_data.append({
-                'x': sum(x) if x_var == "Count" else median(x),
-                'y': use.capitalize(),
-                'yr_e': yr_e
-            })
+            x = [b['x'] for b in buildings_in_uses if b['x'] is not None]
+            if x:
+                chart_data.append({
+                    'x': sum(x) if x_var == "Count" else median(x),
+                    'y': use.capitalize(),
+                    'yr_e': yr_e
+                })
         return chart_data
 
     def aggregate_year_built(self, yr_e, x_var, buildings):
@@ -1053,7 +1069,7 @@ class OrganizationViewSet(viewsets.ViewSet):
 
         # Now iterate over decade groups to make each chart item
         for decade, buildings_in_decade in grouped_decades.items():
-            x = [b['x'] for b in buildings_in_decade]
+            x = [b['x'] for b in buildings_in_decade if b['x'] is not None]
             chart_data.append({
                 'x': sum(x) if x_var == "Count" else median(x),
                 'y': '%s-%s' % (decade, '%s9' % str(decade)[:-1]),  # 1990-1999
@@ -1081,6 +1097,8 @@ class OrganizationViewSet(viewsets.ViewSet):
         # Group buildings in this year_ending group into ranges
         grouped_ranges = defaultdict(list)
         for b in buildings:
+            if b['y'] is None:
+                continue
             area = b['y']
             # make sure anything greater than the biggest bin gets put in
             # the biggest bin
@@ -1089,7 +1107,7 @@ class OrganizationViewSet(viewsets.ViewSet):
 
         # Now iterate over range groups to make each chart item
         for range_floor, buildings_in_range in grouped_ranges.items():
-            x = [b['x'] for b in buildings_in_range]
+            x = [b['x'] for b in buildings_in_range if b['x'] is not None]
             chart_data.append({
                 'x': sum(x) if x_var == "Count" else median(x),
                 'y': y_display_map[range_floor],
@@ -1139,6 +1157,8 @@ class OrganizationViewSet(viewsets.ViewSet):
         """
         Export a report as a spreadsheet
         """
+        access_level_instance = AccessLevelInstance.objects.get(pk=self.request.access_level_instance_id)
+
         # get params
         params = {
             "x_var": request.query_params.get("x_var", None),
@@ -1187,7 +1207,7 @@ class OrganizationViewSet(viewsets.ViewSet):
         cycles = Cycle.objects.filter(id__in=params["cycle_ids"])
         matching_columns = Column.objects.filter(organization_id=pk, is_matching_criteria=True, table_name="PropertyState")
         data = self.get_raw_report_data(
-            pk, cycles, params['x_var'], params['y_var'], matching_columns
+            pk, access_level_instance, cycles, params['x_var'], params['y_var'], matching_columns
         )
 
         base_sheet.write(data_row_start, data_col_start, 'ID', bold)
@@ -1290,7 +1310,7 @@ class OrganizationViewSet(viewsets.ViewSet):
             }
         )
 
-    @has_perm_class('requires_member')
+    @has_perm_class('requires_superuser')
     @ajax_request_class
     @action(detail=True, methods=['GET'])
     def insert_sample_data(self, request, pk=None):
@@ -1372,7 +1392,8 @@ class OrganizationViewSet(viewsets.ViewSet):
         # Create a merge of the last 2 properties
         state_ids_to_merge = ids[-2:]
         merged_state = merge_properties(state_ids_to_merge, pk, 'Manual Match')
-        match_merge_link(merged_state.propertyview_set.first().id, 'PropertyState')
+        view = merged_state.propertyview_set.first()
+        match_merge_link(merged_state.id, 'PropertyState', view.property.access_level_instance, view.cycle)
 
         # pair a property to tax lot
         property_id = property_views[0].id
@@ -1387,7 +1408,7 @@ class OrganizationViewSet(viewsets.ViewSet):
             is_extra_data=True  # Column objects representing raw/header rows are NEVER extra data
         )
 
-        import_record = ImportRecord.objects.create(name='Auto-Populate', super_organization=org)
+        import_record = ImportRecord.objects.create(name='Auto-Populate', super_organization=org, access_level_instance=self.org.root)
 
         # Interval Data
         filename = 'PM Meter Data.xlsx'  # contains meter data for bsyncr and BETTER

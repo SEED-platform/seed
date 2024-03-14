@@ -6,12 +6,13 @@ See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
 import json
 
-from django.urls import reverse
+from django.urls import reverse, reverse_lazy
 from rest_framework import status
 
 from seed.landing.models import SEEDUser as User
 from seed.models import Column
-from seed.tests.util import DeleteModelsTestCase
+from seed.test_helpers.fake import FakeColumnListProfileFactory
+from seed.tests.util import AccessLevelBaseTestCase, DeleteModelsTestCase
 from seed.utils.organizations import create_organization
 
 
@@ -152,3 +153,68 @@ class ColumnListProfilesView(DeleteModelsTestCase):
         self.assertEqual(len(result['data']['columns']), 1)
         self.assertEqual(result['data']['columns'][0]['order'], 999)
         self.assertEqual(result['data']['columns'][0]['pinned'], True)
+
+
+class ColumnsListProfileViewPermissionsTests(AccessLevelBaseTestCase, DeleteModelsTestCase):
+    def setUp(self):
+        super().setUp()
+
+        self.column_1 = Column.objects.get(organization=self.org, table_name='PropertyState',
+                                           column_name='address_line_1')
+        self.column_2 = Column.objects.get(organization=self.org, table_name='PropertyState',
+                                           column_name='city')
+        self.payload_data = {
+            "name": "Test Column List Setting",
+            "profile_location": "List View Profile",
+            "inventory_type": "Property",
+            "columns": [
+                {"id": self.column_1.id, "pinned": False, "order": 1, "column_name": self.column_1.column_name,
+                 "table_name": self.column_1.table_name},
+                {"id": self.column_2.id, "pinned": False, "order": 2, "column_name": self.column_2.column_name,
+                 "table_name": self.column_2.table_name},
+            ],
+            "derived_columns": [],
+        }
+
+        column_list_factory = FakeColumnListProfileFactory(organization=self.org)
+        self.columnlistprofile = column_list_factory.get_columnlistprofile(columns=['address_line_1', 'city'])
+
+    def test_column_list_profile_create_permissions(self):
+        url = reverse_lazy('api:v3:column_list_profiles-list') + "?organization_id=" + str(self.org.id)
+
+        # child user cannot
+        self.login_as_child_member()
+        response = self.client.post(url, data=json.dumps(self.payload_data), content_type='application/json')
+        assert response.status_code == 403
+
+        # root users can create column in root
+        self.login_as_root_member()
+        response = self.client.post(url, data=json.dumps(self.payload_data), content_type='application/json')
+        assert response.status_code == 201
+
+    def test_column_list_profile_delete_permissions(self):
+        url = reverse_lazy('api:v3:column_list_profiles-detail', args=[self.columnlistprofile.id]) + "?organization_id=" + str(self.org.id)
+
+        # child user cannot
+        self.login_as_child_member()
+        response = self.client.delete(url, content_type='application/json')
+        assert response.status_code == 403
+
+        # root users can
+        self.login_as_root_owner()
+        response = self.client.delete(url, content_type='application/json')
+        assert response.status_code == 204
+
+    def test_column_list_profile_update_permissions(self):
+        url = reverse_lazy('api:v3:column_list_profiles-detail', args=[self.columnlistprofile.id]) + "?organization_id=" + str(self.org.id)
+        self.payload_data["name"] = "boo"
+
+        # child user cannot
+        self.login_as_child_member()
+        response = self.client.put(url, data=json.dumps(self.payload_data), content_type='application/json')
+        assert response.status_code == 403
+
+        # root users can
+        self.login_as_root_member()
+        response = self.client.put(url, data=json.dumps(self.payload_data), content_type='application/json')
+        assert response.status_code == 200

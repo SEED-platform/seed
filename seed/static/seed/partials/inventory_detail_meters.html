@@ -37,7 +37,7 @@
         <label>{$:: 'Interval' | translate $}:</label>
         <select class="form-control" ng-model="interval.selected" ng-change="refresh_readings()" ng-options="option for option in interval.options"></select>
       </div>
-      <div class="row">
+      <div class="row" ng-show="menu.user.organization.user_role !== 'viewer'">
         <button type="button" ng-click="open_green_button_upload_modal()" class="btn btn-primary" translate>UPLOAD_GB_DATA_BUTTON</button>
       </div>
     </div>

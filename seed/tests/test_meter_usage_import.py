@@ -82,7 +82,7 @@ class MeterUsageImportTest(TestCase):
         self.property_view_1 = PropertyView.objects.create(property=self.property_1, cycle=self.cycle, state=self.state_1)
         self.property_view_2 = PropertyView.objects.create(property=self.property_2, cycle=self.cycle, state=self.state_2)
 
-        self.import_record = ImportRecord.objects.create(owner=self.user, last_modified_by=self.user, super_organization=self.org)
+        self.import_record = ImportRecord.objects.create(owner=self.user, last_modified_by=self.user, super_organization=self.org, access_level_instance=self.org.root)
 
         # This file has multiple tabs
         filename = "example-pm-monthly-meter-usage.xlsx"
@@ -754,7 +754,7 @@ class MeterUsageImportTest(TestCase):
         In this case, neither the meter (if applicable) nor any of its readings
         are created.
         """
-        dup_import_record = ImportRecord.objects.create(owner=self.user, last_modified_by=self.user, super_organization=self.org)
+        dup_import_record = ImportRecord.objects.create(owner=self.user, last_modified_by=self.user, super_organization=self.org, access_level_instance=self.org.root)
         dup_filename = "example-pm-monthly-meter-usage-1-dup.xlsx"
         dup_filepath = os.path.dirname(os.path.abspath(__file__)) + "/../data_importer/tests/data/" + dup_filename
 
@@ -848,6 +848,7 @@ class MeterUsageImportAdjustedScenarioTest(DataMappingBaseTestCase):
             'import_file_id': self.import_file_1.id,
             'data_state': DATA_STATE_MAPPING,
             'no_default_data': False,
+            "raw_access_level_instance_id": self.org.root.id,
         }
 
         # Create 1 property with a duplicate in the first ImportFile

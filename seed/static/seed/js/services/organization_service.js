@@ -51,18 +51,51 @@ angular.module('BE.seed.service.organization', []).factory('organization_service
       })
       .then((response) => response.data);
 
+    organization_factory.get_organization_access_level_tree = (org_id) => $http.get(`/api/v3/organizations/${org_id}/access_levels/tree`).then((response) => response.data);
+
+    organization_factory.update_organization_access_level_names = (org_id, new_access_level_names) => $http.post(
+      `/api/v3/organizations/${org_id}/access_levels/access_level_names/`,
+      { access_level_names: new_access_level_names }
+    ).then((response) => response.data);
+
+    organization_factory.can_delete_access_level_instance = (org_id, instance_id) => $http.get(`/api/v3/organizations/${org_id}/access_levels/${instance_id}/can_delete_instance/`).then((response) => response.data);
+
+    organization_factory.delete_access_level_instance = (org_id, instance_id) => $http.delete(`/api/v3/organizations/${org_id}/access_levels/${instance_id}/delete_instance/`).then((response) => response.data);
+
+    organization_factory.create_organization_access_level_instance = (org_id, parent_id, name) => $http.post(
+      `/api/v3/organizations/${org_id}/access_levels/add_instance/`,
+      { parent_id, name }
+    ).then((response) => response.data);
+
+    organization_factory.edit_organization_access_level_instance = (org_id, instance_id, name) => $http.put(
+      `/api/v3/organizations/${org_id}/` + `access_levels/${instance_id}/edit_instance/`,
+      { name }
+    ).then((response) => response.data);
+
     /**
      * updates the role for a user within an org
      * @param  {int} user_id id of user
      * @param  {int} org_id  id of organization
      * @param  {str} role    role
-     * @return {promise obj}         promise object
+     * @return {promise obj} promise object
      */
     organization_factory.update_role = (user_id, org_id, role) => $http
       .put(
         `/api/v3/users/${user_id}/role/`,
         {
           role
+        },
+        {
+          params: { organization_id: org_id }
+        }
+      )
+      .then((response) => response.data);
+
+      organization_factory.update_ali = (user_id, org_id, ali_id) => $http
+      .put(
+        `/api/v3/users/${user_id}/access_level_instance/`,
+        {
+          "access_level_instance_id": ali_id,
         },
         {
           params: { organization_id: org_id }

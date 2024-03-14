@@ -79,3 +79,5 @@ django-braces==1.14.0
 django-oauth-toolkit==1.2.0
 
 future==0.18.3
+
+django-treebeard==4.6.1

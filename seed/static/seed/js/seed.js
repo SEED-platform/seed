@@ -12,6 +12,7 @@ angular.module('BE.seed.vendor_dependencies', [
   'ui.grid',
   'ui.grid.draggable-rows',
   'ui.grid.exporter',
+  'ui.grid.edit',
   'ui.grid.moveColumns',
   'ui.grid.pinning',
   'ui.grid.resizeColumns',
@@ -75,6 +76,7 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.export_to_audit_template_modal',
   'BE.seed.controller.filter_group_modal',
   'BE.seed.controller.geocode_modal',
+  'BE.seed.controller.goal_editor_modal',
   'BE.seed.controller.green_button_upload_modal',
   'BE.seed.controller.insights_program',
   'BE.seed.controller.insights_property',
@@ -107,21 +109,27 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.new_member_modal',
   'BE.seed.controller.notes',
   'BE.seed.controller.organization',
+  'BE.seed.controller.organization_access_level_tree',
+  'BE.seed.controller.organization_add_access_level_instance_modal',
+  'BE.seed.controller.organization_add_access_level_modal',
+  'BE.seed.controller.organization_delete_access_level_instance_modal',
+  'BE.seed.controller.organization_edit_access_level_instance_modal',
   'BE.seed.controller.organization_settings',
   'BE.seed.controller.organization_sharing',
   'BE.seed.controller.pairing',
   'BE.seed.controller.pairing_settings',
+  'BE.seed.controller.portfolio_summary',
   'BE.seed.controller.postoffice_modal',
   'BE.seed.controller.profile',
   'BE.seed.controller.program_setup',
   'BE.seed.controller.record_match_merge_link_modal',
-  'BE.seed.controller.set_update_to_now_modal',
   'BE.seed.controller.rename_column_modal',
   'BE.seed.controller.reset_modal',
   'BE.seed.controller.sample_data_modal',
   'BE.seed.controller.security',
   'BE.seed.controller.sensor_readings_upload_modal',
   'BE.seed.controller.sensors_upload_modal',
+  'BE.seed.controller.set_update_to_now_modal',
   'BE.seed.controller.settings_profile_modal',
   'BE.seed.controller.show_populated_columns_modal',
   'BE.seed.controller.ubid_admin',
@@ -146,6 +154,7 @@ angular.module('BE.seed.directives', [
   'sdUploader'
 ]);
 angular.module('BE.seed.services', [
+  'BE.seed.service.ah',
   'BE.seed.service.analyses',
   'BE.seed.service.audit_template',
   'BE.seed.service.auth',
@@ -162,6 +171,7 @@ angular.module('BE.seed.services', [
   'BE.seed.service.filter_groups',
   'BE.seed.service.flippers',
   'BE.seed.service.geocode',
+  'BE.seed.service.goal',
   'BE.seed.service.httpParamSerializerSeed',
   'BE.seed.service.inventory',
   'BE.seed.service.inventory_reports',
@@ -776,6 +786,14 @@ SEED_app.config([
               return note_service.get_notes(organization_id, $stateParams.inventory_type, $stateParams.view_id);
             }
           ],
+          auth_payload: [
+            'auth_service',
+            'user_service',
+            (auth_service, user_service) => {
+              const organization_id = user_service.get_organization().id;
+              return auth_service.is_authorized(organization_id, ['requires_member']);
+            }
+          ],
           $uibModalInstance: () => undefined
         }
       })
@@ -1245,6 +1263,194 @@ SEED_app.config([
         }
       })
       .state({
+        name: 'programs',
+        url: '/accounts/{organization_id:int}/program_setup',
+        templateUrl: `${static_url}seed/partials/program_setup.html`,
+        controller: 'program_setup_controller',
+        resolve: {
+          valid_column_data_types: [
+            () => ['number', 'float', 'integer', 'ghg', 'ghg_intensity', 'area', 'eui', 'boolean']
+          ],
+          valid_x_axis_data_types: [
+            () => ['number', 'string', 'float', 'integer', 'ghg', 'ghg_intensity', 'area', 'eui', 'boolean']
+          ],
+          compliance_metrics: [
+            '$stateParams',
+            'compliance_metric_service',
+            ($stateParams, compliance_metric_service) => compliance_metric_service.get_compliance_metrics($stateParams.organization_id)
+          ],
+          organization_payload: [
+            'organization_service',
+            '$stateParams',
+            (organization_service, $stateParams) => organization_service.get_organization($stateParams.organization_id)
+          ],
+          cycles_payload: [
+            'cycle_service',
+            '$stateParams',
+            (cycle_service, $stateParams) => cycle_service.get_cycles_for_org($stateParams.organization_id)
+          ],
+          property_columns: [
+            'valid_column_data_types',
+            '$stateParams',
+            'inventory_service',
+            'naturalSort',
+            (valid_column_data_types, $stateParams, inventory_service, naturalSort) => inventory_service.get_property_columns_for_org($stateParams.organization_id).then((columns) => {
+              columns = _.reject(columns, (item) => item.related || !valid_column_data_types.includes(item.data_type)).sort((a, b) => naturalSort(a.displayName, b.displayName));
+              return columns;
+            })
+          ],
+          x_axis_columns: [
+            'valid_x_axis_data_types',
+            '$stateParams',
+            'inventory_service',
+            'naturalSort',
+            (valid_x_axis_data_types, $stateParams, inventory_service, naturalSort) => inventory_service.get_property_columns_for_org($stateParams.organization_id).then((columns) => {
+              columns = _.reject(columns, (item) => item.related || !valid_x_axis_data_types.includes(item.data_type)).sort((a, b) => naturalSort(a.displayName, b.displayName));
+              return columns;
+            })
+          ],
+          filter_groups: [
+            '$stateParams',
+            'filter_groups_service',
+            ($stateParams, filter_groups_service) => {
+              const inventory_type = 'Property'; // just properties for now
+              return filter_groups_service.get_filter_groups(inventory_type, $stateParams.organization_id);
+            }
+          ],
+          auth_payload: [
+            'auth_service',
+            '$stateParams',
+            '$q',
+            (auth_service, $stateParams, $q) => auth_service.is_authorized($stateParams.organization_id, ['requires_member']).then(
+              (data) => {
+                if (data.auth.requires_member) {
+                  return data;
+                }
+                return $q.reject('not authorized');
+              },
+              (data) => $q.reject(data.message)
+            )
+          ]
+        }
+      })
+      .state({
+        name: 'program_setup',
+        url: '/accounts/{organization_id:int}/program_setup/{id:int}',
+        templateUrl: `${static_url}seed/partials/program_setup.html`,
+        controller: 'program_setup_controller',
+        resolve: {
+          valid_column_data_types: [
+            () => ['number', 'float', 'integer', 'ghg', 'ghg_intensity', 'area', 'eui', 'boolean']
+          ],
+          valid_x_axis_data_types: [
+            () => ['number', 'string', 'float', 'integer', 'ghg', 'ghg_intensity', 'area', 'eui', 'boolean']
+          ],
+          compliance_metrics: [
+            '$stateParams',
+            'compliance_metric_service',
+            ($stateParams, compliance_metric_service) => compliance_metric_service.get_compliance_metrics($stateParams.organization_id)
+          ],
+          organization_payload: [
+            'organization_service',
+            '$stateParams',
+            (organization_service, $stateParams) => organization_service.get_organization($stateParams.organization_id)
+          ],
+          cycles_payload: [
+            'cycle_service',
+            '$stateParams',
+            (cycle_service, $stateParams) => cycle_service.get_cycles_for_org($stateParams.organization_id)
+          ],
+          property_columns: [
+            'valid_column_data_types',
+            '$stateParams',
+            'inventory_service',
+            'naturalSort',
+            (valid_column_data_types, $stateParams, inventory_service, naturalSort) => inventory_service.get_property_columns_for_org($stateParams.organization_id).then((columns) => {
+              columns = _.reject(columns, (item) => item.related || !valid_column_data_types.includes(item.data_type)).sort((a, b) => naturalSort(a.displayName, b.displayName));
+              return columns;
+            })
+          ],
+          x_axis_columns: [
+            'valid_x_axis_data_types',
+            '$stateParams',
+            'inventory_service',
+            'naturalSort',
+            (valid_x_axis_data_types, $stateParams, inventory_service, naturalSort) => inventory_service.get_property_columns_for_org($stateParams.organization_id).then((columns) => {
+              columns = _.reject(columns, (item) => item.related || !valid_x_axis_data_types.includes(item.data_type)).sort((a, b) => naturalSort(a.displayName, b.displayName));
+              return columns;
+            })
+          ],
+          filter_groups: [
+            '$stateParams',
+            'filter_groups_service',
+            ($stateParams, filter_groups_service) => {
+              const inventory_type = 'Property'; // just properties for now
+              return filter_groups_service.get_filter_groups(inventory_type, $stateParams.organization_id);
+            }
+          ],
+          auth_payload: [
+            'auth_service',
+            '$stateParams',
+            '$q',
+            (auth_service, $stateParams, $q) => auth_service.is_authorized($stateParams.organization_id, ['requires_member']).then(
+              (data) => {
+                if (data.auth.requires_member) {
+                  return data;
+                }
+                return $q.reject('not authorized');
+              },
+              (data) => $q.reject(data.message)
+            )
+          ]
+        }
+      })
+      .state({
+        name: 'organization_access_level_tree',
+        url: '/accounts/{organization_id:int}/access_level_tree',
+        templateUrl: `${static_url}seed/partials/organization_access_level_tree.html`,
+        controller: 'organization_access_level_tree_controller',
+        resolve: {
+          organization_payload: [
+            'organization_service',
+            '$stateParams',
+            '$q',
+            (organization_service, $stateParams, $q) => {
+              const organization_id = $stateParams.organization_id;
+              return organization_service.get_organization(organization_id)
+                .then((data) => {
+                  if (data.organization.is_parent) {
+                    return data;
+                  }
+                  return $q.reject('Your page could not be located!');
+                });
+            }
+          ],
+          auth_payload: [
+            'auth_service',
+            '$stateParams',
+            '$q',
+            (auth_service, $stateParams, $q) => {
+              const organization_id = $stateParams.organization_id;
+              return auth_service.is_authorized(organization_id, ['requires_viewer', 'requires_owner'])
+                .then((data) => {
+                  if (data.auth.requires_viewer) {
+                    return data;
+                  }
+                  return $q.reject('not authorized');
+                }, (data) => $q.reject(data.message));
+            }
+          ],
+          access_level_tree: [
+            'organization_service',
+            '$stateParams',
+            (organization_service, $stateParams) => {
+              const organization_id = $stateParams.organization_id;
+              return organization_service.get_organization_access_level_tree(organization_id);
+            }
+          ]
+        }
+      })
+      .state({
         name: 'organization_column_settings',
         url: '/accounts/{organization_id:int}/column_settings/{inventory_type:properties|taxlots}',
         templateUrl: `${static_url}seed/partials/column_settings.html`,
@@ -1611,6 +1817,14 @@ SEED_app.config([
           user_profile_payload: [
             'user_service',
             (user_service) => user_service.get_user_profile()
+          ],
+          access_level_tree: [
+            'organization_service',
+            '$stateParams',
+            (organization_service, $stateParams) => {
+              const organization_id = $stateParams.organization_id;
+              return organization_service.get_organization_access_level_tree(organization_id);
+            }
           ]
         }
       })
@@ -2160,11 +2374,11 @@ SEED_app.config([
               return inventory_service.get_column_list_profiles('Detail View Profile', inventory_type);
             }
           ],
-          users_payload: [
-            'organization_service',
-            'user_service',
-            (organization_service, user_service) => organization_service.get_organization_users({ org_id: user_service.get_organization().id })
-          ],
+          // users_payload: [
+          //   'organization_service',
+          //   'user_service',
+          //   (organization_service, user_service) => organization_service.get_organization_users({ org_id: user_service.get_organization().id })
+          // ],
           current_profile: [
             '$stateParams',
             'inventory_service',
@@ -2307,11 +2521,11 @@ SEED_app.config([
             'organization_service',
             (user_service, organization_service) => organization_service.get_organization(user_service.get_organization().id)
           ],
-          users_payload: [
-            'user_service',
-            'organization_service',
-            (user_service, organization_service) => organization_service.get_organization_users({ org_id: user_service.get_organization().id })
-          ],
+          // users_payload: [
+          //   'user_service',
+          //   'organization_service',
+          //   (user_service, organization_service) => organization_service.get_organization_users({ org_id: user_service.get_organization().id })
+          // ],
           views_payload: [
             '$stateParams',
             'user_service',
@@ -2633,6 +2847,29 @@ SEED_app.config([
               return filter_groups_service.get_filter_groups(inventory_type);
             }
           ]
+        }
+      })
+      .state({
+        name: 'portfolio_summary',
+        url: '/insights/portfolio_summary',
+        templateUrl: `${static_url}seed/partials/portfolio_summary.html`,
+        controller: 'portfolio_summary_controller',
+        resolve: {
+          valid_column_data_types: [() => ['number', 'float', 'integer', 'area', 'eui', 'ghg', 'ghg_intensity']],
+          property_columns: ['valid_column_data_types', '$stateParams', 'inventory_service', (valid_column_data_types, $stateParams, inventory_service) => inventory_service.get_property_columns_for_org($stateParams.organization_id).then((columns) => {
+            _.remove(columns, { table_name: 'TaxLotState' });
+            return columns;
+          })],
+          cycles: ['cycle_service', (cycle_service) => cycle_service.get_cycles()],
+          organization_payload: ['user_service', 'organization_service', (user_service, organization_service) => organization_service.get_organization(user_service.get_organization().id)],
+          access_level_tree: ['organization_payload', 'organization_service', (organization_payload, organization_service) => {
+            const organization_id = organization_payload.organization.id;
+            return organization_service.get_organization_access_level_tree(organization_id);
+          }],
+          auth_payload: ['auth_service', 'organization_payload', (auth_service, organization_payload) => {
+            const organization_id = organization_payload.organization.id;
+            return auth_service.is_authorized(organization_id, ['requires_owner']);
+          }]
         }
       })
       .state({

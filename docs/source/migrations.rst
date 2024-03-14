@@ -38,6 +38,10 @@ local_untracked.py file
         ),
     )
 
+Version 2.22.0
+--------------
+- There are no special migrations needed for this version. Simply run `./manage.py migrate`.
+
 Version 2.21.0
 --------------
 - There are no special migrations needed for this version. Simply run `./manage.py migrate`.

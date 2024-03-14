@@ -279,7 +279,7 @@ class AuditTemplateBatchTests(TestCase):
         self.assertEqual(response['success'], False)
         self.assertEqual(response['message'], exp_message)
 
-        # missing audit tempalte building id
+        # missing audit template building id
         url = reverse('api:v3:audit_template-batch-get-building-xml') + '?organization_id=' + str(self.org.id) + '&cycle_id=' + str(self.cycle.id)
         content_type = 'application/json'
         data = json.dumps([

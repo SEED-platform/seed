@@ -13,8 +13,15 @@ from rest_framework.decorators import action
 
 from seed.data_importer.models import ImportRecord
 from seed.decorators import ajax_request_class, require_organization_id_class
-from seed.lib.superperms.orgs.decorators import has_perm_class
-from seed.lib.superperms.orgs.models import Organization, OrganizationUser
+from seed.lib.superperms.orgs.decorators import (
+    has_hierarchy_access,
+    has_perm_class
+)
+from seed.lib.superperms.orgs.models import (
+    AccessLevelInstance,
+    Organization,
+    OrganizationUser
+)
 from seed.models import obj_to_dict
 from seed.utils.api import OrgMixin, api_endpoint_class
 from seed.utils.api_schema import (
@@ -42,7 +49,13 @@ class DatasetViewSet(viewsets.ViewSet, OrgMixin):
         org_id = self.get_organization(request)
         org = Organization.objects.get(pk=org_id)
         datasets = []
-        for d in ImportRecord.objects.filter(super_organization=org):
+        access_level_instance = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
+        import_records = ImportRecord.objects.filter(
+            super_organization=org,
+            access_level_instance__lft__gte=access_level_instance.lft,
+            access_level_instance__rgt__lte=access_level_instance.rgt,
+        )
+        for d in import_records:
             importfiles = [obj_to_dict(f) for f in d.files]
             dataset = obj_to_dict(d)
             dataset['importfiles'] = importfiles
@@ -66,6 +79,7 @@ class DatasetViewSet(viewsets.ViewSet, OrgMixin):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
+    @has_hierarchy_access(import_record_id_kwarg="pk")
     def update(self, request, pk=None):
         """
             Updates the name of a dataset (ImportRecord).
@@ -103,6 +117,7 @@ class DatasetViewSet(viewsets.ViewSet, OrgMixin):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_view_data')
+    @has_hierarchy_access(import_record_id_kwarg="pk")
     def retrieve(self, request, pk=None):
         """
             Retrieves a dataset (ImportRecord).
@@ -167,6 +182,7 @@ class DatasetViewSet(viewsets.ViewSet, OrgMixin):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_member')
+    @has_hierarchy_access(import_record_id_kwarg="pk")
     def destroy(self, request, pk=None):
         """
             Deletes a dataset (ImportRecord).
@@ -223,7 +239,7 @@ class DatasetViewSet(viewsets.ViewSet, OrgMixin):
             created_at=timezone.now(),
             last_modified_by=request.user,
             super_organization=org,
-            owner=request.user
+            owner=request.user, access_level_instance_id=request.access_level_instance_id
         )
 
         return JsonResponse({'status': 'success', 'id': record.pk, 'name': record.name})
@@ -247,5 +263,10 @@ class DatasetViewSet(viewsets.ViewSet, OrgMixin):
         """
         org_id = int(self.get_organization(request))
 
-        datasets_count = ImportRecord.objects.filter(super_organization_id=org_id).count()
+        access_level_instance = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
+        datasets_count = ImportRecord.objects.filter(
+            super_organization_id=org_id,
+            access_level_instance__lft__gte=access_level_instance.lft,
+            access_level_instance__rgt__lte=access_level_instance.rgt,
+        ).count()
         return JsonResponse({'status': 'success', 'datasets_count': datasets_count})

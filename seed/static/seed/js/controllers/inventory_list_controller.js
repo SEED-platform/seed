@@ -546,6 +546,17 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
       });
     }
 
+    $scope.show_access_level_instances = true;
+    $scope.toggle_access_level_instances = () => {
+      $scope.show_access_level_instances = !$scope.show_access_level_instances;
+      $scope.gridOptions.columnDefs.forEach((col) => {
+        if (col.group === 'access_level_instance') {
+          col.visible = $scope.show_access_level_instances;
+        }
+      });
+      $scope.gridApi.core.refresh();
+    };
+
     $scope.loadLabelsForFilter = (
       query // Find all labels associated with the current cycle.
     ) => _.filter($scope.labels, (lbl) => {
@@ -577,7 +588,8 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
         controller: 'update_item_labels_modal_controller',
         resolve: {
           inventory_ids: () => selectedViewIds,
-          inventory_type: () => $scope.inventory_type
+          inventory_type: () => $scope.inventory_type,
+          is_ali_root: () => $scope.menu.user.is_ali_root
         }
       });
       modalInstance.result.then(() => {
@@ -787,6 +799,27 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
       return _.defaults(col, options, defaults);
     });
 
+    // Add access level instances to grid
+    for (const level of $scope.organization.access_level_names.reverse().slice(0, -1)) {
+      $scope.columns.unshift({
+        name: level,
+        displayName: level,
+        group: 'access_level_instance',
+        enableColumnMenu: true,
+        enableColumnMoving: false,
+        enableColumnResizing: true,
+        enableFiltering: true,
+        enableHiding: true,
+        enableSorting: true,
+        enablePinning: false,
+        exporterSuppressExport: true,
+        pinnedLeft: true,
+        visible: true,
+        width: 100,
+        cellClass: 'ali-cell',
+        headerCellClass: 'ali-header'
+      });
+    }
     // The meters_exist_indicator column is only applicable to properties
     if ($stateParams.inventory_type === 'properties') {
       $scope.columns.unshift(
@@ -1032,17 +1065,11 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
     // Data
     const processData = (data) => {
       if (_.isUndefined(data)) data = $scope.data;
-      const visibleColumns = _.map($scope.columns, 'name').concat([
-        '$$treeLevel',
-        'notes_count',
-        'meters_exist_indicator',
-        'merged_indicator',
-        'id',
-        'property_state_id',
-        'property_view_id',
-        'taxlot_state_id',
-        'taxlot_view_id'
-      ]);
+      const visibleColumns = [
+        ..._.map($scope.columns, 'name'),
+        ...['$$treeLevel', 'notes_count', 'meters_exist_indicator', 'merged_indicator', 'id', 'property_state_id', 'property_view_id', 'taxlot_state_id', 'taxlot_view_id'],
+        ...$scope.organization.access_level_names
+      ];
 
       const columnsToAggregate = _.filter($scope.columns, 'treeAggregationType').reduce((obj, col) => {
         obj[col.name] = col.treeAggregationType;
@@ -1522,6 +1549,9 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
         case 'open_show_populated_columns_modal':
           $scope.open_show_populated_columns_modal();
           break;
+        case 'toggle_access_level_instances':
+          $scope.toggle_access_level_instances();
+          break;
         case 'select_all':
           $scope.select_all();
           break;
@@ -1569,7 +1599,8 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
         resolve: {
           inventory_ids: () => ($scope.inventory_type === 'properties' ? selectedViewIds : []),
           cycles: () => cycles.cycles,
-          current_cycle: () => $scope.cycle.selected_cycle
+          current_cycle: () => $scope.cycle.selected_cycle,
+          user:  () => $scope.menu.user
         }
       });
       modalInstance.result.then(
@@ -1611,7 +1642,15 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
               ($state, $stateParams, inventory_service) => (record.inventory_type === 'properties' ? inventory_service.get_property(record.view_id) : inventory_service.get_taxlot(record.view_id))
             ],
             organization_payload: () => organization_payload,
-            notes: ['note_service', (note_service) => note_service.get_notes($scope.organization.id, record.inventory_type, record.view_id)]
+            notes: ['note_service', (note_service) => note_service.get_notes($scope.organization.id, record.inventory_type, record.view_id)],
+            auth_payload: [
+              'auth_service',
+              'user_service',
+              (auth_service, user_service) => {
+                const organization_id = user_service.get_organization().id;
+                return auth_service.is_authorized(organization_id, ['requires_member']);
+              }
+            ]
           }
         })
         .result.then((notes_count) => {
@@ -1620,12 +1659,13 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
     };
 
     function currentColumns() {
-      // Save all columns except first 3
+      // Save all columns except first 3 and Access Level Instances
       let gridCols = _.filter(
         $scope.gridApi.grid.columns,
         (col) => !_.includes(['treeBaseRowHeaderCol', 'selectionRowHeaderCol', 'notes_count', 'meters_exist_indicator', 'merged_indicator', 'id', 'labels'], col.name) &&
           col.visible &&
-          !col.colDef.is_derived_column
+          !col.colDef.is_derived_column &&
+          col.colDef.group !== 'access_level_instance'
       );
 
       // Ensure pinned ordering first

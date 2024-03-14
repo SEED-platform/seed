@@ -26,7 +26,7 @@ angular.module('BE.seed.service.analyses', []).factory('analyses_service', [
 
     const get_analysis_view_for_org = (analysis_id, view_id, org_id) => $http.get(`/api/v3/analyses/${analysis_id}/views/${view_id}/?organization_id=${org_id}`).then((response) => response.data);
 
-    const create_analysis = (name, service, configuration, property_view_ids) => {
+    const create_analysis = (name, service, configuration, property_view_ids, access_level_instance_id) => {
       const organization_id = user_service.get_organization().id;
       return $http({
         url: '/api/v3/analyses/',
@@ -36,7 +36,8 @@ angular.module('BE.seed.service.analyses', []).factory('analyses_service', [
           name,
           service,
           configuration,
-          property_view_ids
+          property_view_ids,
+          access_level_instance_id,
         }
       }).then((response) => response.data);
     };

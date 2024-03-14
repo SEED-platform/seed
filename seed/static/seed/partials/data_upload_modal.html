@@ -17,6 +17,8 @@
   <h4 class="modal-title" ng-switch-when="17" translate>Confirm Audit Template Building Import?</h4>
   <h4 class="modal-title" ng-switch-when="18" translate>Select Properties to Update</h4>
   <h4 class="modal-title" ng-switch-when="19" translate>Audit Template Upload Results</h4>
+  <h4 class="modal-title" ng-switch-when="20" translate>Upload Access Level Instances</h4>
+  <h4 class="modal-title" ng-switch-when="21" translate>Successful upload!</h4>
 </div>
 <div class="modal-body" ng-switch on="step.number">
   <!-- Step 1 -->
@@ -37,11 +39,15 @@
       </div>
     </div>
   </div>
+  <div ng-switch-when="20">
+    <p translate>ACCESS_LEVEL_STRUCTURE_UPLOAD_TEXT</p>
+  </div>
   <!-- Step 2 & 13: Choose upload type (also Portfolio Manager Data Import) -->
   <div class="data_upload_steps container-fluid" ng-switch-when="2|13" ng-switch-when-separator="|">
     <div class="alert alert-danger" ng-show="uploader.invalid_extension_alert" translate="INVALID_EXTENSION_ALERT"></div>
     <div class="alert alert-danger" ng-show="uploader.invalid_geojson_extension_alert" translate="INVALID_GEOJSON_EXTENSION_ALERT"></div>
     <div class="alert alert-danger" ng-show="uploader.invalid_xml_zip_extension_alert" translate="INVALID_XML_ZIP_EXTENSION_ALERT"></div>
+
     <uib-tabset class="modal-tabs">
       <uib-tab index="0" heading="{$:: 'Property and Tax Lot Data' | translate $}">
         <div class="tab-content-section" ng-hide="uploader.in_progress">
@@ -72,6 +78,11 @@
           </div>
         </div>
         <div class="tab-content-section" ng-hide="uploader.in_progress">
+          <div class="alert alert-warning" ng-show="organization.inventory_count == 0">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+              <span translate>REVIEW_MATCHING_CRITERIA</span>
+              <a ng-if="auth.requires_owner" target="_blank" ui-sref="organization_column_settings(::{organization_id: organization.id, inventory_type: 'properties'})">Column Settings</a>
+          </div>
           <div class="row">
             <div class="col-sm-4">
               <p translate>FILE_TYPES_SUPPORTED</p>
@@ -300,7 +311,7 @@
             ng-if="uploader.progress_last_updated != null && uploader.progress_last_checked != null && (uploader.progress_last_checked - uploader.progress_last_updated) / 1000 > 60"
             class="progress_bar_copy_bottom"
           >
-            <i class="fa-solid fa-spinner fa-pulse fa-fw" style="padding-right: 0"></i>
+            <i class="fa-solid fa-spinner fa-spin-pulse fa-fw" style="padding-right: 0"></i>
             SEED is still working. Please do not refresh or leave this page. (Last updated at {$ uploader.progress_last_checked | date:'hh:mm a' $})
           </div>
         </div>
@@ -321,15 +332,23 @@
           <li>{$:: multipleCycleUpload ? 'default_cycle' : 'Cycle' | translate $}: {$ selectedCycle.name $}</li>
           <li>{$:: 'Total rows in the import file' | translate $}: {$ import_file_records|number:0 $}</li>
           <li ng-if="property_new">{$:: 'New properties' | translate $}: {$ property_new|number:0 $}</li>
+          <li ng-if="property_new_errors">{$:: 'New properties errors' | translate $}: {$ property_new_errors|number:0 $}</li>
           <li ng-if="tax_lot_new">{$:: 'New tax lots' | translate $}: {$ tax_lot_new|number:0 $}</li>
+          <li ng-if="tax_lot_new_errors">{$:: 'New tax lots errors' | translate $}: {$ tax_lot_new_errors|number:0 $}</li>
           <li ng-if="property_merges_within_file">{$:: 'Merged properties within import file' | translate $}: {$ property_merges_within_file|number:0 $}</li>
+          <li ng-if="property_merges_within_file_errors">{$:: 'Merged properties within import file errors' | translate $}: {$ property_merges_within_file_errors|number:0 $}</li>
           <li ng-if="tax_lot_merges_within_file">{$:: 'Merged tax lots within import file' | translate $}: {$ tax_lot_merges_within_file|number:0 $}</li>
+          <li ng-if="tax_lot_merges_within_file_errors">{$:: 'Merged tax lots within import file errors' | translate $}: {$ tax_lot_merges_within_file_errors|number:0 $}</li>
           <li ng-if="property_merges_against_existing">{$:: 'Merged properties against existing records' | translate $}: {$ property_merges_against_existing|number:0 $}</li>
+          <li ng-if="property_merges_against_existing_errors">{$:: 'Merged properties against existing records errors' | translate $}: {$ property_merges_against_existing_errors|number:0 $}</li>
           <li ng-if="tax_lot_merges_against_existing">{$:: 'Merged tax lots against existing records' | translate $}: {$ tax_lot_merges_against_existing|number:0 $}</li>
+          <li ng-if="tax_lot_merges_against_existing_errors">{$:: 'Merged tax lots against existing records errors' | translate $}: {$ tax_lot_merges_against_existing_errors|number:0 $}</li>
           <li ng-if="property_merges_between_existing">{$:: 'Merged properties between existing records' | translate $}: {$ property_merges_between_existing|number:0 $}</li>
           <li ng-if="tax_lot_merges_between_existing">{$:: 'Merged tax lots between existing records' | translate $}: {$ tax_lot_merges_between_existing|number:0 $}</li>
           <li ng-if="property_duplicates_within_file">{$:: 'Ignored property duplicates within the import file' | translate $}: {$ property_duplicates_within_file|number:0 $}</li>
+          <li ng-if="property_duplicates_within_file_errors">{$:: 'Ignored property duplicates within the import file errors' | translate $}: {$ property_duplicates_within_file_errors|number:0 $}</li>
           <li ng-if="tax_lot_duplicates_within_file">{$:: 'Ignored tax lot duplicates within the import file' | translate $}: {$ tax_lot_duplicates_within_file|number:0 $}</li>
+          <li ng-if="tax_lot_duplicates_within_file_errors">{$:: 'Ignored tax lot duplicates within the import file errors' | translate $}: {$ tax_lot_duplicates_within_file_errors|number:0 $}</li>
           <li ng-if="property_duplicates_against_existing">{$:: 'Ignored duplicates of existing properties' | translate $}: {$ property_duplicates_against_existing|number:0 $}</li>
           <li ng-if="tax_lot_duplicates_against_existing">{$:: 'Ignored duplicates of existing tax lots' | translate $}: {$ tax_lot_duplicates_against_existing|number:0 $}</li>
 
@@ -368,15 +387,25 @@
           <li>{$:: multipleCycleUpload ? 'default_cycle' : 'Cycle' | translate $}: {$ selectedCycle.name $}</li>
           <li>{$:: 'Total rows in the import file' | translate $}: {$ import_file_records|number:0 $}</li>
           <li ng-if="property_new">{$:: 'New properties' | translate $}: {$ property_new|number:0 $}</li>
+          <li ng-if="property_new_errors">{$:: 'New properties errors' | translate $}: {$ property_new_errors|number:0 $}</li>
           <li ng-if="tax_lot_new">{$:: 'New tax lots' | translate $}: {$ tax_lot_new|number:0 $}</li>
+          <li ng-if="tax_lot_new_errors">{$:: 'New tax lots errors' | translate $}: {$ tax_lot_new_errors|number:0 $}</li>
           <li ng-if="property_merges_within_file">{$:: 'Merged properties within import file' | translate $}: {$ property_merges_within_file|number:0 $}</li>
+          <li ng-if="property_merges_within_file_errors">{$:: 'Merged properties within import file errors' | translate $}: {$ property_merges_within_file_errors|number:0 $}</li>
           <li ng-if="tax_lot_merges_within_file">{$:: 'Merged tax lots within import file' | translate $}: {$ tax_lot_merges_within_file|number:0 $}</li>
+          <li ng-if="tax_lot_merges_within_file_errors">{$:: 'Merged tax lots within import file errors' | translate $}: {$ tax_lot_merges_within_file_errors|number:0 $}</li>
           <li ng-if="property_merges_between_existing">{$:: 'Merged properties between existing records' | translate $}: {$ property_merges_between_existing|number:0 $}</li>
+          <li ng-if="property_merges_between_existing_errors">{$:: 'Merged properties between existing records errors' | translate $}: {$ property_merges_between_existing_errors|number:0 $}</li>
           <li ng-if="tax_lot_merges_between_existing">{$:: 'Merged tax lots between existing records' | translate $}: {$ tax_lot_merges_between_existing|number:0 $}</li>
+          <li ng-if="tax_lot_merges_between_existing_errors">{$:: 'Merged tax lots between existing records errors' | translate $}: {$ tax_lot_merges_between_existing_errors|number:0 $}</li>
           <li ng-if="property_duplicates_within_file">{$:: 'Ignored property duplicates within the import file' | translate $}: {$ property_duplicates_within_file|number:0 $}</li>
+          <li ng-if="property_duplicates_within_file_errors">{$:: 'Ignored property duplicates within the import file errors' | translate $}: {$ property_duplicates_within_file_errors|number:0 $}</li>
           <li ng-if="tax_lot_duplicates_within_file">{$:: 'Ignored tax lot duplicates within the import file' | translate $}: {$ tax_lot_duplicates_within_file|number:0 $}</li>
+          <li ng-if="tax_lot_duplicates_within_file_errors">{$:: 'Ignored tax lot duplicates within the import file errors' | translate $}: {$ tax_lot_duplicates_within_file_errors|number:0 $}</li>
           <li ng-if="property_duplicates_against_existing">{$:: 'Ignored duplicates of existing properties' | translate $}: {$ property_duplicates_against_existing|number:0 $}</li>
+          <li ng-if="property_duplicates_against_existing_errors">{$:: 'Ignored duplicates of existing properties errors' | translate $}: {$ property_duplicates_against_existing_errors|number:0 $}</li>
           <li ng-if="tax_lot_duplicates_against_existing">{$:: 'Ignored duplicates of existing tax lots' | translate $}: {$ tax_lot_duplicates_against_existing|number:0 $}</li>
+          <li ng-if="tax_lot_duplicates_against_existing_errors">{$:: 'Ignored duplicates of existing tax lots errors' | translate $}: {$ tax_lot_duplicates_against_existing_errors|number:0 $}</li>
 
           <div ng-if="properties_geocoded_high_confidence || properties_geocoded_low_confidence || properties_geocoded_manually || properties_geocode_not_possible">
             <br />
@@ -443,7 +472,6 @@
   <!-- Step 15:  Upload PM Meter Readings -->
   <div class="data_upload_steps" ng-switch-when="15">
     <div class="alert alert-danger" ng-show="pm_meter_import_error" translate>{$:: pm_meter_import_error $}</div>
-
     <div class="progress_bar_container" ng-show="uploader.in_progress">
       <div class="progress_bar_copy_top" translate="UPLOADING_PROGRESS" translate-values="{ dataset_filename: dataset.filename , cycle_name: selectedCycle.name }"></div>
 
@@ -540,6 +568,40 @@
   <div class="data-upload-steps" ng-switch-when="19">
     <div class="alert alert-success">New Property Views: {$ at_upload_summary.success $}</div>
     <div class="alert alert-danger" ng-if="at_upload_summary.failure">Failed to update: {$ at_upload_summary.failure $}</div>
+  </div>
+  <!-- Step 20: Upload Access Level Instances -->
+  <div class="data_upload_steps container-fluid" ng-switch-when="20">
+    <div class="alert alert-danger" ng-show="uploader.invalid_extension_alert" translate="INVALID_EXTENSION_ALERT"></div>
+    <div class="row">
+      <div class="col-sm-12">
+        <p translate>AH_FILE_TYPES_SUPPORTED</p>
+        <p translate>MULTI_FILE_EXCEL_NOT_SUPPORTED</p>
+      </div>
+      <div class="col-sm-12" style="margin-bottom: 10px;">
+        <div class="btn btn-primary upload-btn flex-centered" sd-uploader organization-id="organization.org_id" sourcetype="AccessLevelInstances" sourceprog="" sourcever="" importrecord="" eventfunc="uploaderfunc(message, file, progress)">
+          <i class="fa-solid fa-table fa-2x"></i>
+          <span class="grow">{$:: 'Upload a Spreadsheet' | translate $}</span>
+        </div>
+        <div class="tab-content-section" ng-show="uploader.in_progress" ng-include="::urls.static_url + 'seed/partials/data_upload_modal_progress.html'"></div>
+      </div>
+    </div>
+  </div>
+  <!-- Step 21: Access Level Instances Success -->
+  <div class="data_upload_steps" ng-switch-when="21">
+    <div class="row">
+      <div class="alert alert-success" translate="ACCESS_LEVEL_FILENAME_UPLOADED"></div>
+      <div class="alert alert-danger" ng-if="access_level_issues != null && (access_level_issues | json) != ({} | json)" style="display:flex;align-items:baseline;">
+        <div style="flex-grow:1">There were errors and/or warnings for the file(s) uploaded.</div>
+        <button type="button" class="btn btn-primary" ng-click="export_access_level_issues(access_level_issues)">
+          <i class="fa-solid fa-download" aria-hidden="true"></i><span class="pad-left-5" translate>Export CSV</span>
+        </button>
+      </div>
+    </div>
+    <div class="row" ng-if="access_level_issues != null && (access_level_issues | json) != ({} | json)">
+      <div class="col-sm-12">
+        <ng-include src="::urls.static_url + 'seed/partials/access_level_instances_import_messages.html'"></ng-include>
+      </div>
+    </div>
   </div>
 </div>
 

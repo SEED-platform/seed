@@ -102,7 +102,7 @@ def _create_default_columns(organization_id):
         Column.objects.create(**details)
 
 
-def create_organization(user=None, org_name='', *args, **kwargs):
+def create_organization(user=None, org_name='test_org', *args, **kwargs):
     """
     Helper script to create a user/org relationship from scratch. This is heavily used and
     creates the default labels, columns, and data quality rules when a new organization is created
@@ -121,7 +121,7 @@ def create_organization(user=None, org_name='', *args, **kwargs):
 
     if user:
         organization_user, user_added = OrganizationUser.objects.get_or_create(
-            user=user, organization=organization
+            user=user, organization=organization, access_level_instance=organization.root
         )
 
     for label in Label.DEFAULT_LABELS:
@@ -166,7 +166,7 @@ def create_suborganization(user, current_org, suborg_name='', user_role=ROLE_MEM
         # upon initializing an organization, create the default columns
         _create_default_columns(sub_org.id)
 
-    ou, _ = OrganizationUser.objects.get_or_create(user=user, organization=sub_org)
+    ou, _ = OrganizationUser.objects.get_or_create(user=user, organization=sub_org, access_level_instance=sub_org.root)
     ou.role_level = user_role
     ou.save()
 

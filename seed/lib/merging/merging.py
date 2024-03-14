@@ -239,6 +239,9 @@ def merge_state(merged_state, state1, state2, priorities, ignore_merge_protectio
         state2_present_columns
     )
 
+    default_ali = state1.raw_access_level_instance
+    merged_state.raw_access_level_instance = default_ali if default_ali is not None else state2.raw_access_level_instance
+
     # merge measures, scenarios, simulations
     if isinstance(merged_state, PropertyState):
         PropertyState.merge_relationships(merged_state, state1, state2)
