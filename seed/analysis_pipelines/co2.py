@@ -39,7 +39,7 @@ ERROR_INVALID_REGION_CODE = 4
 
 CO2_ANALYSIS_MESSAGES = {
     ERROR_INVALID_METER_READINGS: 'Property view skipped (no linked electricity meters with readings).',
-    ERROR_NO_VALID_PROPERTIES: 'Analysis found no valid properties.',
+    ERROR_NO_VALID_PROPERTIES: 'Analysis found no properties containing valid meter readings.',
     WARNING_SOME_INVALID_PROPERTIES: 'Some properties failed to validate.',
     ERROR_NO_REGION_CODE: 'Property is missing eGRID Subregion Code.',
     ERROR_INVALID_REGION_CODE: 'Could not find C02 rate for provided eGRID subregion code.'
