@@ -6,7 +6,6 @@ on:
     branches:
       - "develop"
       - "main"
-      - "AH/develop"
 
 jobs:
   # Currently GH Actions provides no simple method for "sharing"
