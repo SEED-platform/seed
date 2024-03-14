@@ -26,17 +26,20 @@ else
 	BRANCH_NAME ?= $(shell git rev-parse --abbrev-ref HEAD)
 endif
 
-$(info BRANCH_NAME="$(BRANCH_NAME)")
+# Normalize branch name for Docker tag compatibility
+BRANCH_NAME_SAFE = $(subst /,-,$(BRANCH_NAME))
+
+$(info BRANCH_NAME_SAFE="$(BRANCH_NAME_SAFE)")
 
 # git release version - use for rollbacks
-
-TAG ?= $(BASE_IMAGE_TAG)-$(BRANCH_NAME)-$(HEAD_VER)
+TAG ?= $(BASE_IMAGE_TAG)-$(BRANCH_NAME_SAFE)-$(HEAD_VER)
 
 .PHONY: build push
 
 build:
 	docker build -t $(REPO):$(TAG) \
 	  -f Dockerfile \
+      --build-arg NGINX_LISTEN_OPTS=$(NGINX_LISTEN_OPTS) \
 		./
 
 push:

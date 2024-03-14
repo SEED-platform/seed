@@ -95,7 +95,7 @@ http {
     # configuration of the server
     server {
 
-        listen      80 default_server http2;
+        listen      80 default_server ${NGINX_LISTEN_OPTS};
         server_name localhost;
         charset     utf-8;
 
