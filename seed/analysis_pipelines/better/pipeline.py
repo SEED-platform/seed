@@ -1,8 +1,8 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
-:author
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
 import copy
 import logging
@@ -26,7 +26,8 @@ from seed.analysis_pipelines.better.helpers import (
     _run_better_building_analyses,
     _run_better_portfolio_analysis,
     _store_better_building_analysis_results,
-    _store_better_portfolio_analysis_results
+    _store_better_portfolio_analysis_results,
+    _store_better_portfolio_building_analysis_results
 )
 from seed.analysis_pipelines.pipeline import (
     AnalysisPipeline,
@@ -45,6 +46,7 @@ from seed.models import (
     AnalysisMessage,
     AnalysisPropertyView,
     Column,
+    Cycle,
     Meter
 )
 
@@ -67,7 +69,7 @@ def _validate_better_config(analysis):
     REQUIRED_CONFIG_PROPERTIES = [
         'min_model_r_squared',
         'savings_target',
-        'benchmark_data',
+        'benchmark_data_type',
         'portfolio_analysis',
         'preprocess_meters',
     ]
@@ -80,8 +82,8 @@ def _validate_better_config(analysis):
 
 class BETTERPipeline(AnalysisPipeline):
     """
-    BETTERPipeline is a class for preparing, running, and post
-    processing BETTER analysis by implementing the AnalysisPipeline's abstract
+    BETTERPipeline is a class for preparing, running, and post-processing
+    BETTER analysis by implementing the AnalysisPipeline's abstract
     methods.
     """
 
@@ -149,6 +151,7 @@ def get_meter_readings(property_id, preprocess_meters, config):
     :param preprocess_meters: bool, if true aggregate and interpolate readings
         into monthly readings. If false, don't do any preprocessing of the property's
         meters and readings.
+    :param config: dict
     :return: List[dict], list of dictionaries of the form:
         { 'meter_type': <Meter.type>, 'readings': List[SimpleMeterReading | MeterReading] }
     """
@@ -162,20 +165,25 @@ def get_meter_readings(property_id, preprocess_meters, config):
     )
 
     # check if dates are ok
-    if 'select_meters' in config and config['select_meters'] == 'select':
-        try:
+
+    try:
+        if config.get('select_meters') == 'date_range':
             value1 = dateutil.parser.parse(config['meter']['start_date'])
             value2 = dateutil.parser.parse(config['meter']['end_date'])
             # add a day to get the timestamps to include the last day otherwise timestamp is 00:00:00
             value2 = value2 + timedelta(days=1)
+        elif config.get('select_meters') == 'select_cycle':
+            cycle = Cycle.objects.get(pk=config['cycle_id'])
+            value1 = dateutil.parser.parse(cycle.start.isoformat())
+            value2 = dateutil.parser.parse(cycle.end.isoformat()) + timedelta(days=1)
 
-        except Exception as err:
-            raise AnalysisPipelineException(
-                f'Analysis configuration error: invalid dates selected for meter readings: {err}')
+    except Exception as err:
+        raise AnalysisPipelineException(
+            f'Analysis configuration error: invalid dates selected for meter readings: {err}')
 
     if preprocess_meters:
         for meter in meters:
-            if 'select_meters' in config and config['select_meters'] == 'select':
+            if config.get('select_meters') == 'date_range':
                 try:
                     meter_readings = meter.meter_readings.filter(start_time__range=[value1, value2])
                 except Exception as err:
@@ -205,7 +213,8 @@ def get_meter_readings(property_id, preprocess_meters, config):
         for meter in meters:
             # filtering on readings >= 1.0 b/c BETTER flails when readings are less than 1 currently
             readings = []
-            if 'select_meters' in config and config['select_meters'] == 'select':
+
+            if config.get('select_meters') in ['date_range', 'select_cycle']:
                 try:
                     readings = meter.meter_readings.filter(start_time__range=[value1, value2], reading__gte=1.0).order_by('start_time')
                 except Exception as err:
@@ -328,19 +337,23 @@ def _start_analysis(self, analysis_id):
                 fail_on_error=True,
             )
 
-    better_building_analyses = _create_better_buildings(better_portfolio_id, context)
+    better_building_analyses, better_portfolio_building_analyses = _create_better_buildings(better_portfolio_id, context)
 
     if better_portfolio_id is not None:
-        better_analysis_id = _run_better_portfolio_analysis(
+        better_portfolio_building_analyses = _run_better_portfolio_analysis(
             better_portfolio_id,
-            better_building_analyses,
+            better_portfolio_building_analyses,
             analysis.configuration,
             context,
         )
 
         _store_better_portfolio_analysis_results(
-            better_analysis_id,
-            better_building_analyses,
+            better_portfolio_building_analyses,
+            context,
+        )
+
+        _store_better_portfolio_building_analysis_results(
+            better_portfolio_building_analyses,
             context,
         )
 
@@ -351,10 +364,10 @@ def _start_analysis(self, analysis_id):
             context,
         )
 
-    _store_better_building_analysis_results(
-        better_building_analyses,
-        context,
-    )
+        _store_better_building_analysis_results(
+            better_building_analyses,
+            context,
+        )
 
 
 @shared_task(bind=True)
@@ -368,21 +381,26 @@ def _process_results(self, analysis_id):
     progress_data.step('Processing results')
 
     # store all measure recommendations
+    #
+    # Updated measure list 10/21/2023. There were several added and 4 removed/renamed which include removal of:
+    #   'Check Fossil Baseload', 'Decrease Ventilation', 'Eliminate Electric Heating', 'Upgrade Windows',
+    # The data will still exist in the database for historic reason, but new runs will not include those.
     ee_measure_names = [
-        'Upgrade Windows',
-        'Reduce Plug Loads',
         'Add/Fix Economizers',
-        'Decrease Ventilation',
-        'Reduce Lighting Load',
-        'Check Fossil Baseload',
-        'Decrease Infiltration',
+        'Add Wall/Ceiling/Roof Insulation',
         'Decrease Heating Setpoints',
-        'Eliminate Electric Heating',
+        'Decrease Infiltration',
+        'Ensure Adequate Ventilation Rate',
         'Increase Cooling Setpoints',
-        'Reduce Equipment Schedules',
-        'Add Wall/Ceiling Insulation',
         'Increase Cooling System Efficiency',
-        'Increase Heating System Efficiency'
+        'Increase Heating System Efficiency',
+        'Reduce Equipment Schedules',
+        'Reduce Lighting Load',
+        'Reduce Plug Loads',
+        'Upgrade Windows to Improve Thermal Efficiency',
+        'Upgrade Windows to Reduce Solar Heat Gain',
+        'Upgrade to Sustainable Resources for Water Heating',
+        'Use High Efficiency Heat Pump for Heating',
     ]
     ee_measure_column_data_paths = [
         ExtraDataColumnPath(
@@ -396,6 +414,11 @@ def _process_results(self, analysis_id):
     # gather all columns to store
     BETTER_VALID_MODEL_E_COL = 'better_valid_model_electricity'
     BETTER_VALID_MODEL_F_COL = 'better_valid_model_fuel'
+
+    # if user is at root level and has role member or owner, columns can be created
+    # otherwise set the 'missing_columns' flag for later
+    missing_columns = False
+
     column_data_paths = [
         # Combined Savings
         ExtraDataColumnPath(
@@ -491,13 +514,13 @@ def _process_results(self, analysis_id):
             'better_inverse_r_squared_electricity',
             'BETTER Inverse Model R^2 (Electricity)',
             1,
-            'inverse_model.Electricity.r2'
+            'inverse_model.ELECTRICITY.r2'
         ),
         ExtraDataColumnPath(
             'better_inverse_r_squared_fossil_fuel',
             'BETTER Inverse Model R^2 (Fossil Fuel)',
             1,
-            'inverse_model.Fossil Fuel.r2'
+            'inverse_model.FOSSIL_FUEL.r2'
         ),
     ] + ee_measure_column_data_paths
 
@@ -505,19 +528,27 @@ def _process_results(self, analysis_id):
         # check if the column exists with the bare minimum required pieces of data. For example,
         # don't check column_description and display_name because they may be changed by
         # the user at a later time.
-        column, created = Column.objects.get_or_create(
-            is_extra_data=True,
-            column_name=column_data_path.column_name,
-            organization=analysis.organization,
-            table_name='PropertyState',
-        )
-
-        # add in the other fields of the columns only if it is a new column.
-        if created:
-            column.display_name = column_data_path.column_display_name
-            column.column_description = column_data_path.column_display_name
-
-        column.save()
+        # if column doesn't exist, and user has permission to create, then create
+        try:
+            Column.objects.get(
+                is_extra_data=True,
+                column_name=column_data_path.column_name,
+                organization=analysis.organization,
+                table_name='PropertyState',
+            )
+        except Exception:
+            if analysis.can_create():
+                column, created = Column.objects.create(
+                    is_extra_data=True,
+                    column_name=column_data_path.column_name,
+                    organization=analysis.organization,
+                    table_name='PropertyState',
+                )
+                column.display_name = column_data_path.column_display_name
+                column.column_description = column_data_path.column_display_name
+                column.save()
+            else:
+                missing_columns = True
 
     # Update the original PropertyView's PropertyState with analysis results of interest
     analysis_property_views = analysis.analysispropertyview_set.prefetch_related('property', 'cycle').all()
@@ -531,7 +562,11 @@ def _process_results(self, analysis_id):
         for data_path in column_data_paths:
             value = get_json_path(data_path.json_path, raw_better_results)
             if value is not None:
-                value = float(value) * data_path.unit_multiplier
+                # some of the ee_measures return an empty string, which should be falsy
+                if 'ee_measures' in data_path.json_path and value == '':
+                    value = 0.0 * data_path.unit_multiplier  # to be consistent
+                else:
+                    value = float(value) * data_path.unit_multiplier
             simplified_results[data_path.column_name] = value
 
         electricity_model_is_valid = bool(simplified_results[BETTER_VALID_MODEL_E_COL])
@@ -540,9 +575,15 @@ def _process_results(self, analysis_id):
         # create a message for the failed models
         warning_messages = []
         if not electricity_model_is_valid:
-            warning_messages.append('No reasonable change-point model could be found for this building\'s electricity consumption. Model R^2 was {}'.format(round(simplified_results['better_inverse_r_squared_fossil_fuel'], 4)))
+            r2_electricity = simplified_results['better_inverse_r_squared_electricity']
+            if r2_electricity is not None:
+                r2_electricity = round(r2_electricity, 4)
+            warning_messages.append('No reasonable change-point model could be found for this building\'s electricity consumption. Model R^2 was {}'.format(r2_electricity))
         if not fuel_model_is_valid:
-            warning_messages.append('No reasonable change-point model could be found for this building\'s fossil fuel consumption. Model R^2 was {}'.format(round(simplified_results['better_inverse_r_squared_fossil_fuel'], 4)))
+            r2_fossil_fuel = simplified_results['better_inverse_r_squared_fossil_fuel']
+            if r2_fossil_fuel is not None:
+                r2_fossil_fuel = round(r2_fossil_fuel, 4)
+            warning_messages.append('No reasonable change-point model could be found for this building\'s fossil fuel consumption. Model R^2 was {}'.format(r2_fossil_fuel))
         for warning_message in warning_messages:
             AnalysisMessage.log_and_create(
                 logger,
@@ -568,9 +609,11 @@ def _process_results(self, analysis_id):
             else:
                 cleaned_results[col_name] = value
 
-        original_property_state = property_view_by_apv_id[analysis_property_view.id].state
-        original_property_state.extra_data.update(cleaned_results)
-        original_property_state.save()
+        # if no columns are missing, save back to property
+        if not missing_columns:
+            original_property_state = property_view_by_apv_id[analysis_property_view.id].state
+            original_property_state.extra_data.update(cleaned_results)
+            original_property_state.save()
 
 
 @shared_task(bind=True)

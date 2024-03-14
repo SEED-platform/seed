@@ -1,77 +1,69 @@
 <div class="page_header_container" ng-cloak>
-    <div class="page_header">
-        <div class="left page_action_container">
-            <a ui-sref="inventory_list(::{inventory_type: inventory_type})" class="page_action">
-                <i class="fa fa-chevron-left"></i>
-                {$:: (inventory_type === 'taxlots' ? 'Tax Lots' : 'Properties') | translate $}
-            </a>
-        </div>
-        <div class="page_title">
-            <h1>{$:: (inventory_type === 'taxlots' ? 'Tax Lot Detail' : 'Property Detail') | translate $}</h1>
-        </div>
+  <div class="page_header">
+    <div class="left page_action_container">
+      <a ui-sref="inventory_list(::{inventory_type: inventory_type})" class="page_action">
+        <i class="fa-solid fa-chevron-left"></i>
+        {$:: (inventory_type === 'taxlots' ? 'Tax Lots' : 'Properties') | translate $}
+      </a>
     </div>
+    <div class="page_title">
+      <h1>{$:: (inventory_type === 'taxlots' ? 'Tax Lot Detail' : 'Property Detail') | translate $}</h1>
+    </div>
+    <div class="right page_action_container"></div>
+  </div>
 </div>
 <div class="section_nav_container">
-    <div class="section_nav" ng-include="::urls.static_url + 'seed/partials/inventory_detail_nav.html'"></div>
+  <div class="section_nav" ng-include="::urls.static_url + 'seed/partials/inventory_detail_nav.html'"></div>
 </div>
 <div class="section_header_container">
-    <div class="section_header fixed_height_short has_no_padding">
-        <div class="section_action_container left" style="width: 50%;">
-            <span>
-                <h2>
-                    <span ng-if="::inventory_type==='properties'">
-                        <i class="fa fa-building-o"></i><span translate>Property</span> :
-                    </span>
-                    <span ng-if="::inventory_type==='taxlots'">
-                        <i class="fa fa-map-o"></i><span translate>Tax Lot</span> :
-                    </span>
-                    <span ng-bind-html="inventory_name">{$ inventory_display_name(inventory_type==='properties' ? 'property' : 'taxlot') | translate $}</span>
-                </h2>
-            </span>
-        </div>
+  <div class="section_header fixed_height_short has_no_padding">
+    <div class="section_action_container left" style="width: 50%">
+      <span>
+        <h2>
+          <span ng-if="::inventory_type === 'properties'"> <i class="fa-regular fa-building"></i><span translate>Property</span> : </span>
+          <span ng-if="::inventory_type === 'taxlots'"> <i class="fa-regular fa-map"></i><span translate>Tax Lot</span> : </span>
+          <span ng-if="inventory_name">{$:: inventory_name | translate $}</span>
+          <span ng-if="!inventory_name">({$:: inventory_name_error $}) <i class="glyphicon glyphicon-question-sign" title="This can be changed from the organization settings page."></i></span>
+        </h2>
+      </span>
     </div>
+  </div>
 </div>
 
-<div class="section_content_container" ng-cloak>
-    <div class="inventory-list-controls columns">
-
-        <div class="column">
-            <div class="row">
-                <label>{$:: 'Interval' | translate $}:</label>
-                <select class="form-control"
-                    ng-model="interval.selected"
-                    ng-change="refresh_readings()"
-                    ng-options="option for option in interval.options">
-                </select>
-            </div>
-            <div class="row">
-                <button type="button" ng-click="open_green_button_upload_modal()" class="btn btn-primary" translate>UPLOAD_GB_DATA_BUTTON</button>
-            </div>
-        </div>
-
-        <div class="column grow">
-            <div class="text-info row pull-right">
-                <span translate>Note:  Meters are labeled with the following format:  "Type - Source - Source ID".</span>
-            </div>
-        </div>
-
+<div class="section_content_container meters-detail" ng-cloak>
+  <div class="inventory-list-controls columns">
+    <div class="column">
+      <div class="row">
+        <label>{$:: 'Interval' | translate $}:</label>
+        <select class="form-control" ng-model="interval.selected" ng-change="refresh_readings()" ng-options="option for option in interval.options"></select>
+      </div>
+      <div class="row" ng-show="menu.user.organization.user_role !== 'viewer'">
+        <button type="button" ng-click="open_green_button_upload_modal()" class="btn btn-primary" translate>UPLOAD_GB_DATA_BUTTON</button>
+      </div>
     </div>
 
-    <div class="section_content">
-        <h4> Meters </div>
-        <div id="meters-grid-container" ng-show="has_meters">
-            <div ui-grid="meterGridOptions" ui-grid-selection ui-grid-resize-columns></div>
-        </div>
-        <div ng-hide="has_meters">
-            <div class="jumbotron text-center" translate>No Data</div>
-        </div>
-
-        <h4> Readings </h4>
-        <div id="meters-readings-grid-container" ng-show="has_readings">
-            <div ui-grid="meterReadGridOptions" ui-grid-resize-columns></div>
-        </div>
-        <div ng-hide="has_readings">
-            <div class="jumbotron text-center" translate>No Data</div>
-        </div>
+    <div class="column grow">
+      <div class="text-info row pull-right">
+        <span translate>Note: Meters are labeled with the following format: "Type - Source - Source ID".</span>
+      </div>
     </div>
+  </div>
+
+  <div class="section_content">
+    <h4>Meters</h4>
+    <div id="meters-grid-container" ng-show="has_meters">
+      <div ui-grid="meterGridOptions" ui-grid-selection ui-grid-resize-columns ui-grid-exporter></div>
+    </div>
+    <div ng-hide="has_meters">
+      <div class="jumbotron text-center" translate>No Data</div>
+    </div>
+
+    <h4>Readings</h4>
+    <div id="meters-readings-grid-container" ng-show="has_readings">
+      <div ui-grid="meterReadGridOptions" ui-grid-selection ui-grid-resize-columns ui-grid-exporter></div>
+    </div>
+    <div ng-hide="has_readings">
+      <div class="jumbotron text-center" translate>No Data</div>
+    </div>
+  </div>
 </div>

@@ -1,8 +1,8 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
-:author
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
 import logging
 import re
@@ -11,7 +11,7 @@ from datetime import datetime, timedelta
 
 from django.db.models import Subquery
 from django.utils.timezone import make_aware
-from pytz import timezone
+from pytz import AmbiguousTimeError, NonExistentTimeError, timezone
 
 from config.settings.common import TIME_ZONE
 from seed.data_importer.utils import (
@@ -233,9 +233,8 @@ class MetersParser(object):
         for raw_details in self._meters_and_readings_details:
             meter_details = {
                 'source': self._source_type,
+                'source_id': str(raw_details['Portfolio Manager Meter ID'])
             }
-
-            meter_details['source_id'] = str(raw_details['Portfolio Manager Meter ID'])
 
             # Continue/skip, if no property is found.
             given_property_id = str(raw_details['Portfolio Manager ID'])
@@ -261,8 +260,23 @@ class MetersParser(object):
                 unaware_start = datetime.strptime(raw_start, "%Y-%m-%d %H:%M:%S")
                 unaware_end = datetime.strptime(raw_details['End Date'], "%Y-%m-%d %H:%M:%S")
 
-            start_time = make_aware(unaware_start, timezone=self._tz)
-            end_time = make_aware(unaware_end, timezone=self._tz)
+            try:
+                start_time = make_aware(unaware_start, timezone=self._tz)
+            except AmbiguousTimeError:
+                # Handle timestamp that occurs twice due to "falling back" to standard time
+                start_time = make_aware(unaware_start, timezone=self._tz, is_dst=False)
+            except NonExistentTimeError:
+                # Handle timestamp that doesn't exist due to "springing forward" to dst
+                start_time = make_aware(unaware_start, timezone=self._tz, is_dst=True)
+
+            try:
+                end_time = make_aware(unaware_end, timezone=self._tz)
+            except AmbiguousTimeError:
+                # Handle timestamp that occurs twice due to "falling back" to standard time
+                end_time = make_aware(unaware_end, timezone=self._tz, is_dst=False)
+            except NonExistentTimeError:
+                # Handle timestamp that doesn't exist due to "springing forward" to dst
+                end_time = make_aware(unaware_end, timezone=self._tz, is_dst=True)
 
             successful_parse = self._parse_meter_readings(raw_details, meter_details, start_time, end_time)
 
@@ -447,11 +461,11 @@ class MetersParser(object):
         # check which (if any) meter readings are provided
         # there can be more than one reading type per row (e.g., both electricity
         # and natural gas in the same row)
-        provided_reading_types = []
+        provided_reading_types = set()
         for field in raw_data[0].keys():
             for header_string in Meter.ENERGY_TYPE_BY_HEADER_STRING.keys():
                 if field.startswith(header_string):
-                    provided_reading_types.append(field)
+                    provided_reading_types.add(field)
                     continue
 
         if not provided_reading_types:
@@ -465,11 +479,7 @@ class MetersParser(object):
 
         results = []
         for raw_reading in raw_data:
-            # December 16, 2022 updated code to match ESPM formatting changes
-            try:
-                start_date = datetime.strptime(raw_reading['Month'], '%b-%y')
-            except KeyError:
-                start_date = datetime.strptime(raw_reading['Month '], '%b-%y')
+            start_date = datetime.strptime(raw_reading['Month'], '%b-%y')
 
             _, days_in_month = monthrange(start_date.year, start_date.month)
             end_date = datetime(
@@ -491,19 +501,30 @@ class MetersParser(object):
                     raise Exception(f'Failed to parse meter type and units from "{reading_type}"')
 
                 meter_type_match = type_and_units_match.group('meter_type').strip()
-                meter_type = Meter.ENERGY_TYPE_BY_HEADER_STRING.get(meter_type_match)
-                if meter_type is None:
-                    raise Exception(f'Invalid meter type "{meter_type_match}"')
+                for energy_type in Meter.ENERGY_TYPE_BY_HEADER_STRING.keys():
+                    if meter_type_match.startswith(energy_type):
+                        meter_type = Meter.ENERGY_TYPE_BY_HEADER_STRING.get(energy_type)
+                        continue
+                if not meter_type:
+                    raise Exception(f'Invalid units "{meter_type_match}"')
 
                 units_match = type_and_units_match.group('units').strip()
                 units = METER_UNITS_MAPPING.get(units_match)
                 if units is None:
                     raise Exception(f'Invalid units "{units_match}"')
 
+                # Get the correct Property ID depending on the version of meter file
+                if not raw_reading.get('Property Id'):
+                    # This is the new format as of around 3/22/2023
+                    property_id = raw_reading.get('Portfolio Manager Property ID')
+                else:
+                    # This is the previous format
+                    property_id = raw_reading.get('Property Id')
+
                 reading = {
                     'Start Date': start_date.strftime('%Y-%m-%d %H:%M:%S'),
                     'End Date': end_date.strftime('%Y-%m-%d %H:%M:%S'),
-                    'Portfolio Manager ID': raw_reading['Property Id'],
+                    'Portfolio Manager ID': property_id,
                     'Portfolio Manager Meter ID': 'Unknown',
                     'Meter Type': meter_type,
                     'Usage/Quantity': raw_reading[reading_type],

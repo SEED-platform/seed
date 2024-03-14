@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
-:author
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
 from __future__ import unicode_literals
 
@@ -62,7 +62,7 @@ class Command(BaseCommand):
 
         for org in organizations:
             print("Adding user to {}.".format(org))
-            org.add_member(user)
+            org.add_member(user, access_level_instance_id=org.root.id)
         else:
             # NL added this but is not going to make it the default because it may cause
             # security issues for others. Not sure yet. Comment here if you think we should

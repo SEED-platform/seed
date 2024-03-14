@@ -59,14 +59,14 @@ Helm
 Helm organizes all of your Kubernetes deployment, service, and volume yml files into "charts" that can be deployed, managed, and published with simple commands.
 To install Helm:
 
-* `Windows eksctl https://kubernetes.io/docs/tasks/tools/install-kubectl/#install-kubectl-on-windows`_
+* `Windows eksctl <https://kubernetes.io/docs/tasks/tools/install-kubectl/#install-kubectl-on-windows>`_
 * Mac (with Homebrew) :code:`brew install helm`
 
 EKS Control (AWS Specific)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 EKSCtl is a command line tool to manage Elastic Kubernetes clusters on AWS. If not using AWS, then disregard this section.
 
-* `Windows <https://www.stacksimplify.com/aws-eks/eks-cluster/install-aws-eksctl-kubectl-cli/#step-02-02-windows-10-install-and-configure-kubectl>`_
+* `Windows eksctl config <https://www.stacksimplify.com/aws-eks/eks-cluster/install-aws-eksctl-kubectl-cli/#step-02-02-windows-10-install-and-configure-kubectl>`_
 * Mac (with Homebrew) :code:`brew install eksctl`
 
 To launch a cluster on using EKSCts, run the following command in the terminal (assuming adequate permissions for the user). Also make sure to replace items in the `<>` brackets.
@@ -89,7 +89,7 @@ Charts
 SEED stores its charts in the `charts directory`_ of the Github Repo.  There are two main charts that are deployed when starting SEED on Kubernetes.
 
 * persistentvolumes - these are the volumes to store SEED media data and SEED Postgres data
-* seed - this stores all of the other deployemnt and service files for the application
+* seed - this stores all of the other deployment and service files for the application
 
 Unlike persistentvolumes, the seed charts must be modified with user environment variables that will be forwarded to the docker container for deployment.
 Before deployment, the user **MUST** set these variables to their desired values.
@@ -148,9 +148,6 @@ This chart contains the deployment specification for the SEED web container.  Re
           value: <reCAPTCHA-site-key>
         - name: GOOGLE_RECAPTCHA_SECRET_KEY
           value: <reCAPTCHA-key>
-        # Toggles the v2 version of the SEED API
-        - name: INCLUDE_SEED_V2_APIS
-          value: TRUE
         image: seedplatform/seed:<insert deployment image version>
         #versions can be found here https://github.com/SEED-platform/seed/releases/tag/v2.9.3
 
@@ -164,7 +161,7 @@ This chart contains the deployment specification for the Celery container to con
       value: <super-secret-password>  # must match db-postgres-deployment.yaml and web-celery-deployment.yaml
 
 bsyncr-deployment.yaml
-**************************
+**********************
 This chart contains the deployment specification for the bsyncr analysis server.  Request a NOAA token from `this website <https://www.ncdc.noaa.gov/cdo-web/token>`_.
 
 .. code-block:: yaml
@@ -242,7 +239,7 @@ The command below will restart the pods and re-pull the docker images.
 
 Other Resources
 ---------------
-Common kubectl actions can be found `here <https://kubernetes.io/docs/reference/kubectl/cheatsheet/>`_
+Common kubectl actions can be found `on the kubernetes website <https://kubernetes.io/docs/reference/kubectl/cheatsheet/>`_
 
 
 .. _AWS: https://docs.aws.amazon.com/eks/latest/userguide/create-cluster.html

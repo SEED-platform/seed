@@ -76,8 +76,8 @@ So when searches for links do happen, ambiguous cases have already been resolved
 
 For an individual record, these are the following cases in which a
 match-merge-link is automatically run:
-1. Explicit triggering (from the Propery/TaxLot Detail page)
-2. After editing (in the Propery/TaxLot Detail page)
+1. Explicit triggering (from the Property/TaxLot Detail page)
+2. After editing (in the Property/TaxLot Detail page)
 3. After manual merging (in the Properties/Tax Lots list page). Explicitly
 specified merges happen as chosen by the user. Then, if the resulting record has
 matches, merges and/or linking happens.
@@ -116,12 +116,8 @@ carried over to the final record once merges are complete.
 In the case of importing, considerations must be taken for the fact that, in most cases, multiple records
 are being imported together. Also, since this is the entry point for records, it's possible that a user might
 accidentally try to import the same record snapshot twice - where all the record values are the same as another
-existing record (as opposed to just having the same values for matching criteria fields). So on import, the
-process is as follows:
+existing record (as opposed to just having the same values for matching criteria fields). So on import, the process is as follows:
 
 1. Amongst only the incoming records, duplicates (of other incoming or existing) are flagged and ignored.
 2. Amongst only the incoming records, matching records are merged together.
-3. Amongst all records in the same Cycle, incoming records that match an existing record gets merged with priority to that existing record.
-    If the incoming record has multiple existing matches, the existing matches are merged together in
-    latest updated order first while also combining any other associations (labels, notes, etc.) just as in the manual merge or edit cases.
-    Since the incoming record is new, it doesn't have any of the other associations.
+3. Amongst all records in the same Cycle, incoming records that match an existing record gets merged with priority to that existing record. If the incoming record has multiple existing matches, the existing matches are merged together in latest updated order first while also combining any other associations (labels, notes, etc.) just as in the manual merge or edit cases. Since the incoming record is new, it doesn't have any of the other associations.

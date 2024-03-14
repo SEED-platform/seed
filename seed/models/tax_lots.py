@@ -1,8 +1,8 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
-:author
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
 from __future__ import absolute_import, unicode_literals
 
@@ -11,12 +11,14 @@ import re
 from os import path
 
 from django.contrib.gis.db import models as geomodels
+from django.core.exceptions import ValidationError
 from django.db import models
+from django.db.models import Case, Value, When
 from django.db.models.signals import m2m_changed, post_save, pre_save
 from django.dispatch import receiver
 
 from seed.data_importer.models import ImportFile
-from seed.lib.superperms.orgs.models import Organization
+from seed.lib.superperms.orgs.models import AccessLevelInstance, Organization
 from seed.models.cycles import Cycle
 from seed.models.models import (
     DATA_STATE,
@@ -35,6 +37,7 @@ from seed.utils.generic import (
 )
 from seed.utils.time import convert_to_js_timestamp
 
+from ..utils.ubid import decode_unique_ids
 from .auditlog import AUDIT_IMPORT, DATA_UPDATE_TYPE
 
 _log = logging.getLogger(__name__)
@@ -42,8 +45,9 @@ _log = logging.getLogger(__name__)
 
 class TaxLot(models.Model):
     # NOTE: we have been calling this the organization. We
-    # should stay consistent although I prefer the name organization (!super_org)
+    # should stay consistent, although I prefer the name organization (!super_org)
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
+    access_level_instance = models.ForeignKey(AccessLevelInstance, on_delete=models.CASCADE, null=False, related_name="taxlots")
 
     # Track when the entry was created and when it was updated
     created = models.DateTimeField(auto_now_add=True)
@@ -51,6 +55,21 @@ class TaxLot(models.Model):
 
     def __str__(self):
         return 'TaxLot - %s' % self.pk
+
+
+@receiver(pre_save, sender=TaxLot)
+def set_default_access_level_instance(sender, instance, **kwargs):
+    """If ALI not set, put this TaxLot as the root."""
+    if instance.access_level_instance_id is None:
+        root = AccessLevelInstance.objects.get(organization_id=instance.organization_id, depth=1)
+        instance.access_level_instance_id = root.id
+
+    bad_taxlotproperty = TaxLotProperty.objects \
+        .filter(taxlot_view__taxlot=instance) \
+        .exclude(property_view__property__access_level_instance=instance.access_level_instance) \
+        .exists()
+    if bad_taxlotproperty:
+        raise ValidationError("cannot change property's ALI to AlI different than related properties.")
 
 
 class TaxLotState(models.Model):
@@ -65,19 +84,21 @@ class TaxLotState(models.Model):
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
     data_state = models.IntegerField(choices=DATA_STATE, default=DATA_STATE_UNKNOWN)
     merge_state = models.IntegerField(choices=MERGE_STATE, default=MERGE_STATE_UNKNOWN, null=True)
+    raw_access_level_instance = models.ForeignKey(AccessLevelInstance, null=True, on_delete=models.SET_NULL)
+    raw_access_level_instance_error = models.TextField(null=True)
 
-    custom_id_1 = models.CharField(max_length=255, null=True, blank=True)
+    custom_id_1 = models.CharField(max_length=255, null=True, blank=True, db_collation='natural_sort')
 
-    jurisdiction_tax_lot_id = models.CharField(max_length=2047, null=True, blank=True)
-    block_number = models.CharField(max_length=255, null=True, blank=True)
-    district = models.CharField(max_length=255, null=True, blank=True)
-    address_line_1 = models.CharField(max_length=255, null=True, blank=True)
-    address_line_2 = models.CharField(max_length=255, null=True, blank=True)
+    jurisdiction_tax_lot_id = models.CharField(max_length=2047, null=True, blank=True, db_collation='natural_sort')
+    block_number = models.CharField(max_length=255, null=True, blank=True, db_collation='natural_sort')
+    district = models.CharField(max_length=255, null=True, blank=True, db_collation='natural_sort')
+    address_line_1 = models.CharField(max_length=255, null=True, blank=True, db_collation='natural_sort')
+    address_line_2 = models.CharField(max_length=255, null=True, blank=True, db_collation='natural_sort')
     normalized_address = models.CharField(max_length=255, null=True, blank=True, editable=False)
 
-    city = models.CharField(max_length=255, null=True, blank=True)
-    state = models.CharField(max_length=255, null=True, blank=True)
-    postal_code = models.CharField(max_length=255, null=True, blank=True)
+    city = models.CharField(max_length=255, null=True, blank=True, db_collation='natural_sort')
+    state = models.CharField(max_length=255, null=True, blank=True, db_collation='natural_sort')
+    postal_code = models.CharField(max_length=255, null=True, blank=True, db_collation='natural_sort')
     number_properties = models.IntegerField(null=True, blank=True)
 
     extra_data = models.JSONField(default=dict, blank=True)
@@ -92,11 +113,9 @@ class TaxLotState(models.Model):
     bounding_box = geomodels.PolygonField(geography=True, null=True, blank=True)
     taxlot_footprint = geomodels.PolygonField(geography=True, null=True, blank=True)
     # A unique building identifier as defined by DOE's UBID project (https://buildingid.pnnl.gov/)
-    # Note that ulid is not an actual project at the moment, but it is similar to UBID in that it
-    # is a unique string that represents the bounding box of the Land (or Lot)
-    ulid = models.CharField(max_length=255, null=True, blank=True)
+    ubid = models.CharField(max_length=255, null=True, blank=True, db_collation='natural_sort')
 
-    geocoding_confidence = models.CharField(max_length=32, null=True, blank=True)
+    geocoding_confidence = models.CharField(max_length=32, null=True, blank=True, db_collation='natural_sort')
 
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
@@ -136,7 +155,13 @@ class TaxLotState(models.Model):
             if self.organization is None:
                 _log.error("organization is None")
 
-            taxlot = TaxLot.objects.create(organization=self.organization)
+            if self.raw_access_level_instance is None:
+                _log.error("Could not promote this taxlot: no raw_access_level_instance")
+                return None
+
+            taxlot = TaxLot.objects.create(organization=self.organization, access_level_instance=self.raw_access_level_instance)
+            self.raw_access_level_instance = None
+            self.raw_access_level_instance_error = None
 
             tlv = TaxLotView.objects.create(taxlot=taxlot, cycle=cycle, state=self)
 
@@ -391,8 +416,41 @@ def pre_save_state(sender, instance, **kwargs):
         instance.derived_data[derived_column.name] = derived_column.evaluate(instance)
 
 
+@receiver(post_save, sender=TaxLotState)
+def post_save_taxlot_state(sender, **kwargs):
+    """
+    Generate UbidModels for a TaxLotState if the ubid field is present
+    """
+    state: TaxLotState = kwargs.get('instance')
+
+    ubid = getattr(state, 'ubid')
+    if not ubid:
+        state.ubidmodel_set.filter(preferred=True).update(preferred=False)
+        return
+
+    ubid_model = state.ubidmodel_set.filter(ubid=ubid)
+    if not ubid_model.exists():
+        # First set all others to non-preferred without calling save
+        state.ubidmodel_set.filter(preferred=True).update(preferred=False)
+        # Add UBID and set as preferred
+        ubid_model = state.ubidmodel_set.create(
+            preferred=True,
+            ubid=ubid,
+        )
+        # Update lat/long/centroid
+        decode_unique_ids(state)
+        logging.info(f"Created ubid_model id: {ubid_model.id}, ubid: {ubid_model.ubid}")
+    elif ubid_model.filter(preferred=False).exists():
+        state.ubidmodel_set.update(
+            preferred=Case(
+                When(ubid=ubid, then=Value(True)),
+                default=Value(False),
+            )
+        )
+
+
 class TaxLotView(models.Model):
-    taxlot = models.ForeignKey(TaxLot, on_delete=models.CASCADE, related_name='views', null=True)
+    taxlot = models.ForeignKey(TaxLot, on_delete=models.CASCADE, related_name='views')
     state = models.ForeignKey(TaxLotState, on_delete=models.CASCADE)
     cycle = models.ForeignKey(Cycle, on_delete=models.PROTECT)
 
@@ -512,9 +570,11 @@ def sync_latitude_longitude_and_long_lat(sender, instance, **kwargs):
         longitude_change = original_obj.longitude != instance.longitude
         long_lat_change = original_obj.long_lat != instance.long_lat
         lat_and_long_both_populated = instance.latitude is not None and instance.longitude is not None
-
-        # The 'not long_lat_change' condition removes the case when long_lat is changed by an external API
+        # The 'not long_lat_change' condition removes the case when long_lat is changed by an external API,
+        # so the first block below is when a user manually changes the lat/long and the geocoding confidence
+        # needs to be updated to "manually" (or keep as Census Geocoder)
         if (latitude_change or longitude_change) and lat_and_long_both_populated and not long_lat_change:
+            # manual change
             instance.long_lat = f"POINT ({instance.longitude} {instance.latitude})"
             instance.geocoding_confidence = "Manually geocoded (N/A)"
         elif (latitude_change or longitude_change) and not lat_and_long_both_populated:

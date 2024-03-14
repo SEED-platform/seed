@@ -1,37 +1,40 @@
 /**
- * :copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
- * :author
+ * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+ * See also https://github.com/seed-platform/seed/main/LICENSE.md
  */
-describe('controller: data_quality_modal_controller', function () {
+describe('controller: data_quality_modal_controller', () => {
   // globals set up and used in each test scenario
   // var mock_uploader_service;
-  var controller, modal_state;
-  var data_quality_controller_scope;
+  let controller; let
+    modal_state;
+  let data_quality_controller_scope;
 
-  var cycles = {
-    cycles: [{
-      end: '2015-01-01T07:59:59Z',
-      id: 2017,
-      name: '2014 Calendar Year',
-      num_properties: 1496,
-      num_taxlots: 1519,
-      start: '2014-01-01T08:00:00Z'
-    }],
+  const cycles = {
+    cycles: [
+      {
+        end: '2015-01-01',
+        id: 2017,
+        name: '2014 Calendar Year',
+        num_properties: 1496,
+        num_taxlots: 1519,
+        start: '2014-01-01'
+      }
+    ],
     status: 'success'
   };
 
-  var organization = {
+  const organization = {
     id: 1
   };
   // make the seed app available for each test
   // 'config.seed' is created in TestFilters.html
-  beforeEach(function () {
+  beforeEach(() => {
     module('BE.seed');
-    inject(function (_$httpBackend_) {
+    inject((_$httpBackend_) => {
       $httpBackend = _$httpBackend_;
       $httpBackend.whenGET(/^\/static\/seed\/locales\/.*\.json/).respond(200, {});
     });
-    inject(function ($controller, $rootScope/*, $q, search_service*/) {
+    inject(($controller, $rootScope /* , $q, search_service */) => {
       controller = $controller;
       data_quality_controller_scope = $rootScope.$new();
       modal_state = '';
@@ -39,7 +42,7 @@ describe('controller: data_quality_modal_controller', function () {
   });
 
   // this is outside the beforeEach so it can be configured by each unit test
-  function create_data_quality_modal_controller () {
+  function create_data_quality_modal_controller() {
     controller('data_quality_modal_controller', {
       $scope: data_quality_controller_scope,
       $uibModalInstance: {
@@ -50,8 +53,8 @@ describe('controller: data_quality_modal_controller', function () {
           modal_state = 'dismiss';
         }
       },
-      cycles: cycles,
-      organization: organization
+      cycles,
+      organization
     });
   }
 
@@ -59,8 +62,7 @@ describe('controller: data_quality_modal_controller', function () {
    * Test scenarios
    */
 
-
-   /*  set this up but doesn't do anything anyway, tested in e2e now. Kept file in case it's useful later */
+  /*  set this up but doesn't do anything anyway, tested in e2e now. Kept file in case it's useful later */
   it('should dq modal sort and search', function () {
     // arrange
     create_data_quality_modal_controller();
@@ -86,7 +88,7 @@ describe('controller: data_quality_modal_controller', function () {
     data_quality_controller_scope.search.column_prototype.toggle_sort();
     data_quality_controller_scope.search.column_prototype.sorted_class();
 
-    //what needs to be asserted here?
+    // what needs to be asserted here?
     expect(true).toBe(true);
   });
 });

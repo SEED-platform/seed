@@ -1,20 +1,20 @@
 <div class="page_header_container" ng-cloak>
-    <div class="page_header">
-        <div class="left page_action_container">
-            <a ui-sref="inventory_list(::{inventory_type: inventory_type})" class="page_action">
-                <i class="fa fa-chevron-left"></i>
-                {$:: (inventory_type === 'taxlots' ? 'Tax Lots' : 'Properties') | translate $}
-            </a>
-        </div>
-        <div class="page_title">
-            <h1>{$:: (inventory_type === 'taxlots' ? 'Tax Lot Detail Notes' : 'Property Detail Notes') | translate $}</h1>
-        </div>
-        <div class="right page_action_container page_action_btn"></div>
+  <div class="page_header">
+    <div class="left page_action_container">
+      <a ui-sref="inventory_list(::{inventory_type: inventory_type})" class="page_action">
+        <i class="fa-solid fa-chevron-left"></i>
+        {$:: (inventory_type === 'taxlots' ? 'Tax Lots' : 'Properties') | translate $}
+      </a>
     </div>
+    <div class="page_title">
+      <h1>{$:: (inventory_type === 'taxlots' ? 'Tax Lot Detail' : 'Property Detail') | translate $}</h1>
+    </div>
+    <div class="right page_action_container"></div>
+  </div>
 </div>
 
 <div class="section_nav_container">
-    <div class="section_nav" ng-include="::urls.static_url + 'seed/partials/inventory_detail_nav.html'"></div>
+  <div class="section_nav" ng-include="::urls.static_url + 'seed/partials/inventory_detail_nav.html'"></div>
 </div>
 
 <div ng-include="::urls.static_url + 'seed/partials/notes.html'"></div>

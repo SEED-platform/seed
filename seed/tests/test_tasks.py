@@ -1,8 +1,8 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
-:author
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
 import logging
 import pathlib
@@ -15,6 +15,7 @@ from seed import tasks
 from seed.data_importer.models import ImportFile, ImportRecord
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.models import Organization
+from seed.models import PORTFOLIO_RAW, SEED_DATA_SOURCES
 from seed.utils.organizations import create_organization
 
 logger = logging.getLogger(__name__)
@@ -27,13 +28,13 @@ class TestTasks(TestCase):
         self.fake_user = User.objects.create(username='test')
         self.fake_org, _, _ = create_organization(self.fake_user)
         self.import_record = ImportRecord.objects.create(
-            owner=self.fake_user, last_modified_by=self.fake_user
+            owner=self.fake_user, last_modified_by=self.fake_user, access_level_instance=self.fake_org.root
         )
 
         filepath = path.join(path.dirname(__file__), 'data', 'portfolio-manager-sample.csv')
         self.import_file = ImportFile.objects.create(
             import_record=self.import_record,
-            source_type='PORTFOLIO_RAW',
+            source_type=SEED_DATA_SOURCES[PORTFOLIO_RAW][1],
         )
         self.import_file.file = SimpleUploadedFile(
             name='portfolio-manager-sample.csv',

@@ -1,8 +1,9 @@
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
-:author nicholas.long@nrel.gov
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
 
-File contains settings needed to run SEED with docker
+:author nicholas.long@nrel.gov
+:description File contains settings needed to run SEED with docker
 """
 from __future__ import absolute_import
 
@@ -42,7 +43,9 @@ COMPRESS_OFFLINE = compress
 ALLOWED_HOSTS = ['*']
 
 # LBNL's BETTER tool host
-BETTER_HOST = os.environ.get('BETTER_HOST', 'https://better-lbnl-development.herokuapp.com')
+# BETTER_HOST = os.environ.get('BETTER_HOST', 'https://better.lbl.gov')
+BETTER_HOST = os.environ.get('BETTER_HOST', 'https://better-lbnl-staging.herokuapp.com')
+# BETTER_HOST = os.environ.get('BETTER_HOST', 'https://better-lbnl-development.herokuapp.com')
 
 # Audit Template Production Host
 AUDIT_TEMPLATE_HOST = os.environ.get('AUDIT_TEMPLATE_HOST', 'https://api.labworks.org')
@@ -69,29 +72,18 @@ if SEED_TESTING:
     TESTING_MAPQUEST_API_KEY = os.environ.get('TESTING_MAPQUEST_API_KEY', '<your_key_here>')
 else:
     # Redis / Celery config
+    if 'REDIS_PASSWORD' in os.environ:
+        CELERY_BROKER_URL = f"redis://:{os.environ.get('REDIS_PASSWORD')}@{os.environ.get('REDIS_HOST', 'db-redis')}:6379/1"
+    else:
+        CELERY_BROKER_URL = f"redis://{os.environ.get('REDIS_HOST', 'db-redis')}:6379/1"
+
     CACHES = {
         'default': {
-            'BACKEND': 'redis_cache.cache.RedisCache',
-            'LOCATION': "db-redis:6379",
-            'OPTIONS': {
-                'DB': 1
-            },
-            'TIMEOUT': 300,
+            'BACKEND': 'django_redis.cache.RedisCache',
+            'LOCATION': CELERY_BROKER_URL,
         }
     }
-    if 'REDIS_PASSWORD' in os.environ:
-        CACHES['OPTIONS']['PASSWORD'] = os.environ.get('REDIS_PASSWORD')
-        CELERY_BROKER_URL = 'redis://:{}@{}/{}'.format(
-            CACHES['default']['OPTIONS']['PASSWORD'],
-            CACHES['default']['LOCATION'],
-            CACHES['default']['OPTIONS']['DB']
-        )
-    else:
-        CELERY_BROKER_URL = 'redis://{}/{}'.format(
-            CACHES['default']['LOCATION'], CACHES['default']['OPTIONS']['DB']
-        )
 
-    CELERY_BROKER_TRANSPORT = 'redis'
     CELERY_RESULT_BACKEND = CELERY_BROKER_URL
 
 CELERY_TASK_DEFAULT_QUEUE = 'seed-docker'
@@ -127,3 +119,12 @@ if local_untracked_spec is None:
     print("Unable to find the local_untracked in config/settings/local_untracked.py; Continuing with base settings...")
 else:
     from config.settings.local_untracked import *  # noqa
+
+# salesforce testing
+if 'SF_INSTANCE' not in vars():
+    # use env vars
+    SF_INSTANCE = os.environ.get('SF_INSTANCE', '')
+    SF_USERNAME = os.environ.get('SF_USERNAME', '')
+    SF_PASSWORD = os.environ.get('SF_PASSWORD', '')
+    SF_DOMAIN = os.environ.get('SF_DOMAIN', '')
+    SF_SECURITY_TOKEN = os.environ.get('SF_SECURITY_TOKEN', '')

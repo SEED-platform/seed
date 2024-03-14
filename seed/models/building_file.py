@@ -1,7 +1,9 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
+
 :author nicholas.long@nrel.gov
 """
 from __future__ import unicode_literals
@@ -17,6 +19,7 @@ from seed.lib.merging.merging import merge_state
 from seed.models import (
     AUDIT_IMPORT,
     MERGE_STATE_MERGED,
+    ATEvent,
     Column,
     Measure,
     Meter,
@@ -134,7 +137,7 @@ class BuildingFile(models.Model):
 
         return self._cache_kbtu_thermal_conversion_factors
 
-    def process(self, organization_id, cycle, property_view=None, promote_property_state=True):
+    def process(self, organization_id, cycle, property_view=None, promote_property_state=True, access_level_instance=None):
         """
         Process the building file that was uploaded and create the correct models for the object
 
@@ -220,6 +223,7 @@ class BuildingFile(models.Model):
         }
         # add in scenarios
         linked_meters = []
+        scenarios = []
         for s in data.get('scenarios', []):
             # If the scenario does not have a name then log a warning and continue
             if not s.get('name'):
@@ -280,6 +284,7 @@ class BuildingFile(models.Model):
                 scenario.measures.add(measure)
 
             scenario.save()
+            scenarios.append(scenario)
 
             # meters
             energy_types = dict(Meter.ENERGY_TYPES)
@@ -380,10 +385,20 @@ class BuildingFile(models.Model):
 
             # set the property_state to the new one
             property_state = merged_state
-        elif not property_view and promote_property_state:
+        elif not property_view and promote_property_state and access_level_instance:
+            property_state.raw_access_level_instance = access_level_instance
             property_view = property_state.promote(cycle)
         else:
             return True, property_state, None, messages
+
+        event = ATEvent.objects.create(
+            property=property_view.property,
+            cycle=property_view.cycle,
+            building_file=self,
+            audit_date=property_state.extra_data.get('audit_date', ''),
+        )
+        event.scenarios.set(scenarios)
+        event.save()
 
         for meter in linked_meters:
             meter.property = property_view.property

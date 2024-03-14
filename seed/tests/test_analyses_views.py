@@ -1,21 +1,30 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
-:author
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
 import json
 
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
+from django.urls import reverse_lazy
+from django.utils import timezone as tz
 
 from seed.landing.models import SEEDUser as User
-from seed.models import Analysis, AnalysisOutputFile, AnalysisPropertyView
+from seed.models import (
+    Analysis,
+    AnalysisOutputFile,
+    AnalysisPropertyView,
+    Meter,
+    MeterReading
+)
 from seed.test_helpers.fake import (
     FakeCycleFactory,
     FakePropertyFactory,
     FakePropertyStateFactory
 )
+from seed.tests.util import AccessLevelBaseTestCase
 from seed.utils.organizations import create_organization
 
 
@@ -54,7 +63,8 @@ class TestAnalysesView(TestCase):
             service=Analysis.BSYNCR,
             status=Analysis.CREATING,
             user=self.user,
-            organization=self.org
+            organization=self.org,
+            access_level_instance=self.org.root,
         )
         self.analysis_property_view_a = AnalysisPropertyView.objects.create(
             analysis=self.analysis_a,
@@ -75,7 +85,8 @@ class TestAnalysesView(TestCase):
             service=Analysis.BSYNCR,
             status=Analysis.READY,
             user=self.user,
-            organization=self.org
+            organization=self.org,
+            access_level_instance=self.org.root,
         )
         self.analysis_property_view_c = AnalysisPropertyView.objects.create(
             analysis=self.analysis_b,
@@ -96,7 +107,8 @@ class TestAnalysesView(TestCase):
             service=Analysis.BSYNCR,
             status=Analysis.QUEUED,
             user=self.user,
-            organization=self.org
+            organization=self.org,
+            access_level_instance=self.org.root,
         )
 
         # create an analysis with a different organization
@@ -105,7 +117,8 @@ class TestAnalysesView(TestCase):
             service=Analysis.BSYNCR,
             status=Analysis.RUNNING,
             user=self.user,
-            organization=self.org_b
+            organization=self.org_b,
+            access_level_instance=self.org.root,
         )
 
         # create an output file and add to 3 analysis property views
@@ -148,10 +161,7 @@ class TestAnalysesView(TestCase):
 
     def test_list_with_property(self):
         response = self.client.get("".join([
-            '/api/v3/analyses/?organization_id=',
-            str(self.org.pk),
-            '&property_id=',
-            str(self.property_a.pk)
+            '/api/v3/properties/', str(self.property_a.pk), '/analyses/?organization_id=', str(self.org.pk),
         ]))
         self.assertEqual(response.status_code, 200)
         result = json.loads(response.content)
@@ -239,3 +249,248 @@ class TestAnalysesView(TestCase):
         self.assertEqual(result['status'], 'success')
         self.assertEqual(result['view']['id'], self.analysis_property_view_d.id)
         self.assertEqual(len(result['view']['output_files']), 0)
+
+
+class TestAnalysesViewPermissions(AccessLevelBaseTestCase):
+    def setUp(self):
+        super().setUp()
+
+        self.cycle = self.cycle_factory.get_cycle(name="Cycle A")
+        self.root_analysis = Analysis.objects.create(
+            name='test',
+            service=Analysis.BSYNCR,
+            status=Analysis.READY,
+            user=self.root_owner_user,
+            organization=self.org,
+            access_level_instance=self.org.root,
+            configuration={'model_type': 'Simple Linear Regression'},
+        )
+
+        self.root_property = self.property_factory.get_property(access_level_instance=self.root_level_instance)
+        self.child_property = self.property_factory.get_property(access_level_instance=self.child_level_instance)
+
+        self.root_view = self.property_view_factory.get_property_view(prprty=self.root_property, cycle=self.cycle)
+        self.child_view = self.property_view_factory.get_property_view(prprty=self.child_property, cycle=self.cycle)
+
+        self.root_analysis_property_view = AnalysisPropertyView.objects.create(
+            analysis=self.root_analysis,
+            property=self.root_property,
+            cycle=self.cycle,
+            property_state=self.root_view.state
+        )
+        self.child_analysis_property_view = AnalysisPropertyView.objects.create(
+            analysis=self.root_analysis,
+            property=self.child_property,
+            cycle=self.cycle,
+            property_state=self.child_view.state
+        )
+
+        self.meter = Meter.objects.create(
+            property=self.root_property,
+            source=Meter.PORTFOLIO_MANAGER,
+            source_id="Source ID",
+            type=Meter.ELECTRICITY_GRID,
+        )
+        self.meter.save()
+        MeterReading.objects.create(
+            meter=self.meter,
+            start_time=tz.now(),
+            end_time=tz.now(),
+            reading=12345,
+            source_unit='kWh',
+            conversion_factor=1.00
+        )
+
+    def test_analysis_list(self):
+        url = reverse_lazy('api:v3:analyses-list') + "?organization_id=" + str(self.org.id)
+
+        # child user can
+        self.login_as_child_member()
+        response = self.client.get(url, content_type='application/json')
+        assert len(response.json()["analyses"]) == 0
+        assert response.status_code == 200
+
+        # root users can
+        self.login_as_root_member()
+        response = self.client.get(url, content_type='application/json')
+        assert len(response.json()["analyses"]) == 1
+        assert response.status_code == 200
+
+    def test_analysis_create(self):
+        url = reverse_lazy('api:v3:analyses-list') + "?organization_id=" + str(self.org.id)
+        params = json.dumps({
+            "service": "EUI",
+            "property_view_ids": [self.root_view.id],
+            "name": "boo",
+            "access_level_instance_id": self.root_level_instance.id,
+            "end_time": "2016-02-01 00:00:00",
+            "configuration": {"select_meters": "all"},
+        })
+
+        # child user cannot
+        self.login_as_child_member()
+        response = self.client.post(url, params, content_type='application/json')
+        assert response.status_code == 404
+
+        # root users can
+        self.login_as_root_member()
+        response = self.client.post(url, params, content_type='application/json')
+        assert response.status_code == 200
+
+    def test_analysis_get(self):
+        url = reverse_lazy('api:v3:analyses-detail', args=[self.root_analysis.pk]) + "?organization_id=" + str(self.org.id)
+
+        # child user cannot
+        self.login_as_child_member()
+        response = self.client.get(url, content_type='application/json')
+        assert response.status_code == 404
+
+        # root users can
+        self.login_as_root_member()
+        response = self.client.get(url, content_type='application/json')
+        assert response.status_code == 200
+
+    def test_analysis_destroy(self):
+        url = reverse_lazy('api:v3:analyses-detail', args=[self.root_analysis.pk]) + "?organization_id=" + str(self.org.id)
+
+        # child user cannot
+        self.login_as_child_member()
+        response = self.client.delete(url, content_type='application/json')
+        assert response.status_code == 404
+
+        # root users can
+        self.login_as_root_member()
+        response = self.client.delete(url, content_type='application/json')
+        assert response.status_code == 200
+
+    def test_analysis_start(self):
+        url = reverse_lazy('api:v3:analyses-start', args=[self.root_analysis.pk]) + "?organization_id=" + str(self.org.id)
+
+        # child user cannot
+        self.login_as_child_member()
+        response = self.client.post(url, content_type='application/json')
+        assert response.status_code == 404
+
+        # root users can
+        self.login_as_root_member()
+        response = self.client.post(url, content_type='application/json')
+        assert response.status_code == 200
+
+    def test_analysis_stop(self):
+        url = reverse_lazy('api:v3:analyses-stop', args=[self.root_analysis.pk]) + "?organization_id=" + str(self.org.id)
+
+        # child user cannot
+        self.login_as_child_member()
+        response = self.client.post(url, content_type='application/json')
+        assert response.status_code == 404
+
+        # root users can
+        self.login_as_root_member()
+        response = self.client.post(url, content_type='application/json')
+        assert response.status_code == 200
+
+    def test_analysis_progress_key(self):
+        url = reverse_lazy('api:v3:analyses-progress-key', args=[self.root_analysis.pk]) + "?organization_id=" + str(self.org.id)
+
+        # child user cannot
+        self.login_as_child_member()
+        response = self.client.get(url, content_type='application/json')
+        assert response.status_code == 404
+
+        # root users can
+        self.login_as_root_member()
+        response = self.client.get(url, content_type='application/json')
+        assert response.status_code == 200
+
+    def test_analysis_stats(self):
+        url = reverse_lazy('api:v3:analyses-stats') + "?organization_id=" + str(self.org.id) + "&cycle_id=" + str(self.cycle.pk)
+
+        # child user can
+        self.login_as_child_member()
+        response = self.client.get(url, content_type='application/json')
+        assert response.status_code == 200
+        assert response.json()["total_records"] == 1
+
+        # root users can
+        self.login_as_root_member()
+        response = self.client.get(url, content_type='application/json')
+        assert response.status_code == 200
+        assert response.json()["total_records"] == 2
+
+
+class TestAnalysesViewViewPermissions(AccessLevelBaseTestCase):
+    def setUp(self):
+        super().setUp()
+
+        self.cycle = self.cycle_factory.get_cycle(name="Cycle A")
+        self.root_analysis = Analysis.objects.create(
+            name='test',
+            service=Analysis.BSYNCR,
+            status=Analysis.READY,
+            user=self.root_owner_user,
+            organization=self.org,
+            access_level_instance=self.org.root,
+            configuration={'model_type': 'Simple Linear Regression'},
+        )
+
+        self.root_property = self.property_factory.get_property(access_level_instance=self.root_level_instance)
+        self.child_property = self.property_factory.get_property(access_level_instance=self.child_level_instance)
+
+        self.root_view = self.property_view_factory.get_property_view(prprty=self.root_property, cycle=self.cycle)
+        self.child_view = self.property_view_factory.get_property_view(prprty=self.child_property, cycle=self.cycle)
+
+        self.root_analysis_property_view = AnalysisPropertyView.objects.create(
+            analysis=self.root_analysis,
+            property=self.root_property,
+            cycle=self.cycle,
+            property_state=self.root_view.state
+        )
+        self.child_analysis_property_view = AnalysisPropertyView.objects.create(
+            analysis=self.root_analysis,
+            property=self.child_property,
+            cycle=self.cycle,
+            property_state=self.child_view.state
+        )
+
+        self.meter = Meter.objects.create(
+            property=self.root_property,
+            source=Meter.PORTFOLIO_MANAGER,
+            source_id="Source ID",
+            type=Meter.ELECTRICITY_GRID,
+        )
+        self.meter.save()
+        MeterReading.objects.create(
+            meter=self.meter,
+            start_time=tz.now(),
+            end_time=tz.now(),
+            reading=12345,
+            source_unit='kWh',
+            conversion_factor=1.00
+        )
+
+    def test_analysis_view_lit(self):
+        url = reverse_lazy('api:v3:analysis-views-list', args=[self.root_analysis.pk]) + "?organization_id=" + str(self.org.id)
+
+        # child user cannot
+        self.login_as_child_member()
+        response = self.client.get(url, content_type='application/json')
+        assert response.status_code == 404
+
+        # root users can
+        self.login_as_root_member()
+        response = self.client.get(url, content_type='application/json')
+        assert response.status_code == 200
+
+    def test_analysis_view_get(self):
+        url = reverse_lazy('api:v3:analysis-views-detail', args=[self.root_analysis.pk, self.root_analysis_property_view.pk])
+        url += "?organization_id=" + str(self.org.id)
+
+        # child user cannot
+        self.login_as_child_member()
+        response = self.client.get(url, content_type='application/json')
+        assert response.status_code == 404
+
+        # root users can
+        self.login_as_root_member()
+        response = self.client.get(url, content_type='application/json')
+        assert response.status_code == 200

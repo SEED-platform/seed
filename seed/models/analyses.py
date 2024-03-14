@@ -1,8 +1,8 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
-:author
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
 import logging
 
@@ -10,7 +10,7 @@ from django.db import models
 
 from seed.analysis_pipelines.utils import get_json_path
 from seed.landing.models import SEEDUser as User
-from seed.lib.superperms.orgs.models import Organization
+from seed.lib.superperms.orgs.models import AccessLevelInstance, Organization
 
 logger = logging.getLogger(__name__)
 
@@ -23,12 +23,14 @@ class Analysis(models.Model):
     BETTER = 2
     EUI = 3
     CO2 = 4
+    EEEJ = 5
 
     SERVICE_TYPES = (
         (BSYNCR, 'BSyncr'),
         (BETTER, 'BETTER'),
         (EUI, 'EUI'),
-        (CO2, 'CO2')
+        (CO2, 'CO2'),
+        (EEEJ, 'EEEJ')
     )
 
     PENDING_CREATION = 8
@@ -59,9 +61,10 @@ class Analysis(models.Model):
     status = models.IntegerField(default=PENDING_CREATION, choices=STATUS_TYPES)
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
+    access_level_instance = models.ForeignKey(AccessLevelInstance, on_delete=models.CASCADE, null=False, related_name="analyses", blank=False)
     configuration = models.JSONField(default=dict, blank=True)
     # parsed_results can contain any results gathered from the resulting file(s)
-    # that are applicable to the entire analysis (ie all properties involved).
+    # that are applicable to the entire analysis (i.e., all properties involved).
     # For property-specific results, use the AnalysisPropertyView's parsed_results
     parsed_results = models.JSONField(default=dict, blank=True)
 
@@ -101,6 +104,21 @@ class Analysis(models.Model):
         # BSyncr
         if self.service == self.BSYNCR:
             return [{'name': 'Completed', 'value': ''}]
+        # EEEJ
+        elif self.service == self.EEEJ:
+            tract = results.get('2010 Census Tract')
+            tract = 'N/A' if tract is None else tract
+
+            dac = results.get('DAC')
+            dac = 'N/A' if dac is None else dac
+
+            low_income = results.get('Low Income')
+            low_income = 'N/A' if low_income is None else low_income
+            return [
+                {'name': 'Census Tract', 'value': tract},
+                {'name': 'DAC', 'value': dac},
+                {'name': 'Low Income?', 'value': low_income}
+            ]
 
         # BETTER
         elif self.service == self.BETTER:
@@ -116,7 +134,7 @@ class Analysis(models.Model):
                 }, {
                     'name': ['BETTER Inverse Model R^2 (Electricity', 'Fossil Fuel)'],
                     'value_template': ['{json_value:,.2f}', '{json_value:,.2f}'],
-                    'json_path': ['inverse_model.Electricity.r2', 'inverse_model.Fossil Fuel.r2'],
+                    'json_path': ['inverse_model.ELECTRICITY.r2', 'inverse_model.FOSSIL_FUEL.r2'],
                 }
             ]
 
@@ -178,3 +196,6 @@ class Analysis(models.Model):
         :returns: bool
         """
         return self.status in [self.FAILED, self.STOPPED, self.COMPLETED]
+
+    def can_create(self):
+        return self.organization.is_user_ali_root(self.user.id) and (self.organization.is_owner(self.user.id) or self.organization.has_role_member(self.user.id))

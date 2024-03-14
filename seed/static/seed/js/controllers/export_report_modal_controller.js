@@ -1,46 +1,41 @@
 /**
- * :copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
- * :author
+ * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+ * See also https://github.com/seed-platform/seed/main/LICENSE.md
  */
 angular.module('BE.seed.controller.export_report_modal', []).controller('export_report_modal_controller', [
   '$scope',
   '$uibModalInstance',
   'axes_data',
-  'cycle_start',
-  'cycle_end',
+  'cycles',
   'inventory_reports_service',
-  function (
-    $scope,
-    $uibModalInstance,
-    axes_data,
-    cycle_start,
-    cycle_end,
-    inventory_reports_service
-  ) {
+  // eslint-disable-next-line func-names
+  function ($scope, $uibModalInstance, axes_data, cycles, inventory_reports_service) {
     $scope.export_name = '';
 
-    $scope.export_selected = function () {
-      var filename = $scope.export_name;
+    $scope.export_selected = () => {
+      let filename = $scope.export_name;
 
-      var ext = '.xlsx';
-      if (!_.endsWith(filename, ext)) filename += ext;
+      if (!filename) return;
 
-      inventory_reports_service.export_reports_data(axes_data, cycle_start, cycle_end)
-        .then(function (response) {
-          var blob_type = response.headers()['content-type'];
+      const ext = '.xlsx';
+      if (!filename.endsWith(ext)) filename += ext;
 
-          var blob = new Blob([response.data], {type: blob_type});
-          saveAs(blob, filename);
+      inventory_reports_service.export_reports_data(axes_data, cycles).then((response) => {
+        const blob_type = response.headers()['content-type'];
 
-          $scope.close();
-        });
+        const blob = new Blob([response.data], { type: blob_type });
+        saveAs(blob, filename);
+
+        $scope.close();
+      });
     };
 
-    $scope.cancel = function () {
+    $scope.cancel = () => {
       $uibModalInstance.dismiss('cancel');
     };
 
-    $scope.close = function () {
+    $scope.close = () => {
       $uibModalInstance.close();
     };
-  }]);
+  }
+]);

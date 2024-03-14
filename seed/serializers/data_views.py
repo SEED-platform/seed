@@ -1,10 +1,9 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
-:author
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
-
 from django.db import transaction
 from rest_framework import serializers
 
@@ -54,11 +53,11 @@ class DataViewSerializer(serializers.ModelSerializer):
             instance.save()
 
             # if new parameters are provided, delete previous ones so we can create the new params
-            paramters_data = validated_data.get('parameters')
-            if paramters_data:
+            parameters_data = validated_data.get('parameters')
+            if parameters_data:
                 DataViewParameter.objects.filter(data_view=instance).delete()
 
-                for parameter in paramters_data:
+                for parameter in parameters_data:
                     DataViewParameter.objects.create(data_view=instance, **parameter)
 
             return instance

@@ -1,15 +1,17 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
-:author
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
 import logging
 
 from django.conf import settings
 from django.contrib.auth.models import User
-from django.db import models
-from django.db.models.signals import pre_delete
+from django.db import IntegrityError, models, transaction
+from django.db.models.signals import post_save, pre_delete, pre_save
+from django.dispatch import receiver
+from treebeard.ns_tree import NS_Node
 
 from seed.lib.superperms.orgs.exceptions import TooManyNestedOrgs
 
@@ -40,37 +42,20 @@ STATUS_CHOICES = (
 )
 
 
-# This should be cleaned/DRYed up with Organization._default_display_meter_units
-def _get_default_display_meter_units():
-    return {
-        'Coal (anthracite)': 'kBtu (thousand Btu)',
-        'Coal (bituminous)': 'kBtu (thousand Btu)',
-        'Coke': 'kBtu (thousand Btu)',
-        'Diesel': 'kBtu (thousand Btu)',
-        'District Chilled Water - Absorption': 'kBtu (thousand Btu)',
-        'District Chilled Water - Electric': 'kBtu (thousand Btu)',
-        'District Chilled Water - Engine': 'kBtu (thousand Btu)',
-        'District Chilled Water - Other': 'kBtu (thousand Btu)',
-        'District Hot Water': 'kBtu (thousand Btu)',
-        'District Steam': 'kBtu (thousand Btu)',
-        'Electric - Grid': 'kWh (thousand Watt-hours)',
-        'Electric - Solar': 'kWh (thousand Watt-hours)',
-        'Electric - Wind': 'kWh (thousand Watt-hours)',
-        'Electric - Unknown': 'kWh (thousand Watt-hours)',
-        'Fuel Oil (No. 1)': 'kBtu (thousand Btu)',
-        'Fuel Oil (No. 2)': 'kBtu (thousand Btu)',
-        'Fuel Oil (No. 4)': 'kBtu (thousand Btu)',
-        'Fuel Oil (No. 5 and No. 6)': 'kBtu (thousand Btu)',
-        'Kerosene': 'kBtu (thousand Btu)',
-        'Natural Gas': 'kBtu (thousand Btu)',
-        'Other:': 'kBtu (thousand Btu)',
-        'Propane': 'kBtu (thousand Btu)',
-        'Wood': 'kBtu (thousand Btu)'
-    }
+def _get_default_meter_units():
+    """Returns the default meter units for an organization. This method
+    is used only to set the default units for a new organization.
+
+    Do not use this method otherwise, simply call
+    `Organization._default_display_meter_units` directly."""
+    return Organization._default_display_meter_units
 
 
 class OrganizationUser(models.Model):
     class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['user', 'organization'], name='unique_user_for_organization'),
+        ]
         ordering = ['organization', '-role_level']
 
     user = models.ForeignKey(USER_MODEL, on_delete=models.CASCADE)
@@ -81,6 +66,7 @@ class OrganizationUser(models.Model):
     role_level = models.IntegerField(
         default=ROLE_OWNER, choices=ROLE_LEVEL_CHOICES
     )
+    access_level_instance = models.ForeignKey("AccessLevelInstance", on_delete=models.CASCADE, null=False, related_name="users")
 
     def delete(self, *args, **kwargs):
         """Ensure we preserve at least one Owner for this org."""
@@ -107,6 +93,62 @@ class OrganizationUser(models.Model):
         )
 
 
+@receiver(pre_save, sender=OrganizationUser)
+def presave_organization_user(sender, instance, **kwargs):
+    if instance.role_level == ROLE_OWNER and instance.access_level_instance != instance.organization.root:
+        raise IntegrityError("Owners must be member of the organization's root.")
+
+
+class AccessLevelInstance(NS_Node):
+    """Node in the Accountability Hierarchy tree"""
+    name = models.CharField(max_length=100, null=False)
+    organization = models.ForeignKey('Organization', on_delete=models.CASCADE)
+    # path automatically maintained dict of ancestors names by access level names.
+    # See get_path and set_path.
+    path = models.JSONField(null=False)
+
+    node_order_by = ['name']
+
+    # TODO: Add constraint that siblings cannot have same name.
+
+    def get_path(self):
+        """get a dictionary detailing the ancestors of this Access Level Instance
+        """
+        level_names = self.organization.access_level_names
+        ancestors = {
+            level_names[depth - 1]: name
+            for depth, name
+            in self.get_ancestors().values_list("depth", "name")
+        }
+        ancestors[level_names[self.depth - 1]] = self.name
+
+        return ancestors
+
+    def __str__(self):
+        access_level_name = self.organization.access_level_names[self.depth - 1]
+        return f"{self.name}: {self.organization.name} Access Level {access_level_name}"
+
+
+@receiver(pre_save, sender=AccessLevelInstance)
+def set_path(sender, instance, **kwargs):
+    # if instance is new, set path
+    if instance.id is None:
+        instance.path = instance.get_path()
+
+    # else, if we updated the name...
+    else:
+        previous = AccessLevelInstance.objects.get(pk=instance.id)
+        if instance.name != previous.name:
+            level_name = instance.organization.access_level_names[instance.depth - 1]
+            with transaction.atomic():
+                # update our path
+                instance.path[level_name] = instance.name
+                # update our children's path
+                for ali in instance.get_descendants():
+                    ali.path[level_name] = instance.name
+                    ali.save()
+
+
 class Organization(models.Model):
     """A group of people that optionally contains another sub group."""
 
@@ -124,11 +166,15 @@ class Organization(models.Model):
     )
 
     MEASUREMENT_CHOICES_GHG = (
+        ('kgCO2e/year', 'kgCO2e/year'),
         ('MtCO2e/year', 'MtCO2e/year'),
     )
 
     MEASUREMENT_CHOICES_GHG_INTENSITY = (
         ('kgCO2e/ft**2/year', 'kgCO2e/ft²/year'),
+        ('MtCO2e/ft**2/year', 'MtCO2e/ft²/year'),
+        ('kgCO2e/m**2/year', 'kgCO2e/m²/year'),
+        ('MtCO2e/m**2/year', 'MtCO2e/m²/year'),
     )
 
     US = 1
@@ -139,18 +185,20 @@ class Organization(models.Model):
         (CAN, 'CAN'),
     )
 
-    # This should be cleaned/DRYed up with the ._get_default_display_meter_units method
     _default_display_meter_units = {
         'Coal (anthracite)': 'kBtu (thousand Btu)',
         'Coal (bituminous)': 'kBtu (thousand Btu)',
         'Coke': 'kBtu (thousand Btu)',
+        'Default': 'kBtu (thousand Btu)',
         'Diesel': 'kBtu (thousand Btu)',
+        'District Chilled Water': 'kBtu (thousand Btu)',
         'District Chilled Water - Absorption': 'kBtu (thousand Btu)',
         'District Chilled Water - Electric': 'kBtu (thousand Btu)',
         'District Chilled Water - Engine': 'kBtu (thousand Btu)',
         'District Chilled Water - Other': 'kBtu (thousand Btu)',
         'District Hot Water': 'kBtu (thousand Btu)',
         'District Steam': 'kBtu (thousand Btu)',
+        'Electric': 'kWh (thousand Watt-hours)',
         'Electric - Grid': 'kWh (thousand Watt-hours)',
         'Electric - Solar': 'kWh (thousand Watt-hours)',
         'Electric - Wind': 'kWh (thousand Watt-hours)',
@@ -161,13 +209,19 @@ class Organization(models.Model):
         'Fuel Oil (No. 5 and No. 6)': 'kBtu (thousand Btu)',
         'Kerosene': 'kBtu (thousand Btu)',
         'Natural Gas': 'kBtu (thousand Btu)',
-        'Other:': 'kBtu (thousand Btu)',
+        'Other:': 'kBtu (thousand Btu)',  # yes, other has a colon at the end.
         'Propane': 'kBtu (thousand Btu)',
-        'Wood': 'kBtu (thousand Btu)'
+        'Wood': 'kBtu (thousand Btu)',
     }
 
     class Meta:
         ordering = ['name']
+        constraints = [
+            models.CheckConstraint(
+                name="ubid_threshold_range",
+                check=models.Q(ubid_threshold__range=(0, 1)),
+            ),
+        ]
 
     name = models.CharField(max_length=100)
     users = models.ManyToManyField(
@@ -200,7 +254,7 @@ class Organization(models.Model):
     modified = models.DateTimeField(auto_now=True, null=True)
 
     # Default preferred all meter units to kBtu
-    display_meter_units = models.JSONField(default=_get_default_display_meter_units)
+    display_meter_units = models.JSONField(default=_get_default_meter_units)
 
     # If below this threshold, we don't show results from this Org
     # in exported views of its data.
@@ -229,6 +283,15 @@ class Organization(models.Model):
     at_organization_token = models.CharField(blank=True, max_length=128, default='')
     audit_template_user = models.EmailField(blank=True, max_length=128, default='')
     audit_template_password = models.CharField(blank=True, max_length=128, default='')
+    audit_template_report_type = models.CharField(blank=True, max_length=128, default='Demo City Report')
+
+    # Salesforce Functionality
+    salesforce_enabled = models.BooleanField(default=False)
+
+    access_level_names = models.JSONField(default=list)
+
+    # UBID Threshold
+    ubid_threshold = models.FloatField(default=1.0)
 
     def save(self, *args, **kwargs):
         """Perform checks before saving."""
@@ -248,12 +311,19 @@ class Organization(models.Model):
         """Return True if user object has a relation to this organization."""
         return user in self.users.all()
 
-    def add_member(self, user, role=ROLE_OWNER):
-        """Add a user to an organization."""
+    def add_member(self, user, access_level_instance_id, role=ROLE_OWNER):
+        """Add a user to an organization. Returns a boolean if a new OrganizationUser record was created"""
+        if OrganizationUser.objects.filter(user=user, organization=self).exists():
+            return False
+
         # Ensure that the user can login in case they had previously been deactivated due to no org associations
-        user.is_active = True
-        user.save()
-        return OrganizationUser.objects.get_or_create(user=user, organization=self, role_level=role)
+        if not user.is_active:
+            user.is_active = True
+            user.save()
+
+        _, created = OrganizationUser.objects.get_or_create(user=user, organization=self, access_level_instance_id=access_level_instance_id, role_level=role)
+
+        return created
 
     def remove_member(self, user):
         """Remove user from organization."""
@@ -273,6 +343,30 @@ class Organization(models.Model):
         return OrganizationUser.objects.filter(
             user=user, role_level=ROLE_OWNER, organization=self,
         ).exists()
+
+    def has_role_member(self, user):
+        """
+        Return True if the user has a relation to this org, with a role of
+        member.
+        """
+        return OrganizationUser.objects.filter(
+            user=user, role_level=ROLE_MEMBER, organization=self,
+        ).exists()
+
+    def is_user_ali_root(self, user):
+        """
+        Return True if the user's ali is at the root of the organization
+        """
+        is_root = False
+
+        ou = OrganizationUser.objects.filter(
+            user=user, organization=self,
+        )
+        if ou.count() > 0:
+            ou = ou.first()
+            if ou.access_level_instance == self.root:
+                is_root = True
+        return is_root
 
     def get_exportable_fields(self):
         """Default to parent definition of exportable fields."""
@@ -309,8 +403,28 @@ class Organization(models.Model):
             return self.id
         return self.parent_org.id
 
+    def add_new_access_level_instance(self, parent_id: int, name: str) -> AccessLevelInstance:
+        parent = AccessLevelInstance.objects.get(pk=parent_id)
+
+        if len(self.access_level_names) < parent.depth + 1:
+            raise UserWarning('Cannot create child at an unnamed level')
+
+        new_access_level_instance = parent.add_child(organization=self, name=name)
+
+        return new_access_level_instance
+
+    def get_access_tree(self, from_ali=None) -> list:
+        if from_ali is None:
+            from_ali = self.root
+
+        return AccessLevelInstance.dump_bulk(from_ali)
+
     def __str__(self):
         return 'Organization: {0}({1})'.format(self.name, self.pk)
+
+    @property
+    def root(self):
+        return AccessLevelInstance.objects.get(organization=self, depth=1)
 
 
 def organization_pre_delete(sender, instance, **kwargs):
@@ -322,3 +436,70 @@ def organization_pre_delete(sender, instance, **kwargs):
 
 
 pre_delete.connect(organization_pre_delete, sender=Organization)
+
+
+@receiver(pre_save, sender=Organization)
+def presave_organization(sender, instance, **kwargs):
+    from seed.models import Column
+
+    if instance.id is None:
+        return
+
+    previous = Organization.objects.get(pk=instance.id)
+    previous_access_level_names = previous.access_level_names
+
+    if previous_access_level_names != instance.access_level_names:
+        _assert_alns_are_valid(instance)
+        _update_alis_path_keys(instance, previous_access_level_names)
+
+    taken_names = Column.objects.filter(organization=instance, display_name__in=instance.access_level_names).values_list("display_name", flat=True)
+    if len(taken_names) > 0:
+        raise ValueError(f"{taken_names} are column names.")
+
+
+def _assert_alns_are_valid(org):
+    from seed.models import Column
+    alns = org.access_level_names
+
+    if len(set(alns)) != len(alns):  # if not unique
+        raise ValueError("Organization's access_level_names must be unique.")
+
+    columns_with_same_names = Column.objects.filter(organization=org, display_name__in=alns)
+    if columns_with_same_names.count() > 0:
+        repeated_names = set(columns_with_same_names.values_list("display_name", flat=True))
+        raise ValueError(f"Access level names cannot match SEED column names: {list(repeated_names)}")
+
+
+def _update_alis_path_keys(org, previous_access_level_names):
+    """For each instance.access_level_names item changed, update the ali.paths
+    """
+    alis = AccessLevelInstance.objects.filter(organization=org)
+    min_len = min(len(previous_access_level_names), len(org.access_level_names))
+
+    with transaction.atomic():
+        # for each name in access_level_name...
+        for i in range(min_len):
+            previous_access_level_name = previous_access_level_names[i]
+            current_access_level_name = org.access_level_names[i]
+
+            # If the name was changed, alter the paths of the ALIs.
+            if previous_access_level_name != current_access_level_name:
+                for ali in alis:
+                    if previous_access_level_name in ali.path:
+                        ali.path[current_access_level_name] = ali.path[previous_access_level_name]
+                        del ali.path[previous_access_level_name]
+                        ali.save()
+
+
+@receiver(post_save, sender=Organization)
+def post_save_organization(sender, instance, created, **kwargs):
+    """
+    Give new Orgs a Accountability Hierarchy root.
+    """
+    if created:
+        if not instance.access_level_names:
+            instance.access_level_names = [instance.name]
+
+        root = AccessLevelInstance.add_root(organization=instance, name="root")
+        root.save()
+        instance.save()

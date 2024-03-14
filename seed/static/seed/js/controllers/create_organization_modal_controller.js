@@ -1,48 +1,44 @@
 /**
- * :copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
- * :author
+ * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+ * See also https://github.com/seed-platform/seed/main/LICENSE.md
  */
-angular.module('BE.seed.controller.create_organization_modal', [])
-  .controller('create_organization_modal_controller', [
-    '$scope',
-    '$uibModalInstance',
-    'user_service',
-    'user_id',
-    'organization_service',
-    function (
-      $scope,
-      $uibModalInstance,
-      user_service,
-      user_id,
+angular.module('BE.seed.controller.create_organization_modal', []).controller('create_organization_modal_controller', [
+  '$scope',
+  '$uibModalInstance',
+  'user_service',
+  'user_id',
+  'organization_service',
+  // eslint-disable-next-line func-names
+  function ($scope, $uibModalInstance, user_service, user_id, organization_service) {
+    user_service.get_user_profile().then((data) => {
+      $scope.email = data.email;
+    });
+
+    // This in the pattern that the organization service understands
+    $scope.org = {
+      email: {
+        email: $scope.email,
+        user_id
+      }
+    };
+
+    /**
+     * adds a user to the org
+     */
+    $scope.submit_form = () => {
+      const org = _.cloneDeep($scope.org);
       organization_service
-    ) {
-
-      user_service.get_user_profile().then (function (data) {
-        $scope.email = data.email;
-      });
-
-      //This in the pattern that the organization service understands
-      $scope.org = {
-        email: {
-          email: $scope.email,
-          user_id: user_id
-        }
-      };
-
-      /**
-       * adds a user to the org
-       */
-      $scope.submit_form = function () {
-        const org = _.cloneDeep($scope.org);
-        organization_service.add(org).then(function () {
+        .add(org)
+        .then(() => {
           window.location.href = '/app';
-        }).catch(function (error) {
+        })
+        .catch((error) => {
           $scope.error_message = error.data.message;
         });
-      };
+    };
 
-      $scope.close = function () {
-        $uibModalInstance.close();
-      };
-
-    }]);
+    $scope.close = () => {
+      $uibModalInstance.close();
+    };
+  }
+]);

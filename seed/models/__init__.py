@@ -2,8 +2,8 @@
 # encoding: utf-8
 
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
-:author
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
 # Do not isort these since order is important
 # The precommit call has a skip for this file.
@@ -24,9 +24,12 @@ from .column_list_profiles import *  # noqa
 from .column_list_profile_columns import *  # noqa
 from .compliance_metrics import *  # noqa
 from .auditlog import *  # noqa
+from .eeej import *  # noqa
 from .measures import *  # noqa
 from .scenarios import *  # noqa
 from .meters import *  # noqa
+from .salesforce_configs import *  # noqa
+from .salesforce_mappings import *  # noqa
 from .sensors import *  # noqa
 from .simulations import *  # noqa
 from .building_file import *  # noqa
@@ -38,15 +41,14 @@ from .analysis_output_files import *  # noqa
 from .analysis_messages import *  # noqa
 from .postoffice import *  # noqa
 from .filter_group import *  # noqa
+from .events import *  # noqa
+from .ubid_models import *  # noqa
+from .uniformat import *  # noqa
+from .goals import * # noqa
+from .goal_notes import * # noqa
 
 from .certification import (    # noqa
     GreenAssessment,
     GreenAssessmentProperty,
     GreenAssessmentURL
-)
-
-from .projects import (     # noqa
-    Project,
-    ProjectPropertyView,
-    ProjectTaxLotView,
 )

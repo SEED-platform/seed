@@ -1,3 +1,414 @@
+# SEED Version 2.22.0
+
+<!-- Release notes generated using configuration in .github/release.yml at develop -->
+
+## What's Changed
+### New Features 🎉
+* Support unicode characters by replacing unidecode with new normalize method by @nllong in https://github.com/SEED-platform/seed/pull/4484
+* Redis backend update by @axelstudios in https://github.com/SEED-platform/seed/pull/4376
+### Improvements 📈
+* Sort cycles by start_date on property insights page by @kflemin in https://github.com/SEED-platform/seed/pull/4441
+* Fixed FontAwesome v6.5 alignment by @axelstudios in https://github.com/SEED-platform/seed/pull/4444
+* Fixes text alignment following FontAwesome changes by @axelstudios in https://github.com/SEED-platform/seed/pull/4465
+* Sensor reading performance improvement by @axelstudios in https://github.com/SEED-platform/seed/pull/4464
+* Move program setup to modal on insights pages by @kflemin in https://github.com/SEED-platform/seed/pull/4468
+* Retrieve all map data at once by @haneslinger in https://github.com/SEED-platform/seed/pull/4469
+* Change unique name constraint on derived column so it's within inventory type by @haneslinger in https://github.com/SEED-platform/seed/pull/4472
+* Add JSON response to GET Audit Template submission by @kflemin in https://github.com/SEED-platform/seed/pull/4477
+* Labels: Added complex filtering logic by @ebeers-png in https://github.com/SEED-platform/seed/pull/4449
+### Maintenance 🧹
+* Update developer documentation dependencies by @nllong in https://github.com/SEED-platform/seed/pull/4485
+* Delete PropertyStateViewSet by @haneslinger in https://github.com/SEED-platform/seed/pull/4292
+### Bug Fixes 🐛
+* Display x-axis label for ranked distance to compliance by @kflemin in https://github.com/SEED-platform/seed/pull/4442
+* Fix multi-cycle test for new year by @perryr16 in https://github.com/SEED-platform/seed/pull/4459
+* Fix and optimize sensors by @haneslinger in https://github.com/SEED-platform/seed/pull/4461
+* Restore column filters when unpinning by @axelstudios in https://github.com/SEED-platform/seed/pull/4473
+* Fix importing diesel meter readings by @axelstudios in https://github.com/SEED-platform/seed/pull/4476
+* Add bulk meter reading error handling for duplicate date-pairs by @perryr16 in https://github.com/SEED-platform/seed/pull/4467
+* Allow omitted fields on the mapping page to be unfilled by @haneslinger in https://github.com/SEED-platform/seed/pull/4471
+* Default label to show in list by @haneslinger in https://github.com/SEED-platform/seed/pull/4448
+* Show spinner on label creation by @perryr16 in https://github.com/SEED-platform/seed/pull/4458
+* Catch invalid organization id preventing 500s by @perryr16 in https://github.com/SEED-platform/seed/pull/4475
+* Fix inventory list timing console errors by @perryr16 in https://github.com/SEED-platform/seed/pull/4478
+* Fix inventory list double refresh on load by @perryr16 in https://github.com/SEED-platform/seed/pull/4480
+* Apply GHG and GHGI unit versions to canonical columns by @perryr16 in https://github.com/SEED-platform/seed/pull/4462
+* Fix inventory loading if no previous sort settings exist in localStorage by @axelstudios in https://github.com/SEED-platform/seed/pull/4497
+* Fix simple modal service by @kflemin in https://github.com/SEED-platform/seed/pull/4505
+* Handle errors when filtering columns with special characters by @perryr16 in https://github.com/SEED-platform/seed/pull/4511
+* Fix program setup's new program button action by @perryr16 in https://github.com/SEED-platform/seed/pull/4499
+* Ignore duplicates when adding labels by @kflemin in https://github.com/SEED-platform/seed/pull/4523
+* Fix 403 error for viewer role by @kflemin in https://github.com/SEED-platform/seed/pull/4526
+* Inventory List - Ignore incomplete filters containing just an operator by @kflemin in https://github.com/SEED-platform/seed/pull/4527
+* Inventory Map - Fix positioning of the popup tooltip to be closer to the pin by @kflemin in https://github.com/SEED-platform/seed/pull/4528
+* Update error message on overlapping reading import by @perryr16 in https://github.com/SEED-platform/seed/pull/4533
+* Fix Redis compatibility with boto3 by @axelstudios in https://github.com/SEED-platform/seed/pull/4534
+* Reject import file if it contains braces by @perryr16 in https://github.com/SEED-platform/seed/pull/4537
+* Update default dates on data quality rules by @nllong in https://github.com/SEED-platform/seed/pull/4538
+* Apply unit conversion to extra data by @perryr16 in https://github.com/SEED-platform/seed/pull/4496
+* Fix unit conversion for non-numeric values by @perryr16 in https://github.com/SEED-platform/seed/pull/4555
+* Fix property insights categorical axis by @haneslinger in https://github.com/SEED-platform/seed/pull/4565
+
+
+**Full Changelog**: https://github.com/SEED-platform/seed/compare/v2.21.0...v2.22.0
+
+# SEED Version 2.21.0
+
+<!-- Release notes generated using configuration in .github/release.yml at develop -->
+
+## What's Changed
+### New Features 🎉
+* Provide environment variable to disable wait-for-it condition in deployments by @dhaley in https://github.com/SEED-platform/seed/pull/4377
+* Add healthcheck to docker web container by @axelstudios in https://github.com/SEED-platform/seed/pull/4374
+* Audit Template report submission endpoint by @kflemin in https://github.com/SEED-platform/seed/pull/4411
+* Remove Summary charts by @haneslinger in https://github.com/SEED-platform/seed/pull/4402
+* Add count to default reports by @haneslinger in https://github.com/SEED-platform/seed/pull/4423
+### Improvements 📈
+* Property Insights UI enhancements by @kflemin in https://github.com/SEED-platform/seed/pull/4384
+* Add distance to target in table under property insights graph by @kflemin in https://github.com/SEED-platform/seed/pull/4386
+* Populate default report using cycles by @haneslinger in https://github.com/SEED-platform/seed/pull/4420
+* Analyses performance improvement by @haneslinger in https://github.com/SEED-platform/seed/pull/4434
+* Additional analyses performance improvement by @haneslinger in https://github.com/SEED-platform/seed/pull/4438
+### Maintenance 🧹
+* Updated developer resources documentation by @axelstudios in https://github.com/SEED-platform/seed/pull/4373
+* Bump django from 3.2.20 to 3.2.23 in /requirements by @dependabot in https://github.com/SEED-platform/seed/pull/4379
+* Updated salesforce pg_restore docs by @axelstudios in https://github.com/SEED-platform/seed/pull/4382
+### Bug Fixes 🐛
+* Fix CO2 analysis column naming by @ebeers-png in https://github.com/SEED-platform/seed/pull/4410
+* Salesforce scheduling issues by @axelstudios in https://github.com/SEED-platform/seed/pull/4387
+* Custom report name field location by @kflemin in https://github.com/SEED-platform/seed/pull/4385
+* Order cycles by start date on program setup by @kflemin in https://github.com/SEED-platform/seed/pull/4428
+* Property Insights tooltip refinement by @kflemin in https://github.com/SEED-platform/seed/pull/4425
+
+
+**Full Changelog**: https://github.com/SEED-platform/seed/compare/v2.20.1...v2.21.0
+
+# SEED Version 2.20.1
+
+<!-- Release notes generated using configuration in .github/release.yml at develop -->
+
+## What's Changed
+### New Features 🎉
+* Feature to enable Redis for ElastiCache by @dhaley in https://github.com/SEED-platform/seed/pull/4288
+* Health check endpoint by @axelstudios in https://github.com/SEED-platform/seed/pull/4371
+### Improvements 📈
+* Update dependencies and fonts by @axelstudios in https://github.com/SEED-platform/seed/pull/3941
+* Update Redis config to support encryption in transit with AWS ElastiCache  by @dhaley in https://github.com/SEED-platform/seed/pull/4258
+* Decrease BETTER polling rate 5x, increase timeout 5x by @axelstudios in https://github.com/SEED-platform/seed/pull/4280
+* Increase ESPM max timeout by @anchapin in https://github.com/SEED-platform/seed/pull/4296
+* Update list of BETTER's measures returned by @nllong in https://github.com/SEED-platform/seed/pull/4300
+### Maintenance 🧹
+* Code Cleanup by @axelstudios in https://github.com/SEED-platform/seed/pull/3539
+### Bug Fixes 🐛
+* Fix mapping of BETTER's measures with empty strings to false by @nllong in https://github.com/SEED-platform/seed/pull/4276
+* Enable natural sorting of Inventory List columns by @axelstudios in https://github.com/SEED-platform/seed/pull/4281
+* Handle ambiguous timestamps by @axelstudios in https://github.com/SEED-platform/seed/pull/4287
+* Fix cycle deletion modal by @axelstudios in https://github.com/SEED-platform/seed/pull/4291
+* Handle nonexistent timestamps by @axelstudios in https://github.com/SEED-platform/seed/pull/4294
+* Add failing logic to AT export if AT credentials are invalid by @perryr16 in https://github.com/SEED-platform/seed/pull/4282
+* Add analysis description translations by @kflemin in https://github.com/SEED-platform/seed/pull/4304
+* Fix showing derived column values on the inventory list page by @axelstudios in https://github.com/SEED-platform/seed/pull/4364
+
+
+**Full Changelog**: https://github.com/SEED-platform/seed/compare/v2.20.0...v2.20.1
+
+# SEED Version 2.20.0
+
+<!-- Release notes generated using configuration in .github/release.yml at develop -->
+
+## What's Changed
+### New Features 🎉
+* Add new `create_property` and `update_with_espm` endpoint by @kflemin in https://github.com/SEED-platform/seed/pull/4012
+* EEEJ Analysis Functionality by @kflemin in https://github.com/SEED-platform/seed/pull/4208
+* Add Uniformat Table by @axelstudios in https://github.com/SEED-platform/seed/pull/4238
+* Add Import Export to Audit Template by @perryr16 in https://github.com/SEED-platform/seed/pull/4215
+### Improvements 📈
+* Optimize list analyses endpoint by @haneslinger in https://github.com/SEED-platform/seed/pull/4206
+* Move analyses endpoint by @haneslinger in https://github.com/SEED-platform/seed/pull/4210
+* Remove Beta label from text of analysis button  by @kflemin in https://github.com/SEED-platform/seed/pull/4225
+* Show Analysis `debug_message` If Available by @axelstudios in https://github.com/SEED-platform/seed/pull/4198
+* Use display name in custom reports legend by @haneslinger in https://github.com/SEED-platform/seed/pull/4060
+* Add more API documentation for meter and meter readings by @nllong in https://github.com/SEED-platform/seed/pull/4237
+* Update default meter range selection for BETTER analysis by @perryr16 in https://github.com/SEED-platform/seed/pull/3819
+* Add a cycle indicator to the analysis modal and filter analyses for current cycle by @perryr16 in https://github.com/SEED-platform/seed/pull/3837
+* Add envvar to specify loading test EEEJ dataset by @kflemin in https://github.com/SEED-platform/seed/pull/4254
+* Default to excluding Address Line 1 as a matching criteria by @axelstudios in https://github.com/SEED-platform/seed/pull/4256
+* Refactor map page for functionality and performance by @axelstudios in https://github.com/SEED-platform/seed/pull/4260
+### Maintenance 🧹
+* Remove Deprecated APIs by @axelstudios in https://github.com/SEED-platform/seed/pull/4049
+* Lock `google-chrome` to v114 by @axelstudios in https://github.com/SEED-platform/seed/pull/4165
+* Bump word-wrap from 1.2.3 to 1.2.4 by @dependabot in https://github.com/SEED-platform/seed/pull/4154
+* Remove ID from inventory document display name by @perryr16 in https://github.com/SEED-platform/seed/pull/4125
+* Bump uwsgi from 2.0.17.1 to 2.0.22 in /requirements by @dependabot in https://github.com/SEED-platform/seed/pull/4209
+* Allow analysis property view related properties to be null by @perryr16 in https://github.com/SEED-platform/seed/pull/4227
+* Disable ability to remove matching criteria fields once inventory is added by @perryr16 in https://github.com/SEED-platform/seed/pull/4222
+* Add documentation for cleaning up conflicting column names during migration by @nllong in https://github.com/SEED-platform/seed/pull/4264
+### Bug Fixes 🐛
+* Add Open Street Map to CSP rules by @axelstudios in https://github.com/SEED-platform/seed/pull/4169
+* add error handling for sf edge case by @kflemin in https://github.com/SEED-platform/seed/pull/4159
+* Fix display name by @haneslinger in https://github.com/SEED-platform/seed/pull/4223
+* Fix refresh_metadata by @haneslinger in https://github.com/SEED-platform/seed/pull/4221
+* Fix Meters Without `source_id` by @axelstudios in https://github.com/SEED-platform/seed/pull/4229
+* Fix performance for fetching analyses and force user email to lowercase by @ebeers-png in https://github.com/SEED-platform/seed/pull/4213
+* Update inventory selection to include current inventory type only by @perryr16 in https://github.com/SEED-platform/seed/pull/3862
+* Delete BuildingFiles and Related Events on PropertyState delete by @perryr16 in https://github.com/SEED-platform/seed/pull/4217
+* Fixed Issues with Scenario/Measure CRUD Operations by @axelstudios in https://github.com/SEED-platform/seed/pull/4240
+* Fix Meter Overwrites by @axelstudios in https://github.com/SEED-platform/seed/pull/4250
+* Fix filter group dropdown bugs by @ebeers-png in https://github.com/SEED-platform/seed/pull/4249
+* Fix EEEJ analysis errors when there are no lat/long or address by @kflemin in https://github.com/SEED-platform/seed/pull/4247
+* ArcGIS CSP rule by @axelstudios in https://github.com/SEED-platform/seed/pull/4265
+* Fix edge case for map label filtering by @axelstudios in https://github.com/SEED-platform/seed/pull/4270
+
+
+**Full Changelog**: https://github.com/SEED-platform/seed/compare/v2.19.0...v2.20.0
+
+# SEED Version 2.19.0
+<!-- Release notes generated using configuration in .github/release.yml at develop -->
+
+## What's Changed
+### New Features 🎉
+* Add Terms of Service by @kflemin in https://github.com/SEED-platform/seed/pull/4065
+* Multiple cycle upload by @anchapin in https://github.com/SEED-platform/seed/pull/4073
+* Add UBID relation to state by @perryr16 in https://github.com/SEED-platform/seed/pull/4074
+* Store additional geocoding results by @nllong in https://github.com/SEED-platform/seed/pull/4020
+### Improvements 📈
+* Move reports to insights page by @haneslinger in https://github.com/SEED-platform/seed/pull/4031
+* Direct to property insight on click of program overview column by @haneslinger in https://github.com/SEED-platform/seed/pull/4011
+* Add ranked sorting to insight property page by @haneslinger in https://github.com/SEED-platform/seed/pull/4030
+* Include x and y in property insights tables by @haneslinger in https://github.com/SEED-platform/seed/pull/4075
+* Add percentages to program overview by @haneslinger in https://github.com/SEED-platform/seed/pull/4077
+* Add matching criteria to report export by @haneslinger in https://github.com/SEED-platform/seed/pull/4072
+### Maintenance 🧹
+* Bump django from 3.2.18 to 3.2.19 in /requirements by @dependabot in https://github.com/SEED-platform/seed/pull/4034
+* Improve inventory load times by @ebeers-png in https://github.com/SEED-platform/seed/pull/3990
+* Updated installation steps by @anchapin in https://github.com/SEED-platform/seed/pull/3987
+* Bump django-ses from 1.0.3 to 3.5.0 in /requirements by @dependabot in https://github.com/SEED-platform/seed/pull/4055
+* Bump requests from 2.28.0 to 2.31.0 in /requirements by @dependabot in https://github.com/SEED-platform/seed/pull/4056
+* Pin urllib3 by @axelstudios in https://github.com/SEED-platform/seed/pull/4059
+* Remove OEP by @kflemin in https://github.com/SEED-platform/seed/pull/4109
+* Bump django from 3.2.19 to 3.2.20 in /requirements by @dependabot in https://github.com/SEED-platform/seed/pull/4128
+* Merge sphinx spelling list with VSCode's Code Spelling version by @nllong in https://github.com/SEED-platform/seed/pull/4149
+### Bug Fixes 🐛
+* Fix duplicate users per organization by @axelstudios in https://github.com/SEED-platform/seed/pull/4033
+* Require org id from endpoints with has_perm_class by @haneslinger in https://github.com/SEED-platform/seed/pull/4027
+* Remove sync salesforce button due to timeout by @kflemin in https://github.com/SEED-platform/seed/pull/4038
+* Fix column list profile GET request syntax by @ebeers-png in https://github.com/SEED-platform/seed/pull/3988
+* Prevent Automatically Serving Static `index.html` Files by @axelstudios in https://github.com/SEED-platform/seed/pull/4057
+* Fix User Creation Bugs by @axelstudios in https://github.com/SEED-platform/seed/pull/4094
+* Fix categorical data on reports scatter plot by @haneslinger in https://github.com/SEED-platform/seed/pull/4085
+* Fix ESPM Source Types by @axelstudios in https://github.com/SEED-platform/seed/pull/4096
+* Fix Download URLs by @axelstudios in https://github.com/SEED-platform/seed/pull/4066
+* Use iterator() when rehashing to save memory by @nllong in https://github.com/SEED-platform/seed/pull/4139
+* Constrain uniqueness of column name and move geocoding column creation by @nllong in https://github.com/SEED-platform/seed/pull/4151
+
+**Full Changelog**: https://github.com/SEED-platform/seed/compare/v2.18.1...v2.19.0
+
+# SEED Version 2.18.1
+<!-- Release notes generated using configuration in .github/release.yml at develop -->
+
+## What's Changed
+### New Features 🎉
+* Codebuild & Elasticache Redis integration support by @dhaley in https://github.com/SEED-platform/seed/pull/3981
+### Improvements 📈
+* Add better error messaging that includes the property view ID by @kflemin in https://github.com/SEED-platform/seed/pull/3973
+* Add Salesforce fields to store data admin contact by @kflemin in https://github.com/SEED-platform/seed/pull/3985
+* Add salesforce mappings sort and more error checking and messaging by @kflemin in https://github.com/SEED-platform/seed/pull/3992
+* Add zoom and panning to insights property page by @haneslinger in https://github.com/SEED-platform/seed/pull/3879
+* Remove program overview tabular data by @haneslinger in https://github.com/SEED-platform/seed/pull/4007
+* Save Insight property config locally by @haneslinger in https://github.com/SEED-platform/seed/pull/3994
+* Add Salesforce delete_label_on_sync setting by @kflemin in https://github.com/SEED-platform/seed/pull/4022
+* Replace seed getting started guide for v2.18 by @kflemin in https://github.com/SEED-platform/seed/pull/4026
+* Add in the start and end cycle year to the title by @haneslinger in https://github.com/SEED-platform/seed/pull/4014
+### Bug Fixes 🐛
+* Validate property state before creating BuildingSync document by @perryr16 in https://github.com/SEED-platform/seed/pull/3953
+* Fix Update-Salesforce requests by @axelstudios in https://github.com/SEED-platform/seed/pull/3978
+* Enforce non-null `taxlot_id` attached to `TaxlotView`s by @axelstudios in https://github.com/SEED-platform/seed/pull/4006
+
+## New Contributors
+* @dhaley made their first contribution in https://github.com/SEED-platform/seed/pull/3981
+
+**Full Changelog**: https://github.com/SEED-platform/seed/compare/v2.18.0...v2.18.1
+
+# SEED Version 2.18.0
+<!-- Release notes generated using configuration in .github/release.yml at develop -->
+
+## What's Changed
+### New Features 🎉
+* Implement Salesforce integration by @kflemin in https://github.com/SEED-platform/seed/pull/3840
+* Add option to export meter data in GeoJSON by @nllong in https://github.com/SEED-platform/seed/pull/3900
+* Create property timeline view by @perryr16 in https://github.com/SEED-platform/seed/pull/3899
+### Improvements 📈
+* Update Evaluate Permissions by @haneslinger in https://github.com/SEED-platform/seed/pull/3864
+* select cycles instead of start/end dates by @kflemin in https://github.com/SEED-platform/seed/pull/3895
+* Specify cycle in eui analysis by @haneslinger in https://github.com/SEED-platform/seed/pull/3820
+* Add labels button on property insights page by @haneslinger in https://github.com/SEED-platform/seed/pull/3860
+* Bump yargs-parser and protractor by @dependabot in https://github.com/SEED-platform/seed/pull/3939
+* Modularized nginx, added gzip, added cache expiration by @axelstudios in https://github.com/SEED-platform/seed/pull/3940
+### Maintenance 🧹
+* Bump django from 3.2.17 to 3.2.18 in /requirements by @dependabot in https://github.com/SEED-platform/seed/pull/3863
+* Bump sentry-sdk from 1.7.2 to 1.14.0 in /requirements by @dependabot in https://github.com/SEED-platform/seed/pull/3907
+* Migrate BETTER API from V1 to V2 by @perryr16 in https://github.com/SEED-platform/seed/pull/3881
+* Update copyright and copyright years by @nllong in https://github.com/SEED-platform/seed/pull/3903
+### Bug Fixes 🐛
+* Filter cycle specific labels on inventory list by @perryr16 in https://github.com/SEED-platform/seed/pull/3858
+* Fix casting of GHG metrics on Program Insight page by @haneslinger in https://github.com/SEED-platform/seed/pull/3880
+* Fix deletion of new custom report by @haneslinger in https://github.com/SEED-platform/seed/pull/3924
+* Fix saving BETTER/Salesforce data for non-active orgs by @axelstudios in https://github.com/SEED-platform/seed/pull/3925
+* Fix GitHub Actions Masking by @axelstudios in https://github.com/SEED-platform/seed/pull/3930
+* adding >= and <= to display by @kflemin in https://github.com/SEED-platform/seed/pull/3928
+* Fix custom reports download button by @haneslinger in https://github.com/SEED-platform/seed/pull/3926
+* Updated the meter import process to work with latest format from EnergyStar Portfolio Manager by @anchapin in https://github.com/SEED-platform/seed/pull/3927
+* Fix active nav for deep URLs by @axelstudios in https://github.com/SEED-platform/seed/pull/3931
+* Fixed saving Program Setup data for non-active orgs by @axelstudios in https://github.com/SEED-platform/seed/pull/3932
+* Make test_compliance_metric_retrieve_endpoint deterministic by @haneslinger in https://github.com/SEED-platform/seed/pull/3934
+* Fix custom report creation reload by @haneslinger in https://github.com/SEED-platform/seed/pull/3936
+* Fixed issue with filtering Property columns from Tax Lot tab of Inventory by @anchapin in https://github.com/SEED-platform/seed/pull/3943
+* Increase AnalysisMessage.user_message length by @perryr16 in https://github.com/SEED-platform/seed/pull/3935
+* Fixes Timeline Bugs by @perryr16 in https://github.com/SEED-platform/seed/pull/3944
+* Fix editing a derived column without changing the name by @axelstudios in https://github.com/SEED-platform/seed/pull/3949
+* Fix Salesforce connection requests for non-superusers by @axelstudios in https://github.com/SEED-platform/seed/pull/3947
+### Other Changes
+* None
+
+**Full Changelog**: https://github.com/SEED-platform/seed/compare/v2.17.4...v2.18.0
+
+# SEED Version 2.17.4
+<!-- Release notes generated using configuration in .github/release.yml at develop -->
+
+## What's Changed
+### Improvements 📈
+* Open New Tab on Insight Property Click by @haneslinger in https://github.com/SEED-platform/seed/pull/3853
+### Maintenance 🧹
+* Improve nginx security by @nllong and @axelstudios in https://github.com/SEED-platform/seed/pull/3873
+
+**Full Changelog**: https://github.com/SEED-platform/seed/compare/v2.17.3...v2.17.4
+
+# SEED Version 2.17.3
+<!-- Release notes generated using configuration in .github/release.yml at prep-release-2.17.3 -->
+
+## What's Changed
+### New Features 🎉
+* Add CRUD to MeterReading by @nllong in https://github.com/SEED-platform/seed/pull/3757
+* Add export to meters and meter readings by @nllong in https://github.com/SEED-platform/seed/pull/3868
+### Improvements 📈
+* Change "Program Configuration" to "Program Setup" by @anchapin in https://github.com/SEED-platform/seed/pull/3832
+* Get audit date and audit date type from buildingsync files by @haneslinger in https://github.com/SEED-platform/seed/pull/3838
+* Update GeoJSON export format with GeometryCollections and remove crs by @nllong in https://github.com/SEED-platform/seed/pull/3851
+### Maintenance 🧹
+* Bump django from 3.2.17 to 3.2.18 in /requirements by @dependabot in https://github.com/SEED-platform/seed/pull/3863
+* Remove project and compliance models by @nllong in https://github.com/SEED-platform/seed/pull/3743
+* Fix nginx Security by @axelstudios in https://github.com/SEED-platform/seed/pull/3866
+### Bug Fixes 🐛
+* Fix ESPM xml report import by @nllong in https://github.com/SEED-platform/seed/pull/3856
+* Fix importing of GeoJSON property footprints by @nllong in https://github.com/SEED-platform/seed/pull/3848
+* Fix clickable header by @axelstudios in https://github.com/SEED-platform/seed/pull/3867
+
+**Full Changelog**: https://github.com/SEED-platform/seed/compare/v2.17.2...v2.17.3
+
+# SEED Version 2.17.2
+
+## What's Changed
+### New Features 🎉
+* Allow switching cycles in inventory detail page by @haneslinger in https://github.com/SEED-platform/seed/pull/3783
+### Improvements 📈
+* Remove add column in mapping page by @haneslinger in https://github.com/SEED-platform/seed/pull/3813
+* Sort the dropdown of meter units by @nllong in https://github.com/SEED-platform/seed/pull/3822
+### Maintenance 🧹
+* Update to Django 3.2.17 in https://github.com/SEED-platform/seed/pull/3824
+### Bug Fixes 🐛
+* Fix 500 on data view evaluate when extra data is not present by @haneslinger in https://github.com/SEED-platform/seed/pull/3803
+* Catch create column error correctly by @haneslinger in https://github.com/SEED-platform/seed/pull/3791
+* Show all navigation links in the organization view https://github.com/SEED-platform/seed/pull/3811
+* Remove state population in create column by @haneslinger in https://github.com/SEED-platform/seed/pull/3806
+
+**Full Changelog**: https://github.com/SEED-platform/seed/compare/v2.17.1...v2.17.2
+
+# SEED Version 2.17.1
+
+## What's Changed
+### New Features 🎉
+* Allow users to create columns by @haneslinger in https://github.com/SEED-platform/seed/pull/3730
+### Improvements 📈
+* Show portfolio manager errors by @haneslinger in https://github.com/SEED-platform/seed/pull/3735
+* Allow users to hide property insight dataset by @haneslinger in https://github.com/SEED-platform/seed/pull/3726
+### Maintenance 🧹
+* Bump future from 0.18.2 to 0.18.3 in /requirements by @dependabot in https://github.com/SEED-platform/seed/pull/3792
+### Bug Fixes 🐛
+* Fix stacked property points by @haneslinger in https://github.com/SEED-platform/seed/pull/3725
+* Fix filter group with extra column work on revised programs by @haneslinger in https://github.com/SEED-platform/seed/pull/3727
+* Fix filter on nulls and empty strings by @haneslinger in https://github.com/SEED-platform/seed/pull/3733
+* Add the @has_perm_class permission to program metric api endpoints by @anchapin in https://github.com/SEED-platform/seed/pull/3729
+* fix meter service route for units in organization settings by @kflemin in https://github.com/SEED-platform/seed/pull/3738
+* Fix custom report legend sort for chrome by @haneslinger in https://github.com/SEED-platform/seed/pull/3740
+* Sort column mappings in profile before export by @nllong in https://github.com/SEED-platform/seed/pull/3748
+* Update derived column migration to prevent conflicting column names and prevent duplicate column names by @nllong in https://github.com/SEED-platform/seed/pull/3728
+* Fixed issue with overlapping meter readings with new ESPM format by @anchapin in https://github.com/SEED-platform/seed/pull/3745
+* Fix filtering on "" and !"" for all data types by @haneslinger in https://github.com/SEED-platform/seed/pull/3765
+* Fix bug where compliance calculations were not being cast to the right data types by @nllong in https://github.com/SEED-platform/seed/pull/3789
+
+**Full Changelog**: https://github.com/SEED-platform/seed/compare/v2.17.0...v2.17.1
+
+# SEED Version 2.17.0
+
+## What's Changed
+### New Features 🎉
+* Switch to created filter group after creation by @haneslinger in https://github.com/SEED-platform/seed/pull/3569
+* Use the same color for each axis per filter group by @haneslinger in https://github.com/SEED-platform/seed/pull/3587
+* Add 'ghg' and 'ghg_intensity' to 'valid_column_data_types' for Custom Report by @anchapin in https://github.com/SEED-platform/seed/pull/3570
+* Add export column mappings by @nllong in https://github.com/SEED-platform/seed/pull/3611
+* Allow filtering on all columns including related taxlots/properties by @haneslinger in https://github.com/SEED-platform/seed/pull/3618
+* Add the ability to create multiple compliance programs by @anchapin in https://github.com/SEED-platform/seed/pull/3623
+* Add create, update, retrieve, and delete to Meter API by @nllong in https://github.com/SEED-platform/seed/pull/3639
+* Nav property on click in property insight page by @haneslinger in https://github.com/SEED-platform/seed/pull/3679
+### Improvements 📈
+* Refactor meter selection by @haneslinger in https://github.com/SEED-platform/seed/pull/3649
+* Disable sorting by derived column by @haneslinger in https://github.com/SEED-platform/seed/pull/3669
+* Sort legend on custom reports by @haneslinger in https://github.com/SEED-platform/seed/pull/3671
+* Fix legend by @haneslinger in https://github.com/SEED-platform/seed/pull/3682
+* Add spinner to model deletion by @haneslinger in https://github.com/SEED-platform/seed/pull/3713
+* Make sure the left and right axis have the same range by @haneslinger in https://github.com/SEED-platform/seed/pull/3695
+* Enter edit mode state on any change in custom report  by @kflemin in https://github.com/SEED-platform/seed/pull/3710
+* Reorder the metric type drop down text in Program Configuration by @anchapin in https://github.com/SEED-platform/seed/pull/3719
+### Maintenance 🧹
+* Output proper error message by @haneslinger in https://github.com/SEED-platform/seed/pull/3592
+* Final version of the BPS sample data files by @anchapin in https://github.com/SEED-platform/seed/pull/3584
+* Remove nosetests and fix precommit by @nllong in https://github.com/SEED-platform/seed/pull/3619
+* BPS Data Final Updates by @anchapin in https://github.com/SEED-platform/seed/pull/3646
+* Update ci and publish to use latest versions by @nllong in https://github.com/SEED-platform/seed/pull/3656
+* Update contribution information and enforce PR labels by @nllong in https://github.com/SEED-platform/seed/pull/3654
+* Update links for support by @nllong in https://github.com/SEED-platform/seed/pull/3681
+* Refactor properties_across_cycles_with_filters so it only makes one P… by @haneslinger in https://github.com/SEED-platform/seed/pull/3674
+* ESPM formatting changes by @anchapin in https://github.com/SEED-platform/seed/pull/3716
+### Bug Fixes 🐛
+* Add error check for blank Actual Column in Program Setup by @anchapin in https://github.com/SEED-platform/seed/pull/3572
+* Use the same column for the names used in Property Insights by @anchapin in https://github.com/SEED-platform/seed/pull/3578
+* On FilterGroup delete, filter groups don't filter≈y by @haneslinger in https://github.com/SEED-platform/seed/pull/3596
+* Update inventory reporting charts by @nllong in https://github.com/SEED-platform/seed/pull/3604
+* Fix update labels and label selected by @haneslinger in https://github.com/SEED-platform/seed/pull/3615
+* Fix ESPM get template with no children by @haneslinger in https://github.com/SEED-platform/seed/pull/3632
+* Fix note's API result to not include related model's view ID by @nllong in https://github.com/SEED-platform/seed/pull/3635
+* Apply label to only selected by @haneslinger in https://github.com/SEED-platform/seed/pull/3637
+* Update alt text, remove metric from program by @nllong in https://github.com/SEED-platform/seed/pull/3647
+* Fix filtering on other inventory type by @haneslinger in https://github.com/SEED-platform/seed/pull/3658
+* Fix swagger loading the Meter endpoints by @nllong in https://github.com/SEED-platform/seed/pull/3666
+* Fix tooltip in insights legend by @haneslinger in https://github.com/SEED-platform/seed/pull/3678
+* Support import of a csv file that has lots of spaces by @nllong in https://github.com/SEED-platform/seed/pull/3680
+* Fix SEED to work with updated ESPM API, remove SEED ESPM API v2.1 by @nllong in https://github.com/SEED-platform/seed/pull/3709
+* Fix evaluate request by @haneslinger in https://github.com/SEED-platform/seed/pull/3699
+* Fix switching filter group by @haneslinger in https://github.com/SEED-platform/seed/pull/3702
+* Delete Derived Columns Before Org by @axelstudios in https://github.com/SEED-platform/seed/pull/3700
+* Fix #VALUE! errors when importing xlsx files by @nllong in https://github.com/SEED-platform/seed/pull/3685
+* Update the BPS Sample Data AT Files by @anchapin in https://github.com/SEED-platform/seed/pull/3711
+* Fix issue with evaluating compliance metric by @anchapin in https://github.com/SEED-platform/seed/pull/3715
+### Other Changes
+* Bump django from 3.2.15 to 3.2.16 in /requirements by @dependabot in https://github.com/SEED-platform/seed/pull/3622
+* Remove use of campus on the property model by @nllong in https://github.com/SEED-platform/seed/pull/3614
+* Fix permissions for viewers to see program overview by @haneslinger in https://github.com/SEED-platform/seed/pull/3620
+* Return only need columns in compliance evaluate by @haneslinger in https://github.com/SEED-platform/seed/pull/3664
+
+
+**Full Changelog**: https://github.com/SEED-platform/seed/compare/v2.16.0...v2.17.0
+
 # SEED Version 2.16.0
 
 This release contains new functionality to help track building-portfolio programs such as Benchmarking and basic-Building Performance Standards. In order to track programs, SEED was updated with a program configuration page with the selection of two metrics to track (an energy and emissions metric). The tracking requires an actual and a goal column to be defined allowing the program to determine if a property is in compliance.
@@ -433,7 +844,7 @@ Closed Issues and Features (Total: 54):
 - Fixed [#2374]( https://github.com/SEED-platform/seed/issues/2374 ), Import spreadsheets without a raw header results in an error
 - Maintenance [#2379]( https://github.com/SEED-platform/seed/issues/2379 ), Refactor perms for several API v3 views
 - Fixed [#2410]( https://github.com/SEED-platform/seed/issues/2410 ), Merge and Link Matches -- didn't seem to merge records that should have merged
-- Maintenance [#2432]( https://github.com/SEED-platform/seed/issues/2432 ), Migrate seedv2 to helm and upgrade to latest approved version
+- Maintenance [#2432]( https://github.com/SEED-platform/seed/issues/2432 ), Migrate production to helm and upgrade to latest approved version
 - Fixed [#2434]( https://github.com/SEED-platform/seed/issues/2434 ), Ensure Sentry is working on all of our instances
 - Feature [#2440]( https://github.com/SEED-platform/seed/issues/2440 ), Add API v3 endpoints /analyses GET and /analyses/{id}/ GET
 - Feature [#2455]( https://github.com/SEED-platform/seed/issues/2455 ), Implement front-end for Analyses summary page for Property
@@ -456,7 +867,7 @@ Closed Issues and Features (Total: 54):
 - Feature [#2539]( https://github.com/SEED-platform/seed/issues/2539 ), Each user should have their own organization
 - Improved [#2541]( https://github.com/SEED-platform/seed/issues/2541 ), Links on About page should open separate tab
 - Feature [#2542]( https://github.com/SEED-platform/seed/issues/2542 ), Organization owners can delete their own organization
-- Feature [#2543]( https://github.com/SEED-platform/seed/issues/2543 ), Nginx should render a more user-friendly page if SEED is offline.
+- Feature [#2543]( https://github.com/SEED-platform/seed/issues/2543 ), nginx should render a more user-friendly page if SEED is offline.
 - Fixed [#2546]( https://github.com/SEED-platform/seed/issues/2546 ), IntegrityError: duplicate key value violates unique constraint "seed_propertyview_property_id_f8bdf6c2_uniq"
 - Fixed [#2548]( https://github.com/SEED-platform/seed/issues/2548 ), 500 errors can be triggered on some endpoints
 - Fixed [#2549]( https://github.com/SEED-platform/seed/issues/2549 ), Mapping status at 0% even though file successfully imported
@@ -1120,16 +1531,11 @@ Accepted Pull Requests: 25
 
 Date Range: 05/31/18 - 07/04/18:
 
-Closed Issues: 18
-- Fixed [#74]( https://github.com/SEED-platform/seed/issues/74 ), Update Projects when new data is added
+Closed Issues: 13
 - Fixed [#127]( https://github.com/SEED-platform/seed/issues/127 ), Export unmatched records
-- Fixed [#258]( https://github.com/SEED-platform/seed/issues/258 ), Add Buildings to Projects from Project Screen
-- Fixed [#285]( https://github.com/SEED-platform/seed/issues/285 ), Incorrect event for delete project?
 - Fixed [#360]( https://github.com/SEED-platform/seed/issues/360 ), Duplicate Data -- Cleanup after importing files
 - Fixed [#590]( https://github.com/SEED-platform/seed/issues/590 ), deleting data sets does not delete buildings?
 - Fixed [#654]( https://github.com/SEED-platform/seed/issues/654 ), Design feature which allows bulk editing of data
-- Fixed [#829]( https://github.com/SEED-platform/seed/issues/829 ), Building project tab shouldn't have edit button
-- Fixed [#838]( https://github.com/SEED-platform/seed/issues/838 ), Edit project window doesn't pre-populate compliance fields
 - Fixed [#1282]( https://github.com/SEED-platform/seed/issues/1282 ), Add space to the left of the Settings grids
 - Fixed [#1292]( https://github.com/SEED-platform/seed/issues/1292 ), Blank record added to Tax Lot view
 - Fixed [#1344]( https://github.com/SEED-platform/seed/issues/1344 ), Error trying to display inventory list

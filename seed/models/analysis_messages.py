@@ -1,8 +1,8 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
-:author
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
 import json
 import logging
@@ -42,9 +42,9 @@ class AnalysisMessage(models.Model):
     analysis_property_view = models.ForeignKey(AnalysisPropertyView, on_delete=models.CASCADE, null=True, blank=True)
     type = models.IntegerField(choices=MESSAGE_TYPES)
     # human-readable message which is presented on the frontend
-    user_message = models.CharField(max_length=255, blank=False, default=None)
+    user_message = models.CharField(max_length=1024, blank=False, default=None)
     # message for debugging purposes, not intended to be displayed on frontend
-    debug_message = models.CharField(max_length=255, blank=True)
+    debug_message = models.CharField(max_length=1024, blank=True)
 
     @classmethod
     def log_and_create(cls, logger, type_, user_message, debug_message, analysis_id,
@@ -82,7 +82,7 @@ class AnalysisMessage(models.Model):
         logger.log(logger_level, json.dumps(log_message_dict))
 
         # truncate the messages to make sure they meet our db constraints
-        MAX_MESSAGE_LENGTH = 255
+        MAX_MESSAGE_LENGTH = 1024
         ELLIPSIS = '...'
         if len(user_message) > MAX_MESSAGE_LENGTH:
             user_message = user_message[:MAX_MESSAGE_LENGTH - len(ELLIPSIS)] + ELLIPSIS

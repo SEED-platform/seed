@@ -1,11 +1,8 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California,
-through Lawrence Berkeley National Laboratory (subject to receipt of any
-required approvals from the U.S. Department of Energy) and contributors.
-All rights reserved.
-:author
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
 import csv
 import datetime
@@ -27,6 +24,7 @@ from seed.decorators import ajax_request_class
 from seed.lib.progress_data.progress_data import ProgressData
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.models import (
+    AccessLevelInstance,
     ColumnListProfile,
     PropertyView,
     TaxLotProperty,
@@ -35,8 +33,10 @@ from seed.models import (
 from seed.models.meters import Meter, MeterReading
 from seed.models.property_measures import PropertyMeasure
 from seed.models.scenarios import Scenario
+from seed.serializers.meter_readings import MeterReadingSerializer
+from seed.serializers.meters import MeterSerializer
 from seed.serializers.tax_lot_properties import TaxLotPropertySerializer
-from seed.tasks import update_inventory_metadata
+from seed.tasks import set_update_to_now
 from seed.utils.api import OrgMixin, api_endpoint_class
 from seed.utils.api_schema import AutoSchemaHelper
 from seed.utils.match import update_sub_progress_total
@@ -70,12 +70,16 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
                 'export_type': 'string',
                 'profile_id': 'integer',
                 'proress_key': 'string',
+                'include_notes': 'boolean',
+                'include_meter_readings': 'boolean',
             },
             description='- ids: (View) IDs for records to be exported\n'
                         '- filename: desired filename including extension (defaulting to \'ExportedData.{export_type}\')\n'
                         '- export_types: \'csv\', \'geojson\', \'xlsx\' (defaulting to \'csv\')\n'
                         '- profile_id: Column List Profile ID to use for customizing fields included in export'
                         '- progress_key: (Optional) Used to find and update the ProgressData object. If none is provided, a ProgressData object will be created.'
+                        '- include_notes: (Optional) Include notes in the export. Defaults to False.'
+                        '- include_meter_readings: (Optional) Include notes in the export. Defaults to False.'
         ),
     )
     @api_endpoint_class
@@ -87,6 +91,7 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
         Download a collection of the TaxLot and Properties in multiple formats.
         """
         org_id = self.get_organization(request)
+        access_level_instance = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
 
         if request.data.get('progress_key'):
             progress_key = request.data['progress_key']
@@ -123,6 +128,8 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
         if hasattr(view_klass, 'property'):
             select_related.append('property')
             filter_str['property__organization_id'] = org_id
+            filter_str['property__access_level_instance__lft__gte'] = access_level_instance.lft
+            filter_str['property__access_level_instance__rgt__lte'] = access_level_instance.rgt
             # always export the labels and notes
             column_name_mappings['property_notes'] = 'Property Notes'
             column_name_mappings['property_labels'] = 'Property Labels'
@@ -130,6 +137,8 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
         elif hasattr(view_klass, 'taxlot'):
             select_related.append('taxlot')
             filter_str['taxlot__organization_id'] = org_id
+            filter_str['taxlot__access_level_instance__lft__gte'] = access_level_instance.lft
+            filter_str['taxlot__access_level_instance__rgt__lte'] = access_level_instance.rgt
             # always export the labels and notes
             column_name_mappings['taxlot_notes'] = 'Tax Lot Notes'
             column_name_mappings['taxlot_labels'] = 'Tax Lot Labels'
@@ -144,6 +153,8 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
         derived_columns = column_profile.derived_columns.all() if column_profile is not None else []
         column_name_mappings.update({dc.name: dc.name for dc in derived_columns})
         progress_data.step('Exporting Inventory...')
+
+        export_type = request.data.get('export_type', 'csv')
 
         # add labels, notes, and derived columns
         include_notes = request.data.get('include_notes', True)
@@ -163,6 +174,17 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
             if hasattr(record, 'property'):
                 data[i]['property_labels'] = ','.join(label_string)
                 data[i]['property_notes'] = '\n----------\n'.join(note_string) if include_notes else '(excluded during export)'
+
+                include_meter_data = request.data.get('include_meter_readings', False)
+                if include_meter_data and export_type == 'geojson':
+                    meters = []
+                    for meter in record.property.meters.all():
+                        meters.append(MeterSerializer(meter).data)
+                        meters[-1]['readings'] = []
+                        for meter_reading in meter.meter_readings.all().order_by('start_time'):
+                            meters[-1]['readings'].append(MeterReadingSerializer(meter_reading).data)
+
+                    data[i]['_meters'] = meters
             elif hasattr(record, 'taxlot'):
                 data[i]['taxlot_labels'] = ','.join(label_string)
                 data[i]['taxlot_notes'] = '\n----------\n'.join(note_string) if include_notes else '(excluded during export)'
@@ -182,7 +204,6 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
             else:
                 view_id_str = 'taxlot_view_id'
             data.sort(key=lambda inventory_obj: order_dict[inventory_obj[view_id_str]])
-        export_type = request.data.get('export_type', 'csv')
 
         filename = request.data.get('filename', f"ExportedData.{export_type}")
         progress_data.finish_with_success()
@@ -440,6 +461,7 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
                 "properties": {}
             }
 
+            feature_geometries = []
             for key, value in datum.items():
                 if value is None:
                     continue
@@ -459,43 +481,49 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
                     established. When/If a second geometry is added, this is
                     appended alongside the previous geometry.
                     """
-                    individual_geometry = {}
 
                     # long_lat
                     if key == 'long_lat':
                         coordinates = self._serialized_point(value)
                         # point
-                        individual_geometry = {
+                        feature_geometries.append({
+                            "type": "Point",
                             "coordinates": coordinates,
-                            "type": "Point"
-                        }
+                        })
                     else:
                         # polygons
                         coordinates = self._serialized_coordinates(value)
-                        individual_geometry = {
+                        feature_geometries.append({
+                            "type": "Polygon",
                             "coordinates": [coordinates],
-                            "type": "Polygon"
-                        }
-
-                    if feature.get("geometry", None) is None:
-                        feature["geometry"] = {
-                            "type": "GeometryCollection",
-                            "geometries": [individual_geometry]
-                        }
-                    else:
-                        feature["geometry"]["geometries"].append(individual_geometry)
+                        })
                 else:
                     """
                     Non-polygon data
                     """
-                    display_key = column_name_mappings.get(key, key)
-                    feature["properties"][display_key] = value
+                    if key == "_meters":
+                        if feature["properties"].get("meters") is None:
+                            feature["properties"]["meters"] = value
+                        else:
+                            logging.warning("meters already exists in properties, not adding")
+                    else:
+                        display_key = column_name_mappings.get(key, key)
+                        feature["properties"][display_key] = value
 
-                    # # store point geometry in case you need it
-                    # if display_key == "Longitude":
-                    #     point_geometry[0] = value
-                    # if display_key == "Latitude":
-                    #     point_geometry[1] = value
+            # now add in the geometry data depending on how many geometries were found
+            if len(feature_geometries) == 0:
+                # no geometry found -- save an empty polygon geometry
+                feature["geometry"] = {
+                    "type": "Polygon",
+                    "coordinates": []
+                }
+            elif len(feature_geometries) == 1:
+                feature["geometry"] = feature_geometries[0]
+            else:
+                feature["geometry"] = {
+                    "type": "GeometryCollection",
+                    "geometries": feature_geometries
+                }
 
             """
             Before appending feature, ensure that if there is no geometry recorded.
@@ -514,12 +542,11 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
             # append feature
             features.append(feature)
 
+            # per geojsonlint.com, the CRS we were defining was the default and should not
+            # be included.
             response_dict = {
                 "type": "FeatureCollection",
-                "crs": {
-                    "type": "EPSG",
-                    "properties": {"code": 4326}
-                },
+                "name": f"SEED Export - {filename.replace('.geojson', '')}",
                 "features": features
             }
 
@@ -564,13 +591,9 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
 
         # make array unique
         if is_property:
-
-            unique = [dict(p) for p in set(tuple(i.items())
-                                           for i in related)]
-
+            unique = [dict(p) for p in set(tuple(i.items()) for i in related)]
         else:
-            unique = [dict(p) for p in set(tuple(i.items())
-                                           for i in related)]
+            unique = [dict(p) for p in set(tuple(i.items()) for i in related)]
 
         return unique
 
@@ -578,25 +601,37 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
     @ajax_request_class
     @has_perm_class('can_modify_data')
     @action(detail=False, methods=['GET'])
-    def start_refresh_metadata(self, request):
+    def start_set_update_to_now(self, request):
         """
-        Generate a ProgressData object that will be used to monitor property and tax lot metadata refresh
+        Generate a ProgressData object that will be used to monitor the set "update" of selected
+        properties and tax lots to now
         """
-        progress_data = ProgressData(func_name='refresh_metadata', unique_id=f'metadata{randint(10000,99999)}')
+        progress_data = ProgressData(func_name='set_update_to_now', unique_id=f'metadata{randint(10000,99999)}')
         return progress_data.result()
 
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
     @action(detail=False, methods=['POST'])
-    def refresh_metadata(self, request):
+    def set_update_to_now(self, request):
         """
-        Kick off celery task to refresh metadata of selected inventory
+        Kick off celery task to set "update" of selected inventory to now
         """
-        ids = request.data.get('ids')
-        states = request.data.get('states')
-        inventory_type = request.data.get('inventory_type')
+        property_view_ids = request.data.get('property_views')
+        taxlot_view_ids = request.data.get('taxlot_views')
         progress_key = request.data.get('progress_key')
 
-        update_inventory_metadata.subtask([ids, states, inventory_type, progress_key]).apply_async()
+        access_level_instance = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
+        property_view_ids = list(PropertyView.objects.filter(
+            id__in=property_view_ids,
+            property__access_level_instance__lft__gte=access_level_instance.lft,
+            property__access_level_instance__rgt__lte=access_level_instance.rgt,
+        ).values_list("id", flat=True))
+        taxlot_view_ids = list(TaxLotView.objects.filter(
+            taxlot__access_level_instance__lft__gte=access_level_instance.lft,
+            taxlot__access_level_instance__rgt__lte=access_level_instance.rgt,
+            id__in=taxlot_view_ids
+        ).values_list("id", flat=True))
+
+        set_update_to_now.subtask([property_view_ids, taxlot_view_ids, progress_key]).apply_async()
         return

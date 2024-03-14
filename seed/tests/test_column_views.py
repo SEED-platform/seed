@@ -1,8 +1,8 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
-:author
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
 import json
 
@@ -14,7 +14,7 @@ from seed.test_helpers.fake import (
     FakePropertyStateFactory,
     FakeTaxLotStateFactory
 )
-from seed.tests.util import DeleteModelsTestCase
+from seed.tests.util import AccessLevelBaseTestCase, DeleteModelsTestCase
 from seed.utils.organizations import create_organization
 
 DEFAULT_CUSTOM_COLUMNS = [
@@ -62,54 +62,105 @@ class DefaultColumnsViewTests(DeleteModelsTestCase):
 
         self.client.login(**user_details)
 
-    def test_set_default_columns(self):
-        url = reverse_lazy('api:v1:set_default_columns')
-        columns = ['s', 'c1', 'c2']
+    def test_create_column(self):
+        # Set Up
+        ps = self.property_state_factory.get_property_state(self.org)
+        self.assertFalse("new_column" in ps.extra_data)
+
+        url = reverse_lazy('api:v3:columns-list') + "?organization_id=" + str(self.org.id)
         post_data = {
-            'columns': columns,
-            'show_shared_buildings': True
+            'column_name': 'new_column',
+            'table_name': 'PropertyState',
         }
-        # set the columns
+
+        # Act
         response = self.client.post(
             url,
             content_type='application/json',
             data=json.dumps(post_data)
         )
+
+        # Assert
+        self.assertEqual(201, response.status_code)
+
         json_string = response.content
         data = json.loads(json_string)
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(data["column"]["column_name"], post_data["column_name"])
+        self.assertEqual(data["column"]["table_name"], post_data["table_name"])
 
-        # get the columns
-        # url = reverse_lazy('api:v1:columns-get-default-columns')
-        # response = self.client.get(url)
-        # json_string = response.content
-        # data = json.loads(json_string)
-        # self.assertEqual(data['columns'], columns)
+        Column.objects.get(**post_data)  # error if doesn't exist.
 
-        # get show_shared_buildings
-        url = reverse_lazy('api:v3:user-shared-buildings', args=[self.user.pk])
-        response = self.client.get(url)
-        data = response.json()
-        self.assertEqual(data['show_shared_buildings'], True)
+    def test_create_column_name_of_access_level_instance(self):
+        url = reverse_lazy('api:v3:columns-list') + "?organization_id=" + str(self.org.id)
+        post_data = {
+            'display_name': self.org.access_level_names[0],
+            'organization_id': self.org.id,
+            'table_name': 'PropertyState'
+        }
 
-        # set show_shared_buildings to False
-        # post_data['show_shared_buildings'] = False
-        # url = reverse_lazy('api:v1:set_default_columns')
-        # response = self.client.post(
-        #     url,
-        #     content_type='application/json',
-        #     data=json.dumps(post_data)
-        # )
-        # json_string = response.content
-        # data = json.loads(json_string)
-        # self.assertEqual(200, response.status_code)
+        # Act
+        response = self.client.post(url, content_type='application/json', data=json.dumps(post_data))
 
-        # get show_shared_buildings
-        # url = reverse_lazy('api:v2:users-shared-buildings', args=[self.user.pk])
-        # response = self.client.get(url)
-        # json_string = response.content
-        # data = json.loads(json_string)
-        # self.assertEqual(data['show_shared_buildings'], False)
+        # Assert
+        self.assertEqual(400, response.status_code)
+
+    def test_create_column_bad_no_data(self):
+        # Set Up
+        url = reverse_lazy('api:v3:columns-list') + "?organization_id=" + str(self.org.id)
+
+        # Act - no data
+        response = self.client.post(
+            url,
+            content_type='application/json',
+            data=json.dumps({})
+        )
+        self.assertEqual(400, response.status_code)
+
+        # Act - no table_name
+        response = self.client.post(
+            url,
+            content_type='application/json',
+            data=json.dumps({'column_name': 'new_column'})
+        )
+        self.assertEqual(400, response.status_code)
+
+        # Act - no column_name
+        response = self.client.post(
+            url,
+            content_type='application/json',
+            data=json.dumps({'table_name': 'PropertyState'})
+        )
+        self.assertEqual(400, response.status_code)
+
+        # Act - invalid key
+        response = self.client.post(
+            url,
+            content_type='application/json',
+            data=json.dumps({
+                'column_name': 'new_column',
+                'table_name': 'bad',
+                'whoa': 'I shouldnt be here',
+            })
+        )
+        self.assertEqual(400, response.status_code)
+
+    def test_create_column_bad_table_name(self):
+        # Set Up
+        url = reverse_lazy('api:v3:columns-list') + "?organization_id=" + str(self.org.id)
+        post_data = {
+            'column_name': 'new_column',
+            'table_name': 'bad',
+        }
+
+        # Act
+        response = self.client.post(
+            url,
+            content_type='application/json',
+            data=json.dumps(post_data)
+        )
+
+        # Assert
+        self.assertEqual(400, response.status_code)
 
     def test_get_all_columns(self):
         # test building list columns
@@ -185,7 +236,8 @@ class DefaultColumnsViewTests(DeleteModelsTestCase):
             content_type='application/json',
             data=json.dumps({
                 'new_column_name': 'address_line_1_extra_data',
-                'overwrite': False
+                'overwrite': False,
+                'organization_id': self.org.id
             })
         )
         result = response.json()
@@ -198,6 +250,14 @@ class DefaultColumnsViewTests(DeleteModelsTestCase):
                          "na": ps.normalized_address}]
 
         self.assertListEqual(expected_data, new_data)
+
+    def test_rename_column_access_level_name(self):
+        column = Column.objects.filter(organization=self.org, table_name='PropertyState', column_name='address_line_1').first()
+        url = reverse_lazy('api:v3:columns-detail', args=[column.id]) + "?organization_id=" + str(self.org.id)
+        payload = {'column_name': 'address_line_1', 'table_name': 'PropertyState', "sharedFieldType": "None", "comstock_mapping": None, "display_name": self.org.access_level_names[0]}
+
+        response = self.client.put(url, data=json.dumps(payload), content_type='application/json')
+        assert response.status_code == 400
 
     def test_rename_column_property_existing(self):
         column = Column.objects.filter(
@@ -217,7 +277,8 @@ class DefaultColumnsViewTests(DeleteModelsTestCase):
             content_type='application/json',
             data=json.dumps({
                 'new_column_name': 'property_name',
-                'overwrite': False
+                'overwrite': False,
+                'organization_id': self.org.id,
             })
         )
         result = response.json()
@@ -229,7 +290,8 @@ class DefaultColumnsViewTests(DeleteModelsTestCase):
             content_type='application/json',
             data=json.dumps({
                 'new_column_name': 'property_name',
-                'overwrite': True
+                'overwrite': True,
+                'organization_id': self.org.id,
             })
         )
         result = response.json()
@@ -266,7 +328,8 @@ class DefaultColumnsViewTests(DeleteModelsTestCase):
             content_type='application/json',
             data=json.dumps({
                 'new_column_name': 'address_line_1_extra_data',
-                'overwrite': False
+                'overwrite': False,
+                'organization_id': self.org.id,
             })
         )
         result = response.json()
@@ -284,6 +347,7 @@ class DefaultColumnsViewTests(DeleteModelsTestCase):
         response = self.client.post(
             reverse('api:v3:columns-rename', args=[self.cross_org_column.pk]),
             content_type='application/json',
+            data={'organization_id': self.org.id}
         )
         result = response.json()
         # self.assertFalse(result['success'])
@@ -297,8 +361,71 @@ class DefaultColumnsViewTests(DeleteModelsTestCase):
         response = self.client.post(
             reverse('api:v3:columns-rename', args=[-999]),
             content_type='application/json',
+            data={'organization_id': self.org.id},
         )
         self.assertEqual(response.status_code, 404)
         result = response.json()
         self.assertFalse(result['success'])
         self.assertEqual(result['message'], 'Cannot find column in org=%s with pk=-999' % self.org.id)
+
+
+class ColumnsViewPermissionsTests(AccessLevelBaseTestCase, DeleteModelsTestCase):
+    def setUp(self):
+        super().setUp()
+        self.column = Column.objects.create(column_name='test', organization=self.org, table_name='PropertyState', is_extra_data=True)
+        self.column.save()
+
+    def test_column_create_permissions(self):
+        url = reverse_lazy('api:v3:columns-list') + "?organization_id=" + str(self.org.id)
+        payload = {'column_name': 'new_column', 'table_name': 'PropertyState'}
+
+        # child user cannot
+        self.login_as_child_member()
+        response = self.client.post(url, data=json.dumps(payload), content_type='application/json')
+        assert response.status_code == 403
+
+        # root users can create column in root
+        self.login_as_root_member()
+        response = self.client.post(url, data=json.dumps(payload), content_type='application/json')
+        assert response.status_code == 201
+
+    def test_column_delete_permissions(self):
+        url = reverse_lazy('api:v3:columns-detail', args=[self.column.id]) + "?organization_id=" + str(self.org.id)
+
+        # child user cannot
+        self.login_as_child_member()
+        response = self.client.delete(url, content_type='application/json')
+        assert response.status_code == 403
+
+        # root users can
+        self.login_as_root_owner()
+        response = self.client.delete(url, content_type='application/json')
+        assert response.status_code == 200
+
+    def test_column_update_permissions(self):
+        url = reverse_lazy('api:v3:columns-detail', args=[self.column.id]) + "?organization_id=" + str(self.org.id)
+        payload = {'column_name': 'boo', 'table_name': 'PropertyState', "sharedFieldType": "None", "comstock_mapping": None}
+
+        # child user cannot
+        self.login_as_child_member()
+        response = self.client.put(url, data=json.dumps(payload), content_type='application/json')
+        assert response.status_code == 403
+
+        # root users can see meters in root
+        self.login_as_root_member()
+        response = self.client.put(url, data=json.dumps(payload), content_type='application/json')
+        assert response.status_code == 200
+
+    def test_column_rename_permissions(self):
+        url = reverse_lazy('api:v3:columns-rename', args=[self.column.id]) + "?organization_id=" + str(self.org.id)
+        payload = {'new_column_name': 'boo'}
+
+        # child user cannot
+        self.login_as_child_member()
+        response = self.client.post(url, data=json.dumps(payload), content_type='application/json')
+        assert response.status_code == 403
+
+        # root users can
+        self.login_as_root_member()
+        response = self.client.post(url, data=json.dumps(payload), content_type='application/json')
+        assert response.status_code == 200

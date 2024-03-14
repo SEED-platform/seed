@@ -1,19 +1,19 @@
 /**
- * :copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
- * :author
+ * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+ * See also https://github.com/seed-platform/seed/main/LICENSE.md
  */
-describe('service: inventory_service', function () {
-  var mock_inventory_service;
+describe('service: inventory_service', () => {
+  let mock_inventory_service;
 
-  beforeEach(function () {
+  beforeEach(() => {
     module('BE.seed');
-    inject(function (inventory_service) {
+    inject((inventory_service) => {
       mock_inventory_service = inventory_service;
     });
   });
 
-  it('should filter text and numeric columns', function () {
-    var combinedFilter = mock_inventory_service.combinedFilter().condition;
+  it('should filter text and numeric columns', () => {
+    const combinedFilter = mock_inventory_service.combinedFilter().condition;
     expect(combinedFilter('!""', 'a')).toBe(true);
     expect(combinedFilter('!=""', 'a')).toBe(true);
     expect(combinedFilter('!= ""', 'a')).toBe(true);
@@ -67,8 +67,8 @@ describe('service: inventory_service', function () {
     expect(combinedFilter('!"", abc', 'xyz')).toBe(false);
   });
 
-  it('should filter date and datetime columns', function () {
-    var dateFilter = mock_inventory_service.dateFilter().condition;
+  it('should filter date and datetime columns', () => {
+    const dateFilter = mock_inventory_service.dateFilter().condition;
     expect(dateFilter('""', '')).toBe(true);
     expect(dateFilter('""', ' ')).toBe(true);
     expect(dateFilter('""', null)).toBe(true);

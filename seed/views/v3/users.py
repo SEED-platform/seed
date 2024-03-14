@@ -1,14 +1,15 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
-:author
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
 import logging
 
 from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth.tokens import default_token_generator
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
+from django.db import IntegrityError
 from django.http import JsonResponse
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import serializers, status, viewsets
@@ -21,7 +22,7 @@ from seed.lib.superperms.orgs.decorators import PERMS, has_perm_class
 from seed.lib.superperms.orgs.models import (
     ROLE_MEMBER,
     ROLE_OWNER,
-    ROLE_VIEWER,
+    AccessLevelInstance,
     Organization,
     OrganizationUser
 )
@@ -33,35 +34,9 @@ from seed.utils.api_schema import (
     swagger_auto_schema_org_query_param
 )
 from seed.utils.organizations import create_organization
+from seed.utils.users import get_role_from_js
 
 _log = logging.getLogger(__name__)
-
-
-def _get_js_role(role):
-    """return the JS friendly role name for user
-    :param role: role as defined in superperms.models
-    :returns: (string) JS role name
-    """
-    roles = {
-        ROLE_OWNER: 'owner',
-        ROLE_VIEWER: 'viewer',
-        ROLE_MEMBER: 'member',
-    }
-    return roles.get(role, 'viewer')
-
-
-def _get_role_from_js(role):
-    """return the OrganizationUser role_level from the JS friendly role name
-
-    :param role: 'member', 'owner', or 'viewer'
-    :returns: int role as defined in superperms.models
-    """
-    roles = {
-        'owner': ROLE_OWNER,
-        'viewer': ROLE_VIEWER,
-        'member': ROLE_MEMBER,
-    }
-    return roles[role]
 
 
 def _get_js_rule_type(data_type):
@@ -174,10 +149,12 @@ class UserViewSet(viewsets.ViewSet, OrgMixin):
     )
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('requires_owner')
+    @has_perm_class('requires_owner_or_superuser_without_org', False)
     def create(self, request):
         """
-        Creates a new SEED user.  One of 'organization_id' or 'org_name' is needed.
+        Creates a new SEED user.
+        Organization owners must specify the `organization_id` query param.
+        Superusers can add `org_name` to the body and create a new organization for the new user.
         Sends invitation email to the new user.
         """
         # WARNING: we aren't using the OrgMixin here to validate the organization
@@ -196,35 +173,42 @@ class UserViewSet(viewsets.ViewSet, OrgMixin):
         last_name = body['last_name']
         email = body['email']
         username = body['email']
+        access_level_instance_id = body.get("access_level_instance_id")
+        role = body.get('role', 'owner')
         user, created = User.objects.get_or_create(username=username.lower())
 
         if org_id:
             org = Organization.objects.get(pk=org_id)
             org_created = False
+            if access_level_instance_id is None:
+                return JsonResponse({
+                    'status': 'error',
+                    'message': 'if using an existing org, you must provide a `access_level_instance_id`'
+                }, status=status.HTTP_400_BAD_REQUEST)
         else:
             org, _, _ = create_organization(user, org_name)
+            access_level_instance_id = AccessLevelInstance.objects.get(organization=org, depth=1).id
             org_created = True
 
         # Add the user to the org.  If this is the org's first user,
         # the user becomes the owner/admin automatically.
         # see Organization.add_member()
+
+        try:
+            role = get_role_from_js(role)
+        except Exception:
+            return JsonResponse({
+                'status': 'error', 'message': 'valid arguments for role are [viewer, member, owner]'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
         if not org.is_member(user):
-            org.add_member(user)
-
-        if body.get('role'):
-            # check if this is a dict, if so, grab the value out of 'value'
-            role = body['role']
             try:
-                _get_role_from_js(role)
-            except Exception:
-                return JsonResponse({'status': 'error', 'message': 'valid arguments for role are [viewer, member, '
-                                                                   'owner]'},
-                                    status=status.HTTP_400_BAD_REQUEST)
-
-            OrganizationUser.objects.filter(
-                organization_id=org.pk,
-                user_id=user.pk
-            ).update(role_level=_get_role_from_js(role))
+                org.add_member(user, access_level_instance_id, role)
+            except IntegrityError as e:
+                return JsonResponse({
+                    'status': 'error',
+                    'message': str(e)
+                }, status=status.HTTP_400_BAD_REQUEST)
 
         if created:
             user.set_unusable_password()
@@ -254,7 +238,7 @@ class UserViewSet(viewsets.ViewSet, OrgMixin):
         }
     )
     @ajax_request_class
-    @has_perm_class('requires_superuser')
+    @has_perm_class('requires_superuser', False)
     def list(self, request):
         """
         Retrieves all users' email addresses and IDs.
@@ -299,7 +283,7 @@ class UserViewSet(viewsets.ViewSet, OrgMixin):
         Updates a user's role within an organization.
         """
         body = request.data
-        role = _get_role_from_js(body['role'])
+        role = get_role_from_js(body['role'])
 
         user_id = int(pk)
         organization_id = self.get_organization(request)
@@ -333,7 +317,51 @@ class UserViewSet(viewsets.ViewSet, OrgMixin):
                 'message': 'an organization must have at least one owner'
             }, status=status.HTTP_409_CONFLICT)
 
+        if role == ROLE_OWNER and user.access_level_instance != user.organization.root:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Owners must belong to the root ali.'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
         user.role_level = role
+        user.save()
+
+        return JsonResponse({'status': 'success'})
+
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('requires_owner')
+    @action(detail=True, methods=['PUT'])
+    def access_level_instance(self, request, pk=None):
+        user_id = int(pk)
+        organization_id = self.get_organization(request)
+
+        # get user
+        try:
+            user = OrganizationUser.objects.get(user_id=user_id, organization_id=organization_id)
+        except OrganizationUser.DoesNotExist:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'No such user'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        # get ali
+        access_level_instance_id = request.data.get("access_level_instance_id")
+        if access_level_instance_id is None:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Must be an `access_level_instance_id`'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            access_level_instance = AccessLevelInstance.objects.get(organization_id=organization_id, id=access_level_instance_id)
+        except AccessLevelInstance.DoesNotExist:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'No such access_level_instance'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        # set user ali
+        user.access_level_instance = access_level_instance
         user.save()
 
         return JsonResponse({'status': 'success'})
@@ -347,7 +375,7 @@ class UserViewSet(viewsets.ViewSet, OrgMixin):
     @ajax_request_class
     def retrieve(self, request, pk=None):
         """
-        Retrieves the a user's first_name, last_name, email
+        Retrieves user's first_name, last_name, email
         and api key if exists by user ID (pk).
         """
 
@@ -426,7 +454,7 @@ class UserViewSet(viewsets.ViewSet, OrgMixin):
         user.first_name = json_user.get('first_name')
         user.last_name = json_user.get('last_name')
         user.email = json_user.get('email')
-        user.username = json_user.get('email')
+        user.username = json_user.get('email', '').lower()
         user.save()
         return JsonResponse({
             'status': 'success',
@@ -630,9 +658,20 @@ class UserViewSet(viewsets.ViewSet, OrgMixin):
             return content
         user.default_organization_id = self.get_organization(request)
         user.save()
-        return {'status': 'success'}
 
-    @has_perm_class('requires_superuser')
+        ou = OrganizationUser.objects.get(user=user, organization_id=user.default_organization_id)
+        return {
+            'status': 'success',
+            "user": {
+                "id": ou.id,
+                "access_level_instance": {
+                    "id": ou.access_level_instance.id,
+                    "name": ou.access_level_instance.name,
+                }
+            }
+        }
+
+    @has_perm_class('requires_superuser', False)
     @ajax_request_class
     @action(detail=True, methods=['PUT'])
     def deactivate(self, request, pk=None):

@@ -1,8 +1,7 @@
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
-:author
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
-
 import copy
 from datetime import datetime
 
@@ -369,7 +368,7 @@ def find_last_in_xpath(tree, xpath, namespaces):
     '/Foo1/Bar1/Foo2/Bar2', it'd return Bar1 as well as 'Foo2/Bar2'
 
     :param tree: lxml.ElementTree, tree to search
-    :param xpath: string, an absolute xpath (ie should start with /auc:BuildingSync/...)
+    :param xpath: string, an absolute xpath (i.e., should start with /auc:BuildingSync/...)
     """
     remainder = []
     xpath_list = xpath.split('/')
@@ -410,7 +409,7 @@ def _build_path(element, xpath_list):
     """Internal implementation of build_path. Refer to its docs
 
     :param element: lxml.Element, element to build off of
-    :param xpath_list: list, a list of strings which represent parts of the xpath (ie xpath split on "/")
+    :param xpath_list: list, a list of strings which represent parts of the xpath (i.e., xpath split on "/")
     """
     if not xpath_list:
         # terminal case, everything has been built
@@ -562,11 +561,6 @@ BASE_MAPPING_V2 = {
                 'value': 'text',
                 'formatter': to_float,
             },
-            'property_name': {
-                'xpath': './auc:Buildings/auc:Building',
-                'type': 'value',
-                'value': '@ID',
-            },
             'property_type': {
                 'xpath': './auc:Buildings/auc:Building/auc:Sections/auc:Section/auc:OccupancyClassification',
                 'type': 'value',
@@ -705,6 +699,27 @@ BASE_MAPPING_V2 = {
                 'value': 'text',
                 'formatter': to_float
             }
+        }
+    },
+    'audit_dates': {
+        'xpath': '/auc:BuildingSync/auc:Facilities/auc:Facility/auc:Reports/auc:Report/auc:AuditDates/auc:AuditDate',
+        'type': 'list',
+        'items': {
+            "date": {
+                'xpath': './auc:Date',
+                'type': 'value',
+                'value': 'text',
+            },
+            "date_type": {
+                'xpath': './auc:DateType',
+                'type': 'value',
+                'value': 'text',
+            },
+            "custom_date_type": {
+                'xpath': './auc:CustomDateType',
+                'type': 'value',
+                'value': 'text',
+            },
         }
     },
     'scenarios': {

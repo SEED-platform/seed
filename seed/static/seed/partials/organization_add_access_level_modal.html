@@ -1,0 +1,31 @@
+<div class="modal-header">
+  <h4>{$:: 'Add Levels to the Organizational Structure Tree' | translate $}</h4>
+</div>
+<div class="modal-body">
+  <div ng-repeat="(i, level_name) in new_access_level_names track by i" class="form-group row" style="display: flex">
+    <div class="col-sm-5" style="display: flex; align-items: center">
+      <label class="al-label" for="al_{$:: i $}">{$:: 'Custom Name for Level' | translate $} {$:: i+1 $}</label>
+    </div>
+    <div class="col-sm-7">
+      <input class="form-control" id="al_{$:: i $}" type="text" ng-model="new_access_level_names[i]">
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-sm-offset-5 col-sm-7" style="display: flex; justify-content: space-between">
+      <button type="button" class="btn btn-primary" ng-click="remove_level()">
+        <i class="fa-solid fa-minus-circle"></i> {$:: 'Remove Access Level' | translate $}
+      </button>
+      <button type="button" class="btn btn-primary" ng-click="add_level()">
+        <i class="fa-solid fa-plus-circle"></i> {$:: 'Add Access Level' | translate $}
+      </button>
+    </div>
+  </div>
+</div>
+<div class="modal-footer">
+  <span ng-show="num_alis_to_delete > 0" style="display: flex; align-items:flex-start">
+    <input type="checkbox" ng-model="enable_save" id="enable-save" name="enable-save"/>
+    <label for="enable-save" translate="CONFIRM_ACCESS_LEVEL_DELETE" translate-values="{num_access_levels: num_alis_to_delete}" class="confirm-label"></label>
+  </span>
+  <button type="button" class="btn btn-default" ng-click="cancel()" translate>Cancel</button>
+  <button type="button" class="btn btn-primary" ng-click="save_access_level_names()" ng-disabled="!is_modified() || !enable_save" translate>Save</button>
+</div>

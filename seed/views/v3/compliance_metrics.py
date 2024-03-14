@@ -1,8 +1,8 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
-:author
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
 from copy import deepcopy
 
@@ -14,7 +14,7 @@ from rest_framework.decorators import action
 
 from seed.decorators import ajax_request_class, require_organization_id_class
 from seed.lib.superperms.orgs.decorators import has_perm_class
-from seed.lib.superperms.orgs.models import Organization
+from seed.lib.superperms.orgs.models import AccessLevelInstance, Organization
 from seed.models.compliance_metrics import ComplianceMetric
 from seed.serializers.compliance_metrics import ComplianceMetricSerializer
 from seed.utils.api import OrgMixin, api_endpoint_class
@@ -80,7 +80,7 @@ class ComplianceMetricViewSet(viewsets.ViewSet, OrgMixin):
     @require_organization_id_class
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('requires_owner')
+    @has_perm_class('requires_root_member_access')
     def destroy(self, request, pk):
         organization_id = self.get_organization(request)
 
@@ -118,7 +118,7 @@ class ComplianceMetricViewSet(viewsets.ViewSet, OrgMixin):
     @require_organization_id_class
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('requires_owner')
+    @has_perm_class('requires_root_member_access')
     def create(self, request):
 
         org_id = int(self.get_organization(request))
@@ -177,7 +177,7 @@ class ComplianceMetricViewSet(viewsets.ViewSet, OrgMixin):
     @require_organization_id_class
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('requires_owner')
+    @has_perm_class('requires_root_member_access')
     def update(self, request, pk):
         org_id = self.get_organization(request)
 
@@ -239,7 +239,8 @@ class ComplianceMetricViewSet(viewsets.ViewSet, OrgMixin):
                 'message': 'ComplianceMetric does not exist'
             }, status=status.HTTP_404_NOT_FOUND)
 
-        response = compliance_metric.evaluate()
+        user_ali = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
+        response = compliance_metric.evaluate(user_ali)
 
         return JsonResponse({
             'status': 'success',

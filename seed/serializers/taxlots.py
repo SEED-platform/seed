@@ -1,8 +1,8 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
-:author
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
 from rest_framework import serializers
 
@@ -54,6 +54,13 @@ class TaxLotStateSerializer(serializers.ModelSerializer):
             result['extra_data'] = prepopulated_extra_data
 
         return result
+
+
+class BriefTaxlotViewSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TaxLotView
+        depth = 1
+        fields = ('id', 'cycle', 'taxlot_id')
 
 
 class TaxLotViewSerializer(serializers.ModelSerializer):

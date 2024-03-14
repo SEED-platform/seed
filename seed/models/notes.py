@@ -1,17 +1,15 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
-:author
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
-
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.models import Organization
-from seed.models import PropertyView, TaxLotView
-from seed.models.projects import Project
+from seed.models import MAX_NAME_LENGTH, Property, PropertyView, TaxLotView
 from seed.utils.generic import obj_to_dict
 
 
@@ -25,7 +23,7 @@ class Note(models.Model):
         (LOG, 'Log'),
     )
 
-    name = models.CharField(_('name'), max_length=Project.PROJECT_NAME_MAX_LENGTH)
+    name = models.CharField(_('name'), max_length=MAX_NAME_LENGTH)
     note_type = models.IntegerField(choices=NOTE_TYPES, default=NOTE, null=True)
 
     text = models.TextField()
@@ -110,3 +108,13 @@ class Note(models.Model):
 
     def to_dict(self):
         return obj_to_dict(self)
+
+
+class HistoricalNote(models.Model):
+    text = models.TextField(blank=True)
+    property = models.OneToOneField(Property, on_delete=models.CASCADE, related_name='historical_note')
+
+    def serialize(self):
+        from seed.serializers.historical_notes import HistoricalNoteSerializer
+        serializer = HistoricalNoteSerializer(self)
+        return serializer.data

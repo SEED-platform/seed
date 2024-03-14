@@ -1,6 +1,9 @@
 # !/usr/bin/env python
 # encoding: utf-8
-
+"""
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
+"""
 import json
 import os
 import pathlib
@@ -22,6 +25,8 @@ from seed.models import (
     ASSESSED_RAW,
     DATA_STATE_DELETE,
     DATA_STATE_MAPPING,
+    PORTFOLIO_METER_USAGE,
+    SEED_DATA_SOURCES,
     Meter,
     MeterReading,
     Property,
@@ -77,7 +82,7 @@ class MeterUsageImportTest(TestCase):
         self.property_view_1 = PropertyView.objects.create(property=self.property_1, cycle=self.cycle, state=self.state_1)
         self.property_view_2 = PropertyView.objects.create(property=self.property_2, cycle=self.cycle, state=self.state_2)
 
-        self.import_record = ImportRecord.objects.create(owner=self.user, last_modified_by=self.user, super_organization=self.org)
+        self.import_record = ImportRecord.objects.create(owner=self.user, last_modified_by=self.user, super_organization=self.org, access_level_instance=self.org.root)
 
         # This file has multiple tabs
         filename = "example-pm-monthly-meter-usage.xlsx"
@@ -85,7 +90,7 @@ class MeterUsageImportTest(TestCase):
 
         self.import_file = ImportFile.objects.create(
             import_record=self.import_record,
-            source_type="PM Meter Usage",
+            source_type=SEED_DATA_SOURCES[PORTFOLIO_METER_USAGE][1],
             uploaded_filename=filename,
             file=SimpleUploadedFile(
                 name=filename,
@@ -199,7 +204,7 @@ class MeterUsageImportTest(TestCase):
 
         import_file_with_invalids = ImportFile.objects.create(
             import_record=self.import_record,
-            source_type="PM Meter Usage",
+            source_type=SEED_DATA_SOURCES[PORTFOLIO_METER_USAGE][1],
             uploaded_filename=filename,
             file=SimpleUploadedFile(
                 name=filename,
@@ -239,7 +244,7 @@ class MeterUsageImportTest(TestCase):
 
         cost_meter_import_file = ImportFile.objects.create(
             import_record=self.import_record,
-            source_type="PM Meter Usage",
+            source_type=SEED_DATA_SOURCES[PORTFOLIO_METER_USAGE][1],
             uploaded_filename=filename,
             file=SimpleUploadedFile(
                 name=filename,
@@ -663,7 +668,7 @@ class MeterUsageImportTest(TestCase):
 
         cost_meter_import_file = ImportFile.objects.create(
             import_record=self.import_record,
-            source_type="PM Meter Usage",
+            source_type=SEED_DATA_SOURCES[PORTFOLIO_METER_USAGE][1],
             uploaded_filename=filename,
             file=SimpleUploadedFile(
                 name=filename,
@@ -749,13 +754,13 @@ class MeterUsageImportTest(TestCase):
         In this case, neither the meter (if applicable) nor any of its readings
         are created.
         """
-        dup_import_record = ImportRecord.objects.create(owner=self.user, last_modified_by=self.user, super_organization=self.org)
+        dup_import_record = ImportRecord.objects.create(owner=self.user, last_modified_by=self.user, super_organization=self.org, access_level_instance=self.org.root)
         dup_filename = "example-pm-monthly-meter-usage-1-dup.xlsx"
         dup_filepath = os.path.dirname(os.path.abspath(__file__)) + "/../data_importer/tests/data/" + dup_filename
 
         dup_file = ImportFile.objects.create(
             import_record=dup_import_record,
-            source_type="PM Meter Usage",
+            source_type=SEED_DATA_SOURCES[PORTFOLIO_METER_USAGE][1],
             uploaded_filename=dup_filename,
             file=SimpleUploadedFile(
                 name=dup_filename,
@@ -804,7 +809,7 @@ class MeterUsageImportTest(TestCase):
                 "type": "Electric - Grid",
                 "incoming": 4,
                 "successfully_imported": 0,
-                "errors": "Overlapping readings.",
+                "errors": "Import failed. Unable to import data with duplicate start and end date pairs.",
             },
             {
                 "property_id": self.property_2.id,
@@ -814,7 +819,7 @@ class MeterUsageImportTest(TestCase):
                 "type": "Natural Gas",
                 "incoming": 4,
                 "successfully_imported": 0,
-                "errors": "Overlapping readings.",
+                "errors": "Import failed. Unable to import data with duplicate start and end date pairs.",
             },
         ]
 
@@ -843,6 +848,7 @@ class MeterUsageImportAdjustedScenarioTest(DataMappingBaseTestCase):
             'import_file_id': self.import_file_1.id,
             'data_state': DATA_STATE_MAPPING,
             'no_default_data': False,
+            "raw_access_level_instance_id": self.org.root.id,
         }
 
         # Create 1 property with a duplicate in the first ImportFile
@@ -873,7 +879,7 @@ class MeterUsageImportAdjustedScenarioTest(DataMappingBaseTestCase):
 
         pm_meter_file = ImportFile.objects.create(
             import_record=self.import_record,
-            source_type="PM Meter Usage",
+            source_type=SEED_DATA_SOURCES[PORTFOLIO_METER_USAGE][1],
             uploaded_filename=filename,
             file=SimpleUploadedFile(
                 name=filename,

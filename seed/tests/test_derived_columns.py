@@ -1,18 +1,21 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
-:author
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
+import json
+from json import dumps
 from string import Template, ascii_letters, digits
 
 from django.core.exceptions import ValidationError
+from django.urls import reverse
 from hypothesis import assume, example, given, settings
 from hypothesis import strategies as st
 from hypothesis.extra.django import TestCase
 
 from seed.landing.models import SEEDUser as User
-from seed.models import PropertyState
+from seed.models import PropertyState, PropertyView
 from seed.models.columns import Column
 from seed.models.derived_columns import (
     DerivedColumn,
@@ -25,6 +28,7 @@ from seed.test_helpers.fake import (
     FakeDerivedColumnFactory,
     FakePropertyStateFactory
 )
+from seed.tests.util import AccessLevelBaseTestCase
 from seed.utils.organizations import create_organization
 
 no_deadline = settings(deadline=None)
@@ -177,10 +181,10 @@ class TestExpressionEvaluator(TestCase):
     looks like, and it runs our tests many times over different types of data it generates.
     This allows us to test cases we would have never though of and find edge cases.
 
-    We create data specifications (ie what the data should look like) with "strategies".
+    We create data specifications (i.e., what the data should look like) with "strategies".
     We have written custom strategies for generating different types of expressions above.
     They all end with the `_st` suffix.
-    We then tell hypothesis which strategy to use for a test (ie what the data input is) by using the
+    We then tell hypothesis which strategy to use for a test (i.e., what the data input is) by using the
     `@given` decorator.
     """
 
@@ -320,7 +324,7 @@ class TestDerivedColumns(TestCase):
 
         self.property_state_factory = FakePropertyStateFactory(organization=self.org)
 
-    def _derived_column_for_property_factory(self, expression, column_parameters, create_property_state=True):
+    def _derived_column_for_property_factory(self, expression, column_parameters, name=None, create_property_state=True):
         """Factory to create DerivedColumn, DerivedColumnParameters, and a PropertyState
         which can be used to evaluate the DerivedColumn expression.
 
@@ -344,7 +348,7 @@ class TestDerivedColumns(TestCase):
                 'derived_column_parameters': [DerivedColumnParameters]
             }
         """
-        derived_column = self.derived_col_factory.get_derived_column(expression)
+        derived_column = self.derived_col_factory.get_derived_column(expression=expression, name=name)
 
         # link the parameter columns to the derived column
         derived_column_parameters = []
@@ -759,6 +763,7 @@ class TestDerivedColumns(TestCase):
         # -- Setup
         # expression which sums all the parameters
         expression = '$a + 2'
+        derived_column_name = 'dc1'
         column_parameters = {
             'a': {
                 'source_column': self.col_factory('foo', is_extra_data=True),
@@ -766,27 +771,147 @@ class TestDerivedColumns(TestCase):
             },
         }
 
-        models = self._derived_column_for_property_factory(expression, column_parameters)
+        models = self._derived_column_for_property_factory(expression, column_parameters, name=derived_column_name)
         derived_column = models['derived_column']
         property_state = models['property_state']
-
-        derived_column.name = 'dc1'
-        derived_column.save()
 
         self.assertEqual(derived_column.evaluate(property_state), 3)
 
         column_with_derived_column = Column.objects.filter(derived_column=derived_column.id).first()
         expression = '$b + 2'
+        derived_column_name_2 = 'dc2'
         column_parameters = {
             'b': {
                 'source_column': column_with_derived_column,
                 'value': None  # not necessary if property state is already created
             },
         }
-        models = self._derived_column_for_property_factory(expression, column_parameters, create_property_state=False)
+        models = self._derived_column_for_property_factory(expression, column_parameters, name=derived_column_name_2, create_property_state=False)
         derived_column2 = models['derived_column']
-        derived_column2.name = 'dc2'
-        derived_column2.save()
 
         # Derived Column 2 (defined by a different derived column) can be evaluated
         self.assertEqual(derived_column2.evaluate(property_state), 5)
+
+    def test_derived_column_duplicate_name(self):
+        """Test that a derived column cannot be created with the same name as another column"""
+
+        expression = '$a + 2'
+        # gross_floor_area is already created and should fail
+        derived_column_name = 'gross_floor_area'
+        column_parameters = {
+            'a': {
+                'source_column': self.col_factory('foo', is_extra_data=True),
+                'value': 1,
+            },
+        }
+
+        with self.assertRaises(Exception) as exc:
+            self._derived_column_for_property_factory(expression, column_parameters, name=derived_column_name)
+        # validation errors return as a list of errors, so check the string representation of the list
+        self.assertEqual(str(exc.exception), "['Column name PropertyState.gross_floor_area already exists, must be unique']")
+
+
+class TestDerivedColumnsPermissions(AccessLevelBaseTestCase):
+    def setUp(self):
+        super().setUp()
+        self.column = Column.objects.filter(
+            organization=self.org,
+            is_extra_data=False,
+            table_name='PropertyState',
+            data_type='integer'
+        ).first()
+
+        self.derived_column = DerivedColumn.objects.create(
+            name='hello',
+            expression='$a',
+            organization=self.org,
+            inventory_type=DerivedColumn.PROPERTY_TYPE
+        )
+        self.cycle = self.cycle_factory.get_cycle()
+
+    def test_derived_columns_create(self):
+        url = reverse('api:v3:derived_columns-list') + '?organization_id=' + str(self.org.id)
+        post_params = dumps({
+            "name": "new column",
+            "expression": "$param_a / 100",
+            "inventory_type": "Property",
+            "parameters": [
+                {"parameter_name": "param_a", "source_column": self.column.id}
+            ]
+        })
+
+        # root owner user can
+        self.login_as_root_owner()
+        response = self.client.post(url, post_params, content_type='application/json')
+        assert response.status_code == 200
+
+        # root member user cannot
+        self.login_as_root_member()
+        response = self.client.post(url, post_params, content_type='application/json')
+        assert response.status_code == 403
+
+        # child user cannot
+        self.login_as_child_member()
+        response = self.client.post(url, post_params, content_type='application/json')
+        assert response.status_code == 403
+
+    def test_derived_columns_update(self):
+        url = reverse('api:v3:derived_columns-detail', args=[self.derived_column.id]) + '?organization_id=' + str(self.org.id)
+        post_params = dumps({"name": "new column"})
+
+        # root owner user can
+        self.login_as_root_owner()
+        response = self.client.put(url, post_params, content_type='application/json')
+        assert response.status_code == 200
+
+        # root member user cannot
+        self.login_as_root_member()
+        response = self.client.put(url, post_params, content_type='application/json')
+        assert response.status_code == 403
+
+        # child user cannot
+        self.login_as_child_member()
+        response = self.client.put(url, post_params, content_type='application/json')
+        assert response.status_code == 403
+
+    def test_derived_columns_delete(self):
+        url = reverse('api:v3:derived_columns-detail', args=[self.derived_column.id]) + '?organization_id=' + str(self.org.id)
+
+        # root member user cannot
+        self.login_as_root_member()
+        response = self.client.delete(url, content_type='application/json')
+        assert response.status_code == 403
+
+        # child user cannot
+        self.login_as_child_member()
+        response = self.client.delete(url, content_type='application/json')
+        assert response.status_code == 403
+
+        # root owner user can
+        self.login_as_root_owner()
+        response = self.client.delete(url, content_type='application/json')
+        assert response.status_code == 200
+
+    def test_derived_column_evaluate_permissions(self):
+        property = self.property_factory.get_property()
+        property.access_level_instance = self.org.root
+        property.save()
+
+        property_state = self.property_state_factory.get_property_state()
+        PropertyView.objects.create(property=property, cycle=self.cycle, state=property_state)
+
+        url = reverse('api:v3:derived_columns-evaluate', args=[self.derived_column.id])
+        params = {"cycle_id": self.cycle.id, "organization_id": self.org.pk, "inventory_ids": f"{property.pk}"}
+
+        # root member user can
+        response = self.client.get(url, params, content_type='application/json')
+        data = json.loads(response.content)
+        assert response.status_code == 200
+        assert data["results"] == [{'id': property.pk, 'value': None}]
+
+        # child user cannot
+        self.login_as_child_member()
+        response = self.client.get(url, params, content_type='application/json')
+        data = json.loads(response.content)
+        assert response.status_code == 200
+        assert data["results"] == []

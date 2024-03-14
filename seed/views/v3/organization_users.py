@@ -1,10 +1,10 @@
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
-:author
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
-
 from django.core.exceptions import ObjectDoesNotExist
+from django.db import IntegrityError
 from django.http import JsonResponse
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
@@ -13,22 +13,23 @@ from seed.decorators import ajax_request_class
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.lib.superperms.orgs.models import (
+    ROLE_MEMBER,
     ROLE_OWNER,
     Organization,
     OrganizationUser
 )
 from seed.tasks import invite_to_organization
 from seed.utils.api import api_endpoint_class
-from seed.views.v3.organizations import _get_js_role
+from seed.utils.users import get_js_role
 
 
 class OrganizationUserViewSet(viewsets.ViewSet):
-    # allow using `organization_pk` in url path for authorization (ie for has_perm_class)
+    # allow using `organization_pk` in url path for authorization (i.e., for has_perm_class)
     authz_org_id_kwarg = 'organization_pk'
 
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('requires_member')
+    @has_perm_class('requires_viewer')
     def list(self, request, organization_pk):
         """
         Retrieve all users belonging to an org.
@@ -39,20 +40,30 @@ class OrganizationUserViewSet(viewsets.ViewSet):
             return JsonResponse({'status': 'error',
                                  'message': 'Could not retrieve organization at organization_pk = ' + str(organization_pk)},
                                 status=status.HTTP_404_NOT_FOUND)
+
+        org_user = OrganizationUser.objects.get(user=self.request.user, organization=org)
+        is_member = org_user.role_level >= ROLE_MEMBER
+
         users = []
         for u in org.organizationuser_set.all():
             user = u.user
-
-            user_orgs = OrganizationUser.objects.filter(user=user).count()
-
-            users.append({
+            user_info = {
                 'email': user.email,
                 'first_name': user.first_name,
                 'last_name': user.last_name,
-                'number_of_orgs': user_orgs,
                 'user_id': user.pk,
-                'role': _get_js_role(u.role_level)
-            })
+            }
+            if is_member:
+                user_orgs = OrganizationUser.objects.filter(user=user).count()
+                user_info.update({
+                    'number_of_orgs': user_orgs,
+                    'role': get_js_role(u.role_level),
+                    'access_level_instance_id': u.access_level_instance.id,
+                    'access_level_instance_name': u.access_level_instance.name,
+                    'access_level': org.access_level_names[u.access_level_instance.depth - 1],
+                })
+
+            users.append(user_info)
 
         return JsonResponse({'status': 'success', 'users': users})
 
@@ -62,15 +73,21 @@ class OrganizationUserViewSet(viewsets.ViewSet):
     @action(detail=True, methods=['PUT'])
     def add(self, request, organization_pk, pk):
         """
-        Adds an existing user to an organization.
+        Adds an existing user to an organization as an owner.
         """
         org = Organization.objects.get(pk=organization_pk)
         user = User.objects.get(pk=pk)
 
-        _orguser, status = org.add_member(user)
+        try:
+            created = org.add_member(user, org.root.id)
+        except IntegrityError as e:
+            return JsonResponse({
+                'status': 'error',
+                'message': str(e)
+            }, status=status.HTTP_400_BAD_REQUEST)
 
         # Send an email if a new user has been added to the organization
-        if status:
+        if created:
             try:
                 domain = request.get_host()
             except Exception:

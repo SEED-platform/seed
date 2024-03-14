@@ -1,33 +1,40 @@
 /**
- * :copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
- * :author
+ * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+ * See also https://github.com/seed-platform/seed/main/LICENSE.md
  */
 // taken from the angularjs testing page
 // http://docs.angularjs.org/guide/dev_guide.unit-testing
 
 // create dummy angularJS app to attach filter(s)
-var mySDLabelDirectiveApp = angular.module('mySDLabelDirectiveApp', ['sdLabel'],
-  ['$interpolateProvider', '$qProvider', function ($interpolateProvider, $qProvider) {
-    $interpolateProvider.startSymbol('{$');
-    $interpolateProvider.endSymbol('$}');
-    $qProvider.errorOnUnhandledRejections(false);
-  }]);
+const mySDLabelDirectiveApp = angular.module(
+  'mySDLabelDirectiveApp',
+  ['sdLabel'],
+  [
+    '$interpolateProvider',
+    '$qProvider',
+    function ($interpolateProvider, $qProvider) {
+      $interpolateProvider.startSymbol('{$');
+      $interpolateProvider.endSymbol('$}');
+      $qProvider.errorOnUnhandledRejections(false);
+    }
+  ]
+);
 
-describe('The sdLabel directive', function () {
-  var $compile;
-  var $rootScope;
-  beforeEach(function () {
+describe('The sdLabel directive', () => {
+  let $compile;
+  let $rootScope;
+  beforeEach(() => {
     module('mySDLabelDirectiveApp');
-    inject(function (_$compile_, _$rootScope_) {
+    inject((_$compile_, _$rootScope_) => {
       // The injector unwraps the underscores (_) from around the parameter names when matching
       $compile = _$compile_;
       $rootScope = _$rootScope_;
     });
   });
 
-  it('Replaces the element with the appropriate content', function () {
+  it('Replaces the element with the appropriate content', () => {
     // Compile a piece of HTML containing the directive
-    var element = $compile('<sd-label name="compliant" color="blue"></sd-label>')($rootScope);
+    const element = $compile('<sd-label name="compliant" color="blue"></sd-label>')($rootScope);
     // fire all the watches
     $rootScope.$digest();
     // Check that the compiled element contains the templated content
@@ -42,8 +49,8 @@ describe('The sdLabel directive', function () {
   // 'green': 'success',
   // 'blue': 'primary',
   // 'light blue': 'info'
-  it('Maps colors to semantic bootstrap class names', function () {
-    var element = $compile('<sd-label name="compliant" color="red"></sd-label>')($rootScope);
+  it('Maps colors to semantic bootstrap class names', () => {
+    let element = $compile('<sd-label name="compliant" color="red"></sd-label>')($rootScope);
     $rootScope.$digest();
     expect(element.hasClass('label-danger')).toBe(true);
 
@@ -67,6 +74,4 @@ describe('The sdLabel directive', function () {
     $rootScope.$digest();
     expect(element.hasClass('label-info')).toBe(true);
   });
-
-
 });

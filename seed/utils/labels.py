@@ -1,15 +1,14 @@
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California,
-through Lawrence Berkeley National Laboratory (subject to receipt of any
-required approvals from the U.S. Department of Energy) and contributors.
-All rights reserved.
-:author
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
 import json
 
+from django.db.models import Q
 from rest_framework import response, status
 
 from seed import search
+from seed.lib.superperms.orgs.models import AccessLevelInstance
 from seed.serializers.labels import LabelSerializer
 
 
@@ -22,6 +21,10 @@ def filter_labels_for_inv_type(request, inventory_type=None):
     # Since this is being passed in as a query string, the object ends up
     # coming through as a string.
     params['filter_params'] = json.loads(params.get('filter_params', '{}'))
+
+    # If cycle_id is passed with an inventory_type limit the inventory filter
+    cycle_id = params.get('cycle_id', None) if inventory_type is not None else None
+
     params = search.process_search_params(
         params=params,
         user=request.user,
@@ -31,6 +34,7 @@ def filter_labels_for_inv_type(request, inventory_type=None):
         inventory_type,
         params=params,
         user=request.user,
+        cycle_id=cycle_id,
     )
     if 'selected' in request.data:
         # Return labels limited to the 'selected' list.  Otherwise, if selected is empty, return all
@@ -45,6 +49,15 @@ def get_labels(request, qs, super_organization, inv_type):
     inventory = filter_labels_for_inv_type(
         request=request, inventory_type=inv_type
     )
+
+    # filter by AH
+    ali = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
+    if inv_type == "property_view":
+        in_subtree = Q(property__access_level_instance__lft__gte=ali.lft, property__access_level_instance__rgt__lte=ali.rgt)
+    else:
+        in_subtree = Q(taxlot__access_level_instance__lft__gte=ali.lft, taxlot__access_level_instance__rgt__lte=ali.rgt)
+    inventory = inventory.filter(in_subtree)
+
     results = [
         LabelSerializer(
             q,

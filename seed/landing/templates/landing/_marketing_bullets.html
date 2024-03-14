@@ -1,46 +1,34 @@
 {% load i18n %}
 <div class="section_marketing">
-    <h1>{% trans "Welcome to SEED Platform™" %}</h1>
-    <div class="marketing_text">
-        <div class="bullet">
-            <div></div>
-        </div>
-        <div class="bullet_text">
-            {% blocktrans trimmed %}
-                MARKETING_BULLET_1
-            {% endblocktrans %}
-        </div>
+  <h1>{% trans "Welcome to SEED Platform™" %}</h1>
+  <div class="marketing_text">
+    <div class="bullet">
+      <div></div>
     </div>
-    <div class="marketing_text">
-        <div class="bullet">
-            <div></div>
-        </div>
-        <div class="bullet_text">
-            {% blocktrans trimmed %}
-                MARKETING_BULLET_2
-            {% endblocktrans %}
-        </div>
+    <div class="bullet_text">
+      {% blocktrans trimmed %}
+        MARKETING_BULLET_1
+      {% endblocktrans %}
     </div>
-    <div class="marketing_text">
-        <div class="bullet">
-            <div></div>
-        </div>
-        <div class="bullet_text">
-            {% blocktrans trimmed %}
-                MARKETING_BULLET_3
-            {% endblocktrans %}
-        </div>
+  </div>
+  <div class="marketing_text">
+    <div class="bullet">
+      <div></div>
     </div>
-    <!--<div id="powered_by_seed" class="powered_by_seed">
-        <div class="powered_by">Powered by:</div>
-        <div class="logo_seed">
-            <img src="{{STATIC_URL}}seed/images/DOE-SEED-Logo_v4.jpg" alt="SEED Platform" title="SEED Platform" height="60" onerror="hidePoweredBy(this);">
-        </div>
-    </div>-->
+    <div class="bullet_text">
+      {% blocktrans trimmed %}
+        MARKETING_BULLET_2
+      {% endblocktrans %}
+    </div>
+  </div>
+  <div class="marketing_text">
+    <div class="bullet">
+      <div></div>
+    </div>
+    <div class="bullet_text">
+      {% blocktrans trimmed %}
+        MARKETING_BULLET_3
+      {% endblocktrans %}
+    </div>
+  </div>
 </div>
-
-<!--<script>
-    function hidePoweredBy(image){
-        $("#powered_by_seed").hide();
-    }
-</script>-->

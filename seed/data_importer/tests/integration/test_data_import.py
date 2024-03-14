@@ -1,22 +1,21 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
-:author
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
 import copy
 import csv
-import datetime
 import json
 import logging
 import os.path as osp
 import pathlib
 import zipfile
+from datetime import date
 
 from dateutil import parser
 from django.core.files import File
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.utils import timezone
 from mock import patch
 
 from config.settings.common import BASE_DIR
@@ -44,7 +43,11 @@ from seed.models import (
     Scenario,
     TaxLotState
 )
-from seed.models.models import DATA_STATE_MAPPING
+from seed.models.models import (
+    BUILDINGSYNC_RAW,
+    DATA_STATE_MAPPING,
+    SEED_DATA_SOURCES
+)
 from seed.tests.util import DataMappingBaseTestCase
 
 _log = logging.getLogger(__name__)
@@ -101,11 +104,11 @@ class TestDataImport(DataMappingBaseTestCase):
         """Save mappings based on user specifications."""
         # Create new import file to test
         import_record = ImportRecord.objects.create(
-            owner=self.user, last_modified_by=self.user, super_organization=self.org
+            owner=self.user, last_modified_by=self.user, super_organization=self.org, access_level_instance=self.org.root
         )
         import_file = ImportFile.objects.create(
             import_record=import_record,
-            source_type=ASSESSED_RAW,
+            source_type=SEED_DATA_SOURCES[ASSESSED_RAW][1],
         )
         import_file.raw_save_done = True
         import_file.save()
@@ -208,7 +211,7 @@ class TestBuildingSyncImportZipBad(DataMappingBaseTestCase):
 
             self.assertEqual(xml_files_found, 2)
 
-        import_file_source_type = 'BuildingSync Raw'
+        import_file_source_type = BUILDINGSYNC_RAW
         selfvars = self.set_up(import_file_source_type)
         self.user, self.org, self.import_file, self.import_record, self.cycle = selfvars
 
@@ -247,7 +250,7 @@ class TestBuildingSyncImportZip(DataMappingBaseTestCase):
 
             self.assertEqual(xml_files_found, 2)
 
-        import_file_source_type = 'BuildingSync Raw'
+        import_file_source_type = BUILDINGSYNC_RAW
         selfvars = self.set_up(import_file_source_type)
         self.user, self.org, self.import_file, self.import_record, self.cycle = selfvars
 
@@ -329,7 +332,7 @@ class TestBuildingSyncImportXml(DataMappingBaseTestCase):
         filename = 'buildingsync_v2_0_bricr_workflow.xml'
         filepath = osp.join(BASE_DIR, 'seed', 'building_sync', 'tests', 'data', filename)
 
-        import_file_source_type = 'BuildingSync Raw'
+        import_file_source_type = BUILDINGSYNC_RAW
         selfvars = self.set_up(import_file_source_type)
         self.user, self.org, self.import_file, self.import_record, self.cycle = selfvars
 
@@ -410,7 +413,7 @@ class TestBuildingSyncImportXmlBadMeasures(DataMappingBaseTestCase):
         filename = 'buildingsync_ex01_measures_bad_names.xml'
         filepath = osp.join(BASE_DIR, 'seed', 'building_sync', 'tests', 'data', filename)
 
-        import_file_source_type = 'BuildingSync Raw'
+        import_file_source_type = BUILDINGSYNC_RAW
         selfvars = self.set_up(import_file_source_type)
         self.user, self.org, self.import_file, self.import_record, self.cycle = selfvars
 
@@ -502,8 +505,8 @@ class TestMappingExampleData(DataMappingBaseTestCase):
         cycle2, _ = Cycle.objects.get_or_create(
             name='Hack Cycle 2016',
             organization=self.org,
-            start=datetime.datetime(2016, 1, 1, tzinfo=timezone.get_current_timezone()),
-            end=datetime.datetime(2016, 12, 31, tzinfo=timezone.get_current_timezone()),
+            start=date(2016, 1, 1),
+            end=date(2016, 12, 31),
         )
 
         # make sure that the new data was loaded correctly
@@ -512,7 +515,9 @@ class TestMappingExampleData(DataMappingBaseTestCase):
 
         # Promote the PropertyState to a PropertyView
         pv1 = ps.promote(self.cycle)
+        ps.raw_access_level_instance = self.org.root  # un-clear it
         pv2 = ps.promote(self.cycle)  # should just return the same object
+        ps.raw_access_level_instance = self.org.root  # un-clear it
         self.assertEqual(pv1, pv2)
 
         # promote the same state for a new cycle, same data
@@ -525,7 +530,7 @@ class TestMappingExampleData(DataMappingBaseTestCase):
 
 # For some reason if you comment out the next two test cases (TestMappingPropertiesOnly and
 # TestMappingTaxLotsOnly), the test_views_matching.py file will fail. I cannot figure out
-# what is causing this and it is really annoying. Inherenting from DataMappingBaseTestCase
+# what is causing this and it is really annoying. Inheriting from DataMappingBaseTestCase
 # will delete all the model data upon completion, Maybe because FAKE_MAPPINGS
 # is not a copy, rather a pointer?
 

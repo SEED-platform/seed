@@ -1,8 +1,8 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
-:author
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
 import json
 
@@ -110,7 +110,8 @@ class AdminViewsTest(TestCase):
             'first_name': 'New',
             'last_name': 'User',
             'email': 'new_user@testserver',
-            'role_level': 'ROLE_MEMBER'
+            'role': 'member',
+            'access_level_instance_id': org.root.id,
         }
 
         res = self._post_json(self.add_user_url + f'?organization_id={org.pk}', data)
@@ -125,16 +126,34 @@ class AdminViewsTest(TestCase):
         self.assertTrue(self._is_org_owner(self.admin_user, org))
         self.assertEqual(Organization.objects.count(), 1)
 
+    def test_add_owner_existing_org_to_non_root(self):
+        org, _, _ = create_organization(self.admin_user, name='Existing Org')
+        org.access_level_names += ["2nd gen", "3rd_gen"]
+        org.save()
+        child = org.add_new_access_level_instance(org.root.id, "child")
+
+        data = {
+            'first_name': 'New',
+            'last_name': 'User',
+            'email': 'new_user@testserver',
+            'role': 'owner',
+            'access_level_instance_id': child.id,
+        }
+
+        res = self._post_json(self.add_user_url + f'?organization_id={org.pk}', data)
+        self.assertEqual(res.body['status'], 'error')
+
     def test_add_user_new_org(self):
         """
         Create a new user and a new org at the same time.
         """
+        org, _, _ = create_organization(self.user, "test-organization-a")
         data = {'org_name': 'New Org',
                 'first_name': 'New',
                 'last_name': 'Owner',
+                'organization_id': org.id,
                 'email': 'new_owner@testserver'}
         res = self._post_json(self.add_user_url, data)
-
         self.assertEqual(res.body['status'], 'success')
         user = User.objects.get(username=data['email'])
         self.assertEqual(user.email, data['email'])
@@ -164,9 +183,11 @@ class AdminViewsTest(TestCase):
         account creation by an admin to receiving the signup email
         to confirming the account and setting a password.
         """
+        org, _, _ = create_organization(self.user, "test-organization-a")
         data = {'first_name': 'New',
                 'last_name': 'User',
                 'email': 'new_user@testserver',
+                'organization_id': org.id,
                 'org_name': 'New Org'}
         res = self._post_json(self.add_user_url, data)
         self.client.logout()  # stop being the admin user
@@ -214,9 +235,11 @@ class AdminViewsTest(TestCase):
         """
         Simulates the signup and login forcing login username to lowercase
         """
+        org, _, _ = create_organization(self.user, "test-organization-a")
         data = {'first_name': 'New',
                 'last_name': 'User',
                 'email': 'New_Lower_User@testserver.com',
+                'organization_id': org.id,
                 'org_name': 'New Org'}
         res = self._post_json(self.add_user_url, data)
         self.client.logout()  # stop being the admin user

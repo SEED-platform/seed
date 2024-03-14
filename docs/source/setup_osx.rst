@@ -32,7 +32,7 @@ ready for general development. If this is not the case, skip to Prerequisites.  
 * `./manage.py migrate`
 * `./manage.py create_default_user`
 * `./manage.py runserver`
-* `DJANGO_SETTINGS_MODULE=config.settings.dev celery -A seed worker -l info -c 4 --max-tasks-per-child=1000 --events`
+* `DJANGO_SETTINGS_MODULE=config.settings.dev celery -A seed worker -l INFO -c 4 --max-tasks-per-child 1000 -EBS django_celery_beat.schedulers:DatabaseScheduler`
 * navigate to `http://127.0.0.1:8000/app/#/profile/admin` in your browser to add users to organizations
 * main app runs at `127.0.0.1:8000/app`
 
@@ -42,7 +42,7 @@ can also create other superusers.
 
 .. code-block:: console
 
-    ./manage.py create_default_user --username=demo@seed.lbl.gov --organization=lbl --password=demo123
+    ./manage.py create_default_user --username=demo@seed-platform.org --organization=lbl --password=demo123
 
 
 Prerequisites
@@ -65,13 +65,14 @@ should have the following dependencies already installed:
     .. code-block:: bash
 
         brew install pyenv
+        brew install pyenv-virtualenv
         pyenv install <python3 version you want>
         pyenv virtualenv <python3 version you want> seed
         pyenv local seed
 
 
 PostgreSQL 11.1
---------------
+---------------
 
 MacPorts::
 
@@ -269,15 +270,13 @@ For Redis, edit the `CACHES` and `CELERY_BROKER_URL` values to look like this:
 
 .. code-block:: python
 
+    CELERY_BROKER_URL = 'redis://127.0.0.1:6379/1'
     CACHES = {
         'default': {
-            'BACKEND': 'redis_cache.cache.RedisCache',
-            'LOCATION': "127.0.0.1:6379",
-            'OPTIONS': {'DB': 1},
-            'TIMEOUT': 300
+            'BACKEND': 'django_redis.cache.RedisCache',
+            'LOCATION': CELERY_BROKER_URL,
         }
     }
-    CELERY_BROKER_URL = 'redis://127.0.0.1:6379/1'
 
 MapQuest API Key
 ----------------

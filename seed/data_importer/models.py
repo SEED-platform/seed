@@ -1,8 +1,8 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
-:author
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
 import csv
 import hashlib
@@ -20,6 +20,7 @@ from django_extensions.db.models import TimeStampedModel
 from config.utils import de_camel_case
 from seed.data_importer.managers import NotDeletedManager
 from seed.lib.mcm.reader import ROW_DELIMITER
+from seed.lib.superperms.orgs.models import AccessLevelInstance
 from seed.lib.superperms.orgs.models import Organization as SuperOrganization
 from seed.utils.cache import (
     delete_cache,
@@ -92,6 +93,7 @@ class ImportRecord(NotDeletableModel):
                            help_text='The application (e.g., BPD or SEED) for this dataset',
                            default='seed')
     owner = models.ForeignKey('landing.SEEDUser', on_delete=models.CASCADE, blank=True, null=True)
+    access_level_instance = models.ForeignKey(AccessLevelInstance, on_delete=models.CASCADE, null=False, related_name="import_record")
     start_time = models.DateTimeField(blank=True, null=True)
     finish_time = models.DateTimeField(blank=True, null=True)
     created_at = models.DateTimeField(blank=True, null=True)
@@ -552,6 +554,7 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
     matching_completion = models.IntegerField(blank=True, null=True)
     matching_done = models.BooleanField(default=False)
     matching_results_data = models.JSONField(default=dict, blank=True)
+    multiple_cycle_upload = models.BooleanField(default=False)
     num_coercion_errors = models.IntegerField(blank=True, null=True, default=0)
     num_coercions_total = models.IntegerField(blank=True, null=True, default=0)
     num_columns = models.IntegerField(blank=True, null=True)
@@ -596,6 +599,10 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
         return self._strcmp(self.source_program, 'PortfolioManager')
 
     @property
+    def access_level_instance(self):
+        return self.import_record.access_level_instance
+
+    @property
     def from_buildingsync(self):
         source_type = self.source_type if self.source_type else ''
         return 'buildingsync' in source_type.lower()
@@ -610,6 +617,11 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
 
     @property
     def local_file(self):
+        """This method is used to create a copy of a remote file locally. We shouldn't need to use
+        this unless we start storing files remotely and we need to save locally to parse. If that
+        is the case, then we should handle the removal of the temp files otherwise these can add up
+        to a lot of storage space.
+        """
         if not hasattr(self, '_local_file'):
             temp_file = tempfile.NamedTemporaryFile(mode='w+b', delete=False)
             for chunk in self.file.chunks(1024):

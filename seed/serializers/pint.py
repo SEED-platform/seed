@@ -1,14 +1,12 @@
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
-:author
-"""
-"""
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
+
 Collects the various utility functions for doing a last-moment collapse of the
 Pint-aware values/columns to raw floats before sending them out over the API.
 Generally this collapsing relies on having access to the organization, since
 that's where the display preference lives.
 """
-
 import re
 from builtins import str
 
@@ -19,7 +17,7 @@ from rest_framework import serializers
 # Update the registry's definition for year
 # Updating pint from 0.9 resulted in a change in the symbol from 'year' to 'a'
 # see: https://github.com/hgrecco/pint/commit/3ad5c2bb24ca92cb69353af9a84458da9bebc8f3#diff-cc2784e7cfe7c2d896ae4ec1ef1563eed99bed539cb02f5a0f00e276dab48fe5R125
-# Symbols are used when doing the pretty, shortened formatting (ie '{:~P}'.format(...))
+# Symbols are used when doing the pretty, shortened formatting (i.e., '{:~P}'.format(...))
 # which SEED uses when creating display names for columns.
 # Thus we go back to 'year' by copying the current year definition from
 # https://github.com/hgrecco/pint/blob/636961a8ac988f5af25799ffdd041da725554bfb/pint/default_en.txt#L174
@@ -35,6 +33,13 @@ AREA_DEFAULT_UNITS = 'ft**2'
 EUI_DEFAULT_UNITS = 'kBtu/ft**2/year'
 GHG_DEFAULT_UNITS = 'MtCO2e/year'
 GHG_INTENSITY_DEFAULT_UNITS = 'kgCO2e/ft**2/year'
+
+DEFAULT_UNITS = {
+    'area': AREA_DEFAULT_UNITS,
+    'eui': EUI_DEFAULT_UNITS,
+    'ghg': GHG_DEFAULT_UNITS,
+    'ghg_intensity': GHG_INTENSITY_DEFAULT_UNITS,
+}
 
 
 def to_raw_magnitude(obj):
@@ -52,7 +57,7 @@ def collapse_unit(org, x):
     used to hide the fact of Quantities from Angular.
     """
     # make extensible / field name agnostic by just branching on the dimensionality
-    # and not the field name (eg. 'gross_floor_area') ... the dimensionality gets
+    # and not the field name (e.g., 'gross_floor_area') ... the dimensionality gets
     # enforced separately by the django pint column type
     pint_specs = {
         EUI_DIMENSIONALITY: org.display_units_eui or EUI_DEFAULT_UNITS,

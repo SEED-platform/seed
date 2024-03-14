@@ -1,8 +1,8 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
-:author
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
 from __future__ import unicode_literals
 
@@ -10,6 +10,7 @@ import logging
 
 from django.db import models
 
+from seed.models.events import ATEvent
 from seed.models.properties import PropertyView
 from seed.models.property_measures import PropertyMeasure
 
@@ -74,6 +75,7 @@ class Scenario(models.Model):
     cdd_base_temperature = models.FloatField(null=True)
 
     measures = models.ManyToManyField(PropertyMeasure)
+    event = models.ForeignKey(ATEvent, related_name='scenarios', on_delete=models.SET_NULL, null=True)
 
     def copy_initial_meters(self, source_scenario_id):
         """
@@ -100,3 +102,19 @@ class Scenario(models.Model):
             meter.property = property_
             meter.save()  # save to get new id / association
             meter.copy_readings(source_meter, overlaps_possible=False)
+
+    @classmethod
+    def str_to_temporal_status(cls, status):
+        if not status:
+            return None
+
+        if isinstance(status, int):
+            if status in [(t[0]) for t in cls.TEMPORAL_STATUS_TYPES]:
+                return status
+            return None
+
+        value = [y[0] for x, y in enumerate(cls.TEMPORAL_STATUS_TYPES) if y[1] == status]
+        if len(value) == 1:
+            return value[0]
+        else:
+            return None

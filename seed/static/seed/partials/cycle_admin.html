@@ -1,95 +1,161 @@
 <div class="page_header_container">
-    <div class="page_header">
-        <div class="left page_action_container">
-            <a ui-sref="organizations" class="page_action"><i class="fa fa-chevron-left"></i> {$:: 'Organizations' | translate $}</a>
-        </div>
-        <div class="page_title">
-            <h1>{$:: org.name $}</h1>
-        </div>
-        <div class="right page_action_container"></div>
+  <div class="page_header">
+    <div class="left page_action_container">
+      <a ui-sref="organizations" class="page_action"><i class="fa-solid fa-chevron-left"></i> {$:: 'Organizations' | translate $}</a>
     </div>
+    <div class="page_title">
+      <h1>{$:: org.name $}</h1>
+    </div>
+    <div class="right page_action_container"></div>
+  </div>
 </div>
 <div class="section_nav_container">
-    <div class="section_nav" ng-include="::urls.static_url + 'seed/partials/accounts_nav.html'"></div>
+  <div class="section_nav" ng-include="::urls.static_url + 'seed/partials/accounts_nav.html'"></div>
 </div>
 <div id="cycle_admin" class="section">
-    <div class="section_content_container">
-        <div class="section_content">
-            <div class="newCycleInput">
-                <form name="newCycleForm" class="form-inline" role="form" ng-submit="submitNewCycleForm(newCycleForm)" novalidate>
-                    <div class="form-group" ng-class="{'has-error': newCycleForm.name.$invalid && newCycleForm.name.$dirty }">
-                        <label class="control-label sectionLabel" style="padding-right:20px;" translate>Create new cycle</label>
-                        <div class="input-group" style="padding-right:20px;">
-                            <input type="text" name="name" class="form-control" ng-minlength="1" ng-maxlength="100" style="min-width:300px;" ng-model="new_cycle.name" placeholder="{$:: 'Cycle Name' | translate $}" sd-check-cycle-exists="cycles" required>
-                        </div>
-                        <div class="form-group" ng-class="{'has-error' : invalidDates }">
-                            <label for="from-date">{$:: 'From date' | translate $}:</label>
-
-                            <div class="input-group date-input" style="padding-right:20px;">
-                                <input id="from-date" type="text" class="form-control" uib-datepicker-popup="MM-dd-yyyy" is-open="startDatePickerOpen" ng-model="new_cycle.start" uib-tooltip="'From Date' must be before 'To Date'" tooltip-placement="top" tooltip-trigger="mouseenter" tooltip-enable="invalidDates" ng-required="true">
-                                <span class="input-group-btn">
-                            <button type="button" class="btn btn-default" ng-click="openStartDatePicker($event)"><i class="fa fa-calendar"></i></button>
-                        </span>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label for="to-date">{$:: 'To date' | translate $}:</label>
-                            <div class="input-group date-input" style="padding-right:20px;">
-                                <input id="to-date" type="text" class="form-control" uib-datepicker-popup="MM-dd-yyyy" is-open="endDatePickerOpen" ng-model="new_cycle.end" uib-tooltip="'From Date' must be before 'To Date'" tooltip-placement="top" tooltip-trigger="mouseenter" tooltip-enable="invalidDates" ng-required="true">
-                                <span class="input-group-btn">
-                                    <button type="button" class="btn btn-default" ng-click="openEndDatePicker($event)"><i class="fa fa-calendar"></i></button>
-                                </span>
-                            </div>
-                        </div>
-                        <button id="btnCreateCycle" class="btn btn-primary" ng-disabled="newCycleForm.$invalid" translate>Create Cycle</button>
-                        <div class="help-block">
-                            <span class="has-error" ng-show="newCycleForm.name.$error.sdCheckCycleExists" translate>This cycle name is already taken.</span>
-                        </div>
-                    </div>
-                </form>
+  <div class="section_content_container">
+    <div class="section_content">
+      <div class="newCycleInput">
+        <form name="newCycleForm" class="form-inline" role="form" ng-submit="submitNewCycleForm(newCycleForm)" novalidate>
+          <div class="form-group" ng-class="{'has-error': newCycleForm.name.$invalid && newCycleForm.name.$dirty }">
+            <label class="control-label sectionLabel" style="padding-right: 20px" translate>Create new cycle</label>
+            <div class="input-group" style="padding-right: 20px">
+              <input
+                type="text"
+                name="name"
+                class="form-control"
+                ng-minlength="1"
+                ng-maxlength="100"
+                style="min-width: 300px"
+                ng-model="new_cycle.name"
+                placeholder="{$:: 'Cycle Name' | translate $}"
+                sd-check-cycle-exists="cycles"
+                required
+              />
             </div>
+            <div class="form-group" ng-class="{'has-error' : invalidDates }">
+              <label for="from-date">{$:: 'From date' | translate $}:</label>
 
-
-            <div style="padding-left:10px;" class="sectionLabel">
-                <p><strong translate>Existing Cycles</strong></p>
+              <div class="input-group date-input" style="padding-right: 20px">
+                <input
+                  id="from-date"
+                  type="text"
+                  class="form-control"
+                  uib-datepicker-popup="yyyy-MM-dd"
+                  is-open="startDatePickerOpen"
+                  ng-model="new_cycle.start"
+                  uib-tooltip="'From Date' must be before 'To Date'"
+                  tooltip-placement="top"
+                  tooltip-trigger="mouseenter"
+                  tooltip-enable="invalidDates"
+                  ng-required="true"
+                />
+                <span class="input-group-btn">
+                  <button type="button" class="btn btn-default" ng-click="openStartDatePicker($event)"><i class="fa-regular fa-calendar-days"></i></button>
+                </span>
+              </div>
             </div>
-
-            <div class="table_list_container">
-                <table class="table table-striped table-hover table-condensed">
-                    <thead>
-                        <tr>
-                            <th style="width:40%" translate>Name</th>
-                            <th style="width:25%" translate>From Date</th>
-                            <th style="width:25%" translate>To Date</th>
-                            <th style="text-align: right; width:10%"></th>
-                        </tr>
-                    </thead>
-                    <tr ng-repeat="cycle in cycles">
-                        <td>
-                            <span editable-text="::cycle.name" e-name="name" e-form="rowform" ng-show="rowform.$visible" onbeforesave="checkEditCycleBeforeSave($data, cycle.name)" e-ng-keypress="onEditCycleNameKeypress($event, rowform)" e-maxlength="255" e-required>{$:: cycle.name $}</span>
-                            <span ng-show="!rowform.$visible">{$:: cycle.name $}</span>
-                        </td>
-                        <td>
-                            <span editable-bsdate="::cycle.start" e-name="start" e-form="rowform" ng-show="rowform.$visible" e-is-open="opened.start" e-ng-click="open($event,'start')" e-datepicker-popup="MM-dd-yyyy" e-required>{$:: cycle.start | date : 'MM-dd-yyyy' $}</span>
-                            <span ng-show="!rowform.$visible">{$:: cycle.start | date : 'MM-dd-yyyy' $}</span>
-                        </td>
-                        <td>
-                            <span editable-bsdate="::cycle.end" e-name="end" e-form="rowform" ng-show="rowform.$visible" e-is-open="opened.end" e-ng-click="open($event,'end')" e-datepicker-popup="MM-dd-yyyy" e-required>{$:: cycle.end | date : 'MM-dd-yyyy' $}</span>
-                            <span ng-show="!rowform.$visible">{$:: cycle.end | date : 'MM-dd-yyyy' $}</span>
-                        </td>
-                        <td style="text-align: right; white-space: nowrap">
-                            <form editable-form name="rowform" onbeforesave="saveCycle($data, cycle.id, $index)" ng-show="rowform.$visible" class="form-buttons form-inline" shown="inserted == cycle">
-                                <button type="submit" ng-disabled="rowform.$waiting" class="btn btn-primary btn-rowform" translate>save</button>
-                                <button type="button" ng-disabled="rowform.$waiting" ng-click="rowform.$cancel()" class="btn btn-default btn-rowform" translate>cancel</button>
-                            </form>
-                            <div class="buttons" ng-show="!rowform.$visible">
-                                <button class="btn btn-default btn-rowform" ng-click="rowform.$show()" translate>Edit</button>
-                                <button class="btn btn-danger" ng-click="showDeleteCycleModal(cycle.id)" translate>Delete</button>
-                            </div>
-                        </td>
-                    </tr>
-                </table>
+            <div class="form-group">
+              <label for="to-date">{$:: 'To date' | translate $}:</label>
+              <div class="input-group date-input" style="padding-right: 20px">
+                <input
+                  id="to-date"
+                  type="text"
+                  class="form-control"
+                  uib-datepicker-popup="yyyy-MM-dd"
+                  is-open="endDatePickerOpen"
+                  ng-model="new_cycle.end"
+                  uib-tooltip="'From Date' must be before 'To Date'"
+                  tooltip-placement="top"
+                  tooltip-trigger="mouseenter"
+                  tooltip-enable="invalidDates"
+                  ng-required="true"
+                />
+                <span class="input-group-btn">
+                  <button type="button" class="btn btn-default" ng-click="openEndDatePicker($event)"><i class="fa-regular fa-calendar-days"></i></button>
+                </span>
+              </div>
             </div>
-        </div>
+            <button id="btnCreateCycle" class="btn btn-primary" ng-disabled="newCycleForm.$invalid || invalidDates" translate>Create Cycle</button>
+            <div class="help-block">
+              <span class="has-error" ng-show="newCycleForm.name.$error.sdCheckCycleExists" translate>This cycle name is already taken.</span>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <div style="padding-left: 10px" class="sectionLabel">
+        <p><strong translate>Existing Cycles</strong></p>
+      </div>
+
+      <div class="table_list_container">
+        <table class="table table-striped table-hover table-condensed">
+          <thead>
+            <tr>
+              <th style="width: 40%" translate>Name</th>
+              <th style="width: 25%" translate>From Date</th>
+              <th style="width: 25%" translate>To Date</th>
+              <th style="text-align: right; width: 10%"></th>
+            </tr>
+          </thead>
+          <tr ng-repeat="cycle in cycles">
+            <td>
+              <span
+                editable-text="::cycle.name"
+                e-name="name"
+                e-form="rowform"
+                ng-show="rowform.$visible"
+                onbeforesave="checkEditCycleBeforeSave($data, cycle.name)"
+                e-ng-keypress="onEditCycleNameKeypress($event, rowform)"
+                e-maxlength="255"
+                e-required
+                >{$:: cycle.name $}</span
+              >
+              <span ng-show="!rowform.$visible">{$:: cycle.name $}</span>
+            </td>
+            <td>
+              <span
+                editable-bsdate="::cycle.start"
+                e-name="start"
+                e-form="rowform"
+                ng-show="rowform.$visible"
+                onbeforesave="checkEditCycleDateBeforeSave(rowform, $data)"
+                e-is-open="opened.start"
+                e-ng-click="open($event,'start')"
+                e-datepicker-popup="yyyy-MM-dd"
+                e-required
+                >{$:: cycle.start | date : 'yyyy-MM-dd' $}</span
+              >
+              <span ng-show="!rowform.$visible">{$:: format_date(cycle.start) $}</span>
+            </td>
+            <td>
+              <span
+                editable-bsdate="::cycle.end"
+                e-name="end"
+                e-form="rowform"
+                ng-show="rowform.$visible"
+                onbeforesave="checkEditCycleDateBeforeSave(rowform, $data)"
+                e-is-open="opened.end"
+                e-ng-click="open($event,'end')"
+                e-datepicker-popup="yyyy-MM-dd"
+                e-required
+                >{$:: cycle.end | date : 'yyyy-MM-dd' $}</span
+              >
+              <span ng-show="!rowform.$visible">{$:: format_date(cycle.end) $}</span>
+            </td>
+            <td style="text-align: right; white-space: nowrap">
+              <form editable-form name="rowform" onbeforesave="saveCycle($data, cycle.id)" ng-show="rowform.$visible" class="form-buttons form-inline" shown="inserted == cycle">
+                <button type="submit" ng-disabled="rowform.$waiting" class="btn btn-primary btn-rowform" translate>Save</button>
+                <button type="button" ng-disabled="rowform.$waiting" ng-click="rowform.$cancel()" class="btn btn-default btn-rowform" translate>Cancel</button>
+              </form>
+              <div class="buttons" ng-show="!rowform.$visible">
+                <button class="btn btn-default btn-rowform" ng-click="rowform.$show()" translate>Edit</button>
+                <button class="btn btn-danger" ng-click="showDeleteCycleModal(cycle.id)" translate>Delete</button>
+              </div>
+            </td>
+          </tr>
+        </table>
+      </div>
     </div>
+  </div>
 </div>

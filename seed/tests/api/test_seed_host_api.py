@@ -1,10 +1,12 @@
 ﻿# !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
-:author Claudine Custodio / Baptiste Ravache
-"""
-"""
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
+
+:author Claudine Custodio
+:author Baptiste Ravache
+
 API Testing for remote SEED installations.
 
 Instructions:
@@ -26,16 +28,14 @@ The script reproduce the different steps that a SEED user would do to upload a b
 map each files, match them, create a project and a label and export a list of buildings.
 
 List of arguments:
-The script requires a host name (i.e., output file name), the main URL tested (e.g., https://seed.lbl.gov),
+The script requires a host name (i.e., output file name), the main URL tested (e.g., https://devserver.seed-platform.org),
 the SEED username and the corresponding API key.
 Those information can be listed as follow in the .ini file contained with the script or entered at the beginning of the script.
 
 Outputs:
 The script will create a .txt file that contains the log of the test, i.e., the success/failure of each apps test and the results of
 some apps.
-
 """
-
 import base64
 import datetime as dt
 import json

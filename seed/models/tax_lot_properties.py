@@ -1,8 +1,8 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
-:author
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
 from __future__ import annotations, unicode_literals
 
@@ -14,11 +14,16 @@ from typing import TYPE_CHECKING, Optional, Sequence, Union
 from django.apps import apps
 from django.contrib.gis.db.models import GeometryField
 from django.contrib.gis.geos import GEOSGeometry
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import Count
+from django.db.models.signals import pre_save
+from django.dispatch import receiver
 from django.utils.timezone import make_naive
+from quantityfield.units import ureg
 
 from seed.models.columns import Column
+from seed.serializers.pint import DEFAULT_UNITS
 from seed.utils.geocode import bounding_box_wkt, long_lat_wkt
 from seed.utils.ubid import centroid_wkt
 
@@ -52,23 +57,39 @@ class TaxLotProperty(models.Model):
         ]
 
     @classmethod
-    def extra_data_to_dict_with_mapping(cls, instance, mappings, fields=None):
+    def extra_data_to_dict_with_mapping(cls, instance, mappings, fields=None, units={}):
         """
         Convert the extra data to a dictionary with a name mapping for the keys
 
         :param instance: dict, the extra data dictionary
         :param mappings: dict, mapping names { "from_name": "to_name", ...}
         :param fields: list, extra data fields to include. Use the original column names (the ones in the database)
+        :param units: dict, extra data units
+
         :return: dict
         """
         data = {}
 
+        def check_and_convert_numeric(value):
+            if isinstance(value, (int, float)) and not isinstance(value, bool):
+                return True, value
+            if isinstance(value, str):
+                try:
+                    return True, float(value)
+                except ValueError:
+                    pass
+            return False, value
+
         if fields:
             for field in fields:
+                value = instance.get(field, None)
+                is_numeric, value = check_and_convert_numeric(value)
+                if is_numeric and units.get(field):
+                    value = value * ureg(units[field])
                 if field in mappings:
-                    data[mappings[field]] = instance.get(field, None)
+                    data[mappings[field]] = value
                 else:
-                    data[field] = instance.get(field, None)
+                    data[field] = value
 
         return data
 
@@ -122,6 +143,7 @@ class TaxLotProperty(models.Model):
         show_columns: Optional[list[int]],
         columns_from_database: list[dict],
         include_related: bool = True,
+        goal_id: int = False,
     ) -> list[dict]:
         """
         This method takes a list of TaxLotViews or PropertyViews and returns the data along
@@ -203,9 +225,17 @@ class TaxLotProperty(models.Model):
         else:
             filtered_fields = set([col['column_name'] for col in obj_columns if not col['is_extra_data']
                                    and col['id'] in show_columns])
-            filtered_extra_data_fields = set([col['column_name'] for col in obj_columns if col['is_extra_data']
-                                              and col['id'] in show_columns])
-            filtered_derived_data_fields = set([col['column_name'] for col in obj_columns if col['derived_column'] is not None and col['id'] in show_columns])
+            extra_data_units = {}
+            filtered_extra_data_fields = set()
+            for col in obj_columns:
+                if col['is_extra_data'] and col['id'] in show_columns:
+                    filtered_extra_data_fields.add(col['column_name'])
+                    extra_data_units[col['column_name']] = DEFAULT_UNITS.get(col['data_type'])
+
+            filtered_derived_data_fields = set([
+                col['column_name'] for col in obj_columns
+                if col['derived_column'] is not None and col['id'] in show_columns
+            ])
 
         # get the related data
         join_map = {}
@@ -229,7 +259,8 @@ class TaxLotProperty(models.Model):
                     TaxLotProperty.extra_data_to_dict_with_mapping(
                         obj.state.extra_data,
                         obj_column_name_mapping,
-                        fields=filtered_extra_data_fields
+                        fields=filtered_extra_data_fields,
+                        units=extra_data_units
                     ).items()
                 )
                 obj_dict.update([(k, v) for k, v in obj.state.derived_data.items() if k in filtered_derived_data_fields])
@@ -243,9 +274,11 @@ class TaxLotProperty(models.Model):
 
             obj_dict['merged_indicator'] = obj.state_id in merged_state_ids
 
-            # This is only applicable to Properties since Tax Lots don't have meters
             if this_cls == 'Property':
+                obj_dict.update(obj.property.access_level_instance.get_path())
                 obj_dict['meters_exist_indicator'] = len(obj.property.meters.all()) > 0
+            else:
+                obj_dict.update(obj.taxlot.access_level_instance.get_path())
 
             # bring in GIS data
             obj_dict[lookups['bounding_box']] = bounding_box_wkt(obj.state)
@@ -265,6 +298,12 @@ class TaxLotProperty(models.Model):
             # remove the measures from this view for now
             if obj_dict.get('measures'):
                 del obj_dict['measures']
+
+            # add goal note data
+            if goal_id:
+                goal_note = obj.property.goalnote_set.filter(goal=goal_id).first()
+                obj_dict['goal_note'] = goal_note.serialize() if goal_note else None
+                obj_dict['historical_note'] = obj.property.historical_note.serialize()
 
             results.append(obj_dict)
 
@@ -299,6 +338,10 @@ class TaxLotProperty(models.Model):
                                    and col['id'] in show_columns])
             filtered_extra_data_fields = set([col['column_name'] for col in related_columns if col['is_extra_data']
                                               and col['id'] in show_columns])
+            filtered_derived_data_fields = set([
+                col['column_name'] for col in related_columns
+                if col['derived_column'] is not None and col['id'] in show_columns
+            ])
 
         for related_view in related_views:
             related_dict = TaxLotProperty.model_to_dict_with_mapping(
@@ -339,6 +382,7 @@ class TaxLotProperty(models.Model):
                         fields=filtered_extra_data_fields
                     ).items()
                 )
+            related_dict.update([(k, v) for k, v in related_view.state.derived_data.items() if k in filtered_derived_data_fields])
             related_map[related_view.pk] = related_dict
 
             # Replace taxlot_view id with taxlot id
@@ -410,3 +454,12 @@ class TaxLotProperty(models.Model):
                 join_map[getattr(join, lookups['obj_view_id'])] = [join_dict]
 
         return join_map
+
+
+@receiver(pre_save, sender=TaxLotProperty)
+def presave_organization(sender, instance, **kwargs):
+    p_ali = instance.property_view.property.access_level_instance.pk
+    t_ali = instance.taxlot_view.taxlot.access_level_instance.pk
+
+    if p_ali != t_ali:
+        raise ValidationError("taxlot and property must have same access level instance.")

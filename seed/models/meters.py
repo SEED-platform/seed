@@ -1,9 +1,10 @@
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
-
 from django.db import connection, models
+from psycopg2.extras import execute_values
 
 from seed.models import Property, Scenario
 
@@ -13,12 +14,14 @@ class Meter(models.Model):
     COAL_BITUMINOUS = 2
     COKE = 3
     DIESEL = 4
+    DISTRICT_CHILLED_WATER = 25  # renumber this some day?
     DISTRICT_CHILLED_WATER_ABSORPTION = 5
     DISTRICT_CHILLED_WATER_ELECTRIC = 6
     DISTRICT_CHILLED_WATER_ENGINE = 7
     DISTRICT_CHILLED_WATER_OTHER = 8
     DISTRICT_HOT_WATER = 9
     DISTRICT_STEAM = 10
+    ELECTRICITY = 26  # renumber this some day?
     ELECTRICITY_GRID = 11
     ELECTRICITY_SOLAR = 12
     ELECTRICITY_WIND = 13
@@ -33,6 +36,7 @@ class Meter(models.Model):
     WOOD = 22
     COST = 23
     ELECTRICITY_UNKNOWN = 24
+    CUSTOM_METER = 99
 
     # Taken from EnergyStar Portfolio Manager
     ENERGY_TYPES = (
@@ -40,12 +44,14 @@ class Meter(models.Model):
         (COAL_BITUMINOUS, 'Coal (bituminous)'),
         (COKE, 'Coke'),
         (DIESEL, 'Diesel'),
+        (DISTRICT_CHILLED_WATER, 'District Chilled Water'),
         (DISTRICT_CHILLED_WATER_ABSORPTION, 'District Chilled Water - Absorption'),
         (DISTRICT_CHILLED_WATER_ELECTRIC, 'District Chilled Water - Electric'),
         (DISTRICT_CHILLED_WATER_ENGINE, 'District Chilled Water - Engine'),
         (DISTRICT_CHILLED_WATER_OTHER, 'District Chilled Water - Other'),
         (DISTRICT_HOT_WATER, 'District Hot Water'),
         (DISTRICT_STEAM, 'District Steam'),
+        (ELECTRICITY, 'Electric'),
         (ELECTRICITY_GRID, 'Electric - Grid'),
         (ELECTRICITY_SOLAR, 'Electric - Solar'),
         (ELECTRICITY_WIND, 'Electric - Wind'),
@@ -60,10 +66,13 @@ class Meter(models.Model):
         (WOOD, 'Wood'),
         (COST, 'Cost'),
         (ELECTRICITY_UNKNOWN, 'Electric - Unknown'),
+        (CUSTOM_METER, 'Custom Meter')
     )
     ENERGY_TYPE_BY_METER_TYPE = dict(ENERGY_TYPES)
 
-    # list of header strings and their related energy types
+    # list of header strings and their related energy types. These are used
+    # when parsing ESPM files to map the columns headers to the correct meter
+    # types.
     ENERGY_TYPE_BY_HEADER_STRING = {
 
         # these mappings are assumed based on ESPM values [old format]
@@ -95,30 +104,6 @@ class Meter(models.Model):
         'Fuel Oil #2 Use': ENERGY_TYPE_BY_METER_TYPE[FUEL_OIL_NO_2],
         'Diesel #2 Use': ENERGY_TYPE_BY_METER_TYPE[DIESEL],
 
-        # these mappings are assumed based on ESPM values [new format as of 12-16-2022]
-        'Coal Use (Anthracite) - Monthly': ENERGY_TYPE_BY_METER_TYPE[COAL_ANTHRACITE],
-        'Coal Use (Bituminous) - Monthly': ENERGY_TYPE_BY_METER_TYPE[COAL_BITUMINOUS],
-        'Coke - Monthly': ENERGY_TYPE_BY_METER_TYPE[COKE],
-        'Diesel - Monthly': ENERGY_TYPE_BY_METER_TYPE[DIESEL],
-        'District Chilled Water Use (Absorption) - Monthly': ENERGY_TYPE_BY_METER_TYPE[DISTRICT_CHILLED_WATER_ABSORPTION],
-        'District Chilled Water Use (Electric) - Monthly': ENERGY_TYPE_BY_METER_TYPE[DISTRICT_CHILLED_WATER_ELECTRIC],
-        'District Chilled Water Use (Engine) - Monthly': ENERGY_TYPE_BY_METER_TYPE[DISTRICT_CHILLED_WATER_ENGINE],
-        'District Chilled Water Use (Other) - Monthly': ENERGY_TYPE_BY_METER_TYPE[DISTRICT_CHILLED_WATER_OTHER],
-        'District Hot Water Use - Monthly': ENERGY_TYPE_BY_METER_TYPE[DISTRICT_HOT_WATER],
-        'District Steam Use - Monthly': ENERGY_TYPE_BY_METER_TYPE[DISTRICT_STEAM],
-        'Electricity Use (Grid) - Monthly': ENERGY_TYPE_BY_METER_TYPE[ELECTRICITY_GRID],
-        'Electricity Use (Solar) - Monthly': ENERGY_TYPE_BY_METER_TYPE[ELECTRICITY_SOLAR],
-        'Electricity Use (Wind) - Monthly': ENERGY_TYPE_BY_METER_TYPE[ELECTRICITY_WIND],
-        'Fuel Oil Use (No. 1) - Monthly': ENERGY_TYPE_BY_METER_TYPE[FUEL_OIL_NO_1],
-        'Fuel Oil Use (No. 2) - Monthly': ENERGY_TYPE_BY_METER_TYPE[FUEL_OIL_NO_2],
-        'Fuel Oil Use (No. 4) - Monthly': ENERGY_TYPE_BY_METER_TYPE[FUEL_OIL_NO_4],
-        'Fuel Oil Use (No. 5 and No. 6) - Monthly': ENERGY_TYPE_BY_METER_TYPE[FUEL_OIL_NO_5_AND_NO_6],
-        'Kerosene Use - Monthly': ENERGY_TYPE_BY_METER_TYPE[KEROSENE],
-        'Natural Gas Use - Monthly': ENERGY_TYPE_BY_METER_TYPE[NATURAL_GAS],
-        'Other Use - Monthly': ENERGY_TYPE_BY_METER_TYPE[OTHER],
-        'Propane Use - Monthly': ENERGY_TYPE_BY_METER_TYPE[PROPANE],
-        'Wood Use - Monthly': ENERGY_TYPE_BY_METER_TYPE[WOOD],
-        'Electricity Use (Unknown) - Monthly': ENERGY_TYPE_BY_METER_TYPE[ELECTRICITY_UNKNOWN],
     }
 
     type_lookup = dict((reversed(type) for type in ENERGY_TYPES))  # type: ignore
@@ -137,6 +122,8 @@ class Meter(models.Model):
         (MANUAL_ENTRY, 'Manual Entry'),
     )
 
+    # The alias can be thought of as the "name" of the meter. Not
+    # sure why we don't have a name field.
     alias = models.CharField(max_length=255, null=True, blank=True)
     is_virtual = models.BooleanField(default=False)
 
@@ -168,22 +155,21 @@ class Meter(models.Model):
         bulk_create is used.
         """
         if overlaps_possible:
-            reading_strings = [
-                f"({self.id}, '{reading.start_time}', '{reading.end_time}', {reading.reading}, '{reading.source_unit}', {reading.conversion_factor})"
-                for reading
-                in source_meter.meter_readings.all()
-            ]
-
             sql = (
-                "INSERT INTO seed_meterreading(meter_id, start_time, end_time, reading, source_unit, conversion_factor)" +
-                " VALUES " + ", ".join(reading_strings) +
-                " ON CONFLICT (meter_id, start_time, end_time)" +
-                " DO UPDATE SET reading = EXCLUDED.reading, source_unit = EXCLUDED.source_unit, conversion_factor = EXCLUDED.conversion_factor" +
-                " RETURNING reading;"
+                'INSERT INTO seed_meterreading(meter_id, start_time, end_time, reading, source_unit, conversion_factor) '
+                'VALUES %s '
+                'ON CONFLICT (meter_id, start_time, end_time) '
+                'DO UPDATE SET reading=excluded.reading, source_unit=excluded.source_unit, conversion_factor=excluded.conversion_factor '
+                'RETURNING reading'
             )
 
             with connection.cursor() as cursor:
-                cursor.execute(sql)
+                execute_values(
+                    cursor,
+                    sql,
+                    source_meter.meter_readings.values(),
+                    template=f"({self.id}, %(start_time)s, %(end_time)s, %(reading)s, %(source_unit)s, %(conversion_factor)s)",
+                )
         else:
             readings = {
                 MeterReading(
@@ -204,11 +190,11 @@ class MeterReading(models.Model):
     """
     A meter reading represents the actual usage entry for a given meter.
 
-    NOTE: SEED stores all meter readings in kBtu.  The raw usage reading is converted
+    NOTE: SEED stores all energy readings in kBtu.  The raw usage reading is converted
     on import to kBtu using the conversion_factor which is determined by the meter type and raw units on import,
     therefore, the reading field of this model will always be in kBtu.
 
-    The original units however when being displayed to the user ie. (Property Detail Meters tab)
+    The original units however when being displayed to the user (e.g., on the Property Detail Meters tab)
     will contain the original units and meter readings.
     """
     meter = models.ForeignKey(

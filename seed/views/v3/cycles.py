@@ -1,11 +1,11 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California,
-through Lawrence Berkeley National Laboratory (subject to receipt of any
-required approvals from the U.S. Department of Energy) and contributors.
-All rights reserved.
-:authors Paul Munday<paul@paulmunday.net> Fable Turas <fable@raintechpdx.com>
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
+
+:author Paul Munday<paul@paulmunday.net>
+:author Fable Turas <fable@raintechpdx.com>
 """
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
@@ -24,13 +24,19 @@ from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
     decorator=swagger_auto_schema_org_query_param)
 @method_decorator(
     name='create',
-    decorator=swagger_auto_schema_org_query_param)
+    decorator=[
+        swagger_auto_schema_org_query_param,
+        has_perm_class('requires_root_member_access'),
+    ])
 @method_decorator(
     name='retrieve',
     decorator=swagger_auto_schema_org_query_param)
 @method_decorator(
     name='update',
-    decorator=swagger_auto_schema_org_query_param)
+    decorator=[
+        swagger_auto_schema_org_query_param,
+        has_perm_class('requires_root_member_access'),
+    ])
 class CycleViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
     """API endpoint for viewing and creating cycles (time periods).
 

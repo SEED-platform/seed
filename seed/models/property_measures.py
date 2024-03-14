@@ -1,8 +1,8 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
-:author
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
 from __future__ import unicode_literals
 
@@ -157,7 +157,9 @@ class PropertyMeasure(models.Model):
             return None
 
         if isinstance(impl_status, int):
-            return impl_status
+            if impl_status in [(t[0]) for t in cls.IMPLEMENTATION_TYPES]:
+                return impl_status
+            return None
 
         value = [y[0] for x, y in enumerate(cls.IMPLEMENTATION_TYPES) if y[1] == impl_status]
         if len(value) == 1:
@@ -171,7 +173,9 @@ class PropertyMeasure(models.Model):
             return None
 
         if isinstance(category, int):
-            return category
+            if category in [(t[0]) for t in cls.CATEGORY_AFFECTED_TYPE]:
+                return category
+            return None
 
         value = [y[0] for x, y in enumerate(cls.CATEGORY_AFFECTED_TYPE) if y[1] == category]
         if len(value) == 1:
@@ -185,7 +189,9 @@ class PropertyMeasure(models.Model):
             return None
 
         if isinstance(app_scale, int):
-            return app_scale
+            if app_scale in [(t[0]) for t in cls.APPLICATION_SCALE_TYPES]:
+                return app_scale
+            return None
 
         value = [y[0] for x, y in enumerate(cls.APPLICATION_SCALE_TYPES) if y[1] == app_scale]
         if len(value) == 1:

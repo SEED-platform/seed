@@ -1,149 +1,131 @@
 <div class="page_header_container" ng-cloak>
-    <div class="page_header">
-        <div class="left page_action_container">
-            <a ui-sref="inventory_list(::{inventory_type: inventory_type})" class="page_action">
-                <i class="fa fa-chevron-left"></i>
-                {$:: (inventory_type === 'taxlots' ? 'Tax Lots' : 'Properties') | translate $}
-            </a>
-        </div>
-        <div class="page_title">
-            <h1>{$:: (inventory_type === 'taxlots' ? 'Tax Lot Detail' : 'Property Detail') | translate $}</h1>
-        </div>
+  <div class="page_header">
+    <div class="left page_action_container">
+      <a ui-sref="inventory_list(::{inventory_type: inventory_type})" class="page_action">
+        <i class="fa-solid fa-chevron-left"></i>
+        {$:: (inventory_type === 'taxlots' ? 'Tax Lots' : 'Properties') | translate $}
+      </a>
     </div>
+    <div class="page_title">
+      <h1>{$:: (inventory_type === 'taxlots' ? 'Tax Lot Detail' : 'Property Detail') | translate $}</h1>
+    </div>
+    <div class="right page_action_container"></div>
+  </div>
 </div>
 <div class="section_nav_container">
-    <div class="section_nav" ng-include="::urls.static_url + 'seed/partials/inventory_detail_nav.html'"></div>
+  <div class="section_nav" ng-include="::urls.static_url + 'seed/partials/inventory_detail_nav.html'"></div>
 </div>
 <div class="section_header_container">
-    <div class="section_header fixed_height_short has_no_padding">
-        <div class="section_action_container left" style="width: 50%;">
-            <span>
-                <h2>
-                    <span ng-if="::inventory_type==='properties'">
-                        <i class="fa fa-building-o"></i><span translate>Property</span> :
-                    </span>
-                    <span ng-if="::inventory_type==='taxlots'">
-                        <i class="fa fa-map-o"></i><span translate>Tax Lot</span> :
-                    </span>
-                    <span ng-bind-html="inventory_name">{$ inventory_display_name(inventory_type==='properties' ? 'property' : 'taxlot') | translate $}</span>
-                </h2>
-            </span>
-        </div>
+  <div class="section_header fixed_height_short has_no_padding">
+    <div class="section_action_container left" style="width: 50%">
+      <span>
+        <h2>
+          <span ng-if="::inventory_type==='properties'"> <i class="fa-regular fa-building"></i><span translate>Property</span> : </span>
+          <span ng-if="::inventory_type==='taxlots'"> <i class="fa-regular fa-map"></i><span translate>Tax Lot</span> : </span>
+          <span ng-bind-html="inventory_name">{$ inventory_display_name(inventory_type==='properties' ? 'property' : 'taxlot') | translate $}</span>
+        </h2>
+      </span>
     </div>
+  </div>
 </div>
-<div class="section_content_container" ng-cloak style="padding-left:15px; padding-right:15px;">
-
-    <div>
-        <div class="btn-group" style="padding-top: 15px; display: flex; gap: 15px;">
-            <button type="button" style="border-radius: 4px;" ng-click="open_data_logger_upload_modal()" class="btn btn-primary" translate>UPLOAD_DATA_LOGGER_BUTTON</button>
-        </div>
+<div class="section_content_container" ng-cloak style="padding-left: 15px; padding-right: 15px">
+  <div>
+    <div ng-show="menu.user.organization.user_role !== 'viewer'" class="btn-group" style="padding-top: 15px; display: flex; gap: 15px">
+      <button type="button" style="border-radius: 4px" ng-click="open_data_logger_upload_modal()" class="btn btn-primary" translate>UPLOAD_DATA_LOGGER_BUTTON</button>
     </div>
+  </div>
 
-    <div id="data-logger-info-container">
-        <h4 translate>DATA_LOGGERS</h4>
-        <div id="grid-container" style="padding-top: 15px">
-            <div ng-show="has_data_loggers">
-                <div ui-grid="dataloggerGridOptions" ui-grid-resize-columns ui-grid-auto-resize></div>
-            </div>
-            <div ng-hide="has_data_loggers">
-                <div class="jumbotron text-center" translate>No Data</div>
-            </div>
-        </div>
+  <div id="data-logger-info-container">
+    <h4 translate>DATA_LOGGERS</h4>
+    <div id="grid-container" style="padding-top: 15px">
+      <div ng-show="has_data_loggers">
+        <div ui-grid="dataloggerGridOptions" ui-grid-resize-columns ui-grid-auto-resize></div>
+      </div>
+      <div ng-hide="has_data_loggers">
+        <div class="jumbotron text-center" translate>No Data</div>
+      </div>
     </div>
+  </div>
 
-    <div id="sensor-info-container">
+  <div id="sensor-info-container">
+    <div class="sensor-header-container">
+      <h4 translate>SENSORS</h4>
+    </div>
+    <div id="grid-container" style="padding-top: 15px">
+      <div ng-show="has_sensors">
+        <div ui-grid="sensorGridOptions" ui-grid-resize-columns ui-grid-exporter ui-grid-auto-resize></div>
+      </div>
+      <div ng-hide="has_sensors">
+        <div class="jumbotron text-center" translate>No Data</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sensor-usage-info-container" style="padding-top: 15px; margin-bottom: 15px">
+    <div class="form-group">
+      <label>{$:: 'Interval' | translate $}:</label>
+      <div style="display: inline-block">
+        <select class="form-control" ng-model="interval.selected" ng-change="refresh_readings()" ng-options="option for option in interval.options" style="margin-left: 10px"></select>
+      </div>
+    </div>
+    <div style="display: flex; align-items: baseline">
+      <div class="form-group" uib-dropdown is-open="data_loggers_options.isopen" auto-close="outsideClick" on-toggle="data_logger_selection_toggled(open)" style="margin-top: 15px; margin-right: 15px">
+        <button type="button" class="btn btn-default" uib-dropdown-toggle>Filter Data Logger <span class="caret"></span></button>
+        <ul class="dropdown-menu" uib-dropdown-menu>
+          <li ng-repeat="data_logger in data_logger_selections">
+            <div>
+              <label class="btn btn-default" style="width: 100%; display: flex; justify-content: space-between; border-radius: 0px">
+                {$:: data_logger.label $}<input type="checkbox" ng-model="data_logger.selected" name="data_logger.label" style="width: 14px; height: 14px; margin-left: 10px" />
+              </label>
+            </div>
+          </li>
+        </ul>
+      </div>
+      <div class="form-group" uib-dropdown is-open="sensor_types_options.isopen" auto-close="outsideClick" on-toggle="sensor_type_selection_toggled(open)" style="margin-top: 15px">
+        <button type="button" class="btn btn-default" uib-dropdown-toggle>Filter Sensor Type <span class="caret"></span></button>
+        <ul class="dropdown-menu" uib-dropdown-menu>
+          <li ng-repeat="sensor_type in sensor_type_selections">
+            <div>
+              <label class="btn btn-default" style="width: 100%; display: flex; justify-content: space-between; border-radius: 0px">
+                {$:: sensor_type.label $}<input type="checkbox" ng-model="sensor_type.selected" name="sensor_type.label" style="width: 14px; height: 14px; margin-left: 10px" />
+              </label>
+            </div>
+          </li>
+        </ul>
+      </div>
+      <div style="margin: 15px">
+        <input ng-click="toggled_show_only_occupied_reading(!showOnlyOccupiedReadings)" type="checkbox" name="showOnlyOccupiedReadingsCheckbox" />
+        <label for="showOnlyOccupiedReadingsCheckbox"> Only Show Readings for Occupied Hours</label><br />
+      </div>
+    </div>
+    <div class="section_content" ng-show="has_sensor_readings">
+      <div style="display: flex; justify-content: space-between; align-items: center">
         <div class="sensor-header-container">
-            <h4 translate>SENSORS</h4>
+          <h4 translate>SENSOR_READINGS</h4>
         </div>
-        <div id="grid-container" style="padding-top: 15px">
-            <div ng-show="has_sensors">
-                <div ui-grid="sensorGridOptions" ui-grid-resize-columns  ui-grid-exporter ui-grid-auto-resize></div>
-            </div>
-            <div ng-hide="has_sensors">
-                <div class="jumbotron text-center" translate>No Data</div>
-            </div>
+
+        <div class="item-count" ng-show="interval.selected === 'Exact'">
+          {$ usage_pagination.start $}-{$ usage_pagination.end $}<span ng-if="usage_pagination.num_pages > 1"> of {$ usage_pagination.total $}</span>
+          <i ng-if="selectedCount > 0">
+            <span>({$ selected_display $}</span><span ng-if="selectedCount < usage_pagination.total"> - <a ng-click="select_all()" translate>Select All</a></span
+            ><span ng-if="selectedCount === usage_pagination.total"> - <a ng-click="select_none()" translate>Select None</a></span
+            ><span>)</span>
+          </i>
+          <button ng-click="refresh_readings(usage_pagination.page - 1)" ng-disabled="!usage_pagination.has_previous" class="btn btn-default btn-sm">
+            <i class="fa-solid fa-chevron-left"></i>
+          </button>
+          <button ng-click="refresh_readings(+usage_pagination.page + 1)" ng-disabled="!usage_pagination.has_next" class="btn btn-default btn-sm">
+            <i class="fa-solid fa-chevron-right"></i>
+          </button>
         </div>
+      </div>
     </div>
 
-    <div class="sensor-usage-info-container" style="padding-top: 15px; margin-bottom: 15px;">
-        <div class="form-group">
-            <label>{$:: 'Interval' | translate $}:</label>
-            <div style="display: inline-block;">
-                <select class="form-control"
-                    ng-model="interval.selected"
-                    ng-change="refresh_readings()"
-                    ng-options="option for option in interval.options"
-                    style="margin-left: 10px;">
-                </select>
-            </div>
-        </div>
-        <div style="display: flex; align-items: baseline;">
-            <div class="form-group" uib-dropdown is-open="data_loggers_options.isopen" auto-close="outsideClick" on-toggle="data_logger_selection_toggled(open)" style="margin-top: 15px; margin-right: 15px;">
-                <button type="button" class="btn btn-default" uib-dropdown-toggle>
-                    Filter Data Logger <span class="caret"></span>
-                </button>
-                <ul class="dropdown-menu" uib-dropdown-menu>
-                    <li ng-repeat="data_logger in data_logger_selections">
-                        <div>
-                            <label class="btn btn-default" style="width: 100%; display: flex; justify-content: space-between; border-radius: 0px;">
-                                {$:: data_logger.label $}<input type="checkbox" ng-model="data_logger.selected" name="data_logger.label" style="width: 14px; height: 14px; margin-left: 10px;">
-                            </label>
-                        </div>
-                    </li>
-                </ul>
-            </div>
-            <div class="form-group" uib-dropdown is-open="sensor_types_options.isopen" auto-close="outsideClick" on-toggle="sensor_type_selection_toggled(open)" style="margin-top: 15px;">
-                <button type="button" class="btn btn-default" uib-dropdown-toggle>
-                    Filter Sensor Type <span class="caret"></span>
-                </button>
-                <ul class="dropdown-menu" uib-dropdown-menu>
-                    <li ng-repeat="sensor_type in sensor_type_selections">
-                        <div>
-                            <label class="btn btn-default" style="width: 100%; display: flex; justify-content: space-between; border-radius: 0px;">
-                                {$:: sensor_type.label $}<input type="checkbox" ng-model="sensor_type.selected" name="sensor_type.label" style="width: 14px; height: 14px; margin-left: 10px;">
-                            </label>
-                        </div>
-                    </li>
-                </ul>
-            </div>
-            <div style="margin: 15px;">
-                <input ng-click="toggled_show_only_occupied_reading(!showOnlyOccupiedReadings)" type="checkbox" name="showOnlyOccupiedReadingsCheckbox">
-                <label for="showOnlyOccupiedReadingsCheckbox"> Only Show Readings for Occupied Hours</label><br>
-            </div>
-        </div>
-        <div class="section_content" ng-show="has_sensor_readings">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <div class="sensor-header-container">
-                    <h4 translate>SENSOR_READINGS</h4>
-                </div>
-
-                <div class="item-count" ng-show="interval.selected === 'Exact'">
-                    {$ usage_pagination.start $}-{$ usage_pagination.end $}<span ng-if="usage_pagination.num_pages > 1"> of {$
-                        usage_pagination.total $}</span>
-                    <i ng-if="selectedCount > 0">
-                        <span>({$ selected_display $}</span><span ng-if="selectedCount < usage_pagination.total"> - <a
-                                ng-click="select_all()" translate>Select All</a></span><span
-                            ng-if="selectedCount === usage_pagination.total"> - <a ng-click="select_none()" translate>Select
-                                None</a></span><span>)</span>
-                    </i>
-                    <button ng-click="refresh_readings(usage_pagination.page - 1)" ng-disabled="!usage_pagination.has_previous"
-                        class="btn btn-default btn-sm">
-                        <i class="fa fa-chevron-left"></i>
-                    </button>
-                    <button ng-click="refresh_readings(+usage_pagination.page + 1)" ng-disabled="!usage_pagination.has_next"
-                        class="btn btn-default btn-sm">
-                        <i class="fa fa-chevron-right"></i>
-                    </button>
-                </div>
-            </div>
-            </div>
-
-            <div id="usage-grid-container">
-                <div ui-grid="usageGridOptions" ui-grid-exporter ui-grid-resize-columns></div>
-            </div>
-        </div>
-        <div ng-hide="has_sensor_readings">
-            <div class="jumbotron text-center" translate>No Data</div>
-        </div>
+    <div id="usage-grid-container">
+      <div ui-grid="usageGridOptions" ui-grid-exporter ui-grid-resize-columns></div>
     </div>
+  </div>
+  <div ng-hide="has_sensor_readings">
+    <div class="jumbotron text-center" translate>No Data</div>
+  </div>
 </div>

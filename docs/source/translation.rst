@@ -3,14 +3,21 @@ Translating SEED
 
 1. Update translations on `lokalise`_.
 
-2. Copy lokalise.cfg.example to lokalise.cfg. Update API token.
+2. Copy lokalise.yml.example to lokalise.yml. Update API token.
+
+3. Install lokalise locally
+
+   .. code:: bash
+
+      brew tap lokalise/cli-2
+      brew install lokalise2
 
 3. Run scripts if you have Lokalise CLI installed. If not, see scripts for manual steps.
 
    .. code:: bash
 
-      script/get_python_translations
-      script/get_angular_translations
+      script/get_python_translations.sh
+      script/get_angular_translations.sh
 
 4. Uncomment the ``useMissingTranslationHandlerLog`` line seed.js to log untranslated strings to the console for review
 
@@ -53,7 +60,7 @@ So, the basic flow on top of any new UI features is now:
    and commit them. There are scripts under ``/scripts`` to make this
    mostly automatic.
 5. Visually check that the containing UI looks OK with the translated
-   string(s). Some languages (eg. French, German) can be wordy relative
+   string(s). Some languages (e.g., French, German) can be wordy relative
    to English and cause UI elements like buttons to expand oddly. Adjust
    the layout or adjust the translation as needed.
 
@@ -76,6 +83,6 @@ Compare:
 
    <h2>{$:: inventory_type == 'taxlots' ?
          translations['INCLUDE_SHARED_TAXLOTS'] :
-         translations['INCLUDE_SHARED
+         translations['INCLUDE_SHARED']
 
 .. _lokalise: https://lokalise.com/project/3537487659ca9b1dce98a7.36378626/?view=multi

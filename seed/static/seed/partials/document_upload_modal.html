@@ -1,46 +1,61 @@
 <div class="modal-header" ng-switch on="step.number">
-    <h4 class="modal-title" ng-switch-when="1" translate>SELECT_DOC_UPLOAD_TITLE</h4>
-    <h4 class="modal-title" ng-switch-when="2" translate>UPLOADING_DOCUMENT_TITLE</h4>
-    <h4 class="modal-title" ng-switch-when="3" translate>UPLOAD_COMPLETE_TITLE</h4>
+  <h4 class="modal-title" ng-switch-when="1" translate>SELECT_DOC_UPLOAD_TITLE</h4>
+  <h4 class="modal-title" ng-switch-when="2" translate>UPLOADING_DOCUMENT_TITLE</h4>
+  <h4 class="modal-title" ng-switch-when="3" translate>UPLOAD_COMPLETE_TITLE</h4>
 </div>
 
 <div class="modal-body" ng-switch on="step.number">
-    <div class="data_upload_steps container-fluid" ng-switch-when="1">
-        <div class="alert alert-danger" ng-show="uploader.invalid_file_extension_alert" style="margin-bottom: 18px;" translate="INVALID_DOC_FILE_EXTENSION_ALERT"></div>
-        <div class="alert alert-danger" ng-show="uploader.invalid_file_contents" style="margin-bottom: 18px;" translate>An error occurred while processing the file. Please ensure that your file meets the required specifications.</div>
+  <div class="data_upload_steps container-fluid" ng-switch-when="1">
+    <div ng-if="!(uploader.invalid_file_contents || uploader.invalid_file_extension_alert)" translate>UPLOAD_DOC_ACCEPTED_FILE_TYPES</div>
+    <div class="alert alert-danger" ng-show="uploader.invalid_file_extension_alert" style="margin-bottom: 18px" translate>INVALID_DOC_FILE_EXTENSION_ALERT</div>
+    <div class="alert alert-danger" ng-show="uploader.invalid_file_contents" style="margin-bottom: 18px" translate>
+      An error occurred while processing the file. Please ensure that your file meets the required specifications.
     </div>
+  </div>
 
-    <div class="data_upload_steps container-fluid" ng-switch-when="2">
-        <div class="progress_bar_container">
-            <div class="progress_bar_copy_top"
-                 translate="UPLOADING_PROGRESS"
-                 translate-values="{ dataset_filename: filename }"></div>
+  <div class="data_upload_steps container-fluid" ng-switch-when="2">
+    <div class="progress_bar_container">
+      <div class="progress_bar_copy_top" translate="UPLOADING_PROGRESS_NO_CYCLE" translate-values="{ dataset_filename: filename }"></div>
 
-            <uib-progressbar class="progress-striped active" value="uploader.progress" type="success"></uib-progressbar>
-            <div class="progress_bar_copy_bottom">{$ uploader.progress | number:0 $}% {$:: 'Complete' | translate $} {$ uploader.status_message ? ': ' + uploader.status_message : '' $}</div>
-        </div>
+      <uib-progressbar class="progress-striped active" value="uploader.progress" type="success"></uib-progressbar>
+      <div class="progress_bar_copy_bottom">{$ uploader.progress | number:0 $}% {$:: 'Complete' | translate $} {$ uploader.status_message ? ': ' + uploader.status_message : '' $}</div>
     </div>
+  </div>
 
+  <div class="data_upload_steps container-fluid" ng-switch-when="3">
+    <div><span translate>Successfully Uploaded</span> <strong>{$ uploader.filename $}</strong></div>
+  </div>
 </div>
 
 <div class="modal-footer container-fluid" ng-switch on="step.number">
-    <div class="row text-center" ng-switch-when="1">
-        <button type="button" class="btn btn-primary col-sm-6 center-block" sd-uploader organization-id="organization_id" sourcetype="UploadFile" sourceprog="" sourcever="" importrecord="view_id" eventfunc="uploaderfunc(message, file, progress)"><span translate>UPLOAD_FILE</span></button>
-    </div>
-    <div ng-switch-when="2">
-        <div class="row text-center">
-            <button type="button" class="btn btn-primary col-sm-6 center-block" ng-click="accept_sensors()" translate>Confirm</button>
-        </div>
-    </div>
-
-    <div ng-switch-when="3">
-        <div class="row text-center">
-            <button type="button" class="btn btn-primary col-sm-6 center-block" ng-click="refresh_page()" translate>COMPLETE_AND_REFRESH</button>
-        </div>
-    </div>
-
-
+  <div class="row text-center" ng-switch-when="1">
+    <button
+      type="button"
+      class="btn btn-primary col-sm-6 center-block"
+      sd-uploader
+      organization-id="organization_id"
+      sourcetype="UploadFile"
+      sourceprog=""
+      sourcever=""
+      importrecord="view_id"
+      eventfunc="uploaderfunc(message, file, progress)"
+    >
+      <span translate>UPLOAD_FILE</span>
+    </button>
+  </div>
+  <div ng-switch-when="2">
     <div class="row text-center">
-        <button type="button" class="btn btn-default col-sm-6 center-block" ng-click="cancel()" translate>Dismiss</button>
+      <button type="button" class="btn btn-primary col-sm-6 center-block" ng-click="accept_sensors()" translate>Confirm</button>
     </div>
+  </div>
+
+  <div ng-switch-when="3">
+    <div class="row text-center">
+      <button type="button" class="btn btn-primary col-sm-6 center-block" ng-click="refresh_page()" translate>COMPLETE_AND_REFRESH</button>
+    </div>
+  </div>
+
+  <div class="row text-center">
+    <button type="button" class="btn btn-default col-sm-6 center-block" ng-click="cancel()" translate>Dismiss</button>
+  </div>
 </div>

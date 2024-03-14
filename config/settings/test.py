@@ -1,13 +1,14 @@
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
-:author
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
 from __future__ import absolute_import
 
 # use importlib module to find the local_untracked file rather than a hard-coded path
-import importlib
+import importlib.util
 import logging
 import os
+from distutils.util import strtobool
 
 from celery.utils import LOG_LEVELS
 
@@ -79,3 +80,18 @@ else:
 # suppress some logging on faker -- only show warnings or greater
 logging.getLogger('faker.factory').setLevel(logging.ERROR)
 logging.disable(logging.WARNING)
+
+# salesforce testing
+if 'SF_INSTANCE' not in vars():
+    # use env vars
+    SF_INSTANCE = os.environ.get('SF_INSTANCE', '')
+    SF_USERNAME = os.environ.get('SF_USERNAME', '')
+    SF_PASSWORD = os.environ.get('SF_PASSWORD', '')
+    SF_DOMAIN = os.environ.get('SF_DOMAIN', '')
+    SF_SECURITY_TOKEN = os.environ.get('SF_SECURITY_TOKEN', '')
+
+# load small EEEJ dataset for testing
+try:
+    EEEJ_LOAD_SMALL_TEST_DATASET = bool(strtobool(os.environ.get('EEEJ_LOAD_SMALL_TEST_DATASET', 'True')))
+except Exception:
+    EEEJ_LOAD_SMALL_TEST_DATASET = True

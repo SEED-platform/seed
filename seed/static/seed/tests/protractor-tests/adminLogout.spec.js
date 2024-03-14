@@ -1,27 +1,27 @@
 /**
- * :copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
- * :author
+ * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+ * See also https://github.com/seed-platform/seed/main/LICENSE.md
  */
-//admin delete test orgs
+// admin delete test orgs
 
-var EC = protractor.ExpectedConditions;
-
+const EC = protractor.ExpectedConditions;
 
 // Admin page last:
-describe('When I go to admin page', function () {
+describe('When I go to admin page', () => {
   // manually
-  it('should reset sync', function () {
+  it('should reset sync', () => {
     browser.ignoreSynchronization = false;
   });
 
-  it('should delete new test org inventory', function () {
+  it('should delete new test org inventory', () => {
     browser.get('/app/#/profile/admin');
-    var myNewOrg = element.all(by.repeater('org in org_user.organizations')).filter(function (rows) {
-      expect(rows.length).not.toBeLessThan(1);
-      return rows.getText().then(function (label) {
-        return label.includes(browser.params.testOrg.parent);
-      });
-    }).first();
+    const myNewOrg = element
+      .all(by.repeater('org in org_user.organizations'))
+      .filter((rows) => {
+        expect(rows.length).not.toBeLessThan(1);
+        return rows.getText().then((label) => label.includes(browser.params.testOrg.parent));
+      })
+      .first();
     expect(myNewOrg.isPresent()).toBe(true);
 
     myNewOrg.$('[ng-click="confirm_inventory_delete(org)"]').click();
@@ -32,14 +32,15 @@ describe('When I go to admin page', function () {
     // expect(myNewOrg.$('[ng-click="confirm_inventory_delete(org)"]').isDisabled()).toBe(true);
   });
 
-  it('should delete new test sub org', function () {
+  it('should delete new test sub org', () => {
     // browser.get("/app/#/profile/admin");
-    var myNewSubOrg = element.all(by.repeater('org in org_user.organizations')).filter(function (rows) {
-      expect(rows.length).not.toBeLessThan(1);
-      return rows.getText().then(function (label) {
-        return label.includes(browser.params.testOrg.childRename);
-      });
-    }).first();
+    const myNewSubOrg = element
+      .all(by.repeater('org in org_user.organizations'))
+      .filter((rows) => {
+        expect(rows.length).not.toBeLessThan(1);
+        return rows.getText().then((label) => label.includes(browser.params.testOrg.childRename));
+      })
+      .first();
     expect(myNewSubOrg.isPresent()).toBe(true);
 
     browser.wait(EC.presenceOf(myNewSubOrg.$('[ng-click="confirm_inventory_delete(org)"]')), 120000);
@@ -55,13 +56,14 @@ describe('When I go to admin page', function () {
     expect(myNewSubOrg.isPresent()).toBe(false);
   }, 30000);
 
-  it('should remove column mappings', function () {
-    var myNewOrg = element.all(by.repeater('org in org_user.organizations')).filter(function (rows) {
-      expect(rows.length).not.toBeLessThan(1);
-      return rows.getText().then(function (label) {
-        return label.includes(browser.params.testOrg.parent);
-      });
-    }).first();
+  it('should remove column mappings', () => {
+    const myNewOrg = element
+      .all(by.repeater('org in org_user.organizations'))
+      .filter((rows) => {
+        expect(rows.length).not.toBeLessThan(1);
+        return rows.getText().then((label) => label.includes(browser.params.testOrg.parent));
+      })
+      .first();
     expect(myNewOrg.isPresent()).toBe(true);
 
     browser.wait(EC.presenceOf(myNewOrg.$('[ng-click="confirm_inventory_delete(org)"]')), 120000);
@@ -70,14 +72,15 @@ describe('When I go to admin page', function () {
     browser.switchTo().alert().accept();
   }, 30000);
 
-  it('should delete new test org', function () {
+  it('should delete new test org', () => {
     // browser.get("/app/#/profile/admin");
-    var myNewOrg = element.all(by.repeater('org in org_user.organizations')).filter(function (rows) {
-      expect(rows.length).not.toBeLessThan(1);
-      return rows.getText().then(function (label) {
-        return label.includes(browser.params.testOrg.parent);
-      });
-    }).first();
+    const myNewOrg = element
+      .all(by.repeater('org in org_user.organizations'))
+      .filter((rows) => {
+        expect(rows.length).not.toBeLessThan(1);
+        return rows.getText().then((label) => label.includes(browser.params.testOrg.parent));
+      })
+      .first();
     expect(myNewOrg.isPresent()).toBe(true);
 
     browser.wait(EC.presenceOf(myNewOrg.$('[ng-click="confirm_inventory_delete(org)"]')), 120000);
@@ -94,11 +97,11 @@ describe('When I go to admin page', function () {
   }, 30000);
 
   // manually
-  it('should reset sync', function () {
+  it('should reset sync', () => {
     browser.ignoreSynchronization = true;
   });
 
-  it('should logout user', function () {
+  it('should logout user', () => {
     $('#sidebar-logout').click();
     browser.wait(EC.presenceOf($('.section_marketing')), 30000);
     expect($('.section_marketing').isPresent()).toBe(true);

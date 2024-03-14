@@ -34,7 +34,7 @@ def forwards(apps, schema_editor):
         }
     ]
 
-    # Go through all the organizatoins
+    # Go through all the organizations
     for org in Organization.objects.all():
         for new_db_field in new_db_fields:
             columns = Column.objects.filter(
@@ -98,7 +98,8 @@ def forwards(apps, schema_editor):
         else:
             raise Exception("  More than one column returned")
 
-    print("objects to delete:")
+    if len(objs_to_delete):
+        print("objects to delete:")
     for obj in objs_to_delete:
         print("  {}  --  {}.{}".format(obj.id, obj.table_name, obj.column_name))
         obj.delete()

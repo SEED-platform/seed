@@ -1,8 +1,8 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
-:author
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
 from rest_framework import serializers
 
@@ -60,7 +60,7 @@ class LabelSerializer(serializers.ModelSerializer):
     def get_is_applied(self, obj):
         filtered_result = []
         if self.inventory:
-            # TODO: This needs to be updated to support labels being moved to Views. This breaks OEP.
+            # TODO: This needs to be updated to support labels being moved to Views.
             filtered_result = self.inventory.prefetch_related('labels').filter(labels__in=[obj]).values_list('id', flat=True)
 
         return filtered_result

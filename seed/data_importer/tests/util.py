@@ -1,10 +1,9 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
-:author
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
-
 import logging
 
 logger = logging.getLogger(__name__)
@@ -250,6 +249,33 @@ FAKE_MAPPINGS = {
             "to_field": 'Double Tester',
         }
     ],
+    'unicode': [
+        {
+            "from_field": 'Custom ID 1',
+            "to_table_name": 'PropertyState',
+            "to_field": 'custom_id_1',
+        }, {
+            "from_field": 'Property Name',
+            "to_table_name": 'PropertyState',
+            "to_field": 'property_name',
+        }, {
+            "from_field": 'Extra Data - String',
+            "to_table_name": 'PropertyState',
+            "to_field": 'Extra Data - String',
+        }, {
+            "from_field": 'Extra Data - Float',
+            "to_table_name": 'PropertyState',
+            "to_field": 'Extra Data - Float',
+        }, {
+            "from_field": 'بيانات اضافية',
+            "to_table_name": 'PropertyState',
+            "to_field": 'بيانات اضافية',
+        }, {
+            "from_field": 'Notes',
+            "to_table_name": 'PropertyState',
+            "to_field": 'Notes',
+        }
+    ],
     'short': {  # Short should no longer be used and probably does not work anymore.
         'property_name': 'Name',
         'address_line_1': 'Address Line 1',
@@ -262,6 +288,7 @@ TAXLOT_FOOTPRINT_MAPPING = {
     "to_table_name": 'TaxLotState',
     "to_field": 'taxlot_footprint',
 }
+
 PROPERTY_FOOTPRINT_MAPPING = {
     "from_field": 'Property Coordinates',
     "to_table_name": 'PropertyState',

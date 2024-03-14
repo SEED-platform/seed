@@ -56,7 +56,9 @@ autodoc_mock_imports = [
 templates_path = ['_templates']
 
 # Location of word list.
-spelling_word_list_filename = 'spelling_wordlist.txt'
+# convert the spelling list to a text file and save
+open('../../.cspell.txt', 'w').write('\n'.join(json.load(open('../../.cspell.json'))['words']))
+spelling_word_list_filename = '../../.cspell.txt'
 
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
@@ -71,8 +73,8 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'SEED Platform'
-copyright = '2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory'
-author = 'The Regents of the University of California, through Lawrence Berkeley National Laboratory'
+copyright = '2017, 2024, Alliance for Sustainable Energy, LLC, and other contributors.'
+author = 'Alliance for Sustainable Energy, LLC, and other contributors.'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -91,7 +93,7 @@ release = data['version']
 #
 # This is also used if you do content translation via gettext catalogs.
 # Usually you set "language" from the command line for these cases.
-language = None
+language = 'en'
 
 # There are two options for replacing |today|: either, you set today to some
 # non-false value, then it is used:
@@ -201,7 +203,6 @@ html_show_sourcelink = False
 # If true, "Created using Sphinx" is shown in the HTML footer. Default is True.
 html_show_sphinx = False
 
-# If true, "(C) Copyright ..." is shown in the HTML footer. Default is True.
 html_show_copyright = True
 
 # If true, an OpenSearch description file will be output, and all pages will

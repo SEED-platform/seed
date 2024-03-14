@@ -1,6 +1,9 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
+
 Test Geocoding of Properties and Tax Lots
 
 On first run, HTTP request/responses are truly sent and received.
@@ -8,7 +11,6 @@ On subsequent runs on the same machine, API request/responses are
 intercepted/mocked by VCR. To execute an actual HTTP request/response
 (and not use mocked data), delete the vcr_cassette files.
 """
-
 import vcr
 from django.conf import settings
 from django.contrib.gis.geos import Point, Polygon

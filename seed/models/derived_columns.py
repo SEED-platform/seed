@@ -1,8 +1,8 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
-:author
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
 from __future__ import annotations
 
@@ -87,8 +87,8 @@ class ExpressionEvaluator:
         """Transforms expression tree into a result by applying operations.
         Should be used with the expression grammar above
         """
-        from operator import add, mod, mul, neg, sub
-        from operator import truediv as div
+        from operator import add, mod, mul, neg, sub  # type: ignore[misc]
+        from operator import truediv as div  # type: ignore[misc]
 
         number = float
         min = min
@@ -206,7 +206,7 @@ class DerivedColumn(models.Model):
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=['organization', 'name'], name='unique_name_for_organization'
+                fields=['organization', 'name', 'inventory_type'], name='unique_name_for_organization'
             )
         ]
 
@@ -227,6 +227,10 @@ class DerivedColumn(models.Model):
         elif self.inventory_type == 1:
             inventory_type = 'TaxLotState'
         if created:
+            # check if the column name already exists for the table_name
+            if Column.objects.filter(organization=self.organization, table_name=inventory_type, column_name=self.name).exists():
+                raise ValidationError(f'Column name {inventory_type}.{self.name} already exists, must be unique')
+
             Column.objects.create(
                 derived_column=self,
                 column_name=self.name,
@@ -234,6 +238,7 @@ class DerivedColumn(models.Model):
                 column_description=self.name,
                 table_name=inventory_type,
                 organization=self.organization,
+                is_extra_data=False,
             )
         return save_response
 
@@ -259,10 +264,10 @@ class DerivedColumn(models.Model):
         logger.error("get_parameter_values")
 
         # check cache for parameter_dicts by org.id by derived_column.id.
-        cached_derived_columns = get_cache_raw("property_derived_columns", {}) # get from cache
-        derived_columns_dicts = cached_derived_columns.get(inventory_state.organization.id, {}) # by org id
-        derived_column_dict = derived_columns_dicts.get(self.id, {}) # by derived column id
-        parameter_dicts = derived_column_dict.get("parameters", None) # the parameters
+        cached_derived_columns = get_cache_raw("property_derived_columns", {})  # get from cache
+        derived_columns_dicts = cached_derived_columns.get(inventory_state.organization.id, {})  # by org id
+        derived_column_dict = derived_columns_dicts.get(self.id, {})  # by derived column id
+        parameter_dicts = derived_column_dict.get("parameters", None)  # the parameters
 
         # if absent, query for parameter_dicts.
         if parameter_dicts is None:
@@ -274,7 +279,6 @@ class DerivedColumn(models.Model):
         else:
             logger.error("found parameter_dicts")
 
-
         logger.error(parameter_dicts)
 
         # populate parameter_values, key are parameter_name, value are state value.
@@ -284,7 +288,7 @@ class DerivedColumn(models.Model):
             source_column_derived_column_id = parameter["source_column_derived_column_id"]
 
             if source_column_derived_column_id is not None:
-                derived_column_dict = derived_columns_dicts.get(source_column_derived_column_id) # by derived column id
+                derived_column_dict = derived_columns_dicts.get(source_column_derived_column_id)  # by derived column id
                 derived_column = DerivedColumn(
                     id=source_column_derived_column_id,
                     name=derived_column_dict["name"],
@@ -319,9 +323,9 @@ class DerivedColumn(models.Model):
         """
         import logging
         logger = logging.getLogger(__name__)
-        logger.error(f"+++++++++++")
+        logger.error("+++++++++++")
         logger.error(f"evaluating derived column {self.id} for state {inventory_state.id}")
-        logger.error(f"+++++++++++")
+        logger.error("+++++++++++")
 
         if not hasattr(self, '_cached_evaluator'):
             self._cached_evaluator = ExpressionEvaluator(self.expression)

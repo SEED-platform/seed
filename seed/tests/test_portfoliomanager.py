@@ -1,21 +1,26 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California,
-through Lawrence Berkeley National Laboratory (subject to receipt of any
-required approvals from the U.S. Department of Energy) and contributors.
-All rights reserved.
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
+
 :author Paul Munday <paul@paulmunday.net>
 """
 import json
 import os
+from os import path
+from pathlib import Path
 from unittest import skip, skipIf
 
 import requests
+import xmltodict
 from django.test import TestCase
 from django.urls import reverse_lazy
+from xlrd import open_workbook
 
+from seed.data_importer.models import ImportRecord
 from seed.landing.models import SEEDUser as User
+from seed.tests.util import AccessLevelBaseTestCase
 from seed.utils.organizations import create_organization
 from seed.views.v3.portfolio_manager import PortfolioManagerImport
 
@@ -86,7 +91,7 @@ class PortfolioManagerTemplateListViewTestsFailure(TestCase):
         # status should be error
         # message should have "missing username"
         self.assertEqual(400, resp.status_code)
-        data = json.loads(resp.content)
+        data = resp.json()
         self.assertIn('status', data)
         self.assertIn('message', data)
         self.assertEqual('error', data['status'])
@@ -102,7 +107,7 @@ class PortfolioManagerTemplateListViewTestsFailure(TestCase):
         # status should be error
         # message should have "missing password"
         self.assertEqual(400, resp.status_code)
-        data = json.loads(resp.content)
+        data = resp.json()
         self.assertIn('status', data)
         self.assertIn('message', data)
         self.assertEqual('error', data['status'])
@@ -119,7 +124,7 @@ class PortfolioManagerTemplateListViewTestsFailure(TestCase):
         # status should be error
         # message should have "missing template"
         self.assertEqual(400, resp.status_code)
-        data = json.loads(resp.content)
+        data = resp.json()
         self.assertIn('status', data)
         self.assertIn('message', data)
         self.assertEqual('error', data['status'])
@@ -208,7 +213,7 @@ class PortfolioManagerReportGenerationViewTestsFailure(TestCase):
         # status should be error
         # message should have "missing username"
         self.assertEqual(400, resp.status_code)
-        data = json.loads(resp.content)
+        data = resp.json()
         self.assertIn('status', data)
         self.assertIn('message', data)
         self.assertEqual('error', data['status'])
@@ -224,7 +229,7 @@ class PortfolioManagerReportGenerationViewTestsFailure(TestCase):
         # status should be error
         # message should have "missing password"
         self.assertEqual(400, resp.status_code)
-        data = json.loads(resp.content)
+        data = resp.json()
         self.assertIn('status', data)
         self.assertIn('message', data)
         self.assertEqual('error', data['status'])
@@ -240,7 +245,7 @@ class PortfolioManagerReportGenerationViewTestsFailure(TestCase):
         # status should be error
         # message should have "missing template"
         self.assertEqual(400, resp.status_code)
-        data = json.loads(resp.content)
+        data = resp.json()
         self.assertIn('status', data)
         self.assertIn('message', data)
         self.assertEqual('error', data['status'])
@@ -265,7 +270,7 @@ class PortfolioManagerReportGenerationViewTestsFailure(TestCase):
         # status should be error
         # message should have "missing template"
         self.assertEqual(400, resp.status_code)
-        data = json.loads(resp.content)
+        data = resp.json()
         self.assertIn('status', data)
         self.assertIn('message', data)
         self.assertEqual('error', data['status'])
@@ -328,7 +333,7 @@ class PortfolioManagerReportGenerationViewTestsSuccess(TestCase):
 
         # then for each property, we expect some keys to come back, but if it has the property id, that should suffice
         for prop in body['properties']:
-            self.assertIn('property_id', prop)
+            self.assertIn('portfolioManagerPropertyId', prop)
 
     @pm_skip_test_check
     def test_report_generation_empty_child_template(self):
@@ -367,6 +372,8 @@ class PortfolioManagerReportGenerationViewTestsSuccess(TestCase):
 
 
 class PortfolioManagerReportSinglePropertyUploadTest(TestCase):
+    """Test case for downloading a report with a single building and saving
+    it to SEED's Dataset upload api."""
 
     def setUp(self):
         user_details = {
@@ -397,7 +404,7 @@ class PortfolioManagerReportSinglePropertyUploadTest(TestCase):
     @pm_skip_test_check
     def test_single_property_template_for_upload(self):
 
-        # create a single property report with template
+        # create a single ESPM property report with template
         template = {
             "children": [],
             "display_name": "SEED_Test - Single Property",
@@ -414,11 +421,11 @@ class PortfolioManagerReportSinglePropertyUploadTest(TestCase):
         )
         self.assertEqual(200, report_response.status_code)
 
-        property_info = json.loads(report_response.content)
+        property_info = report_response.json()
         self.assertEqual(1, len(property_info['properties']))
         self.assertIsInstance(property_info['properties'], list)
 
-        # add report to dataset
+        # add report to SEED's dataset
         response = self.client.post(
             reverse_lazy('api:v3:upload-create-from-pm-import'),
             json.dumps({
@@ -428,3 +435,130 @@ class PortfolioManagerReportSinglePropertyUploadTest(TestCase):
             content_type='application/json',
         )
         self.assertEqual(200, response.status_code)
+
+
+class UploadViewSetPermission(AccessLevelBaseTestCase):
+    def setUp(self):
+        super().setUp()
+        self.root_property = self.property_factory.get_property(access_level_instance=self.root_level_instance)
+        self.child_property = self.property_factory.get_property(access_level_instance=self.child_level_instance)
+
+        self.import_record = ImportRecord.objects.create(
+            owner=self.root_member_user, last_modified_by=self.root_member_user, super_organization=self.org, access_level_instance=self.org.root
+        )
+
+    def test_create(self):
+        filename = path.join(path.dirname(__file__), 'data', 'property_sample_data.json')
+        with open(filename, 'rb') as f:
+
+            url = reverse_lazy('api:v3:upload-list')
+            url += "?organization_id=" + str(self.org.id)
+            url += "&import_record=" + str(self.import_record.id)
+            params = {"file": f}
+
+            self.login_as_child_member()
+            response = self.client.post(url, data=params)
+            assert response.status_code == 404
+
+            self.login_as_root_member()
+            response = self.client.post(url, data=params)
+            assert response.status_code == 200
+
+    def test_create_from_pm_import(self):
+        url = reverse_lazy('api:v3:upload-create-from-pm-import')
+        params = json.dumps({
+            'properties': [],
+            'import_record_id': self.import_record.pk,
+            'organization_id': self.org.pk
+        })
+
+        self.login_as_child_member()
+        response = self.client.post(url, params, content_type='application/json')
+        assert response.status_code == 404
+
+        self.login_as_root_member()
+        response = self.client.post(url, params, content_type='application/json')
+        assert response.status_code == 200
+
+
+class PortfolioManagerSingleReportXSLX(TestCase):
+    """Test downloading a single ESPM report in XSLX format."""
+
+    def setUp(self):
+        user_details = {
+            'username': 'test_user@demo.com',
+            'password': 'test_pass',
+        }
+        self.user = User.objects.create_superuser(
+            email='test_user@demo.com', **user_details
+        )
+        self.org, _, _ = create_organization(self.user)
+        self.client.login(**user_details)
+
+        self.pm_un = os.environ.get(PM_UN, False)
+        self.pm_pw = os.environ.get(PM_PW, False)
+        if not self.pm_un or not self.pm_pw:
+            self.fail('Somehow PM test was initiated without %s or %s in the environment' % (PM_UN, PM_PW))
+
+        self.output_dir = Path(__file__).parent.absolute() / 'output'
+        if not self.output_dir.exists():
+            os.mkdir(self.output_dir)
+
+    @pm_skip_test_check
+    def test_single_report_download(self):
+        # PM ID 22178850 is a more complete test case with meter data
+        pm_id = 22178850
+
+        # remove the file if it exists
+        new_file = self.output_dir / f"single_property_{pm_id}.xlsx"
+        if new_file.exists():
+            new_file.unlink()
+        self.assertFalse(new_file.exists())
+
+        pm = PortfolioManagerImport(self.pm_un, self.pm_pw)
+
+        content = pm.return_single_property_report(pm_id)
+        self.assertIsNotNone(content)
+        with open(new_file, 'wb') as file:
+            file.write(content)
+
+        self.assertTrue(new_file.exists())
+
+        # TODO: load the xlsx file and ensure that it has the right tabs
+        workbook = open_workbook(new_file)
+        self.assertIn('Property', workbook.sheet_names())
+        self.assertIn('Meters', workbook.sheet_names())
+        self.assertIn('Meter Entries', workbook.sheet_names())
+
+        # verify that the Property worksheet has the PM id in it
+        sheet = workbook.sheet_by_name('Property')
+        self.assertTrue(str(pm_id) in str(sheet._cell_values))
+
+    @pm_skip_test_check
+    def test_single_report_view(self):
+        pm_id = 22178850
+        response = self.client.post(
+            reverse_lazy('api:v3:portfolio_manager-download', args=[pm_id]),
+            json.dumps({"username": self.pm_un, "password": self.pm_pw}),
+            content_type='application/json',
+        )
+        self.assertEqual(200, response.status_code)
+
+
+class PortfolioManagerReportParsingTest(TestCase):
+    """Test the parsing of the resulting PM XML file. This is only for the
+    version 2 parsing"""
+
+    def test_parse_pm_report(self):
+        pm = PortfolioManagerImport('not_a_real_password', 'not_a_real_password')
+        xml_path = Path(__file__).parent.absolute() / 'data' / 'portfolio-manager-report.xml'
+        with open(xml_path, 'r') as file:
+            content_object = xmltodict.parse(file.read(), dict_constructor=dict)
+
+            success, properties = pm._parse_properties_v2(content_object)
+
+            self.assertTrue(success)
+            self.assertEqual(len(properties), 9)
+            self.assertEqual(properties[0]['portfolioManagerPropertyId'], '22178843')
+            self.assertIsNone(properties[0]['parentPropertyId'])
+            self.assertEqual(properties[0]['propertyFloorAreaBuildingsAndParking'], '89250.0')

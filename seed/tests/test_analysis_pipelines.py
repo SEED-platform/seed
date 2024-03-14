@@ -1,8 +1,8 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
-:author
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
 import json
 import logging
@@ -27,6 +27,11 @@ from seed.analysis_pipelines.bsyncr import (
     BsyncrPipeline,
     _build_bsyncr_input,
     _parse_analysis_property_view_id
+)
+from seed.analysis_pipelines.eeej import (
+    _get_data_for_census_tract_fetch,
+    _get_eeej_indicators,
+    _get_location
 )
 from seed.analysis_pipelines.eui import (
     ERROR_INVALID_GROSS_FLOOR_AREA,
@@ -142,7 +147,7 @@ class TestAnalysisPipeline(TestCase):
 
         # the status should not have changed
         self.analysis.refresh_from_db()
-        self.assertTrue(Analysis.RUNNING, self.analysis.status)
+        self.assertEqual(Analysis.RUNNING, self.analysis.status)
 
     def test_prepare_analysis_is_successful_when_analysis_status_is_valid(self):
         # Setup
@@ -739,7 +744,7 @@ class TestBsyncrPipeline(TestCase):
             analysis=self.analysis_b,
             analysis_property_view=None,
         )
-        self.assertTrue('No files were able to be prepared for the analysis', analysis_message.user_message)
+        self.assertEqual('No files were able to be prepared for the analysis', analysis_message.user_message)
 
     def test_start_analysis_is_successful_when_inputs_are_valid(self):
         # Setup
@@ -959,6 +964,7 @@ class TestBETTERPipeline(TestCase):
 
 class TestEuiPipeline(TestCase):
     def setUp(self):
+        self.timezone_object = pytztimezone(TIME_ZONE)
         user_details = {
             'username': 'test_user@demo.com',
             'password': 'test_pass',
@@ -968,7 +974,7 @@ class TestEuiPipeline(TestCase):
         }
         self.user = User.objects.create_user(**user_details)
         self.org, _, _ = create_organization(self.user)
-        self.cycle = FakeCycleFactory(organization=self.org, user=self.user).get_cycle()
+        self.cycle = FakeCycleFactory(organization=self.org, user=self.user).get_cycle(start=datetime(2020, 1, 1, tzinfo=self.timezone_object))
         self.test_property = FakePropertyFactory(organization=self.org).get_property()
         self.property_state = FakePropertyStateFactory(organization=self.org).get_property_state(gross_floor_area=ureg.Quantity(float(10000), "foot ** 2"))
         self.property_view = FakePropertyViewFactory(organization=self.org, user=self.user).get_property_view(prprty=self.test_property, cycle=self.cycle, state=self.property_state)
@@ -984,12 +990,11 @@ class TestEuiPipeline(TestCase):
             source_id="Source ID",
             type=Meter.NATURAL_GAS
         )
-        self.timezone_object = pytztimezone(TIME_ZONE)
 
     def test_invalid_property_state(self):
         self.property_state.gross_floor_area = None
         self.property_state.save()
-        meter_readings_by_property_view, errors_by_property_view_id = _get_valid_meters([self.property_view.id])
+        meter_readings_by_property_view, errors_by_property_view_id = _get_valid_meters([self.property_view.id], {"select_meters": "all"})
         self.assertDictEqual(meter_readings_by_property_view, {})
         self.assertDictEqual(errors_by_property_view_id, {
             self.property_view.id: [EUI_ANALYSIS_MESSAGES[ERROR_INVALID_GROSS_FLOOR_AREA]]
@@ -1001,22 +1006,23 @@ class TestEuiPipeline(TestCase):
         MeterReading.objects.filter(meter=self.invalid_meter).delete()
         MeterReading.objects.create(
             meter=self.invalid_meter,
-            start_time=make_aware(datetime(2021, 1, 1, 0, 0, 0), timezone=self.timezone_object),
-            end_time=make_aware(datetime(2021, 1, 28, 0, 0, 0), timezone=self.timezone_object),
+            start_time=make_aware(datetime(2020, 1, 1, 0, 0, 0), timezone=self.timezone_object),
+            end_time=make_aware(datetime(2020, 1, 28, 0, 0, 0), timezone=self.timezone_object),
             reading=12345,
             source_unit='kWh',
             conversion_factor=1.00
         )
-        meter_readings_by_property_view, errors_by_property_view_id = _get_valid_meters([self.property_view.id])
+        meter_readings_by_property_view, errors_by_property_view_id = _get_valid_meters([self.property_view.id], {"select_meters": "all"})
         self.assertDictEqual(meter_readings_by_property_view, {})
         self.assertDictEqual(errors_by_property_view_id, {
             self.property_view.id: [EUI_ANALYSIS_MESSAGES[ERROR_INVALID_METER_READINGS]]
         })
 
-    def test_valid_meters(self):
+    def test_valid_meters_use_most_recent_year(self):
         MeterReading.objects.filter(meter=self.meter).delete()
+        meter_readings = []
         for j in range(1, 13):
-            MeterReading.objects.create(
+            meter_reading = MeterReading.objects.create(
                 meter=self.meter,
                 start_time=make_aware(datetime(2020, j, 1, 0, 0, 0), timezone=self.timezone_object),
                 end_time=make_aware(datetime(2020, j, 28, 0, 0, 0), timezone=self.timezone_object),
@@ -1024,9 +1030,91 @@ class TestEuiPipeline(TestCase):
                 source_unit='kWh',
                 conversion_factor=1.00
             )
-        meter_readings_by_property_view, errors_by_property_view_id = _get_valid_meters([self.property_view.id])
+            meter_readings.append(SimpleMeterReading(meter_reading.start_time, meter_reading.end_time, meter_reading.reading))
+
+        # this meter should not be included in the results as its not in the year
+        MeterReading.objects.create(
+            meter=self.meter,
+            start_time=make_aware(datetime(2019, 1, 1, 0, 0, 0), timezone=self.timezone_object),
+            end_time=make_aware(datetime(2019, 1, 28, 0, 0, 0), timezone=self.timezone_object),
+            reading=12345,
+            source_unit='kWh',
+            conversion_factor=1.00
+        )
+
+        self.maxDiff = None
+        meter_readings_by_property_view, errors_by_property_view_id = _get_valid_meters([self.property_view.id], {"select_meters": "all"})
         self.assertDictEqual(errors_by_property_view_id, {})
-        self.assertNotEqual(meter_readings_by_property_view, {})
+        self.assertDictEqual(meter_readings_by_property_view, {self.property_view.id: meter_readings})
+
+    def test_valid_meters_use_custom_range(self):
+        MeterReading.objects.filter(meter=self.meter).delete()
+        meter_readings = []
+        for j in range(1, 12):
+            meter_reading = MeterReading.objects.create(
+                meter=self.meter,
+                start_time=make_aware(datetime(2020, j, 1, 0, 0, 0), timezone=self.timezone_object),
+                end_time=make_aware(datetime(2020, j, 28, 0, 0, 0), timezone=self.timezone_object),
+                reading=12345,
+                source_unit='kWh',
+                conversion_factor=1.00
+            )
+            meter_readings.append(SimpleMeterReading(meter_reading.start_time, meter_reading.end_time, meter_reading.reading))
+
+        # this meter should not be included in the results as its not in the range
+        MeterReading.objects.create(
+            meter=self.meter,
+            start_time=make_aware(datetime(2020, 12, 1, 0, 0, 0), timezone=self.timezone_object),
+            end_time=make_aware(datetime(2020, 12, 28, 0, 0, 0), timezone=self.timezone_object),
+            reading=12345,
+            source_unit='kWh',
+            conversion_factor=1.00
+        )
+
+        self.maxDiff = None
+        config = {
+            "select_meters": "date_range",
+            "meter": {
+                "start_date": datetime(2020, 1, 1, 0, 0, 0),
+                "end_date": datetime(2020, 11, 30, 0, 0, 0)
+            }
+        }
+        meter_readings_by_property_view, errors_by_property_view_id = _get_valid_meters([self.property_view.id], config)
+        self.assertDictEqual(errors_by_property_view_id, {})
+        self.assertDictEqual(meter_readings_by_property_view, {self.property_view.id: meter_readings})
+
+    def test_valid_meters_use_cycle(self):
+        MeterReading.objects.filter(meter=self.meter).delete()
+        meter_readings = []
+        for j in range(1, 13):
+            meter_reading = MeterReading.objects.create(
+                meter=self.meter,
+                start_time=make_aware(datetime(2020, j, 1, 0, 0, 0), timezone=self.timezone_object),
+                end_time=make_aware(datetime(2020, j, 28, 0, 0, 0), timezone=self.timezone_object),
+                reading=12345,
+                source_unit='kWh',
+                conversion_factor=1.00
+            )
+            meter_readings.append(SimpleMeterReading(meter_reading.start_time, meter_reading.end_time, meter_reading.reading))
+
+        # this meter should not be included in the results as its not in the cycle
+        MeterReading.objects.create(
+            meter=self.meter,
+            start_time=make_aware(datetime(2022, 1, 1, 0, 0, 0), timezone=self.timezone_object),
+            end_time=make_aware(datetime(2022, 1, 28, 0, 0, 0), timezone=self.timezone_object),
+            reading=12345,
+            source_unit='kWh',
+            conversion_factor=1.00
+        )
+
+        self.maxDiff = None
+        config = {
+            "select_meters": "select_cycle",
+            "cycle_id": self.cycle.id,
+        }
+        meter_readings_by_property_view, errors_by_property_view_id = _get_valid_meters([self.property_view.id], config)
+        self.assertDictEqual(errors_by_property_view_id, {})
+        self.assertDictEqual(meter_readings_by_property_view, {self.property_view.id: meter_readings})
 
     def test_calculate_eui(self):
         reading_start_time = datetime(2020, 1, 1)
@@ -1037,3 +1125,64 @@ class TestEuiPipeline(TestCase):
         self.assertEqual(results['eui'], 0.63)
         self.assertEqual(results['reading'], reading_amount)
         self.assertEqual(results['coverage'], 100)
+
+
+class TestEeejPipeline(TestCase):
+    def setUp(self):
+        self.timezone_object = pytztimezone(TIME_ZONE)
+        user_details = {
+            'username': 'test_user@demo.com',
+            'password': 'test_pass',
+            'email': 'test_user@demo.com',
+            'first_name': 'Test',
+            'last_name': 'User',
+        }
+        self.user = User.objects.create_user(**user_details)
+        self.org, _, _ = create_organization(self.user)
+        self.cycle = FakeCycleFactory(organization=self.org, user=self.user).get_cycle(start=datetime(2020, 1, 1, tzinfo=self.timezone_object))
+        self.test_property = FakePropertyFactory(organization=self.org).get_property()
+        self.property_state = FakePropertyStateFactory(organization=self.org).get_property_state(gross_floor_area=ureg.Quantity(float(10000), "foot ** 2"))
+        self.property_view = FakePropertyViewFactory(organization=self.org, user=self.user).get_property_view(prprty=self.test_property, cycle=self.cycle, state=self.property_state)
+
+    def test_get_location(self):
+
+        location, status = _get_location(self.property_view)
+        self.assertEqual(status, 'success')
+        self.assertTrue(location is not None)
+        self.assertEqual(location, '730 Garcia Street, Boring, Oregon, 97080')
+
+    def test_get_data_for_census_tract_fetch(self):
+        pvids = [self.property_view.id]
+        loc_data_by_property_view, errors_by_property_view_id = _get_data_for_census_tract_fetch(pvids, self.org, True)
+        self.assertEqual(errors_by_property_view_id, {})
+        self.assertEqual(loc_data_by_property_view, {self.property_view.id: {'latitude': None, 'longitude': None, 'geocoding_confidence': None, 'tract': None, 'valid_coords': False, 'location': '730 Garcia Street, Boring, Oregon, 97080'}})
+
+    def test_get_eeej_indicators(self):
+        # create one disadvantaged and one not
+        # make sure addresses are real so we can get a real census tract fetched from the service
+        self.test_property_dac = FakePropertyFactory(organization=self.org).get_property()
+        self.property_state_dac = FakePropertyStateFactory(organization=self.org).get_property_state(address_line_1='6715 W Colfax Ave', city='Lakewood', state='CO', postal_code='80214')
+        self.property_view_dac = FakePropertyViewFactory(organization=self.org, user=self.user).get_property_view(prprty=self.test_property_dac, cycle=self.cycle, state=self.property_state_dac)
+
+        self.test_property_not_dac = FakePropertyFactory(organization=self.org).get_property()
+        self.property_state_not_dac = FakePropertyStateFactory(organization=self.org).get_property_state(address_line_1='605 Whittier Drive', city='Beverly Hills', state='CA', postal_code='90210')
+        self.property_view_not_dac = FakePropertyViewFactory(organization=self.org, user=self.user).get_property_view(prprty=self.test_property_not_dac, cycle=self.cycle, state=self.property_state_not_dac)
+
+        apv_ids = [self.property_view_dac.id, self.property_view_not_dac.id]
+        apvs = [self.property_view_dac, self.property_view_not_dac]
+        loc_data_by_property_view, errors_by_property_view_id = _get_data_for_census_tract_fetch(apv_ids, self.org, True)
+        results, errors_by_apv_id = _get_eeej_indicators(apvs, loc_data_by_property_view)
+        self.assertEqual(len(results), 2)
+        # DAC
+        self.assertEqual(results[self.property_view_dac.id]['census_tract'], '08059011402')
+        self.assertEqual(results[self.property_view_dac.id]['dac'], True)
+        self.assertEqual(results[self.property_view_dac.id]['energy_burden_low_income'], False)
+        self.assertEqual(results[self.property_view_dac.id]['energy_burden_percentile'], 12.0)
+        self.assertEqual(results[self.property_view_dac.id]['number_affordable_housing'], 1)
+
+        # non DAC
+        self.assertEqual(results[self.property_view_not_dac.id]['census_tract'], '06037700700')
+        self.assertEqual(results[self.property_view_not_dac.id]['dac'], False)
+        self.assertEqual(results[self.property_view_not_dac.id]['energy_burden_low_income'], False)
+        self.assertEqual(results[self.property_view_not_dac.id]['energy_burden_percentile'], 8.0)
+        self.assertEqual(results[self.property_view_not_dac.id]['number_affordable_housing'], 0)

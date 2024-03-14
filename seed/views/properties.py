@@ -1,13 +1,9 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California,
-through Lawrence Berkeley National Laboratory (subject to receipt of any
-required approvals from the U.S. Department of Energy) and contributors.
-All rights reserved.
-:author
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
-
 import json
 
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
@@ -20,7 +16,7 @@ from rest_framework.viewsets import ViewSet
 from seed.decorators import ajax_request_class
 from seed.filtersets import PropertyStateFilterSet, PropertyViewFilterSet
 from seed.lib.superperms.orgs.decorators import has_perm_class
-from seed.lib.superperms.orgs.models import Organization
+from seed.lib.superperms.orgs.models import AccessLevelInstance, Organization
 from seed.models import (
     AUDIT_USER_EDIT,
     DATA_STATE_MATCHING,
@@ -393,7 +389,8 @@ class PropertyViewSet(ViewSet, ProfileIdMixin):
                 {'status': 'error', 'message': 'Need to pass organization_id as query parameter'},
                 status=status.HTTP_400_BAD_REQUEST)
 
-        response = properties_across_cycles(org_id, profile_id, cycle_ids)
+        root = AccessLevelInstance.objects.get(organization_id=org_id, depth=1)
+        response = properties_across_cycles(org_id, root, profile_id, cycle_ids)
 
         return JsonResponse(response)
 
@@ -491,7 +488,7 @@ class PropertyViewSet(ViewSet, ProfileIdMixin):
 
         merged_state = merge_properties(state_ids, organization_id, 'Manual Match')
 
-        merge_count, link_count, view_id = match_merge_link(merged_state.propertyview_set.first().id, 'PropertyState')
+        merge_count, link_count, view_id = match_merge_link(merged_state.id, 'PropertyState')
 
         result = {
             'status': 'success'
@@ -1146,7 +1143,7 @@ class PropertyViewSet(ViewSet, ProfileIdMixin):
 
                         Note.create_from_edit(request.user.id, property_view, new_property_state_data, previous_data)
 
-                        merge_count, link_count, view_id = match_merge_link(property_view.id, 'PropertyState')
+                        merge_count, link_count, view_id = match_merge_link(property_view.state_id, 'PropertyState')
 
                         result.update({
                             'view_id': view_id,

@@ -1,6 +1,9 @@
 # !/usr/bin/env python
 # encoding: utf-8
-
+"""
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
+"""
 from calendar import monthrange
 from collections import defaultdict
 from datetime import datetime, time, timedelta
@@ -87,7 +90,7 @@ class PropertyMeterReadingsExporter():
         for meter in self.meters:
             field_name, conversion_factor = self._build_column_def(meter, column_defs)
 
-            for meter_reading in meter.meter_readings.all():
+            for meter_reading in meter.meter_readings.all().order_by('start_time', 'end_time'):
                 start_time = meter_reading.start_time.astimezone(tz=self.tz).strftime(time_format)
                 end_time = meter_reading.end_time.astimezone(tz=self.tz).strftime(time_format)
 
@@ -230,8 +233,12 @@ class PropertyMeterReadingsExporter():
             display_unit = "{} Dollars".format(self._org_country)
             conversion_factor = 1.00
         else:
-            display_unit = self.org_meter_display_settings[type_text]
-            conversion_factor = self.factors[type_text][display_unit]
+            if type_text in self.org_meter_display_settings:
+                display_unit = self.org_meter_display_settings[type_text]
+                conversion_factor = self.factors[type_text][display_unit]
+            else:
+                display_unit = self.org_meter_display_settings['Default']
+                conversion_factor = self.factors['Default'][display_unit]
 
         column_defs[field_name] = {
             'field': field_name,

@@ -1,7 +1,5 @@
-$font-family-sans-serif: "PT Sans", "Helvetica Neue", Helvetica, Arial,
-  sans-serif;
-$font-family-sans-serif-narrow: "PT Sans Narrow", "Helvetica Neue", Helvetica,
-  Arial, sans-serif;
+$font-family-sans-serif: 'PT Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+$font-family-sans-serif-narrow: 'PT Sans Narrow', 'Helvetica Neue', Helvetica, Arial, sans-serif;
 $font-family-base: $font-family-sans-serif;
 $font-family-base-narrow: $font-family-sans-serif-narrow;
 $font-size-base: 13px;
@@ -83,7 +81,7 @@ body {
 
 body {
   align-items: center;
-  background: #808080 url("../images/landing/landing-bg.png") no-repeat;
+  background: #808080 url('../images/landing/landing-bg.png') no-repeat;
   background-size: cover;
   display: flex;
   font-family: $font-family-base;
@@ -186,7 +184,7 @@ body {
       min-height: 430px;
       text-align: center;
       border-left: 1px solid $bdp-landing-md-gray;
-      background: url("../images/landing/bg-paper.png");
+      background: url('../images/landing/bg-paper.png');
       border-top-right-radius: 8px;
       border-bottom-right-radius: 8px;
 
@@ -261,24 +259,20 @@ body {
           }
 
           .chrome {
-            background: url("../images/landing/logo-chrome-64.png") top center
-              no-repeat;
+            background: url('../images/landing/logo-chrome-64.png') top center no-repeat;
             margin-left: 63px;
           }
 
           .firefox {
-            background: url("../images/landing/logo-firefox-64.png") top center
-              no-repeat;
+            background: url('../images/landing/logo-firefox-64.png') top center no-repeat;
           }
 
           .safari {
-            background: url("../images/landing/logo-safari-64.png") top center
-              no-repeat;
+            background: url('../images/landing/logo-safari-64.png') top center no-repeat;
           }
 
           .ie {
-            background: url("../images/landing/logo-ie-64.png") top center
-              no-repeat;
+            background: url('../images/landing/logo-ie-64.png') top center no-repeat;
           }
         }
 
@@ -315,7 +309,7 @@ body {
             padding: 10px;
             margin-top: 8px;
             margin-bottom: 2px;
-            font-family: "PT Sans Narrow", sans-serif;
+            font-family: 'PT Sans Narrow', sans-serif;
             font-size: 16px;
             line-height: 20px;
             color: $bdp-landing-lt-gray;
@@ -330,27 +324,11 @@ body {
           input:focus {
             border-color: rgba(82, 168, 236, 0.8);
             outline: thin dotted 9;
-            @include box-shadow(
-              inset 0 1px 1px rgba(0, 0, 0, 0.075)
-                /* , 0 0 8px rgba(82,168,236,.6) */
-            );
+            @include box-shadow(inset 0 1px 1px rgba(0, 0, 0, 0.075) /* , 0 0 8px rgba(82,168,236,.6) */);
           }
 
           br {
             display: none;
-          }
-
-          .errorlist {
-            text-indent: 0;
-            color: $red;
-            position: relative;
-
-            li {
-              position: absolute;
-              left: 200px;
-              top: 15px;
-              list-style: none;
-            }
           }
 
           select {
@@ -366,7 +344,7 @@ body {
             width: 88%;
           }
 
-          input[type="checkbox"] {
+          input[type='checkbox'] {
             margin-top: 0;
             width: 20px;
           }
@@ -381,7 +359,7 @@ body {
         }
 
         .btn {
-          margin: 30px 4px 0 4px;
+          margin: 10px 4px 0 4px;
           display: inline-block;
           font-size: 16px;
         }
@@ -430,24 +408,14 @@ body {
       margin-top: 30px;
     }
   }
-
-  .login_form table.signup_table {
-    width: 40%;
-  }
 }
 
-.login.page
-  .page_section
-  .section_forms
-  .signup_form
-  table.signup_table
-  .errorlist {
-  margin: 0 0 8px 0;
+.page .errorlist {
+  color: $red;
   padding: 0;
 
   li {
-    left: 0;
-    position: relative;
+    list-style: none;
   }
 }
 
@@ -462,5 +430,30 @@ body {
     background-color: $white;
     padding: 10px;
     border: 1px solid $gray_lighter;
+  }
+}
+
+.terms-link {
+  padding-top: 10px;
+
+  a {
+    margin-left: 5px;
+  }
+}
+
+#terms-and-conditions {
+  background-color: rgba(255, 255, 255, 0.75);
+  border-radius: 8px;
+  display: none;
+  max-height: 250px;
+  margin: 0 auto;
+  max-width: 84.48%;
+  overflow-y: auto;
+  padding: 0 20px;
+  text-align: left;
+
+  h3 {
+    font-size: 20px;
+    font-weight: bold;
   }
 }

@@ -1,7 +1,7 @@
 Migrations
 ==========
 
-Django handles the migration of the database very well; however, there are various changes to SEED that may require some custom (manual) migrations. The migration documenation includes the required changes based on deployment and development for each release.
+Django handles the migration of the database very well; however, there are various changes to SEED that may require some custom (manual) migrations. The migration documentation includes the required changes based on deployment and development for each release.
 
 Version Develop
 ---------------
@@ -15,28 +15,19 @@ Docker then you will not need to do this.
     CELERY_RESULT_BACKEND = CELERY_BROKER_URL
 
 If you are using a password, then in your local_untracked.py configuration, add the password to
-the CACHES configuration option. Your final configuration should look like the following in your
+the CELERY_BROKER_URL. Your final configuration should look like the following in your
 local_untracked.py file
 
 .. code-block:: python
 
+    CELERY_BROKER_URL = 'redis://:password@127.0.0.1:6379/1'
     CACHES = {
         'default': {
-            'BACKEND': 'redis_cache.cache.RedisCache',
-            'LOCATION': "127.0.0.1:6379",
-            'OPTIONS': {
-                'DB': 1,
-                'PASSWORD': 'password',
-            },
-            'TIMEOUT': 300
+            'BACKEND': 'django_redis.cache.RedisCache',
+            'LOCATION': CELERY_BROKER_URL,
         }
     }
 
-    CELERY_BROKER_URL = 'redis://:%s@%s/%s' % (
-        CACHES['default']['OPTIONS']['PASSWORD'],
-        CACHES['default']['LOCATION'],
-        CACHES['default']['OPTIONS']['DB']
-    )
     CELERY_RESULT_BACKEND = CELERY_BROKER_URL
     CELERY_TASK_DEFAULT_QUEUE = 'seed-local'
     CELERY_TASK_QUEUES = (
@@ -47,32 +38,96 @@ local_untracked.py file
         ),
     )
 
+Version 2.22.0
+--------------
+- Run ``./manage.py migrate``.
+- There is a Redis dependency update in this release that requires users and deployments to modify their settings' ``CACHES`` config.
+   #. Update your dependencies with pip install -r requirements/base.txt
+   #. Update the CACHES BACKEND property to django_redis.cache.RedisCache
+   #. Update the CACHES LOCATION property to match the redis-py native URL notation for connection strings, including the redis protocol and database number. e.g. redis://localhost:6379/1
+
+   Since the CELERY_BROKER_URL setting must also be in the same format, it may be helpful to configure that setting first and then reference it in the caches LOCATION parameter.
+- See the `PR for an example migration <https://github.com/SEED-platform/seed/pull/4376#issue-1972716522>`_.
+
+Version 2.21.0
+--------------
+- There are no special migrations needed for this version. Simply run `./manage.py migrate`.
+
+Version 2.20.1
+--------------
+- There are no special migrations needed for this version. Simply run `./manage.py migrate`.
+
+Version 2.20.0
+--------------
+- There are no special migrations needed for this version. Simply run `./manage.py migrate`.
+- There is a single long running migration related to importing census tract disadvantaged community data. This migration should take around 7 minutes to complete.
+
+Version 2.19.0
+--------------
+- Run `./manage.py migrate`.
+- There is a new migration in this release that requires column names to be unique across `organization`, `table_name`, and `is_extra_data`. This migration will fail if there are duplicate column names. If you have duplicate column names, you will need to manually fix them in your database before running the migration. The following steps will help you identify and fix the duplicate column names:
+    - Check the organization age to gauge the impact of the change. If it is a deprecated org, impact of the change will be low. Often this issue arose in older organizations when units were not part of the columns. The old mapping columns were not upserts with the units, so typically the columns impacted are the ones with units.
+    - Query the `seed_column` table for the organization and column name displayed on the screen (e.g., `organization_id = 300 and column_name = 'Source EUI (kBtu/ft2)'`). If there is no `table_name` set, it is likely an import file column name and can easily be cleaned up without causing issues. In such cases, there will be two rows, and you want to keep the one with the `units_pint` column set.
+    - More complex columns may require deleting or updating the `column_id` in the `seed_columnmapping_*` tables. If there is a foreign key constraint with `seed_columnmapping_*`, take note of the ID you want to remove and the ID you want it to be replaced with (preferably keep the one with units_pint).
+    - If the constraint is on `seed_columnmapping_column_raw`:
+        - The field should be an import file column (i.e., no `table_name` item). Query for the old column in `seed_columnmapping_column_raw` (e.g., `column_name = <old_id>`).
+        - Replace the old ID with the new one. If it errors because it already exists, then the row can be deleted.
+        - Return to the `seed_column` table and remove the old ID.
+    - If the constraint is on `seed_columnmapping_column_mapped`:
+        - The mapped column should have a `table_name` in the field. If not, it is likely an older organization.
+        - If there is no `table_name`, remove the row from the `seed_columnmapping_column_mapped` table.
+        - Return to the `seed_column` table and remove the old ID.
+
+Version 2.18.1
+--------------
+- There are no special migrations needed for this version. Simply run `./manage.py migrate`.
+
+Version 2.18.0
+--------------
+- There are no special migrations needed for this version. Simply run `./manage.py migrate`.
+
+Version 2.17.4
+--------------
+- There are no special migrations needed for this version. Simply run `./manage.py migrate`.
+
+Version 2.17.3
+--------------
+- There are no special migrations needed for this version. Simply run `./manage.py migrate`.
+
+Version 2.17.2
+--------------
+- There are no special migrations needed for this version. Simply run `./manage.py migrate`.
+
+Version 2.17.1
+--------------
+- There are no special migrations needed for this version. Simply run `./manage.py migrate`.
+
 Version 2.17.0
------------------------
+--------------
 - There are no special migrations needed for this version. Simply run `./manage.py migrate`.
 
 Version 2.16.0
------------------------
+--------------
 - There are no special migrations needed for this version. Simply run `./manage.py migrate`.
 
 Version 2.15.2
------------------------
+--------------
 - There are no migrations needed for this version.
 
 Version 2.15.1
------------------------
+--------------
 - There are no migrations needed for this version.
 
 Version 2.15.0
------------------------
+--------------
 - There are no special migrations needed for this version. Simply run `./manage.py migrate`.
 
 Version 2.14.0
------------------------
+--------------
 - There are no special migrations needed for this version. Simply run `./manage.py migrate`.
 
 Version 2.13.0
------------------------
+--------------
 - There are no special migrations needed for this version. Simply run `./manage.py migrate`.
 
 Version 2.12.0 - 2.12.4
@@ -170,9 +225,7 @@ Max OSX
 Version 2.5.2
 -------------
 
-- There are no manual migrations that are needed. The `./manage.py migrate` command may take awhile
-to run since the migration requires the recalculation of all the normalized addresses to parse
-bldg correct and to cast the result as a string and not a bytestring.
+- There are no manual migrations that are needed. The `./manage.py migrate` command may take awhile to run since the migration requires the recalculation of all the normalized addresses to parse bldg correct and to cast the result as a string and not a bytestring.
 
 Version 2.5.1
 -------------
@@ -190,7 +243,7 @@ Docker-based Deployment
 
     django.db.utils.OperationalError: could not open extension control file "/usr/share/postgresql/11/extension/postgis.control": No such file or directory
 
-- If you are using a copied version of the docker-compose.yml file (e.g., for OEP support), then you need to change `127.0.0.1:5000/postgres` to `127.0.0.1:5000/postgres-seed`
+- If you are using a copied version of the docker-compose.yml file, then you need to change `127.0.0.1:5000/postgres` to `127.0.0.1:5000/postgres-seed`
 
 Development
 ^^^^^^^^^^^

@@ -20,11 +20,11 @@ jobs:
       matrix:
         test_env: [django, functional, api]
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
+        uses: docker/setup-buildx-action@v3
       - name: Cache Docker layers
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: /tmp/.buildx-cache
           # using `-v3` in key to clear old cache due to errors
@@ -52,25 +52,33 @@ jobs:
           docker exec --env DJANGO_LOG_LEVEL seed_web ./manage.py migrate
           docker exec --env DJANGO_LOG_LEVEL seed_web ./manage.py create_default_user --username=demo@example.com --password=demo123
           docker exec --env DJANGO_LOG_LEVEL seed_web /bin/bash -c 'echo "y" | ./manage.py make_superuser --user demo@example.com'
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
       - name: Install dependencies
         run: |
           npm install
           sudo apt update
           sudo apt install -y xvfb
-          wget --no-verbose -O /tmp/chrome.deb https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
-          sudo apt install -y /tmp/chrome.deb
+          # Available chrome-driver versions: https://chromedriver.storage.googleapis.com/
+          # Available google-chrome versions: https://www.ubuntuupdates.org/package/google_chrome/stable/main/base/google-chrome-stable?id=202706
+          # Lock to 114.0.5735.90
+          wget --no-verbose -O /tmp/chrome.deb https://dl.google.com/linux/chrome/deb/pool/main/g/google-chrome-stable/google-chrome-stable_114.0.5735.90-1_amd64.deb
+          sudo apt install -y --allow-downgrades /tmp/chrome.deb
           google-chrome --version
       - name: Test Django
         if: ${{ matrix.test_env == 'django' }}
         env:
           SEED_PM_UN: ${{ secrets.SEED_PM_UN }}
           SEED_PM_PW: ${{ secrets.SEED_PM_PW }}
+          SF_INSTANCE: ${{ secrets.SF_INSTANCE }}
+          SF_USERNAME: ${{ secrets.SF_USERNAME }}
+          SF_PASSWORD: ${{ secrets.SF_PASSWORD }}
+          SF_DOMAIN: ${{ vars.SF_DOMAIN }}
+          SF_SECURITY_TOKEN: ${{ secrets.SF_SECURITY_TOKEN }}
           COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
           DJANGO_LOG_LEVEL: ERROR
         run: |
           docker exec seed_web touch /seed/config/settings/local_untracked.py
-          docker exec --env SEED_PM_UN --env SEED_PM_PW --env DJANGO_LOG_LEVEL seed_web coverage run manage.py test seed --settings=config.settings.docker_dev
+          docker exec --env SEED_PM_UN --env SEED_PM_PW --env DJANGO_LOG_LEVEL --env SF_INSTANCE --env SF_USERNAME --env SF_PASSWORD --env SF_SECURITY_TOKEN --env SF_DOMAIN seed_web coverage run manage.py test --settings=config.settings.docker_dev
           if [[ ! -z "${COVERALLS_REPO_TOKEN}" ]]; then
             docker exec --env COVERALLS_REPO_TOKEN seed_web coveralls
           else
@@ -83,9 +91,9 @@ jobs:
         run: |
           CHROME_VERSION=$(google-chrome --version | awk '{ print $NF }')
           echo "Getting webdriver for chrome version ${CHROME_VERSION}"
-          ./node_modules/protractor/bin/webdriver-manager update --versions.chrome=${CHROME_VERSION} --gecko=false
+          npx webdriver-manager update --versions.chrome=${CHROME_VERSION} --gecko=false
           Xvfb :99 &
-          ./node_modules/protractor/bin/protractor seed/static/seed/tests/protractor-tests/protractorConfig.js
+          npx protractor seed/static/seed/tests/protractor-tests/protractorConfig.js
       - name: Test API
         if: ${{ matrix.test_env == 'api' }}
         run: |
@@ -100,8 +108,8 @@ jobs:
       matrix:
         tox_env: [docs, precommit, mypy]
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.9"
       - name: Install deps

@@ -1,7 +1,8 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
+
 :author Dan Gunter <dkgunter@lbl.gov>
 """
 import logging
@@ -237,6 +238,9 @@ def merge_state(merged_state, state1, state2, priorities, ignore_merge_protectio
         ignore_merge_protection,
         state2_present_columns
     )
+
+    default_ali = state1.raw_access_level_instance
+    merged_state.raw_access_level_instance = default_ali if default_ali is not None else state2.raw_access_level_instance
 
     # merge measures, scenarios, simulations
     if isinstance(merged_state, PropertyState):

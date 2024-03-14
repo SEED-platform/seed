@@ -1,8 +1,8 @@
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
-
 from django.db import models
 
 from seed.lib.superperms.orgs.models import Organization
@@ -12,13 +12,6 @@ from seed.models.column_list_profiles import (
 )
 from seed.models.models import StatusLabel
 
-AND = 0
-LABEL_LOGIC_TYPE = [
-    (AND, 'and'),
-    (1, 'or'),
-    (2, 'exclude'),
-]
-
 
 class FilterGroup(models.Model):
 
@@ -26,8 +19,9 @@ class FilterGroup(models.Model):
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='filter_groups', null=False)
     inventory_type = models.IntegerField(choices=VIEW_LIST_INVENTORY_TYPE, default=VIEW_LIST_PROPERTY)
     query_dict = models.JSONField(null=False, default=dict)
-    labels = models.ManyToManyField(StatusLabel)
-    label_logic = models.IntegerField(choices=LABEL_LOGIC_TYPE, default=AND)
+    and_labels = models.ManyToManyField(StatusLabel, related_name='and_filter_groups')
+    or_labels = models.ManyToManyField(StatusLabel, related_name='or_filter_groups')
+    exclude_labels = models.ManyToManyField(StatusLabel, related_name='exclude_filter_groups')
 
     class Meta:
         ordering = ['id']

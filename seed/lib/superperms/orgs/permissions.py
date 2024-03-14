@@ -1,15 +1,16 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California,
-through Lawrence Berkeley National Laboratory (subject to receipt of any
-required approvals from the U.S. Department of Energy) and contributors.
-All rights reserved.
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
+
 :authors Paul Munday<paul@paulmunday.net> Fable Turas<fable@raintechpdx.com>
 
 Provides permissions classes for use in DRF views and viewsets to control
 access based on Organization and OrganizationUser.role_level.
 """
+from typing import Union
+
 from django import VERSION as DJANGO_VERSION
 from django.conf import settings
 from rest_framework.exceptions import PermissionDenied
@@ -37,20 +38,27 @@ def is_authenticated(user):
     return user.is_authenticated
 
 
-def get_org_or_id(dictlike):
+def get_org_or_id(dictlike: dict) -> Union[int, None]:
     """Get value of organization or organization_id"""
     # while documentation should encourage the use of one consistent key choice
     # for supplying an organization to query_params, we check all reasonable
     # permutations of organization id.
     org_query_strings = ['organization', 'organization_id', 'org_id', 'org']
+    if isinstance(dictlike, list):
+        return None
+
+    # Check if there are any assigned organization values
     org_id = None
     for org_str in org_query_strings:
-        org_id = dictlike.get(org_str)
-        if org_id:
-            # Type case the organization_id as a integer
-            if '_id' in org_str:
-                org_id = int(org_id)
-            break
+        try:
+            org_id = dictlike.get(org_str)
+            if org_id:
+                # Type case the organization_id as a integer
+                if '_id' in org_str:
+                    org_id = int(org_id)
+                break
+        except (ValueError, TypeError):
+            return -1
     return org_id
 
 

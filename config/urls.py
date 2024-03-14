@@ -1,14 +1,13 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
-:author
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
 from django.conf import settings
-from django.conf.urls import include, re_path
 from django.conf.urls.static import static
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
-from django.urls import path
+from django.urls import include, path, re_path
 from drf_yasg import openapi
 from drf_yasg.views import get_schema_view
 from rest_framework import permissions
@@ -20,13 +19,13 @@ from seed.landing.views import (
     password_reset_confirm,
     password_reset_done
 )
-from seed.views.main import angular_js_tests, version
+from seed.views.main import angular_js_tests, health_check, version
 
 schema_view = get_schema_view(
     openapi.Info(
         title="SEED API",
         default_version='v3',
-        description="Test description",
+        description="SEED Platform API Documentation",
         # terms_of_service="https://www.google.com/policies/terms/",
         # contact=openapi.Contact(email="contact@snippets.local"),
         # license=openapi.License(name="BSD License"),
@@ -34,6 +33,12 @@ schema_view = get_schema_view(
     public=False,
     permission_classes=(permissions.AllowAny,),
 )
+
+
+def trigger_error(request):
+    """Endpoint for testing sentry with a divide by zero"""
+    1 / 0
+
 
 urlpatterns = [
     re_path(r'^accounts/password/reset/done/$', password_reset_done, name='password_reset_done'),
@@ -58,19 +63,19 @@ urlpatterns = [
     re_path(r'^robots\.txt', robots_txt, name='robots_txt'),
 
     # API
+    re_path(r'^api/health_check/$', health_check, name='health_check'),
     re_path(r'^api/swagger/$', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     re_path(r'^api/version/$', version, name='version'),
     re_path(r'^api/', include((api, "seed"), namespace='api')),
-    re_path(r'^oauth/', include(('oauth2_jwt_provider.urls', 'oauth2_jwt_provider'), namespace='oauth2_provider'))
+    re_path(r'^oauth/', include(('oauth2_jwt_provider.urls', 'oauth2_jwt_provider'), namespace='oauth2_provider')),
+
+    # test sentry error
+    path('sentry-debug/', trigger_error)
 ]
 
 handler404 = 'seed.views.main.error404'
+handler410 = 'seed.views.main.error410'
 handler500 = 'seed.views.main.error500'
-
-
-def trigger_error(request):
-    """Endpoint for testing sentry with a divide by zero"""
-    1 / 0
 
 
 if settings.DEBUG:
@@ -86,7 +91,4 @@ if settings.DEBUG:
 
         # admin
         re_path(r'^admin/', admin.site.urls),
-
-        # test sentry error
-        path('sentry-debug/', trigger_error)
     ]

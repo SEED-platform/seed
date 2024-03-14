@@ -1,8 +1,8 @@
 ﻿# !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
-:author
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
 import csv
 import logging
@@ -134,7 +134,7 @@ def check_progress(main_url, header, progress_key):
             headers=header
         )
         print("... {} ...".format(progress_result.json()['progress']))
-    except [urllib3.exceptions.ProtocolError, RemoteDisconnected, requests.exceptions.ConnectionError]:
+    except (urllib3.exceptions.ProtocolError, RemoteDisconnected, requests.exceptions.ConnectionError):
         print("Server is not responding... trying again in a few seconds")
         progress_result = None
     except Exception:

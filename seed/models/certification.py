@@ -1,10 +1,9 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California,
-through Lawrence Berkeley National Laboratory (subject to receipt of any
-required approvals from the U.S. Department of Energy) and contributors.
-All rights reserved.
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
+
 :author Paul Munday <paul@paulmunday.net>
 """
 # pylint:disable=too-few-public-methods
@@ -27,12 +26,12 @@ from seed.models.auditlog import (
 )
 from seed.utils.strings import titlecase
 
-DEFAULT_GREEN_ASSESSEMENT_VALIDITY_DURATION = getattr(
+DEFAULT_GREEN_ASSESSMENT_VALIDITY_DURATION = getattr(
     settings, 'GREEN_ASSESSMENT_DEFAULT_VALIDITY_DURATION', None
 )
-if DEFAULT_GREEN_ASSESSEMENT_VALIDITY_DURATION:
-    DEFAULT_GREEN_ASSESSEMENT_VALIDITY_DURATION = datetime.timedelta(
-        DEFAULT_GREEN_ASSESSEMENT_VALIDITY_DURATION
+if DEFAULT_GREEN_ASSESSMENT_VALIDITY_DURATION:
+    DEFAULT_GREEN_ASSESSMENT_VALIDITY_DURATION = datetime.timedelta(
+        DEFAULT_GREEN_ASSESSMENT_VALIDITY_DURATION
     )
 
 # logger = logging.getLogger(__name__)
@@ -92,7 +91,7 @@ class GreenAssessment(models.Model):
     is_integer_score = models.BooleanField(default=True)
     validity_duration = models.DurationField(
         null=True, blank=True,
-        default=DEFAULT_GREEN_ASSESSEMENT_VALIDITY_DURATION
+        default=DEFAULT_GREEN_ASSESSMENT_VALIDITY_DURATION
     )
 
     class Meta:

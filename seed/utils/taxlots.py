@@ -1,14 +1,9 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California,
-through Lawrence Berkeley National Laboratory (subject to receipt of any
-required approvals from the U.S. Department of Energy) and contributors.
-All rights reserved.
-:author
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
-
-# Local Imports
 from seed.lib.superperms.orgs.models import Organization
 from seed.models import (
     VIEW_LIST,
@@ -22,7 +17,7 @@ from seed.models import (
 from seed.serializers.pint import apply_display_unit_preferences
 
 
-def taxlots_across_cycles(org_id, profile_id, cycle_ids=[]):
+def taxlots_across_cycles(org_id, ali, profile_id, cycle_ids=[]):
     # Identify column preferences to be used to scope fields/values
     columns_from_database = Column.retrieve_all(org_id, 'taxlot', False)
 
@@ -47,9 +42,12 @@ def taxlots_across_cycles(org_id, profile_id, cycle_ids=[]):
     results = {}
     for cycle_id in cycle_ids:
         # get -Views for this Cycle
-        taxlot_views = TaxLotView.objects.select_related('taxlot', 'state', 'cycle') \
-            .filter(taxlot__organization_id=org_id, cycle_id=cycle_id) \
-            .order_by('id')
+        taxlot_views = TaxLotView.objects.select_related('taxlot', 'state', 'cycle').filter(
+            taxlot__organization_id=org_id,
+            cycle_id=cycle_id,
+            taxlot__access_level_instance__lft__gte=ali.lft,
+            taxlot__access_level_instance__rgt__lte=ali.rgt,
+        ).order_by('id')
 
         related_results = TaxLotProperty.serialize(taxlot_views, show_columns, columns_from_database)
 

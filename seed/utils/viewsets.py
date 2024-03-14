@@ -1,10 +1,9 @@
 #!/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California,
-through Lawrence Berkeley National Laboratory (subject to receipt of any
-required approvals from the U.S. Department of Energy) and contributors.
-All rights reserved.
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
+
 :author: Fable Turas fable@raintechpdx.com
 
 This provides a custom DRF ModelViewSet for rendering SEED API views with the
@@ -12,8 +11,6 @@ necessary decorator and organization queryset mixins added, inheriting from
 DRF's ModelViewSet and setting SEED relevant defaults to renderer_classes,
 parser_classes, authentication_classes, and pagination_classes attributes.
 """
-
-# Imports from Django
 from typing import Any
 
 from oauth2_provider.contrib.rest_framework import OAuth2Authentication
@@ -21,10 +18,16 @@ from rest_framework.authentication import SessionAuthentication
 from rest_framework.mixins import (
     CreateModelMixin,
     DestroyModelMixin,
+    ListModelMixin,
+    RetrieveModelMixin,
     UpdateModelMixin
 )
 from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
-from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
+from rest_framework.viewsets import (
+    GenericViewSet,
+    ModelViewSet,
+    ReadOnlyModelViewSet
+)
 
 # Local Imports
 from seed.authentication import SEEDAuthentication
@@ -48,7 +51,7 @@ RENDERER_CLASSES = (JSONRenderer,)
 PERMISSIONS_CLASSES = (SEEDOrgPermissions,)
 
 
-class UpdateWithoutPatchModelMixin(object):
+class UpdateWithoutPatchModelMixin(GenericViewSet):
     # Taken from: https://github.com/encode/django-rest-framework/pull/3081#issuecomment-518396378
     # Rebuilds the UpdateModelMixin without the patch action
     def update(self, request, *args, **kwargs):
@@ -56,6 +59,17 @@ class UpdateWithoutPatchModelMixin(object):
 
     def perform_update(self, serializer):
         return UpdateModelMixin.perform_update(self, serializer)
+
+
+class ModelViewSetWithoutPatch(CreateModelMixin,
+                               RetrieveModelMixin,
+                               UpdateWithoutPatchModelMixin,
+                               DestroyModelMixin,
+                               ListModelMixin,
+                               GenericViewSet):
+    """
+    Replacement for ModelViewSet that excludes patch.
+    """
 
 
 class SEEDOrgModelViewSet(DecoratorMixin(drf_api_endpoint), OrgQuerySetMixin, ModelViewSet):  # type: ignore[misc]
@@ -109,4 +123,10 @@ class SEEDOrgNoPatchOrOrgCreateModelViewSet(SEEDOrgReadOnlyModelViewSet,
                                             UpdateWithoutPatchModelMixin):
     """Extends SEEDOrgReadOnlyModelViewSet to include update (without patch),
     create, and destroy actions.
+    """
+
+
+class SEEDOrgNoPatchNoCreateModelViewSet(SEEDOrgReadOnlyModelViewSet, DestroyModelMixin, UpdateWithoutPatchModelMixin):
+    """
+    Extends SEEDOrgReadOnlyModelViewSet to include update (without patch), and destroy actions
     """

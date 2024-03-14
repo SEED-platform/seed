@@ -1,13 +1,11 @@
 /**
- * :copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
- * :author
+ * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+ * See also https://github.com/seed-platform/seed/main/LICENSE.md
  */
 
 // config for protractor tests
 exports.config = {
-  specs: [
-    '**/jasmineTests.spec.js'
-  ],
+  specs: ['**/jasmineTests.spec.js'],
   baseUrl: 'http://localhost:80/',
   rootElement: '.app',
   params: {

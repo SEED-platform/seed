@@ -2,6 +2,7 @@
 
 from django.db import migrations
 
+
 def remove_old_campus_column(apps, schema_editor):
     """Remove the existence of Property.campus"""
     Organization = apps.get_model("orgs", "Organization")
@@ -13,6 +14,7 @@ def remove_old_campus_column(apps, schema_editor):
         # find the newest column, and delete that one.
         if len(columns) >= 1:
             columns.delete()
+
 
 class Migration(migrations.Migration):
 

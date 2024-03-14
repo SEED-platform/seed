@@ -1,131 +1,142 @@
 <div class="page_header_container" ng-cloak>
-    <div class="page_header">
-        <div class="left page_action_container">
-
-        </div>
-        <div class="page_title">
-            <h1>{$:: (inventory_type === 'taxlots' ? 'Tax Lots' : 'Properties') | translate $}</h1>
-        </div>
-        <div class="right page_action_container page_action_btn"></div>
+  <div class="page_header">
+    <div class="left page_action_container"></div>
+    <div class="page_title">
+      <h1>{$:: (inventory_type === 'taxlots' ? 'Tax Lots' : 'Properties') | translate $}</h1>
     </div>
+    <div class="right page_action_container"></div>
+  </div>
 </div>
 
 <div class="section_nav_container">
-    <div class="section_nav" ng-include="::urls.static_url + 'seed/partials/inventory_nav.html'"></div>
+  <div class="section_nav" ng-include="::urls.static_url + 'seed/partials/inventory_nav.html'"></div>
 </div>
 
 <div class="inventory-list-controls">
-    <form name="listControlsForm" class="form-inline" role="form" ng-submit="submitNewLabelForm(newLabelForm.$valid)" novalidate>
-        <div class="form-group">
-            <div uib-dropdown class="btn-group pointer" ng-style="nothing_selected_cursor()">
-                <button id="btnInventoryActions" type="button" uib-dropdown-toggle class="btn btn-default btn-sm">
-                    {$:: 'Actions' | translate $} <span class="caret"></span>
-                </button>
-                <ul id="inventory-actions-dropdown" uib-dropdown-menu class="dropdown-menu" role="menu" aria-labelledby="btnInventoryActions">
-                    <li role="menuitem">
-                        <a ng-click="open_merge_modal()" ng-disabled="selectedParentCount < 2">Merge Selected</a>
-                    </li>
-                    <li role="menuitem" ng-hide="::menu.user.organization.user_role === 'viewer'">
-                        <a ng-click="open_delete_modal()" ng-disabled="selectedCount === 0" translate>Delete Selected</a>
-                    </li>
-                    <li role="menuitem">
-                        <a ng-click="open_export_modal()" ng-disabled="selectedCount === 0" translate>Export Selected</a>
-                    </li>
-                    <li role="menuitem">
-                        <a ng-click="open_update_labels_modal()" ng-disabled="selectedParentCount === 0" translate>Add/Remove Labels</a>
-                    </li>
-                    <li role="menuitem">
-                        <a ng-click="run_data_quality_check()" ng-disabled="selectedCount === 0" translate>Data Quality Check</a>
-                    </li>
-                    <li role="menuitem">
-                        <a ng-click="open_postoffice_modal()" ng-disabled="selectedCount === 0" translate>Email</a>
-                    </li>
-                    <li role="menuitem">
-                        <a ng-click="open_analyses_modal()" ng-disabled="selectedCount === 0" translate>Run Analysis</a>
-                    </li>
-                    <li role="menuitem">
-                        <a ng-click="open_refresh_metadata_modal()" ng-disabled="selectedCount === 0" translate>Refresh Metadata</a>
-                    </li>
-                    <li class="divider"></li>
-                    <li role="menuitem">
-                        <a ng-click="open_geocode_modal()" ng-disabled="selectedCount === 0" translate>Geocode Selected</a>
-                    </li>
-                    <li role="menuitem">
-                        <a ng-click="open_ubid_modal()" ng-disabled="selectedCount === 0">Decode UBID/ULID for Selected</a>
-                    </li>
-                    <li class="divider"></li>
-                    <li role="menuitem">
-                        <a ng-click="open_show_populated_columns_modal()" ng-disabled="data.length === 0" translate>Only Show Populated Columns</a>
-                    </li>
-                </ul>
-            </div>
-        </div>
-        <div class="form-group">
-            <label for="tags-input" translate>Filter by label:</label>
-            <div class="btn-group">
-                <tags-input id="tags-input" ng-model="selected_labels" min-length="1" placeholder="{$:: 'Add a label' | translate $}" replace-spaces-with-dashes="false" add-from-autocomplete-only="true" ng-disabled="!labels.length">
-                    <auto-complete source="loadLabelsForFilter($query)" max-results-to-show="255" min-length="0" load-on-empty="true" load-on-focus="true" ng-disabled="!labels.length"></auto-complete>
-                </tags-input>
-            </div>
-        </div>
-        <div class="form-group btn-group">
-            <label class="btn btn-default btn-sm" style="width:50px;" ng-class="{active: labelLogic === 'and'}" ng-click="labelLogicUpdated('and')" ng-disabled="!labels.length" translate>AND</label>
-            <label class="btn btn-default btn-sm" style="width:50px;" ng-class="{active: labelLogic === 'or'}" ng-click="labelLogicUpdated('or')" ng-disabled="!labels.length" translate>OR</label>
-            <label class="btn btn-default btn-sm" style="width:75px;" ng-class="{active: labelLogic === 'exclude'}" ng-click="labelLogicUpdated('exclude')" ng-disabled="!labels.length" translate>EXCLUDE</label>
-        </div>
-        <div class="form-group btn-group building-list-filter-buttons">
-            <button type="button" ng-click="clear_labels()" class="btn btn-default btn-sm" ng-class="{'btn-info': selected_labels.length, 'btn-default': !selected_labels.length}" translate>Clear Labels</button>
-        </div>
-        <div class="btn-group">
-            <button type="button" ng-click="gridApi.grid.clearAllFilters();" ng-class="{'btn-info': filters_exist(), 'btn-default': !filters_exist()}" class="btn btn-sm" translate>Clear Filters</button>
-        </div>
-
-    </form>
-
-    <div class="form-group settings_profile" style="padding-top: 20px; display: flex; justify-content: space-between;">
-        <span>
-            <label>{$:: 'Cycle' | translate $}:</label>
-            <div style="display: inline-block;">
-                <select class="form-control input-sm" ng-model="cycle.selected_cycle" ng-change="update_cycle(cycle.selected_cycle)" ng-options="option.name for option in ::cycle.cycles track by option.id">
-                </select>
-            </div>
-        </span>
-
-        <span ng-show="profiles.length > 0">
-            <label>{$:: 'Column List Profile'| translate $}:</label>
-            <div style="display: inline-block;">
-                <select class="form-control input-sm" ng-model="currentProfile" ng-options="option.name for option in profiles track by option.id"></select>
-            </div>
-        </span>
+  <form name="listControlsForm" class="form-inline" role="form" ng-submit="submitNewLabelForm(newLabelForm.$valid)" novalidate>
+    <div ng-show="menu.user.organization.user_role !== 'viewer'" class="form-group">
+      <div uib-dropdown class="btn-group">
+        <button id="btnInventoryActions" type="button" uib-dropdown-toggle class="btn btn-default btn-sm">{$:: 'Actions' | translate $} <span class="caret"></span></button>
+        <ul id="inventory-actions-dropdown" uib-dropdown-menu class="dropdown-menu" role="menu" aria-labelledby="btnInventoryActions">
+          <li role="menuitem">
+            <a ng-click="open_merge_modal()" ng-disabled="selectedParentCount < 2">Merge Selected</a>
+          </li>
+          <li role="menuitem" ng-hide="::menu.user.organization.user_role === 'viewer'">
+            <a ng-click="open_delete_modal()" ng-disabled="selectedCount === 0" translate>Delete Selected</a>
+          </li>
+          <li role="menuitem">
+            <a ng-click="open_export_modal()" ng-disabled="selectedCount === 0" translate>Export Selected</a>
+          </li>
+          <li role="menuitem">
+            <a ng-click="open_update_labels_modal()" ng-disabled="selectedParentCount === 0" translate>Add/Remove Labels</a>
+          </li>
+          <li role="menuitem">
+            <a ng-click="run_data_quality_check()" ng-disabled="selectedCount === 0" translate>Data Quality Check</a>
+          </li>
+          <li role="menuitem">
+            <a ng-click="open_postoffice_modal()" ng-disabled="selectedCount === 0" translate>Email</a>
+          </li>
+          <li role="menuitem">
+            <a ng-click="open_analyses_modal()" ng-disabled="selectedCount === 0" translate>Run Analysis</a>
+          </li>
+          <li role="menuitem">
+            <a ng-click="open_set_update_to_now_modal()" ng-disabled="selectedCount === 0" translate>Set Update Time to Now</a>
+          </li>
+          <li class="divider"></li>
+          <li role="menuitem">
+            <a ng-click="open_geocode_modal()" ng-disabled="selectedCount === 0" translate>Geocode Selected</a>
+          </li>
+          <li role="menuitem">
+            <a ng-click="open_ubid_decode_modal()" ng-disabled="selectedCount === 0">Decode UBID for Selected</a>
+          </li>
+          <li class="divider"></li>
+          <li role="menuitem">
+            <a ng-if="menu.user.is_ali_root" ng-click="open_show_populated_columns_modal()" ng-disabled="data.length === 0" translate>Only Show Populated Columns</a>
+          </li>
+        </ul>
+      </div>
     </div>
+    <div class="form-group">
+      <label for="tags-input" translate>Filter by label:</label>
+      <div class="btn-group">
+        <tags-input
+          id="tags-input"
+          ng-model="selected_labels"
+          min-length="1"
+          placeholder="{$:: 'Add a label' | translate $}"
+          replace-spaces-with-dashes="false"
+          add-from-autocomplete-only="true"
+          ng-disabled="!labels.length"
+        >
+          <auto-complete source="loadLabelsForFilter($query)" max-results-to-show="255" min-length="0" load-on-empty="true" load-on-focus="true" ng-disabled="!labels.length"></auto-complete>
+        </tags-input>
+      </div>
+    </div>
+    <div class="form-group btn-group">
+      <label class="btn btn-default btn-sm" style="width: 50px" ng-class="{active: labelLogic === 'and'}" ng-click="labelLogicUpdated('and')" ng-disabled="!labels.length" translate>AND</label>
+      <label class="btn btn-default btn-sm" style="width: 50px" ng-class="{active: labelLogic === 'or'}" ng-click="labelLogicUpdated('or')" ng-disabled="!labels.length" translate>OR</label>
+      <label class="btn btn-default btn-sm" style="width: 75px" ng-class="{active: labelLogic === 'exclude'}" ng-click="labelLogicUpdated('exclude')" ng-disabled="!labels.length" translate
+        >EXCLUDE</label
+      >
+    </div>
+    <div class="form-group btn-group building-list-filter-buttons">
+      <button type="button" ng-click="clear_labels()" class="btn btn-default btn-sm" ng-class="{'btn-info': selected_labels.length, 'btn-default': !selected_labels.length}" translate>
+        Clear Labels
+      </button>
+    </div>
+    <div class="btn-group">
+      <button type="button" ng-click="gridApi.grid.clearAllFilters();" ng-class="{'btn-info': filters_exist(), 'btn-default': !filters_exist()}" class="btn btn-sm" translate>Clear Filters</button>
+    </div>
+  </form>
+
+  <div class="form-group settings_profile" style="padding-top: 20px; display: flex; justify-content: space-between">
+    <span>
+      <label>{$:: 'Cycle' | translate $}:</label>
+      <div style="display: inline-block">
+        <select
+          class="form-control input-sm"
+          ng-model="cycle.selected_cycle"
+          ng-change="update_cycle(cycle.selected_cycle)"
+          ng-options="option.name for option in ::cycle.cycles track by option.id"
+        ></select>
+      </div>
+    </span>
+
+    <span ng-show="profiles.length > 0">
+      <label>{$:: 'Column List Profile'| translate $}:</label>
+      <div style="display: inline-block">
+        <select class="form-control input-sm" ng-model="currentProfile" ng-options="option.name for option in profiles track by option.id"></select>
+      </div>
+    </span>
+  </div>
 </div>
 
 <div class="inventory-list-tab-container">
-    <div class="item-count" ng-class="{'text-info': (filters_exist() || selected_labels.length)}">
-        <span ng-if="::inventory_type === 'properties'">
-            <i class="fa fa-building-o"></i>
-            <span translate="NUMBER_OF_PROPERTIES" translate-values="{ num: (total | number: 0) }"></span>
-        </span>
+  <ul class="nav nav-tabs">
+    <li ng-class="::{active: inventory_type==='properties'}" heading="View by Property">
+      <a ui-sref="inventory_list_legacy(::{inventory_type: 'properties'})" translate>View by Property</a>
+    </li>
+    <li ng-class="::{active: inventory_type==='taxlots'}" heading="View by Tax Lot">
+      <a ui-sref="inventory_list_legacy(::{inventory_type: 'taxlots'})" translate>View by Tax Lot</a>
+    </li>
+  </ul>
+  <div class="item-count" ng-class="{'text-info': (filters_exist() || selected_labels.length)}">
+    <span ng-if="::inventory_type === 'properties'">
+      <i class="fa-regular fa-building"></i>
+      <span translate="NUMBER_OF_PROPERTIES" translate-values="{ num: (total | number: 0) }"></span>
+    </span>
 
-        <span ng-if="::inventory_type === 'taxlots'">
-            <i class="fa fa-map-o"></i>
-            <span translate="NUMBER_OF_TAXLOTS" translate-values="{ num: (total | number: 0) }"></span>
-        </span>
-    </div>
-    <ul class="nav nav-tabs" style="margin-bottom:1px;">
-        <li ng-class="::{active: inventory_type==='properties'}" heading="View by Property">
-            <a ui-sref="inventory_list_legacy(::{inventory_type: 'properties'})" translate>View by Property</a>
-        </li>
-        <li ng-class="::{active: inventory_type==='taxlots'}" heading="View by Tax Lot">
-            <a ui-sref="inventory_list_legacy(::{inventory_type: 'taxlots'})" translate>View by Tax Lot</a>
-        </li>
-    </ul>
+    <span ng-if="::inventory_type === 'taxlots'">
+      <i class="fa-regular fa-map"></i>
+      <span translate="NUMBER_OF_TAXLOTS" translate-values="{ num: (total | number: 0) }"></span>
+    </span>
+  </div>
 </div>
 
-<div class="section_content_container" ng-cloak style="clear:both; overflow:hidden;">
-    <div class="section_content">
-        <div id="grid-container">
-            <div ui-grid="gridOptions" ui-grid-exporter ui-grid-move-columns ui-grid-pinning ui-grid-resize-columns ui-grid-save-state ui-grid-selection ui-grid-tree-view></div>
-        </div>
+<div class="section_content_container" ng-cloak style="clear: both; overflow: hidden">
+  <div class="section_content">
+    <div id="grid-container">
+      <div ui-grid="gridOptions" ui-grid-exporter ui-grid-move-columns ui-grid-pinning ui-grid-resize-columns ui-grid-save-state ui-grid-selection ui-grid-tree-view></div>
     </div>
+  </div>
 </div>

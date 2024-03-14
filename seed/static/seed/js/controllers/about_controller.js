@@ -1,15 +1,13 @@
 /**
- * :copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
- * :author
+ * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+ * See also https://github.com/seed-platform/seed/main/LICENSE.md
  */
-angular.module('BE.seed.controller.about', [])
-  .controller('about_controller', [
-    '$scope',
-    'version_payload',
-    function (
-      $scope,
-      version_payload
-    ) {
-      $scope.version = version_payload.version;
-      $scope.sha = version_payload.sha;
-    }]);
+angular.module('BE.seed.controller.about', []).controller('about_controller', [
+  '$scope',
+  'version_payload',
+  // eslint-disable-next-line func-names
+  function ($scope, version_payload) {
+    $scope.version = version_payload.version;
+    $scope.sha = version_payload.sha;
+  }
+]);

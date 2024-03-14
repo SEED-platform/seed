@@ -1,8 +1,8 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
-:author
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
 import os
 import re
@@ -64,7 +64,7 @@ def faq_page(request):
                 faq_data[category_name].append(parsed_faq._asdict())
 
     if not request.user.is_anonymous:
-        initial_org_id, initial_org_name, initial_org_user_role = _get_default_org(
+        initial_org_id, initial_org_name, initial_org_user_role, access_level_instance_name, access_level_instance_id, is_ali_root, is_ali_leaf = _get_default_org(
             request.user
         )
     debug = settings.DEBUG

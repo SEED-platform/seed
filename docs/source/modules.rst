@@ -6,11 +6,14 @@ Modules
     :maxdepth: 3
 
     modules/config
+    modules/seed.cleansing
     modules/seed.data
     modules/seed.data_importer
     modules/seed.features
     modules/seed.landing
     modules/seed.lib
+    modules/seed.lib.mappings
+    modules/seed.lib.merging
     modules/seed.mappings
     modules/seed.managers
     modules/seed.models

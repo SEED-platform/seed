@@ -1,23 +1,20 @@
 /**
- * :copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
- * :author
- */
-/**
+ * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+ * See also https://github.com/seed-platform/seed/main/LICENSE.md
+ *
  * run_jasmine.js: runs the jasmine JS test runner
  */
 (function () {
-  var jasmineEnv = jasmine.getEnv();
+  const jasmineEnv = jasmine.getEnv();
   jasmineEnv.updateInterval = 1000;
 
-  var htmlReporter = new jasmine.HtmlReporter();
+  const htmlReporter = new jasmine.HtmlReporter();
 
   jasmineEnv.addReporter(htmlReporter);
 
-  jasmineEnv.specFilter = function (spec) {
-    return htmlReporter.specFilter(spec);
-  };
+  jasmineEnv.specFilter = (spec) => htmlReporter.specFilter(spec);
 
-  var currentWindowOnload = window.onload;
+  const currentWindowOnload = window.onload;
 
   window.onload = function () {
     if (currentWindowOnload) {
@@ -25,7 +22,7 @@
     }
     execJasmine();
   };
-  function execJasmine () {
+  function execJasmine() {
     jasmineEnv.execute();
   }
-})();
+}());

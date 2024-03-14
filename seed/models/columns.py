@@ -1,16 +1,16 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
-:author
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
-
 import copy
 import csv
 import logging
 import os.path
 from collections import OrderedDict
-from typing import Literal, Optional
+from datetime import datetime
+from typing import Any, Callable, Literal, Optional
 
 from django.apps import apps
 from django.core.exceptions import ValidationError
@@ -18,8 +18,10 @@ from django.db import IntegrityError, models, transaction
 from django.db.models import Q
 from django.db.models.signals import pre_save
 from django.utils.translation import gettext_lazy as _
+from past.builtins import basestring
 
 from seed.lib.superperms.orgs.models import Organization as SuperOrganization
+from seed.lib.superperms.orgs.models import OrganizationUser
 from seed.models.column_mappings import ColumnMapping
 from seed.models.models import Unit
 
@@ -30,6 +32,10 @@ INVENTORY_DISPLAY = {
     'TaxLot': 'Tax Lot',
 }
 _log = logging.getLogger(__name__)
+
+
+class ColumnCastException(Exception):
+    pass
 
 
 class Column(models.Model):
@@ -105,10 +111,13 @@ class Column(models.Model):
         'import_file',
         'long_lat',
         'merge_state',
+        'raw_access_level_instance_error',
+        'raw_access_level_instance_id',
         'source_type',
         'updated',
     ] + EXCLUDED_COLUMN_RETURN_FIELDS
 
+    # These are columns that you cannot rename fields to
     EXCLUDED_RENAME_TO_FIELDS = [
         'lot_number',
         'latitude',
@@ -119,6 +128,7 @@ class Column(models.Model):
         'updated',
     ] + COLUMN_EXCLUDE_FIELDS
 
+    # These are column names that you can't rename at all
     EXCLUDED_RENAME_FROM_FIELDS = [
         'lot_number',
         'year_built',
@@ -126,26 +136,37 @@ class Column(models.Model):
         'taxlot_footprint',
     ] + COLUMN_EXCLUDE_FIELDS
 
-    # These are fields that should not be mapped to, ever.
+    # These are fields that should not be mapped to, ever. AKA Protected column fields
+    # for either PropertyState or TaxLotState. They will not be shown in the mapping
+    # suggestions.
     EXCLUDED_MAPPING_FIELDS = [
         'created',
         'extra_data',
         'lot_number',
         'normalized_address',
+        'geocoded_address',
+        'geocoded_postal_code',
+        'geocoded_side_of_street',
+        'geocoded_country',
+        'geocoded_state',
+        'geocoded_county',
+        'geocoded_city',
+        'geocoded_neighborhood',
         'updated',
     ]
 
-    # These are columns that should not be offered as suggestions during mapping
+    # These are columns that should not be offered as suggestions during mapping for
+    # properties and tax lots
     UNMAPPABLE_PROPERTY_FIELDS = [
         'created',
         'geocoding_confidence',
         'lot_number',
-        'updated'
+        'updated',
     ]
     UNMAPPABLE_TAXLOT_FIELDS = [
         'created',
         'geocoding_confidence',
-        'updated'
+        'updated',
     ]
 
     INTERNAL_TYPE_TO_DATA_TYPE = {
@@ -159,6 +180,21 @@ class Column(models.Model):
         'JSONField': 'string',
         'PolygonField': 'geometry',
         'PointField': 'geometry',
+    }
+
+    DATA_TYPE_PARSERS: dict[str, Callable] = {
+        'number': lambda v: float(v.replace(',', '') if isinstance(v, basestring) else v),
+        'float': lambda v: float(v.replace(',', '') if isinstance(v, basestring) else v),
+        'integer': lambda v: int(v.replace(',', '') if isinstance(v, basestring) else v),
+        'string': str,
+        'geometry': str,
+        'datetime': datetime.fromisoformat,
+        'date': lambda v: datetime.fromisoformat(v).date(),
+        'boolean': lambda v: v.lower() == 'true',
+        'area': lambda v: float(v.replace(',', '') if isinstance(v, basestring) else v),
+        'eui': lambda v: float(v.replace(',', '') if isinstance(v, basestring) else v),
+        'ghg_intensity': lambda v: float(v.replace(',', '') if isinstance(v, basestring) else v),
+        'ghg': lambda v: float(v.replace(',', '') if isinstance(v, basestring) else v),
     }
 
     # These are the default columns (also known as the fields in the database)
@@ -188,10 +224,10 @@ class Column(models.Model):
             'column_description': 'Jurisdiction Property ID',
             'data_type': 'string',
         }, {
-            'column_name': 'ulid',
+            'column_name': 'ubid',
             'table_name': 'TaxLotState',
-            'display_name': 'ULID',
-            'column_description': 'ULID',
+            'display_name': 'UBID',
+            'column_description': 'UBID',
             'data_type': 'string',
         }, {
             'column_name': 'ubid',
@@ -652,6 +688,7 @@ class Column(models.Model):
     is_extra_data = models.BooleanField(default=False)
     is_matching_criteria = models.BooleanField(default=False)
     import_file = models.ForeignKey('data_importer.ImportFile', on_delete=models.CASCADE, blank=True, null=True)
+    # TODO: units_pint should be renamed to `from_units` as this is the unit of the incoming data in pint format
     units_pint = models.CharField(max_length=64, blank=True, null=True)
 
     # 0 is deactivated. Order used to construct full address.
@@ -672,6 +709,11 @@ class Column(models.Model):
     class Meta:
         constraints = [
             models.UniqueConstraint(fields=['organization', 'comstock_mapping'], name='unique_comstock_mapping'),
+            # create a name constraint on the column. The name must be unique across the organization,
+            # table_name (property or tax lot), if it is extra_data. Note that this may require some
+            # database cleanup because older organizations might have imported data before the `units_pint`
+            # column existed and there will be duplicates.
+            models.UniqueConstraint(fields=['organization', 'column_name', 'table_name', 'is_extra_data'], name='unique_column_name')
         ]
 
     def __str__(self):
@@ -693,6 +735,14 @@ class Column(models.Model):
                     {'is_extra_data': _(
                         'Column \'%s\':\'%s\' is not a field in the database and not marked as extra data. Mark as extra data to save column.') % (
                         self.table_name, self.column_name)})
+
+    def cast(self, value: Any) -> Any:
+        """Cast the value to the correct type for the column.
+
+        Args:
+            value (Any): Value to cast, typically a string.
+        """
+        return Column.cast_column_value(self.data_type, value)
 
     def save(self, *args, **kwargs):
         if self.column_name and not self.column_description:
@@ -903,7 +953,7 @@ class Column(models.Model):
 
         # Take the existing object and return the same object with the db column objects added to
         # the dictionary (to_column_object and from_column_object)
-        mappings = Column._column_fields_to_columns(mappings, organization)
+        mappings = Column._column_fields_to_columns(mappings, organization, user)
         for mapping in mappings:
             if isinstance(mapping, dict):
                 try:
@@ -960,7 +1010,7 @@ class Column(models.Model):
         return True
 
     @staticmethod
-    def _column_fields_to_columns(fields, organization):
+    def _column_fields_to_columns(fields, organization, user):
         """
         List of dictionaries to process into column objects. This method will create the columns
         if they did not previously exist. Note that fields are probably mutable, but the method
@@ -994,115 +1044,47 @@ class Column(models.Model):
         Returns:
             dict with lists of columns to which is mappable.
         """
-
-        def select_col_obj(column_name, table_name, organization_column):
-            if organization_column:
-                return [organization_column]
-            else:
-                # Try for "global" column definitions, e.g., BEDES. - Note the BEDES are not
-                # loaded into the database as of 9/8/2016 so not sure if this code is ever
-                # exercised
-                obj = Column.objects.filter(organization=None, column_name=column_name).first()
-
-                if obj:
-                    # create organization mapped column
-                    obj.pk = None
-                    obj.id = None
-                    obj.organization = organization
-                    obj.save()
-
-                    return [obj]
-                else:
-                    if table_name:
-                        obj, _ = Column.objects.get_or_create(
-                            organization=organization,
-                            column_name=column_name,
-                            table_name=table_name,
-                            is_extra_data=is_extra_data,
-                        )
-                        return [obj]
-                    else:
-                        obj, _ = Column.objects.get_or_create(
-                            organization=organization,
-                            column_name=column_name,
-                            is_extra_data=is_extra_data,
-                        )
-                        return [obj]
-
         # Container to store the dicts with the Column object
         new_data = []
+        org_user = OrganizationUser.objects.get(organization=organization, user=user)
+        is_root_user = org_user.access_level_instance == organization.root
 
         for field in fields:
             new_field = field
+            is_ah_data = any([
+                field['to_field'] == name for name in organization.access_level_names
+            ])
+            is_extra_data = not any([
+                field['to_table_name'] == c['table_name'] and field['to_field'] == c['column_name']
+                for c in Column.DATABASE_COLUMNS
+            ])
 
-            # Check if the extra_data field in the model object is a database column
-            is_extra_data = True
-            for c in Column.DATABASE_COLUMNS:
-                if field['to_table_name'] == c['table_name'] and field['to_field'] == c[
-                        'column_name']:
-                    is_extra_data = False
-                    break
+            to_col_params = {
+                "organization": organization,
+                "column_name": field['to_field'],
+                "table_name": '' if is_ah_data else field['to_table_name'],
+                "is_extra_data": is_extra_data,
+            }
+            if is_root_user or is_ah_data:
+                to_org_col, _ = Column.objects.get_or_create(**to_col_params)
+            else:
+                try:
+                    to_org_col = Column.objects.get(**to_col_params)
+                except Column.DoesNotExist:
+                    raise PermissionError(f"user does not have permission to create column {field['to_field']}")
 
-            try:
-                to_org_col, _ = Column.objects.get_or_create(
-                    organization=organization,
-                    column_name=field['to_field'],
-                    table_name=field['to_table_name'],
-                    is_extra_data=is_extra_data
-                )
-            except Column.MultipleObjectsReturned:
-                _log.debug("More than one to_column found for {}.{}".format(field['to_table_name'],
-                                                                            field['to_field']))
-                # raise Exception("Cannot handle more than one to_column returned for {}.{}".format(
-                #     field['to_field'], field['to_table_name']))
+            # the from column is the field in the import file, thus the table_name needs to be
+            # blank. Eventually need to handle passing in import_file_id
+            from_org_col, _ = Column.objects.update_or_create(
+                organization=organization,
+                table_name='',
+                column_name=field['from_field'],
+                is_extra_data=False,  # Column objects representing raw/header rows are NEVER extra data
+                defaults={'units_pint': field.get('from_units', None)}
+            )
 
-                # TODO: write something to remove the duplicate columns
-                to_org_col = Column.objects.filter(organization=organization,
-                                                   column_name=field['to_field'],
-                                                   table_name=field['to_table_name'],
-                                                   is_extra_data=is_extra_data).first()
-                _log.debug("Grabbing the first to_column")
-
-            try:
-                # the from column is the field in the import file, thus the table_name needs to be
-                # blank. Eventually need to handle passing in import_file_id
-                from_org_col, _ = Column.objects.update_or_create(
-                    organization=organization,
-                    table_name='',
-                    column_name=field['from_field'],
-                    is_extra_data=False,  # Column objects representing raw/header rows are NEVER extra data
-                    defaults={'units_pint': field.get('from_units', None)}
-                )
-            except Column.MultipleObjectsReturned:
-                # We want to avoid the ambiguity of having multiple Column objects for a specific raw column.
-                # To do that, delete all multiples along with any associated ColumnMapping objects.
-                _log.debug(
-                    "More than one from_column found for {}.{}".format(field['to_table_name'],
-                                                                       field['to_field']))
-
-                all_from_cols = Column.objects.filter(
-                    organization=organization,
-                    table_name='',
-                    column_name=field['from_field'],
-                    is_extra_data=False
-                )
-
-                ColumnMapping.objects.filter(column_raw__id__in=models.Subquery(all_from_cols.values('id'))).delete()
-                all_from_cols.delete()
-
-                from_org_col = Column.objects.create(
-                    organization=organization,
-                    table_name='',
-                    units_pint=field.get('from_units', None),
-                    column_name=field['from_field'],
-                    column_description=field['from_field'],
-                    is_extra_data=False  # Column objects representing raw/header rows are NEVER extra data
-                )
-                _log.debug("Creating a new from_column")
-
-            new_field['to_column_object'] = select_col_obj(field['to_field'],
-                                                           field['to_table_name'], to_org_col)
-            new_field['from_column_object'] = select_col_obj(field['from_field'], "", from_org_col)
+            new_field['to_column_object'] = [to_org_col]
+            new_field['from_column_object'] = [from_org_col]
             new_data.append(new_field)
 
         return new_data
@@ -1176,6 +1158,32 @@ class Column(models.Model):
         return [c_count, cm_delete_count]
 
     @staticmethod
+    def cast_column_value(column_data_type: str, value: Any, allow_none: bool = True) -> Any:
+        """cast a single value from the column data type
+
+        Args:
+            column_data_type (str): The data type as defined in the column object
+            value (Any): value to cast. Note the value may already be cast correctly.
+
+        Raises:
+            Exception: CastException if the value cannot be cast to the correct type
+
+        Returns:
+            Any: Resulting casted value
+        """
+        if value is None:
+            if allow_none:
+                return None
+            else:
+                raise ColumnCastException('Datum is None and allow_none is False.')
+
+        parser = Column.DATA_TYPE_PARSERS.get(column_data_type, str)
+        try:
+            return parser(value)
+        except Exception:
+            raise ColumnCastException(f'Invalid data type for "{column_data_type}". Expected a valid "{column_data_type}" value.')
+
+    @staticmethod
     def retrieve_db_types():
         """
         Return the data types for the database columns in the format of:
@@ -1192,6 +1200,7 @@ class Column(models.Model):
         """
         columns = copy.deepcopy(Column.DATABASE_COLUMNS)
 
+        # TODO: There seem to be lots of these lists floating around. We should consolidate them.
         MAP_TYPES = {
             'number': 'float',
             'float': 'float',
@@ -1240,7 +1249,7 @@ class Column(models.Model):
         """
         Similar to keys, except it returns a list of tuples of the columns that are in the database
 
-        .. code-block:: json
+        .. code-block:: python
 
             [
               ('PropertyState', 'address_line_1'),
@@ -1372,7 +1381,8 @@ class Column(models.Model):
         inventory_type: Optional[Literal['property', 'taxlot']] = None,
         only_used: bool = False,
         include_related: bool = True,
-        exclude_derived: bool = False
+        exclude_derived: bool = False,
+        column_ids: Optional[list[int]] = None
     ) -> list[dict]:
         """
         Retrieve all the columns for an organization. This method will query for all the columns in the
@@ -1383,14 +1393,20 @@ class Column(models.Model):
         :param inventory_type: Inventory Type (property|taxlot) from the requester. This sets the related columns if requested.
         :param only_used: View only the used columns that exist in the Column's table
         :param include_related: Include related columns (e.g., if inventory type is Property, include Taxlot columns)
+        :param exclude_derived: Exclude derived columns.
+        :param column_ids: List of Column ids.
         """
         from seed.serializers.columns import ColumnSerializer
 
         # Grab all the columns out of the database for the organization that are assigned to a
         # table_name. Order extra_data last so that extra data duplicate-checking will happen after
         # processing standard columns
-        column_query = Column.objects.filter(organization_id=org_id).exclude(table_name='').exclude(
-            table_name=None)
+        if column_ids:
+            column_query = Column.objects.filter(organization_id=org_id, id__in=column_ids).exclude(
+                table_name='').exclude(table_name=None)
+        else:
+            column_query = Column.objects.filter(organization_id=org_id).exclude(
+                table_name='').exclude(table_name=None)
         if exclude_derived:
             column_query = column_query.exclude(derived_column__isnull=False)
         columns_db = column_query.order_by('is_extra_data', 'column_name')
@@ -1442,9 +1458,6 @@ class Column(models.Model):
             if include_column:
                 columns.append(new_c)
 
-        # import json
-        # print(json.dumps(columns, indent=2))
-
         # validate that the field 'name' is unique.
         uniq = set()
         for c in columns:
@@ -1460,7 +1473,7 @@ class Column(models.Model):
         """
         Return the list of priorities for the columns. Result will be in the form of:
 
-        .. code-block:: json
+        .. code-block:: python
 
             {
                 'PropertyState': {
@@ -1503,7 +1516,7 @@ class Column(models.Model):
         """
         Return list of all columns for an organization as a tuple.
 
-        .. code-block:: json
+        .. code-block:: python
 
             [
               ('PropertyState', 'address_line_1'),
@@ -1534,6 +1547,15 @@ def validate_model(sender, **kwargs):
 
     if 'raw' in kwargs and not kwargs['raw']:
         instance.full_clean()
+
+    if instance.display_name is not None and instance.organization is not None:
+        if instance.display_name in instance.organization.access_level_names:
+            raise IntegrityError("This display name is already an access level name and cannot be used.")
+
+    if instance.organization_id:
+        org = SuperOrganization.objects.get(pk=instance.organization_id)
+        if instance.display_name in org.access_level_names:
+            raise ValidationError("This display name is an organization access level name.")
 
 
 pre_save.connect(validate_model, sender=Column)

@@ -1,11 +1,17 @@
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
-:author
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
+import json
 import logging
 import os
+import time
 from collections import namedtuple
 
+from django.conf import settings
+from django.core.files.base import ContentFile
+from django.core.files.storage import FileSystemStorage
+from django.db import transaction
 from django.db.models import Q, Subquery
 from django.http import HttpResponse, JsonResponse
 from django_filters import CharFilter, DateFilter
@@ -17,16 +23,31 @@ from rest_framework.parsers import JSONParser, MultiPartParser
 from rest_framework.renderers import JSONRenderer
 
 from seed.building_sync.building_sync import BuildingSync
+from seed.data_importer import tasks
+from seed.data_importer.match import save_state_match
+from seed.data_importer.meters_parser import MetersParser
+from seed.data_importer.models import ImportFile, ImportRecord
+from seed.data_importer.tasks import _save_pm_meter_usage_data_task
 from seed.data_importer.utils import kbtu_thermal_conversion_factors
 from seed.decorators import ajax_request_class
 from seed.hpxml.hpxml import HPXML
-from seed.lib.superperms.orgs.decorators import has_perm_class
+from seed.lib.progress_data.progress_data import ProgressData
+from seed.lib.superperms.orgs.decorators import (
+    has_hierarchy_access,
+    has_perm_class
+)
+from seed.lib.superperms.orgs.models import AccessLevelInstance
 from seed.models import (
+    AUDIT_USER_CREATE,
     AUDIT_USER_EDIT,
+    DATA_STATE_MAPPING,
     DATA_STATE_MATCHING,
     MERGE_STATE_DELETE,
     MERGE_STATE_MERGED,
     MERGE_STATE_NEW,
+    PORTFOLIO_RAW,
+    SEED_DATA_SOURCES,
+    Analysis,
     BuildingFile,
     Column,
     ColumnMappingProfile,
@@ -35,6 +56,7 @@ from seed.models import (
     InventoryDocument,
     Meter,
     Note,
+    Organization,
     Property,
     PropertyAuditLog,
     PropertyMeasure,
@@ -45,9 +67,11 @@ from seed.models import (
 )
 from seed.models import StatusLabel as Label
 from seed.models import TaxLotProperty, TaxLotView
+from seed.serializers.analyses import AnalysisSerializer
 from seed.serializers.pint import PintJSONEncoder
 from seed.serializers.properties import (
     PropertySerializer,
+    PropertyStatePromoteWritableSerializer,
     PropertyStateSerializer,
     PropertyViewAsStateSerializer,
     PropertyViewSerializer,
@@ -61,7 +85,7 @@ from seed.utils.api_schema import (
 )
 from seed.utils.inventory_filter import get_filtered_results
 from seed.utils.labels import get_labels
-from seed.utils.match import match_merge_link
+from seed.utils.match import MergeLinkPairError, match_merge_link
 from seed.utils.merge import merge_properties
 from seed.utils.meters import PropertyMeterReadingsExporter
 from seed.utils.properties import (
@@ -70,9 +94,17 @@ from seed.utils.properties import (
     properties_across_cycles,
     update_result_with_master
 )
+from seed.utils.salesforce import update_salesforce_properties
 from seed.utils.sensors import PropertySensorReadingsExporter
 
 logger = logging.getLogger(__name__)
+
+logging.basicConfig(
+    format='%(asctime)s %(levelname)-8s %(message)s',
+    level=logging.ERROR,
+    datefmt='%Y-%m-%d %H:%M:%S'
+)
+
 
 # Global toggle that controls whether or not to display the raw extra
 # data fields in the columns returned for the view.
@@ -152,6 +184,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
     # For the Swagger page, GenericAPIView asserts a value exists for `queryset`
     queryset = PropertyView.objects.none()
 
+    @has_perm_class('requires_viewer')
     @action(detail=False, filter_backends=[PropertyViewFilterBackend])
     def search(self, request):
         """
@@ -161,7 +194,12 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         """
         # here be dragons
         org_id = self.get_organization(self.request)
-        qs = PropertyView.objects.filter(property__organization_id=org_id).order_by('-state__id')
+        ali = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
+        qs = PropertyView.objects.filter(
+            property__organization_id=org_id,
+            property__access_level_instance__lft__gte=ali.lft,
+            property__access_level_instance__rgt__lte=ali.rgt
+        ).order_by('-state__id')
         # this is the entrypoint to the filtering backend
         # https://www.django-rest-framework.org/api-guide/filtering/#custom-generic-filtering
         qs = self.filter_queryset(qs)
@@ -201,11 +239,18 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         return new_state
 
     @swagger_auto_schema(
-        manual_parameters=[AutoSchemaHelper.query_org_id_field(required=True)],
+        manual_parameters=[
+            AutoSchemaHelper.query_org_id_field(required=True),
+            AutoSchemaHelper.query_integer_field(
+                name='cycle_id',
+                required=False,
+                description="Optional cycle id to restrict is_applied ids to only those in the specified cycle"
+            ),
+        ],
         request_body=AutoSchemaHelper.schema_factory(
             {
-                'selected': ['integer'],
-                'label_names': ['string'],
+                'selected': 'integer',
+                'label_names': 'string',
             },
             description='- selected: Property View IDs to be checked for which labels are applied\n'
                         '- label_names: list of label names to query'
@@ -229,11 +274,11 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             super_organization=super_organization
         ).order_by('name').distinct()
 
-        # if labels names is passes, then get only those labels
+        # if label_names is present, then get only those labels
         if request.data.get('label_names', None):
             labels_qs = labels_qs.filter(
                 name__in=request.data.get('label_names')
-            ).order_by('name')
+            )
 
         # TODO: refactor to avoid passing request here
         return get_labels(request, labels_qs, super_organization, 'property_view')
@@ -252,11 +297,12 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         )
     )
     @ajax_request_class
-    @has_perm_class('requires_member')
+    @has_perm_class('requires_viewer')
+    @has_hierarchy_access(property_view_id_kwarg="pk")
     @action(detail=True, methods=['POST'])
     def meter_usage(self, request, pk):
         """
-        Retrieves meter usage information
+        Retrieves meter usage information for the meters not in the excluded_meter_ids list
         """
         body = dict(request.data)
         interval = body['interval']
@@ -275,7 +321,29 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         return exporter.readings_and_column_defs(interval)
 
     @ajax_request_class
-    @has_perm_class('requires_member')
+    @has_perm_class('requires_viewer')
+    @action(detail=True, methods=['GET'])
+    @has_hierarchy_access(property_id_kwarg="pk")
+    def analyses(self, request, pk):
+        organization_id = self.get_organization(request)
+
+        analyses_queryset = (
+            Analysis.objects.filter(organization=organization_id, analysispropertyview__property=pk)
+            .distinct().order_by('-id')
+        )
+
+        analyses = []
+        for analysis in analyses_queryset:
+            serialized_analysis = AnalysisSerializer(analysis).data
+            serialized_analysis.update(analysis.get_property_view_info(pk))
+            serialized_analysis.update({'highlights': analysis.get_highlights(pk)})
+            analyses.append(serialized_analysis)
+
+        return {'status': 'success', 'analyses': analyses}
+
+    @ajax_request_class
+    @has_perm_class('requires_viewer')
+    @has_hierarchy_access(property_view_id_kwarg="pk")
     @action(detail=True, methods=['POST'])
     def sensor_usage(self, request, pk):
         """
@@ -311,6 +379,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
     @swagger_auto_schema_org_query_param
     @ajax_request_class
     @has_perm_class('requires_viewer')
+    @has_hierarchy_access(property_view_id_kwarg="pk")
     @action(detail=True, methods=['GET'])
     def sensors(self, request, pk):
         """
@@ -408,7 +477,8 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
                 {'status': 'error', 'message': 'Need to pass organization_id as query parameter'},
                 status=status.HTTP_400_BAD_REQUEST)
 
-        response = properties_across_cycles(org_id, profile_id, cycle_ids)
+        ali = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
+        response = properties_across_cycles(org_id, ali, profile_id, cycle_ids)
 
         return JsonResponse(response)
 
@@ -494,10 +564,13 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         Check to see if the given Properties (given by ID) have Meters.
         """
         org_id = self.get_organization(request)
+        ali = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
         property_view_ids = request.data.get('property_view_ids', [])
         property_views = PropertyView.objects.filter(
             id__in=property_view_ids,
-            cycle__organization_id=org_id
+            cycle__organization_id=org_id,
+            property__access_level_instance__lft__gte=ali.lft,
+            property__access_level_instance__rgt__lte=ali.rgt
         )
 
         # Check that property_view_ids given are all contained within given org.
@@ -543,14 +616,17 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
     def merge(self, request):
         """
         Merge multiple property records into a single new record, and run this
-        new record through a match and merge round within it's current Cycle.
+        new record through a match and merge round within its current Cycle.
         """
         body = request.data
         organization_id = int(self.get_organization(request))
+        ali = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
 
         property_view_ids = body.get('property_view_ids', [])
         property_states = PropertyView.objects.filter(
             id__in=property_view_ids,
+            property__access_level_instance__lft__gte=ali.lft,
+            property__access_level_instance__rgt__lte=ali.rgt,
             cycle__organization_id=organization_id
         ).values('id', 'state_id')
         # get the state ids in order according to the given view ids
@@ -573,20 +649,23 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
                 'message': 'At least two ids are necessary to merge'
             }, status=status.HTTP_400_BAD_REQUEST)
 
-        merged_state = merge_properties(property_state_ids, organization_id, 'Manual Match')
+        try:
+            with transaction.atomic():
+                merged_state = merge_properties(property_state_ids, organization_id, 'Manual Match')
+                view = merged_state.propertyview_set.first()
+                merge_count, link_count, view_id = match_merge_link(merged_state.id, 'PropertyState', view.property.access_level_instance, view.cycle)
 
-        merge_count, link_count, view_id = match_merge_link(merged_state.propertyview_set.first().id, 'PropertyState')
+        except MergeLinkPairError:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'These two properties have different alis.'
+            }, status=status.HTTP_400_BAD_REQUEST)
 
-        result = {
-            'status': 'success'
-        }
-
-        result.update({
+        return {
+            'status': 'success',
             'match_merged_count': merge_count,
             'match_link_count': link_count,
-        })
-
-        return result
+        }
 
     @swagger_auto_schema(
         manual_parameters=[AutoSchemaHelper.query_org_id_field()],
@@ -601,11 +680,14 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         Unmerge a property view into two property views
         """
         try:
+            ali = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
             old_view = PropertyView.objects.select_related(
                 'property', 'cycle', 'state'
             ).get(
                 id=pk,
-                property__organization_id=self.get_organization(request)
+                property__organization_id=self.get_organization(request),
+                property__access_level_instance__lft__gte=ali.lft,
+                property__access_level_instance__rgt__lte=ali.rgt,
             )
         except PropertyView.DoesNotExist:
             return {
@@ -744,6 +826,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_viewer')
+    @has_hierarchy_access(property_view_id_kwarg="pk")
     @action(detail=True, methods=['GET'])
     def links(self, request, pk=None):
         """
@@ -794,6 +877,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
+    @has_hierarchy_access(property_view_id_kwarg="pk")
     @action(detail=True, methods=['POST'])
     def match_merge_link(self, request, pk=None):
         """
@@ -808,7 +892,15 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             pk=pk,
             cycle__organization_id=org_id
         )
-        merge_count, link_count, view_id = match_merge_link(property_view.id, 'PropertyState')
+        try:
+            with transaction.atomic():
+                merge_count, link_count, view_id = match_merge_link(property_view.state.id, 'PropertyState', property_view.property.access_level_instance, property_view.cycle)
+
+        except MergeLinkPairError:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'This property shares matching criteria with at least one property in a different ali. This should not happen. Please contact your system administrator.'
+            }, status=status.HTTP_400_BAD_REQUEST)
 
         result = {
             'view_id': view_id,
@@ -832,6 +924,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
+    @has_hierarchy_access(property_view_id_kwarg="pk")
     @action(detail=True, methods=['PUT'])
     def pair(self, request, pk=None):
         """
@@ -856,6 +949,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
+    @has_hierarchy_access(property_view_id_kwarg="pk")
     @action(detail=True, methods=['PUT'])
     def unpair(self, request, pk=None):
         """
@@ -884,10 +978,13 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         Batch delete several properties
         """
         org_id = self.get_organization(request)
+        ali = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
 
         property_view_ids = request.data.get('property_view_ids', [])
         property_state_ids = PropertyView.objects.filter(
             id__in=property_view_ids,
+            property__access_level_instance__lft__gte=ali.lft,
+            property__access_level_instance__rgt__lte=ali.rgt,
             cycle__organization_id=org_id
         ).values_list('state_id', flat=True)
         resp = PropertyState.objects.filter(pk__in=Subquery(property_state_ids)).delete()
@@ -954,6 +1051,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_view_data')
+    @has_hierarchy_access(property_view_id_kwarg="pk")
     def retrieve(self, request, pk=None):
         """
         Get property details
@@ -982,6 +1080,157 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         else:
             return JsonResponse(result, status=status.HTTP_404_NOT_FOUND)
 
+    @swagger_auto_schema(
+        manual_parameters=[
+            AutoSchemaHelper.query_org_id_field(),
+        ],
+        request_body=AutoSchemaHelper.schema_factory(
+            {
+                'cycle_id': 'integer',
+                'state': 'object',
+            },
+            required=['cycle_id', 'state']
+        ),
+    )
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('can_modify_data')
+    def create(self, request):
+        """
+        Create a propertyState and propertyView via promote for given cycle
+        """
+        org_id = self.get_organization(self.request)
+        data = request.data
+
+        # get state data
+        property_state_data = data.get('state', None)
+        cycle_pk = data.get('cycle_id', None)
+        access_level_instance_id = data.get('access_level_instance_id', None)
+
+        # set raw ali
+        if access_level_instance_id is None:
+            user_ali = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
+            property_state_data["raw_access_level_instance_id"] = user_ali.id
+        else:
+            user_ali = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
+            state_ali = AccessLevelInstance.objects.get(pk=access_level_instance_id)
+
+            if not (user_ali == state_ali or state_ali.is_descendant_of(user_ali)):
+                return JsonResponse({
+                    'status': 'error',
+                    'message': 'No such resource.'
+                }, status=status.HTTP_404_NOT_FOUND)
+
+            property_state_data["raw_access_level_instance_id"] = state_ali.id
+
+        if cycle_pk is None:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Missing required parameter cycle_id',
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        if property_state_data is None:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Missing required parameter state',
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        # ensure that state organization_id is set to org in the request
+        state_org_id = property_state_data.get('organization_id', org_id)
+        if state_org_id != org_id:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'State organization_id does not match request organization_id',
+            }, status=status.HTTP_400_BAD_REQUEST)
+        property_state_data['organization_id'] = state_org_id
+
+        # get cycle
+        try:
+            cycle = Cycle.objects.get(pk=cycle_pk, organization_id=org_id)
+        except Cycle.DoesNotExist:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Invalid cycle_id',
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        # set empty strings to None
+        try:
+            for key, val in property_state_data.items():
+                if val == '':
+                    property_state_data[key] = None
+        except AttributeError:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Invalid state',
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        # extra data fields that do not match existing columns will not be imported
+        extra_data_columns = list(Column.objects.filter(
+            organization_id=org_id,
+            table_name='PropertyState',
+            is_extra_data=True,
+            derived_column_id=None
+        ).values_list('column_name', flat=True))
+
+        extra_data = property_state_data.get('extra_data', {})
+        new_data = {}
+
+        for k, v in extra_data.items():
+            # keep only those that match a column
+            if k in extra_data_columns:
+                new_data[k] = v
+
+        property_state_data['extra_data'] = new_data
+
+        # this serializer is meant to be used by a `create` action
+        property_state_serializer = PropertyStatePromoteWritableSerializer(
+            data=property_state_data
+        )
+
+        try:
+            valid = property_state_serializer.is_valid()
+        except ValueError as e:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Invalid state: {}'.format(str(e))
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        if valid:
+            # create the new property state, and perform an initial save
+            new_state = property_state_serializer.save()
+            # set `merge_state` to new, rather than unknown
+            new_state.merge_state = MERGE_STATE_NEW
+
+            # Log this appropriately - "Import Creation" ?
+            PropertyAuditLog.objects.create(organization_id=org_id,
+                                            parent1=None,
+                                            parent2=None,
+                                            parent_state1=None,
+                                            parent_state2=None,
+                                            state=new_state,
+                                            name='Import Creation',
+                                            description='Creation from API',
+                                            import_filename=None,
+                                            record_type=AUDIT_USER_CREATE)
+
+            # promote to view
+            view = new_state.promote(cycle)
+
+            return JsonResponse({
+                'status': 'success',
+                'property_view_id': view.id,
+                'property_state_id': new_state.id,
+                'property_id': view.property.id,
+                'view': PropertyViewSerializer(view).data
+            }, encoder=PintJSONEncoder, status=status.HTTP_201_CREATED)
+
+        else:
+            # invalid request
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Invalid state: {}'.format(property_state_serializer.errors)
+            }, status=status.HTTP_400_BAD_REQUEST)
+
     @swagger_auto_schema_org_query_param
     @api_endpoint_class
     @ajax_request_class
@@ -1000,8 +1249,13 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
               description: List of property view ids
               paramType: body
         """
+        ali = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
         view_ids = request.data.get('view_ids', [])
-        property_queryset = PropertyView.objects.filter(id__in=view_ids).distinct()
+        property_queryset = PropertyView.objects.filter(
+            id__in=view_ids,
+            property__access_level_instance__lft__gte=ali.lft,
+            property__access_level_instance__rgt__lte=ali.rgt,
+        ).distinct()
         property_ids = list(property_queryset.values_list('property_id', flat=True))
         return JsonResponse({
             'status': 'success',
@@ -1015,10 +1269,11 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
+    @has_hierarchy_access(property_view_id_kwarg="pk")
     def update(self, request, pk=None):
         """
         Update a property and run the updated record through a match and merge
-        round within it's current Cycle.
+        round within its current Cycle.
         """
         data = request.data
 
@@ -1062,6 +1317,13 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
                         # create the new property state, and perform an initial save / moving relationships
                         new_state = new_property_state_serializer.save()
 
+                        # preserve any non-preferred UBIDs from the Import Creation state
+                        ubid_models = property_view.state.ubidmodel_set.filter(preferred=False)
+                        for ubid_model in ubid_models:
+                            new_state.ubidmodel_set.create(
+                                ubid=ubid_model.ubid,
+                            )
+
                         # Since we are creating a new relationship when we are manually editing the Properties, then
                         # we need to move the relationships over to the new manually edited record.
                         new_state = self._move_relationships(property_view.state, new_state)
@@ -1085,9 +1347,6 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
                         result.update(
                             {'state': new_property_state_serializer.data}
                         )
-
-                        # save the property view so that the datetime gets updated on the property.
-                        property_view.save()
                     else:
                         result.update({
                             'status': 'error',
@@ -1137,7 +1396,14 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
 
                         Note.create_from_edit(request.user.id, property_view, new_property_state_data, previous_data)
 
-                        merge_count, link_count, view_id = match_merge_link(property_view.id, 'PropertyState')
+                        try:
+                            with transaction.atomic():
+                                merge_count, link_count, view_id = match_merge_link(property_view.state.id, 'PropertyState', property_view.property.access_level_instance, property_view.cycle)
+                        except MergeLinkPairError:
+                            return JsonResponse({
+                                'status': 'error',
+                                'message': 'This change causes the property to perform a forbidden merge and is thus forbidden'
+                            }, status=status.HTTP_400_BAD_REQUEST)
 
                         result.update({
                             'view_id': view_id,
@@ -1206,6 +1472,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         ]
     )
     @has_perm_class('can_view_data')
+    @has_hierarchy_access(property_view_id_kwarg="pk")
     @action(detail=True, methods=['GET'])
     def building_sync(self, request, pk):
         """
@@ -1257,6 +1524,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         manual_parameters=[AutoSchemaHelper.query_org_id_field()]
     )
     @has_perm_class('can_view_data')
+    @has_hierarchy_access(property_view_id_kwarg="pk")
     @action(detail=True, methods=['GET'])
     def hpxml(self, request, pk):
         """
@@ -1313,6 +1581,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
     )
     @action(detail=True, methods=['PUT'], parser_classes=(MultiPartParser,))
     @has_perm_class('can_modify_data')
+    @has_hierarchy_access(property_view_id_kwarg="pk")
     def update_with_building_sync(self, request, pk):
         """
         Update an existing PropertyView with a building file. Currently only supports BuildingSync.
@@ -1326,11 +1595,34 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         the_file = request.data['file']
         file_type = BuildingFile.str_to_file_type(request.data.get('file_type', 'Unknown'))
         organization_id = self.get_organization(request)
-        cycle_pk = request.query_params.get('cycle_id', None)
-        org_id = self.get_organization(self.request)
+        cycle_id = request.query_params.get('cycle_id', None)
 
+        return self._update_with_building_sync(the_file, file_type, organization_id, cycle_id, pk)
+
+    def batch_update_with_building_sync(self, properties, org_id, cycle_id, progress_key):
+        """
+        Update a list of PropertyViews with a building file. Currently only supports BuildingSync.
+        """
+        progress_data = ProgressData.from_key(progress_key)
+        if not Cycle.objects.filter(pk=cycle_id):
+            logging.warning(f'Cycle {cycle_id} does not exist')
+            return progress_data.finish_with_error(f'Cycle {cycle_id} does not exist')
+
+        results = {'success': 0, 'failure': 0}
+        for property in properties:
+            formatted_time = time.strftime('%Y%m%d_%H%M%S', time.localtime(time.time()))
+            blob = ContentFile(property['xml'], name=f'at_{property["audit_template_building_id"]}_{formatted_time}.xml')
+            response = self._update_with_building_sync(blob, 1, org_id, cycle_id, property['property_view'], property['updated_at'])
+            response = json.loads(response.content)
+            results['success' if response['success'] else 'failure'] += 1
+
+            progress_data.step('Updating Properties...')
+
+        progress_data.finish_with_success(results)
+
+    def _update_with_building_sync(self, the_file, file_type, organization_id, cycle_id, view_id, at_updated=False):
         try:
-            cycle = Cycle.objects.get(pk=cycle_pk, organization_id=org_id)
+            cycle = Cycle.objects.get(pk=cycle_id, organization_id=organization_id)
         except Cycle.DoesNotExist:
             return JsonResponse({
                 'success': False,
@@ -1342,7 +1634,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             # if the cycle was not within the user's organization
             property_view = PropertyView.objects.select_related(
                 'property', 'cycle', 'state'
-            ).get(pk=pk, cycle_id=cycle_pk)
+            ).get(pk=view_id, cycle_id=cycle_id)
         except PropertyView.DoesNotExist:
             return JsonResponse({
                 'status': 'error',
@@ -1364,6 +1656,20 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         )
 
         if p_status and new_pv_state:
+            if at_updated:
+                # Update the propertyView state and parent state with the at_updated
+                for state in [building_file.property_state, property_view.state]:
+                    state.extra_data.update({'at_updated_at': at_updated})
+                    state.save()
+
+                Column.objects.get_or_create(
+                    is_extra_data=True,
+                    column_name='at_updated_at',
+                    display_name='Audit Template Updated',
+                    organization=cycle.organization,
+                    table_name='PropertyState',
+                )
+
             return JsonResponse({
                 'success': True,
                 'status': 'success',
@@ -1378,8 +1684,205 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
                 'message': "Could not process building file with messages {}".format(messages)
             }, status=status.HTTP_400_BAD_REQUEST)
 
+    @swagger_auto_schema(
+        manual_parameters=[
+            AutoSchemaHelper.path_id_field(
+                description='ID of the property view to update'
+            ),
+            AutoSchemaHelper.query_org_id_field(),
+            AutoSchemaHelper.query_integer_field(
+                'cycle_id',
+                required=True,
+                description='ID of the cycle of the property view'
+            ),
+            AutoSchemaHelper.query_integer_field(
+                'mapping_profile_id',
+                required=True,
+                description='ID of the column mapping profile to use'
+            ),
+            AutoSchemaHelper.upload_file_field(
+                'file',
+                required=True,
+                description='ESPM property report to use (in XLSX format)',
+            ),
+        ],
+        request_body=no_body,
+    )
     @action(detail=True, methods=['PUT'], parser_classes=(MultiPartParser,))
     @has_perm_class('can_modify_data')
+    @has_hierarchy_access(property_view_id_kwarg="pk")
+    def update_with_espm(self, request, pk):
+        """Update an existing PropertyView with an exported singular ESPM file.
+        """
+        if len(request.FILES) == 0:
+            return JsonResponse({
+                'success': False,
+                'message': 'Must pass file in as a multipart/form-data request'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        the_file = request.data['file']
+        cycle_pk = request.query_params.get('cycle_id', None)
+        org_id = self.get_organization(self.request)
+        org_inst = Organization.objects.get(pk=org_id)
+
+        # get mapping profile (ensure it is part of the org)
+        mapping_profile_id = request.query_params.get('mapping_profile_id', None)
+        if not mapping_profile_id:
+            return JsonResponse({
+                'success': False,
+                'message': 'Must provide a column mapping profile'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        column_mapping_profile = org_inst.columnmappingprofile_set.filter(
+            pk=mapping_profile_id
+        )
+        if len(column_mapping_profile) == 0:
+            return JsonResponse({
+                'success': False,
+                'message': 'Could not find ESPM column mapping profile'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        elif len(column_mapping_profile) > 1:
+            return JsonResponse({
+                'success': False,
+                'message': f"Found multiple ESPM column mapping profiles, found {len(column_mapping_profile)}"
+            }, status=status.HTTP_400_BAD_REQUEST)
+        column_mapping_profile = column_mapping_profile[0]
+
+        try:
+            Cycle.objects.get(pk=cycle_pk, organization_id=org_id)
+        except Cycle.DoesNotExist:
+            return JsonResponse({
+                'success': False,
+                'message': 'Cycle ID is missing or Cycle does not exist'
+            }, status=status.HTTP_404_NOT_FOUND)
+
+        try:
+            # note that this is a "safe" query b/c we should have already returned
+            # if the cycle was not within the user's organization
+            property_view = PropertyView.objects.select_related(
+                'property', 'cycle', 'state'
+            ).get(pk=pk, cycle_id=cycle_pk)
+        except PropertyView.DoesNotExist:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'property view does not exist'
+            }, status=status.HTTP_404_NOT_FOUND)
+
+        # create a new "datafile" object to store the file
+        import_record, _ = ImportRecord.objects.get_or_create(
+            name='Manual ESPM Records',
+            owner=request.user,
+            last_modified_by=request.user,
+            super_organization_id=org_id,
+            access_level_instance_id=self.request.access_level_instance_id
+        )
+
+        filename = the_file.name
+        path = os.path.join(settings.MEDIA_ROOT, "uploads", filename)
+
+        # Get a unique filename using the get_available_name method in FileSystemStorage
+        s = FileSystemStorage()
+        path = s.get_available_name(path)
+
+        # verify the directory exists
+        if not os.path.exists(os.path.dirname(path)):
+            os.makedirs(os.path.dirname(path))
+
+        # save the file
+        with open(path, 'wb+') as temp_file:
+            for chunk in the_file.chunks():
+                temp_file.write(chunk)
+
+        import_file = ImportFile.objects.create(
+            cycle_id=cycle_pk,
+            import_record=import_record,
+            uploaded_filename=filename,
+            file=path,
+            source_type=SEED_DATA_SOURCES[PORTFOLIO_RAW][1],
+            source_program='PortfolioManager',
+            source_program_version='1.0',
+        )
+
+        # save the raw data, but do it synchronously in the foreground
+        tasks.save_raw_espm_data_synchronous(import_file.pk)
+
+        # verify that there is only one property in the file
+        import_file.refresh_from_db()
+        if import_file.num_rows != 1:
+            return JsonResponse({
+                'success': False,
+                'message': f"File must contain exactly one property, found {import_file.num_rows or 0} properties"
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        # create the column mappings
+        Column.retrieve_mapping_columns(import_file.pk)
+
+        # assign the mappings to the import file id
+        Column.create_mappings(column_mapping_profile.mappings, org_inst, request.user, import_file.pk)
+
+        # call the mapping process - but do this in the foreground, not asynchronously.
+        tasks.map_data_synchronous(import_file.pk)
+
+        # The data should now be mapped, but since we called the task, we have the IDs of the
+        # mapped files, so query for the files.
+        new_property_state = PropertyState.objects.filter(
+            organization_id=org_id,
+            import_file_id=import_file.pk,
+            data_state=DATA_STATE_MAPPING,
+        )
+        if len(new_property_state) == 0:
+            return JsonResponse({
+                'success': False,
+                'message': "Could not find newly mapped property state"
+            }, status=status.HTTP_400_BAD_REQUEST)
+        elif len(new_property_state) > 1:
+            return JsonResponse({
+                'success': False,
+                'message': f"Found multiple newly mapped property states, found {len(new_property_state)}"
+            }, status=status.HTTP_400_BAD_REQUEST)
+        new_property_state = new_property_state[0]
+
+        # retrieve the column merge priorities and then save the update new property state.
+        # This is called merge protection on the front end.
+        priorities = Column.retrieve_priorities(org_id)
+        merged_state = save_state_match(property_view.state, new_property_state, priorities)
+
+        # save the merged state to the latest property view
+        property_view.state = merged_state
+        property_view.save()
+
+        # now save the meters, need a progress_data object to pass to the tasks, although
+        # not used.
+        progress_data = ProgressData(func_name='meter_import', unique_id=import_file.pk)
+        # -- Start --
+        # For now, we are duplicating the methods that are called in the tasks in order
+        # to circumvent the celery background task management (i.e., run in foreground)
+        meters_parser = MetersParser.factory(import_file.local_file, org_id)
+        meters_and_readings = meters_parser.meter_and_reading_objs
+        for meter_readings in meters_and_readings:
+            _save_pm_meter_usage_data_task(meter_readings, import_file.id, progress_data.key)
+        # -- End -- of duplicate (and simplified) meter import methods
+        progress_data.delete()
+
+        if merged_state:
+            return JsonResponse({
+                'success': True,
+                'status': 'success',
+                'message': 'successfully updated property with ESPM file',
+                'data': {
+                    'status': 'success',
+                    'property_view': PropertyViewAsStateSerializer(property_view).data,
+                },
+            }, status=status.HTTP_200_OK)
+        else:
+            return JsonResponse({
+                'status': 'error',
+                'message': "Could not process ESPM file"
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=True, methods=['PUT'], parser_classes=(MultiPartParser,))
+    @has_perm_class('can_modify_data')
+    @has_hierarchy_access(property_view_id_kwarg="pk")
     def upload_inventory_document(self, request, pk):
         """
         Upload an inventory document on a property. Currently only supports PDFs.
@@ -1424,8 +1927,75 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
                 'message': str(e)
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+    @swagger_auto_schema(
+        manual_parameters=[AutoSchemaHelper.query_org_id_field()],
+        request_body=AutoSchemaHelper.schema_factory(
+            {
+                'property_view_ids': ['integer']
+            },
+            required=['property_view_ids'],
+            description='A list of property view ids to sync with Salesforce')
+    )
+    @api_endpoint_class
+    @ajax_request_class
+    @action(detail=False, methods=['POST'])
+    @has_perm_class('can_modify_data')
+    def update_salesforce(self, request):
+        """
+        Update an existing PropertyView's Salesforce Benchmark object.
+        Use an array so it can update one or more properties
+        """
+        org_id = self.get_organization(request)
+        ids = request.data.get('property_view_ids', [])
+
+        # filter ids based on request user's ali
+        ali = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
+        checked_ids = PropertyView.objects.filter(
+            property__organization_id=org_id,
+            pk__in=ids,
+            property__access_level_instance__lft__gte=ali.lft,
+            property__access_level_instance__rgt__lte=ali.rgt
+        ).values_list('pk', flat=True)
+
+        if not checked_ids:
+            # no eligible IDs for this ali
+            return JsonResponse({
+                'status': 'error',
+                'message': 'ID not found'
+            }, status=status.HTTP_404_NOT_FOUND)
+        try:
+            the_status, messages = update_salesforce_properties(org_id, list(checked_ids))
+            if not the_status:
+                return JsonResponse({
+                    'status': 'error',
+                    'message': messages,
+                }, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as err:
+            template = "An exception of type {0} occurred. Arguments:\n{1!r}"
+            message = template.format(type(err).__name__, err.args)
+            return JsonResponse({
+                'status': 'error',
+                'message': message
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        if the_status:
+            message = 'successful sync with Salesforce'
+            if len(ids) != len(checked_ids):
+                message = message + ' One or more IDs were not found in SEED and could not be synced'
+            return JsonResponse({
+                'success': True,
+                'status': 'success',
+                'message': message
+            })
+        else:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'failed to sync with Salesforce'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
     @action(detail=True, methods=['DELETE'])
     @has_perm_class('can_modify_data')
+    @has_hierarchy_access(property_view_id_kwarg="pk")
     def delete_inventory_document(self, request, pk):
         """
         Deletes an inventory document from a property

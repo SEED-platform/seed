@@ -1,3 +1,7 @@
+"""
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
+"""
 import csv
 import datetime
 import logging
@@ -16,7 +20,10 @@ from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
 
 from seed.data_importer.models import ImportFile, ImportRecord
 from seed.decorators import ajax_request_class
-from seed.lib.superperms.orgs.decorators import has_perm_class
+from seed.lib.superperms.orgs.decorators import (
+    has_hierarchy_access,
+    has_perm_class
+)
 from seed.models import PORTFOLIO_RAW, SEED_DATA_SOURCES
 from seed.utils.api import OrgMixin, api_endpoint_class
 from seed.utils.api_schema import AutoSchemaHelper
@@ -76,6 +83,7 @@ class UploadViewSet(viewsets.ViewSet, OrgMixin):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
+    @has_hierarchy_access(param_import_record_id="import_record")
     def create(self, request):
         """
         Upload a new file to an import_record. This is a multipart/form upload.
@@ -202,6 +210,7 @@ class UploadViewSet(viewsets.ViewSet, OrgMixin):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
+    @has_hierarchy_access(body_import_record_id="import_record_id")
     @action(detail=False, methods=['POST'], parser_classes=(JSONParser,))
     def create_from_pm_import(self, request):
         """
@@ -370,9 +379,9 @@ class UploadViewSet(viewsets.ViewSet, OrgMixin):
         f = ImportFile.objects.create(import_record=record,
                                       uploaded_filename=file_name,
                                       file=path,
-                                      source_type=SEED_DATA_SOURCES[PORTFOLIO_RAW],
-                                      **{'source_program': 'PortfolioManager',
-                                         'source_program_version': '1.0'})
+                                      source_type=SEED_DATA_SOURCES[PORTFOLIO_RAW][1],
+                                      source_program='PortfolioManager',
+                                      source_program_version='1.0')
 
         # Return the newly created import file ID
         return JsonResponse({'success': True, 'import_file_id': f.pk})

@@ -1,3 +1,7 @@
+"""
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
+"""
 import datetime
 from calendar import monthrange
 from collections import defaultdict, namedtuple
@@ -39,7 +43,7 @@ def _split_reading(meter_reading, snap_intervals=True):
     If snap_intervals is not enabled, the original start and end are preserved in
     the first and last readings (respectively)
 
-    Because we have to estimate the reading value (ie energy usage) when a reading
+    Because we have to estimate the reading value (i.e., energy usage) when a reading
     doesn't cleanly fit in a calendar month (e.g., when it straddles or spans months),
     the result will not always be perfectly accurate to how much energy was really
     used in a calendar month.
@@ -104,7 +108,7 @@ def _split_reading(meter_reading, snap_intervals=True):
     for idx, (month_start, month_end) in enumerate(months_affected):
         # estimate the reading value for this month by calculating
         # the fraction of the original reading this month covers and multiplying
-        # the "total" (ie original) reading by that fraction
+        # the "total" (i.e., original) reading by that fraction
         overlap_start = max(month_start, reading_unaware_start_time)
         overlap_end = min(month_end, reading_unaware_end_time)
         # overlap_delta is essentially the union of time covered by this month and

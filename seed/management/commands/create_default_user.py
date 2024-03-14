@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
-:author
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
 from django.core.management.base import BaseCommand
 
 from seed.landing.models import SEEDUser as User
-from seed.lib.superperms.orgs.models import Organization
+from seed.lib.superperms.orgs.models import ROLE_OWNER, Organization
 from seed.utils.organizations import create_organization
 
 
@@ -71,8 +71,9 @@ class Command(BaseCommand):
         if Organization.objects.filter(name=options['organization']).exists():
             org = Organization.objects.get(name=options['organization'])
             self.stdout.write(
-                'Org <%s> already exists' % options['organization'], ending='\n'
+                'Org <%s> already exists, adding user' % options['organization'], ending='\n'
             )
+            org.add_member(u, org.root.id, ROLE_OWNER)
         else:
             self.stdout.write(
                 'Creating org <%s> ...' % options['organization'],

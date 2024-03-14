@@ -1,6 +1,9 @@
 # !/usr/bin/env python
 # encoding: utf-8
-
+"""
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
+"""
 import csv
 
 from django.http import HttpResponse, JsonResponse
@@ -10,6 +13,7 @@ from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST
 from rest_framework.viewsets import ViewSet
 
 from seed.lib.mcm import mapper
+from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.lib.superperms.orgs.permissions import SEEDOrgPermissions
 from seed.models import Column, ColumnMappingProfile
 from seed.serializers.column_mapping_profiles import (
@@ -64,7 +68,6 @@ class ColumnMappingProfileViewSet(OrgMixin, ViewSet):
                 'data': data,
             })
         except Exception as e:
-            raise e
             return JsonResponse({
                 'status': 'error',
                 'data': str(e),
@@ -88,6 +91,7 @@ class ColumnMappingProfileViewSet(OrgMixin, ViewSet):
             description="Optional 'name' or 'mappings'.\n" + mappings_description
         )
     )
+    @has_perm_class('requires_root_member_access')
     @api_endpoint_class
     def update(self, request, pk=None):
         """
@@ -153,7 +157,7 @@ class ColumnMappingProfileViewSet(OrgMixin, ViewSet):
     @action(detail=True, methods=['GET'])
     def csv(self, request, pk=None):
         """Export a column list profile in a CSV format. This format is supported in the py-seed library when setting up
-        new mappings programatically."""
+        new mappings programmatically."""
         response = HttpResponse(content_type='text/csv')
         response['Content-Disposition'] = f'attachment; filename="column_mapping_profile_{pk}.csv"'
 
@@ -169,7 +173,9 @@ class ColumnMappingProfileViewSet(OrgMixin, ViewSet):
         writer = csv.writer(response)
         writer.writerow(['Raw Columns', 'units', 'SEED Table', 'SEED Columns'])
 
-        for map in profile.mappings:
+        # sort the mappings by the to_field
+        sorted_mappings = sorted(profile.mappings, key=lambda m: m['to_field'].casefold())
+        for map in sorted_mappings:
             writer.writerow([
                 map['from_field'], map['from_units'], map['to_table_name'], map['to_field']
             ])
@@ -195,6 +201,7 @@ class ColumnMappingProfileViewSet(OrgMixin, ViewSet):
             required=['name', 'mappings']
         )
     )
+    @has_perm_class('requires_root_member_access')
     @api_endpoint_class
     def create(self, request, pk=None):
         """
@@ -232,6 +239,7 @@ class ColumnMappingProfileViewSet(OrgMixin, ViewSet):
             description="Optional org id which overrides the users (default) current org id"
         )]
     )
+    @has_perm_class('requires_root_member_access')
     @api_endpoint_class
     def destroy(self, request, pk=None):
         """

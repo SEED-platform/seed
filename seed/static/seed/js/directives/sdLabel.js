@@ -1,18 +1,18 @@
 /**
- * :copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
- * :author
- */
-/**
+ * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+ * See also https://github.com/seed-platform/seed/main/LICENSE.md
+ *
  * directive sd-label: adds a bootstrap label from a color
  */
-angular.module('sdLabel', []).directive('sdLabel', ['$log', function ($log) {
-  return {
+angular.module('sdLabel', []).directive('sdLabel', [
+  '$log',
+  ($log) => ({
     scope: {},
     restrict: 'E',
-    link: function (scope, element, attrs) {
+    link: (scope, element, attrs) => {
       scope.name = attrs.name;
-      var lookup_label = function (color) {
-        var lookup_colors = {
+      const lookup_label = (color) => {
+        const lookup_colors = {
           red: 'danger',
           gray: 'default',
           grey: 'default',
@@ -32,5 +32,5 @@ angular.module('sdLabel', []).directive('sdLabel', ['$log', function ($log) {
     },
     replace: true,
     template: '<span class="label label-{$ label $}">{$ name $}</span>'
-  };
-}]);
+  })
+]);

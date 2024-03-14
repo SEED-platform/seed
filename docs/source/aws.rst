@@ -161,25 +161,23 @@ settings.
 
 .. code-block:: python
 
+    CELERY_BROKER_URL = 'redis://seed-core-cache.ntmprk.0001.usw2.cache.amazonaws.com:6379/1'
     CACHES = {
         'default': {
-            'BACKEND': 'redis_cache.cache.RedisCache',
-            'LOCATION': "seed-core-cache.ntmprk.0001.usw2.cache.amazonaws.com:6379",
-            'OPTIONS': { 'DB': 1 },
-            'TIMEOUT': 300
+            'BACKEND': 'django_redis.cache.RedisCache',
+            'LOCATION': CELERY_BROKER_URL,
         }
     }
-    CELERY_BROKER_URL = 'redis://seed-core-cache.ntmprk.0001.usw2.cache.amazonaws.com:6379/1'
 
 Running Celery the Background Task Worker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-`Celery`_ is used for background tasks (saving data, matching, creating
-projects, etc) and must be connected to the message broker queue. From the
-project directory, ``celery`` can be started:
+`Celery`_ is used for background tasks (saving data, matching, data quality checks, etc.)
+and must be connected to the message broker queue. From the project directory, ``celery``
+can be started:
 
 .. code-block:: console
 
-    celery -A seed worker -l INFO -c 2 -B --events --max-tasks-per-child 1000
+    celery -A seed worker -l INFO -c 2 --max-tasks-per-child 1000 -EBS django_celery_beat.schedulers:DatabaseScheduler
 
 .. _Celery: http://www.celeryproject.org/

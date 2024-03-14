@@ -143,15 +143,13 @@ settings.
 
 .. code-block:: python
 
+    CELERY_BROKER_URL = 'redis://127.0.0.1:6379/1'
     CACHES = {
         'default': {
-            'BACKEND': 'redis_cache.cache.RedisCache',
-            'LOCATION': '127.0.0.1:6379',
-            'OPTIONS': {'DB': 1},
-            'TIMEOUT': 300
+            'BACKEND': 'django_redis.cache.RedisCache',
+            'LOCATION': CELERY_BROKER_URL,
         }
     }
-    CELERY_BROKER_URL = 'redis://127.0.0.1:6379/1'
 
 
 Creating the initial user
@@ -177,13 +175,13 @@ create a superuser to access the system
 Running celery the background task worker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-`Celery`_ is used for background tasks (saving data, matching, creating
-projects, etc) and must be connected to the message broker queue. From the
-project directory, ``celery`` can be started:
+`Celery`_ is used for background tasks (saving data, matching, data quality checks, etc.)
+and must be connected to the message broker queue. From the project directory, ``celery``
+can be started:
 
 .. code-block:: console
 
-    DJANGO_SETTINGS_MODULE=config.settings.dev celery -A seed worker -l info -c 2 -B --events --max-tasks-per-child=1000
+    DJANGO_SETTINGS_MODULE=config.settings.dev celery -A seed worker -l INFO -c 2 --max-tasks-per-child 1000 -EBS django_celery_beat.schedulers:DatabaseScheduler
 
 .. _Celery: http://www.celeryproject.org/
 
@@ -243,7 +241,7 @@ Start the web server (this also starts celery):
 
 .. warning::
 
-    Note that uwsgi has port set to ``80``. In a production setting, a dedicated web server such as NGINX would be
+    Note that uwsgi has port set to ``80``. In a production setting, a dedicated web server such as nginx would be
     receiving requests on port 80 and passing requests to uwsgi running on a different port, e.g 8000.
 
 
@@ -320,15 +318,13 @@ local_untracked.py
     # config for local storage backend
     DOMAIN_URLCONFS = {'default': 'config.urls'}
 
+    CELERY_BROKER_URL = 'redis://127.0.0.1:6379/1'
     CACHES = {
         'default': {
-            'BACKEND': 'redis_cache.cache.RedisCache',
-            'LOCATION': '127.0.0.1:6379',
-            'OPTIONS': {'DB': 1},
-            'TIMEOUT': 300
+            'BACKEND': 'django_redis.cache.RedisCache',
+            'LOCATION': CELERY_BROKER_URL,
         }
     }
-    CELERY_BROKER_URL = 'redis://127.0.0.1:6379/1'
 
     # SMTP config
     EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'

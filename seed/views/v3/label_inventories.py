@@ -1,7 +1,9 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
+
 :author 'Piper Merriam <pmerriam@quickleft.com>'
 """
 from collections import namedtuple
@@ -15,6 +17,7 @@ from rest_framework.renderers import JSONRenderer
 from rest_framework.views import APIView
 
 from seed.lib.superperms.orgs.decorators import has_perm_class
+from seed.lib.superperms.orgs.models import AccessLevelInstance
 from seed.models import PropertyView
 from seed.models import StatusLabel as Label
 from seed.models import TaxLotView
@@ -102,7 +105,7 @@ class LabelInventoryViewSet(APIView):
     def filter_by_inventory(self, qs, inventory_type, inventory_ids):
         if inventory_ids:
             filterdict = {
-                "{}view__pk__in".format(inventory_type): inventory_ids
+                f"{inventory_type}view__pk__in": inventory_ids
             }
             qs = qs.filter(**filterdict)
         return qs
@@ -111,14 +114,14 @@ class LabelInventoryViewSet(APIView):
         Model = self.models[inventory_type]
 
         # Ensure the the label org and inventory org are the same
-        inventory_views = getattr(Model, "{}view".format(inventory_type)).get_queryset()
+        inventory_views = getattr(Model, f"{inventory_type}view").get_queryset()
         inventory_parent_org_id = inventory_views.get(pk=inventory_id)\
             .cycle.organization.get_parent().id
         label_super_org_id = Model.statuslabel.get_queryset().get(pk=label_id).super_organization_id
         if inventory_parent_org_id == label_super_org_id:
             create_dict = {
                 'statuslabel_id': label_id,
-                "{}view_id".format(inventory_type): inventory_id
+                f"{inventory_type}view_id": inventory_id
             }
 
             return Model(**create_dict)
@@ -149,7 +152,7 @@ class LabelInventoryViewSet(APIView):
                     if pk not in exclude[label_id]:
                         new_inventory_label = self.label_factory(inventory_type, label_id, pk)
                         new_inventory_labels.append(new_inventory_label)
-            model.objects.bulk_create(new_inventory_labels)
+            model.objects.bulk_create(new_inventory_labels, ignore_conflicts=True)
             added = [
                 self.get_inventory_id(m, inventory_type)
                 for m in new_inventory_labels
@@ -207,6 +210,7 @@ class LabelInventoryViewSet(APIView):
         remove_label_ids = request.data.get('remove_label_ids', [])
         inventory_ids = request.data.get('inventory_ids', [])
         organization_id = request.query_params['organization_id']
+        access_level_instance = AccessLevelInstance.objects.get(pk=self.request.access_level_instance_id)
         error = None
         # ensure add_label_ids and remove_label_ids are different
         if not set(add_label_ids).isdisjoint(remove_label_ids):
@@ -222,6 +226,13 @@ class LabelInventoryViewSet(APIView):
             }
             status_code = error.status_code
         else:
+            Model = self.inventory_models[inventory_type]
+            inventory_ids = Model.objects.filter(**{
+                "id__in": inventory_ids,
+                f"{inventory_type}__access_level_instance__lft__gte": access_level_instance.lft,
+                f"{inventory_type}__access_level_instance__rgt__lte": access_level_instance.rgt,
+            }).values_list("id", flat=True)
+
             qs = self.get_queryset(inventory_type, organization_id)
             qs = self.filter_by_inventory(qs, inventory_type, inventory_ids)
             removed = self.remove_labels(qs, inventory_type, remove_label_ids)

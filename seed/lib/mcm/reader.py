@@ -1,14 +1,12 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
-:author
-"""
-"""
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
+
 The Reader module is intended to contain only code which reads data
 out of CSV files. Fuzzy matches, application to data models happens
 elsewhere.
-
 """
 import json
 import logging
@@ -20,11 +18,11 @@ from csv import DictReader, Sniffer
 
 import xmltodict
 from past.builtins import basestring
-from unidecode import unidecode
 from xlrd import XLRDError, empty_cell, open_workbook, xldate
 from xlrd.xldate import XLDateAmbiguous
 
 from seed.data_importer.utils import kbtu_thermal_conversion_factors
+from seed.lib.mcm.cleaners import normalize_unicode_and_characters
 
 # Create a list of Excel cell types. This is copied
 # directly from the xlrd source code.
@@ -58,7 +56,7 @@ def clean_fieldnames(fieldnames):
     num_generated_headers = 0
     new_fieldnames = []
     for fieldname in fieldnames:
-        new_fieldname = unidecode(fieldname)
+        new_fieldname = normalize_unicode_and_characters(fieldname)
         if fieldname == '':
             num_generated_headers += 1
             new_fieldname = f'{SEED_GENERATED_HEADER_PREFIX} {num_generated_headers}'
@@ -263,7 +261,8 @@ class GeoJSONParser(object):
         features = raw_data.get("features")
         raw_column_names = features[0].get("properties").keys()
 
-        self.headers = [self._display_name(col) for col in raw_column_names]
+        # add in the property footprint to the headers/columns
+        self.headers = [self._display_name(col) for col in raw_column_names] + ["property_footprint"]
         self.column_translations = {col: self._display_name(col) for col in raw_column_names}
         self.first_five_rows = [self._capture_row(feature) for feature in features[:5]]
 
@@ -272,7 +271,7 @@ class GeoJSONParser(object):
             properties = feature.get('properties')
 
             entry = {self.column_translations.get(k, k): v for k, v in properties.items()}
-            entry["bounding_box"] = self._get_bounding_box(feature)
+            entry["property_footprint"] = self._get_bounding_box(feature)
 
             self.data.append(entry)
 
@@ -287,7 +286,7 @@ class GeoJSONParser(object):
         return f"POLYGON (({', '.join(coords_strings)}))"
 
     def _capture_row(self, feature):
-        stringified_values = [str(value) for value in feature.get('properties').values()]
+        stringified_values = [str(value) for value in feature.get('properties').values()] + ['Property Footprint - Not Displayed']
         return "|#*#|".join(stringified_values)
 
     def num_columns(self):
@@ -352,6 +351,9 @@ class ExcelParser(object):
         """Handle different value types for XLS.
 
         :param item: xlrd cell object
+        :kwargs:
+            :trim_and_clean_strings: boolean, default False, strip whitespace before and after, remove
+                                     multiple whitespaces within string. Used specifically for headers
         :returns: items value with dates parsed properly
         """
 
@@ -380,7 +382,14 @@ class ExcelParser(object):
 
         # XL_CELL_TEXT
         if isinstance(item.value, basestring):
-            return unidecode(item.value)
+            if kwargs.get('trim_and_clean_strings', False):
+                # remove leading and trailing whitespace
+                value = item.value.strip()
+                # remove any double spaces within the string
+                value = " ".join(value.split())
+            else:
+                value = item.value
+            return normalize_unicode_and_characters(value)
 
         # only remaining items should be booleans
         return item.value
@@ -391,20 +400,20 @@ class ExcelParser(object):
 
         :param sheet: xlrd Sheet
         :param header_row: the row index to start with
-        :returns: Generator yeilding a row as Dict
+        :returns: Generator yielding a row as Dict
         """
 
         # save off the headers into a member variable. Only do this once. If XLSDictReader is
         # called later (which it is in `seek_to_beginning` then don't reparse the headers
         if not self.cache_headers:
             for j in range(sheet.ncols):
-                self.cache_headers.append(self.get_value(sheet.cell(header_row, j)).strip())
+                self.cache_headers.append(self.get_value(sheet.cell(header_row, j), trim_and_clean_strings=True))
 
         def item(i, j):
             """returns a tuple (column header, cell value)"""
             # self.cache_headers[j],
             return (
-                self.get_value(sheet.cell(header_row, j)),
+                self.get_value(sheet.cell(header_row, j), trim_and_clean_strings=True),
                 self.get_value(sheet.cell(i, j))
             )
 
@@ -596,7 +605,7 @@ class MCMParser(object):
             for x in first_row:
                 row_field = r[x]
                 if isinstance(row_field, basestring):
-                    row_field = unidecode(r[x])
+                    row_field = normalize_unicode_and_characters(r[x])
                 else:
                     row_field = str(r[x])
                 row_arr.append(row_field.strip())

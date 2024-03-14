@@ -1,11 +1,13 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
-:author
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
 import json
 
+from django.core.exceptions import ValidationError
+from django.db.utils import IntegrityError
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
 from drf_yasg.utils import swagger_auto_schema
@@ -111,6 +113,39 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet, Org
             'columns': columns,
         })
 
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('requires_root_member_access')
+    def create(self, request):
+        org_id = self.get_organization(self.request)
+
+        table_name = self.request.data.get("table_name")
+        if table_name != "PropertyState" and table_name != "TaxLotState":
+            return JsonResponse({
+                'status': 'error',
+                'message': 'table_name must be "PropertyState" or "TaxLotState"'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            # set request data organization_id to org_id just in case it is not set or incorrectly set
+            self.request.data['organization_id'] = org_id
+
+            new_column = Column.objects.create(
+                is_extra_data=True,
+                **self.request.data
+            )
+            new_column.save()
+        except ValidationError as e:
+            return JsonResponse({
+                'status': 'error',
+                'message': str(e)
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        return JsonResponse({
+            'status': 'success',
+            'column': ColumnSerializer(new_column).data,
+        }, status=status.HTTP_201_CREATED)
+
     @swagger_auto_schema_org_query_param
     @ajax_request_class
     def retrieve(self, request, pk=None):
@@ -139,7 +174,7 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet, Org
         })
 
     @ajax_request_class
-    @has_perm_class('can_modify_data')
+    @has_perm_class('requires_root_member_access')
     def update(self, request, pk=None):
         organization_id = self.get_organization(request)
 
@@ -150,10 +185,19 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet, Org
         if request.data['comstock_mapping'] is not None:
             Column.objects.filter(organization_id=organization_id, comstock_mapping=request.data['comstock_mapping']) \
                 .update(comstock_mapping=None)
-        return super(ColumnViewSet, self).update(request, pk)
+
+        try:
+            result = super(ColumnViewSet, self).update(request, pk)
+        except IntegrityError as e:
+            return JsonResponse({
+                'status': 'error',
+                'message': str(e)
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        return result
 
     @ajax_request_class
-    @has_perm_class('can_modify_data')
+    @has_perm_class('requires_root_member_access')
     def destroy(self, request, pk=None):
         org_id = self.get_organization(request)
         try:
@@ -186,7 +230,7 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet, Org
         })
     )
     @ajax_request_class
-    @has_perm_class('can_modify_data')
+    @has_perm_class('requires_root_member_access')
     @action(detail=True, methods=['POST'])
     def rename(self, request, pk=None):
         """

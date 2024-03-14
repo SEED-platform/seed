@@ -1,8 +1,7 @@
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
-:author
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
-
 from typing import Literal, Optional, Type, Union
 
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
@@ -11,7 +10,7 @@ from django.http import JsonResponse
 from rest_framework import status
 from rest_framework.request import Request
 
-from seed.lib.superperms.orgs.models import Organization
+from seed.lib.superperms.orgs.models import AccessLevelInstance, Organization
 from seed.models import (
     VIEW_LIST,
     VIEW_LIST_PROPERTY,
@@ -37,12 +36,22 @@ def get_filtered_results(request: Request, inventory_type: Literal['property', '
     # check if there is a query parameter for the profile_id. If so, then use that one
     profile_id = request.query_params.get('profile_id', profile_id)
     shown_column_ids = request.query_params.get('shown_column_ids')
+    goal_id = request.data.get('goal_id')
 
     if not org_id:
         return JsonResponse(
             {'status': 'error', 'message': 'Need to pass organization_id as query parameter'},
             status=status.HTTP_400_BAD_REQUEST)
     org = Organization.objects.get(id=org_id)
+
+    access_level_instance_id = request.data.get('access_level_instance_id', request.access_level_instance_id)
+    access_level_instance = AccessLevelInstance.objects.get(pk=access_level_instance_id)
+    user_ali = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
+    if not (user_ali == access_level_instance or access_level_instance.is_descendant_of(user_ali)):
+        return JsonResponse({
+            'status': 'error',
+            'message': f'No access_level_instance with id {access_level_instance_id}.'
+        }, status=status.HTTP_404_NOT_FOUND)
 
     if cycle_id:
         cycle = Cycle.objects.get(organization_id=org_id, pk=cycle_id)
@@ -73,12 +82,24 @@ def get_filtered_results(request: Request, inventory_type: Literal['property', '
     if inventory_type == 'property':
         views_list = (
             PropertyView.objects.select_related('property', 'state', 'cycle')
-            .filter(property__organization_id=org_id, cycle=cycle)
+            .filter(
+                property__organization_id=org_id, cycle=cycle,
+                # this is a m-to-1-to-1, so the joins not _that_ bad
+                # should it prove to be un-performant, I think we can make it a "through" field
+                property__access_level_instance__lft__gte=access_level_instance.lft,
+                property__access_level_instance__rgt__lte=access_level_instance.rgt,
+            )
         )
     elif inventory_type == 'taxlot':
         views_list = (
             TaxLotView.objects.select_related('taxlot', 'state', 'cycle')
-            .filter(taxlot__organization_id=org_id, cycle=cycle)
+            .filter(
+                taxlot__organization_id=org_id, cycle=cycle,
+                # this is a m-to-1-to-1, so the joins not _that_ bad
+                # should it prove to be un-performant, I think we can make it a "through" field
+                taxlot__access_level_instance__lft__gte=access_level_instance.lft,
+                taxlot__access_level_instance__rgt__lte=access_level_instance.rgt,
+            )
         )
 
     include_related = (
@@ -94,7 +115,7 @@ def get_filtered_results(request: Request, inventory_type: Literal['property', '
         exclude_derived=True,
     )
     try:
-        filters, annotations, order_by = build_view_filters_and_sorts(request.query_params, columns_from_database)
+        filters, annotations, order_by = build_view_filters_and_sorts(request.query_params, columns_from_database, inventory_type, org.access_level_names)
     except FilterException as e:
         return JsonResponse(
             {
@@ -104,7 +125,16 @@ def get_filtered_results(request: Request, inventory_type: Literal['property', '
             status=status.HTTP_400_BAD_REQUEST
         )
 
-    views_list = views_list.annotate(**annotations).filter(filters).order_by(*order_by)
+    try:
+        views_list = views_list.annotate(**annotations).filter(filters).order_by(*order_by)
+    except ValueError as e:
+        return JsonResponse(
+            {
+                'status': 'error',
+                'message': f'Error filtering: {str(e)}'
+            },
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
     # If we are returning the children, build the childrens filters.
     if include_related:
@@ -118,7 +148,7 @@ def get_filtered_results(request: Request, inventory_type: Literal['property', '
             exclude_derived=True,
         )
         try:
-            filters, annotations, _ = build_view_filters_and_sorts(request.query_params, other_columns_from_database)
+            filters, annotations, _ = build_view_filters_and_sorts(request.query_params, other_columns_from_database, other_inventory_type)
         except FilterException as e:
             return JsonResponse(
                 {
@@ -132,8 +162,8 @@ def get_filtered_results(request: Request, inventory_type: Literal['property', '
         if len(filters) > 0 or len(annotations) > 0:
             other_inventory_type_class: Union[Type[TaxLotView], Type[PropertyView]] = TaxLotView if inventory_type == "property" else PropertyView
             other_views_list = (
-                other_inventory_type_class.objects.select_related('taxlot', 'state', 'cycle')
-                .filter(taxlot__organization_id=org_id, cycle=cycle)
+                other_inventory_type_class.objects.select_related(other_inventory_type, 'state', 'cycle')
+                .filter(**{f'{other_inventory_type}__organization_id': org_id, 'cycle': cycle})
             )
 
             other_views_list = other_views_list.annotate(**annotations).filter(filters)
@@ -147,6 +177,10 @@ def get_filtered_results(request: Request, inventory_type: Literal['property', '
     # exclude property views limited to the 'exclude_view_ids' list if not empty
     if 'exclude_view_ids' in request.data and request.data['exclude_view_ids']:
         views_list = views_list.exclude(id__in=request.data['exclude_view_ids'])
+
+    # return property views limited to the 'include_property_ids' list if not empty
+    if include_property_ids := request.data.get('include_property_ids'):
+        views_list = views_list.filter(property__id__in=include_property_ids)
 
     if ids_only:
         id_list = list(views_list.values_list('id', flat=True))
@@ -171,6 +205,14 @@ def get_filtered_results(request: Request, inventory_type: Literal['property', '
                 'status': 'error',
                 'recommended_action': 'update_column_settings',
                 'message': f'Error filtering - your data might not match the column settings data type: {str(e)}'
+            },
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    except IndexError as e:
+        return JsonResponse(
+            {
+                'status': 'error',
+                'message': f'Error filtering - Clear filters and try again: {str(e)}'
             },
             status=status.HTTP_400_BAD_REQUEST
         )
@@ -222,7 +264,8 @@ def get_filtered_results(request: Request, inventory_type: Literal['property', '
             views,
             show_columns,
             columns_from_database,
-            include_related
+            include_related,
+            goal_id
         )
     except DataError as e:
         return JsonResponse(

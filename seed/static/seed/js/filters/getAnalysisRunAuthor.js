@@ -1,10 +1,10 @@
 /**
- * :copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
- * :author
+ * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+ * See also https://github.com/seed-platform/seed/main/LICENSE.md
  */
-
-angular.module('getAnalysisRunAuthor', []).filter('getAnalysisRunAuthor', function () {
-  return function (users) {
+angular.module('getAnalysisRunAuthor', []).filter(
+  'getAnalysisRunAuthor',
+  () => (users) => {
     if (!users || users.length < 1) {
       return ''; // no user, display nothing
     }
@@ -13,5 +13,5 @@ angular.module('getAnalysisRunAuthor', []).filter('getAnalysisRunAuthor', functi
       return user.email; // no full name, display email
     }
     return [user.last_name, user.first_name].join(', '); // display full name
-  };
-});
+  }
+);

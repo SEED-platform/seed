@@ -1,8 +1,8 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
-:author
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
 from django.http import JsonResponse
 from drf_yasg.utils import swagger_auto_schema
@@ -10,8 +10,11 @@ from rest_framework import viewsets
 from rest_framework.status import HTTP_409_CONFLICT
 
 from seed.decorators import ajax_request_class, require_organization_id_class
-from seed.lib.superperms.orgs.decorators import has_perm_class
-from seed.models import AnalysisPropertyView
+from seed.lib.superperms.orgs.decorators import (
+    has_hierarchy_access,
+    has_perm_class
+)
+from seed.models import AnalysisPropertyView, PropertyView
 from seed.serializers.analysis_property_views import (
     AnalysisPropertyViewSerializer
 )
@@ -28,6 +31,7 @@ class AnalysisPropertyViewViewSet(viewsets.ViewSet, OrgMixin):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_member')
+    @has_hierarchy_access(analysis_id_kwarg="analysis_pk")
     def list(self, request, analysis_pk):
         organization_id = int(self.get_organization(request))
         try:
@@ -58,6 +62,7 @@ class AnalysisPropertyViewViewSet(viewsets.ViewSet, OrgMixin):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_member')
+    @has_hierarchy_access(analysis_id_kwarg="analysis_pk")
     def retrieve(self, request, analysis_pk, pk):
         organization_id = int(self.get_organization(request))
         try:
@@ -68,8 +73,7 @@ class AnalysisPropertyViewViewSet(viewsets.ViewSet, OrgMixin):
                 'message': "Requested analysis property view doesn't exist in this organization and/or analysis."
             }, status=HTTP_409_CONFLICT)
 
-        property_view_by_apv_id = AnalysisPropertyView.get_property_views([view])
-        original_view = property_view_by_apv_id[view.id]
+        original_view = PropertyView.objects.filter(property=view.property, cycle=view.cycle).first()
 
         return JsonResponse({
             'status': 'success',

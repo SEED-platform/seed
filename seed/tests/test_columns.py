@@ -1,11 +1,11 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
-:author
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
-
 import os.path
+from datetime import date, datetime
 
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError
@@ -21,6 +21,7 @@ from seed.models import (
     ColumnMapping,
     PropertyState
 )
+from seed.models.columns import ColumnCastException
 from seed.test_helpers.fake import (
     FakePropertyStateFactory,
     FakeTaxLotStateFactory
@@ -32,15 +33,16 @@ class TestColumns(TestCase):
 
     def setUp(self):
         self.fake_user = User.objects.create(username='test')
-        self.fake_org, _, _ = create_organization(self.fake_user)
+        self.fake_org, _, _ = create_organization(self.fake_user, org_name="test")
+        self.fake_org.save()
 
     def test_get_column_mapping(self):
         """Honor organizational bounds, get mapping data."""
 
         # Calling organization create like this will not generate the default
         # columns, which is okay for this test.
-        org1 = Organization.objects.create()
-        org2 = Organization.objects.create()
+        org1 = Organization.objects.create(name="org1")
+        org2 = Organization.objects.create(name="org2")
 
         # Raw columns don't have a table name!
         raw_column = seed_models.Column.objects.create(
@@ -149,7 +151,7 @@ class TestColumns(TestCase):
             'Ewok': ('TaxLotState', 'Hattin', '', True),
         }
         self.assertDictEqual(expected, test_mapping)
-        self.assertTrue(test_mapping['Ewok'], 'Hattin')
+        self.assertEqual(test_mapping['Ewok'][1], 'Hattin')
 
         c_wookiee = Column.objects.filter(column_name='Wookiee')[0]
         # Since the raw column is wookiee, then it should NOT be extra data
@@ -243,13 +245,24 @@ class TestColumns(TestCase):
         self.assertFalse(rextra_data_column.is_matching_criteria)
 
     def test_column_has_description(self):
-        org1 = Organization.objects.create()
+        org1 = Organization.objects.create(name="org1")
         # Raw columns don't have a table name!
         raw_column = seed_models.Column.objects.create(
             column_name='site_eui',
             organization=org1
         )
         self.assertEqual(raw_column.column_name, raw_column.column_description)
+
+    def test_create_column_with_invalid_name(self):
+        with self.assertRaises(IntegrityError):
+            extra_data_column = Column.objects.create(
+                table_name='PropertyState',
+                column_name='test_column',
+                display_name=self.fake_org.access_level_names[0],
+                organization=self.fake_org,
+                is_extra_data=True,
+            )
+            extra_data_column.save()
 
 
 class TestRenameColumns(TestCase):
@@ -1091,7 +1104,6 @@ class TestColumnsByInventory(TestCase):
                 "total_ghg_emissions": "float",
                 "total_ghg_emissions_intensity": "float",
                 "ubid": "string",
-                "ulid": "string",
                 "updated": "datetime",
                 "use_description": "string",
                 "year_ending": "date",
@@ -1120,7 +1132,7 @@ class TestColumnsByInventory(TestCase):
                 'source_eui_weather_normalized', 'space_alerts', 'state', 'taxlot_footprint',
                 'total_ghg_emissions', 'total_ghg_emissions_intensity',
                 'total_marginal_ghg_emissions', 'total_marginal_ghg_emissions_intensity',
-                'ubid', 'ulid', 'updated',
+                'ubid', 'updated',
                 'use_description', 'year_built', 'year_ending']
 
         self.assertCountEqual(c, data)
@@ -1140,7 +1152,7 @@ class TestColumnsByInventory(TestCase):
                     'source_eui_modeled', 'source_eui_weather_normalized', 'space_alerts', 'state',
                     'taxlot_footprint', 'total_ghg_emissions', 'total_ghg_emissions_intensity',
                     'total_marginal_ghg_emissions', 'total_marginal_ghg_emissions_intensity',
-                    'ubid', 'ulid', 'use_description', 'year_built', 'year_ending']
+                    'ubid', 'use_description', 'year_built', 'year_ending']
 
         method_columns = Column.retrieve_db_field_name_for_hash_comparison()
         self.assertListEqual(method_columns, expected)
@@ -1199,3 +1211,75 @@ class TestColumnsByInventory(TestCase):
         self.assertEqual(priors['PropertyState']['extra_data']["Apostrophe's Field"], 'Favor New')
         self.assertEqual(priors['TaxLotState']['custom_id_1'], 'Favor New')
         self.assertEqual(priors['TaxLotState']['extra_data']['Gross Floor Area'], 'Favor New')
+
+
+class TestColumnCasting(TestCase):
+    def setUp(self):
+        self.fake_user = User.objects.create(username='test')
+        self.fake_org, _org_user, _user_created = create_organization(
+            self.fake_user, name='Existing Org'
+        )
+        self.column_1 = Column.objects.create(
+            table_name='PropertyState',
+            column_name='test_column',
+            data_type='integer',
+            organization=self.fake_org,
+            is_extra_data=True,
+        )
+
+    def test_cast_values(self):
+        r = Column.cast_column_value('string', 123)
+        self.assertEqual('123', r)
+        r = Column.cast_column_value('integer', '123')
+        self.assertEqual(123, r)
+        r = Column.cast_column_value('integer', '123,456')
+        self.assertEqual(123456, r)
+        r = Column.cast_column_value('float', '123.456')
+        self.assertEqual(123.456, r)
+        r = Column.cast_column_value('float', 123.456)
+        self.assertEqual(123.456, r)
+        r = Column.cast_column_value('float', '123,456')
+        self.assertEqual(123456, r)
+        r = Column.cast_column_value('number', '123.456')
+        self.assertEqual(123.456, r)
+        r = Column.cast_column_value('number', '123,456')
+        self.assertEqual(123456, r)
+        r = Column.cast_column_value('geometry', 'POLY 123, 456')
+        self.assertEqual('POLY 123, 456', r)
+        r = Column.cast_column_value('datetime', '2020-01-01T00:00:00')
+        self.assertEqual(datetime(2020, 1, 1, 0, 0, 0), r)
+        r = Column.cast_column_value('date', '2020-01-01')
+        self.assertEqual(date(2020, 1, 1), r)
+        r = Column.cast_column_value('boolean', 'true')
+        self.assertEqual(True, r)
+        r = Column.cast_column_value('boolean', 'false')
+        self.assertEqual(False, r)
+        r = Column.cast_column_value('area', '123.456')
+        self.assertEqual(123.456, r)
+        r = Column.cast_column_value('area', '123,456')
+        self.assertEqual(123456, r)
+        r = Column.cast_column_value('eui', '123.456')
+        self.assertEqual(123.456, r)
+        r = Column.cast_column_value('eui', '123,456')
+        self.assertEqual(123456, r)
+        r = Column.cast_column_value('eui', 123.456)
+        self.assertEqual(123.456, r)
+        r = Column.cast_column_value('eui', None)
+        self.assertEqual(None, r)
+
+    def test_cast_values_with_errors(self):
+        with self.assertRaises(ColumnCastException) as exc:
+            Column.cast_column_value('integer', 'abc')
+        self.assertEqual(str(exc.exception),
+                         'Invalid data type for "integer". Expected a valid "integer" value.'
+                         )
+
+        with self.assertRaises(ColumnCastException) as exc:
+            Column.cast_column_value('eui', None, allow_none=False)
+        self.assertEqual(str(exc.exception),
+                         'Datum is None and allow_none is False.'
+                         )
+
+    def test_column_based_cast(self):
+        r = self.column_1.cast('123')
+        self.assertEqual(123, r)

@@ -1,8 +1,8 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
-:author
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
 import random
 from io import StringIO
@@ -230,7 +230,7 @@ class TestXMLHelpers(TestCase):
         # tree should remain valid as well after inserting
         self.xmlschema.validate(etree.tostring(self.tree).decode())
 
-    def test_update_tree_changes_text_on_nonexisting_element(self):
+    def test_update_tree_changes_text_on_nonexistent_element(self):
         # -- Setup
         # auc:PremisesName does not exist in the tree
         xpath = '/'.join([

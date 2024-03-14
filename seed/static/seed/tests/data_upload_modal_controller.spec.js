@@ -1,39 +1,45 @@
 /**
- * :copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
- * :author
+ * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+ * See also https://github.com/seed-platform/seed/main/LICENSE.md
  */
-describe('controller: data_upload_modal_controller', function () {
+describe('controller: data_upload_modal_controller', () => {
   // globals set up and used in each test scenario
-  var mock_uploader_service, controller, modal_state;
-  var data_upload_controller_scope;
-  var mock_mapping_service, mock_matching_service;
-  var global_step = 1;
-  var global_dataset = {};
+  let mock_uploader_service; let controller; let
+    modal_state;
+  let data_upload_controller_scope;
+  let mock_mapping_service; let
+    mock_matching_service;
+  let mock_organization_service;
+  let mock_auth_service;
+  let global_step = 1;
+  let global_dataset = {};
 
-  var cycles = {
-    cycles: [{
-      end: '2015-01-01T07:59:59Z',
-      id: 2017,
-      name: '2014 Calendar Year',
-      num_properties: 1496,
-      num_taxlots: 1519,
-      start: '2014-01-01T08:00:00Z'
-    }],
+  const cycles = {
+    cycles: [
+      {
+        end: '2015-01-01',
+        id: 2017,
+        name: '2014 Calendar Year',
+        num_properties: 1496,
+        num_taxlots: 1519,
+        start: '2014-01-01'
+      }
+    ],
     status: 'success'
   };
 
-  var organization = {
+  const organization = {
     id: 1
   };
   // make the seed app available for each test
   // 'config.seed' is created in TestFilters.html
-  beforeEach(function () {
+  beforeEach(() => {
     module('BE.seed');
-    inject(function (_$httpBackend_) {
+    inject((_$httpBackend_) => {
       $httpBackend = _$httpBackend_;
       $httpBackend.whenGET(/^\/static\/seed\/locales\/.*\.json/).respond(200, {});
     });
-    inject(function ($controller, $rootScope, $uibModal, urls, $q, uploader_service, mapping_service, matching_service) {
+    inject(($controller, $rootScope, $uibModal, urls, $q, uploader_service, mapping_service, matching_service, organization_service, auth_service) => {
       controller = $controller;
       data_upload_controller_scope = $rootScope.$new();
       modal_state = '';
@@ -43,84 +49,82 @@ describe('controller: data_upload_modal_controller', function () {
       mock_uploader_service = uploader_service;
       mock_mapping_service = mapping_service;
       mock_matching_service = matching_service;
-      spyOn(mock_uploader_service, 'check_progress')
-        .andCallFake(function () {
-          // return $q.reject for error scenario
+      mock_organization_service = organization_service;
+      mock_auth_service = auth_service;
+      spyOn(mock_uploader_service, 'check_progress').andCallFake(() =>
+        // return $q.reject for error scenario
+        $q.resolve({
+          status: 'success',
+          progress: '25.0'
+        }));
+      spyOn(mock_uploader_service, 'check_progress_loop').andCallFake((progress, num, num2, cb) => {
+        // return $q.reject for error scenario
+        cb();
+        return $q.resolve({
+          status: 'success',
+          progress: '100.0'
+        });
+      });
+      spyOn(mock_uploader_service, 'create_dataset').andCallFake((dataset_name) => {
+        // return $q.reject for error scenario
+        if (dataset_name !== 'fail') {
           return $q.resolve({
             status: 'success',
-            progress: '25.0'
+            id: 3,
+            name: dataset_name
           });
+        }
+        return $q.reject({
+          status: 'error',
+          message: 'name already in use'
         });
-      spyOn(mock_uploader_service, 'check_progress_loop')
-        .andCallFake(function (progress, num, num2, cb) {
-          // return $q.reject for error scenario
-          cb();
+      });
+      spyOn(mock_uploader_service, 'save_raw_data').andCallFake((dataset_name) => {
+        // return $q.reject for error scenario
+        if (dataset_name !== 'fail') {
           return $q.resolve({
             status: 'success',
-            progress: '100.0'
+            file_id: 3,
+            progress_key: ':1:SEED:save_raw_data:PROG:51'
           });
+        }
+        return $q.reject({
+          status: 'error'
         });
-      spyOn(mock_uploader_service, 'create_dataset')
-        .andCallFake(function (dataset_name) {
-          // return $q.reject for error scenario
-          if (dataset_name !== 'fail') {
-            return $q.resolve({
-              status: 'success',
-              id: 3,
-              name: dataset_name
-
-            });
-          } else {
-            return $q.reject({
-              status: 'error',
-              message: 'name already in use'
-            });
-          }
-        });
-      spyOn(mock_uploader_service, 'save_raw_data')
-        .andCallFake(function (dataset_name) {
-          // return $q.reject for error scenario
-          if (dataset_name !== 'fail') {
-            return $q.resolve({
-              status: 'success',
-              file_id: 3,
-              progress_key: ':1:SEED:save_raw_data:PROG:51'
-            });
-          } else {
-            return $q.reject({
-              status: 'error'
-            });
-          }
-        });
-      spyOn(mock_mapping_service, 'start_mapping')
-        .andCallFake(function (dataset_name) {
-          // return $q.reject for error scenario
-          if (dataset_name !== 'fail') {
-            return $q.resolve({
-              status: 'success',
-              file_id: 3
-            });
-          } else {
-            return $q.reject({
-              status: 'error'
-            });
-          }
-        });
-      spyOn(mock_matching_service, 'start_system_matching')
-        .andCallFake(function () {
-          // return $q.reject for error scenario
+      });
+      spyOn(mock_mapping_service, 'start_mapping').andCallFake((dataset_name) => {
+        // return $q.reject for error scenario
+        if (dataset_name !== 'fail') {
           return $q.resolve({
-            status: 'warning',
+            status: 'success',
             file_id: 3
           });
+        }
+        return $q.reject({
+          status: 'error'
         });
-
-    }
-    );
+      });
+      spyOn(mock_matching_service, 'start_system_matching').andCallFake(() =>
+        // return $q.reject for error scenario
+        $q.resolve({
+          status: 'warning',
+          file_id: 3
+        }));
+      spyOn(mock_organization_service, 'get_organization').andCallFake(() =>
+        // return organization
+        $q.resolve({
+          organization: {},
+        }));
+      spyOn(mock_auth_service, 'is_authorized').andCallFake(() =>
+        // return auth
+        $q.resolve({
+          auth: {},
+        }));
+    });
   });
 
   // this is outside the beforeEach so it can be configured by each unit test
-  function create_data_upload_modal_controller () {
+  function create_data_upload_modal_controller() {
     controller('data_upload_modal_controller', {
       $scope: data_upload_controller_scope,
       $uibModalInstance: {
@@ -133,8 +137,8 @@ describe('controller: data_upload_modal_controller', function () {
       },
       step: global_step,
       dataset: global_dataset,
-      cycles: cycles,
-      organization: organization
+      cycles,
+      organization
     });
   }
 
@@ -142,7 +146,7 @@ describe('controller: data_upload_modal_controller', function () {
    * Test scenarios
    */
 
-  it('should close the modal when the close function is called', function () {
+  it('should close the modal when the close function is called', () => {
     // arrange
     create_data_upload_modal_controller();
 
@@ -154,7 +158,7 @@ describe('controller: data_upload_modal_controller', function () {
     expect(modal_state).toBe('close');
   });
 
-  it('should cancel the modal when the cancel function is called', function () {
+  it('should cancel the modal when the cancel function is called', () => {
     // arrange
     create_data_upload_modal_controller();
 
@@ -166,7 +170,7 @@ describe('controller: data_upload_modal_controller', function () {
     expect(modal_state).toBe('dismiss');
   });
 
-  it('should start at the step provided', function () {
+  it('should start at the step provided', () => {
     // arrange
     create_data_upload_modal_controller();
 
@@ -187,12 +191,12 @@ describe('controller: data_upload_modal_controller', function () {
     expect(data_upload_controller_scope.step.number).toBe(2);
   });
 
-  it('should goto different steps', function () {
+  it('should goto different steps', () => {
     // arrange
     create_data_upload_modal_controller();
 
     // act
-    var step;
+    let step;
     step = 2;
     data_upload_controller_scope.goto_step(step);
     data_upload_controller_scope.$digest();
@@ -201,7 +205,7 @@ describe('controller: data_upload_modal_controller', function () {
     expect(data_upload_controller_scope.step.number).toBe(step);
   });
 
-  it('disables the "Name it" button if no text is entered', function () {
+  it('disables the "Name it" button if no text is entered', () => {
     // arrange
     create_data_upload_modal_controller();
 
@@ -211,7 +215,7 @@ describe('controller: data_upload_modal_controller', function () {
     // assertions
     expect(data_upload_controller_scope.dataset.disabled()).toBe(true);
   });
-  it('disables the "Name it" button if no text is entered, then cleared', function () {
+  it('disables the "Name it" button if no text is entered, then cleared', () => {
     // arrange
     create_data_upload_modal_controller();
 
@@ -222,7 +226,7 @@ describe('controller: data_upload_modal_controller', function () {
     // assertions
     expect(data_upload_controller_scope.dataset.disabled()).toBe(true);
   });
-  it('enables the "Name it" button if text is entered', function () {
+  it('enables the "Name it" button if text is entered', () => {
     // arrange
     create_data_upload_modal_controller();
 
@@ -233,7 +237,7 @@ describe('controller: data_upload_modal_controller', function () {
     // assertions
     expect(data_upload_controller_scope.dataset.disabled()).toBe(false);
   });
-  it('should show an alert if the dataset name is already in use', function () {
+  it('should show an alert if the dataset name is already in use', () => {
     // arrange
     create_data_upload_modal_controller();
 
@@ -244,7 +248,7 @@ describe('controller: data_upload_modal_controller', function () {
     // assertions
     expect(data_upload_controller_scope.dataset.alert).toBe(true);
   });
-  it('should not show an alert if the dataset name is not already in use', function () {
+  it('should not show an alert if the dataset name is not already in use', () => {
     // arrange
     create_data_upload_modal_controller();
 
@@ -255,12 +259,12 @@ describe('controller: data_upload_modal_controller', function () {
     // assertions
     expect(data_upload_controller_scope.dataset.alert).toBe(false);
   });
-  it('after creating a dataset, stores the dataset id', function () {
+  it('after creating a dataset, stores the dataset id', () => {
     // arrange
     create_data_upload_modal_controller();
 
     // act
-    var ds_name = 'my shiny new dataset';
+    const ds_name = 'my shiny new dataset';
     data_upload_controller_scope.create_dataset(ds_name);
     data_upload_controller_scope.$digest();
 
@@ -359,7 +363,7 @@ describe('controller: data_upload_modal_controller', function () {
   //     .toBe('auto-matching energy data');
   // });
 
-  it('should test find matches', function () {
+  it('should test find matches', () => {
     // arrange
     create_data_upload_modal_controller();
     data_upload_controller_scope.dataset.import_file_id = 1234;
@@ -372,7 +376,7 @@ describe('controller: data_upload_modal_controller', function () {
     expect(mock_matching_service.start_system_matching).toHaveBeenCalledWith(1234);
   });
 
-  it('should take an dataset payload', function () {
+  it('should take an dataset payload', () => {
     // arrange
     create_data_upload_modal_controller();
 
@@ -385,7 +389,7 @@ describe('controller: data_upload_modal_controller', function () {
     expect(data_upload_controller_scope.dataset.id).toBe(0);
   });
 
-  it('should extend a custom dataset payload', function () {
+  it('should extend a custom dataset payload', () => {
     // arrange
     global_dataset = {
       id: 100,
@@ -402,6 +406,5 @@ describe('controller: data_upload_modal_controller', function () {
     expect(data_upload_controller_scope.dataset.filename).toBe('seed_data.csv');
     expect(data_upload_controller_scope.dataset.id).toBe(100);
     expect(data_upload_controller_scope.dataset.alert).toBe(false);
-
   });
 });

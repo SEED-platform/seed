@@ -1,18 +1,14 @@
 /**
- * :copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
- * :author
+ * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+ * See also https://github.com/seed-platform/seed/main/LICENSE.md
  */
-// dataset services
 angular.module('BE.seed.service.main', []).factory('main_service', [
   '$http',
-  function ($http) {
-    var main_factory = {};
+  ($http) => {
+    const main_factory = {};
 
-    main_factory.version = function () {
-      return $http.get('/api/version/').then(function (response) {
-        return response.data;
-      });
-    };
+    main_factory.version = () => $http.get('/api/version/').then((response) => response.data);
 
     return main_factory;
-  }]);
+  }
+]);

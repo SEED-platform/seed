@@ -1,11 +1,12 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
-:author
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
 import re
 import string
+import unicodedata
 from datetime import date, datetime
 
 import dateutil
@@ -33,6 +34,46 @@ BOOL_SYNONYMS = (
 PUNCT_REGEX = re.compile('[{0}]'.format(
     re.escape(string.punctuation.replace('.', '').replace('-', '')))
 )
+# Mapping of specific characters to their normalized versions (need to expand this list)
+CHAR_MAPPING = {
+    ord('“'): '"',
+    ord('”'): '"',
+    ord('‘'): "'",
+    ord('’'): "'",
+    ord('′'): "'",
+    ord('″'): '"',
+    ord('‴'): "'''",
+    ord('…'): '...',
+    ord('•'): '*',
+    ord('⁄'): '/',
+    ord('×'): 'x',
+    ord('⁓'): '~',
+    # mdash, ndash, horizontal bar
+    ord('–'): '-',
+    ord('—'): '--',
+    ord('―'): '-',
+    ord('¬'): '-',
+    # guillemets to single and double quotes
+    ord('‹'): ''',
+    ord('›'): ''',
+    ord('«'): '"',
+    ord('»'): '"',
+}
+
+
+def normalize_unicode_and_characters(text):
+    """Method to normalize unicode characters and replace specific characters with their normalized versions."""
+    # Normalize Unicode characters to their canonical form (NFC decomposition) --
+    # Combines characters and diacritics when possible.
+
+    # Unicode standardizes on a single code point for accented characters such as é, ü, and ñ.
+    # More info can be seed here: https://docs.python.org/2/library/unicodedata.html#unicodedata.normalize
+    normalized_text = unicodedata.normalize('NFC', text)
+
+    # Apply CHAR_MAPPINGS to remove certain characters to be normalized.
+    normalized_text = normalized_text.translate(CHAR_MAPPING)
+
+    return normalized_text
 
 
 def default_cleaner(value, *args):
