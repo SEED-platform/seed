@@ -448,7 +448,7 @@ def sync_salesforce(org_id):
 @shared_task
 def sync_audit_template(org_id):
     import logging
-    logging.error('>>> called sync_audit_template with org_id %s', org_id)
+    logging.error('>>> TASK INITIATED for org %s', org_id)
     try:
         org = Organization.objects.get(id=org_id)
     except Organization.DoesNotExist:

@@ -45,7 +45,8 @@ def require_token(fn):
 
 def schedule_sync(data, org_id):
     logging.error('>>> SCHEDULE SYNC')
-    timezone = get_current_timezone()
+
+    timezone = data.get('timezone', get_current_timezone())
 
     if 'update_at_hour' in data and 'update_at_minute' in data:
         logging.error('>>> creating schedule')
@@ -53,7 +54,7 @@ def schedule_sync(data, org_id):
         schedule, _ = CrontabSchedule.objects.get_or_create(
             minute=data['update_at_minute'],
             hour=data['update_at_hour'],
-            day_of_week='*',
+            day_of_week=data['update_at_day'],
             day_of_month='*',
             month_of_year='*',
             timezone=timezone
@@ -70,6 +71,7 @@ def schedule_sync(data, org_id):
                 args=json.dumps([org_id])
             )
         else:
+            logging.error('>>> task count %s', PeriodicTask.objects.filter(name=AUTO_SYNC_NAME + str(org_id)).count())
             task = tasks.first()
             # update crontab (if changed)
             task.crontab = schedule
@@ -77,6 +79,8 @@ def schedule_sync(data, org_id):
 
             # Cleanup orphaned/unused crontab schedules
             CrontabSchedule.objects.exclude(id__in=PeriodicTask.objects.values_list('crontab_id', flat=True)).delete()
+            logging.error('>>> task count %s', PeriodicTask.objects.filter(name=AUTO_SYNC_NAME + str(org_id)).count())
+
 
 def toggle_audit_template_sync(audit_template_sync_enabled, org_id):
     """ when audit_template_sync_enabled value is toggled, also toggle the auto sync
@@ -455,6 +459,7 @@ def _batch_get_city_submission_xml(org_id, city_id, progress_key):
     if not response:
         return None, messages
     submissions = response.json()
+    # breakpoint()
     # Progress data is difficult to calculate as not all submissions will need an xml
     progress_data.total = len(submissions) * 2
     progress_data.save()
@@ -489,6 +494,7 @@ def _batch_get_city_submission_xml(org_id, city_id, progress_key):
 
         if view:
             xml, _ = audit_template.get_submission(sub['id'], 'xml')
+            breakpoint()
 
             if hasattr(xml, 'text'):
                 if not xml_data_by_cycle.get(view.cycle.id): 

@@ -308,7 +308,7 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
       }
 
       if ($scope.org.audit_template_sync_enabled && validate_at_conf()) {
-        audit_template_service.upsert_audit_template_config($scope.org.id, $scope.at_conf) 
+        audit_template_service.upsert_audit_template_config($scope.org.id, $scope.at_conf, $scope.timezone) 
       }
 
       // also save NEW/UPDATED salesforce mappings if any

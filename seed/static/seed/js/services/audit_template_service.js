@@ -48,20 +48,15 @@ angular.module('BE.seed.service.audit_template', []).factory('audit_template_ser
 
     audit_template_factory.get_audit_template_configs = (org_id) => $http
       .get(`/api/v3/audit_template_configs/?organization_id=${org_id}`)
-      .then((response) => {
-        console.log('get atc', response.data)
-        return response.data.data
-      })
-      .catch((response) => {
-        console.log('get atc fail')
-        return response.data.data
-      })
+      .then((response) => response.data.data)
+      .catch((response) => response.data.data);
 
-    audit_template_factory.upsert_audit_template_config = (org_id, data) => {
+    audit_template_factory.upsert_audit_template_config = (org_id, data, timezone) => {
+      data['timezone'] = timezone;
       return data.id 
         ? audit_template_factory.update_audit_template_config(org_id, data)
         : audit_template_factory.create_audit_template_config(org_id, data)
-    }
+    };
 
     audit_template_factory.create_audit_template_config = (org_id, data) => $http
       .post(`/api/v3/audit_template_configs/?organization_id=${org_id}`, data)
@@ -72,17 +67,17 @@ angular.module('BE.seed.service.audit_template', []).factory('audit_template_ser
       .catch((response) => {
         console.log('service fail', response)
         return response.data.data
-      })
+      });
 
     audit_template_factory.update_audit_template_config = (org_id, data) => $http
         .put(`/api/v3/audit_template_configs/${data.id}/?organization_id=${org_id}`, data)
         .then((response) => response.data.data)
-        .catch((response) => response.data)
+        .catch((response) => response.data);
 
     audit_template_factory.delete_audit_template_config = (org_id, config_id) => $http
       .delete(`/api/v3/audit_template_configs/${config_id}/?organization_id=${org_id}`)
       .then((response) => response.data)
-      .catch((response) => response.data)
+      .catch((response) => response.data);
 
     return audit_template_factory;
   }
