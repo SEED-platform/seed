@@ -5,8 +5,9 @@ See also https://github.com/seed-platform/seed/main/LICENSE.md
 from datetime import datetime, timedelta
 
 from django.db.utils import IntegrityError
+from django.http import JsonResponse
 from pytz import timezone as pytztimezone
-from rest_framework import viewsets
+from rest_framework import status, viewsets
 
 from config.settings.common import TIME_ZONE
 from seed.decorators import ajax_request_class
@@ -130,3 +131,26 @@ class DataLoggerViewSet(viewsets.ViewSet, OrgMixin):
             }
 
         return result
+
+    @swagger_auto_schema_org_query_param
+    @ajax_request_class
+    @has_perm_class('requires_member')
+    @has_hierarchy_access(data_logger_id_kwarg='pk')
+    def destroy(self, request, pk):
+        org_id = self.get_organization(request)
+
+        # get data logger
+        try:
+            data_logger = DataLogger.objects.get(property__organization_id=org_id, pk=pk)
+        except DataLogger.DoesNotExist:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'No such DataLogger found.'
+            }, status=status.HTTP_404_NOT_FOUND)
+
+        # delete data logger
+        data_logger.delete()
+
+        return JsonResponse({
+            'status': 'success',
+        }, status=status.HTTP_204_NO_CONTENT)
