@@ -5,6 +5,7 @@ See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import IntegrityError
+from django.db.models import Q
 from django.http import JsonResponse
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
@@ -15,6 +16,7 @@ from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.lib.superperms.orgs.models import (
     ROLE_MEMBER,
     ROLE_OWNER,
+    AccessLevelInstance,
     Organization,
     OrganizationUser
 )
@@ -44,8 +46,15 @@ class OrganizationUserViewSet(viewsets.ViewSet):
         org_user = OrganizationUser.objects.get(user=self.request.user, organization=org)
         is_member = org_user.role_level >= ROLE_MEMBER
 
+        access_level_instance = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
+        in_subtree = Q(
+            access_level_instance__lft__gte=access_level_instance.lft,
+            access_level_instance__rgt__lte=access_level_instance.rgt,
+            organization=org
+        )
+
         users = []
-        for u in org.organizationuser_set.all():
+        for u in OrganizationUser.objects.filter(in_subtree).filter():
             user = u.user
             user_info = {
                 'email': user.email,

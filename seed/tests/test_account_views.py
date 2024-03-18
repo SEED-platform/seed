@@ -23,7 +23,7 @@ from seed.models.columns import Column
 from seed.models.cycles import Cycle
 from seed.models.properties import PropertyState
 from seed.models.tax_lots import TaxLotState
-from seed.tests.util import FakeRequest
+from seed.tests.util import AccessLevelBaseTestCase, FakeRequest
 from seed.utils.organizations import create_organization
 from seed.utils.users import get_js_role, get_role_from_js
 from seed.views.main import _get_default_org
@@ -1118,3 +1118,20 @@ class AuthViewTests(TestCase):
         self.assertEqual(org_id, '')
         self.assertEqual(org_name, '')
         self.assertEqual(org_role, '')
+
+
+class TestOrganizationPermissions(AccessLevelBaseTestCase):
+    def setUp(self):
+        super().setUp()
+
+    def test_list_users(self):
+        url = reverse_lazy('api:v3:organization-users-list', args=[self.org.id])
+        url += '?organization_id=' + str(self.org.id)
+
+        self.login_as_root_member()
+        resp = self.client.get(url)
+        assert len(resp.json()["users"]) == 4
+
+        self.login_as_child_member()
+        resp = self.client.get(url)
+        assert len(resp.json()["users"]) == 1
