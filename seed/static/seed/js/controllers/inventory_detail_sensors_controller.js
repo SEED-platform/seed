@@ -182,8 +182,8 @@ angular.module('BE.seed.controller.inventory_detail_sensors', []).controller('in
         displayName: 'Actions',
         enableHiding: false,
         cellTemplate:
-          '<div style="display: flex; justify-content: space-around; align-content: center">' +
-          '<button type="button" class="btn-primary" style="border-radius: 4px;" ng-click="grid.appScope.open_sensor_delete_modal(row.entity)">Delete Sensor</button>' +
+          '<div style="display: flex; justify-content: space-around; align-content: center; margin-top:2px;">' +
+          '<button type="button" class="btn-danger" aria-label="delete sensor" style="border-radius: 4px;" ng-click="grid.appScope.open_sensor_delete_modal(row.entity)"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></button>' +
           '</div>',
         enableColumnMenu: false,
         enableColumnMoving: false,
