@@ -45,7 +45,11 @@ class OrganizationUserViewSet(viewsets.ViewSet):
         is_member = org_user.role_level >= ROLE_MEMBER
 
         users = []
-        for u in org.organizationuser_set.all():
+        org_users = org.organizationuser_set.filter(
+            access_level_instance__rgt__lte=org_user.access_level_instance.rgt,
+            access_level_instance__lft__gte=org_user.access_level_instance.lft,
+        )
+        for u in org_users:
             user = u.user
             user_info = {
                 'email': user.email,
