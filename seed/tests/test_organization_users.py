@@ -7,9 +7,9 @@ See also https://github.com/seed-platform/seed/main/LICENSE.md
 from django.urls import reverse_lazy
 
 from seed.landing.models import SEEDUser as User
-from seed.tests.util import AccessLevelBaseTestCase
-from seed.utils.organizations import create_organization
 from seed.lib.superperms.orgs.models import OrganizationUser
+from seed.tests.util import AccessLevelBaseTestCase
+
 
 class TestOrganizationPermissions(AccessLevelBaseTestCase):
     def setUp(self):
@@ -21,12 +21,11 @@ class TestOrganizationPermissions(AccessLevelBaseTestCase):
         self.child_user1 = User.objects.get(username='child_member@demo.com')
         self.child_user2 = User.objects.create(username='child_member2@demo.com')
         OrganizationUser.objects.create(
-            user=self.child_user2, 
-            organization=self.org, 
+            user=self.child_user2,
+            organization=self.org,
             access_level_instance_id=self.child_ali.id,
             role_level=0,
         )
-
 
     def test_org_user_permissions(self):
         user_count = User.objects.count()
@@ -41,6 +40,5 @@ class TestOrganizationPermissions(AccessLevelBaseTestCase):
         response = self.client.get(url, content_type='application/json')
         assert response.status_code == 200
         users = response.json()['users']
-        assert len(users) < user_count 
+        assert len(users) < user_count
         assert len(users) == 2
-        
