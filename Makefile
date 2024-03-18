@@ -44,3 +44,14 @@ build:
 
 push:
 	docker push $(REPO):$(TAG)
+
+## up	:	Start up containers.
+up:
+	@echo "Starting up containers..."
+	docker-compose pull
+	docker-compose -f docker-compose.local.yml up -d --build  --remove-orphans
+
+## stop	:	Stop containers.
+stop:
+	@echo "Stopping containers..."
+	@docker-compose stop
