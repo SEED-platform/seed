@@ -126,9 +126,10 @@ angular.module('BE.seed.controller.inventory_detail_sensors', []).controller('in
         displayName: 'Actions',
         enableHiding: false,
         cellTemplate:
-          '<div style="display: flex; justify-content: space-around; align-content: center">' +
+          '<div style="display: flex; justify-content: space-around; align-content: center;margin:2px;">' +
           '<button type="button" ng-show="grid.appScope.menu.user.organization.user_role !== \'viewer\'" class="btn-primary" style="border-radius: 4px;" ng-click="grid.appScope.open_sensors_upload_modal(row.entity)" translate>UPLOAD_SENSORS_BUTTON</button>' +
           '<button type="button" ng-show="grid.appScope.menu.user.organization.user_role !== \'viewer\'" class="btn-primary" style="border-radius: 4px;" ng-click="grid.appScope.open_sensor_readings_upload_modal(row.entity)" translate>UPLOAD_SENSOR_READINGS_BUTTON</button>' +
+          '<button type="button" ng-show="grid.appScope.menu.user.organization.user_role !== \'viewer\'" class="btn-danger" style="border-radius: 4px; aria-label="Delete" ng-click="grid.appScope.open_delete_data_logger_modal(row.entity)" ><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></button>' +
           '</div>',
         enableColumnMenu: false,
         enableColumnMoving: false,
@@ -362,6 +363,17 @@ angular.module('BE.seed.controller.inventory_detail_sensors', []).controller('in
           view_id: () => $scope.inventory.view_id,
           datasets: () => dataset_service.get_datasets().then((result) => result.datasets),
           data_logger_id: () => data_logger.id
+        }
+      });
+    };
+
+    $scope.open_delete_data_logger_modal = (data_logger) => {
+      $uibModal.open({
+        templateUrl: `${urls.static_url}seed/partials/delete_data_logger_modal.html`,
+        controller: 'delete_data_logger_modal_controller',
+        resolve: {
+          organization_id: () => $scope.organization.id,
+          data_logger_id: () => data_logger.id,
         }
       });
     };
