@@ -144,6 +144,7 @@ angular.module('BE.seed.controller.inventory_detail_meters', []).controller('inv
         templateUrl: `${urls.static_url}seed/partials/meter_deletion_modal.html`,
         controller: 'meter_deletion_modal_controller',
         resolve: {
+          organization_id: () => $scope.organization.id,
           meter: () => meter,
           view_id: () => $scope.inventory.view_id,
           refresh_meters_and_readings: () => $scope.refresh_meters_and_readings
@@ -225,6 +226,7 @@ angular.module('BE.seed.controller.inventory_detail_meters', []).controller('inv
         [meters, property_meter_usage] = data;
 
         resetSelections();
+        $scope.meterGridApi.core.refresh()
         $scope.applyFilters();
         spinner_utility.hide();
       });
