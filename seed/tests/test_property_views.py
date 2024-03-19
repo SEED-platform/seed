@@ -2136,6 +2136,25 @@ class PropertySensorViewTests(AccessLevelBaseTestCase, DataMappingBaseTestCase):
         result = self.client.get(url, data)
         assert result.status_code == 404
 
+    def test_data_loggers_delete_permissions(self):
+        dl = DataLogger.objects.create(**{
+            "property_id": self.property_1.id,
+            "display_name": "moo",
+        })
+
+        url = reverse('api:v3:data_logger-detail', kwargs={'pk': dl.id})
+        url += f'?organization_id={self.org.pk}'
+
+        # child user cannot
+        self.login_as_child_member()
+        result = self.client.delete(url)
+        assert result.status_code == 404
+
+        # root users can get data logger in root
+        self.login_as_root_member()
+        result = self.client.delete(url)
+        assert result.status_code == 204
+
     def test_property_sensors_endpoint_returns_a_list_of_sensors_of_a_view(self):
         dl_a = DataLogger.objects.create(**{
             "property_id": self.property_1.id,
@@ -2281,6 +2300,58 @@ class PropertySensorViewTests(AccessLevelBaseTestCase, DataMappingBaseTestCase):
                 {'year': 2100, 's1 (moo)': 4.0, 's2 (moo)': 14.0},
             ]
         )
+
+    def test_delete_data_logger(self):
+        dl_1 = DataLogger.objects.create(**{
+            "property_id": self.property_1.id,
+            "display_name": "moo",
+        })
+        s1 = Sensor.objects.create(**{
+            "data_logger": dl_1,
+            "display_name": "s1",
+            "sensor_type": "first",
+            "units": "one",
+            "column_name": "sensor 1"
+        })
+        SensorReading.objects.create(**{
+            "reading": 0.0,
+            "timestamp": str(datetime(2000, 1, 1, tzinfo=timezone(TIME_ZONE))),
+            "sensor": s1,
+            "is_occupied": False
+        })
+
+        dl_2 = DataLogger.objects.create(**{
+            "property_id": self.property_1.id,
+            "display_name": "bark",
+        })
+        s2 = Sensor.objects.create(**{
+            "data_logger": dl_2,
+            "display_name": "s2",
+            "sensor_type": "second",
+            "units": "two",
+            "column_name": "sensor 2"
+        })
+        SensorReading.objects.create(**{
+            "reading": 0.0,
+            "timestamp": str(datetime(2000, 1, 1, tzinfo=timezone(TIME_ZONE))),
+            "sensor": s2,
+            "is_occupied": False
+        })
+
+        assert DataLogger.objects.count() == 2
+        assert Sensor.objects.count() == 2
+        assert SensorReading.objects.count() == 2
+
+        # Action
+        url = reverse('api:v3:data_logger-detail', kwargs={'pk': dl_1.id})
+        url += f'?organization_id={self.org.pk}'
+        result = self.client.delete(url, content_type="application/json")
+
+        # Assertion
+        assert result.status_code == 204
+        assert DataLogger.objects.count() == 1
+        assert Sensor.objects.count() == 1
+        assert SensorReading.objects.count() == 1
 
 
 class PropertyMeterViewTests(DataMappingBaseTestCase):
