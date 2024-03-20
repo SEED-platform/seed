@@ -6,15 +6,22 @@ See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
 import json
 
-from django.urls import reverse
+from datetime import datetime
+from django.urls import reverse, reverse_lazy
 from xlrd import open_workbook
 
 from seed.data_importer.models import ImportFile, ImportRecord
 from seed.landing.models import SEEDUser as User
 from seed.lib.mcm.reader import ROW_DELIMITER
-from seed.models import Cycle
+from seed.models import Cycle, Column
 from seed.tests.util import AccessLevelBaseTestCase, DataMappingBaseTestCase
 from seed.utils.organizations import create_organization
+from seed.test_helpers.fake import (
+    FakeCycleFactory,
+    FakePropertyFactory,
+    FakePropertyStateFactory,
+    FakePropertyViewFactory,
+)
 
 
 class TestOrganizationViews(DataMappingBaseTestCase):
@@ -27,6 +34,10 @@ class TestOrganizationViews(DataMappingBaseTestCase):
             email='test_user@demo.com', **user_details
         )
         self.org, _, _ = create_organization(user)
+        self.cycle_factory = FakeCycleFactory(organization=self.org, user=user)
+        self.property_factory = FakePropertyFactory(organization=self.org)
+        self.property_state_factory = FakePropertyStateFactory(organization=self.org)
+        self.property_view_factory = FakePropertyViewFactory(organization=self.org)
 
         self.client.login(**user_details)
 
@@ -100,6 +111,60 @@ class TestOrganizationViews(DataMappingBaseTestCase):
         # Specifically use assertEqual as order does matter
         self.assertEqual(result['PropertyState'], default_matching_criteria_display_names['PropertyState'])
         self.assertEqual(result['TaxLotState'], default_matching_criteria_display_names['TaxLotState'])
+
+
+    def test_public_feed(self):
+        print('>>> TEST')
+        # create public columns
+        Column.objects.create(
+            table_name='PropertyState',
+            column_name='extra_col',
+            organization=self.org,
+            is_extra_data=True,
+        )
+        column_names = ['ubid', 'property_name', 'source_eui', 'gross_floor_area', 'energy_score', 'extra_col']
+        for column_name in column_names:
+            column = Column.objects.filter(column_name=column_name).first()
+            column.shared_field_type = 1
+            column.save()
+
+        # create cycles 
+        cycle1 = self.cycle_factory.get_cycle(name='2010 Calendar Year', start=datetime(2010, 1, 1), end=datetime(2011, 1, 1))
+        cycle2 = self.cycle_factory.get_cycle(name='2011 Calendar Year', start=datetime(2011, 1, 1), end=datetime(2012, 1, 1))
+        cycle3 = self.cycle_factory.get_cycle(name='2012 Calendar Year', start=datetime(2012, 1, 1), end=datetime(2013, 1, 1))
+
+        # create properties
+        property1 = self.property_factory.get_property()
+        property2 = self.property_factory.get_property()
+
+        # create states{property#}{cycle#}
+        state11 = self.property_state_factory.get_property_state(property_name='property 11', ubid='a+b+c-1')
+        state12 = self.property_state_factory.get_property_state(property_name='property 12', ubid='a+b+c-1')
+        state13 = self.property_state_factory.get_property_state(property_name='property 13', ubid='a+b+c-1', extra_data={'extra_col': 'aaa'})
+        state21 = self.property_state_factory.get_property_state(property_name='property 21', ubid='a+b+c-2', extra_data={'extra_col': 'bbb'})
+        state22 = self.property_state_factory.get_property_state(property_name='property 22', ubid='a+b+c-2')
+        state23 = self.property_state_factory.get_property_state(property_name='property 23', ubid='a+b+c-2')
+
+        # create view{property#}{cycle#}
+        view11 = self.property_view_factory.get_property_view(prpty=property1, state=state11, cycle=cycle1)
+        view12 = self.property_view_factory.get_property_view(prpty=property1, state=state12, cycle=cycle2)
+        view21 = self.property_view_factory.get_property_view(prpty=property1, state=state13, cycle=cycle3)
+        view22 = self.property_view_factory.get_property_view(prpty=property2, state=state21, cycle=cycle1)
+        view31 = self.property_view_factory.get_property_view(prpty=property2, state=state22, cycle=cycle2)
+        view32 = self.property_view_factory.get_property_view(prpty=property2, state=state23, cycle=cycle3)
+
+        url = reverse_lazy('api:v3:organizations-public-feed', args=[self.org.id])
+        response = self.client.get(url, content_type='application/json')
+        assert response.status_code == 200 
+        data = response.json()
+
+        assert list(data.keys()) == [state11.ubid, state21.ubid]
+        p1_data = data[state11.ubid]
+        assert list(p1_data.keys()) == [cycle1.name, cycle2.name, cycle3.name]
+        p1_c1_data = p1_data[cycle1.name]
+        assert sorted(list(p1_c1_data.keys())) == sorted(column_names)
+
+        
 
 
 class TestOrganizationPermissions(AccessLevelBaseTestCase):
