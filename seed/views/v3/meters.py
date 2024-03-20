@@ -30,7 +30,7 @@ from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
 @method_decorator(
     name='create',
     decorator=[
-        has_perm_class('requires_viewer'),
+        has_perm_class('requires_member'),
         has_hierarchy_access(property_view_id_kwarg="property_pk"),
         swagger_auto_schema(
             manual_parameters=[
@@ -58,11 +58,11 @@ from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
 )
 @method_decorator(
     name='destroy',
-    decorator=[has_perm_class('requires_viewer'), has_hierarchy_access(property_view_id_kwarg="property_pk")]
+    decorator=[has_perm_class('requires_member'), has_hierarchy_access(property_view_id_kwarg="property_pk")]
 )
 @method_decorator(
     name='update',
-    decorator=[has_perm_class('requires_viewer'), has_hierarchy_access(property_view_id_kwarg="property_pk")]
+    decorator=[has_perm_class('requires_member'), has_hierarchy_access(property_view_id_kwarg="property_pk")]
 )
 class MeterViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
     """API endpoint for managing meters."""

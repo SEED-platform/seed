@@ -9,7 +9,12 @@ angular.module('BE.seed.service.meter', []).factory('meter_service', [
 
     meter_factory.get_meters = (property_view_id, organization_id) => $http.get(`/api/v3/properties/${property_view_id}/meters/`, { params: { organization_id } }).then((response) => response.data);
 
-    meter_factory.delete_meter = (property_view_id, meter_id) => $http.delete(`/api/v3/properties/${property_view_id}/meters/${meter_id}`).then((response) => response.data);
+    meter_factory.delete_meter = (organization_id, property_view_id, meter_id) => {
+      return $http
+        .delete(`/api/v3/properties/${property_view_id}/meters/${meter_id}/?organization_id=${organization_id}`)
+        .then((response) => response)
+        .catch((response) => response);
+    };
 
     meter_factory.property_meter_usage = (property_view_id, organization_id, interval, excluded_meter_ids) => {
       if (_.isUndefined(excluded_meter_ids)) excluded_meter_ids = [];
