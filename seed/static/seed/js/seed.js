@@ -128,6 +128,7 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.sample_data_modal',
   'BE.seed.controller.security',
   'BE.seed.controller.sensor_readings_upload_modal',
+  'BE.seed.controller.sensor_delete_modal',
   'BE.seed.controller.sensors_upload_modal',
   'BE.seed.controller.set_update_to_now_modal',
   'BE.seed.controller.settings_profile_modal',
