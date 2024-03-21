@@ -117,9 +117,6 @@ class ColumnMapping(models.Model):
     column_raw = models.ManyToManyField('Column', related_name='raw_mappings', blank=True, )
     column_mapped = models.ManyToManyField('Column', related_name='mapped_mappings', blank=True, )
 
-    # This field is the database column which allows checks for delimited values (e.g., a;b;c;d)
-    DELIMITED_FIELD = ('TaxLotState', 'jurisdiction_tax_lot_id', 'Jurisdiction Tax Lot ID', False)
-
     def is_direct(self):
         """
         Returns True if the ColumnMapping is a direct mapping from imported
