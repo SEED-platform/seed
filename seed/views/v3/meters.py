@@ -2,7 +2,7 @@
 # encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
-See also https://github.com/seed-platform/seed/main/LICENSE.md
+See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 from django.utils.decorators import method_decorator
 from drf_yasg.utils import swagger_auto_schema
@@ -30,7 +30,7 @@ from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
 @method_decorator(
     name='create',
     decorator=[
-        has_perm_class('requires_viewer'),
+        has_perm_class('requires_member'),
         has_hierarchy_access(property_view_id_kwarg="property_pk"),
         swagger_auto_schema(
             manual_parameters=[
@@ -58,11 +58,11 @@ from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
 )
 @method_decorator(
     name='destroy',
-    decorator=[has_perm_class('requires_viewer'), has_hierarchy_access(property_view_id_kwarg="property_pk")]
+    decorator=[has_perm_class('requires_member'), has_hierarchy_access(property_view_id_kwarg="property_pk")]
 )
 @method_decorator(
     name='update',
-    decorator=[has_perm_class('requires_viewer'), has_hierarchy_access(property_view_id_kwarg="property_pk")]
+    decorator=[has_perm_class('requires_member'), has_hierarchy_access(property_view_id_kwarg="property_pk")]
 )
 class MeterViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
     """API endpoint for managing meters."""
