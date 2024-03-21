@@ -80,7 +80,7 @@ RUN apk add --no-cache gettext && \
     else \
         echo "NGINX_LISTEN_OPTS is set to: ${NGINX_LISTEN_OPTS}"; \
     fi && \
-    envsubst "${NGINX_LISTEN_OPTS}" < /etc/nginx/nginx.conf.template > /etc/nginx/nginx.conf
+    envsubst '${NGINX_LISTEN_OPTS}' < /etc/nginx/nginx.conf.template > /etc/nginx/nginx.conf
 
 # symlink maintenance.html that nginx will serve in the case of a 503
 RUN ln -sf /seed/collected_static/maintenance.html /var/lib/nginx/html/maintenance.html
