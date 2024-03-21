@@ -1,14 +1,12 @@
 BASE_IMAGE_TAG = 3.9
 
-PROJECT_NAME=nrel179d-seedweb
-
 ifdef AWS_ACCOUNT_ID
   REGISTRY-IDS=$(AWS_ACCOUNT_ID)
 else
   $(error AWS_ACCOUNT_ID is not set)
 endif
 
-REPO = $(REGISTRY-IDS).dkr.ecr.us-west-2.amazonaws.com/nrel-$(PROJECT_NAME)
+REPO = $(REGISTRY-IDS).dkr.ecr.us-west-2.amazonaws.com/$(IMAGE_REPO_NAME)
 
 ifdef RELEASE_SHA2
   HEAD_VER=$(RELEASE_SHA2)
@@ -28,18 +26,32 @@ else
 	BRANCH_NAME ?= $(shell git rev-parse --abbrev-ref HEAD)
 endif
 
-$(info BRANCH_NAME="$(BRANCH_NAME)")
+# Normalize branch name for Docker tag compatibility
+BRANCH_NAME_SAFE = $(subst /,-,$(BRANCH_NAME))
+
+$(info BRANCH_NAME_SAFE="$(BRANCH_NAME_SAFE)")
 
 # git release version - use for rollbacks
-
-TAG ?= $(BASE_IMAGE_TAG)-$(BRANCH_NAME)-$(HEAD_VER)
+TAG ?= $(BASE_IMAGE_TAG)-$(BRANCH_NAME_SAFE)-$(HEAD_VER)
 
 .PHONY: build push
 
 build:
 	docker build -t $(REPO):$(TAG) \
 	  -f Dockerfile \
+      --build-arg NGINX_LISTEN_OPTS=$(NGINX_LISTEN_OPTS) \
 		./
 
 push:
 	docker push $(REPO):$(TAG)
+
+## up	:	Start up containers.
+up:
+	@echo "Starting up containers..."
+	docker-compose pull
+	docker-compose -f docker-compose.local.yml up -d --build  --remove-orphans
+
+## stop	:	Stop containers.
+stop:
+	@echo "Stopping containers..."
+	@docker-compose stop
