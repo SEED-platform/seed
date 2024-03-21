@@ -181,6 +181,11 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
     # For the Swagger page, GenericAPIView asserts a value exists for `queryset`
     queryset = PropertyView.objects.none()
 
+    @swagger_auto_schema(
+        manual_parameters=[
+            AutoSchemaHelper.query_org_id_field(required=True),
+        ]
+    )
     @has_perm_class('requires_viewer')
     @action(detail=False, filter_backends=[PropertyViewFilterBackend])
     def search(self, request):
@@ -197,9 +202,11 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             property__access_level_instance__lft__gte=ali.lft,
             property__access_level_instance__rgt__lte=ali.rgt
         ).order_by('-state__id')
+
         # this is the entrypoint to the filtering backend
         # https://www.django-rest-framework.org/api-guide/filtering/#custom-generic-filtering
         qs = self.filter_queryset(qs)
+
         # converting QuerySet to list b/c serializer will only use column list profile this way
         return JsonResponse(
             PropertyViewAsStateSerializer(list(qs), context={'request': request}, many=True).data,
