@@ -303,21 +303,19 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, **kwargs):
     # figure out which import field is defined as the unique field that may have a delimiter of
     # individual values (e.g., tax lot ids). The definition of the delimited field is currently
     # hard coded
-    try:
-        delimited_fields = {}
-        if 'TaxLotState' in table_mappings:
-            tmp = list(table_mappings['TaxLotState'].keys())[
-                list(table_mappings['TaxLotState'].values()).index(ColumnMapping.DELIMITED_FIELD)
-            ]
+    delimited_fields = {}
+    if 'TaxLotState' in table_mappings:
+        jurisdiction_tax_lot_id_table_mapping = next(iter(
+            k for k, v in table_mappings["TaxLotState"].items()
+            if v[1] == "jurisdiction_tax_lot_id"
+        ), None)
+
+        if jurisdiction_tax_lot_id_table_mapping:
             delimited_fields['jurisdiction_tax_lot_id'] = {
-                'from_field': tmp,
+                'from_field': jurisdiction_tax_lot_id_table_mapping,
                 'to_table': 'TaxLotState',
                 'to_field_name': 'jurisdiction_tax_lot_id',
             }
-
-    except ValueError:
-        delimited_fields = {}
-        # field does not exist in mapping list, so ignoring
 
     # _log.debug("my table mappings are {}".format(table_mappings))
     # _log.debug("delimited_field that will be expanded and normalized: {}".format(delimited_fields))
