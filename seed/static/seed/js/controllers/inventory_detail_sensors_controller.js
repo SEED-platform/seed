@@ -129,6 +129,7 @@ angular.module('BE.seed.controller.inventory_detail_sensors', []).controller('in
           '<div style="display: flex; justify-content: space-around; align-content: center;margin:2px;">' +
           '<button type="button" ng-show="grid.appScope.menu.user.organization.user_role !== \'viewer\'" class="btn-primary" style="border-radius: 4px;" ng-click="grid.appScope.open_sensors_upload_modal(row.entity)" translate>UPLOAD_SENSORS_BUTTON</button>' +
           '<button type="button" ng-show="grid.appScope.menu.user.organization.user_role !== \'viewer\'" class="btn-primary" style="border-radius: 4px;" ng-click="grid.appScope.open_sensor_readings_upload_modal(row.entity)" translate>UPLOAD_SENSOR_READINGS_BUTTON</button>' +
+          '<button type="button" ng-show="grid.appScope.menu.user.organization.user_role !== \'viewer\'" class="btn-primary" style="border-radius: 4px;" ng-click="grid.appScope.open_data_logger_upload_or_update_modal(row.entity)"><i class="fa-solid fa-pencil"></i></button>' +
           '<button type="button" ng-show="grid.appScope.menu.user.organization.user_role !== \'viewer\'" class="btn-danger" style="border-radius: 4px; aria-label="Delete" ng-click="grid.appScope.open_delete_data_logger_modal(row.entity)" ><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></button>' +
           '</div>',
         enableColumnMenu: false,
@@ -194,7 +195,7 @@ angular.module('BE.seed.controller.inventory_detail_sensors', []).controller('in
         exporterSuppressExport: true,
         pinnedLeft: true,
         visible: true,
-        width: 300
+        width: 100
       }
     ];
 
@@ -339,11 +340,12 @@ angular.module('BE.seed.controller.inventory_detail_sensors', []).controller('in
         });
     };
 
-    $scope.open_data_logger_upload_modal = (/* data_logger */) => {
+    $scope.open_data_logger_upload_or_update_modal = (data_logger) => {
       $uibModal.open({
-        templateUrl: `${urls.static_url}seed/partials/data_logger_upload_modal.html`,
-        controller: 'data_logger_upload_modal_controller',
+        templateUrl: `${urls.static_url}seed/partials/data_logger_upload_or_update_modal.html`,
+        controller: 'data_logger_upload_or_update_modal_controller',
         resolve: {
+          data_logger: () => data_logger,
           filler_cycle: () => $scope.filler_cycle,
           organization_id: () => $scope.organization.id,
           view_id: () => $scope.inventory.view_id,

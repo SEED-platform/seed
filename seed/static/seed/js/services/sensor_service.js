@@ -23,6 +23,23 @@ angular.module('BE.seed.service.sensor', []).factory('sensor_service', [
       }
     }).then((response) => response.data);
 
+
+    sensor_factory.update_data_logger = (organization_id, id, display_name, location_description, manufacturer_name, model_name, serial_number, identifier) => {
+      let url = `/api/v3/data_loggers/${id}/?organization_id=${organization_id}`;
+      return $http({
+        url: url,
+        method: 'PUT',
+        data: {
+          display_name,
+          location_description,
+          manufacturer_name,
+          model_name,
+          serial_number,
+          identifier
+        }
+      }).then((response) => response.data);
+    };
+
     sensor_factory.delete_data_logger = (data_logger_id, organization_id) => {
       let url = `/api/v3/data_loggers/${data_logger_id}?organization_id=${organization_id}`;
       return $http.delete(url).then(resp => resp.data);
