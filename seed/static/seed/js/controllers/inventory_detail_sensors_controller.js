@@ -184,6 +184,7 @@ angular.module('BE.seed.controller.inventory_detail_sensors', []).controller('in
         enableHiding: false,
         cellTemplate:
           '<div style="display: flex; justify-content: space-around; align-content: center; margin-top:2px;">' +
+          '<button type="button" class="btn-primary" style="border-radius: 4px;" ng-click="grid.appScope.open_sensor_update_modal(row.entity)"><i class="fa-solid fa-pencil"></i></button>' +
           '<button type="button" class="btn-danger" aria-label="delete sensor" style="border-radius: 4px;" ng-click="grid.appScope.open_sensor_delete_modal(row.entity)"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></button>' +
           '</div>',
         enableColumnMenu: false,
@@ -382,6 +383,20 @@ angular.module('BE.seed.controller.inventory_detail_sensors', []).controller('in
         resolve: {
           filler_cycle: () => $scope.filler_cycle,
           organization_id: () => $scope.organization.id,
+          sensor: () => sensor,
+          sensor_service,
+        }
+      });
+    };
+
+    $scope.open_sensor_update_modal = (sensor) => {
+      $uibModal.open({
+        templateUrl: `${urls.static_url}seed/partials/sensor_update_modal.html`,
+        controller: 'sensor_update_modal_controller',
+        resolve: {
+          filler_cycle: () => $scope.filler_cycle,
+          organization_id: () => $scope.organization.id,
+          view_id: () => $stateParams.view_id,
           sensor: () => sensor,
           sensor_service,
         }

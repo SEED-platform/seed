@@ -1,4 +1,5 @@
 from django.db.models import Q
+from django.db.utils import IntegrityError
 from django.http import JsonResponse
 from rest_framework import generics, status, viewsets
 from rest_framework.decorators import action
@@ -107,3 +108,32 @@ class SensorViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profile
         return JsonResponse({
             'status': 'success',
         }, status=status.HTTP_204_NO_CONTENT)
+
+    @swagger_auto_schema_org_query_param
+    @ajax_request_class
+    @has_perm_class('requires_member')
+    @has_hierarchy_access(property_view_id_kwarg="property_pk")
+    def update(self, request, property_pk, pk):
+        org_id = self.get_organization(request)
+        data = request.data
+
+        # get sensor
+        sensor_query = Sensor.objects.filter(data_logger__property__organization_id=org_id, pk=pk)
+        if sensor_query.count() != 1:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'No such Sensor found.'
+            }, status=status.HTTP_404_NOT_FOUND)
+
+        # update
+        try:
+            sensor_query.update(**data)
+        except IntegrityError as e:
+            return JsonResponse({
+                'status': 'error',
+                'message': str(e)
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        return JsonResponse({
+            'status': 'success',
+        }, status=status.HTTP_200_OK)
