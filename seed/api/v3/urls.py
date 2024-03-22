@@ -169,5 +169,10 @@ urlpatterns = [
         r'^organizations/(?P<pk>\d+)/public_feed\.json$', 
         OrganizationViewSet.as_view({'get': 'public_feed_json'}), 
         name='organizations-public-feed'
+    ),
+    re_path(
+        r'^organizations/(?P<pk>\d+)/public_feed\.rss$', 
+        OrganizationViewSet.as_view({'get': 'public_feed_rss'}), 
+        name='organizations-public-feed'
     )
 ]

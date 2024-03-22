@@ -5,15 +5,17 @@ SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and othe
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 from json import load
+import pint
 
+from django.core.paginator import EmptyPage, Paginator
 from seed.lib.superperms.orgs.exceptions import TooManyNestedOrgs
 from seed.lib.superperms.orgs.models import (
     ROLE_MEMBER,
     Organization,
-    OrganizationUser
+    OrganizationUser,
 )
 from seed.lib.xml_mapping.mapper import default_buildingsync_profile_mappings
-from seed.models import Column, ColumnMappingProfile
+from seed.models import Column, ColumnMappingProfile, PropertyState, TaxLotState
 from seed.models.data_quality import DataQualityCheck
 
 
@@ -179,3 +181,156 @@ def create_suborganization(user, current_org, suborg_name='', user_role=ROLE_MEM
         return False, 'Tried to create child of a child organization.', None
 
     return True, sub_org, ou
+
+
+def public_feed(org, request):
+    """
+    Format all property and taxlot state data to be displayed on a public feed
+    """
+    params = request.query_params
+    page = get_int(params.get('page'), 1)
+    per_page = get_int(params.get('per_page'), 100)
+    property_key = params.get('property_key', 'ubid')
+    taxlot_key = params.get('taxlot_key', 'ubid')
+    pstates = get_states(
+        PropertyState,
+        org.propertystate_set.filter(propertyview__isnull=False),
+        property_key,
+        page,
+        per_page
+    )
+    tstates = get_states(
+        TaxLotState,
+        org.taxlotstate_set.filter(taxlotview__isnull=False),
+        taxlot_key,
+        page,
+        per_page
+    )
+
+    metadata = {
+        'organization': org.name,
+        'organization_id': org.id,
+        'page': page,
+        'per_page': per_page,
+        'total_pages': int((len(pstates) + len(tstates)) / per_page) + 1,
+        'properties': len(pstates),
+        'taxlots': len(tstates),
+        'property_key': property_key,
+        'taxlot_key': taxlot_key,
+    }
+
+    # gonna need public columns for properties and taxlots
+    p_public_columns = Column.objects.filter(shared_field_type=1, table_name='PropertyState').values_list('column_name', 'is_extra_data')
+    t_public_columns = Column.objects.filter(shared_field_type=1, table_name='TaxLotState').values_list('column_name', 'is_extra_data')
+    data = {'properties': {}, 'taxlots': {}}
+    for pstate in pstates:
+        # what if matching criteria dne? a whole bunch of None's
+        add_state_to_data(data['properties'], pstate.propertyview_set.first(), pstate, property_key, p_public_columns)
+
+    for tstate in tstates:
+        add_state_to_data(data['taxlots'], tstate.taxlotview_set.first(), tstate, taxlot_key, t_public_columns)
+
+    return {'metadata': metadata, 'data': data}
+
+def add_state_to_data(data, view, state, key, public_columns):
+    # add public_column state data to the response
+    cycle = view.cycle.name
+    matching_field = getattr(state, key, None)
+    property_data = data.setdefault(matching_field, {})
+    cycle_data = property_data.setdefault(cycle, {})
+
+    for (name, extra_data) in public_columns:
+        if not extra_data:
+            value = getattr(state, name, None)
+        else:
+            value = state.extra_data.get(name, None)
+
+        if isinstance(value, pint.Quantity):
+            # convert pint to string with units
+            # json cant display exponents.
+            # value = "{:~P}".format(value)
+            value = f'{value.m} {value.u}'
+
+        cycle_data[name] = value
+
+
+def get_int(value, default):
+    try: 
+        result = int(float(value))
+        return result if result > 0 else default
+    except (ValueError, TypeError):
+        return default
+
+def get_states(cls, query, key, page, per_page):
+    # determine if key is cannonical or extra_data
+    fields = [field.name for field in cls._meta.get_fields()]
+    extra_data = True if key not in fields else False
+    order_key = key if not extra_data else f'extra_data__{key}'
+    # Django's natural order is by cycle, we need to order by the matching key
+    states = query.order_by(order_key)
+    
+    paginator = Paginator(states, per_page)
+    try: 
+        return paginator.page(page)
+    except EmptyPage:
+        return paginator.page(paginator.num_pages)
+
+
+######### MORE OF AN RSS LIST ###########
+def public_feed_rss(org, request):
+    """
+    Format all property and taxlot state data to be displayed on a public feed
+    """
+    params = request.query_params
+    page = get_int(params.get('page'), 1)
+    per_page = get_int(params.get('per_page'), 100)
+    property_key = params.get('property_key', 'ubid')
+    taxlot_key = params.get('taxlot_key', 'ubid')
+    pstates = get_states(
+        PropertyState,
+        org.propertystate_set.filter(propertyview__isnull=False),
+        property_key,
+        page,
+        per_page
+    )
+    tstates = get_states(
+        TaxLotState,
+        org.taxlotstate_set.filter(taxlotview__isnull=False),
+        taxlot_key,
+        page,
+        per_page
+    )
+
+    p_public_columns = Column.objects.filter(shared_field_type=1, table_name='PropertyState').values_list('column_name', 'is_extra_data')
+    t_public_columns = Column.objects.filter(shared_field_type=1, table_name='TaxLotState').values_list('column_name', 'is_extra_data')
+    data = []
+
+    for pstate in pstates:
+        # what if matching criteria dne? a whole bunch of None's
+        add_state_to_data_rss(data, 'property', pstate.propertyview_set.first(), pstate, p_public_columns)
+
+    for tstate in tstates:
+        add_state_to_data_rss(data, 'taxlot', tstate.taxlotview_set.first(), tstate, t_public_columns)
+
+    return data
+
+def add_state_to_data_rss(data, type, view, state, public_columns):
+    # add public_column state data to the response
+    datum = {
+        'type': type,
+        'cycle': view.cycle.name,
+    }
+
+    for (name, extra_data) in public_columns:
+        if not extra_data:
+            value = getattr(state, name, None)
+        else:
+            value = state.extra_data.get(name, None)
+
+        if isinstance(value, pint.Quantity):
+            # convert pint to string with units
+            # json cant display exponents.
+            value = f'{value.m} {value.u}'
+
+        datum[name] = value
+    data.append(datum)

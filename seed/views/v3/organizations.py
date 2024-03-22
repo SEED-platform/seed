@@ -8,7 +8,6 @@ import logging
 from collections import defaultdict
 from io import BytesIO
 from pathlib import Path
-import pint
 
 from django.conf import settings
 from django.contrib.auth.decorators import permission_required
@@ -72,7 +71,9 @@ from seed.utils.match import match_merge_link
 from seed.utils.merge import merge_properties
 from seed.utils.organizations import (
     create_organization,
-    create_suborganization
+    create_suborganization,
+    public_feed,
+    public_feed_rss,
 )
 from seed.utils.properties import pair_unpair_property_taxlot
 from seed.utils.salesforce import toggle_salesforce_sync
@@ -1433,39 +1434,37 @@ class OrganizationViewSet(viewsets.ViewSet):
 
     @ajax_request_class
     def public_feed_json(self, request, pk):
+        """
+        Format all property and taxlot state data fir a given organization to be displayed on a public feed as a json object
+        """
         try:
             org = Organization.objects.get(pk=pk)
         except Organization.DoesNotExist:
             return JsonResponse({'erorr': 'Organization does not exist'}, status=status.HTTP_404_NOT_FOUND)
         
-        public_columns = Column.objects.filter(shared_field_type=1).values_list('column_name', 'is_extra_data')
-        data = {}
-        states = org.propertystate_set.filter(propertyview__isnull=False)
-        for state in states:
-            # need to do it by ubids.
-            # what do we do if ubid DNE? 
-            # other matching criteria? 
-            # default display field?
-            cycle = state.propertyview_set.first().cycle.name
-            property_data = data.setdefault(state.ubid, {})
-            cycle_data = property_data.setdefault(cycle, {})
-
-
-            for (name, extra_data) in public_columns:
-                if not extra_data:
-                    value = getattr(state, name, None)
-                else:
-                    value = state.extra_data.get(name, None)
-
-                if isinstance(value, pint.Quantity):
-                    # convert pint to string with units
-                    value = "{:~P}".format(value)
-
-                cycle_data[name] = value
-
+        feed = public_feed(org, request)
+        
         return JsonResponse(
-            data, 
-            json_dumps_params={'indent': 4}, 
+            feed, 
+            json_dumps_params={'indent': 4},
             status=status.HTTP_200_OK
         )
+        
 
+    @ajax_request_class
+    def public_feed_rss(self, request, pk):
+        """
+        Format all property and taxlot state data fir a given organization to be displayed on a public feed as a .rss feed
+        """
+        try:
+            org = Organization.objects.get(pk=pk)
+        except Organization.DoesNotExist:
+            return JsonResponse({'erorr': 'Organization does not exist'}, status=status.HTTP_404_NOT_FOUND)
+        
+        feed = {'data': public_feed_rss(org, request)}
+        
+        return JsonResponse(
+            feed, 
+            json_dumps_params={'indent': 4},
+            status=status.HTTP_200_OK
+        )
