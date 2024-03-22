@@ -493,7 +493,7 @@ class PropertySensorViewTests(AccessLevelBaseTestCase):
         })
 
         # Action
-        url = reverse('api:v3:property-sensors-detail', kwargs={'property_pk': self.property_view_1, "pk": s1.id})
+        url = reverse('api:v3:property-sensors-detail', kwargs={'property_pk': self.property_view_1.pk, "pk": s1.id})
         url += f'?organization_id={self.org.pk}'
         params = json.dumps({
             "display_name": "s2"
