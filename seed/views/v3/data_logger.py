@@ -158,6 +158,8 @@ class DataLoggerViewSet(viewsets.ViewSet, OrgMixin):
 
     @swagger_auto_schema_org_query_param
     @ajax_request_class
+    @has_perm_class('requires_member')
+    @has_hierarchy_access(data_logger_id_kwarg='pk')
     def update(self, request, pk):
         org_id = self.get_organization(request)
         data = request.data
