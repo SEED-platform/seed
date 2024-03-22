@@ -41,11 +41,11 @@ angular.module('BE.seed.controller.sensor_update_modal', []).controller('sensor_
         $scope.sensor.display_name,
         $scope.sensor.location_description,
         $scope.sensor.description,
-        $scope.sensor.sensor_type,
+        $scope.sensor.type,
         $scope.sensor.units,
         $scope.sensor.column_name,
       )
-      .then((result) => {
+      .then(() => {
         $scope.refresh_page();
       })
       .catch((err) => {
@@ -54,6 +54,11 @@ angular.module('BE.seed.controller.sensor_update_modal', []).controller('sensor_
         }
       });
     }
+
+    $scope.refresh_page = () => {
+      $state.reload();
+      $uibModalInstance.dismiss('cancel');
+    };
 
     $scope.dismiss = () => {
       $uibModalInstance.close();
