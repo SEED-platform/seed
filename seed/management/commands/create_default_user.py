@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
-See also https://github.com/seed-platform/seed/main/LICENSE.md
+See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 from django.core.management.base import BaseCommand
 
@@ -73,7 +73,7 @@ class Command(BaseCommand):
             self.stdout.write(
                 'Org <%s> already exists, adding user' % options['organization'], ending='\n'
             )
-            org.add_member(u, ROLE_OWNER)
+            org.add_member(u, org.root.id, ROLE_OWNER)
         else:
             self.stdout.write(
                 'Creating org <%s> ...' % options['organization'],

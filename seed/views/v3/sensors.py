@@ -4,7 +4,10 @@ from rest_framework import generics, status, viewsets
 from rest_framework.decorators import action
 
 from seed.decorators import ajax_request_class
-from seed.lib.superperms.orgs.decorators import has_perm_class
+from seed.lib.superperms.orgs.decorators import (
+    has_hierarchy_access,
+    has_perm_class
+)
 from seed.models import DataLogger, PropertyView, Sensor
 from seed.utils.api import OrgMixin, ProfileIdMixin
 from seed.utils.api_schema import swagger_auto_schema_org_query_param
@@ -14,6 +17,7 @@ from seed.utils.sensors import PropertySensorReadingsExporter
 class SensorViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, ProfileIdMixin):
     @ajax_request_class
     @has_perm_class('requires_member')
+    @has_hierarchy_access(property_view_id_kwarg="property_pk")
     @action(detail=False, methods=['POST'])
     def usage(self, request, property_pk):
         """
@@ -49,6 +53,7 @@ class SensorViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profile
     @swagger_auto_schema_org_query_param
     @ajax_request_class
     @has_perm_class('requires_viewer')
+    @has_hierarchy_access(property_view_id_kwarg="property_pk")
     def list(self, request, property_pk):
         """
         Retrieves sensors for the property
@@ -80,6 +85,7 @@ class SensorViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profile
     @swagger_auto_schema_org_query_param
     @ajax_request_class
     @has_perm_class('requires_member')
+    @has_hierarchy_access(property_view_id_kwarg="property_pk")
     def destroy(self, request, property_pk, pk):
         """
         Retrieves sensors for the property

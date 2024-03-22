@@ -3,7 +3,7 @@
 
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
-See also https://github.com/seed-platform/seed/main/LICENSE.md
+See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 # Do not isort these since order is important
 # The precommit call has a skip for this file.
@@ -44,6 +44,8 @@ from .filter_group import *  # noqa
 from .events import *  # noqa
 from .ubid_models import *  # noqa
 from .uniformat import *  # noqa
+from .goals import * # noqa
+from .goal_notes import * # noqa
 
 from .certification import (    # noqa
     GreenAssessment,

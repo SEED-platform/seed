@@ -2,7 +2,7 @@
 # encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
-See also https://github.com/seed-platform/seed/main/LICENSE.md
+See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 import json
 import logging
@@ -1153,7 +1153,7 @@ class TestEeejPipeline(TestCase):
 
     def test_get_data_for_census_tract_fetch(self):
         pvids = [self.property_view.id]
-        loc_data_by_property_view, errors_by_property_view_id = _get_data_for_census_tract_fetch(pvids, self.org)
+        loc_data_by_property_view, errors_by_property_view_id = _get_data_for_census_tract_fetch(pvids, self.org, True)
         self.assertEqual(errors_by_property_view_id, {})
         self.assertEqual(loc_data_by_property_view, {self.property_view.id: {'latitude': None, 'longitude': None, 'geocoding_confidence': None, 'tract': None, 'valid_coords': False, 'location': '730 Garcia Street, Boring, Oregon, 97080'}})
 
@@ -1170,7 +1170,7 @@ class TestEeejPipeline(TestCase):
 
         apv_ids = [self.property_view_dac.id, self.property_view_not_dac.id]
         apvs = [self.property_view_dac, self.property_view_not_dac]
-        loc_data_by_property_view, errors_by_property_view_id = _get_data_for_census_tract_fetch(apv_ids, self.org)
+        loc_data_by_property_view, errors_by_property_view_id = _get_data_for_census_tract_fetch(apv_ids, self.org, True)
         results, errors_by_apv_id = _get_eeej_indicators(apvs, loc_data_by_property_view)
         self.assertEqual(len(results), 2)
         # DAC

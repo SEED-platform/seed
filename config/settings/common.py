@@ -1,6 +1,6 @@
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
-See also https://github.com/seed-platform/seed/main/LICENSE.md
+See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 from __future__ import absolute_import
 
@@ -103,6 +103,7 @@ DJANGO_CORE_APPS = (
     'crispy_forms',  # needed to squash warnings around collectstatic with rest_framework
     'post_office',
     'django_celery_beat',
+    'treebeard',
 )
 
 
@@ -148,7 +149,6 @@ COMPRESS_FILTERS = {
     ],
     'js': [
         'compressor.filters.jsmin.JSMinFilter',
-        'compressor.filters.yuglify.YUglifyJSFilter',
     ]
 }
 STATICFILES_DIRS = [

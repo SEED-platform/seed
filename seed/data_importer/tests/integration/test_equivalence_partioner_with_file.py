@@ -2,7 +2,7 @@
 # encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
-See also https://github.com/seed-platform/seed/main/LICENSE.md
+See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 import logging
 import os.path as osp
@@ -44,7 +44,7 @@ class TestEquivalenceWithFile(DataMappingBaseTestCase):
         all_unmatched_properties = self.import_file.find_unmatched_property_states()
         sub_progress_data = ProgressData(func_name='match_sub_progress', unique_id=123)
         sub_progress_data.save()
-        unmatched_property_ids, duplicate_property_count = match.filter_duplicate_states(
+        unmatched_property_ids, _, duplicate_property_count = match.filter_duplicate_states(
             all_unmatched_properties,
             sub_progress_data.key,
         )

@@ -2,7 +2,7 @@
 # encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
-See also https://github.com/seed-platform/seed/main/LICENSE.md
+See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 import ast
 
@@ -18,6 +18,7 @@ from seed.test_helpers.fake import (
     FakeTaxLotStateFactory,
     FakeTaxLotViewFactory
 )
+from seed.tests.util import AccessLevelBaseTestCase
 from seed.utils.geocode import long_lat_wkt
 from seed.utils.organizations import create_organization
 
@@ -232,3 +233,66 @@ class GeocodeViewTests(TestCase):
         false_result = self.client.get(url, post_params_false)
 
         self.assertEqual(b'false', false_result.content)
+
+
+class GeocodeViewPermissionsTest(AccessLevelBaseTestCase):
+    def setUp(self):
+        super().setUp()
+        # empty property/taxlots so it doesn't actually call mapquest.
+        empty_details = {"address_line_1": None, "state": None, "postal_code": None, "city": None}
+
+        self.root_property = self.property_factory.get_property(access_level_instance=self.root_level_instance)
+        self.root_property_state = self.property_state_factory.get_property_state(**empty_details)
+        self.root_property_view = self.property_view_factory.get_property_view(prprty=self.root_property, state=self.root_property_state)
+
+        self.root_taxlot = self.taxlot_factory.get_taxlot(access_level_instance=self.root_level_instance)
+        self.root_taxlot_state = self.taxlot_state_factory.get_taxlot_state(**empty_details)
+        self.root_taxlot_view = self.taxlot_view_factory.get_taxlot_view(taxlot=self.root_taxlot, state=self.root_taxlot_state)
+
+        self.child_property = self.property_factory.get_property(access_level_instance=self.child_level_instance)
+        self.child_property_state = self.property_state_factory.get_property_state(**empty_details)
+        self.child_property_view = self.property_view_factory.get_property_view(prprty=self.child_property, state=self.child_property_state)
+
+        self.child_taxlot = self.taxlot_factory.get_taxlot(access_level_instance=self.child_level_instance)
+        self.child_taxlot_state = self.taxlot_state_factory.get_taxlot_state(**empty_details)
+        self.child_taxlot_view = self.taxlot_view_factory.get_taxlot_view(taxlot=self.child_taxlot, state=self.child_taxlot_state)
+
+        self.post_params = {
+            'organization_id': self.org.pk,
+            'property_view_ids': [self.root_property_view.pk, self.child_property_view.pk],
+            'taxlot_view_ids': [self.root_taxlot_view.pk, self.child_taxlot_view.pk]
+        }
+
+        self.org.mapquest_api_key = "somekey"
+        self.org.geocoding_enabled = True
+        self.org.save()
+
+    def test_confidence_summary(self):
+        url = reverse('api:v3:geocode-confidence-summary')
+
+        self.login_as_root_member()
+        result = self.client.post(url, self.post_params)
+        assert sum(result.json()["properties"].values()) == 2
+        assert sum(result.json()["tax_lots"].values()) == 2
+
+        self.login_as_child_member()
+        result = self.client.post(url, self.post_params)
+        assert sum(result.json()["properties"].values()) == 1
+        assert sum(result.json()["tax_lots"].values()) == 1
+
+    def test_geocode_endpoint(self):
+        url = reverse('api:v3:geocode-geocode-by-ids') + '?organization_id=%s' % self.org.pk
+
+        self.login_as_child_member()
+        self.client.post(url, self.post_params)
+        assert PropertyState.objects.get(pk=self.root_property_state.pk).geocoding_confidence is None
+        assert TaxLotState.objects.get(pk=self.root_taxlot_state.pk).geocoding_confidence is None
+        assert PropertyState.objects.get(pk=self.child_property_state.pk).geocoding_confidence is not None
+        assert TaxLotState.objects.get(pk=self.child_taxlot_state.pk).geocoding_confidence is not None
+
+        self.login_as_root_member()
+        self.client.post(url, self.post_params)
+        assert PropertyState.objects.get(pk=self.root_property_state.pk).geocoding_confidence is not None
+        assert TaxLotState.objects.get(pk=self.root_taxlot_state.pk).geocoding_confidence is not None
+        assert PropertyState.objects.get(pk=self.child_property_state.pk).geocoding_confidence is not None
+        assert TaxLotState.objects.get(pk=self.child_taxlot_state.pk).geocoding_confidence is not None

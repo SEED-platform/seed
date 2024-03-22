@@ -2,7 +2,7 @@
 # encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
-See also https://github.com/seed-platform/seed/main/LICENSE.md
+See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 :author nicholas.long@nrel.gov
 """
@@ -485,7 +485,7 @@ class BuildingSync(object):
         if not bsync_element.tag.endswith('BuildingSync'):
             raise ParsingError('Expected BuildingSync element as root element in xml')
 
-        # first check for a version attribute in the buldingsync tag
+        # first check for a version attribute in the buildingsync tag
         if "version" in bsync_element.attrib:
             return bsync_element.attrib["version"]
 

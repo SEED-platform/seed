@@ -7,31 +7,20 @@ See also https://github.com/seed-platform/seed/main/LICENSE.md
 import json
 from datetime import datetime
 
-from django.test import TestCase
 from django.urls import reverse
 from django.utils.timezone import \
     make_aware  # make_aware is used because inconsistencies exist in creating datetime with tzinfo
 from pytz import timezone
 
 from config.settings.common import TIME_ZONE
-from seed.landing.models import SEEDUser as User
 from seed.models.sensors import DataLogger, Sensor, SensorReading
 from seed.test_helpers.fake import FakePropertyViewFactory
-from seed.utils.organizations import create_organization
+from seed.tests.util import AccessLevelBaseTestCase
 
 
-class PropertySensorViewTests(TestCase):
+class PropertySensorViewTests(AccessLevelBaseTestCase):
     def setUp(self):
-        self.user_details = {
-            'username': 'test_user@demo.com',
-            'password': 'test_pass',
-        }
-        self.user = User.objects.create_superuser(
-            email='test_user@demo.com', **self.user_details
-        )
-        self.org, _, _ = create_organization(self.user)
-        self.org.save()
-        self.client.login(**self.user_details)
+        super().setUp()
 
         property_view_factory = FakePropertyViewFactory(organization=self.org)
         self.property_view_1 = property_view_factory.get_property_view()
@@ -39,6 +28,80 @@ class PropertySensorViewTests(TestCase):
 
         self.property_view_2 = property_view_factory.get_property_view()
         self.property_2 = self.property_view_2.property
+
+    def test_create_data_loggers_permissions(self):
+        url = reverse('api:v3:data_logger-list') + "?property_view_id=" + str(self.property_view_1.id)
+        data = {"display_name": "boo", "location_description": "ah", "identifier": "me", "org_id": self.org.pk}
+
+        # root users can create data logger in root
+        self.login_as_root_member()
+        result = self.client.post(url, json.dumps(data), content_type="application/json")
+        assert result.status_code == 200
+
+        # child user cannot
+        self.login_as_child_member()
+        data["display_name"] = "lol"
+        result = self.client.post(url, json.dumps(data), content_type="application/json")
+        assert result.status_code == 404
+
+    def test_data_loggers_list_permissions(self):
+        url = reverse('api:v3:data_logger-list')
+        data = {"property_view_id": self.property_view_1.id, "org_id": self.org.pk}
+
+        # root users can get data logger in root
+        self.login_as_root_member()
+        result = self.client.get(url, data)
+        assert result.status_code == 200
+
+        # child user cannot
+        self.login_as_child_member()
+        result = self.client.get(url, data)
+        assert result.status_code == 404
+
+    def test_data_loggers_delete_permissions(self):
+        dl = DataLogger.objects.create(**{
+            "property_id": self.property_1.id,
+            "display_name": "moo",
+        })
+
+        url = reverse('api:v3:data_logger-detail', kwargs={'pk': dl.id})
+        url += f'?organization_id={self.org.pk}'
+
+        # child user cannot
+        self.login_as_child_member()
+        result = self.client.delete(url)
+        assert result.status_code == 404
+
+        # root users can get data logger in root
+        self.login_as_root_member()
+        result = self.client.delete(url)
+        assert result.status_code == 204
+
+    def test_delete_sensor_permissions(self):
+        dl = DataLogger.objects.create(**{
+            "property_id": self.property_1.id,
+            "display_name": "moo",
+        })
+        s = Sensor.objects.create(**{
+            "data_logger": dl,
+            "display_name": "s1",
+            "sensor_type": "first",
+            "units": "one",
+            "column_name": "sensor 1"
+        })
+
+        url = reverse('api:v3:property-sensors-detail', kwargs={'property_pk': self.property_view_1.pk, "pk": s.id})
+        url += f'?organization_id={self.org.pk}'
+
+        # child user cannot
+        self.login_as_child_member()
+        result = self.client.delete(url)
+        assert result.status_code == 404
+
+        # root users can get data logger in root
+        self.login_as_root_member()
+        result = self.client.delete(url)
+        assert result.status_code == 204
 
     def test_property_sensors_endpoint_returns_a_list_of_sensors_of_a_view(self):
         dl_a = DataLogger.objects.create(**{
@@ -130,7 +193,7 @@ class PropertySensorViewTests(TestCase):
         assert SensorReading.objects.count() == 2
 
         # Action
-        url = reverse('api:v3:property-sensors-detail', kwargs={'property_pk': self.property_view_1, "pk": s1.id})
+        url = reverse('api:v3:property-sensors-detail', kwargs={'property_pk': self.property_view_1.pk, "pk": s1.id})
         url += f'?organization_id={self.org.pk}'
         result = self.client.delete(url, content_type="application/json")
 

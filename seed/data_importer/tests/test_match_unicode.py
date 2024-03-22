@@ -3,7 +3,7 @@
 # encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
-See also https://github.com/seed-platform/seed/main/LICENSE.md
+See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 import logging
 import os.path as osp
@@ -33,7 +33,7 @@ logger = logging.getLogger(__name__)
 class TestUnicodeNormalization(DataMappingBaseTestCase):
     def test_unicode_normalization(self):
         """Test a few cases. The unicodedata.normalize('NFC', text) method combines the
-        the letter and diacritics, which seems to provide the best compatibility."""
+        letter and diacritics, which seems to provide the best compatibility."""
         # Guillemets
         unicode_text = "Café «Déjà Vu»"
         expected_out = "Café \"Déjà Vu\""
@@ -137,6 +137,7 @@ class TestUnicodeMatching(DataMappingBaseTestCase):
             'import_file_id': self.import_file_1.id,
             'data_state': DATA_STATE_MAPPING,
             'no_default_data': False,
+            'raw_access_level_instance_id': self.org.root.id,
         }
         self.property_state_factory.get_property_state(**base_state_details)
 

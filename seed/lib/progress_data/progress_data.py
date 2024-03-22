@@ -2,7 +2,7 @@
 # encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
-See also https://github.com/seed-platform/seed/main/LICENSE.md
+See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 import logging
 
@@ -180,8 +180,8 @@ class ProgressData(object):
 
     def increment_value(self):
         """
-        Return the value to increment the progress back. Currently this is always assume that that
-        size of the step is 1 to the self.total count.
+        Return the value used to increment the progress. Currently, this always assumes that the
+        size of the step is 1 / self.total count.
 
         :return: float, value to increment the step by
         """

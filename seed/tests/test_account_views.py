@@ -2,7 +2,7 @@
 # encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
-See also https://github.com/seed-platform/seed/main/LICENSE.md
+See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 import json
 from datetime import date
@@ -103,6 +103,7 @@ class AccountsViewTests(TestCase):
             'salesforce_enabled': False,
             'ubid_threshold': 1.0,
             'inventory_count': 0,
+            "access_level_names": [self.org.name]
         }
 
         org_payload = _dict_org(self.fake_request, [self.org])
@@ -117,12 +118,12 @@ class AccountsViewTests(TestCase):
 
         # Now let's make sure that we pick up related buildings correctly.
         for x in range(10):
-            ps = PropertyState.objects.create(organization=self.org)
+            ps = PropertyState.objects.create(organization=self.org, raw_access_level_instance=self.org.root)
             ps.promote(self.cycle)
             ps.save()
 
         for x in range(5):
-            ts = TaxLotState.objects.create(organization=self.org)
+            ts = TaxLotState.objects.create(organization=self.org, raw_access_level_instance=self.org.root)
             ts.promote(self.cycle)
             ts.save()
 
@@ -165,6 +166,7 @@ class AccountsViewTests(TestCase):
             }],
             'sub_orgs': [{
                 'name': 'sub',
+                'access_level_names': ['sub'],
                 'org_id': new_org.pk,
                 'id': new_org.pk,
                 'number_of_users': 1,
@@ -244,6 +246,7 @@ class AccountsViewTests(TestCase):
             'salesforce_enabled': False,
             'ubid_threshold': 1.0,
             'inventory_count': 0,
+            'access_level_names': ['my org'],
         }
 
         org_payload = _dict_org(self.fake_request, Organization.objects.all())
@@ -343,7 +346,7 @@ class AccountsViewTests(TestCase):
         """test removing a user"""
         # normal case
         u = User.objects.create(username='b@b.com', email='b@be.com')
-        self.org.add_member(u)
+        self.org.add_member(u, access_level_instance_id=self.org.root.id)
 
         resp = self.client.delete(
             reverse_lazy('api:v3:organization-users-remove', args=[self.org.id, u.id]),
@@ -371,7 +374,7 @@ class AccountsViewTests(TestCase):
     def test_cannot_leave_org_with_no_owner(self):
         """test removing a user"""
         u = User.objects.create(username='b@b.com', email='b@be.com')
-        self.org.add_member(u, role=ROLE_MEMBER)
+        self.org.add_member(u, role=ROLE_MEMBER, access_level_instance_id=self.org.root.id)
         self.assertEqual(self.org.users.count(), 2)
 
         resp = self.client.delete(
@@ -387,7 +390,7 @@ class AccountsViewTests(TestCase):
     def test_remove_user_from_org_user_DNE(self):
         """DNE = does not exist"""
         u = User.objects.create(username='b@b.com', email='b@be.com')
-        self.org.add_member(u)
+        self.org.add_member(u, access_level_instance_id=self.org.root.id)
 
         resp = self.client.delete(
             reverse_lazy('api:v3:organization-users-remove', args=[self.org.id, 9999]),
@@ -402,7 +405,7 @@ class AccountsViewTests(TestCase):
     def test_remove_user_from_org_org_DNE(self):
         """DNE = does not exist"""
         u = User.objects.create(username='b@b.com', email='b@be.com')
-        self.org.add_member(u)
+        self.org.add_member(u, access_level_instance_id=self.org.root.id)
 
         resp = self.client.delete(
             reverse_lazy('api:v3:organization-users-remove', args=[9999, u.id]),
@@ -426,7 +429,7 @@ class AccountsViewTests(TestCase):
 
     def test_update_role(self):
         u = User.objects.create(username='b@b.com', email='b@be.com')
-        self.org.add_member(u, role=ROLE_VIEWER)
+        self.org.add_member(u, role=ROLE_VIEWER, access_level_instance_id=self.org.root.id)
 
         ou = OrganizationUser.objects.get(
             user_id=u.id, organization_id=self.org.id)
@@ -452,9 +455,35 @@ class AccountsViewTests(TestCase):
             })
         self.assertEqual(ou.role_level, ROLE_MEMBER)
 
+    def test_update_access_level_instance(self):
+        # Setup
+        u = User.objects.create(username='b@b.com', email='b@be.com')
+        self.org.add_member(u, role=ROLE_VIEWER, access_level_instance_id=self.org.root.id)
+        org_user = OrganizationUser.objects.get(user=u)
+
+        self.org.access_level_names = ["root", "child"]
+        self.org.save()
+        child_ali = self.org.add_new_access_level_instance(self.org.root.id, "child")
+
+        # Action
+        resp = self.client.put(
+            reverse_lazy("api:v3:user-access-level-instance", args=[u.id]) + '?organization_id=' + str(
+                self.org.id),
+            data=json.dumps(
+                {
+                    'access_level_instance_id': child_ali.id
+                }
+            ),
+            content_type='application/json',
+        )
+
+        # Assertion
+        assert resp.status_code == 200
+        assert OrganizationUser.objects.get(pk=org_user.pk).access_level_instance_id == child_ali.id
+
     def test_allowed_to_update_role_if_not_last_owner(self):
         u = User.objects.create(username='b@b.com', email='b@be.com')
-        self.org.add_member(u, role=ROLE_OWNER)
+        self.org.add_member(u, role=ROLE_OWNER, access_level_instance_id=self.org.root.id)
 
         ou = OrganizationUser.objects.get(
             user_id=self.user.id, organization_id=self.org.id)
@@ -482,7 +511,7 @@ class AccountsViewTests(TestCase):
 
     def test_cannot_update_role_if_last_owner(self):
         u = User.objects.create(username='b@b.com', email='b@be.com')
-        self.org.add_member(u, role=ROLE_MEMBER)
+        self.org.add_member(u, role=ROLE_MEMBER, access_level_instance_id=self.org.root.id)
 
         ou = OrganizationUser.objects.get(
             user_id=self.user.id, organization_id=self.org.id)
@@ -1034,6 +1063,7 @@ class AuthViewTests(TestCase):
 
     def test_set_default_organization(self):
         """test seed.views.accounts.set_default_organization"""
+        org_user = OrganizationUser.objects.get(user=self.user)
         resp = self.client.put(
             reverse_lazy('api:v3:user-default-organization',
                          args=[self.user.id]) + f'?organization_id={self.org.pk}',
@@ -1043,6 +1073,10 @@ class AuthViewTests(TestCase):
             json.loads(resp.content),
             {
                 'status': 'success',
+                'user': {
+                    'id': org_user.id,
+                    'access_level_instance': {'id': self.org.root.id, 'name': 'root'},
+                }
             })
         # refresh the user
         u = User.objects.get(pk=self.user.pk)
@@ -1050,12 +1084,14 @@ class AuthViewTests(TestCase):
 
     def test__get_default_org(self):
         """test seed.views.main._get_default_org"""
-        org_id, org_name, org_role = _get_default_org(self.user)
+        org_id, org_name, org_role, ali_name, ali_id, is_ali_root, is_ali_leaf = _get_default_org(self.user)
 
         # check standard case
         self.assertEqual(org_id, self.org.id)
         self.assertEqual(org_name, self.org.name)
         self.assertEqual(org_role, 'owner')
+        self.assertEqual(ali_name, 'root')
+        self.assertEqual(ali_id, self.org.root.id)
 
         # check that the default org was set
         u = User.objects.get(pk=self.user.pk)
@@ -1066,7 +1102,7 @@ class AuthViewTests(TestCase):
             username='tester@be.com',
             email='tester@be.com',
         )
-        org_id, org_name, org_role = _get_default_org(other_user)
+        org_id, org_name, org_role, ali_name, ali_id, is_ali_root, is_ali_leaf = _get_default_org(other_user)
         self.assertEqual(org_id, '')
         self.assertEqual(org_name, '')
         self.assertEqual(org_role, '')
@@ -1078,7 +1114,7 @@ class AuthViewTests(TestCase):
         self.assertEqual(other_user.default_organization, self.org)
         # _get_default_org should remove the user from the org and set the
         # next available org as default or set to ''
-        org_id, org_name, org_role = _get_default_org(other_user)
+        org_id, org_name, org_role, ali_name, ali_id, is_ali_root, is_ali_leaf = _get_default_org(other_user)
         self.assertEqual(org_id, '')
         self.assertEqual(org_name, '')
         self.assertEqual(org_role, '')

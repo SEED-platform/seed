@@ -2,7 +2,7 @@
 # encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
-See also https://github.com/seed-platform/seed/main/LICENSE.md
+See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 import json
 import uuid
@@ -118,7 +118,23 @@ def upload_match_sort(header, main_url, organization_id, dataset_id, cycle_id, f
         main_url + '/api/v3/import_files/{}/matching_and_geocoding_results/'.format(import_id),
         headers=header,
         params={"organization_id": organization_id})
+
     check_status(result, partmsg, log)
+
+    # get number of properties
+    params = {
+        'organization_id': organization_id,
+        'cycle': cycle_id,
+        'page': 1,
+        'per_page': 999999999
+    }
+    result = requests.post(main_url + '/api/v3/properties/filter/',
+                           headers=header,
+                           params=params)
+    inventory_ids = [prop['property_view_id'] for prop in result.json()['results']]
+    if len(inventory_ids) == 0:
+        print("No properties were created! Check import process")
+        raise RuntimeError
 
 
 def account(header, main_url, username, log):
@@ -332,6 +348,7 @@ def labels(header, main_url, organization_id, cycle_id, log):
                            headers=header,
                            params=params,
                            json=payload)
+
     check_status(result, partmsg, log)
     label_id = result.json()['id']
 
@@ -361,6 +378,7 @@ def labels(header, main_url, organization_id, cycle_id, log):
                           headers=header,
                           params=params,
                           json=payload)
+
     check_status(result, partmsg, log)
 
     # Delete label
@@ -423,9 +441,13 @@ def data_quality(header, main_url, organization_id, log):
     check_status(result, partmsg, log)
 
     # get some property view ids
+    params = {
+        'organization_id': organization_id
+    }
     result = requests.get(
         main_url + '/api/v3/property_views/',
-        headers=header
+        headers=header,
+        params=params
     )
     prop_view_ids = [prop['id'] for prop in result.json()['property_views']]
 

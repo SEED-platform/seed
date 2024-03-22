@@ -1,6 +1,6 @@
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
-See also https://github.com/seed-platform/seed/main/LICENSE.md
+See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 import os
 import tempfile
@@ -11,7 +11,10 @@ from django.test import TestCase
 
 from seed.data_importer.models import ImportRecord
 from seed.landing.models import SEEDUser as User
-from seed.lib.superperms.orgs.models import OrganizationUser
+from seed.lib.superperms.orgs.models import (
+    AccessLevelInstance,
+    OrganizationUser
+)
 from seed.models import (
     AnalysisInputFile,
     AnalysisOutputFile,
@@ -35,16 +38,18 @@ class TestMeasures(TestCase):
         self.user_a = User.objects.create(username='user_a')
         self.user_b = User.objects.create(username='user_b')
         self.org_a = Organization.objects.create()
+        self.root_a = AccessLevelInstance.objects.get(organization_id=self.org_a, depth=1)
         self.org_a_sub = Organization.objects.create()
         self.org_a_sub.parent_org = self.org_a
         self.org_a_sub.save()
         self.org_b = Organization.objects.create()
+        self.root_b = AccessLevelInstance.objects.get(organization_id=self.org_b, depth=1)
 
         OrganizationUser.objects.create(
-            user=self.user_a, organization=self.org_a
+            user=self.user_a, organization=self.org_a, access_level_instance_id=self.root_a.id
         )
         OrganizationUser.objects.create(
-            user=self.user_b, organization=self.org_b
+            user=self.user_b, organization=self.org_b, access_level_instance_id=self.root_b.id
         )
 
     @classmethod
@@ -99,7 +104,8 @@ class TestMeasures(TestCase):
         import_record = ImportRecord.objects.create(
             owner=self.user_a,
             last_modified_by=self.user_a,
-            super_organization=self.org_a
+            super_organization=self.org_a,
+            access_level_instance=self.org_a.root
         )
         ImportFile.objects.create(
             import_record=import_record,
@@ -121,7 +127,8 @@ class TestMeasures(TestCase):
             owner=self.user_a,
             last_modified_by=self.user_a,
             # use suborg of org_a
-            super_organization=self.org_a_sub
+            super_organization=self.org_a_sub,
+            access_level_instance=self.org_a.root
         )
         ImportFile.objects.create(
             import_record=import_record,
@@ -142,7 +149,8 @@ class TestMeasures(TestCase):
         import_record = ImportRecord.objects.create(
             owner=self.user_a,
             last_modified_by=self.user_a,
-            super_organization=self.org_a
+            super_organization=self.org_a,
+            access_level_instance=self.org_a.root
         )
         ImportFile.objects.create(
             import_record=import_record,

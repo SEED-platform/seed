@@ -44,6 +44,7 @@ services:
       - SEED_ADMIN_ORG=default
       - SECRET_KEY=ARQV8qGuJKH8sGnBf6ZeEdJQRKLTUhsvEcp8qG9X9sCPXvGLhdxqnNXpZcy6HEyf
       - DJANGO_SETTINGS_MODULE=config.settings.docker
+      - NGINX_LISTEN_OPTS="http2"
       # Sentry configuration if you want to use it (make sure to enable on web-celery container too)
       # - SENTRY_RAVEN_DSN=https://<userid>@<ordid>.ingest.sentry.io/<jobid>
       # - SENTRY_JS_DSN=https://<userid>@<ordid>.ingest.sentry.io/<jobid>

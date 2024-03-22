@@ -2,7 +2,7 @@
 # encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
-See also https://github.com/seed-platform/seed/main/LICENSE.md
+See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 from django.http import JsonResponse
 from drf_yasg.utils import swagger_auto_schema
@@ -10,7 +10,10 @@ from rest_framework import viewsets
 from rest_framework.status import HTTP_409_CONFLICT
 
 from seed.decorators import ajax_request_class, require_organization_id_class
-from seed.lib.superperms.orgs.decorators import has_perm_class
+from seed.lib.superperms.orgs.decorators import (
+    has_hierarchy_access,
+    has_perm_class
+)
 from seed.models import AnalysisPropertyView, PropertyView
 from seed.serializers.analysis_property_views import (
     AnalysisPropertyViewSerializer
@@ -28,6 +31,7 @@ class AnalysisPropertyViewViewSet(viewsets.ViewSet, OrgMixin):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_member')
+    @has_hierarchy_access(analysis_id_kwarg="analysis_pk")
     def list(self, request, analysis_pk):
         organization_id = int(self.get_organization(request))
         try:
@@ -58,6 +62,7 @@ class AnalysisPropertyViewViewSet(viewsets.ViewSet, OrgMixin):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_member')
+    @has_hierarchy_access(analysis_id_kwarg="analysis_pk")
     def retrieve(self, request, analysis_pk, pk):
         organization_id = int(self.get_organization(request))
         try:

@@ -1,6 +1,6 @@
 /**
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
- * See also https://github.com/seed-platform/seed/main/LICENSE.md
+ * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
 angular.module('BE.seed.service.user', []).factory('user_service', [
   '$http',
@@ -11,6 +11,7 @@ angular.module('BE.seed.service.user', []).factory('user_service', [
     const urls = generated_urls;
 
     let organization;
+    let access_level_instance;
     let user_id;
 
     /**
@@ -28,6 +29,13 @@ angular.module('BE.seed.service.user', []).factory('user_service', [
       user_role: window.BE.initial_org_user_role
     };
 
+    user_factory.get_access_level_instance = () => access_level_instance ?? {
+      id: window.BE.access_level_instance_id,
+      name: window.BE.access_level_instance_name,
+      is_ali_root: window.BE.is_ali_root,
+      is_ali_leaf: window.BE.is_ali_leaf
+    };
+
     /**
      * sets the current organization
      * @param {obj} org
@@ -43,7 +51,10 @@ angular.module('BE.seed.service.user', []).factory('user_service', [
             params: { organization_id: org.id }
           }
         )
-        .then((response) => response.data));
+        .then(({ data }) => {
+          access_level_instance = data.user.access_level_instance;
+          return data;
+        }));
     };
 
     user_factory.get_users = () => $http.get('/api/v3/users/').then((response) => response.data);
@@ -54,7 +65,8 @@ angular.module('BE.seed.service.user', []).factory('user_service', [
         last_name: user.last_name,
         email: user.email,
         org_name: user.org_name,
-        role: user.role
+        role: user.role,
+        access_level_instance_id: user.access_level_instance_id
       };
 
       const params = {};

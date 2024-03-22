@@ -1,8 +1,12 @@
+ARG NGINX_LISTEN_OPTS
+
 # AUTHOR:           Clay Teeter <teeterc@gmail.com>, Nicholas Long <nicholas.long@nrel.gov>
 # DESCRIPTION:      Image with seed platform and dependencies running in development mode
 # TO_BUILD_AND_RUN: docker-compose build && docker-compose up
 
 FROM alpine:3.14
+
+ARG NGINX_LISTEN_OPTS
 
 RUN apk add --no-cache python3-dev \
         postgresql-dev \
@@ -67,6 +71,17 @@ RUN git config --system --add safe.directory /seed
 
 # nginx configuration - replace the root/default nginx config file and add included files
 COPY ./docker/nginx/*.conf /etc/nginx/
+COPY ./docker/nginx/nginx.conf.template /etc/nginx/nginx.conf.template
+
+# Install gettext package for envsubst and then generate nginx.conf from the template
+RUN apk add --no-cache gettext && \
+    if [ -z "${NGINX_LISTEN_OPTS}" ]; then \
+        echo "NGINX_LISTEN_OPTS is unset or empty, defaulting to: HTTP1.1"; \
+    else \
+        echo "NGINX_LISTEN_OPTS is set to: ${NGINX_LISTEN_OPTS}"; \
+    fi && \
+    envsubst '${NGINX_LISTEN_OPTS}' < /etc/nginx/nginx.conf.template > /etc/nginx/nginx.conf
+
 # symlink maintenance.html that nginx will serve in the case of a 503
 RUN ln -sf /seed/collected_static/maintenance.html /var/lib/nginx/html/maintenance.html
 # set execute permissions on the maint script to toggle on and off

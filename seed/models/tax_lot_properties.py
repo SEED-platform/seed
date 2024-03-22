@@ -2,7 +2,7 @@
 # encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
-See also https://github.com/seed-platform/seed/main/LICENSE.md
+See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 from __future__ import annotations, unicode_literals
 
@@ -14,8 +14,11 @@ from typing import TYPE_CHECKING, Optional, Sequence, Union
 from django.apps import apps
 from django.contrib.gis.db.models import GeometryField
 from django.contrib.gis.geos import GEOSGeometry
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import Count
+from django.db.models.signals import pre_save
+from django.dispatch import receiver
 from django.utils.timezone import make_naive
 from quantityfield.units import ureg
 
@@ -140,6 +143,7 @@ class TaxLotProperty(models.Model):
         show_columns: Optional[list[int]],
         columns_from_database: list[dict],
         include_related: bool = True,
+        goal_id: int = False,
     ) -> list[dict]:
         """
         This method takes a list of TaxLotViews or PropertyViews and returns the data along
@@ -264,9 +268,11 @@ class TaxLotProperty(models.Model):
 
             obj_dict['merged_indicator'] = obj.state_id in merged_state_ids
 
-            # This is only applicable to Properties since Tax Lots don't have meters
             if this_cls == 'Property':
+                obj_dict.update(obj.property.access_level_instance.get_path())
                 obj_dict['meters_exist_indicator'] = len(obj.property.meters.all()) > 0
+            else:
+                obj_dict.update(obj.taxlot.access_level_instance.get_path())
 
             # bring in GIS data
             obj_dict[lookups['bounding_box']] = bounding_box_wkt(obj.state)
@@ -286,6 +292,12 @@ class TaxLotProperty(models.Model):
             # remove the measures from this view for now
             if obj_dict.get('measures'):
                 del obj_dict['measures']
+
+            # add goal note data
+            if goal_id:
+                goal_note = obj.property.goalnote_set.filter(goal=goal_id).first()
+                obj_dict['goal_note'] = goal_note.serialize() if goal_note else None
+                obj_dict['historical_note'] = obj.property.historical_note.serialize()
 
             results.append(obj_dict)
 
@@ -431,3 +443,12 @@ class TaxLotProperty(models.Model):
                 join_map[getattr(join, lookups['obj_view_id'])] = [join_dict]
 
         return join_map
+
+
+@receiver(pre_save, sender=TaxLotProperty)
+def presave_organization(sender, instance, **kwargs):
+    p_ali = instance.property_view.property.access_level_instance.pk
+    t_ali = instance.taxlot_view.taxlot.access_level_instance.pk
+
+    if p_ali != t_ali:
+        raise ValidationError("taxlot and property must have same access level instance.")

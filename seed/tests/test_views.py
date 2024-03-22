@@ -2,7 +2,7 @@
 # encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
-See also https://github.com/seed-platform/seed/main/LICENSE.md
+See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 import json
 from datetime import datetime
@@ -36,7 +36,11 @@ from seed.test_helpers.fake import (
     FakeTaxLotFactory,
     FakeTaxLotStateFactory
 )
-from seed.tests.util import AssertDictSubsetMixin, DeleteModelsTestCase
+from seed.tests.util import (
+    AccessLevelBaseTestCase,
+    AssertDictSubsetMixin,
+    DeleteModelsTestCase
+)
 from seed.utils.organizations import create_organization
 
 DEFAULT_CUSTOM_COLUMNS = [
@@ -84,7 +88,7 @@ class GetDatasetsViewsTests(TestCase):
         self.client.login(**user_details)
 
     def test_get_datasets(self):
-        import_record = ImportRecord.objects.create(owner=self.user)
+        import_record = ImportRecord.objects.create(owner=self.user, access_level_instance=self.org.root)
         import_record.super_organization = self.org
         import_record.save()
         response = self.client.get(reverse('api:v3:datasets-list'),
@@ -92,7 +96,7 @@ class GetDatasetsViewsTests(TestCase):
         self.assertEqual(1, len(response.json()['datasets']))
 
     def test_get_datasets_count(self):
-        import_record = ImportRecord.objects.create(owner=self.user)
+        import_record = ImportRecord.objects.create(owner=self.user, access_level_instance=self.org.root)
         import_record.super_organization = self.org
         import_record.save()
         response = self.client.get(reverse('api:v3:datasets-count'),
@@ -103,7 +107,7 @@ class GetDatasetsViewsTests(TestCase):
         self.assertEqual(j['datasets_count'], 1)
 
     def test_get_datasets_count_invalid(self):
-        import_record = ImportRecord.objects.create(owner=self.user)
+        import_record = ImportRecord.objects.create(owner=self.user, access_level_instance=self.org.root)
         import_record.super_organization = self.org
         import_record.save()
         response = self.client.get(reverse('api:v3:datasets-count'),
@@ -114,7 +118,7 @@ class GetDatasetsViewsTests(TestCase):
         self.assertEqual(j['message'], 'Organization does not exist')
 
     def test_get_dataset(self):
-        import_record = ImportRecord.objects.create(owner=self.user)
+        import_record = ImportRecord.objects.create(owner=self.user, access_level_instance=self.org.root)
         import_record.super_organization = self.org
         import_record.save()
         response = self.client.get(
@@ -124,7 +128,7 @@ class GetDatasetsViewsTests(TestCase):
         self.assertEqual('success', response.json()['status'])
 
     def test_delete_dataset(self):
-        import_record = ImportRecord.objects.create(owner=self.user)
+        import_record = ImportRecord.objects.create(owner=self.user, access_level_instance=self.org.root)
         import_record.super_organization = self.org
         import_record.save()
 
@@ -138,7 +142,7 @@ class GetDatasetsViewsTests(TestCase):
             ImportRecord.objects.filter(pk=import_record.pk).exists())
 
     def test_update_dataset(self):
-        import_record = ImportRecord.objects.create(owner=self.user)
+        import_record = ImportRecord.objects.create(owner=self.user, access_level_instance=self.org.root)
         import_record.super_organization = self.org
         import_record.save()
 
@@ -157,6 +161,98 @@ class GetDatasetsViewsTests(TestCase):
                                                     name='new').exists())
 
 
+class DatasetPermissionsTests(AccessLevelBaseTestCase):
+    def setUp(self):
+        super().setUp()
+        self.root_import_record = ImportRecord.objects.create(
+            super_organization=self.org,
+            owner=self.root_owner_user,
+            access_level_instance=self.root_level_instance
+        )
+        self.child_import_record = ImportRecord.objects.create(
+            super_organization=self.org,
+            owner=self.root_owner_user,
+            access_level_instance=self.child_level_instance
+        )
+
+    def test_dataset_list(self):
+        url = reverse_lazy('api:v3:datasets-list') + f"?organization_id={self.org.id}"
+
+        self.login_as_child_member()
+        resp = self.client.get(url, content_type='application/json')
+        assert len(resp.json()["datasets"]) == 1
+
+        # root member can
+        self.login_as_root_member()
+        resp = self.client.get(url, content_type='application/json')
+        assert len(resp.json()["datasets"]) == 2
+
+    def test_dataset_update(self):
+        url = reverse_lazy('api:v3:datasets-detail', args=[self.root_import_record.pk]) + f"?organization_id={self.org.id}"
+        params = json.dumps({"dataset": None})
+
+        self.login_as_child_member()
+        resp = self.client.put(url, params, content_type='application/json')
+        assert resp.status_code == 404
+
+        # root member can
+        self.login_as_root_member()
+        resp = self.client.put(url, params, content_type='application/json')
+        assert resp.status_code == 200
+
+    def test_dataset_retrieve(self):
+        url = reverse_lazy('api:v3:datasets-detail', args=[self.root_import_record.pk]) + f"?organization_id={self.org.id}"
+
+        self.login_as_child_member()
+        resp = self.client.get(url, content_type='application/json')
+        assert resp.status_code == 404
+
+        # root member can
+        self.login_as_root_member()
+        resp = self.client.get(url, content_type='application/json')
+        assert resp.status_code == 200
+
+    def test_dataset_destroy(self):
+        url = reverse_lazy('api:v3:datasets-detail', args=[self.root_import_record.pk]) + f"?organization_id={self.org.id}"
+
+        self.login_as_child_member()
+        resp = self.client.delete(url, content_type='application/json')
+        assert resp.status_code == 404
+
+        # root member can
+        self.login_as_root_member()
+        resp = self.client.delete(url, content_type='application/json')
+        assert resp.status_code == 200
+
+    def test_dataset_create(self):
+        url = reverse_lazy('api:v3:datasets-list') + f"?organization_id={self.org.id}"
+        params = json.dumps({"name": "hi"})
+
+        self.login_as_child_member()
+        resp = self.client.post(url, params, content_type='application/json')
+        assert resp.status_code == 200
+        assert self.child_level_instance.id == ImportRecord.objects.get(pk=resp.json()["id"]).access_level_instance_id
+
+        # root member can
+        self.login_as_root_member()
+        params = json.dumps({"name": "hoi"})
+        resp = self.client.post(url, params, content_type='application/json')
+        assert resp.status_code == 200
+        assert self.root_level_instance.id == ImportRecord.objects.get(pk=resp.json()["id"]).access_level_instance_id
+
+    def test_dataset_count(self):
+        url = reverse_lazy('api:v3:datasets-count') + f"?organization_id={self.org.id}"
+
+        self.login_as_child_member()
+        resp = self.client.get(url, content_type='application/json')
+        assert resp.json()["datasets_count"] == 1
+
+        # root member can
+        self.login_as_root_member()
+        resp = self.client.get(url, content_type='application/json')
+        assert resp.json()["datasets_count"] == 2
+
+
 class ImportFileViewsTests(TestCase):
     def setUp(self):
         user_details = {
@@ -171,7 +267,7 @@ class ImportFileViewsTests(TestCase):
             start=datetime(2016, 1, 1, tzinfo=timezone.get_current_timezone()))
 
         self.import_record = ImportRecord.objects.create(owner=self.user,
-                                                         super_organization=self.org)
+                                                         super_organization=self.org, access_level_instance=self.org.root)
         self.import_file = ImportFile.objects.create(
             import_record=self.import_record,
             cycle=self.cycle,
@@ -182,7 +278,9 @@ class ImportFileViewsTests(TestCase):
 
     def test_get_import_file(self):
         response = self.client.get(
-            reverse('api:v3:import_files-detail', args=[self.import_file.pk]))
+            reverse('api:v3:import_files-detail', args=[self.import_file.pk])
+            + '?organization_id=' + str(self.org.pk)
+        )
         self.assertEqual(self.import_file.pk, response.json()['import_file']['id'])
 
     def test_delete_file(self):
@@ -242,7 +340,7 @@ class TestMCMViews(TestCase):
 
         self.client.login(**user_details)
         self.import_record = ImportRecord.objects.create(
-            owner=self.user
+            owner=self.user, access_level_instance=self.org.root
         )
         self.import_record.super_organization = self.org
         self.import_record.save()
@@ -390,7 +488,7 @@ class TestMCMViews(TestCase):
         }
         user_2 = User.objects.create_user(**user_2_details)
         OrganizationUser.objects.create(
-            user=user_2, organization=self.org
+            user=user_2, organization=self.org, access_level_instance=self.org.root
         )
         self.client.login(**user_2_details)
 

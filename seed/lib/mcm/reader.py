@@ -2,7 +2,7 @@
 # encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
-See also https://github.com/seed-platform/seed/main/LICENSE.md
+See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 The Reader module is intended to contain only code which reads data
 out of CSV files. Fuzzy matches, application to data models happens
@@ -400,7 +400,7 @@ class ExcelParser(object):
 
         :param sheet: xlrd Sheet
         :param header_row: the row index to start with
-        :returns: Generator yeilding a row as Dict
+        :returns: Generator yielding a row as Dict
         """
 
         # save off the headers into a member variable. Only do this once. If XLSDictReader is

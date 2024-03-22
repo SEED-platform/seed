@@ -1,6 +1,6 @@
 /**
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
- * See also https://github.com/seed-platform/seed/main/LICENSE.md
+ * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
 angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_detail_controller', [
   '$http',
@@ -28,7 +28,7 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
   'inventory_payload',
   'views_payload',
   'analyses_payload',
-  'users_payload',
+  // 'users_payload',
   'columns',
   'derived_columns_payload',
   'profiles',
@@ -66,7 +66,7 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
     inventory_payload,
     views_payload,
     analyses_payload,
-    users_payload,
+    // users_payload,
     columns,
     derived_columns_payload,
     profiles,
@@ -120,6 +120,14 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
     $scope.historical_items = inventory_payload.history;
     $scope.item_state = inventory_payload.state;
     $scope.inventory_docs = $scope.inventory_type === 'properties' ? inventory_payload.property.inventory_documents : null;
+    const ali = $scope.inventory_type === 'properties' ?
+      inventory_payload.property.access_level_instance :
+      inventory_payload.taxlot.access_level_instance;
+
+    $scope.ali_path = {};
+    if (typeof ali === 'object') {
+      $scope.ali_path = ali.path;
+    }
 
     $scope.order_historical_items_with_scenarios = () => {
       $scope.historical_items_with_scenarios = $scope.historical_items ? $scope.historical_items.filter((item) => !_.isEmpty(item.state.scenarios)) : [];
@@ -154,7 +162,7 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
         return 0;
       })[0];
     }
-    $scope.users = users_payload.users;
+    // $scope.users = users_payload.users;
 
     // handle popovers cleared on scrolling
     [document.getElementsByClassName('ui-view-container')[0], document.getElementById('pin')].forEach((el) => {
@@ -503,7 +511,8 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
         controller: 'update_item_labels_modal_controller',
         resolve: {
           inventory_ids: () => [$scope.inventory.view_id],
-          inventory_type: () => $scope.inventory_type
+          inventory_type: () => $scope.inventory_type,
+          is_ali_root: () => $scope.menu.user.is_ali_root
         }
       });
       modalInstance.result.then(
@@ -542,7 +551,8 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
         resolve: {
           inventory_ids: () => [$scope.inventory.view_id],
           current_cycle: () => $scope.cycle,
-          cycles: () => cycle_service.get_cycles().then((result) => result.cycles)
+          cycles: () => cycle_service.get_cycles().then((result) => result.cycles),
+          user: () => $scope.menu.user
         }
       });
     };
@@ -698,20 +708,24 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
     };
 
     $scope.match_merge_link_record = () => {
-      let new_view_id;
       if ($scope.inventory_type === 'properties') {
-        inventory_service.property_match_merge_link($scope.inventory.view_id).then((result) => {
-          new_view_id = result.view_id;
-          notify_merges_and_links(result);
-          if (new_view_id) reload_with_view_id(new_view_id);
-        });
+        match_merge_link_fn = inventory_service.property_match_merge_link
       } else if ($scope.inventory_type === 'taxlots') {
-        inventory_service.taxlot_match_merge_link($scope.inventory.view_id).then((result) => {
-          new_view_id = result.view_id;
-          notify_merges_and_links(result);
-          if (new_view_id) reload_with_view_id(new_view_id);
-        });
+        match_merge_link_fn = inventory_service.taxlot_match_merge_link
       }
+
+      match_merge_link_fn($scope.inventory.view_id)
+      .then(result => {
+        notify_merges_and_links(result);
+        new_view_id = result.view_id;
+        if (new_view_id) reload_with_view_id(new_view_id);
+      })
+      .catch(result => {
+        Notification.error({
+          message: result.data.message,
+          delay: 10000
+        });
+      });
     };
 
     $scope.open_match_merge_link_warning_modal = (accept_action, trigger) => {

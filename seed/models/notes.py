@@ -2,14 +2,14 @@
 # encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
-See also https://github.com/seed-platform/seed/main/LICENSE.md
+See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.models import Organization
-from seed.models import MAX_NAME_LENGTH, PropertyView, TaxLotView
+from seed.models import MAX_NAME_LENGTH, Property, PropertyView, TaxLotView
 from seed.utils.generic import obj_to_dict
 
 
@@ -108,3 +108,13 @@ class Note(models.Model):
 
     def to_dict(self):
         return obj_to_dict(self)
+
+
+class HistoricalNote(models.Model):
+    text = models.TextField(blank=True)
+    property = models.OneToOneField(Property, on_delete=models.CASCADE, related_name='historical_note')
+
+    def serialize(self):
+        from seed.serializers.historical_notes import HistoricalNoteSerializer
+        serializer = HistoricalNoteSerializer(self)
+        return serializer.data

@@ -13,7 +13,7 @@
 </div>
 
 <div class="section_header_container">
-  <button type="button" class="btn btn-info" ng-click="open_create_note_modal()" style="margin: 15px"><i class="fa-regular fa-note-sticky"></i> <span translate>New Note</span></button>
+  <button type="button" class="btn btn-info" ng-if="auth.requires_member" ng-click="open_create_note_modal()" style="margin: 15px"><i class="fa-regular fa-note-sticky"></i> <span translate>New Note</span></button>
   <table ng-if="notes.length" class="table table-striped table_highlight_first fixed-layout" style="margin-bottom: -1px">
     <thead>
       <tr>
@@ -40,12 +40,12 @@
         </td>
 
         <td>
-          <button class="btn btn-primary" type="button" ng-click="open_edit_note_modal(note)" tooltip-placement="bottom" uib-tooltip="Edit" ng-disabled="note.note_type == 'Log'">
+          <button ng-if="auth.requires_member" class="btn btn-primary" type="button" ng-click="open_edit_note_modal(note)" tooltip-placement="bottom" uib-tooltip="Edit" ng-disabled="note.note_type == 'Log'">
             <span class="glyphicon glyphicon-erase" aria-hidden="true"></span>
           </button>
         </td>
         <td>
-          <button class="btn btn-danger" type="button" ng-click="open_delete_note_modal(note)" tooltip-placement="bottom" uib-tooltip="Delete" ng-disabled="note.note_type == 'Log'">
+          <button ng-if="auth.requires_member" class="btn btn-danger" type="button" ng-click="open_delete_note_modal(note)" tooltip-placement="bottom" uib-tooltip="Delete" ng-disabled="note.note_type == 'Log'">
             <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
           </button>
         </td>

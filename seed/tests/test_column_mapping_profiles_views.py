@@ -2,7 +2,7 @@
 # encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
-See also https://github.com/seed-platform/seed/main/LICENSE.md
+See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 from json import dumps, loads
 
@@ -10,7 +10,7 @@ from django.urls import reverse
 
 from seed.lib.xml_mapping.mapper import default_buildingsync_profile_mappings
 from seed.models import ASSESSED_RAW, Column, ColumnMappingProfile
-from seed.tests.util import DataMappingBaseTestCase
+from seed.tests.util import AccessLevelBaseTestCase, DataMappingBaseTestCase
 
 
 class ColumnMappingProfileViewsCore(DataMappingBaseTestCase):
@@ -144,6 +144,63 @@ class ColumnMappingProfileViewsCore(DataMappingBaseTestCase):
 
         self.assertEqual(200, response.status_code)
         self.assertFalse(ColumnMappingProfile.objects.filter(profile_type=ColumnMappingProfile.NORMAL).exists())
+
+
+class ColumnMappingProfileViewsPermissionsTest(AccessLevelBaseTestCase, DataMappingBaseTestCase):
+    def setUp(self):
+        super().setUp()
+        self.profile = self.org.columnmappingprofile_set.get(profile_type=ColumnMappingProfile.NORMAL)
+
+    def test_delete_permissions(self):
+        url = reverse('api:v3:column_mapping_profiles-detail', args=[self.profile.id]) + '?organization_id=' + str(self.org.id)
+
+        # child user cannot
+        self.login_as_child_member()
+        response = self.client.delete(url, content_type='application/json')
+        assert response.status_code == 403
+
+        # root user can
+        self.login_as_root_member()
+        response = self.client.delete(url, content_type='application/json')
+        assert response.status_code == 200
+
+    def test_update_permissions(self):
+        url = reverse('api:v3:column_mapping_profiles-detail', args=[self.profile.id]) + '?organization_id=' + str(self.org.id)
+        post_params = dumps({
+            "name": 'changed_profile_name',
+            "mappings": [
+                {"from_field": "Property Name", "from_units": None, "to_field": "Property Name", "to_table_name": "PropertyState"},
+            ],
+        })
+
+        # root user can
+        self.login_as_root_member()
+        response = self.client.put(url, post_params, content_type='application/json')
+        assert response.status_code == 200
+
+        # child user cannot
+        self.login_as_child_member()
+        response = self.client.put(url, post_params, content_type='application/json')
+        assert response.status_code == 403
+
+    def test_create_permissions(self):
+        url = reverse('api:v3:column_mapping_profiles-list') + '?organization_id=' + str(self.org.id)
+        post_params = dumps({
+            "name": 'changed_profile_name',
+            "mappings": [
+                {"from_field": "Property Name", "from_units": None, "to_field": "Property Name", "to_table_name": "PropertyState"},
+            ],
+        })
+
+        # root user can
+        self.login_as_root_member()
+        response = self.client.post(url, post_params, content_type='application/json')
+        assert response.status_code == 200
+
+        # child user cannot
+        self.login_as_child_member()
+        response = self.client.post(url, post_params, content_type='application/json')
+        assert response.status_code == 403
 
 
 class ColumnMappingProfilesViewsNonCrud(DataMappingBaseTestCase):

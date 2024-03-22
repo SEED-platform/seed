@@ -1,6 +1,6 @@
 /**
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
- * See also https://github.com/seed-platform/seed/main/LICENSE.md
+ * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
 describe('controller: data_upload_modal_controller', () => {
   // globals set up and used in each test scenario
@@ -9,6 +9,8 @@ describe('controller: data_upload_modal_controller', () => {
   let data_upload_controller_scope;
   let mock_mapping_service; let
     mock_matching_service;
+  let mock_organization_service;
+  let mock_auth_service;
   let global_step = 1;
   let global_dataset = {};
 
@@ -37,7 +39,7 @@ describe('controller: data_upload_modal_controller', () => {
       $httpBackend = _$httpBackend_;
       $httpBackend.whenGET(/^\/static\/seed\/locales\/.*\.json/).respond(200, {});
     });
-    inject(($controller, $rootScope, $uibModal, urls, $q, uploader_service, mapping_service, matching_service) => {
+    inject(($controller, $rootScope, $uibModal, urls, $q, uploader_service, mapping_service, matching_service, organization_service, auth_service) => {
       controller = $controller;
       data_upload_controller_scope = $rootScope.$new();
       modal_state = '';
@@ -47,6 +49,8 @@ describe('controller: data_upload_modal_controller', () => {
       mock_uploader_service = uploader_service;
       mock_mapping_service = mapping_service;
       mock_matching_service = matching_service;
+      mock_organization_service = organization_service;
+      mock_auth_service = auth_service;
       spyOn(mock_uploader_service, 'check_progress').andCallFake(() =>
         // return $q.reject for error scenario
         $q.resolve({
@@ -105,6 +109,16 @@ describe('controller: data_upload_modal_controller', () => {
         $q.resolve({
           status: 'warning',
           file_id: 3
+        }));
+      spyOn(mock_organization_service, 'get_organization').andCallFake(() =>
+        // return organization
+        $q.resolve({
+          organization: {},
+        }));
+      spyOn(mock_auth_service, 'is_authorized').andCallFake(() =>
+        // return auth
+        $q.resolve({
+          auth: {},
         }));
     });
   });

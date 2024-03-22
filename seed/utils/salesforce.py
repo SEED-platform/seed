@@ -2,7 +2,7 @@
 # encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
-See also https://github.com/seed-platform/seed/main/LICENSE.md
+See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 import datetime
 import json
@@ -39,7 +39,7 @@ def test_connection(params):
 
 
 def check_salesforce_enabled(org_id):
-    """ check that salesforce process is enabled before synching
+    """ check that salesforce process is enabled before syncing
     """
     enabled = False
     org = Organization.objects.get(pk=org_id)

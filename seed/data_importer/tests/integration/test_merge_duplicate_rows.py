@@ -2,7 +2,7 @@
 # encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
-See also https://github.com/seed-platform/seed/main/LICENSE.md
+See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 import datetime
 import logging
@@ -204,7 +204,7 @@ class TestCaseMultipleDuplicateMatching(DataMappingBaseTestCase):
 
         sub_progress_data = ProgressData(func_name='match_sub_progress', unique_id=123)
         sub_progress_data.save()
-        unique_property_states, _ = match.filter_duplicate_states(ps, sub_progress_data.key)
+        unique_property_states, _, _ = match.filter_duplicate_states(ps, sub_progress_data.key)
         self.assertEqual(len(unique_property_states), 4)
 
         tasks.geocode_and_match_buildings_task(self.import_file.id)

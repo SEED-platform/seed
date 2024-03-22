@@ -2,7 +2,7 @@
 # encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
-See also https://github.com/seed-platform/seed/main/LICENSE.md
+See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 :author Paul Munday <paul@paulmunday.net>
 """
@@ -166,13 +166,13 @@ class PermissionsFunctionsTests(TestCase):
         fake_org_2 = Organization.objects.create()
         fake_org_3 = Organization.objects.create()
         OrganizationUser.objects.create(
-            user=fake_user, organization=fake_org_1
+            user=fake_user, organization=fake_org_1, access_level_instance_id=fake_org_1.root.id
         )
         OrganizationUser.objects.create(
-            user=fake_user, organization=fake_org_2
+            user=fake_user, organization=fake_org_2, access_level_instance_id=fake_org_2.root.id
         )
         OrganizationUser.objects.create(
-            user=fake_user, organization=fake_org_3
+            user=fake_user, organization=fake_org_3, access_level_instance_id=fake_org_3.root.id
         )
         # no default_organization and no parent org
         result = get_user_org(fake_user)

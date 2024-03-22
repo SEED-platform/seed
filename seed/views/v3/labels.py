@@ -2,7 +2,7 @@
 # encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
-See also https://github.com/seed-platform/seed/main/LICENSE.md
+See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 :author 'Piper Merriam <pmerriam@quickleft.com>'
 """
@@ -13,6 +13,7 @@ from rest_framework.renderers import JSONRenderer
 
 from seed.decorators import DecoratorMixin
 from seed.filters import LabelFilterBackend
+from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.models import StatusLabel as Label
 from seed.serializers.labels import LabelSerializer
 from seed.utils.api import drf_api_endpoint
@@ -39,27 +40,41 @@ from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
 )
 @method_decorator(
     name='create',
-    decorator=swagger_auto_schema(
-        manual_parameters=[AutoSchemaHelper.query_org_id_field(
-            required=False,
-            description="Optional org id which overrides the users (default) current org id")],
-        request_body=AutoSchemaHelper.schema_factory(
-            {
-                'name': 'string',
-                'color': 'string',
-            },
-            required=['name'],
-            description='An object containing meta data for a new label'
-        )
-    ),
+    decorator=[
+        swagger_auto_schema(
+            manual_parameters=[AutoSchemaHelper.query_org_id_field(
+                required=False,
+                description="Optional org id which overrides the users (default) current org id")],
+            request_body=AutoSchemaHelper.schema_factory(
+                {
+                    'name': 'string',
+                    'color': 'string',
+                },
+                required=['name'],
+                description='An object containing meta data for a new label'
+            )
+        ),
+        has_perm_class('requires_root_member_access'),
+
+    ],
 )
 @method_decorator(
     name='destroy',
-    decorator=swagger_auto_schema(
-        manual_parameters=[AutoSchemaHelper.query_org_id_field(
-            required=False,
-            description="Optional org id which overrides the users (default) current org id")]
-    ),
+    decorator=[
+        swagger_auto_schema(
+            manual_parameters=[AutoSchemaHelper.query_org_id_field(
+                required=False,
+                description="Optional org id which overrides the users (default) current org id"
+            )]
+        ),
+        has_perm_class('requires_root_member_access'),
+    ],
+)
+@method_decorator(
+    name='update',
+    decorator=[
+        has_perm_class('requires_root_member_access'),
+    ],
 )
 @method_decorator(
     name='update',

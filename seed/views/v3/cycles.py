@@ -2,7 +2,7 @@
 # encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
-See also https://github.com/seed-platform/seed/main/LICENSE.md
+See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 :author Paul Munday<paul@paulmunday.net>
 :author Fable Turas <fable@raintechpdx.com>
@@ -24,13 +24,19 @@ from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
     decorator=swagger_auto_schema_org_query_param)
 @method_decorator(
     name='create',
-    decorator=swagger_auto_schema_org_query_param)
+    decorator=[
+        swagger_auto_schema_org_query_param,
+        has_perm_class('requires_root_member_access'),
+    ])
 @method_decorator(
     name='retrieve',
     decorator=swagger_auto_schema_org_query_param)
 @method_decorator(
     name='update',
-    decorator=swagger_auto_schema_org_query_param)
+    decorator=[
+        swagger_auto_schema_org_query_param,
+        has_perm_class('requires_root_member_access'),
+    ])
 class CycleViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
     """API endpoint for viewing and creating cycles (time periods).
 
