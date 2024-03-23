@@ -70,6 +70,23 @@ angular.module('BE.seed.service.sensor', []).factory('sensor_service', [
         .then((response) => response.data);
     };
 
+    sensor_factory.update_sensor = (organization_id, view_id, id, display_name, location_description, description, sensor_type, units, column_name) => {
+      let url = `/api/v3/properties/${view_id}/sensors/${id}/?organization_id=${organization_id}`;
+      return $http({
+        url: url,
+        method: 'PUT',
+        data: {
+          id,
+          display_name,
+          location_description,
+          description,
+          sensor_type,
+          units,
+          column_name
+        }
+      }).then((response) => response.data);
+    };
+
     return sensor_factory;
   }
 ]);

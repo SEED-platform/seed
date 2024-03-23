@@ -44,8 +44,10 @@ class Sensor(models.Model):
     column_name = models.CharField(max_length=255)
 
     class Meta:
-        unique_together = ('data_logger', 'display_name')
-        unique_together = ('data_logger', 'column_name')
+        unique_together = (
+            ('data_logger', 'display_name'),
+            ('data_logger', 'column_name')
+        )
 
 
 class SensorReading(models.Model):

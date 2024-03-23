@@ -103,6 +103,57 @@ class PropertySensorViewTests(AccessLevelBaseTestCase):
         result = self.client.delete(url)
         assert result.status_code == 204
 
+    def test_update_data_logger_permissions(self):
+        dl = DataLogger.objects.create(**{
+            "property_id": self.property_1.id,
+            "display_name": "moo",
+        })
+
+        url = reverse('api:v3:data_logger-detail', kwargs={'pk': dl.id})
+        url += f'?organization_id={self.org.pk}'
+        params = json.dumps({
+            "display_name": "quack"
+        })
+
+        # child user cannot
+        self.login_as_child_member()
+        result = self.client.put(url, params, content_type="application/json")
+        assert result.status_code == 404
+
+        # root users can
+        self.login_as_root_member()
+        result = self.client.put(url, params, content_type="application/json")
+        assert result.status_code == 200
+
+    def test_update_sensor_permissions(self):
+        dl = DataLogger.objects.create(**{
+            "property_id": self.property_1.id,
+            "display_name": "moo",
+        })
+        s = Sensor.objects.create(**{
+            "data_logger": dl,
+            "display_name": "s1",
+            "sensor_type": "first",
+            "units": "one",
+            "column_name": "sensor 1"
+        })
+
+        url = reverse('api:v3:property-sensors-detail', kwargs={'property_pk': self.property_view_1.pk, "pk": s.id})
+        url += f'?organization_id={self.org.pk}'
+        params = json.dumps({
+            "display_name": "quack"
+        })
+
+        # child user cannot
+        self.login_as_child_member()
+        result = self.client.put(url, params, content_type="application/json")
+        assert result.status_code == 404
+
+        # root users can
+        self.login_as_root_member()
+        result = self.client.put(url, params, content_type="application/json")
+        assert result.status_code == 200
+
     def test_property_sensors_endpoint_returns_a_list_of_sensors_of_a_view(self):
         dl_a = DataLogger.objects.create(**{
             "property_id": self.property_1.id,
@@ -388,6 +439,64 @@ class PropertySensorViewTests(AccessLevelBaseTestCase):
         url += f'?organization_id={self.org.pk}'
         params = json.dumps({
             "display_name": "quack"
+        })
+        result = self.client.put(url, params, content_type="application/json")
+
+        # Assert
+        assert result.status_code == 400
+
+    def test_update_sensor(self):
+        # Set Up
+        dl = DataLogger.objects.create(**{
+            "property_id": self.property_1.id,
+            "display_name": "moo",
+        })
+        s = Sensor.objects.create(**{
+            "data_logger": dl,
+            "display_name": "s1",
+            "sensor_type": "first",
+            "units": "one",
+            "column_name": "sensor 1"
+        })
+
+        # Action
+        url = reverse('api:v3:property-sensors-detail', kwargs={'property_pk': self.property_view_1.pk, "pk": s.id})
+        url += f'?organization_id={self.org.pk}'
+        params = json.dumps({
+            "display_name": "quack"
+        })
+        result = self.client.put(url, params, content_type="application/json")
+
+        # Assert
+        assert result.status_code == 200
+        assert Sensor.objects.first().display_name == "quack"
+
+    def test_update_sensor_duplicate_display_name(self):
+        # Set Up
+        dl = DataLogger.objects.create(**{
+            "property_id": self.property_1.id,
+            "display_name": "moo",
+        })
+        s1 = Sensor.objects.create(**{
+            "data_logger": dl,
+            "display_name": "s1",
+            "sensor_type": "first",
+            "units": "one",
+            "column_name": "sensor 1"
+        })
+        Sensor.objects.create(**{
+            "data_logger": dl,
+            "display_name": "s2",
+            "sensor_type": "first",
+            "units": "one",
+            "column_name": "sensor 2"
+        })
+
+        # Action
+        url = reverse('api:v3:property-sensors-detail', kwargs={'property_pk': self.property_view_1.pk, "pk": s1.id})
+        url += f'?organization_id={self.org.pk}'
+        params = json.dumps({
+            "display_name": "s2"
         })
         result = self.client.put(url, params, content_type="application/json")
 
