@@ -5,7 +5,7 @@
 angular.module('BE.seed.controller.export_report_modal', []).controller('export_report_modal_controller', [
   '$scope',
   '$uibModalInstance',
-  'spinner_utility', 
+  'spinner_utility',
   'axes_data',
   'cycles',
   'inventory_reports_service',
@@ -20,8 +20,8 @@ angular.module('BE.seed.controller.export_report_modal', []).controller('export_
 
       const ext = '.xlsx';
       if (!filename.endsWith(ext)) filename += ext;
-      
-      spinner_utility.show()
+
+      spinner_utility.show();
       inventory_reports_service.export_reports_data(axes_data, cycles).then((response) => {
         const blob_type = response.headers()['content-type'];
 

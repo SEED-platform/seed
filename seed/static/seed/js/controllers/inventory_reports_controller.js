@@ -372,7 +372,7 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
           cycles: () => $scope.selected_cycles,
         }
       });
-      modalInstance.result.finally(spinner_utility.hide)
+      modalInstance.result.finally(spinner_utility.hide);
     };
 
     /** Get the 'raw' (disaggregated) chart data from the server for the scatter plot chart.
