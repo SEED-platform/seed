@@ -37,7 +37,8 @@ class AuditTemplateViewTests(TestCase):
         self.org, _, _ = create_organization(self.user)
         self.org.at_organization_token = "fake at_api_token"
         self.org.audit_template_user = "fake at user"
-        self.org.audit_template_password = "fake at password"
+        # 'password' encrypted
+        self.org.audit_template_password = "InBhc3N3b3JkIg:xIgRoZurgtGDvmVEUL5Tx1vGbAQe-Iepsct5hiQx29Q"
         self.org.save()
 
         self.client.login(**self.user_details)
@@ -141,7 +142,8 @@ class AuditTemplateBatchTests(TestCase):
         self.org, _, _ = create_organization(self.user)
         self.org.at_organization_token = "fake at_api_token"
         self.org.audit_template_user = "fake at user"
-        self.org.audit_template_password = "fake at password"
+        # 'password' encrypted
+        self.org.audit_template_password = "InBhc3N3b3JkIg:xIgRoZurgtGDvmVEUL5Tx1vGbAQe-Iepsct5hiQx29Q"
         self.org.save()
         self.cycle_factory = FakeCycleFactory(organization=self.org, user=self.user)
 
