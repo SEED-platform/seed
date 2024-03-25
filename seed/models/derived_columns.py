@@ -274,7 +274,11 @@ class DerivedColumn(models.Model):
             logger.error("creating parameter_dicts")
 
             parameters = DerivedColumnParameter.objects.filter(derived_column_id=self.id)
-            parameter_dicts = parameters.values('parameter_name', column_name=F('source_column__column_name'))
+            parameter_dicts = parameters.values(
+                'parameter_name',
+                source_column_name=F('source_column__column_name'),
+                source_column_derived_column=F('source_column__derived_column'),
+            )
 
         else:
             logger.error("found parameter_dicts")
