@@ -1461,10 +1461,13 @@ class OrganizationViewSet(viewsets.ViewSet):
         except Organization.DoesNotExist:
             return JsonResponse({'erorr': 'Organization does not exist'}, status=status.HTTP_404_NOT_FOUND)
         
-        feed = {'data': public_feed_rss(org, request)}
+        rss_feed = public_feed_rss(org, request)
+        # rss_feed = {'data': public_feed_rss(org, request)}
         
-        return JsonResponse(
-            feed, 
-            json_dumps_params={'indent': 4},
-            status=status.HTTP_200_OK
-        )
+
+        return HttpResponse(rss_feed, content_type='application/rss+xml; charset=utf-8')
+        # return JsonResponse(
+        #     feed, 
+        #     json_dumps_params={'indent': 4},
+        #     status=status.HTTP_200_OK
+        # )

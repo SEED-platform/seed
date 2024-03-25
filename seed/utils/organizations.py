@@ -4,10 +4,14 @@
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+import json
 from json import load
+import logging
 import pint
 
 from django.core.paginator import EmptyPage, Paginator
+from lxml import etree 
+from lxml.builder import E
 from seed.lib.superperms.orgs.exceptions import TooManyNestedOrgs
 from seed.lib.superperms.orgs.models import (
     ROLE_MEMBER,
@@ -281,6 +285,7 @@ def public_feed_rss(org, request):
     """
     Format all property and taxlot state data to be displayed on a public feed
     """
+    base_url = request.build_absolute_uri('/')
     params = request.query_params
     page = get_int(params.get('page'), 1)
     per_page = get_int(params.get('per_page'), 100)
@@ -312,13 +317,14 @@ def public_feed_rss(org, request):
     for tstate in tstates:
         add_state_to_data_rss(data, 'taxlot', tstate.taxlotview_set.first(), tstate, t_public_columns)
 
-    return data
+    return convert_json_to_rss(org, data, base_url, property_key, taxlot_key)
 
 def add_state_to_data_rss(data, type, view, state, public_columns):
     # add public_column state data to the response
     datum = {
         'type': type,
         'cycle': view.cycle.name,
+        'id': view.id
     }
 
     for (name, extra_data) in public_columns:
@@ -334,3 +340,22 @@ def add_state_to_data_rss(data, type, view, state, public_columns):
 
         datum[name] = value
     data.append(datum)
+
+def convert_json_to_rss(org, json_data, base_url, property_key, taxlot_key):
+    rss = E.rss(
+        E.channel(
+            E.title('SEED Property and TaxLot Updates'),
+            E.link(f'{base_url}'),
+            E.description(f'Recent updates to SEED organization {org}'),
+            *[E.item(
+                E.title(f'{entry["type"].capitalize()} {entry.get(property_key, None) if entry["type"] == "property" else entry.get(taxlot_key, None)}'),
+                E.link(f'{base_url}app/#/{"properties" if entry["type"] == "property" else "taxlots"}/{entry["id"]}'),
+                E.description(json.dumps(entry))
+
+            ) for entry in json_data]
+        ),
+        version="1.0"
+    )
+    
+    rss_xml = etree.tostring(rss, pretty_print=True, xml_declaration=True, encoding='UTF-8')
+    return rss_xml
