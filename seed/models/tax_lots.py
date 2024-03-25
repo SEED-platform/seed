@@ -102,6 +102,7 @@ class TaxLotState(models.Model):
     number_properties = models.IntegerField(null=True, blank=True)
 
     extra_data = models.JSONField(default=dict, blank=True)
+    derived_data = models.JSONField(default=dict, blank=True)
     hash_object = models.CharField(max_length=32, null=True, blank=True, default=None)
 
     # taxlots can now have lat/long and polygons, points.
@@ -399,6 +400,20 @@ class TaxLotState(models.Model):
     def merge_relationships(cls, merged_state, state1, state2):
         """Stub to implement if merging TaxLotState relationships is needed"""
         return None
+
+
+@receiver(pre_save, sender=TaxLotState)
+def pre_save_state(sender, instance, **kwargs):
+    """On state create, update state with all the relevant derived data"""
+    # TODO: Currently, only this methods sister in Property State is tested. The two inventory types
+    # should share this method, or they should both be tested seperately.
+    from seed.models.derived_columns import DerivedColumn
+
+    # TODO: This only needs to happen on the creation of a propertystate or when source columns of the
+    # derived column is changed. How might we ensure this is only called when it needs to be?
+    derived_columns = DerivedColumn.objects.filter(organization=instance.organization)
+    for derived_column in derived_columns:
+        instance.derived_data[derived_column.name] = derived_column.evaluate(instance)
 
 
 @receiver(post_save, sender=TaxLotState)
