@@ -152,7 +152,7 @@ def _dict_org(request, organizations):
             'new_user_email_signature': o.new_user_email_signature,
             'at_organization_token': o.at_organization_token,
             'audit_template_user': o.audit_template_user,
-            'audit_template_password': decrypt(o.audit_template_password)[0],
+            'audit_template_password': decrypt(o.audit_template_password)[0] if o.audit_template_password else '',
             'at_host_url': settings.AUDIT_TEMPLATE_HOST,
             'audit_template_report_type': o.audit_template_report_type,
             'salesforce_enabled': o.salesforce_enabled,
