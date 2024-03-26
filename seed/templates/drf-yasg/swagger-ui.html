@@ -46,7 +46,10 @@
     <script src="{% static 'drf-yasg/swagger-ui-init.js' %}"></script>
 {% endblock %}
 {% block extra_scripts %}
-    {# -- Add any additional scripts here -- #}
+    <script>
+        swaggerUiConfig.layout = 'BaseLayout';
+        swaggerUiConfig.filter = false;
+    </script>
 {% endblock %}
 
 <a id="oauth2-redirect-url" href="{% static 'drf-yasg/swagger-ui-dist/oauth2-redirect.html' %}" class="hidden"></a>
