@@ -58,6 +58,7 @@ from seed.views.v3.property_scenarios import PropertyScenarioViewSet
 from seed.views.v3.property_views import PropertyViewViewSet
 from seed.views.v3.salesforce_configs import SalesforceConfigViewSet
 from seed.views.v3.salesforce_mappings import SalesforceMappingViewSet
+from seed.views.v3.sensors import SensorViewSet
 from seed.views.v3.tax_lot_properties import TaxLotPropertyViewSet
 from seed.views.v3.taxlot_views import TaxlotViewViewSet
 from seed.views.v3.taxlots import TaxlotViewSet
@@ -129,6 +130,7 @@ properties_router.register(r'scenarios', PropertyScenarioViewSet, basename='prop
 properties_router.register(r'events', EventViewSet, basename='property-events')
 properties_router.register(r'goal_notes', GoalNoteViewSet, basename='property-goal-notes')
 properties_router.register(r'historical_notes', HistoricalNoteViewSet, basename='property-historical-notes')
+properties_router.register(r'sensors', SensorViewSet, basename='property-sensors')
 
 # This is a third level router, so we need to register it with the second level router
 meters_router = nested_routers.NestedSimpleRouter(properties_router, r'meters', lookup='meter')

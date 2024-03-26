@@ -52,7 +52,6 @@ from seed.models import (
     Column,
     ColumnMappingProfile,
     Cycle,
-    DataLogger,
     InventoryDocument,
     Meter,
     Note,
@@ -62,7 +61,6 @@ from seed.models import (
     PropertyMeasure,
     PropertyState,
     PropertyView,
-    Sensor,
     Simulation
 )
 from seed.models import StatusLabel as Label
@@ -95,7 +93,6 @@ from seed.utils.properties import (
     update_result_with_master
 )
 from seed.utils.salesforce import update_salesforce_properties
-from seed.utils.sensors import PropertySensorReadingsExporter
 
 logger = logging.getLogger(__name__)
 
@@ -184,6 +181,11 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
     # For the Swagger page, GenericAPIView asserts a value exists for `queryset`
     queryset = PropertyView.objects.none()
 
+    @swagger_auto_schema(
+        manual_parameters=[
+            AutoSchemaHelper.query_org_id_field(required=True),
+        ]
+    )
     @has_perm_class('requires_viewer')
     @action(detail=False, filter_backends=[PropertyViewFilterBackend])
     def search(self, request):
@@ -200,9 +202,11 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             property__access_level_instance__lft__gte=ali.lft,
             property__access_level_instance__rgt__lte=ali.rgt
         ).order_by('-state__id')
+
         # this is the entrypoint to the filtering backend
         # https://www.django-rest-framework.org/api-guide/filtering/#custom-generic-filtering
         qs = self.filter_queryset(qs)
+
         # converting QuerySet to list b/c serializer will only use column list profile this way
         return JsonResponse(
             PropertyViewAsStateSerializer(list(qs), context={'request': request}, many=True).data,
@@ -340,74 +344,6 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             analyses.append(serialized_analysis)
 
         return {'status': 'success', 'analyses': analyses}
-
-    @ajax_request_class
-    @has_perm_class('requires_viewer')
-    @has_hierarchy_access(property_view_id_kwarg="pk")
-    @action(detail=True, methods=['POST'])
-    def sensor_usage(self, request, pk):
-        """
-        Retrieves sensor usage information
-        """
-        org_id = self.get_organization(request)
-        page = request.query_params.get('page')
-        per_page = request.query_params.get('per_page')
-
-        body = dict(request.data)
-        interval = body['interval']
-        excluded_sensor_ids = body['excluded_sensor_ids']
-        showOnlyOccupiedReadings = body.get('showOnlyOccupiedReadings', False)
-
-        property_view = PropertyView.objects.get(
-            pk=pk,
-            cycle__organization_id=org_id
-        )
-        property_id = property_view.property.id
-
-        exporter = PropertySensorReadingsExporter(property_id, org_id, excluded_sensor_ids, showOnlyOccupiedReadings)
-
-        if interval != "Exact" and (page or per_page):
-            return JsonResponse({
-                'success': False,
-                'message': 'Cannot pass query parameter "page" or "per_page" unless "interval" is "Exact"'
-            }, status=status.HTTP_400_BAD_REQUEST)
-        page = page if page is not None else 1
-        per_page = per_page if per_page is not None else 500
-
-        return exporter.readings_and_column_defs(interval, page, per_page)
-
-    @swagger_auto_schema_org_query_param
-    @ajax_request_class
-    @has_perm_class('requires_viewer')
-    @has_hierarchy_access(property_view_id_kwarg="pk")
-    @action(detail=True, methods=['GET'])
-    def sensors(self, request, pk):
-        """
-        Retrieves sensors for the property
-        """
-        org_id = self.get_organization(request)
-
-        property_view = PropertyView.objects.get(
-            pk=pk,
-            cycle__organization_id=org_id
-        )
-        property_id = property_view.property.id
-
-        res = []
-        for data_logger in DataLogger.objects.filter(property_id=property_id):
-            for sensor in Sensor.objects.filter(Q(data_logger_id=data_logger.id)):
-                res.append({
-                    'id': sensor.id,
-                    'display_name': sensor.display_name,
-                    'location_description': sensor.location_description,
-                    'description': sensor.description,
-                    'type': sensor.sensor_type,
-                    'units': sensor.units,
-                    'column_name': sensor.column_name,
-                    'data_logger': data_logger.display_name
-                })
-
-        return res
 
     @swagger_auto_schema(
         manual_parameters=[

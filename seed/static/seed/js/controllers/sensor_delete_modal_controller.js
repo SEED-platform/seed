@@ -1,33 +1,35 @@
 /**
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
- * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
+ * See also https://github.com/seed-platform/seed/main/LICENSE.md
  */
-angular.module('BE.seed.controller.delete_data_logger_upload_or_update_modal', []).controller('delete_data_logger_modal_controller', [
+angular.module('BE.seed.controller.sensor_delete_modal', []).controller('sensor_delete_modal_controller', [
   '$scope',
   '$state',
+  '$stateParams',
   '$uibModalInstance',
-  'uiGridConstants',
   '$window',
+  'uiGridConstants',
   'spinner_utility',
-  'sensor_service',
   'organization_id',
-  'data_logger_id',
+  'sensor',
+  'sensor_service',
   // eslint-disable-next-line func-names
   function (
     $scope,
     $state,
+    $stateParams,
     $uibModalInstance,
-    uiGridConstants,
     $window,
+    uiGridConstants,
     spinner_utility,
-    sensor_service,
     organization_id,
-    data_logger_id
+    sensor,
+    sensor_service
   ) {
     $scope.delete = () => {
-      sensor_service.delete_data_logger(data_logger_id, organization_id)
+      spinner_utility.show();
+      sensor_service.delete_sensor($stateParams.view_id, sensor.id, organization_id)
       .then( () => {
-        spinner_utility.show();
         $window.location.reload();
       })
       .catch((err) => Notification.error(err));
