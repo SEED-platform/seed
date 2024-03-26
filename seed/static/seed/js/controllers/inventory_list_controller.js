@@ -467,7 +467,8 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
           }
         });
       });
-      return maxWidth > $scope.max_label_width ? $scope.max_label_width : maxWidth + 2;
+      maxWidth = Math.max(30, maxWidth + 2)
+      return Math.min(maxWidth, $scope.max_label_width)
     };
 
     // Reduce labels to only records found in the current cycle
