@@ -194,8 +194,8 @@ def public_feed(org, request):
     params = request.query_params
     page = get_int(params.get('page'), 1)
     per_page = get_int(params.get('per_page'), 100)
-    property_key = params.get('property_key', 'ubid')
-    taxlot_key = params.get('taxlot_key', 'ubid')
+    property_key = params.get('property_key', 'pm_property_id')
+    taxlot_key = params.get('taxlot_key', 'jurisdiction_tax_lot_id')
     pstates = get_states(
         PropertyState,
         org.propertystate_set.filter(propertyview__isnull=False),
@@ -289,8 +289,8 @@ def public_feed_rss(org, request):
     params = request.query_params
     page = get_int(params.get('page'), 1)
     per_page = get_int(params.get('per_page'), 100)
-    property_key = params.get('property_key', 'ubid')
-    taxlot_key = params.get('taxlot_key', 'ubid')
+    property_key = params.get('property_key', 'pm_property_id')
+    taxlot_key = params.get('taxlot_key', 'jurisdiction_tax_lot_id')
     pstates = get_states(
         PropertyState,
         org.propertystate_set.filter(propertyview__isnull=False),
