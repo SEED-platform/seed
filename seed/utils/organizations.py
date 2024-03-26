@@ -196,29 +196,20 @@ def public_feed(org, request):
     per_page = get_int(params.get('per_page'), 100)
     property_key = params.get('property_key', 'pm_property_id')
     taxlot_key = params.get('taxlot_key', 'jurisdiction_tax_lot_id')
-    pstates = get_states(
-        PropertyState,
-        org.propertystate_set.filter(propertyview__isnull=False),
-        property_key,
-        page,
-        per_page
-    )
-    tstates = get_states(
-        TaxLotState,
-        org.taxlotstate_set.filter(taxlotview__isnull=False),
-        taxlot_key,
-        page,
-        per_page
-    )
+    p_states = org.propertystate_set.filter(propertyview__isnull=False).order_by('-updated')
+    p_states_paginated = paginate_states(p_states, page, per_page)
+
+    t_states = org.taxlotstate_set.filter(taxlotview__isnull=False).order_by('-updated')
+    t_states_paginated = paginate_states(t_states, page, per_page)
 
     metadata = {
         'organization': org.name,
         'organization_id': org.id,
         'page': page,
         'per_page': per_page,
-        'total_pages': int((len(pstates) + len(tstates)) / per_page) + 1,
-        'properties': len(pstates),
-        'taxlots': len(tstates),
+        'total_pages': int((len(p_states_paginated) + len(t_states_paginated)) / per_page) + 1,
+        'properties': p_states.count(),
+        'taxlots': t_states.count(),
         'property_key': property_key,
         'taxlot_key': taxlot_key,
     }
@@ -226,37 +217,45 @@ def public_feed(org, request):
     # gonna need public columns for properties and taxlots
     p_public_columns = Column.objects.filter(shared_field_type=1, table_name='PropertyState').values_list('column_name', 'is_extra_data')
     t_public_columns = Column.objects.filter(shared_field_type=1, table_name='TaxLotState').values_list('column_name', 'is_extra_data')
-    data = {'properties': {}, 'taxlots': {}}
-    for pstate in pstates:
+    data = {'properties': [], 'taxlots': []}
+    for p_state in p_states_paginated:
         # what if matching criteria dne? a whole bunch of None's
-        add_state_to_data(data['properties'], pstate.propertyview_set.first(), pstate, property_key, p_public_columns)
+        add_state_to_data(data['properties'], p_state.propertyview_set.first(), p_state, property_key, p_public_columns)
 
-    for tstate in tstates:
-        add_state_to_data(data['taxlots'], tstate.taxlotview_set.first(), tstate, taxlot_key, t_public_columns)
+    for t_state in t_states_paginated:
+        add_state_to_data(data['taxlots'], t_state.taxlotview_set.first(), t_state, taxlot_key, t_public_columns)
+        pass
 
     return {'metadata': metadata, 'data': data}
 
-def add_state_to_data(data, view, state, key, public_columns):
-    # add public_column state data to the response
-    cycle = view.cycle.name
-    matching_field = getattr(state, key, None)
-    property_data = data.setdefault(matching_field, {})
-    cycle_data = property_data.setdefault(cycle, {})
+def paginate_states(states, page, per_page):
+    paginator = Paginator(states, per_page)
+    try: 
+        return paginator.page(page)
+    except EmptyPage:
+        return paginator.page(paginator.num_pages)
 
+def add_state_to_data(data, view, state, key, public_columns):
+    state_data = {
+        key: getattr(state, key, None),
+        'cycle': view.cycle.name,
+        'updated': state.updated,
+        'created': state.created,
+    }
     for (name, extra_data) in public_columns:
+        if name in ['updated', 'created', key]: continue
         if not extra_data:
             value = getattr(state, name, None)
         else:
             value = state.extra_data.get(name, None)
 
         if isinstance(value, pint.Quantity):
-            # convert pint to string with units
-            # json cant display exponents.
-            # value = "{:~P}".format(value)
+            # convert pint to string with units (json cannot display exponents)
             value = f'{value.m} {value.u}'
+        
+        state_data[value] = value
 
-        cycle_data[name] = value
-
+    data.append(state_data)
 
 def get_int(value, default):
     try: 
