@@ -252,9 +252,7 @@ def add_state_to_data(data, view, state, key, public_columns):
         if isinstance(value, pint.Quantity):
             # convert pint to string with units (json cannot display exponents)
             value = f'{value.m} {value.u}'
-        
         state_data[value] = value
-
     data.append(state_data)
 
 def get_int(value, default):
@@ -279,7 +277,7 @@ def get_states(cls, query, key, page, per_page):
         return paginator.page(paginator.num_pages)
 
 
-######### MORE OF AN RSS LIST ###########
+######### RSS ###########
 def public_feed_rss(org, request):
     """
     Format all property and taxlot state data to be displayed on a public feed
