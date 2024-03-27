@@ -4,9 +4,13 @@
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+import logging
+
 from rest_framework import serializers
 
 from seed.models import StatusLabel as Label
+
+_log = logging.getLogger(__name__)
 
 
 class LabelSerializer(serializers.ModelSerializer):
@@ -58,6 +62,8 @@ class LabelSerializer(serializers.ModelSerializer):
         return ret
 
     def get_is_applied(self, obj):
+        return obj.is_applied
+
         filtered_result = []
         if self.inventory:
             # TODO: This needs to be updated to support labels being moved to Views.

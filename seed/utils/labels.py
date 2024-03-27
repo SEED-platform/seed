@@ -58,12 +58,29 @@ def get_labels(request, qs, super_organization, inv_type):
         in_subtree = Q(taxlot__access_level_instance__lft__gte=ali.lft, taxlot__access_level_instance__rgt__lte=ali.rgt)
     inventory = inventory.filter(in_subtree)
 
-    results = [
-        LabelSerializer(
-            q,
-            super_organization=super_organization,
-            inventory=inventory
-        ).data for q in qs
-    ]
+    import time
+
+    from django.contrib.postgres.aggregates.general import ArrayAgg
+
+    s = time.time()
+    results = LabelSerializer(
+        qs.annotate(is_applied=ArrayAgg("propertyview")),
+        super_organization=super_organization,
+        inventory=inventory,
+        many=True
+    ).data
+    # results = [
+    #     LabelSerializer(
+    #         q,
+    #         super_organization=super_organization,
+    #         inventory=inventory
+    #     ).data for q in qs
+    # ]
+    e = time.time()
+
+    import logging
+    logger = logging.getLogger(__name__)
+    logger.error(f"+++++++++++ {e-s} +++++++++++++++")
+
     status_code = status.HTTP_200_OK
     return response.Response(results, status=status_code)
