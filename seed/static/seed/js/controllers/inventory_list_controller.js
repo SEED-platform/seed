@@ -470,6 +470,7 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
       return maxWidth > $scope.max_label_width ? $scope.max_label_width : maxWidth + 2;
     };
 
+    $scope.show_tags_input = { or: true, and: true, exclude: true };
     // Reduce labels to only records found in the current cycle
     $scope.selected_and_labels = [];
     $scope.selected_or_labels = [];
@@ -478,10 +479,20 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
     const localStorageKey = `grid.${$scope.inventory_type}`;
     const localStorageLabelKey = `grid.${$scope.inventory_type}.labels`;
 
+    // clear the selected_labels and re-render the component as invalid text is not attatched to the model.
+    const reset_tags_input = (key, selected_labels) => {
+      selected_labels.splice(0);
+      $scope.show_tags_input[key] = false;
+      setTimeout(() => {
+        // immediately re-render
+        $scope.$apply(() => $scope.show_tags_input[key] = true);
+      }, 0);
+    }
+
     $scope.clear_labels = function (action) {
-      if (action === 'and') $scope.selected_and_labels = [];
-      if (action === 'or') $scope.selected_or_labels = [];
-      if (action === 'exclude') $scope.selected_exclude_labels = [];
+      if (action === 'and') reset_tags_input('and', $scope.selected_and_labels);
+      if (action === 'or') reset_tags_input('or', $scope.selected_or_labels);
+      if (action === 'exclude') reset_tags_input('exclude', $scope.selected_exclude_labels);
       $scope.filterUsingLabels();
     };
 
