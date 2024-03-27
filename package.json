@@ -14,28 +14,29 @@
     "url": "https://github.com/SEED-platform/seed/issues"
   },
   "engines": {
-    "node": ">=16"
+    "node": ">=20"
   },
   "devDependencies": {
-    "eslint": "^8.51.0",
+    "eslint": "^8.57.0",
     "eslint-config-airbnb-base": "^15.0.0",
     "eslint-plugin-angular": "^4.1.0",
-    "eslint-plugin-import": "^2.28.1",
+    "eslint-plugin-import": "^2.29.1",
     "eslint-plugin-lodash": "^7.4.0",
     "eslint-plugin-prefer-arrow": "^1.2.3",
     "eslint-plugin-protractor": "^2.1.1",
     "lodash": "^4.17.21",
     "protractor": "^7.0.0",
-    "sass": "^1.69.3",
-    "stylelint": "^15.10.3",
-    "stylelint-config-standard-scss": "^11.0.0",
+    "sass": "^1.71.1",
+    "stylelint": "^16.2.1",
+    "stylelint-config-standard-scss": "^13.0.0",
     "webdriver-manager": "^12.1.9"
   },
   "scripts": {
     "lint": "npx eslint \"seed/{docs,static}/**/*.js\"",
     "lint:fix": "npm run lint -- --fix",
     "postinstall": "cd vendors && npm install",
-    "stylelint:fix": "stylelint seed/static/seed/scss/style.scss --fix",
+    "prettier:fix": "prettier -w seed/static/seed/partials",
+    "stylelint:fix": "stylelint --fix seed/landing/static/landing/scss/landing.scss seed/static/seed/scss/style.scss",
     "test": "npx protractor seed/static/seed/tests/protractor-tests/protractorConfig.js"
   },
   "browserslist": [

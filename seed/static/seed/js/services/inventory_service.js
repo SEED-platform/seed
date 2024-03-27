@@ -64,10 +64,10 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       ids_only = null,
       shown_column_ids = null,
       access_level_instance_id = null,
-      include_property_ids,
-      goal_id = null,
+      include_property_ids = null,
+      goal_id = null
     ) => {
-      organization_id = organization_id == undefined ? user_service.get_organization().id : organization_id;
+      organization_id = organization_id ?? user_service.get_organization().id;
 
       const params = {
         organization_id,
@@ -105,7 +105,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
         data.access_level_instance_id = access_level_instance_id;
       }
       if (goal_id) {
-        data.goal_id = goal_id
+        data.goal_id = goal_id;
       }
 
       return $http
@@ -403,7 +403,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       ids_only = null,
       shown_column_ids = null
     ) => {
-      organization_id = organization_id == undefined ? user_service.get_organization().id : organization_id;
+      organization_id = organization_id ?? user_service.get_organization().id;
 
       const params = {
         organization_id,
@@ -645,7 +645,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
     };
 
     inventory_service.save_last_cycle = (pk, organization_id = null) => {
-      organization_id = organization_id == undefined ? user_service.get_organization().id : organization_id;
+      organization_id = organization_id ?? user_service.get_organization().id;
       const cycles = JSON.parse(localStorage.getItem('cycles')) || {};
       cycles[organization_id] = _.toInteger(pk);
       localStorage.setItem('cycles', JSON.stringify(cycles));
@@ -858,10 +858,10 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
               value = Number(filterData[2].replace('\\.', '.'));
               if (operator === '!') {
                 // Not equal
-                match = cellValue != value;
+                match = String(cellValue) !== String(value);
               } else {
                 // Equal
-                match = cellValue == value;
+                match = String(cellValue) === String(value);
               }
               return match;
             }
@@ -1044,12 +1044,12 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       }
     });
 
-    inventory_service.saveSelectedLabels = (key, ids, action='') => {
+    inventory_service.saveSelectedLabels = (key, ids, action = '') => {
       key += `.${action}.${user_service.get_organization().id}`;
       localStorage.setItem(key, JSON.stringify(ids));
     };
 
-    inventory_service.loadSelectedLabels = (key, action='') => {
+    inventory_service.loadSelectedLabels = (key, action = '') => {
       key += `.${action}.${user_service.get_organization().id}`;
       return JSON.parse(localStorage.getItem(key)) || [];
     };

@@ -47,8 +47,6 @@ angular.module('BE.seed.controller.inventory_detail_settings', []).controller('i
     $scope.profiles = profiles;
     $scope.currentProfile = current_profile;
 
-    const { derived_columns } = derived_columns_payload;
-
     const initializeRowSelections = () => {
       if ($scope.gridApi) {
         _.delay(() => {

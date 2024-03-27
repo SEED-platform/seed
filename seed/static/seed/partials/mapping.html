@@ -127,7 +127,15 @@
           ng-change="flag_profile_change()"
           ng-options="profile as profile.name for profile in profiles track by profile.id"
         ></select>
-        <button type="button" class="btn btn-primary" ng-click="apply_profile()" ng-hide="import_file.matching_done" ng-disabled="dropdown_selected_profile.id === current_profile.id" style="padding: 0 8px; width: min-content" translate>
+        <button
+          type="button"
+          class="btn btn-primary"
+          ng-click="apply_profile()"
+          ng-hide="import_file.matching_done"
+          ng-disabled="dropdown_selected_profile.id === current_profile.id"
+          style="padding: 0 8px; width: min-content"
+          translate
+        >
           Apply Profile
         </button>
         <button
@@ -155,9 +163,7 @@
         <div class="alert alert-danger" ng-show="duplicates_present" translate>
           Please review SEED column names or the column names of the file being imported. Duplicate values are not allowed in either case.
         </div>
-        <div class="alert alert-danger" ng-show="disallowed_creation_present" translate>
-          You do not have access to create columns.
-        </div>
+        <div class="alert alert-danger" ng-show="disallowed_creation_present" translate>You do not have access to create columns.</div>
         <div class="alert alert-danger" ng-show="derived_column_match" translate>
           Please review SEED column names or the column names of the file being imported. Column names that match an existing Derived Column name are not allowed.
         </div>
@@ -202,17 +208,28 @@
           </thead>
           <tbody id="mapped-table">
             <tr ng-repeat="col in mappings">
-              <td style="text-align: right" ng-class="{'danger': !col.isOmitted && (col.is_duplicate || col.suggestion === '' || col.is_disallowed_creation)}" ng-attr-id="mapped-row-isOmitted-{$:: $index $}">
+              <td
+                style="text-align: right"
+                ng-class="{'danger': !col.isOmitted && (col.is_duplicate || col.suggestion === '' || col.is_disallowed_creation)}"
+                ng-attr-id="mapped-row-isOmitted-{$:: $index $}"
+              >
                 <input type="checkbox" ng-model="col.isOmitted" ng-disabled="import_file.matching_done" />
               </td>
-              <td style="text-align: right" ng-class="{'danger': col.is_duplicate || (!col.isOmitted && col.suggestion === '' || col.is_disallowed_creation), 'omitted': col.isOmitted}" ng-attr-id="mapped-row-type-{$:: $index $}">
+              <td
+                style="text-align: right"
+                ng-class="{'danger': col.is_duplicate || (!col.isOmitted && col.suggestion === '' || col.is_disallowed_creation), 'omitted': col.isOmitted}"
+                ng-attr-id="mapped-row-type-{$:: $index $}"
+              >
                 <select ng-model="col.suggestion_table_name" ng-change="updateInventoryTypeDropdown(); change(col)" ng-disabled="import_file.matching_done || col.isOmitted">
                   <option disabled ng-if="col.suggestion_table_name===undefined" value="{$ undefined $}"></option>
                   <option value="PropertyState" translate>Property</option>
                   <option value="TaxLotState" ng-if="!mappingBuildingSync" translate>Tax Lot</option>
                 </select>
               </td>
-              <td ng-class="{'danger': col.is_duplicate || (!col.isOmitted && col.suggestion === '' || col.is_disallowed_creation), 'omitted': col.isOmitted}" ng-attr-id="mapped-row-input-{$:: $index $}">
+              <td
+                ng-class="{'danger': col.is_duplicate || (!col.isOmitted && col.suggestion === '' || col.is_disallowed_creation), 'omitted': col.isOmitted}"
+                ng-attr-id="mapped-row-input-{$:: $index $}"
+              >
                 <input
                   type="text"
                   uib-typeahead="column.display_name for column in (col.suggestion_table_name === 'PropertyState' ? mappable_property_columns : mappable_taxlot_columns) | filter:{display_name:$viewValue} | limitTo:20"
