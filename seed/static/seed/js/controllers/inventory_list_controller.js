@@ -788,7 +788,10 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
       // Modify misc
       if (col.data_type === 'datetime') {
         options.cellFilter = "date:'yyyy-MM-dd h:mm a'";
-      } else if (['area', 'eui', 'float', 'number'].includes(col.data_type)) {
+      } else if (
+        ['area', 'eui', 'float', 'number'].includes(col.data_type) &&
+        !["longitude", "latitude"].includes(col.column_name) // we need the whole number for these
+      ) {
         options.cellFilter = `tolerantNumber: ${$scope.organization.display_decimal_places}`;
       } else if (col.is_derived_column) {
         options.cellFilter = `number: ${$scope.organization.display_decimal_places}`;
