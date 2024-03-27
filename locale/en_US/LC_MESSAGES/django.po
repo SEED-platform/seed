@@ -854,6 +854,9 @@ msgstr "Custom Name for Level"
 msgid "Custom Reports"
 msgstr "Custom Reports"
 
+msgid "Custom Reports require filter groups. Filter groups are created and configured on the"
+msgstr "Custom Reports require filter groups. Filter groups are created and configured on the"
+
 msgid "Custom emails can be sent to Building Owners using the templates defined below. The email will be sent to the SEED record's Owner Email address and is currently not configurable. The email 'from' address is the same as the server email address which is also used to email users their account information."
 msgstr "Custom emails can be sent to Building Owners using the templates defined below. The email will be sent to the SEED record's Owner Email address and is currently not configurable. The email 'from' address is the same as the server email address which is also used to email users their account information."
 
