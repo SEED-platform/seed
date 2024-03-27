@@ -451,7 +451,7 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
     $scope.max_label_width = 750;
     $scope.get_label_column_width = () => {
       if (!$scope.show_full_labels) {
-        return 30;
+        return 31;
       }
       let maxWidth = 0;
       const renderContainer = document.body.getElementsByClassName('ui-grid-render-container-left')[0];
@@ -467,7 +467,8 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
           }
         });
       });
-      return maxWidth > $scope.max_label_width ? $scope.max_label_width : maxWidth + 2;
+      maxWidth = Math.max(31, maxWidth + 2);
+      return Math.min(maxWidth, $scope.max_label_width);
     };
 
     // Reduce labels to only records found in the current cycle
