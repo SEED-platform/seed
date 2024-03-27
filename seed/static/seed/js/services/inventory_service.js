@@ -85,53 +85,38 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
         params.per_page = per_page || 999999999;
       }
 
-      return cycle_service
-        .get_cycles()
-        .then((cycles) => {
-          const validCycleIds = _.map(cycles.cycles, 'id');
+      if (_.has(cycle, 'id')) {
+        params.cycle = cycle.id;
+        if (save_last_cycle === true) {
+          inventory_service.save_last_cycle(cycle.id);
+        }
+      }
 
-          const lastCycleId = inventory_service.get_last_cycle();
-          if (_.has(cycle, 'id')) {
-            params.cycle = cycle.id;
-            if (save_last_cycle === true) {
-              inventory_service.save_last_cycle(cycle.id);
-            }
-          } else if (_.includes(validCycleIds, lastCycleId)) {
-            params.cycle = lastCycleId;
-          }
+      const data = {
+        // Pass the specific ids if they exist
+        include_view_ids,
+        exclude_view_ids,
+        include_property_ids,
+        // Pass the current profile (if one exists) to limit the column data that is returned
+        profile_id
+      };
+      // add access_level_instance if it exists
+      if (access_level_instance_id) {
+        data.access_level_instance_id = access_level_instance_id;
+      }
+      if (goal_id) {
+        data.goal_id = goal_id
+      }
 
-          const data = {
-            // Pass the specific ids if they exist
-            include_view_ids,
-            exclude_view_ids,
-            include_property_ids,
-            // Pass the current profile (if one exists) to limit the column data that is returned
-            profile_id
-          };
-          // add access_level_instance if it exists
-          if (access_level_instance_id) {
-            data.access_level_instance_id = access_level_instance_id;
+      return $http
+        .post(
+          '/api/v3/properties/filter/',
+          data,
+          {
+            params
           }
-          if (goal_id) {
-            data.goal_id = goal_id
-          }
-
-          return $http
-            .post(
-              '/api/v3/properties/filter/',
-              data,
-              {
-                params
-              }
-            )
-            .then((response) => response.data);
-        })
-        .catch((response) => {
-          if (response.data.message) {
-            return response.data;
-          }
-          throw response;
-        });
+        )
+        .then((response) => response.data);
     };
 
     inventory_service.properties_cycle = (profile_id, cycle_ids) => $http

@@ -264,7 +264,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
       $scope.max_label_width = 750;
       $scope.get_label_column_width = (labels_col, key) => {
         if (!$scope.show_full_labels[key]) {
-          return 30;
+          return 31;
         }
         let maxWidth = 0;
         const renderContainer = document.body.getElementsByClassName('ui-grid-render-container-body')[1];
@@ -280,7 +280,8 @@ angular.module('BE.seed.controller.portfolio_summary', [])
             }
           });
         });
-        return maxWidth > $scope.max_label_width ? $scope.max_label_width : maxWidth + 2;
+        maxWidth = Math.max(31, maxWidth + 2);
+        return Math.min(maxWidth, $scope.max_label_width);
       };
 
       // Expand or contract labels col
@@ -359,7 +360,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
       const build_label_col_def = (labels_col, key) => {
         const header_cell_template = `<i ng-click="grid.appScope.toggle_labels('${labels_col}', '${key}')" class='ui-grid-cell-contents fas fa-chevron-circle-right' id='label-header-icon-${key}' style='margin:2px; float:right;'></i>`;
         const cell_template = `<div ng-click="grid.appScope.toggle_labels('${labels_col}', '${key}')" class='ui-grid-cell-contents' ng-bind-html="grid.appScope.display_labels(row.entity, '${key}')"></div>`;
-        const width_fn = $scope.gridApi ? $scope.get_label_column_width(labels_col, key) : 30;
+        const width_fn = $scope.gridApi ? $scope.get_label_column_width(labels_col, key) : 31;
 
         return {
           name: labels_col,
