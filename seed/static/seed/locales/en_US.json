@@ -274,6 +274,7 @@
     "Custom ID 1 (Tax Lot)": "Custom ID 1 (Tax Lot)",
     "Custom Name for Level": "Custom Name for Level",
     "Custom Reports": "Custom Reports",
+    "Custom Reports require filter groups. Filter groups are created and configured on the": "Custom Reports require filter groups. Filter groups are created and configured on the",
     "Custom emails can be sent to Building Owners using the templates defined below. The email will be sent to the SEED record's Owner Email address and is currently not configurable. The email 'from' address is the same as the server email address which is also used to email users their account information.": "Custom emails can be sent to Building Owners using the templates defined below. The email will be sent to the SEED record's Owner Email address and is currently not configurable. The email 'from' address is the same as the server email address which is also used to email users their account information.",
     "Cycle": "Cycle",
     "Cycle Name": "Cycle Name",
