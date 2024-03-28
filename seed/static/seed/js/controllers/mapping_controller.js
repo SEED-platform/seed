@@ -132,29 +132,28 @@ angular.module('BE.seed.controller.mapping', []).controller('mapping_controller'
     };
 
     // Profile-level create and update modal-rending actions
-    const profile_mappings_from_working_mappings = () =>
+    const profile_mappings_from_working_mappings = () => _.reduce(
       // for to_field, try DB col name, if not use col display name
-      _.reduce(
-        $scope.mappings,
-        (profile_mapping_data, mapping) => {
-          const this_mapping = {
-            from_field: mapping.name,
-            from_units: mapping.from_units,
-            to_field: mapping.suggestion_column_name || mapping.suggestion || '',
-            to_table_name: mapping.suggestion_table_name
-          };
-          const isBuildingSyncProfile =
+      $scope.mappings,
+      (profile_mapping_data, mapping) => {
+        const this_mapping = {
+          from_field: mapping.name,
+          from_units: mapping.from_units,
+          to_field: mapping.suggestion_column_name || mapping.suggestion || '',
+          to_table_name: mapping.suggestion_table_name
+        };
+        const isBuildingSyncProfile =
             $scope.current_profile.profile_type !== undefined &&
             [COLUMN_MAPPING_PROFILE_TYPE_BUILDINGSYNC_DEFAULT, COLUMN_MAPPING_PROFILE_TYPE_BUILDINGSYNC_CUSTOM].includes($scope.current_profile.profile_type);
 
-          if (isBuildingSyncProfile) {
-            this_mapping.from_field_value = mapping.from_field_value;
-          }
-          profile_mapping_data.push(this_mapping);
-          return profile_mapping_data;
-        },
-        []
-      );
+        if (isBuildingSyncProfile) {
+          this_mapping.from_field_value = mapping.from_field_value;
+        }
+        profile_mapping_data.push(this_mapping);
+        return profile_mapping_data;
+      },
+      []
+    );
 
     $scope.new_profile = () => {
       let profile_mapping_data = profile_mappings_from_working_mappings();
@@ -195,7 +194,8 @@ angular.module('BE.seed.controller.mapping', []).controller('mapping_controller'
 
       modalInstance.result.then((new_profile) => {
         $scope.profiles.push(new_profile);
-        $scope.dropdown_selected_profile = $scope.current_profile = _.last($scope.profiles);
+        $scope.current_profile = _.last($scope.profiles);
+        $scope.dropdown_selected_profile = $scope.current_profile;
 
         $scope.profile_change_possible = false;
         $scope.mappings_change_possible = false;
@@ -338,7 +338,7 @@ angular.module('BE.seed.controller.mapping', []).controller('mapping_controller'
      * `change` should indicate to the user if a table column is already mapped
      * to another csv raw column header
      *
-     * @param col: table column mapping object. Represents the database fields <-> raw
+     * @param col - table column mapping object. Represents the database fields <-> raw
      *  relationship.
      */
     $scope.change = (col, checkingMultiple) => {

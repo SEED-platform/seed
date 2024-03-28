@@ -19,7 +19,7 @@ angular.module('BE.seed.controller.profile', []).controller('profile_controller'
     /**
      * updates the user's PI
      */
-    $scope.submit_form = function () {
+    $scope.submit_form = () => {
       user_service.update_user($scope.user).then(() => {
         $scope.user_updated = true;
         user_copy = angular.copy($scope.user);
@@ -30,7 +30,7 @@ angular.module('BE.seed.controller.profile', []).controller('profile_controller'
     /**
      * resets the form
      */
-    $scope.reset_form = function () {
+    $scope.reset_form = () => {
       $scope.user = angular.copy(user_copy);
     };
   }

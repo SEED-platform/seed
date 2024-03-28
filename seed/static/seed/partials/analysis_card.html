@@ -6,7 +6,13 @@
     {$ analysis.status $}
   </span>
   <span ng-if="allowActions">
-    <i class="glyphicon glyphicon-play link" title="Start Analysis" aria-hidden="true" ng-if="analysis.status === 'Ready' && menu.user.organization.user_role !== 'viewer'" ng-click="start_analysis(analysis.id)"></i>
+    <i
+      class="glyphicon glyphicon-play link"
+      title="Start Analysis"
+      aria-hidden="true"
+      ng-if="analysis.status === 'Ready' && menu.user.organization.user_role !== 'viewer'"
+      ng-click="start_analysis(analysis.id)"
+    ></i>
     <i
       class="glyphicon glyphicon-stop link"
       title="Stop Analysis"
@@ -41,7 +47,11 @@
     </div>
     <small>{$:: users | filter : {'user_id':analysis.user} | getAnalysisRunAuthor $}</small><small ng-if="cycle_name"> | cycle {$ cycle_name $}</small>
   </div>
-  <a ng-show="menu.user.organization.user_role !== 'viewer'" class="link" ui-sref="analysis_run(::{inventory_type: inventory_type, view_id: view_id, run_id: analysis.views[0], analysis_id: analysis.id, organization_id: org.id})">
+  <a
+    ng-show="menu.user.organization.user_role !== 'viewer'"
+    class="link"
+    ui-sref="analysis_run(::{inventory_type: inventory_type, view_id: view_id, run_id: analysis.views[0], analysis_id: analysis.id, organization_id: org.id})"
+  >
     Full Analysis <i class="glyphicon glyphicon-log-out"></i>
   </a>
 </div>

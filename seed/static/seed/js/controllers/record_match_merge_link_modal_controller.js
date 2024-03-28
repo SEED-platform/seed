@@ -50,11 +50,11 @@ angular.module('BE.seed.controller.record_match_merge_link_modal', []).controlle
       $scope.matching_criteria_columns = _.map(raw_column_names, (col_name) => _.find(inventory_columns, { column_name: col_name }).displayName);
     });
 
-    $scope.close = function () {
+    $scope.close = () => {
       $uibModalInstance.close();
     };
 
-    $scope.cancel = function () {
+    $scope.cancel = () => {
       $uibModalInstance.dismiss();
     };
   }

@@ -226,7 +226,7 @@ angular.module('BE.seed.controller.inventory_detail_meters', []).controller('inv
         [meters, property_meter_usage] = data;
 
         resetSelections();
-        $scope.meterGridApi.core.refresh()
+        $scope.meterGridApi.core.refresh();
         $scope.applyFilters();
         spinner_utility.hide();
       });

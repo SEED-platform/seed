@@ -113,7 +113,7 @@ class LabelInventoryViewSet(APIView):
     def label_factory(self, inventory_type, label_id, inventory_id):
         Model = self.models[inventory_type]
 
-        # Ensure the the label org and inventory org are the same
+        # Ensure the label org and inventory org are the same
         inventory_views = getattr(Model, f"{inventory_type}view").get_queryset()
         inventory_parent_org_id = inventory_views.get(pk=inventory_id)\
             .cycle.organization.get_parent().id

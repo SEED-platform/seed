@@ -44,50 +44,61 @@ angular.module('BE.seed.controller.members', []).controller('members_controller'
       // set edited user and default edits
       $scope.user_id_being_edited = user.user_id;
       $scope.user_edits = {
-        "access_level_instance": {
-          "id": user.access_level_instance_id,
-          "name": user.access_level_instance_name
+        access_level_instance: {
+          id: user.access_level_instance_id,
+          name: user.access_level_instance_name
         },
-        "access_level": user.access_level,
-        "role": user.role,
+        access_level: user.access_level,
+        role: user.role
       };
 
-      // the the possible access_level_instances at that level
-      access_level_idx = $scope.access_level_names.findIndex(x => x == $scope.user_edits["access_level"]);
+      // the possible access_level_instances at that level
+      const access_level_idx = $scope.access_level_names.findIndex((x) => x === $scope.user_edits.access_level);
       $scope.access_level_instances = access_level_instances_by_depth[access_level_idx];
-    }
+    };
 
     // Result of pick a new al. sets ali options.
     $scope.change_access_level_instance_options = () => {
-      access_level_idx = $scope.access_level_names.findIndex(x => x == $scope.user_edits["access_level"]);
+      const access_level_idx = $scope.access_level_names.findIndex((x) => x === $scope.user_edits.access_level);
       $scope.access_level_instances = access_level_instances_by_depth[access_level_idx];
-      $scope.user_edits["access_level_instance"] = null;
-    }
+      $scope.user_edits.access_level_instance = null;
+    };
 
     // user user edits
     $scope.save_user_edits = () => {
-      if ($scope.user_edits["access_level_instance"] === null){
+      if ($scope.user_edits.access_level_instance === null) {
         Notification.error('Must select an ali.');
         return;
       }
-      if($scope.user_edits.role == "owner" && $scope.user_edits.access_level != $scope.access_level_names[0]){
+      if ($scope.user_edits.role === 'owner' && $scope.user_edits.access_level !== $scope.access_level_names[0]) {
         Notification.error('Owners must be in the root.');
         return;
       }
 
       // update user
-      user = $scope.users.find(x => x.user_id == $scope.user_id_being_edited);
-      $scope.update_user(user, $scope.user_edits)
+      const user = $scope.users.find((x) => x.user_id === $scope.user_id_being_edited);
+      $scope.update_user(user, $scope.user_edits);
 
-      user.role = $scope.user_edits.role
-      user.access_level_instance_id = $scope.user_edits.access_level_instance.id
-      user.access_level_instance_name = $scope.user_edits.access_level_instance.name
-      user.access_level = $scope.user_edits.access_level
+      user.role = $scope.user_edits.role;
+      user.access_level_instance_id = $scope.user_edits.access_level_instance.id;
+      user.access_level_instance_name = $scope.user_edits.access_level_instance.name;
+      user.access_level = $scope.user_edits.access_level;
 
       // reset user edits
       $scope.user_id_being_edited = null;
       $scope.user_edits = {};
-    }
+    };
+
+    const refreshRoleStatus = (auth_refresh = true) => {
+      $scope.only_one_owner = _.chain($scope.users).filter(['role', 'owner']).size().value() === 1;
+
+      if (auth_refresh) {
+        auth_service.is_authorized($scope.org.id, ['can_invite_member', 'can_remove_member', 'requires_owner', 'requires_member', 'requires_superuser']).then((data) => {
+          $scope.auth = data.auth;
+        });
+      }
+    };
+
     /**
      * update_user: updates a users role and access level instance
      */
@@ -97,26 +108,25 @@ angular.module('BE.seed.controller.members', []).controller('members_controller'
       organization_service.update_role(user.user_id, $scope.org.id, user_edits.role)
         .then(() => {
           refreshRoleStatus();
-          return organization_service.update_ali(user.user_id, $scope.org.id, user_edits.access_level_instance.id)
+          return organization_service.update_ali(user.user_id, $scope.org.id, user_edits.access_level_instance.id);
         })
         .catch((data) => {
           $scope.$emit('app_error', data);
-        })
-    }
+        });
+    };
 
     $scope.cancel_user_edits = () => {
       $scope.user_id_being_edited = null;
       $scope.user_edits = {};
-    }
+    };
 
     $scope.get_roles = (user) => {
-      user_in_root = user.access_level == $scope.org.access_level_names[0]
-      if(user_in_root){
-        return ['owner', 'member', 'viewer']
-      } else{
-        return ['member', 'viewer']
+      const user_in_root = user.access_level === $scope.org.access_level_names[0];
+      if (user_in_root) {
+        return ['owner', 'member', 'viewer'];
       }
-    }
+      return ['member', 'viewer'];
+    };
 
     /**
      * remove_member: removes a user from the org
@@ -136,7 +146,6 @@ angular.module('BE.seed.controller.members', []).controller('members_controller'
           $scope.$emit('app_error', response);
         });
     };
-
 
     /**
      * new_member_modal open an AngularUI modal to add/invite a new member
@@ -190,21 +199,11 @@ angular.module('BE.seed.controller.members', []).controller('members_controller'
       return 'none';
     };
 
-    function refreshRoleStatus(auth_refresh = true) {
-      $scope.only_one_owner = _.chain($scope.users).filter(['role', 'owner']).size().value() === 1;
-
-      if (auth_refresh) {
-        auth_service.is_authorized($scope.org.id, ['can_invite_member', 'can_remove_member', 'requires_owner', 'requires_member', 'requires_superuser']).then((data) => {
-          $scope.auth = data.auth;
-        });
-      }
-    }
-
     /**
      * called on controller load and when users are refreshed
      *  - creates a name field for each user from first_name and last_name
      */
-    var init = () => {
+    const init = () => {
       $scope.user = $scope.users.map((u) => {
         u.first_name = u.first_name || '';
         u.last_name = u.last_name || '';

@@ -648,7 +648,7 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
 
     $scope.export_building_sync_xlsx = () => {
       const filename = `buildingsync_property_${$stateParams.view_id}.xlsx`;
-      // var profileId = null;
+      // let profileId = null;
       // if ($scope.currentProfile) {
       //   profileId = $scope.currentProfile.id;
       // }
@@ -708,24 +708,25 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
     };
 
     $scope.match_merge_link_record = () => {
+      let match_merge_link_fn;
       if ($scope.inventory_type === 'properties') {
-        match_merge_link_fn = inventory_service.property_match_merge_link
+        match_merge_link_fn = inventory_service.property_match_merge_link;
       } else if ($scope.inventory_type === 'taxlots') {
-        match_merge_link_fn = inventory_service.taxlot_match_merge_link
+        match_merge_link_fn = inventory_service.taxlot_match_merge_link;
       }
 
       match_merge_link_fn($scope.inventory.view_id)
-      .then(result => {
-        notify_merges_and_links(result);
-        new_view_id = result.view_id;
-        if (new_view_id) reload_with_view_id(new_view_id);
-      })
-      .catch(result => {
-        Notification.error({
-          message: result.data.message,
-          delay: 10000
+        .then((result) => {
+          notify_merges_and_links(result);
+          const new_view_id = result.view_id;
+          if (new_view_id) reload_with_view_id(new_view_id);
+        })
+        .catch((result) => {
+          Notification.error({
+            message: result.data.message,
+            delay: 10000
+          });
         });
-      });
     };
 
     $scope.open_match_merge_link_warning_modal = (accept_action, trigger) => {

@@ -49,7 +49,7 @@ angular.module('BE.seed.controller.filter_group_modal', []).controller('filter_g
             inventory_type: $scope.data.inventory_type,
             and_labels: $scope.data.and_labels,
             or_labels: $scope.data.or_labels,
-            exclude_labels: $scope.data.exclude_labels,
+            exclude_labels: $scope.data.exclude_labels
           })
           .then((result) => {
             $uibModalInstance.close(result);

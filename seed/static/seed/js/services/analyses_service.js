@@ -37,7 +37,7 @@ angular.module('BE.seed.service.analyses', []).factory('analyses_service', [
           service,
           configuration,
           property_view_ids,
-          access_level_instance_id,
+          access_level_instance_id
         }
       }).then((response) => response.data);
     };
@@ -108,7 +108,7 @@ angular.module('BE.seed.service.analyses', []).factory('analyses_service', [
     /**
      * check_progress_loop: polls progress data of an analysis
      *
-     * @param {obj} {id, status}: object containing id and status of the analysis to poll
+     * @param {obj} {id, status} object containing id and status of the analysis to poll
      * @param {async fn} status_update_callback: called every time a progress data is completed. Provided one parameter, analysis id
      * @param {fn} no_current_task_callback: called when there are no more progress data for the analysis. Provided one parameter, analysis id
      * @returns {fn}: a function which when called stops the polling

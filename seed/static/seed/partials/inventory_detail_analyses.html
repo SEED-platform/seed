@@ -48,6 +48,8 @@
         <div ng-repeat="analysis in analyses" ng-controller="analysis_details_controller" ng-include="::urls.static_url + 'seed/partials/analysis_card.html'" class="tab-content-card"></div>
       </div>
     </uib-tab>
-    <button ng-show="menu.user.organization.user_role !== 'viewer'" type="button" class="btn btn-info" ng-click="open_analysis_modal()" style="float: right"><i class="fa-solid fa-area-chart"></i> <span translate>New Analysis</span></button>
+    <button ng-show="menu.user.organization.user_role !== 'viewer'" type="button" class="btn btn-info" ng-click="open_analysis_modal()" style="float: right">
+      <i class="fa-solid fa-area-chart"></i> <span translate>New Analysis</span>
+    </button>
   </uib-tabset>
 </div>

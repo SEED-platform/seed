@@ -104,7 +104,7 @@ angular.module('BE.seed.controller.green_button_upload_modal', []).controller('g
 
     const grid_rows_to_display = (data) => Math.min(data.length, 5);
 
-    var show_confirmation_info = () => {
+    const show_confirmation_info = () => {
       uploader_service
         .greenbutton_meters_preview($scope.file_id, $scope.organization_id, $scope.view_id)
         .then((result) => {
@@ -155,7 +155,7 @@ angular.module('BE.seed.controller.green_button_upload_modal', []).controller('g
       });
     };
 
-    var buildImportResults = (message) => {
+    const buildImportResults = (message) => {
       const col_defs = base_green_button_col_defs;
 
       col_defs.push(successfully_imported_col_def);

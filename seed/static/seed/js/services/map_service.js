@@ -22,7 +22,7 @@ angular.module('BE.seed.service.map', []).factory('map_service', [
           .post('/api/v3/eeej/filter_disadvantaged_tracts/', {
             tract_ids: tractIds
           })
-          .then(({ data: { disadvantaged } }) => disadvantaged);
+          .then(({ data: { disadvantaged: _disadvantaged } }) => _disadvantaged);
         for (const id of idsToFetch) {
           disadvantaged[id] = disadvantagedTracts.includes(id);
         }

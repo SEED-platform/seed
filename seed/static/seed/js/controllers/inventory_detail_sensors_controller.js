@@ -51,6 +51,14 @@ angular.module('BE.seed.controller.inventory_detail_sensors', []).controller('in
 
     const getSensorLabel = (sensor) => `${sensor.display_name} (${sensor.data_logger})`;
 
+    // On page load, all sensors and readings
+    $scope.has_sensor_readings = $scope.property_sensor_usage.readings.length > 0;
+    $scope.has_sensors = sensors.length > 0;
+    $scope.has_data_loggers = data_loggers.length > 0;
+
+    const sorted_data_loggers = _.sortBy(data_loggers, ['id']);
+    const sorted_sensors = _.sortBy(sensors, ['id']);
+
     const resetSelections = () => {
       $scope.data_logger_selections = _.map(sorted_data_loggers, (data_logger) => ({
         selected: true,
@@ -66,15 +74,6 @@ angular.module('BE.seed.controller.inventory_detail_sensors', []).controller('in
       }));
     };
 
-    // On page load, all sensors and readings
-    $scope.has_sensor_readings = $scope.property_sensor_usage.readings.length > 0;
-    $scope.has_sensors = sensors.length > 0;
-    $scope.has_data_loggers = data_loggers.length > 0;
-
-    var sorted_data_loggers = _.sortBy(data_loggers, ['id']);
-    resetSelections();
-
-    var sorted_sensors = _.sortBy(sensors, ['id']);
     resetSelections();
 
     $scope.data_logger_selection_toggled = (is_open) => {
@@ -136,7 +135,6 @@ angular.module('BE.seed.controller.inventory_detail_sensors', []).controller('in
         enableColumnMoving: false,
         enableColumnResizing: false,
         enableFiltering: false,
-        enableHiding: false,
         enableSorting: false,
         exporterSuppressExport: true,
         pinnedLeft: true,
@@ -181,7 +179,6 @@ angular.module('BE.seed.controller.inventory_detail_sensors', []).controller('in
         name: 'actions',
         field: 'actions',
         displayName: 'Actions',
-        enableHiding: false,
         cellTemplate:
           '<div style="display: flex; justify-content: space-around; align-content: center; margin-top:2px;">' +
           '<button type="button" class="btn-info" aria-label="edit sensor" style="border-radius: 4px;" ng-click="grid.appScope.open_sensor_update_modal(row.entity)"><i class="fa-solid fa-pencil"></i></button>' +
@@ -271,7 +268,7 @@ angular.module('BE.seed.controller.inventory_detail_sensors', []).controller('in
 
     // given a list of sensor labels, it returns the filtered readings and column defs
     // This is used by the primary filterBy... functions
-    const filterBySensorLabels = function filterBySensorLabels(readings, columnDefs, sensorLabels) {
+    const filterBySensorLabels = (readings, columnDefs, sensorLabels) => {
       const timeColumns = ['timestamp', 'month', 'year'];
       const selectedColumns = sensorLabels.concat(timeColumns);
       const filteredReadings = readings.map((reading) => Object.entries(reading).reduce((newReading, _ref) => {
@@ -299,7 +296,7 @@ angular.module('BE.seed.controller.inventory_detail_sensors', []).controller('in
 
       // filter according to sensor selections
       const selectedSensorLabels = sensors
-        .filter((sensor) => selectedDataLoggerDisplayNames.includes(sensor.data_logger) & selectedSensorType.includes(sensor.type))
+        .filter((sensor) => selectedDataLoggerDisplayNames.includes(sensor.data_logger) && selectedSensorType.includes(sensor.type))
         .map((sensor) => getSensorLabel(sensor));
 
       return filterBySensorLabels(readings, columnDefs, selectedSensorLabels);
@@ -384,7 +381,7 @@ angular.module('BE.seed.controller.inventory_detail_sensors', []).controller('in
           filler_cycle: () => $scope.filler_cycle,
           organization_id: () => $scope.organization.id,
           sensor: () => sensor,
-          sensor_service,
+          sensor_service
         }
       });
     };
@@ -398,7 +395,7 @@ angular.module('BE.seed.controller.inventory_detail_sensors', []).controller('in
           organization_id: () => $scope.organization.id,
           view_id: () => $stateParams.view_id,
           sensor: () => sensor,
-          sensor_service,
+          sensor_service
         }
       });
     };
@@ -423,7 +420,7 @@ angular.module('BE.seed.controller.inventory_detail_sensors', []).controller('in
         controller: 'delete_data_logger_modal_controller',
         resolve: {
           organization_id: () => $scope.organization.id,
-          data_logger_id: () => data_logger.id,
+          data_logger_id: () => data_logger.id
         }
       });
     };

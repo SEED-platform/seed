@@ -96,14 +96,9 @@ angular.module('BE.seed.controller.sensor_readings_upload_modal', []).controller
       }
     ];
 
-    const successfully_imported_col_def = {
-      field: 'successfully_imported',
-      enableHiding: false
-    };
-
     const grid_rows_to_display = (data) => Math.min(data.length, 5);
 
-    var show_confirmation_info = () => {
+    const show_confirmation_info = () => {
       uploader_service
         .sensor_readings_preview($scope.file_id, $scope.organization_id, $scope.view_id, $scope.data_logger_id)
         .then((result) => {
@@ -131,16 +126,6 @@ angular.module('BE.seed.controller.sensor_readings_upload_modal', []).controller
         .catch(saveFailure);
     };
 
-    const saveSuccess = (progress_data) => {
-      // recheck progress in order to ensure message has been appended to progress_data
-      uploader_service.check_progress(progress_data.progress_key).then((data) => {
-        $scope.uploader.status_message = 'saving complete';
-        $scope.uploader.progress = 100;
-        buildImportResults(data.message);
-        $scope.step.number = 4;
-      });
-    };
-
     const buildImportResults = (message) => {
       const additional_columnDefs = [
         {
@@ -158,6 +143,16 @@ angular.module('BE.seed.controller.sensor_readings_upload_modal', []).controller
         enableVerticalScrollbar: message.length <= 5 ? uiGridConstants.scrollbars.NEVER : uiGridConstants.scrollbars.WHEN_NEEDED,
         minRowsToShow: grid_rows_to_display(message)
       };
+    };
+
+    const saveSuccess = (progress_data) => {
+      // recheck progress in order to ensure message has been appended to progress_data
+      uploader_service.check_progress(progress_data.progress_key).then((data) => {
+        $scope.uploader.status_message = 'saving complete';
+        $scope.uploader.progress = 100;
+        buildImportResults(data.message);
+        $scope.step.number = 4;
+      });
     };
 
     $scope.accept_sensor_readings = () => {

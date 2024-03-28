@@ -4,9 +4,8 @@
  */
 describe('controller: data_quality_modal_controller', () => {
   // globals set up and used in each test scenario
-  // var mock_uploader_service;
-  let controller; let
-    modal_state;
+  let controller;
+  let modal_state;
   let data_quality_controller_scope;
 
   const cycles = {

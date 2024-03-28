@@ -39,7 +39,7 @@ angular.module('BE.seed.controller.update_item_labels_modal', []).controller('up
     $scope.available_colors = label_service.get_available_colors();
 
     /* Initialize the label props for a 'new' label */
-    $scope.initialize_new_label = function () {
+    $scope.initialize_new_label = () => {
       $scope.new_label = {
         color: 'gray',
         label: 'default',
@@ -49,7 +49,7 @@ angular.module('BE.seed.controller.update_item_labels_modal', []).controller('up
     };
 
     /* Create a new label based on user input */
-    $scope.submitNewLabelForm = function (form) {
+    $scope.submitNewLabelForm = (form) => {
       $scope.createdLabel = null;
       if (form.$invalid) return;
       label_service.create_label($scope.new_label).then(
@@ -78,14 +78,14 @@ angular.module('BE.seed.controller.update_item_labels_modal', []).controller('up
     };
 
     /* Toggle the add button for a label */
-    $scope.toggle_add = function (label) {
+    $scope.toggle_add = (label) => {
       if (label.is_checked_remove && label.is_checked_add) {
         label.is_checked_remove = false;
       }
     };
 
     /* Toggle the remove button for a label */
-    $scope.toggle_remove = function (label) {
+    $scope.toggle_remove = (label) => {
       if (label.is_checked_remove && label.is_checked_add) {
         label.is_checked_add = false;
       }
@@ -94,7 +94,7 @@ angular.module('BE.seed.controller.update_item_labels_modal', []).controller('up
     $scope.modified = () => Boolean(_.filter($scope.labels, 'is_checked_add').length || _.filter($scope.labels, 'is_checked_remove').length);
 
     /* User has indicated 'Done' so perform selected label operations */
-    $scope.done = function () {
+    $scope.done = () => {
       $scope.waiting = true;
       spinner_utility.show();
       const addLabelIDs = _.chain($scope.labels).filter('is_checked_add').map('id').value()
@@ -116,7 +116,6 @@ angular.module('BE.seed.controller.update_item_labels_modal', []).controller('up
             $log.error('error:', data, status);
           }
         ).finally(() => spinner_utility.hide());
-
       } else if (inventory_type === 'taxlots') {
         label_service.update_taxlot_labels(addLabelIDs, removeLabelIDs, inventory_ids).then(
           (data) => {
@@ -135,13 +134,13 @@ angular.module('BE.seed.controller.update_item_labels_modal', []).controller('up
     };
 
     /* User has cancelled dialog */
-    $scope.cancel = function () {
+    $scope.cancel = () => {
       // don't do anything, just close modal.
       $uibModalInstance.dismiss('cancel');
     };
 
     /* init: Gets the list of labels. Sets up new label object. */
-    const init = function () {
+    const init = () => {
       $scope.initialize_new_label();
       // get labels with 'is_applied' property by passing in current search state
       $scope.loading = true;

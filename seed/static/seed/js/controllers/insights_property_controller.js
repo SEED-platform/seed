@@ -294,7 +294,7 @@ angular.module('BE.seed.controller.insights_property', []).controller('insights_
         yMax: 0,
         backgroundColor: '#333',
         borderWidth: 1,
-        display: (ctx) => $scope.display_annotation,
+        display: () => $scope.display_annotation,
         arrowHeads: {
           end: {
             display: true,
@@ -313,7 +313,7 @@ angular.module('BE.seed.controller.insights_property', []).controller('insights_
         item.x = _.find(prop, (v, k) => k.endsWith(`_${String($scope.configs.chart_xaxis)}`));
 
         // is x axis categorical?
-        if ($scope.x_categorical === false && isNaN(item.x)) {
+        if ($scope.x_categorical === false && Number.isNaN(Number(item.x))) {
           $scope.x_categorical = true;
         }
 
@@ -369,7 +369,7 @@ angular.module('BE.seed.controller.insights_property', []).controller('insights_
         if (item.x && item.y && item.target) {
           if ((metric_type === 1 && item.target < item.y) || (metric_type === 2 && item.target > item.y)) {
             add = true;
-            item.distance = Math.abs(item.target - item.y)
+            item.distance = Math.abs(item.target - item.y);
           }
         }
 
@@ -428,8 +428,8 @@ angular.module('BE.seed.controller.insights_property', []).controller('insights_
               },
               tooltip: {
                 callbacks: {
-                  label: function(context) {
-                    let text = [];
+                  label: (context) => {
+                    const text = [];
                     // property ID / default display field
                     if (context.raw.name) {
                       text.push(`Property: ${context.raw.name}`);

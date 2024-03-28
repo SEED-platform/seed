@@ -82,7 +82,7 @@ angular.module('BE.seed.controller.inventory_detail_analyses_modal', []).control
           };
           // only root users can create columns
           if (user.is_ali_root && ['member', 'owner'].includes(user.organization.user_role)) {
-            $scope.new_analysis.configuration.save_co2_results = true
+            $scope.new_analysis.configuration.save_co2_results = true;
           }
           break;
 

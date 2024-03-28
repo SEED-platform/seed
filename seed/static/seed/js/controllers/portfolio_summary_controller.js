@@ -52,7 +52,6 @@ angular.module('BE.seed.controller.portfolio_summary', [])
       $scope.cycles = cycles.cycles;
       $scope.access_level_tree = access_level_tree.access_level_tree;
       $scope.level_names = access_level_tree.access_level_names;
-      const localStorageLabelKey = 'grid.properties.labels';
       $scope.goal = {};
       $scope.columns = property_columns;
       $scope.cycle_columns = [];
@@ -305,7 +304,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
           const labels = _.filter(current_labels, (label) => !_.isEmpty(label.is_applied));
 
           // load saved label filter
-          // const ids = inventory_service.loadSelectedLabels(localStorageLabelKey);
+          // const ids = inventory_service.loadSelectedLabels('grid.properties.labels');
           // $scope.selected_labels = _.filter(labels, (label) => _.includes(ids, label.id));
 
           if (key === 'baseline') {
@@ -386,10 +385,10 @@ angular.module('BE.seed.controller.portfolio_summary', [])
       const set_eui_goal = (baseline, current, property, preferred_columns) => {
         // only check defined columns
         for (const col of preferred_columns.filter((c) => c)) {
-          if (baseline && property.baseline_eui == undefined) {
+          if (baseline && _.isNil(property.baseline_eui)) {
             property.baseline_eui = baseline[col.name];
           }
-          if (current && property.current_eui == undefined) {
+          if (current && _.isNil(property.current_eui)) {
             property.current_eui = current[col.name];
           }
         }

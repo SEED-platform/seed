@@ -33,37 +33,37 @@ angular.module('BE.seed.controller.organization_add_access_level_modal', [])
       We need this to tell how many alis deleting a level would delete
       */
       const access_level_instances_by_depth = {};
-      const calculate_access_level_instances_by_depth = function (tree, depth = 1) {
-        if (tree == undefined) return;
-        if (access_level_instances_by_depth[depth] == undefined) access_level_instances_by_depth[depth] = [];
+      const calculate_access_level_instances_by_depth = (tree, depth = 1) => {
+        if (!tree) return;
+        if (!access_level_instances_by_depth[depth]) access_level_instances_by_depth[depth] = [];
         tree.forEach((ali) => {
           access_level_instances_by_depth[depth].push({ id: ali.id, name: ali.data.name });
           calculate_access_level_instances_by_depth(ali.children, depth + 1);
         });
       };
 
-      const get_num_alis_at_depth = function(depth) {
-        if (Object.keys(access_level_instances_by_depth).length === 0){
+      const get_num_alis_at_depth = (depth) => {
+        if (Object.keys(access_level_instances_by_depth).length === 0) {
           calculate_access_level_instances_by_depth(access_level_tree, 1);
         }
-        return access_level_instances_by_depth[depth]?.length ?? 0
-      }
+        return access_level_instances_by_depth[depth]?.length ?? 0;
+      };
 
       // A deleted level may mean deleting part of the tree itself
-      check_for_deletions = () => {
+      const check_for_deletions = () => {
         // if no levels are being deleted, no warning
         $scope.enable_save = true;
-        num_levels_to_delete = current_access_level_names.length - $scope.new_access_level_names.length;
-        if (num_levels_to_delete <= 0 ) {
-          return
+        const num_levels_to_delete = current_access_level_names.length - $scope.new_access_level_names.length;
+        if (num_levels_to_delete <= 0) {
+          return;
         }
 
         // Get num alis that will be deleted
-        depths_to_delete = _.range(current_access_level_names.length-num_levels_to_delete+1, current_access_level_names.length+1)
-        $scope.num_alis_to_delete = depths_to_delete.reduce((acc, curr) => acc + get_num_alis_at_depth(curr), 0)
+        const depths_to_delete = _.range(current_access_level_names.length - num_levels_to_delete + 1, current_access_level_names.length + 1);
+        $scope.num_alis_to_delete = depths_to_delete.reduce((acc, curr) => acc + get_num_alis_at_depth(curr), 0);
 
         // if no alis are being deleted, no warning
-        if ($scope.num_alis_to_delete > 0){
+        if ($scope.num_alis_to_delete > 0) {
           $scope.enable_save = false;
         }
       };

@@ -26,11 +26,11 @@ angular.module('BE.seed.controller.delete_data_logger_upload_or_update_modal', [
   ) {
     $scope.delete = () => {
       sensor_service.delete_data_logger(data_logger_id, organization_id)
-      .then( () => {
-        spinner_utility.show();
-        $window.location.reload();
-      })
-      .catch((err) => Notification.error(err));
+        .then(() => {
+          spinner_utility.show();
+          $window.location.reload();
+        })
+        .catch((err) => Notification.error(err));
     };
 
     $scope.dismiss = () => {

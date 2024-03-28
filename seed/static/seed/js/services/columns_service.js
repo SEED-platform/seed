@@ -25,7 +25,8 @@ angular.module('BE.seed.service.columns', []).factory('columns_service', [
       })
       .then((response) => response.data);
 
-    columns_service.rename_column = (column_id, column_name, overwrite_preference) => columns_service.rename_column_for_org(user_service.get_organization().id, column_id, column_name, overwrite_preference);
+    columns_service.rename_column = (column_id, column_name, overwrite_preference) => columns_service
+      .rename_column_for_org(user_service.get_organization().id, column_id, column_name, overwrite_preference);
 
     columns_service.rename_column_for_org = (org_id, column_id, column_name, overwrite_preference) => $http
       .post(`/api/v3/columns/${column_id}/rename/`, {

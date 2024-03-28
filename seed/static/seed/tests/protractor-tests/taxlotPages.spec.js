@@ -29,7 +29,7 @@ describe('When I go to the taxlot page', () => {
 
   // Not sure we need this one:
   // it('should filter semi colon and expand', function () {
-  // 	var jurisTL = $$('[role="columnheader"]').filter(function(elm) {
+  // 	const jurisTL = $$('[role="columnheader"]').filter(function(elm) {
   // 		return elm.getText().then(function (label) {
   // 			return label.includes('Associated TaxLot IDs');
   // 		});
@@ -109,14 +109,14 @@ describe('When I go to the taxlot page', () => {
     $$('[ng-model="label.is_checked_add"]').first().click();
     $('[ng-click="done()"]').click();
 
-    var labels = element.all(by.repeater('label in labels'));
+    let labels = element.all(by.repeater('label in labels'));
     expect(labels.count()).not.toBeLessThan(1);
 
     // remove label
     $('[ng-click="open_update_labels_modal(inventory.id, inventory_type)"]').click();
     $$('[ng-click="toggle_remove(label)"]').first().click();
     $('[ng-click="done()"]').click();
-    var labels = element.all(by.repeater('label in labels'));
+    labels = element.all(by.repeater('label in labels'));
     expect(labels.count()).toBeLessThan(1);
 
     $('a.page_action.ng-binding').click();
@@ -139,7 +139,7 @@ describe('When I go to the taxlot page', () => {
     $('[ng-if="grid.options.enableSelectAll"]').click().click();
     $$('[ng-class="{\'ui-grid-row-selected\': row.isSelected}"]').first().click();
     $('#inventory-list').click();
-    var cols = $('.ui-grid-render-container.ui-grid-render-container-body').all(by.repeater('col in colContainer.renderedColumns'));
+    let cols = $('.ui-grid-render-container.ui-grid-render-container-body').all(by.repeater('col in colContainer.renderedColumns'));
     expect(cols.count()).toBe(1);
     $('#column-list-profiles').click();
     $('[ng-click="toggleMenu()"]').click();
@@ -148,7 +148,7 @@ describe('When I go to the taxlot page', () => {
     $$('[ng-click="itemAction($event, title)"]').first().click();
     $('[ng-change="saveShowSharedBuildings()"]').click();
     $('#inventory-list').click();
-    var cols = $('.ui-grid-render-container.ui-grid-render-container-body').all(by.repeater('col in colContainer.renderedColumns'));
+    cols = $('.ui-grid-render-container.ui-grid-render-container-body').all(by.repeater('col in colContainer.renderedColumns'));
     expect(cols.count()).not.toBeLessThan(2);
     browser.driver.navigate().refresh();
   }, 45000);

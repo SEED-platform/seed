@@ -1,7 +1,7 @@
 module.exports = {
   extends: 'airbnb-base',
   parserOptions: {
-    ecmaVersion: 2022
+    ecmaVersion: 2024
   },
   env: {
     browser: true,
@@ -44,7 +44,6 @@ module.exports = {
       'error',
       'never'
     ],
-    'consistent-return': 'warn',
     'func-style': [
       'error',
       'declaration',
@@ -66,6 +65,13 @@ module.exports = {
       }
     ],
     'no-plusplus': 'off',
+    'no-restricted-globals': ['error', {
+      name: 'isFinite',
+      message: 'Use Number.isFinite instead'
+    }, {
+      name: 'isNaN',
+      message: 'Use Number.isNaN instead'
+    }],
     'no-restricted-syntax': [
       'error',
       'ForInStatement',
@@ -73,7 +79,6 @@ module.exports = {
       'WithStatement'
     ],
     'no-sequences': 'error',
-    'no-shadow': 'warn',
     'object-shorthand': [
       'error',
       'properties'
@@ -92,10 +97,14 @@ module.exports = {
     ],
     // FIX LATER
     camelcase: 'off',
+    'consistent-return': 'off',
     'default-case': 'off',
+    'no-alert': 'off',
     'no-console': 'off',
     'no-param-reassign': 'off',
+    'no-shadow': 'off',
     'no-underscore-dangle': 'off',
+    'no-use-before-define': 'off',
     'prefer-destructuring': 'off'
   }
 };

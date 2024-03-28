@@ -64,9 +64,9 @@ angular.module('BE.seed.service.uploader', []).factory('uploader_service', [
      * save_raw_data
      * This service call will simply call a view on the backend to save raw
      * data into BuildingSnapshot instances.
-     * @param file_id: the pk of a ImportFile object we're going to save raw.
-     * @param {string} cycle_id: the id of the cycle
-     * @param {boolean} multiple_cycle_upload: whether records can be imported into multiple cycles
+     * @param file_id - the pk of a ImportFile object we're going to save raw.
+     * @param {string} cycle_id - the id of the cycle
+     * @param {boolean} multiple_cycle_upload - whether records can be imported into multiple cycles
      */
     uploader_factory.save_raw_data = (file_id, cycle_id, multiple_cycle_upload = false) => $http
       .post(
@@ -85,16 +85,16 @@ angular.module('BE.seed.service.uploader', []).factory('uploader_service', [
      * save_access_level_instance_data
      * This service call will call a view on the backend to save access level instance data
      * as a background task
-     * @param filename: the filepath of the uploaded tempfile (this is not an ImportFile!)
+     * @param filename - the filepath of the uploaded tempfile (this is not an ImportFile!)
      */
-    uploader_factory.save_access_level_instance_data = (filename, org_id) => // TODO: is this the correct way to get the organization ID? I feel like we should check it
-      $http.post(`/api/v3/organizations/${org_id}/access_levels/start_save_data/`, {
-        filename
-      }).then((response) => response.data);
+    // TODO: is this the correct way to get the organization ID? I feel like we should check it
+    uploader_factory.save_access_level_instance_data = (filename, org_id) => $http.post(`/api/v3/organizations/${org_id}/access_levels/start_save_data/`, {
+      filename
+    }).then((response) => response.data);
 
     /**
      * check_progress: gets the progress for saves, maps, and matches
-     * @param progress_key: progress_key to grab the progress
+     * @param progress_key - progress_key to grab the progress
      */
     uploader_factory.check_progress = (progress_key) => $http.get(`/api/v3/progress/${progress_key}/`).then((response) => {
       if (response.data.status === 'error') return $q.reject(response);
@@ -106,7 +106,7 @@ angular.module('BE.seed.service.uploader', []).factory('uploader_service', [
       progress_bar_obj.progress_last_checked = right_now;
 
       const new_progress_value = _.clamp(data.progress * multiplier + offset, 0, 100);
-      const updating_progress = new_progress_value != progress_bar_obj.progress || progress_bar_obj.status_message != data.status_message;
+      const updating_progress = new_progress_value !== progress_bar_obj.progress || progress_bar_obj.status_message !== data.status_message;
       if (updating_progress) {
         progress_bar_obj.progress_last_updated = right_now;
       }
@@ -124,13 +124,12 @@ angular.module('BE.seed.service.uploader', []).factory('uploader_service', [
     /**
      * check_progress_loop: check loop to update the progress bar
      *
-     * @param {string} progress_key: key
-     * @param {number} offset: where to start the progress bar
-     * @param {number} multiplier: multiplier for progress val
-     * @param {fn} success_fn: function to call when progress is done
-     * @param {fn} failure_fn: function to call when progress is done and the result was not success
-     * @param {obj} progress_bar_obj: progress bar object, attr 'progress'
-     *   is set with the progress
+     * @param {string} progress_key - key
+     * @param {number} offset - where to start the progress bar
+     * @param {number} multiplier - multiplier for progress val
+     * @param {fn} success_fn - function to call when progress is done
+     * @param {fn} failure_fn - function to call when progress is done and the result was not success
+     * @param {obj} progress_bar_obj - progress bar object, attr 'progress' is set with the progress
      */
     uploader_factory.check_progress_loop = (progress_key, offset, multiplier, success_fn, failure_fn, progress_bar_obj) => {
       uploader_factory.check_progress(progress_key).then((data) => {
@@ -152,22 +151,25 @@ angular.module('BE.seed.service.uploader', []).factory('uploader_service', [
       const progress_list = [uploader_factory.check_progress(progress_key)];
       if (sub_progress_argument) progress_list.push(uploader_factory.check_progress(sub_progress_key));
 
-      Promise.all(progress_list).then((values) => {
-        check_and_update_progress(values);
-      });
-
-      function check_and_update_progress(data) {
+      const check_and_update_progress = (data) => {
         $timeout(() => {
           update_progress_bar_obj(data[0], progress_argument);
           if (data[0].progress < 100) {
-            data.length > 1 ?
-              (update_progress_bar_obj(data[1], sub_progress_argument), uploader_factory.check_progress_loop_main_sub(progress_argument, success_fn, failure_fn, sub_progress_argument)) :
+            if (data.length > 1) {
+              update_progress_bar_obj(data[1], sub_progress_argument);
+              uploader_factory.check_progress_loop_main_sub(progress_argument, success_fn, failure_fn, sub_progress_argument);
+            } else {
               uploader_factory.check_progress_loop_main_sub(progress_argument, success_fn, failure_fn);
+            }
           } else {
             success_fn(data[0]);
           }
         }, 750);
-      }
+      };
+
+      Promise.all(progress_list).then((values) => {
+        check_and_update_progress(values);
+      });
     };
 
     uploader_factory.pm_meters_preview = (file_id, org_id) => $http.get(`/api/v3/import_files/${file_id}/pm_meters_preview/`, { params: { organization_id: org_id } }).then((response) => response.data);

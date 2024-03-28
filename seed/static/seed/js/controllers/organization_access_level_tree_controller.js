@@ -55,7 +55,7 @@ angular.module('BE.seed.controller.organization_access_level_tree', [])
           resolve: {
             org_id: () => $scope.org.id,
             current_access_level_names: () => $scope.access_level_names,
-            access_level_tree: () => $scope.access_level_tree,
+            access_level_tree: () => $scope.access_level_tree
           }
         }).result.then(() => {
           spinner_utility.show();

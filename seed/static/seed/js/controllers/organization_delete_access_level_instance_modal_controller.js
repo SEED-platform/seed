@@ -13,6 +13,7 @@ angular.module('BE.seed.controller.organization_delete_access_level_instance_mod
     'instance_name',
     'spinner_utility',
     'Notification',
+    // eslint-disable-next-line func-names
     function (
       $scope,
       $state,

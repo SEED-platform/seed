@@ -12,7 +12,7 @@ angular.module('BE.seed.service.matching', []).factory('matching_service', [
     /**
      *Start system matching. For now, geocoding is also kicked off here.
      *
-     *@param import_file_id: int, the database id of the import file
+     *@param {int} import_file_id - the database id of the import file
      * we wish to match against other buildings for an organization.
      */
     matching_service.start_system_matching = (import_file_id) => $http

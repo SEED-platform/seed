@@ -71,6 +71,7 @@ angular.module('sdBasicPropertyInfoChart', []).directive('sdBasicPropertyInfoCha
     controller: [
       '$scope',
       '$element',
+      // eslint-disable-next-line func-names
       function ($scope, $element) {
         let id;
         let svg;

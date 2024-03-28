@@ -386,8 +386,8 @@ angular.module('BE.seed.service.search', []).factory('search_service', [
      *
      */
     // search_service.deselect_all_buildings = function () {
-    //   var len = this.buildings.length;
-    //   for (var bldg_index = 0; bldg_index < len; bldg_index++) {
+    //   const len = this.buildings.length;
+    //   for (let bldg_index = 0; bldg_index < len; bldg_index++) {
     //     this.buildings[bldg_index].checked = false;
     //   }
     //   this.selected_buildings = [];

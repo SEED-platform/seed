@@ -13,7 +13,7 @@
 </div>
 
 <div class="inventory-list-controls" style="display: flex; justify-content: space-between">
-  <div class="form-group settings_profile" style="display: flex; justify-content: space-between; flex-direction: column">
+  <div class="form-group" style="display: flex; justify-content: space-between; flex-direction: column">
     <div uib-dropdown is-open="cycles_options.isopen" auto-close="outsideClick" on-toggle="cycle_selection_toggled(open)">
       <label>{$:: 'Cycle' | translate $}:</label>
       <button type="button" class="btn btn-default" uib-dropdown-toggle>Selected (<span ng-bind="included_cycle_ids.length"></span>) <span class="caret"></span></button>

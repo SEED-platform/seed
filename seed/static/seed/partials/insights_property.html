@@ -13,23 +13,20 @@
 <div class="section_content_container">
   <div class="section_content container-fluid">
     <div class="content_block row insights-header">
-        <div ng-show="!data">
-          <div ng-if="auth.requires_member" class="compliance-setup">
-            <p>Configure your program's metrics:</p>
-            <button class="btn btn-primary" type="submit" ng-click="open_program_setup_modal()">
-              Program Configuration
-            </button>
-          </div>
+      <div ng-show="!data">
+        <div ng-if="auth.requires_member" class="compliance-setup">
+          <p>Configure your program's metrics:</p>
+          <button class="btn btn-primary" type="submit" ng-click="open_program_setup_modal()">Program Configuration</button>
         </div>
-        <div ng-show="data">
-          <div ng-if="auth.requires_member" class="compliance-setup">
-            <p>Need to configure your Program?
-              <button class="btn btn-primary" type="submit" ng-click="open_program_setup_modal()">
-                Program Configuration
-              </button>
-            </p>
-          </div>
+      </div>
+      <div ng-show="data">
+        <div ng-if="auth.requires_member" class="compliance-setup">
+          <p>
+            Need to configure your Program?
+            <button class="btn btn-primary" type="submit" ng-click="open_program_setup_modal()">Program Configuration</button>
+          </p>
         </div>
+      </div>
     </div>
     <div class="content_block row less_pad">
       <div ng-show="data">
@@ -66,7 +63,9 @@
             </div>
 
             <div ng-show="menu.user.organization.user_role !== 'viewer'" class="button-grid chart-buttons">
-              <div class="flex-button-child"><button type="button" class="btn btn-primary" ng-click="open_update_labels_modal()" ng-disabled="!visibleIds().length" translate>Update Property Labels</button></div>
+              <div class="flex-button-child">
+                <button type="button" class="btn btn-primary" ng-click="open_update_labels_modal()" ng-disabled="!visibleIds().length" translate>Update Property Labels</button>
+              </div>
             </div>
           </div>
         </div>
@@ -123,7 +122,7 @@
                           <td><a ui-sref="inventory_detail(::{inventory_type: 'properties', view_id: item.id, cycle_id: cycle.id})">Property - {$ item.name ? item.name: item.id $}</a></td>
                           <td>{$ item.x $}</td>
                           <td>{$ item.y $}</td>
-                          <td>{$ item.distance $}
+                          <td>{$ item.distance $}</td>
                         </tr>
                       </table>
                     </td>
@@ -170,7 +169,8 @@
             </div>
             <div class="legend-row row" ng-click="toggle_dataset_visibility(1)">
               <div class="col-md-3 legend-icon-col">
-                <img class="legend-icon"  src="{$ static_url $}seed/images/red_triangle.svg" alt="red triangle marker" /></div>
+                <img class="legend-icon" src="{$ static_url $}seed/images/red_triangle.svg" alt="red triangle marker" />
+              </div>
               <div class="col-md-9 text" ng-hide="insightsChart.legend.legendItems[1].hidden" translate>Not Compliant</div>
               <div class="col-md-9 text strikethrough" ng-hide="!insightsChart.legend.legendItems[1].hidden" translate>Not Compliant</div>
             </div>
