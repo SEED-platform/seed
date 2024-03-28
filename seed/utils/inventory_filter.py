@@ -3,7 +3,6 @@ SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and othe
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 from typing import Literal, Optional, Type, Union
-
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.db.utils import DataError
 from django.http import JsonResponse
@@ -25,6 +24,8 @@ from seed.models import (
 )
 from seed.serializers.pint import apply_display_unit_preferences
 from seed.utils.search import FilterException, build_view_filters_and_sorts
+
+import logging
 
 
 def get_filtered_results(request: Request, inventory_type: Literal['property', 'taxlot'], profile_id: int) -> JsonResponse:
@@ -116,6 +117,8 @@ def get_filtered_results(request: Request, inventory_type: Literal['property', '
     )
     try:
         filters, annotations, order_by = build_view_filters_and_sorts(request.query_params, columns_from_database, inventory_type, org.access_level_names)
+        # logging.error('>>> main filters %s', filters)
+        # logging.error('>>> main annotations %s', annotations)
     except FilterException as e:
         return JsonResponse(
             {
@@ -127,6 +130,8 @@ def get_filtered_results(request: Request, inventory_type: Literal['property', '
 
     try:
         views_list = views_list.annotate(**annotations).filter(filters).order_by(*order_by)
+        vlp = views_list
+        logging.error('>>> main views_count %s', views_list.count())
     except ValueError as e:
         return JsonResponse(
             {
@@ -149,6 +154,8 @@ def get_filtered_results(request: Request, inventory_type: Literal['property', '
         )
         try:
             filters, annotations, _ = build_view_filters_and_sorts(request.query_params, other_columns_from_database, other_inventory_type)
+            # logging.error('>>> other filters %s', filters)
+            # logging.error('>>> other annotations %s', annotations)
         except FilterException as e:
             return JsonResponse(
                 {
@@ -168,19 +175,29 @@ def get_filtered_results(request: Request, inventory_type: Literal['property', '
 
             other_views_list = other_views_list.annotate(**annotations).filter(filters)
             taxlot_properties = TaxLotProperty.objects.filter(**{f'{other_inventory_type}_view__in': other_views_list})
-            views_list = views_list.filter(taxlotproperty__in=taxlot_properties)
+            import remote_pdb; remote_pdb.set_trace()
+            if taxlot_properties.count() != 0:
+                views_list = views_list.filter(taxlotproperty__in=taxlot_properties)
+            else: 
+                views_list = views_list.exclude(taxlotproperty__isnull=False)
+
+            logging.error('>>> other views_count %s', views_list.count() )
 
     # return property views limited to the 'include_view_ids' list if not empty
     if 'include_view_ids' in request.data and request.data['include_view_ids']:
         views_list = views_list.filter(id__in=request.data['include_view_ids'])
+        logging.error('>>> include view views_count %s', views_list.count() )
+
 
     # exclude property views limited to the 'exclude_view_ids' list if not empty
     if 'exclude_view_ids' in request.data and request.data['exclude_view_ids']:
         views_list = views_list.exclude(id__in=request.data['exclude_view_ids'])
+        logging.error('>>> exclude view views_count %s', views_list.count() )
 
     # return property views limited to the 'include_property_ids' list if not empty
     if include_property_ids := request.data.get('include_property_ids'):
         views_list = views_list.filter(property__id__in=include_property_ids)
+        logging.error('>>> include property views_count %s', views_list.count() )
 
     if ids_only:
         id_list = list(views_list.values_list('id', flat=True))
