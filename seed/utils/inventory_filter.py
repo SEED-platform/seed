@@ -175,7 +175,7 @@ def get_filtered_results(request: Request, inventory_type: Literal['property', '
 
             other_views_list = other_views_list.annotate(**annotations).filter(filters)
             taxlot_properties = TaxLotProperty.objects.filter(**{f'{other_inventory_type}_view__in': other_views_list})
-            import remote_pdb; remote_pdb.set_trace()
+            # import remote_pdb; remote_pdb.set_trace()
             if taxlot_properties.count() != 0:
                 views_list = views_list.filter(taxlotproperty__in=taxlot_properties)
             else: 
