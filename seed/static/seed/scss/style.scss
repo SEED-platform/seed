@@ -168,6 +168,10 @@ a:not([href]) {
   font-size: 100%;
   margin-right: 5px;
   padding: 2.6px 7.8px;
+
+  &:last-child {
+    margin-right: 0;
+  }
 }
 
 .btn {
