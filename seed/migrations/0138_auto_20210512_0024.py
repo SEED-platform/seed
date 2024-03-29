@@ -5,7 +5,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('orgs', '0017_auto_20210218_1715'),
         ('seed', '0137_statuslabel_show_in_list'),

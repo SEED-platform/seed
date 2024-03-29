@@ -1,9 +1,9 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 from django.utils.decorators import method_decorator
 from rest_framework import status
 from rest_framework.decorators import action
@@ -20,25 +20,25 @@ from seed.utils.viewsets import SEEDOrgModelViewSet
     name='update',
     decorator=[
         has_perm_class('requires_root_member_access'),
-    ]
+    ],
 )
 @method_decorator(
     name='destroy',
     decorator=[
         has_perm_class('requires_root_member_access'),
-    ]
+    ],
 )
 @method_decorator(
     name='retrieve',
     decorator=[
         has_perm_class('requires_root_member_access'),
-    ]
+    ],
 )
 @method_decorator(
     name='list',
     decorator=[
         has_perm_class('requires_root_member_access'),
-    ]
+    ],
 )
 class GreenAssessmentPropertyViewSet(SEEDOrgModelViewSet):
     """API endpoint to view and create green assessment property attachments.
@@ -89,6 +89,7 @@ class GreenAssessmentPropertyViewSet(SEEDOrgModelViewSet):
     partial_update:
         Update one or more fields on an existing green assessment...
     """
+
     serializer_class = GreenAssessmentPropertySerializer
     model = GreenAssessmentProperty
     orgfilter = 'assessment__organization_id'

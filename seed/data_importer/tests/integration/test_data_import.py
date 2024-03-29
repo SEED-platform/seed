@@ -1,9 +1,9 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 import copy
 import csv
 import json
@@ -12,21 +12,17 @@ import os.path as osp
 import pathlib
 import zipfile
 from datetime import date
+from unittest.mock import patch
 
 from dateutil import parser
 from django.core.files import File
 from django.core.files.uploadedfile import SimpleUploadedFile
-from mock import patch
 
 from config.settings.common import BASE_DIR
 from seed.data_importer import tasks
 from seed.data_importer.models import ImportFile, ImportRecord
 from seed.data_importer.tasks import map_data, save_raw_data
-from seed.data_importer.tests.util import (
-    FAKE_EXTRA_DATA,
-    FAKE_MAPPINGS,
-    FAKE_ROW
-)
+from seed.data_importer.tests.util import FAKE_EXTRA_DATA, FAKE_MAPPINGS, FAKE_ROW
 from seed.lib.xml_mapping.mapper import default_buildingsync_profile_mappings
 from seed.models import (
     ASSESSED_BS,
@@ -41,13 +37,9 @@ from seed.models import (
     PropertyState,
     PropertyView,
     Scenario,
-    TaxLotState
+    TaxLotState,
 )
-from seed.models.models import (
-    BUILDINGSYNC_RAW,
-    DATA_STATE_MAPPING,
-    SEED_DATA_SOURCES
-)
+from seed.models.models import BUILDINGSYNC_RAW, DATA_STATE_MAPPING, SEED_DATA_SOURCES
 from seed.tests.util import DataMappingBaseTestCase
 
 _log = logging.getLogger(__name__)
@@ -69,10 +61,7 @@ class TestDataImport(DataMappingBaseTestCase):
         selfvars = self.set_up(import_file_source_type)
         self.user, self.org, self.import_file, self.import_record, self.cycle = selfvars
         filepath = osp.join(osp.dirname(__file__), '..', '..', '..', 'tests', 'data', filename)
-        self.import_file.file = SimpleUploadedFile(
-            name=filename,
-            content=pathlib.Path(filepath).read_bytes()
-        )
+        self.import_file.file = SimpleUploadedFile(name=filename, content=pathlib.Path(filepath).read_bytes())
         self.import_file.save()
 
     def test_cached_first_row_order(self):
@@ -81,7 +70,7 @@ class TestDataImport(DataMappingBaseTestCase):
         with patch.object(ImportFile, 'cache_first_rows', return_value=None):
             tasks.save_raw_data(self.import_file.pk)
 
-        expected_first_row = 'Property Id|#*#|Property Name|#*#|Year Ending|#*#|Property Floor Area (Buildings and Parking) (ft2)|#*#|Address 1|#*#|Address 2|#*#|City|#*#|State/Province|#*#|Postal Code|#*#|Year Built|#*#|ENERGY STAR Score|#*#|Site EUI (kBtu/ft2)|#*#|Total GHG Emissions (MtCO2e)|#*#|Weather Normalized Site EUI (kBtu/ft2)|#*#|National Median Site EUI (kBtu/ft2)|#*#|Source EUI (kBtu/ft2)|#*#|Weather Normalized Source EUI (kBtu/ft2)|#*#|National Median Source EUI (kBtu/ft2)|#*#|Parking - Gross Floor Area (ft2)|#*#|Organization|#*#|Generation Date|#*#|Release Date'  # NOQA
+        expected_first_row = 'Property Id|#*#|Property Name|#*#|Year Ending|#*#|Property Floor Area (Buildings and Parking) (ft2)|#*#|Address 1|#*#|Address 2|#*#|City|#*#|State/Province|#*#|Postal Code|#*#|Year Built|#*#|ENERGY STAR Score|#*#|Site EUI (kBtu/ft2)|#*#|Total GHG Emissions (MtCO2e)|#*#|Weather Normalized Site EUI (kBtu/ft2)|#*#|National Median Site EUI (kBtu/ft2)|#*#|Source EUI (kBtu/ft2)|#*#|Weather Normalized Source EUI (kBtu/ft2)|#*#|National Median Source EUI (kBtu/ft2)|#*#|Parking - Gross Floor Area (ft2)|#*#|Organization|#*#|Generation Date|#*#|Release Date'
 
         import_file = ImportFile.objects.get(pk=self.import_file.pk)
         first_row = import_file.cached_first_row
@@ -125,10 +114,12 @@ class TestDataImport(DataMappingBaseTestCase):
         Column.create_mappings(self.fake_mappings, self.org, self.user, import_file.pk)
         tasks.map_data(import_file.pk)
 
-        mapped_bs = list(PropertyState.objects.filter(
-            import_file=import_file,
-            source_type=ASSESSED_BS,
-        ))
+        mapped_bs = list(
+            PropertyState.objects.filter(
+                import_file=import_file,
+                source_type=ASSESSED_BS,
+            )
+        )
 
         self.assertEqual(len(mapped_bs), 1)
 
@@ -136,24 +127,16 @@ class TestDataImport(DataMappingBaseTestCase):
         self.assertNotEqual(test_bs.pk, fake_raw_bs.pk)
         self.assertEqual(test_bs.property_name, self.fake_row['Name'])
         self.assertEqual(test_bs.address_line_1, self.fake_row['Address Line 1'])
-        self.assertEqual(
-            test_bs.year_built,
-            parser.parse(self.fake_row['Year Built']).year
-        )
+        self.assertEqual(test_bs.year_built, parser.parse(self.fake_row['Year Built']).year)
 
         # Make sure that we saved the extra_data column mappings
-        data_columns = Column.objects.filter(
-            organization=self.org,
-            is_extra_data=True
-        ).exclude(table_name='')
+        data_columns = Column.objects.filter(organization=self.org, is_extra_data=True).exclude(table_name='')
 
         # There's only one piece of data that did not cleanly map.
         # Note that as of 09/15/2016 - extra data still needs to be defined in the mappings, it
         # will no longer magically appear in the extra_data field if the user did not specify to
         # map it!
-        self.assertListEqual(
-            sorted([d.column_name for d in data_columns]), ['Double Tester']
-        )
+        self.assertListEqual(sorted([d.column_name for d in data_columns]), ['Double Tester'])
 
 
 class TestImportCSVMissingHeaders(DataMappingBaseTestCase):
@@ -172,10 +155,7 @@ class TestImportCSVMissingHeaders(DataMappingBaseTestCase):
         selfvars = self.set_up(import_file_source_type)
         self.user, self.org, self.import_file, self.import_record, self.cycle = selfvars
         filepath = osp.join(osp.dirname(__file__), '..', '..', '..', 'tests', 'data', filename)
-        self.import_file.file = SimpleUploadedFile(
-            name=filename,
-            content=pathlib.Path(filepath).read_bytes()
-        )
+        self.import_file.file = SimpleUploadedFile(name=filename, content=pathlib.Path(filepath).read_bytes())
         self.import_file.save()
 
     def test_generates_headers_for_those_missing(self):
@@ -184,7 +164,7 @@ class TestImportCSVMissingHeaders(DataMappingBaseTestCase):
         with patch.object(ImportFile, 'cache_first_rows', return_value=None):
             tasks.save_raw_data(self.import_file.pk)
 
-        expected_first_row = 'Property Id|#*#|Property Name|#*#|SEED Generated Header 1|#*#|SEED Generated Header 2|#*#|Address 1|#*#|SEED Generated Header 3|#*#|City|#*#|State/Province|#*#|Postal Code|#*#|Year Built|#*#|ENERGY STAR Score|#*#|Site EUI (kBtu/ft2)|#*#|Total GHG Emissions (MtCO2e)|#*#|Weather Normalized Site EUI (kBtu/ft2)|#*#|National Median Site EUI (kBtu/ft2)|#*#|Source EUI (kBtu/ft2)|#*#|Weather Normalized Source EUI (kBtu/ft2)|#*#|National Median Source EUI (kBtu/ft2)|#*#|Parking - Gross Floor Area (ft2)|#*#|Organization|#*#|Generation Date|#*#|Release Date'  # NOQA
+        expected_first_row = 'Property Id|#*#|Property Name|#*#|SEED Generated Header 1|#*#|SEED Generated Header 2|#*#|Address 1|#*#|SEED Generated Header 3|#*#|City|#*#|State/Province|#*#|Postal Code|#*#|Year Built|#*#|ENERGY STAR Score|#*#|Site EUI (kBtu/ft2)|#*#|Total GHG Emissions (MtCO2e)|#*#|Weather Normalized Site EUI (kBtu/ft2)|#*#|National Median Site EUI (kBtu/ft2)|#*#|Source EUI (kBtu/ft2)|#*#|Weather Normalized Source EUI (kBtu/ft2)|#*#|National Median Source EUI (kBtu/ft2)|#*#|Parking - Gross Floor Area (ft2)|#*#|Organization|#*#|Generation Date|#*#|Release Date'
 
         import_file = ImportFile.objects.get(pk=self.import_file.pk)
         first_row = import_file.cached_first_row
@@ -202,7 +182,7 @@ class TestBuildingSyncImportZipBad(DataMappingBaseTestCase):
         filepath = osp.join(BASE_DIR, 'seed', 'building_sync', 'tests', 'data', filename)
 
         # Verify we have the expected number of BuildingSync files in the zip file
-        with zipfile.ZipFile(filepath, "r", zipfile.ZIP_STORED) as openzip:
+        with zipfile.ZipFile(filepath, 'r', zipfile.ZIP_STORED) as openzip:
             filelist = openzip.infolist()
             xml_files_found = 0
             for f in filelist:
@@ -216,9 +196,7 @@ class TestBuildingSyncImportZipBad(DataMappingBaseTestCase):
         self.user, self.org, self.import_file, self.import_record, self.cycle = selfvars
 
         self.import_file.file = SimpleUploadedFile(
-            name=filename,
-            content=pathlib.Path(filepath).read_bytes(),
-            content_type="application/zip"
+            name=filename, content=pathlib.Path(filepath).read_bytes(), content_type='application/zip'
         )
         self.import_file.save()
 
@@ -241,7 +219,7 @@ class TestBuildingSyncImportZip(DataMappingBaseTestCase):
         filepath = osp.join(BASE_DIR, 'seed', 'building_sync', 'tests', 'data', filename)
 
         # Verify we have the expected number of BuildingSync files in the zip file
-        with zipfile.ZipFile(filepath, "r", zipfile.ZIP_STORED) as openzip:
+        with zipfile.ZipFile(filepath, 'r', zipfile.ZIP_STORED) as openzip:
             filelist = openzip.infolist()
             xml_files_found = 0
             for f in filelist:
@@ -254,13 +232,10 @@ class TestBuildingSyncImportZip(DataMappingBaseTestCase):
         selfvars = self.set_up(import_file_source_type)
         self.user, self.org, self.import_file, self.import_record, self.cycle = selfvars
 
-        self.import_file.file = SimpleUploadedFile(
-            name=filename,
-            content=open(filepath, 'rb').read(),
-            content_type="application/zip"
-        )
-        self.import_file.uploaded_filename = filename
-        self.import_file.save()
+        with open(filepath, 'rb') as file:
+            self.import_file.file = SimpleUploadedFile(name=filename, content=file.read(), content_type='application/zip')
+            self.import_file.uploaded_filename = filename
+            self.import_file.save()
 
     def test_save_raw_data_zip(self):
         # -- Act
@@ -337,9 +312,7 @@ class TestBuildingSyncImportXml(DataMappingBaseTestCase):
         self.user, self.org, self.import_file, self.import_record, self.cycle = selfvars
 
         self.import_file.file = SimpleUploadedFile(
-            name=filename,
-            content=pathlib.Path(filepath).read_bytes(),
-            content_type="application/xml"
+            name=filename, content=pathlib.Path(filepath).read_bytes(), content_type='application/xml'
         )
         self.import_file.uploaded_filename = filename
         self.import_file.save()
@@ -377,8 +350,7 @@ class TestBuildingSyncImportXml(DataMappingBaseTestCase):
         self.assertEqual('success', progress_info['status'])
         # verify there were no errors with the files
         self.assertEqual({}, progress_info.get('file_info', {}))
-        ps = PropertyState.objects.filter(address_line_1='123 MAIN BLVD',
-                                          import_file=self.import_file)
+        ps = PropertyState.objects.filter(address_line_1='123 MAIN BLVD', import_file=self.import_file)
         self.assertEqual(len(ps), 1)
 
         # -- Act
@@ -418,9 +390,7 @@ class TestBuildingSyncImportXmlBadMeasures(DataMappingBaseTestCase):
         self.user, self.org, self.import_file, self.import_record, self.cycle = selfvars
 
         self.import_file.file = SimpleUploadedFile(
-            name=filename,
-            content=pathlib.Path(filepath).read_bytes(),
-            content_type="application/xml"
+            name=filename, content=pathlib.Path(filepath).read_bytes(), content_type='application/xml'
         )
         self.import_file.uploaded_filename = filename
         self.import_file.save()
@@ -441,8 +411,7 @@ class TestBuildingSyncImportXmlBadMeasures(DataMappingBaseTestCase):
         self.assertEqual('success', progress_info['status'])
         # verify there were no errors with the files
         self.assertEqual({}, progress_info.get('file_info', {}))
-        ps = PropertyState.objects.filter(address_line_1='123 Main St',
-                                          import_file=self.import_file)
+        ps = PropertyState.objects.filter(address_line_1='123 Main St', import_file=self.import_file)
         self.assertEqual(ps.count(), 1)
 
         # -- Act
@@ -469,10 +438,7 @@ class TestMappingExampleData(DataMappingBaseTestCase):
         selfvars = self.set_up(import_file_source_type)
         self.user, self.org, self.import_file, self.import_record, self.cycle = selfvars
         filepath = osp.join(osp.dirname(__file__), '..', 'data', filename)
-        self.import_file.file = SimpleUploadedFile(
-            name=filename,
-            content=pathlib.Path(filepath).read_bytes()
-        )
+        self.import_file.file = SimpleUploadedFile(name=filename, content=pathlib.Path(filepath).read_bytes())
         self.import_file.save()
 
     def test_mapping(self):
@@ -534,6 +500,7 @@ class TestMappingExampleData(DataMappingBaseTestCase):
 # will delete all the model data upon completion, Maybe because FAKE_MAPPINGS
 # is not a copy, rather a pointer?
 
+
 class TestMappingPropertiesOnly(DataMappingBaseTestCase):
     def setUp(self):
         filename = getattr(self, 'filename', 'example-data-properties.xlsx')
@@ -544,10 +511,7 @@ class TestMappingPropertiesOnly(DataMappingBaseTestCase):
         selfvars = self.set_up(import_file_source_type)
         self.user, self.org, self.import_file, self.import_record, self.cycle = selfvars
         filepath = osp.join(osp.dirname(__file__), '..', 'data', filename)
-        self.import_file.file = SimpleUploadedFile(
-            name=filename,
-            content=pathlib.Path(filepath).read_bytes()
-        )
+        self.import_file.file = SimpleUploadedFile(name=filename, content=pathlib.Path(filepath).read_bytes())
         self.import_file.save()
 
     def test_mapping_properties_only(self):
@@ -556,8 +520,8 @@ class TestMappingPropertiesOnly(DataMappingBaseTestCase):
         # have entries in the db (for now).
         new_mappings = copy.deepcopy(self.fake_mappings)
         for m in new_mappings:
-            if m["to_table_name"] == 'TaxLotState':
-                m["to_table_name"] = 'PropertyState'
+            if m['to_table_name'] == 'TaxLotState':
+                m['to_table_name'] = 'PropertyState'
 
         tasks.save_raw_data(self.import_file.pk)
         Column.create_mappings(new_mappings, self.org, self.user, self.import_file.pk)
@@ -583,18 +547,15 @@ class TestMappingTaxLotsOnly(DataMappingBaseTestCase):
         selfvars = self.set_up(import_file_source_type)
         self.user, self.org, self.import_file, self.import_record, self.cycle = selfvars
         filepath = osp.join(osp.dirname(__file__), '..', 'data', filename)
-        self.import_file.file = SimpleUploadedFile(
-            name=filename,
-            content=pathlib.Path(filepath).read_bytes()
-        )
+        self.import_file.file = SimpleUploadedFile(name=filename, content=pathlib.Path(filepath).read_bytes())
         self.import_file.save()
 
     def test_mapping_tax_lots_only(self):
         # update the mappings to not include any taxlot tables in the data
         new_mappings = copy.deepcopy(self.fake_mappings)
         for m in new_mappings:
-            if m["to_table_name"] == 'PropertyState':
-                m["to_table_name"] = 'TaxLotState'
+            if m['to_table_name'] == 'PropertyState':
+                m['to_table_name'] = 'TaxLotState'
 
         tasks.save_raw_data(self.import_file.pk)
         Column.create_mappings(new_mappings, self.org, self.user, self.import_file.pk)
@@ -623,10 +584,7 @@ class TestPromotingProperties(DataMappingBaseTestCase):
         selfvars = self.set_up(import_file_source_type)
         self.user, self.org, self.import_file, self.import_record, self.cycle = selfvars
         filepath = osp.join(osp.dirname(__file__), 'data', filename)
-        self.import_file.file = SimpleUploadedFile(
-            name=filename,
-            content=pathlib.Path(filepath).read_bytes()
-        )
+        self.import_file.file = SimpleUploadedFile(name=filename, content=pathlib.Path(filepath).read_bytes())
         self.import_file.save()
 
     def import_exported_data(self, filename):
@@ -660,9 +618,7 @@ class TestPromotingProperties(DataMappingBaseTestCase):
             keys.append(k)
 
         # save the new file
-        new_file_name = 'tmp_{}_flat.csv'.format(
-            osp.splitext(osp.basename(filename))[0]
-        )
+        new_file_name = f'tmp_{osp.splitext(osp.basename(filename))[0]}_flat.csv'
         f_new = osp.join(osp.dirname(__file__), 'data', new_file_name)
         with open(f_new, 'w') as csvfile:
             writer = csv.DictWriter(csvfile, fieldnames=keys)
@@ -671,20 +627,17 @@ class TestPromotingProperties(DataMappingBaseTestCase):
                 writer.writerow(d)
 
         # save the keys this does not appear to be used anywhere
-        new_file_name = 'tmp_{}_keys.csv'.format(
-            osp.splitext(osp.basename(filename))[0]
-        )
+        new_file_name = f'tmp_{osp.splitext(osp.basename(filename))[0]}_keys.csv'
         f_new = osp.join(osp.dirname(__file__), 'data', new_file_name)
         with open(f_new, 'w') as outfile:
             outfile.writelines([str(key) + '\n' for key in keys])
 
         # Continue saving the raw data
-        new_file_name = "tmp_{}_flat.csv".format(
-            osp.splitext(osp.basename(filename))[0]
-        )
+        new_file_name = f'tmp_{osp.splitext(osp.basename(filename))[0]}_flat.csv'
         f_new = osp.join(osp.dirname(__file__), 'data', new_file_name)
-        self.import_file.file = File(open(f_new))
-        self.import_file.save()
+        with open(f_new) as file:
+            self.import_file.file = File(file)
+            self.import_file.save()
 
         save_raw_data(self.import_file.id)
 
@@ -694,13 +647,7 @@ class TestPromotingProperties(DataMappingBaseTestCase):
         for k in keys:
             if k == 'id':
                 continue
-            mapping.append(
-                {
-                    "from_field": k,
-                    "to_table_name": "PropertyState",
-                    "to_field": k
-                }
-            )
+            mapping.append({'from_field': k, 'to_table_name': 'PropertyState', 'to_field': k})
 
         Column.create_mappings(mapping, self.org, self.user, self.import_file.pk)
 
@@ -716,10 +663,7 @@ class TestPostalCodeAndExcelCellErrors(DataMappingBaseTestCase):
         selfvars = self.set_up(import_file_source_type)
         self.user, self.org, self.import_file, self.import_record, self.cycle = selfvars
         filepath = osp.join(osp.dirname(__file__), '..', 'data', filename)
-        self.import_file.file = SimpleUploadedFile(
-            name=filename,
-            content=pathlib.Path(filepath).read_bytes()
-        )
+        self.import_file.file = SimpleUploadedFile(name=filename, content=pathlib.Path(filepath).read_bytes())
         self.import_file.save()
 
     def test_postal_code_property(self):
@@ -752,13 +696,13 @@ class TestPostalCodeAndExcelCellErrors(DataMappingBaseTestCase):
         ts = TaxLotState.objects.filter(address_line_1='35 Tenth Street').first()
 
         if ts is None:
-            raise TypeError("Invalid Taxlot Address!")
+            raise TypeError('Invalid Taxlot Address!')
         self.assertEqual(ts.postal_code, '00333')
 
         ts = TaxLotState.objects.filter(address_line_1='93030 Wellington Blvd').first()
 
         if ts is None:
-            raise TypeError("Invalid Taxlot Address!")
+            raise TypeError('Invalid Taxlot Address!')
         self.assertEqual(ts.postal_code, '00000-0000')
 
     def test_postal_code_invalid_fields(self):

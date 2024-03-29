@@ -1,9 +1,9 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 import logging
 import operator
 import os.path as osp
@@ -15,18 +15,8 @@ from django.db.models import Q
 
 from seed.data_importer import tasks
 from seed.data_importer.models import ImportFile
-from seed.data_importer.tests.util import (
-    FAKE_EXTRA_DATA,
-    FAKE_MAPPINGS,
-    FAKE_ROW
-)
-from seed.models import (
-    ASSESSED_BS,
-    ASSESSED_RAW,
-    DATA_STATE_MAPPING,
-    Column,
-    PropertyState
-)
+from seed.data_importer.tests.util import FAKE_EXTRA_DATA, FAKE_MAPPINGS, FAKE_ROW
+from seed.models import ASSESSED_BS, ASSESSED_RAW, DATA_STATE_MAPPING, Column, PropertyState
 from seed.tests.util import DataMappingBaseTestCase
 
 logger = logging.getLogger(__name__)
@@ -42,10 +32,7 @@ class TestMatching(DataMappingBaseTestCase):
         selfvars = self.set_up(import_file_source_type)
         self.user, self.org, self.import_file, self.import_record, self.cycle = selfvars
         filepath = osp.join(osp.dirname(__file__), '..', 'data', filename)
-        self.import_file.file = SimpleUploadedFile(
-            name=filename,
-            content=pathlib.Path(filepath).read_bytes()
-        )
+        self.import_file.file = SimpleUploadedFile(name=filename, content=pathlib.Path(filepath).read_bytes())
         self.import_file.save()
 
     def query_property_matches(self, properties, pm_id, custom_id, ubid):
@@ -164,43 +151,31 @@ class TestMatching(DataMappingBaseTestCase):
         """
         # TODO: Fix the PM, tax lot id, and custom ID fields in PropertyState
         bs_data = {
-            'pm_property_id': "2360",
+            'pm_property_id': '2360',
             # 'tax_lot_id': '476/460',
             'property_name': 'Garfield Complex',
-            'custom_id_1': "89",
+            'custom_id_1': '89',
             'address_line_1': '12975 Database LN.',
             'address_line_2': '',
             'city': 'Cartoon City',
-            'postal_code': "54321",
+            'postal_code': '54321',
             'data_state': DATA_STATE_MAPPING,
             'source_type': ASSESSED_BS,
         }
 
         # Setup mapped AS snapshot.
-        PropertyState.objects.create(
-            organization=self.org,
-            import_file=self.import_file,
-            **bs_data
-        )
+        PropertyState.objects.create(organization=self.org, import_file=self.import_file, **bs_data)
 
         # Different file, but same ImportRecord.
         # Setup mapped PM snapshot.
         # Should be an identical match.
-        new_import_file = ImportFile.objects.create(import_record=self.import_record,
-                                                    mapping_done=True)
+        new_import_file = ImportFile.objects.create(import_record=self.import_record, mapping_done=True)
 
         tasks.geocode_and_match_buildings_task(new_import_file.pk)
 
-        duplicate_import_file = ImportFile.objects.create(
-            import_record=self.import_record,
-            mapping_done=True
-        )
+        duplicate_import_file = ImportFile.objects.create(import_record=self.import_record, mapping_done=True)
 
-        PropertyState.objects.create(
-            organization=self.org,
-            import_file=duplicate_import_file,
-            **bs_data
-        )
+        PropertyState.objects.create(organization=self.org, import_file=duplicate_import_file, **bs_data)
 
         # get a list of unhandled
         # unmatched_properties = self.import_file.find_unmatched_property_states()

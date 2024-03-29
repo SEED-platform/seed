@@ -1,24 +1,20 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 from json import load
 
 from seed.lib.superperms.orgs.exceptions import TooManyNestedOrgs
-from seed.lib.superperms.orgs.models import (
-    ROLE_MEMBER,
-    Organization,
-    OrganizationUser
-)
+from seed.lib.superperms.orgs.models import ROLE_MEMBER, Organization, OrganizationUser
 from seed.lib.xml_mapping.mapper import default_buildingsync_profile_mappings
 from seed.models import Column, ColumnMappingProfile
 from seed.models.data_quality import DataQualityCheck
 
 
 def default_pm_mappings():
-    with open("./seed/lib/mappings/data/pm-mapping.json", "r") as read_file:
+    with open('./seed/lib/mappings/data/pm-mapping.json') as read_file:
         raw_mappings = load(read_file)
 
     # Verify that from_field values are all uniq
@@ -28,14 +24,14 @@ def default_pm_mappings():
     # taken from mapping partial (./static/seed/partials/mapping.html)
     valid_units = [
         # area units
-        "ft**2",
-        "m**2",
+        'ft**2',
+        'm**2',
         # eui_units
-        "kBtu/ft**2/year",
-        "kWh/m**2/year",
-        "GJ/m**2/year",
-        "MJ/m**2/year",
-        "kBtu/m**2/year",
+        'kBtu/ft**2/year',
+        'kWh/m**2/year',
+        'GJ/m**2/year',
+        'MJ/m**2/year',
+        'kBtu/m**2/year',
     ]
 
     formatted_mappings = []
@@ -47,10 +43,10 @@ def default_pm_mappings():
             from_units = None
 
         mapping = {
-            "to_field": rm.get('to_field'),
-            "from_field": rm.get('from_field'),
-            "from_units": from_units,
-            "to_table_name": rm.get('to_table_name'),
+            'to_field': rm.get('to_field'),
+            'from_field': rm.get('from_field'),
+            'from_units': from_units,
+            'to_table_name': rm.get('to_table_name'),
         }
 
         formatted_mappings.append(mapping)
@@ -112,12 +108,11 @@ def create_organization(user=None, org_name='test_org', *args, **kwargs):
     :param (optional) kwargs: 'role', int; 'status', str.
     """
     from seed.models import StatusLabel as Label
+
     organization_user = None
     user_added = False
 
-    organization = Organization.objects.create(
-        name=org_name
-    )
+    organization = Organization.objects.create(name=org_name)
 
     if user:
         organization_user, user_added = OrganizationUser.objects.get_or_create(
@@ -136,16 +131,13 @@ def create_organization(user=None, org_name='test_org', *args, **kwargs):
     _create_default_columns(organization.id)
 
     # ... and the default column mapping profile for Portfolio Manager
-    organization.columnmappingprofile_set.create(
-        name='Portfolio Manager Defaults',
-        mappings=default_pm_mappings()
-    )
+    organization.columnmappingprofile_set.create(name='Portfolio Manager Defaults', mappings=default_pm_mappings())
 
     # ... and the default column mapping profile for BuildingSync
     organization.columnmappingprofile_set.create(
         name='BuildingSync v2.0 Defaults',
         mappings=default_buildingsync_profile_mappings(),
-        profile_type=ColumnMappingProfile.BUILDINGSYNC_DEFAULT
+        profile_type=ColumnMappingProfile.BUILDINGSYNC_DEFAULT,
     )
 
     # create the default rules for this organization

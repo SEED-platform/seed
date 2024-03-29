@@ -1,25 +1,20 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 :author 'Piper Merriam <pmerriam@quickleft.com>'
 """
+
 import itertools
 
 from django.test import TestCase
 
-from seed.utils.search import (
-    NUMERIC_EXPRESSION_REGEX,
-    is_numeric_expression,
-    parse_expression
-)
+from seed.utils.search import NUMERIC_EXPRESSION_REGEX, is_numeric_expression, parse_expression
 
 
 # Metaclass to create individual test methods per test case.
 class TestCaseFactory(type):
-
     def __new__(cls, name, bases, attrs):
         cases = attrs['cases']
         method_maker = attrs['method_maker']
@@ -27,9 +22,9 @@ class TestCaseFactory(type):
 
         for doc, value, expected in cases:
             test = method_maker(value, expected)
-            test_name = '{0}_{1}'.format(prefix, doc.lower().replace(' ', '_'))
+            test_name = f'{prefix}_{doc.lower().replace(" ", "_")}'
             if test_name in attrs:
-                raise KeyError("Test name {0} duplicated".format(test_name))
+                raise KeyError(f'Test name {test_name} duplicated')
             test.__name__ = test_name
             test.__doc__ = doc
             attrs[test_name] = test
@@ -40,13 +35,14 @@ def make_is_numeric_expression_method(value, expected):
     def run(self):
         result = is_numeric_expression(value)
         self.assertEqual(bool(expected), bool(result))
+
     return run
 
 
 class IsNumericExpressionTests(TestCase):
     __metaclass__ = TestCaseFactory
     method_maker = make_is_numeric_expression_method
-    prefix = "test_is_numeric_expression"
+    prefix = 'test_is_numeric_expression'
 
     # test name, input, expected output
     cases = [
@@ -55,40 +51,40 @@ class IsNumericExpressionTests(TestCase):
         ('not_expression_2', '', False),
         ('not_expression_3', None, False),
         # Incomplete expressions
-        ('not_expression_4', "=", False),
-        ('not_expression_5', "==", False),
-        ('not_expression_6', "!=", False),
-        ('not_expression_7', "!", False),
-        ('not_expression_8', "<>", False),
-        ('not_expression_9', "<", False),
-        ('not_expression_10', "<=", False),
-        ('not_expression_11', ">", False),
-        ('not_expression_12', ">=", False),
+        ('not_expression_4', '=', False),
+        ('not_expression_5', '==', False),
+        ('not_expression_6', '!=', False),
+        ('not_expression_7', '!', False),
+        ('not_expression_8', '<>', False),
+        ('not_expression_9', '<', False),
+        ('not_expression_10', '<=', False),
+        ('not_expression_11', '>', False),
+        ('not_expression_12', '>=', False),
         # Basic expressions
-        ('equality_1', "=1234", True),
-        ('equality_2', "==1234", True),
-        ('inequality_1', "!=1234", True),
-        ('inequality_2', "!1234", True),
-        ('inequality_3', "<>1234", True),
-        ('less_than', "<1234", True),
-        ('less_than_or_equal', "<=1234", True),
-        ('greater_than', ">1234", True),
-        ('greater_than_or_equal', ">=1234", True),
+        ('equality_1', '=1234', True),
+        ('equality_2', '==1234', True),
+        ('inequality_1', '!=1234', True),
+        ('inequality_2', '!1234', True),
+        ('inequality_3', '<>1234', True),
+        ('less_than', '<1234', True),
+        ('less_than_or_equal', '<=1234', True),
+        ('greater_than', '>1234', True),
+        ('greater_than_or_equal', '>=1234', True),
         # Whitespace
-        ('whitespace_1', "=  1234", True),
-        ('whitespace_2', " == 1234 ", True),
+        ('whitespace_1', '=  1234', True),
+        ('whitespace_2', ' == 1234 ', True),
         # Nulls checks
-        ('is_null_1', "=null", True),
-        ('is_null_2', "==null", True),
-        ('is_not_null_1', "!=null", True),
-        ('is_not_null_2', "!null", True),
-        ('is_not_null_3', "<>null", True),
+        ('is_null_1', '=null', True),
+        ('is_null_2', '==null', True),
+        ('is_not_null_1', '!=null', True),
+        ('is_not_null_2', '!null', True),
+        ('is_not_null_3', '<>null', True),
         # Complex Expressions
-        ('complex_1', ">123,<456", True),
-        ('complex_2', ">123, <456", True),
-        ('complex_3', ">123 , <456", True),
-        ('complex_4', ">123,<456,!null", True),
-        ('complex_5', ">123,<", True),
+        ('complex_1', '>123,<456', True),
+        ('complex_2', '>123, <456', True),
+        ('complex_3', '>123 , <456', True),
+        ('complex_4', '>123,<456,!null', True),
+        ('complex_5', '>123,<', True),
     ]
 
 
@@ -99,53 +95,52 @@ def query_to_child_tuples(query):
     """
     if isinstance(query, tuple):
         return query
-    return list(itertools.chain.from_iterable((
-        (
-            [tuple(itertools.chain.from_iterable(([query.negated], c)))]
-            if isinstance(c, tuple)
-            else query_to_child_tuples(c)
+    return list(
+        itertools.chain.from_iterable(
+            ([tuple(itertools.chain.from_iterable(([query.negated], c)))] if isinstance(c, tuple) else query_to_child_tuples(c))
+            for c in query.children
         )
-        for c in query.children
-    )))
+    )
 
 
 def make_parse_expression_method(value, expected):
     def run(self):
         parts = NUMERIC_EXPRESSION_REGEX.findall(value)
-        result = parse_expression("field", parts)
+        result = parse_expression('field', parts)
         query_children = query_to_child_tuples(result)
         self.assertEqual(expected, query_children)
+
     return run
 
 
 class ExpressionParserTests(TestCase):
     __metaclass__ = TestCaseFactory
     method_maker = make_parse_expression_method
-    prefix = "test_numeric_expression_parser"
+    prefix = 'test_numeric_expression_parser'
 
     # test name, input, expected output
     cases = [
-        ("equality_1", "=1234", [(False, "field", "1234")]),
-        ("equality_2", "==1234", [(False, "field", "1234")]),
-        ("inequality_1", "!=1234", [(True, "field", "1234")]),
-        ("inequality_2", "!1234", [(True, "field", "1234")]),
-        ("inequality_3", "<>1234", [(True, "field", "1234")]),
-        ("greater_than", ">1234", [(False, "field__gt", "1234")]),
-        ("greater_than_or_equal", ">=1234", [(False, "field__gte", "1234")]),
-        ("less_than", "<1234", [(False, "field__lt", "1234")]),
-        ("less_than_or_equal", "<=1234", [(False, "field__lte", "1234")]),
+        ('equality_1', '=1234', [(False, 'field', '1234')]),
+        ('equality_2', '==1234', [(False, 'field', '1234')]),
+        ('inequality_1', '!=1234', [(True, 'field', '1234')]),
+        ('inequality_2', '!1234', [(True, 'field', '1234')]),
+        ('inequality_3', '<>1234', [(True, 'field', '1234')]),
+        ('greater_than', '>1234', [(False, 'field__gt', '1234')]),
+        ('greater_than_or_equal', '>=1234', [(False, 'field__gte', '1234')]),
+        ('less_than', '<1234', [(False, 'field__lt', '1234')]),
+        ('less_than_or_equal', '<=1234', [(False, 'field__lte', '1234')]),
         # null
-        ("is_null_1", "=null", [(False, "field__isnull", True)]),
-        ("is_null_2", "==null", [(False, "field__isnull", True)]),
-        ("is_not_null_1", "!null", [(False, "field__isnull", False)]),
-        ("is_not_null_2", "!=null", [(False, "field__isnull", False)]),
-        ("is_not_null_3", "<>null", [(False, "field__isnull", False)]),
+        ('is_null_1', '=null', [(False, 'field__isnull', True)]),
+        ('is_null_2', '==null', [(False, 'field__isnull', True)]),
+        ('is_not_null_1', '!null', [(False, 'field__isnull', False)]),
+        ('is_not_null_2', '!=null', [(False, 'field__isnull', False)]),
+        ('is_not_null_3', '<>null', [(False, 'field__isnull', False)]),
         # complex expressions
-        ("complex_1", "!=1234,<1234", [(True, "field", "1234"), (False, "field__lt", "1234")]),
-        ("complex_2", ">1234,<4567", [(False, "field__gt", "1234"), (False, "field__lt", "4567")]),
+        ('complex_1', '!=1234,<1234', [(True, 'field', '1234'), (False, 'field__lt', '1234')]),
+        ('complex_2', '>1234,<4567', [(False, 'field__gt', '1234'), (False, 'field__lt', '4567')]),
         # invalid
-        ("invalid_null_1", ">null", []),
-        ("invalid_null_2", ">=null", []),
-        ("invalid_null_3", "<null", []),
-        ("invalid_null_4", "<=null", []),
+        ('invalid_null_1', '>null', []),
+        ('invalid_null_2', '>=null', []),
+        ('invalid_null_3', '<null', []),
+        ('invalid_null_4', '<=null', []),
     ]

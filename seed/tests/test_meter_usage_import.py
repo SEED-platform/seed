@@ -1,9 +1,9 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 import json
 import os
 import pathlib
@@ -12,9 +12,10 @@ from datetime import datetime
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 from django.urls import reverse
-from django.utils.timezone import \
-    make_aware  # make_aware is used because inconsistencies exist in creating datetime with tzinfo
-from django.utils.timezone import get_current_timezone
+from django.utils.timezone import (
+    get_current_timezone,
+    make_aware,  # make_aware is used because inconsistencies exist in creating datetime with tzinfo
+)
 from pytz import timezone
 
 from config.settings.common import TIME_ZONE
@@ -31,13 +32,9 @@ from seed.models import (
     MeterReading,
     Property,
     PropertyState,
-    PropertyView
+    PropertyView,
 )
-from seed.test_helpers.fake import (
-    FakeCycleFactory,
-    FakePropertyFactory,
-    FakePropertyStateFactory
-)
+from seed.test_helpers.fake import FakeCycleFactory, FakePropertyFactory, FakePropertyStateFactory
 from seed.tests.util import DataMappingBaseTestCase
 from seed.utils.organizations import create_organization
 
@@ -48,9 +45,7 @@ class MeterUsageImportTest(TestCase):
             'username': 'test_user@demo.com',
             'password': 'test_pass',
         }
-        self.user = User.objects.create_superuser(
-            email='test_user@demo.com', **self.user_details
-        )
+        self.user = User.objects.create_superuser(email='test_user@demo.com', **self.user_details)
         self.org, _, _ = create_organization(self.user)
         self.client.login(**self.user_details)
 
@@ -82,21 +77,20 @@ class MeterUsageImportTest(TestCase):
         self.property_view_1 = PropertyView.objects.create(property=self.property_1, cycle=self.cycle, state=self.state_1)
         self.property_view_2 = PropertyView.objects.create(property=self.property_2, cycle=self.cycle, state=self.state_2)
 
-        self.import_record = ImportRecord.objects.create(owner=self.user, last_modified_by=self.user, super_organization=self.org, access_level_instance=self.org.root)
+        self.import_record = ImportRecord.objects.create(
+            owner=self.user, last_modified_by=self.user, super_organization=self.org, access_level_instance=self.org.root
+        )
 
         # This file has multiple tabs
-        filename = "example-pm-monthly-meter-usage.xlsx"
-        filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + filename
+        filename = 'example-pm-monthly-meter-usage.xlsx'
+        filepath = os.path.dirname(os.path.abspath(__file__)) + '/data/' + filename
 
         self.import_file = ImportFile.objects.create(
             import_record=self.import_record,
             source_type=SEED_DATA_SOURCES[PORTFOLIO_METER_USAGE][1],
             uploaded_filename=filename,
-            file=SimpleUploadedFile(
-                name=filename,
-                content=pathlib.Path(filepath).read_bytes()
-            ),
-            cycle=self.cycle
+            file=SimpleUploadedFile(name=filename, content=pathlib.Path(filepath).read_bytes()),
+            cycle=self.cycle,
         )
 
         self.tz_obj = timezone(TIME_ZONE)
@@ -107,7 +101,7 @@ class MeterUsageImportTest(TestCase):
         Each meter will have 2 readings, for a total of 8 readings.
         These come from 8 meter usage rows in the .xlsx file - 1 per reading.
         """
-        url = reverse("api:v3:import_files-start-save-data", args=[self.import_file.id])
+        url = reverse('api:v3:import_files-start-save-data', args=[self.import_file.id])
         url += f'?organization_id={self.org.pk}'
         post_params = {
             'cycle_id': self.cycle.pk,
@@ -128,7 +122,7 @@ class MeterUsageImportTest(TestCase):
         self.assertEqual(meter_reading_10.start_time, make_aware(datetime(2016, 1, 1, 0, 0, 0), timezone=self.tz_obj))
         self.assertEqual(meter_reading_10.end_time, make_aware(datetime(2016, 2, 1, 0, 0, 0), timezone=self.tz_obj))
         self.assertEqual(meter_reading_10.reading, 597478.9)
-        self.assertEqual(meter_reading_10.source_unit, "kBtu (thousand Btu)")  # spot check
+        self.assertEqual(meter_reading_10.source_unit, 'kBtu (thousand Btu)')  # spot check
         self.assertEqual(meter_reading_10.conversion_factor, 1)  # spot check
 
         self.assertEqual(meter_reading_11.start_time, make_aware(datetime(2016, 2, 1, 0, 0, 0), timezone=self.tz_obj))
@@ -163,7 +157,7 @@ class MeterUsageImportTest(TestCase):
         self.assertEqual(meter_reading_30.start_time, make_aware(datetime(2016, 1, 1, 0, 0, 0), timezone=self.tz_obj))
         self.assertEqual(meter_reading_30.end_time, make_aware(datetime(2016, 2, 1, 0, 0, 0), timezone=self.tz_obj))
         self.assertEqual(meter_reading_30.reading, 154572.2)
-        self.assertEqual(meter_reading_30.source_unit, "kBtu (thousand Btu)")  # spot check
+        self.assertEqual(meter_reading_30.source_unit, 'kBtu (thousand Btu)')  # spot check
         self.assertEqual(meter_reading_30.conversion_factor, 1)  # spot check
 
         self.assertEqual(meter_reading_40.start_time, make_aware(datetime(2016, 2, 1, 0, 0, 0), timezone=self.tz_obj))
@@ -199,21 +193,18 @@ class MeterUsageImportTest(TestCase):
         These come from 8 meter usage rows in the .xlsx file (1 per reading)
         where 4 of them have either an invalid type or unit.
         """
-        filename = "example-pm-monthly-meter-usage-with-unknown-types-and-units.xlsx"
-        filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + filename
+        filename = 'example-pm-monthly-meter-usage-with-unknown-types-and-units.xlsx'
+        filepath = os.path.dirname(os.path.abspath(__file__)) + '/data/' + filename
 
         import_file_with_invalids = ImportFile.objects.create(
             import_record=self.import_record,
             source_type=SEED_DATA_SOURCES[PORTFOLIO_METER_USAGE][1],
             uploaded_filename=filename,
-            file=SimpleUploadedFile(
-                name=filename,
-                content=pathlib.Path(filepath).read_bytes()
-            ),
-            cycle=self.cycle
+            file=SimpleUploadedFile(name=filename, content=pathlib.Path(filepath).read_bytes()),
+            cycle=self.cycle,
         )
 
-        url = reverse("api:v3:import_files-start-save-data", args=[import_file_with_invalids.id])
+        url = reverse('api:v3:import_files-start-save-data', args=[import_file_with_invalids.id])
         url += f'?organization_id={self.org.pk}'
         post_params = {
             'cycle_id': self.cycle.pk,
@@ -239,21 +230,18 @@ class MeterUsageImportTest(TestCase):
         self.assertEqual(meter_3.meter_readings.all().count(), 1)
 
     def test_import_meter_usage_file_including_2_cost_meters(self):
-        filename = "example-pm-monthly-meter-usage-2-cost-meters.xlsx"
-        filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + filename
+        filename = 'example-pm-monthly-meter-usage-2-cost-meters.xlsx'
+        filepath = os.path.dirname(os.path.abspath(__file__)) + '/data/' + filename
 
         cost_meter_import_file = ImportFile.objects.create(
             import_record=self.import_record,
             source_type=SEED_DATA_SOURCES[PORTFOLIO_METER_USAGE][1],
             uploaded_filename=filename,
-            file=SimpleUploadedFile(
-                name=filename,
-                content=pathlib.Path(filepath).read_bytes()
-            ),
-            cycle=self.cycle
+            file=SimpleUploadedFile(name=filename, content=pathlib.Path(filepath).read_bytes()),
+            cycle=self.cycle,
         )
 
-        url = reverse("api:v3:import_files-start-save-data", args=[cost_meter_import_file.id])
+        url = reverse('api:v3:import_files-start-save-data', args=[cost_meter_import_file.id])
         url += f'?organization_id={self.org.pk}'
         post_params = {
             'cycle_id': self.cycle.pk,
@@ -295,12 +283,12 @@ class MeterUsageImportTest(TestCase):
             start_time=make_aware(datetime(2018, 1, 1, 0, 0, 0), timezone=self.tz_obj),
             end_time=make_aware(datetime(2018, 2, 1, 0, 0, 0), timezone=self.tz_obj),
             reading=12345,
-            conversion_factor=1.0
+            conversion_factor=1.0,
         )
         unsaved_meter_reading.save()
         existing_meter_reading = MeterReading.objects.get(reading=12345)
 
-        url = reverse("api:v3:import_files-start-save-data", args=[self.import_file.id])
+        url = reverse('api:v3:import_files-start-save-data', args=[self.import_file.id])
         url += f'?organization_id={self.org.pk}'
         post_params = {
             'cycle_id': self.cycle.pk,
@@ -337,16 +325,11 @@ class MeterUsageImportTest(TestCase):
         end_time = make_aware(datetime(2016, 2, 1, 0, 0, 0), timezone=self.tz_obj)
 
         unsaved_meter_reading = MeterReading(
-            meter=existing_meter,
-            start_time=start_time,
-            end_time=end_time,
-            reading=12345,
-            source_unit="GJ",
-            conversion_factor=947.82
+            meter=existing_meter, start_time=start_time, end_time=end_time, reading=12345, source_unit='GJ', conversion_factor=947.82
         )
         unsaved_meter_reading.save()
 
-        url = reverse("api:v3:import_files-start-save-data", args=[self.import_file.id])
+        url = reverse('api:v3:import_files-start-save-data', args=[self.import_file.id])
         url += f'?organization_id={self.org.pk}'
         post_params = {
             'cycle_id': self.cycle.pk,
@@ -362,7 +345,7 @@ class MeterUsageImportTest(TestCase):
 
         self.assertEqual(meter_reading.end_time, end_time)
         self.assertEqual(meter_reading.reading, 597478.9)
-        self.assertEqual(meter_reading.source_unit, "kBtu (thousand Btu)")
+        self.assertEqual(meter_reading.source_unit, 'kBtu (thousand Btu)')
         self.assertEqual(meter_reading.conversion_factor, 1)
 
     def test_property_existing_in_multiple_cycles_can_have_meters_and_readings_associated_to_it(self):
@@ -381,7 +364,7 @@ class MeterUsageImportTest(TestCase):
         # new state and cycle associated to old property
         PropertyView.objects.create(property=self.property_1, cycle=new_cycle, state=new_property_state)
 
-        url = reverse("api:v3:import_files-start-save-data", args=[self.import_file.id])
+        url = reverse('api:v3:import_files-start-save-data', args=[self.import_file.id])
         url += f'?organization_id={self.org.pk}'
         post_params = {
             'cycle_id': self.cycle.pk,
@@ -396,7 +379,7 @@ class MeterUsageImportTest(TestCase):
         property_details_1 = FakePropertyStateFactory(organization=self.org).get_details()
         property_details_1['organization_id'] = self.org.id
         property_details_1['pm_property_id'] = self.state_1.pm_property_id
-        property_details_1['custom_id_1'] = "values that forces non-match"
+        property_details_1['custom_id_1'] = 'values that forces non-match'
         new_property_1 = PropertyState(**property_details_1)
         new_property_1.save()
 
@@ -407,7 +390,7 @@ class MeterUsageImportTest(TestCase):
         property_details_2 = FakePropertyStateFactory(organization=self.org).get_details()
         property_details_2['organization_id'] = self.org.id
         property_details_2['pm_property_id'] = self.state_1.pm_property_id
-        property_details_2['custom_id_1'] = "second value that forces non-match"
+        property_details_2['custom_id_1'] = 'second value that forces non-match'
         new_property_2 = PropertyState(**property_details_2)
         new_property_2.save()
 
@@ -415,7 +398,7 @@ class MeterUsageImportTest(TestCase):
         property_4 = self.property_factory.get_property()
         PropertyView.objects.create(property=property_4, cycle=new_cycle, state=new_property_2)
 
-        url = reverse("api:v3:import_files-start-save-data", args=[self.import_file.id])
+        url = reverse('api:v3:import_files-start-save-data', args=[self.import_file.id])
         url += f'?organization_id={self.org.pk}'
         post_params = {
             'cycle_id': self.cycle.pk,
@@ -450,7 +433,7 @@ class MeterUsageImportTest(TestCase):
 
         PropertyView.objects.create(property=new_property, cycle=new_cycle, state=new_property_state)
 
-        url = reverse("api:v3:import_files-start-save-data", args=[self.import_file.id])
+        url = reverse('api:v3:import_files-start-save-data', args=[self.import_file.id])
         url += f'?organization_id={self.org.pk}'
         post_params = {
             'cycle_id': self.cycle.pk,
@@ -465,7 +448,7 @@ class MeterUsageImportTest(TestCase):
         self.assertEqual(refreshed_new_property.meters.count(), 0)
 
     def test_the_response_contains_expected_and_actual_reading_counts_single_cycle(self):
-        url = reverse("api:v3:import_files-start-save-data", args=[self.import_file.id])
+        url = reverse('api:v3:import_files-start-save-data', args=[self.import_file.id])
         url += f'?organization_id={self.org.pk}'
         post_params = {
             'cycle_id': self.cycle.pk,
@@ -476,40 +459,40 @@ class MeterUsageImportTest(TestCase):
 
         expectation = [
             {
-                "property_id": self.property_1.id,
-                "cycles": self.cycle.name,
-                "pm_property_id": "5766973",
-                "source_id": "5766973-0",
-                "type": "Electric - Grid",
-                "incoming": 2,
-                "successfully_imported": 2,
+                'property_id': self.property_1.id,
+                'cycles': self.cycle.name,
+                'pm_property_id': '5766973',
+                'source_id': '5766973-0',
+                'type': 'Electric - Grid',
+                'incoming': 2,
+                'successfully_imported': 2,
             },
             {
-                "property_id": self.property_1.id,
-                "cycles": self.cycle.name,
-                "pm_property_id": "5766973",
-                "source_id": "5766973-1",
-                "type": "Natural Gas",
-                "incoming": 2,
-                "successfully_imported": 2,
+                'property_id': self.property_1.id,
+                'cycles': self.cycle.name,
+                'pm_property_id': '5766973',
+                'source_id': '5766973-1',
+                'type': 'Natural Gas',
+                'incoming': 2,
+                'successfully_imported': 2,
             },
             {
-                "property_id": self.property_2.id,
-                "cycles": self.cycle.name,
-                "pm_property_id": "5766975",
-                "source_id": "5766975-0",
-                "type": "Electric - Grid",
-                "incoming": 2,
-                "successfully_imported": 2,
+                'property_id': self.property_2.id,
+                'cycles': self.cycle.name,
+                'pm_property_id': '5766975',
+                'source_id': '5766975-0',
+                'type': 'Electric - Grid',
+                'incoming': 2,
+                'successfully_imported': 2,
             },
             {
-                "property_id": self.property_2.id,
-                "cycles": self.cycle.name,
-                "pm_property_id": "5766975",
-                "source_id": "5766975-1",
-                "type": "Natural Gas",
-                "incoming": 2,
-                "successfully_imported": 2,
+                'property_id': self.property_2.id,
+                'cycles': self.cycle.name,
+                'pm_property_id': '5766975',
+                'source_id': '5766975-1',
+                'type': 'Natural Gas',
+                'incoming': 2,
+                'successfully_imported': 2,
             },
         ]
 
@@ -529,7 +512,7 @@ class MeterUsageImportTest(TestCase):
 
         PropertyView.objects.create(property=self.property_1, cycle=new_cycle, state=new_property_state)
 
-        url = reverse("api:v3:import_files-start-save-data", args=[self.import_file.id])
+        url = reverse('api:v3:import_files-start-save-data', args=[self.import_file.id])
         url += f'?organization_id={self.org.pk}'
         post_params = {
             'cycle_id': self.cycle.pk,
@@ -540,40 +523,40 @@ class MeterUsageImportTest(TestCase):
 
         expectation = [
             {
-                "property_id": self.property_1.id,
-                "cycles": self.cycle.name + ", " + new_cycle.name,
-                "pm_property_id": "5766973",
-                "source_id": "5766973-0",
-                "type": "Electric - Grid",
-                "incoming": 2,
-                "successfully_imported": 2,
+                'property_id': self.property_1.id,
+                'cycles': self.cycle.name + ', ' + new_cycle.name,
+                'pm_property_id': '5766973',
+                'source_id': '5766973-0',
+                'type': 'Electric - Grid',
+                'incoming': 2,
+                'successfully_imported': 2,
             },
             {
-                "property_id": self.property_1.id,
-                "cycles": self.cycle.name + ", " + new_cycle.name,
-                "pm_property_id": "5766973",
-                "source_id": "5766973-1",
-                "type": "Natural Gas",
-                "incoming": 2,
-                "successfully_imported": 2,
+                'property_id': self.property_1.id,
+                'cycles': self.cycle.name + ', ' + new_cycle.name,
+                'pm_property_id': '5766973',
+                'source_id': '5766973-1',
+                'type': 'Natural Gas',
+                'incoming': 2,
+                'successfully_imported': 2,
             },
             {
-                "property_id": self.property_2.id,
-                "cycles": self.cycle.name,
-                "pm_property_id": "5766975",
-                "source_id": "5766975-0",
-                "type": "Electric - Grid",
-                "incoming": 2,
-                "successfully_imported": 2,
+                'property_id': self.property_2.id,
+                'cycles': self.cycle.name,
+                'pm_property_id': '5766975',
+                'source_id': '5766975-0',
+                'type': 'Electric - Grid',
+                'incoming': 2,
+                'successfully_imported': 2,
             },
             {
-                "property_id": self.property_2.id,
-                "cycles": self.cycle.name,
-                "pm_property_id": "5766975",
-                "source_id": "5766975-1",
-                "type": "Natural Gas",
-                "incoming": 2,
-                "successfully_imported": 2,
+                'property_id': self.property_2.id,
+                'cycles': self.cycle.name,
+                'pm_property_id': '5766975',
+                'source_id': '5766975-1',
+                'type': 'Natural Gas',
+                'incoming': 2,
+                'successfully_imported': 2,
             },
         ]
 
@@ -585,7 +568,7 @@ class MeterUsageImportTest(TestCase):
 
         # Create new state NOT associated to existing record but has same PM Property ID
         property_details['pm_property_id'] = self.state_1.pm_property_id
-        property_details['custom_id_1'] = "values that forces non-match"
+        property_details['custom_id_1'] = 'values that forces non-match'
         state = PropertyState(**property_details)
         state.save()
         new_property_state = PropertyState.objects.get(pk=state.id)
@@ -594,7 +577,7 @@ class MeterUsageImportTest(TestCase):
         property_3 = self.property_factory.get_property()
         PropertyView.objects.create(property=property_3, cycle=self.cycle, state=new_property_state)
 
-        url = reverse("api:v3:import_files-start-save-data", args=[self.import_file.id])
+        url = reverse('api:v3:import_files-start-save-data', args=[self.import_file.id])
         url += f'?organization_id={self.org.pk}'
         post_params = {
             'cycle_id': self.cycle.pk,
@@ -605,79 +588,76 @@ class MeterUsageImportTest(TestCase):
 
         expectation = [
             {
-                "property_id": self.property_1.id,
-                "cycles": self.cycle.name,
-                "pm_property_id": "5766973",
-                "source_id": "5766973-0",
-                "type": "Electric - Grid",
-                "incoming": 2,
-                "successfully_imported": 2,
+                'property_id': self.property_1.id,
+                'cycles': self.cycle.name,
+                'pm_property_id': '5766973',
+                'source_id': '5766973-0',
+                'type': 'Electric - Grid',
+                'incoming': 2,
+                'successfully_imported': 2,
             },
             {
-                "property_id": property_3.id,
-                "cycles": self.cycle.name,
-                "pm_property_id": "5766973",
-                "source_id": "5766973-0",
-                "type": "Electric - Grid",
-                "incoming": 2,
-                "successfully_imported": 2,
+                'property_id': property_3.id,
+                'cycles': self.cycle.name,
+                'pm_property_id': '5766973',
+                'source_id': '5766973-0',
+                'type': 'Electric - Grid',
+                'incoming': 2,
+                'successfully_imported': 2,
             },
             {
-                "property_id": self.property_1.id,
-                "cycles": self.cycle.name,
-                "pm_property_id": "5766973",
-                "source_id": "5766973-1",
-                "type": "Natural Gas",
-                "incoming": 2,
-                "successfully_imported": 2,
+                'property_id': self.property_1.id,
+                'cycles': self.cycle.name,
+                'pm_property_id': '5766973',
+                'source_id': '5766973-1',
+                'type': 'Natural Gas',
+                'incoming': 2,
+                'successfully_imported': 2,
             },
             {
-                "property_id": property_3.id,
-                "cycles": self.cycle.name,
-                "pm_property_id": "5766973",
-                "source_id": "5766973-1",
-                "type": "Natural Gas",
-                "incoming": 2,
-                "successfully_imported": 2,
+                'property_id': property_3.id,
+                'cycles': self.cycle.name,
+                'pm_property_id': '5766973',
+                'source_id': '5766973-1',
+                'type': 'Natural Gas',
+                'incoming': 2,
+                'successfully_imported': 2,
             },
             {
-                "property_id": self.property_2.id,
-                "cycles": self.cycle.name,
-                "pm_property_id": "5766975",
-                "source_id": "5766975-0",
-                "type": "Electric - Grid",
-                "incoming": 2,
-                "successfully_imported": 2,
+                'property_id': self.property_2.id,
+                'cycles': self.cycle.name,
+                'pm_property_id': '5766975',
+                'source_id': '5766975-0',
+                'type': 'Electric - Grid',
+                'incoming': 2,
+                'successfully_imported': 2,
             },
             {
-                "property_id": self.property_2.id,
-                "cycles": self.cycle.name,
-                "pm_property_id": "5766975",
-                "source_id": "5766975-1",
-                "type": "Natural Gas",
-                "incoming": 2,
-                "successfully_imported": 2,
+                'property_id': self.property_2.id,
+                'cycles': self.cycle.name,
+                'pm_property_id': '5766975',
+                'source_id': '5766975-1',
+                'type': 'Natural Gas',
+                'incoming': 2,
+                'successfully_imported': 2,
             },
         ]
 
         self.assertCountEqual(result['message'], expectation)
 
     def test_the_response_contains_expected_and_actual_reading_counts_for_pm_ids_with_costs(self):
-        filename = "example-pm-monthly-meter-usage-2-cost-meters.xlsx"
-        filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + filename
+        filename = 'example-pm-monthly-meter-usage-2-cost-meters.xlsx'
+        filepath = os.path.dirname(os.path.abspath(__file__)) + '/data/' + filename
 
         cost_meter_import_file = ImportFile.objects.create(
             import_record=self.import_record,
             source_type=SEED_DATA_SOURCES[PORTFOLIO_METER_USAGE][1],
             uploaded_filename=filename,
-            file=SimpleUploadedFile(
-                name=filename,
-                content=pathlib.Path(filepath).read_bytes()
-            ),
-            cycle=self.cycle
+            file=SimpleUploadedFile(name=filename, content=pathlib.Path(filepath).read_bytes()),
+            cycle=self.cycle,
         )
 
-        url = reverse("api:v3:import_files-start-save-data", args=[cost_meter_import_file.id])
+        url = reverse('api:v3:import_files-start-save-data', args=[cost_meter_import_file.id])
         url += f'?organization_id={self.org.pk}'
         post_params = {
             'cycle_id': self.cycle.pk,
@@ -688,58 +668,58 @@ class MeterUsageImportTest(TestCase):
 
         expectation = [
             {
-                "property_id": self.property_1.id,
-                "cycles": self.cycle.name,
-                "pm_property_id": "5766973",
-                "source_id": "5766973-0",
-                "type": "Electric - Grid",
-                "incoming": 2,
-                "successfully_imported": 2,
+                'property_id': self.property_1.id,
+                'cycles': self.cycle.name,
+                'pm_property_id': '5766973',
+                'source_id': '5766973-0',
+                'type': 'Electric - Grid',
+                'incoming': 2,
+                'successfully_imported': 2,
             },
             {
-                "property_id": self.property_1.id,
-                "cycles": self.cycle.name,
-                "pm_property_id": "5766973",
-                "source_id": "5766973-1",
-                "type": "Natural Gas",
-                "incoming": 2,
-                "successfully_imported": 2,
+                'property_id': self.property_1.id,
+                'cycles': self.cycle.name,
+                'pm_property_id': '5766973',
+                'source_id': '5766973-1',
+                'type': 'Natural Gas',
+                'incoming': 2,
+                'successfully_imported': 2,
             },
             {
-                "property_id": self.property_1.id,
-                "cycles": self.cycle.name,
-                "pm_property_id": "5766973",
-                "source_id": "5766973-0",
-                "type": "Cost",
-                "incoming": 2,
-                "successfully_imported": 2,
+                'property_id': self.property_1.id,
+                'cycles': self.cycle.name,
+                'pm_property_id': '5766973',
+                'source_id': '5766973-0',
+                'type': 'Cost',
+                'incoming': 2,
+                'successfully_imported': 2,
             },
             {
-                "property_id": self.property_1.id,
-                "cycles": self.cycle.name,
-                "pm_property_id": "5766973",
-                "source_id": "5766973-1",
-                "type": "Cost",
-                "incoming": 2,
-                "successfully_imported": 2,
+                'property_id': self.property_1.id,
+                'cycles': self.cycle.name,
+                'pm_property_id': '5766973',
+                'source_id': '5766973-1',
+                'type': 'Cost',
+                'incoming': 2,
+                'successfully_imported': 2,
             },
             {
-                "property_id": self.property_2.id,
-                "cycles": self.cycle.name,
-                "pm_property_id": "5766975",
-                "source_id": "5766975-0",
-                "type": "Electric - Grid",
-                "incoming": 2,
-                "successfully_imported": 2,
+                'property_id': self.property_2.id,
+                'cycles': self.cycle.name,
+                'pm_property_id': '5766975',
+                'source_id': '5766975-0',
+                'type': 'Electric - Grid',
+                'incoming': 2,
+                'successfully_imported': 2,
             },
             {
-                "property_id": self.property_2.id,
-                "cycles": self.cycle.name,
-                "pm_property_id": "5766975",
-                "source_id": "5766975-1",
-                "type": "Natural Gas",
-                "incoming": 2,
-                "successfully_imported": 2,
+                'property_id': self.property_2.id,
+                'cycles': self.cycle.name,
+                'pm_property_id': '5766975',
+                'source_id': '5766975-1',
+                'type': 'Natural Gas',
+                'incoming': 2,
+                'successfully_imported': 2,
             },
         ]
 
@@ -754,22 +734,21 @@ class MeterUsageImportTest(TestCase):
         In this case, neither the meter (if applicable) nor any of its readings
         are created.
         """
-        dup_import_record = ImportRecord.objects.create(owner=self.user, last_modified_by=self.user, super_organization=self.org, access_level_instance=self.org.root)
-        dup_filename = "example-pm-monthly-meter-usage-1-dup.xlsx"
-        dup_filepath = os.path.dirname(os.path.abspath(__file__)) + "/../data_importer/tests/data/" + dup_filename
+        dup_import_record = ImportRecord.objects.create(
+            owner=self.user, last_modified_by=self.user, super_organization=self.org, access_level_instance=self.org.root
+        )
+        dup_filename = 'example-pm-monthly-meter-usage-1-dup.xlsx'
+        dup_filepath = os.path.dirname(os.path.abspath(__file__)) + '/../data_importer/tests/data/' + dup_filename
 
         dup_file = ImportFile.objects.create(
             import_record=dup_import_record,
             source_type=SEED_DATA_SOURCES[PORTFOLIO_METER_USAGE][1],
             uploaded_filename=dup_filename,
-            file=SimpleUploadedFile(
-                name=dup_filename,
-                content=pathlib.Path(dup_filepath).read_bytes()
-            ),
-            cycle=self.cycle
+            file=SimpleUploadedFile(name=dup_filename, content=pathlib.Path(dup_filepath).read_bytes()),
+            cycle=self.cycle,
         )
 
-        url = reverse("api:v3:import_files-start-save-data", args=[dup_file.id])
+        url = reverse('api:v3:import_files-start-save-data', args=[dup_file.id])
         url += f'?organization_id={self.org.pk}'
         post_params = {
             'cycle_id': self.cycle.pk,
@@ -782,44 +761,44 @@ class MeterUsageImportTest(TestCase):
 
         expected_import_summary = [
             {
-                "property_id": self.property_1.id,
-                "cycles": self.cycle.name,
-                "pm_property_id": "5766973",
-                "source_id": "5766973-0",
-                "type": "Electric - Grid",
-                "incoming": 2,
-                "successfully_imported": 2,
-                "errors": "",
+                'property_id': self.property_1.id,
+                'cycles': self.cycle.name,
+                'pm_property_id': '5766973',
+                'source_id': '5766973-0',
+                'type': 'Electric - Grid',
+                'incoming': 2,
+                'successfully_imported': 2,
+                'errors': '',
             },
             {
-                "property_id": self.property_1.id,
-                "cycles": self.cycle.name,
-                "pm_property_id": "5766973",
-                "source_id": "5766973-1",
-                "type": "Natural Gas",
-                "incoming": 2,
-                "successfully_imported": 2,
-                "errors": "",
+                'property_id': self.property_1.id,
+                'cycles': self.cycle.name,
+                'pm_property_id': '5766973',
+                'source_id': '5766973-1',
+                'type': 'Natural Gas',
+                'incoming': 2,
+                'successfully_imported': 2,
+                'errors': '',
             },
             {
-                "property_id": self.property_2.id,
-                "cycles": self.cycle.name,
-                "pm_property_id": "5766975",
-                "source_id": "5766975-0",
-                "type": "Electric - Grid",
-                "incoming": 4,
-                "successfully_imported": 0,
-                "errors": "Import failed. Unable to import data with duplicate start and end date pairs.",
+                'property_id': self.property_2.id,
+                'cycles': self.cycle.name,
+                'pm_property_id': '5766975',
+                'source_id': '5766975-0',
+                'type': 'Electric - Grid',
+                'incoming': 4,
+                'successfully_imported': 0,
+                'errors': 'Import failed. Unable to import data with duplicate start and end date pairs.',
             },
             {
-                "property_id": self.property_2.id,
-                "cycles": self.cycle.name,
-                "pm_property_id": "5766975",
-                "source_id": "5766975-1",
-                "type": "Natural Gas",
-                "incoming": 4,
-                "successfully_imported": 0,
-                "errors": "Import failed. Unable to import data with duplicate start and end date pairs.",
+                'property_id': self.property_2.id,
+                'cycles': self.cycle.name,
+                'pm_property_id': '5766975',
+                'source_id': '5766975-1',
+                'type': 'Natural Gas',
+                'incoming': 4,
+                'successfully_imported': 0,
+                'errors': 'Import failed. Unable to import data with duplicate start and end date pairs.',
             },
         ]
 
@@ -848,7 +827,7 @@ class MeterUsageImportAdjustedScenarioTest(DataMappingBaseTestCase):
             'import_file_id': self.import_file_1.id,
             'data_state': DATA_STATE_MAPPING,
             'no_default_data': False,
-            "raw_access_level_instance_id": self.org.root.id,
+            'raw_access_level_instance_id': self.org.root.id,
         }
 
         # Create 1 property with a duplicate in the first ImportFile
@@ -860,9 +839,7 @@ class MeterUsageImportAdjustedScenarioTest(DataMappingBaseTestCase):
         self.import_file_1.save()
         geocode_and_match_buildings_task(self.import_file_1.id)
 
-        import_record_2, import_file_2 = self.create_import_file(
-            self.user, self.org, self.cycle
-        )
+        import_record_2, import_file_2 = self.create_import_file(self.user, self.org, self.cycle)
 
         # Create another duplicate property coming from second ImportFile
         base_details['import_file_id'] = import_file_2.id
@@ -874,18 +851,15 @@ class MeterUsageImportAdjustedScenarioTest(DataMappingBaseTestCase):
         geocode_and_match_buildings_task(import_file_2.id)
 
         # Import the PM Meters
-        filename = "example-pm-monthly-meter-usage.xlsx"
-        filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + filename
+        filename = 'example-pm-monthly-meter-usage.xlsx'
+        filepath = os.path.dirname(os.path.abspath(__file__)) + '/data/' + filename
 
         pm_meter_file = ImportFile.objects.create(
             import_record=self.import_record,
             source_type=SEED_DATA_SOURCES[PORTFOLIO_METER_USAGE][1],
             uploaded_filename=filename,
-            file=SimpleUploadedFile(
-                name=filename,
-                content=pathlib.Path(filepath).read_bytes()
-            ),
-            cycle=self.cycle
+            file=SimpleUploadedFile(name=filename, content=pathlib.Path(filepath).read_bytes()),
+            cycle=self.cycle,
         )
 
         # Check that meters pre-upload confirmation runs without problems
@@ -893,7 +867,7 @@ class MeterUsageImportAdjustedScenarioTest(DataMappingBaseTestCase):
         confirmation_url += f'?organization_id={self.org.pk}'
         self.client.get(confirmation_url)
 
-        url = reverse("api:v3:import_files-start-save-data", args=[pm_meter_file.id])
+        url = reverse('api:v3:import_files-start-save-data', args=[pm_meter_file.id])
         url += f'?organization_id={self.org.pk}'
         post_params = {
             'cycle_id': self.cycle.pk,

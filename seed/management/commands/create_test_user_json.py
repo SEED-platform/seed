@@ -1,10 +1,11 @@
-# -*- coding: utf-8 -*-
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 import json
 import re
+import sys
 
 from django.core.management.base import BaseCommand
 
@@ -15,28 +16,15 @@ class Command(BaseCommand):
     help = 'Creates the JSON file needed for testing the API'
 
     def add_arguments(self, parser):
-        parser.add_argument('--username',
-                            default='demo@seed-platform.org',
-                            help='Sets the default username.',
-                            action='store',
-                            dest='username')
+        parser.add_argument(
+            '--username', default='demo@seed-platform.org', help='Sets the default username.', action='store', dest='username'
+        )
 
-        parser.add_argument('--host',
-                            default='http://127.0.0.1:8000',
-                            help='Host',
-                            action='store',
-                            dest='host')
+        parser.add_argument('--host', default='http://127.0.0.1:8000', help='Host', action='store', dest='host')
 
-        parser.add_argument('--file',
-                            default='none',
-                            help='File name to save JSON',
-                            action='store',
-                            dest='file')
+        parser.add_argument('--file', default='none', help='File name to save JSON', action='store', dest='file')
 
-        parser.add_argument('--pyseed',
-                            help='Write out in the format for pyseed',
-                            action='store_true',
-                            dest='pyseed')
+        parser.add_argument('--pyseed', help='Write out in the format for pyseed', action='store_true', dest='pyseed')
 
     def handle(self, *args, **options):
         if User.objects.filter(username=options['username']).exists():
@@ -51,15 +39,15 @@ class Command(BaseCommand):
                 }
             else:
                 # pull out the protocol, port, and url to break up the parts
-                pattern = re.compile(r'^(.*:)//([A-Za-z0-9\-\.]+)(:[0-9]+)?(.*)$')
+                pattern = re.compile(r'^(.*:)//([A-Za-z0-9\-.]+)(:[0-9]+)?(.*)$')
                 match = pattern.match(options['host'])
                 data = {
                     'name': 'seed_api_test',
-                    'base_url': f"{match.group(1)}//{match.group(2)}",
+                    'base_url': f'{match.group(1)}//{match.group(2)}',
                     'username': options['username'],
                     'api_key': u.api_key,
                     'port': int(match.group(3).replace(':', '')) if match.group(3) else 80,
-                    'use_ssl': True if 'https' in match.group(1) else False,
+                    'use_ssl': 'https' in match.group(1),
                 }
 
             if options['file'] == 'none':
@@ -70,4 +58,4 @@ class Command(BaseCommand):
 
         else:
             print('User does not exist')
-            exit(1)
+            sys.exit(1)

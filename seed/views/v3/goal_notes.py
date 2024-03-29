@@ -2,13 +2,11 @@
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 from django.http import JsonResponse
 from rest_framework import status
 
-from seed.lib.superperms.orgs.decorators import (
-    has_hierarchy_access,
-    has_perm_class
-)
+from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm_class
 from seed.models import AccessLevelInstance, GoalNote
 from seed.serializers.goal_notes import GoalNoteSerializer
 from seed.utils.api import OrgMixin
@@ -32,19 +30,19 @@ class GoalNoteViewSet(UpdateWithoutPatchModelMixin, OrgMixin):
         try:
             goal_note = GoalNote.objects.get(property=property_pk, pk=pk)
         except GoalNote.DoesNotExist:
-            return JsonResponse({
-                'status': 'error',
-                'errors': "No such resource."
-            }, status=status.HTTP_404_NOT_FOUND)
+            return JsonResponse({'status': 'error', 'errors': 'No such resource.'}, status=status.HTTP_404_NOT_FOUND)
 
         data = self.get_permission_data(request.data, request.access_level_instance_id)
         serializer = GoalNoteSerializer(goal_note, data=data, partial=True)
 
         if not serializer.is_valid():
-            return JsonResponse({
-                'status': 'error',
-                'errors': serializer.errors,
-            }, status=status.HTTP_400_BAD_REQUEST)
+            return JsonResponse(
+                {
+                    'status': 'error',
+                    'errors': serializer.errors,
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         serializer.save()
 

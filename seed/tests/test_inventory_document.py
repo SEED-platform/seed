@@ -1,9 +1,9 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 from os import path
 
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -17,16 +17,11 @@ from seed.utils.organizations import create_organization
 
 class TestInventoryDocuments(TestCase):
     def setUp(self):
-        user_details = {
-            'username': 'test_user@demo.com',
-            'password': 'test_pass',
-            'email': 'test_user@demo.com'
-        }
+        user_details = {'username': 'test_user@demo.com', 'password': 'test_pass', 'email': 'test_user@demo.com'}
         self.user = User.objects.create_superuser(**user_details)
         self.org, _, _ = create_organization(self.user)
 
     def test_file_type_lookup(self):
-
         self.assertEqual(InventoryDocument.str_to_file_type(None), None)
         self.assertEqual(InventoryDocument.str_to_file_type(''), None)
         self.assertEqual(InventoryDocument.str_to_file_type(1), 1)

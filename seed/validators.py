@@ -2,13 +2,14 @@
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 import re
 
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext as _
 
 
-class PasswordBaseCharacterQuantityValidator(object):
+class PasswordBaseCharacterQuantityValidator:
     TYPE = ''
     RE = re.compile(r'')
 
@@ -18,16 +19,13 @@ class PasswordBaseCharacterQuantityValidator(object):
     def validate(self, password, user=None):
         if len(self.RE.findall(password)) < self.quantity:
             raise ValidationError(
-                _("This password must contain at least %(quantity)d %(type)s characters."),
+                _('This password must contain at least %(quantity)d %(type)s characters.'),
                 code='password_not_enough_%s' % self.TYPE,
                 params={'quantity': self.quantity, 'type': self.TYPE},
             )
 
     def get_help_text(self):
-        return _(
-            "Your password must contain at least %(quantity)d %(type)s characters."
-            % {'quantity': self.quantity, 'type': self.TYPE}
-        )
+        return _('Your password must contain at least %(quantity)d %(type)s characters.' % {'quantity': self.quantity, 'type': self.TYPE})
 
 
 class PasswordUppercaseCharacterValidator(PasswordBaseCharacterQuantityValidator):

@@ -12,7 +12,6 @@ def backfill_org_audit_template_report_type(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('orgs', '0027_organization_ubid_threshold'),
     ]

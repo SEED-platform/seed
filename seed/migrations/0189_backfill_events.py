@@ -5,10 +5,10 @@ from django.db import migrations, transaction
 
 @transaction.atomic
 def backfill_at_events(apps, schema_editor):
-    BuildingFile = apps.get_model("seed", "BuildingFile")
-    PropertyView = apps.get_model("seed", "PropertyView")
-    ATEvent = apps.get_model("seed", "ATEvent")
-    Scenario = apps.get_model("seed", "Scenario")
+    BuildingFile = apps.get_model('seed', 'BuildingFile')
+    PropertyView = apps.get_model('seed', 'PropertyView')
+    ATEvent = apps.get_model('seed', 'ATEvent')
+    Scenario = apps.get_model('seed', 'Scenario')
 
     building_files = BuildingFile.objects.all()
     for building_file in building_files:
@@ -25,7 +25,7 @@ def backfill_at_events(apps, schema_editor):
             building_file=building_file,
             created=building_file.created,
             modified=building_file.created,
-            audit_date=propertyview.state.extra_data.get('audit_date', '')
+            audit_date=propertyview.state.extra_data.get('audit_date', ''),
         )
         scenarios = Scenario.objects.filter(property_state=propertyview.state_id)
         for scenario in scenarios:
@@ -37,8 +37,8 @@ def backfill_at_events(apps, schema_editor):
 
 @transaction.atomic
 def backfill_analysis_events(apps, schema_editor):
-    Analysis = apps.get_model("seed", "Analysis")
-    AnalysisEvent = apps.get_model("seed", "AnalysisEvent")
+    Analysis = apps.get_model('seed', 'Analysis')
+    AnalysisEvent = apps.get_model('seed', 'AnalysisEvent')
 
     analysises = Analysis.objects.all()
     for analysis in analysises:
@@ -54,8 +54,8 @@ def backfill_analysis_events(apps, schema_editor):
 
 @transaction.atomic
 def backfill_note_events(apps, schema_editor):
-    Note = apps.get_model("seed", "Note")
-    NoteEvent = apps.get_model("seed", "NoteEvent")
+    Note = apps.get_model('seed', 'Note')
+    NoteEvent = apps.get_model('seed', 'NoteEvent')
 
     notes = Note.objects.filter(property_view__isnull=False)
     for note in notes:
@@ -69,7 +69,6 @@ def backfill_note_events(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('seed', '0188_auto_20230217_1652'),
     ]

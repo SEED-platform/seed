@@ -1,9 +1,9 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 import json
 
 from django.core import serializers
@@ -19,14 +19,13 @@ class ComplianceMetricViewTests(AccessLevelBaseTestCase):
     """
 
     def setUp(self):
-
         # set up org, all users, and factories
         super().setUp()
 
-        self.cycle1 = self.cycle_factory.get_cycle(name="Cycle A")
-        self.cycle2 = self.cycle_factory.get_cycle(name="Cycle B")
-        self.cycle3 = self.cycle_factory.get_cycle(name="Cycle C")
-        self.cycle4 = self.cycle_factory.get_cycle(name="Cycle D")
+        self.cycle1 = self.cycle_factory.get_cycle(name='Cycle A')
+        self.cycle2 = self.cycle_factory.get_cycle(name='Cycle B')
+        self.cycle3 = self.cycle_factory.get_cycle(name='Cycle C')
+        self.cycle4 = self.cycle_factory.get_cycle(name='Cycle D')
 
         self.column1 = self.column_factory.get_column('column 1', is_extra_data=True)
         self.column2 = self.column_factory.get_column('column 2', is_extra_data=True)
@@ -60,7 +59,7 @@ class ComplianceMetricViewTests(AccessLevelBaseTestCase):
             actual_emission_column=self.column3,
             target_emission_column=self.column4,
             emission_metric_type=1,
-            filter_group=self.filter_group
+            filter_group=self.filter_group,
         )
         self.compliance_metric1.cycles.set(self.cycles1)
         self.compliance_metric1.x_axis_columns.set(self.x_axes1)
@@ -71,7 +70,7 @@ class ComplianceMetricViewTests(AccessLevelBaseTestCase):
             organization=self.org,
             actual_energy_column=self.column1,
             target_energy_column=self.column2,
-            energy_metric_type=0
+            energy_metric_type=0,
         )
         self.compliance_metric2.x_axis_columns.set(self.x_axes2)
         self.compliance_metric2.cycles.set(self.cycles2)
@@ -102,20 +101,19 @@ class ComplianceMetricViewTests(AccessLevelBaseTestCase):
         self.assertEqual(2, len(ComplianceMetric.objects.all()))
 
         test_metric_details = {
-            "name": "compliance metric 3",
-            "actual_emission_column": self.column3.id,
-            "target_emission_column": self.column4.id,
-            "emission_metric_type": "Target > Actual for Compliance",
-            "filter_group": self.filter_group.id,
-            "cycles": [self.cycle1.id, self.cycle2.id],
-            "x_axis_columns": [self.column5.id, self.column6.id]
+            'name': 'compliance metric 3',
+            'actual_emission_column': self.column3.id,
+            'target_emission_column': self.column4.id,
+            'emission_metric_type': 'Target > Actual for Compliance',
+            'filter_group': self.filter_group.id,
+            'cycles': [self.cycle1.id, self.cycle2.id],
+            'x_axis_columns': [self.column5.id, self.column6.id],
         }
 
         # can create as ROOT-LEVEL OWNER
         self.login_as_root_owner()
         response = self.client.get(
-            reverse('api:v3:compliance_metrics-list') + '?organization_id=' + str(self.org.id),
-            content_type='application/json'
+            reverse('api:v3:compliance_metrics-list') + '?organization_id=' + str(self.org.id), content_type='application/json'
         )
         data = json.loads(response.content)
         self.assertEqual(2, len(data['compliance_metrics']))
@@ -123,7 +121,7 @@ class ComplianceMetricViewTests(AccessLevelBaseTestCase):
         response = self.client.post(
             reverse('api:v3:compliance_metrics-list') + '?organization_id=' + str(self.org.id),
             data=json.dumps(test_metric_details),
-            content_type='application/json'
+            content_type='application/json',
         )
         data = json.loads(response.content)
         self.assertEqual(response.status_code, 200)
@@ -140,8 +138,7 @@ class ComplianceMetricViewTests(AccessLevelBaseTestCase):
         self.assertEqual(3, len(ComplianceMetric.objects.all()))
 
         response = self.client.get(
-            reverse('api:v3:compliance_metrics-list') + '?organization_id=' + str(self.org.id),
-            content_type='application/json'
+            reverse('api:v3:compliance_metrics-list') + '?organization_id=' + str(self.org.id), content_type='application/json'
         )
         data = json.loads(response.content)
         self.assertEqual(3, len(data['compliance_metrics']))
@@ -149,12 +146,11 @@ class ComplianceMetricViewTests(AccessLevelBaseTestCase):
         compliance_metric = ComplianceMetric.objects.get(name='compliance metric 3')
         response = self.client.delete(
             reverse('api:v3:compliance_metrics-detail', args=[compliance_metric.id]) + '?organization_id=' + str(self.org.id),
-            content_type='application/json'
+            content_type='application/json',
         )
 
         response = self.client.get(
-            reverse('api:v3:compliance_metrics-list') + '?organization_id=' + str(self.org.id),
-            content_type='application/json'
+            reverse('api:v3:compliance_metrics-list') + '?organization_id=' + str(self.org.id), content_type='application/json'
         )
         data = json.loads(response.content)
         self.assertEqual(2, len(data['compliance_metrics']))
@@ -162,33 +158,30 @@ class ComplianceMetricViewTests(AccessLevelBaseTestCase):
 
         # CAN CREATE as ROOT-LEVEL MEMBER:
         self.login_as_root_member()
-        test_metric_details['name'] = "compliance ROOT MEMBER"
+        test_metric_details['name'] = 'compliance ROOT MEMBER'
 
         response = self.client.post(
             reverse('api:v3:compliance_metrics-list') + '?organization_id=' + str(self.org.id),
             data=json.dumps(test_metric_details),
-            content_type='application/json'
+            content_type='application/json',
         )
         self.assertEqual(response.status_code, 200)
 
         # CANNOT CREATE AS CHILD-LEVEL MEMBER:
         self.login_as_child_member()
-        test_metric_details['name'] = "compliance CHILD MEMBER"
+        test_metric_details['name'] = 'compliance CHILD MEMBER'
         response = self.client.post(
             reverse('api:v3:compliance_metrics-list') + '?organization_id=' + str(self.org.id),
             data=json.dumps(test_metric_details),
-            content_type='application/json'
+            content_type='application/json',
         )
         self.assertEqual(response.status_code, 403)
 
     def test_compliance_metric_create_bad_data(self):
         response = self.client.post(
             reverse('api:v3:compliance_metrics-list') + '?organization_id=' + str(self.org.id),
-            data=json.dumps({
-                "name": "compliance_metric3",
-                "energy_metric_type": 0
-            }),
-            content_type='application/json'
+            data=json.dumps({'name': 'compliance_metric3', 'energy_metric_type': 0}),
+            content_type='application/json',
         )
         data = json.loads(response.content)
         self.assertEqual('error', data['status'])
@@ -206,9 +199,7 @@ class ComplianceMetricViewTests(AccessLevelBaseTestCase):
         self.assertEqual('compliance metric 1', data['compliance_metric']['name'])
         self.assertEqual([self.column5.id, self.column6.id, self.column7.id], data['compliance_metric']['x_axis_columns'])
 
-        response = self.client.get(
-            reverse('api:v3:compliance_metrics-detail', args=[99999999]) + '?organization_id=' + str(self.org.id)
-        )
+        response = self.client.get(reverse('api:v3:compliance_metrics-detail', args=[99999999]) + '?organization_id=' + str(self.org.id))
         data = json.loads(response.content)
         self.assertEqual('error', data['status'])
         self.assertEqual('ComplianceMetric with id 99999999 does not exist', data['message'])
@@ -221,11 +212,8 @@ class ComplianceMetricViewTests(AccessLevelBaseTestCase):
         self.login_as_root_member()
         response = self.client.put(
             reverse('api:v3:compliance_metrics-detail', args=[self.compliance_metric1.id]) + '?organization_id=' + str(self.org.id),
-            data=json.dumps({
-                "name": "updated name",
-                "x_axis_columns": [self.column3.id, self.column4.id]
-            }),
-            content_type='application/json'
+            data=json.dumps({'name': 'updated name', 'x_axis_columns': [self.column3.id, self.column4.id]}),
+            content_type='application/json',
         )
 
         data = json.loads(response.content)
@@ -236,10 +224,12 @@ class ComplianceMetricViewTests(AccessLevelBaseTestCase):
         # test cannot update a non-existing compliance metric
         response = self.client.put(
             reverse('api:v3:compliance_metrics-detail', args=[99999]) + '?organization_id=' + str(self.org.id),
-            data=json.dumps({
-                "x_axis_columns": [self.column1.id, self.column2.id, self.column3.id],
-            }),
-            content_type='application/json'
+            data=json.dumps(
+                {
+                    'x_axis_columns': [self.column1.id, self.column2.id, self.column3.id],
+                }
+            ),
+            content_type='application/json',
         )
         data = json.loads(response.content)
         self.assertEqual('error', data['status'])
@@ -249,10 +239,8 @@ class ComplianceMetricViewTests(AccessLevelBaseTestCase):
         self.login_as_child_member()
         response = self.client.put(
             reverse('api:v3:compliance_metrics-detail', args=[self.compliance_metric1.id]) + '?organization_id=' + str(self.org.id),
-            data=json.dumps({
-                "name": "another name"
-            }),
-            content_type='application/json'
+            data=json.dumps({'name': 'another name'}),
+            content_type='application/json',
         )
         data = json.loads(response.content)
         self.assertEqual('error', data['status'])
@@ -264,12 +252,11 @@ class ComplianceMetricViewTests(AccessLevelBaseTestCase):
         self.assertEqual(self.column3.id, cm1.x_axis_columns.first().id)
 
     def test_compliance_metric_delete_endpoint(self):
-
         # CANNOT DELETE AS CHILD-LEVEL MEMBER:
         self.login_as_child_member()
         response = self.client.delete(
             reverse('api:v3:compliance_metrics-detail', args=[self.compliance_metric2.id]) + '?organization_id=' + str(self.org.id),
-            content_type='application/json'
+            content_type='application/json',
         )
         data = json.loads(response.content)
         self.assertEqual('error', data['status'])
@@ -282,7 +269,7 @@ class ComplianceMetricViewTests(AccessLevelBaseTestCase):
         self.login_as_root_member()
         response = self.client.delete(
             reverse('api:v3:compliance_metrics-detail', args=[self.compliance_metric2.id]) + '?organization_id=' + str(self.org.id),
-            content_type='application/json'
+            content_type='application/json',
         )
         data = json.loads(response.content)
         self.assertEqual('success', data['status'])
@@ -296,14 +283,14 @@ class ComplianceMetricEvaluationTests(AccessLevelBaseTestCase):
     """
     Test ComplianceMetric model's ability to evaluate propertyview values
     """
-    def setUp(self):
 
+    def setUp(self):
         # set up org, all users, and factories
         super().setUp()
 
-        self.cycle1 = self.cycle_factory.get_cycle(name="Cycle A")
-        self.cycle2 = self.cycle_factory.get_cycle(name="Cycle B")
-        self.cycle3 = self.cycle_factory.get_cycle(name="Cycle C")
+        self.cycle1 = self.cycle_factory.get_cycle(name='Cycle A')
+        self.cycle2 = self.cycle_factory.get_cycle(name='Cycle B')
+        self.cycle3 = self.cycle_factory.get_cycle(name='Cycle C')
 
         self.site_eui = self.column_factory.get_column('site_eui')
         self.total_ghg_emissions = self.column_factory.get_column('total_ghg_emissions')
@@ -329,7 +316,7 @@ class ComplianceMetricEvaluationTests(AccessLevelBaseTestCase):
             organization=self.org,
             actual_energy_column=self.site_eui,
             target_energy_column=self.source_eui,
-            energy_metric_type=0
+            energy_metric_type=0,
         )
         self.compliance_metric.x_axis_columns.set(self.x_axes)
         self.compliance_metric.cycles.set(self.cycles)
@@ -340,26 +327,41 @@ class ComplianceMetricEvaluationTests(AccessLevelBaseTestCase):
         self.retail3 = self.property_factory.get_property(access_level_instance=self.root_level_instance)
         self.retail4 = self.property_factory.get_property(access_level_instance=self.child_level_instance)
 
-        self.view10 = self.property_view_factory.get_property_view(prprty=self.office1, cycle=self.cycle1, site_eui=60, source_eui=59, total_ghg_emissions=500)
-        self.view11 = self.property_view_factory.get_property_view(prprty=self.office2, cycle=self.cycle1, site_eui=70, source_eui=59, total_ghg_emissions=400)
-        self.view12 = self.property_view_factory.get_property_view(prprty=self.retail3, cycle=self.cycle1, site_eui=65, source_eui=62, total_ghg_emissions=300)
-        self.view13 = self.property_view_factory.get_property_view(prprty=self.retail4, cycle=self.cycle1, site_eui=72, source_eui=62, total_ghg_emissions=350)
+        self.view10 = self.property_view_factory.get_property_view(
+            prprty=self.office1, cycle=self.cycle1, site_eui=60, source_eui=59, total_ghg_emissions=500
+        )
+        self.view11 = self.property_view_factory.get_property_view(
+            prprty=self.office2, cycle=self.cycle1, site_eui=70, source_eui=59, total_ghg_emissions=400
+        )
+        self.view12 = self.property_view_factory.get_property_view(
+            prprty=self.retail3, cycle=self.cycle1, site_eui=65, source_eui=62, total_ghg_emissions=300
+        )
+        self.view13 = self.property_view_factory.get_property_view(
+            prprty=self.retail4, cycle=self.cycle1, site_eui=72, source_eui=62, total_ghg_emissions=350
+        )
 
         serializers.serialize('json', [self.view10])
 
-        self.view20 = self.property_view_factory.get_property_view(prprty=self.office1, cycle=self.cycle2, site_eui=58, source_eui=59, total_ghg_emissions=480)
-        self.view21 = self.property_view_factory.get_property_view(prprty=self.office2, cycle=self.cycle2, site_eui=68, source_eui=59, total_ghg_emissions=380)
-        self.view22 = self.property_view_factory.get_property_view(prprty=self.retail3, cycle=self.cycle2, site_eui=63, source_eui=59, total_ghg_emissions=280)
-        self.view23 = self.property_view_factory.get_property_view(prprty=self.retail4, cycle=self.cycle2, site_eui=70, source_eui=59, total_ghg_emissions=330)
+        self.view20 = self.property_view_factory.get_property_view(
+            prprty=self.office1, cycle=self.cycle2, site_eui=58, source_eui=59, total_ghg_emissions=480
+        )
+        self.view21 = self.property_view_factory.get_property_view(
+            prprty=self.office2, cycle=self.cycle2, site_eui=68, source_eui=59, total_ghg_emissions=380
+        )
+        self.view22 = self.property_view_factory.get_property_view(
+            prprty=self.retail3, cycle=self.cycle2, site_eui=63, source_eui=59, total_ghg_emissions=280
+        )
+        self.view23 = self.property_view_factory.get_property_view(
+            prprty=self.retail4, cycle=self.cycle2, site_eui=70, source_eui=59, total_ghg_emissions=330
+        )
 
     # calculating compliance metrics
     def test_compliance_metric_get_data_permissions(self):
-
         # login as root level owner/member and retrieve data
         self.login_as_root_owner()
         response = self.client.get(
             reverse('api:v3:compliance_metrics-evaluate', args=[self.compliance_metric.id]) + '?organization_id=' + str(self.org.id),
-            content_type='application/json'
+            content_type='application/json',
         )
         assert response.status_code == 200
         data = json.loads(response.content)
@@ -371,7 +373,7 @@ class ComplianceMetricEvaluationTests(AccessLevelBaseTestCase):
         self.login_as_root_member()
         response = self.client.get(
             reverse('api:v3:compliance_metrics-evaluate', args=[self.compliance_metric.id]) + '?organization_id=' + str(self.org.id),
-            content_type='application/json'
+            content_type='application/json',
         )
         assert response.status_code == 200
         data = json.loads(response.content)
@@ -384,7 +386,7 @@ class ComplianceMetricEvaluationTests(AccessLevelBaseTestCase):
         self.login_as_child_member()
         response = self.client.get(
             reverse('api:v3:compliance_metrics-evaluate', args=[self.compliance_metric.id]) + '?organization_id=' + str(self.org.id),
-            content_type='application/json'
+            content_type='application/json',
         )
         assert response.status_code == 200
         data = json.loads(response.content)

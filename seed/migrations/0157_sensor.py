@@ -5,7 +5,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('seed', '0156_auto_20211104_1638'),
     ]
@@ -21,7 +20,10 @@ class Migration(migrations.Migration):
                 ('sensor_type', models.CharField(max_length=63)),
                 ('units', models.CharField(max_length=63)),
                 ('column_name', models.CharField(max_length=255, unique=True)),
-                ('sensor_property', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='sensors', to='seed.property')),
+                (
+                    'sensor_property',
+                    models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='sensors', to='seed.property'),
+                ),
             ],
         ),
     ]

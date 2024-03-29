@@ -1,9 +1,9 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
@@ -76,33 +76,37 @@ class Note(models.Model):
         for column_name, value in new_values.items():
             if column_name == 'extra_data':
                 for ed_column_name, ed_value in value.items():
-                    log_data.append({
-                        "field": ed_column_name,
-                        "previous_value": previous_values.get('extra_data', {}).get(ed_column_name, None),
-                        "new_value": ed_value,
-                        "state_id": view.state_id
-                    })
+                    log_data.append(
+                        {
+                            'field': ed_column_name,
+                            'previous_value': previous_values.get('extra_data', {}).get(ed_column_name, None),
+                            'new_value': ed_value,
+                            'state_id': view.state_id,
+                        }
+                    )
             else:
-                log_data.append({
-                    "field": column_name,
-                    "previous_value": previous_values.get(column_name, None),
-                    "new_value": value,
-                    "state_id": view.state_id
-                })
+                log_data.append(
+                    {
+                        'field': column_name,
+                        'previous_value': previous_values.get(column_name, None),
+                        'new_value': value,
+                        'state_id': view.state_id,
+                    }
+                )
 
         # Create note attributes to be then updated with appropriate -View "type".
         note_attrs = {
-            "name": "Automatically Created",
-            "note_type": self.LOG,
-            "organization_id": view.cycle.organization_id,
-            "user_id": user_id,
-            "log_data": log_data
+            'name': 'Automatically Created',
+            'note_type': self.LOG,
+            'organization_id': view.cycle.organization_id,
+            'user_id': user_id,
+            'log_data': log_data,
         }
 
         if view.__class__ == PropertyView:
-            note_attrs["property_view_id"] = view.id
+            note_attrs['property_view_id'] = view.id
         elif view.__class__ == TaxLotView:
-            note_attrs["taxlot_view_id"] = view.id
+            note_attrs['taxlot_view_id'] = view.id
 
         return self.objects.create(**note_attrs)
 
@@ -116,5 +120,6 @@ class HistoricalNote(models.Model):
 
     def serialize(self):
         from seed.serializers.historical_notes import HistoricalNoteSerializer
+
         serializer = HistoricalNoteSerializer(self)
         return serializer.data

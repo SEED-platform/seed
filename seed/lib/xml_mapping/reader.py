@@ -1,9 +1,9 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 import os
 import zipfile
 from io import BytesIO
@@ -14,7 +14,7 @@ from seed.building_sync.building_sync import BuildingSync
 from seed.building_sync.mappings import xpath_to_column_map
 
 
-class BuildingSyncParser(object):
+class BuildingSyncParser:
     def __init__(self, file_):
         """
         :param file_: FieldFile, an ImportFile's file
@@ -47,7 +47,7 @@ class BuildingSyncParser(object):
             bs = BuildingSync()
             bs.import_file(BytesIO(bsync_file))
         except Exception as e:
-            raise Exception(f'Error importing BuildingSync file {file_name}: {str(e)}')
+            raise Exception(f'Error importing BuildingSync file {file_name}: {e!s}')
 
         if not self._xpath_col_dict:
             # get the mapping for the first xml data
@@ -89,7 +89,7 @@ class BuildingSyncParser(object):
         for column in self.headers:
             values.append(str(row_copy[column]))
 
-        return "|#*#|".join(values)
+        return '|#*#|'.join(values)
 
     def num_columns(self):
         return 0

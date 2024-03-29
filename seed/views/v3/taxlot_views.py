@@ -1,9 +1,9 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 from django.http import JsonResponse
 from rest_framework import status, viewsets
 
@@ -28,8 +28,8 @@ class TaxlotViewViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
 
         if not org_id:
             return JsonResponse(
-                {'status': 'error', 'message': 'Need to pass organization_id as query parameter'},
-                status=status.HTTP_400_BAD_REQUEST)
+                {'status': 'error', 'message': 'Need to pass organization_id as query parameter'}, status=status.HTTP_400_BAD_REQUEST
+            )
 
         views = TaxLotView.objects.filter(
             taxlot__organization_id=org_id,
@@ -41,7 +41,4 @@ class TaxlotViewViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
         if taxlot is not None:
             views = views.filter(taxlot_id=taxlot)
 
-        return {
-            'status': "success",
-            "taxlot_views": [BriefTaxlotViewSerializer(view).data for view in views]
-        }
+        return {'status': 'success', 'taxlot_views': [BriefTaxlotViewSerializer(view).data for view in views]}

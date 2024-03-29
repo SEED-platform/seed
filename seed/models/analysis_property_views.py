@@ -1,9 +1,9 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 from collections import namedtuple
 
 from django.core.exceptions import ValidationError
@@ -20,6 +20,7 @@ class AnalysisPropertyView(models.Model):
     The AnalysisPropertyView provides a "snapshot" of a property at the time an
     analysis was run.
     """
+
     analysis = models.ForeignKey(Analysis, on_delete=models.CASCADE)
     property = models.ForeignKey(Property, on_delete=models.SET_NULL, null=True)
     cycle = models.ForeignKey(Cycle, on_delete=models.CASCADE)
@@ -54,10 +55,7 @@ class AnalysisPropertyView(models.Model):
             )
 
             missing_property_views = property_view_ids - set(property_views.values_list('id', flat=True))
-            failures = [
-                BatchCreateError(view_id, 'No such PropertyView')
-                for view_id in missing_property_views
-            ]
+            failures = [BatchCreateError(view_id, 'No such PropertyView') for view_id in missing_property_views]
 
             analysis_property_view_ids = {}
             for property_view in property_views:
@@ -68,19 +66,13 @@ class AnalysisPropertyView(models.Model):
                     property_state.save()
 
                     analysis_property_view = AnalysisPropertyView(
-                        analysis_id=analysis_id,
-                        property=property_view.property,
-                        cycle=property_view.cycle,
-                        property_state=property_state
+                        analysis_id=analysis_id, property=property_view.property, cycle=property_view.cycle, property_state=property_state
                     )
                     analysis_property_view.full_clean()
                     analysis_property_view.save()
                     analysis_property_view_ids[property_view.id] = analysis_property_view.id
                 except ValidationError as e:
-                    failures.append(BatchCreateError(
-                        property_view.id,
-                        f'Validation of new AnalysisPropertyView failed:\n{e}'
-                    ))
+                    failures.append(BatchCreateError(property_view.id, f'Validation of new AnalysisPropertyView failed:\n{e}'))
 
         return analysis_property_view_ids, failures
 
@@ -95,15 +87,12 @@ class AnalysisPropertyView(models.Model):
         # Fast query to find all potentially-necessary propertyViews
         views = analysis_property_views.values('property_id', 'cycle_id')
         property_views = PropertyView.objects.filter(
-            property_id__in=set(v['property_id'] for v in views),
-            cycle_id__in=set(v['cycle_id'] for v in views),
+            property_id__in={v['property_id'] for v in views},
+            cycle_id__in={v['cycle_id'] for v in views},
         )
 
         # get original property views keyed by canonical property id and cycle
-        property_views_by_property_cycle_id = {
-            (pv.property_id, pv.cycle_id): pv
-            for pv in property_views
-        }
+        property_views_by_property_cycle_id = {(pv.property_id, pv.cycle_id): pv for pv in property_views}
 
         return {
             # we use .get() here because the PropertyView might not exist anymore!

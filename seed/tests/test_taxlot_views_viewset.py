@@ -15,13 +15,13 @@ class TaxlotViewsTests(AccessLevelBaseTestCase):
         self.cycle = self.cycle_factory.get_cycle()
 
     def test_taxlot_views_list(self):
-        url = reverse_lazy('api:v3:taxlot_views-list') + f"?organization_id={self.org.id}"
+        url = reverse_lazy('api:v3:taxlot_views-list') + f'?organization_id={self.org.id}'
 
         self.login_as_child_member()
         resp = self.client.get(url, content_type='application/json')
-        assert len(resp.json()["taxlot_views"]) == 1
+        assert len(resp.json()['taxlot_views']) == 1
 
         # root member can
         self.login_as_root_member()
         resp = self.client.get(url, content_type='application/json')
-        assert len(resp.json()["taxlot_views"]) == 2
+        assert len(resp.json()['taxlot_views']) == 2

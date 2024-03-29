@@ -2,6 +2,7 @@
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 import copy
 from datetime import datetime
 
@@ -9,9 +10,7 @@ import pytz
 from lxml import etree
 
 BUILDINGSYNC_URI = 'http://buildingsync.net/schemas/bedes-auc/2019'
-NAMESPACES = {
-    'auc': BUILDINGSYNC_URI
-}
+NAMESPACES = {'auc': BUILDINGSYNC_URI}
 etree.register_namespace('auc', BUILDINGSYNC_URI)
 
 """
@@ -77,17 +76,10 @@ def table_mapping_to_buildingsync_mapping(table_mapping):
 
         db_column = mapping_info[1]
         sub_xpath = full_xpath.replace(property_base_xpath, '').lstrip('/')
-        bsync_property_mapping[db_column] = {
-            'xpath': sub_xpath
-        }
+        bsync_property_mapping[db_column] = {'xpath': sub_xpath}
 
     if bsync_property_mapping:
-        return {
-            'property': {
-                'xpath': property_base_xpath,
-                'properties': bsync_property_mapping
-            }
-        }
+        return {'property': {'xpath': property_base_xpath, 'properties': bsync_property_mapping}}
 
     # no mappings for xml found
     return None
@@ -119,7 +111,7 @@ def get_terminal_value(element, mapping):
             return postfix
         return prefix
 
-    raise Exception(f'Unrecognized value type \"{mapping["value"]}\"')
+    raise Exception(f'Unrecognized value type "{mapping["value"]}"')
 
 
 def apply_mapping(element, mapping, messages, namespaces, xpaths_as_keys=False):
@@ -224,16 +216,16 @@ def to_energy_type(energy_type):
     energy_name = {
         'Electricity': 'Electric - Grid',
         'Electricity-Exported': 'Electric - Grid',
-        'Electricity-Onsite generated': 'Other:',                   # other?
+        'Electricity-Onsite generated': 'Other:',  # other?
         'Natural gas': 'Natural Gas',
-        'Fuel oil': 'Other:',                                       # other?
+        'Fuel oil': 'Other:',  # other?
         'Fuel oil no 1': 'Fuel oil (No. 1)',
         'Fuel oil no 2': 'Fuel Oil (No. 2)',
         'Fuel oil no 4': 'Fuel Oil (No. 4)',
-        'Fuel oil no 5': 'Other:',                                  # other?
-        'Fuel oil no 5 (light)': 'Other:',                          # other?
-        'Fuel oil no 5 (heavy)': 'Other:',                          # other?
-        'Fuel oil no 6': 'Fuel Oil (No. 5 and No. 6)',              # other?
+        'Fuel oil no 5': 'Other:',  # other?
+        'Fuel oil no 5 (light)': 'Other:',  # other?
+        'Fuel oil no 5 (heavy)': 'Other:',  # other?
+        'Fuel oil no 6': 'Fuel Oil (No. 5 and No. 6)',  # other?
         'Fuel oil no 5 and no 6': 'Fuel Oil (No. 5 and No. 6)',
         'District steam': 'District Steam',
         'District hot water': 'District Hot Water',
@@ -242,37 +234,37 @@ def to_energy_type(energy_type):
         'Liquid propane': 'Propane',
         'Kerosene': 'Kerosene',
         'Diesel': 'Diesel',
-        'Coal': 'Other:',                                           # other?
+        'Coal': 'Other:',  # other?
         'Coal anthracite': 'Coal (anthracite)',
         'Coal bituminous': 'Coal (bituminous)',
         'Coke': 'Coke',
         'Wood': 'Wood',
         'Wood pellets': 'Wood',
-        'Hydropower': 'Other:',                                     # other?
-        'Biofuel': 'Other:',                                        # other?
-        'Biofuel B5': 'Other:',                                     # other?
-        'Biofuel B10': 'Other:',                                    # other?
-        'Biofuel B20': 'Other:',                                    # other?
+        'Hydropower': 'Other:',  # other?
+        'Biofuel': 'Other:',  # other?
+        'Biofuel B5': 'Other:',  # other?
+        'Biofuel B10': 'Other:',  # other?
+        'Biofuel B20': 'Other:',  # other?
         'Wind': 'Electric - Wind',
-        'Geothermal': 'Other:',                                     # other?
+        'Geothermal': 'Other:',  # other?
         'Solar': 'Electric - Solar',
-        'Biomass': 'Other:',                                        # other?
-        'Hydrothermal': 'Other:',                                   # other?
-        'Dry steam': 'Other:',                                      # other?
-        'Flash steam': 'Other:',                                    # other?
-        'Ethanol': 'Other:',                                        # other?
-        'Biodiesel': 'Other:',                                      # other?
-        'Waste heat': 'Other:',                                     # other?
-        'Dual fuel': 'Other:',                                      # other?
-        'Gasoline': 'Other:',                                       # other?
-        'Thermal-Exported': 'Other:',                               # other?
-        'Thermal-Onsite generated': 'Other:',                       # other?
-        'Other delivered-Exported': 'Other:',                       # other?
-        'Other delivered-Onsite generated': 'Other:',               # other?
-        'Other metered-Exported': 'Other:',                         # other?
-        'Other metered-Onsite generated': 'Other:',                 # other?
+        'Biomass': 'Other:',  # other?
+        'Hydrothermal': 'Other:',  # other?
+        'Dry steam': 'Other:',  # other?
+        'Flash steam': 'Other:',  # other?
+        'Ethanol': 'Other:',  # other?
+        'Biodiesel': 'Other:',  # other?
+        'Waste heat': 'Other:',  # other?
+        'Dual fuel': 'Other:',  # other?
+        'Gasoline': 'Other:',  # other?
+        'Thermal-Exported': 'Other:',  # other?
+        'Thermal-Onsite generated': 'Other:',  # other?
+        'Other delivered-Exported': 'Other:',  # other?
+        'Other delivered-Onsite generated': 'Other:',  # other?
+        'Other metered-Exported': 'Other:',  # other?
+        'Other metered-Onsite generated': 'Other:',  # other?
         'Other': 'Other:',
-        'Unknown': 'Other:',                                        # other?
+        'Unknown': 'Other:',  # other?
     }.get(energy_type, energy_type).lower()
     for energy_pair in Meter.ENERGY_TYPES:
         if energy_pair[1].lower() == energy_name:
@@ -310,12 +302,12 @@ def to_energy_units(units):
         'lbs': 'Lbs. (pounds)',
         'Klbs': 'kLbs. (thousand pounds)',
         'Mlbs': 'MLbs. (million pounds)',
-        'Mass ton': 'Tons',                     # assuming "Tons" over "Tonnes (metric)"
+        'Mass ton': 'Tons',  # assuming "Tons" over "Tonnes (metric)"
         'Ton-hour': 'ton hours',
         'Other': 'Unknown',
         'Unknown': 'Unknown',
         'None': 'None',
-    }.get(units, "Unknown")
+    }.get(units, 'Unknown')
 
 
 def to_float(value):
@@ -327,19 +319,19 @@ def to_int(value):
 
 
 def to_bool(value):
-    return value.lower() == "true"
+    return value.lower() == 'true'
 
 
 def to_datetime(value):
     try:
-        res = pytz.utc.localize(datetime.strptime(value, "%Y-%m-%dT%H:%M:%S"))
+        res = pytz.utc.localize(datetime.strptime(value, '%Y-%m-%dT%H:%M:%S'))
         return res
     except ValueError as e:
         # parsing datetime with a timezone containing a colon is problematic for python < 3.7
         # https://stackoverflow.com/questions/30999230/how-to-parse-timezone-with-colon
-        if ":" == value[-3:-2]:
+        if value[-3:-2] == ':':
             value = value[:-3] + value[-2:]
-            res = datetime.strptime(value, "%Y-%m-%dT%H:%M:%S%z")
+            res = datetime.strptime(value, '%Y-%m-%dT%H:%M:%S%z')
             return res
         raise e
 
@@ -622,36 +614,27 @@ BASE_MAPPING_V2 = {
                 'xpath': './auc:Buildings/auc:Building/auc:PremisesIdentifiers/auc:PremisesIdentifier[auc:IdentifierCustomName="Portfolio Manager Building ID"]/auc:IdentifierValue',
                 'type': 'value',
                 'value': 'text',
-            }
-        }
+            },
+        },
     },
     'measures': {
         'xpath': '/auc:BuildingSync/auc:Facilities/auc:Facility/auc:Measures/auc:Measure',
         'type': 'list',
         'items': {
-            'property_measure_name': {
-                'xpath': '.',
-                'type': 'value',
-                'value': '@ID'
-            },
+            'property_measure_name': {'xpath': '.', 'type': 'value', 'value': '@ID'},
             'category': {
                 'xpath': './auc:TechnologyCategories/auc:TechnologyCategory/*[1]',
                 'type': 'value',
                 'value': 'tag',
-                'formatter': snake_case
+                'formatter': snake_case,
             },
             'name': {
                 'xpath': './auc:TechnologyCategories/auc:TechnologyCategory/*[1]//auc:MeasureName',
                 'type': 'value',
                 'value': 'text',
-                'formatter': snake_case
+                'formatter': snake_case,
             },
-            'implementation_status': {
-                'xpath': './auc:ImplementationStatus',
-                'type': 'value',
-                'value': 'text',
-                'formatter': to_impl_status
-            },
+            'implementation_status': {'xpath': './auc:ImplementationStatus', 'type': 'value', 'value': 'text', 'formatter': to_impl_status},
             'application_scale_of_application': {
                 'xpath': './auc:MeasureScaleOfApplication',
                 'type': 'value',
@@ -661,91 +644,50 @@ BASE_MAPPING_V2 = {
                 'xpath': './auc:SystemCategoryAffected',
                 'type': 'value',
                 'value': 'text',
-                'formatter': to_application_scale
+                'formatter': to_application_scale,
             },
-            'recommended': {
-                'xpath': './auc:Recommended',
-                'type': 'value',
-                'value': 'text',
-                'formatter': to_bool
-            },
-            'measure_total_first_cost': {
-                'xpath': './auc:MeasureTotalFirstCost',
-                'type': 'value',
-                'value': 'text',
-                'formatter': to_float
-            },
+            'recommended': {'xpath': './auc:Recommended', 'type': 'value', 'value': 'text', 'formatter': to_bool},
+            'measure_total_first_cost': {'xpath': './auc:MeasureTotalFirstCost', 'type': 'value', 'value': 'text', 'formatter': to_float},
             'measure_installation_cost': {
                 'xpath': './auc:MeasureInstallationCost',
                 'type': 'value',
                 'value': 'text',
-                'formatter': to_float
+                'formatter': to_float,
             },
-            'measure_material_cost': {
-                'xpath': './auc:MeasureMaterialCost',
-                'type': 'value',
-                'value': 'text',
-                'formatter': to_float
-            },
-            'mv_cost': {
-                'xpath': './auc:MVCost',
-                'type': 'value',
-                'value': 'text',
-                'formatter': to_float
-            },
-            'useful_life': {
-                'xpath': './auc:UsefulLife',
-                'type': 'value',
-                'value': 'text',
-                'formatter': to_float
-            }
-        }
+            'measure_material_cost': {'xpath': './auc:MeasureMaterialCost', 'type': 'value', 'value': 'text', 'formatter': to_float},
+            'mv_cost': {'xpath': './auc:MVCost', 'type': 'value', 'value': 'text', 'formatter': to_float},
+            'useful_life': {'xpath': './auc:UsefulLife', 'type': 'value', 'value': 'text', 'formatter': to_float},
+        },
     },
     'audit_dates': {
         'xpath': '/auc:BuildingSync/auc:Facilities/auc:Facility/auc:Reports/auc:Report/auc:AuditDates/auc:AuditDate',
         'type': 'list',
         'items': {
-            "date": {
+            'date': {
                 'xpath': './auc:Date',
                 'type': 'value',
                 'value': 'text',
             },
-            "date_type": {
+            'date_type': {
                 'xpath': './auc:DateType',
                 'type': 'value',
                 'value': 'text',
             },
-            "custom_date_type": {
+            'custom_date_type': {
                 'xpath': './auc:CustomDateType',
                 'type': 'value',
                 'value': 'text',
             },
-        }
+        },
     },
     'scenarios': {
         'xpath': '/auc:BuildingSync/auc:Facilities/auc:Facility/auc:Reports/auc:Report/auc:Scenarios/auc:Scenario',
         'type': 'list',
         'items': {
-            'id': {
-                'xpath': '.',
-                'type': 'value',
-                'value': '@ID'
-            },
-            'name': {
-                'xpath': './auc:ScenarioName',
-                'type': 'value',
-                'value': 'text'
-            },
-            'temporal_status': {
-                'xpath': './auc:TemporalStatus',
-                'type': 'value',
-                'value': 'text'
-            },
-            'reference_case': {
-                'xpath': './auc:ScenarioType/auc:PackageOfMeasures/auc:ReferenceCase',
-                'type': 'value',
-                'value': '@IDref'
-            },
+            'id': {'xpath': '.', 'type': 'value', 'value': '@ID'},
+            'name': {'xpath': './auc:ScenarioName', 'type': 'value', 'value': 'text'},
+            'temporal_status': {'xpath': './auc:TemporalStatus', 'type': 'value', 'value': 'text'},
+            'reference_case': {'xpath': './auc:ScenarioType/auc:PackageOfMeasures/auc:ReferenceCase', 'type': 'value', 'value': '@IDref'},
             'annual_site_energy_savings': {
                 'xpath': './auc:ScenarioType/auc:PackageOfMeasures/auc:AnnualSavingsSiteEnergy',
                 'type': 'value',
@@ -764,68 +706,62 @@ BASE_MAPPING_V2 = {
             'annual_electricity_savings': {
                 'xpath': './auc:ScenarioType/auc:PackageOfMeasures/auc:AnnualSavingsByFuels/auc:AnnualSavingsByFuel[auc:EnergyResource="Electricity"]/auc:AnnualSavingsNativeUnits',
                 'type': 'value',
-                'value': 'text'
+                'value': 'text',
             },
             'annual_natural_gas_savings': {
                 'xpath': './auc:ScenarioType/auc:PackageOfMeasures/auc:AnnualSavingsByFuels/auc:AnnualSavingsByFuel[auc:EnergyResource="Natural gas"]/auc:AnnualSavingsNativeUnits',
                 'type': 'value',
-                'value': 'text'
+                'value': 'text',
             },
             'annual_site_energy': {
                 'xpath': './auc:AllResourceTotals/auc:AllResourceTotal[auc:EndUse="All end uses"]/auc:SiteEnergyUse',
                 'type': 'value',
-                'value': 'text'
+                'value': 'text',
             },
             'annual_site_energy_use_intensity': {
                 'xpath': './auc:AllResourceTotals/auc:AllResourceTotal[auc:EndUse="All end uses"]/auc:SiteEnergyUseIntensity',
                 'type': 'value',
-                'value': 'text'
+                'value': 'text',
             },
             'annual_source_energy': {
                 'xpath': './auc:AllResourceTotals/auc:AllResourceTotal[auc:EndUse="All end uses"]/auc:SourceEnergyUse',
                 'type': 'value',
-                'value': 'text'
+                'value': 'text',
             },
             'annual_source_energy_use_intensity': {
                 'xpath': './auc:AllResourceTotals/auc:AllResourceTotal[auc:EndUse="All end uses"]/auc:SourceEnergyUseIntensity',
                 'type': 'value',
-                'value': 'text'
+                'value': 'text',
             },
             'annual_electricity_energy': {
                 'xpath': './auc:ResourceUses/auc:ResourceUse[auc:EnergyResource="Electricity"]/auc:AnnualFuelUseConsistentUnits',
                 'type': 'value',
-                'value': 'text'
+                'value': 'text',
             },
             'annual_peak_demand': {
                 'xpath': './auc:ResourceUses/auc:ResourceUse[auc:EnergyResource="Electricity"]/auc:AnnualPeakConsistentUnits',
                 'type': 'value',
-                'value': 'text'
+                'value': 'text',
             },
             'annual_peak_electricity_reduction': {
                 'xpath': './auc:ScenarioType/auc:PackageOfMeasures/auc:AnnualPeakElectricityReduction',
                 'type': 'value',
-                'value': 'text'
+                'value': 'text',
             },
             'annual_natural_gas_energy': {
                 'xpath': './auc:ResourceUses/auc:ResourceUse[auc:EnergyResource="Natural gas"]/auc:AnnualFuelUseConsistentUnits',
                 'type': 'value',
-                'value': 'text'
+                'value': 'text',
             },
             'is_virtual': {
                 'xpath': './auc:ScenarioType/auc:PackageOfMeasures/auc:CalculationMethod/auc:Modeled',
                 'type': 'value',
-                'value': 'exist'
+                'value': 'exist',
             },
             'measure_ids': {
                 'xpath': './auc:ScenarioType/auc:PackageOfMeasures/auc:MeasureIDs/auc:MeasureID',
                 'type': 'list',
-                'items': {
-                    'id': {
-                        'xpath': '.',
-                        'type': 'value',
-                        'value': '@IDref'
-                    }
-                }
+                'items': {'id': {'xpath': '.', 'type': 'value', 'value': '@IDref'}},
             },
             'resource_uses': {
                 'xpath': './auc:ResourceUses/auc:ResourceUse',
@@ -836,19 +772,9 @@ BASE_MAPPING_V2 = {
                         'type': 'value',
                         'value': '@ID',
                     },
-                    'type': {
-                        'xpath': './auc:EnergyResource',
-                        'type': 'value',
-                        'value': 'text',
-                        'formatter': to_energy_type
-                    },
-                    'units': {
-                        'xpath': './auc:ResourceUnits',
-                        'type': 'value',
-                        'value': 'text',
-                        'formatter': to_energy_units
-                    }
-                }
+                    'type': {'xpath': './auc:EnergyResource', 'type': 'value', 'value': 'text', 'formatter': to_energy_type},
+                    'units': {'xpath': './auc:ResourceUnits', 'type': 'value', 'value': 'text', 'formatter': to_energy_units},
+                },
             },
             'time_series': {
                 'xpath': './auc:TimeSeriesData/auc:TimeSeries',
@@ -859,29 +785,11 @@ BASE_MAPPING_V2 = {
                         'type': 'value',
                         'value': '@ID',
                     },
-                    'start_time': {
-                        'xpath': './auc:StartTimestamp',
-                        'type': 'value',
-                        'value': 'text',
-                        'formatter': to_datetime
-                    },
-                    'end_time': {
-                        'xpath': './auc:EndTimestamp',
-                        'type': 'value',
-                        'value': 'text',
-                        'formatter': to_datetime
-                    },
-                    'reading': {
-                        'xpath': './auc:IntervalReading',
-                        'type': 'value',
-                        'value': 'text'
-                    },
-                    'source_id': {
-                        'xpath': './auc:ResourceUseID',
-                        'type': 'value',
-                        'value': '@IDref'
-                    }
-                }
+                    'start_time': {'xpath': './auc:StartTimestamp', 'type': 'value', 'value': 'text', 'formatter': to_datetime},
+                    'end_time': {'xpath': './auc:EndTimestamp', 'type': 'value', 'value': 'text', 'formatter': to_datetime},
+                    'reading': {'xpath': './auc:IntervalReading', 'type': 'value', 'value': 'text'},
+                    'source_id': {'xpath': './auc:ResourceUseID', 'type': 'value', 'value': '@IDref'},
+                },
             },
             # Audit Template stores some meter readings in AllResourceTotals...
             'audit_template_all_resource_totals': {
@@ -898,9 +806,9 @@ BASE_MAPPING_V2 = {
                         'type': 'value',
                         'value': 'text',
                         'formatter': to_float,
-                    }
-                }
-            }
-        }
-    }
+                    },
+                },
+            },
+        },
+    },
 }

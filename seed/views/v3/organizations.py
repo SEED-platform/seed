@@ -1,10 +1,12 @@
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
+import functools
 import json
 import logging
+import operator
 from collections import defaultdict
 from io import BytesIO
 from pathlib import Path
@@ -29,18 +31,8 @@ from seed.data_importer.models import ImportFile, ImportRecord
 from seed.data_importer.tasks import save_raw_data
 from seed.decorators import ajax_request_class
 from seed.landing.models import SEEDUser as User
-from seed.lib.superperms.orgs.decorators import (
-    has_hierarchy_access,
-    has_perm_class
-)
-from seed.lib.superperms.orgs.models import (
-    ROLE_MEMBER,
-    ROLE_OWNER,
-    ROLE_VIEWER,
-    AccessLevelInstance,
-    Organization,
-    OrganizationUser
-)
+from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm_class
+from seed.lib.superperms.orgs.models import ROLE_MEMBER, ROLE_OWNER, ROLE_VIEWER, AccessLevelInstance, Organization, OrganizationUser
 from seed.models import (
     AUDIT_IMPORT,
     GREEN_BUTTON,
@@ -51,17 +43,15 @@ from seed.models import (
     Property,
     PropertyAuditLog,
     PropertyState,
-    PropertyView
+    PropertyView,
+    TaxLot,
+    TaxLotAuditLog,
+    TaxLotState,
+    TaxLotView,
 )
 from seed.models import StatusLabel as Label
-from seed.models import TaxLot, TaxLotAuditLog, TaxLotState, TaxLotView
-from seed.serializers.column_mappings import (
-    SaveColumnMappingsRequestPayloadSerializer
-)
-from seed.serializers.organizations import (
-    SaveSettingsSerializer,
-    SharedFieldsReturnSerializer
-)
+from seed.serializers.column_mappings import SaveColumnMappingsRequestPayloadSerializer
+from seed.serializers.organizations import SaveSettingsSerializer, SharedFieldsReturnSerializer
 from seed.serializers.pint import apply_display_unit_preferences
 from seed.utils.api import api_endpoint_class
 from seed.utils.api_schema import AutoSchemaHelper
@@ -69,10 +59,7 @@ from seed.utils.generic import median, round_down_hundred_thousand
 from seed.utils.geocode import geocode_buildings
 from seed.utils.match import match_merge_link
 from seed.utils.merge import merge_properties
-from seed.utils.organizations import (
-    create_organization,
-    create_suborganization
-)
+from seed.utils.organizations import create_organization, create_suborganization
 from seed.utils.properties import pair_unpair_property_taxlot
 from seed.utils.salesforce import toggle_salesforce_sync
 from seed.utils.users import get_js_role
@@ -88,29 +75,28 @@ def _dict_org(request, organizations):
         org_cycles = Cycle.objects.filter(organization=o).only('id', 'name').order_by('name')
         cycles = []
         for c in org_cycles:
-            cycles.append({
-                'name': c.name,
-                'cycle_id': c.pk,
-                'num_properties': PropertyView.objects.filter(cycle=c).count(),
-                'num_taxlots': TaxLotView.objects.filter(cycle=c).count()
-            })
+            cycles.append(
+                {
+                    'name': c.name,
+                    'cycle_id': c.pk,
+                    'num_properties': PropertyView.objects.filter(cycle=c).count(),
+                    'num_taxlots': TaxLotView.objects.filter(cycle=c).count(),
+                }
+            )
 
         # We don't wish to double count sub organization memberships.
-        org_users = OrganizationUser.objects.select_related('user').only(
-            'role_level', 'user__first_name', 'user__last_name', 'user__email', 'user__id'
-        ).filter(organization=o)
+        org_users = (
+            OrganizationUser.objects.select_related('user')
+            .only('role_level', 'user__first_name', 'user__last_name', 'user__email', 'user__id')
+            .filter(organization=o)
+        )
 
         owners = []
         role_level = None
         user_is_owner = False
         for ou in org_users:
             if ou.role_level == ROLE_OWNER:
-                owners.append({
-                    'first_name': ou.user.first_name,
-                    'last_name': ou.user.last_name,
-                    'email': ou.user.email,
-                    'id': ou.user.id
-                })
+                owners.append({'first_name': ou.user.first_name, 'last_name': ou.user.last_name, 'email': ou.user.email, 'id': ou.user.id})
 
                 if ou.user == request.user:
                     user_is_owner = True
@@ -167,9 +153,7 @@ def _dict_org(request, organizations):
 def _dict_org_brief(request, organizations):
     """returns a brief dictionary of an organization's data."""
 
-    organization_roles = list(OrganizationUser.objects.filter(user=request.user).values(
-        'organization_id', 'role_level'
-    ))
+    organization_roles = list(OrganizationUser.objects.filter(user=request.user).values('organization_id', 'role_level'))
 
     role_levels = {}
     for r in organization_roles:
@@ -243,22 +227,17 @@ class OrganizationViewSet(viewsets.ViewSet):
                 }
             )
         except Organization.DoesNotExist:
-            return JsonResponse({
-                'status': 'error',
-                'message': 'organization with with id {} does not exist'.format(pk)
-            }, status=status.HTTP_404_NOT_FOUND)
+            return JsonResponse(
+                {'status': 'error', 'message': f'organization with with id {pk} does not exist'}, status=status.HTTP_404_NOT_FOUND
+            )
 
     @swagger_auto_schema(
         manual_parameters=[
-            AutoSchemaHelper.query_integer_field(
-                'import_file_id', required=True, description='Import file id'),
-            openapi.Parameter(
-                'id', openapi.IN_PATH, type=openapi.TYPE_INTEGER, description='Organization id'),
+            AutoSchemaHelper.query_integer_field('import_file_id', required=True, description='Import file id'),
+            openapi.Parameter('id', openapi.IN_PATH, type=openapi.TYPE_INTEGER, description='Organization id'),
         ],
         request_body=SaveColumnMappingsRequestPayloadSerializer,
-        responses={
-            200: 'success response'
-        }
+        responses={200: 'success response'},
     )
     @api_endpoint_class
     @ajax_request_class
@@ -275,43 +254,31 @@ class OrganizationViewSet(viewsets.ViewSet):
         """
         import_file_id = request.query_params.get('import_file_id')
         if import_file_id is None:
-            return JsonResponse({
-                'status': 'error',
-                'message': 'Query param `import_file_id` is required'
-            }, status=status.HTTP_400_BAD_REQUEST)
+            return JsonResponse(
+                {'status': 'error', 'message': 'Query param `import_file_id` is required'}, status=status.HTTP_400_BAD_REQUEST
+            )
         try:
             ImportFile.objects.get(pk=import_file_id)
             organization = Organization.objects.get(pk=pk)
         except ImportFile.DoesNotExist:
-            return JsonResponse({
-                'status': 'error',
-                'message': 'No import file found'
-            }, status=status.HTTP_404_NOT_FOUND)
+            return JsonResponse({'status': 'error', 'message': 'No import file found'}, status=status.HTTP_404_NOT_FOUND)
         except Organization.DoesNotExist:
-            return JsonResponse({
-                'status': 'error',
-                'message': 'No organization found'
-            }, status=status.HTTP_404_NOT_FOUND)
+            return JsonResponse({'status': 'error', 'message': 'No organization found'}, status=status.HTTP_404_NOT_FOUND)
 
         try:
-            Column.create_mappings(
-                request.data.get('mappings', []),
-                organization,
-                request.user,
-                import_file_id
-            )
+            Column.create_mappings(request.data.get('mappings', []), organization, request.user, import_file_id)
         except PermissionError as e:
-            return JsonResponse({'status': 'error', "message": str(e)})
+            return JsonResponse({'status': 'error', 'message': str(e)})
 
         else:
             return JsonResponse({'status': 'success'})
 
     @swagger_auto_schema(
-        manual_parameters=[AutoSchemaHelper.query_boolean_field(
-            'brief',
-            required=False,
-            description='If true, only return high-level organization details'
-        )]
+        manual_parameters=[
+            AutoSchemaHelper.query_boolean_field(
+                'brief', required=False, description='If true, only return high-level organization details'
+            )
+        ]
     )
     @api_endpoint_class
     @ajax_request_class
@@ -331,11 +298,13 @@ class OrganizationViewSet(viewsets.ViewSet):
 
             orgs = _dict_org_brief(request, qs)
             if len(orgs) == 0:
-                return JsonResponse({
-                    'status': 'error',
-                    'message': 'Your SEED account is not associated with any organizations. '
-                               'Please contact a SEED administrator.'
-                }, status=status.HTTP_401_UNAUTHORIZED)
+                return JsonResponse(
+                    {
+                        'status': 'error',
+                        'message': 'Your SEED account is not associated with any organizations. ' 'Please contact a SEED administrator.',
+                    },
+                    status=status.HTTP_401_UNAUTHORIZED,
+                )
             else:
                 return JsonResponse({'organizations': orgs})
         else:
@@ -346,11 +315,13 @@ class OrganizationViewSet(viewsets.ViewSet):
 
             orgs = _dict_org(request, qs)
             if len(orgs) == 0:
-                return JsonResponse({
-                    'status': 'error',
-                    'message': 'Your SEED account is not associated with any organizations. '
-                               'Please contact a SEED administrator.'
-                }, status=status.HTTP_401_UNAUTHORIZED)
+                return JsonResponse(
+                    {
+                        'status': 'error',
+                        'message': 'Your SEED account is not associated with any organizations. ' 'Please contact a SEED administrator.',
+                    },
+                    status=status.HTTP_401_UNAUTHORIZED,
+                )
             else:
                 return JsonResponse({'organizations': orgs})
 
@@ -375,41 +346,32 @@ class OrganizationViewSet(viewsets.ViewSet):
         brief = json.loads(request.query_params.get('brief', 'false'))
 
         if org_id is None:
-            return JsonResponse({
-                'status': 'error',
-                'message': 'no organization_id sent'
-            }, status=status.HTTP_400_BAD_REQUEST)
+            return JsonResponse({'status': 'error', 'message': 'no organization_id sent'}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             org = Organization.objects.get(pk=org_id)
         except Organization.DoesNotExist:
-            return JsonResponse({
-                'status': 'error',
-                'message': 'organization does not exist'
-            }, status=status.HTTP_404_NOT_FOUND)
+            return JsonResponse({'status': 'error', 'message': 'organization does not exist'}, status=status.HTTP_404_NOT_FOUND)
         if (
-            not request.user.is_superuser and
-            not OrganizationUser.objects.filter(
-                user=request.user,
-                organization=org,
-                role_level__in=[ROLE_OWNER, ROLE_MEMBER, ROLE_VIEWER]
+            not request.user.is_superuser
+            and not OrganizationUser.objects.filter(
+                user=request.user, organization=org, role_level__in=[ROLE_OWNER, ROLE_MEMBER, ROLE_VIEWER]
             ).exists()
         ):
             # TODO: better permission and return 401 or 403
-            return JsonResponse({
-                'status': 'error',
-                'message': 'user is not the owner of the org'
-            }, status=status.HTTP_403_FORBIDDEN)
+            return JsonResponse({'status': 'error', 'message': 'user is not the owner of the org'}, status=status.HTTP_403_FORBIDDEN)
 
         if brief:
             org = _dict_org_brief(request, [org])[0]
         else:
             org = _dict_org(request, [org])[0]
 
-        return JsonResponse({
-            'status': 'success',
-            'organization': org,
-        })
+        return JsonResponse(
+            {
+                'status': 'success',
+                'organization': org,
+            }
+        )
 
     @swagger_auto_schema(
         request_body=AutoSchemaHelper.schema_factory(
@@ -419,8 +381,8 @@ class OrganizationViewSet(viewsets.ViewSet):
             },
             required=['organization_name', 'user_id'],
             description='Properties:\n'
-                        '- organization_name: The new organization name\n'
-                        '- user_id: The user ID (primary key) to be used as the owner of the new organization'
+            '- organization_name: The new organization name\n'
+            '- user_id: The user ID (primary key) to be used as the owner of the new organization',
         )
     )
     @api_endpoint_class
@@ -434,25 +396,13 @@ class OrganizationViewSet(viewsets.ViewSet):
         org_name = body['organization_name']
 
         if not request.user.is_superuser and request.user.id != user.id:
-            return JsonResponse({
-                'status': 'error',
-                'message': 'not authorized'
-            }, status=status.HTTP_403_FORBIDDEN)
+            return JsonResponse({'status': 'error', 'message': 'not authorized'}, status=status.HTTP_403_FORBIDDEN)
 
         if Organization.objects.filter(name=org_name).exists():
-            return JsonResponse({
-                'status': 'error',
-                'message': 'Organization name already exists'
-            }, status=status.HTTP_409_CONFLICT)
+            return JsonResponse({'status': 'error', 'message': 'Organization name already exists'}, status=status.HTTP_409_CONFLICT)
 
         org, _, _ = create_organization(user, org_name, org_name)
-        return JsonResponse(
-            {
-                'status': 'success',
-                'message': 'Organization created',
-                'organization': _dict_org(request, [org])[0]
-            }
-        )
+        return JsonResponse({'status': 'success', 'message': 'Organization created', 'organization': _dict_org(request, [org])[0]})
 
     @api_endpoint_class
     @ajax_request_class
@@ -480,8 +430,7 @@ class OrganizationViewSet(viewsets.ViewSet):
         org = Organization.objects.get(pk=pk)
         posted_org = body.get('organization', None)
         if posted_org is None:
-            return JsonResponse({'status': 'error', 'message': 'malformed request'},
-                                status=status.HTTP_400_BAD_REQUEST)
+            return JsonResponse({'status': 'error', 'message': 'malformed request'}, status=status.HTTP_400_BAD_REQUEST)
 
         desired_threshold = posted_org.get('query_threshold', None)
         if desired_threshold is not None:
@@ -497,12 +446,10 @@ class OrganizationViewSet(viewsets.ViewSet):
 
         def warn_bad_pint_spec(kind, unit_string):
             if unit_string is not None:
-                _log.warn("got bad {0} unit string {1} for org {2}".format(
-                    kind, unit_string, org.name))
+                _log.warn(f'got bad {kind} unit string {unit_string} for org {org.name}')
 
         def warn_bad_units(kind, unit_string):
-            _log.warn("got bad {0} unit string {1} for org {2}".format(
-                kind, unit_string, org.name))
+            _log.warn(f'got bad {kind} unit string {unit_string} for org {org.name}')
 
         desired_display_units_eui = posted_org.get('display_units_eui')
         if is_valid_choice(Organization.MEASUREMENT_CHOICES_EUI, desired_display_units_eui):
@@ -532,8 +479,7 @@ class OrganizationViewSet(viewsets.ViewSet):
         if isinstance(desired_display_decimal_places, int) and desired_display_decimal_places >= 0:
             org.display_decimal_places = desired_display_decimal_places
         elif desired_display_decimal_places is not None:
-            _log.warn("got bad sig figs {0} for org {1}".format(
-                desired_display_decimal_places, org.name))
+            _log.warn(f'got bad sig figs {desired_display_decimal_places} for org {org.name}')
 
         desired_display_meter_units = posted_org.get('display_meter_units')
         if desired_display_meter_units:
@@ -627,11 +573,10 @@ class OrganizationViewSet(viewsets.ViewSet):
         # update the ubid threshold option
         ubid_threshold = posted_org.get('ubid_threshold')
         if ubid_threshold is not None and ubid_threshold != org.ubid_threshold:
-            if not type(ubid_threshold) in (float, int) or ubid_threshold < 0 or ubid_threshold > 1:
-                return JsonResponse({
-                    'status': 'error',
-                    'message': 'ubid_threshold must be a float between 0 and 1'
-                }, status=status.HTTP_400_BAD_REQUEST)
+            if type(ubid_threshold) not in (float, int) or ubid_threshold < 0 or ubid_threshold > 1:
+                return JsonResponse(
+                    {'status': 'error', 'message': 'ubid_threshold must be a float between 0 and 1'}, status=status.HTTP_400_BAD_REQUEST
+                )
 
             org.ubid_threshold = ubid_threshold
 
@@ -640,8 +585,7 @@ class OrganizationViewSet(viewsets.ViewSet):
         # Update the selected exportable fields.
         new_public_column_names = posted_org.get('public_fields', None)
         if new_public_column_names is not None:
-            old_public_columns = Column.objects.filter(organization=org,
-                                                       shared_field_type=Column.SHARED_PUBLIC)
+            old_public_columns = Column.objects.filter(organization=org, shared_field_type=Column.SHARED_PUBLIC)
             # turn off sharing in the old_pub_fields
             for col in old_public_columns:
                 col.shared_field_type = Column.SHARED_NONE
@@ -669,16 +613,9 @@ class OrganizationViewSet(viewsets.ViewSet):
         don't belong to will be removed from the results.
         """
         org = Organization.objects.get(pk=pk)
-        return JsonResponse({
-            'status': 'success',
-            'query_threshold': org.query_threshold
-        })
+        return JsonResponse({'status': 'success', 'query_threshold': org.query_threshold})
 
-    @swagger_auto_schema(
-        responses={
-            200: SharedFieldsReturnSerializer
-        }
-    )
+    @swagger_auto_schema(responses={200: SharedFieldsReturnSerializer})
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_member')
@@ -687,10 +624,7 @@ class OrganizationViewSet(viewsets.ViewSet):
         """
         Retrieves all fields marked as shared for the organization. Will only return used fields.
         """
-        result = {
-            'status': 'success',
-            'public_fields': []
-        }
+        result = {'status': 'success', 'public_fields': []}
 
         columns = Column.retrieve_all(pk, 'property', True)
         for c in columns:
@@ -700,7 +634,7 @@ class OrganizationViewSet(viewsets.ViewSet):
                     'name': c['name'],
                     'column_name': c['column_name'],
                     # this is the field name in the db. The other name can have tax_
-                    'display_name': c['display_name']
+                    'display_name': c['display_name'],
                 }
                 result['public_fields'].append(new_column)
 
@@ -714,8 +648,8 @@ class OrganizationViewSet(viewsets.ViewSet):
             },
             required=['sub_org_name', 'sub_org_owner_email'],
             description='Properties:\n'
-                        '- sub_org_name: Name of the new sub organization\n'
-                        '- sub_org_owner_email: Email of the owner of the sub organization, which must already exist',
+            '- sub_org_name: Name of the new sub organization\n'
+            '- sub_org_owner_email: Email of the owner of the sub organization, which must already exist',
         )
     )
     @api_endpoint_class
@@ -732,23 +666,15 @@ class OrganizationViewSet(viewsets.ViewSet):
         try:
             user = User.objects.get(username=email)
         except User.DoesNotExist:
-            return JsonResponse({
-                'status': 'error',
-                'message': 'User with email address (%s) does not exist' % email
-            }, status=status.HTTP_400_BAD_REQUEST)
+            return JsonResponse(
+                {'status': 'error', 'message': 'User with email address (%s) does not exist' % email}, status=status.HTTP_400_BAD_REQUEST
+            )
 
-        created, mess_or_org, _ = create_suborganization(user, org, body['sub_org_name'],
-                                                         ROLE_OWNER)
+        created, mess_or_org, _ = create_suborganization(user, org, body['sub_org_name'], ROLE_OWNER)
         if created:
-            return JsonResponse({
-                'status': 'success',
-                'organization_id': mess_or_org.pk
-            })
+            return JsonResponse({'status': 'success', 'organization_id': mess_or_org.pk})
         else:
-            return JsonResponse({
-                'status': 'error',
-                'message': mess_or_org
-            }, status=status.HTTP_409_CONFLICT)
+            return JsonResponse({'status': 'error', 'message': mess_or_org}, status=status.HTTP_409_CONFLICT)
 
     @api_endpoint_class
     @ajax_request_class
@@ -761,16 +687,15 @@ class OrganizationViewSet(viewsets.ViewSet):
         try:
             org = Organization.objects.get(pk=pk)
         except ObjectDoesNotExist:
-            return JsonResponse({'status': 'error',
-                                 'message': 'Could not retrieve organization at pk = ' + str(pk)},
-                                status=status.HTTP_404_NOT_FOUND)
+            return JsonResponse(
+                {'status': 'error', 'message': 'Could not retrieve organization at pk = ' + str(pk)}, status=status.HTTP_404_NOT_FOUND
+            )
 
         matching_criteria_column_names = dict(
-            org.column_set.
-            filter(is_matching_criteria=True).
-            values('table_name').
-            annotate(column_names=ArrayAgg('column_name')).
-            values_list('table_name', 'column_names')
+            org.column_set.filter(is_matching_criteria=True)
+            .values('table_name')
+            .annotate(column_names=ArrayAgg('column_name'))
+            .values_list('table_name', 'column_names')
         )
 
         return JsonResponse(matching_criteria_column_names)
@@ -786,14 +711,11 @@ class OrganizationViewSet(viewsets.ViewSet):
         try:
             org = Organization.objects.get(pk=pk)
         except ObjectDoesNotExist:
-            return JsonResponse({'status': 'error',
-                                 'message': 'Could not retrieve organization at pk = ' + str(pk)},
-                                status=status.HTTP_404_NOT_FOUND)
+            return JsonResponse(
+                {'status': 'error', 'message': 'Could not retrieve organization at pk = ' + str(pk)}, status=status.HTTP_404_NOT_FOUND
+            )
 
-        geocoding_columns_qs = org.column_set.\
-            filter(geocoding_order__gt=0).\
-            order_by('geocoding_order').\
-            values('table_name', 'column_name')
+        geocoding_columns_qs = org.column_set.filter(geocoding_order__gt=0).order_by('geocoding_order').values('table_name', 'column_name')
 
         geocoding_columns = {
             'PropertyState': [],
@@ -818,25 +740,25 @@ class OrganizationViewSet(viewsets.ViewSet):
                 result[name] = getattr(state, name)
 
         # set x
-        if x_var == "Count":
-            result["x"] = 1
+        if x_var == 'Count':
+            result['x'] = 1
         else:
             try:
-                result["x"] = getattr(state, x_var)
+                result['x'] = getattr(state, x_var)
             except AttributeError:
                 # check extra data
                 try:
-                    result["x"] = state.extra_data.get(x_var)
+                    result['x'] = state.extra_data.get(x_var)
                 except AttributeError:
                     return {}
 
         # set y
         try:
-            result["y"] = getattr(state, y_var)
+            result['y'] = getattr(state, y_var)
         except AttributeError:
             # check extra data
             try:
-                result["y"] = state.extra_data.get(y_var)
+                result['y'] = state.extra_data.get(y_var)
             except AttributeError:
                 return {}
 
@@ -845,14 +767,16 @@ class OrganizationViewSet(viewsets.ViewSet):
     def get_raw_report_data(self, organization_id, access_level_instance, cycles, x_var, y_var, additional_columns=None):
         if additional_columns is None:
             additional_columns = []
-        all_property_views = PropertyView.objects.select_related(
-            'property', 'state'
-        ).filter(
-            property__organization_id=organization_id,
-            property__access_level_instance__lft__gte=access_level_instance.lft,
-            property__access_level_instance__rgt__lte=access_level_instance.rgt,
-            cycle_id__in=cycles
-        ).order_by('id')
+        all_property_views = (
+            PropertyView.objects.select_related('property', 'state')
+            .filter(
+                property__organization_id=organization_id,
+                property__access_level_instance__lft__gte=access_level_instance.lft,
+                property__access_level_instance__rgt__lte=access_level_instance.rgt,
+                cycle_id__in=cycles,
+            )
+            .order_by('id')
+        )
         organization = Organization.objects.get(pk=organization_id)
         results = []
         for cycle in cycles:
@@ -870,12 +794,12 @@ class OrganizationViewSet(viewsets.ViewSet):
                     data.append(de_unitted_result)
                     count_with_data.append(property_pk)
             result = {
-                "cycle_id": cycle.pk,
-                "chart_data": data,
-                "property_counts": {
-                    "yr_e": cycle.end.strftime('%Y'),
-                    "num_properties": len(count_total),
-                    "num_properties_w-data": len(count_with_data),
+                'cycle_id': cycle.pk,
+                'chart_data': data,
+                'property_counts': {
+                    'yr_e': cycle.end.strftime('%Y'),
+                    'num_properties': len(count_total),
+                    'num_properties_w-data': len(count_with_data),
                 },
             }
             results.append(result)
@@ -883,26 +807,12 @@ class OrganizationViewSet(viewsets.ViewSet):
 
     @swagger_auto_schema(
         manual_parameters=[
+            AutoSchemaHelper.query_string_field('x_var', required=True, description='Raw column name for x axis'),
+            AutoSchemaHelper.query_string_field('y_var', required=True, description='Raw column name for y axis'),
             AutoSchemaHelper.query_string_field(
-                'x_var',
-                required=True,
-                description='Raw column name for x axis'
+                'start', required=True, description='Start time, in the format "2018-12-31T23:53:00-08:00"'
             ),
-            AutoSchemaHelper.query_string_field(
-                'y_var',
-                required=True,
-                description='Raw column name for y axis'
-            ),
-            AutoSchemaHelper.query_string_field(
-                'start',
-                required=True,
-                description='Start time, in the format "2018-12-31T23:53:00-08:00"'
-            ),
-            AutoSchemaHelper.query_string_field(
-                'end',
-                required=True,
-                description='End time, in the format "2018-12-31T23:53:00-08:00"'
-            ),
+            AutoSchemaHelper.query_string_field('end', required=True, description='End time, in the format "2018-12-31T23:53:00-08:00"'),
         ]
     )
     @api_endpoint_class
@@ -910,57 +820,39 @@ class OrganizationViewSet(viewsets.ViewSet):
     @has_perm_class('requires_viewer')
     @action(detail=True, methods=['GET'])
     def report(self, request, pk=None):
-        """Retrieve a summary report for charting x vs y
-        """
+        """Retrieve a summary report for charting x vs y"""
         access_level_instance = AccessLevelInstance.objects.get(pk=self.request.access_level_instance_id)
         params = {
-            "x_var": request.query_params.get("x_var", None),
-            "y_var": request.query_params.get("y_var", None),
-            "cycle_ids": request.query_params.getlist("cycle_ids", None),
+            'x_var': request.query_params.get('x_var', None),
+            'y_var': request.query_params.get('y_var', None),
+            'cycle_ids': request.query_params.getlist('cycle_ids', None),
         }
 
-        excepted_params = ["x_var", "y_var", "cycle_ids"]
+        excepted_params = ['x_var', 'y_var', 'cycle_ids']
         missing_params = [p for p in excepted_params if p not in params]
         if missing_params:
             return Response(
-                {'status': 'error', 'message': "Missing params: {}".format(", ".join(missing_params))},
-                status=status.HTTP_400_BAD_REQUEST
+                {'status': 'error', 'message': 'Missing params: {}'.format(', '.join(missing_params))}, status=status.HTTP_400_BAD_REQUEST
             )
 
-        cycles = Cycle.objects.filter(id__in=params["cycle_ids"])
+        cycles = Cycle.objects.filter(id__in=params['cycle_ids'])
         data = self.get_raw_report_data(pk, access_level_instance, cycles, params['x_var'], params['y_var'])
-        data = {
-            "chart_data": sum([d["chart_data"] for d in data], []),
-            "property_counts": [d["property_counts"] for d in data]
-        }
+        data = {'chart_data': functools.reduce(operator.iadd, [d['chart_data'] for d in data], []), 'property_counts': [d['property_counts'] for d in data]}
 
-        return Response(
-            {'status': 'success', 'data': data},
-            status=status.HTTP_200_OK
-        )
+        return Response({'status': 'success', 'data': data}, status=status.HTTP_200_OK)
 
     @swagger_auto_schema(
         manual_parameters=[
-            AutoSchemaHelper.query_string_field(
-                'x_var',
-                required=True,
-                description='Raw column name for x axis'
-            ),
+            AutoSchemaHelper.query_string_field('x_var', required=True, description='Raw column name for x axis'),
             AutoSchemaHelper.query_string_field(
                 'y_var',
                 required=True,
-                description='Raw column name for y axis, must be one of: "gross_floor_area", "property_type", "year_built"'
+                description='Raw column name for y axis, must be one of: "gross_floor_area", "property_type", "year_built"',
             ),
             AutoSchemaHelper.query_string_field(
-                'start',
-                required=True,
-                description='Start time, in the format "2018-12-31T23:53:00-08:00"'
+                'start', required=True, description='Start time, in the format "2018-12-31T23:53:00-08:00"'
             ),
-            AutoSchemaHelper.query_string_field(
-                'end',
-                required=True,
-                description='End time, in the format "2018-12-31T23:53:00-08:00"'
-            ),
+            AutoSchemaHelper.query_string_field('end', required=True, description='End time, in the format "2018-12-31T23:53:00-08:00"'),
         ]
     )
     @api_endpoint_class
@@ -968,52 +860,46 @@ class OrganizationViewSet(viewsets.ViewSet):
     @has_perm_class('requires_viewer')
     @action(detail=True, methods=['GET'])
     def report_aggregated(self, request, pk=None):
-        """Retrieve a summary report for charting x vs y aggregated by y_var
-        """
+        """Retrieve a summary report for charting x vs y aggregated by y_var"""
         access_level_instance = AccessLevelInstance.objects.get(pk=self.request.access_level_instance_id)
 
         # get params
         params = {
-            "x_var": request.query_params.get("x_var", None),
-            "y_var": request.query_params.get("y_var", None),
-            "cycle_ids": request.query_params.getlist("cycle_ids", None)
+            'x_var': request.query_params.get('x_var', None),
+            'y_var': request.query_params.get('y_var', None),
+            'cycle_ids': request.query_params.getlist('cycle_ids', None),
         }
 
         # error if missing
-        excepted_params = ["x_var", "y_var", "cycle_ids"]
+        excepted_params = ['x_var', 'y_var', 'cycle_ids']
         missing_params = [p for p in excepted_params if p not in params]
         if missing_params:
             return Response(
-                {'status': 'error', 'message': "Missing params: {}".format(", ".join(missing_params))},
-                status=status.HTTP_400_BAD_REQUEST
+                {'status': 'error', 'message': 'Missing params: {}'.format(', '.join(missing_params))}, status=status.HTTP_400_BAD_REQUEST
             )
 
         # error if y_var invalid
         valid_y_values = ['gross_floor_area', 'property_type', 'year_built']
-        if params["y_var"] not in valid_y_values:
+        if params['y_var'] not in valid_y_values:
             return Response(
-                {'status': 'error', 'message': f"{params['y_var']} is not a valid value for y_var"},
-                status=status.HTTP_400_BAD_REQUEST
+                {'status': 'error', 'message': f"{params['y_var']} is not a valid value for y_var"}, status=status.HTTP_400_BAD_REQUEST
             )
 
         # get data
-        cycles = Cycle.objects.filter(id__in=params["cycle_ids"])
-        data = self.get_raw_report_data(pk, access_level_instance, cycles, params["x_var"], params["y_var"])
+        cycles = Cycle.objects.filter(id__in=params['cycle_ids'])
+        data = self.get_raw_report_data(pk, access_level_instance, cycles, params['x_var'], params['y_var'])
         chart_data = []
         property_counts = []
         for datum in data:
             buildings = datum['chart_data']
             yr_e = datum['property_counts']['yr_e']
-            chart_data.extend(self.aggregate_data(yr_e, params["x_var"], params["y_var"], buildings)),
+            (chart_data.extend(self.aggregate_data(yr_e, params['x_var'], params['y_var'], buildings)),)
             property_counts.append(datum['property_counts'])
 
         # Send back to client
         result = {
             'status': 'success',
-            'aggregated_data': {
-                'chart_data': chart_data,
-                'property_counts': property_counts
-            },
+            'aggregated_data': {'chart_data': chart_data, 'property_counts': property_counts},
         }
 
         return Response(result, status=status.HTTP_200_OK)
@@ -1023,8 +909,6 @@ class OrganizationViewSet(viewsets.ViewSet):
             'property_type': self.aggregate_property_type,
             'year_built': self.aggregate_year_built,
             'gross_floor_area': self.aggregate_gross_floor_area,
-
-
         }
         return aggregation_method[y_var](yr_e, x_var, buildings)
 
@@ -1040,11 +924,7 @@ class OrganizationViewSet(viewsets.ViewSet):
         for use, buildings_in_uses in grouped_uses.items():
             x = [b['x'] for b in buildings_in_uses if b['x'] is not None]
             if x:
-                chart_data.append({
-                    'x': sum(x) if x_var == "Count" else median(x),
-                    'y': use.capitalize(),
-                    'yr_e': yr_e
-                })
+                chart_data.append({'x': sum(x) if x_var == 'Count' else median(x), 'y': use.capitalize(), 'yr_e': yr_e})
         return chart_data
 
     def aggregate_year_built(self, yr_e, x_var, buildings):
@@ -1057,11 +937,13 @@ class OrganizationViewSet(viewsets.ViewSet):
         # Now iterate over decade groups to make each chart item
         for decade, buildings_in_decade in grouped_decades.items():
             x = [b['x'] for b in buildings_in_decade if b['x'] is not None]
-            chart_data.append({
-                'x': sum(x) if x_var == "Count" else median(x),
-                'y': '%s-%s' % (decade, '%s9' % str(decade)[:-1]),  # 1990-1999
-                'yr_e': yr_e
-            })
+            chart_data.append(
+                {
+                    'x': sum(x) if x_var == 'Count' else median(x),
+                    'y': f'{decade}-{"%s9" % str(decade)[:-1]}',  # 1990-1999
+                    'yr_e': yr_e,
+                }
+            )
         return chart_data
 
     def aggregate_gross_floor_area(self, yr_e, x_var, buildings):
@@ -1095,45 +977,19 @@ class OrganizationViewSet(viewsets.ViewSet):
         # Now iterate over range groups to make each chart item
         for range_floor, buildings_in_range in grouped_ranges.items():
             x = [b['x'] for b in buildings_in_range if b['x'] is not None]
-            chart_data.append({
-                'x': sum(x) if x_var == "Count" else median(x),
-                'y': y_display_map[range_floor],
-                'yr_e': yr_e
-            })
+            chart_data.append({'x': sum(x) if x_var == 'Count' else median(x), 'y': y_display_map[range_floor], 'yr_e': yr_e})
         return chart_data
 
     @swagger_auto_schema(
         manual_parameters=[
+            AutoSchemaHelper.query_string_field('x_var', required=True, description='Raw column name for x axis'),
+            AutoSchemaHelper.query_string_field('x_label', required=True, description='Label for x axis'),
+            AutoSchemaHelper.query_string_field('y_var', required=True, description='Raw column name for y axis'),
+            AutoSchemaHelper.query_string_field('y_label', required=True, description='Label for y axis'),
             AutoSchemaHelper.query_string_field(
-                'x_var',
-                required=True,
-                description='Raw column name for x axis'
+                'start', required=True, description='Start time, in the format "2018-12-31T23:53:00-08:00"'
             ),
-            AutoSchemaHelper.query_string_field(
-                'x_label',
-                required=True,
-                description='Label for x axis'
-            ),
-            AutoSchemaHelper.query_string_field(
-                'y_var',
-                required=True,
-                description='Raw column name for y axis'
-            ),
-            AutoSchemaHelper.query_string_field(
-                'y_label',
-                required=True,
-                description='Label for y axis'
-            ),
-            AutoSchemaHelper.query_string_field(
-                'start',
-                required=True,
-                description='Start time, in the format "2018-12-31T23:53:00-08:00"'
-            ),
-            AutoSchemaHelper.query_string_field(
-                'end',
-                required=True,
-                description='End time, in the format "2018-12-31T23:53:00-08:00"'
-            ),
+            AutoSchemaHelper.query_string_field('end', required=True, description='End time, in the format "2018-12-31T23:53:00-08:00"'),
         ]
     )
     @api_endpoint_class
@@ -1148,20 +1004,19 @@ class OrganizationViewSet(viewsets.ViewSet):
 
         # get params
         params = {
-            "x_var": request.query_params.get("x_var", None),
-            "x_label": request.query_params.get("x_label", None),
-            "y_var": request.query_params.get("y_var", None),
-            "y_label": request.query_params.get("y_label", None),
-            "cycle_ids": request.query_params.getlist("cycle_ids", None)
+            'x_var': request.query_params.get('x_var', None),
+            'x_label': request.query_params.get('x_label', None),
+            'y_var': request.query_params.get('y_var', None),
+            'y_label': request.query_params.get('y_label', None),
+            'cycle_ids': request.query_params.getlist('cycle_ids', None),
         }
 
         # error if missing
-        excepted_params = ["x_var", "x_label", "y_var", "y_label", "cycle_ids"]
+        excepted_params = ['x_var', 'x_label', 'y_var', 'y_label', 'cycle_ids']
         missing_params = [p for p in excepted_params if p not in params]
         if missing_params:
             return Response(
-                {'status': 'error', 'message': "Missing params: {}".format(", ".join(missing_params))},
-                status=status.HTTP_400_BAD_REQUEST
+                {'status': 'error', 'message': 'Missing params: {}'.format(', '.join(missing_params))}, status=status.HTTP_400_BAD_REQUEST
             )
 
         response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
@@ -1191,11 +1046,9 @@ class OrganizationViewSet(viewsets.ViewSet):
         agg_sheet.write(data_row_start, data_col_start + 2, 'Year Ending', bold)
 
         # Gather base data
-        cycles = Cycle.objects.filter(id__in=params["cycle_ids"])
-        matching_columns = Column.objects.filter(organization_id=pk, is_matching_criteria=True, table_name="PropertyState")
-        data = self.get_raw_report_data(
-            pk, access_level_instance, cycles, params['x_var'], params['y_var'], matching_columns
-        )
+        cycles = Cycle.objects.filter(id__in=params['cycle_ids'])
+        matching_columns = Column.objects.filter(organization_id=pk, is_matching_criteria=True, table_name='PropertyState')
+        data = self.get_raw_report_data(pk, access_level_instance, cycles, params['x_var'], params['y_var'], matching_columns)
 
         base_sheet.write(data_row_start, data_col_start, 'ID', bold)
 
@@ -1254,10 +1107,7 @@ class OrganizationViewSet(viewsets.ViewSet):
         """
         org = Organization.objects.get(id=pk)
 
-        if org.mapquest_api_key:
-            return True
-        else:
-            return False
+        return bool(org.mapquest_api_key)
 
     @has_perm_class('requires_member')
     @ajax_request_class
@@ -1287,15 +1137,10 @@ class OrganizationViewSet(viewsets.ViewSet):
                 form.save(
                     from_email=settings.PASSWORD_RESET_EMAIL,
                     subject_template_name='landing/password_reset_subject.txt',
-                    email_template_name='landing/password_reset_forced_email.html'
+                    email_template_name='landing/password_reset_forced_email.html',
                 )
 
-        return JsonResponse(
-            {
-                'status': 'success',
-                'message': 'passwords reset'
-            }
-        )
+        return JsonResponse({'status': 'success', 'message': 'passwords reset'})
 
     @has_perm_class('requires_superuser')
     @ajax_request_class
@@ -1307,23 +1152,19 @@ class OrganizationViewSet(viewsets.ViewSet):
         org = Organization.objects.get(id=pk)
         cycles = Cycle.objects.filter(organization=org)
         if cycles.count() == 0:
-            return JsonResponse({
-                'status': 'error',
-                'message': 'there must be at least 1 cycle'
-            }, status=status.HTTP_400_BAD_REQUEST)
+            return JsonResponse({'status': 'error', 'message': 'there must be at least 1 cycle'}, status=status.HTTP_400_BAD_REQUEST)
 
         cycle = cycles.first()
         if PropertyView.objects.filter(cycle=cycle).count() > 0 or TaxLotView.objects.filter(cycle=cycle).count() > 0:
-            return JsonResponse({
-                'status': 'error',
-                'message': 'the cycle must not contain any properties or tax lots'
-            }, status=status.HTTP_400_BAD_REQUEST)
+            return JsonResponse(
+                {'status': 'error', 'message': 'the cycle must not contain any properties or tax lots'}, status=status.HTTP_400_BAD_REQUEST
+            )
 
         taxlot_details = {
             'jurisdiction_tax_lot_id': 'A-12345',
             'city': 'Boring',
             'organization_id': pk,
-            'extra_data': {'Note': 'This is my first note'}
+            'extra_data': {'Note': 'This is my first note'},
         }
 
         taxlot_state = TaxLotState(**taxlot_details)
@@ -1331,15 +1172,10 @@ class OrganizationViewSet(viewsets.ViewSet):
         taxlot_1 = TaxLot.objects.create(organization=org)
         taxview = TaxLotView.objects.create(taxlot=taxlot_1, cycle=cycle, state=taxlot_state)
 
-        TaxLotAuditLog.objects.create(
-            organization=org,
-            state=taxlot_state,
-            record_type=AUDIT_IMPORT,
-            name='Import Creation'
-        )
+        TaxLotAuditLog.objects.create(organization=org, state=taxlot_state, record_type=AUDIT_IMPORT, name='Import Creation')
 
         filename_pd = 'property_sample_data.json'
-        filepath_pd = f"{Path(__file__).parent.absolute()}/../../tests/data/{filename_pd}"
+        filepath_pd = f'{Path(__file__).parent.absolute()}/../../tests/data/{filename_pd}'
 
         with open(filepath_pd) as file:
             property_details = json.load(file)
@@ -1348,7 +1184,6 @@ class OrganizationViewSet(viewsets.ViewSet):
         properties = []
         ids = []
         for dic in property_details:
-
             dic['organization_id'] = pk
 
             state = PropertyState(**dic)
@@ -1365,12 +1200,7 @@ class OrganizationViewSet(viewsets.ViewSet):
             if state.extra_data.get('Note') == 'Residential':
                 propertyview.labels.add(new_label)
 
-            PropertyAuditLog.objects.create(
-                organization=org,
-                state=state,
-                record_type=AUDIT_IMPORT,
-                name='Import Creation'
-            )
+            PropertyAuditLog.objects.create(organization=org, state=state, record_type=AUDIT_IMPORT, name='Import Creation')
 
             # Geocoding - need mapquest API (should add comment for new users)
             geocode = PropertyState.objects.filter(id__in=ids)
@@ -1392,40 +1222,40 @@ class OrganizationViewSet(viewsets.ViewSet):
             organization=org,
             table_name='PropertyState',
             column_name='Note',
-            is_extra_data=True  # Column objects representing raw/header rows are NEVER extra data
+            is_extra_data=True,  # Column objects representing raw/header rows are NEVER extra data
         )
 
         import_record = ImportRecord.objects.create(name='Auto-Populate', super_organization=org, access_level_instance=self.org.root)
 
         # Interval Data
         filename = 'PM Meter Data.xlsx'  # contains meter data for bsyncr and BETTER
-        filepath = f"{Path(__file__).parent.absolute()}/data/{filename}"
+        filepath = f'{Path(__file__).parent.absolute()}/data/{filename}'
 
-        import_meterdata = ImportFile.objects.create(
-            import_record=import_record,
-            source_type=SEED_DATA_SOURCES[PORTFOLIO_METER_USAGE][1],
-            uploaded_filename=filename,
-            file=SimpleUploadedFile(name=filename, content=open(filepath, 'rb').read()),
-            cycle=cycle
-        )
+        with open(filepath, 'rb') as content:
+            import_meterdata = ImportFile.objects.create(
+                import_record=import_record,
+                source_type=SEED_DATA_SOURCES[PORTFOLIO_METER_USAGE][1],
+                uploaded_filename=filename,
+                file=SimpleUploadedFile(name=filename, content=content.read()),
+                cycle=cycle,
+            )
 
         save_raw_data(import_meterdata.id)
 
         # Greenbutton Import
         filename = 'example-GreenButton-data.xml'
-        filepath = f"{Path(__file__).parent.absolute()}/data/{filename}"
+        filepath = f'{Path(__file__).parent.absolute()}/data/{filename}'
 
-        import_greenbutton = ImportFile.objects.create(
-            import_record=import_record,
-            source_type=SEED_DATA_SOURCES[GREEN_BUTTON][1],
-            uploaded_filename=filename,
-            file=SimpleUploadedFile(name=filename, content=open(filepath, 'rb').read()),
-            cycle=cycle,
-            matching_results_data={'property_id': properties[7].id}
-        )
+        with open(filepath, 'rb') as content:
+            import_greenbutton = ImportFile.objects.create(
+                import_record=import_record,
+                source_type=SEED_DATA_SOURCES[GREEN_BUTTON][1],
+                uploaded_filename=filename,
+                file=SimpleUploadedFile(name=filename, content=content.read()),
+                cycle=cycle,
+                matching_results_data={'property_id': properties[7].id},
+            )
 
         save_raw_data(import_greenbutton.id)
 
-        return JsonResponse({
-            'status': 'success'
-        })
+        return JsonResponse({'status': 'success'})

@@ -4,7 +4,6 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('orgs', '0013_organization_comstock_enabled'),
         ('seed', '0127_auto_20200605_1125'),

@@ -1,9 +1,9 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 import json
 import logging
 import urllib
@@ -40,10 +40,7 @@ def landing_page(request):
 
         form = LoginForm(request.POST)
         if form.is_valid():
-            new_user = authenticate(
-                username=form.cleaned_data['email'].lower(),
-                password=form.cleaned_data['password']
-            )
+            new_user = authenticate(username=form.cleaned_data['email'].lower(), password=form.cleaned_data['password'])
             if new_user is not None and new_user.is_active:
                 login(request, new_user)
                 return HttpResponseRedirect(redirect_to)
@@ -55,28 +52,25 @@ def landing_page(request):
     else:
         form = LoginForm()
 
-    request.user = {
-        'first_name': '',
-        'last_name': '',
-        'email': ''
-    }
-    return render(request, 'landing/home.html', {
-        'context': {'self_registration': settings.INCLUDE_ACCT_REG},
-        'debug': settings.DEBUG,
-        'initial_org_id': 0,
-        'initial_org_user_role': 0,
-        'initial_org_name': '',
-        'login_form': form,
-        'username': ''
-    })
+    request.user = {'first_name': '', 'last_name': '', 'email': ''}
+    return render(
+        request,
+        'landing/home.html',
+        {
+            'context': {'self_registration': settings.INCLUDE_ACCT_REG},
+            'debug': settings.DEBUG,
+            'initial_org_id': 0,
+            'initial_org_user_role': 0,
+            'initial_org_name': '',
+            'login_form': form,
+            'username': '',
+        },
+    )
 
 
 def password_set(request, uidb64=None, token=None):
     return auth.views.PasswordResetConfirmView.as_view(template_name='landing/password_set.html')(
-        request,
-        uidb64=uidb64,
-        token=token,
-        post_reset_redirect=reverse('landing:password_set_complete')
+        request, uidb64=uidb64, token=token, post_reset_redirect=reverse('landing:password_set_complete')
     )
 
 
@@ -91,18 +85,12 @@ def password_reset(request):
 
 
 def password_reset_done(request):
-    return auth.views.PasswordResetDoneView.as_view(
-        template_name='landing/password_reset_done.html'
-    )(request)
+    return auth.views.PasswordResetDoneView.as_view(template_name='landing/password_reset_done.html')(request)
 
 
 def password_reset_confirm(request, uidb64=None, token=None):
     return auth.views.PasswordResetConfirmView.as_view(template_name='landing/password_reset_confirm.html')(
-        request,
-        uidb64=uidb64,
-        token=token,
-        set_password_form=SetPasswordForm,
-        success_url=reverse('landing:password_reset_complete')
+        request, uidb64=uidb64, token=token, set_password_form=SetPasswordForm, success_url=reverse('landing:password_reset_complete')
     )
 
 
@@ -116,30 +104,27 @@ def signup(request, uidb64=None, token=None):
         uidb64=uidb64,
         token=token,
         set_password_form=SetPasswordForm,
-        post_reset_redirect=reverse('landing:landing_page') + "?setup_complete"
+        post_reset_redirect=reverse('landing:landing_page') + '?setup_complete',
     )
 
 
 def create_account(request):
-    if request.method == "POST":
+    if request.method == 'POST':
         redirect_to = request.POST.get('next', request.GET.get('next', False))
         if not redirect_to:
             redirect_to = reverse('seed:home')
         form = CustomCreateUserForm(request.POST)
         errors = ErrorList()
         if form.is_valid():
-            ''' Begin reCAPTCHA validation '''
+            """ Begin reCAPTCHA validation """
             recaptcha_response = request.POST.get('g-recaptcha-response')
             url = 'https://www.google.com/recaptcha/api/siteverify'
-            values = {
-                'secret': settings.GOOGLE_RECAPTCHA_SECRET_KEY,
-                'response': recaptcha_response
-            }
+            values = {'secret': settings.GOOGLE_RECAPTCHA_SECRET_KEY, 'response': recaptcha_response}
             data = urllib.parse.urlencode(values).encode()
             req = urllib.request.Request(url, data=data)
             response = urllib.request.urlopen(req)
             result = json.loads(response.read().decode())
-            ''' End reCAPTCHA validation '''
+            """ End reCAPTCHA validation """
             if result['success']:
                 user = form.save(commit=False)
                 user.username = user.username.lower()
@@ -150,13 +135,10 @@ def create_account(request):
                         domain = request.get_host()
                     except Exception:
                         domain = 'seed-platform.org'
-                    invite_new_user_to_seed(
-                        domain, user.email, default_token_generator.make_token(user),
-                        user.pk, user.email
-                    )
+                    invite_new_user_to_seed(domain, user.email, default_token_generator.make_token(user), user.pk, user.email)
                     return redirect('landing:account_activation_sent')
                 except Exception as e:
-                    logger.error(f'Unexpected error creating new account: {str(e)}')
+                    logger.error(f'Unexpected error creating new account: {e!s}')
                     errors = form._errors.setdefault(NON_FIELD_ERRORS, errors)
                     errors.append('An unexpected error occurred. Please contact the site administrator.')
             else:

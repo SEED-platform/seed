@@ -1,19 +1,16 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 from django.contrib.gis.geos import Polygon
 from django.test import TestCase
 
 from seed.landing.models import SEEDUser as User
 from seed.models.properties import PropertyState
 from seed.models.tax_lots import TaxLotState
-from seed.test_helpers.fake import (
-    FakePropertyStateFactory,
-    FakeTaxLotStateFactory
-)
+from seed.test_helpers.fake import FakePropertyStateFactory, FakeTaxLotStateFactory
 from seed.utils.geocode import bounding_box_wkt, wkt_to_polygon
 from seed.utils.organizations import create_organization
 from seed.utils.ubid import centroid_wkt, decode_unique_ids
@@ -25,9 +22,7 @@ class UbidSpecificWktMethods(TestCase):
             'username': 'test_user@demo.com',
             'password': 'test_pass',
         }
-        self.user = User.objects.create_superuser(
-            email='test_user@demo.com', **user_details
-        )
+        self.user = User.objects.create_superuser(email='test_user@demo.com', **user_details)
         self.org, _, _ = create_organization(self.user)
         self.org.save()
 
@@ -61,9 +56,7 @@ class UbidUtilMethods(TestCase):
             'username': 'test_user@demo.com',
             'password': 'test_pass',
         }
-        self.user = User.objects.create_superuser(
-            email='test_user@demo.com', **user_details
-        )
+        self.user = User.objects.create_superuser(email='test_user@demo.com', **user_details)
         self.org, _, _ = create_organization(self.user)
         self.org.save()
 
@@ -82,19 +75,19 @@ class UbidUtilMethods(TestCase):
         decode_unique_ids(properties)
         refreshed_property = PropertyState.objects.get(pk=property.id)
         known_property_bounding_box = wkt_to_polygon(
-            "POLYGON ((-87.56021875000002 41.74504999999999, "
-            "-87.56021875000002 41.74514999999997, "
-            "-87.56043749999996 41.74514999999997, "
-            "-87.56043749999996 41.74504999999999, "
-            "-87.56021875000002 41.74504999999999))"
+            'POLYGON ((-87.56021875000002 41.74504999999999, '
+            '-87.56021875000002 41.74514999999997, '
+            '-87.56043749999996 41.74514999999997, '
+            '-87.56043749999996 41.74504999999999, '
+            '-87.56021875000002 41.74504999999999))'
         )['coordinates'][0]
 
         known_property_centroid = wkt_to_polygon(
-            "POLYGON ((-87.5603125 41.74509999999998, "
-            "-87.5603125 41.74512499999997, "
-            "-87.56034374999999 41.74512499999997, "
-            "-87.56034374999999 41.74509999999998, "
-            "-87.5603125 41.74509999999998))"
+            'POLYGON ((-87.5603125 41.74509999999998, '
+            '-87.5603125 41.74512499999997, '
+            '-87.56034374999999 41.74512499999997, '
+            '-87.56034374999999 41.74509999999998, '
+            '-87.5603125 41.74509999999998))'
         )['coordinates'][0]
 
         # Need to check that these are almost equal. Underlying gdal methods
@@ -123,19 +116,19 @@ class UbidUtilMethods(TestCase):
         refreshed_taxlot = TaxLotState.objects.get(pk=taxlot.id)
 
         known_taxlot_bounding_box = wkt_to_polygon(
-            "POLYGON ((-87.56021875000002 41.74504999999999, "
-            "-87.56021875000002 41.74514999999997, "
-            "-87.56043749999996 41.74514999999997, "
-            "-87.56043749999996 41.74504999999999, "
-            "-87.56021875000002 41.74504999999999))"
+            'POLYGON ((-87.56021875000002 41.74504999999999, '
+            '-87.56021875000002 41.74514999999997, '
+            '-87.56043749999996 41.74514999999997, '
+            '-87.56043749999996 41.74504999999999, '
+            '-87.56021875000002 41.74504999999999))'
         )['coordinates'][0]
 
         known_taxlot_centroid = wkt_to_polygon(
-            "POLYGON ((-87.5603125 41.74509999999998, "
-            "-87.5603125 41.74512499999997, "
-            "-87.56034374999999 41.74512499999997, "
-            "-87.56034374999999 41.74509999999998, "
-            "-87.5603125 41.74509999999998))"
+            'POLYGON ((-87.5603125 41.74509999999998, '
+            '-87.5603125 41.74512499999997, '
+            '-87.56034374999999 41.74512499999997, '
+            '-87.56034374999999 41.74509999999998, '
+            '-87.5603125 41.74509999999998))'
         )['coordinates'][0]
 
         # Need to check that these are almost equal. Underlying gdal methods

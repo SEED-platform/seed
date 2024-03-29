@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('seed', '0195_sf_delete_label_checkbox'),
     ]
@@ -17,6 +16,22 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='propertystate',
             name='source_type',
-            field=models.IntegerField(blank=True, choices=[(0, 'Assessed Raw'), (1, 'Portfolio Raw'), (2, 'Assessed'), (3, 'Portfolio'), (4, 'BuildingSnapshot'), (5, 'BuildingSync Raw'), (6, 'GreenButton'), (7, 'PM Meter Usage'), (8, 'SensorMetadata'), (9, 'SensorReadings')], db_index=True, null=True),
+            field=models.IntegerField(
+                blank=True,
+                choices=[
+                    (0, 'Assessed Raw'),
+                    (1, 'Portfolio Raw'),
+                    (2, 'Assessed'),
+                    (3, 'Portfolio'),
+                    (4, 'BuildingSnapshot'),
+                    (5, 'BuildingSync Raw'),
+                    (6, 'GreenButton'),
+                    (7, 'PM Meter Usage'),
+                    (8, 'SensorMetadata'),
+                    (9, 'SensorReadings'),
+                ],
+                db_index=True,
+                null=True,
+            ),
         ),
     ]

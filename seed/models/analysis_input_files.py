@@ -1,9 +1,9 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 from django.db import models
 
 from seed.models import Analysis
@@ -29,11 +29,10 @@ class AnalysisInputFile(models.Model):
     For example, if running an analysis on multiple properties, it might be a
     CSV containing data collected from each property.
     """
+
     BUILDINGSYNC = 1
 
-    CONTENT_TYPES = (
-        (BUILDINGSYNC, 'BuildingSync'),
-    )
+    CONTENT_TYPES = ((BUILDINGSYNC, 'BuildingSync'),)
 
     file = models.FileField(upload_to=analysis_input_path, max_length=500)
     content_type = models.IntegerField(choices=CONTENT_TYPES)

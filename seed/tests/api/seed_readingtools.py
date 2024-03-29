@@ -1,9 +1,9 @@
 ﻿# !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 import csv
 import logging
 import os
@@ -23,7 +23,7 @@ def report_memory():
     print(f'Free mem (MB): {mem.available / 1024}')
     min_amount = 100 * 1024 * 1024  # 100MB
     if mem.available <= min_amount:
-        print("WARNING: Memory is low on system")
+        print('WARNING: Memory is low on system')
 
     # also report the processes (that we care about)
     ps = [p.info for p in psutil.process_iter(attrs=['pid', 'name']) if 'python' in p.info['name']]
@@ -51,18 +51,16 @@ def upload_file(upload_header, organization_id, upload_filepath, main_url, uploa
             "filename": "DataforSEED_dos15.csv"
         }
     """
-    upload_url = "%s/api/v3/upload/?organization_id=%s" % (main_url, organization_id)
-    params = {
-        'import_record': upload_dataset_id,
-        'source_type': upload_datatype
-    }
+    upload_url = f'{main_url}/api/v3/upload/?organization_id={organization_id}'
+    params = {'import_record': upload_dataset_id, 'source_type': upload_datatype}
     return requests.post(
         upload_url,
         params=params,
         files=[
             ('file', (pathlib.Path(upload_filepath).name, pathlib.Path(upload_filepath).read_bytes())),
         ],
-        headers=upload_header
+        headers=upload_header,
+        timeout=300,
     )
 
 
@@ -76,7 +74,7 @@ def check_status(result_out, part_msg, log, piid_flag=None):
             if piid_flag == 'export':
                 content_str = result_out.content.decode()
                 if content_str.startswith('id'):
-                    msg = "Data exported successfully"
+                    msg = 'Data exported successfully'
                     # the data are returned as text. No easy way to check the status. If ID
                     # exists, then claim success.
                 else:
@@ -91,17 +89,14 @@ def check_status(result_out, part_msg, log, piid_flag=None):
                 log.error(part_msg + failed)
                 log.debug(msg)
                 raise RuntimeError
+            elif piid_flag == 'organizations':
+                msg = 'Number of organizations:\t' + str(len(result_out.json()['organizations'][0]))
+            elif piid_flag == 'users':
+                msg = 'Number of users:\t' + str(len(result_out.json()['users'][0]))
+            elif piid_flag == 'mappings':
+                msg = pprint.pformat(result_out.json()['suggested_column_mappings'], indent=2, width=70)
             else:
-                if piid_flag == 'organizations':
-                    msg = 'Number of organizations:\t' + str(
-                        len(result_out.json()['organizations'][0]))
-                elif piid_flag == 'users':
-                    msg = 'Number of users:\t' + str(len(result_out.json()['users'][0]))
-                elif piid_flag == 'mappings':
-                    msg = pprint.pformat(result_out.json()['suggested_column_mappings'],
-                                         indent=2, width=70)
-                else:
-                    msg = pprint.pformat(result_out.json(), indent=2, width=70)
+                msg = pprint.pformat(result_out.json(), indent=2, width=70)
         except BaseException:
             log.error(part_msg + failed)
             log.debug('Unknown error during request results recovery')
@@ -121,24 +116,19 @@ def check_status(result_out, part_msg, log, piid_flag=None):
         log.debug(msg)
         raise RuntimeError
 
-    return
-
 
 def check_progress(main_url, header, progress_key):
     """Delays the sequence until progress is at 100 percent."""
     time.sleep(2)
-    print("checking progress {}".format(progress_key))
+    print(f'checking progress {progress_key}')
     try:
-        progress_result = requests.get(
-            main_url + '/api/v3/progress/{}/'.format(progress_key),
-            headers=header
-        )
-        print("... {} ...".format(progress_result.json()['progress']))
+        progress_result = requests.get(main_url + f'/api/v3/progress/{progress_key}/', headers=header, timeout=300)
+        print('... {} ...'.format(progress_result.json()['progress']))
     except (urllib3.exceptions.ProtocolError, RemoteDisconnected, requests.exceptions.ConnectionError):
-        print("Server is not responding... trying again in a few seconds")
+        print('Server is not responding... trying again in a few seconds')
         progress_result = None
     except Exception:
-        print("Other unknown exception caught!")
+        print('Other unknown exception caught!')
         progress_result = None
 
     if progress_result and progress_result.json()['progress'] == 100:
@@ -152,13 +142,13 @@ def check_progress(main_url, header, progress_key):
 def read_map_file(mapfile_path):
     """Read in the mapping file"""
 
-    assert (os.path.isfile(mapfile_path)), "Cannot find file:\t" + mapfile_path
+    assert os.path.isfile(mapfile_path), 'Cannot find file:\t' + mapfile_path
 
-    map_reader = csv.reader(open(mapfile_path, 'r'))
+    map_reader = csv.reader(open(mapfile_path))
     map_reader.__next__()  # Skip the header
 
     # Open the mapping file and fill list
-    maplist = list()
+    maplist = []
 
     for rowitem in map_reader:
         maplist.append(
@@ -174,9 +164,9 @@ def read_map_file(mapfile_path):
 
 
 def setup_logger(filename, write_file=True):
-    """Set-up the logger object"""
+    """Setup the logger object"""
 
-    logging.getLogger("requests").setLevel(logging.WARNING)
+    logging.getLogger('requests').setLevel(logging.WARNING)
 
     _log = logging.getLogger()
     _log.setLevel(logging.DEBUG)
@@ -200,7 +190,7 @@ def setup_logger(filename, write_file=True):
 
 def write_out_django_debug(partmsg, result):
     if result.status_code != 200:
-        filename = '{}_fail.html'.format(partmsg)
+        filename = f'{partmsg}_fail.html'
         with open(filename, 'w') as fail:
             fail.writelines(result.text)
-        print('Wrote debug -> {}'.format(filename))
+        print(f'Wrote debug -> {filename}')

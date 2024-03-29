@@ -1,9 +1,9 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 from rest_framework import serializers
 
 from seed.data_importer.utils import usage_point_id
@@ -21,7 +21,10 @@ class MeterSerializer(serializers.ModelSerializer, OrgMixin):
 
     class Meta:
         model = Meter
-        exclude = ('property', 'scenario',)
+        exclude = (
+            'property',
+            'scenario',
+        )
 
     def validate_scenario_id(self, scenario_id):
         # validate that the user has access to the scenario

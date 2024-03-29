@@ -1,15 +1,15 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
-from __future__ import annotations, unicode_literals
+
+from __future__ import annotations
 
 import logging
 from collections import defaultdict
 from itertools import chain
-from typing import TYPE_CHECKING, Optional, Sequence, Union
+from typing import TYPE_CHECKING, Sequence
 
 from django.apps import apps
 from django.contrib.gis.db.models import GeometryField
@@ -45,16 +45,14 @@ class TaxLotProperty(models.Model):
     primary = models.BooleanField(default=True)
 
     def __str__(self):
-        return 'M2M Property View %s / TaxLot View %s' % (
-            self.property_view_id, self.taxlot_view_id)
+        return f'M2M Property View {self.property_view_id} / TaxLot View {self.taxlot_view_id}'
 
     class Meta:
-        unique_together = ('property_view', 'taxlot_view',)
-        index_together = [
-            ['cycle', 'property_view'],
-            ['cycle', 'taxlot_view'],
-            ['property_view', 'taxlot_view']
-        ]
+        unique_together = (
+            'property_view',
+            'taxlot_view',
+        )
+        index_together = [['cycle', 'property_view'], ['cycle', 'taxlot_view'], ['property_view', 'taxlot_view']]
 
     @classmethod
     def extra_data_to_dict_with_mapping(cls, instance, mappings, fields=None, units={}):
@@ -100,6 +98,7 @@ class TaxLotProperty(models.Model):
         specific API fields.
         """
         from django.db import models
+
         opts = instance._meta
         data = {}
         for f in chain(opts.concrete_fields, opts.private_fields, opts.many_to_many):
@@ -139,8 +138,8 @@ class TaxLotProperty(models.Model):
     @classmethod
     def serialize(
         cls,
-        object_list: Union[Sequence[PropertyView], Sequence[TaxLotView]],
-        show_columns: Optional[list[int]],
+        object_list: Sequence[PropertyView] | Sequence[TaxLotView],
+        show_columns: list[int] | None,
         columns_from_database: list[dict],
         include_related: bool = True,
         goal_id: int = False,
@@ -198,15 +197,24 @@ class TaxLotProperty(models.Model):
 
         # gather note counts
         Note = apps.get_model('seed', 'Note')
-        obj_note_counts = {x[0]: x[1] for x in Note.objects.filter(**{lookups['obj_query_in']: ids})
-                           .values_list(lookups['obj_view_id']).order_by().annotate(Count(lookups['obj_view_id']))}
+        obj_note_counts = {
+            x[0]: x[1]
+            for x in Note.objects.filter(**{lookups['obj_query_in']: ids})
+            .values_list(lookups['obj_view_id'])
+            .order_by()
+            .annotate(Count(lookups['obj_view_id']))
+        }
 
         # determine merge statuses
         states_qs = lookups['view_class'].objects.filter(id__in=ids)
-        merged_state_ids = lookups['audit_log_class'].objects.filter(
-            name__in=['Manual Match', 'System Match', 'Merge current state in migration'],
-            state_id__in=models.Subquery(states_qs.values('state_id'))
-        ).values_list('state_id', flat=True)
+        merged_state_ids = (
+            lookups['audit_log_class']
+            .objects.filter(
+                name__in=['Manual Match', 'System Match', 'Merge current state in migration'],
+                state_id__in=models.Subquery(states_qs.values('state_id')),
+            )
+            .values_list('state_id', flat=True)
+        )
 
         # gather all columns - separate the 'related' columns
         related_columns = []
@@ -223,8 +231,7 @@ class TaxLotProperty(models.Model):
         if show_columns is None:
             filtered_fields = set([col['column_name'] for col in obj_columns if not col['is_extra_data']])
         else:
-            filtered_fields = set([col['column_name'] for col in obj_columns if not col['is_extra_data']
-                                   and col['id'] in show_columns])
+            filtered_fields = set([col['column_name'] for col in obj_columns if not col['is_extra_data'] and col['id'] in show_columns])
             extra_data_units = {}
             filtered_extra_data_fields = set()
             for col in obj_columns:
@@ -242,20 +249,14 @@ class TaxLotProperty(models.Model):
         for obj in object_list:
             # Each object in the response is built from the state data, with related data added on.
             obj_dict = TaxLotProperty.model_to_dict_with_mapping(
-                obj.state,
-                obj_column_name_mapping,
-                fields=filtered_fields,
-                exclude=['extra_data']
+                obj.state, obj_column_name_mapping, fields=filtered_fields, exclude=['extra_data']
             )
 
             # Only add extra data columns if a settings profile was used
             if show_columns is not None:
                 obj_dict.update(
                     TaxLotProperty.extra_data_to_dict_with_mapping(
-                        obj.state.extra_data,
-                        obj_column_name_mapping,
-                        fields=filtered_extra_data_fields,
-                        units=extra_data_units
+                        obj.state.extra_data, obj_column_name_mapping, fields=filtered_extra_data_fields, units=extra_data_units
                     ).items()
                 )
 
@@ -305,11 +306,7 @@ class TaxLotProperty(models.Model):
 
     @classmethod
     def get_related(
-        cls,
-        ids: list[int],
-        show_columns: Union[list[int], None],
-        related_columns: list[dict],
-        lookups: dict
+        cls, ids: list[int], show_columns: list[int] | None, related_columns: list[dict], lookups: dict
     ) -> dict[int, list[dict]]:
         # Ids of views to look up in m2m
         joins = TaxLotProperty.objects.filter(**{lookups['obj_query_in']: ids}).select_related(lookups['related_view'])
@@ -318,8 +315,11 @@ class TaxLotProperty(models.Model):
         related_ids = [getattr(j, lookups['related_view_id']) for j in joins]
 
         # Get all related views from the related_class
-        related_views = apps.get_model('seed', lookups['related_class']).objects.select_related(
-            lookups['select_related'], 'state', 'cycle').filter(pk__in=related_ids)
+        related_views = (
+            apps.get_model('seed', lookups['related_class'])
+            .objects.select_related(lookups['select_related'], 'state', 'cycle')
+            .filter(pk__in=related_ids)
+        )
 
         related_column_name_mapping = {col['column_name']: col['name'] for col in related_columns}
 
@@ -328,17 +328,14 @@ class TaxLotProperty(models.Model):
         if show_columns is None:
             filtered_fields = set([col['column_name'] for col in related_columns if not col['is_extra_data']])
         else:
-            filtered_fields = set([col['column_name'] for col in related_columns if not col['is_extra_data']
-                                   and col['id'] in show_columns])
-            filtered_extra_data_fields = set([col['column_name'] for col in related_columns if col['is_extra_data']
-                                              and col['id'] in show_columns])
+            filtered_fields = set([col['column_name'] for col in related_columns if not col['is_extra_data'] and col['id'] in show_columns])
+            filtered_extra_data_fields = set(
+                [col['column_name'] for col in related_columns if col['is_extra_data'] and col['id'] in show_columns]
+            )
 
         for related_view in related_views:
             related_dict = TaxLotProperty.model_to_dict_with_mapping(
-                related_view.state,
-                related_column_name_mapping,
-                fields=filtered_fields,
-                exclude=['extra_data']
+                related_view.state, related_column_name_mapping, fields=filtered_fields, exclude=['extra_data']
             )
 
             related_dict[lookups['related_state_id']] = related_view.state.id
@@ -367,9 +364,7 @@ class TaxLotProperty(models.Model):
             if show_columns is not None:
                 related_dict.update(
                     TaxLotProperty.extra_data_to_dict_with_mapping(
-                        related_view.state.extra_data,
-                        related_column_name_mapping,
-                        fields=filtered_extra_data_fields
+                        related_view.state.extra_data, related_column_name_mapping, fields=filtered_extra_data_fields
                     ).items()
                 )
             related_map[related_view.pk] = related_dict
@@ -392,15 +387,24 @@ class TaxLotProperty(models.Model):
                 prop_to_jurisdiction_tl[name].append(pth)
 
         Note = apps.get_model('seed', 'Note')
-        join_note_counts = {x[0]: x[1] for x in Note.objects.filter(**{lookups['related_query_in']: related_ids})
-                            .values_list(lookups['related_view_id']).order_by().annotate(Count(lookups['related_view_id']))}
+        join_note_counts = {
+            x[0]: x[1]
+            for x in Note.objects.filter(**{lookups['related_query_in']: related_ids})
+            .values_list(lookups['related_view_id'])
+            .order_by()
+            .annotate(Count(lookups['related_view_id']))
+        }
 
         # Get merged_indicators for related
         join_states_qs = lookups['related_view_class'].objects.filter(id__in=related_ids)
-        join_merged_state_ids = lookups['related_audit_log_class'].objects.filter(
-            name__in=['Manual Match', 'System Match', 'Merge current state in migration'],
-            state_id__in=models.Subquery(join_states_qs.values('state_id'))
-        ).values_list('state_id', flat=True)
+        join_merged_state_ids = (
+            lookups['related_audit_log_class']
+            .objects.filter(
+                name__in=['Manual Match', 'System Match', 'Merge current state in migration'],
+                state_id__in=models.Subquery(join_states_qs.values('state_id')),
+            )
+            .values_list('state_id', flat=True)
+        )
 
         # A mapping of object's view pk to a list of related state info for a related view
         join_map: dict[int, list[dict]] = {}
@@ -417,18 +421,22 @@ class TaxLotProperty(models.Model):
                     jurisdiction_tax_lot_ids.append('Missing')
 
                 join_dict = related_map[getattr(join, lookups['related_view_id'])].copy()
-                join_dict.update({
-                    # 'primary': 'P' if join.primary else 'S',
-                    # 'calculated_taxlot_ids': '; '.join(jurisdiction_tax_lot_ids),
-                    lookups['related_view_id']: getattr(join, lookups['related_view_id'])
-                })
+                join_dict.update(
+                    {
+                        # 'primary': 'P' if join.primary else 'S',
+                        # 'calculated_taxlot_ids': '; '.join(jurisdiction_tax_lot_ids),
+                        lookups['related_view_id']: getattr(join, lookups['related_view_id'])
+                    }
+                )
 
             else:
                 join_dict = related_map[getattr(join, lookups['related_view_id'])].copy()
-                join_dict.update({
-                    # 'primary': 'P' if join.primary else 'S',
-                    lookups['related_view_id']: getattr(join, lookups['related_view_id'])
-                })
+                join_dict.update(
+                    {
+                        # 'primary': 'P' if join.primary else 'S',
+                        lookups['related_view_id']: getattr(join, lookups['related_view_id'])
+                    }
+                )
 
             join_dict['notes_count'] = join_note_counts.get(getattr(join, lookups['related_view_id']), 0)
             join_dict['merged_indicator'] = getattr(join, lookups['related_view']).state_id in join_merged_state_ids
@@ -451,4 +459,4 @@ def presave_organization(sender, instance, **kwargs):
     t_ali = instance.taxlot_view.taxlot.access_level_instance.pk
 
     if p_ali != t_ali:
-        raise ValidationError("taxlot and property must have same access level instance.")
+        raise ValidationError('taxlot and property must have same access level instance.')

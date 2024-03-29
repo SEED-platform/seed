@@ -1,9 +1,9 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django_extensions.db.models import TimeStampedModel
@@ -102,19 +102,9 @@ class StatusLabel(TimeStampedModel):
     )
 
     name = models.CharField(_('name'), max_length=MAX_NAME_LENGTH)
-    color = models.CharField(
-        _('compliance_type'),
-        max_length=30,
-        choices=COLOR_CHOICES,
-        default=GREEN_CHOICE
-    )
+    color = models.CharField(_('compliance_type'), max_length=30, choices=COLOR_CHOICES, default=GREEN_CHOICE)
     super_organization = models.ForeignKey(
-        SuperOrganization,
-        on_delete=models.CASCADE,
-        verbose_name=_('SeedOrg'),
-        blank=True,
-        null=True,
-        related_name='labels'
+        SuperOrganization, on_delete=models.CASCADE, verbose_name=_('SeedOrg'), blank=True, null=True, related_name='labels'
     )
     show_in_list = models.BooleanField(default=False)
 
@@ -140,7 +130,7 @@ class StatusLabel(TimeStampedModel):
         ordering = ['-name']
 
     def __str__(self):
-        return '{0} - {1}'.format(self.name, self.color)
+        return f'{self.name} - {self.color}'
 
     def to_dict(self):
         return obj_to_dict(self)
@@ -148,6 +138,7 @@ class StatusLabel(TimeStampedModel):
 
 class Unit(models.Model):
     """Unit of measure for a Column Value."""
+
     STRING = 1
     DECIMAL = 2  # This is not used anymore, use float
     FLOAT = 3
@@ -167,4 +158,4 @@ class Unit(models.Model):
     unit_type = models.IntegerField(choices=UNIT_TYPES, default=STRING)
 
     def __str__(self):
-        return '{0} Format: {1}'.format(self.unit_name, self.unit_type)
+        return f'{self.unit_name} Format: {self.unit_type}'

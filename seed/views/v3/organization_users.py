@@ -1,8 +1,8 @@
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import IntegrityError
 from django.http import JsonResponse
@@ -12,12 +12,7 @@ from rest_framework.decorators import action
 from seed.decorators import ajax_request_class
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.decorators import has_perm_class
-from seed.lib.superperms.orgs.models import (
-    ROLE_MEMBER,
-    ROLE_OWNER,
-    Organization,
-    OrganizationUser
-)
+from seed.lib.superperms.orgs.models import ROLE_MEMBER, ROLE_OWNER, Organization, OrganizationUser
 from seed.tasks import invite_to_organization
 from seed.utils.api import api_endpoint_class
 from seed.utils.users import get_js_role
@@ -37,9 +32,10 @@ class OrganizationUserViewSet(viewsets.ViewSet):
         try:
             org = Organization.objects.get(pk=organization_pk)
         except ObjectDoesNotExist:
-            return JsonResponse({'status': 'error',
-                                 'message': 'Could not retrieve organization at organization_pk = ' + str(organization_pk)},
-                                status=status.HTTP_404_NOT_FOUND)
+            return JsonResponse(
+                {'status': 'error', 'message': 'Could not retrieve organization at organization_pk = ' + str(organization_pk)},
+                status=status.HTTP_404_NOT_FOUND,
+            )
 
         if request.user.is_superuser:
             is_member_or_superuser = True
@@ -64,13 +60,15 @@ class OrganizationUserViewSet(viewsets.ViewSet):
             }
             if is_member_or_superuser:
                 user_orgs = OrganizationUser.objects.filter(user=user).count()
-                user_info.update({
-                    'number_of_orgs': user_orgs,
-                    'role': get_js_role(u.role_level),
-                    'access_level_instance_id': u.access_level_instance.id,
-                    'access_level_instance_name': u.access_level_instance.name,
-                    'access_level': org.access_level_names[u.access_level_instance.depth - 1],
-                })
+                user_info.update(
+                    {
+                        'number_of_orgs': user_orgs,
+                        'role': get_js_role(u.role_level),
+                        'access_level_instance_id': u.access_level_instance.id,
+                        'access_level_instance_name': u.access_level_instance.name,
+                        'access_level': org.access_level_names[u.access_level_instance.depth - 1],
+                    }
+                )
 
             users.append(user_info)
 
@@ -90,10 +88,7 @@ class OrganizationUserViewSet(viewsets.ViewSet):
         try:
             created = org.add_member(user, org.root.id)
         except IntegrityError as e:
-            return JsonResponse({
-                'status': 'error',
-                'message': str(e)
-            }, status=status.HTTP_400_BAD_REQUEST)
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
         # Send an email if a new user has been added to the organization
         if created:
@@ -101,9 +96,7 @@ class OrganizationUserViewSet(viewsets.ViewSet):
                 domain = request.get_host()
             except Exception:
                 domain = 'seed-platform.org'
-            invite_to_organization(
-                domain, user, request.user.username, org
-            )
+            invite_to_organization(domain, user, request.user.username, org)
 
         return JsonResponse({'status': 'success'})
 
@@ -118,50 +111,48 @@ class OrganizationUserViewSet(viewsets.ViewSet):
         try:
             org = Organization.objects.get(pk=organization_pk)
         except Organization.DoesNotExist:
-            return JsonResponse({
-                'status': 'error',
-                'message': 'organization does not exist'
-            }, status=status.HTTP_404_NOT_FOUND)
+            return JsonResponse({'status': 'error', 'message': 'organization does not exist'}, status=status.HTTP_404_NOT_FOUND)
 
         try:
             user = User.objects.get(pk=pk)
         except User.DoesNotExist:
-            return JsonResponse({
-                'status': 'error',
-                'message': 'user does not exist'
-            }, status=status.HTTP_404_NOT_FOUND)
+            return JsonResponse({'status': 'error', 'message': 'user does not exist'}, status=status.HTTP_404_NOT_FOUND)
 
         # A super user can remove a user. The superuser logic is also part of the decorator which
         # checks if super permissions have been limited per the ALLOW_SUPER_USER_PERMS setting.
-        org_owner = OrganizationUser.objects.filter(
-            user=request.user, organization=org, role_level=ROLE_OWNER
-        ).exists()
+        org_owner = OrganizationUser.objects.filter(user=request.user, organization=org, role_level=ROLE_OWNER).exists()
         if not request.user.is_superuser and not org_owner:
-            return JsonResponse({
-                'status': 'error',
-                'message': 'only the organization owner or superuser can remove a member'
-            }, status=status.HTTP_403_FORBIDDEN)
+            return JsonResponse(
+                {'status': 'error', 'message': 'only the organization owner or superuser can remove a member'},
+                status=status.HTTP_403_FORBIDDEN,
+            )
 
-        is_last_member = not OrganizationUser.objects.filter(
-            organization=org,
-        ).exclude(user=user).exists()
+        is_last_member = (
+            not OrganizationUser.objects.filter(
+                organization=org,
+            )
+            .exclude(user=user)
+            .exists()
+        )
 
         if is_last_member:
-            return JsonResponse({
-                'status': 'error',
-                'message': 'an organization must have at least one member'
-            }, status=status.HTTP_409_CONFLICT)
+            return JsonResponse(
+                {'status': 'error', 'message': 'an organization must have at least one member'}, status=status.HTTP_409_CONFLICT
+            )
 
-        is_last_owner = not OrganizationUser.objects.filter(
-            organization=org,
-            role_level=ROLE_OWNER,
-        ).exclude(user=user).exists()
+        is_last_owner = (
+            not OrganizationUser.objects.filter(
+                organization=org,
+                role_level=ROLE_OWNER,
+            )
+            .exclude(user=user)
+            .exists()
+        )
 
         if is_last_owner:
-            return JsonResponse({
-                'status': 'error',
-                'message': 'an organization must have at least one owner level member'
-            }, status=status.HTTP_409_CONFLICT)
+            return JsonResponse(
+                {'status': 'error', 'message': 'an organization must have at least one owner level member'}, status=status.HTTP_409_CONFLICT
+            )
 
         ou = OrganizationUser.objects.get(user=user, organization=org)
         ou.delete()

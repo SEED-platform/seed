@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('seed', '0194_alter_taxlotview_taxlot'),
     ]

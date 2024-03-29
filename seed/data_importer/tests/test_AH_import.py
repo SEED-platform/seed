@@ -1,31 +1,15 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
-
 from datetime import datetime
 
-from seed.data_importer.match import (
-    match_and_link_incoming_properties_and_taxlots
-)
+from seed.data_importer.match import match_and_link_incoming_properties_and_taxlots
 from seed.lib.progress_data.progress_data import ProgressData
-from seed.models import (
-    ASSESSED_RAW,
-    DATA_STATE_MAPPING,
-    DATA_STATE_MATCHING,
-    Property,
-    PropertyState,
-    PropertyView
-)
-from seed.test_helpers.fake import (
-    FakeCycleFactory,
-    FakePropertyFactory,
-    FakePropertyStateFactory,
-    FakePropertyViewFactory
-)
+from seed.models import ASSESSED_RAW, DATA_STATE_MAPPING, DATA_STATE_MATCHING, Property, PropertyState, PropertyView
+from seed.test_helpers.fake import FakeCycleFactory, FakePropertyFactory, FakePropertyStateFactory, FakePropertyViewFactory
 from seed.tests.util import DataMappingBaseTestCase
 
 
@@ -38,10 +22,10 @@ class TestAHImportFile(DataMappingBaseTestCase):
         self.cycle_factory = FakeCycleFactory(organization=self.org, user=self.user)
 
         # create tree
-        self.org.access_level_names = ["1st Gen", "2nd Gen", "3rd Gen"]
-        mom = self.org.add_new_access_level_instance(self.org.root.id, "mom")
-        self.me_ali = self.org.add_new_access_level_instance(mom.id, "me")
-        self.sister = self.org.add_new_access_level_instance(mom.id, "sister")
+        self.org.access_level_names = ['1st Gen', '2nd Gen', '3rd Gen']
+        mom = self.org.add_new_access_level_instance(self.org.root.id, 'mom')
+        self.me_ali = self.org.add_new_access_level_instance(mom.id, 'me')
+        self.sister = self.org.add_new_access_level_instance(mom.id, 'sister')
         self.org.save()
 
         self.property_state_factory = FakePropertyStateFactory(organization=self.org)
@@ -84,9 +68,9 @@ class TestAHImportFile(DataMappingBaseTestCase):
 
 
 class TestAHImport(TestAHImportFile):
-    def test_AH_set(self):
+    def test_hierarchy_set(self):
         # Set Up
-        self.base_details["raw_access_level_instance_id"] = self.me_ali.id
+        self.base_details['raw_access_level_instance_id'] = self.me_ali.id
         self.property_state_factory.get_property_state(**self.base_details)
 
         # Action
@@ -102,9 +86,9 @@ class TestAHImport(TestAHImportFile):
         p = Property.objects.first()
         assert p.access_level_instance == self.me_ali
 
-    def test_no_AH(self):
+    def test_no_hierarchy(self):
         # Set Up
-        self.base_details["raw_access_level_instance_error"] = "uh oh"
+        self.base_details['raw_access_level_instance_error'] = 'uh oh'
         self.property_state_factory.get_property_state(**self.base_details)
 
         # Action
@@ -113,7 +97,9 @@ class TestAHImport(TestAHImportFile):
         # Assert - results
         self.blank_result['property_initial_incoming'] = 1
         self.blank_result['property_new_errors'] = 1
-        self.assertDictContainsSubset(self.blank_result, results)
+        for key, value in self.blank_result.items():
+            self.assertIn(key, results)
+            self.assertEqual(results[key], value)
 
         # Assert - No property was created
         assert Property.objects.count() == 0
@@ -125,15 +111,15 @@ class TestAHImportDuplicateIncoming(TestAHImportFile):
         super().setUp()
 
         # this causes all the states to be duplicates
-        self.base_details["ubid"] = '86HJPCWQ+2VV-1-3-2-3'
-        self.base_details["no_default_data"] = False
+        self.base_details['ubid'] = '86HJPCWQ+2VV-1-3-2-3'
+        self.base_details['no_default_data'] = False
 
     def test_duplicate_both_good(self):
         # Set Up
-        self.base_details["raw_access_level_instance_id"] = self.me_ali.id
+        self.base_details['raw_access_level_instance_id'] = self.me_ali.id
         self.property_state_factory.get_property_state(**self.base_details)
 
-        self.base_details["raw_access_level_instance_id"] = self.me_ali.id
+        self.base_details['raw_access_level_instance_id'] = self.me_ali.id
         self.property_state_factory.get_property_state(**self.base_details)
 
         # Action
@@ -153,10 +139,10 @@ class TestAHImportDuplicateIncoming(TestAHImportFile):
 
     def test_duplicate_both_good_but_different_a(self):
         # Set Up
-        self.base_details["raw_access_level_instance_id"] = self.org.root.id
+        self.base_details['raw_access_level_instance_id'] = self.org.root.id
         self.property_state_factory.get_property_state(**self.base_details)
 
-        self.base_details["raw_access_level_instance_id"] = self.me_ali.id
+        self.base_details['raw_access_level_instance_id'] = self.me_ali.id
         self.property_state_factory.get_property_state(**self.base_details)
 
         # Action
@@ -174,10 +160,10 @@ class TestAHImportDuplicateIncoming(TestAHImportFile):
 
     def test_duplicate_both_good_but_different_b(self):
         # Set Up
-        self.base_details["raw_access_level_instance_id"] = self.me_ali.id
+        self.base_details['raw_access_level_instance_id'] = self.me_ali.id
         self.property_state_factory.get_property_state(**self.base_details)
 
-        self.base_details["raw_access_level_instance_id"] = self.org.root.id
+        self.base_details['raw_access_level_instance_id'] = self.org.root.id
         self.property_state_factory.get_property_state(**self.base_details)
 
         # Action
@@ -195,11 +181,11 @@ class TestAHImportDuplicateIncoming(TestAHImportFile):
 
     def test_duplicate_one_bad_a(self):
         # Set Up
-        self.base_details["raw_access_level_instance_error"] = "uh oh"
+        self.base_details['raw_access_level_instance_error'] = 'uh oh'
         self.property_state_factory.get_property_state(**self.base_details)
 
-        self.base_details["raw_access_level_instance_error"] = None
-        self.base_details["raw_access_level_instance_id"] = self.me_ali.id
+        self.base_details['raw_access_level_instance_error'] = None
+        self.base_details['raw_access_level_instance_id'] = self.me_ali.id
         self.property_state_factory.get_property_state(**self.base_details)
 
         # Action
@@ -219,11 +205,11 @@ class TestAHImportDuplicateIncoming(TestAHImportFile):
 
     def test_duplicate_one_bad_b(self):
         # Set Up
-        self.base_details["raw_access_level_instance_id"] = self.me_ali.id
+        self.base_details['raw_access_level_instance_id'] = self.me_ali.id
         self.property_state_factory.get_property_state(**self.base_details)
 
-        self.base_details["raw_access_level_instance_error"] = "uh oh"
-        self.base_details["raw_access_level_instance_id"] = None
+        self.base_details['raw_access_level_instance_error'] = 'uh oh'
+        self.base_details['raw_access_level_instance_id'] = None
         self.property_state_factory.get_property_state(**self.base_details)
 
         # Action
@@ -243,7 +229,7 @@ class TestAHImportDuplicateIncoming(TestAHImportFile):
 
     def test_duplicate_both_bad(self):
         # Set Up
-        self.base_details["raw_access_level_instance_error"] = "uh oh"
+        self.base_details['raw_access_level_instance_error'] = 'uh oh'
         self.property_state_factory.get_property_state(**self.base_details)
 
         self.property_state_factory.get_property_state(**self.base_details)
@@ -267,16 +253,16 @@ class TestAHImportMatchIncoming(TestAHImportFile):
         super().setUp()
 
         # this causes all the states to match
-        self.base_details["ubid"] = '86HJPCWQ+2VV-1-3-2-3'
-        self.base_details["no_default_data"] = False
+        self.base_details['ubid'] = '86HJPCWQ+2VV-1-3-2-3'
+        self.base_details['no_default_data'] = False
 
     def test_match_both_good(self):
         # Set Up
-        self.base_details["raw_access_level_instance_id"] = self.me_ali.id
+        self.base_details['raw_access_level_instance_id'] = self.me_ali.id
         self.property_state_factory.get_property_state(**self.base_details)
 
-        self.base_details["raw_access_level_instance_id"] = self.me_ali.id
-        self.base_details['city'] = 'Denver'   # so not duplicate
+        self.base_details['raw_access_level_instance_id'] = self.me_ali.id
+        self.base_details['city'] = 'Denver'  # so not duplicate
         self.property_state_factory.get_property_state(**self.base_details)
 
         # Action
@@ -296,11 +282,11 @@ class TestAHImportMatchIncoming(TestAHImportFile):
 
     def test_match_both_good_but_different_a(self):
         # Set Up
-        self.base_details["raw_access_level_instance_id"] = self.org.root.id
+        self.base_details['raw_access_level_instance_id'] = self.org.root.id
         self.property_state_factory.get_property_state(**self.base_details)
 
-        self.base_details["raw_access_level_instance_id"] = self.me_ali.id
-        self.base_details['city'] = 'Denver'   # so not duplicate
+        self.base_details['raw_access_level_instance_id'] = self.me_ali.id
+        self.base_details['city'] = 'Denver'  # so not duplicate
         self.property_state_factory.get_property_state(**self.base_details)
 
         # Action
@@ -318,11 +304,11 @@ class TestAHImportMatchIncoming(TestAHImportFile):
 
     def test_match_both_good_but_different_b(self):
         # Set Up
-        self.base_details["raw_access_level_instance_id"] = self.me_ali.id
+        self.base_details['raw_access_level_instance_id'] = self.me_ali.id
         self.property_state_factory.get_property_state(**self.base_details)
 
-        self.base_details["raw_access_level_instance_id"] = self.org.root.id
-        self.base_details['city'] = 'Denver'   # so not duplicate
+        self.base_details['raw_access_level_instance_id'] = self.org.root.id
+        self.base_details['city'] = 'Denver'  # so not duplicate
         self.property_state_factory.get_property_state(**self.base_details)
 
         # Action
@@ -340,12 +326,12 @@ class TestAHImportMatchIncoming(TestAHImportFile):
 
     def test_match_one_bad_a(self):
         # Set Up
-        self.base_details["raw_access_level_instance_error"] = "uh oh"
+        self.base_details['raw_access_level_instance_error'] = 'uh oh'
         self.property_state_factory.get_property_state(**self.base_details)
 
-        self.base_details["raw_access_level_instance_error"] = None
-        self.base_details["raw_access_level_instance_id"] = self.org.root.id
-        self.base_details['city'] = 'Denver'   # so not duplicate
+        self.base_details['raw_access_level_instance_error'] = None
+        self.base_details['raw_access_level_instance_id'] = self.org.root.id
+        self.base_details['city'] = 'Denver'  # so not duplicate
         self.property_state_factory.get_property_state(**self.base_details)
 
         # Action
@@ -365,12 +351,12 @@ class TestAHImportMatchIncoming(TestAHImportFile):
 
     def test_match_one_bad_b(self):
         # Set Up
-        self.base_details["raw_access_level_instance_id"] = self.me_ali.id
+        self.base_details['raw_access_level_instance_id'] = self.me_ali.id
         self.property_state_factory.get_property_state(**self.base_details)
 
-        self.base_details["raw_access_level_instance_error"] = "uh oh"
-        self.base_details["raw_access_level_instance_id"] = None
-        self.base_details['city'] = 'Denver'   # so not duplicate
+        self.base_details['raw_access_level_instance_error'] = 'uh oh'
+        self.base_details['raw_access_level_instance_id'] = None
+        self.base_details['city'] = 'Denver'  # so not duplicate
         self.property_state_factory.get_property_state(**self.base_details)
 
         # Action
@@ -390,10 +376,10 @@ class TestAHImportMatchIncoming(TestAHImportFile):
 
     def test_match_both_bad(self):
         # Set Up
-        self.base_details["raw_access_level_instance_error"] = "uh oh"
+        self.base_details['raw_access_level_instance_error'] = 'uh oh'
         self.property_state_factory.get_property_state(**self.base_details)
 
-        self.base_details['city'] = 'Denver'   # so not duplicate
+        self.base_details['city'] = 'Denver'  # so not duplicate
         self.property_state_factory.get_property_state(**self.base_details)
 
         # Action
@@ -415,7 +401,7 @@ class TestAHImportDuplicateExisting(TestAHImportFile):
         super().setUp()
 
         # this causes all the states to be duplicates
-        self.base_details["no_default_data"] = False
+        self.base_details['no_default_data'] = False
 
         self.state = self.property_state_factory.get_property_state(**self.base_details)
         self.state.import_file = None
@@ -425,7 +411,7 @@ class TestAHImportDuplicateExisting(TestAHImportFile):
 
     def test_duplicate_both_good(self):
         # Set Up
-        self.base_details["raw_access_level_instance_id"] = self.me_ali.id
+        self.base_details['raw_access_level_instance_id'] = self.me_ali.id
         self.property_state_factory.get_property_state(**self.base_details)
 
         # Action
@@ -445,7 +431,7 @@ class TestAHImportDuplicateExisting(TestAHImportFile):
 
     def test_duplicate_both_good_but_different(self):
         # Set Up
-        self.base_details["raw_access_level_instance_id"] = self.org.root.id
+        self.base_details['raw_access_level_instance_id'] = self.org.root.id
         self.property_state_factory.get_property_state(**self.base_details)
 
         # Action
@@ -468,7 +454,7 @@ class TestAHImportDuplicateExisting(TestAHImportFile):
         self.import_record.access_level_instance = self.me_ali
         self.import_record.save()
 
-        self.base_details["raw_access_level_instance_id"] = self.me_ali.id
+        self.base_details['raw_access_level_instance_id'] = self.me_ali.id
         self.property_state_factory.get_property_state(**self.base_details)
 
         # Action
@@ -493,7 +479,7 @@ class TestAHImportDuplicateExisting(TestAHImportFile):
 
     def test_duplicate_incoming_error(self):
         # Set Up
-        self.base_details["raw_access_level_instance_error"] = "uh oh"
+        self.base_details['raw_access_level_instance_error'] = 'uh oh'
         self.property_state_factory.get_property_state(**self.base_details)
 
         # Action
@@ -518,7 +504,7 @@ class TestAHImportDuplicateExisting(TestAHImportFile):
         self.import_record.access_level_instance = self.me_ali
         self.import_record.save()
 
-        self.base_details["raw_access_level_instance_id"] = None
+        self.base_details['raw_access_level_instance_id'] = None
         self.property_state_factory.get_property_state(**self.base_details)
 
         # Action
@@ -547,8 +533,8 @@ class TestAHImportMatchExisting(TestAHImportFile):
         super().setUp()
 
         # this causes all the states to match
-        self.base_details["ubid"] = '86HJPCWQ+2VV-1-3-2-3'
-        self.base_details["no_default_data"] = False
+        self.base_details['ubid'] = '86HJPCWQ+2VV-1-3-2-3'
+        self.base_details['no_default_data'] = False
 
         self.state = self.property_state_factory.get_property_state(**self.base_details)
         self.state.data_state = DATA_STATE_MATCHING
@@ -558,7 +544,7 @@ class TestAHImportMatchExisting(TestAHImportFile):
 
     def test_match_both_good(self):
         # Set Up
-        self.base_details["raw_access_level_instance_id"] = self.me_ali.id
+        self.base_details['raw_access_level_instance_id'] = self.me_ali.id
         self.base_details['city'] = 'Denver'  # so not duplicate
         self.property_state_factory.get_property_state(**self.base_details)
 
@@ -582,11 +568,11 @@ class TestAHImportMatchExisting(TestAHImportFile):
         # city changed
         assert PropertyView.objects.count() == 1
         pv = PropertyView.objects.first()
-        assert pv.state.city == "Denver"
+        assert pv.state.city == 'Denver'
 
     def test_match_both_good_but_different(self):
         # Set Up
-        self.base_details["raw_access_level_instance_id"] = self.org.root.id
+        self.base_details['raw_access_level_instance_id'] = self.org.root.id
         self.base_details['city'] = 'Denver'  # so not duplicate
         self.property_state_factory.get_property_state(**self.base_details)
 
@@ -617,7 +603,7 @@ class TestAHImportMatchExisting(TestAHImportFile):
         self.import_record.access_level_instance = self.me_ali
         self.import_record.save()
 
-        self.base_details["raw_access_level_instance_id"] = self.me_ali.id
+        self.base_details['raw_access_level_instance_id'] = self.me_ali.id
         self.base_details['city'] = 'Denver'  # so not duplicate
         self.property_state_factory.get_property_state(**self.base_details)
 
@@ -643,8 +629,8 @@ class TestAHImportMatchExisting(TestAHImportFile):
 
     def test_match_incoming_error(self):
         # Set Up
-        self.base_details["raw_access_level_instance_error"] = "uh oh"
-        self.base_details['city'] = 'Denver'    # so not duplicate
+        self.base_details['raw_access_level_instance_error'] = 'uh oh'
+        self.base_details['city'] = 'Denver'  # so not duplicate
         self.property_state_factory.get_property_state(**self.base_details)
 
         # Action
@@ -662,7 +648,7 @@ class TestAHImportMatchExisting(TestAHImportFile):
         # city unchanged
         assert PropertyView.objects.count() == 1
         pv = PropertyView.objects.first()
-        assert pv.state.city == "Denver"
+        assert pv.state.city == 'Denver'
 
         # merged
         self.assertEqual(PropertyState.objects.count(), 3)
@@ -674,7 +660,7 @@ class TestAHImportMatchExisting(TestAHImportFile):
         self.import_record.access_level_instance = self.me_ali
         self.import_record.save()
 
-        self.base_details["raw_access_level_instance_id"] = None
+        self.base_details['raw_access_level_instance_id'] = None
         self.base_details['city'] = 'Denver'  # so not duplicate
         self.property_state_factory.get_property_state(**self.base_details)
 
@@ -706,26 +692,22 @@ class TestAHImportMatchExistingDifferentCycle(TestAHImportFile):
         self.property_view_factory = FakePropertyViewFactory(organization=self.org)
 
         # this causes all the states to match
-        self.base_details["ubid"] = '86HJPCWQ+2VV-1-3-2-3'
-        self.base_details["no_default_data"] = False
+        self.base_details['ubid'] = '86HJPCWQ+2VV-1-3-2-3'
+        self.base_details['no_default_data'] = False
 
         self.state = self.property_state_factory.get_property_state(**self.base_details)
         self.state.data_state = DATA_STATE_MATCHING
         self.state.save()
         self.existing_property = self.property_factory.get_property(access_level_instance=self.me_ali)
         self.other_cycle = self.cycle_factory.get_cycle(start=datetime(2010, 10, 10))
-        self.view = PropertyView.objects.create(
-            property=self.existing_property,
-            cycle=self.other_cycle,
-            state=self.state
-        )
+        self.view = PropertyView.objects.create(property=self.existing_property, cycle=self.other_cycle, state=self.state)
 
     def test_has_ali_merges_and_links(self):
         # Set Up - create view for merge
         self.property_view_factory.get_property_view(prprty=self.existing_property, cycle=self.cycle)
 
         # Set Up - update new state info
-        self.base_details["raw_access_level_instance_id"] = self.me_ali.id
+        self.base_details['raw_access_level_instance_id'] = self.me_ali.id
         self.base_details['city'] = 'Denver'  # so not duplicate
         self.property_state_factory.get_property_state(**self.base_details)
 
@@ -749,17 +731,17 @@ class TestAHImportMatchExistingDifferentCycle(TestAHImportFile):
 
         # city changed in the correct view
         assert PropertyView.objects.count() == 2
-        view_info = PropertyView.objects.values("property_id", "cycle_id", "state__city")
+        view_info = PropertyView.objects.values('property_id', 'cycle_id', 'state__city')
         assert list(view_info) == [
             {
-                "property_id": self.existing_property.id,
-                "cycle_id": self.other_cycle.id,
-                "state__city": None,
+                'property_id': self.existing_property.id,
+                'cycle_id': self.other_cycle.id,
+                'state__city': None,
             },
             {
-                "property_id": self.existing_property.id,
-                "cycle_id": self.cycle.id,
-                "state__city": "Denver",
+                'property_id': self.existing_property.id,
+                'cycle_id': self.cycle.id,
+                'state__city': 'Denver',
             },
         ]
 
@@ -768,7 +750,7 @@ class TestAHImportMatchExistingDifferentCycle(TestAHImportFile):
         self.property_view_factory.get_property_view(prprty=self.existing_property, cycle=self.cycle)
 
         # Set Up - update new state info
-        self.base_details["raw_access_level_instance_error"] = "uh oh"
+        self.base_details['raw_access_level_instance_error'] = 'uh oh'
         self.base_details['city'] = 'Denver'  # so not duplicate
         self.property_state_factory.get_property_state(**self.base_details)
 
@@ -792,24 +774,24 @@ class TestAHImportMatchExistingDifferentCycle(TestAHImportFile):
 
         # city changed in the correct view
         assert PropertyView.objects.count() == 2
-        view_info = PropertyView.objects.values("property_id", "cycle_id", "state__city")
+        view_info = PropertyView.objects.values('property_id', 'cycle_id', 'state__city')
 
         assert list(view_info) == [
             {
-                "property_id": self.existing_property.id,
-                "cycle_id": self.other_cycle.id,
-                "state__city": None,
+                'property_id': self.existing_property.id,
+                'cycle_id': self.other_cycle.id,
+                'state__city': None,
             },
             {
-                "property_id": self.existing_property.id,
-                "cycle_id": self.cycle.id,
-                "state__city": "Denver",
+                'property_id': self.existing_property.id,
+                'cycle_id': self.cycle.id,
+                'state__city': 'Denver',
             },
         ]
 
     def test_has_ali_links(self):
         # Set Up - update new state info
-        self.base_details["raw_access_level_instance_id"] = self.me_ali.id
+        self.base_details['raw_access_level_instance_id'] = self.me_ali.id
         self.base_details['city'] = 'Denver'  # so not duplicate
         self.property_state_factory.get_property_state(**self.base_details)
 
@@ -827,19 +809,19 @@ class TestAHImportMatchExistingDifferentCycle(TestAHImportFile):
 
         # city changed in the correct view
         assert PropertyView.objects.count() == 2
-        view_info = PropertyView.objects.values("property_id", "property__access_level_instance_id", "cycle_id", "state__city")
+        view_info = PropertyView.objects.values('property_id', 'property__access_level_instance_id', 'cycle_id', 'state__city')
         assert list(view_info) == [
             {
-                "property_id": self.existing_property.id,
-                "property__access_level_instance_id": self.me_ali.id,
-                "cycle_id": self.other_cycle.id,
-                "state__city": None,
+                'property_id': self.existing_property.id,
+                'property__access_level_instance_id': self.me_ali.id,
+                'cycle_id': self.other_cycle.id,
+                'state__city': None,
             },
             {
-                "property_id": self.existing_property.id,
-                "property__access_level_instance_id": self.me_ali.id,
-                "cycle_id": self.cycle.id,
-                "state__city": "Denver",
+                'property_id': self.existing_property.id,
+                'property__access_level_instance_id': self.me_ali.id,
+                'cycle_id': self.cycle.id,
+                'state__city': 'Denver',
             },
         ]
 
@@ -849,7 +831,7 @@ class TestAHImportMatchExistingDifferentCycle(TestAHImportFile):
         self.existing_property.save()
 
         # Set Up - update new state info
-        self.base_details["raw_access_level_instance_id"] = self.me_ali.id  # different ali
+        self.base_details['raw_access_level_instance_id'] = self.me_ali.id  # different ali
         self.base_details['city'] = 'Denver'  # so not duplicate
         self.property_state_factory.get_property_state(**self.base_details)
 
@@ -867,19 +849,19 @@ class TestAHImportMatchExistingDifferentCycle(TestAHImportFile):
 
         # no change
         assert PropertyView.objects.count() == 1
-        view_info = PropertyView.objects.values("property_id", "property__access_level_instance_id", "cycle_id", "state__city")
+        view_info = PropertyView.objects.values('property_id', 'property__access_level_instance_id', 'cycle_id', 'state__city')
         assert list(view_info) == [
             {
-                "property_id": self.existing_property.id,
-                "property__access_level_instance_id": self.sister.id,
-                "cycle_id": self.other_cycle.id,
-                "state__city": None,
+                'property_id': self.existing_property.id,
+                'property__access_level_instance_id': self.sister.id,
+                'cycle_id': self.other_cycle.id,
+                'state__city': None,
             },
         ]
 
     def test_no_ali_links(self):
         # Set Up - update new state info
-        self.base_details["raw_access_level_instance_error"] = "uh oh"
+        self.base_details['raw_access_level_instance_error'] = 'uh oh'
         self.base_details['city'] = 'Denver'  # so not duplicate
         self.property_state_factory.get_property_state(**self.base_details)
 
@@ -900,17 +882,17 @@ class TestAHImportMatchExistingDifferentCycle(TestAHImportFile):
 
         # city changed in the correct view
         assert PropertyView.objects.count() == 2
-        view_info = PropertyView.objects.values("property_id", "cycle_id", "state__city")
+        view_info = PropertyView.objects.values('property_id', 'cycle_id', 'state__city')
         assert list(view_info) == [
             {
-                "property_id": self.existing_property.id,
-                "cycle_id": self.other_cycle.id,
-                "state__city": None,
+                'property_id': self.existing_property.id,
+                'cycle_id': self.other_cycle.id,
+                'state__city': None,
             },
             {
-                "property_id": self.existing_property.id,
-                "cycle_id": self.cycle.id,
-                "state__city": "Denver",
+                'property_id': self.existing_property.id,
+                'cycle_id': self.cycle.id,
+                'state__city': 'Denver',
             },
         ]
 
@@ -922,7 +904,7 @@ class TestAHImportMatchExistingDifferentCycle(TestAHImportFile):
         self.import_record.save()
 
         # update new state info
-        self.base_details["raw_access_level_instance_error"] = "uh oh"
+        self.base_details['raw_access_level_instance_error'] = 'uh oh'
         self.base_details['city'] = 'Denver'  # so not duplicate
         self.property_state_factory.get_property_state(**self.base_details)
 
@@ -941,11 +923,11 @@ class TestAHImportMatchExistingDifferentCycle(TestAHImportFile):
 
         # no change
         assert PropertyView.objects.count() == 1
-        view_info = PropertyView.objects.values("property_id", "cycle_id", "state__city")
+        view_info = PropertyView.objects.values('property_id', 'cycle_id', 'state__city')
         assert list(view_info) == [
             {
-                "property_id": self.existing_property.id,
-                "cycle_id": self.other_cycle.id,
-                "state__city": None,
+                'property_id': self.existing_property.id,
+                'cycle_id': self.other_cycle.id,
+                'state__city': None,
             },
         ]

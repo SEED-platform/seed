@@ -4,7 +4,6 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('seed', '0147_rename_bsync_col_mapping_preset'),
     ]

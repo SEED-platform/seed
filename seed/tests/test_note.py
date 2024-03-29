@@ -1,11 +1,11 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 :author nicholas.long@nrel.gov
 """
+
 from django.test import TestCase
 
 from seed.landing.models import SEEDUser as User

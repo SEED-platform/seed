@@ -1,9 +1,9 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 import logging
 import os.path as osp
 import pathlib
@@ -11,19 +11,8 @@ import pathlib
 from django.core.files.uploadedfile import SimpleUploadedFile
 
 from seed.data_importer import tasks
-from seed.data_importer.tests.util import (
-    FAKE_EXTRA_DATA,
-    FAKE_MAPPINGS,
-    FAKE_ROW
-)
-from seed.models import (
-    ASSESSED_RAW,
-    DATA_STATE_MAPPING,
-    Column,
-    PropertyState,
-    TaxLotState,
-    TaxLotView
-)
+from seed.data_importer.tests.util import FAKE_EXTRA_DATA, FAKE_MAPPINGS, FAKE_ROW
+from seed.models import ASSESSED_RAW, DATA_STATE_MAPPING, Column, PropertyState, TaxLotState, TaxLotView
 from seed.tests.util import DataMappingBaseTestCase
 
 logger = logging.getLogger(__name__)
@@ -39,14 +28,11 @@ class TestCaseB(DataMappingBaseTestCase):
         selfvars = self.set_up(import_file_source_type)
         self.user, self.org, self.import_file, self.import_record, self.cycle = selfvars
         filepath = osp.join(osp.dirname(__file__), '..', 'data', filename)
-        self.import_file.file = SimpleUploadedFile(
-            name=filename,
-            content=pathlib.Path(filepath).read_bytes()
-        )
+        self.import_file.file = SimpleUploadedFile(name=filename, content=pathlib.Path(filepath).read_bytes())
         self.import_file.save()
 
     def test_match_buildings(self):
-        """ case B (many property <-> one tax lot) """
+        """case B (many property <-> one tax lot)"""
         tasks.save_raw_data(self.import_file.pk)
         Column.create_mappings(self.fake_mappings, self.org, self.user, self.import_file.pk)
         # Set remap to True because for some reason this file id has been imported before.
@@ -75,7 +61,7 @@ class TestCaseB(DataMappingBaseTestCase):
             data_state=DATA_STATE_MAPPING,
             import_file=self.import_file,
         ).first()
-        self.assertEqual(p_test.lot_number, "333/66555;333/66125;333/66148")
+        self.assertEqual(p_test.lot_number, '333/66555;333/66125;333/66148')
 
         tasks.geocode_and_match_buildings_task(self.import_file.id)
 

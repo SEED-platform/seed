@@ -2,6 +2,7 @@
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 import os
 
 from django.conf import settings
@@ -19,7 +20,7 @@ def encrypt(password: str) -> str:
 
 
 def decrypt(password: str):
-    """ Decrypts a password """
+    """Decrypts a password"""
 
     secret = get_secret()
 
@@ -28,12 +29,11 @@ def decrypt(password: str):
         enc = signer.unsign_object(password)
         return enc, None
     except signing.BadSignature as e:
-        print("Error: Cannot decrypt password.")
+        print('Error: Cannot decrypt password.')
         return None, e
 
 
 def get_secret() -> str:
-
     if settings.SECRET_KEY:
         secret = settings.SECRET_KEY
     else:

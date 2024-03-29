@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('orgs', '0020_rename_display_significant_figures_organization_display_decimal_places'),
     ]

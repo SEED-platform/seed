@@ -1,19 +1,15 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 :author Paul Munday <paul@paulmunday.net>
 """
+
 from rest_framework import serializers
 
 from seed.models import Property
-from seed.serializers.properties import (
-    PropertyLabelsField,
-    PropertyListSerializer,
-    PropertyMinimalSerializer
-)
+from seed.serializers.properties import PropertyLabelsField, PropertyListSerializer, PropertyMinimalSerializer
 
 
 class TaxLotPropertySerializer(serializers.ModelSerializer):
@@ -23,9 +19,7 @@ class TaxLotPropertySerializer(serializers.ModelSerializer):
     class Meta:
         model = Property
         fields = '__all__'
-        extra_kwargs = {
-            'organization': {'read_only': True}
-        }
+        extra_kwargs = {'organization': {'read_only': True}}
 
     @classmethod
     def many_init(cls, *args, **kwargs):

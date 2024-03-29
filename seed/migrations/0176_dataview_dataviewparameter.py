@@ -5,7 +5,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('orgs', '0023_auto_20220721_1851'),
         ('seed', '0175_filtergroup'),
@@ -30,7 +29,10 @@ class Migration(migrations.Migration):
                 ('aggregations', models.JSONField(blank=True)),
                 ('target', models.CharField(blank=True, max_length=255)),
                 ('column', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='seed.column')),
-                ('data_view', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='parameters', to='seed.dataview')),
+                (
+                    'data_view',
+                    models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='parameters', to='seed.dataview'),
+                ),
             ],
         ),
     ]

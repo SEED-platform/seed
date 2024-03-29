@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('data_importer', '0013_importfile_raw_property_state_to_filename'),
     ]

@@ -5,7 +5,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('orgs', '0022_auto_20220711_1928'),
         ('seed', '0174_fix_ghg_columns'),
@@ -21,7 +20,10 @@ class Migration(migrations.Migration):
                 ('query_dict', models.JSONField(default=dict)),
                 ('label_logic', models.IntegerField(choices=[(0, 'and'), (1, 'or'), (2, 'exclude')], default=0)),
                 ('labels', models.ManyToManyField(to='seed.StatusLabel')),
-                ('organization', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='filter_groups', to='orgs.organization')),
+                (
+                    'organization',
+                    models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='filter_groups', to='orgs.organization'),
+                ),
             ],
             options={
                 'ordering': ['id'],

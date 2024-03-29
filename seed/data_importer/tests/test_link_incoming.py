@@ -1,26 +1,15 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 from django.contrib.postgres.aggregates.general import ArrayAgg
 from django.db.models.aggregates import Count
 
 from seed.data_importer.tasks import geocode_and_match_buildings_task
-from seed.models import (
-    ASSESSED_RAW,
-    DATA_STATE_MAPPING,
-    PropertyState,
-    PropertyView,
-    TaxLotState,
-    TaxLotView
-)
-from seed.test_helpers.fake import (
-    FakeCycleFactory,
-    FakePropertyStateFactory,
-    FakeTaxLotStateFactory
-)
+from seed.models import ASSESSED_RAW, DATA_STATE_MAPPING, PropertyState, PropertyView, TaxLotState, TaxLotView
+from seed.test_helpers.fake import FakeCycleFactory, FakePropertyStateFactory, FakeTaxLotStateFactory
 from seed.tests.util import DataMappingBaseTestCase
 
 
@@ -30,15 +19,11 @@ class TestMatchMergeLink(DataMappingBaseTestCase):
         self.user, self.org, self.import_file_1, self.import_record_1, self.cycle_1 = selfvars
 
         cycle_factory = FakeCycleFactory(organization=self.org, user=self.user)
-        self.cycle_2 = cycle_factory.get_cycle(name="Cycle 2")
-        self.import_record_2, self.import_file_2 = self.create_import_file(
-            self.user, self.org, self.cycle_2
-        )
+        self.cycle_2 = cycle_factory.get_cycle(name='Cycle 2')
+        self.import_record_2, self.import_file_2 = self.create_import_file(self.user, self.org, self.cycle_2)
 
-        self.cycle_3 = cycle_factory.get_cycle(name="Cycle 3")
-        self.import_record_3, self.import_file_3 = self.create_import_file(
-            self.user, self.org, self.cycle_3
-        )
+        self.cycle_3 = cycle_factory.get_cycle(name='Cycle 3')
+        self.import_record_3, self.import_file_3 = self.create_import_file(self.user, self.org, self.cycle_3)
 
         self.property_state_factory = FakePropertyStateFactory(organization=self.org)
         self.taxlot_state_factory = FakeTaxLotStateFactory(organization=self.org)
@@ -65,7 +50,7 @@ class TestMatchMergeLink(DataMappingBaseTestCase):
             'import_file_id': self.import_file_1.id,
             'data_state': DATA_STATE_MAPPING,
             'no_default_data': False,
-            "raw_access_level_instance_id": self.org.root.id,
+            'raw_access_level_instance_id': self.org.root.id,
         }
         self.property_state_factory.get_property_state(**base_state_details)
 
@@ -125,22 +110,17 @@ class TestMatchMergeLink(DataMappingBaseTestCase):
         self.assertEqual(4 + 6 + 2, PropertyState.objects.count())
         # 4 unique canonical records used in -Views
         # For now, Properties are not deleted when they aren't used in -Views so a count test wouldn't be appropriate
-        self.assertEqual(
-            4,
-            len(set(PropertyView.objects.values_list('property_id', flat=True)))
-        )
+        self.assertEqual(4, len(set(PropertyView.objects.values_list('property_id', flat=True))))
 
         # At the moment, there should be 3 -Views with the same canonical record across 3 cycles
-        views_with_same_canonical_record = PropertyView.objects.\
-            values('property_id').\
-            annotate(times_used=Count('id'), cycle_ids=ArrayAgg('cycle_id')).\
-            filter(times_used__gt=1).\
-            get()
-        self.assertEqual(3, views_with_same_canonical_record['times_used'])
-        self.assertCountEqual(
-            [self.cycle_1.id, self.cycle_2.id, self.cycle_3.id],
-            views_with_same_canonical_record['cycle_ids']
+        views_with_same_canonical_record = (
+            PropertyView.objects.values('property_id')
+            .annotate(times_used=Count('id'), cycle_ids=ArrayAgg('cycle_id'))
+            .filter(times_used__gt=1)
+            .get()
         )
+        self.assertEqual(3, views_with_same_canonical_record['times_used'])
+        self.assertCountEqual([self.cycle_1.id, self.cycle_2.id, self.cycle_3.id], views_with_same_canonical_record['cycle_ids'])
 
     def test_match_merge_link_for_taxlots(self):
         """
@@ -164,7 +144,7 @@ class TestMatchMergeLink(DataMappingBaseTestCase):
             'import_file_id': self.import_file_1.id,
             'data_state': DATA_STATE_MAPPING,
             'no_default_data': False,
-            "raw_access_level_instance_id": self.org.root.id,
+            'raw_access_level_instance_id': self.org.root.id,
         }
         self.taxlot_state_factory.get_taxlot_state(**base_state_details)
 
@@ -224,19 +204,14 @@ class TestMatchMergeLink(DataMappingBaseTestCase):
         self.assertEqual(4 + 6 + 2, TaxLotState.objects.count())
         # 4 unique canonical records used in -Views
         # For now, Properties are not deleted when they aren't used in -Views so a count test wouldn't be appropriate
-        self.assertEqual(
-            4,
-            len(set(TaxLotView.objects.values_list('taxlot_id', flat=True)))
-        )
+        self.assertEqual(4, len(set(TaxLotView.objects.values_list('taxlot_id', flat=True))))
 
         # At the moment, there should be 3 -Views with the same canonical record across 3 cycles
-        views_with_same_canonical_record = TaxLotView.objects.\
-            values('taxlot_id').\
-            annotate(times_used=Count('id'), cycle_ids=ArrayAgg('cycle_id')).\
-            filter(times_used__gt=1).\
-            get()
-        self.assertEqual(3, views_with_same_canonical_record['times_used'])
-        self.assertCountEqual(
-            [self.cycle_1.id, self.cycle_2.id, self.cycle_3.id],
-            views_with_same_canonical_record['cycle_ids']
+        views_with_same_canonical_record = (
+            TaxLotView.objects.values('taxlot_id')
+            .annotate(times_used=Count('id'), cycle_ids=ArrayAgg('cycle_id'))
+            .filter(times_used__gt=1)
+            .get()
         )
+        self.assertEqual(3, views_with_same_canonical_record['times_used'])
+        self.assertCountEqual([self.cycle_1.id, self.cycle_2.id, self.cycle_3.id], views_with_same_canonical_record['cycle_ids'])

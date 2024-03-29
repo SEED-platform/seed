@@ -1,9 +1,9 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 from django.utils.decorators import method_decorator
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
@@ -25,27 +25,23 @@ from seed.utils.viewsets import SEEDOrgModelViewSet
                 location_attr='IN_PATH',
                 type='TYPE_INTEGER',
                 required=True,
-                description='ID of the property view where the meter is associated.'),
+                description='ID of the property view where the meter is associated.',
+            ),
             AutoSchemaHelper.base_field(
                 name='meter_pk',
                 location_attr='IN_PATH',
                 type='TYPE_INTEGER',
                 required=True,
-                description='ID of the meter to attached the meter readings.'),
+                description='ID of the meter to attached the meter readings.',
+            ),
         ],
         request_body=openapi.Schema(
             type=openapi.TYPE_ARRAY,
             items=AutoSchemaHelper.schema_factory(
-                {
-                    'start_time': 'string',
-                    'end_time': 'string',
-                    'reading': 'number',
-                    'source_unit': 'string',
-                    'conversion_factor': 'number'
-                },
+                {'start_time': 'string', 'end_time': 'string', 'reading': 'number', 'source_unit': 'string', 'conversion_factor': 'number'},
                 required=['start_time', 'end_time', 'reading', 'source_unit', 'conversion_factor'],
             ),
-            description='Dictionary or list of dictionaries of meter readings to add.'
+            description='Dictionary or list of dictionaries of meter readings to add.',
         ),
     ),
 )
@@ -90,10 +86,10 @@ class MeterReadingViewSet(SEEDOrgModelViewSet):
         ).order_by('start_time', 'end_time')
 
     def get_serializer(self, *args, **kwargs):
-        if isinstance(kwargs.get("data", {}), list):
-            kwargs["many"] = True
+        if isinstance(kwargs.get('data', {}), list):
+            kwargs['many'] = True
 
-        return super(MeterReadingViewSet, self).get_serializer(*args, **kwargs)
+        return super().get_serializer(*args, **kwargs)
 
     def perform_create(self, serializer):
         """On create, make sure to add in the property id which comes from the URL kwargs."""

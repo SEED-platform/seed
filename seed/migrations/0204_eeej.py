@@ -12,7 +12,6 @@ def handle_eeej_data(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('seed', '0203_column_unique_column_name'),
     ]
@@ -37,7 +36,13 @@ class Migration(migrations.Migration):
                 ('hud_object_id', models.CharField(max_length=20, unique=True)),
                 ('census_tract_geoid', models.CharField(max_length=11)),
                 ('long_lat', django.contrib.gis.db.models.fields.PointField(geography=True, srid=4326)),
-                ('housing_type', models.CharField(choices=[('public housing development', 'Public Housing'), ('multi-family assisted property', 'Multifamily')], max_length=100)),
+                (
+                    'housing_type',
+                    models.CharField(
+                        choices=[('public housing development', 'Public Housing'), ('multi-family assisted property', 'Multifamily')],
+                        max_length=100,
+                    ),
+                ),
                 ('name', models.CharField(max_length=150)),
             ],
         ),

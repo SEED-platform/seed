@@ -1,9 +1,9 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 import logging
 
 from buildingid.code import decode
@@ -50,21 +50,21 @@ def decode_unique_ids(qs):
 
         # Starting with the SE point, list the points in counter-clockwise order
         bounding_box_polygon = (
-            f"POLYGON (({bounding_box_obj.longitudeHi} {bounding_box_obj.latitudeLo}, "
-            f"{bounding_box_obj.longitudeHi} {bounding_box_obj.latitudeHi}, "
-            f"{bounding_box_obj.longitudeLo} {bounding_box_obj.latitudeHi}, "
-            f"{bounding_box_obj.longitudeLo} {bounding_box_obj.latitudeLo}, "
-            f"{bounding_box_obj.longitudeHi} {bounding_box_obj.latitudeLo}))"
+            f'POLYGON (({bounding_box_obj.longitudeHi} {bounding_box_obj.latitudeLo}, '
+            f'{bounding_box_obj.longitudeHi} {bounding_box_obj.latitudeHi}, '
+            f'{bounding_box_obj.longitudeLo} {bounding_box_obj.latitudeHi}, '
+            f'{bounding_box_obj.longitudeLo} {bounding_box_obj.latitudeLo}, '
+            f'{bounding_box_obj.longitudeHi} {bounding_box_obj.latitudeLo}))'
         )
         state.bounding_box = bounding_box_polygon
 
         # Starting with the SE point, list the points in counter-clockwise order
         centroid_polygon = (
-            f"POLYGON (({bounding_box_obj.centroid.longitudeHi} {bounding_box_obj.centroid.latitudeLo}, "
-            f"{bounding_box_obj.centroid.longitudeHi} {bounding_box_obj.centroid.latitudeHi}, "
-            f"{bounding_box_obj.centroid.longitudeLo} {bounding_box_obj.centroid.latitudeHi}, "
-            f"{bounding_box_obj.centroid.longitudeLo} {bounding_box_obj.centroid.latitudeLo}, "
-            f"{bounding_box_obj.centroid.longitudeHi} {bounding_box_obj.centroid.latitudeLo}))"
+            f'POLYGON (({bounding_box_obj.centroid.longitudeHi} {bounding_box_obj.centroid.latitudeLo}, '
+            f'{bounding_box_obj.centroid.longitudeHi} {bounding_box_obj.centroid.latitudeHi}, '
+            f'{bounding_box_obj.centroid.longitudeLo} {bounding_box_obj.centroid.latitudeHi}, '
+            f'{bounding_box_obj.centroid.longitudeLo} {bounding_box_obj.centroid.latitudeLo}, '
+            f'{bounding_box_obj.centroid.longitudeHi} {bounding_box_obj.centroid.latitudeLo}))'
         )
         state.centroid = centroid_polygon
 
@@ -146,11 +146,7 @@ def merge_ubid_models(old_state_ids, new_state_id, StateClass):
             if old_ubid.ubid in new_ubids.values_list('ubid', flat=True):
                 continue
 
-            ubid_details = {
-                'ubid': old_ubid.ubid,
-                state_field: new_state,
-                'preferred': old_ubid.ubid == preferred_ubid
-            }
+            ubid_details = {'ubid': old_ubid.ubid, state_field: new_state, 'preferred': old_ubid.ubid == preferred_ubid}
 
             new_state.ubidmodel_set.create(**ubid_details)
 

@@ -5,7 +5,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('seed', '0191_add_data_admin_to_sf'),
     ]
@@ -14,7 +13,9 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='salesforceconfig',
             name='data_admin_account_name_column',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, related_name='data_admin_account_name_column', to='seed.column'),
+            field=models.ForeignKey(
+                null=True, on_delete=django.db.models.deletion.CASCADE, related_name='data_admin_account_name_column', to='seed.column'
+            ),
         ),
         migrations.AddField(
             model_name='salesforceconfig',

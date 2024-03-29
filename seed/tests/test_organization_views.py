@@ -1,9 +1,9 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 import json
 
 from django.urls import reverse
@@ -23,9 +23,7 @@ class TestOrganizationViews(DataMappingBaseTestCase):
             'username': 'test_user@demo.com',
             'password': 'test_pass',
         }
-        user = User.objects.create_superuser(
-            email='test_user@demo.com', **user_details
-        )
+        user = User.objects.create_superuser(email='test_user@demo.com', **user_details)
         self.org, _, _ = create_organization(user)
 
         self.client.login(**user_details)
@@ -53,28 +51,12 @@ class TestOrganizationViews(DataMappingBaseTestCase):
 
     def test_matching_criteria_columns_view_with_nondefault_geocoding_columns(self):
         # Deactivate city for properties and state for taxlots
-        self.org.column_set.filter(
-            column_name='city',
-            table_name="PropertyState"
-        ).update(geocoding_order=0)
-        self.org.column_set.filter(
-            column_name='state',
-            table_name="TaxLotState"
-        ).update(geocoding_order=0)
+        self.org.column_set.filter(column_name='city', table_name='PropertyState').update(geocoding_order=0)
+        self.org.column_set.filter(column_name='state', table_name='TaxLotState').update(geocoding_order=0)
 
         # Create geocoding-enabled ED_city for properties and ED_state for taxlots
-        self.org.column_set.create(
-            column_name='ed_city',
-            is_extra_data=True,
-            table_name='PropertyState',
-            geocoding_order=3
-        )
-        self.org.column_set.create(
-            column_name='ed_state',
-            is_extra_data=True,
-            table_name='TaxLotState',
-            geocoding_order=4
-        )
+        self.org.column_set.create(column_name='ed_city', is_extra_data=True, table_name='PropertyState', geocoding_order=3)
+        self.org.column_set.create(column_name='ed_state', is_extra_data=True, table_name='TaxLotState', geocoding_order=4)
 
         url = reverse('api:v3:organizations-geocoding-columns', args=[self.org.id])
         raw_result = self.client.get(url)
@@ -112,11 +94,9 @@ class TestOrganizationPermissions(AccessLevelBaseTestCase):
         )
         self.import_file = ImportFile.objects.create(
             import_record=self.import_record,
-            source_type="Assessed Raw",
+            source_type='Assessed Raw',
             mapping_done=True,
-            cached_first_row=ROW_DELIMITER.join(
-                ['name', 'address', 'year built', 'building id']
-            )
+            cached_first_row=ROW_DELIMITER.join(['name', 'address', 'year built', 'building id']),
         )
 
         self.property = self.property_factory.get_property()
@@ -140,22 +120,25 @@ class TestOrganizationPermissions(AccessLevelBaseTestCase):
         self.import_record.access_level_instance = self.child_level_instance
         self.import_record.save()
         url = reverse('api:v3:organizations-column-mappings', args=[self.org.pk]) + f'?import_file_id={self.import_file.id}'
-        params = json.dumps({'mappings': [{
-            "from_field": "a new col",
-            "from_units": None,
-            "to_field": "a new col",
-            "to_field_display_name": "a new col",
-            "to_table_name": "PropertyState",
-        }]})
+        params = json.dumps(
+            {
+                'mappings': [
+                    {
+                        'from_field': 'a new col',
+                        'from_units': None,
+                        'to_field': 'a new col',
+                        'to_field_display_name': 'a new col',
+                        'to_table_name': 'PropertyState',
+                    }
+                ]
+            }
+        )
 
         # child user cannot
         self.login_as_child_member()
         resp = self.client.post(url, params, content_type='application/json')
         assert resp.status_code == 200
-        assert resp.json() == {
-            "status": "error",
-            "message": "user does not have permission to create column a new col"
-        }
+        assert resp.json() == {'status': 'error', 'message': 'user does not have permission to create column a new col'}
 
         # root users can
         self.login_as_root_member()
@@ -178,36 +161,36 @@ class TestOrganizationPermissions(AccessLevelBaseTestCase):
 
     def test_report(self):
         url = reverse('api:v3:organizations-report', args=[self.org.pk])
-        url += f"?x_var=building_count&y_var=gross_floor_area&cycle_ids={Cycle.objects.first().id}"
+        url += f'?x_var=building_count&y_var=gross_floor_area&cycle_ids={Cycle.objects.first().id}'
 
         # child user cannot
         self.login_as_child_member()
         resp = self.client.get(url, content_type='application/json')
-        assert resp.json()["data"]["property_counts"][0]["num_properties"] == 0
+        assert resp.json()['data']['property_counts'][0]['num_properties'] == 0
 
         # root users can
         self.login_as_root_member()
         resp = self.client.get(url, content_type='application/json')
-        assert resp.json()["data"]["property_counts"][0]["num_properties"] == 1
+        assert resp.json()['data']['property_counts'][0]['num_properties'] == 1
 
     def test_report_aggregated(self):
         url = reverse('api:v3:organizations-report-aggregated', args=[self.org.pk])
-        url += f"?x_var=building_count&y_var=gross_floor_area&cycle_ids={Cycle.objects.first().id}"
+        url += f'?x_var=building_count&y_var=gross_floor_area&cycle_ids={Cycle.objects.first().id}'
 
         # child user cannot
         self.login_as_child_member()
         resp = self.client.get(url, content_type='application/json')
-        assert resp.json()["aggregated_data"]["property_counts"][0]["num_properties"] == 0
+        assert resp.json()['aggregated_data']['property_counts'][0]['num_properties'] == 0
 
         # root users can
         self.login_as_root_member()
         resp = self.client.get(url, content_type='application/json')
-        assert resp.json()["aggregated_data"]["property_counts"][0]["num_properties"] == 1
+        assert resp.json()['aggregated_data']['property_counts'][0]['num_properties'] == 1
 
     def test_report_export(self):
         url = reverse('api:v3:organizations-report-export', args=[self.org.pk])
-        url += f"?x_var=building_count&y_var=gross_floor_area&cycle_ids={Cycle.objects.first().id}"
-        url += "&x_label=x&y_label=y"
+        url += f'?x_var=building_count&y_var=gross_floor_area&cycle_ids={Cycle.objects.first().id}'
+        url += '&x_label=x&y_label=y'
 
         # child user cannot
         self.login_as_child_member()

@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('seed', '0177_compliance_metric'),
     ]
@@ -13,11 +12,15 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='compliancemetric',
             name='emission_metric_type',
-            field=models.IntegerField(blank=True, choices=[(0, 'Target > Actual for Compliance'), (1, 'Actual > Target for Compliance')], null=True),
+            field=models.IntegerField(
+                blank=True, choices=[(0, 'Target > Actual for Compliance'), (1, 'Actual > Target for Compliance')], null=True
+            ),
         ),
         migrations.AlterField(
             model_name='compliancemetric',
             name='energy_metric_type',
-            field=models.IntegerField(blank=True, choices=[(0, 'Target > Actual for Compliance'), (1, 'Actual > Target for Compliance')], null=True),
+            field=models.IntegerField(
+                blank=True, choices=[(0, 'Target > Actual for Compliance'), (1, 'Actual > Target for Compliance')], null=True
+            ),
         ),
     ]

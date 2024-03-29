@@ -1,5 +1,4 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
@@ -23,16 +22,8 @@ class UbidModel(models.Model):
     class Meta:
         # Two partial indexes to handle uniqueness with null values
         constraints = [
-            models.UniqueConstraint(
-                fields=['ubid', 'property_id'],
-                name='unique_ubid_for_property',
-                condition=Q(taxlot_id__isnull=True)
-            ),
-            models.UniqueConstraint(
-                fields=['ubid', 'taxlot_id'],
-                name='unique_ubid_for_taxlot',
-                condition=Q(property_id__isnull=True)
-            ),
+            models.UniqueConstraint(fields=['ubid', 'property_id'], name='unique_ubid_for_property', condition=Q(taxlot_id__isnull=True)),
+            models.UniqueConstraint(fields=['ubid', 'taxlot_id'], name='unique_ubid_for_taxlot', condition=Q(property_id__isnull=True)),
         ]
 
 

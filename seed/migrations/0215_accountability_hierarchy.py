@@ -35,7 +35,9 @@ def assign_analyses_to_root_access_level(apps, schema_editor):
     AccessLevelInstance = apps.get_model('orgs', 'AccessLevelInstance')
 
     if Analysis.objects.filter(organization=None).exists():
-        raise ValueError("Some Analyses have no organization, and are orphaned. This shouldn't have happened and these Analyses cannot be migrated. Please add an organization or delete the orphaned analyses and try again.")
+        raise ValueError(
+            "Some Analyses have no organization, and are orphaned. This shouldn't have happened and these Analyses cannot be migrated. Please add an organization or delete the orphaned analyses and try again."
+        )
 
     root_alis = {ali.organization_id: ali for ali in AccessLevelInstance.objects.filter(depth=1)}
 
@@ -56,7 +58,6 @@ def backfill_historical_notes(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('orgs', '0030_accountability_hierarchy'),
         ('seed', '0214_delete_filtergroup_labels'),
@@ -67,27 +68,66 @@ class Migration(migrations.Migration):
             name='Goal',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('target_percentage', models.IntegerField(validators=[django.core.validators.MinValueValidator(0), django.core.validators.MaxValueValidator(100)])),
+                (
+                    'target_percentage',
+                    models.IntegerField(
+                        validators=[django.core.validators.MinValueValidator(0), django.core.validators.MaxValueValidator(100)]
+                    ),
+                ),
                 ('name', models.CharField(max_length=255, unique=True)),
                 ('access_level_instance', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='orgs.accesslevelinstance')),
-                ('area_column', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='goal_area_columns', to='seed.column')),
-                ('baseline_cycle', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='goal_baseline_cycles', to='seed.cycle')),
-                ('current_cycle', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='goal_current_cycles', to='seed.cycle')),
-                ('eui_column1', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='goal_eui_column1s', to='seed.column')),
-                ('eui_column2', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='goal_eui_column2s', to='seed.column')),
-                ('eui_column3', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='goal_eui_column3s', to='seed.column')),
+                (
+                    'area_column',
+                    models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='goal_area_columns', to='seed.column'),
+                ),
+                (
+                    'baseline_cycle',
+                    models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='goal_baseline_cycles', to='seed.cycle'),
+                ),
+                (
+                    'current_cycle',
+                    models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='goal_current_cycles', to='seed.cycle'),
+                ),
+                (
+                    'eui_column1',
+                    models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='goal_eui_column1s', to='seed.column'),
+                ),
+                (
+                    'eui_column2',
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name='goal_eui_column2s',
+                        to='seed.column',
+                    ),
+                ),
+                (
+                    'eui_column3',
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name='goal_eui_column3s',
+                        to='seed.column',
+                    ),
+                ),
                 ('organization', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='orgs.organization')),
             ],
         ),
         migrations.AddField(
             model_name='analysis',
             name='access_level_instance',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, related_name='analyses', to='orgs.accesslevelinstance'),
+            field=models.ForeignKey(
+                null=True, on_delete=django.db.models.deletion.CASCADE, related_name='analyses', to='orgs.accesslevelinstance'
+            ),
         ),
         migrations.AddField(
             model_name='property',
             name='access_level_instance',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, related_name='properties', to='orgs.accesslevelinstance'),
+            field=models.ForeignKey(
+                null=True, on_delete=django.db.models.deletion.CASCADE, related_name='properties', to='orgs.accesslevelinstance'
+            ),
         ),
         migrations.AddField(
             model_name='propertystate',
@@ -102,7 +142,9 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='taxlot',
             name='access_level_instance',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, related_name='taxlots', to='orgs.accesslevelinstance'),
+            field=models.ForeignKey(
+                null=True, on_delete=django.db.models.deletion.CASCADE, related_name='taxlots', to='orgs.accesslevelinstance'
+            ),
         ),
         migrations.AddField(
             model_name='taxlotstate',
@@ -119,14 +161,34 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('text', models.TextField(blank=True)),
-                ('property', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='historical_note', to='seed.property')),
+                (
+                    'property',
+                    models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='historical_note', to='seed.property'),
+                ),
             ],
         ),
         migrations.CreateModel(
             name='GoalNote',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('question', models.CharField(blank=True, choices=[('Is this a new construction or acquisition?', 'Is this a new construction or acquisition?'), ('Do you have data to report?', 'Do you have data to report?'), ('Is this value correct?', 'Is this value correct?'), ('Are these values correct?', 'Are these values correct?'), ('Other or multiple flags; explain in Additional Notes field', 'Other or multiple flags; explain in Additional Notes field')], max_length=1024, null=True)),
+                (
+                    'question',
+                    models.CharField(
+                        blank=True,
+                        choices=[
+                            ('Is this a new construction or acquisition?', 'Is this a new construction or acquisition?'),
+                            ('Do you have data to report?', 'Do you have data to report?'),
+                            ('Is this value correct?', 'Is this value correct?'),
+                            ('Are these values correct?', 'Are these values correct?'),
+                            (
+                                'Other or multiple flags; explain in Additional Notes field',
+                                'Other or multiple flags; explain in Additional Notes field',
+                            ),
+                        ],
+                        max_length=1024,
+                        null=True,
+                    ),
+                ),
                 ('resolution', models.CharField(blank=True, max_length=1024, null=True)),
                 ('passed_checks', models.BooleanField(default=False)),
                 ('new_or_acquired', models.BooleanField(default=False)),
@@ -152,16 +214,22 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='property',
             name='access_level_instance',
-            field=models.ForeignKey(null=False, on_delete=django.db.models.deletion.CASCADE, related_name='properties', to='orgs.accesslevelinstance'),
+            field=models.ForeignKey(
+                null=False, on_delete=django.db.models.deletion.CASCADE, related_name='properties', to='orgs.accesslevelinstance'
+            ),
         ),
         migrations.AlterField(
             model_name='taxlot',
             name='access_level_instance',
-            field=models.ForeignKey(null=False, on_delete=django.db.models.deletion.CASCADE, related_name='taxlots', to='orgs.accesslevelinstance'),
+            field=models.ForeignKey(
+                null=False, on_delete=django.db.models.deletion.CASCADE, related_name='taxlots', to='orgs.accesslevelinstance'
+            ),
         ),
         migrations.AlterField(
             model_name='analysis',
             name='access_level_instance',
-            field=models.ForeignKey(null=False, on_delete=django.db.models.deletion.CASCADE, related_name='analyses', to='orgs.accesslevelinstance'),
+            field=models.ForeignKey(
+                null=False, on_delete=django.db.models.deletion.CASCADE, related_name='analyses', to='orgs.accesslevelinstance'
+            ),
         ),
     ]

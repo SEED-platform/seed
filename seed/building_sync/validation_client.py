@@ -2,6 +2,7 @@
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 import os
 import pathlib
 import zipfile
@@ -10,7 +11,7 @@ import requests
 
 from seed.building_sync.building_sync import BuildingSync
 
-VALIDATION_API_URL = "https://buildingsync.net/api/validate"
+VALIDATION_API_URL = 'https://buildingsync.net/api/validate'
 DEFAULT_SCHEMA_VERSION = BuildingSync.BUILDINGSYNC_V2_0_0
 DEFAULT_USE_CASE = 'SEED'
 
@@ -26,7 +27,7 @@ def _validation_api_post(file_, schema_version, use_case_name):
         files = {'file': (file_.name, pathlib.Path(file_.name).read_text(), 'application/xml')}
 
     return requests.request(
-        "POST",
+        'POST',
         VALIDATION_API_URL,
         data={'schema_version': schema_version},
         files=files,
@@ -52,28 +53,28 @@ def validate_use_case(file_, filename=None, schema_version=DEFAULT_SCHEMA_VERSIO
         response = _validation_api_post(file_, schema_version, use_case_name)
     except requests.exceptions.Timeout:
         raise ValidationClientException(
-            "Request to Selection Tool timed out. SEED may need to increase the timeout",
+            'Request to Selection Tool timed out. SEED may need to increase the timeout',
         )
     except Exception as e:
         raise ValidationClientException(
-            f"Failed to make request to selection tool: {e}",
+            f'Failed to make request to selection tool: {e}',
         )
 
     if response.status_code != 200:
         raise ValidationClientException(
-            f"Received bad response from Selection Tool: {response.text}",
+            f'Received bad response from Selection Tool: {response.text}',
         )
 
     try:
         response_body = response.json()
     except ValueError:
         raise ValidationClientException(
-            f"Expected JSON response from Selection Tool: {response.text}",
+            f'Expected JSON response from Selection Tool: {response.text}',
         )
 
     if response_body.get('success', False) is not True:
         raise ValidationClientException(
-            f"Selection Tool request was not successful: {response.text}",
+            f'Selection Tool request was not successful: {response.text}',
         )
 
     response_schema_version = response_body.get('schema_version')
@@ -88,20 +89,22 @@ def validate_use_case(file_, filename=None, schema_version=DEFAULT_SCHEMA_VERSIO
     if file_extension == '.zip':
         if not isinstance(validation_results, list):
             raise ValidationClientException(
-                f"Expected response validation_results to be list for zip file: {response.text}",
+                f'Expected response validation_results to be list for zip file: {response.text}',
             )
     else:
         if not isinstance(validation_results, dict):
             raise ValidationClientException(
-                f"Expected response validation_results to be dict for single xml file: {response.text}",
+                f'Expected response validation_results to be dict for single xml file: {response.text}',
             )
         # turn the single file result into the same structure as zip file result
         if filename is None:
             filename = os.path.basename(file_.name)
-        validation_results = [{
-            'file': filename,
-            'results': validation_results,
-        }]
+        validation_results = [
+            {
+                'file': filename,
+                'results': validation_results,
+            }
+        ]
 
     # check that the schema and use case is valid for every file
     file_summaries = []
@@ -127,17 +130,11 @@ def validate_use_case(file_, filename=None, schema_version=DEFAULT_SCHEMA_VERSIO
             'use_case_warnings': use_case_result.get('warnings', []),
         }
 
-        file_has_errors = (
-            len(file_summary['schema_errors']) > 0
-            or len(file_summary['use_case_errors']) > 0
-        )
+        file_has_errors = len(file_summary['schema_errors']) > 0 or len(file_summary['use_case_errors']) > 0
         if file_has_errors:
             all_files_valid = False
 
-        file_has_errors_or_warnings = (
-            file_has_errors
-            or len(file_summary['use_case_warnings']) > 0
-        )
+        file_has_errors_or_warnings = file_has_errors or len(file_summary['use_case_warnings']) > 0
         if file_has_errors_or_warnings:
             file_summaries.append(file_summary)
 

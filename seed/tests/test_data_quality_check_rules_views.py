@@ -1,9 +1,9 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 import json
 from copy import deepcopy
 
@@ -21,11 +21,7 @@ class RuleViewTests(DataMappingBaseTestCase):
 
         self.user, self.org, self.import_file, self.import_record, self.cycle = selfvars
 
-        self.client.login(
-            username='test_user@demo.com',
-            password='test_pass',
-            email='test_user@demo.com'
-        )
+        self.client.login(username='test_user@demo.com', password='test_pass', email='test_user@demo.com')
 
     def test_get_rules(self):
         url = reverse('api:v3:data_quality_check-rules-list', kwargs={'nested_organization_id': self.org.id})
@@ -62,7 +58,7 @@ class RuleViewTests(DataMappingBaseTestCase):
             'max': None,
             'text_match': 'Test Rule 1',
             'severity': Rule.SEVERITY_ERROR,
-            'units': "",
+            'units': '',
         }
         dq.add_rule(base_rule_info)
 
@@ -101,7 +97,7 @@ class RuleViewTests(DataMappingBaseTestCase):
             'max': None,
             'text_match': 'some random text',
             'severity': Rule.SEVERITY_ERROR,
-            'units': "",
+            'units': '',
             'status_label': None,
         }
 
@@ -125,14 +121,14 @@ class RuleViewTests(DataMappingBaseTestCase):
             'max': None,
             'text_match': None,
             'severity': Rule.SEVERITY_VALID,
-            'units': "",
+            'units': '',
             'status_label': None,
         }
 
         url = reverse('api:v3:data_quality_check-rules-list', kwargs={'nested_organization_id': self.org.id})
         res = self.client.post(url, content_type='application/json', data=json.dumps(base_rule_info))
 
-        expected_message = 'Label must be assigned when using \'Valid\' Data Severity. Rule must not include or exclude an empty string. '
+        expected_message = "Label must be assigned when using 'Valid' Data Severity. Rule must not include or exclude an empty string. "
         self.assertTrue(expected_message in json.loads(res.content)['message'])
 
     def test_update_rule_status_label_validation(self):
@@ -152,24 +148,23 @@ class RuleViewTests(DataMappingBaseTestCase):
             'max': None,
             'text_match': 'Test Rule 1',
             'severity': Rule.SEVERITY_ERROR,
-            'units': "",
+            'units': '',
         }
         dq.add_rule(base_rule_info)
         rule = dq.rules.get()
 
         # Send invalid update request that includes a label id from another org
-        new_org, _, _ = create_organization(self.user, "test-organization-a")
+        new_org, _, _ = create_organization(self.user, 'test-organization-a')
         wrong_org_label_id = new_org.labels.first().id
         put_data = deepcopy(base_rule_info)
         put_data['status_label'] = wrong_org_label_id
-        url = reverse('api:v3:data_quality_check-rules-detail', kwargs={
-            'nested_organization_id': self.org.id,
-            'pk': rule.id
-        })
+        url = reverse('api:v3:data_quality_check-rules-detail', kwargs={'nested_organization_id': self.org.id, 'pk': rule.id})
         res = self.client.put(url, content_type='application/json', data=json.dumps(put_data))
 
         self.assertEqual(res.status_code, 400)
-        self.assertTrue(f'Label with ID {wrong_org_label_id} not found in organization, {self.org.id}.' in json.loads(res.content)['status_label'])
+        self.assertTrue(
+            f'Label with ID {wrong_org_label_id} not found in organization, {self.org.id}.' in json.loads(res.content)['status_label']
+        )
 
     def test_update_rule_valid_severity_label_validation(self):
         # Start with 1 Rule
@@ -188,7 +183,7 @@ class RuleViewTests(DataMappingBaseTestCase):
             'max': None,
             'text_match': 'Test Rule 1',
             'severity': Rule.SEVERITY_ERROR,
-            'units': "",
+            'units': '',
         }
         dq.add_rule(base_rule_info)
         rule = dq.rules.get()
@@ -197,14 +192,11 @@ class RuleViewTests(DataMappingBaseTestCase):
         put_data = deepcopy(base_rule_info)
         put_data['severity'] = Rule.SEVERITY_VALID
         put_data['status_label'] = None
-        url = reverse('api:v3:data_quality_check-rules-detail', kwargs={
-            'nested_organization_id': self.org.id,
-            'pk': rule.id
-        })
+        url = reverse('api:v3:data_quality_check-rules-detail', kwargs={'nested_organization_id': self.org.id, 'pk': rule.id})
         res = self.client.put(url, content_type='application/json', data=json.dumps(put_data))
 
         self.assertEqual(res.status_code, 400)
-        self.assertTrue('Label must be assigned when using \'Valid\' Data Severity. ' in json.loads(res.content)['message'])
+        self.assertTrue("Label must be assigned when using 'Valid' Data Severity. " in json.loads(res.content)['message'])
 
         # Add label to rule and change severity to valid, then try to remove label
         rule.status_label = self.org.labels.first()
@@ -213,15 +205,12 @@ class RuleViewTests(DataMappingBaseTestCase):
 
         put_data_2 = deepcopy(base_rule_info)
         del put_data_2['severity']  # don't update severity
-        put_data_2['status_label'] = ""
-        url = reverse('api:v3:data_quality_check-rules-detail', kwargs={
-            'nested_organization_id': self.org.id,
-            'pk': rule.id
-        })
+        put_data_2['status_label'] = ''
+        url = reverse('api:v3:data_quality_check-rules-detail', kwargs={'nested_organization_id': self.org.id, 'pk': rule.id})
         res = self.client.put(url, content_type='application/json', data=json.dumps(put_data_2))
 
         self.assertEqual(res.status_code, 400)
-        self.assertTrue('Label must be assigned when using \'Valid\' Data Severity. ' in json.loads(res.content)['message'])
+        self.assertTrue("Label must be assigned when using 'Valid' Data Severity. " in json.loads(res.content)['message'])
 
     def test_update_rule_include_empty_text_match_validation(self):
         # Start with 1 Rule
@@ -240,7 +229,7 @@ class RuleViewTests(DataMappingBaseTestCase):
             'max': None,
             'text_match': 'Test Rule 1',
             'severity': Rule.SEVERITY_ERROR,
-            'units': "",
+            'units': '',
         }
         dq.add_rule(base_rule_info)
         rule = dq.rules.get()
@@ -248,10 +237,7 @@ class RuleViewTests(DataMappingBaseTestCase):
         # Send invalid update request
         put_data = deepcopy(base_rule_info)
         put_data['text_match'] = None
-        url = reverse('api:v3:data_quality_check-rules-detail', kwargs={
-            'nested_organization_id': self.org.id,
-            'pk': rule.id
-        })
+        url = reverse('api:v3:data_quality_check-rules-detail', kwargs={'nested_organization_id': self.org.id, 'pk': rule.id})
         res = self.client.put(url, content_type='application/json', data=json.dumps(put_data))
 
         self.assertEqual(res.status_code, 400)
@@ -265,10 +251,7 @@ class RuleViewTests(DataMappingBaseTestCase):
         put_data_2 = deepcopy(base_rule_info)
         del put_data_2['text_match']  # don't update text_match
         put_data_2['condition'] = Rule.RULE_EXCLUDE
-        url = reverse('api:v3:data_quality_check-rules-detail', kwargs={
-            'nested_organization_id': self.org.id,
-            'pk': dq.rules.get().id
-        })
+        url = reverse('api:v3:data_quality_check-rules-detail', kwargs={'nested_organization_id': self.org.id, 'pk': dq.rules.get().id})
         res = self.client.put(url, content_type='application/json', data=json.dumps(put_data_2))
 
         self.assertEqual(res.status_code, 400)

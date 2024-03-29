@@ -1,9 +1,9 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 from django.urls import include, re_path
 from rest_framework import routers
 from rest_framework_nested import routers as nested_routers
@@ -33,9 +33,7 @@ from seed.views.v3.gbr_properties import GBRPropertyViewSet
 from seed.views.v3.geocode import GeocodeViewSet
 from seed.views.v3.goal_notes import GoalNoteViewSet
 from seed.views.v3.goals import GoalViewSet
-from seed.views.v3.green_assessment_properties import (
-    GreenAssessmentPropertyViewSet
-)
+from seed.views.v3.green_assessment_properties import GreenAssessmentPropertyViewSet
 from seed.views.v3.green_assessment_urls import GreenAssessmentURLViewSet
 from seed.views.v3.green_assessments import GreenAssessmentViewSet
 from seed.views.v3.historical_notes import HistoricalNoteViewSet

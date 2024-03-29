@@ -2,6 +2,7 @@
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 from django.db import models
 
 from seed.models import Goal, Property
@@ -26,5 +27,6 @@ class GoalNote(models.Model):
 
     def serialize(self):
         from seed.serializers.goal_notes import GoalNoteSerializer
+
         serializer = GoalNoteSerializer(self)
         return serializer.data

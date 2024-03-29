@@ -1,11 +1,11 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 :author Dan Gunter <dkgunter@lbl.gov>
 """
+
 import json
 import logging
 import os
@@ -43,11 +43,11 @@ def _sanitize_and_convert_keys_to_regex(key):
     for pfx in LINEAR_UNITS:
         if pfx not in key:
             continue
-        for (sfx, repl) in ('_', '2'), ('^2', '2'), ('^3', '3'):
+        for sfx, repl in ('_', '2'), ('^2', '2'), ('^3', '3'):
             s = pfx + sfx
             p = key.find(s)
             if p >= 0:  # yes, the unit has a dimension
-                key = key[:p + len(pfx)] + repl + key[p + len(s):]
+                key = key[: p + len(pfx)] + repl + key[p + len(s) :]
                 found = True
                 break
         if found:
@@ -87,7 +87,7 @@ def create_column_regexes(raw_columns):
         ]
     """
     if not raw_columns:
-        _log.debug("No raw_columns provided!")
+        _log.debug('No raw_columns provided!')
         return []
 
     # clean up the comparing columns
@@ -148,7 +148,7 @@ def get_pm_mapping(raw_columns, mapping_data=None, resolve_duplicates=True):
     from_columns = create_column_regexes(raw_columns)
 
     if not mapping_data:
-        f = open(os.path.join(MAPPING_DATA_DIR, "pm-mapping.json"))
+        f = open(os.path.join(MAPPING_DATA_DIR, 'pm-mapping.json'))
         mapping_data = json.load(f)
 
     # transform the data into the format expected by the mapper. (see mapping_columns.final_mappings)
@@ -164,12 +164,11 @@ def get_pm_mapping(raw_columns, mapping_data=None, resolve_duplicates=True):
 
         if not column_found:
             # if we get here then the columns was never found
-            _log.debug("Could not find applicable mappings, resorting to raw field ({}) in PropertyState".format(c['raw']))
+            _log.debug('Could not find applicable mappings, resorting to raw field ({}) in PropertyState'.format(c['raw']))
             final_mappings[c['raw']] = ('PropertyState', c['raw'], 100)
 
     # verify that there are no duplicate matchings
     if resolve_duplicates:
-
         # get the set of mappings
         mappings = []
         for v in final_mappings.values():
@@ -183,7 +182,7 @@ def get_pm_mapping(raw_columns, mapping_data=None, resolve_duplicates=True):
                 i = 1
                 base = v[1]
                 while v in unique_mappings:
-                    new_v = base + "_duplicate_{}".format(i)
+                    new_v = base + f'_duplicate_{i}'
                     v = (v[0], new_v, v[2])
                     i += 1
 

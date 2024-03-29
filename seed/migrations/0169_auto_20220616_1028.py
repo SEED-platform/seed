@@ -5,7 +5,7 @@ from django.db import migrations
 
 def add_new_bsync_mappings(apps, schema_editor):
     """create a default BuildingSync column mapping preset for each organization"""
-    Organization = apps.get_model("orgs", "Organization")
+    Organization = apps.get_model('orgs', 'Organization')
 
     for org in Organization.objects.all():
         # first find current BuildingSync mapping, 'BuildingSync Default' profile is 1
@@ -26,7 +26,7 @@ def add_new_bsync_mappings(apps, schema_editor):
                 'from_units': None,
                 'to_table_name': 'PropertyState',
                 'to_field': 'pm_property_id',
-            }
+            },
         ]
 
         for prof in profiles:
@@ -45,7 +45,6 @@ def add_new_bsync_mappings(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('seed', '0168_datalogger_identifier'),
     ]

@@ -7,7 +7,7 @@ from seed.lib.xml_mapping.mapper import default_buildingsync_profile_mappings
 
 def recreate_default_bsync_presets(apps, schema_editor):
     """create a default BuildingSync column mapping preset for each organization"""
-    Organization = apps.get_model("orgs", "Organization")
+    Organization = apps.get_model('orgs', 'Organization')
 
     # profile number for 'BuildingSync Default' profile is 1
     prof_type = 1
@@ -22,18 +22,13 @@ def recreate_default_bsync_presets(apps, schema_editor):
 
         # then recreate including BAE fields with updated "default_buildingsync_profile_mappings" method
         org.columnmappingprofile_set.create(
-            name=bsync_mapping_name,
-            mappings=default_buildingsync_profile_mappings(),
-            profile_type=prof_type
+            name=bsync_mapping_name, mappings=default_buildingsync_profile_mappings(), profile_type=prof_type
         )
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('seed', '0162_auto_20220418_2257'),
     ]
 
-    operations = [
-        migrations.RunPython(recreate_default_bsync_presets)
-    ]
+    operations = [migrations.RunPython(recreate_default_bsync_presets)]

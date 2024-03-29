@@ -1,9 +1,9 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 from django.db.models import Case, F, FloatField, IntegerField, Value, When
 from django.db.models.fields.json import KeyTextTransform
 from django.db.models.functions import Cast, Coalesce
@@ -56,8 +56,10 @@ def extra_data_expression(column, default_value):
     """
     return Case(
         # use regex to determine if value can be converted to a number (int or float)
-        When(**{f'state__extra_data__{column.column_name}__regex': r'^\d+(\.\d+)?$'},
-             then=Cast(KeyTextTransform(column.column_name, 'state__extra_data'), output_field=FloatField())),
+        When(
+            **{f'state__extra_data__{column.column_name}__regex': r'^\d+(\.\d+)?$'},
+            then=Cast(KeyTextTransform(column.column_name, 'state__extra_data'), output_field=FloatField()),
+        ),
         default=Value(default_value),
-        output_field=FloatField()
+        output_field=FloatField(),
     )

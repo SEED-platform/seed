@@ -1,9 +1,9 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 from json import dumps, loads
 
 from django.urls import reverse
@@ -18,19 +18,15 @@ class ColumnMappingProfileViewsCore(DataMappingBaseTestCase):
         selfvars = self.set_up(ASSESSED_RAW)
         self.user, self.org, _import_file, _import_record, _cycle = selfvars
 
-        user_details = {
-            'username': 'test_user@demo.com',
-            'password': 'test_pass',
-            'email': 'test_user@demo.com'
-        }
+        user_details = {'username': 'test_user@demo.com', 'password': 'test_pass', 'email': 'test_user@demo.com'}
         self.client.login(**user_details)
 
     def test_filter_profile_endpoint(self):
         profile_info = {
-            "name": 'test_profile_1',
-            "mappings": [
-                {"from_field": "Property Id", "from_units": None, "to_field": "PM Property ID", "to_table_name": "PropertyState"},
-                {"from_field": "Property Name", "from_units": None, "to_field": "Property Name", "to_table_name": "PropertyState"},
+            'name': 'test_profile_1',
+            'mappings': [
+                {'from_field': 'Property Id', 'from_units': None, 'to_field': 'PM Property ID', 'to_table_name': 'PropertyState'},
+                {'from_field': 'Property Name', 'from_units': None, 'to_field': 'Property Name', 'to_table_name': 'PropertyState'},
             ],
         }
 
@@ -48,14 +44,14 @@ class ColumnMappingProfileViewsCore(DataMappingBaseTestCase):
 
     def test_filter_profile_endpoint_by_type(self):
         profile_info = {
-            "name": 'test_profile_1',
-            "mappings": [
-                {"from_field": "Property Id", "from_units": None, "to_field": "PM Property ID", "to_table_name": "PropertyState"},
-                {"from_field": "Property Name", "from_units": None, "to_field": "Property Name", "to_table_name": "PropertyState"},
+            'name': 'test_profile_1',
+            'mappings': [
+                {'from_field': 'Property Id', 'from_units': None, 'to_field': 'PM Property ID', 'to_table_name': 'PropertyState'},
+                {'from_field': 'Property Name', 'from_units': None, 'to_field': 'Property Name', 'to_table_name': 'PropertyState'},
             ],
-            "profile_type": ColumnMappingProfile.NORMAL
+            'profile_type': ColumnMappingProfile.NORMAL,
         }
-        args = {"profile_type": ['Normal']}
+        args = {'profile_type': ['Normal']}
         self.org.columnmappingprofile_set.create(**profile_info)
 
         url = reverse('api:v3:column_mapping_profiles-filter') + '?organization_id=' + str(self.org.id)
@@ -70,17 +66,17 @@ class ColumnMappingProfileViewsCore(DataMappingBaseTestCase):
 
     def test_filter_profile_endpoint_by_multiple_types(self):
         profile_info = {
-            "name": 'test_profile_1',
-            "mappings": [
-                {"from_field": "Property Id", "from_units": None, "to_field": "PM Property ID", "to_table_name": "PropertyState"},
-                {"from_field": "Property Name", "from_units": None, "to_field": "Property Name", "to_table_name": "PropertyState"},
+            'name': 'test_profile_1',
+            'mappings': [
+                {'from_field': 'Property Id', 'from_units': None, 'to_field': 'PM Property ID', 'to_table_name': 'PropertyState'},
+                {'from_field': 'Property Name', 'from_units': None, 'to_field': 'Property Name', 'to_table_name': 'PropertyState'},
             ],
-            "profile_type": ColumnMappingProfile.BUILDINGSYNC_CUSTOM
+            'profile_type': ColumnMappingProfile.BUILDINGSYNC_CUSTOM,
         }
-        args = {"profile_type": ['BuildingSync Default', 'BuildingSync Custom']}
+        args = {'profile_type': ['BuildingSync Default', 'BuildingSync Custom']}
         self.org.columnmappingprofile_set.create(**profile_info)
 
-        url = (reverse('api:v3:column_mapping_profiles-filter') + '?organization_id=' + str(self.org.id))
+        url = reverse('api:v3:column_mapping_profiles-filter') + '?organization_id=' + str(self.org.id)
 
         response = self.client.post(url, args, content_type='application/json')
         self.assertEqual(200, response.status_code, response.content)
@@ -92,22 +88,24 @@ class ColumnMappingProfileViewsCore(DataMappingBaseTestCase):
 
     def test_update_profile_endpoint(self):
         profile_info = {
-            "name": 'test_profile_1',
-            "mappings": [
-                {"from_field": "Property Id", "from_units": None, "to_field": "PM Property ID", "to_table_name": "PropertyState"},
-                {"from_field": "Property Name", "from_units": None, "to_field": "Property Name", "to_table_name": "PropertyState"},
+            'name': 'test_profile_1',
+            'mappings': [
+                {'from_field': 'Property Id', 'from_units': None, 'to_field': 'PM Property ID', 'to_table_name': 'PropertyState'},
+                {'from_field': 'Property Name', 'from_units': None, 'to_field': 'Property Name', 'to_table_name': 'PropertyState'},
             ],
         }
 
         profile = self.org.columnmappingprofile_set.create(**profile_info)
 
         url = reverse('api:v3:column_mapping_profiles-detail', args=[profile.id]) + '?organization_id=' + str(self.org.id)
-        post_params = dumps({
-            "name": 'changed_profile_name',
-            "mappings": [
-                {"from_field": "Property Name", "from_units": None, "to_field": "Property Name", "to_table_name": "PropertyState"},
-            ],
-        })
+        post_params = dumps(
+            {
+                'name': 'changed_profile_name',
+                'mappings': [
+                    {'from_field': 'Property Name', 'from_units': None, 'to_field': 'Property Name', 'to_table_name': 'PropertyState'},
+                ],
+            }
+        )
 
         response = self.client.put(url, post_params, content_type='application/json')
         self.assertEqual(200, response.status_code)
@@ -120,13 +118,15 @@ class ColumnMappingProfileViewsCore(DataMappingBaseTestCase):
     def test_create_profile_endpoint(self):
         url = reverse('api:v3:column_mapping_profiles-list') + '?organization_id=' + str(self.org.id)
 
-        profile_info = dumps({
-            "name": 'test_profile_1',
-            "mappings": [
-                {"from_field": "Property Id", "from_units": None, "to_field": "PM Property ID", "to_table_name": "PropertyState"},
-                {"from_field": "Property Name", "from_units": None, "to_field": "Property Name", "to_table_name": "PropertyState"},
-            ],
-        })
+        profile_info = dumps(
+            {
+                'name': 'test_profile_1',
+                'mappings': [
+                    {'from_field': 'Property Id', 'from_units': None, 'to_field': 'PM Property ID', 'to_table_name': 'PropertyState'},
+                    {'from_field': 'Property Name', 'from_units': None, 'to_field': 'Property Name', 'to_table_name': 'PropertyState'},
+                ],
+            }
+        )
 
         response = self.client.post(url, profile_info, content_type='application/json')
         self.assertEqual(200, response.status_code)
@@ -166,12 +166,14 @@ class ColumnMappingProfileViewsPermissionsTest(AccessLevelBaseTestCase, DataMapp
 
     def test_update_permissions(self):
         url = reverse('api:v3:column_mapping_profiles-detail', args=[self.profile.id]) + '?organization_id=' + str(self.org.id)
-        post_params = dumps({
-            "name": 'changed_profile_name',
-            "mappings": [
-                {"from_field": "Property Name", "from_units": None, "to_field": "Property Name", "to_table_name": "PropertyState"},
-            ],
-        })
+        post_params = dumps(
+            {
+                'name': 'changed_profile_name',
+                'mappings': [
+                    {'from_field': 'Property Name', 'from_units': None, 'to_field': 'Property Name', 'to_table_name': 'PropertyState'},
+                ],
+            }
+        )
 
         # root user can
         self.login_as_root_member()
@@ -185,12 +187,14 @@ class ColumnMappingProfileViewsPermissionsTest(AccessLevelBaseTestCase, DataMapp
 
     def test_create_permissions(self):
         url = reverse('api:v3:column_mapping_profiles-list') + '?organization_id=' + str(self.org.id)
-        post_params = dumps({
-            "name": 'changed_profile_name',
-            "mappings": [
-                {"from_field": "Property Name", "from_units": None, "to_field": "Property Name", "to_table_name": "PropertyState"},
-            ],
-        })
+        post_params = dumps(
+            {
+                'name': 'changed_profile_name',
+                'mappings': [
+                    {'from_field': 'Property Name', 'from_units': None, 'to_field': 'Property Name', 'to_table_name': 'PropertyState'},
+                ],
+            }
+        )
 
         # root user can
         self.login_as_root_member()
@@ -208,31 +212,24 @@ class ColumnMappingProfilesViewsNonCrud(DataMappingBaseTestCase):
         selfvars = self.set_up(ASSESSED_RAW)
         self.user, self.org, _import_file, _import_record, _cycle = selfvars
 
-        user_details = {
-            'username': 'test_user@demo.com',
-            'password': 'test_pass',
-            'email': 'test_user@demo.com'
-        }
+        user_details = {'username': 'test_user@demo.com', 'password': 'test_pass', 'email': 'test_user@demo.com'}
         self.client.login(**user_details)
 
     def test_get_suggestion_given_raw_column_headers(self):
         # Create ED col to test
-        Column.objects.create(
-            column_name='extra_data_test',
-            table_name='PropertyState',
-            organization=self.org,
-            is_extra_data=True
-        )
+        Column.objects.create(column_name='extra_data_test', table_name='PropertyState', organization=self.org, is_extra_data=True)
 
         # Create a list of similarly named cols
-        mock_incoming_headers = dumps({
-            'headers': [
-                'Jurisdiction Tax Lot ID',
-                'PM Property ID',
-                'Zip',
-                'Extra Data',
-            ],
-        })
+        mock_incoming_headers = dumps(
+            {
+                'headers': [
+                    'Jurisdiction Tax Lot ID',
+                    'PM Property ID',
+                    'Zip',
+                    'Extra Data',
+                ],
+            }
+        )
 
         # hit new endpoint with this list
         url = reverse('api:v3:column_mapping_profiles-suggestions') + '?organization_id=' + str(self.org.id)
@@ -244,7 +241,7 @@ class ColumnMappingProfilesViewsNonCrud(DataMappingBaseTestCase):
             'Extra Data': ['PropertyState', 'extra_data_test', 94],
             'Jurisdiction Tax Lot ID': ['TaxLotState', 'jurisdiction_tax_lot_id', 100],
             'PM Property ID': ['PropertyState', 'pm_property_id', 100],
-            'Zip': ['PropertyState', 'postal_code', 100]
+            'Zip': ['PropertyState', 'postal_code', 100],
         }
 
         for header in results:
@@ -256,11 +253,7 @@ class ColumnMappingProfilesViewsBuildingSync(DataMappingBaseTestCase):
         selfvars = self.set_up(ASSESSED_RAW)
         self.user, self.org, _import_file, _import_record, _cycle = selfvars
 
-        user_details = {
-            'username': 'test_user@demo.com',
-            'password': 'test_pass',
-            'email': 'test_user@demo.com'
-        }
+        user_details = {'username': 'test_user@demo.com', 'password': 'test_pass', 'email': 'test_user@demo.com'}
         self.client.login(**user_details)
 
     def test_update_default_bsync_profile_fails(self):
@@ -268,9 +261,9 @@ class ColumnMappingProfilesViewsBuildingSync(DataMappingBaseTestCase):
 
         url = reverse('api:v3:column_mapping_profiles-detail', args=[profile.id]) + '?organization_id=' + str(self.org.id)
         update_vals = {
-            "name": 'changed_profile_name',
-            "mappings": [
-                {"from_field": "Updated Property Name", "from_units": None, "to_field": "Property Name", "to_table_name": "PropertyState"},
+            'name': 'changed_profile_name',
+            'mappings': [
+                {'from_field': 'Updated Property Name', 'from_units': None, 'to_field': 'Property Name', 'to_table_name': 'PropertyState'},
             ],
         }
 
@@ -293,9 +286,7 @@ class ColumnMappingProfilesViewsBuildingSync(DataMappingBaseTestCase):
 
     def test_delete_custom_bsync_profile_succeeds(self):
         profile = self.org.columnmappingprofile_set.create(
-            name='Custom BSync Profile',
-            mappings=[],
-            profile_type=ColumnMappingProfile.BUILDINGSYNC_CUSTOM
+            name='Custom BSync Profile', mappings=[], profile_type=ColumnMappingProfile.BUILDINGSYNC_CUSTOM
         )
 
         url = reverse('api:v3:column_mapping_profiles-detail', args=[profile.id]) + '?organization_id=' + str(self.org.id)
@@ -310,9 +301,8 @@ class ColumnMappingProfilesViewsBuildingSync(DataMappingBaseTestCase):
         profile_mappings = default_buildingsync_profile_mappings()
         profile_name = 'Custom BSync Profile'
         profile = self.org.columnmappingprofile_set.create(
-            name=profile_name,
-            mappings=profile_mappings,
-            profile_type=ColumnMappingProfile.BUILDINGSYNC_CUSTOM)
+            name=profile_name, mappings=profile_mappings, profile_type=ColumnMappingProfile.BUILDINGSYNC_CUSTOM
+        )
 
         # -- Act
         # change one of the mapping's to_field
@@ -343,9 +333,8 @@ class ColumnMappingProfilesViewsBuildingSync(DataMappingBaseTestCase):
         profile_mappings = default_buildingsync_profile_mappings()
         profile_name = 'Custom BSync Profile'
         profile = self.org.columnmappingprofile_set.create(
-            name=profile_name,
-            mappings=profile_mappings,
-            profile_type=ColumnMappingProfile.BUILDINGSYNC_CUSTOM)
+            name=profile_name, mappings=profile_mappings, profile_type=ColumnMappingProfile.BUILDINGSYNC_CUSTOM
+        )
 
         # -- Act
         # remove one of the mappings and update it
@@ -376,9 +365,8 @@ class ColumnMappingProfilesViewsBuildingSync(DataMappingBaseTestCase):
         profile_mappings = default_buildingsync_profile_mappings()
         profile_name = 'Custom BSync Profile'
         profile = self.org.columnmappingprofile_set.create(
-            name=profile_name,
-            mappings=profile_mappings,
-            profile_type=ColumnMappingProfile.BUILDINGSYNC_CUSTOM)
+            name=profile_name, mappings=profile_mappings, profile_type=ColumnMappingProfile.BUILDINGSYNC_CUSTOM
+        )
 
         # -- Act
         # change one of the mappings in an acceptable way
@@ -405,25 +393,28 @@ class ColumnMappingProfilesViewsBuildingSync(DataMappingBaseTestCase):
     def test_create_custom_bsync_profile_succeeds(self):
         url = reverse('api:v3:column_mapping_profiles-list') + '?organization_id=' + str(self.org.id)
 
-        profile_info = dumps({
-            "name": 'BSync Profile',
-            "mappings": [
-                {
-                    "from_field": "Property Id",
-                    "from_field_value": "text",
-                    "from_units": None,
-                    "to_field": "PM Property ID",
-                    "to_table_name": "PropertyState"
-                }, {
-                    "from_field": "Property Name",
-                    "from_field_value": "@ID",
-                    "from_units": None,
-                    "to_field": "Property Name",
-                    "to_table_name": "PropertyState"
-                }
-            ],
-            "profile_type": "BuildingSync Custom"
-        })
+        profile_info = dumps(
+            {
+                'name': 'BSync Profile',
+                'mappings': [
+                    {
+                        'from_field': 'Property Id',
+                        'from_field_value': 'text',
+                        'from_units': None,
+                        'to_field': 'PM Property ID',
+                        'to_table_name': 'PropertyState',
+                    },
+                    {
+                        'from_field': 'Property Name',
+                        'from_field_value': '@ID',
+                        'from_units': None,
+                        'to_field': 'Property Name',
+                        'to_table_name': 'PropertyState',
+                    },
+                ],
+                'profile_type': 'BuildingSync Custom',
+            }
+        )
 
         response = self.client.post(url, profile_info, content_type='application/json')
         self.assertEqual(200, response.status_code, response.content)
@@ -431,30 +422,35 @@ class ColumnMappingProfilesViewsBuildingSync(DataMappingBaseTestCase):
         datum = loads(response.content)['data']
 
         self.assertEqual('BSync Profile', datum.get('name'))
-        self.assertEqual(1, ColumnMappingProfile.objects.filter(name='BSync Profile', profile_type=ColumnMappingProfile.BUILDINGSYNC_CUSTOM).count())
+        self.assertEqual(
+            1, ColumnMappingProfile.objects.filter(name='BSync Profile', profile_type=ColumnMappingProfile.BUILDINGSYNC_CUSTOM).count()
+        )
 
     def test_create_custom_bsync_profile_fails_when_missing_from_field_value(self):
         url = reverse('api:v3:column_mapping_profiles-list') + '?organization_id=' + str(self.org.id)
 
-        profile_info = dumps({
-            "name": 'BSync Profile',
-            "mappings": [
-                {
-                    "from_field": "Property Id",
-                    # NOTE: no from_field_value
-                    "from_units": None,
-                    "to_field": "PM Property ID",
-                    "to_table_name": "PropertyState"
-                }, {
-                    "from_field": "Property Name",
-                    # NOTE: no from_field_value
-                    "from_units": None,
-                    "to_field": "Property Name",
-                    "to_table_name": "PropertyState"
-                }
-            ],
-            "profile_type": "BuildingSync Custom"
-        })
+        profile_info = dumps(
+            {
+                'name': 'BSync Profile',
+                'mappings': [
+                    {
+                        'from_field': 'Property Id',
+                        # NOTE: no from_field_value
+                        'from_units': None,
+                        'to_field': 'PM Property ID',
+                        'to_table_name': 'PropertyState',
+                    },
+                    {
+                        'from_field': 'Property Name',
+                        # NOTE: no from_field_value
+                        'from_units': None,
+                        'to_field': 'Property Name',
+                        'to_table_name': 'PropertyState',
+                    },
+                ],
+                'profile_type': 'BuildingSync Custom',
+            }
+        )
 
         response = self.client.post(url, profile_info, content_type='application/json')
         self.assertEqual(400, response.status_code, response.content)

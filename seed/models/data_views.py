@@ -1,9 +1,9 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 import logging
 
 from django.db import models
@@ -96,10 +96,7 @@ class DataView(models.Model):
             },
             'views_by_filter_group_id': {},
             'columns_by_id': {},
-            'graph_data': {
-                'labels': [cycle.name for cycle in sorted(list(self.cycles.all()), key=lambda x: x.name)],
-                'datasets': []
-            }
+            'graph_data': {'labels': [cycle.name for cycle in sorted(self.cycles.all(), key=lambda x: x.name)], 'datasets': []},
         }
 
         response['views_by_filter_group_id'], views_by_filter = self.views_by_filter(user_ali)
@@ -142,7 +139,7 @@ class DataView(models.Model):
                 for aggregation in [Avg, Max, Min, Sum, Count]:  # NEED TO ADD 'views_by_label' for scatter plot
                     self._format_aggregation_name(aggregation)
                     dataset = {'data': [], 'column': column.display_name, 'aggregation': aggregation.name, 'filter_group': filter_name}
-                    for cycle in sorted(list(self.cycles.all()), key=lambda x: x.name):
+                    for cycle in sorted(self.cycles.all(), key=lambda x: x.name):
                         views = views_by_filter[filter_id][cycle.id]
                         states = PropertyState.objects.filter(propertyview__in=views)
                         value = self._evaluate_aggregation(states, aggregation, column)
@@ -163,7 +160,15 @@ class DataView(models.Model):
         elif aggregation == Min:
             aggregation.name = 'Minimum'
 
-    def _assign_views_by_default_field_values(self, views, data, data_cycles, column, cycle_id, aggregation, ):
+    def _assign_views_by_default_field_values(
+        self,
+        views,
+        data,
+        data_cycles,
+        column,
+        cycle_id,
+        aggregation,
+    ):
         for view in views:
             # Default assignment on first pass
             view_key = self._format_property_display_field(view)
@@ -178,7 +183,7 @@ class DataView(models.Model):
 
             try:
                 value = round(state_value.m, 2)
-                unit = '{:P~}'.format(state_value.u)
+                unit = f'{state_value.u:P~}'
             except AttributeError:
                 value = state_value
                 unit = None
@@ -205,7 +210,7 @@ class DataView(models.Model):
 
             if aggregation.get('value') or aggregation.get('value') == 0:
                 value = aggregation['value']
-                if isinstance(value, int) or isinstance(value, float):
+                if isinstance(value, (float, int)):
                     return round(value, 2)
                 return round(value.m, 2)
 
@@ -246,8 +251,8 @@ class DataView(models.Model):
             return None
 
         permissions_filter = {
-            "property__access_level_instance__lft__gte": user_ali.lft,
-            "property__access_level_instance__rgt__lte": user_ali.rgt,
+            'property__access_level_instance__lft__gte': user_ali.lft,
+            'property__access_level_instance__rgt__lte': user_ali.rgt,
         }
 
         and_labels = filter_group.and_labels.all()
@@ -269,26 +274,18 @@ class DataView(models.Model):
 
     def _get_filter_group_views(self, cycle, query_dict, user_ali):
         org_id = self.organization.id
-        columns = Column.retrieve_all(
-            org_id=org_id,
-            inventory_type='property',
-            only_used=False,
-            include_related=False
-        )
+        columns = Column.retrieve_all(org_id=org_id, inventory_type='property', only_used=False, include_related=False)
         annotations = {}
         try:
             filters, annotations, order_by = build_view_filters_and_sorts(query_dict, columns, 'property')
         except Exception:
             logging.error('error with filter group')
 
-        views_list = (
-            PropertyView.objects.select_related('property', 'state', 'cycle')
-            .filter(
-                property__organization_id=org_id,
-                cycle=cycle,
-                property__access_level_instance__lft__gte=user_ali.lft,
-                property__access_level_instance__rgt__lte=user_ali.rgt,
-            )
+        views_list = PropertyView.objects.select_related('property', 'state', 'cycle').filter(
+            property__organization_id=org_id,
+            cycle=cycle,
+            property__access_level_instance__lft__gte=user_ali.lft,
+            property__access_level_instance__rgt__lte=user_ali.rgt,
         )
 
         views_list = views_list.annotate(**annotations).filter(filters).order_by(*order_by)

@@ -1,8 +1,8 @@
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 from django.db import connection, models
 from psycopg2.extras import execute_values
 
@@ -66,7 +66,7 @@ class Meter(models.Model):
         (WOOD, 'Wood'),
         (COST, 'Cost'),
         (ELECTRICITY_UNKNOWN, 'Electric - Unknown'),
-        (CUSTOM_METER, 'Custom Meter')
+        (CUSTOM_METER, 'Custom Meter'),
     )
     ENERGY_TYPE_BY_METER_TYPE = dict(ENERGY_TYPES)
 
@@ -74,7 +74,6 @@ class Meter(models.Model):
     # when parsing ESPM files to map the columns headers to the correct meter
     # types.
     ENERGY_TYPE_BY_HEADER_STRING = {
-
         # these mappings are assumed based on ESPM values [old format]
         'Coal Use (Anthracite)': ENERGY_TYPE_BY_METER_TYPE[COAL_ANTHRACITE],
         'Coal Use (Bituminous)': ENERGY_TYPE_BY_METER_TYPE[COAL_BITUMINOUS],
@@ -99,14 +98,12 @@ class Meter(models.Model):
         'Propane Use': ENERGY_TYPE_BY_METER_TYPE[PROPANE],
         'Wood Use': ENERGY_TYPE_BY_METER_TYPE[WOOD],
         'Electricity Use (Unknown)': ENERGY_TYPE_BY_METER_TYPE[ELECTRICITY_UNKNOWN],
-
         # these values are added based on known usage
         'Fuel Oil #2 Use': ENERGY_TYPE_BY_METER_TYPE[FUEL_OIL_NO_2],
         'Diesel #2 Use': ENERGY_TYPE_BY_METER_TYPE[DIESEL],
-
     }
 
-    type_lookup = dict((reversed(type) for type in ENERGY_TYPES))  # type: ignore
+    type_lookup = dict(reversed(type) for type in ENERGY_TYPES)  # type: ignore[misc]
 
     PORTFOLIO_MANAGER = 1
     GREENBUTTON = 2
@@ -127,25 +124,14 @@ class Meter(models.Model):
     alias = models.CharField(max_length=255, null=True, blank=True)
     is_virtual = models.BooleanField(default=False)
 
-    property = models.ForeignKey(
-        Property,
-        on_delete=models.CASCADE,
-        related_name='meters',
-        null=True,
-        blank=True
-    )
+    property = models.ForeignKey(Property, on_delete=models.CASCADE, related_name='meters', null=True, blank=True)
 
     source = models.IntegerField(choices=SOURCES, default=None, null=True)
     source_id = models.CharField(max_length=255, null=True, blank=True)
 
     type = models.IntegerField(choices=ENERGY_TYPES, default=None, null=True)
 
-    scenario = models.ForeignKey(
-        Scenario,
-        on_delete=models.CASCADE,
-        null=True,
-        blank=True
-    )
+    scenario = models.ForeignKey(Scenario, on_delete=models.CASCADE, null=True, blank=True)
 
     def copy_readings(self, source_meter, overlaps_possible=True):
         """
@@ -168,7 +154,7 @@ class Meter(models.Model):
                     cursor,
                     sql,
                     source_meter.meter_readings.values(),
-                    template=f"({self.id}, %(start_time)s, %(end_time)s, %(reading)s, %(source_unit)s, %(conversion_factor)s)",
+                    template=f'({self.id}, %(start_time)s, %(end_time)s, %(reading)s, %(source_unit)s, %(conversion_factor)s)',
                 )
         else:
             readings = {
@@ -197,13 +183,8 @@ class MeterReading(models.Model):
     The original units however when being displayed to the user (e.g., on the Property Detail Meters tab)
     will contain the original units and meter readings.
     """
-    meter = models.ForeignKey(
-        Meter,
-        on_delete=models.CASCADE,
-        related_name='meter_readings',
-        null=True,
-        blank=True
-    )
+
+    meter = models.ForeignKey(Meter, on_delete=models.CASCADE, related_name='meter_readings', null=True, blank=True)
 
     start_time = models.DateTimeField(db_index=True, primary_key=True)
     end_time = models.DateTimeField(db_index=True)

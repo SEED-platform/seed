@@ -1,8 +1,5 @@
-# -*- coding: utf-8 -*-
-
 # This rehashing file should be used in the future if needed as it has been optimized. Rehashing takes
 # awhile and should be avoided if possible.
-from __future__ import unicode_literals
 
 from django.db import connection, migrations, transaction
 
@@ -14,17 +11,17 @@ from seed.data_importer.tasks import hash_state_object
 
 def forwards(apps, schema_editor):
     property_sql = (
-        "UPDATE seed_propertystate " +
-        "SET created = seed_propertyauditlog.created, updated = seed_propertyauditlog.created " +
-        "FROM seed_propertyauditlog " +
-        "WHERE seed_propertystate.id = state_id;"
+        'UPDATE seed_propertystate '
+        + 'SET created = seed_propertyauditlog.created, updated = seed_propertyauditlog.created '
+        + 'FROM seed_propertyauditlog '
+        + 'WHERE seed_propertystate.id = state_id;'
     )
 
     taxlot_sql = (
-        "UPDATE seed_taxlotstate " +
-        "SET created = seed_taxlotauditlog.created, updated = seed_taxlotauditlog.created " +
-        "FROM seed_taxlotauditlog " +
-        "WHERE seed_taxlotstate.id = state_id;"
+        'UPDATE seed_taxlotstate '
+        + 'SET created = seed_taxlotauditlog.created, updated = seed_taxlotauditlog.created '
+        + 'FROM seed_taxlotauditlog '
+        + 'WHERE seed_taxlotstate.id = state_id;'
     )
 
     with connection.cursor() as cursor:
@@ -47,7 +44,7 @@ def recalculate_hash_objects(apps, schema_editor):
     with transaction.atomic():
         for idx, obj in enumerate(PropertyState.objects.all().iterator()):
             if idx % 1000 == 0:
-                print("... %s / %s ..." % (idx, property_count))
+                print(f'... {idx} / {property_count} ...')
             obj.hash_object = hash_state_object(obj)
             obj.save()
 
@@ -55,7 +52,7 @@ def recalculate_hash_objects(apps, schema_editor):
     with transaction.atomic():
         for idx, obj in enumerate(TaxLotState.objects.all().iterator()):
             if idx % 1000 == 0:
-                print("... %s / %s ..." % (idx, taxlot_count))
+                print(f'... {idx} / {taxlot_count} ...')
             obj.hash_object = hash_state_object(obj)
             obj.save()
     # execution_time = time.clock() - start

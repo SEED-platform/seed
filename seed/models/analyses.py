@@ -1,9 +1,9 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 import logging
 
 from django.db import models
@@ -19,19 +19,14 @@ class Analysis(models.Model):
     """
     The Analysis represents an analysis performed on one or more properties.
     """
+
     BSYNCR = 1
     BETTER = 2
     EUI = 3
     CO2 = 4
     EEEJ = 5
 
-    SERVICE_TYPES = (
-        (BSYNCR, 'BSyncr'),
-        (BETTER, 'BETTER'),
-        (EUI, 'EUI'),
-        (CO2, 'CO2'),
-        (EEEJ, 'EEEJ')
-    )
+    SERVICE_TYPES = ((BSYNCR, 'BSyncr'), (BETTER, 'BETTER'), (EUI, 'EUI'), (CO2, 'CO2'), (EEEJ, 'EEEJ'))
 
     PENDING_CREATION = 8
     CREATING = 10
@@ -61,7 +56,9 @@ class Analysis(models.Model):
     status = models.IntegerField(default=PENDING_CREATION, choices=STATUS_TYPES)
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
-    access_level_instance = models.ForeignKey(AccessLevelInstance, on_delete=models.CASCADE, null=False, related_name="analyses", blank=False)
+    access_level_instance = models.ForeignKey(
+        AccessLevelInstance, on_delete=models.CASCADE, null=False, related_name='analyses', blank=False
+    )
     configuration = models.JSONField(default=dict, blank=True)
     # parsed_results can contain any results gathered from the resulting file(s)
     # that are applicable to the entire analysis (i.e., all properties involved).
@@ -77,7 +74,7 @@ class Analysis(models.Model):
         return {
             'number_of_analysis_property_views': self.analysispropertyview_set.count(),
             'views': list(analysis_property_views.values_list('id', flat=True).distinct()),
-            'cycles': list(analysis_property_views.values_list('cycle', flat=True).distinct())
+            'cycles': list(analysis_property_views.values_list('cycle', flat=True).distinct()),
         }
 
     def get_highlights(self, property_id=None):
@@ -114,11 +111,7 @@ class Analysis(models.Model):
 
             low_income = results.get('Low Income')
             low_income = 'N/A' if low_income is None else low_income
-            return [
-                {'name': 'Census Tract', 'value': tract},
-                {'name': 'DAC', 'value': dac},
-                {'name': 'Low Income?', 'value': low_income}
-            ]
+            return [{'name': 'Census Tract', 'value': tract}, {'name': 'DAC', 'value': dac}, {'name': 'Low Income?', 'value': low_income}]
 
         # BETTER
         elif self.service == self.BETTER:
@@ -127,15 +120,17 @@ class Analysis(models.Model):
                     'name': ['Potential Cost Savings (USD)'],
                     'value_template': ['${json_value:,.2f}'],
                     'json_path': ['assessment.assessment_energy_use.cost_savings_combined'],
-                }, {
+                },
+                {
                     'name': ['Potential Energy Savings'],
                     'value_template': ['{json_value:,.2f} kWh'],
                     'json_path': ['assessment.assessment_energy_use.energy_savings_combined'],
-                }, {
+                },
+                {
                     'name': ['BETTER Inverse Model R^2 (Electricity', 'Fossil Fuel)'],
                     'value_template': ['{json_value:,.2f}', '{json_value:,.2f}'],
                     'json_path': ['inverse_model.ELECTRICITY.r2', 'inverse_model.FOSSIL_FUEL.r2'],
-                }
+                },
             ]
 
             ret = []
@@ -149,10 +144,7 @@ class Analysis(models.Model):
                         value = highlight['value_template'][i].format(json_value=parsed_result)
                     full_name.append(name)
                     full_value.append(value)
-                ret.append({
-                    'name': ', '.join(full_name),
-                    'value': ', '.join(full_value)
-                })
+                ret.append({'name': ', '.join(full_name), 'value': ', '.join(full_value)})
 
             return ret
 
@@ -166,10 +158,7 @@ class Analysis(models.Model):
             if coverage is None:
                 coverage = 'N/A'
 
-            return [
-                {'name': 'Fractional EUI', 'value': f'{value} kBtu/sqft'},
-                {'name': 'Annual Coverage', 'value': f'{coverage}%'}
-            ]
+            return [{'name': 'Fractional EUI', 'value': f'{value} kBtu/sqft'}, {'name': 'Annual Coverage', 'value': f'{coverage}%'}]
 
         # CO2
         elif self.service == self.CO2:
@@ -181,10 +170,7 @@ class Analysis(models.Model):
             if coverage is None:
                 coverage = 'N/A'
 
-            return [
-                {'name': 'Average Annual CO2', 'value': f'{value} kgCO2e'},
-                {'name': 'Annual Coverage', 'value': f'{coverage}%'}
-            ]
+            return [{'name': 'Average Annual CO2', 'value': f'{value} kgCO2e'}, {'name': 'Annual Coverage', 'value': f'{coverage}%'}]
 
         # Unexpected
         return [{'name': 'Unexpected Analysis Type', 'value': 'Oops!'}]
@@ -198,4 +184,6 @@ class Analysis(models.Model):
         return self.status in [self.FAILED, self.STOPPED, self.COMPLETED]
 
     def can_create(self):
-        return self.organization.is_user_ali_root(self.user.id) and (self.organization.is_owner(self.user.id) or self.organization.has_role_member(self.user.id))
+        return self.organization.is_user_ali_root(self.user.id) and (
+            self.organization.is_owner(self.user.id) or self.organization.has_role_member(self.user.id)
+        )

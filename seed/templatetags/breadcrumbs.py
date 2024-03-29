@@ -1,11 +1,11 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 breadcrumbs.py, https://bitbucket.org/Mathiasdm/django-simple-breadcrumbs/
 """
+
 import logging
 
 from django import template
@@ -24,9 +24,9 @@ def create_crumb(title, url=None):
     """
 
     if url:
-        crumb = '<span class="breadcrumb-separator">/</span><a class="breadcrumb-item" href="%s">%s</a>' % (url, title)
+        crumb = f'<span class="breadcrumb-separator">/</span><a class="breadcrumb-item" href="{url}">{title}</a>'
     else:
-        crumb = '<span class="breadcrumb-separator">/</span><span class="breadcrumb-item">%s</span>' % (title, )
+        crumb = f'<span class="breadcrumb-separator">/</span><span class="breadcrumb-item">{title}</span>'
 
     return crumb
 
@@ -37,9 +37,9 @@ def create_crumb_first(title, url=None):
     """
 
     if url:
-        crumb = '<a class="breadcrumb-item root" href="%s">%s</a>' % (url, title)
+        crumb = f'<a class="breadcrumb-item root" href="{url}">{title}</a>'
     else:
-        crumb = '<span class="breadcrumb-item root">%s</span>' % (title, )
+        crumb = f'<span class="breadcrumb-item root">{title}</span>a'
 
     return crumb
 
@@ -145,7 +145,6 @@ def breadcrumb_url_root(parser, token):
 
 
 class BreadcrumbNode(Node):
-
     def __init__(self, vars, render_func=create_crumb):
         """
         First var is title, second var is url context variable
@@ -173,7 +172,7 @@ class BreadcrumbNode(Node):
             try:
                 url = val.resolve(context)
             except VariableDoesNotExist:
-                _log.error('URL does not exist: {}'.format(val))
+                _log.error(f'URL does not exist: {val}')
                 url = None
 
         # add gettext function for title i18n translation
@@ -182,7 +181,6 @@ class BreadcrumbNode(Node):
 
 
 class UrlBreadcrumbNode(Node):
-
     def __init__(self, title, url_node, render_func=create_crumb):
         self.title = Variable(title)
         self.url_node = url_node

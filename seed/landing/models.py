@@ -1,19 +1,15 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 import base64
 import hmac
 import re
 import uuid
 
-from django.contrib.auth.models import (
-    AbstractBaseUser,
-    PermissionsMixin,
-    UserManager
-)
+from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, UserManager
 from django.core.mail import send_mail
 from django.db import models
 from django.utils import timezone
@@ -28,6 +24,7 @@ try:
     from hashlib import sha1
 except ImportError:
     import sha
+
     sha1 = sha.sha
 
 
@@ -38,41 +35,26 @@ class SEEDUser(AbstractBaseUser, PermissionsMixin):
 
     Username, password and email are required. Other fields are optional.
     """
-    username = models.EmailField(
-        _('username (email)'), unique=True,
-        help_text=_('User\'s email address.  Used for auth as well.'))
+
+    username = models.EmailField(_('username (email)'), unique=True, help_text=_("User's email address.  Used for auth as well."))
     first_name = models.CharField(_('first name'), max_length=30, blank=True)
     last_name = models.CharField(_('last name'), max_length=30, blank=True)
     email = models.EmailField(_('email address'), blank=True)
     is_staff = models.BooleanField(
-        _('staff status'), default=False,
-        help_text=_('Designates whether the user can log into this admin '
-                    'site.'))
+        _('staff status'), default=False, help_text=_('Designates whether the user can log into this admin ' 'site.')
+    )
     is_active = models.BooleanField(
-        _('active'), default=True,
-        help_text=_('Designates whether this user should be treated as '
-                    'active. Unselect this instead of deleting accounts.'))
+        _('active'),
+        default=True,
+        help_text=_('Designates whether this user should be treated as ' 'active. Unselect this instead of deleting accounts.'),
+    )
     date_joined = models.DateTimeField(_('date joined'), default=timezone.now)
 
     default_custom_columns = models.JSONField(default=dict)
     default_building_detail_custom_columns = models.JSONField(default=dict)
-    show_shared_buildings = models.BooleanField(
-        _('active'), default=False,
-        help_text=_('shows shared buildings within search results'))
-    default_organization = models.ForeignKey(
-        Organization,
-        on_delete=models.SET_NULL,
-        blank=True,
-        null=True,
-        related_name='default_users'
-    )
-    api_key = models.CharField(
-        _('api key'),
-        max_length=128,
-        blank=True,
-        default='',
-        db_index=True
-    )
+    show_shared_buildings = models.BooleanField(_('active'), default=False, help_text=_('shows shared buildings within search results'))
+    default_organization = models.ForeignKey(Organization, on_delete=models.SET_NULL, blank=True, null=True, related_name='default_users')
+    api_key = models.CharField(_('api key'), max_length=128, blank=True, default='', db_index=True)
 
     objects = UserManager()
 
@@ -120,7 +102,7 @@ class SEEDUser(AbstractBaseUser, PermissionsMixin):
                 raise exceptions.AuthenticationFailed('Invalid API key')
 
     def get_absolute_url(self):
-        return "/users/%s/" % urlquote(self.username)
+        return f'/users/{urlquote(self.username)}/'
 
     def deactivate_user(self):
         self.is_active = False
@@ -130,11 +112,13 @@ class SEEDUser(AbstractBaseUser, PermissionsMixin):
         """
         Returns the first_name plus the last_name, with a space in between.
         """
-        full_name = '%s %s' % (self.first_name, self.last_name)
+        full_name = f'{self.first_name} {self.last_name}'
         return full_name.strip()
 
     def get_short_name(self):
-        "Returns the short name for the user."
+        """
+        Returns the short name for the user.
+        """
         return self.first_name
 
     def email_user(self, subject, message, from_email=None):

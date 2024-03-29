@@ -1,20 +1,14 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 from django.core.exceptions import ValidationError
 from rest_framework import serializers
 
 from seed.lib.superperms.orgs.models import Organization
-from seed.models import (
-    VIEW_LIST_INVENTORY_TYPE,
-    VIEW_LOCATION_TYPES,
-    Column,
-    ColumnListProfile,
-    ColumnListProfileColumn
-)
+from seed.models import VIEW_LIST_INVENTORY_TYPE, VIEW_LOCATION_TYPES, Column, ColumnListProfile, ColumnListProfileColumn
 from seed.models.derived_columns import DerivedColumn
 from seed.serializers.base import ChoiceField
 
@@ -28,7 +22,13 @@ class ColumnListProfileColumnSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ColumnListProfileColumn
-        fields = ('id', 'pinned', 'order', 'column_name', 'table_name',)
+        fields = (
+            'id',
+            'pinned',
+            'order',
+            'column_name',
+            'table_name',
+        )
 
 
 class ColumnListProfileDerivedColumnSerializer(serializers.ModelSerializer):
@@ -37,7 +37,11 @@ class ColumnListProfileDerivedColumnSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = DerivedColumn
-        fields = ('id', 'column_name', 'table_name',)
+        fields = (
+            'id',
+            'column_name',
+            'table_name',
+        )
 
     def get_table_name(self, obj):
         return DerivedColumn.INVENTORY_TYPE_TO_CLASS.get(obj.inventory_type).__name__
@@ -60,9 +64,7 @@ class ColumnListProfileSerializer(serializers.ModelSerializer):
             column_id = column.get('id')
             order = column.get('order')
             pinned = column.get('pinned')
-            ColumnListProfileColumn(
-                column_list_profile=instance, column_id=column_id, pinned=pinned, order=order
-            ).save()
+            ColumnListProfileColumn(column_list_profile=instance, column_id=column_id, pinned=pinned, order=order).save()
 
         instance.derived_columns.clear()
         for derived_column in self.initial_data.get('derived_columns', []):
@@ -89,9 +91,7 @@ class ColumnListProfileSerializer(serializers.ModelSerializer):
                 column_id = column.get('id')
                 order = column.get('order')
                 pinned = column.get('pinned')
-                ColumnListProfileColumn(
-                    column_list_profile=cls, column_id=column_id, pinned=pinned, order=order
-                ).save()
+                ColumnListProfileColumn(column_list_profile=cls, column_id=column_id, pinned=pinned, order=order).save()
 
         for derived_column in self.initial_data.get('derived_columns', []):
             cls.derived_columns.add(derived_column.get('id'))

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # SEED Platform documentation build configuration file, created by
 # sphinx-quickstart on Tue Mar  1 14:43:22 2016.
@@ -23,11 +22,10 @@ from shutil import copyfile
 
 # Copy over the local_untracked if it does not exist yet.
 if not os.path.exists('../../config/settings/local_untracked.py'):
-    copyfile('../../config/settings/local_untracked.py.dist',
-             '../../config/settings/local_untracked.py')
+    copyfile('../../config/settings/local_untracked.py.dist', '../../config/settings/local_untracked.py')
 
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings.dev")
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings.dev')
 sys.path.insert(0, os.path.abspath('../..'))
 
 # -- General configuration ------------------------------------------------
@@ -57,7 +55,8 @@ templates_path = ['_templates']
 
 # Location of word list.
 # convert the spelling list to a text file and save
-open('../../.cspell.txt', 'w').write('\n'.join(json.load(open('../../.cspell.json'))['words']))
+with open('../../.cspell.txt', 'w') as cspell_txt, open('../../.cspell.json') as cspell_json:
+    cspell_txt.write('\n'.join(json.load(cspell_json)['words']))
 spelling_word_list_filename = '../../.cspell.txt'
 
 # The suffix(es) of source filenames.
@@ -81,7 +80,7 @@ author = 'Alliance for Sustainable Energy, LLC, and other contributors.'
 # built documents.
 #
 # Grab the version from the package.json file
-with open(os.path.join(os.path.dirname(os.path.realpath(__file__)), "../../package.json")) as f:
+with open(os.path.join(os.path.dirname(os.path.realpath(__file__)), '../../package.json')) as f:
     data = json.load(f)
 
 version = data['version']
@@ -103,8 +102,7 @@ language = 'en'
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
-exclude_patterns = [
-]
+exclude_patterns = []
 
 # The reST default role (used for this markup: `text`) to use for all
 # documents.
@@ -235,13 +233,10 @@ htmlhelp_basename = 'SEED-Platform-documentation'
 latex_elements = {
     # The paper size ('letterpaper' or 'a4paper').
     # 'papersize': 'letterpaper',
-
     # The font size ('10pt', '11pt' or '12pt').
     # 'pointsize': '10pt',
-
     # Additional stuff for the LaTeX preamble.
     # 'preamble': '',
-
     # Latex figure (float) alignment
     # 'figure_align': 'htbp',
 }
@@ -250,8 +245,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'SEEDPlatform.tex', 'SEED Platform Documentation',
-     author, 'manual'),
+    (master_doc, 'SEEDPlatform.tex', 'SEED Platform Documentation', author, 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -279,10 +273,7 @@ latex_documents = [
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
-man_pages = [
-    (master_doc, 'seedplatform', 'SEED Platform Documentation',
-     [author], 1)
-]
+man_pages = [(master_doc, 'seedplatform', 'SEED Platform Documentation', [author], 1)]
 
 # If true, show URL addresses after external links.
 # man_show_urls = False
@@ -294,9 +285,15 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'SEEDPlatform', 'SEED Platform Documentation',
-     author, 'SEEDPlatform', 'One line description of project.',
-     'Miscellaneous'),
+    (
+        master_doc,
+        'SEEDPlatform',
+        'SEED Platform Documentation',
+        author,
+        'SEEDPlatform',
+        'One line description of project.',
+        'Miscellaneous',
+    ),
 ]
 
 # Documents to append as an appendix to all manuals.

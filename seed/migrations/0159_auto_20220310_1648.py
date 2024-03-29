@@ -5,7 +5,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('seed', '0158_sensorreading'),
     ]
@@ -27,7 +26,10 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('display_name', models.CharField(max_length=255)),
                 ('location_identifier', models.CharField(default='', max_length=2047)),
-                ('property', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='data_loggers', to='seed.property')),
+                (
+                    'property',
+                    models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='data_loggers', to='seed.property'),
+                ),
             ],
             options={
                 'unique_together': {('property', 'display_name')},

@@ -1,9 +1,9 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 import json
 from datetime import datetime
 
@@ -16,7 +16,7 @@ from seed.test_helpers.fake import (
     FakeCycleFactory,
     FakePropertyFactory,
     FakePropertyStateFactory,
-    FakePropertyViewFactory
+    FakePropertyViewFactory,
 )
 from seed.tests.util import AccessLevelBaseTestCase
 from seed.utils.organizations import create_organization
@@ -106,7 +106,7 @@ class GoalViewTests(AccessLevelBaseTestCase):
             eui_column3=Column.objects.get(organization=self.org.id, column_name='site_eui'),
             area_column=Column.objects.get(organization=self.org.id, column_name='gross_floor_area'),
             target_percentage=20,
-            name='root_goal'
+            name='root_goal',
         )
         self.child_goal = Goal.objects.create(
             organization=self.org,
@@ -118,7 +118,7 @@ class GoalViewTests(AccessLevelBaseTestCase):
             eui_column3=None,
             area_column=Column.objects.get(organization=self.org.id, column_name='gross_floor_area'),
             target_percentage=20,
-            name='child_goal'
+            name='child_goal',
         )
 
         self.child_goal_extra = Goal.objects.create(
@@ -131,7 +131,7 @@ class GoalViewTests(AccessLevelBaseTestCase):
             eui_column3=None,
             area_column=extra_area,
             target_percentage=20,
-            name='child_goal_extra'
+            name='child_goal_extra',
         )
 
         user2_details = {
@@ -140,7 +140,7 @@ class GoalViewTests(AccessLevelBaseTestCase):
             'email': 'test_user2@demo.com',
         }
         self.user2 = User.objects.create_superuser(**user2_details)
-        self.org2, _, _ = create_organization(self.user2, "org2")
+        self.org2, _, _ = create_organization(self.user2, 'org2')
 
     def test_goal_list(self):
         url = reverse_lazy('api:v3:goals-list') + '?organization_id=' + str(self.org.id)
@@ -216,35 +216,24 @@ class GoalViewTests(AccessLevelBaseTestCase):
                 'eui_column3': goal_columns[3],
                 'area_column': goal_columns[4],
                 'target_percentage': 20,
-                'name': name
+                'name': name,
             }
+
         goal_data = reset_goal_data('child_goal 2')
 
         # leaves have invalid permissions
         self.login_as_child_member()
-        response = self.client.post(
-            url,
-            data=json.dumps(goal_data),
-            content_type='application/json'
-        )
+        response = self.client.post(url, data=json.dumps(goal_data), content_type='application/json')
         assert response.status_code == 403
         assert Goal.objects.count() == goal_count
 
         goal_data['access_level_instance'] = self.root_ali.id
-        response = self.client.post(
-            url,
-            data=json.dumps(goal_data),
-            content_type='application/json'
-        )
+        response = self.client.post(url, data=json.dumps(goal_data), content_type='application/json')
         assert response.status_code == 403
         assert Goal.objects.count() == goal_count
 
         self.login_as_root_member()
-        response = self.client.post(
-            url,
-            data=json.dumps(goal_data),
-            content_type='application/json'
-        )
+        response = self.client.post(url, data=json.dumps(goal_data), content_type='application/json')
         assert response.status_code == 201
         assert Goal.objects.count() == goal_count + 1
         assert GoalNote.objects.count() == goal_note_count + 3
@@ -337,11 +326,7 @@ class GoalViewTests(AccessLevelBaseTestCase):
         assert GoalNote.objects.count() == goal_note_count
 
         # unexpected fields are ignored
-        goal_data = {
-            'name': 'child_goal y',
-            'baseline_cycle': self.cycle2.id,
-            'unexpected': 'invalid'
-        }
+        goal_data = {'name': 'child_goal y', 'baseline_cycle': self.cycle2.id, 'unexpected': 'invalid'}
         response = self.client.put(url, data=json.dumps(goal_data), content_type='application/json')
         assert response.json()['name'] == 'child_goal y'
         assert response.json()['baseline_cycle'] == self.cycle2.id
@@ -368,7 +353,11 @@ class GoalViewTests(AccessLevelBaseTestCase):
             'question': 'Do you have data to report?',
             'resolution': 'updated res',
         }
-        url = reverse_lazy('api:v3:property-goal-notes-detail', args=[self.property4.id, goal_note.id]) + '?organization_id=' + str(self.org.id)
+        url = (
+            reverse_lazy('api:v3:property-goal-notes-detail', args=[self.property4.id, goal_note.id])
+            + '?organization_id='
+            + str(self.org.id)
+        )
         self.login_as_child_member()
         response = self.client.put(url, data=json.dumps(goal_note_data), content_type='application/json')
         assert response.status_code == 404
@@ -400,7 +389,11 @@ class GoalViewTests(AccessLevelBaseTestCase):
             'passed_checks': True,
             'new_or_acquired': True,
         }
-        url = reverse_lazy('api:v3:property-goal-notes-detail', args=[self.property1.id, goal_note.id]) + '?organization_id=' + str(self.org.id)
+        url = (
+            reverse_lazy('api:v3:property-goal-notes-detail', args=[self.property1.id, goal_note.id])
+            + '?organization_id='
+            + str(self.org.id)
+        )
         response = self.client.put(url, data=json.dumps(goal_note_data), content_type='application/json')
         assert response.status_code == 200
         response_goal = response.json()
@@ -412,11 +405,12 @@ class GoalViewTests(AccessLevelBaseTestCase):
     def test_historical_note_update(self):
         self.login_as_child_member()
         assert self.property1.historical_note.text == ''
-        url = reverse_lazy('api:v3:property-historical-notes-detail', args=[self.property1.id, self.property1.historical_note.id]) + '?organization_id=' + str(self.org.id)
-        data = {
-            'property': self.property1.id,
-            'text': 'updated text'
-        }
+        url = (
+            reverse_lazy('api:v3:property-historical-notes-detail', args=[self.property1.id, self.property1.historical_note.id])
+            + '?organization_id='
+            + str(self.org.id)
+        )
+        data = {'property': self.property1.id, 'text': 'updated text'}
         response = self.client.put(url, data=json.dumps(data), content_type='application/json')
         assert response.status_code == 200
         assert response.json()['text'] == 'updated text'
@@ -433,19 +427,10 @@ class GoalViewTests(AccessLevelBaseTestCase):
         response = self.client.get(url, content_type='application/json')
         summary = response.json()
         exp_summary = {
-            'baseline': {
-                'cycle_name': '2001 Annual',
-                'total_kbtu': 44,
-                'total_sqft': 9,
-                'weighted_eui': 4
-            },
-            'current': {
-                'cycle_name': '2003 Annual',
-                'total_kbtu': 110,
-                'total_sqft': 15,
-                'weighted_eui': 7},
+            'baseline': {'cycle_name': '2001 Annual', 'total_kbtu': 44, 'total_sqft': 9, 'weighted_eui': 4},
+            'current': {'cycle_name': '2003 Annual', 'total_kbtu': 110, 'total_sqft': 15, 'weighted_eui': 7},
             'eui_change': -75,
-            'sqft_change': 40
+            'sqft_change': 40,
         }
 
         assert summary == exp_summary
@@ -455,19 +440,10 @@ class GoalViewTests(AccessLevelBaseTestCase):
         response = self.client.get(url, content_type='application/json')
         summary = response.json()
         exp_summary = {
-            'baseline': {
-                'cycle_name': '2001 Annual',
-                'total_kbtu': 200,
-                'total_sqft': 20,
-                'weighted_eui': 10
-            },
-            'current': {
-                'cycle_name': '2003 Annual',
-                'total_kbtu': 5000,
-                'total_sqft': 150,
-                'weighted_eui': 33},
+            'baseline': {'cycle_name': '2001 Annual', 'total_kbtu': 200, 'total_sqft': 20, 'weighted_eui': 10},
+            'current': {'cycle_name': '2003 Annual', 'total_kbtu': 5000, 'total_sqft': 150, 'weighted_eui': 33},
             'eui_change': -229,
-            'sqft_change': 86
+            'sqft_change': 86,
         }
 
         assert summary == exp_summary

@@ -33,11 +33,8 @@ def move_filter_groups_back(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('seed', '0212_add_filtergroup_labels'),
     ]
 
-    operations = [
-        migrations.RunPython(move_filter_groups, move_filter_groups_back)
-    ]
+    operations = [migrations.RunPython(move_filter_groups, move_filter_groups_back)]

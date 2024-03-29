@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('seed', '0181_auto_20221202_0827'),
     ]
@@ -18,6 +17,10 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='meter',
             name='source',
-            field=models.IntegerField(choices=[(1, 'Portfolio Manager'), (2, 'GreenButton'), (3, 'BuildingSync'), (4, 'Portfolio Manager'), (5, 'Manual Entry')], default=None, null=True),
+            field=models.IntegerField(
+                choices=[(1, 'Portfolio Manager'), (2, 'GreenButton'), (3, 'BuildingSync'), (4, 'Portfolio Manager'), (5, 'Manual Entry')],
+                default=None,
+                null=True,
+            ),
         ),
     ]

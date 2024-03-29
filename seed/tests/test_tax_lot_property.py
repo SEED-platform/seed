@@ -1,14 +1,15 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 import json
 import time
 from datetime import datetime
 from random import randint
 
+import pytest
 import pytz
 from django.core.exceptions import ValidationError
 from django.urls import reverse_lazy
@@ -16,14 +17,7 @@ from xlrd import open_workbook
 
 from seed.landing.models import SEEDUser as User
 from seed.lib.progress_data.progress_data import ProgressData
-from seed.models import (
-    Column,
-    Cycle,
-    Note,
-    PropertyView,
-    TaxLotProperty,
-    TaxLotView
-)
+from seed.models import Column, Cycle, Note, PropertyView, TaxLotProperty, TaxLotView
 from seed.serializers.pint import DEFAULT_UNITS
 from seed.tasks import set_update_to_now
 from seed.test_helpers.fake import (
@@ -31,7 +25,7 @@ from seed.test_helpers.fake import (
     FakePropertyStateFactory,
     FakePropertyViewFactory,
     FakeStatusLabelFactory,
-    FakeTaxLotViewFactory
+    FakeTaxLotViewFactory,
 )
 from seed.tests.util import AccessLevelBaseTestCase, DataMappingBaseTestCase
 from seed.utils.organizations import create_organization
@@ -51,21 +45,11 @@ class TestTaxLotProperty(DataMappingBaseTestCase):
         self.org, _, _ = create_organization(self.user)
         # create a default cycle
         self.cycle = Cycle.objects.filter(organization_id=self.org).first()
-        self.property_factory = FakePropertyFactory(
-            organization=self.org
-        )
-        self.property_state_factory = FakePropertyStateFactory(
-            organization=self.org
-        )
-        self.property_view_factory = FakePropertyViewFactory(
-            organization=self.org, user=self.user
-        )
-        self.taxlot_view_factory = FakeTaxLotViewFactory(
-            organization=self.org, user=self.user
-        )
-        self.label_factory = FakeStatusLabelFactory(
-            organization=self.org
-        )
+        self.property_factory = FakePropertyFactory(organization=self.org)
+        self.property_state_factory = FakePropertyStateFactory(organization=self.org)
+        self.property_view_factory = FakePropertyViewFactory(organization=self.org, user=self.user)
+        self.taxlot_view_factory = FakeTaxLotViewFactory(organization=self.org, user=self.user)
+        self.label_factory = FakeStatusLabelFactory(organization=self.org)
         self.property_view = self.property_view_factory.get_property_view()
         self.urls = ['http://example.com', 'http://example.org']
         self.client.login(**user_details)
@@ -76,16 +60,37 @@ class TestTaxLotProperty(DataMappingBaseTestCase):
             p = self.property_view_factory.get_property_view()
             self.properties.append(p.id)
 
-        qs_filter = {"pk__in": self.properties}
+        qs_filter = {'pk__in': self.properties}
         qs = PropertyView.objects.filter(**qs_filter)
 
         columns = [
-            'address_line_1', 'generation_date', 'energy_alerts', 'space_alerts',
-            'building_count', 'owner', 'source_eui', 'jurisdiction_tax_lot_id',
-            'city', 'district', 'site_eui', 'building_certification', 'modified', 'match_type',
-            'source_eui_weather_normalized', 'id', 'property_name', 'conditioned_floor_area',
-            'pm_property_id', 'use_description', 'source_type', 'year_built', 'release_date',
-            'gross_floor_area', 'owner_city_state', 'owner_telephone', 'recent_sale_date',
+            'address_line_1',
+            'generation_date',
+            'energy_alerts',
+            'space_alerts',
+            'building_count',
+            'owner',
+            'source_eui',
+            'jurisdiction_tax_lot_id',
+            'city',
+            'district',
+            'site_eui',
+            'building_certification',
+            'modified',
+            'match_type',
+            'source_eui_weather_normalized',
+            'id',
+            'property_name',
+            'conditioned_floor_area',
+            'pm_property_id',
+            'use_description',
+            'source_type',
+            'year_built',
+            'release_date',
+            'gross_floor_area',
+            'owner_city_state',
+            'owner_telephone',
+            'recent_sale_date',
         ]
         columns_from_database = Column.retrieve_all(self.org.id, 'property', False)
         data = TaxLotProperty.serialize(qs, columns, columns_from_database)
@@ -106,12 +111,9 @@ class TestTaxLotProperty(DataMappingBaseTestCase):
         # call the API
         url = reverse_lazy('api:v3:tax_lot_properties-export')
         response = self.client.post(
-            url + '?{}={}&{}={}'.format(
-                'organization_id', self.org.pk,
-                'inventory_type', 'properties'
-            ),
+            url + '?{}={}&{}={}'.format('organization_id', self.org.pk, 'inventory_type', 'properties'),
             data=json.dumps({'columns': columns, 'export_type': 'csv'}),
-            content_type='application/json'
+            content_type='application/json',
         )
 
         # parse the content as array
@@ -137,22 +139,21 @@ class TestTaxLotProperty(DataMappingBaseTestCase):
         # call the API
         url = reverse_lazy('api:v3:tax_lot_properties-export')
         response = self.client.post(
-            url + '?{}={}&{}={}'.format(
-                'organization_id', self.org.pk,
-                'inventory_type', 'properties'
-            ),
+            url + '?{}={}&{}={}'.format('organization_id', self.org.pk, 'inventory_type', 'properties'),
             data=json.dumps({'columns': columns, 'export_type': 'csv'}),
-            content_type='application/json'
+            content_type='application/json',
         )
 
         # parse the content as array
         data = response.content.decode('utf-8').split('\r\n')
         notes_string = (
-            multi_line_note.created.astimezone().strftime("%Y-%m-%d %I:%M:%S %p") + "\n" +
-            multi_line_note.text +
-            "\n----------\n" +
-            single_line_note.created.astimezone().strftime("%Y-%m-%d %I:%M:%S %p") + "\n" +
-            single_line_note.text
+            multi_line_note.created.astimezone().strftime('%Y-%m-%d %I:%M:%S %p')
+            + '\n'
+            + multi_line_note.text
+            + '\n----------\n'
+            + single_line_note.created.astimezone().strftime('%Y-%m-%d %I:%M:%S %p')
+            + '\n'
+            + single_line_note.text
         )
 
         self.assertEqual(len(data), 3)
@@ -172,12 +173,9 @@ class TestTaxLotProperty(DataMappingBaseTestCase):
         # call the API
         url = reverse_lazy('api:v3:tax_lot_properties-export')
         response = self.client.post(
-            url + '?{}={}&{}={}'.format(
-                'organization_id', self.org.pk,
-                'inventory_type', 'properties'
-            ),
+            url + '?{}={}&{}={}'.format('organization_id', self.org.pk, 'inventory_type', 'properties'),
             data=json.dumps({'columns': columns, 'export_type': 'xlsx'}),
-            content_type='application/json'
+            content_type='application/json',
         )
 
         # parse the content as array
@@ -188,7 +186,7 @@ class TestTaxLotProperty(DataMappingBaseTestCase):
         self.assertTrue('Address Line 1' in data)
         self.assertTrue('Property Labels' in data)
 
-        self.assertEqual(len([r for r in wb.sheet_by_index(0).get_rows()]), 52)
+        self.assertEqual(len(list(wb.sheet_by_index(0).get_rows())), 52)
 
     def test_json_export(self):
         """Test to make sure get_related returns the fields"""
@@ -203,12 +201,9 @@ class TestTaxLotProperty(DataMappingBaseTestCase):
         # call the API
         url = reverse_lazy('api:v3:tax_lot_properties-export')
         response = self.client.post(
-            url + '?{}={}&{}={}'.format(
-                'organization_id', self.org.pk,
-                'inventory_type', 'properties'
-            ),
+            url + '?{}={}&{}={}'.format('organization_id', self.org.pk, 'inventory_type', 'properties'),
             data=json.dumps({'columns': columns, 'export_type': 'geojson'}),
-            content_type='application/json'
+            content_type='application/json',
         )
 
         # parse the content as dictionary
@@ -216,8 +211,8 @@ class TestTaxLotProperty(DataMappingBaseTestCase):
 
         first_level_keys = list(data.keys())
 
-        self.assertIn("type", first_level_keys)
-        self.assertIn("features", first_level_keys)
+        self.assertIn('type', first_level_keys)
+        self.assertIn('features', first_level_keys)
 
         record_level_keys = list(data['features'][0]['properties'].keys())
 
@@ -228,14 +223,8 @@ class TestTaxLotProperty(DataMappingBaseTestCase):
         self.assertEqual(len(data['features']), 51)
 
     def test_set_update_to_now(self):
-        property_view_ids = [
-            self.property_view_factory.get_property_view().id
-            for _ in range(50)
-        ]
-        taxlot_view_ids = [
-            self.taxlot_view_factory.get_taxlot_view().id
-            for _ in range(50)
-        ]
+        property_view_ids = [self.property_view_factory.get_property_view().id for _ in range(50)]
+        taxlot_view_ids = [self.taxlot_view_factory.get_taxlot_view().id for _ in range(50)]
         before_refresh = datetime.now(pytz.UTC)
 
         time.sleep(1)
@@ -279,12 +268,7 @@ class TestTaxLotProperty(DataMappingBaseTestCase):
         state.extra_data['area_str_float'] = '12.3'
         state.save()
 
-        obj_dict = TaxLotProperty.extra_data_to_dict_with_mapping(
-            state.extra_data,
-            mapping,
-            fields=list(mapping.keys()),
-            units=units
-        )
+        obj_dict = TaxLotProperty.extra_data_to_dict_with_mapping(state.extra_data, mapping, fields=list(mapping.keys()), units=units)
         self.assertEqual(obj_dict['area_int'].m, 123)
         self.assertEqual(str(obj_dict['area_int'].u), 'foot ** 2')
         self.assertEqual(obj_dict['area_float'].m, 12.3)
@@ -314,41 +298,33 @@ class TestTaxLotPropertyAccessLevel(AccessLevelBaseTestCase):
         self.root_taxlot_view = self.taxlot_view_factory.get_taxlot_view(taxlot=self.root_taxlot)
 
         TaxLotProperty(
-            primary=True,
-            cycle_id=self.cycle.id,
-            property_view_id=self.root_property_view.id,
-            taxlot_view_id=self.root_taxlot_view.id
+            primary=True, cycle_id=self.cycle.id, property_view_id=self.root_property_view.id, taxlot_view_id=self.root_taxlot_view.id
         ).save()
 
-        self.columns = [
-            Column.objects.get(organization=self.org, table_name='PropertyState', column_name='address_line_1').column_name
-        ]
+        self.columns = [Column.objects.get(organization=self.org, table_name='PropertyState', column_name='address_line_1').column_name]
 
     def test_tax_lot_and_property_in_different_ali(self):
         child_property = self.property_factory.get_property(access_level_instance=self.child_level_instance)
         child_property_view = self.property_view_factory.get_property_view(prprty=child_property)
 
-        with self.assertRaises(ValidationError):
+        with pytest.raises(ValidationError):
             TaxLotProperty(
-                primary=True,
-                cycle_id=self.cycle.id,
-                property_view_id=child_property_view.id,
-                taxlot_view_id=self.root_taxlot_view.id
+                primary=True, cycle_id=self.cycle.id, property_view_id=child_property_view.id, taxlot_view_id=self.root_taxlot_view.id
             ).save()
 
     def test_change_properties_ali(self):
-        with self.assertRaises(ValidationError):
+        with pytest.raises(ValidationError):  # noqa: PT012
             self.root_property.access_level_instance = self.child_level_instance
             self.root_property.save()
 
     def test_change_tax_lot_ali(self):
-        with self.assertRaises(ValidationError):
+        with pytest.raises(ValidationError):  # noqa: PT012
             self.root_taxlot.access_level_instance = self.child_level_instance
             self.root_taxlot.save()
 
     def test_property_export(self):
         url = reverse_lazy('api:v3:tax_lot_properties-export')
-        url += f"?organization_id={self.org.pk}&inventory_type=properties"
+        url += f'?organization_id={self.org.pk}&inventory_type=properties'
         params = json.dumps({'columns': self.columns, 'export_type': 'csv'})
 
         self.login_as_root_member()
@@ -363,7 +339,7 @@ class TestTaxLotPropertyAccessLevel(AccessLevelBaseTestCase):
 
     def test_taxlot_export(self):
         url = reverse_lazy('api:v3:tax_lot_properties-export')
-        url += f"?organization_id={self.org.pk}&inventory_type=taxlots"
+        url += f'?organization_id={self.org.pk}&inventory_type=taxlots'
         params = json.dumps({'columns': self.columns, 'export_type': 'csv'})
 
         self.login_as_root_member()
@@ -382,12 +358,10 @@ class TestTaxLotPropertyAccessLevel(AccessLevelBaseTestCase):
 
         progress_data = ProgressData(func_name='set_update_to_now', unique_id=f'metadata{randint(10000,99999)}')
         url = reverse_lazy('api:v3:tax_lot_properties-set-update-to-now')
-        url += f"?organization_id={self.org.pk}"
-        params = json.dumps({
-            'property_views': [self.root_property_view.pk],
-            'taxlot_views': [self.root_taxlot_view.pk],
-            'progress_key': progress_data.key
-        })
+        url += f'?organization_id={self.org.pk}'
+        params = json.dumps(
+            {'property_views': [self.root_property_view.pk], 'taxlot_views': [self.root_taxlot_view.pk], 'progress_key': progress_data.key}
+        )
 
         self.login_as_child_member()
         self.client.post(url, data=params, content_type='application/json')

@@ -4,8 +4,8 @@ from django.db import migrations, models
 
 
 def forwards(apps, schema_editor):
-    Column = apps.get_model("seed", "Column")
-    Organization = apps.get_model("orgs", "Organization")
+    Column = apps.get_model('seed', 'Column')
+    Organization = apps.get_model('orgs', 'Organization')
 
     new_db_fields = [
         {
@@ -38,11 +38,10 @@ def forwards(apps, schema_editor):
                     c.data_type = new_db_field['data_type']
                 c.save()
             else:
-                print("  More than one column returned")
+                print('  More than one column returned')
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('seed', '0154_analysis_created_at'),
     ]
@@ -53,5 +52,5 @@ class Migration(migrations.Migration):
             name='egrid_subregion_code',
             field=models.CharField(blank=True, max_length=255, null=True),
         ),
-        migrations.RunPython(forwards)
+        migrations.RunPython(forwards),
     ]

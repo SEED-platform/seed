@@ -1,9 +1,7 @@
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
-from __future__ import unicode_literals
 
 from datetime import date, datetime
 
@@ -32,14 +30,14 @@ class Cycle(models.Model):
     @classmethod
     def get_or_create_default(cls, organization):
         year = date.today().year - 1
-        cycle_name = '{} Calendar Year'.format(year)
+        cycle_name = f'{year} Calendar Year'
         cycle = Cycle.objects.filter(name=cycle_name, organization=organization).first()
         if not cycle:
             return Cycle.objects.create(
                 name=cycle_name,
                 organization=organization,
                 start=datetime(year, 1, 1, tzinfo=timezone.get_current_timezone()),
-                end=datetime(year + 1, 1, 1, tzinfo=timezone.get_current_timezone())
+                end=datetime(year + 1, 1, 1, tzinfo=timezone.get_current_timezone()),
             )
         else:
             return cycle

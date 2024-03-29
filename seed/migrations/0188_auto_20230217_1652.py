@@ -6,7 +6,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('seed', '0187_update_compliance_metric_cycles'),
     ]
@@ -29,7 +28,17 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='NoteEvent',
             fields=[
-                ('event_ptr', models.OneToOneField(auto_created=True, on_delete=django.db.models.deletion.CASCADE, parent_link=True, primary_key=True, serialize=False, to='seed.event')),
+                (
+                    'event_ptr',
+                    models.OneToOneField(
+                        auto_created=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        parent_link=True,
+                        primary_key=True,
+                        serialize=False,
+                        to='seed.event',
+                    ),
+                ),
                 ('note', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='seed.note')),
             ],
             options={
@@ -41,7 +50,17 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='ATEvent',
             fields=[
-                ('event_ptr', models.OneToOneField(auto_created=True, on_delete=django.db.models.deletion.CASCADE, parent_link=True, primary_key=True, serialize=False, to='seed.event')),
+                (
+                    'event_ptr',
+                    models.OneToOneField(
+                        auto_created=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        parent_link=True,
+                        primary_key=True,
+                        serialize=False,
+                        to='seed.event',
+                    ),
+                ),
                 ('building_file', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='seed.buildingfile')),
                 ('audit_date', models.CharField(max_length=100, null=True)),
             ],
@@ -54,7 +73,17 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='AnalysisEvent',
             fields=[
-                ('event_ptr', models.OneToOneField(auto_created=True, on_delete=django.db.models.deletion.CASCADE, parent_link=True, primary_key=True, serialize=False, to='seed.event')),
+                (
+                    'event_ptr',
+                    models.OneToOneField(
+                        auto_created=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        parent_link=True,
+                        primary_key=True,
+                        serialize=False,
+                        to='seed.event',
+                    ),
+                ),
                 ('analysis', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='seed.analysis')),
             ],
             options={

@@ -1,9 +1,9 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 import logging
 
 from django.utils.decorators import method_decorator
@@ -23,34 +23,19 @@ _log = logging.getLogger(__name__)
 
 
 nested_org_id_path_field = AutoSchemaHelper.base_field(
-    "nested_organization_id",
-    "IN_PATH",
-    "Organization ID - identifier used to specify a DataQualityCheck and its Rules",
+    'nested_organization_id',
+    'IN_PATH',
+    'Organization ID - identifier used to specify a DataQualityCheck and its Rules',
     True,
-    "TYPE_INTEGER"
+    'TYPE_INTEGER',
 )
 
 
-@method_decorator(
-    name='list',
-    decorator=swagger_auto_schema(manual_parameters=[nested_org_id_path_field])
-)
-@method_decorator(
-    name='retrieve',
-    decorator=swagger_auto_schema(manual_parameters=[nested_org_id_path_field])
-)
-@method_decorator(
-    name='update',
-    decorator=swagger_auto_schema(manual_parameters=[nested_org_id_path_field])
-)
-@method_decorator(
-    name='destroy',
-    decorator=swagger_auto_schema(manual_parameters=[nested_org_id_path_field])
-)
-@method_decorator(
-    name='create',
-    decorator=swagger_auto_schema(manual_parameters=[nested_org_id_path_field])
-)
+@method_decorator(name='list', decorator=swagger_auto_schema(manual_parameters=[nested_org_id_path_field]))
+@method_decorator(name='retrieve', decorator=swagger_auto_schema(manual_parameters=[nested_org_id_path_field]))
+@method_decorator(name='update', decorator=swagger_auto_schema(manual_parameters=[nested_org_id_path_field]))
+@method_decorator(name='destroy', decorator=swagger_auto_schema(manual_parameters=[nested_org_id_path_field]))
+@method_decorator(name='create', decorator=swagger_auto_schema(manual_parameters=[nested_org_id_path_field]))
 class DataQualityCheckRuleViewSet(ModelViewSetWithoutPatch):
     serializer_class = RuleSerializer
     model = Rule
@@ -73,11 +58,7 @@ class DataQualityCheckRuleViewSet(ModelViewSetWithoutPatch):
         else:
             return DataQualityCheck.retrieve(org_id).rules.filter(id=rule_id)
 
-    @swagger_auto_schema(
-        manual_parameters=[nested_org_id_path_field],
-        request_body=no_body,
-        responses={200: RuleSerializer(many=True)}
-    )
+    @swagger_auto_schema(manual_parameters=[nested_org_id_path_field], request_body=no_body, responses={200: RuleSerializer(many=True)})
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_owner')

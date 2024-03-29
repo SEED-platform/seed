@@ -1,5 +1,4 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
@@ -18,9 +17,8 @@ from rest_framework.views import APIView
 
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.lib.superperms.orgs.models import AccessLevelInstance
-from seed.models import PropertyView
+from seed.models import PropertyView, TaxLotView
 from seed.models import StatusLabel as Label
-from seed.models import TaxLotView
 from seed.utils.api_schema import AutoSchemaHelper
 
 ErrorState = namedtuple('ErrorState', ['status_code', 'message'])
@@ -84,7 +82,7 @@ class LabelInventoryViewSet(APIView):
         ).values('id', 'color', 'name')
 
     def get_inventory_id(self, q, inventory_type):
-        return getattr(q, "{}view_id".format(inventory_type))
+        return getattr(q, f"{inventory_type}view_id")
 
     def exclude(self, qs, inventory_type, label_ids):
         """Returns a mapping of label IDs to inventories which already have that
@@ -127,11 +125,8 @@ class LabelInventoryViewSet(APIView):
             return Model(**create_dict)
         else:
             raise IntegrityError(
-                'Label with super_organization_id={} cannot be applied to a record with parent '
-                'organization_id={}.'.format(
-                    label_super_org_id,
-                    inventory_parent_org_id
-                )
+                f'Label with super_organization_id={label_super_org_id} cannot be applied to a record with parent '
+                f'organization_id={inventory_parent_org_id}.'
             )
 
     def add_labels(self, qs, inventory_type, inventory_ids, add_label_ids):

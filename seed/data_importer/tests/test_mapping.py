@@ -1,32 +1,23 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 import logging
 import os.path as osp
 import pathlib
 
+import pytest
 from django.core.files.uploadedfile import SimpleUploadedFile
 from quantityfield.units import ureg
 
 from seed.data_importer import tasks
 from seed.data_importer.tests.util import FAKE_MAPPINGS
 from seed.lib.mcm import mapper
-from seed.models import (
-    ASSESSED_RAW,
-    DATA_STATE_IMPORT,
-    DATA_STATE_MAPPING,
-    Column,
-    PropertyState
-)
+from seed.models import ASSESSED_RAW, DATA_STATE_IMPORT, DATA_STATE_MAPPING, Column, PropertyState
 from seed.models.column_mappings import get_column_mapping
-from seed.test_helpers.fake import (
-    FakePropertyFactory,
-    FakePropertyStateFactory,
-    FakePropertyViewFactory
-)
+from seed.test_helpers.fake import FakePropertyFactory, FakePropertyStateFactory, FakePropertyViewFactory
 from seed.tests.util import DataMappingBaseTestCase
 
 logger = logging.getLogger(__name__)
@@ -47,10 +38,7 @@ class TestMapping(DataMappingBaseTestCase):
         # more of an ID to track imports
 
         state = self.property_state_factory.get_property_state_as_extra_data(
-            import_file_id=self.import_file.id,
-            source_type=ASSESSED_RAW,
-            data_state=DATA_STATE_IMPORT,
-            random_extra=42
+            import_file_id=self.import_file.id, source_type=ASSESSED_RAW, data_state=DATA_STATE_IMPORT, random_extra=42
         )
         # set import_file save done to true
         self.import_file.raw_save_done = True
@@ -63,7 +51,7 @@ class TestMapping(DataMappingBaseTestCase):
             Column.retrieve_all_by_tuple(self.org),
             previous_mapping=get_column_mapping,
             map_args=[self.org],
-            thresh=80
+            thresh=80,
         )
 
         # Convert mapping suggests to the format needed for saving
@@ -71,11 +59,11 @@ class TestMapping(DataMappingBaseTestCase):
         for raw_column, suggestion in suggested_mappings.items():
             # Single suggestion looks like:'lot_number': ['PropertyState', 'lot_number', 100]
             mapping = {
-                "from_field": raw_column,
-                "from_units": None,
-                "to_table_name": suggestion[0],
-                "to_field": suggestion[1],
-                "to_field_display_name": suggestion[1],
+                'from_field': raw_column,
+                'from_units': None,
+                'to_table_name': suggestion[0],
+                'to_field': suggestion[1],
+                'to_field_display_name': suggestion[1],
             }
             mappings.append(mapping)
 
@@ -127,7 +115,7 @@ class TestMapping(DataMappingBaseTestCase):
             Column.retrieve_all_by_tuple(self.org),
             previous_mapping=get_column_mapping,
             map_args=[self.org],
-            thresh=80
+            thresh=80,
         )
 
         ed_site_eui_mappings = []
@@ -135,28 +123,32 @@ class TestMapping(DataMappingBaseTestCase):
         for raw_column, suggestion in suggested_mappings.items():
             if raw_column == 'Site EUI (kBtu/ft2)':
                 # Make this an extra_data field (without from_units)
-                ed_site_eui_mappings.append({
-                    "from_field": raw_column,
-                    "from_units": None,
-                    "to_table_name": 'PropertyState',
-                    "to_field": raw_column,
-                    "to_field_display_name": raw_column,
-                })
+                ed_site_eui_mappings.append(
+                    {
+                        'from_field': raw_column,
+                        'from_units': None,
+                        'to_table_name': 'PropertyState',
+                        'to_field': raw_column,
+                        'to_field_display_name': raw_column,
+                    }
+                )
 
-                unit_aware_site_eui_mappings.append({
-                    "from_field": raw_column,
-                    "from_units": 'kBtu/ft**2/year',
-                    "to_table_name": 'PropertyState',
-                    "to_field": 'site_eui',
-                    "to_field_display_name": 'Site EUI',
-                })
+                unit_aware_site_eui_mappings.append(
+                    {
+                        'from_field': raw_column,
+                        'from_units': 'kBtu/ft**2/year',
+                        'to_table_name': 'PropertyState',
+                        'to_field': 'site_eui',
+                        'to_field_display_name': 'Site EUI',
+                    }
+                )
             else:
                 other_mapping = {
-                    "from_field": raw_column,
-                    "from_units": None,
-                    "to_table_name": suggestion[0],
-                    "to_field": suggestion[1],
-                    "to_field_display_name": suggestion[1],
+                    'from_field': raw_column,
+                    'from_units': None,
+                    'to_table_name': suggestion[0],
+                    'to_field': suggestion[1],
+                    'to_field_display_name': suggestion[1],
                 }
                 ed_site_eui_mappings.append(other_mapping)
                 unit_aware_site_eui_mappings.append(other_mapping)
@@ -219,34 +211,38 @@ class TestMapping(DataMappingBaseTestCase):
             Column.retrieve_all_by_tuple(self.org),
             previous_mapping=get_column_mapping,
             map_args=[self.org],
-            thresh=80
+            thresh=80,
         )
 
         mappings = []
         for raw_column, suggestion in suggested_mappings.items():
             if raw_column == 'Site EUI':
-                mappings.append({
-                    "from_field": raw_column,
-                    "from_units": 'kWh/m**2/year',
-                    "to_table_name": 'PropertyState',
-                    "to_field": 'site_eui',
-                    "to_field_display_name": 'Site EUI',
-                })
+                mappings.append(
+                    {
+                        'from_field': raw_column,
+                        'from_units': 'kWh/m**2/year',
+                        'to_table_name': 'PropertyState',
+                        'to_field': 'site_eui',
+                        'to_field_display_name': 'Site EUI',
+                    }
+                )
             elif raw_column == 'Gross Floor Area':
-                mappings.append({
-                    "from_field": raw_column,
-                    "from_units": 'm**2',
-                    "to_table_name": 'PropertyState',
-                    "to_field": 'gross_floor_area',
-                    "to_field_display_name": 'Gross Floor Area',
-                })
+                mappings.append(
+                    {
+                        'from_field': raw_column,
+                        'from_units': 'm**2',
+                        'to_table_name': 'PropertyState',
+                        'to_field': 'gross_floor_area',
+                        'to_field_display_name': 'Gross Floor Area',
+                    }
+                )
             else:
                 other_mapping = {
-                    "from_field": raw_column,
-                    "from_units": None,
-                    "to_table_name": suggestion[0],
-                    "to_field": suggestion[1],
-                    "to_field_display_name": suggestion[1],
+                    'from_field': raw_column,
+                    'from_units': None,
+                    'to_table_name': suggestion[0],
+                    'to_field': suggestion[1],
+                    'to_field_display_name': suggestion[1],
                 }
                 mappings.append(other_mapping)
 
@@ -268,10 +264,10 @@ class TestMappingAccessLevelInstance(DataMappingBaseTestCase):
         self.property_state_factory = FakePropertyStateFactory(organization=self.org)
 
         # create tree
-        self.org.access_level_names = ["1st Gen", "2nd Gen", "3rd Gen"]
-        mom = self.org.add_new_access_level_instance(self.org.root.id, "mom")
-        self.me_ali = self.org.add_new_access_level_instance(mom.id, "me")
-        self.brother_ali = self.org.add_new_access_level_instance(mom.id, "brother")
+        self.org.access_level_names = ['1st Gen', '2nd Gen', '3rd Gen']
+        mom = self.org.add_new_access_level_instance(self.org.root.id, 'mom')
+        self.me_ali = self.org.add_new_access_level_instance(mom.id, 'me')
+        self.brother_ali = self.org.add_new_access_level_instance(mom.id, 'brother')
         self.org.save()
 
         # create state
@@ -288,25 +284,25 @@ class TestMappingAccessLevelInstance(DataMappingBaseTestCase):
             Column.retrieve_all_by_tuple(self.org),
             previous_mapping=get_column_mapping,
             map_args=[self.org],
-            thresh=90
+            thresh=90,
         )
         mappings = []
         for raw_column, suggestion in suggested_mappings.items():
             mapping = {
-                "from_field": raw_column,
-                "from_units": None,
-                "to_table_name": suggestion[0],
-                "to_field": suggestion[1],
-                "to_field_display_name": suggestion[1],
+                'from_field': raw_column,
+                'from_units': None,
+                'to_table_name': suggestion[0],
+                'to_field': suggestion[1],
+                'to_field_display_name': suggestion[1],
             }
             mappings.append(mapping)
         Column.create_mappings(mappings, self.org, self.user, self.import_file.id)
 
     def test_map_good_ah_data(self):
         # state has good AH info
-        self.state.extra_data["1st Gen"] = "root"
-        self.state.extra_data["2nd Gen"] = "mom"
-        self.state.extra_data["3rd Gen"] = "me"
+        self.state.extra_data['1st Gen'] = 'root'
+        self.state.extra_data['2nd Gen'] = 'mom'
+        self.state.extra_data['3rd Gen'] = 'me'
         self.state.save()
 
         # map state
@@ -318,8 +314,8 @@ class TestMappingAccessLevelInstance(DataMappingBaseTestCase):
         )
 
         # extra data gone and raw ali set
-        assert "2nd Gen" not in ps.extra_data
-        assert "3rd Gen" not in ps.extra_data
+        assert '2nd Gen' not in ps.extra_data
+        assert '3rd Gen' not in ps.extra_data
         assert ps.raw_access_level_instance == self.me_ali
         assert ps.raw_access_level_instance_error is None
 
@@ -328,9 +324,9 @@ class TestMappingAccessLevelInstance(DataMappingBaseTestCase):
         self.import_record.save()
 
         # state has good AH info
-        self.state.extra_data["1st Gen"] = "root"
-        self.state.extra_data["2nd Gen"] = "mom"
-        self.state.extra_data["3rd Gen"] = None
+        self.state.extra_data['1st Gen'] = 'root'
+        self.state.extra_data['2nd Gen'] = 'mom'
+        self.state.extra_data['3rd Gen'] = None
         self.state.save()
 
         # map state
@@ -342,18 +338,18 @@ class TestMappingAccessLevelInstance(DataMappingBaseTestCase):
         )
 
         # extra data gone and raw ali set
-        assert "2nd Gen" not in ps.extra_data
-        assert "3rd Gen" not in ps.extra_data
-        assert ps.raw_access_level_instance_error == "Access Level Instance cannot be accessed with the permissions of this import file."
+        assert '2nd Gen' not in ps.extra_data
+        assert '3rd Gen' not in ps.extra_data
+        assert ps.raw_access_level_instance_error == 'Access Level Instance cannot be accessed with the permissions of this import file.'
 
     def test_map_good_ah_data_no_permissions(self):
         self.import_record.access_level_instance = self.me_ali
         self.import_record.save()
 
         # state has good AH info
-        self.state.extra_data["1st Gen"] = "root"
-        self.state.extra_data["2nd Gen"] = "mom"
-        self.state.extra_data["3rd Gen"] = "brother"
+        self.state.extra_data['1st Gen'] = 'root'
+        self.state.extra_data['2nd Gen'] = 'mom'
+        self.state.extra_data['3rd Gen'] = 'brother'
         self.state.save()
 
         # map state
@@ -365,15 +361,15 @@ class TestMappingAccessLevelInstance(DataMappingBaseTestCase):
         )
 
         # extra data gone and raw ali set
-        assert "2nd Gen" not in ps.extra_data
-        assert "3rd Gen" not in ps.extra_data
-        assert ps.raw_access_level_instance_error == "Access Level Information does not match any existing Access Level Instance."
+        assert '2nd Gen' not in ps.extra_data
+        assert '3rd Gen' not in ps.extra_data
+        assert ps.raw_access_level_instance_error == 'Access Level Information does not match any existing Access Level Instance.'
 
     def test_map_ah_data_missing_columns(self):
         # state has missing AH info
-        self.state.extra_data["1st Gen"] = "root"
+        self.state.extra_data['1st Gen'] = 'root'
         # no 2nd Gen
-        self.state.extra_data["3rd Gen"] = "me"
+        self.state.extra_data['3rd Gen'] = 'me'
         self.state.save()
 
         # map state
@@ -385,16 +381,16 @@ class TestMappingAccessLevelInstance(DataMappingBaseTestCase):
         )
 
         # extra data gone and raw ali error is set
-        assert "2nd Gen" not in ps.extra_data
-        assert "3rd Gen" not in ps.extra_data
+        assert '2nd Gen' not in ps.extra_data
+        assert '3rd Gen' not in ps.extra_data
         assert ps.raw_access_level_instance is None
-        assert ps.raw_access_level_instance_error == "Missing/Incomplete Access Level Column."
+        assert ps.raw_access_level_instance_error == 'Missing/Incomplete Access Level Column.'
 
     def test_map_ah_data_missing_value(self):
         # state has blank AH info
-        self.state.extra_data["1st Gen"] = "root"
-        self.state.extra_data["2nd Gen"] = None
-        self.state.extra_data["3rd Gen"] = "me"
+        self.state.extra_data['1st Gen'] = 'root'
+        self.state.extra_data['2nd Gen'] = None
+        self.state.extra_data['3rd Gen'] = 'me'
         self.state.save()
 
         # map state
@@ -406,16 +402,16 @@ class TestMappingAccessLevelInstance(DataMappingBaseTestCase):
         )
 
         # extra data gone and raw ali error is set
-        assert "2nd Gen" not in ps.extra_data
-        assert "3rd Gen" not in ps.extra_data
+        assert '2nd Gen' not in ps.extra_data
+        assert '3rd Gen' not in ps.extra_data
         assert ps.raw_access_level_instance is None
-        assert ps.raw_access_level_instance_error == "Missing/Incomplete Access Level Column."
+        assert ps.raw_access_level_instance_error == 'Missing/Incomplete Access Level Column.'
 
     def test_map_ah_data_bad_value(self):
         # state has bad AH info
-        self.state.extra_data["1st Gen"] = "root"
-        self.state.extra_data["2nd Gen"] = "mom"
-        self.state.extra_data["3rd Gen"] = "I dont exist"
+        self.state.extra_data['1st Gen'] = 'root'
+        self.state.extra_data['2nd Gen'] = 'mom'
+        self.state.extra_data['3rd Gen'] = 'I dont exist'
         self.state.save()
 
         # map state
@@ -427,10 +423,10 @@ class TestMappingAccessLevelInstance(DataMappingBaseTestCase):
         )
 
         # extra data gone and raw ali error is set
-        assert "2nd Gen" not in ps.extra_data
-        assert "3rd Gen" not in ps.extra_data
+        assert '2nd Gen' not in ps.extra_data
+        assert '3rd Gen' not in ps.extra_data
         assert ps.raw_access_level_instance is None
-        assert ps.raw_access_level_instance_error == "Access Level Information does not match any existing Access Level Instance."
+        assert ps.raw_access_level_instance_error == 'Access Level Information does not match any existing Access Level Instance.'
 
 
 class TestDuplicateFileHeaders(DataMappingBaseTestCase):
@@ -441,15 +437,12 @@ class TestDuplicateFileHeaders(DataMappingBaseTestCase):
         selfvars = self.set_up(import_file_source_type)
         self.user, self.org, self.import_file, self.import_record, self.cycle = selfvars
         filepath = osp.join(osp.dirname(__file__), 'data', filename)
-        self.import_file.file = SimpleUploadedFile(
-            name=filename,
-            content=pathlib.Path(filepath).read_bytes()
-        )
+        self.import_file.file = SimpleUploadedFile(name=filename, content=pathlib.Path(filepath).read_bytes())
         self.import_file.save()
 
     def test_duplicate_headers_throws_400(self):
         tasks.save_raw_data(self.import_file.pk)
         Column.create_mappings(self.fake_mappings, self.org, self.user, self.import_file.pk)
 
-        with self.assertRaises(Exception):
+        with pytest.raises(Exception):  # noqa: PT011
             tasks.map_data(self.import_file.pk)

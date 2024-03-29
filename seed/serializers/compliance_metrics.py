@@ -1,5 +1,4 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
@@ -24,4 +23,17 @@ class ComplianceMetricSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ComplianceMetric
-        fields = ('id', 'name', 'organization_id', 'cycles', 'actual_energy_column', 'target_energy_column', 'energy_metric_type', 'actual_emission_column', 'target_emission_column', 'emission_metric_type', 'filter_group', 'x_axis_columns',)
+        fields = (
+            'id',
+            'name',
+            'organization_id',
+            'cycles',
+            'actual_energy_column',
+            'target_energy_column',
+            'energy_metric_type',
+            'actual_emission_column',
+            'target_emission_column',
+            'emission_metric_type',
+            'filter_group',
+            'x_axis_columns',
+        )

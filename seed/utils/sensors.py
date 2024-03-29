@@ -1,9 +1,9 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 from calendar import month_name
 from collections import defaultdict
 
@@ -16,7 +16,7 @@ from config.settings.common import TIME_ZONE
 from seed.models import Sensor, SensorReading
 
 
-class PropertySensorReadingsExporter():
+class PropertySensorReadingsExporter:
     """
     Returns readings and column definitions for UI-Grid. These readings can be
     returned in different intervals: exact, monthly, and yearly.
@@ -29,7 +29,9 @@ class PropertySensorReadingsExporter():
         self._cache_factors = None
         self._cache_org_country = None
 
-        self.sensors = Sensor.objects.select_related('data_logger').filter(data_logger__property_id=property_id).exclude(pk__in=excluded_sensor_ids)
+        self.sensors = (
+            Sensor.objects.select_related('data_logger').filter(data_logger__property_id=property_id).exclude(pk__in=excluded_sensor_ids)
+        )
         self.org_id = org_id
         self.showOnlyOccupiedReadings = showOnlyOccupiedReadings
         self.tz = timezone(TIME_ZONE)
@@ -51,12 +53,12 @@ class PropertySensorReadingsExporter():
         if self.showOnlyOccupiedReadings:
             sensor_readings = sensor_readings.filter(is_occupied=True)
 
-        timestamps = list(sensor_readings.distinct('timestamp').order_by('timestamp').values_list("timestamp", flat=True))
+        timestamps = list(sensor_readings.distinct('timestamp').order_by('timestamp').values_list('timestamp', flat=True))
         paginator = Paginator(timestamps, per_page)
         timestamps_in_page = paginator.page(page)
 
         # Used to consolidate different readings (types) within the same time window
-        timestamps = defaultdict(lambda: {})
+        timestamps = defaultdict(dict)
 
         # Construct column_defs using this dictionary's values for frontend to use
         column_defs = {
@@ -70,12 +72,9 @@ class PropertySensorReadingsExporter():
             earliest_time = timestamps_in_page[0]
             latest_time = timestamps_in_page[-1]
 
-            time_format = "%Y-%m-%d %H:%M:%S"
+            time_format = '%Y-%m-%d %H:%M:%S'
 
-            field_name_by_sensor_id = {
-                sensor.id: self._build_column_def(sensor, column_defs)
-                for sensor in self.sensors
-            }
+            field_name_by_sensor_id = {sensor.id: self._build_column_def(sensor, column_defs) for sensor in self.sensors}
 
             sensor_readings = sensor_readings.filter(timestamp__range=[earliest_time, latest_time])
 
@@ -83,7 +82,7 @@ class PropertySensorReadingsExporter():
                 timestamp = sensor_reading.timestamp.astimezone(tz=self.tz).strftime(time_format)
                 times_key = str(timestamp)
 
-                timestamps[times_key]["timestamp"] = timestamp
+                timestamps[times_key]['timestamp'] = timestamp
                 timestamps[times_key][field_name_by_sensor_id[sensor_reading.sensor_id]] = sensor_reading.reading
 
         return {
@@ -94,10 +93,10 @@ class PropertySensorReadingsExporter():
                 'num_pages': paginator.num_pages,
                 'has_next': paginator.page(page).has_next(),
                 'has_previous': paginator.page(page).has_previous(),
-                'total': paginator.count
+                'total': paginator.count,
             },
             'readings': list(timestamps.values()),
-            'column_defs': list(column_defs.values())
+            'column_defs': list(column_defs.values()),
         }
 
     def _usages_by_month(self):
@@ -106,7 +105,7 @@ class PropertySensorReadingsExporter():
         records in monthly intervals.
         """
         # Used to consolidate different readings (types) within the same month
-        monthly_readings = defaultdict(lambda: {})
+        monthly_readings = defaultdict(dict)
 
         # Construct column_defs using this dictionary's values for frontend to use
         column_defs = {
@@ -124,11 +123,13 @@ class PropertySensorReadingsExporter():
                 sensor_readings = sensor_readings.filter(is_occupied=True)
 
             # group by month and avg readings
-            readings_avg_by_month = sensor_readings \
-                .annotate(month=TruncMonth('timestamp')) \
-                .values('month').order_by('month') \
-                .annotate(avg=Avg('reading')) \
+            readings_avg_by_month = (
+                sensor_readings.annotate(month=TruncMonth('timestamp'))
+                .values('month')
+                .order_by('month')
+                .annotate(avg=Avg('reading'))
                 .values('month', 'avg')
+            )
 
             for reading in readings_avg_by_month:
                 month_year = '{} {}'.format(month_name[reading['month'].month], reading['month'].year)
@@ -147,7 +148,7 @@ class PropertySensorReadingsExporter():
         formatted and aggregated to display all records in yearly intervals.
         """
         # Used to consolidate different readings (types) within the same year
-        yearly_readings = defaultdict(lambda: {})
+        yearly_readings = defaultdict(dict)
 
         # Construct column_defs using this dictionary's values for frontend to use
         column_defs = {
@@ -164,11 +165,13 @@ class PropertySensorReadingsExporter():
             if self.showOnlyOccupiedReadings:
                 sensor_readings = sensor_readings.filter(is_occupied=True)
 
-            readings_avg_by_year = sensor_readings \
-                .annotate(year=TruncYear('timestamp')) \
-                .values('year').order_by('year') \
-                .annotate(avg=Avg('reading')) \
+            readings_avg_by_year = (
+                sensor_readings.annotate(year=TruncYear('timestamp'))
+                .values('year')
+                .order_by('year')
+                .annotate(avg=Avg('reading'))
                 .values('year', 'avg')
+            )
 
             for reading in readings_avg_by_year:
                 year = reading['year'].year
@@ -176,14 +179,11 @@ class PropertySensorReadingsExporter():
                 yearly_readings[year]['year'] = year
                 yearly_readings[year][field_name] = reading['avg']
 
-        return {
-            'readings': list(yearly_readings.values()),
-            'column_defs': list(column_defs.values())
-        }
+        return {'readings': list(yearly_readings.values()), 'column_defs': list(column_defs.values())}
 
     def _build_column_def(self, sensor, column_defs):
         field_name = sensor.display_name
-        display_name = '{} ({})'.format(field_name, sensor.data_logger.display_name)
+        display_name = f'{field_name} ({sensor.data_logger.display_name})'
 
         column_defs[display_name] = {
             'field': display_name,

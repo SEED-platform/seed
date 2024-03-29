@@ -37,7 +37,6 @@ def assign_users_to_root_access_level(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('orgs', '0029_auto_20240105_1257'),
     ]
@@ -67,13 +66,17 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='organizationuser',
             name='access_level_instance',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, related_name='users', to='orgs.accesslevelinstance'),
+            field=models.ForeignKey(
+                null=True, on_delete=django.db.models.deletion.CASCADE, related_name='users', to='orgs.accesslevelinstance'
+            ),
         ),
         migrations.RunPython(create_root_access_levels),
         migrations.RunPython(assign_users_to_root_access_level, reverse_code=migrations.RunPython.noop),
         migrations.AlterField(
             model_name='organizationuser',
             name='access_level_instance',
-            field=models.ForeignKey(null=False, on_delete=django.db.models.deletion.CASCADE, related_name='users', to='orgs.accesslevelinstance'),
-        )
+            field=models.ForeignKey(
+                null=False, on_delete=django.db.models.deletion.CASCADE, related_name='users', to='orgs.accesslevelinstance'
+            ),
+        ),
     ]

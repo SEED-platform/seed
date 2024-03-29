@@ -1,8 +1,5 @@
-# -*- coding: utf-8 -*-
-
 # This rehashing file should be used in the future if needed as it has been optimized. Rehashing takes
 # awhile and should be avoided if possible.
-from __future__ import unicode_literals
 
 import re
 
@@ -25,8 +22,10 @@ def update_postal_codes(apps, schema_editor):
 
     with transaction.atomic():
         objs = PropertyState.objects.filter(
-            Q(postal_code__iregex=r'^\d{4}-\d{3,4}$') | Q(postal_code__iregex=r'^\d{4}$') |
-            Q(owner_postal_code__iregex=r'^\d{4}-\d{3,4}$') | Q(owner_postal_code__iregex=r'^\d{4}$')
+            Q(postal_code__iregex=r'^\d{4}-\d{3,4}$')
+            | Q(postal_code__iregex=r'^\d{4}$')
+            | Q(owner_postal_code__iregex=r'^\d{4}-\d{3,4}$')
+            | Q(owner_postal_code__iregex=r'^\d{4}$')
         )
         if len(objs):
             print('Checking for short postal codes in property states')
@@ -37,9 +36,7 @@ def update_postal_codes(apps, schema_editor):
             obj.owner_postal_code = zero_fill(obj.owner_postal_code)
             obj.save()
 
-        objs = TaxLotState.objects.filter(
-            Q(postal_code__iregex=r'^\d{4}-\d{3,4}$') | Q(postal_code__iregex=r'^\d{4}$')
-        )
+        objs = TaxLotState.objects.filter(Q(postal_code__iregex=r'^\d{4}-\d{3,4}$') | Q(postal_code__iregex=r'^\d{4}$'))
         if len(objs):
             print('Checking for short postal codes in tax lot states')
         for obj in objs:

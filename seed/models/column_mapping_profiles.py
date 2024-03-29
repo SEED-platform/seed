@@ -1,9 +1,9 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 import csv
 import os
 
@@ -20,7 +20,7 @@ class ColumnMappingProfile(models.Model):
     COLUMN_MAPPING_PROFILE_TYPES = (
         (NORMAL, 'Normal'),
         (BUILDINGSYNC_DEFAULT, 'BuildingSync Default'),
-        (BUILDINGSYNC_CUSTOM, 'BuildingSync Custom')
+        (BUILDINGSYNC_CUSTOM, 'BuildingSync Custom'),
     )
 
     name = models.CharField(max_length=255, blank=False)
@@ -52,7 +52,9 @@ class ColumnMappingProfile(models.Model):
         raise Exception(f'Invalid profile type "{profile_type}"')
 
     @classmethod
-    def create_from_file(cls, filename: str, org: Organization, profile_name: str, profile_type: int = NORMAL, overwrite_if_exists: bool = False):
+    def create_from_file(
+        cls, filename: str, org: Organization, profile_name: str, profile_type: int = NORMAL, overwrite_if_exists: bool = False
+    ):
         """Generate a ColumnMappingProfile from a set of mappings in a file. The format of the file
         is slightly different from the Column.create_mappings_from_file, but is the same format as
         the file that you download from the column mappings page within SEED.
@@ -69,22 +71,22 @@ class ColumnMappingProfile(models.Model):
         """
         mappings = []
         if os.path.isfile(filename):
-            with open(filename, 'r', newline=None) as csvfile:
+            with open(filename, newline=None) as csvfile:
                 csvreader = csv.reader(csvfile)
                 next(csvreader)  # skip header
                 for row in csvreader:
                     data = {
-                        "from_field": row[0],
-                        "from_units": row[1],
-                        "to_table_name": row[2],
-                        "to_field": row[3],
+                        'from_field': row[0],
+                        'from_units': row[1],
+                        'to_table_name': row[2],
+                        'to_field': row[3],
                     }
                     mappings.append(data)
         else:
-            raise Exception(f"Mapping file does not exist: {filename}")
+            raise Exception(f'Mapping file does not exist: {filename}')
 
         if len(mappings) == 0:
-            raise Exception(f"No mappings in file: {filename}")
+            raise Exception(f'No mappings in file: {filename}')
 
         # Because this object has a many to many on orgs (which I argue shouldn't), then
         # first, get all the org's mapping profiles
@@ -93,7 +95,7 @@ class ColumnMappingProfile(models.Model):
         # second, get or create the profile now that we are only seeing my 'orgs' profiles
         profile, created = profiles.get_or_create(name=profile_name, profile_type=profile_type)
         if not created and not overwrite_if_exists:
-            raise Exception(f"ColumnMappingProfile already exists, not overwriting: {profile_name}")
+            raise Exception(f'ColumnMappingProfile already exists, not overwriting: {profile_name}')
 
         # Do I need to confirm that the mappings are defined in the Columns world?
         profile.mappings = mappings

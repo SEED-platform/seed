@@ -1,9 +1,9 @@
 #!/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 from rest_framework import serializers
 
 from seed.models import ColumnMapping
@@ -11,8 +11,7 @@ from seed.serializers.columns import ColumnSerializer
 
 
 class ColumnMappingSerializer(serializers.ModelSerializer):
-    organization_id = serializers.PrimaryKeyRelatedField(source='super_organization',
-                                                         read_only=True)
+    organization_id = serializers.PrimaryKeyRelatedField(source='super_organization', read_only=True)
     user_id = serializers.PrimaryKeyRelatedField(source='user', read_only=True)
 
     class Meta:
@@ -64,4 +63,5 @@ class SaveColumnMappingsRequestPayloadSerializer(serializers.Serializer):
         ]
     }
     """
+
     mappings = serializers.ListField(child=ImportMappingSerializer())

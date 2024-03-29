@@ -6,7 +6,6 @@ import seed.models.analysis_input_files
 
 
 class Migration(migrations.Migration):
-
     replaces = [('seed', '0132_auto_20201211_1949'), ('seed', '0133_auto_20201211_2050'), ('seed', '0134_auto_20201211_2053')]
 
     dependencies = [
@@ -22,6 +21,18 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='analysis',
             name='status',
-            field=models.IntegerField(choices=[(8, 'Pending Creation'), (10, 'Creating'), (20, 'Ready'), (30, 'Queued'), (40, 'Running'), (50, 'Failed'), (60, 'Stopped'), (70, 'Completed')], default=8),
+            field=models.IntegerField(
+                choices=[
+                    (8, 'Pending Creation'),
+                    (10, 'Creating'),
+                    (20, 'Ready'),
+                    (30, 'Queued'),
+                    (40, 'Running'),
+                    (50, 'Failed'),
+                    (60, 'Stopped'),
+                    (70, 'Completed'),
+                ],
+                default=8,
+            ),
         ),
     ]

@@ -1,10 +1,9 @@
-
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 import logging
 import os.path as osp
 import pathlib
@@ -14,17 +13,8 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from seed.data_importer import tasks
 from seed.data_importer.tests.util import FAKE_MAPPINGS
 from seed.lib.mcm.cleaners import normalize_unicode_and_characters
-from seed.models import (
-    ASSESSED_RAW,
-    DATA_STATE_MAPPING,
-    Column,
-    PropertyState,
-    PropertyView
-)
-from seed.test_helpers.fake import (
-    FakePropertyStateFactory,
-    FakeTaxLotStateFactory
-)
+from seed.models import ASSESSED_RAW, DATA_STATE_MAPPING, Column, PropertyState, PropertyView
+from seed.test_helpers.fake import FakePropertyStateFactory, FakeTaxLotStateFactory
 from seed.tests.util import DataMappingBaseTestCase
 
 logger = logging.getLogger(__name__)
@@ -35,26 +25,26 @@ class TestUnicodeNormalization(DataMappingBaseTestCase):
         """Test a few cases. The unicodedata.normalize('NFC', text) method combines the
         letter and diacritics, which seems to provide the best compatibility."""
         # Guillemets
-        unicode_text = "Café «Déjà Vu»"
-        expected_out = "Café \"Déjà Vu\""
+        unicode_text = 'Café «Déjà Vu»'
+        expected_out = 'Café "Déjà Vu"'
         normalized_text = normalize_unicode_and_characters(unicode_text)
         self.assertEqual(normalized_text, expected_out)
 
         # This passes straight through (no diacritics)
-        unicode_text = "شكرا لك"
+        unicode_text = 'شكرا لك'
         normalized_text = normalize_unicode_and_characters(unicode_text)
         self.assertEqual(normalized_text, unicode_text)
 
         # mdash to `--`
-        unicode_text = "– über schön! —"
-        expected_out = "- über schön! --"
+        unicode_text = '– über schön! —'  # noqa: RUF001
+        expected_out = '- über schön! --'
         normalized_text = normalize_unicode_and_characters(unicode_text)
         self.assertEqual(normalized_text, expected_out)
 
         # \u004E\u0303 is Ñ (N + tilde) and the normalization converts it to a
         # single unicode character. ñ stays and combines the diacritic and letter
-        unicode_text = "\u004E\u0303a\u006E\u0303o malcriado"
-        expected_out = "Ñaño malcriado"
+        unicode_text = '\u004e\u0303a\u006e\u0303o malcriado'
+        expected_out = 'Ñaño malcriado'
         normalized_text = normalize_unicode_and_characters(unicode_text)
         self.assertEqual(normalized_text, expected_out)
 
@@ -67,10 +57,7 @@ class TestUnicodeImport(DataMappingBaseTestCase):
         selfvars = self.set_up(import_file_source_type)
         self.user, self.org, self.import_file, self.import_record, self.cycle = selfvars
         filepath = osp.join(osp.dirname(__file__), 'data', filename)
-        self.import_file.file = SimpleUploadedFile(
-            name=filename,
-            content=pathlib.Path(filepath).read_bytes()
-        )
+        self.import_file.file = SimpleUploadedFile(name=filename, content=pathlib.Path(filepath).read_bytes())
         self.import_file.save()
 
     def test_unicode_import(self):
@@ -113,7 +100,7 @@ class TestUnicodeImport(DataMappingBaseTestCase):
         self.assertEqual(qry.count(), 1)
         state = qry.first().state
 
-        self.assertEqual(state.property_name, "Déjà vu Café")
+        self.assertEqual(state.property_name, 'Déjà vu Café')
 
 
 class TestUnicodeMatching(DataMappingBaseTestCase):

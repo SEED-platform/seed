@@ -2,6 +2,7 @@
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 from lxml import etree
 from lxml.builder import ElementMaker
 from quantityfield.units import ureg
@@ -31,7 +32,7 @@ BETTER_TO_BSYNC_PROPERTY_TYPE = {
     'Retail Store': 'Retail',
     'Senior Care Community': 'Health care-Skilled nursing facility',
     'Supermarket/Grocery Store': 'Food sales-Grocery store',
-    'Other': 'Other'
+    'Other': 'Other',
 }
 
 # maps SEED Meter types to BuildingSync ResourceUse types
@@ -53,7 +54,7 @@ SEED_TO_BSYNC_RESOURCE_TYPE = {
     Meter.DISTRICT_HOT_WATER: 'District hot water',
     Meter.DISTRICT_CHILLED_WATER_ELECTRIC: 'District chilled water',
     Meter.KEROSENE: 'Kerosene',
-    Meter.WOOD: 'Wood'
+    Meter.WOOD: 'Wood',
 }
 
 
@@ -80,7 +81,8 @@ def _build_better_input(analysis_property_view, meters_and_readings):
         errors.append("BETTER analysis requires the property's gross floor area.")
     if property_state.property_type is None or property_state.property_type not in BETTER_TO_BSYNC_PROPERTY_TYPE:
         errors.append(
-            f"BETTER analysis requires the property's type must be one of the following: {', '.join(BETTER_TO_BSYNC_PROPERTY_TYPE.keys())}")
+            f"BETTER analysis requires the property's type must be one of the following: {', '.join(BETTER_TO_BSYNC_PROPERTY_TYPE.keys())}"
+        )
     if property_state.postal_code is None:
         errors.append("BETTER analysis requires the property's postal code.")
 
@@ -92,13 +94,13 @@ def _build_better_input(analysis_property_view, meters_and_readings):
     try:
         eGRIDRegion = property_state.extra_data['eGRIDRegion']
     except KeyError:
-        eGRIDRegion = ""
+        eGRIDRegion = ''
 
     property_type = BETTER_TO_BSYNC_PROPERTY_TYPE[property_state.property_type]
 
     gfa = property_state.gross_floor_area
     if gfa.units != ureg.feet**2:
-        gross_floor_area = str(gfa.to(ureg.feet ** 2).magnitude)
+        gross_floor_area = str(gfa.to(ureg.feet**2).magnitude)
     else:
         gross_floor_area = str(gfa.magnitude)
 
@@ -107,106 +109,85 @@ def _build_better_input(analysis_property_view, meters_and_readings):
         'xsi': XSI_URI,
     }
     nsmap.update(NAMESPACES)
-    E = ElementMaker(
-        namespace=BUILDINGSYNC_URI,
-        nsmap=nsmap
-    )
+    E = ElementMaker(namespace=BUILDINGSYNC_URI, nsmap=nsmap)
 
-    doc = (
-        E.BuildingSync(
-            {
-                etree.QName(XSI_URI,
-                            'schemaLocation'): 'http://buildingsync.net/schemas/bedes-auc/2019 https://raw.github.com/BuildingSync/schema/v2.3.0/BuildingSync.xsd',
-                'version': '2.3.0'
-            },
-            E.Facilities(
-                E.Facility(
-                    {'ID': 'Facility-1'},
-                    E.Sites(
-                        E.Site(
-                            {'ID': 'Site-1'},
-                            E.Buildings(
-                                E.Building(
-                                    {'ID': 'Building-1'},
-                                    E.PremisesName(property_state.property_name),
-                                    E.PremisesIdentifiers(
-                                        E.PremisesIdentifier(
-                                            E.IdentifierLabel('Custom'),
-                                            E.IdentifierCustomName(PREMISES_ID_NAME),
-                                            E.IdentifierValue(str(analysis_property_view.id)),
-                                        )
-                                    ),
-                                    E.Address(
-                                        E.City(property_state.city),
-                                        E.State(property_state.state),
-                                        E.PostalCode(property_state.postal_code)
-                                    ),
-                                    E.eGRIDRegionCode(eGRIDRegion),
-                                    E.Longitude(str(analysis_property_view.property_state.longitude)),
-                                    E.Latitude(str(analysis_property_view.property_state.latitude)),
-                                    E.OccupancyClassification(property_type),
-                                    E.FloorAreas(
-                                        E.FloorArea(
-                                            E.FloorAreaType("Gross"),
-                                            E.FloorAreaValue(gross_floor_area)
-                                        )
-                                    ),
-                                )
-                            )
-                        )
-                    ),
-                    E.Reports(
-                        E.Report(
-                            {'ID': 'Report-1'},
-                            E.Scenarios(
-                                E.Scenario(
-                                    {'ID': 'Scenario-Measured'},
-                                    E.ScenarioType(
-                                        E.CurrentBuilding(
-                                            E.CalculationMethod(
-                                                E.Measured()
-                                            )
-                                        )
-                                    ),
-                                    E.ResourceUses(
-                                        *[
-                                            E.ResourceUse(
-                                                {'ID': f'ResourceUse-{meter_idx:03}'},
-                                                E.EnergyResource(SEED_TO_BSYNC_RESOURCE_TYPE[meter_and_readings['meter_type']]),
-                                                # SEED stores all meter readings as kBtu
-                                                E.ResourceUnits('kBtu'),
-                                                E.EndUse('All end uses')
-                                            )
-                                            for meter_idx, meter_and_readings in enumerate(meters_and_readings)
-                                        ]
-                                    ),
-                                    E.TimeSeriesData(
-                                        *[
-                                            E.TimeSeries(
-                                                {'ID': f'TimeSeries-{meter_idx:03}-{reading_idx:03}'},
-                                                E.ReadingType('Total'),
-                                                E.StartTimestamp(reading.start_time.isoformat()),
-                                                E.EndTimestamp(reading.end_time.isoformat()),
-                                                E.IntervalFrequency('Month'),
-                                                E.IntervalReading(str(reading.reading)),
-                                                E.ResourceUseID({'IDref': f'ResourceUse-{meter_idx:03}'}),
-                                            )
-                                            for meter_idx, meter_and_readings in enumerate(meters_and_readings) \
-                                            for reading_idx, reading in enumerate(meter_and_readings['readings'])
-                                        ]
-                                    ),
-                                    E.LinkedPremises(
-                                        E.Building(
-                                            E.LinkedBuildingID({'IDref': 'Building-1'})
-                                        )
+    doc = E.BuildingSync(
+        {
+            etree.QName(
+                XSI_URI, 'schemaLocation'
+            ): 'http://buildingsync.net/schemas/bedes-auc/2019 https://raw.github.com/BuildingSync/schema/v2.3.0/BuildingSync.xsd',
+            'version': '2.3.0',
+        },
+        E.Facilities(
+            E.Facility(
+                {'ID': 'Facility-1'},
+                E.Sites(
+                    E.Site(
+                        {'ID': 'Site-1'},
+                        E.Buildings(
+                            E.Building(
+                                {'ID': 'Building-1'},
+                                E.PremisesName(property_state.property_name),
+                                E.PremisesIdentifiers(
+                                    E.PremisesIdentifier(
+                                        E.IdentifierLabel('Custom'),
+                                        E.IdentifierCustomName(PREMISES_ID_NAME),
+                                        E.IdentifierValue(str(analysis_property_view.id)),
                                     )
-                                )
+                                ),
+                                E.Address(
+                                    E.City(property_state.city), E.State(property_state.state), E.PostalCode(property_state.postal_code)
+                                ),
+                                E.eGRIDRegionCode(eGRIDRegion),
+                                E.Longitude(str(analysis_property_view.property_state.longitude)),
+                                E.Latitude(str(analysis_property_view.property_state.latitude)),
+                                E.OccupancyClassification(property_type),
+                                E.FloorAreas(E.FloorArea(E.FloorAreaType('Gross'), E.FloorAreaValue(gross_floor_area))),
                             )
-                        )
+                        ),
                     )
-                )
+                ),
+                E.Reports(
+                    E.Report(
+                        {'ID': 'Report-1'},
+                        E.Scenarios(
+                            E.Scenario(
+                                {'ID': 'Scenario-Measured'},
+                                E.ScenarioType(E.CurrentBuilding(E.CalculationMethod(E.Measured()))),
+                                E.ResourceUses(
+                                    *[
+                                        E.ResourceUse(
+                                            {'ID': f'ResourceUse-{meter_idx:03}'},
+                                            E.EnergyResource(SEED_TO_BSYNC_RESOURCE_TYPE[meter_and_readings['meter_type']]),
+                                            # SEED stores all meter readings as kBtu
+                                            E.ResourceUnits('kBtu'),
+                                            E.EndUse('All end uses'),
+                                        )
+                                        for meter_idx, meter_and_readings in enumerate(meters_and_readings)
+                                    ]
+                                ),
+                                E.TimeSeriesData(
+                                    *[
+                                        E.TimeSeries(
+                                            {'ID': f'TimeSeries-{meter_idx:03}-{reading_idx:03}'},
+                                            E.ReadingType('Total'),
+                                            E.StartTimestamp(reading.start_time.isoformat()),
+                                            E.EndTimestamp(reading.end_time.isoformat()),
+                                            E.IntervalFrequency('Month'),
+                                            E.IntervalReading(str(reading.reading)),
+                                            E.ResourceUseID({'IDref': f'ResourceUse-{meter_idx:03}'}),
+                                        )
+                                        for meter_idx, meter_and_readings in enumerate(meters_and_readings)
+                                        for reading_idx, reading in enumerate(meter_and_readings['readings'])
+                                    ]
+                                ),
+                                E.LinkedPremises(E.Building(E.LinkedBuildingID({'IDref': 'Building-1'}))),
+                            )
+                        ),
+                    )
+                ),
             )
-        )
+        ),
     )
     return etree.tostring(doc, pretty_print=True), []
 
@@ -217,6 +198,5 @@ def _parse_analysis_property_view_id(filepath):
     analysis_property_view_id_elem = input_file_tree.xpath(id_xpath, namespaces=NAMESPACES)
 
     if len(analysis_property_view_id_elem) != 1:
-        raise AnalysisPipelineException(
-            f'Expected BuildingSync file to have exactly one "{PREMISES_ID_NAME}" PremisesIdentifier')
+        raise AnalysisPipelineException(f'Expected BuildingSync file to have exactly one "{PREMISES_ID_NAME}" PremisesIdentifier')
     return int(analysis_property_view_id_elem[0].text)

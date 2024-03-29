@@ -1,10 +1,8 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
-from __future__ import absolute_import
 
 import copy
 import itertools
@@ -23,8 +21,7 @@ _log = logging.getLogger(__name__)
 
 
 # TODO: Remove this method in favor of calling MappingColumns directly
-def build_column_mapping(raw_columns, dest_columns, previous_mapping=None, map_args=None,
-                         default_mappings=None, thresh=0):
+def build_column_mapping(raw_columns, dest_columns, previous_mapping=None, map_args=None, default_mappings=None, thresh=0):
     """
     Wrapper around the MappingColumns class to create the list of suggested mappings
 
@@ -50,9 +47,9 @@ def build_column_mapping(raw_columns, dest_columns, previous_mapping=None, map_a
 
     """
 
-    return MappingColumns(raw_columns, dest_columns, previous_mapping=previous_mapping,
-                          map_args=map_args, default_mappings=default_mappings,
-                          threshold=thresh).final_mappings
+    return MappingColumns(
+        raw_columns, dest_columns, previous_mapping=previous_mapping, map_args=map_args, default_mappings=default_mappings, threshold=thresh
+    ).final_mappings
 
 
 def apply_initial_data(model, initial_data):
@@ -76,9 +73,7 @@ def apply_initial_data(model, initial_data):
 def _concat_values(concat_columns, column_values, delimiter):
     """Concatenate the values into one string to set for target."""
     # Use the order of values that we got from concat_columns def.
-    values = [
-        column_values[item] for item in concat_columns if item in column_values
-    ]
+    values = [column_values[item] for item in concat_columns if item in column_values]
     return delimiter.join(values) or None
 
 
@@ -111,8 +106,7 @@ def apply_column_value(raw_column_name, column_value, model, mapping, is_extra_d
         if cleaner:
             # Get the list of Quantity fields from the Column object in SEED. This is non-ideal, since the
             # rest of the mapping code does not use SEED models. Perhaps make this an argument.
-            if (model.__class__.__name__, mapped_column_name) in apps.get_model('seed',
-                                                                                'Column').QUANTITY_UNIT_COLUMNS:
+            if (model.__class__.__name__, mapped_column_name) in apps.get_model('seed', 'Column').QUANTITY_UNIT_COLUMNS:
                 # clean against the database type first
                 cleaned_value = cleaner.clean_value(column_value, mapped_column_name, is_extra_data)
 
@@ -123,26 +117,22 @@ def apply_column_value(raw_column_name, column_value, model, mapping, is_extra_d
                 if mapped_column_name != raw_column_name:
                     # now clean against the raw name with pint (Quantity Units) because that's the column
                     # that holds the units needed to interpret the value correctly
-                    cleaned_value = cleaner.clean_value(cleaned_value, raw_column_name,
-                                                        is_extra_data)
+                    cleaned_value = cleaner.clean_value(cleaned_value, raw_column_name, is_extra_data)
             else:
                 cleaned_value = cleaner.clean_value(column_value, mapped_column_name, is_extra_data)
         else:
             cleaned_value = default_cleaner(column_value)
 
         if is_extra_data:
-            if hasattr(model, 'extra_data'):
-                # only save it if the model and the mapping are the same
-                if model.__class__.__name__ == table_name:
-                    if isinstance(cleaned_value, (datetime, date)):
-                        # TODO: create an encoder for datetime once we are in Django 1.11
-                        model.extra_data[mapped_column_name] = cleaned_value.isoformat()
-                    else:
-                        model.extra_data[mapped_column_name] = cleaned_value
-        else:
-            # Simply set the field to the cleaned value if it is the correct model
-            if model.__class__.__name__ == table_name:
-                setattr(model, mapped_column_name, cleaned_value)
+            # only save it if the model and the mapping are the same
+            if hasattr(model, 'extra_data') and model.__class__.__name__ == table_name:
+                if isinstance(cleaned_value, (datetime, date)):
+                    # TODO: create an encoder for datetime once we are in Django 1.11
+                    model.extra_data[mapped_column_name] = cleaned_value.isoformat()
+                else:
+                    model.extra_data[mapped_column_name] = cleaned_value
+        elif model.__class__.__name__ == table_name:
+            setattr(model, mapped_column_name, cleaned_value)
 
     return model
 
@@ -212,16 +202,15 @@ def expand_and_normalize_field(field, return_list=False):
 
     if isinstance(field, basestring):
         field = field.rstrip(';:,')
-        data = [_normalize_expanded_field(r) for r in re.split(",|;|:", field)]
+        data = [_normalize_expanded_field(r) for r in re.split(',|;|:', field)]
         if return_list:
             return data
         else:
-            return ";".join(data)
+            return ';'.join(data)
+    elif return_list:
+        return [field]
     else:
-        if return_list:
-            return [field]
-        else:
-            return field
+        return field
 
 
 def expand_rows(row, delimited_fields, expand_row):
@@ -295,9 +284,9 @@ def map_row(row, mapping, model_class, extra_data_fields=[], cleaner=None, **kwa
     # concat = _set_default_concat_config(concat)
 
     for raw_field, value in row.items():
-        is_extra_data = True if raw_field in extra_data_fields else False
+        is_extra_data = raw_field in extra_data_fields
 
-        # Save the value if is is not None, keep empty fields.
+        # Save the value if it is not None, keep empty fields.
         if value is not None:
             model = apply_column_value(raw_field, value, model, mapping, is_extra_data, cleaner)
 

@@ -1,12 +1,8 @@
-# -*- coding: utf-8 -*-
-from __future__ import unicode_literals
-
 from django.conf import settings
 from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
         ('contenttypes', '0001_initial'),
@@ -21,10 +17,12 @@ class Migration(migrations.Migration):
                 ('building_pk', models.CharField(max_length=40, null=True, blank=True)),
                 ('was_in_database', models.BooleanField(default=False)),
                 ('is_missing_from_import', models.BooleanField(default=False)),
-                ('building_model_content_type', models.ForeignKey(on_delete=models.deletion.CASCADE, blank=True, to='contenttypes.ContentType', null=True)),
+                (
+                    'building_model_content_type',
+                    models.ForeignKey(on_delete=models.deletion.CASCADE, blank=True, to='contenttypes.ContentType', null=True),
+                ),
             ],
-            options={
-            },
+            options={},
             bases=(models.Model,),
         ),
         migrations.CreateModel(
@@ -41,8 +39,7 @@ class Migration(migrations.Migration):
                 ('valid_destination_value', models.BooleanField(default=False)),
                 ('active', models.BooleanField(default=True)),
             ],
-            options={
-            },
+            options={},
             bases=(models.Model,),
         ),
         migrations.CreateModel(
@@ -86,8 +83,19 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('deleted', models.BooleanField(default=False)),
-                ('name', models.CharField(default=b'Unnamed Dataset', max_length=255, null=True, verbose_name=b'Name Your Dataset', blank=True)),
-                ('app', models.CharField(default=b'seed', help_text=b'The application (e.g., BPD or SEED) for this dataset', max_length=64, verbose_name=b'Destination App')),
+                (
+                    'name',
+                    models.CharField(default=b'Unnamed Dataset', max_length=255, null=True, verbose_name=b'Name Your Dataset', blank=True),
+                ),
+                (
+                    'app',
+                    models.CharField(
+                        default=b'seed',
+                        help_text=b'The application (e.g., BPD or SEED) for this dataset',
+                        max_length=64,
+                        verbose_name=b'Destination App',
+                    ),
+                ),
                 ('start_time', models.DateTimeField(null=True, blank=True)),
                 ('finish_time', models.DateTimeField(null=True, blank=True)),
                 ('created_at', models.DateTimeField(null=True, blank=True)),
@@ -103,13 +111,46 @@ class Migration(migrations.Migration):
                 ('matching_done', models.BooleanField(default=False)),
                 ('is_imported_live', models.BooleanField(default=False)),
                 ('keep_missing_buildings', models.BooleanField(default=True)),
-                ('status', models.IntegerField(default=0, choices=[(0, b'Uploading'), (1, b'Machine Mapping'), (2, b'Needs Mapping'), (3, b'Machine Cleaning'), (4, b'Needs Cleaning'), (5, b'Ready to Merge'), (6, b'Merging'), (7, b'Merge Complete'), (8, b'Importing'), (9, b'Live'), (10, b'Unknown'), (11, b'Matching')])),
+                (
+                    'status',
+                    models.IntegerField(
+                        default=0,
+                        choices=[
+                            (0, b'Uploading'),
+                            (1, b'Machine Mapping'),
+                            (2, b'Needs Mapping'),
+                            (3, b'Machine Cleaning'),
+                            (4, b'Needs Cleaning'),
+                            (5, b'Ready to Merge'),
+                            (6, b'Merging'),
+                            (7, b'Merge Complete'),
+                            (8, b'Importing'),
+                            (9, b'Live'),
+                            (10, b'Unknown'),
+                            (11, b'Matching'),
+                        ],
+                    ),
+                ),
                 ('import_completed_at', models.DateTimeField(null=True, blank=True)),
                 ('merge_completed_at', models.DateTimeField(null=True, blank=True)),
                 ('mcm_version', models.IntegerField(max_length=10, null=True, blank=True)),
-                ('last_modified_by', models.ForeignKey(on_delete=models.deletion.CASCADE, related_name='modified_import_records', blank=True, to=settings.AUTH_USER_MODEL, null=True)),
+                (
+                    'last_modified_by',
+                    models.ForeignKey(
+                        on_delete=models.deletion.CASCADE,
+                        related_name='modified_import_records',
+                        blank=True,
+                        to=settings.AUTH_USER_MODEL,
+                        null=True,
+                    ),
+                ),
                 ('owner', models.ForeignKey(on_delete=models.deletion.CASCADE, blank=True, to=settings.AUTH_USER_MODEL, null=True)),
-                ('super_organization', models.ForeignKey(on_delete=models.deletion.CASCADE, related_name='import_records', blank=True, to='orgs.Organization', null=True)),
+                (
+                    'super_organization',
+                    models.ForeignKey(
+                        on_delete=models.deletion.CASCADE, related_name='import_records', blank=True, to='orgs.Organization', null=True
+                    ),
+                ),
             ],
             options={
                 'ordering': ('-updated_at',),
@@ -143,8 +184,7 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('value', models.TextField(null=True, blank=True)),
             ],
-            options={
-            },
+            options={},
             bases=(models.Model,),
         ),
         migrations.CreateModel(
@@ -153,21 +193,29 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('passes', models.BooleanField(default=False)),
             ],
-            options={
-            },
+            options={},
             bases=(models.Model,),
         ),
         migrations.CreateModel(
             name='RangeValidationRule',
             fields=[
-                ('validationrule_ptr', models.OneToOneField(on_delete=models.deletion.CASCADE, parent_link=True, auto_created=True, primary_key=True, serialize=False, to='data_importer.ValidationRule')),
+                (
+                    'validationrule_ptr',
+                    models.OneToOneField(
+                        on_delete=models.deletion.CASCADE,
+                        parent_link=True,
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        to='data_importer.ValidationRule',
+                    ),
+                ),
                 ('max_value', models.FloatField(null=True, blank=True)),
                 ('min_value', models.FloatField(null=True, blank=True)),
                 ('limit_min', models.BooleanField(default=False)),
                 ('limit_max', models.BooleanField(default=False)),
             ],
-            options={
-            },
+            options={},
             bases=('data_importer.validationrule',),
         ),
         migrations.AddField(

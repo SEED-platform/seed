@@ -1,9 +1,9 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 import csv
 
 from django.http import HttpResponse, JsonResponse
@@ -16,17 +16,15 @@ from seed.lib.mcm import mapper
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.lib.superperms.orgs.permissions import SEEDOrgPermissions
 from seed.models import Column, ColumnMappingProfile
-from seed.serializers.column_mapping_profiles import (
-    ColumnMappingProfileSerializer
-)
+from seed.serializers.column_mapping_profiles import ColumnMappingProfileSerializer
 from seed.utils.api import OrgMixin, api_endpoint_class
 from seed.utils.api_schema import AutoSchemaHelper
 
 mappings_description = (
-    "Each object in mappings must be in particular format:\n"
-    "to_field: [string of Display Name of target Column]\n"
-    "from_field: [string EXACTLY matching a header from an import file]\n"
-    "from_units: [one of the following:"
+    'Each object in mappings must be in particular format:\n'
+    'to_field: [string of Display Name of target Column]\n'
+    'from_field: [string EXACTLY matching a header from an import file]\n'
+    'from_units: [one of the following:'
     "'ft&#42;&#42;2' 'm&#42;&#42;2' 'kBtu/ft&#42;&#42;2/year' 'kWh/m&#42;&#42;2/year' 'GJ/m&#42;&#42;2/year' "
     "'MJ/m&#42;&#42;2/year' 'kBtu/m&#42;&#42;2/year']\n "
     "to_table_name: [one of the following: 'TaxLotState' 'PropertyState']"
@@ -39,14 +37,14 @@ class ColumnMappingProfileViewSet(OrgMixin, ViewSet):
     queryset = ColumnMappingProfile.objects.none()
 
     @swagger_auto_schema(
-        manual_parameters=[AutoSchemaHelper.query_org_id_field(
-            required=False,
-            description="Optional org id which overrides the users (default) current org id"
-        )],
+        manual_parameters=[
+            AutoSchemaHelper.query_org_id_field(
+                required=False, description='Optional org id which overrides the users (default) current org id'
+            )
+        ],
         request_body=AutoSchemaHelper.schema_factory(
-            {'profile_type': ['string']},
-            description="Possible Types: 'Normal', 'BuildingSync Default', BuildingSync Custom'"
-        )
+            {'profile_type': ['string']}, description="Possible Types: 'Normal', 'BuildingSync Default', BuildingSync Custom'"
+        ),
     )
     @api_endpoint_class
     @action(detail=False, methods=['POST'])  # POST in order to provide array/list
@@ -63,33 +61,41 @@ class ColumnMappingProfileViewSet(OrgMixin, ViewSet):
             profiles = ColumnMappingProfile.objects.filter(**filter_params)
             data = [ColumnMappingProfileSerializer(p).data for p in profiles]
 
-            return JsonResponse({
-                'status': 'success',
-                'data': data,
-            })
+            return JsonResponse(
+                {
+                    'status': 'success',
+                    'data': data,
+                }
+            )
         except Exception as e:
-            return JsonResponse({
-                'status': 'error',
-                'data': str(e),
-            }, status=HTTP_400_BAD_REQUEST)
+            return JsonResponse(
+                {
+                    'status': 'error',
+                    'data': str(e),
+                },
+                status=HTTP_400_BAD_REQUEST,
+            )
 
     @swagger_auto_schema(
-        manual_parameters=[AutoSchemaHelper.query_org_id_field(
-            required=False,
-            description="Optional org id which overrides the users (default) current org id"
-        )],
+        manual_parameters=[
+            AutoSchemaHelper.query_org_id_field(
+                required=False, description='Optional org id which overrides the users (default) current org id'
+            )
+        ],
         request_body=AutoSchemaHelper.schema_factory(
             {
                 'name': 'string',
-                'mappings': [{
-                    'to_field': 'string',
-                    'from_field': 'string',
-                    'from_units': 'string',
-                    'to_table_name': 'string',
-                }]
+                'mappings': [
+                    {
+                        'to_field': 'string',
+                        'from_field': 'string',
+                        'from_units': 'string',
+                        'to_table_name': 'string',
+                    }
+                ],
             },
-            description="Optional 'name' or 'mappings'.\n" + mappings_description
-        )
+            description="Optional 'name' or 'mappings'.\n" + mappings_description,
+        ),
     )
     @has_perm_class('requires_root_member_access')
     @api_endpoint_class
@@ -102,16 +108,10 @@ class ColumnMappingProfileViewSet(OrgMixin, ViewSet):
         try:
             profile = ColumnMappingProfile.objects.get(organizations__pk=org_id, pk=pk)
         except ColumnMappingProfile.DoesNotExist:
-            return JsonResponse({
-                'status': 'error',
-                'data': 'No profile with given id'
-            }, status=HTTP_400_BAD_REQUEST)
+            return JsonResponse({'status': 'error', 'data': 'No profile with given id'}, status=HTTP_400_BAD_REQUEST)
 
         if profile.profile_type == ColumnMappingProfile.BUILDINGSYNC_DEFAULT:
-            return JsonResponse({
-                'status': 'error',
-                'data': 'Default BuildingSync profile are not editable'
-            }, status=HTTP_400_BAD_REQUEST)
+            return JsonResponse({'status': 'error', 'data': 'Default BuildingSync profile are not editable'}, status=HTTP_400_BAD_REQUEST)
 
         updated_name, updated_mappings = request.data.get('name'), request.data.get('mappings')
 
@@ -142,16 +142,19 @@ class ColumnMappingProfileViewSet(OrgMixin, ViewSet):
                 profile.mappings = updated_mappings
 
         profile.save()
-        return JsonResponse({
-            'status': 'success',
-            'data': ColumnMappingProfileSerializer(profile).data,
-        })
+        return JsonResponse(
+            {
+                'status': 'success',
+                'data': ColumnMappingProfileSerializer(profile).data,
+            }
+        )
 
     @swagger_auto_schema(
-        manual_parameters=[AutoSchemaHelper.query_org_id_field(
-            required=False,
-            description="Optional org id which overrides the users (default) current org id"
-        )]
+        manual_parameters=[
+            AutoSchemaHelper.query_org_id_field(
+                required=False, description='Optional org id which overrides the users (default) current org id'
+            )
+        ]
     )
     @api_endpoint_class
     @action(detail=True, methods=['GET'])
@@ -165,10 +168,7 @@ class ColumnMappingProfileViewSet(OrgMixin, ViewSet):
         try:
             profile = ColumnMappingProfile.objects.get(organizations__pk=org_id, pk=pk)
         except ColumnMappingProfile.DoesNotExist:
-            return JsonResponse({
-                'status': 'error',
-                'data': 'No profile with given id'
-            }, status=HTTP_400_BAD_REQUEST)
+            return JsonResponse({'status': 'error', 'data': 'No profile with given id'}, status=HTTP_400_BAD_REQUEST)
 
         writer = csv.writer(response)
         writer.writerow(['Raw Columns', 'units', 'SEED Table', 'SEED Columns'])
@@ -176,30 +176,31 @@ class ColumnMappingProfileViewSet(OrgMixin, ViewSet):
         # sort the mappings by the to_field
         sorted_mappings = sorted(profile.mappings, key=lambda m: m['to_field'].casefold())
         for map in sorted_mappings:
-            writer.writerow([
-                map['from_field'], map['from_units'], map['to_table_name'], map['to_field']
-            ])
+            writer.writerow([map['from_field'], map['from_units'], map['to_table_name'], map['to_field']])
 
         return response
 
     @swagger_auto_schema(
-        manual_parameters=[AutoSchemaHelper.query_org_id_field(
-            required=False,
-            description="Optional org id which overrides the users (default) current org id"
-        )],
+        manual_parameters=[
+            AutoSchemaHelper.query_org_id_field(
+                required=False, description='Optional org id which overrides the users (default) current org id'
+            )
+        ],
         request_body=AutoSchemaHelper.schema_factory(
             {
                 'name': 'string',
-                'mappings': [{
-                    'to_field': 'string',
-                    'from_field': 'string',
-                    'from_units': 'string',
-                    'to_table_name': 'string',
-                }]
+                'mappings': [
+                    {
+                        'to_field': 'string',
+                        'from_field': 'string',
+                        'from_units': 'string',
+                        'to_table_name': 'string',
+                    }
+                ],
             },
             description=mappings_description,
-            required=['name', 'mappings']
-        )
+            required=['name', 'mappings'],
+        ),
     )
     @has_perm_class('requires_root_member_access')
     @api_endpoint_class
@@ -223,21 +224,28 @@ class ColumnMappingProfileViewSet(OrgMixin, ViewSet):
                 response_data = ser_profile.errors
                 response_code = HTTP_400_BAD_REQUEST
 
-            return JsonResponse({
-                'status': response_status,
-                'data': response_data,
-            }, status=response_code)
+            return JsonResponse(
+                {
+                    'status': response_status,
+                    'data': response_data,
+                },
+                status=response_code,
+            )
         except Exception as e:
-            return JsonResponse({
-                'status': 'error',
-                'data': str(e),
-            }, status=HTTP_400_BAD_REQUEST)
+            return JsonResponse(
+                {
+                    'status': 'error',
+                    'data': str(e),
+                },
+                status=HTTP_400_BAD_REQUEST,
+            )
 
     @swagger_auto_schema(
-        manual_parameters=[AutoSchemaHelper.query_org_id_field(
-            required=False,
-            description="Optional org id which overrides the users (default) current org id"
-        )]
+        manual_parameters=[
+            AutoSchemaHelper.query_org_id_field(
+                required=False, description='Optional org id which overrides the users (default) current org id'
+            )
+        ]
     )
     @has_perm_class('requires_root_member_access')
     @api_endpoint_class
@@ -249,33 +257,36 @@ class ColumnMappingProfileViewSet(OrgMixin, ViewSet):
         try:
             profile = ColumnMappingProfile.objects.get(organizations__pk=org_id, pk=pk)
         except Exception as e:
-            return JsonResponse({
-                'status': 'error',
-                'data': str(e),
-            }, status=HTTP_400_BAD_REQUEST)
+            return JsonResponse(
+                {
+                    'status': 'error',
+                    'data': str(e),
+                },
+                status=HTTP_400_BAD_REQUEST,
+            )
 
         if profile.profile_type == ColumnMappingProfile.BUILDINGSYNC_DEFAULT:
-            return JsonResponse({
-                'status': 'error',
-                'data': 'Not allowed to edit default BuildingSync profiles'
-            }, status=HTTP_400_BAD_REQUEST)
+            return JsonResponse(
+                {'status': 'error', 'data': 'Not allowed to edit default BuildingSync profiles'}, status=HTTP_400_BAD_REQUEST
+            )
         else:
             profile.delete()
-            return JsonResponse({
-                'status': 'success',
-                'data': "Successfully deleted",
-            })
+            return JsonResponse(
+                {
+                    'status': 'success',
+                    'data': 'Successfully deleted',
+                }
+            )
 
     @swagger_auto_schema(
-        manual_parameters=[AutoSchemaHelper.query_org_id_field(
-            required=False,
-            description="Optional org id which overrides the users (default) current org id"
-        )],
+        manual_parameters=[
+            AutoSchemaHelper.query_org_id_field(
+                required=False, description='Optional org id which overrides the users (default) current org id'
+            )
+        ],
         request_body=AutoSchemaHelper.schema_factory(
-            {'headers': ['string']},
-            description="Raw headers - the exact headers for columns in an import file.",
-            required=['headers']
-        )
+            {'headers': ['string']}, description='Raw headers - the exact headers for columns in an import file.', required=['headers']
+        ),
     )
     @api_endpoint_class
     @action(detail=False, methods=['POST'])
@@ -292,7 +303,7 @@ class ColumnMappingProfileViewSet(OrgMixin, ViewSet):
                 Column.retrieve_all_by_tuple(org_id),
                 previous_mapping=None,
                 map_args=None,
-                thresh=80  # percentage match that we require. 80% is random value for now.
+                thresh=80,  # percentage match that we require. 80% is random value for now.
             )
             # replace None with empty string for column names and PropertyState for tables
             # TODO #239: Move this fix to build_column_mapping
@@ -311,12 +322,17 @@ class ColumnMappingProfileViewSet(OrgMixin, ViewSet):
                 elif table == 'TaxLot':
                     suggested_mappings[m][0] = 'TaxLotState'
 
-            return JsonResponse({
-                'status': 'success',
-                'data': suggested_mappings,
-            })
+            return JsonResponse(
+                {
+                    'status': 'success',
+                    'data': suggested_mappings,
+                }
+            )
         except Exception as e:
-            return JsonResponse({
-                'status': 'error',
-                'data': str(e),
-            }, status=HTTP_400_BAD_REQUEST)
+            return JsonResponse(
+                {
+                    'status': 'error',
+                    'data': str(e),
+                },
+                status=HTTP_400_BAD_REQUEST,
+            )

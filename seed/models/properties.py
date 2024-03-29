@@ -1,10 +1,8 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
-from __future__ import absolute_import, unicode_literals
 
 import copy
 import logging
@@ -16,12 +14,7 @@ from django.contrib.gis.db import models as geomodels
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError, models, transaction
 from django.db.models import Case, Value, When
-from django.db.models.signals import (
-    m2m_changed,
-    post_save,
-    pre_delete,
-    pre_save
-)
+from django.db.models.signals import m2m_changed, post_save, pre_delete, pre_save
 from django.dispatch import receiver
 from django.forms.models import model_to_dict
 from past.builtins import basestring
@@ -29,6 +22,7 @@ from quantityfield.fields import QuantityField
 from quantityfield.units import ureg
 
 from seed.data_importer.models import ImportFile
+
 # from seed.utils.cprofile import cprofile
 from seed.lib.mcm.cleaners import date_cleaner
 from seed.lib.superperms.orgs.models import AccessLevelInstance, Organization
@@ -40,15 +34,11 @@ from seed.models.models import (
     MERGE_STATE,
     MERGE_STATE_UNKNOWN,
     SEED_DATA_SOURCES,
-    StatusLabel
+    StatusLabel,
 )
 from seed.models.tax_lot_properties import TaxLotProperty
 from seed.utils.address import normalize_address_str
-from seed.utils.generic import (
-    compare_orgs_between_label_and_target,
-    obj_to_dict,
-    split_model_fields
-)
+from seed.utils.generic import compare_orgs_between_label_and_target, obj_to_dict, split_model_fields
 from seed.utils.time import convert_datestr, convert_to_js_timestamp
 
 from ..utils.ubid import decode_unique_ids
@@ -73,8 +63,9 @@ class Property(models.Model):
 
     The property can also reference a parent property.
     """
+
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
-    access_level_instance = models.ForeignKey(AccessLevelInstance, on_delete=models.CASCADE, null=False, related_name="properties")
+    access_level_instance = models.ForeignKey(AccessLevelInstance, on_delete=models.CASCADE, null=False, related_name='properties')
 
     # Handle properties that may have multiple properties (e.g., buildings)
     parent_property = models.ForeignKey('Property', on_delete=models.CASCADE, blank=True, null=True)
@@ -118,7 +109,7 @@ class Property(models.Model):
                         is_virtual=source_meter.is_virtual,
                         source=source_meter.source,
                         source_id=source_meter.source_id,
-                        type=source_meter.type
+                        type=source_meter.type,
                     )
 
                     if created:
@@ -141,10 +132,11 @@ def set_default_access_level_instance(sender, instance, **kwargs):
         root = AccessLevelInstance.objects.get(organization_id=instance.organization_id, depth=1)
         instance.access_level_instance_id = root.id
 
-    bad_taxlotproperty = TaxLotProperty.objects \
-        .filter(property_view__property=instance) \
-        .exclude(taxlot_view__taxlot__access_level_instance=instance.access_level_instance) \
+    bad_taxlotproperty = (
+        TaxLotProperty.objects.filter(property_view__property=instance)
+        .exclude(taxlot_view__taxlot__access_level_instance=instance.access_level_instance)
         .exists()
+    )
     if bad_taxlotproperty:
         raise ValidationError("cannot change property's ALI to AlI different than related taxlots.")
 
@@ -153,6 +145,7 @@ def set_default_access_level_instance(sender, instance, **kwargs):
 def post_save_property(sender, instance, created, **kwargs):
     if created:
         from seed.models import HistoricalNote
+
         HistoricalNote.objects.get_or_create(property=instance)
 
 
@@ -376,18 +369,18 @@ class PropertyState(models.Model):
 
             # Need to create a property for this state
             if self.organization is None:
-                _log.warn("organization is None")
+                _log.warn('organization is None')
 
             if property_id:
                 try:
                     # should I validate this further?
                     prop = Property.objects.get(id=property_id)
                 except Property.DoesNotExist:
-                    _log.error("Could not promote this property")
+                    _log.error('Could not promote this property')
                     return None
             else:
                 if self.raw_access_level_instance is None:
-                    _log.error("Could not promote this property: no raw_access_level_instance")
+                    _log.error('Could not promote this property: no raw_access_level_instance')
                     return None
 
                 prop = Property.objects.create(organization=self.organization, access_level_instance=self.raw_access_level_instance)
@@ -407,8 +400,8 @@ class PropertyState(models.Model):
 
             return pvs[0]
         else:
-            _log.error("Found %s PropertyView" % len(pvs))
-            _log.error("This should never occur, famous last words?")
+            _log.error('Found %s PropertyView' % len(pvs))
+            _log.error('This should never occur, famous last words?')
 
             return None
 
@@ -416,16 +409,11 @@ class PropertyState(models.Model):
         return 'Property State - %s' % self.pk
 
     def clean(self):
-        date_field_names = (
-            'year_ending',
-            'generation_date',
-            'release_date',
-            'recent_sale_date'
-        )
+        date_field_names = ('year_ending', 'generation_date', 'release_date', 'recent_sale_date')
         for field in date_field_names:
             value = getattr(self, field)
             if value and isinstance(value, basestring):
-                _log.info("Saving %s which is a date time" % field)
+                _log.info('Saving %s which is a date time' % field)
                 _log.info(convert_datestr(value))
                 _log.info(date_cleaner(value))
 
@@ -439,12 +427,8 @@ class PropertyState(models.Model):
             extra_data = self.extra_data
             ed_fields = list(filter(lambda f: f in extra_data, ed_fields))
 
-            result = {
-                field: getattr(self, field) for field in model_fields
-            }
-            result['extra_data'] = {
-                field: extra_data[field] for field in ed_fields
-            }
+            result = {field: getattr(self, field) for field in model_fields}
+            result['extra_data'] = {field: extra_data[field] for field in ed_fields}
 
             # always return id's
             result['id'] = result['pk'] = self.pk
@@ -464,6 +448,7 @@ class PropertyState(models.Model):
 
         # save a hash of the object to the database for quick lookup
         from seed.data_importer.tasks import hash_state_object
+
         self.hash_object = hash_state_object(self)
 
         return super().save(*args, **kwargs)
@@ -511,13 +496,11 @@ class PropertyState(models.Model):
                 'date_edited': convert_to_js_timestamp(log.created),
                 'source': log.get_record_type_display(),
                 'filename': filename,
-                'file': file
+                'file': file,
                 # 'changed_fields': json.loads(log.description) if log.record_type == AUDIT_USER_EDIT else None
             }
 
-        log = PropertyAuditLog.objects.select_related('state', 'parent1', 'parent2').filter(
-            state_id=self.id
-        ).order_by('-id').first()
+        log = PropertyAuditLog.objects.select_related('state', 'parent1', 'parent2').filter(state_id=self.id).order_by('-id').first()
 
         if log:
             main = {
@@ -544,8 +527,11 @@ class PropertyState(models.Model):
                         if log.parent2.name in ['Import Creation', 'Manual Edit']:
                             record = record_dict(log.parent2)
                             history.append(record)
-                        elif log.parent2.name == 'System Match' and log.parent2.parent1.name == 'Import Creation' and \
-                                log.parent2.parent2.name == 'Import Creation':
+                        elif (
+                            log.parent2.name == 'System Match'
+                            and log.parent2.parent1.name == 'Import Creation'
+                            and log.parent2.parent2.name == 'Import Creation'
+                        ):
                             # Handle case where an import file matches within itself, and proceeds to match with
                             # existing records
                             record = record_dict(log.parent2.parent2)
@@ -559,8 +545,13 @@ class PropertyState(models.Model):
                         if log.parent1.name in ['Import Creation', 'Manual Edit']:
                             record = record_dict(log.parent1)
                             history.append(record)
-                        elif log.parent1.name == 'System Match' and log.parent1.parent1 and log.parent1.parent1.name == 'Import Creation' and \
-                                log.parent1.parent2 and log.parent1.parent2.name == 'Import Creation':
+                        elif (
+                            log.parent1.name == 'System Match'
+                            and log.parent1.parent1
+                            and log.parent1.parent1.name == 'Import Creation'
+                            and log.parent1.parent2
+                            and log.parent1.parent2.name == 'Import Creation'
+                        ):
                             # Handle case where an import file matches within itself, and proceeds to match with
                             # existing records
                             record = record_dict(log.parent1.parent2)
@@ -601,7 +592,8 @@ class PropertyState(models.Model):
         """
 
         coparents = list(
-            PropertyState.objects.raw("""
+            PropertyState.objects.raw(
+                """
                 WITH creation_id AS (
                     SELECT
                       pal.id,
@@ -677,26 +669,63 @@ class PropertyState(models.Model):
                 WHERE (ps.id = aid.parent_state1_id AND
                        aid.parent_state1_id <> aid.original_state_id) OR
                       (ps.id = aid.parent_state2_id AND
-                       aid.parent_state2_id <> aid.original_state_id);""", [int(state_id)])
+                       aid.parent_state2_id <> aid.original_state_id);""",
+                [int(state_id)],
+            )
         )
 
         # reduce this down to just the fields that were returned and convert to dict. This is
         # important because the fields that were not queried will be deferred and require a new
         # query to retrieve.
-        keep_fields = ['id', 'pm_property_id', 'pm_parent_property_id', 'custom_id_1',
-                       'audit_template_building_id', 'ubid', 'address_line_1', 'address_line_2',
-                       'city', 'state', 'postal_code', 'longitude', 'latitude',
-                       'lot_number', 'gross_floor_area', 'use_description', 'energy_score',
-                       'site_eui', 'site_eui_modeled', 'total_ghg_emissions', 'total_marginal_ghg_emissions',
-                       'total_ghg_emissions_intensity', 'total_marginal_ghg_emissions_intensity',
-                       'property_notes', 'property_type', 'year_ending', 'owner',
-                       'owner_email', 'owner_telephone', 'building_count',
-                       'year_built', 'recent_sale_date', 'conditioned_floor_area',
-                       'occupied_floor_area', 'owner_address', 'owner_postal_code',
-                       'home_energy_score_id', 'generation_date', 'release_date',
-                       'source_eui_weather_normalized', 'site_eui_weather_normalized',
-                       'source_eui', 'source_eui_modeled', 'energy_alerts', 'space_alerts',
-                       'building_certification', 'extra_data', ]
+        keep_fields = [
+            'id',
+            'pm_property_id',
+            'pm_parent_property_id',
+            'custom_id_1',
+            'audit_template_building_id',
+            'ubid',
+            'address_line_1',
+            'address_line_2',
+            'city',
+            'state',
+            'postal_code',
+            'longitude',
+            'latitude',
+            'lot_number',
+            'gross_floor_area',
+            'use_description',
+            'energy_score',
+            'site_eui',
+            'site_eui_modeled',
+            'total_ghg_emissions',
+            'total_marginal_ghg_emissions',
+            'total_ghg_emissions_intensity',
+            'total_marginal_ghg_emissions_intensity',
+            'property_notes',
+            'property_type',
+            'year_ending',
+            'owner',
+            'owner_email',
+            'owner_telephone',
+            'building_count',
+            'year_built',
+            'recent_sale_date',
+            'conditioned_floor_area',
+            'occupied_floor_area',
+            'owner_address',
+            'owner_postal_code',
+            'home_energy_score_id',
+            'generation_date',
+            'release_date',
+            'source_eui_weather_normalized',
+            'site_eui_weather_normalized',
+            'source_eui',
+            'source_eui_modeled',
+            'energy_alerts',
+            'space_alerts',
+            'building_certification',
+            'extra_data',
+        ]
         coparents = [{key: getattr(c, key) for key in keep_fields} for c in coparents]
 
         return coparents, len(coparents)
@@ -716,10 +745,10 @@ class PropertyState(models.Model):
 
         # TODO: get some items off of this property view - labels and eventually notes
         # collect the relationships
-        no_measure_scenarios = [x for x in state2.scenarios.filter(measures__isnull=True)]
-        building_files = [x for x in state2.building_files.all()]
-        simulations = [x for x in Simulation.objects.filter(property_state=state2)]
-        measures = [x for x in PropertyMeasure.objects.filter(property_state=state2)]
+        no_measure_scenarios = list(state2.scenarios.filter(measures__isnull=True))
+        building_files = list(state2.building_files.all())
+        simulations = list(Simulation.objects.filter(property_state=state2))
+        measures = list(PropertyMeasure.objects.filter(property_state=state2))
 
         # copy in the no measure scenarios
         for new_s in no_measure_scenarios:
@@ -782,13 +811,13 @@ class PropertyState(models.Model):
 
                     except IntegrityError:
                         _log.error(
-                            "Measure state_id, measure_id, application_scale, and implementation_status already exists -- skipping for now")
+                            'Measure state_id, measure_id, application_scale, and implementation_status already exists -- skipping for now'
+                        )
 
                 new_items.append(test_dict)
 
             # connect back up the scenario measures
             for scenario_id, measure_list in scenario_measure_map.items():
-
                 # create a new scenario from the old one
                 scenario = Scenario.objects.get(pk=scenario_id)
 
@@ -837,7 +866,7 @@ def post_save_property_state(sender, **kwargs):
         )
         # Update lat/long/centroid
         decode_unique_ids(state)
-        logging.info(f"Created ubid_model id: {ubid_model.id}, ubid: {ubid_model.ubid}")
+        logging.info(f'Created ubid_model id: {ubid_model.id}, ubid: {ubid_model.ubid}')
     elif ubid_model.filter(preferred=False).exists():
         state.ubidmodel_set.update(
             preferred=Case(
@@ -855,6 +884,7 @@ class PropertyView(models.Model):
     cycle (time period), and a state (characteristics).
 
     """
+
     # different property views can be associated with each other (2012, 2013)
     property = models.ForeignKey(Property, on_delete=models.CASCADE, related_name='views')
     cycle = models.ForeignKey(Cycle, on_delete=models.PROTECT)
@@ -868,7 +898,10 @@ class PropertyView(models.Model):
         return 'Property View - %s' % self.pk
 
     class Meta:
-        unique_together = ('property', 'cycle',)
+        unique_together = (
+            'property',
+            'cycle',
+        )
         index_together = [['state', 'cycle']]
 
     def __init__(self, *args, **kwargs):
@@ -876,12 +909,7 @@ class PropertyView(models.Model):
         super().__init__(*args, **kwargs)
 
     def initialize_audit_logs(self, **kwargs):
-        kwargs.update({
-            'organization': self.property.organization,
-            'state': self.state,
-            'view': self,
-            'record_type': AUDIT_IMPORT
-        })
+        kwargs.update({'organization': self.property.organization, 'state': self.state, 'view': self, 'record_type': AUDIT_IMPORT})
         return PropertyAuditLog.objects.create(**kwargs)
 
     def tax_lot_views(self):
@@ -893,9 +921,7 @@ class PropertyView(models.Model):
         # forwent the use of list comprehension to make the code more readable.
         # get the related taxlot_view.state as well to save time if needed.
         result = []
-        for tlp in TaxLotProperty.objects.filter(
-                cycle=self.cycle,
-                property_view=self).select_related('taxlot_view', 'taxlot_view__state'):
+        for tlp in TaxLotProperty.objects.filter(cycle=self.cycle, property_view=self).select_related('taxlot_view', 'taxlot_view__state'):
             result.append(tlp.taxlot_view)
 
         return result
@@ -918,8 +944,7 @@ class PropertyView(models.Model):
     def import_filename(self):
         """Get the import file name form the audit logs"""
         if not getattr(self, '_import_filename', None):
-            audit_log = PropertyAuditLog.objects.filter(
-                view_id=self.pk).order_by('created').first()
+            audit_log = PropertyAuditLog.objects.filter(view_id=self.pk).order_by('created').first()
             self._import_filename = audit_log.import_filename
         return self._import_filename
 
@@ -936,18 +961,18 @@ def post_save_property_view(sender, **kwargs):
 
 class PropertyAuditLog(models.Model):
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
-    parent1 = models.ForeignKey('PropertyAuditLog', on_delete=models.CASCADE, blank=True, null=True,
-                                related_name='propertyauditlog_parent1')
-    parent2 = models.ForeignKey('PropertyAuditLog', on_delete=models.CASCADE, blank=True, null=True,
-                                related_name='propertyauditlog_parent2')
+    parent1 = models.ForeignKey(
+        'PropertyAuditLog', on_delete=models.CASCADE, blank=True, null=True, related_name='propertyauditlog_parent1'
+    )
+    parent2 = models.ForeignKey(
+        'PropertyAuditLog', on_delete=models.CASCADE, blank=True, null=True, related_name='propertyauditlog_parent2'
+    )
 
     # store the parent states as well so that we can quickly return which state is associated
     # with the parents of the audit log without having to query the parent audit log to grab
     # the state
-    parent_state1 = models.ForeignKey(PropertyState, on_delete=models.CASCADE, blank=True, null=True,
-                                      related_name='parent_state1')
-    parent_state2 = models.ForeignKey(PropertyState, on_delete=models.CASCADE, blank=True, null=True,
-                                      related_name='parent_state2')
+    parent_state1 = models.ForeignKey(PropertyState, on_delete=models.CASCADE, blank=True, null=True, related_name='parent_state1')
+    parent_state2 = models.ForeignKey(PropertyState, on_delete=models.CASCADE, blank=True, null=True, related_name='parent_state2')
 
     state = models.ForeignKey('PropertyState', on_delete=models.CASCADE, related_name='propertyauditlog_state')
     view = models.ForeignKey('PropertyView', on_delete=models.CASCADE, related_name='propertyauditlog_view', null=True)
@@ -979,16 +1004,16 @@ def sync_latitude_longitude_and_long_lat(sender, instance, **kwargs):
         # so the first block below is when a user manually changes the lat/long and the geocoding confidence
         # needs to be updated to "manually" (or keep as Census Geocoder)
         if (latitude_change or longitude_change) and lat_and_long_both_populated and not long_lat_change:
-            instance.long_lat = f"POINT ({instance.longitude} {instance.latitude})"
+            instance.long_lat = f'POINT ({instance.longitude} {instance.latitude})'
             # keep Census Geocoder confidence if newly present in the string
             if instance is not None and instance.geocoding_confidence is not None:
                 if 'Census Geocoder' in instance.geocoding_confidence and 'Census Geocoder' not in original_obj.geocoding_confidence:
                     instance.geocoding_confidence = instance.geocoding_confidence
                 else:
-                    instance.geocoding_confidence = "Manually geocoded (N/A)"
+                    instance.geocoding_confidence = 'Manually geocoded (N/A)'
             else:
                 # If we are here, then we are manually geocoding the property
-                instance.geocoding_confidence = "Manually geocoded (N/A)"
+                instance.geocoding_confidence = 'Manually geocoded (N/A)'
 
         elif (latitude_change or longitude_change) and not lat_and_long_both_populated:
             instance.long_lat = None

@@ -1,11 +1,7 @@
-# -*- coding: utf-8 -*-
-from __future__ import unicode_literals
-
 from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('seed', '0012_auto_20151222_1031'),
     ]
@@ -44,7 +40,30 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='meter',
             name='energy_type',
-            field=models.IntegerField(choices=[(1, b'Natural Gas'), (2, b'Electricity'), (3, b'Fuel Oil'), (4, b'Fuel Oil No. 1'), (5, b'Fuel Oil No. 2'), (6, b'Fuel Oil No. 4'), (7, b'Fuel Oil No. 5 and No. 6'), (8, b'District Steam'), (9, b'District Hot Water'), (10, b'District Chilled Water'), (11, b'Propane'), (12, b'Liquid Propane'), (13, b'Kerosene'), (14, b'Diesel'), (15, b'Coal'), (16, b'Coal Anthracite'), (17, b'Coal Bituminous'), (18, b'Coke'), (19, b'Wood'), (20, b'Other')]),
+            field=models.IntegerField(
+                choices=[
+                    (1, b'Natural Gas'),
+                    (2, b'Electricity'),
+                    (3, b'Fuel Oil'),
+                    (4, b'Fuel Oil No. 1'),
+                    (5, b'Fuel Oil No. 2'),
+                    (6, b'Fuel Oil No. 4'),
+                    (7, b'Fuel Oil No. 5 and No. 6'),
+                    (8, b'District Steam'),
+                    (9, b'District Hot Water'),
+                    (10, b'District Chilled Water'),
+                    (11, b'Propane'),
+                    (12, b'Liquid Propane'),
+                    (13, b'Kerosene'),
+                    (14, b'Diesel'),
+                    (15, b'Coal'),
+                    (16, b'Coal Anthracite'),
+                    (17, b'Coal Bituminous'),
+                    (18, b'Coke'),
+                    (19, b'Wood'),
+                    (20, b'Other'),
+                ]
+            ),
         ),
         migrations.AlterField(
             model_name='meter',

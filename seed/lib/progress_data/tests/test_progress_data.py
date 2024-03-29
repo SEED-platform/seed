@@ -1,11 +1,12 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 import logging
 
+import pytest
 from django.test import TestCase
 
 from seed.lib.progress_data.progress_data import ProgressData
@@ -54,9 +55,9 @@ class TestProgressData(TestCase):
         self.assertDictEqual(pd.data, pd2.data)
 
     def test_key_missing(self):
-        with self.assertRaises(Exception) as exc:
+        with pytest.raises(Exception) as exc:  # noqa: PT011
             ProgressData.from_key('some_random_key')
-        self.assertEqual(str(exc.exception), 'Could not find key some_random_key in cache')
+        self.assertEqual(str(exc.value), 'Could not find key some_random_key in cache')
 
     def test_delete_cache(self):
         pd = ProgressData(func_name='test_func_4', unique_id='1q2w3e')
@@ -88,7 +89,7 @@ class TestProgressData(TestCase):
         pd = ProgressData(func_name='test_func_6', unique_id='pokemon')
         self.assertIsNone(pd.summary())
 
-        new_summary = {"Values": ["As", "A", "List"]}
+        new_summary = {'Values': ['As', 'A', 'List']}
         pd.update_summary(new_summary)
         self.assertEqual(pd.summary(), new_summary)
 

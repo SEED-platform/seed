@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
@@ -6,7 +5,6 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 Delete all organizations that are not part of the main 12.
 See code for organization list and source documentation.
 """
-from __future__ import unicode_literals
 
 import logging
 
@@ -29,21 +27,18 @@ def get_organizations_to_delete():
 
 def destroy_organization(org):
     """Delete an organization using the Celery information."""
-    logging.info("Deleting organization {}".format(org))
+    logging.info(f'Deleting organization {org}')
     seed.tasks.delete_organization(org.pk)
-    return
 
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
         """Delete all organizations that are not in Robin's whitelist."""
 
-        logging.debug("**NOTE - Celery server must be running for this operation to work")
+        logging.debug('**NOTE - Celery server must be running for this operation to work')
 
         deprecated_organizations = get_organizations_to_delete()
 
-        logging.info("Deleting {} deprecated organizations.".format(deprecated_organizations))
+        logging.info(f'Deleting {deprecated_organizations} deprecated organizations.')
         for org in deprecated_organizations:
             destroy_organization(org)
-
-        return

@@ -1,11 +1,11 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 :author 'Piper Merriam <pmerriam@quickleft.com'
 """
+
 import operator
 import re
 from dataclasses import dataclass
@@ -98,13 +98,13 @@ def is_exact_exclude_filter(q):
     return False
 
 
-NUMERIC_EXPRESSION_REGEX = re.compile((
+NUMERIC_EXPRESSION_REGEX = re.compile(
     r'('  # open expression grp
     r'(?P<operator>==|=|>|>=|<|<=|<>|!|!=)'  # operator
     r'\s*'  # whitespace
     r'(?P<value>(?:-?[0-9]+)|(?:null))\s*(?:,|$)'  # numeric value or the string null
     r')'  # close expression grp
-))
+)
 
 
 def is_numeric_expression(q):
@@ -118,13 +118,13 @@ def is_numeric_expression(q):
     return False
 
 
-STRING_EXPRESSION_REGEX = re.compile((
+STRING_EXPRESSION_REGEX = re.compile(
     r'('  # open expression grp
     r'(?P<operator>==|(?<!<|>)=|<>|!|!=)'  # operator
     r'\s*'  # whitespace
     r'(?P<value>\'\'|""|null|[a-zA-Z0-9\s]+)\s*(?:,|$)'  # open value grp
     r')'  # close expression grp
-))
+)
 
 
 def is_string_expression(q):
@@ -139,19 +139,19 @@ def is_string_expression(q):
 
 
 OPERATOR_MAP = {
-    "==": ("", False),
-    "=": ("", False),
-    ">": ("__gt", False),
-    ">=": ("__gte", False),
-    "<": ("__lt", False),
-    "<=": ("__lte", False),
-    "!": ("", True),
-    "!=": ("", True),
-    "<>": ("", True),
+    '==': ('', False),
+    '=': ('', False),
+    '>': ('__gt', False),
+    '>=': ('__gte', False),
+    '<': ('__lt', False),
+    '<=': ('__lte', False),
+    '!': ('', True),
+    '!=': ('', True),
+    '<>': ('', True),
 }
 
-NULL_OPERATORS = {"=", "==", "!", "!=", "<>"}
-EQUALITY_OPERATORS = {"=", "=="}
+NULL_OPERATORS = {'=', '==', '!', '!=', '<>'}
+EQUALITY_OPERATORS = {'=', '=='}
 
 
 def _translate_expression_parts(op, val):
@@ -162,13 +162,13 @@ def _translate_expression_parts(op, val):
 
     Returns `None` if the comparison is invalid ("> null").
     """
-    if val == "null":
+    if val == 'null':
         if op not in NULL_OPERATORS:
-            raise ValueError("Invalid operation on null")
+            raise ValueError('Invalid operation on null')
         elif op in EQUALITY_OPERATORS:
-            return "__isnull", True, None
+            return '__isnull', True, None
         else:
-            return "__isnull", False, None
+            return '__isnull', False, None
 
     suffix, is_negated = OPERATOR_MAP[op]
     return suffix, val, is_negated
@@ -185,10 +185,7 @@ def parse_expression(k, parts):
             suffix, q_val, is_negated = _translate_expression_parts(op, val)
         except ValueError:
             continue
-        lookup = "{field}{suffix}".format(
-            field=k,
-            suffix=suffix,
-        )
+        lookup = f'{k}{suffix}'
         q_object = Q(**{lookup: q_val})
         if is_negated:
             query_filters.append(~q_object)
@@ -268,15 +265,16 @@ def _build_extra_data_annotations(column_name: str, data_type: str) -> tuple[str
               a dict of annotations
     """
     # annotations require a few characters to be removed...
-    cleaned_column_name = column_name \
-        .replace(' ', '_') \
-        .replace("'", '-') \
-        .replace('"', '-') \
-        .replace('`', '-') \
-        .replace(';', '-') \
-        .replace('[', '_') \
-        .replace(']', '_') \
+    cleaned_column_name = (
+        column_name.replace(' ', '_')
+        .replace("'", '-')
+        .replace('"', '-')
+        .replace('`', '-')
+        .replace(';', '-')
+        .replace('[', '_')
+        .replace(']', '_')
         .replace('%', '_')
+    )
     text_field_name = f'_{cleaned_column_name}_to_text'
     final_field_name = f'_{cleaned_column_name}_final'
 
@@ -285,35 +283,47 @@ def _build_extra_data_annotations(column_name: str, data_type: str) -> tuple[str
         text_field_name: KeyTextTransform(column_name, 'state__extra_data'),
     }
     if data_type == 'integer':
-        annotations.update({
-            final_field_name: Cast(
-                # Remove comma separators
-                Replace(text_field_name, models.Value(','), models.Value('')), output_field=models.IntegerField())
-        })
+        annotations.update(
+            {
+                final_field_name: Cast(
+                    # Remove comma separators
+                    Replace(text_field_name, models.Value(','), models.Value('')),
+                    output_field=models.IntegerField(),
+                )
+            }
+        )
     elif data_type in ['number', 'float', 'area', 'eui', 'ghg', 'ghg_intensity']:
-        annotations.update({
-            final_field_name: Cast(
-                # Remove comma separators
-                Replace(text_field_name, models.Value(','), models.Value('')), output_field=models.FloatField())
-        })
+        annotations.update(
+            {
+                final_field_name: Cast(
+                    # Remove comma separators
+                    Replace(text_field_name, models.Value(','), models.Value('')),
+                    output_field=models.FloatField(),
+                )
+            }
+        )
     elif data_type in ['date', 'datetime']:
-        annotations.update({
-            final_field_name: Cast(text_field_name, output_field=models.DateTimeField())
-        })
+        annotations.update({final_field_name: Cast(text_field_name, output_field=models.DateTimeField())})
     elif data_type == 'boolean':
-        annotations.update({
-            final_field_name: Cast(text_field_name, output_field=models.BooleanField())
-        })
+        annotations.update({final_field_name: Cast(text_field_name, output_field=models.BooleanField())})
     else:
         # treat as string
-        annotations.update({
-            final_field_name: Coalesce(text_field_name, models.Value(''), output_field=models.TextField()),
-        })
+        annotations.update(
+            {
+                final_field_name: Coalesce(text_field_name, models.Value(''), output_field=models.TextField()),
+            }
+        )
 
     return final_field_name, annotations
 
 
-def _parse_view_filter(filter_expression: str, filter_value: Union[str, bool], columns_by_name: dict[str, dict], inventory_type: str, access_level_names: list[str]) -> tuple[Q, AnnotationDict]:
+def _parse_view_filter(
+    filter_expression: str,
+    filter_value: Union[str, bool],
+    columns_by_name: dict[str, dict],
+    inventory_type: str,
+    access_level_names: list[str],
+) -> tuple[Q, AnnotationDict]:
     """Parse a filter expression into a Q object
 
     :param filter_expression: should be a valid Column.column_name, with an optional
@@ -331,17 +341,13 @@ def _parse_view_filter(filter_expression: str, filter_value: Union[str, bool], c
     if is_access_level_instance:
         filter.operator = QueryFilterOperator.CONTAINS
         updated_expression = f'{inventory_type}__access_level_instance__path'
-        filter.is_negated = True if filter_expression.endswith('__exact') else False
+        filter.is_negated = filter_expression.endswith('__exact')
 
         if filter_expression.endswith('__icontains'):
             level = filter_expression.split('__')[0]
             updated_expression += f'__{level}'
 
-        updated_filter = QueryFilter(
-            updated_expression,
-            filter.operator,
-            filter.is_negated
-        )
+        updated_filter = QueryFilter(updated_expression, filter.operator, filter.is_negated)
         return updated_filter.to_q(filter_value), {}
     else:
         column = columns_by_name.get(filter.field_name)
@@ -350,7 +356,7 @@ def _parse_view_filter(filter_expression: str, filter_value: Union[str, bool], c
     if column is None or is_related:
         return Q(), {}
 
-    column_name = column["column_name"]
+    column_name = column['column_name']
     annotations: AnnotationDict = {}
     if column['is_extra_data']:
         new_field_name, annotations = _build_extra_data_annotations(column['column_name'], column['data_type'])
@@ -370,7 +376,9 @@ def _parse_view_filter(filter_expression: str, filter_value: Union[str, bool], c
     return updated_filter.to_q(new_filter_value), annotations
 
 
-def _parse_view_sort(sort_expression: str, columns_by_name: dict[str, dict], inventory_type: str, access_level_names: list[str]) -> tuple[Union[None, str, Collate], AnnotationDict]:
+def _parse_view_sort(
+    sort_expression: str, columns_by_name: dict[str, dict], inventory_type: str, access_level_names: list[str]
+) -> tuple[Union[None, str, Collate], AnnotationDict]:
     """Parse a sort expression
 
     :param sort_expression: should be a valid Column.column_name. Optionally prefixed
@@ -384,7 +392,7 @@ def _parse_view_sort(sort_expression: str, columns_by_name: dict[str, dict], inv
         return sort_expression, {}
     elif column_name in columns_by_name:
         column = columns_by_name[column_name]
-        column_name = column["column_name"]
+        column_name = column['column_name']
         if column['related']:
             return None, {}
         elif column['is_extra_data']:
@@ -405,7 +413,9 @@ def _parse_view_sort(sort_expression: str, columns_by_name: dict[str, dict], inv
         return None, {}
 
 
-def build_view_filters_and_sorts(filters: QueryDict, columns: list[dict], inventory_type: str, access_level_names: list[str] = []) -> tuple[Q, AnnotationDict, list[str]]:
+def build_view_filters_and_sorts(
+    filters: QueryDict, columns: list[dict], inventory_type: str, access_level_names: list[str] = []
+) -> tuple[Q, AnnotationDict, list[str]]:
     """Build a query object usable for `*View.filter(...)` as well as a list of
     column names for usable for `*View.order_by(...)`.
 
@@ -444,7 +454,7 @@ def build_view_filters_and_sorts(filters: QueryDict, columns: list[dict], invent
     """
     columns_by_name = {}
     for column in columns:
-        if (column['related']):
+        if column['related']:
             continue
         columns_by_name[column['name']] = column
 
@@ -455,7 +465,6 @@ def build_view_filters_and_sorts(filters: QueryDict, columns: list[dict], invent
         is_access_level_instance = filter_column in access_level_names
         # when the filter value is "", we want to be sure to include None and "".
         if filter_value == '':
-
             if is_access_level_instance:
                 is_null_filter_expression = filter_expression
                 is_null_filter_value = filter_column
@@ -470,18 +479,16 @@ def build_view_filters_and_sorts(filters: QueryDict, columns: list[dict], invent
                 is_null_filter_value = True
 
             parsed_filters, parsed_annotations = _parse_view_filter(
-                is_null_filter_expression,
-                is_null_filter_value,
-                columns_by_name,
-                inventory_type,
-                access_level_names
+                is_null_filter_expression, is_null_filter_value, columns_by_name, inventory_type, access_level_names
             )
 
             # if column data_type is "string", also filter on the empty string
             filter = QueryFilter.parse(filter_expression)
             column_data_type = columns_by_name.get(filter.field_name, {}).get('data_type')
             if column_data_type in ['string', 'None']:
-                empty_string_parsed_filters, _ = _parse_view_filter(filter_expression, filter_value, columns_by_name, inventory_type, access_level_names)
+                empty_string_parsed_filters, _ = _parse_view_filter(
+                    filter_expression, filter_value, columns_by_name, inventory_type, access_level_names
+                )
 
                 if filter_expression.endswith('__ne'):
                     parsed_filters &= empty_string_parsed_filters
@@ -490,7 +497,9 @@ def build_view_filters_and_sorts(filters: QueryDict, columns: list[dict], invent
                     parsed_filters |= empty_string_parsed_filters
 
         else:
-            parsed_filters, parsed_annotations = _parse_view_filter(filter_expression, filter_value, columns_by_name, inventory_type, access_level_names)
+            parsed_filters, parsed_annotations = _parse_view_filter(
+                filter_expression, filter_value, columns_by_name, inventory_type, access_level_names
+            )
 
         new_filters &= parsed_filters
         annotations.update(parsed_annotations)

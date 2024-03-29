@@ -1,9 +1,9 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 import logging
 import re
 import urllib.parse
@@ -16,17 +16,9 @@ from seed.analysis_pipelines.pipeline import (
     AnalysisPipeline,
     AnalysisPipelineException,
     analysis_pipeline_task,
-    task_create_analysis_property_views
+    task_create_analysis_property_views,
 )
-from seed.models import (
-    Analysis,
-    AnalysisMessage,
-    AnalysisPropertyView,
-    Column,
-    EeejCejst,
-    EeejHud,
-    PropertyView
-)
+from seed.models import Analysis, AnalysisMessage, AnalysisPropertyView, Column, EeejCejst, EeejHud, PropertyView
 
 logger = logging.getLogger(__name__)
 
@@ -41,11 +33,15 @@ EEEJ_ANALYSIS_MESSAGES = {
     ERROR_RETRIEVING_CENSUS_TRACT: 'Unable to retrieve Census Tract for this property.',
     ERROR_NO_TRACT_OR_LOCATION: 'Property missing location or Census Tract',
     ERROR_NO_VALID_PROPERTIES: 'Analysis found no valid properties to analyze.',
-    WARNING_SOME_INVALID_PROPERTIES: 'Some properties failed to validate.'
+    WARNING_SOME_INVALID_PROPERTIES: 'Some properties failed to validate.',
 }
 
-CENSUS_GEOCODER_URL_STUB = 'https://geocoding.geo.census.gov/geocoder/geographies/onelineaddress?benchmark=2020&vintage=2010&format=json&address='
-CENSUS_GEOCODER_URL_COORDS_STUB = 'https://geocoding.geo.census.gov/geocoder/geographies/coordinates?benchmark=2020&vintage=2010&format=json&'
+CENSUS_GEOCODER_URL_STUB = (
+    'https://geocoding.geo.census.gov/geocoder/geographies/onelineaddress?benchmark=2020&vintage=2010&format=json&address='
+)
+CENSUS_GEOCODER_URL_COORDS_STUB = (
+    'https://geocoding.geo.census.gov/geocoder/geographies/coordinates?benchmark=2020&vintage=2010&format=json&'
+)
 TRACT_FIELDNAME = 'analysis_census_tract'
 
 EJSCREEN_URL_STUB = 'https://ejscreen.epa.gov/mapper/EJscreen_SOE_report.aspx?namestr=&geometry={"spatialReference":{"wkid":4326},"x":LONG,"y":LAT}&distance=1&unit=9035&areatype=&areaid=&f=report'
@@ -86,9 +82,18 @@ def _get_data_for_census_tract_fetch(property_view_ids, organization, can_create
 
     property_views = PropertyView.objects.filter(id__in=property_view_ids)
     for property_view in property_views:
-        loc_data_by_property_view[property_view.id] = {'tract': None, 'latitude': None, 'longitude': None, 'geocoding_confidence': None, 'location': None, 'valid_coords': False}
+        loc_data_by_property_view[property_view.id] = {
+            'tract': None,
+            'latitude': None,
+            'longitude': None,
+            'geocoding_confidence': None,
+            'location': None,
+            'valid_coords': False,
+        }
 
-        latitude, longitude, geocoding_confidence = [getattr(property_view.state, field) for field in ['latitude', 'longitude', 'geocoding_confidence']]
+        latitude, longitude, geocoding_confidence = (
+            getattr(property_view.state, field) for field in ['latitude', 'longitude', 'geocoding_confidence']
+        )
         high_confidence = bool(re.search(r'^(High \(.+?\)|Census Geocoder \(.+?\)|Manually geocoded \(.+?\))$', str(geocoding_confidence)))
 
         if latitude and longitude and high_confidence:
@@ -98,29 +103,30 @@ def _get_data_for_census_tract_fetch(property_view_ids, organization, can_create
             loc_data_by_property_view[property_view.id]['valid_coords'] = True
 
         # census tract already computed?
-        if TRACT_FIELDNAME in property_view.state.extra_data.keys():
+        if TRACT_FIELDNAME in property_view.state.extra_data:
             loc_data_by_property_view[property_view.id]['tract'] = property_view.state.extra_data[TRACT_FIELDNAME]
             if not loc_data_by_property_view[property_view.id]['tract']:
                 # reset to None if blank so we can re-geocode
                 loc_data_by_property_view[property_view.id]['tract'] = None
-        if loc_data_by_property_view[property_view.id]['tract'] is None:
-            # get location ONLY if we need it (no valid coords)
-            if not loc_data_by_property_view[property_view.id]['valid_coords']:
-                location, status = _get_location(property_view)
-                if 'error' in status:
-                    # invalid_location.append(property_view.id)
-                    if property_view.id not in errors_by_property_view_id:
-                        errors_by_property_view_id[property_view.id] = []
-                    errors_by_property_view_id[property_view.id].append(EEEJ_ANALYSIS_MESSAGES[ERROR_INVALID_LOCATION])
-                    del loc_data_by_property_view[property_view.id]
-                    continue
-                # save location
-                loc_data_by_property_view[property_view.id]['location'] = location
+        # get location ONLY if we need it (no valid coords)
+        if loc_data_by_property_view[property_view.id]['tract'] is None and not loc_data_by_property_view[property_view.id]['valid_coords']:
+            location, status = _get_location(property_view)
+            if 'error' in status:
+                # invalid_location.append(property_view.id)
+                if property_view.id not in errors_by_property_view_id:
+                    errors_by_property_view_id[property_view.id] = []
+                errors_by_property_view_id[property_view.id].append(EEEJ_ANALYSIS_MESSAGES[ERROR_INVALID_LOCATION])
+                del loc_data_by_property_view[property_view.id]
+                continue
+            # save location
+            loc_data_by_property_view[property_view.id]['location'] = location
 
         # if both are None, error
-        if loc_data_by_property_view[property_view.id]['tract'] is None \
-            and loc_data_by_property_view[property_view.id]['location'] is None \
-                and not loc_data_by_property_view[property_view.id]['valid_coords']:
+        if (
+            loc_data_by_property_view[property_view.id]['tract'] is None
+            and loc_data_by_property_view[property_view.id]['location'] is None
+            and not loc_data_by_property_view[property_view.id]['valid_coords']
+        ):
             # invalid_location.append(property_view.id)
             if property_view.id not in errors_by_property_view_id:
                 errors_by_property_view_id[property_view.id] = []
@@ -146,21 +152,23 @@ def _fetch_census_tract(pv_data):
         # celery was mad at when I did this in the url string
         lat = str(pv_data['latitude'])
         lng = str(pv_data['longitude'])
-        url = f"{CENSUS_GEOCODER_URL_COORDS_STUB}x={lng}&y={lat}"
+        url = f'{CENSUS_GEOCODER_URL_COORDS_STUB}x={lng}&y={lat}'
     else:
         # use address string
         url = f"{CENSUS_GEOCODER_URL_STUB}{urllib.parse.quote(pv_data['location'])}"
-    headers = {
-        'accept': 'application/json'
-    }
+    headers = {'accept': 'application/json'}
 
     try:
-        response = requests.request("GET", url, headers=headers)
+        response = requests.request('GET', url, headers=headers)
         if response.status_code != 200:
-            logger.error(f"EEEJ Analysis: Expected 200 response from CENSUS GEOCODER service but got {response.status_code}: {response.content} for location: {pv_data['location']}")
+            logger.error(
+                f"EEEJ Analysis: Expected 200 response from CENSUS GEOCODER service but got {response.status_code}: {response.content} for location: {pv_data['location']}"
+            )
             return None, None, None, 'error'
     except Exception as e:
-        logger.error(f"EEEJ Analysis: Unexpected error retrieving census tract from CENSUS GEOCODER service {e} for location: {pv_data['location']}, error: {e}")
+        logger.error(
+            f"EEEJ Analysis: Unexpected error retrieving census tract from CENSUS GEOCODER service {e} for location: {pv_data['location']}, error: {e}"
+        )
         return None, None, None, 'error'
 
     # find census tract (response format is different for lat/lng vs. location search)
@@ -193,7 +201,9 @@ def _fetch_census_tract(pv_data):
             longitude = pv_data['latitude']
             latitude = pv_data['longitude']
     except Exception as e:
-        logger.error(f"EEEJ Analysis: error processing results from CENSUS GEOCODER service for location: {pv_data['location']}, error: {e}")
+        logger.error(
+            f"EEEJ Analysis: error processing results from CENSUS GEOCODER service for location: {pv_data['location']}, error: {e}"
+        )
         return None, None, None, 'error'
 
     return tract, latitude, longitude, 'success'
@@ -212,7 +222,7 @@ def _get_location(property_view):
 
     location = property_view.state.address_line_1
     if property_view.state.address_line_2 is not None:
-        location = location + " " + property_view.state.address_line_2
+        location = location + ' ' + property_view.state.address_line_2
 
     # city/state or postal_code
     has_citystate = False
@@ -225,9 +235,9 @@ def _get_location(property_view):
         return location, 'error'
 
     if has_citystate:
-        location = location + ", " + property_view.state.city + ", " + property_view.state.state
+        location = location + ', ' + property_view.state.city + ', ' + property_view.state.state
     if has_zip:
-        location = location + ", " + property_view.state.postal_code
+        location = location + ', ' + property_view.state.postal_code
 
     # for debugging:
     # print(f" ------------ LOCATION STR: {location}")
@@ -289,8 +299,7 @@ def _get_eeej_indicators(analysis_property_views, loc_data_by_analysis_property_
 
 
 def _get_ejscreen_reports(results_by_apv, analysis_property_views):
-    """Create EJScreen Report URL from https://ejscreen.epa.gov/mapper/ejscreenapi1.html
-    """
+    """Create EJScreen Report URL from https://ejscreen.epa.gov/mapper/ejscreenapi1.html"""
     errors_by_apv_id = {}
     for apv in analysis_property_views:
         try:
@@ -301,7 +310,9 @@ def _get_ejscreen_reports(results_by_apv, analysis_property_views):
                 errors_by_apv_id[apv.id].append('Cannot retrieve EJ Screen report URL without latitude and longitude values')
                 continue
 
-            url = EJSCREEN_URL_STUB.replace('LONG', str(results_by_apv[apv.id]['longitude'])).replace('LAT', str(results_by_apv[apv.id]['latitude']))
+            url = EJSCREEN_URL_STUB.replace('LONG', str(results_by_apv[apv.id]['longitude'])).replace(
+                'LAT', str(results_by_apv[apv.id]['latitude'])
+            )
 
             if apv.id not in results_by_apv:
                 results_by_apv[apv.id] = {}
@@ -325,19 +336,20 @@ def _log_errors(errors_by_apv_id, analysis_id):
                 type_=AnalysisMessage.ERROR,
                 analysis_id=analysis_id,
                 analysis_property_view_id=av_id,
-                user_message="  ".join(errors_by_apv_id[av_id]),
-                debug_message=''
+                user_message='  '.join(errors_by_apv_id[av_id]),
+                debug_message='',
             )
 
 
 class EEEJPipeline(AnalysisPipeline):
-
     def _prepare_analysis(self, property_view_ids, start_analysis=True):
         # current implementation will *always* start the analysis immediately
         analysis = Analysis.objects.get(id=self._analysis_id)
 
         # check that we have the data we need to retrieve census tract for each property
-        loc_data_by_property_view, errors_by_property_view_id = _get_data_for_census_tract_fetch(property_view_ids, analysis.organization, analysis.can_create())
+        loc_data_by_property_view, errors_by_property_view_id = _get_data_for_census_tract_fetch(
+            property_view_ids, analysis.organization, analysis.can_create()
+        )
 
         if not loc_data_by_property_view:
             AnalysisMessage.log_and_create(
@@ -346,7 +358,7 @@ class EEEJPipeline(AnalysisPipeline):
                 analysis_id=self._analysis_id,
                 analysis_property_view_id=None,
                 user_message=EEEJ_ANALYSIS_MESSAGES[ERROR_NO_VALID_PROPERTIES],
-                debug_message=''
+                debug_message='',
             )
             analysis = Analysis.objects.get(id=self._analysis_id)
             analysis.status = Analysis.FAILED
@@ -360,7 +372,7 @@ class EEEJPipeline(AnalysisPipeline):
         chain(
             task_create_analysis_property_views.si(self._analysis_id, property_view_ids),
             _finish_preparation.s(loc_data_by_property_view, errors_by_property_view_id, self._analysis_id),
-            _run_analysis.s(self._analysis_id)
+            _run_analysis.s(self._analysis_id),
         ).apply_async()
 
     def _start_analysis(self):
@@ -382,8 +394,8 @@ def _finish_preparation(self, analysis_view_ids_by_property_view_id, loc_data_by
                 type_=AnalysisMessage.ERROR,
                 analysis_id=analysis_id,
                 analysis_property_view_id=analysis_view_id,
-                user_message="  ".join(errors_by_property_view_id[pid]),
-                debug_message=''
+                user_message='  '.join(errors_by_property_view_id[pid]),
+                debug_message='',
             )
 
     # replace property_view id with analysis_property_view id
@@ -411,34 +423,39 @@ def _run_analysis(self, loc_data_by_analysis_property_view, analysis_id):
         {
             'column_name': 'analysis_dac',
             'display_name': 'Disadvantaged Community',
-            'description': 'Property located in a Disadvantaged Community as defined by CEJST'
-        }, {
+            'description': 'Property located in a Disadvantaged Community as defined by CEJST',
+        },
+        {
             'column_name': 'analysis_energy_burden_low_income',
             'display_name': 'Energy Burden and low Income?',
-            'description': 'Is this property located in an energy burdened census tract. Energy Burden defined by CEJST as greater than or equal to the 90th percentile for energy burden and is low income.'
-        }, {
+            'description': 'Is this property located in an energy burdened census tract. Energy Burden defined by CEJST as greater than or equal to the 90th percentile for energy burden and is low income.',
+        },
+        {
             'column_name': 'analysis_energy_burden_percentile',
             'display_name': 'Energy Burden Percentile',
-            'description': 'Energy Burden Percentile as identified by CEJST'
-        }, {
+            'description': 'Energy Burden Percentile as identified by CEJST',
+        },
+        {
             'column_name': 'analysis_low_income',
             'display_name': 'Low Income?',
-            'description': 'Is this property located in a census tract identified as Low Income by CEJST?'
-        }, {
+            'description': 'Is this property located in a census tract identified as Low Income by CEJST?',
+        },
+        {
             'column_name': 'analysis_share_neighbors_disadvantaged',
             'display_name': 'Share of Neighboring Tracts Identified as Disadvantaged',
-            'description': 'The percentage of neighboring census tracts that have been identified as disadvantaged by CEJST'
-        }, {
+            'description': 'The percentage of neighboring census tracts that have been identified as disadvantaged by CEJST',
+        },
+        {
             'column_name': 'analysis_number_affordable_housing',
             'display_name': 'Number of Affordable Housing Locations in Tract',
-            'description': 'Number of affordable housing locations (both public housing developments and multi-family assisted housing) identified by HUD in census tract'
-        }
+            'description': 'Number of affordable housing locations (both public housing developments and multi-family assisted housing) identified by HUD in census tract',
+        },
     ]
 
     for col in column_meta:
         try:
             Column.objects.get(
-                column_name=col["column_name"],
+                column_name=col['column_name'],
                 organization=analysis.organization,
                 table_name='PropertyState',
             )
@@ -446,12 +463,12 @@ def _run_analysis(self, loc_data_by_analysis_property_view, analysis_id):
             if analysis.can_create():
                 column = Column.objects.create(
                     is_extra_data=True,
-                    column_name=col["column_name"],
+                    column_name=col['column_name'],
                     organization=analysis.organization,
                     table_name='PropertyState',
                 )
-                column.display_name = col["display_name"]
-                column.column_description = col["description"]
+                column.display_name = col['display_name']
+                column.column_description = col['description']
                 column.save()
             else:
                 missing_columns = True
@@ -460,9 +477,8 @@ def _run_analysis(self, loc_data_by_analysis_property_view, analysis_id):
     analysis_property_view_ids = list(loc_data_by_analysis_property_view.keys())
 
     # prefetching property and cycle b/c .get_property_views() uses them (this is not "clean" but whatever)
-    analysis_property_views = (
-        AnalysisPropertyView.objects.filter(id__in=analysis_property_view_ids)
-        .prefetch_related('property', 'cycle', 'property_state')
+    analysis_property_views = AnalysisPropertyView.objects.filter(id__in=analysis_property_view_ids).prefetch_related(
+        'property', 'cycle', 'property_state'
     )
     property_views_by_apv_id = AnalysisPropertyView.get_property_views(analysis_property_views)
 
@@ -492,7 +508,9 @@ def _run_analysis(self, loc_data_by_analysis_property_view, analysis_id):
             'Low Income': results[analysis_property_view.id]['low_income'],
             'Share of Neighboring Disadvantaged Tracts': results[analysis_property_view.id]['share_neighbors_disadvantaged'],
             'Number of Affordable Housing Locations in Tract': results[analysis_property_view.id]['number_affordable_housing'],
-            'EJ Screen Report URL': results[analysis_property_view.id]['ejscreen_report'] if 'ejscreen_report' in results[analysis_property_view.id] else None
+            'EJ Screen Report URL': results[analysis_property_view.id]['ejscreen_report']
+            if 'ejscreen_report' in results[analysis_property_view.id]
+            else None,
         }
 
         analysis_property_view.save()
@@ -501,27 +519,30 @@ def _run_analysis(self, loc_data_by_analysis_property_view, analysis_id):
         # only if you can
         property_view = property_views_by_apv_id[analysis_property_view.id]
         if not missing_columns:
-            property_view.state.extra_data.update({
-                'analysis_census_tract': results[analysis_property_view.id]['census_tract'],
-                'analysis_dac': results[analysis_property_view.id]['dac'],
-                'analysis_energy_burden_low_income': results[analysis_property_view.id]['energy_burden_low_income'],
-                'analysis_energy_burden_percentile': results[analysis_property_view.id]['energy_burden_percentile'],
-                'analysis_low_income': results[analysis_property_view.id]['low_income'],
-                'analysis_share_neighbors_disadvantaged': results[analysis_property_view.id]['share_neighbors_disadvantaged'],
-                'analysis_number_affordable_housing': results[analysis_property_view.id]['number_affordable_housing'],
-            })
+            property_view.state.extra_data.update(
+                {
+                    'analysis_census_tract': results[analysis_property_view.id]['census_tract'],
+                    'analysis_dac': results[analysis_property_view.id]['dac'],
+                    'analysis_energy_burden_low_income': results[analysis_property_view.id]['energy_burden_low_income'],
+                    'analysis_energy_burden_percentile': results[analysis_property_view.id]['energy_burden_percentile'],
+                    'analysis_low_income': results[analysis_property_view.id]['low_income'],
+                    'analysis_share_neighbors_disadvantaged': results[analysis_property_view.id]['share_neighbors_disadvantaged'],
+                    'analysis_number_affordable_housing': results[analysis_property_view.id]['number_affordable_housing'],
+                }
+            )
 
         # store lat/lng (if blank) Census geocoder codes at the street address level (not Point level like mapquest)
         # store anyway but record as "Census Geocoder (L1AAA)" vs. mapquest "High (P1AAA)"
-        if (not property_view.state.latitude or not property_view.state.longitude) and ('High' not in str(property_view.state.geocoding_confidence)):
+        if (not property_view.state.latitude or not property_view.state.longitude) and (
+            'High' not in str(property_view.state.geocoding_confidence)
+        ):
             # don't overwrite the mapquest geocoding
             property_view.state.latitude = results[analysis_property_view.id]['latitude']
             property_view.state.longitude = results[analysis_property_view.id]['longitude']
             property_view.state.geocoding_confidence = 'Census Geocoder (L1AAA)'
             # recalculate long_lat Point
             property_view.state.long_lat = Point(
-                float(results[analysis_property_view.id]['longitude']),
-                float(results[analysis_property_view.id]['latitude'])
+                float(results[analysis_property_view.id]['longitude']), float(results[analysis_property_view.id]['latitude'])
             )
 
         property_view.state.save()

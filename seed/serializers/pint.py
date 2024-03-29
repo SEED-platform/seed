@@ -7,8 +7,8 @@ Pint-aware values/columns to raw floats before sending them out over the API.
 Generally this collapsing relies on having access to the organization, since
 that's where the display preference lives.
 """
+
 import re
-from builtins import str
 
 from django.core.serializers.json import DjangoJSONEncoder
 from quantityfield.units import ureg
@@ -43,7 +43,7 @@ DEFAULT_UNITS = {
 
 
 def to_raw_magnitude(obj):
-    return "{:.2f}".format(obj.magnitude)
+    return f'{obj.magnitude:.2f}'
 
 
 def get_dimensionality(quantity_object):
@@ -63,7 +63,7 @@ def collapse_unit(org, x):
         EUI_DIMENSIONALITY: org.display_units_eui or EUI_DEFAULT_UNITS,
         AREA_DIMENSIONALITY: org.display_units_area or AREA_DEFAULT_UNITS,
         GHG_DIMENSIONALITY: org.display_units_ghg or GHG_DEFAULT_UNITS,
-        GHG_INTENSITY_DIMENSIONALITY: org.display_units_ghg_intensity or GHG_INTENSITY_DEFAULT_UNITS
+        GHG_INTENSITY_DIMENSIONALITY: org.display_units_ghg_intensity or GHG_INTENSITY_DEFAULT_UNITS,
     }
 
     if isinstance(x, ureg.Quantity):
@@ -95,7 +95,7 @@ def pretty_units(quantity):
     hack; can lose it when Pint gets something like a "{:~U}" format code
     see https://github.com/hgrecco/pint/pull/231
     """
-    return '{:~P}'.format(quantity).split(' ')[1]
+    return f'{quantity:~P}'.split(' ')[1]
 
 
 def pretty_units_from_spec(unit_spec):
@@ -103,7 +103,7 @@ def pretty_units_from_spec(unit_spec):
     return pretty_units(quantity)
 
 
-def add_pint_unit_suffix(organization, column, data_key="data_type", display_key="display_name"):
+def add_pint_unit_suffix(organization, column, data_key='data_type', display_key='display_name'):
     """
     transforms the displayName coming from `Column.retrieve_all` to add known
     units where applicable,  eg. 'Gross Floor Area' to 'Gross Floor Area (sq.
@@ -116,26 +116,22 @@ def add_pint_unit_suffix(organization, column, data_key="data_type", display_key
         # the columns. The mere presence of a unit suffix will tell us in the UI
         # that this is a Pint-aware column
         stripped_name = re.sub(r' \(pint\)$', '', column_name, flags=re.IGNORECASE)
-        return stripped_name + ' ({})'.format(display_units)
+        return stripped_name + f' ({display_units})'
 
     if data_key not in column:
-        data_key = "dataType"
+        data_key = 'dataType'
     if display_key not in column:
-        display_key = "displayName"
+        display_key = 'displayName'
 
     try:
         if column[data_key] == 'area':
-            column[display_key] = format_column_name(
-                column[display_key], organization.display_units_area)
+            column[display_key] = format_column_name(column[display_key], organization.display_units_area)
         elif column[data_key] == 'eui':
-            column[display_key] = format_column_name(
-                column[display_key], organization.display_units_eui)
+            column[display_key] = format_column_name(column[display_key], organization.display_units_eui)
         elif column[data_key] == 'ghg':
-            column[display_key] = format_column_name(
-                column[display_key], organization.display_units_ghg)
+            column[display_key] = format_column_name(column[display_key], organization.display_units_ghg)
         elif column[data_key] == 'ghg_intensity':
-            column[display_key] = format_column_name(
-                column[display_key], organization.display_units_ghg_intensity)
+            column[display_key] = format_column_name(column[display_key], organization.display_units_ghg_intensity)
     except KeyError:
         pass  # no transform needed if we can't detect dataType, nbd
 

@@ -2,24 +2,16 @@
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 import logging
 import pathlib
 from collections import namedtuple
 
 from django.core.files.base import File as BaseFile
 
-from seed.analysis_pipelines.better.buildingsync import (
-    _parse_analysis_property_view_id
-)
-from seed.analysis_pipelines.pipeline import (
-    AnalysisPipelineException,
-    StopAnalysisTaskChain
-)
-from seed.models import (
-    AnalysisMessage,
-    AnalysisOutputFile,
-    AnalysisPropertyView
-)
+from seed.analysis_pipelines.better.buildingsync import _parse_analysis_property_view_id
+from seed.analysis_pipelines.pipeline import AnalysisPipelineException, StopAnalysisTaskChain
+from seed.models import AnalysisMessage, AnalysisOutputFile, AnalysisPropertyView
 
 logger = logging.getLogger(__name__)
 
@@ -36,7 +28,9 @@ class BuildingAnalysis:
 class PortfolioBuildingAnalysis:
     """Used to track AnalysisPropertyViews and BETTER portfolio building analysis IDs"""
 
-    def __init__(self, analysis_property_view_id, better_portfolio_id, better_building_id, better_analysis_id, better_portfolio_building_analysis_id):
+    def __init__(
+        self, analysis_property_view_id, better_portfolio_id, better_building_id, better_analysis_id, better_portfolio_building_analysis_id
+    ):
         self.analysis_property_view_id = analysis_property_view_id
         self.better_portfolio_id = better_portfolio_id
         self.better_building_id = better_building_id
@@ -114,11 +108,7 @@ def _check_warnings(warnings, context):
 
     for warning in warnings:
         AnalysisMessage.log_and_create(
-            logger=logger,
-            type_=AnalysisMessage.WARNING,
-            analysis_id=context.analysis.id,
-            user_message=warning,
-            debug_message='Warning'
+            logger=logger, type_=AnalysisMessage.WARNING, analysis_id=context.analysis.id, user_message=warning, debug_message='Warning'
         )
 
 
@@ -141,24 +131,12 @@ def _run_better_portfolio_analysis(better_portfolio_id, better_portfolio_buildin
         warnings,
         context,
     )
-    _check_errors(
-        errors,
-        'Failed to create BETTER portfolio analysis',
-        context,
-        fail_on_error=True
-    )
+    _check_errors(errors, 'Failed to create BETTER portfolio analysis', context, fail_on_error=True)
 
-    errors = context.client.run_portfolio_analysis(
-        better_portfolio_id,
-        better_analysis_id
-    )
+    errors = context.client.run_portfolio_analysis(better_portfolio_id, better_analysis_id)
     if errors:
         _check_errors(
-            errors,
-            f'Failed to generate BETTER portfolio analysis: {errors[0]}',
-            context,
-            fail_on_error=True,
-            custom_message=errors[0]
+            errors, f'Failed to generate BETTER portfolio analysis: {errors[0]}', context, fail_on_error=True, custom_message=errors[0]
         )
 
     # Store better_analysis_id and better_portfolio_building_analysis_id in the appropriate better_portfolio_building_analysis
@@ -169,12 +147,7 @@ def _run_better_portfolio_analysis(better_portfolio_id, better_portfolio_buildin
         bpba.better_analysis_id = better_analysis_id
         bpba.better_portfolio_building_analysis_id = pba['id']
 
-    _check_errors(
-        errors,
-        'Failed to get BETTER portfolio analysis as JSON',
-        context,
-        fail_on_error=True
-    )
+    _check_errors(errors, 'Failed to get BETTER portfolio analysis as JSON', context, fail_on_error=True)
 
     return better_portfolio_building_analyses
 
@@ -190,18 +163,11 @@ def _store_better_portfolio_analysis_results(better_portfolio_building_analyses,
     # portfolio_building_analyses within a portfolio have the same analysis_id
     better_analysis_id = better_portfolio_building_analyses[0].better_analysis_id
     results_dir, errors = context.client.get_portfolio_analysis_standalone_html(better_analysis_id)
-    _check_errors(
-        errors,
-        'Failed to get BETTER portfolio analysis standalone HTML',
-        context,
-        fail_on_error=True
-    )
+    _check_errors(errors, 'Failed to get BETTER portfolio analysis standalone HTML', context, fail_on_error=True)
     for result_file_path in pathlib.Path(results_dir.name).iterdir():
-        with open(result_file_path, 'r') as f:
+        with open(result_file_path) as f:
             if result_file_path.suffix != '.html':
-                raise AnalysisPipelineException(
-                    f'Received unhandled file type from BETTER: {result_file_path.name}'
-                )
+                raise AnalysisPipelineException(f'Received unhandled file type from BETTER: {result_file_path.name}')
 
             content_type = AnalysisOutputFile.HTML
             file_ = BaseFile(f)
@@ -230,7 +196,7 @@ def _store_better_portfolio_building_analysis_results(better_portfolio_building_
         results_dict, errors = context.client.get_portfolio_building_analysis(
             better_portfolio_building_analysis.better_portfolio_id,
             better_portfolio_building_analysis.better_analysis_id,
-            better_portfolio_building_analysis.better_portfolio_building_analysis_id
+            better_portfolio_building_analysis.better_portfolio_building_analysis_id,
         )
         if errors:
             _check_errors(
@@ -260,10 +226,7 @@ def _run_better_building_analyses(better_building_analyses, analysis_config, con
         better_building_id = building_analysis.better_building_id
         analysis_property_view_id = building_analysis.analysis_property_view_id
 
-        better_analysis_id, errors = context.client.create_and_run_building_analysis(
-            better_building_id,
-            analysis_config
-        )
+        better_analysis_id, errors = context.client.create_and_run_building_analysis(better_building_id, analysis_config)
         if errors:
             _check_errors(
                 errors,
@@ -271,7 +234,7 @@ def _run_better_building_analyses(better_building_analyses, analysis_config, con
                 context,
                 analysis_property_view_id=analysis_property_view_id,
                 fail_on_error=False,
-                custom_message=errors[0]
+                custom_message=errors[0],
             )
             # continue to next building
             continue
@@ -312,13 +275,12 @@ def _store_better_building_analysis_results(better_building_analyses, context):
             continue
 
         for result_file_path in pathlib.Path(results_dir.name).iterdir():
-            with open(result_file_path, 'r') as f:
+            with open(result_file_path) as f:
                 if result_file_path.suffix == '.html':
                     content_type = AnalysisOutputFile.HTML
                     file_ = BaseFile(f)
                 else:
-                    raise AnalysisPipelineException(
-                        f'Received unhandled file type from better: {result_file_path.name}')
+                    raise AnalysisPipelineException(f'Received unhandled file type from better: {result_file_path.name}')
 
                 analysis_output_file = AnalysisOutputFile(
                     content_type=content_type,
@@ -340,7 +302,7 @@ def _store_better_building_analysis_results(better_building_analyses, context):
                 context,
                 analysis_property_view_id=analysis_property_view_id,
                 fail_on_error=False,
-                custom_message=errors[0]
+                custom_message=errors[0],
             )
             # continue to next building analysis
             continue
@@ -368,7 +330,7 @@ def _create_better_buildings(better_portfolio_id, context):
                 f'Failed to create building for analysis property view {analysis_property_view_id}',
                 context,
                 analysis_property_view_id,
-                fail_on_error=False
+                fail_on_error=False,
             )
             # go to next building
             continue
@@ -380,19 +342,13 @@ def _create_better_buildings(better_portfolio_id, context):
                     better_portfolio_id,
                     better_building_id,
                     None,  # better_analysis_id
-                    None  # better_portfolio_building_analysis_id
+                    None,  # better_portfolio_building_analysis_id
                 )
             )
             logger.info(f'Created BETTER portfolio building ({better_building_id}) for AnalysisPropertyView ({analysis_property_view_id})')
 
         else:
-            better_building_analyses.append(
-                BuildingAnalysis(
-                    analysis_property_view_id,
-                    better_building_id,
-                    None
-                )
-            )
+            better_building_analyses.append(BuildingAnalysis(analysis_property_view_id, better_building_id, None))
             logger.info(f'Created BETTER building ({better_building_id}) for AnalysisPropertyView ({analysis_property_view_id})')
 
     return better_building_analyses, better_portfolio_building_analyses

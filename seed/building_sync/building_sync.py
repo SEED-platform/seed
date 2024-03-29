@@ -1,11 +1,11 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 :author nicholas.long@nrel.gov
 """
+
 import copy
 import logging
 import os
@@ -27,7 +27,7 @@ from seed.building_sync.mappings import (
     apply_mapping,
     merge_mappings,
     table_mapping_to_buildingsync_mapping,
-    update_tree
+    update_tree,
 )
 from seed.models.meters import Meter
 
@@ -43,7 +43,7 @@ class ParsingError(Exception):
     pass
 
 
-class BuildingSync(object):
+class BuildingSync:
     BUILDINGSYNC_V2_0 = '2.0'
     BUILDINGSYNC_V2_0_0 = '2.0.0'
     BUILDINGSYNC_V2_1_0 = '2.1.0'
@@ -54,7 +54,7 @@ class BuildingSync(object):
         BUILDINGSYNC_V2_0: BASE_MAPPING_V2,
         BUILDINGSYNC_V2_2_0: BASE_MAPPING_V2,
         BUILDINGSYNC_V2_3_0: BASE_MAPPING_V2,
-        BUILDINGSYNC_V2_4_0: BASE_MAPPING_V2
+        BUILDINGSYNC_V2_4_0: BASE_MAPPING_V2,
     }
 
     def __init__(self):
@@ -76,7 +76,7 @@ class BuildingSync(object):
         # save element tree
         if isinstance(source, str):
             if not os.path.isfile(source):
-                raise ParsingError("File not found: {}".format(source))
+                raise ParsingError(f'File not found: {source}')
             with open(source) as f:
                 self.element_tree = etree.parse(f)
         else:
@@ -90,7 +90,10 @@ class BuildingSync(object):
             self.fix_namespaces()
 
         root = self.element_tree.getroot()
-        root.set('{http://www.w3.org/2001/XMLSchema-instance}schemaLocation', 'http://buildingsync.net/schemas/bedes-auc/2019 https://raw.githubusercontent.com/BuildingSync/schema/v{}/BuildingSync.xsd'.format(self.version))
+        root.set(
+            '{http://www.w3.org/2001/XMLSchema-instance}schemaLocation',
+            f'http://buildingsync.net/schemas/bedes-auc/2019 https://raw.githubusercontent.com/BuildingSync/schema/v{self.version}/BuildingSync.xsd',
+        )
 
         return True
 
@@ -130,9 +133,9 @@ class BuildingSync(object):
         if version not in self.VERSION_MAPPINGS_DICT:
             raise ParsingError(f'Invalid version "{version}"')
 
-        xml_string = '''<?xml version="1.0"?>
-        <auc:BuildingSync xmlns:auc="http://buildingsync.net/schemas/bedes-auc/2019" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://buildingsync.net/schemas/bedes-auc/2019 https://raw.githubusercontent.com/BuildingSync/schema/v{}/BuildingSync.xsd">
-        </auc:BuildingSync>'''.format(version)
+        xml_string = f"""<?xml version="1.0"?>
+        <auc:BuildingSync xmlns:auc="http://buildingsync.net/schemas/bedes-auc/2019" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://buildingsync.net/schemas/bedes-auc/2019 https://raw.githubusercontent.com/BuildingSync/schema/v{version}/BuildingSync.xsd">
+        </auc:BuildingSync>"""
         self.element_tree = etree.parse(StringIO(xml_string))
         self.version = version
 
@@ -175,7 +178,7 @@ class BuildingSync(object):
                     property_state._meta.get_field(field)
                     seed_value = getattr(property_state, field)
                 except FieldDoesNotExist:
-                    _log.debug("Field {} is not a db field, trying read from extra data".format(field))
+                    _log.debug(f'Field {field} is not a db field, trying read from extra data')
                     seed_value = property_state.extra_data.get(field, None)
                     continue
 
@@ -184,8 +187,7 @@ class BuildingSync(object):
             if isinstance(seed_value, ureg.Quantity):
                 seed_value = seed_value.magnitude
 
-            update_tree(schema, self.element_tree, xml_element_xpath,
-                        xml_element_value, str(seed_value), NAMESPACES)
+            update_tree(schema, self.element_tree, xml_element_xpath, xml_element_value, str(seed_value), NAMESPACES)
 
         # Not sure why, but lxml was not pretty printing if the tree was updated
         # As a hack to fix this, we just export the tree, parse it, then export again
@@ -281,16 +283,11 @@ class BuildingSync(object):
                         original_meter = meters[meter_reading['source_id']]
                         other_meter_source_id = f'Site Energy Use {original_meter["source_id"]}'
                         if other_meter_source_id not in meters:
-                            meters[other_meter_source_id] = {
-                                **original_meter,
-                                'source_id': other_meter_source_id,
-                                'readings': []
-                            }
+                            meters[other_meter_source_id] = {**original_meter, 'source_id': other_meter_source_id, 'readings': []}
 
-                        meters[other_meter_source_id]['readings'].append({
-                            **meter_reading,
-                            'reading': all_resource_total['site_energy_use']
-                        })
+                        meters[other_meter_source_id]['readings'].append(
+                            {**meter_reading, 'reading': all_resource_total['site_energy_use']}
+                        )
 
                 #
                 # End Audit Template weirdness
@@ -302,9 +299,7 @@ class BuildingSync(object):
                 if meter['readings']:
                     meters_with_readings.append(meter)
                 else:
-                    messages['warnings'].append(
-                        f'Skipping meter {meter_id} because it had no valid readings.'
-                    )
+                    messages['warnings'].append(f'Skipping meter {meter_id} because it had no valid readings.')
 
             # create scenario
             seed_scenario = {
@@ -340,16 +335,9 @@ class BuildingSync(object):
             # have measures.
             #
 
-            if (
-                self._is_from_audit_template_tool()
-                and not seed_scenario['measures']
-                and not seed_scenario['meters']
-            ):
+            if self._is_from_audit_template_tool() and not seed_scenario['measures'] and not seed_scenario['meters']:
                 # Skip this scenario!
-                messages['warnings'].append(
-                    f'Skipping Scenario {scenario["id"]} because it doesn\'t include '
-                    'measures or meter data.'
-                )
+                messages['warnings'].append(f'Skipping Scenario {scenario["id"]} because it doesn\'t include ' 'measures or meter data.')
                 continue
 
             #
@@ -359,8 +347,8 @@ class BuildingSync(object):
             scenarios.append(seed_scenario)
 
         # get most recent audit date
-        audit_dates = result["audit_dates"]
-        audit_dates.sort(key=lambda x: datetime.strptime(x["date"], "%Y-%m-%d"))
+        audit_dates = result['audit_dates']
+        audit_dates.sort(key=lambda x: datetime.strptime(x['date'], '%Y-%m-%d'))
         most_recent_audit_date = {} if len(audit_dates) == 0 else audit_dates[-1]
 
         property_ = result['property']
@@ -384,8 +372,8 @@ class BuildingSync(object):
             'net_floor_area': property_['net_floor_area'],
             'footprint_floor_area': property_['footprint_floor_area'],
             'audit_template_building_id': property_['audit_template_building_id'],
-            'audit_date': most_recent_audit_date.get("date"),
-            'audit_date_type': most_recent_audit_date.get("custom_date_type"),
+            'audit_date': most_recent_audit_date.get('date'),
+            'audit_date_type': most_recent_audit_date.get('custom_date_type'),
         }
 
         return res
@@ -460,8 +448,7 @@ class BuildingSync(object):
                 del merged_mapping[key]
 
         messages = {'warnings': [], 'errors': []}
-        result = apply_mapping(self.element_tree, merged_mapping, messages,
-                               NAMESPACES, xpaths_as_keys=True)
+        result = apply_mapping(self.element_tree, merged_mapping, messages, NAMESPACES, xpaths_as_keys=True)
 
         # flatten the dictionary and make all keys absolute xpaths
         base_xpath = list(result.keys())[0]  # only one key in result, the property xpath
@@ -486,12 +473,11 @@ class BuildingSync(object):
             raise ParsingError('Expected BuildingSync element as root element in xml')
 
         # first check for a version attribute in the buildingsync tag
-        if "version" in bsync_element.attrib:
-            return bsync_element.attrib["version"]
+        if 'version' in bsync_element.attrib:
+            return bsync_element.attrib['version']
 
         # second check if it's a file form Audit Template Tool
         if self._is_from_audit_template_tool():
-
             # it must be a 2.0 file as that was the last version which didn't require @version
             return self.BUILDINGSYNC_V2_0
 
@@ -506,22 +492,30 @@ class BuildingSync(object):
                 if parsed_version in self.VERSION_MAPPINGS_DICT:
                     return parsed_version
 
-                raise ParsingError(f'Unsupported BuildingSync schema version "{parsed_version}". Supported versions: {list(self.VERSION_MAPPINGS_DICT.keys())}')
+                raise ParsingError(
+                    f'Unsupported BuildingSync schema version "{parsed_version}". Supported versions: {list(self.VERSION_MAPPINGS_DICT.keys())}'
+                )
 
-        raise ParsingError('Invalid or missing schema specification. Expected a valid BuildingSync schemaLocation in the BuildingSync element. For example: https://raw.githubusercontent.com/BuildingSync/schema/v<schema version here>/BuildingSync.xsd')
+        raise ParsingError(
+            'Invalid or missing schema specification. Expected a valid BuildingSync schemaLocation in the BuildingSync element. For example: https://raw.githubusercontent.com/BuildingSync/schema/v<schema version here>/BuildingSync.xsd'
+        )
 
     def _is_from_audit_template_tool(self):
         """Determines if the source file is from audit template tool
 
         :return bool:
         """
-        report_type_xpath = '/' + '/'.join(['auc:BuildingSync',
-                                            'auc:Facilities',
-                                            'auc:Facility',
-                                            'auc:Reports',
-                                            'auc:Report',
-                                            'auc:UserDefinedFields',
-                                            'auc:UserDefinedField[auc:FieldName="Audit Template Report Type"]'])
+        report_type_xpath = '/' + '/'.join(
+            [
+                'auc:BuildingSync',
+                'auc:Facilities',
+                'auc:Facility',
+                'auc:Reports',
+                'auc:Report',
+                'auc:UserDefinedFields',
+                'auc:UserDefinedField[auc:FieldName="Audit Template Report Type"]',
+            ]
+        )
 
         report_type = self.element_tree.xpath(report_type_xpath, namespaces=NAMESPACES)
         return len(report_type) != 0

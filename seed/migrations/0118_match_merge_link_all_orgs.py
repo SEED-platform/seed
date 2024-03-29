@@ -1,13 +1,10 @@
-# -*- coding: utf-8 -*-
-from __future__ import unicode_literals
-
 from django.db import ProgrammingError, migrations
 
 from seed.utils.match import whole_org_match_merge_link
 
 
 def forwards(apps, schema_editor):
-    Organization = apps.get_model("orgs", "organization")
+    Organization = apps.get_model('orgs', 'organization')
 
     try:
         for org in Organization.objects.all():

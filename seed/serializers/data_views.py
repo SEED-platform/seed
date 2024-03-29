@@ -1,9 +1,9 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 from django.db import transaction
 from rest_framework import serializers
 
@@ -18,7 +18,6 @@ class DataViewParameterSerializer(serializers.ModelSerializer):
 
 
 class DataViewSerializer(serializers.ModelSerializer):
-
     parameters = DataViewParameterSerializer(many=True)
 
     class Meta:

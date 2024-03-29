@@ -1,9 +1,9 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 import json
 import logging
 import os
@@ -53,28 +53,34 @@ def _get_default_org(user):
         org_name = org.name
         ou = user.organizationuser_set.filter(organization=org).first()
         # parent org owner has no role (None) yet has access to the sub-org
-        org_user_role = get_js_role(ou.role_level) if ou else ""
+        org_user_role = get_js_role(ou.role_level) if ou else ''
         ali_name = ou.access_level_instance.name
         ali_id = ou.access_level_instance.id
         is_ali_root = ou.access_level_instance == ou.organization.root
         is_ali_leaf = ou.access_level_instance.is_leaf()
         return org_id, org_name, org_user_role, ali_name, ali_id, is_ali_root, is_ali_leaf
     else:
-        return "", "", "", "", "", "", ""
+        return '', '', '', '', '', '', ''
 
 
 @login_required
 def home(request):
     """the main view for the app
-        Sets in the context for the django template:
+    Sets in the context for the django template:
 
-        * **app_urls**: a json object of all the URLs that is loaded in the JS global namespace
-        * **username**: the request user's username (first and last name)
+    * **app_urls**: a json object of all the URLs that is loaded in the JS global namespace
+    * **username**: the request user's username (first and last name)
     """
-    username = request.user.first_name + " " + request.user.last_name
-    initial_org_id, initial_org_name, initial_org_user_role, access_level_instance_name, access_level_instance_id, is_ali_root, is_ali_leaf = _get_default_org(
-        request.user
-    )
+    username = request.user.first_name + ' ' + request.user.last_name
+    (
+        initial_org_id,
+        initial_org_name,
+        initial_org_user_role,
+        access_level_instance_name,
+        access_level_instance_id,
+        is_ali_root,
+        is_ali_leaf,
+    ) = _get_default_org(request.user)
     debug = settings.DEBUG
     return render(request, 'seed/index.html', locals())
 
@@ -108,14 +114,13 @@ def celery_queue(request):
         for worker, response in result.items():
             if method == 'stats':
                 results['maxConcurrency'] = response['pool']['max-concurrency']
+            elif response is not None:
+                total = len(response)
+                results[method] = {'total': total}
+                if total > 0:
+                    results[method]['tasks'] = list(set([t['name'] for t in response]))
             else:
-                if response is not None:
-                    total = len(response)
-                    results[method] = {'total': total}
-                    if total > 0:
-                        results[method]['tasks'] = list(set([t['name'] for t in response]))
-                else:
-                    results[method] = {'total': 0}
+                results[method] = {'total': 0}
 
     return JsonResponse(results)
 
@@ -143,12 +148,15 @@ def health_check(request):
 
     success = postgres_status and celery_status and redis_status
 
-    return JsonResponse({
-        'status': 'healthy' if success else 'unhealthy',
-        'postgres': 'success' if postgres_status else 'error',
-        'celery': 'success' if celery_status else 'error',
-        'redis': 'success' if redis_status else 'error',
-    }, status=(200 if success else 418))
+    return JsonResponse(
+        {
+            'status': 'healthy' if success else 'unhealthy',
+            'postgres': 'success' if postgres_status else 'error',
+            'celery': 'success' if celery_status else 'error',
+            'redis': 'success' if redis_status else 'error',
+        },
+        status=(200 if success else 418),
+    )
 
 
 @api_endpoint
@@ -158,45 +166,49 @@ def version(request):
     """
     Returns the SEED version and current git sha
     """
-    manifest_path = os.path.dirname(
-        os.path.realpath(__file__)) + '/../../package.json'
+    manifest_path = os.path.dirname(os.path.realpath(__file__)) + '/../../package.json'
     with open(manifest_path, encoding='utf-8') as package_json:
         manifest = json.load(package_json)
 
-    sha = subprocess.check_output(
-        ['git', 'rev-parse', '--short=9', 'HEAD']).strip()
+    sha = subprocess.check_output(['git', 'rev-parse', '--short=9', 'HEAD']).strip()
 
-    return JsonResponse({
-        'version': manifest['version'],
-        'sha': sha.decode('utf-8')
-    })
+    return JsonResponse({'version': manifest['version'], 'sha': sha.decode('utf-8')})
 
 
 def error404(request, exception):
     if '/api/' in request.path:
-        return JsonResponse({
-            "status": "error",
-            "message": "Endpoint could not be found",
-        }, status=status.HTTP_404_NOT_FOUND)
+        return JsonResponse(
+            {
+                'status': 'error',
+                'message': 'Endpoint could not be found',
+            },
+            status=status.HTTP_404_NOT_FOUND,
+        )
     else:
         return redirect('/app/#?http_error=404')
 
 
 def error410(request):
     if '/api/' in request.path:
-        return JsonResponse({
-            "status": "error",
-            "message": "Deprecated API endpoint",
-        }, status=status.HTTP_410_GONE)
+        return JsonResponse(
+            {
+                'status': 'error',
+                'message': 'Deprecated API endpoint',
+            },
+            status=status.HTTP_410_GONE,
+        )
     else:
         return redirect('/app/#?http_error=410')
 
 
 def error500(request):
     if '/api/' in request.path:
-        return JsonResponse({
-            "status": "error",
-            "message": "Internal server error",
-        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return JsonResponse(
+            {
+                'status': 'error',
+                'message': 'Internal server error',
+            },
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
     else:
         return redirect('/app/#?http_error=500')

@@ -16,7 +16,6 @@ class Migration(migrations.Migration):
         ),
         migrations.AddConstraint(
             model_name='organization',
-            constraint=models.CheckConstraint(check=models.Q(('ubid_threshold__range', (0, 1))),
-                                              name='ubid_threshold_range'),
+            constraint=models.CheckConstraint(check=models.Q(('ubid_threshold__range', (0, 1))), name='ubid_threshold_range'),
         ),
     ]

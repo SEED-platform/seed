@@ -1,9 +1,9 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 from pytz import timezone
 
 from config.settings.common import TIME_ZONE
@@ -11,7 +11,7 @@ from seed.lib.mcm import reader
 from seed.models import Sensor
 
 
-class SensorsReadingsParser(object):
+class SensorsReadingsParser:
     """
     This class parses and validates different details about sensor readings
     Import File - including sensor types & units - to be created before execution.
@@ -48,18 +48,18 @@ class SensorsReadingsParser(object):
         try:
             keys = list(raw_sensor_readings_data[0].keys())
         except IndexError:
-            raise ValueError("File has no rows")
+            raise ValueError('File has no rows')
 
-        if "timestamp" not in keys:
-            raise ValueError("File does not contain correct columns")
+        if 'timestamp' not in keys:
+            raise ValueError('File does not contain correct columns')
 
         sensor_names = keys
-        sensor_names.remove("timestamp")
+        sensor_names.remove('timestamp')
 
         sensor_readings_by_sensor_name = {sensor_name: {} for sensor_name in sensor_names}
 
         for reading in raw_sensor_readings_data:
-            timestamp = reading["timestamp"]
+            timestamp = reading['timestamp']
             for sensor_name in sensor_names:
                 sensor_readings_by_sensor_name[sensor_name][timestamp] = reading[sensor_name]
 
@@ -70,9 +70,9 @@ class SensorsReadingsParser(object):
 
         result = [
             {
-                "column_name": sensor_name,
-                "exists": sensor_name in sensor_names,
-                "num_readings": sum((v != "0" and v is not None) for v in readings.values())
+                'column_name': sensor_name,
+                'exists': sensor_name in sensor_names,
+                'num_readings': sum((v != '0' and v is not None) for v in readings.values()),
             }
             for sensor_name, readings in self.sensor_readings_details.items()
         ]

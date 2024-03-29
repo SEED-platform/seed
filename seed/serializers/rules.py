@@ -1,9 +1,9 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 from rest_framework import serializers
 
 from seed.models import StatusLabel
@@ -11,11 +11,7 @@ from seed.models.data_quality import DataQualityCheck, Rule
 
 
 class RuleSerializer(serializers.ModelSerializer):
-    status_label = serializers.PrimaryKeyRelatedField(
-        queryset=StatusLabel.objects.all(),
-        allow_null=True,
-        required=False
-    )
+    status_label = serializers.PrimaryKeyRelatedField(queryset=StatusLabel.objects.all(), allow_null=True, required=False)
 
     class Meta:
         model = Rule
@@ -62,9 +58,7 @@ class RuleSerializer(serializers.ModelSerializer):
             dq_org_id = int(self.context['request'].parser_context['kwargs']['nested_organization_id'])
 
         if label is not None and label.super_organization_id != dq_org_id:
-            raise serializers.ValidationError(
-                f'Label with ID {label.id} not found in organization, {dq_org_id}.'
-            )
+            raise serializers.ValidationError(f'Label with ID {label.id} not found in organization, {dq_org_id}.')
         else:
             return label
 
@@ -92,11 +86,11 @@ class RuleSerializer(serializers.ModelSerializer):
 
         if (severity_is_valid and severity_unchanged) or severity_will_be_valid:
             # Defaulting to "FOO" enables a value check of either "" or None (even if key doesn't exist)
-            label_will_be_removed = data.get('status_label', "FOO") in ["", None]
+            label_will_be_removed = data.get('status_label', 'FOO') in ['', None]
             label_unchanged = 'status_label' not in data
             if label_will_be_removed or (label_is_not_associated and label_unchanged):
                 data_invalid = True
-                validation_message += 'Label must be assigned when using \'Valid\' Data Severity. '
+                validation_message += "Label must be assigned when using 'Valid' Data Severity. "
 
         # Rule must NOT include or exclude an empty string.
         if self.instance is None:
@@ -109,8 +103,8 @@ class RuleSerializer(serializers.ModelSerializer):
 
         if (is_include_or_exclude and condition_unchanged) or will_be_include_or_exclude:
             # Defaulting to "FOO" enables a value check of either "" or None (only if key exists)
-            text_match_will_be_empty = data.get('text_match', "FOO") in ["", None]
-            text_match_is_empty = getattr(self.instance, 'text_match', "FOO") in ["", None]
+            text_match_will_be_empty = data.get('text_match', 'FOO') in ['', None]
+            text_match_is_empty = getattr(self.instance, 'text_match', 'FOO') in ['', None]
             text_match_unchanged = 'text_match' not in data
 
             if text_match_will_be_empty or (text_match_is_empty and text_match_unchanged):
@@ -118,8 +112,6 @@ class RuleSerializer(serializers.ModelSerializer):
                 validation_message += 'Rule must not include or exclude an empty string. '
 
         if data_invalid:
-            raise serializers.ValidationError({
-                'message': validation_message
-            })
+            raise serializers.ValidationError({'message': validation_message})
         else:
             return data

@@ -1,9 +1,9 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 from rest_framework import serializers
 
 from seed.models import ColumnMappingProfile
@@ -22,7 +22,7 @@ class ColumnMappingProfileSerializer(serializers.ModelSerializer):
         profile_types_dict = dict(ColumnMappingProfile.COLUMN_MAPPING_PROFILE_TYPES)
         bsync_profiles = [
             profile_types_dict[ColumnMappingProfile.BUILDINGSYNC_DEFAULT],
-            profile_types_dict[ColumnMappingProfile.BUILDINGSYNC_CUSTOM]
+            profile_types_dict[ColumnMappingProfile.BUILDINGSYNC_CUSTOM],
         ]
         profile_type = self.initial_data.get('profile_type')
         if profile_type is None or profile_type not in bsync_profiles:
@@ -30,6 +30,8 @@ class ColumnMappingProfileSerializer(serializers.ModelSerializer):
 
         for mapping in mappings:
             if mapping.get('from_field_value') is None:
-                raise serializers.ValidationError(f'All BuildingSync mappings must include "from_field_value": for mapping {mapping["from_field"]}')
+                raise serializers.ValidationError(
+                    f'All BuildingSync mappings must include "from_field_value": for mapping {mapping["from_field"]}'
+                )
 
         return mappings

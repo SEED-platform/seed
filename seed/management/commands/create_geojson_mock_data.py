@@ -1,8 +1,8 @@
-# -*- coding: utf-8 -*-
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 import csv
 import json
 import os
@@ -15,11 +15,7 @@ class Command(BaseCommand):
     help = 'Parse example geojson data and extract to CSV for a test file'
 
     def add_arguments(self, parser):
-        parser.add_argument('--path',
-                            default='~',
-                            help='Path to local geojson files for parsing',
-                            action='store',
-                            dest='path')
+        parser.add_argument('--path', default='~', help='Path to local geojson files for parsing', action='store', dest='path')
 
     def convert_list_to_wkt(self, geom):
         """
@@ -29,8 +25,8 @@ class Command(BaseCommand):
         :param geom:
         :return:
         """
-        if geom['type'] == "Polygon":
-            coords = [f"{coord[0]} {coord[1]}" for coord in geom['coordinates'][0]]
+        if geom['type'] == 'Polygon':
+            coords = [f'{coord[0]} {coord[1]}' for coord in geom['coordinates'][0]]
             return f"POLYGON (( {', '.join(coords)} ))"
         else:
             raise Exception(f"Unknown type of Geometry in GeoJSON of {geom['type']}")
@@ -101,40 +97,66 @@ class Command(BaseCommand):
         data = [
             {
                 'taxlots': [
-                    {'id': 2664, },
+                    {
+                        'id': 2664,
+                    },
                 ],
                 'footprints': [
-                    {'id': 9572, },
-                    {'id': 12480, },
-                    {'id': 13322, },
-                    {'id': 13332, },
-                ]
+                    {
+                        'id': 9572,
+                    },
+                    {
+                        'id': 12480,
+                    },
+                    {
+                        'id': 13322,
+                    },
+                    {
+                        'id': 13332,
+                    },
+                ],
             },
             {
                 'taxlots': [
-                    {'id': 2632, },
+                    {
+                        'id': 2632,
+                    },
                 ],
                 'footprints': [
-                    {'id': 13159, },
-                ]
+                    {
+                        'id': 13159,
+                    },
+                ],
             },
             {
                 'taxlots': [
-                    {'id': 241, },
-                    {'id': 242, }
+                    {
+                        'id': 241,
+                    },
+                    {
+                        'id': 242,
+                    },
                 ],
                 'footprints': [
-                    {'id': 12388, },
-                ]
+                    {
+                        'id': 12388,
+                    },
+                ],
             },
             {
                 'taxlots': [
-                    {'id': 2299, },
-                    {'id': 2486, }
+                    {
+                        'id': 2299,
+                    },
+                    {
+                        'id': 2486,
+                    },
                 ],
                 'footprints': [
-                    {'id': 10072, },
-                ]
+                    {
+                        'id': 10072,
+                    },
+                ],
             },
         ]
 
@@ -165,8 +187,7 @@ class Command(BaseCommand):
                         for k, v in taxlot_mapping.items():
                             taxlot['properties'][v] = feature.properties[k]
                         # add in the polygons
-                        taxlot['properties']['coordinates'] = self.convert_list_to_wkt(
-                            feature.geometry)
+                        taxlot['properties']['coordinates'] = self.convert_list_to_wkt(feature.geometry)
 
             for footprint in datum['footprints']:
                 for feature in properties.features:
@@ -175,8 +196,7 @@ class Command(BaseCommand):
                         for k, v in property_mapping.items():
                             footprint['properties'][v] = feature.properties[k]
                         # add in the polygons
-                        footprint['properties']['coordinates'] = self.convert_list_to_wkt(
-                            feature.geometry)
+                        footprint['properties']['coordinates'] = self.convert_list_to_wkt(feature.geometry)
 
         print(json.dumps(data, indent=2))
 

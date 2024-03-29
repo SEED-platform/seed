@@ -5,7 +5,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('orgs', '0023_auto_20220721_1851'),
         ('seed', '0176_dataview_dataviewparameter'),
@@ -20,13 +19,48 @@ class Migration(migrations.Migration):
                 ('start', models.DateTimeField()),
                 ('end', models.DateTimeField()),
                 ('created', models.DateTimeField(auto_now_add=True)),
-                ('energy_metric_type', models.IntegerField(choices=[(0, 'Target > Actual for Compliance'), (1, 'Actual > Target for Compliance')], default=0)),
-                ('emission_metric_type', models.IntegerField(choices=[(0, 'Target > Actual for Compliance'), (1, 'Actual > Target for Compliance')], default=0)),
-                ('actual_emission_column', models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, related_name='actual_emission_column', to='seed.column')),
-                ('actual_energy_column', models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, related_name='actual_energy_column', to='seed.column')),
-                ('organization', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='compliance_metrics', to='orgs.organization')),
-                ('target_emission_column', models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, related_name='target_emission_column', to='seed.column')),
-                ('target_energy_column', models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, related_name='target_energy_column', to='seed.column')),
+                (
+                    'energy_metric_type',
+                    models.IntegerField(choices=[(0, 'Target > Actual for Compliance'), (1, 'Actual > Target for Compliance')], default=0),
+                ),
+                (
+                    'emission_metric_type',
+                    models.IntegerField(choices=[(0, 'Target > Actual for Compliance'), (1, 'Actual > Target for Compliance')], default=0),
+                ),
+                (
+                    'actual_emission_column',
+                    models.ForeignKey(
+                        null=True, on_delete=django.db.models.deletion.CASCADE, related_name='actual_emission_column', to='seed.column'
+                    ),
+                ),
+                (
+                    'actual_energy_column',
+                    models.ForeignKey(
+                        null=True, on_delete=django.db.models.deletion.CASCADE, related_name='actual_energy_column', to='seed.column'
+                    ),
+                ),
+                (
+                    'organization',
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name='compliance_metrics',
+                        to='orgs.organization',
+                    ),
+                ),
+                (
+                    'target_emission_column',
+                    models.ForeignKey(
+                        null=True, on_delete=django.db.models.deletion.CASCADE, related_name='target_emission_column', to='seed.column'
+                    ),
+                ),
+                (
+                    'target_energy_column',
+                    models.ForeignKey(
+                        null=True, on_delete=django.db.models.deletion.CASCADE, related_name='target_energy_column', to='seed.column'
+                    ),
+                ),
                 ('x_axis_columns', models.ManyToManyField(related_name='x_axis_columns', to='seed.Column')),
             ],
             options={
@@ -36,6 +70,9 @@ class Migration(migrations.Migration):
         ),
         migrations.AddConstraint(
             model_name='compliancemetric',
-            constraint=models.CheckConstraint(check=models.Q(('actual_energy_column__isnull', False), ('actual_emission_column__isnull', False), _connector='OR'), name='at_least_one_compliance_metric_type'),
+            constraint=models.CheckConstraint(
+                check=models.Q(('actual_energy_column__isnull', False), ('actual_emission_column__isnull', False), _connector='OR'),
+                name='at_least_one_compliance_metric_type',
+            ),
         ),
     ]

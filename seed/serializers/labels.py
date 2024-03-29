@@ -1,9 +1,9 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 from rest_framework import serializers
 
 from seed.models import StatusLabel as Label
@@ -11,7 +11,7 @@ from seed.models import StatusLabel as Label
 
 class LabelSerializer(serializers.ModelSerializer):
     organization_id = serializers.PrimaryKeyRelatedField(
-        source="super_organization",
+        source='super_organization',
         read_only=True,
     )
     is_applied = serializers.SerializerMethodField()
@@ -35,16 +35,16 @@ class LabelSerializer(serializers.ModelSerializer):
 
     class Meta:
         fields = (
-            "id",
-            "name",
-            "color",
-            "organization_id",
-            "super_organization",
-            "is_applied",
-            "show_in_list",
+            'id',
+            'name',
+            'color',
+            'organization_id',
+            'super_organization',
+            'is_applied',
+            'show_in_list',
         )
         extra_kwargs = {
-            "super_organization": {"write_only": True},
+            'super_organization': {'write_only': True},
         }
         model = Label
 

@@ -1,9 +1,9 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 from rest_framework import serializers
 
 from seed.models import AnalysisEvent, ATEvent, Event, NoteEvent
@@ -45,7 +45,7 @@ class ATEventSerializer(serializers.ModelSerializer):
 
     def to_representation(self, obj):
         result = super().to_representation(obj)
-        result["event_type"] = "ATEvent"
+        result['event_type'] = 'ATEvent'
 
         return result
 
@@ -60,13 +60,13 @@ class AnalysisEventSerializer(serializers.ModelSerializer):
 
     def to_representation(self, obj):
         result = super().to_representation(obj)
-        result["event_type"] = "AnalysisEvent"
+        result['event_type'] = 'AnalysisEvent'
 
         highlights = obj.analysis.get_highlights(obj.property_id)
-        result["analysis"]["highlights"] = highlights
+        result['analysis']['highlights'] = highlights
 
-        analysis_property_views = obj.analysis.get_property_view_info(obj.property_id)["views"]
-        result["analysis"]["views"] = analysis_property_views
+        analysis_property_views = obj.analysis.get_property_view_info(obj.property_id)['views']
+        result['analysis']['views'] = analysis_property_views
 
         return result
 
@@ -81,6 +81,6 @@ class NoteEventSerializer(serializers.ModelSerializer):
 
     def to_representation(self, obj):
         result = super().to_representation(obj)
-        result["event_type"] = "NoteEvent"
+        result['event_type'] = 'NoteEvent'
 
         return result

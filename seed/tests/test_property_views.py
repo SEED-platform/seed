@@ -1,9 +1,9 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 import ast
 import json
 import os
@@ -14,17 +14,15 @@ from datetime import datetime
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test.client import BOUNDARY, MULTIPART_CONTENT, encode_multipart
 from django.urls import reverse
-from django.utils.timezone import \
-    make_aware  # make_aware is used because inconsistencies exist in creating datetime with tzinfo
-from django.utils.timezone import get_current_timezone
+from django.utils.timezone import (
+    get_current_timezone,
+    make_aware,  # make_aware is used because inconsistencies exist in creating datetime with tzinfo
+)
 from pytz import timezone
 
 from config.settings.common import BASE_DIR, TIME_ZONE
 from seed.data_importer.models import ImportFile, ImportRecord
-from seed.data_importer.tasks import (
-    geocode_and_match_buildings_task,
-    save_raw_data
-)
+from seed.data_importer.tasks import geocode_and_match_buildings_task, save_raw_data
 from seed.landing.models import SEEDUser as User
 from seed.lib.xml_mapping.mapper import default_buildingsync_profile_mappings
 from seed.models import (
@@ -48,12 +46,9 @@ from seed.models import (
     Scenario,
     StatusLabel,
     TaxLotProperty,
-    TaxLotView
+    TaxLotView,
 )
-from seed.serializers.properties import (
-    PropertyStatePromoteWritableSerializer,
-    PropertyStateSerializer
-)
+from seed.serializers.properties import PropertyStatePromoteWritableSerializer, PropertyStateSerializer
 from seed.test_helpers.fake import (
     FakeColumnFactory,
     FakeColumnListProfileFactory,
@@ -64,12 +59,13 @@ from seed.test_helpers.fake import (
     FakePropertyViewFactory,
     FakeStatusLabelFactory,
     FakeTaxLotFactory,
-    FakeTaxLotStateFactory
+    FakeTaxLotStateFactory,
 )
-from seed.tests.util import DataMappingBaseTestCase
+from seed.tests.util import AccessLevelBaseTestCase, DataMappingBaseTestCase
 from seed.utils.match import match_merge_link
 from seed.utils.merge import merge_properties
 from seed.utils.organizations import create_organization
+from seed.utils.properties import pair_unpair_property_taxlot
 
 COLUMNS_TO_SEND = [
     'project_id',
@@ -79,20 +75,12 @@ COLUMNS_TO_SEND = [
     'postal_code',
     'pm_parent_property_id',
     'extra_data_field',
-    'jurisdiction_tax_lot_id'
+    'jurisdiction_tax_lot_id',
 ]
-
-from seed.tests.util import AccessLevelBaseTestCase
-from seed.utils.properties import pair_unpair_property_taxlot
-
 
 class PropertyViewTests(DataMappingBaseTestCase):
     def setUp(self):
-        user_details = {
-            'username': 'test_user@demo.com',
-            'password': 'test_pass',
-            'email': 'test_user@demo.com'
-        }
+        user_details = {'username': 'test_user@demo.com', 'password': 'test_pass', 'email': 'test_user@demo.com'}
         self.user = User.objects.create_superuser(**user_details)
         self.org, self.org_user, _ = create_organization(self.user)
         self.column_factory = FakeColumnFactory(organization=self.org)
@@ -100,28 +88,24 @@ class PropertyViewTests(DataMappingBaseTestCase):
         self.property_factory = FakePropertyFactory(organization=self.org)
         self.property_state_factory = FakePropertyStateFactory(organization=self.org)
         self.property_view_factory = FakePropertyViewFactory(organization=self.org)
-        self.cycle = self.cycle_factory.get_cycle(
-            start=datetime(2010, 10, 10, tzinfo=get_current_timezone()))
+        self.cycle = self.cycle_factory.get_cycle(start=datetime(2010, 10, 10, tzinfo=get_current_timezone()))
         self.column_list_factory = FakeColumnListProfileFactory(organization=self.org)
         self.client.login(**user_details)
 
         # create tree
-        self.org.access_level_names = ["1st Gen", "2nd Gen", "3rd Gen"]
-        mom_ali = self.org.add_new_access_level_instance(self.org.root.id, "mom")
-        self.me_ali = self.org.add_new_access_level_instance(mom_ali.id, "me")
-        self.sister_ali = self.org.add_new_access_level_instance(mom_ali.id, "sister")
+        self.org.access_level_names = ['1st Gen', '2nd Gen', '3rd Gen']
+        mom_ali = self.org.add_new_access_level_instance(self.org.root.id, 'mom')
+        self.me_ali = self.org.add_new_access_level_instance(mom_ali.id, 'me')
+        self.sister_ali = self.org.add_new_access_level_instance(mom_ali.id, 'sister')
         self.org.save()
 
     def test_create_property(self):
         state = self.property_state_factory.get_property_state()
         cycle_id = self.cycle.id
 
-        params = json.dumps({
-            "cycle_id": cycle_id,
-            "state": PropertyStateSerializer(state).data
-        })
+        params = json.dumps({'cycle_id': cycle_id, 'state': PropertyStateSerializer(state).data})
 
-        url = reverse('api:v3:properties-list') + '?organization_id={}'.format(self.org.pk)
+        url = reverse('api:v3:properties-list') + f'?organization_id={self.org.pk}'
         response = self.client.post(url, params, content_type='application/json')
         self.assertEqual(response.status_code, 201)
         self.assertEqual(response.json()['status'], 'success')
@@ -130,21 +114,23 @@ class PropertyViewTests(DataMappingBaseTestCase):
         self.assertEqual(property.access_level_instance, self.org_user.access_level_instance)
 
     def test_create_property_with_ali(self):
-        self.org.access_level_names = ["root", "child"]
+        self.org.access_level_names = ['root', 'child']
         self.org.save()
-        child_ali = self.org.add_new_access_level_instance(self.org.root.id, "child")
+        child_ali = self.org.add_new_access_level_instance(self.org.root.id, 'child')
         child_ali.save()
 
         state = self.property_state_factory.get_property_state()
         cycle_id = self.cycle.id
 
-        params = json.dumps({
-            "cycle_id": cycle_id,
-            "state": PropertyStateSerializer(state).data,
-            "access_level_instance_id": child_ali.id,
-        })
+        params = json.dumps(
+            {
+                'cycle_id': cycle_id,
+                'state': PropertyStateSerializer(state).data,
+                'access_level_instance_id': child_ali.id,
+            }
+        )
 
-        url = reverse('api:v3:properties-list') + '?organization_id={}'.format(self.org.pk)
+        url = reverse('api:v3:properties-list') + f'?organization_id={self.org.pk}'
         response = self.client.post(url, params, content_type='application/json')
 
         self.assertEqual(response.status_code, 201)
@@ -154,21 +140,23 @@ class PropertyViewTests(DataMappingBaseTestCase):
         self.assertEqual(property.access_level_instance, child_ali)
 
     def test_create_property_with_bad_ali(self):
-        self.org.access_level_names = ["root", "child"]
+        self.org.access_level_names = ['root', 'child']
         self.org.save()
-        child_ali = self.org.add_new_access_level_instance(self.org.root.id, "child")
+        child_ali = self.org.add_new_access_level_instance(self.org.root.id, 'child')
         self.org_user.access_level_instance = child_ali
 
         state = self.property_state_factory.get_property_state()
         cycle_id = self.cycle.id
 
-        params = json.dumps({
-            "cycle_id": cycle_id,
-            "state": PropertyStateSerializer(state).data,
-            "access_level_instance_id": self.org.root.id,
-        })
+        params = json.dumps(
+            {
+                'cycle_id': cycle_id,
+                'state': PropertyStateSerializer(state).data,
+                'access_level_instance_id': self.org.root.id,
+            }
+        )
 
-        url = reverse('api:v3:properties-list') + '?organization_id={}'.format(self.org.pk)
+        url = reverse('api:v3:properties-list') + f'?organization_id={self.org.pk}'
         response = self.client.post(url, params, content_type='application/json')
 
         self.assertEqual(response.status_code, 201)
@@ -177,16 +165,12 @@ class PropertyViewTests(DataMappingBaseTestCase):
     def test_create_property_in_diff_org(self):
         state = self.property_state_factory.get_property_state()
         cycle_id = self.cycle.id
-        user_2 = User.objects.create_superuser(
-            **{'username': 'test_user2@demo.com', 'password': 'test_pass', 'email': 'test_user2@demo.com'})
+        user_2 = User.objects.create_superuser(username='test_user2@demo.com', password='test_pass', email='test_user2@demo.com')
         org_2, _, _ = create_organization(user_2)
 
         # verify that user (1) can't post to user_2's org
-        params = json.dumps({
-            "cycle_id": cycle_id,
-            "state": PropertyStateSerializer(state).data
-        })
-        url = reverse('api:v3:properties-list') + '?organization_id={}'.format(org_2.pk)
+        params = json.dumps({'cycle_id': cycle_id, 'state': PropertyStateSerializer(state).data})
+        url = reverse('api:v3:properties-list') + f'?organization_id={org_2.pk}'
         response = self.client.post(url, params, content_type='application/json')
         self.assertEqual(response.status_code, 403)
         self.assertEqual(response.json()['detail'], 'You do not have permission to perform this action.')
@@ -197,12 +181,9 @@ class PropertyViewTests(DataMappingBaseTestCase):
         state.data_state = 999
         cycle_id = self.cycle.id
 
-        params = json.dumps({
-            "cycle_id": cycle_id,
-            "state": PropertyStateSerializer(state).data
-        })
+        params = json.dumps({'cycle_id': cycle_id, 'state': PropertyStateSerializer(state).data})
 
-        url = reverse('api:v3:properties-list') + '?organization_id={}'.format(self.org.pk)
+        url = reverse('api:v3:properties-list') + f'?organization_id={self.org.pk}'
         response = self.client.post(url, params, content_type='application/json')
         self.assertEqual(response.status_code, 201)
         self.assertEqual(response.json()['status'], 'success')
@@ -229,15 +210,13 @@ class PropertyViewTests(DataMappingBaseTestCase):
         protected_columns.append('files')
 
         for column in protected_columns:
-            self.assertIsNotNone(serializer.fields.get(column), f"Column {column} is not in the serializer")
-            self.assertTrue(serializer.fields[column].read_only, f"Column {column} is not read_only in the write serializer")
+            self.assertIsNotNone(serializer.fields.get(column), f'Column {column} is not in the serializer')
+            self.assertTrue(serializer.fields[column].read_only, f'Column {column} is not read_only in the write serializer')
 
     def test_get_and_edit_properties(self):
         state = self.property_state_factory.get_property_state()
         prprty = self.property_factory.get_property()
-        view = PropertyView.objects.create(
-            property=prprty, cycle=self.cycle, state=state
-        )
+        view = PropertyView.objects.create(property=prprty, cycle=self.cycle, state=state)
         params = {
             'organization_id': self.org.pk,
             'page': 1,
@@ -245,7 +224,7 @@ class PropertyViewTests(DataMappingBaseTestCase):
             'columns': COLUMNS_TO_SEND,
         }
 
-        url = reverse('api:v3:properties-search') + '?cycle_id={}'.format(self.cycle.pk)
+        url = reverse('api:v3:properties-search') + f'?cycle_id={self.cycle.pk}'
         response = self.client.get(url, params)
         data = json.loads(response.content)
         self.assertEqual(len(data), 1)
@@ -258,12 +237,8 @@ class PropertyViewTests(DataMappingBaseTestCase):
         self.assertTrue(db_updated_time is not None)
 
         # update the address
-        new_data = {
-            "state": {
-                "address_line_1": "742 Evergreen Terrace"
-            }
-        }
-        url = reverse('api:v3:properties-detail', args=[view.id]) + '?organization_id={}'.format(self.org.pk)
+        new_data = {'state': {'address_line_1': '742 Evergreen Terrace'}}
+        url = reverse('api:v3:properties-detail', args=[view.id]) + f'?organization_id={self.org.pk}'
         response = self.client.put(url, json.dumps(new_data), content_type='application/json')
         data = json.loads(response.content)
         self.assertEqual(data['status'], 'success')
@@ -276,33 +251,29 @@ class PropertyViewTests(DataMappingBaseTestCase):
         self.assertEqual(data['status'], 'success')
         self.assertEqual(data['state']['address_line_1'], '742 Evergreen Terrace')
         self.assertEqual(
-            datetime.strptime(db_created_time, "%Y-%m-%dT%H:%M:%S.%fZ").replace(microsecond=0),
-            datetime.strptime(data['property']['created'], "%Y-%m-%dT%H:%M:%S.%fZ").replace(microsecond=0)
+            datetime.strptime(db_created_time, '%Y-%m-%dT%H:%M:%S.%fZ').replace(microsecond=0),
+            datetime.strptime(data['property']['created'], '%Y-%m-%dT%H:%M:%S.%fZ').replace(microsecond=0),
         )
-        self.assertGreater(datetime.strptime(data['property']['updated'], "%Y-%m-%dT%H:%M:%S.%fZ"),
-                           datetime.strptime(db_updated_time, "%Y-%m-%dT%H:%M:%S.%fZ"))
+        self.assertGreater(
+            datetime.strptime(data['property']['updated'], '%Y-%m-%dT%H:%M:%S.%fZ'),
+            datetime.strptime(db_updated_time, '%Y-%m-%dT%H:%M:%S.%fZ'),
+        )
 
     def test_upload_inventory_document_and_delete(self):
         state = self.property_state_factory.get_property_state()
         prprty = self.property_factory.get_property()
-        view = PropertyView.objects.create(
-            property=prprty, cycle=self.cycle, state=state
-        )
+        view = PropertyView.objects.create(property=prprty, cycle=self.cycle, state=state)
 
         test_filepath = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data', 'test-document.pdf')
 
         url = reverse('api:v3:properties-detail', args=[view.id]) + f'upload_inventory_document/?organization_id={self.org.pk}'
 
-        document = open(test_filepath, 'rb')
-        response = self.client.put(
-            path=url,
-            data=encode_multipart(data=dict(
-                file=document,
-                file_type='PDF',
-                name='unused-name'),
-                boundary=BOUNDARY),
-            content_type=MULTIPART_CONTENT
-        )
+        with open(test_filepath, 'rb') as document:
+            response = self.client.put(
+                path=url,
+                data=encode_multipart(data={'file': document, 'file_type': 'PDF', 'name': 'unused-name'}, boundary=BOUNDARY),
+                content_type=MULTIPART_CONTENT,
+            )
 
         data = response.json()
         self.assertEqual(200, response.status_code)
@@ -318,30 +289,18 @@ class PropertyViewTests(DataMappingBaseTestCase):
     def test_edit_properties_creates_notes_after_initial_edit(self):
         state = self.property_state_factory.get_property_state()
         prprty = self.property_factory.get_property()
-        view = PropertyView.objects.create(
-            property=prprty, cycle=self.cycle, state=state
-        )
+        view = PropertyView.objects.create(property=prprty, cycle=self.cycle, state=state)
 
         # update the address
-        new_data = {
-            "state": {
-                "address_line_1": "742 Evergreen Terrace",
-                "extra_data": {"Some Extra Data": "111"}
-            }
-        }
-        url = reverse('api:v3:properties-detail', args=[view.id]) + '?organization_id={}'.format(self.org.pk)
+        new_data = {'state': {'address_line_1': '742 Evergreen Terrace', 'extra_data': {'Some Extra Data': '111'}}}
+        url = reverse('api:v3:properties-detail', args=[view.id]) + f'?organization_id={self.org.pk}'
         self.client.put(url, json.dumps(new_data), content_type='application/json')
 
         self.assertEqual(view.notes.count(), 1)
 
         # update the address again
-        new_data = {
-            "state": {
-                "address_line_1": "123 note street",
-                "extra_data": {"Some Extra Data": "222"}
-            }
-        }
-        url = reverse('api:v3:properties-detail', args=[view.id]) + '?organization_id={}'.format(self.org.pk)
+        new_data = {'state': {'address_line_1': '123 note street', 'extra_data': {'Some Extra Data': '222'}}}
+        url = reverse('api:v3:properties-detail', args=[view.id]) + f'?organization_id={self.org.pk}'
         self.client.put(url, json.dumps(new_data), content_type='application/json')
 
         self.assertEqual(view.notes.count(), 2)
@@ -350,37 +309,30 @@ class PropertyViewTests(DataMappingBaseTestCase):
 
         expected_log_data = [
             {
-                "field": "address_line_1",
-                "previous_value": "742 Evergreen Terrace",
-                "new_value": "123 note street",
-                "state_id": refreshed_view.state_id
+                'field': 'address_line_1',
+                'previous_value': '742 Evergreen Terrace',
+                'new_value': '123 note street',
+                'state_id': refreshed_view.state_id,
             },
-            {
-                "field": "Some Extra Data",
-                "previous_value": "111",
-                "new_value": "222",
-                "state_id": refreshed_view.state_id
-            },
+            {'field': 'Some Extra Data', 'previous_value': '111', 'new_value': '222', 'state_id': refreshed_view.state_id},
         ]
         self.assertEqual(note.note_type, Note.LOG)
-        self.assertEqual(note.name, "Automatically Created")
+        self.assertEqual(note.name, 'Automatically Created')
         self.assertCountEqual(note.log_data, expected_log_data)
 
     def test_first_lat_long_edit(self):
         state = self.property_state_factory.get_property_state()
         prprty = self.property_factory.get_property()
-        view = PropertyView.objects.create(
-            property=prprty, cycle=self.cycle, state=state
-        )
+        view = PropertyView.objects.create(property=prprty, cycle=self.cycle, state=state)
 
         # update the address
         new_data = {
-            "state": {
-                "latitude": 39.765251,
-                "longitude": -104.986138,
+            'state': {
+                'latitude': 39.765251,
+                'longitude': -104.986138,
             }
         }
-        url = reverse('api:v3:properties-detail', args=[view.id]) + '?organization_id={}'.format(self.org.pk)
+        url = reverse('api:v3:properties-detail', args=[view.id]) + f'?organization_id={self.org.pk}'
         response = self.client.put(url, json.dumps(new_data), content_type='application/json')
         data = json.loads(response.content)
         self.assertEqual(data['status'], 'success')
@@ -401,7 +353,7 @@ class PropertyViewTests(DataMappingBaseTestCase):
             'import_file_id': import_file_1.id,
             'data_state': DATA_STATE_MAPPING,
             'no_default_data': False,
-            "raw_access_level_instance_id": self.org.root.id,
+            'raw_access_level_instance_id': self.org.root.id,
         }
         self.property_state_factory.get_property_state(**base_details)
 
@@ -412,7 +364,7 @@ class PropertyViewTests(DataMappingBaseTestCase):
 
         _import_record_2, import_file_2 = self.create_import_file(self.user, self.org, self.cycle)
 
-        url = reverse('api:v3:properties-filter') + '?cycle_id={}&organization_id={}&page=1&per_page=999999999'.format(self.cycle.pk, self.org.pk)
+        url = reverse('api:v3:properties-filter') + f'?cycle_id={self.cycle.pk}&organization_id={self.org.pk}&page=1&per_page=999999999'
         response = self.client.post(url, content_type='application/json')
         data = json.loads(response.content)
 
@@ -428,7 +380,7 @@ class PropertyViewTests(DataMappingBaseTestCase):
         import_file_2.save()
         geocode_and_match_buildings_task(import_file_2.id)
 
-        url = reverse('api:v3:properties-filter') + '?cycle_id={}&organization_id={}&page=1&per_page=999999999'.format(self.cycle.pk, self.org.pk)
+        url = reverse('api:v3:properties-filter') + f'?cycle_id={self.cycle.pk}&organization_id={self.org.pk}&page=1&per_page=999999999'
         response = self.client.post(url, content_type='application/json')
         data = json.loads(response.content)
 
@@ -444,13 +396,10 @@ class PropertyViewTests(DataMappingBaseTestCase):
 
         # attach pairing to one and only property_view
         TaxLotProperty(
-            primary=True,
-            cycle_id=self.cycle.id,
-            property_view_id=PropertyView.objects.get().id,
-            taxlot_view_id=taxlot_view.id
+            primary=True, cycle_id=self.cycle.id, property_view_id=PropertyView.objects.get().id, taxlot_view_id=taxlot_view.id
         ).save()
 
-        url = reverse('api:v3:properties-filter') + '?cycle_id={}&organization_id={}&page=1&per_page=999999999'.format(self.cycle.pk, self.org.pk)
+        url = reverse('api:v3:properties-filter') + f'?cycle_id={self.cycle.pk}&organization_id={self.org.pk}&page=1&per_page=999999999'
         response = self.client.post(url, content_type='application/json')
         data = json.loads(response.content)
 
@@ -460,11 +409,9 @@ class PropertyViewTests(DataMappingBaseTestCase):
         self.assertFalse(related['merged_indicator'])
 
     def test_list_properties_with_profile_id(self):
-        state = self.property_state_factory.get_property_state(extra_data={"field_1": "value_1"})
+        state = self.property_state_factory.get_property_state(extra_data={'field_1': 'value_1'})
         prprty = self.property_factory.get_property()
-        PropertyView.objects.create(
-            property=prprty, cycle=self.cycle, state=state
-        )
+        PropertyView.objects.create(property=prprty, cycle=self.cycle, state=state)
 
         # save all the columns in the state to the database so we can setup column list settings
         Column.save_column_names(state)
@@ -475,7 +422,7 @@ class PropertyViewTests(DataMappingBaseTestCase):
             'organization_id': self.org.pk,
             'profile_id': columnlistprofile.id,
         }
-        url = reverse('api:v3:properties-search') + '?cycle_id={}'.format(self.cycle.pk)
+        url = reverse('api:v3:properties-search') + f'?cycle_id={self.cycle.pk}'
         response = self.client.get(url, params)
         data = response.json()
         self.assertEqual(len(data), 1)
@@ -486,30 +433,23 @@ class PropertyViewTests(DataMappingBaseTestCase):
 
     def test_properties_cycles_list(self):
         # Create Property set in cycle 1
-        state = self.property_state_factory.get_property_state(extra_data={"field_1": "value_1"})
+        state = self.property_state_factory.get_property_state(extra_data={'field_1': 'value_1'})
         prprty = self.property_factory.get_property()
-        PropertyView.objects.create(
-            property=prprty, cycle=self.cycle, state=state
-        )
+        PropertyView.objects.create(property=prprty, cycle=self.cycle, state=state)
 
-        cycle_2 = self.cycle_factory.get_cycle(
-            start=datetime(2018, 10, 10, tzinfo=get_current_timezone()))
-        state_2 = self.property_state_factory.get_property_state(extra_data={"field_1": "value_2"})
+        cycle_2 = self.cycle_factory.get_cycle(start=datetime(2018, 10, 10, tzinfo=get_current_timezone()))
+        state_2 = self.property_state_factory.get_property_state(extra_data={'field_1': 'value_2'})
         prprty_2 = self.property_factory.get_property()
-        PropertyView.objects.create(
-            property=prprty_2, cycle=cycle_2, state=state_2
-        )
+        PropertyView.objects.create(property=prprty_2, cycle=cycle_2, state=state_2)
 
         # save all the columns in the state to the database so we can setup column list settings
         Column.save_column_names(state)
         # get the columnlistprofile (default) for all columns
         columnlistprofile = self.column_list_factory.get_columnlistprofile(columns=['address_line_1', 'field_1'])
 
-        post_params = json.dumps({
-            'organization_id': self.org.pk,
-            'profile_id': columnlistprofile.id,
-            'cycle_ids': [self.cycle.id, cycle_2.id]
-        })
+        post_params = json.dumps(
+            {'organization_id': self.org.pk, 'profile_id': columnlistprofile.id, 'cycle_ids': [self.cycle.id, cycle_2.id]}
+        )
         url = reverse('api:v3:properties-filter-by-cycle')
         response = self.client.post(url, post_params, content_type='application/json')
         data = response.json()
@@ -537,17 +477,12 @@ class PropertyViewTests(DataMappingBaseTestCase):
 
         ps_1 = self.property_state_factory.get_property_state(**base_details)
         prprty = self.property_factory.get_property()
-        view_1 = PropertyView.objects.create(
-            property=prprty, cycle=self.cycle, state=ps_1
-        )
+        view_1 = PropertyView.objects.create(property=prprty, cycle=self.cycle, state=ps_1)
 
-        cycle_2 = self.cycle_factory.get_cycle(
-            start=datetime(2018, 10, 10, tzinfo=get_current_timezone()))
+        cycle_2 = self.cycle_factory.get_cycle(start=datetime(2018, 10, 10, tzinfo=get_current_timezone()))
         ps_2 = self.property_state_factory.get_property_state(**base_details)
         prprty_2 = self.property_factory.get_property()
-        PropertyView.objects.create(
-            property=prprty_2, cycle=cycle_2, state=ps_2
-        )
+        PropertyView.objects.create(property=prprty_2, cycle=cycle_2, state=ps_2)
 
         url = reverse('api:v3:properties-match-merge-link', args=[view_1.id])
         url += f'?organization_id={self.org.pk}'
@@ -573,24 +508,22 @@ class PropertyViewTests(DataMappingBaseTestCase):
 
         ps_1 = self.property_state_factory.get_property_state(**base_details)
         prprty = self.property_factory.get_property(access_level_instance=self.me_ali)
-        view_1 = PropertyView.objects.create(
-            property=prprty, cycle=self.cycle, state=ps_1
-        )
+        view_1 = PropertyView.objects.create(property=prprty, cycle=self.cycle, state=ps_1)
 
-        cycle_2 = self.cycle_factory.get_cycle(
-            start=datetime(2018, 10, 10, tzinfo=get_current_timezone()))
+        cycle_2 = self.cycle_factory.get_cycle(start=datetime(2018, 10, 10, tzinfo=get_current_timezone()))
         ps_2 = self.property_state_factory.get_property_state(**base_details)
         prprty_2 = self.property_factory.get_property(access_level_instance=self.sister_ali)
-        PropertyView.objects.create(
-            property=prprty_2, cycle=cycle_2, state=ps_2
-        )
+        PropertyView.objects.create(property=prprty_2, cycle=cycle_2, state=ps_2)
 
         url = reverse('api:v3:properties-match-merge-link', args=[view_1.id])
         url += f'?organization_id={self.org.pk}'
         response = self.client.post(url, content_type='application/json')
 
         assert response.status_code == 400
-        assert response.json()["message"] == 'This property shares matching criteria with at least one property in a different ali. This should not happen. Please contact your system administrator.'
+        assert (
+            response.json()['message']
+            == 'This property shares matching criteria with at least one property in a different ali. This should not happen. Please contact your system administrator.'
+        )
 
     def test_property_match_merge_link_merges_but_different_alis(self):
         base_details = {
@@ -600,37 +533,31 @@ class PropertyViewTests(DataMappingBaseTestCase):
 
         ps_1 = self.property_state_factory.get_property_state(**base_details)
         prprty = self.property_factory.get_property(access_level_instance=self.me_ali)
-        view_1 = PropertyView.objects.create(
-            property=prprty, cycle=self.cycle, state=ps_1
-        )
+        view_1 = PropertyView.objects.create(property=prprty, cycle=self.cycle, state=ps_1)
 
         ps_2 = self.property_state_factory.get_property_state(**base_details)
         prprty_2 = self.property_factory.get_property(access_level_instance=self.sister_ali)
-        PropertyView.objects.create(
-            property=prprty_2, cycle=self.cycle, state=ps_2
-        )
+        PropertyView.objects.create(property=prprty_2, cycle=self.cycle, state=ps_2)
 
         url = reverse('api:v3:properties-match-merge-link', args=[view_1.id])
         url += f'?organization_id={self.org.pk}'
         response = self.client.post(url, content_type='application/json')
 
         assert response.status_code == 400
-        assert response.json()["message"] == 'This property shares matching criteria with at least one property in a different ali. This should not happen. Please contact your system administrator.'
+        assert (
+            response.json()['message']
+            == 'This property shares matching criteria with at least one property in a different ali. This should not happen. Please contact your system administrator.'
+        )
 
     def test_get_links_for_a_single_property(self):
         # Create 2 linked property sets
-        state = self.property_state_factory.get_property_state(extra_data={"field_1": "value_1"})
+        state = self.property_state_factory.get_property_state(extra_data={'field_1': 'value_1'})
         prprty = self.property_factory.get_property()
-        view_1 = PropertyView.objects.create(
-            property=prprty, cycle=self.cycle, state=state
-        )
+        view_1 = PropertyView.objects.create(property=prprty, cycle=self.cycle, state=state)
 
-        later_cycle = self.cycle_factory.get_cycle(
-            start=datetime(2100, 10, 10, tzinfo=get_current_timezone()))
-        state_2 = self.property_state_factory.get_property_state(extra_data={"field_1": "value_2"})
-        view_2 = PropertyView.objects.create(
-            property=prprty, cycle=later_cycle, state=state_2
-        )
+        later_cycle = self.cycle_factory.get_cycle(start=datetime(2100, 10, 10, tzinfo=get_current_timezone()))
+        state_2 = self.property_state_factory.get_property_state(extra_data={'field_1': 'value_2'})
+        view_2 = PropertyView.objects.create(property=prprty, cycle=later_cycle, state=state_2)
 
         url = reverse('api:v3:properties-links', args=[view_1.id])
         url += f'?organization_id={self.org.pk}'
@@ -663,7 +590,7 @@ class PropertyViewTests(DataMappingBaseTestCase):
         # http://localhost:8000/api/v3/properties/search?organization_id=265&cycle=219&identifier=09-IS
 
         # check for all items
-        query_params = "?cycle={}&organization_id={}".format(self.cycle.pk, self.org.pk)
+        query_params = f'?cycle={self.cycle.pk}&organization_id={self.org.pk}'
         url = reverse('api:v3:properties-search') + query_params
         response = self.client.get(url)
         results = json.loads(response.content)
@@ -671,7 +598,7 @@ class PropertyViewTests(DataMappingBaseTestCase):
         self.assertEqual(len(results), 5)
 
         # check for 2 items with 123
-        query_params = "?cycle={}&organization_id={}&identifier={}".format(self.cycle.pk, self.org.pk, '123')
+        query_params = '?cycle={}&organization_id={}&identifier={}'.format(self.cycle.pk, self.org.pk, '123')
         url = reverse('api:v3:properties-search') + query_params
         response = self.client.get(url)
         results = json.loads(response.content)
@@ -684,9 +611,7 @@ class PropertyViewTests(DataMappingBaseTestCase):
         self.assertEqual(len(results), 2)
 
         # check the combination of both the identifier and the analysis state
-        query_params = "?cycle={}&organization_id={}&identifier={}".format(
-            self.cycle.pk, self.org.pk, 'Long'
-        )
+        query_params = '?cycle={}&organization_id={}&identifier={}'.format(self.cycle.pk, self.org.pk, 'Long')
         url = reverse('api:v3:properties-search') + query_params
         response = self.client.get(url)
         results = json.loads(response.content)
@@ -697,50 +622,39 @@ class PropertyViewTests(DataMappingBaseTestCase):
         # Create a property set with meters
         state_1 = self.property_state_factory.get_property_state()
         property_1 = self.property_factory.get_property()
-        property_view_1 = PropertyView.objects.create(
-            property=property_1, cycle=self.cycle, state=state_1
-        )
+        property_view_1 = PropertyView.objects.create(property=property_1, cycle=self.cycle, state=state_1)
 
-        import_record = ImportRecord.objects.create(owner=self.user, last_modified_by=self.user, super_organization=self.org, access_level_instance=self.org.root)
-        filename = "example-GreenButton-data.xml"
-        filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + filename
+        import_record = ImportRecord.objects.create(
+            owner=self.user, last_modified_by=self.user, super_organization=self.org, access_level_instance=self.org.root
+        )
+        filename = 'example-GreenButton-data.xml'
+        filepath = os.path.dirname(os.path.abspath(__file__)) + '/data/' + filename
         import_file = ImportFile.objects.create(
             import_record=import_record,
             source_type=SEED_DATA_SOURCES[GREEN_BUTTON][1],
             uploaded_filename=filename,
-            file=SimpleUploadedFile(
-                name=filename,
-                content=pathlib.Path(filepath).read_bytes()
-            ),
+            file=SimpleUploadedFile(name=filename, content=pathlib.Path(filepath).read_bytes()),
             cycle=self.cycle,
-            matching_results_data={"property_id": property_1.id}  # this is how target property is specified
+            matching_results_data={'property_id': property_1.id},  # this is how target property is specified
         )
-        gb_import_url = reverse("api:v3:import_files-start-save-data", args=[import_file.id])
+        gb_import_url = reverse('api:v3:import_files-start-save-data', args=[import_file.id])
         gb_import_url += f'?organization_id={self.org.pk}'
-        gb_import_post_params = {
-            'cycle_id': self.cycle.pk
-        }
+        gb_import_post_params = {'cycle_id': self.cycle.pk}
         self.client.post(gb_import_url, gb_import_post_params)
 
         # Create a property set without meters
         state_2 = self.property_state_factory.get_property_state()
         property_2 = self.property_factory.get_property()
-        property_view_2 = PropertyView.objects.create(
-            property=property_2, cycle=self.cycle, state=state_2
-        )
+        property_view_2 = PropertyView.objects.create(property=property_2, cycle=self.cycle, state=state_2)
 
         url = reverse('api:v3:properties-meters-exist')
         url += f'?organization_id={self.org.pk}'
 
-        true_post_params = json.dumps({
-            'property_view_ids': [property_view_2.pk, property_view_1.pk]
-        })
+        true_post_params = json.dumps({'property_view_ids': [property_view_2.pk, property_view_1.pk]})
         true_result = self.client.post(url, true_post_params, content_type='application/json')
         self.assertEqual(b'true', true_result.content)
 
-        false_post_params = json.dumps({
-            'property_view_ids': [property_view_2.pk]
-        })
+        false_post_params = json.dumps({'property_view_ids': [property_view_2.pk]})
         false_result = self.client.post(url, false_post_params, content_type='application/json')
         self.assertEqual(b'false', false_result.content)
 
@@ -755,7 +669,11 @@ class PropertyViewTestsPermissions(AccessLevelBaseTestCase):
         self.view = self.property_view_factory.get_property_view(cycle=self.cycle)
         self.taxlot_view = self.taxlot_view_factory.get_taxlot_view(cycle=self.cycle)
         self.property = Property.objects.create(organization=self.org, access_level_instance=self.org.root)
-        self.label = StatusLabel.objects.create(color="red", name="test_label", super_organization=self.org,)
+        self.label = StatusLabel.objects.create(
+            color='red',
+            name='test_label',
+            super_organization=self.org,
+        )
         self.view.labels.add(self.label)
         self.view.property = self.property
         self.view.save()
@@ -767,15 +685,15 @@ class PropertyViewTestsPermissions(AccessLevelBaseTestCase):
         self.login_as_root_member()
         resp = self.client.post(url, content_type='application/json')
         data = resp.json()
-        label_data = next(d for d in data if d["name"] == "test_label")
-        assert label_data["is_applied"] == [self.view.pk]
+        label_data = next(d for d in data if d['name'] == 'test_label')
+        assert label_data['is_applied'] == [self.view.pk]
 
         # child member cannot
         self.login_as_child_member()
         resp = self.client.post(url, content_type='application/json')
         data = resp.json()
-        label_data = next(d for d in data if d["name"] == "test_label")
-        assert "is_applied" not in label_data
+        label_data = next(d for d in data if d['name'] == 'test_label')
+        assert 'is_applied' not in label_data
 
     def test_property_meter_usage(self):
         url = reverse('api:v3:properties-meter-usage', kwargs={'pk': self.view.id}) + f'?organization_id={self.org.pk}'
@@ -832,20 +750,16 @@ class PropertyViewTestsPermissions(AccessLevelBaseTestCase):
         self.login_as_child_member()
         resp = self.client.post(url, params, content_type='application/json')
         assert resp.status_code == 400
-        assert resp.json()["status"] == "error"
+        assert resp.json()['status'] == 'error'
 
     def test_properties_merge(self):
         self.state_2 = self.property_state_factory.get_property_state(address_line_1='2 property state')
         self.property_2 = self.property_factory.get_property()
-        self.view_2 = PropertyView.objects.create(
-            property=self.property_2, cycle=self.cycle, state=self.state_2
-        )
+        self.view_2 = PropertyView.objects.create(property=self.property_2, cycle=self.cycle, state=self.state_2)
 
         # Merge the properties
-        url = reverse('api:v3:properties-merge') + '?organization_id={}'.format(self.org.pk)
-        post_params = json.dumps({
-            'property_view_ids': [self.view_2.pk, self.view.pk]
-        })
+        url = reverse('api:v3:properties-merge') + f'?organization_id={self.org.pk}'
+        post_params = json.dumps({'property_view_ids': [self.view_2.pk, self.view.pk]})
 
         # child member cannot
         self.login_as_child_member()
@@ -885,7 +799,7 @@ class PropertyViewTestsPermissions(AccessLevelBaseTestCase):
 
     def test_property_update(self):
         url = reverse('api:v3:properties-detail', args=[self.view.id]) + f'?organization_id={self.org.pk}'
-        param = json.dumps({"state": {"address_line_1": "742 Evergreen Terrace"}})
+        param = json.dumps({'state': {'address_line_1': '742 Evergreen Terrace'}})
 
         # root member can
         self.login_as_root_member()
@@ -919,24 +833,22 @@ class PropertyViewTestsPermissions(AccessLevelBaseTestCase):
         self.login_as_root_member()
         resp = self.client.post(url, content_type='application/json')
         assert resp.status_code == 200
-        assert resp.json()["pagination"]["total"] == 1
+        assert resp.json()['pagination']['total'] == 1
 
         # child member cannot
         self.login_as_child_member()
         resp = self.client.post(url, content_type='application/json')
         assert resp.status_code == 200
-        assert resp.json()["pagination"]["total"] == 0
+        assert resp.json()['pagination']['total'] == 0
 
     def test_property_unmerge(self):
         self.state_2 = self.property_state_factory.get_property_state(address_line_1='2 property state')
         self.property_2 = self.property_factory.get_property()
-        self.view_2 = PropertyView.objects.create(
-            property=self.property_2, cycle=self.cycle, state=self.state_2
-        )
+        self.view_2 = PropertyView.objects.create(property=self.property_2, cycle=self.cycle, state=self.state_2)
         merged_state = merge_properties([self.view.state.pk, self.state_2.pk], self.org.pk, 'Manual Match')
         _, _, view_id = match_merge_link(merged_state.id, 'PropertyState', self.org.root, self.cycle)
         view_id = PropertyView.objects.first().id
-        url = reverse('api:v3:properties-unmerge', args=[view_id]) + '?organization_id={}'.format(self.org.pk)
+        url = reverse('api:v3:properties-unmerge', args=[view_id]) + f'?organization_id={self.org.pk}'
 
         # child member cannot
         self.login_as_child_member()
@@ -949,7 +861,7 @@ class PropertyViewTestsPermissions(AccessLevelBaseTestCase):
         assert response.status_code == 200
 
     def test_property_match_merge_link(self):
-        url = reverse('api:v3:properties-match-merge-link', args=[self.view.id]) + '?organization_id={}'.format(self.org.pk)
+        url = reverse('api:v3:properties-match-merge-link', args=[self.view.id]) + f'?organization_id={self.org.pk}'
 
         # root member can
         self.login_as_root_member()
@@ -964,15 +876,11 @@ class PropertyViewTestsPermissions(AccessLevelBaseTestCase):
     def test_properties_batch_delete(self):
         self.state_2 = self.property_state_factory.get_property_state(address_line_1='2 property state')
         self.property_2 = self.property_factory.get_property(access_level_instance=self.child_level_instance)
-        self.view_2 = PropertyView.objects.create(
-            property=self.property_2, cycle=self.cycle, state=self.state_2
-        )
+        self.view_2 = PropertyView.objects.create(property=self.property_2, cycle=self.cycle, state=self.state_2)
 
         # Merge the properties
-        url = reverse('api:v3:properties-batch-delete') + '?organization_id={}'.format(self.org.pk)
-        params = json.dumps({
-            'property_view_ids': [self.view_2.pk, self.view.pk]
-        })
+        url = reverse('api:v3:properties-batch-delete') + f'?organization_id={self.org.pk}'
+        params = json.dumps({'property_view_ids': [self.view_2.pk, self.view.pk]})
 
         # child member only deletes the one it has access to.
         self.login_as_child_member()
@@ -1017,17 +925,17 @@ class PropertyViewTestsPermissions(AccessLevelBaseTestCase):
         self.login_as_root_member()
         resp = self.client.get(url, content_type='application/json')
         assert resp.status_code == 200
-        assert resp.json()["pagination"]["total"] == 1
+        assert resp.json()['pagination']['total'] == 1
 
         # child member cannot
         self.login_as_child_member()
         resp = self.client.get(url, content_type='application/json')
         assert resp.status_code == 200
-        assert resp.json()["pagination"]["total"] == 0
+        assert resp.json()['pagination']['total'] == 0
 
     def test_property_filter_by_cycle(self):
         url = reverse('api:v3:properties-filter-by-cycle') + f'?organization_id={self.org.pk}'
-        params = json.dumps({"cycle_ids": [self.cycle.id]})
+        params = json.dumps({'cycle_ids': [self.cycle.id]})
 
         # root member can
         self.login_as_root_member()
@@ -1042,20 +950,20 @@ class PropertyViewTestsPermissions(AccessLevelBaseTestCase):
         assert len(resp.json()[str(self.cycle.id)]) == 0
 
     def test_properties_get_canonical_properties(self):
-        url = reverse('api:v3:properties-get-canonical-properties') + '?organization_id={}'.format(self.org.pk)
+        url = reverse('api:v3:properties-get-canonical-properties') + f'?organization_id={self.org.pk}'
         params = json.dumps({'view_ids': [self.view.pk]})
 
         # root member can
         self.login_as_root_member()
         resp = self.client.post(url, params, content_type='application/json')
         assert resp.status_code == 200
-        assert resp.json()["properties"] == [self.property.pk]
+        assert resp.json()['properties'] == [self.property.pk]
 
         # child member cannot
         self.login_as_child_member()
         resp = self.client.post(url, params, content_type='application/json')
         assert resp.status_code == 200
-        assert resp.json()["properties"] == []
+        assert resp.json()['properties'] == []
 
     def test_property_pair(self):
         url = reverse('api:v3:properties-pair', args=[self.view.id]) + f'?taxlot_id={self.taxlot_view.pk}&organization_id={self.org.pk}'
@@ -1111,11 +1019,7 @@ class PropertyViewTestsPermissions(AccessLevelBaseTestCase):
         )
         with open(filename, 'rb') as f:
             data = encode_multipart(
-                data=dict(
-                    file=f,
-                    file_type='BuildingSync',
-                    name='unused-name'
-                ),
+                data={'file': f, 'file_type': 'BuildingSync', 'name': 'unused-name'},
                 boundary=BOUNDARY,
             )
 
@@ -1139,11 +1043,7 @@ class PropertyViewTestsPermissions(AccessLevelBaseTestCase):
         )
         with open(filename, 'rb') as f:
             data = encode_multipart(
-                data=dict(
-                    file=f,
-                    file_type='PDF',
-                    name='unused-name'
-                ),
+                data={'file': f, 'file_type': 'PDF', 'name': 'unused-name'},
                 boundary=BOUNDARY,
             )
 
@@ -1174,71 +1074,51 @@ class PropertyViewTestsPermissions(AccessLevelBaseTestCase):
         """Simple test to verify that the property state is merged with an updated
         ESPM download XLSX file."""
         pm_property_id = '22482007'
-        mapping_filepath = os.path.join(
-            os.path.dirname(os.path.abspath(__file__)), 'data', 'mappings', 'espm-single-mapping.csv'
-        )
+        mapping_filepath = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data', 'mappings', 'espm-single-mapping.csv')
         # need to upload the mappings for the ESPM data to a new profile
-        mapping_profile = ColumnMappingProfile.create_from_file(
-            mapping_filepath, self.org, 'ESPM', overwrite_if_exists=True
-        )
+        mapping_profile = ColumnMappingProfile.create_from_file(mapping_filepath, self.org, 'ESPM', overwrite_if_exists=True)
 
-        test_filepath = os.path.join(
-            os.path.dirname(os.path.abspath(__file__)), 'data', f'portfolio-manager-single-{pm_property_id}.xlsx'
-        )
+        test_filepath = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data', f'portfolio-manager-single-{pm_property_id}.xlsx')
 
         url = reverse('api:v3:properties-update-with-espm', args=[self.view.id])
-        url += f"?organization_id={self.org.id}&cycle_id={self.cycle.id}&mapping_profile_id={mapping_profile.id}"
-        doc = open(test_filepath, 'rb')
+        url += f'?organization_id={self.org.id}&cycle_id={self.cycle.id}&mapping_profile_id={mapping_profile.id}'
+        with open(test_filepath, 'rb') as doc:
+            self.login_as_root_member()
+            resp = self.client.put(
+                path=url,
+                data=encode_multipart(data={'file': doc, 'file_type': 'XLSX', 'name': doc.name}, boundary=BOUNDARY),
+                content_type=MULTIPART_CONTENT,
+            )
+            assert resp.status_code == 200
 
-        self.login_as_root_member()
-        resp = self.client.put(
-            path=url,
-            data=encode_multipart(data=dict(
-                file=doc,
-                file_type='XLSX',
-                name=doc.name),
-                boundary=BOUNDARY),
-            content_type=MULTIPART_CONTENT
-        )
-        assert resp.status_code == 200
-
-        self.login_as_child_member()
-        resp = self.client.put(
-            path=url,
-            data=encode_multipart(data=dict(
-                file=doc,
-                file_type='XLSX',
-                name=doc.name),
-                boundary=BOUNDARY),
-            content_type=MULTIPART_CONTENT
-        )
-        assert resp.status_code == 404
+            self.login_as_child_member()
+            resp = self.client.put(
+                path=url,
+                data=encode_multipart(data={'file': doc, 'file_type': 'XLSX', 'name': doc.name}, boundary=BOUNDARY),
+                content_type=MULTIPART_CONTENT,
+            )
+            assert resp.status_code == 404
 
 
 class PropertyUpdateCausesMergesAndLinkTests(AccessLevelBaseTestCase):
     def setUp(self):
         super().setUp()
-        self.cycle = self.cycle_factory.get_cycle(
-            start=datetime(2010, 10, 10, tzinfo=get_current_timezone()))
+        self.cycle = self.cycle_factory.get_cycle(start=datetime(2010, 10, 10, tzinfo=get_current_timezone()))
 
         self.state_1 = self.property_state_factory.get_property_state(
             address_line_1='1 property state',
-            pm_property_id='5766973'  # this allows the Property to be targeted for PM meter additions
+            pm_property_id='5766973',  # this allows the Property to be targeted for PM meter additions
         )
         self.property_1 = self.property_factory.get_property()
-        self.view_1 = PropertyView.objects.create(
-            property=self.property_1, cycle=self.cycle, state=self.state_1
-        )
+        self.view_1 = PropertyView.objects.create(property=self.property_1, cycle=self.cycle, state=self.state_1)
 
         self.state_2 = self.property_state_factory.get_property_state(address_line_1='2 property state')
         self.property_2 = self.property_factory.get_property()
-        self.view_2 = PropertyView.objects.create(
-            property=self.property_2, cycle=self.cycle, state=self.state_2
-        )
+        self.view_2 = PropertyView.objects.create(property=self.property_2, cycle=self.cycle, state=self.state_2)
 
     def test_properties_update_causes_merge(self):
         url = reverse('api:v3:properties-detail', args=[self.view_2.id]) + f'?organization_id={self.org.pk}'
-        param = json.dumps({"state": {"pm_property_id": "5766973"}})
+        param = json.dumps({'state': {'pm_property_id': '5766973'}})
 
         response = self.client.put(url, param, content_type='application/json')
 
@@ -1247,25 +1127,24 @@ class PropertyUpdateCausesMergesAndLinkTests(AccessLevelBaseTestCase):
         assert PropertyView.objects.count() == 1
 
     def test_properties_update_causes_link(self):
-        self.view_1.cycle = self.cycle_factory.get_cycle(
-            start=datetime(2020, 10, 10, tzinfo=get_current_timezone()))
+        self.view_1.cycle = self.cycle_factory.get_cycle(start=datetime(2020, 10, 10, tzinfo=get_current_timezone()))
         self.view_1.save()
 
         url = reverse('api:v3:properties-detail', args=[self.view_2.id]) + f'?organization_id={self.org.pk}'
-        param = json.dumps({"state": {"pm_property_id": "5766973"}})
+        param = json.dumps({'state': {'pm_property_id': '5766973'}})
 
         response = self.client.put(url, param, content_type='application/json')
 
         assert response.status_code == 200
         assert PropertyView.objects.count() == 2
-        assert list(PropertyView.objects.values_list("property", flat=True)) == [self.property_1.id, self.property_1.id]
+        assert list(PropertyView.objects.values_list('property', flat=True)) == [self.property_1.id, self.property_1.id]
 
     def test_properties_update_causes_merge_different_ali(self):
         self.property_1.access_level_instance = self.child_level_instance
         self.property_1.save()
 
         url = reverse('api:v3:properties-detail', args=[self.view_2.id]) + f'?organization_id={self.org.pk}'
-        param = json.dumps({"state": {"pm_property_id": "5766973"}})
+        param = json.dumps({'state': {'pm_property_id': '5766973'}})
 
         response = self.client.put(url, param, content_type='application/json')
 
@@ -1276,27 +1155,22 @@ class PropertyUpdateCausesMergesAndLinkTests(AccessLevelBaseTestCase):
     def test_properties_update_causes_link_different_ali(self):
         self.property_1.access_level_instance = self.child_level_instance
         self.property_1.save()
-        self.view_1.cycle = self.cycle_factory.get_cycle(
-            start=datetime(2020, 10, 10, tzinfo=get_current_timezone()))
+        self.view_1.cycle = self.cycle_factory.get_cycle(start=datetime(2020, 10, 10, tzinfo=get_current_timezone()))
         self.view_1.save()
 
         url = reverse('api:v3:properties-detail', args=[self.view_2.id]) + f'?organization_id={self.org.pk}'
-        param = json.dumps({"state": {"pm_property_id": "5766973"}})
+        param = json.dumps({'state': {'pm_property_id': '5766973'}})
 
         response = self.client.put(url, param, content_type='application/json')
 
         assert response.status_code == 400
         assert PropertyView.objects.count() == 2
-        assert list(PropertyView.objects.values_list("property", flat=True)) == [self.property_1.id, self.property_2.id]
+        assert list(PropertyView.objects.values_list('property', flat=True)) == [self.property_1.id, self.property_2.id]
 
 
 class PropertyMergeViewTests(DataMappingBaseTestCase):
     def setUp(self):
-        user_details = {
-            'username': 'test_user@demo.com',
-            'password': 'test_pass',
-            'email': 'test_user@demo.com'
-        }
+        user_details = {'username': 'test_user@demo.com', 'password': 'test_pass', 'email': 'test_user@demo.com'}
         self.user = User.objects.create_superuser(**user_details)
         self.org, self.org_user, _ = create_organization(self.user)
 
@@ -1304,32 +1178,29 @@ class PropertyMergeViewTests(DataMappingBaseTestCase):
         self.property_factory = FakePropertyFactory(organization=self.org)
         self.property_state_factory = FakePropertyStateFactory(organization=self.org)
 
-        self.cycle = self.cycle_factory.get_cycle(
-            start=datetime(2010, 10, 10, tzinfo=get_current_timezone()))
+        self.cycle = self.cycle_factory.get_cycle(start=datetime(2010, 10, 10, tzinfo=get_current_timezone()))
         self.client.login(**user_details)
 
         self.state_1 = self.property_state_factory.get_property_state(
             address_line_1='1 property state',
-            pm_property_id='5766973'  # this allows the Property to be targeted for PM meter additions
+            pm_property_id='5766973',  # this allows the Property to be targeted for PM meter additions
         )
         self.property_1 = self.property_factory.get_property()
-        self.view_1 = PropertyView.objects.create(
-            property=self.property_1, cycle=self.cycle, state=self.state_1
-        )
+        self.view_1 = PropertyView.objects.create(property=self.property_1, cycle=self.cycle, state=self.state_1)
 
         self.state_2 = self.property_state_factory.get_property_state(address_line_1='2 property state')
         self.property_2 = self.property_factory.get_property()
-        self.view_2 = PropertyView.objects.create(
-            property=self.property_2, cycle=self.cycle, state=self.state_2
+        self.view_2 = PropertyView.objects.create(property=self.property_2, cycle=self.cycle, state=self.state_2)
+
+        self.import_record = ImportRecord.objects.create(
+            owner=self.user, last_modified_by=self.user, super_organization=self.org, access_level_instance=self.org.root
         )
 
-        self.import_record = ImportRecord.objects.create(owner=self.user, last_modified_by=self.user, super_organization=self.org, access_level_instance=self.org.root)
-
         # create tree
-        self.org.access_level_names = ["1st Gen", "2nd Gen", "3rd Gen"]
-        mom_ali = self.org.add_new_access_level_instance(self.org.root.id, "mom")
-        self.me_ali = self.org.add_new_access_level_instance(mom_ali.id, "me")
-        self.sister_ali = self.org.add_new_access_level_instance(mom_ali.id, "sister")
+        self.org.access_level_names = ['1st Gen', '2nd Gen', '3rd Gen']
+        mom_ali = self.org.add_new_access_level_instance(self.org.root.id, 'mom')
+        self.me_ali = self.org.add_new_access_level_instance(mom_ali.id, 'me')
+        self.sister_ali = self.org.add_new_access_level_instance(mom_ali.id, 'sister')
         self.org.save()
 
     def test_properties_merge_without_losing_labels(self):
@@ -1344,10 +1215,8 @@ class PropertyMergeViewTests(DataMappingBaseTestCase):
         self.view_2.labels.add(label_2, label_3)
 
         # Merge the properties
-        url = reverse('api:v3:properties-merge') + '?organization_id={}'.format(self.org.pk)
-        post_params = json.dumps({
-            'property_view_ids': [self.view_2.pk, self.view_1.pk]
-        })
+        url = reverse('api:v3:properties-merge') + f'?organization_id={self.org.pk}'
+        post_params = json.dumps({'property_view_ids': [self.view_2.pk, self.view_1.pk]})
         self.client.post(url, post_params, content_type='application/json')
 
         # The resulting -View should have 3 labels
@@ -1365,10 +1234,8 @@ class PropertyMergeViewTests(DataMappingBaseTestCase):
         self.property_2.save()
 
         # Merge the properties
-        url = reverse('api:v3:properties-merge') + '?organization_id={}'.format(self.org.pk)
-        post_params = json.dumps({
-            'property_view_ids': [self.view_2.pk, self.view_1.pk]
-        })
+        url = reverse('api:v3:properties-merge') + f'?organization_id={self.org.pk}'
+        post_params = json.dumps({'property_view_ids': [self.view_2.pk, self.view_1.pk]})
         response = self.client.post(url, post_params, content_type='application/json')
 
         assert response.status_code == 400
@@ -1379,51 +1246,41 @@ class PropertyMergeViewTests(DataMappingBaseTestCase):
         self.state_2.save()
 
         # create a state in a new cycle whose matching_criteria are the combo of state 1 and 2s.
-        self.other_cycle = self.cycle_factory.get_cycle(
-            start=datetime(2020, 10, 10, tzinfo=get_current_timezone()))
+        self.other_cycle = self.cycle_factory.get_cycle(start=datetime(2020, 10, 10, tzinfo=get_current_timezone()))
         self.state_3 = self.property_state_factory.get_property_state()
         self.property_3 = self.property_factory.get_property()
-        self.view_3 = PropertyView.objects.create(
-            property=self.property_3, cycle=self.other_cycle, state=self.state_3
-        )
+        self.view_3 = PropertyView.objects.create(property=self.property_3, cycle=self.other_cycle, state=self.state_3)
         self.state_3.pm_property_id = self.state_1.pm_property_id
         self.state_3.custom_id_1 = self.state_2.custom_id_1
         self.state_3.save()
 
         # Merge the properties
-        url = reverse('api:v3:properties-merge') + '?organization_id={}'.format(self.org.pk)
-        post_params = json.dumps({
-            'property_view_ids': [self.view_2.pk, self.view_1.pk]
-        })
+        url = reverse('api:v3:properties-merge') + f'?organization_id={self.org.pk}'
+        post_params = json.dumps({'property_view_ids': [self.view_2.pk, self.view_1.pk]})
         response = self.client.post(url, post_params, content_type='application/json')
 
         assert response.status_code == 200
         assert response.json() == {'status': 'success', 'match_merged_count': 0, 'match_link_count': 1}
         views = PropertyView.objects.all()
         assert views.count() == 2
-        assert list(views.values_list("property_id", flat=True)) == [self.property_3.id, self.property_3.id]
+        assert list(views.values_list('property_id', flat=True)) == [self.property_3.id, self.property_3.id]
 
     def test_properties_merge_causes_link_mismatched_alis(self):
         self.state_2.custom_id_1 = 1
         self.state_2.save()
 
         # create a state in a new cycle whose matching_criteria are the combo of state 1 and 2s.
-        self.other_cycle = self.cycle_factory.get_cycle(
-            start=datetime(2020, 10, 10, tzinfo=get_current_timezone()))
+        self.other_cycle = self.cycle_factory.get_cycle(start=datetime(2020, 10, 10, tzinfo=get_current_timezone()))
         self.state_3 = self.property_state_factory.get_property_state()
         self.property_3 = self.property_factory.get_property(access_level_instance=self.sister_ali)
-        self.view_3 = PropertyView.objects.create(
-            property=self.property_3, cycle=self.other_cycle, state=self.state_3
-        )
+        self.view_3 = PropertyView.objects.create(property=self.property_3, cycle=self.other_cycle, state=self.state_3)
         self.state_3.pm_property_id = self.state_1.pm_property_id
         self.state_3.custom_id_1 = self.state_2.custom_id_1
         self.state_3.save()
 
         # Merge the properties
-        url = reverse('api:v3:properties-merge') + '?organization_id={}'.format(self.org.pk)
-        post_params = json.dumps({
-            'property_view_ids': [self.view_2.pk, self.view_1.pk]
-        })
+        url = reverse('api:v3:properties-merge') + f'?organization_id={self.org.pk}'
+        post_params = json.dumps({'property_view_ids': [self.view_2.pk, self.view_1.pk]})
         response = self.client.post(url, post_params, content_type='application/json')
 
         assert response.status_code == 400
@@ -1443,10 +1300,8 @@ class PropertyMergeViewTests(DataMappingBaseTestCase):
         self.view_2.notes.add(note2)
         self.view_2.notes.add(note3)
 
-        url = reverse('api:v3:properties-merge') + '?organization_id={}'.format(self.org.pk)
-        post_params = json.dumps({
-            'property_view_ids': [self.view_2.pk, self.view_1.pk]
-        })
+        url = reverse('api:v3:properties-merge') + f'?organization_id={self.org.pk}'
+        post_params = json.dumps({'property_view_ids': [self.view_2.pk, self.view_1.pk]})
         self.client.post(url, post_params, content_type='application/json')
 
         # The resulting -View should have 3 notes
@@ -1463,35 +1318,23 @@ class PropertyMergeViewTests(DataMappingBaseTestCase):
 
         taxlot_1 = taxlot_factory.get_taxlot()
         state_1 = taxlot_state_factory.get_taxlot_state()
-        taxlot_view_1 = TaxLotView.objects.create(
-            taxlot=taxlot_1, cycle=self.cycle, state=state_1
-        )
+        taxlot_view_1 = TaxLotView.objects.create(taxlot=taxlot_1, cycle=self.cycle, state=state_1)
 
         taxlot_2 = taxlot_factory.get_taxlot()
         state_2 = taxlot_state_factory.get_taxlot_state()
-        taxlot_view_2 = TaxLotView.objects.create(
-            taxlot=taxlot_2, cycle=self.cycle, state=state_2
-        )
+        taxlot_view_2 = TaxLotView.objects.create(taxlot=taxlot_2, cycle=self.cycle, state=state_2)
 
-        TaxLotProperty(
-            primary=True,
-            cycle_id=self.cycle.id,
-            property_view_id=self.view_1.id,
-            taxlot_view_id=taxlot_view_1.id
-        ).save()
+        TaxLotProperty(primary=True, cycle_id=self.cycle.id, property_view_id=self.view_1.id, taxlot_view_id=taxlot_view_1.id).save()
 
-        TaxLotProperty(
-            primary=True,
-            cycle_id=self.cycle.id,
-            property_view_id=self.view_2.id,
-            taxlot_view_id=taxlot_view_2.id
-        ).save()
+        TaxLotProperty(primary=True, cycle_id=self.cycle.id, property_view_id=self.view_2.id, taxlot_view_id=taxlot_view_2.id).save()
 
         # Merge the properties
-        url = reverse('api:v3:properties-merge') + '?organization_id={}'.format(self.org.pk)
-        post_params = json.dumps({
-            'property_view_ids': [self.view_2.pk, self.view_1.pk]  # priority given to view_1
-        })
+        url = reverse('api:v3:properties-merge') + f'?organization_id={self.org.pk}'
+        post_params = json.dumps(
+            {
+                'property_view_ids': [self.view_2.pk, self.view_1.pk]  # priority given to view_1
+            }
+        )
         self.client.post(url, post_params, content_type='application/json')
 
         # There should still be 2 TaxLotProperties
@@ -1505,31 +1348,24 @@ class PropertyMergeViewTests(DataMappingBaseTestCase):
 
     def test_properties_merge_without_losing_meters_1st_has_meters(self):
         # Assign meters to the first Property
-        filename = "example-GreenButton-data.xml"
-        filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + filename
+        filename = 'example-GreenButton-data.xml'
+        filepath = os.path.dirname(os.path.abspath(__file__)) + '/data/' + filename
         import_file = ImportFile.objects.create(
             import_record=self.import_record,
             source_type=SEED_DATA_SOURCES[GREEN_BUTTON][1],
             uploaded_filename=filename,
-            file=SimpleUploadedFile(
-                name=filename,
-                content=pathlib.Path(filepath).read_bytes()
-            ),
+            file=SimpleUploadedFile(name=filename, content=pathlib.Path(filepath).read_bytes()),
             cycle=self.cycle,
-            matching_results_data={"property_id": self.property_1.id}  # this is how target property is specified
+            matching_results_data={'property_id': self.property_1.id},  # this is how target property is specified
         )
-        gb_import_url = reverse("api:v3:import_files-start-save-data", args=[import_file.id])
+        gb_import_url = reverse('api:v3:import_files-start-save-data', args=[import_file.id])
         gb_import_url += f'?organization_id={self.org.pk}'
-        gb_import_post_params = {
-            'cycle_id': self.cycle.pk
-        }
+        gb_import_post_params = {'cycle_id': self.cycle.pk}
         self.client.post(gb_import_url, gb_import_post_params)
 
         # Merge PropertyStates
-        url = reverse('api:v3:properties-merge') + '?organization_id={}'.format(self.org.pk)
-        post_params = json.dumps({
-            'property_view_ids': [self.view_2.pk, self.view_1.pk]
-        })
+        url = reverse('api:v3:properties-merge') + f'?organization_id={self.org.pk}'
+        post_params = json.dumps({'property_view_ids': [self.view_2.pk, self.view_1.pk]})
         self.client.post(url, post_params, content_type='application/json')
 
         # There should only be one PropertyView
@@ -1540,31 +1376,24 @@ class PropertyMergeViewTests(DataMappingBaseTestCase):
 
     def test_properties_merge_without_losing_meters_2nd_has_meters(self):
         # Assign Meters to the second Property
-        filename = "example-GreenButton-data.xml"
-        filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + filename
+        filename = 'example-GreenButton-data.xml'
+        filepath = os.path.dirname(os.path.abspath(__file__)) + '/data/' + filename
         import_file = ImportFile.objects.create(
             import_record=self.import_record,
             source_type=SEED_DATA_SOURCES[GREEN_BUTTON][1],
             uploaded_filename=filename,
-            file=SimpleUploadedFile(
-                name=filename,
-                content=pathlib.Path(filepath).read_bytes()
-            ),
+            file=SimpleUploadedFile(name=filename, content=pathlib.Path(filepath).read_bytes()),
             cycle=self.cycle,
-            matching_results_data={"property_id": self.property_2.id}  # this is how target property is specified
+            matching_results_data={'property_id': self.property_2.id},  # this is how target property is specified
         )
-        gb_import_url = reverse("api:v3:import_files-start-save-data", args=[import_file.id])
+        gb_import_url = reverse('api:v3:import_files-start-save-data', args=[import_file.id])
         gb_import_url += f'?organization_id={self.org.pk}'
-        gb_import_post_params = {
-            'cycle_id': self.cycle.pk
-        }
+        gb_import_post_params = {'cycle_id': self.cycle.pk}
         self.client.post(gb_import_url, gb_import_post_params)
 
         # Merge PropertyStates
-        url = reverse('api:v3:properties-merge') + '?organization_id={}'.format(self.org.pk)
-        post_params = json.dumps({
-            'property_view_ids': [self.view_2.pk, self.view_1.pk]
-        })
+        url = reverse('api:v3:properties-merge') + f'?organization_id={self.org.pk}'
+        post_params = json.dumps({'property_view_ids': [self.view_2.pk, self.view_1.pk]})
         self.client.post(url, post_params, content_type='application/json')
 
         # There should only be one PropertyView
@@ -1576,51 +1405,43 @@ class PropertyMergeViewTests(DataMappingBaseTestCase):
     def test_properties_merge_without_losing_meters_from_different_sources_nonoverlapping(self):
         # For first Property, PM Meters containing 2 readings for each Electricity and Natural Gas for property_1
         # This file has multiple tabs
-        pm_filename = "example-pm-monthly-meter-usage.xlsx"
-        filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + pm_filename
+        pm_filename = 'example-pm-monthly-meter-usage.xlsx'
+        filepath = os.path.dirname(os.path.abspath(__file__)) + '/data/' + pm_filename
         pm_import_file = ImportFile.objects.create(
             import_record=self.import_record,
             source_type=SEED_DATA_SOURCES[PORTFOLIO_METER_USAGE][1],
             uploaded_filename=pm_filename,
-            file=SimpleUploadedFile(
-                name=pm_filename,
-                content=pathlib.Path(filepath).read_bytes()
-            ),
+            file=SimpleUploadedFile(name=pm_filename, content=pathlib.Path(filepath).read_bytes()),
             cycle=self.cycle,
         )
-        pm_import_url = reverse("api:v3:import_files-start-save-data", args=[pm_import_file.id])
+        pm_import_url = reverse('api:v3:import_files-start-save-data', args=[pm_import_file.id])
         pm_import_url += f'?organization_id={self.org.pk}'
-        pm_import_post_params = {
-            'cycle_id': self.cycle.pk
-        }
+        pm_import_post_params = {'cycle_id': self.cycle.pk}
         self.client.post(pm_import_url, pm_import_post_params)
 
         # For second Property, add GreenButton Meters containing 2 readings for Electricity only
-        gb_filename = "example-GreenButton-data.xml"
-        filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + gb_filename
+        gb_filename = 'example-GreenButton-data.xml'
+        filepath = os.path.dirname(os.path.abspath(__file__)) + '/data/' + gb_filename
         gb_import_file = ImportFile.objects.create(
             import_record=self.import_record,
             source_type=SEED_DATA_SOURCES[GREEN_BUTTON][1],
             uploaded_filename=gb_filename,
-            file=SimpleUploadedFile(
-                name=gb_filename,
-                content=pathlib.Path(filepath).read_bytes()
-            ),
+            file=SimpleUploadedFile(name=gb_filename, content=pathlib.Path(filepath).read_bytes()),
             cycle=self.cycle,
-            matching_results_data={"property_id": self.property_2.id}  # this is how target property is specified
+            matching_results_data={'property_id': self.property_2.id},  # this is how target property is specified
         )
-        gb_import_url = reverse("api:v3:import_files-start-save-data", args=[gb_import_file.id])
+        gb_import_url = reverse('api:v3:import_files-start-save-data', args=[gb_import_file.id])
         gb_import_url += f'?organization_id={self.org.pk}'
-        gb_import_post_params = {
-            'cycle_id': self.cycle.pk
-        }
+        gb_import_post_params = {'cycle_id': self.cycle.pk}
         self.client.post(gb_import_url, gb_import_post_params)
 
         # Merge PropertyStates
-        url = reverse('api:v3:properties-merge') + '?organization_id={}'.format(self.org.pk)
-        post_params = json.dumps({
-            'property_view_ids': [self.view_2.pk, self.view_1.pk]  # priority given to view_1
-        })
+        url = reverse('api:v3:properties-merge') + f'?organization_id={self.org.pk}'
+        post_params = json.dumps(
+            {
+                'property_view_ids': [self.view_2.pk, self.view_1.pk]  # priority given to view_1
+            }
+        )
         self.client.post(url, post_params, content_type='application/json')
 
         # There should only be one PropertyView
@@ -1640,45 +1461,35 @@ class PropertyMergeViewTests(DataMappingBaseTestCase):
 
     def test_properties_merge_without_losing_meters_when_some_meters_from_same_source_are_overlapping(self):
         # For first Property, add GreenButton Meters containing 2 readings for Electricity only
-        gb_filename = "example-GreenButton-data.xml"
-        filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + gb_filename
+        gb_filename = 'example-GreenButton-data.xml'
+        filepath = os.path.dirname(os.path.abspath(__file__)) + '/data/' + gb_filename
         gb_import_file = ImportFile.objects.create(
             import_record=self.import_record,
             source_type=SEED_DATA_SOURCES[GREEN_BUTTON][1],
             uploaded_filename=gb_filename,
-            file=SimpleUploadedFile(
-                name=gb_filename,
-                content=pathlib.Path(filepath).read_bytes()
-            ),
+            file=SimpleUploadedFile(name=gb_filename, content=pathlib.Path(filepath).read_bytes()),
             cycle=self.cycle,
-            matching_results_data={"property_id": self.property_1.id}  # this is how target property is specified
+            matching_results_data={'property_id': self.property_1.id},  # this is how target property is specified
         )
-        gb_import_url = reverse("api:v3:import_files-start-save-data", args=[gb_import_file.id])
+        gb_import_url = reverse('api:v3:import_files-start-save-data', args=[gb_import_file.id])
         gb_import_url += f'?organization_id={self.org.pk}'
-        gb_import_post_params = {
-            'cycle_id': self.cycle.pk
-        }
+        gb_import_post_params = {'cycle_id': self.cycle.pk}
         self.client.post(gb_import_url, gb_import_post_params)
 
         # For second Property, add GreenButton Meters containing 2 Electricity readings: 1 overlapping
-        gb_overlapping_filename = "example-GreenButton-data-1-overlapping.xml"
-        filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + gb_overlapping_filename
+        gb_overlapping_filename = 'example-GreenButton-data-1-overlapping.xml'
+        filepath = os.path.dirname(os.path.abspath(__file__)) + '/data/' + gb_overlapping_filename
         gb_overlapping_import_file = ImportFile.objects.create(
             import_record=self.import_record,
             source_type=SEED_DATA_SOURCES[GREEN_BUTTON][1],
             uploaded_filename=gb_overlapping_filename,
-            file=SimpleUploadedFile(
-                name=gb_overlapping_filename,
-                content=pathlib.Path(filepath).read_bytes()
-            ),
+            file=SimpleUploadedFile(name=gb_overlapping_filename, content=pathlib.Path(filepath).read_bytes()),
             cycle=self.cycle,
-            matching_results_data={"property_id": self.property_2.id}  # this is how target property is specified
+            matching_results_data={'property_id': self.property_2.id},  # this is how target property is specified
         )
-        gb_overlapping_import_url = reverse("api:v3:import_files-start-save-data", args=[gb_overlapping_import_file.id])
+        gb_overlapping_import_url = reverse('api:v3:import_files-start-save-data', args=[gb_overlapping_import_file.id])
         gb_overlapping_import_url += f'?organization_id={self.org.pk}'
-        gb_overlapping_import_post_params = {
-            'cycle_id': self.cycle.pk
-        }
+        gb_overlapping_import_post_params = {'cycle_id': self.cycle.pk}
         self.client.post(gb_overlapping_import_url, gb_overlapping_import_post_params)
 
         # Check that there are 2 overlapping readings (that are separate for now) out of 4.
@@ -1686,10 +1497,7 @@ class PropertyMergeViewTests(DataMappingBaseTestCase):
         tz_obj = timezone(TIME_ZONE)
         start_time_match = make_aware(datetime(2011, 3, 5, 21, 15, 0), timezone=tz_obj)
         end_time_match = make_aware(datetime(2011, 3, 5, 21, 30, 0), timezone=tz_obj)
-        same_time_windows = MeterReading.objects.filter(
-            start_time=start_time_match,
-            end_time=end_time_match
-        )
+        same_time_windows = MeterReading.objects.filter(start_time=start_time_match, end_time=end_time_match)
         self.assertEqual(same_time_windows.count(), 2)
 
         # Capture the overlapping reading of property_1, and ensure it's different from property_2's
@@ -1699,10 +1507,12 @@ class PropertyMergeViewTests(DataMappingBaseTestCase):
         self.assertNotEqual(property_1_reading, property_2_reading)
 
         # Merge PropertyStates
-        url = reverse('api:v3:properties-merge') + '?organization_id={}'.format(self.org.pk)
-        post_params = json.dumps({
-            'property_view_ids': [self.view_2.pk, self.view_1.pk]  # priority given to view_1
-        })
+        url = reverse('api:v3:properties-merge') + f'?organization_id={self.org.pk}'
+        post_params = json.dumps(
+            {
+                'property_view_ids': [self.view_2.pk, self.view_1.pk]  # priority given to view_1
+            }
+        )
         self.client.post(url, post_params, content_type='application/json')
 
         # There should only be one PropertyView
@@ -1718,34 +1528,31 @@ class PropertyMergeViewTests(DataMappingBaseTestCase):
         self.assertEqual(MeterReading.objects.count(), 3)
 
         # Check that the resulting reading used belonged to property_1
-        merged_reading = MeterReading.objects.filter(
-            start_time=start_time_match,
-            end_time=end_time_match
-        )
+        merged_reading = MeterReading.objects.filter(start_time=start_time_match, end_time=end_time_match)
         self.assertEqual(merged_reading.count(), 1)
         self.assertEqual(merged_reading.first().reading, property_1_reading)
 
         # Overlapping reading that wasn't prioritized should not exist
         self.assertFalse(MeterReading.objects.filter(reading=property_2_reading).exists())
 
-    def test_merge_assigns_new_canonical_records_to_each_resulting_record_and_old_canonical_records_are_deleted_when_NOT_associated_to_other_views(self):
+    def test_merge_assigns_new_canonical_records_to_each_resulting_record_and_old_canonical_records_are_deleted_when_NOT_associated_to_other_views(
+        self,
+    ):
         # Capture old property_ids
         persisting_property_id = self.property_1.id
         deleted_property_id = self.property_2.id
 
-        new_cycle = self.cycle_factory.get_cycle(
-            start=datetime(2011, 10, 10, tzinfo=get_current_timezone())
-        )
+        new_cycle = self.cycle_factory.get_cycle(start=datetime(2011, 10, 10, tzinfo=get_current_timezone()))
         new_property_state = self.property_state_factory.get_property_state()
-        PropertyView.objects.create(
-            property_id=persisting_property_id, cycle=new_cycle, state=new_property_state
-        )
+        PropertyView.objects.create(property_id=persisting_property_id, cycle=new_cycle, state=new_property_state)
 
         # Merge the properties
-        url = reverse('api:v3:properties-merge') + '?organization_id={}'.format(self.org.pk)
-        post_params = json.dumps({
-            'property_view_ids': [self.view_2.pk, self.view_1.pk]  # priority given to view_1
-        })
+        url = reverse('api:v3:properties-merge') + f'?organization_id={self.org.pk}'
+        post_params = json.dumps(
+            {
+                'property_view_ids': [self.view_2.pk, self.view_1.pk]  # priority given to view_1
+            }
+        )
         self.client.post(url, post_params, content_type='application/json')
 
         self.assertFalse(PropertyView.objects.filter(property_id=deleted_property_id).exists())
@@ -1753,33 +1560,28 @@ class PropertyMergeViewTests(DataMappingBaseTestCase):
 
         self.assertEqual(PropertyView.objects.filter(property_id=persisting_property_id).count(), 1)
 
-    @unittest.skip("TODO: fix merging of PM and BSync meters")
+    @unittest.skip('TODO: fix merging of PM and BSync meters')
     def test_properties_merge_combining_bsync_and_pm_sources(self):
         # -- SETUP
         # For first Property, PM Meters containing 2 readings for each Electricity and Natural Gas for property_1
         # This file has multiple tabs
-        pm_filename = "example-pm-monthly-meter-usage.xlsx"
-        filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + pm_filename
+        pm_filename = 'example-pm-monthly-meter-usage.xlsx'
+        filepath = os.path.dirname(os.path.abspath(__file__)) + '/data/' + pm_filename
         pm_import_file = ImportFile.objects.create(
             import_record=self.import_record,
             source_type=SEED_DATA_SOURCES[PORTFOLIO_METER_USAGE][1],
             uploaded_filename=pm_filename,
-            file=SimpleUploadedFile(
-                name=pm_filename,
-                content=pathlib.Path(filepath).read_bytes()
-            ),
+            file=SimpleUploadedFile(name=pm_filename, content=pathlib.Path(filepath).read_bytes()),
             cycle=self.cycle,
         )
-        pm_import_url = reverse("api:v3:import_files-start-save-data", args=[pm_import_file.id])
+        pm_import_url = reverse('api:v3:import_files-start-save-data', args=[pm_import_file.id])
         pm_import_url += f'?organization_id={self.org.pk}'
-        pm_import_post_params = {
-            'cycle_id': self.cycle.pk
-        }
+        pm_import_post_params = {'cycle_id': self.cycle.pk}
         self.client.post(pm_import_url, pm_import_post_params)
 
         # For second Property, add BuildingSync file containing 6 meters
-        bs_filename = "buildingsync_v2_0_bricr_workflow.xml"
-        filepath = os.path.dirname(os.path.abspath(__file__)) + "/../building_sync/tests/data/" + bs_filename
+        bs_filename = 'buildingsync_v2_0_bricr_workflow.xml'
+        filepath = os.path.dirname(os.path.abspath(__file__)) + '/../building_sync/tests/data/' + bs_filename
         uploaded_file = SimpleUploadedFile(filepath, pathlib.Path(filepath).read_bytes())
         bs_buildingfile = BuildingFile.objects.create(
             file=uploaded_file,
@@ -1797,10 +1599,12 @@ class PropertyMergeViewTests(DataMappingBaseTestCase):
 
         # -- ACT
         # Merge PropertyStates
-        url = reverse('api:v3:properties-merge') + '?organization_id={}'.format(self.org.pk)
-        post_params = json.dumps({
-            'property_view_ids': [self.view_1.pk, bs_property_view.pk]  # priority given to bs_property_view
-        })
+        url = reverse('api:v3:properties-merge') + f'?organization_id={self.org.pk}'
+        post_params = json.dumps(
+            {
+                'property_view_ids': [self.view_1.pk, bs_property_view.pk]  # priority given to bs_property_view
+            }
+        )
         self.client.post(url, post_params, content_type='application/json')
 
         # -- ASSERT
@@ -1834,11 +1638,7 @@ class PropertyMergeViewTests(DataMappingBaseTestCase):
 
 class PropertyUnmergeViewTests(DataMappingBaseTestCase):
     def setUp(self):
-        user_details = {
-            'username': 'test_user@demo.com',
-            'password': 'test_pass',
-            'email': 'test_user@demo.com'
-        }
+        user_details = {'username': 'test_user@demo.com', 'password': 'test_pass', 'email': 'test_user@demo.com'}
         self.user = User.objects.create_superuser(**user_details)
         self.org, self.org_user, _ = create_organization(self.user)
 
@@ -1846,53 +1646,47 @@ class PropertyUnmergeViewTests(DataMappingBaseTestCase):
         self.property_factory = FakePropertyFactory(organization=self.org)
         self.property_state_factory = FakePropertyStateFactory(organization=self.org)
 
-        self.cycle = self.cycle_factory.get_cycle(
-            start=datetime(2010, 10, 10, tzinfo=get_current_timezone()))
+        self.cycle = self.cycle_factory.get_cycle(start=datetime(2010, 10, 10, tzinfo=get_current_timezone()))
         self.client.login(**user_details)
 
         self.state_1 = self.property_state_factory.get_property_state(
             address_line_1='1 property state',
-            pm_property_id='5766973'  # this allows the Property to be targeted for PM meter additions
+            pm_property_id='5766973',  # this allows the Property to be targeted for PM meter additions
         )
         self.property_1 = self.property_factory.get_property()
-        self.view_1 = PropertyView.objects.create(
-            property=self.property_1, cycle=self.cycle, state=self.state_1
-        )
+        self.view_1 = PropertyView.objects.create(property=self.property_1, cycle=self.cycle, state=self.state_1)
 
         self.state_2 = self.property_state_factory.get_property_state(address_line_1='2 property state')
         self.property_2 = self.property_factory.get_property()
-        self.view_2 = PropertyView.objects.create(
-            property=self.property_2, cycle=self.cycle, state=self.state_2
+        self.view_2 = PropertyView.objects.create(property=self.property_2, cycle=self.cycle, state=self.state_2)
+
+        self.import_record = ImportRecord.objects.create(
+            owner=self.user, last_modified_by=self.user, super_organization=self.org, access_level_instance=self.org.root
         )
 
-        self.import_record = ImportRecord.objects.create(owner=self.user, last_modified_by=self.user, super_organization=self.org, access_level_instance=self.org.root)
-
         # Give 2 meters to one of the properties
-        gb_filename = "example-GreenButton-data.xml"
-        filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + gb_filename
+        gb_filename = 'example-GreenButton-data.xml'
+        filepath = os.path.dirname(os.path.abspath(__file__)) + '/data/' + gb_filename
         gb_import_file = ImportFile.objects.create(
             import_record=self.import_record,
             source_type=SEED_DATA_SOURCES[GREEN_BUTTON][1],
             uploaded_filename=gb_filename,
-            file=SimpleUploadedFile(
-                name=gb_filename,
-                content=pathlib.Path(filepath).read_bytes()
-            ),
+            file=SimpleUploadedFile(name=gb_filename, content=pathlib.Path(filepath).read_bytes()),
             cycle=self.cycle,
-            matching_results_data={"property_id": self.property_1.id}  # this is how target property is specified
+            matching_results_data={'property_id': self.property_1.id},  # this is how target property is specified
         )
-        gb_import_url = reverse("api:v3:import_files-start-save-data", args=[gb_import_file.id])
+        gb_import_url = reverse('api:v3:import_files-start-save-data', args=[gb_import_file.id])
         gb_import_url += f'?organization_id={self.org.pk}'
-        gb_import_post_params = {
-            'cycle_id': self.cycle.pk
-        }
+        gb_import_post_params = {'cycle_id': self.cycle.pk}
         self.client.post(gb_import_url, gb_import_post_params)
 
         # Merge the properties
-        url = reverse('api:v3:properties-merge') + '?organization_id={}'.format(self.org.pk)
-        post_params = json.dumps({
-            'property_view_ids': [self.view_2.pk, self.view_1.pk]  # priority given to view_1
-        })
+        url = reverse('api:v3:properties-merge') + f'?organization_id={self.org.pk}'
+        post_params = json.dumps(
+            {
+                'property_view_ids': [self.view_2.pk, self.view_1.pk]  # priority given to view_1
+            }
+        )
         self.client.post(url, post_params, content_type='application/json')
 
     def test_properties_unmerge_without_losing_labels(self):
@@ -1906,7 +1700,7 @@ class PropertyUnmergeViewTests(DataMappingBaseTestCase):
         view.labels.add(label_1, label_2)
 
         # Unmerge the properties
-        url = reverse('api:v3:properties-unmerge', args=[view.id]) + '?organization_id={}'.format(self.org.pk)
+        url = reverse('api:v3:properties-unmerge', args=[view.id]) + f'?organization_id={self.org.pk}'
         self.client.put(url, content_type='application/json')
 
         for new_view in PropertyView.objects.all():
@@ -1924,7 +1718,7 @@ class PropertyUnmergeViewTests(DataMappingBaseTestCase):
         ]
 
         # Unmerge the properties
-        url = reverse('api:v3:properties-unmerge', args=[view.id]) + '?organization_id={}'.format(self.org.pk)
+        url = reverse('api:v3:properties-unmerge', args=[view.id]) + f'?organization_id={self.org.pk}'
         self.client.put(url, content_type='application/json')
 
         self.assertFalse(PropertyView.objects.filter(property_id__in=existing_property_ids).exists())
@@ -1932,7 +1726,7 @@ class PropertyUnmergeViewTests(DataMappingBaseTestCase):
     def test_unmerging_two_properties_with_meters_gives_meters_to_both_of_the_resulting_records(self):
         # Unmerge the properties
         view_id = PropertyView.objects.first().id  # There's only one PropertyView
-        url = reverse('api:v3:properties-unmerge', args=[view_id]) + '?organization_id={}'.format(self.org.pk)
+        url = reverse('api:v3:properties-unmerge', args=[view_id]) + f'?organization_id={self.org.pk}'
         self.client.put(url, content_type='application/json')
 
         # Verify 2 -Views now exist
@@ -1943,17 +1737,18 @@ class PropertyUnmergeViewTests(DataMappingBaseTestCase):
         for view in PropertyView.objects.all():
             self.assertEqual(view.property.meters.count(), 1)
             self.assertEqual(view.property.meters.first().meter_readings.count(), 2)
-            reading_sets.append([
-                {
-                    'start_time': reading.start_time,
-                    'end_time': reading.end_time,
-                    'reading': reading.reading,
-                    'source_unit': reading.source_unit,
-                    'conversion_factor': reading.conversion_factor,
-                }
-                for reading
-                in view.property.meters.first().meter_readings.all().order_by('start_time')
-            ])
+            reading_sets.append(
+                [
+                    {
+                        'start_time': reading.start_time,
+                        'end_time': reading.end_time,
+                        'reading': reading.reading,
+                        'source_unit': reading.source_unit,
+                        'conversion_factor': reading.conversion_factor,
+                    }
+                    for reading in view.property.meters.first().meter_readings.all().order_by('start_time')
+                ]
+            )
 
         self.assertEqual(reading_sets[0], reading_sets[1])
 
@@ -1963,7 +1758,7 @@ class PropertyUnmergeViewTests(DataMappingBaseTestCase):
         property_id = view.property_id
 
         # Unmerge the properties
-        url = reverse('api:v3:properties-unmerge', args=[view.id]) + '?organization_id={}'.format(self.org.pk)
+        url = reverse('api:v3:properties-unmerge', args=[view.id]) + f'?organization_id={self.org.pk}'
         self.client.put(url, content_type='application/json')
 
         self.assertFalse(Property.objects.filter(pk=property_id).exists())
@@ -1974,16 +1769,12 @@ class PropertyUnmergeViewTests(DataMappingBaseTestCase):
         view = PropertyView.objects.first()
         property_id = view.property_id
 
-        new_cycle = self.cycle_factory.get_cycle(
-            start=datetime(2011, 10, 10, tzinfo=get_current_timezone())
-        )
+        new_cycle = self.cycle_factory.get_cycle(start=datetime(2011, 10, 10, tzinfo=get_current_timezone()))
         new_property_state = self.property_state_factory.get_property_state()
-        PropertyView.objects.create(
-            property_id=property_id, cycle=new_cycle, state=new_property_state
-        )
+        PropertyView.objects.create(property_id=property_id, cycle=new_cycle, state=new_property_state)
 
         # Unmerge the properties
-        url = reverse('api:v3:properties-unmerge', args=[view.id]) + '?organization_id={}'.format(self.org.pk)
+        url = reverse('api:v3:properties-unmerge', args=[view.id]) + f'?organization_id={self.org.pk}'
         self.client.put(url, content_type='application/json')
 
         self.assertTrue(Property.objects.filter(pk=view.property_id).exists())
@@ -1992,11 +1783,7 @@ class PropertyUnmergeViewTests(DataMappingBaseTestCase):
 
 class PropertyViewExportTests(DataMappingBaseTestCase):
     def setUp(self):
-        user_details = {
-            'username': 'test_user@demo.com',
-            'password': 'test_pass',
-            'email': 'test_user@demo.com'
-        }
+        user_details = {'username': 'test_user@demo.com', 'password': 'test_pass', 'email': 'test_user@demo.com'}
         self.user = User.objects.create_superuser(**user_details)
         self.org, self.org_user, _ = create_organization(self.user)
         self.column_factory = FakeColumnFactory(organization=self.org)
@@ -2004,8 +1791,7 @@ class PropertyViewExportTests(DataMappingBaseTestCase):
         self.property_factory = FakePropertyFactory(organization=self.org)
         self.property_state_factory = FakePropertyStateFactory(organization=self.org)
         self.property_view_factory = FakePropertyViewFactory(organization=self.org)
-        self.cycle = self.cycle_factory.get_cycle(
-            start=datetime(2010, 10, 10, tzinfo=get_current_timezone()))
+        self.cycle = self.cycle_factory.get_cycle(start=datetime(2010, 10, 10, tzinfo=get_current_timezone()))
         self.column_list_factory = FakeColumnListProfileFactory(organization=self.org)
         self.client.login(**user_details)
 
@@ -2013,14 +1799,12 @@ class PropertyViewExportTests(DataMappingBaseTestCase):
         # -- Setup
         state = self.property_state_factory.get_property_state()
         prprty = self.property_factory.get_property()
-        view = PropertyView.objects.create(
-            property=prprty, cycle=self.cycle, state=state
-        )
+        view = PropertyView.objects.create(property=prprty, cycle=self.cycle, state=state)
         profile = ColumnMappingProfile.objects.get(profile_type=ColumnMappingProfile.BUILDINGSYNC_DEFAULT)
 
         # -- Act
         url = reverse('api:v3:properties-building-sync', args=[view.id])
-        response = self.client.get(url, {'profile_id': profile.id, "organization_id": prprty.organization.id})
+        response = self.client.get(url, {'profile_id': profile.id, 'organization_id': prprty.organization.id})
 
         # -- Assert
         self.assertEqual(200, response.status_code, response.content)
@@ -2039,9 +1823,7 @@ class PropertyViewExportTests(DataMappingBaseTestCase):
         state.save()
 
         prprty = self.property_factory.get_property()
-        view = PropertyView.objects.create(
-            property=prprty, cycle=self.cycle, state=state
-        )
+        view = PropertyView.objects.create(property=prprty, cycle=self.cycle, state=state)
 
         # create a profile mapping where longitude and latitude are swapped
         profile_mappings = default_buildingsync_profile_mappings()
@@ -2052,7 +1834,9 @@ class PropertyViewExportTests(DataMappingBaseTestCase):
                 mapping['to_field'] = 'longitude'
 
         custom_profile_name = 'BSync Custom Profile'
-        self.org.columnmappingprofile_set.create(name=custom_profile_name, mappings=profile_mappings, profile_type=ColumnMappingProfile.BUILDINGSYNC_CUSTOM)
+        self.org.columnmappingprofile_set.create(
+            name=custom_profile_name, mappings=profile_mappings, profile_type=ColumnMappingProfile.BUILDINGSYNC_CUSTOM
+        )
         custom_profile = self.org.columnmappingprofile_set.get(name=custom_profile_name)
 
         # grab the default profile to export with for comparison
@@ -2060,9 +1844,9 @@ class PropertyViewExportTests(DataMappingBaseTestCase):
 
         # -- Act
         url = reverse('api:v3:properties-building-sync', args=[view.id])
-        default_export_response = self.client.get(url, {'profile_id': default_profile.id, "organization_id": prprty.organization.id})
+        default_export_response = self.client.get(url, {'profile_id': default_profile.id, 'organization_id': prprty.organization.id})
         url = reverse('api:v3:properties-building-sync', args=[view.id])
-        custom_export_response = self.client.get(url, {'profile_id': custom_profile.id, "organization_id": prprty.organization.id})
+        custom_export_response = self.client.get(url, {'profile_id': custom_profile.id, 'organization_id': prprty.organization.id})
 
         # -- Assert
         self.assertEqual(200, default_export_response.status_code, default_export_response.content)
@@ -2072,8 +1856,12 @@ class PropertyViewExportTests(DataMappingBaseTestCase):
         default_lines = default_export_response.content.decode().split('\n')
         custom_lines = custom_export_response.content.decode().split('\n')
         diffs = [line.strip() for line in set(default_lines).symmetric_difference(custom_lines)]
-        expected_diffs = ['<auc:Latitude>5555.0</auc:Latitude>', '<auc:Longitude>4444.0</auc:Longitude>',
-                          '<auc:Latitude>4444.0</auc:Latitude>', '<auc:Longitude>5555.0</auc:Longitude>']
+        expected_diffs = [
+            '<auc:Latitude>5555.0</auc:Latitude>',
+            '<auc:Longitude>4444.0</auc:Longitude>',
+            '<auc:Latitude>4444.0</auc:Latitude>',
+            '<auc:Longitude>5555.0</auc:Longitude>',
+        ]
         self.assertCountEqual(expected_diffs, diffs)
 
 
@@ -2083,9 +1871,7 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
             'username': 'test_user@demo.com',
             'password': 'test_pass',
         }
-        self.user = User.objects.create_superuser(
-            email='test_user@demo.com', **self.user_details
-        )
+        self.user = User.objects.create_superuser(email='test_user@demo.com', **self.user_details)
         self.org, _, _ = create_organization(self.user)
 
         # For some reason, defaults weren't established consistently for each test.
@@ -2121,21 +1907,20 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
         self.property_view_1 = PropertyView.objects.create(property=self.property_1, cycle=self.cycle, state=self.state_1)
         self.property_view_2 = PropertyView.objects.create(property=self.property_2, cycle=self.cycle, state=self.state_2)
 
-        self.import_record = ImportRecord.objects.create(owner=self.user, last_modified_by=self.user, super_organization=self.org, access_level_instance=self.org.root)
+        self.import_record = ImportRecord.objects.create(
+            owner=self.user, last_modified_by=self.user, super_organization=self.org, access_level_instance=self.org.root
+        )
 
         # This file has multiple tabs
-        filename = "example-pm-monthly-meter-usage.xlsx"
-        filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + filename
+        filename = 'example-pm-monthly-meter-usage.xlsx'
+        filepath = os.path.dirname(os.path.abspath(__file__)) + '/data/' + filename
 
         self.import_file = ImportFile.objects.create(
             import_record=self.import_record,
             source_type=SEED_DATA_SOURCES[PORTFOLIO_METER_USAGE][1],
             uploaded_filename=filename,
-            file=SimpleUploadedFile(
-                name=filename,
-                content=pathlib.Path(filepath).read_bytes()
-            ),
-            cycle=self.cycle
+            file=SimpleUploadedFile(name=filename, content=pathlib.Path(filepath).read_bytes()),
+            cycle=self.cycle,
         )
 
     def test_property_meters_endpoint_returns_a_list_of_meters_of_a_view(self):
@@ -2151,7 +1936,9 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
         }
         gb_gas_meter = Meter.objects.create(**meter_details)
 
-        url = reverse('api:v3:property-meters-list', kwargs={'property_pk': self.property_view_1.id}) + "?organization_id=" + str(self.org.id)
+        url = (
+            reverse('api:v3:property-meters-list', kwargs={'property_pk': self.property_view_1.id}) + '?organization_id=' + str(self.org.id)
+        )
 
         result = self.client.get(url)
         result_dict = json.loads(result.content)
@@ -2168,7 +1955,8 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
                 'scenario_name': None,
                 'is_virtual': False,
                 'alias': 'Electric - Grid - Portfolio Manager - 5766973-0',
-            }, {
+            },
+            {
                 'id': gas_meter.id,
                 'type': 'Natural Gas',
                 'source': 'Portfolio Manager',
@@ -2177,7 +1965,8 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
                 'scenario_name': None,
                 'is_virtual': False,
                 'alias': 'Natural Gas - Portfolio Manager - 5766973-1',
-            }, {
+            },
+            {
                 'id': gb_gas_meter.id,
                 'type': 'Natural Gas',
                 'source': 'GreenButton',
@@ -2191,7 +1980,9 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
 
         self.assertCountEqual(result_dict, expectation)
 
-    def test_property_meter_usage_returns_meter_readings_and_column_defs_given_property_view_and_nondefault_meter_display_org_settings(self):
+    def test_property_meter_usage_returns_meter_readings_and_column_defs_given_property_view_and_nondefault_meter_display_org_settings(
+        self,
+    ):
         # Update settings for display meter units to change it from the default values.
         self.org.display_meter_units['Electric - Grid'] = 'kWh (thousand Watt-hours)'
         self.org.display_meter_units['Natural Gas'] = 'kcf (thousand cubic feet)'
@@ -2221,12 +2012,14 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
 
         url = reverse('api:v3:properties-meter-usage', kwargs={'pk': self.property_view_1.id})
         url += f'?organization_id={self.org.pk}'
-        post_params = json.dumps({
-            'interval': 'Exact',
-            'excluded_meter_ids': [],
-        })
-        result = self.client.post(url, post_params, content_type="application/json")
-        result_dict = ast.literal_eval(result.content.decode("utf-8"))
+        post_params = json.dumps(
+            {
+                'interval': 'Exact',
+                'excluded_meter_ids': [],
+            }
+        )
+        result = self.client.post(url, post_params, content_type='application/json')
+        result_dict = ast.literal_eval(result.content.decode('utf-8'))
 
         expectation = {
             'readings': [
@@ -2268,25 +2061,22 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
                     'displayName': 'Natural Gas - GreenButton - 123fakeID (kcf (thousand cubic feet))',
                     '_filter_type': 'reading',
                 },
-            ]
+            ],
         }
 
         self.assertCountEqual(result_dict['readings'], expectation['readings'])
         self.assertCountEqual(result_dict['column_defs'], expectation['column_defs'])
 
     def test_property_meter_usage_returns_meter_readings_and_column_defs_when_cost_meter_included(self):
-        filename = "example-pm-monthly-meter-usage-2-cost-meters.xlsx"
-        filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + filename
+        filename = 'example-pm-monthly-meter-usage-2-cost-meters.xlsx'
+        filepath = os.path.dirname(os.path.abspath(__file__)) + '/data/' + filename
 
         cost_import_file = ImportFile.objects.create(
             import_record=self.import_record,
             source_type=SEED_DATA_SOURCES[PORTFOLIO_METER_USAGE][1],
             uploaded_filename=filename,
-            file=SimpleUploadedFile(
-                name=filename,
-                content=pathlib.Path(filepath).read_bytes()
-            ),
-            cycle=self.cycle
+            file=SimpleUploadedFile(name=filename, content=pathlib.Path(filepath).read_bytes()),
+            cycle=self.cycle,
         )
 
         # add meters and readings to property associated to property_view_1
@@ -2295,12 +2085,14 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
         url = reverse('api:v3:properties-meter-usage', kwargs={'pk': self.property_view_1.id})
         url += f'?organization_id={self.org.pk}'
 
-        post_params = json.dumps({
-            'interval': 'Exact',
-            'excluded_meter_ids': [],
-        })
-        result = self.client.post(url, post_params, content_type="application/json")
-        result_dict = ast.literal_eval(result.content.decode("utf-8"))
+        post_params = json.dumps(
+            {
+                'interval': 'Exact',
+                'excluded_meter_ids': [],
+            }
+        )
+        result = self.client.post(url, post_params, content_type='application/json')
+        result_dict = ast.literal_eval(result.content.decode('utf-8'))
 
         expectation = {
             'readings': [
@@ -2350,17 +2142,19 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
                     'displayName': 'Cost - Portfolio Manager - 5766973-1 (US Dollars)',
                     '_filter_type': 'reading',
                 },
-            ]
+            ],
         }
 
         self.assertCountEqual(result_dict['readings'], expectation['readings'])
         self.assertCountEqual(result_dict['column_defs'], expectation['column_defs'])
 
-    def test_property_meter_usage_returns_meter_readings_according_to_thermal_conversion_preferences_of_an_org_if_applicable_for_display_settings(self):
+    def test_property_meter_usage_returns_meter_readings_according_to_thermal_conversion_preferences_of_an_org_if_applicable_for_display_settings(
+        self,
+    ):
         # update the org settings thermal preference and display preference
         self.org.thermal_conversion_assumption = Organization.CAN
-        self.org.display_meter_units["Diesel"] = "Liters"
-        self.org.display_meter_units["Coke"] = "Lbs. (pounds)"
+        self.org.display_meter_units['Diesel'] = 'Liters'
+        self.org.display_meter_units['Coke'] = 'Lbs. (pounds)'
         self.org.save()
 
         # add meters and readings to property associated to property_view_1
@@ -2397,15 +2191,17 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
         }
         MeterReading.objects.create(**coke_reading_details)
 
-        post_params = json.dumps({
-            'interval': 'Exact',
-            'excluded_meter_ids': [],
-        })
+        post_params = json.dumps(
+            {
+                'interval': 'Exact',
+                'excluded_meter_ids': [],
+            }
+        )
 
         url = reverse('api:v3:properties-meter-usage', kwargs={'pk': self.property_view_1.id})
         url += f'?organization_id={self.org.pk}'
-        result = self.client.post(url, post_params, content_type="application/json")
-        result_dict = ast.literal_eval(result.content.decode("utf-8"))
+        result = self.client.post(url, post_params, content_type='application/json')
+        result_dict = ast.literal_eval(result.content.decode('utf-8'))
 
         display_readings = [
             {
@@ -2436,7 +2232,7 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
                 'end_time': make_aware(datetime(2016, 4, 1, 0, 0, 0), timezone=tz_obj),
                 'reading': 100,
                 'source_unit': 'kBtu (thousand Btu)',
-                'conversion_factor': 1
+                'conversion_factor': 1,
             }
             MeterReading.objects.create(**reading_details)
 
@@ -2449,12 +2245,14 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
         url = reverse('api:v3:properties-meter-usage', kwargs={'pk': self.property_view_1.id})
         url += f'?organization_id={self.org.pk}'
 
-        post_params = json.dumps({
-            'interval': 'Month',
-            'excluded_meter_ids': [],
-        })
-        result = self.client.post(url, post_params, content_type="application/json")
-        result_dict = ast.literal_eval(result.content.decode("utf-8"))
+        post_params = json.dumps(
+            {
+                'interval': 'Month',
+                'excluded_meter_ids': [],
+            }
+        )
+        result = self.client.post(url, post_params, content_type='application/json')
+        result_dict = ast.literal_eval(result.content.decode('utf-8'))
 
         expectation = {
             'readings': [
@@ -2494,13 +2292,15 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
                     'displayName': 'Natural Gas - Portfolio Manager - 5766973-1 (kBtu (thousand Btu))',
                     '_filter_type': 'reading',
                 },
-            ]
+            ],
         }
 
         self.assertCountEqual(result_dict['readings'], expectation['readings'])
         self.assertCountEqual(result_dict['column_defs'], expectation['column_defs'])
 
-    def test_property_meter_usage_can_return_monthly_meter_readings_and_column_defs_for_submonthly_data_with_DST_transitions_and_specific_meters(self):
+    def test_property_meter_usage_can_return_monthly_meter_readings_and_column_defs_for_submonthly_data_with_DST_transitions_and_specific_meters(
+        self,
+    ):
         # add initial meters and readings
         save_raw_data(self.import_file.id)
 
@@ -2515,7 +2315,7 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
                 'end_time': make_aware(datetime(2019, 11, 3, 1, 59, 59), timezone=tz_obj, is_dst=False),
                 'reading': 100,
                 'source_unit': 'kBtu (thousand Btu)',
-                'conversion_factor': 1
+                'conversion_factor': 1,
             }
             MeterReading.objects.create(**reading_details)
 
@@ -2535,12 +2335,14 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
         url = reverse('api:v3:properties-meter-usage', kwargs={'pk': self.property_view_1.id})
         url += f'?organization_id={self.org.pk}'
 
-        post_params = json.dumps({
-            'interval': 'Month',
-            'excluded_meter_ids': [property_1_electric_meter.id],
-        })
-        result = self.client.post(url, post_params, content_type="application/json")
-        result_dict = ast.literal_eval(result.content.decode("utf-8"))
+        post_params = json.dumps(
+            {
+                'interval': 'Month',
+                'excluded_meter_ids': [property_1_electric_meter.id],
+            }
+        )
+        result = self.client.post(url, post_params, content_type='application/json')
+        result_dict = ast.literal_eval(result.content.decode('utf-8'))
 
         expectation = {
             'readings': [
@@ -2567,7 +2369,7 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
                     'displayName': 'Natural Gas - Portfolio Manager - 5766973-1 (kBtu (thousand Btu))',
                     '_filter_type': 'reading',
                 },
-            ]
+            ],
         }
 
         self.assertCountEqual(result_dict['readings'], expectation['readings'])
@@ -2591,7 +2393,7 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
                 'end_time': make_aware(datetime(2018, 4, 1, 0, 0, 0), timezone=tz_obj),
                 'reading': 100,
                 'source_unit': 'kBtu (thousand Btu)',
-                'conversion_factor': 1
+                'conversion_factor': 1,
             }
             MeterReading.objects.create(**reading_details)
 
@@ -2604,12 +2406,14 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
         url = reverse('api:v3:properties-meter-usage', kwargs={'pk': self.property_view_1.id})
         url += f'?organization_id={self.org.pk}'
 
-        post_params = json.dumps({
-            'interval': 'Year',
-            'excluded_meter_ids': [],
-        })
-        result = self.client.post(url, post_params, content_type="application/json")
-        result_dict = ast.literal_eval(result.content.decode("utf-8"))
+        post_params = json.dumps(
+            {
+                'interval': 'Year',
+                'excluded_meter_ids': [],
+            }
+        )
+        result = self.client.post(url, post_params, content_type='application/json')
+        result_dict = ast.literal_eval(result.content.decode('utf-8'))
 
         expectation = {
             'readings': [
@@ -2639,7 +2443,7 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
                     'displayName': 'Natural Gas - Portfolio Manager - 5766973-1 (kBtu (thousand Btu))',
                     '_filter_type': 'reading',
                 },
-            ]
+            ],
         }
 
         self.assertCountEqual(result_dict['readings'], expectation['readings'])
@@ -2660,7 +2464,7 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
             'end_time': make_aware(datetime(2020, 2, 2, 0, 0, 0), timezone=tz_obj),
             'reading': 100 * 3.41,
             'source_unit': 'kBtu (thousand Btu)',
-            'conversion_factor': 1
+            'conversion_factor': 1,
         }
         MeterReading.objects.create(**reading_details)
 
@@ -2672,7 +2476,7 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
             'end_time': make_aware(datetime(2020, 4, 3, 0, 0, 0), timezone=tz_obj),
             'reading': 300 * 3.41,
             'source_unit': 'kBtu (thousand Btu)',
-            'conversion_factor': 1
+            'conversion_factor': 1,
         }
         MeterReading.objects.create(**reading_details)
 
@@ -2684,31 +2488,33 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
             'end_time': make_aware(datetime(2020, 7, 2, 0, 0, 0), timezone=tz_obj),
             'reading': 320 * 3.41,
             'source_unit': 'kBtu (thousand Btu)',
-            'conversion_factor': 1
+            'conversion_factor': 1,
         }
         MeterReading.objects.create(**reading_details)
 
         url = reverse('api:v3:properties-meter-usage', kwargs={'pk': self.property_view_1.id})
         url += f'?organization_id={self.org.pk}'
 
-        post_params = json.dumps({
-            'interval': 'Month',
-            'excluded_meter_ids': [],
-        })
-        result = self.client.post(url, post_params, content_type="application/json")
-        result_dict = ast.literal_eval(result.content.decode("utf-8"))
+        post_params = json.dumps(
+            {
+                'interval': 'Month',
+                'excluded_meter_ids': [],
+            }
+        )
+        result = self.client.post(url, post_params, content_type='application/json')
+        result_dict = ast.literal_eval(result.content.decode('utf-8'))
 
         expectation = {
             'readings': [
                 {
                     'Electric - Grid - Portfolio Manager - 5766973-0': 175213.75,
                     'Natural Gas - Portfolio Manager - 5766973-1': 576000.2,
-                    'month': 'January 2016'
+                    'month': 'January 2016',
                 },
                 {
                     'Electric - Grid - Portfolio Manager - 5766973-0': 160880.85,
                     'Natural Gas - Portfolio Manager - 5766973-1': 488000.1,
-                    'month': 'February 2016'
+                    'month': 'February 2016',
                 },
                 {
                     'month': 'January 2020',
@@ -2754,7 +2560,7 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
                     'displayName': 'Natural Gas - Portfolio Manager - 5766973-1 (kBtu (thousand Btu))',
                     '_filter_type': 'reading',
                 },
-            ]
+            ],
         }
 
         self.assertCountEqual(result_dict['readings'], expectation['readings'])
@@ -2763,14 +2569,8 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
 
 class PropertyViewUpdateWithESPMTests(DataMappingBaseTestCase):
     def setUp(self):
-        user_details = {
-            'username': 'test_user@demo.com',
-            'password': 'test_pass',
-            'email': 'test_user@demo.com'
-        }
-        selfvars = self.set_up(
-            PORTFOLIO_RAW, user_details['username'], user_details['password']
-        )
+        user_details = {'username': 'test_user@demo.com', 'password': 'test_pass', 'email': 'test_user@demo.com'}
+        selfvars = self.set_up(PORTFOLIO_RAW, user_details['username'], user_details['password'])
         self.user, self.org, self.import_file_1, self.import_record_1, self.cycle_1 = selfvars
 
         # create the test factories
@@ -2788,9 +2588,7 @@ class PropertyViewUpdateWithESPMTests(DataMappingBaseTestCase):
         """Simple test to verify that the property state is merged with an updated
         ESPM download XLSX file."""
         pm_property_id = '22482007'
-        pv = self.property_view_factory.get_property_view(
-            cycle=self.cycle_1, pm_property_id=pm_property_id
-        )
+        pv = self.property_view_factory.get_property_view(cycle=self.cycle_1, pm_property_id=pm_property_id)
         self.assertTrue(pv.state.pm_property_id, pm_property_id)
 
         # save some of the pv state's data to verify merging
@@ -2798,34 +2596,24 @@ class PropertyViewUpdateWithESPMTests(DataMappingBaseTestCase):
         pv_address_line_1 = pv.state.address_line_1
         pv_site_eui = pv.state.site_eui
 
-        mapping_filepath = os.path.join(
-            os.path.dirname(os.path.abspath(__file__)), 'data', 'mappings', 'espm-single-mapping.csv'
-        )
+        mapping_filepath = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data', 'mappings', 'espm-single-mapping.csv')
 
         # need to upload the mappings for the ESPM data to a new profile
-        mapping_profile = ColumnMappingProfile.create_from_file(
-            mapping_filepath, self.org, 'ESPM', overwrite_if_exists=True
-        )
+        mapping_profile = ColumnMappingProfile.create_from_file(mapping_filepath, self.org, 'ESPM', overwrite_if_exists=True)
 
-        test_filepath = os.path.join(
-            os.path.dirname(os.path.abspath(__file__)), 'data', f'portfolio-manager-single-{pm_property_id}.xlsx'
-        )
+        test_filepath = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data', f'portfolio-manager-single-{pm_property_id}.xlsx')
 
         url = reverse('api:v3:properties-update-with-espm', args=[pv.id])
-        url += f"?organization_id={self.org.id}&cycle_id={self.cycle_1.id}&mapping_profile_id={mapping_profile.id}"
-        doc = open(test_filepath, 'rb')
-        # need to encode the data as multipart form data since this is a PUT. A
-        # POST in the client defaults to multipart, so in a PUT we have to construct it.
-        response = self.client.put(
-            path=url,
-            data=encode_multipart(data=dict(
-                file=doc,
-                file_type='XLSX',
-                name=doc.name),
-                boundary=BOUNDARY),
-            content_type=MULTIPART_CONTENT
-        )
-        self.assertEqual(response.status_code, 200)
+        url += f'?organization_id={self.org.id}&cycle_id={self.cycle_1.id}&mapping_profile_id={mapping_profile.id}'
+        with open(test_filepath, 'rb') as doc:
+            # need to encode the data as multipart form data since this is a PUT. A
+            # POST in the client defaults to multipart, so in a PUT we have to construct it.
+            response = self.client.put(
+                path=url,
+                data=encode_multipart(data={'file': doc, 'file_type': 'XLSX', 'name': doc.name}, boundary=BOUNDARY),
+                content_type=MULTIPART_CONTENT,
+            )
+            self.assertEqual(response.status_code, 200)
 
         # now spot check that some of fields were updated
         pv.refresh_from_db()

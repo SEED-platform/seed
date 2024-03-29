@@ -2,11 +2,12 @@
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 import json
 import re
 from os.path import dirname, join, realpath
 
-f = open(join(dirname(realpath(__file__)), "pm-mapping-orig.json"))
+f = open(join(dirname(realpath(__file__)), 'pm-mapping-orig.json'))
 data = json.load(f)
 
 
@@ -15,11 +16,11 @@ def downcase(str):
 
 
 def strip_units(str):
-    m = re.search(r".*\((.*)\).*", str)
+    m = re.search(r'.*\((.*)\).*', str)
     if m:
-        return [re.sub(r"\((.*)\)", "", str).strip(), m.groups()[0]]
+        return [re.sub(r'\((.*)\)', '', str).strip(), m.groups()[0]]
     else:
-        return [str, ""]
+        return [str, '']
 
 
 new_data = []
@@ -27,7 +28,7 @@ for key, d in data.items():
     updated_key, units = strip_units(key)
     a = {}
     a['from_field'] = key
-    a['to_table_name'] = "PropertyState"
+    a['to_table_name'] = 'PropertyState'
     a['to_field'] = downcase(d[0])
     a['display_name'] = d[0]
     a['schema'] = 'bedes' if d[1]['bedes'] else ''

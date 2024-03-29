@@ -1,11 +1,11 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 :author nicholas.long@nrel.gov
 """
+
 from rest_framework import serializers
 
 from seed.models import Measure, PropertyMeasure
@@ -55,7 +55,7 @@ class PropertyMeasureSerializer(serializers.HyperlinkedModelSerializer):
         )
 
     def measure_id_name(self, obj):
-        return "{}.{}".format(obj.measure.category, obj.measure.name)
+        return f'{obj.measure.category}.{obj.measure.name}'
 
     def get_scenario_id(self, obj):
         scenario = obj.scenario_set.first()

@@ -1,9 +1,9 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 import logging
 
 from django.test import TestCase
@@ -19,11 +19,7 @@ class TestMappingColumns(TestCase):
         dest_columns = ['big foot', 'crankle', 'estómago']
         results = MappingColumns(raw_columns, dest_columns)
 
-        expected = {
-            'foot': ['_', 'big foot', 90],
-            'ankle': ['_', 'crankle', 94],
-            'stomach': ['_', 'est\xf3mago', 82]
-        }
+        expected = {'foot': ['_', 'big foot', 90], 'ankle': ['_', 'crankle', 94], 'stomach': ['_', 'est\xf3mago', 82]}
         self.assertDictEqual(expected, results.final_mappings)
 
     def test_unicode_in_raw(self):
@@ -31,11 +27,7 @@ class TestMappingColumns(TestCase):
         dest_columns = ['foot', 'ankle', 'stomach', 'estooomago']
         results = MappingColumns(raw_columns, dest_columns)
 
-        expected = {
-            'crankle': ['_', 'ankle', 94],
-            'big foot': ['_', 'foot', 90],
-            'est\xf3mago': ['_', 'estooomago', 89]
-        }
+        expected = {'crankle': ['_', 'ankle', 94], 'big foot': ['_', 'foot', 90], 'est\xf3mago': ['_', 'estooomago', 89]}
         self.assertDictEqual(expected, results.final_mappings)
 
     def test_resolve_duplicate(self):
@@ -44,8 +36,5 @@ class TestMappingColumns(TestCase):
         results = MappingColumns(raw_columns, dest_columns)
 
         # Note that the stomach will resolve as 'PropertyState' by default.
-        expected = {
-            'estomago': ['_', 'est\xf3mago', 92],
-            'stomach': ['PropertyState', 'stomach', 100]
-        }
+        expected = {'estomago': ['_', 'est\xf3mago', 92], 'stomach': ['PropertyState', 'stomach', 100]}
         self.assertDictEqual(expected, results.final_mappings)

@@ -1,9 +1,9 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 from rest_framework import pagination, response
 
 
@@ -14,12 +14,14 @@ class FakePagination(pagination.PageNumberPagination):
     """
 
     def get_paginated_response(self, data):
-        return response.Response({
-            "next": None,
-            "previous": None,
-            "count": len(data),
-            "results": data,
-        })
+        return response.Response(
+            {
+                'next': None,
+                'previous': None,
+                'count': len(data),
+                'results': data,
+            }
+        )
 
     def paginate_queryset(self, queryset, request, view=None):
         return queryset

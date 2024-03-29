@@ -1,23 +1,18 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 import json
 
+import pytest
 from django.http import HttpResponse
 from django.test import RequestFactory, TestCase
 from rest_framework.test import APIRequestFactory
 
 from seed import decorators
-from seed.utils.cache import (
-    clear_cache,
-    get_cache,
-    get_lock,
-    increment_cache,
-    make_key
-)
+from seed.utils.cache import clear_cache, get_cache, get_lock, increment_cache, make_key
 
 
 class TestException(Exception):
@@ -39,8 +34,7 @@ class TestDecorators(TestCase):
     def test_get_prog_key(self):
         """We format our cache key properly."""
         expected = make_key('SEED:fun_func:PROG:' + str(self.pk))
-        self.assertEqual(decorators.get_prog_key('fun_func', self.pk),
-                         expected)
+        self.assertEqual(decorators.get_prog_key('fun_func', self.pk), expected)
 
     def test_increment_cache(self):
         """Sum our progress by increments properly."""
@@ -87,7 +81,7 @@ class TestDecorators(TestCase):
             self.assertEqual(int(get_lock(key)), self.locked)
             raise TestException('Test exception!')
 
-        self.assertRaises(TestException, fake_func, self.pk)
+        pytest.raises(TestException, fake_func, self.pk)
         # Even though execution failed part way through a call, we unlock.
         self.assertEqual(int(get_lock(key)), self.unlocked)
 
@@ -107,7 +101,6 @@ class TestDecorators(TestCase):
 
 
 class RequireOrganizationIDTests(TestCase):
-
     def setUp(self):
         @decorators.require_organization_id
         def test_view(request):
@@ -131,8 +124,7 @@ class RequireOrganizationIDTests(TestCase):
         self.assertEqual(400, response.status_code)
         j = json.loads(response.content)
         self.assertEqual(j['status'], 'error')
-        self.assertEqual(j['message'],
-                         'Invalid organization_id: either blank or not an integer')
+        self.assertEqual(j['message'], 'Invalid organization_id: either blank or not an integer')
 
     def test_require_organization_id_fail_not_numeric(self):
         request = RequestFactory().get('', {'organization_id': 'invalid'})
@@ -140,12 +132,10 @@ class RequireOrganizationIDTests(TestCase):
         self.assertEqual(400, response.status_code)
         j = json.loads(response.content)
         self.assertEqual(j['status'], 'error')
-        self.assertEqual(j['message'],
-                         'Invalid organization_id: either blank or not an integer')
+        self.assertEqual(j['message'], 'Invalid organization_id: either blank or not an integer')
 
 
 class ClassDecoratorTests(TestCase):
-
     def test_ajax_request_class_dict(self):
         request = RequestFactory().get('')
 
@@ -156,9 +146,7 @@ class ClassDecoratorTests(TestCase):
         result = func(True, request)
         self.assertEqual(result.status_code, 200)
         self.assertEqual(result['content-type'], 'application/json')
-        self.assertEqual(
-            json.loads(result.content), {"success": True, "key": "val"}
-        )
+        self.assertEqual(json.loads(result.content), {'success': True, 'key': 'val'})
 
     def test_ajax_request_class_dict_status_error(self):
         request = RequestFactory().get('')
@@ -170,9 +158,7 @@ class ClassDecoratorTests(TestCase):
         result = func(True, request)
         self.assertEqual(result.status_code, 400)
         self.assertEqual(result['content-type'], 'application/json')
-        self.assertEqual(
-            json.loads(result.content), {"status": "error", "error": "error"}
-        )
+        self.assertEqual(json.loads(result.content), {'status': 'error', 'error': 'error'})
 
     def test_ajax_request_class_dict_status_false(self):
         request = RequestFactory().get('')
@@ -184,9 +170,7 @@ class ClassDecoratorTests(TestCase):
         result = func(True, request)
         self.assertEqual(result.status_code, 400)
         self.assertEqual(result['content-type'], 'application/json')
-        self.assertEqual(
-            json.loads(result.content), {"success": False, "error": "error"}
-        )
+        self.assertEqual(json.loads(result.content), {'success': False, 'error': 'error'})
 
     def test_require_organization_id_class_org_id(self):
         request = APIRequestFactory().get('', data={'organization_id': 1})
@@ -209,10 +193,7 @@ class ClassDecoratorTests(TestCase):
 
         result = func(True, request)
         self.assertEqual(result.status_code, 400)
-        self.assertEqual(
-            result.content,
-            b'Valid organization_id is required in the query parameters.'
-        )
+        self.assertEqual(result.content, b'Valid organization_id is required in the query parameters.')
 
     def test_require_organization_id_class_org_id_not_int(self):
         request = APIRequestFactory().get('', data={'organization_id': 'bad'})
@@ -224,10 +205,7 @@ class ClassDecoratorTests(TestCase):
 
         result = func(True, request)
         self.assertEqual(result.status_code, 400)
-        self.assertEqual(
-            result.content,
-            b'Invalid organization_id in the query parameters, must be integer'
-        )
+        self.assertEqual(result.content, b'Invalid organization_id in the query parameters, must be integer')
 
     def test_ajax_request_class_format_type(self):
         request = RequestFactory().get('')
@@ -240,6 +218,4 @@ class ClassDecoratorTests(TestCase):
         result = func(True, request)
         self.assertEqual(result.status_code, 200)
         self.assertEqual(result['content-type'], 'text/json')
-        self.assertEqual(
-            json.loads(result.content), {"success": True, "key": "val"}
-        )
+        self.assertEqual(json.loads(result.content), {'success': True, 'key': 'val'})

@@ -1,9 +1,9 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 import json
 
 from django.http import HttpResponse, JsonResponse
@@ -19,16 +19,15 @@ from seed.utils.api_schema import AutoSchemaHelper
 
 
 class AuditTemplateViewSet(viewsets.ViewSet, OrgMixin):
-    @swagger_auto_schema(manual_parameters=[
-        AutoSchemaHelper.query_org_id_field(),
-        AutoSchemaHelper.base_field(
-            name='id',
-            location_attr='IN_PATH',
-            type='TYPE_INTEGER',
-            required=True,
-            description='Audit Template Submission ID.'),
-        AutoSchemaHelper.query_string_field('report_format', False, 'Report format Valid values are: xml, pdf. Defaults to pdf.')
-    ])
+    @swagger_auto_schema(
+        manual_parameters=[
+            AutoSchemaHelper.query_org_id_field(),
+            AutoSchemaHelper.base_field(
+                name='id', location_attr='IN_PATH', type='TYPE_INTEGER', required=True, description='Audit Template Submission ID.'
+            ),
+            AutoSchemaHelper.query_string_field('report_format', False, 'Report format Valid values are: xml, pdf. Defaults to pdf.'),
+        ]
+    )
     @has_perm_class('can_view_data')
     @action(detail=True, methods=['GET'])
     def get_submission(self, request, pk):
@@ -41,11 +40,8 @@ class AuditTemplateViewSet(viewsets.ViewSet, OrgMixin):
 
         valid_file_formats = ['json', 'xml', 'pdf']
         if report_format.lower() not in valid_file_formats:
-            message = f"The report_format specified is invalid. Must be one of: {valid_file_formats}."
-            return JsonResponse({
-                'success': False,
-                'message': message
-            }, status=400)
+            message = f'The report_format specified is invalid. Must be one of: {valid_file_formats}.'
+            return JsonResponse({'success': False, 'message': message}, status=400)
 
         # retrieve report
         at = AuditTemplate(self.get_organization(self.request))
@@ -53,10 +49,7 @@ class AuditTemplateViewSet(viewsets.ViewSet, OrgMixin):
 
         # error
         if response is None:
-            return JsonResponse({
-                'success': False,
-                'message': message
-            }, status=400)
+            return JsonResponse({'success': False, 'message': message}, status=400)
         # json
         if report_format.lower() == 'json':
             return JsonResponse(json.loads(response.content))
@@ -65,8 +58,8 @@ class AuditTemplateViewSet(viewsets.ViewSet, OrgMixin):
             return HttpResponse(response.text)
         # pdf
         response2 = HttpResponse(response.content)
-        response2.headers["Content-Type"] = 'application/pdf'
-        response2.headers["Content-Disposition"] = f'attachment; filename="at_submission_{pk}.pdf"'
+        response2.headers['Content-Type'] = 'application/pdf'
+        response2.headers['Content-Disposition'] = f'attachment; filename="at_submission_{pk}.pdf"'
         return response2
 
     @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_org_id_field()])
@@ -79,20 +72,13 @@ class AuditTemplateViewSet(viewsets.ViewSet, OrgMixin):
         at = AuditTemplate(self.get_organization(self.request))
         response, message = at.get_building(pk)
         if response is None:
-            return JsonResponse({
-                'success': False,
-                'message': message
-            }, status=400)
+            return JsonResponse({'success': False, 'message': message}, status=400)
         return HttpResponse(response.text)
 
     @swagger_auto_schema(
         manual_parameters=[
             AutoSchemaHelper.query_org_id_field(),
-            AutoSchemaHelper.query_integer_field(
-                'cycle_id',
-                required=True,
-                description='Cycle ID'
-            ),
+            AutoSchemaHelper.query_integer_field('cycle_id', required=True, description='Cycle ID'),
         ],
         request_body=AutoSchemaHelper.schema_factory(
             [
@@ -103,7 +89,7 @@ class AuditTemplateViewSet(viewsets.ViewSet, OrgMixin):
                     'updated_at': 'string',
                 }
             ],
-        )
+        ),
     )
     @has_perm_class('can_modify_data')
     @action(detail=False, methods=['PUT'])
@@ -117,34 +103,22 @@ class AuditTemplateViewSet(viewsets.ViewSet, OrgMixin):
 
         valid, message = self.validate_properties(properties)
         if not valid:
-            return JsonResponse({
-                'success': False,
-                'message': message
-            }, status=400)
+            return JsonResponse({'success': False, 'message': message}, status=400)
 
         org = self.get_organization(request)
         cycle_id = request.query_params.get('cycle_id')
 
         if not cycle_id:
-            return JsonResponse({
-                'success': False,
-                'message': 'Missing Cycle ID'
-            })
+            return JsonResponse({'success': False, 'message': 'Missing Cycle ID'})
 
         if not Cycle.objects.filter(id=cycle_id, organization=org).exists():
-            return JsonResponse({
-                'success': False,
-                'message': 'Cycle does not exist'
-            }, status=404)
+            return JsonResponse({'success': False, 'message': 'Cycle does not exist'}, status=404)
 
         at = AuditTemplate(org)
         progress_data = at.batch_get_building_xml(cycle_id, properties)
 
         if progress_data is None:
-            return JsonResponse({
-                'success': False,
-                'message': 'Unexpected Error'
-            }, status=400)
+            return JsonResponse({'success': False, 'message': 'Unexpected Error'}, status=400)
 
         return JsonResponse(progress_data)
 
@@ -159,18 +133,17 @@ class AuditTemplateViewSet(viewsets.ViewSet, OrgMixin):
             valid.append(property.get('name'))
 
         if not all(valid):
-            return False, "Request data must be structured as: {audit_template_building_id: integer, property_view: integer, email: string, updated_at: date time iso string 'YYYY-MM-DDTHH:MM:SSZ'}"
+            return (
+                False,
+                "Request data must be structured as: {audit_template_building_id: integer, property_view: integer, email: string, updated_at: date time iso string 'YYYY-MM-DDTHH:MM:SSZ'}",
+            )
         else:
-            return True, ""
+            return True, ''
 
     @swagger_auto_schema(
         manual_parameters=[
             AutoSchemaHelper.query_org_id_field(),
-            AutoSchemaHelper.query_integer_field(
-                'cycle_id',
-                required=True,
-                description='Cycle ID'
-            ),
+            AutoSchemaHelper.query_integer_field('cycle_id', required=True, description='Cycle ID'),
         ]
     )
     @has_perm_class('can_modify_data')
@@ -182,53 +155,29 @@ class AuditTemplateViewSet(viewsets.ViewSet, OrgMixin):
         org = self.get_organization(request)
         cycle_id = request.query_params.get('cycle_id')
         if not cycle_id:
-            return JsonResponse({
-                'success': False,
-                'message': 'Missing Cycle ID'
-            })
+            return JsonResponse({'success': False, 'message': 'Missing Cycle ID'})
 
         if not Cycle.objects.filter(id=cycle_id, organization=org).exists():
-            return JsonResponse({
-                'success': False,
-                'message': 'Cycle does not exist'
-            }, status=404)
+            return JsonResponse({'success': False, 'message': 'Cycle does not exist'}, status=404)
 
         at = AuditTemplate(org)
         result = at.get_buildings(cycle_id)
 
         if isinstance(result, tuple):
-            return JsonResponse({
-                'success': False,
-                'message': result[1]
-            }, status=200)
+            return JsonResponse({'success': False, 'message': result[1]}, status=200)
 
         response, message = result.get()
         if response is None:
-            return JsonResponse({
-                'success': False,
-                'message': message
-            }, status=400)
+            return JsonResponse({'success': False, 'message': message}, status=400)
 
-        return JsonResponse({
-            'success': True,
-            'message': response
-        }, status=200)
+        return JsonResponse({'success': True, 'message': response}, status=200)
 
     @swagger_auto_schema(
         manual_parameters=[
             AutoSchemaHelper.query_org_id_field(),
-            AutoSchemaHelper.query_integer_field(
-                'cycle_id',
-                required=True,
-                description='Cycle ID'
-            ),
+            AutoSchemaHelper.query_integer_field('cycle_id', required=True, description='Cycle ID'),
         ],
-        request_body=AutoSchemaHelper.schema_factory(
-            {
-                'property_view_ids': ['integer']
-            },
-            description='PropertyView IDs to be exported'
-        )
+        request_body=AutoSchemaHelper.schema_factory({'property_view_ids': ['integer']}, description='PropertyView IDs to be exported'),
     )
     @has_perm_class('can_modify_data')
     @action(detail=False, methods=['POST'])
@@ -242,8 +191,5 @@ class AuditTemplateViewSet(viewsets.ViewSet, OrgMixin):
 
         progress_data, message = at.batch_export_to_audit_template(property_view_ids)
         if progress_data is None:
-            return JsonResponse({
-                'success': False,
-                'message': message or 'Unexpected Error'
-            }, status=400)
+            return JsonResponse({'success': False, 'message': message or 'Unexpected Error'}, status=400)
         return JsonResponse(progress_data)

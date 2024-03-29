@@ -1,9 +1,9 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
@@ -14,18 +14,14 @@ from rest_framework import permissions
 
 from config.views import robots_txt
 from seed.api.base.urls import urlpatterns as api
-from seed.landing.views import (
-    password_reset_complete,
-    password_reset_confirm,
-    password_reset_done
-)
+from seed.landing.views import password_reset_complete, password_reset_confirm, password_reset_done
 from seed.views.main import angular_js_tests, health_check, version
 
 schema_view = get_schema_view(
     openapi.Info(
-        title="SEED API",
+        title='SEED API',
         default_version='v3',
-        description="SEED Platform API Documentation",
+        description='SEED Platform API Documentation',
         # terms_of_service="https://www.google.com/policies/terms/",
         # contact=openapi.Contact(email="contact@snippets.local"),
         # license=openapi.License(name="BSD License"),
@@ -47,30 +43,22 @@ urlpatterns = [
         password_reset_complete,
         name='password_reset_complete',
     ),
-    path(
-        'accounts/password/reset/confirm/<uidb64>/<token>/',
-        password_reset_confirm,
-        name='password_reset_confirm'
-    ),
-
+    path('accounts/password/reset/confirm/<uidb64>/<token>/', password_reset_confirm, name='password_reset_confirm'),
     # Application
-    re_path(r'^', include(('seed.landing.urls', "seed.landing"), namespace="landing")),
-    re_path(r'^app/', include(('seed.urls', "seed"), namespace="seed")),
+    re_path(r'^', include(('seed.landing.urls', 'seed.landing'), namespace='landing')),
+    re_path(r'^app/', include(('seed.urls', 'seed'), namespace='seed')),
     re_path(r'^documentation/', include(('seed.docs.urls', 'seed.docs'), namespace='docs')),
-
     # root configuration items
     re_path(r'^i18n/', include('django.conf.urls.i18n')),
     re_path(r'^robots\.txt', robots_txt, name='robots_txt'),
-
     # API
     re_path(r'^api/health_check/$', health_check, name='health_check'),
     re_path(r'^api/swagger/$', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     re_path(r'^api/version/$', version, name='version'),
-    re_path(r'^api/', include((api, "seed"), namespace='api')),
+    re_path(r'^api/', include((api, 'seed'), namespace='api')),
     re_path(r'^oauth/', include(('oauth2_jwt_provider.urls', 'oauth2_jwt_provider'), namespace='oauth2_provider')),
-
     # test sentry error
-    path('sentry-debug/', trigger_error)
+    path('sentry-debug/', trigger_error),
 ]
 
 handler404 = 'seed.views.main.error404'
@@ -88,7 +76,6 @@ if settings.DEBUG:
     urlpatterns += [
         # test URLs
         re_path(r'^angular_js_tests/$', angular_js_tests, name='angular_js_tests'),
-
         # admin
         re_path(r'^admin/', admin.site.urls),
     ]

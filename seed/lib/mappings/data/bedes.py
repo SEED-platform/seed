@@ -1,5 +1,4 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
@@ -13,7 +12,6 @@ columns are not stored at the moment.
 For instance, 'Annual Fuel Use Consistent Units (Consistent Units)' becomes
 'Annual Fuel Use Consistent Units'
 """
-# flake8: noqa
 
 schema = {
     'AC Adjusted': 'string',
@@ -2653,5 +2651,5 @@ schema = {
     'Zoo - Worker Density (Number per 1,000 ft2)': 'float',
     'eGRID Output Emissions Rate (kgCO2e/MBtu)': 'float',
     'eGRID Region Code': 'string',
-    'eGRID Subregion': 'string'
+    'eGRID Subregion': 'string',
 }

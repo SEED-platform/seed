@@ -2,7 +2,6 @@
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
-from __future__ import absolute_import
 
 # use importlib module to find the local_untracked file rather than a hard-coded path
 import importlib.util
@@ -12,11 +11,9 @@ from distutils.util import strtobool
 
 from celery.utils import LOG_LEVELS
 
-from config.settings.common import *  # noqa
+from config.settings.common import *  # noqa: F403
 
-PASSWORD_HASHERS = (
-    'django.contrib.auth.hashers.MD5PasswordHasher',
-)
+PASSWORD_HASHERS = ('django.contrib.auth.hashers.MD5PasswordHasher',)
 
 DEBUG = True
 SESSION_COOKIE_SECURE = False
@@ -28,7 +25,7 @@ DATABASES = {
         'NAME': 'seed',
         'USER': 'postgres',
         'PASSWORD': 'postgres',
-        'HOST': "127.0.0.1",
+        'HOST': '127.0.0.1',
         'PORT': '',
     },
 }
@@ -45,7 +42,7 @@ REQUIRE_UNIQUE_EMAIL = False
 INTERNAL_IPS = ('127.0.0.1',)
 
 COMPRESS_ENABLED = False
-if "COMPRESS_ENABLED" not in locals() or not COMPRESS_ENABLED:
+if 'COMPRESS_ENABLED' not in locals() or not COMPRESS_ENABLED:
     COMPRESS_PRECOMPILERS = ()
     COMPRESS_FILTERS = {'css': ['compressor.filters.css_default.CssAbsoluteFilter']}
 
@@ -55,10 +52,7 @@ LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
     'handlers': {
-        'console': {
-            'level': 'DEBUG',
-            'class': 'logging.StreamHandler'
-        },
+        'console': {'level': 'DEBUG', 'class': 'logging.StreamHandler'},
     },
     'loggers': {
         # the name of the logger, if empty, then this is the default logger
@@ -72,9 +66,9 @@ LOGGING = {
 
 local_untracked_spec = importlib.util.find_spec('config.settings.local_untracked')
 if local_untracked_spec is None:
-    raise Exception("Unable to find the local_untracked in config/settings/local_untracked.py")
+    raise Exception('Unable to find the local_untracked in config/settings/local_untracked.py')
 else:
-    from config.settings.local_untracked import *  # noqa
+    from config.settings.local_untracked import *  # noqa: F403
 
 
 # suppress some logging on faker -- only show warnings or greater

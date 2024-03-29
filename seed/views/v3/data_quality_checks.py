@@ -1,9 +1,9 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 import csv
 
 from celery.utils.log import get_task_logger
@@ -41,11 +41,7 @@ class DataQualityCheckViewSet(viewsets.ViewSet, OrgMixin):
     @swagger_auto_schema(
         manual_parameters=[
             AutoSchemaHelper.base_field(
-                "organization_id",
-                "IN_PATH",
-                "Organization ID - identifier used to specify a DataQualityCheck",
-                True,
-                "TYPE_INTEGER"
+                'organization_id', 'IN_PATH', 'Organization ID - identifier used to specify a DataQualityCheck', True, 'TYPE_INTEGER'
             )
         ],
         request_body=AutoSchemaHelper.schema_factory(
@@ -54,18 +50,20 @@ class DataQualityCheckViewSet(viewsets.ViewSet, OrgMixin):
                 'taxlot_view_ids': ['integer'],
             },
             description='An object containing IDs of the records to perform'
-                        ' data quality checks on. Should contain two keys- '
-                        'property_view_ids and taxlot_view_ids, each of '
-                        'which is an array of appropriate IDs.',
+            ' data quality checks on. Should contain two keys- '
+            'property_view_ids and taxlot_view_ids, each of '
+            'which is an array of appropriate IDs.',
         ),
         responses={
-            200: AutoSchemaHelper.schema_factory({
-                'num_properties': 'integer',
-                'num_taxlots': 'integer',
-                'progress_key': 'string',
-                'progress': {},
-            })
-        }
+            200: AutoSchemaHelper.schema_factory(
+                {
+                    'num_properties': 'integer',
+                    'num_taxlots': 'integer',
+                    'progress_key': 'string',
+                    'progress': {},
+                }
+            )
+        },
     )
     @api_endpoint_class
     @ajax_request_class
@@ -97,18 +95,20 @@ class DataQualityCheckViewSet(viewsets.ViewSet, OrgMixin):
         # For now, organization_id is the only key currently used to identify DataQualityChecks
         return_value = do_checks(organization_id, property_state_ids, taxlot_state_ids)
 
-        return JsonResponse({
-            'num_properties': len(property_state_ids),
-            'num_taxlots': len(taxlot_state_ids),
-            # TODO #239: Deprecate progress_key from here and just use the 'progress.progress_key'
-            'progress_key': return_value['progress_key'],
-            'progress': return_value,
-        })
+        return JsonResponse(
+            {
+                'num_properties': len(property_state_ids),
+                'num_taxlots': len(taxlot_state_ids),
+                # TODO #239: Deprecate progress_key from here and just use the 'progress.progress_key'
+                'progress_key': return_value['progress_key'],
+                'progress': return_value,
+            }
+        )
 
     @swagger_auto_schema(
         manual_parameters=[
             AutoSchemaHelper.query_org_id_field(),
-            AutoSchemaHelper.query_integer_field("run_id", True, "Import file ID or cache key"),
+            AutoSchemaHelper.query_integer_field('run_id', True, 'Import file ID or cache key'),
         ]
     )
     @api_endpoint_class
@@ -125,10 +125,9 @@ class DataQualityCheckViewSet(viewsets.ViewSet, OrgMixin):
         """
         run_id = request.query_params.get('run_id')
         if run_id is None:
-            return JsonResponse({
-                'status': 'error',
-                'message': 'must include Import file ID or cache key as run_id'
-            }, status=status.HTTP_400_BAD_REQUEST)
+            return JsonResponse(
+                {'status': 'error', 'message': 'must include Import file ID or cache key as run_id'}, status=status.HTTP_400_BAD_REQUEST
+            )
 
         data_quality_results = get_cache_raw(DataQualityCheck.cache_key(run_id, self.get_organization(request)))
         response = HttpResponse(content_type='text/csv')
@@ -141,32 +140,45 @@ class DataQualityCheckViewSet(viewsets.ViewSet, OrgMixin):
             return response
 
         writer.writerow(
-            ['Table', 'Address Line 1', 'PM Property ID', 'Tax Lot ID', 'Custom ID', 'Field',
-             'Applied Label', 'Condition', 'Error Message', 'Severity'])
+            [
+                'Table',
+                'Address Line 1',
+                'PM Property ID',
+                'Tax Lot ID',
+                'Custom ID',
+                'Field',
+                'Applied Label',
+                'Condition',
+                'Error Message',
+                'Severity',
+            ]
+        )
 
         for row in data_quality_results:
             for result in row['data_quality_results']:
-                writer.writerow([
-                    row['data_quality_results'][0]['table_name'],
-                    row['address_line_1'],
-                    row['pm_property_id'] if 'pm_property_id' in row else None,
-                    row['jurisdiction_tax_lot_id'] if 'jurisdiction_tax_lot_id' in row else None,
-                    row['custom_id_1'],
-                    result['formatted_field'],
-                    result.get('label', None),
-                    result['condition'],
-                    # the detailed_message field can have units which has superscripts/subscripts,
-                    # so normalize_unicode_and_characters it!
-                    normalize_unicode_and_characters(result['detailed_message']),
-                    result['severity']
-                ])
+                writer.writerow(
+                    [
+                        row['data_quality_results'][0]['table_name'],
+                        row['address_line_1'],
+                        row.get('pm_property_id', None),
+                        row.get('jurisdiction_tax_lot_id', None),
+                        row['custom_id_1'],
+                        result['formatted_field'],
+                        result.get('label', None),
+                        result['condition'],
+                        # the detailed_message field can have units which has superscripts/subscripts,
+                        # so normalize_unicode_and_characters it!
+                        normalize_unicode_and_characters(result['detailed_message']),
+                        result['severity'],
+                    ]
+                )
 
         return response
 
     @swagger_auto_schema(
         manual_parameters=[
             AutoSchemaHelper.query_org_id_field(),
-            AutoSchemaHelper.query_integer_field("run_id", True, "Import file ID or cache key"),
+            AutoSchemaHelper.query_integer_field('run_id', True, 'Import file ID or cache key'),
         ]
     )
     @api_endpoint_class
@@ -183,6 +195,4 @@ class DataQualityCheckViewSet(viewsets.ViewSet, OrgMixin):
         """
         data_quality_id = request.query_params['run_id']
         data_quality_results = get_cache_raw(DataQualityCheck.cache_key(data_quality_id, self.get_organization(request)))
-        return JsonResponse({
-            'data': data_quality_results
-        })
+        return JsonResponse({'data': data_quality_results})

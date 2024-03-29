@@ -1,9 +1,9 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 import json
 import os
 from unittest.mock import patch
@@ -12,11 +12,7 @@ from django.test import TestCase
 from requests.models import Response
 
 from config.settings.common import BASE_DIR
-from seed.building_sync.validation_client import (
-    DEFAULT_SCHEMA_VERSION,
-    DEFAULT_USE_CASE,
-    validate_use_case
-)
+from seed.building_sync.validation_client import DEFAULT_SCHEMA_VERSION, DEFAULT_USE_CASE, validate_use_case
 
 
 def responseFactory(status_code, body_dict):
@@ -42,16 +38,14 @@ class TestValidationClient(TestCase):
             'success': True,
             'schema_version': DEFAULT_SCHEMA_VERSION,
             'validation_results': {
-                'schema': {
-                    'valid': True
-                },
+                'schema': {'valid': True},
                 'use_cases': {
                     DEFAULT_USE_CASE: {
                         'errors': [],
                         'warnings': [],
                     }
-                }
-            }
+                },
+            },
         }
 
         with patch('seed.building_sync.validation_client._validation_api_post', return_value=responseFactory(200, good_body)):
@@ -68,31 +62,28 @@ class TestValidationClient(TestCase):
                 {
                     'file': 'file1.xml',
                     'results': {
-                        'schema': {
-                            'valid': True
-                        },
+                        'schema': {'valid': True},
                         'use_cases': {
                             DEFAULT_USE_CASE: {
                                 'errors': [],
                                 'warnings': [],
                             }
-                        }
-                    }
-                }, {
+                        },
+                    },
+                },
+                {
                     'file': 'file2.xml',
                     'results': {
-                        'schema': {
-                            'valid': True
-                        },
+                        'schema': {'valid': True},
                         'use_cases': {
                             DEFAULT_USE_CASE: {
                                 'errors': [],
                                 'warnings': [],
                             }
-                        }
-                    }
-                }
-            ]
+                        },
+                    },
+                },
+            ],
         }
 
         with patch('seed.building_sync.validation_client._validation_api_post', return_value=responseFactory(200, good_body)):
@@ -108,15 +99,15 @@ class TestValidationClient(TestCase):
                 'schema': {
                     # Set the schema as NOT valid
                     'valid': False,
-                    'errors': ['schema was bad']
+                    'errors': ['schema was bad'],
                 },
                 'use_cases': {
                     DEFAULT_USE_CASE: {
                         'errors': [],
                         'warnings': [],
                     }
-                }
-            }
+                },
+            },
         }
 
         body = {
@@ -126,19 +117,17 @@ class TestValidationClient(TestCase):
                 {
                     'file': 'file1.xml',
                     'results': {
-                        'schema': {
-                            'valid': True
-                        },
+                        'schema': {'valid': True},
                         'use_cases': {
                             DEFAULT_USE_CASE: {
                                 'errors': [],
                                 'warnings': [],
                             }
-                        }
-                    }
+                        },
+                    },
                 },
                 bad_file_result,
-            ]
+            ],
         }
 
         with patch('seed.building_sync.validation_client._validation_api_post', return_value=responseFactory(200, body)):
@@ -161,8 +150,8 @@ class TestValidationClient(TestCase):
                         'errors': ['something was wrong'],
                         'warnings': [],
                     }
-                }
-            }
+                },
+            },
         }
 
         body = {
@@ -172,19 +161,17 @@ class TestValidationClient(TestCase):
                 {
                     'file': 'file1.xml',
                     'results': {
-                        'schema': {
-                            'valid': True
-                        },
+                        'schema': {'valid': True},
                         'use_cases': {
                             DEFAULT_USE_CASE: {
                                 'errors': [],
                                 'warnings': [],
                             }
-                        }
-                    }
+                        },
+                    },
                 },
                 bad_file_result,
-            ]
+            ],
         }
 
         with patch('seed.building_sync.validation_client._validation_api_post', return_value=responseFactory(200, body)):
@@ -202,33 +189,30 @@ class TestValidationClient(TestCase):
                 {
                     'file': 'file1.xml',
                     'results': {
-                        'schema': {
-                            'valid': True
-                        },
+                        'schema': {'valid': True},
                         'use_cases': {
                             DEFAULT_USE_CASE: {
                                 'errors': [],
                                 # Include a warning
                                 'warnings': ['This is a warning!'],
                             }
-                        }
-                    }
-                }, {
+                        },
+                    },
+                },
+                {
                     'file': 'file2.xml',
                     'results': {
-                        'schema': {
-                            'valid': True
-                        },
+                        'schema': {'valid': True},
                         'use_cases': {
                             DEFAULT_USE_CASE: {
                                 'errors': [],
                                 # Include a warning
                                 'warnings': ['This is another warning!'],
                             }
-                        }
-                    }
-                }
-            ]
+                        },
+                    },
+                },
+            ],
         }
 
         with patch('seed.building_sync.validation_client._validation_api_post', return_value=responseFactory(200, good_body)):

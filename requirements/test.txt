@@ -2,7 +2,6 @@
 -r base.txt
 
 # general
-autopep8==1.4.4
 coverage==4.5.4
 coveralls==1.9.2
 tox==3.14.3
@@ -18,9 +17,9 @@ pytest-django==4.7.0
 urllib3<2
 
 # static code analysis
-flake8==7.0.0
 pycodestyle==2.11.1
-pre-commit==3.6.0
+pre-commit==3.7.0
+ruff==0.3.4
 
 # documentation and spelling
 Sphinx==7.2.6

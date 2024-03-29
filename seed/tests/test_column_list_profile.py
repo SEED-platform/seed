@@ -1,9 +1,9 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 from django.test import TestCase
 from past.builtins import basestring
 
@@ -13,7 +13,6 @@ from seed.utils.organizations import create_organization
 
 
 class TestColumnListProfile(TestCase):
-
     def setUp(self):
         self.fake_user = User.objects.create(username='test')
         self.fake_org, _, _ = create_organization(self.fake_user)

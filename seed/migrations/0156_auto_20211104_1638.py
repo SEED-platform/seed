@@ -4,12 +4,10 @@ from django.db import migrations
 
 
 def forwards(apps, schema_editor):
-    Column = apps.get_model("seed", "Column")
-    Organization = apps.get_model("orgs", "Organization")
+    Column = apps.get_model('seed', 'Column')
+    Organization = apps.get_model('orgs', 'Organization')
 
-    columns_to_remove = [
-        'analysis_state', 'analysis_state_message', 'analysis_end_time', 'analysis_start_time'
-    ]
+    columns_to_remove = ['analysis_state', 'analysis_state_message', 'analysis_end_time', 'analysis_start_time']
 
     # Go through all the organizations and find all the oclumns to remove.
     # There is really no reason to use org.id, but it is there, so doing it that way.
@@ -31,11 +29,10 @@ def forwards(apps, schema_editor):
                 c.delete()
                 print(f'deleting column {column_to_remove} for org {org.id}')
             else:
-                print("  More than one column returned!")
+                print('  More than one column returned!')
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('data_importer', '0015_auto_20210712_2134'),
         ('seed', '0155_propertystate_egrid_subregion_code'),
@@ -60,7 +57,12 @@ class Migration(migrations.Migration):
         ),
         migrations.AlterIndexTogether(
             name='propertystate',
-            index_together={('import_file', 'data_state', 'merge_state'), ('import_file', 'data_state', 'source_type'), ('hash_object',), ('import_file', 'data_state')},
+            index_together={
+                ('import_file', 'data_state', 'merge_state'),
+                ('import_file', 'data_state', 'source_type'),
+                ('hash_object',),
+                ('import_file', 'data_state'),
+            },
         ),
         migrations.RemoveField(
             model_name='propertystate',

@@ -1,10 +1,8 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
-from __future__ import unicode_literals
 
 import logging
 
@@ -19,6 +17,7 @@ class PropertyMeasure(models.Model):
     to fully define a unique measure instance. Scenarios reference these PropertyMeasures to define
     list of measures for the PropertyState.
     """
+
     MEASURE_PROPOSED = 1
     MEASURE_EVALUATED = 2
     MEASURE_SELECTED = 3

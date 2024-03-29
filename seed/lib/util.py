@@ -1,11 +1,11 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 :author Dan Gunter <dkgunter@lbl.gov>
 """
+
 import csv
 import json
 import sys
@@ -13,7 +13,7 @@ import sys
 from seed.lib.mappings import mapper
 
 # use this to recognize when to remove from mapping
-REMOVE_KEY = "REMOVE"
+REMOVE_KEY = 'REMOVE'
 
 
 def create_map(path_in, path_out):
@@ -27,7 +27,7 @@ def create_map(path_in, path_out):
     :return: None
     """
     bedes_flag = mapper.Mapping.META_BEDES
-    infile = csv.reader(open(path_in, 'r', newline=None))
+    infile = csv.reader(open(path_in, newline=None))
     header = infile.next()
     assert len(header) >= 5
     map = {}
@@ -66,9 +66,9 @@ def apply_map(map_path, data_path, out_file):
     Return:
       None
     """
-    map_file = open(map_path, 'r')
+    map_file = open(map_path)
     mapping = mapper.Mapping(map_file, encoding='latin_1')
-    data_file = open(data_path, 'r', newline=None)
+    data_file = open(data_path, newline=None)
     data_csv = csv.reader(data_file)
     # map each field
     d = {}
@@ -76,9 +76,9 @@ def apply_map(map_path, data_path, out_file):
     matched, nomatch = mapping.apply(input_fields)
     for field, m in matched.items():
         d[field] = m.as_json()
-        print('Mapped {} => {}'.format(field, m.field))
+        print(f'Mapped {field} => {m.field}')
     for field in nomatch:
-        print('* No mapping found for input field: {}'.format(field))
+        print(f'* No mapping found for input field: {field}')
         d[field] = mapper.MapItem(field, None).as_json()
     # write mapping as a JSON
     try:
@@ -87,7 +87,7 @@ def apply_map(map_path, data_path, out_file):
         # print('** Error: While writing:\n{}'.format(d))
         pass
     # write stats
-    print('Mapped {} fields: {} OK and {} did not match'.format(len(input_fields), len(matched), len(nomatch)))
+    print(f'Mapped {len(input_fields)} fields: {len(matched)} OK and {len(nomatch)} did not match')
 
 
 def find_duplicates(map_path, data_path, out_file):
@@ -100,9 +100,9 @@ def find_duplicates(map_path, data_path, out_file):
     Return:
       None
     """
-    map_file = open(map_path, 'r')
+    map_file = open(map_path)
     mapping = mapper.Mapping(map_file, encoding='latin-1')
-    data_file = open(data_path, 'r', newline=None)
+    data_file = open(data_path, newline=None)
     data_csv = csv.reader(data_file)
     hdr = data_csv.next()
     seen_values, dup = {}, {}
@@ -125,9 +125,5 @@ def find_duplicates(map_path, data_path, out_file):
     for value, keys in dup.items():
         keylist = ' | '.join(keys)
         out_file.write(
-            '({n:d}) {v}: {kl}\n'.format(
-                n=len(keys),
-                v=value,
-                kl=keylist,
-            ),
+            f'({len(keys):d}) {value}: {keylist}\n',
         )

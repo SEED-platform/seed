@@ -5,7 +5,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('seed', '0158_sensorreading'),
     ]
@@ -19,7 +18,16 @@ class Migration(migrations.Migration):
                 ('file', models.FileField(blank=True, max_length=500, null=True, upload_to='inventory_documents')),
                 ('file_type', models.IntegerField(choices=[(0, 'Unknown'), (1, 'PDF')], default=0)),
                 ('filename', models.CharField(blank=True, max_length=255)),
-                ('property', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='inventory_documents', to='seed.property')),
+                (
+                    'property',
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name='inventory_documents',
+                        to='seed.property',
+                    ),
+                ),
             ],
         ),
     ]

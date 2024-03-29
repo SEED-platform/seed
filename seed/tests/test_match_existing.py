@@ -1,9 +1,9 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 import json
 from datetime import datetime
 
@@ -11,8 +11,7 @@ from django.contrib.postgres.aggregates.general import ArrayAgg
 from django.db.models import Subquery
 from django.db.models.aggregates import Count
 from django.urls import reverse
-from django.utils.timezone import \
-    make_aware  # make_aware is used because inconsistencies exist in creating datetime with tzinfo
+from django.utils.timezone import make_aware  # make_aware is used because inconsistencies exist in creating datetime with tzinfo
 from pytz import timezone
 
 from config.settings.common import TIME_ZONE
@@ -31,14 +30,9 @@ from seed.models import (
     TaxLot,
     TaxLotAuditLog,
     TaxLotState,
-    TaxLotView
+    TaxLotView,
 )
-from seed.test_helpers.fake import (
-    FakeColumnListProfileFactory,
-    FakeCycleFactory,
-    FakePropertyStateFactory,
-    FakeTaxLotStateFactory
-)
+from seed.test_helpers.fake import FakeColumnListProfileFactory, FakeCycleFactory, FakePropertyStateFactory, FakeTaxLotStateFactory
 from seed.tests.util import DataMappingBaseTestCase
 from seed.utils.match import match_merge_link, whole_org_match_merge_link
 
@@ -48,11 +42,7 @@ class TestMatchingPostEdit(DataMappingBaseTestCase):
         selfvars = self.set_up(ASSESSED_RAW)
         self.user, self.org, self.import_file, self.import_record, self.cycle = selfvars
 
-        user_details = {
-            'username': 'test_user@demo.com',
-            'password': 'test_pass',
-            'email': 'test_user@demo.com'
-        }
+        user_details = {'username': 'test_user@demo.com', 'password': 'test_pass', 'email': 'test_user@demo.com'}
         self.client.login(**user_details)
 
         self.property_state_factory = FakePropertyStateFactory(organization=self.org)
@@ -65,7 +55,7 @@ class TestMatchingPostEdit(DataMappingBaseTestCase):
             'import_file_id': self.import_file.id,
             'data_state': DATA_STATE_MAPPING,
             'no_default_data': False,
-            "raw_access_level_instance_id": self.org.root.id,
+            'raw_access_level_instance_id': self.org.root.id,
         }
         # Create 3 non-matching properties
         ps_1 = self.property_state_factory.get_property_state(**base_details)
@@ -83,13 +73,9 @@ class TestMatchingPostEdit(DataMappingBaseTestCase):
         geocode_and_match_buildings_task(self.import_file.id)
 
         # Edit the first property to match the second
-        new_data = {
-            "state": {
-                "pm_property_id": "123MatchID"
-            }
-        }
+        new_data = {'state': {'pm_property_id': '123MatchID'}}
         target_view_id = ps_1.propertyview_set.first().id
-        url = reverse('api:v3:properties-detail', args=[target_view_id]) + '?organization_id={}'.format(self.org.pk)
+        url = reverse('api:v3:properties-detail', args=[target_view_id]) + f'?organization_id={self.org.pk}'
         raw_response = self.client.put(url, json.dumps(new_data), content_type='application/json')
         response = json.loads(raw_response.content)
 
@@ -111,12 +97,8 @@ class TestMatchingPostEdit(DataMappingBaseTestCase):
         self.assertEqual(audit_log.name, 'System Match')
 
         # Update the edit and match-merge result -State
-        new_data = {
-            "state": {
-                "pm_property_id": "1337AnotherDifferentID"
-            }
-        }
-        url = reverse('api:v3:properties-detail', args=[changed_view.id]) + '?organization_id={}'.format(self.org.pk)
+        new_data = {'state': {'pm_property_id': '1337AnotherDifferentID'}}
+        url = reverse('api:v3:properties-detail', args=[changed_view.id]) + f'?organization_id={self.org.pk}'
         raw_response = self.client.put(url, json.dumps(new_data), content_type='application/json')
         response = json.loads(raw_response.content)
 
@@ -140,7 +122,7 @@ class TestMatchingPostEdit(DataMappingBaseTestCase):
             'import_file_id': self.import_file.id,
             'data_state': DATA_STATE_MAPPING,
             'no_default_data': False,
-            "raw_access_level_instance_id": self.org.root.id,
+            'raw_access_level_instance_id': self.org.root.id,
         }
         # Create 3 non-matching taxlots
         tls_1 = self.taxlot_state_factory.get_taxlot_state(**base_details)
@@ -158,13 +140,9 @@ class TestMatchingPostEdit(DataMappingBaseTestCase):
         geocode_and_match_buildings_task(self.import_file.id)
 
         # Edit the first taxlot to match the second
-        new_data = {
-            "state": {
-                "jurisdiction_tax_lot_id": "123MatchID"
-            }
-        }
+        new_data = {'state': {'jurisdiction_tax_lot_id': '123MatchID'}}
         target_view_id = tls_1.taxlotview_set.first().id
-        url = reverse('api:v3:taxlots-detail', args=[target_view_id]) + '?organization_id={}'.format(self.org.pk)
+        url = reverse('api:v3:taxlots-detail', args=[target_view_id]) + f'?organization_id={self.org.pk}'
         raw_response = self.client.put(url, json.dumps(new_data), content_type='application/json')
         response = json.loads(raw_response.content)
 
@@ -184,12 +162,8 @@ class TestMatchingPostEdit(DataMappingBaseTestCase):
         self.assertEqual(audit_log.name, 'System Match')
 
         # Update the edit and match-merge result -State
-        new_data = {
-            "state": {
-                "jurisdiction_tax_lot_id": "1337AnotherDifferentID"
-            }
-        }
-        url = reverse('api:v3:taxlots-detail', args=[changed_view.id]) + '?organization_id={}'.format(self.org.pk)
+        new_data = {'state': {'jurisdiction_tax_lot_id': '1337AnotherDifferentID'}}
+        url = reverse('api:v3:taxlots-detail', args=[changed_view.id]) + f'?organization_id={self.org.pk}'
         raw_response = self.client.put(url, json.dumps(new_data), content_type='application/json')
         response = json.loads(raw_response.content)
 
@@ -214,11 +188,7 @@ class TestMatchingPostMerge(DataMappingBaseTestCase):
         selfvars = self.set_up(ASSESSED_RAW)
         self.user, self.org, self.import_file, self.import_record, self.cycle = selfvars
 
-        user_details = {
-            'username': 'test_user@demo.com',
-            'password': 'test_pass',
-            'email': 'test_user@demo.com'
-        }
+        user_details = {'username': 'test_user@demo.com', 'password': 'test_pass', 'email': 'test_user@demo.com'}
         self.client.login(**user_details)
 
         self.property_state_factory = FakePropertyStateFactory(organization=self.org)
@@ -234,7 +204,7 @@ class TestMatchingPostMerge(DataMappingBaseTestCase):
             'import_file_id': self.import_file.id,
             'data_state': DATA_STATE_MAPPING,
             'no_default_data': False,
-            "raw_access_level_instance_id": self.org.root.id,
+            'raw_access_level_instance_id': self.org.root.id,
         }
         # Create 4 non-matching properties where merging 1 and 2, will match 4
         ps_1 = self.property_state_factory.get_property_state(**base_details)
@@ -268,10 +238,8 @@ class TestMatchingPostMerge(DataMappingBaseTestCase):
         pv_2 = ps_2.propertyview_set.first()
 
         # Merge -State 1 and 2 - which should then match merge with -State 4 with precedence to the initial merged -State
-        url = reverse('api:v3:properties-merge') + '?organization_id={}'.format(self.org.pk)
-        post_params = json.dumps({
-            'property_view_ids': [pv_2.pk, pv_1.pk]
-        })
+        url = reverse('api:v3:properties-merge') + f'?organization_id={self.org.pk}'
+        post_params = json.dumps({'property_view_ids': [pv_2.pk, pv_1.pk]})
         raw_response = self.client.post(url, post_params, content_type='application/json')
         response = json.loads(raw_response.content)
 
@@ -302,7 +270,7 @@ class TestMatchingPostMerge(DataMappingBaseTestCase):
             'import_file_id': self.import_file.id,
             'data_state': DATA_STATE_MAPPING,
             'no_default_data': False,
-            "raw_access_level_instance_id": self.org.root.id,
+            'raw_access_level_instance_id': self.org.root.id,
         }
         # Create 4 non-matching taxlots where merging 1 and 2, will match 4
         tls_1 = self.taxlot_state_factory.get_taxlot_state(**base_details)
@@ -335,10 +303,8 @@ class TestMatchingPostMerge(DataMappingBaseTestCase):
         self.assertEqual(TaxLotView.objects.count(), 4)
 
         # Merge -State 1 and 2 - which should then match merge with -State 4 with precedence to the initial merged -State
-        url = reverse('api:v3:taxlots-merge') + '?organization_id={}'.format(self.org.pk)
-        post_params = json.dumps({
-            'taxlot_view_ids': [tlv_2.pk, tlv_1.pk]
-        })
+        url = reverse('api:v3:taxlots-merge') + f'?organization_id={self.org.pk}'
+        post_params = json.dumps({'taxlot_view_ids': [tlv_2.pk, tlv_1.pk]})
         raw_response = self.client.post(url, post_params, content_type='application/json')
         response = json.loads(raw_response.content)
 
@@ -365,17 +331,15 @@ class TestMatchingExistingViewMatching(DataMappingBaseTestCase):
         selfvars = self.set_up(ASSESSED_RAW)
         self.user, self.org, self.import_file_1, self.import_record_1, self.cycle = selfvars
 
-        user_details = {
-            'username': 'test_user@demo.com',
-            'password': 'test_pass',
-            'email': 'test_user@demo.com'
-        }
+        user_details = {'username': 'test_user@demo.com', 'password': 'test_pass', 'email': 'test_user@demo.com'}
         self.client.login(**user_details)
 
         self.property_state_factory = FakePropertyStateFactory(organization=self.org)
         self.taxlot_state_factory = FakeTaxLotStateFactory(organization=self.org)
 
-    def test_match_merge_link_rolls_up_existing_property_matches_in_updated_state_order_with_final_priority_given_to_selected_property(self):
+    def test_match_merge_link_rolls_up_existing_property_matches_in_updated_state_order_with_final_priority_given_to_selected_property(
+        self,
+    ):
         """
         Import 4 non-matching records each with different cities and
         state_orders (extra data field).
@@ -397,7 +361,7 @@ class TestMatchingExistingViewMatching(DataMappingBaseTestCase):
             'extra_data': {
                 'state_order': 'first',
             },
-            "raw_access_level_instance_id": self.org.root.id,
+            'raw_access_level_instance_id': self.org.root.id,
         }
         ps_1 = self.property_state_factory.get_property_state(**base_details)
 
@@ -422,15 +386,11 @@ class TestMatchingExistingViewMatching(DataMappingBaseTestCase):
 
         # Create (ED) 'state_order' column and update merge protection column for 'city'
         self.org.column_set.create(
-            column_name='state_order',
-            is_extra_data=True,
-            table_name='PropertyState',
+            column_name='state_order', is_extra_data=True, table_name='PropertyState', merge_protection=Column.COLUMN_MERGE_FAVOR_EXISTING
+        )
+        self.org.column_set.filter(column_name='city', table_name='PropertyState').update(
             merge_protection=Column.COLUMN_MERGE_FAVOR_EXISTING
         )
-        self.org.column_set.filter(
-            column_name='city',
-            table_name='PropertyState'
-        ).update(merge_protection=Column.COLUMN_MERGE_FAVOR_EXISTING)
 
         # Update -States to make the roll up order be 4, 2, 3
         refreshed_ps_4 = PropertyState.objects.get(id=ps_4.id)
@@ -447,7 +407,9 @@ class TestMatchingExistingViewMatching(DataMappingBaseTestCase):
 
         # run match_merge_link giving
         manual_merge_view = PropertyView.objects.get(state_id=ps_1.id)
-        count_result, _link_count, view_id_result = match_merge_link(manual_merge_view.state.id, 'PropertyState', self.org.root, manual_merge_view.cycle)
+        count_result, _link_count, view_id_result = match_merge_link(
+            manual_merge_view.state.id, 'PropertyState', self.org.root, manual_merge_view.cycle
+        )
         self.assertEqual(count_result, 4)
 
         """
@@ -464,7 +426,7 @@ class TestMatchingExistingViewMatching(DataMappingBaseTestCase):
         Undoing 1 rollup merge should expose a set -State having
         '2nd Oldest City' and state_order of 'second'.
         """
-        rollback_unmerge_url_1 = reverse('api:v3:properties-unmerge', args=[only_view.id]) + '?organization_id={}'.format(self.org.pk)
+        rollback_unmerge_url_1 = reverse('api:v3:properties-unmerge', args=[only_view.id]) + f'?organization_id={self.org.pk}'
         response = self.client.put(rollback_unmerge_url_1, content_type='application/json')
         self.assertEqual(200, response.status_code)
         self.assertEqual('success', json.loads(response.content).get('status'))
@@ -477,12 +439,14 @@ class TestMatchingExistingViewMatching(DataMappingBaseTestCase):
         Undoing another rollup merge should expose a set -State having
         '4th Oldest City' and state_order of 'fourth'.
         """
-        rollback_unmerge_url_2 = reverse('api:v3:properties-unmerge', args=[rollback_view_1.id]) + '?organization_id={}'.format(self.org.pk)
+        rollback_unmerge_url_2 = reverse('api:v3:properties-unmerge', args=[rollback_view_1.id]) + f'?organization_id={self.org.pk}'
         response = self.client.put(rollback_unmerge_url_2, content_type='application/json')
         self.assertEqual(200, response.status_code)
         self.assertEqual('success', json.loads(response.content).get('status'))
 
-        rollback_view_2 = PropertyView.objects.prefetch_related('state').exclude(state__city__in=['3rd Oldest City', '2nd Oldest City']).get()
+        rollback_view_2 = (
+            PropertyView.objects.prefetch_related('state').exclude(state__city__in=['3rd Oldest City', '2nd Oldest City']).get()
+        )
         self.assertEqual(rollback_view_2.state.city, '4th Oldest City')
         self.assertEqual(rollback_view_2.state.extra_data['state_order'], 'fourth')
 
@@ -492,7 +456,7 @@ class TestMatchingExistingViewMatching(DataMappingBaseTestCase):
             'import_file_id': self.import_file_1.id,
             'data_state': DATA_STATE_MAPPING,
             'no_default_data': False,
-            "raw_access_level_instance_id": self.org.root.id,
+            'raw_access_level_instance_id': self.org.root.id,
         }
         # Create 3 non-duplicate properties with unpopulated matching criteria
         ps_1 = self.property_state_factory.get_property_state(**base_details)
@@ -542,7 +506,7 @@ class TestMatchingExistingViewMatching(DataMappingBaseTestCase):
             'extra_data': {
                 'state_order': 'first',
             },
-            "raw_access_level_instance_id": self.org.root.id,
+            'raw_access_level_instance_id': self.org.root.id,
         }
         tls_1 = self.taxlot_state_factory.get_taxlot_state(**base_details)
 
@@ -567,15 +531,9 @@ class TestMatchingExistingViewMatching(DataMappingBaseTestCase):
 
         # Create (ED) 'state_order' column and update merge protection column for 'city'
         self.org.column_set.create(
-            column_name='state_order',
-            is_extra_data=True,
-            table_name='TaxLotState',
-            merge_protection=Column.COLUMN_MERGE_FAVOR_EXISTING
+            column_name='state_order', is_extra_data=True, table_name='TaxLotState', merge_protection=Column.COLUMN_MERGE_FAVOR_EXISTING
         )
-        self.org.column_set.filter(
-            column_name='city',
-            table_name='TaxLotState'
-        ).update(merge_protection=Column.COLUMN_MERGE_FAVOR_EXISTING)
+        self.org.column_set.filter(column_name='city', table_name='TaxLotState').update(merge_protection=Column.COLUMN_MERGE_FAVOR_EXISTING)
 
         # Update -States to make the roll up order be 4, 2, 3
         refreshed_tls_4 = TaxLotState.objects.get(id=tls_4.id)
@@ -592,7 +550,9 @@ class TestMatchingExistingViewMatching(DataMappingBaseTestCase):
 
         # run match_merge_link giving
         manual_merge_view = TaxLotView.objects.get(state_id=tls_1.id)
-        count_result, _link_count, view_id_result = match_merge_link(manual_merge_view.state_id, 'TaxLotState', self.org.root, manual_merge_view.cycle)
+        count_result, _link_count, view_id_result = match_merge_link(
+            manual_merge_view.state_id, 'TaxLotState', self.org.root, manual_merge_view.cycle
+        )
         self.assertEqual(count_result, 4)
 
         """
@@ -608,7 +568,7 @@ class TestMatchingExistingViewMatching(DataMappingBaseTestCase):
         Undoing 1 rollup merge should expose a set -State having
         '2nd Oldest City' and state_order of 'second'.
         """
-        rollback_unmerge_url_1 = reverse('api:v3:taxlots-unmerge', args=[only_view.id]) + '?organization_id={}'.format(self.org.pk)
+        rollback_unmerge_url_1 = reverse('api:v3:taxlots-unmerge', args=[only_view.id]) + f'?organization_id={self.org.pk}'
         self.client.post(rollback_unmerge_url_1, content_type='application/json')
 
         rollback_view_1 = TaxLotView.objects.prefetch_related('state').exclude(state__city='3rd Oldest City').get()
@@ -619,7 +579,7 @@ class TestMatchingExistingViewMatching(DataMappingBaseTestCase):
         Undoing another rollup merge should expose a set -State having
         '4th Oldest City' and state_order of 'fourth'.
         """
-        rollback_unmerge_url_2 = reverse('api:v3:taxlots-unmerge', args=[rollback_view_1.id]) + '?organization_id={}'.format(self.org.pk)
+        rollback_unmerge_url_2 = reverse('api:v3:taxlots-unmerge', args=[rollback_view_1.id]) + f'?organization_id={self.org.pk}'
         self.client.post(rollback_unmerge_url_2, content_type='application/json')
 
         rollback_view_2 = TaxLotView.objects.prefetch_related('state').exclude(state__city__in=['3rd Oldest City', '2nd Oldest City']).get()
@@ -632,7 +592,7 @@ class TestMatchingExistingViewMatching(DataMappingBaseTestCase):
             'import_file_id': self.import_file_1.id,
             'data_state': DATA_STATE_MAPPING,
             'no_default_data': False,
-            "raw_access_level_instance_id": self.org.root.id,
+            'raw_access_level_instance_id': self.org.root.id,
         }
         # Create 3 non-duplicate taxlots with unpopulated matching criteria
         tls_1 = self.taxlot_state_factory.get_taxlot_state(**base_details)
@@ -667,15 +627,11 @@ class TestMatchMergeLink(DataMappingBaseTestCase):
         self.user, self.org, self.import_file_1, self.import_record_1, self.cycle_1 = selfvars
 
         cycle_factory = FakeCycleFactory(organization=self.org, user=self.user)
-        self.cycle_2 = cycle_factory.get_cycle(name="Cycle 2")
-        self.import_record_2, self.import_file_2 = self.create_import_file(
-            self.user, self.org, self.cycle_2
-        )
+        self.cycle_2 = cycle_factory.get_cycle(name='Cycle 2')
+        self.import_record_2, self.import_file_2 = self.create_import_file(self.user, self.org, self.cycle_2)
 
-        self.cycle_3 = cycle_factory.get_cycle(name="Cycle 3")
-        self.import_record_3, self.import_file_3 = self.create_import_file(
-            self.user, self.org, self.cycle_3
-        )
+        self.cycle_3 = cycle_factory.get_cycle(name='Cycle 3')
+        self.import_record_3, self.import_file_3 = self.create_import_file(self.user, self.org, self.cycle_3)
 
         self.property_state_factory = FakePropertyStateFactory(organization=self.org)
         self.taxlot_state_factory = FakeTaxLotStateFactory(organization=self.org)
@@ -702,7 +658,7 @@ class TestMatchMergeLink(DataMappingBaseTestCase):
             'import_file_id': self.import_file_1.id,
             'data_state': DATA_STATE_MAPPING,
             'no_default_data': False,
-            "raw_access_level_instance_id": self.org.root.id,
+            'raw_access_level_instance_id': self.org.root.id,
         }
         ps_11 = self.property_state_factory.get_property_state(**base_property_details)
 
@@ -763,16 +719,17 @@ class TestMatchMergeLink(DataMappingBaseTestCase):
         self.assertEqual(9, Property.objects.count())
 
         # At the moment, no two -Views have the same canonical records
-        views_with_same_canonical_records = PropertyView.objects.\
-            values('property_id').\
-            annotate(times_used=Count('id')).\
-            filter(times_used__gt=1)
+        views_with_same_canonical_records = (
+            PropertyView.objects.values('property_id').annotate(times_used=Count('id')).filter(times_used__gt=1)
+        )
         self.assertFalse(views_with_same_canonical_records.exists())
 
         # (Unrealistically) Make some match
         to_be_matched_ids = [
             ps_12.id,  # Cycle 1
-            ps_21.id, ps_22.id, ps_23.id,  # Cycle 2
+            ps_21.id,
+            ps_22.id,
+            ps_23.id,  # Cycle 2
             ps_31.id,  # Cycle 3
         ]
         PropertyState.objects.filter(id__in=to_be_matched_ids).update(pm_property_id='1st Match Set')
@@ -808,8 +765,8 @@ class TestMatchMergeLink(DataMappingBaseTestCase):
         cycle_1_cities = list(cycle_1_views.prefetch_related('state').values_list('state__city', flat=True))
         expected_cities_1 = [
             'Unmatched City - Cycle 1',
-            '1st Match - Cycle 1 - City 2'  # ps_11 took precedence over ps_12, since the provided -View was ps_11's -View
-                                            # Update: precedence is given in reverse order of merge
+            '1st Match - Cycle 1 - City 2',  # ps_11 took precedence over ps_12, since the provided -View was ps_11's -View
+            # Update: precedence is given in reverse order of merge
         ]
         self.assertCountEqual(expected_cities_1, cycle_1_cities)
 
@@ -820,8 +777,8 @@ class TestMatchMergeLink(DataMappingBaseTestCase):
         cycle_2_cities = list(cycle_2_views.prefetch_related('state').values_list('state__city', flat=True))
         expected_cities_2 = [
             'Unmatched City - Cycle 2',
-            '1st Match - Cycle 2 - City 2'  # ps_22 was explicitly given precedence.
-                                            # Update: precedence is given in reverse order of merge
+            '1st Match - Cycle 2 - City 2',  # ps_22 was explicitly given precedence.
+            # Update: precedence is given in reverse order of merge
         ]
         self.assertCountEqual(expected_cities_2, cycle_2_cities)
 
@@ -830,9 +787,7 @@ class TestMatchMergeLink(DataMappingBaseTestCase):
         self.assertEqual(2, cycle_3_views.count())
 
         # Check links
-        views_by_canonical_record = PropertyView.objects.\
-            values('property_id').\
-            annotate(view_ids=ArrayAgg('id'), times_used=Count('id'))
+        views_by_canonical_record = PropertyView.objects.values('property_id').annotate(view_ids=ArrayAgg('id'), times_used=Count('id'))
         self.assertTrue(views_by_canonical_record.filter(times_used__gt=1).exists())
 
         # For linked views, the corresponding -States should match
@@ -840,10 +795,9 @@ class TestMatchMergeLink(DataMappingBaseTestCase):
         for view_ids in views_by_canonical_record.values_list('view_ids', flat=True):
             base_state = PropertyView.objects.get(id=view_ids[0]).state
             matching_view_ids = list(
-                PropertyView.objects.
-                prefetch_related('state').
-                filter(state__pm_property_id=base_state.pm_property_id).
-                values_list('id', flat=True)
+                PropertyView.objects.prefetch_related('state')
+                .filter(state__pm_property_id=base_state.pm_property_id)
+                .values_list('id', flat=True)
             )
             self.assertCountEqual(view_ids, matching_view_ids)
 
@@ -869,7 +823,7 @@ class TestMatchMergeLink(DataMappingBaseTestCase):
             'import_file_id': self.import_file_1.id,
             'data_state': DATA_STATE_MAPPING,
             'no_default_data': False,
-            "raw_access_level_instance_id": self.org.root.id,
+            'raw_access_level_instance_id': self.org.root.id,
         }
         tls_11 = self.taxlot_state_factory.get_taxlot_state(**base_state_details)
 
@@ -930,16 +884,15 @@ class TestMatchMergeLink(DataMappingBaseTestCase):
         self.assertEqual(9, TaxLot.objects.count())
 
         # At the moment, no two -Views have the same canonical records
-        views_with_same_canonical_records = TaxLotView.objects.\
-            values('taxlot_id').\
-            annotate(times_used=Count('id')).\
-            filter(times_used__gt=1)
+        views_with_same_canonical_records = TaxLotView.objects.values('taxlot_id').annotate(times_used=Count('id')).filter(times_used__gt=1)
         self.assertFalse(views_with_same_canonical_records.exists())
 
         # (Unrealistically) Make some match
         to_be_matched_ids = [
             tls_12.id,  # Cycle 1
-            tls_21.id, tls_22.id, tls_23.id,  # Cycle 2
+            tls_21.id,
+            tls_22.id,
+            tls_23.id,  # Cycle 2
             tls_31.id,  # Cycle 3
         ]
         TaxLotState.objects.filter(id__in=to_be_matched_ids).update(jurisdiction_tax_lot_id='1st Match Set')
@@ -971,7 +924,7 @@ class TestMatchMergeLink(DataMappingBaseTestCase):
         cycle_1_cities = list(cycle_1_views.prefetch_related('state').values_list('state__city', flat=True))
         expected_cities_1 = [
             'Unmatched City - Cycle 1',
-            '1st Match - Cycle 1 - City 2'  # precedence given in reverse order of merge
+            '1st Match - Cycle 1 - City 2',  # precedence given in reverse order of merge
         ]
         self.assertCountEqual(expected_cities_1, cycle_1_cities)
 
@@ -982,7 +935,7 @@ class TestMatchMergeLink(DataMappingBaseTestCase):
         cycle_2_cities = list(cycle_2_views.prefetch_related('state').values_list('state__city', flat=True))
         expected_cities_2 = [
             'Unmatched City - Cycle 2',
-            '1st Match - Cycle 2 - City 3'  # precedence given in reverse order of merge
+            '1st Match - Cycle 2 - City 3',  # precedence given in reverse order of merge
         ]
         self.assertCountEqual(expected_cities_2, cycle_2_cities)
 
@@ -991,9 +944,7 @@ class TestMatchMergeLink(DataMappingBaseTestCase):
         self.assertEqual(2, cycle_3_views.count())
 
         # Check links
-        views_by_canonical_record = TaxLotView.objects.\
-            values('taxlot_id').\
-            annotate(view_ids=ArrayAgg('id'), times_used=Count('id'))
+        views_by_canonical_record = TaxLotView.objects.values('taxlot_id').annotate(view_ids=ArrayAgg('id'), times_used=Count('id'))
         self.assertTrue(views_by_canonical_record.filter(times_used__gt=1).exists())
 
         # For linked views, the corresponding -States should match
@@ -1001,10 +952,9 @@ class TestMatchMergeLink(DataMappingBaseTestCase):
         for view_ids in views_by_canonical_record.values_list('view_ids', flat=True):
             base_state = TaxLotView.objects.get(id=view_ids[0]).state
             matching_view_ids = list(
-                TaxLotView.objects.
-                prefetch_related('state').
-                filter(state__jurisdiction_tax_lot_id=base_state.jurisdiction_tax_lot_id).
-                values_list('id', flat=True)
+                TaxLotView.objects.prefetch_related('state')
+                .filter(state__jurisdiction_tax_lot_id=base_state.jurisdiction_tax_lot_id)
+                .values_list('id', flat=True)
             )
             self.assertCountEqual(view_ids, matching_view_ids)
 
@@ -1020,7 +970,7 @@ class TestMatchMergeLink(DataMappingBaseTestCase):
             'import_file_id': self.import_file_1.id,
             'data_state': DATA_STATE_MAPPING,
             'no_default_data': False,
-            "raw_access_level_instance_id": self.org.root.id,
+            'raw_access_level_instance_id': self.org.root.id,
         }
         ps_11 = self.property_state_factory.get_property_state(**base_property_details)
 
@@ -1084,7 +1034,7 @@ class TestMatchMergeLink(DataMappingBaseTestCase):
             'import_file_id': self.import_file_1.id,
             'data_state': DATA_STATE_MAPPING,
             'no_default_data': False,
-            "raw_access_level_instance_id": self.org.root.id,
+            'raw_access_level_instance_id': self.org.root.id,
         }
         tls_11 = self.taxlot_state_factory.get_taxlot_state(**base_state_details)
 
@@ -1147,7 +1097,7 @@ class TestMatchMergeLink(DataMappingBaseTestCase):
             'import_file_id': self.import_file_1.id,
             'data_state': DATA_STATE_MAPPING,
             'no_default_data': False,
-            "raw_access_level_instance_id": self.org.root.id,
+            'raw_access_level_instance_id': self.org.root.id,
         }
         ps_11 = self.property_state_factory.get_property_state(**base_property_details)
 
@@ -1208,7 +1158,7 @@ class TestMatchMergeLink(DataMappingBaseTestCase):
             'import_file_id': self.import_file_1.id,
             'data_state': DATA_STATE_MAPPING,
             'no_default_data': False,
-            "raw_access_level_instance_id": self.org.root.id,
+            'raw_access_level_instance_id': self.org.root.id,
         }
         tls_11 = self.taxlot_state_factory.get_taxlot_state(**base_state_details)
 
@@ -1273,7 +1223,7 @@ class TestMatchMergeLink(DataMappingBaseTestCase):
             'import_file_id': self.import_file_1.id,
             'data_state': DATA_STATE_MAPPING,
             'no_default_data': False,
-            "raw_access_level_instance_id": self.org.root.id,
+            'raw_access_level_instance_id': self.org.root.id,
         }
         ps_11 = self.property_state_factory.get_property_state(**base_property_details)
 
@@ -1319,7 +1269,7 @@ class TestMatchMergeLink(DataMappingBaseTestCase):
             meter = Meter.objects.create(
                 property=property,
                 source=Meter.PORTFOLIO_MANAGER,
-                source_id="same source ID",
+                source_id='same source ID',
                 type=Meter.ELECTRICITY_GRID,
             )
             MeterReading.objects.create(
@@ -1328,7 +1278,7 @@ class TestMatchMergeLink(DataMappingBaseTestCase):
                 end_time=make_aware(datetime(2018, 1, 2, 0, 0, 0), timezone=tz_obj),
                 reading=(i + 1) * 100,
                 source_unit='kBtu (thousand Btu)',
-                conversion_factor=1.00
+                conversion_factor=1.00,
             )
 
         # Create overlapping readings for meters associated to 2nd and 3rd Set
@@ -1340,7 +1290,7 @@ class TestMatchMergeLink(DataMappingBaseTestCase):
             end_time=make_aware(datetime(2018, 2, 2, 0, 0, 0), timezone=tz_obj),
             reading=212121,
             source_unit='kBtu (thousand Btu)',
-            conversion_factor=1.00
+            conversion_factor=1.00,
         )
         MeterReading.objects.create(
             meter=meter_31,
@@ -1348,7 +1298,7 @@ class TestMatchMergeLink(DataMappingBaseTestCase):
             end_time=make_aware(datetime(2018, 2, 2, 0, 0, 0), timezone=tz_obj),
             reading=313131,
             source_unit='kBtu (thousand Btu)',
-            conversion_factor=1.00
+            conversion_factor=1.00,
         )
 
         # Update all Sets to match and run match merge link
@@ -1400,7 +1350,7 @@ class TestMatchMergeLink(DataMappingBaseTestCase):
             end_time=make_aware(datetime(2018, 3, 2, 0, 0, 0), timezone=tz_obj),
             reading=321,
             source_unit='kBtu (thousand Btu)',
-            conversion_factor=1.00
+            conversion_factor=1.00,
         )
 
         PropertyState.objects.filter(id=ps_11.id).update(pm_property_id='Match Set')
@@ -1420,10 +1370,8 @@ class TestMatchingExistingViewFullOrgMatchingProperties(DataMappingBaseTestCase)
         self.user, self.org, self.import_file_1, self.import_record_1, self.cycle_1 = selfvars
 
         cycle_factory = FakeCycleFactory(organization=self.org, user=self.user)
-        self.cycle_2 = cycle_factory.get_cycle(name="Cycle 2")
-        self.import_record_2, self.import_file_2 = self.create_import_file(
-            self.user, self.org, self.cycle_2
-        )
+        self.cycle_2 = cycle_factory.get_cycle(name='Cycle 2')
+        self.import_record_2, self.import_file_2 = self.create_import_file(self.user, self.org, self.cycle_2)
 
         self.property_state_factory = FakePropertyStateFactory(organization=self.org)
 
@@ -1452,7 +1400,7 @@ class TestMatchingExistingViewFullOrgMatchingProperties(DataMappingBaseTestCase)
             'import_file_id': self.import_file_1.id,
             'data_state': DATA_STATE_MAPPING,
             'no_default_data': False,
-            "raw_access_level_instance_id": self.org.root.id,
+            'raw_access_level_instance_id': self.org.root.id,
         }
         # Create 6 initially non-matching properties in first Cycle
         self.ps_11 = self.property_state_factory.get_property_state(**base_property_details)
@@ -1495,7 +1443,7 @@ class TestMatchingExistingViewFullOrgMatchingProperties(DataMappingBaseTestCase)
             'import_file_id': self.import_file_2.id,
             'data_state': DATA_STATE_MAPPING,
             'no_default_data': False,
-            "raw_access_level_instance_id": self.org.root.id,
+            'raw_access_level_instance_id': self.org.root.id,
         }
         # Create 6 initially non-matching properties in second Cycle
         self.ps_21 = self.property_state_factory.get_property_state(**base_property_details)
@@ -1552,19 +1500,11 @@ class TestMatchingExistingViewFullOrgMatchingProperties(DataMappingBaseTestCase)
 
         result_1 = summary[self.cycle_1.id]
         self.assertEqual(len(result_1), 4)
-        property_name_or_city_ids_1 = {
-            (ps.get(property_name_key) or ps[city_key]): ps['id']
-            for ps
-            in result_1
-        }
+        property_name_or_city_ids_1 = {(ps.get(property_name_key) or ps[city_key]): ps['id'] for ps in result_1}
 
         result_2 = summary[self.cycle_2.id]
         self.assertEqual(len(result_2), 4)
-        property_name_or_city_ids_2 = {
-            (ps.get(property_name_key) or ps[city_key]): ps['id']
-            for ps
-            in result_2
-        }
+        property_name_or_city_ids_2 = {(ps.get(property_name_key) or ps[city_key]): ps['id'] for ps in result_2}
 
         # check links
         self.assertEqual(property_name_or_city_ids_1['Single to be Linked!'], property_name_or_city_ids_2['Single to be Linked!'])
@@ -1596,10 +1536,9 @@ class TestMatchingExistingViewFullOrgMatchingProperties(DataMappingBaseTestCase)
 
         # Capture initial canonical IDs of impending matches - used for tests
         initial_property_ids_of_matches = list(
-            PropertyView.objects.
-            select_related('state').
-            filter(state__pm_property_id__in=['1st Match Set', '2nd Match Set', 'Single to be Linked!']).
-            values_list('property_id', flat=True)
+            PropertyView.objects.select_related('state')
+            .filter(state__pm_property_id__in=['1st Match Set', '2nd Match Set', 'Single to be Linked!'])
+            .values_list('property_id', flat=True)
         )
 
         summary = whole_org_match_merge_link(self.org.id, 'PropertyState')
@@ -1639,12 +1578,16 @@ class TestMatchingExistingViewFullOrgMatchingProperties(DataMappingBaseTestCase)
         # Check that a link was created for -States across Cycles
         # Specifically, canonical IDs should match but cycles should be different
         property_first_match_set = PropertyState.objects.filter(pm_property_id='1st Match Set')
-        link_p_11, link_p_12 = PropertyView.objects.filter(state_id__in=Subquery(property_first_match_set.values('id'))).values('cycle_id', 'property_id')
+        link_p_11, link_p_12 = PropertyView.objects.filter(state_id__in=Subquery(property_first_match_set.values('id'))).values(
+            'cycle_id', 'property_id'
+        )
         self.assertEqual(link_p_11['property_id'], link_p_12['property_id'])
         self.assertNotEqual(link_p_11['cycle_id'], link_p_12['cycle_id'])
 
         property_single_linked = PropertyState.objects.filter(pm_property_id='Single to be Linked!')
-        link_p_21, link_p_22 = PropertyView.objects.filter(state_id__in=Subquery(property_single_linked.values('id'))).values('cycle_id', 'property_id')
+        link_p_21, link_p_22 = PropertyView.objects.filter(state_id__in=Subquery(property_single_linked.values('id'))).values(
+            'cycle_id', 'property_id'
+        )
         self.assertEqual(link_p_21['property_id'], link_p_22['property_id'])
         self.assertNotEqual(link_p_21['cycle_id'], link_p_22['cycle_id'])
 
@@ -1654,9 +1597,13 @@ class TestMatchingExistingViewFullOrgMatchingProperties(DataMappingBaseTestCase)
 
         # Check -States part of merges are no longer associated to -Views
         merged_ps_ids = [
-            self.ps_11.id, self.ps_12.id,  # Cycle 1
-            self.ps_13.id, self.ps_14.id,  # Cycle 1
-            self.ps_21.id, self.ps_22.id, self.ps_23.id  # Cycle 2
+            self.ps_11.id,
+            self.ps_12.id,  # Cycle 1
+            self.ps_13.id,
+            self.ps_14.id,  # Cycle 1
+            self.ps_21.id,
+            self.ps_22.id,
+            self.ps_23.id,  # Cycle 2
         ]
         self.assertFalse(PropertyView.objects.filter(state_id__in=merged_ps_ids).exists())
 
@@ -1700,14 +1647,8 @@ class TestMatchingExistingViewFullOrgMatchingProperties(DataMappingBaseTestCase)
             },
         }
 
-        self.assertEqual(
-            summary['PropertyState']['merged_count'],
-            expected_summary['PropertyState']['merged_count']
-        )
-        self.assertEqual(
-            summary['PropertyState']['linked_sets_count'],
-            expected_summary['PropertyState']['linked_sets_count']
-        )
+        self.assertEqual(summary['PropertyState']['merged_count'], expected_summary['PropertyState']['merged_count'])
+        self.assertEqual(summary['PropertyState']['linked_sets_count'], expected_summary['PropertyState']['linked_sets_count'])
 
 
 class TestMatchingExistingViewFullOrgMatchingTaxLots(DataMappingBaseTestCase):
@@ -1716,10 +1657,8 @@ class TestMatchingExistingViewFullOrgMatchingTaxLots(DataMappingBaseTestCase):
         self.user, self.org, self.import_file_1, self.import_record_1, self.cycle_1 = selfvars
 
         cycle_factory = FakeCycleFactory(organization=self.org, user=self.user)
-        self.cycle_2 = cycle_factory.get_cycle(name="Cycle 2")
-        self.import_record_2, self.import_file_2 = self.create_import_file(
-            self.user, self.org, self.cycle_2
-        )
+        self.cycle_2 = cycle_factory.get_cycle(name='Cycle 2')
+        self.import_record_2, self.import_file_2 = self.create_import_file(self.user, self.org, self.cycle_2)
 
         self.taxlot_state_factory = FakeTaxLotStateFactory(organization=self.org)
 
@@ -1748,7 +1687,7 @@ class TestMatchingExistingViewFullOrgMatchingTaxLots(DataMappingBaseTestCase):
             'import_file_id': self.import_file_1.id,
             'data_state': DATA_STATE_MAPPING,
             'no_default_data': False,
-            "raw_access_level_instance_id": self.org.root.id,
+            'raw_access_level_instance_id': self.org.root.id,
         }
         # Create 6 initially non-matching taxlots in first Cycle
         self.tls_11 = self.taxlot_state_factory.get_taxlot_state(**base_taxlot_details)
@@ -1796,7 +1735,7 @@ class TestMatchingExistingViewFullOrgMatchingTaxLots(DataMappingBaseTestCase):
             'import_file_id': self.import_file_2.id,
             'data_state': DATA_STATE_MAPPING,
             'no_default_data': False,
-            "raw_access_level_instance_id": self.org.root.id,
+            'raw_access_level_instance_id': self.org.root.id,
         }
         # Create 6 initially non-matching taxlots in second Cycle
         self.tls_21 = self.taxlot_state_factory.get_taxlot_state(**base_taxlot_details)
@@ -1835,9 +1774,7 @@ class TestMatchingExistingViewFullOrgMatchingTaxLots(DataMappingBaseTestCase):
         # get the columnlistprofile (default) for all columns
         column_list_factory = FakeColumnListProfileFactory(organization=self.org)
         columnlistprofile = column_list_factory.get_columnlistprofile(
-            inventory_type=VIEW_LIST_TAXLOT,
-            columns=['district', 'city'],
-            table_name='TaxLotState'
+            inventory_type=VIEW_LIST_TAXLOT, columns=['district', 'city'], table_name='TaxLotState'
         )
 
         # Check all property sets were created without match merges
@@ -1857,19 +1794,11 @@ class TestMatchingExistingViewFullOrgMatchingTaxLots(DataMappingBaseTestCase):
 
         result_1 = summary[self.cycle_1.id]
         self.assertEqual(len(result_1), 4)
-        district_or_city_ids_1 = {
-            (tls.get(district_key) or tls[city_key]): tls['id']
-            for tls
-            in result_1
-        }
+        district_or_city_ids_1 = {(tls.get(district_key) or tls[city_key]): tls['id'] for tls in result_1}
 
         result_2 = summary[self.cycle_2.id]
         self.assertEqual(len(result_2), 4)
-        district_or_city_ids_2 = {
-            (tls.get(district_key) or tls[city_key]): tls['id']
-            for tls
-            in result_2
-        }
+        district_or_city_ids_2 = {(tls.get(district_key) or tls[city_key]): tls['id'] for tls in result_2}
 
         # check links
         self.assertEqual(district_or_city_ids_1['Single to be Linked!'], district_or_city_ids_2['Single to be Linked!'])
@@ -1901,10 +1830,9 @@ class TestMatchingExistingViewFullOrgMatchingTaxLots(DataMappingBaseTestCase):
 
         # Capture initial canonical IDs of impending matches - used for tests
         initial_taxlot_ids_of_matches = list(
-            TaxLotView.objects.
-            select_related('state').
-            filter(state__jurisdiction_tax_lot_id__in=['1st Match Set', '2nd Match Set', 'Single to be Linked!']).
-            values_list('taxlot_id', flat=True)
+            TaxLotView.objects.select_related('state')
+            .filter(state__jurisdiction_tax_lot_id__in=['1st Match Set', '2nd Match Set', 'Single to be Linked!'])
+            .values_list('taxlot_id', flat=True)
         )
 
         summary = whole_org_match_merge_link(self.org.id, 'TaxLotState')
@@ -1944,12 +1872,16 @@ class TestMatchingExistingViewFullOrgMatchingTaxLots(DataMappingBaseTestCase):
         # Check that a link was created for -States across Cycles
         # Specifically, canonical IDs should match but cycles should be different
         taxlot_first_match_set = TaxLotState.objects.filter(jurisdiction_tax_lot_id='1st Match Set')
-        link_tl_11, link_tl_12 = TaxLotView.objects.filter(state_id__in=Subquery(taxlot_first_match_set.values('id'))).values('cycle_id', 'taxlot_id')
+        link_tl_11, link_tl_12 = TaxLotView.objects.filter(state_id__in=Subquery(taxlot_first_match_set.values('id'))).values(
+            'cycle_id', 'taxlot_id'
+        )
         self.assertEqual(link_tl_11['taxlot_id'], link_tl_12['taxlot_id'])
         self.assertNotEqual(link_tl_11['cycle_id'], link_tl_12['cycle_id'])
 
         taxlot_single_linked = TaxLotState.objects.filter(jurisdiction_tax_lot_id='Single to be Linked!')
-        link_tl_11, link_tl_12 = TaxLotView.objects.filter(state_id__in=Subquery(taxlot_single_linked.values('id'))).values('cycle_id', 'taxlot_id')
+        link_tl_11, link_tl_12 = TaxLotView.objects.filter(state_id__in=Subquery(taxlot_single_linked.values('id'))).values(
+            'cycle_id', 'taxlot_id'
+        )
         self.assertEqual(link_tl_11['taxlot_id'], link_tl_12['taxlot_id'])
         self.assertNotEqual(link_tl_11['cycle_id'], link_tl_12['cycle_id'])
 
@@ -1959,9 +1891,13 @@ class TestMatchingExistingViewFullOrgMatchingTaxLots(DataMappingBaseTestCase):
 
         # Check -States part of merges are no longer associated to -Views
         merged_tls_ids = [
-            self.tls_11.id, self.tls_12.id,  # Cycle 1
-            self.tls_13.id, self.tls_14.id,  # Cycle 1
-            self.tls_21.id, self.tls_22.id, self.tls_23.id  # Cycle 2
+            self.tls_11.id,
+            self.tls_12.id,  # Cycle 1
+            self.tls_13.id,
+            self.tls_14.id,  # Cycle 1
+            self.tls_21.id,
+            self.tls_22.id,
+            self.tls_23.id,  # Cycle 2
         ]
         self.assertFalse(TaxLotView.objects.filter(state_id__in=merged_tls_ids).exists())
 
@@ -2005,14 +1941,8 @@ class TestMatchingExistingViewFullOrgMatchingTaxLots(DataMappingBaseTestCase):
             },
         }
 
-        self.assertEqual(
-            summary['TaxLotState']['merged_count'],
-            expected_summary['TaxLotState']['merged_count']
-        )
-        self.assertEqual(
-            summary['TaxLotState']['linked_sets_count'],
-            expected_summary['TaxLotState']['linked_sets_count']
-        )
+        self.assertEqual(summary['TaxLotState']['merged_count'], expected_summary['TaxLotState']['merged_count'])
+        self.assertEqual(summary['TaxLotState']['linked_sets_count'], expected_summary['TaxLotState']['linked_sets_count'])
 
 
 class TestMatchingExistingViewFullOrgMatchingUnlinking(DataMappingBaseTestCase):
@@ -2021,10 +1951,8 @@ class TestMatchingExistingViewFullOrgMatchingUnlinking(DataMappingBaseTestCase):
         self.user, self.org, self.import_file_1, self.import_record_1, self.cycle_1 = selfvars
 
         cycle_factory = FakeCycleFactory(organization=self.org, user=self.user)
-        self.cycle_2 = cycle_factory.get_cycle(name="Cycle 2")
-        self.import_record_2, self.import_file_2 = self.create_import_file(
-            self.user, self.org, self.cycle_2
-        )
+        self.cycle_2 = cycle_factory.get_cycle(name='Cycle 2')
+        self.import_record_2, self.import_file_2 = self.create_import_file(self.user, self.org, self.cycle_2)
 
         self.property_state_factory = FakePropertyStateFactory(organization=self.org)
         self.taxlot_state_factory = FakeTaxLotStateFactory(organization=self.org)
@@ -2038,7 +1966,7 @@ class TestMatchingExistingViewFullOrgMatchingUnlinking(DataMappingBaseTestCase):
             'import_file_id': self.import_file_1.id,
             'data_state': DATA_STATE_MAPPING,
             'no_default_data': False,
-            "raw_access_level_instance_id": self.org.root.id,
+            'raw_access_level_instance_id': self.org.root.id,
         }
         # Create initially matching property in first Cycle
         self.property_state_factory.get_property_state(**base_property_details)
@@ -2056,7 +1984,7 @@ class TestMatchingExistingViewFullOrgMatchingUnlinking(DataMappingBaseTestCase):
             'import_file_id': self.import_file_2.id,
             'data_state': DATA_STATE_MAPPING,
             'no_default_data': False,
-            "raw_access_level_instance_id": self.org.root.id,
+            'raw_access_level_instance_id': self.org.root.id,
         }
         # Create initially matching property in second Cycle
         self.property_state_factory.get_property_state(**base_property_details)
@@ -2089,7 +2017,7 @@ class TestMatchingExistingViewFullOrgMatchingUnlinking(DataMappingBaseTestCase):
             'import_file_id': self.import_file_1.id,
             'data_state': DATA_STATE_MAPPING,
             'no_default_data': False,
-            "raw_access_level_instance_id": self.org.root.id,
+            'raw_access_level_instance_id': self.org.root.id,
         }
         # Create initially matching property in first Cycle
         self.taxlot_state_factory.get_taxlot_state(**base_taxlot_details)
@@ -2107,7 +2035,7 @@ class TestMatchingExistingViewFullOrgMatchingUnlinking(DataMappingBaseTestCase):
             'import_file_id': self.import_file_2.id,
             'data_state': DATA_STATE_MAPPING,
             'no_default_data': False,
-            "raw_access_level_instance_id": self.org.root.id,
+            'raw_access_level_instance_id': self.org.root.id,
         }
         # Create initially matching property in second Cycle
         self.taxlot_state_factory.get_taxlot_state(**base_taxlot_details)

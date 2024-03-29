@@ -2,6 +2,7 @@
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 import csv
 import lzma
 import os
@@ -14,7 +15,7 @@ from seed.models.eeej import EeejCejst, EeejHud, HousingType
 
 
 def add_eeej_data():
-    """ Import EEEJ data from various sources
+    """Import EEEJ data from various sources
     This will take a while to run
     """
     import_cejst()
@@ -22,7 +23,7 @@ def add_eeej_data():
 
 
 def import_hud():
-    """ Import HUD data for Public Developments and Multi-Family - Assisted
+    """Import HUD data for Public Developments and Multi-Family - Assisted
     https://hudgis-hud.opendata.arcgis.com/datasets/public-housing-developments-1/explore?showTable=true
     https://hudgis-hud.opendata.arcgis.com/datasets/HUD::multifamily-properties-assisted/explore?showTable=true
 
@@ -32,14 +33,16 @@ def import_hud():
     # Use smaller files to test with
     if settings.EEEJ_LOAD_SMALL_TEST_DATASET:
         HUD_DATA_PATH_HOUSING = os.path.join(settings.BASE_DIR, 'seed/lib/geospatial/data', 'test-Public_Housing_Developments.csv.xz')
-        HUD_DATA_PATH_MULTIFAMILY = os.path.join(settings.BASE_DIR, 'seed/lib/geospatial/data', 'test-Multifamily_Properties_-_Assisted.csv.xz')
+        HUD_DATA_PATH_MULTIFAMILY = os.path.join(
+            settings.BASE_DIR, 'seed/lib/geospatial/data', 'test-Multifamily_Properties_-_Assisted.csv.xz'
+        )
     else:
         HUD_DATA_PATH_HOUSING = os.path.join(settings.BASE_DIR, 'seed/lib/geospatial/data', 'Public_Housing_Developments.csv.xz')
         HUD_DATA_PATH_MULTIFAMILY = os.path.join(settings.BASE_DIR, 'seed/lib/geospatial/data', 'Multifamily_Properties_-_Assisted.csv.xz')
 
     files = [
         {'type': HousingType.PUBLIC_HOUSING, 'path': HUD_DATA_PATH_HOUSING},
-        {'type': HousingType.MULTIFAMILY, 'path': HUD_DATA_PATH_MULTIFAMILY}
+        {'type': HousingType.MULTIFAMILY, 'path': HUD_DATA_PATH_MULTIFAMILY},
     ]
     errors = []
     for file in files:
@@ -63,26 +66,23 @@ def import_hud():
                         hud_object_id=hud_object_id,
                         name=name,
                         housing_type=file['type'],
-                        defaults={'long_lat': Point(
-                            float(row[col['LON']]),
-                            float(row[col['LAT']])
-                        )}
+                        defaults={'long_lat': Point(float(row[col['LON']]), float(row[col['LAT']]))},
                     )
                 except IntegrityError as e:
-                    errors.append("EEEJ HUD Row already exists: {}. error: {}".format(row_index, str(e)))
+                    errors.append(f'EEEJ HUD Row already exists: {row_index}. error: {e!s}')
                     # print(str(e))
                 except Exception as e:
-                    errors.append("EEEJ HUD - could not add row: {}. error: {}".format(row_index, str(e)))
+                    errors.append(f'EEEJ HUD - could not add row: {row_index}. error: {e!s}')
                     # print(str(e))
 
     # print(f"{len(errors)} errors encountered when loading HUD data")
 
 
 def import_cejst():
-    """" Import CEJST Data:
-        https://energyjustice-buildings.egs.anl.gov/resources/serve/Buildings/cejst.csv
-        Headers of interest: Census tract 2010 ID, Identified as disadvantaged,
-        Greater than or equal to the 90th percentile for energy burden and is low income?, Energy burden (percentile)
+    """ " Import CEJST Data:
+    https://energyjustice-buildings.egs.anl.gov/resources/serve/Buildings/cejst.csv
+    Headers of interest: Census tract 2010 ID, Identified as disadvantaged,
+    Greater than or equal to the 90th percentile for energy burden and is low income?, Energy burden (percentile)
     """
     # Use a smaller file to test with
     if settings.EEEJ_LOAD_SMALL_TEST_DATASET:
@@ -106,11 +106,11 @@ def import_cejst():
                     energy_burden_low_income=row[col['Greater than or equal to the 90th percentile for energy burden and is low income?']],
                     energy_burden_percent=row[col['Energy burden (percentile)']] or None,
                     low_income=row[col['Is low income?']],
-                    share_neighbors_disadvantaged=row[col['Share of neighbors that are identified as disadvantaged']] or None
+                    share_neighbors_disadvantaged=row[col['Share of neighbors that are identified as disadvantaged']] or None,
                 )
             except IntegrityError as e:
-                errors.append("EEEJ CEJST Row already exists: {}. error: {}".format(row_index, str(e)))
+                errors.append(f'EEEJ CEJST Row already exists: {row_index}. error: {e!s}')
             except Exception as e:
-                errors.append("EEEJ CEJST - could not add row: {}. error: {}".format(row_index, str(e)))
+                errors.append(f'EEEJ CEJST - could not add row: {row_index}. error: {e!s}')
 
         # print(f"{len(errors)} errors encountered when loading CEJST data")

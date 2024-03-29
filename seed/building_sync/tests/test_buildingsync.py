@@ -1,9 +1,9 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 from os import path
 
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -18,11 +18,7 @@ from seed.utils.organizations import create_organization
 
 class TestBuildingFiles(TestCase):
     def setUp(self):
-        user_details = {
-            'username': 'test_user@demo.com',
-            'password': 'test_pass',
-            'email': 'test_user@demo.com'
-        }
+        user_details = {'username': 'test_user@demo.com', 'password': 'test_pass', 'email': 'test_user@demo.com'}
         self.user = User.objects.create_superuser(**user_details)
         self.org, _, _ = create_organization(self.user)
 
@@ -50,8 +46,8 @@ class TestBuildingFiles(TestCase):
         self.assertTrue(status)
         self.assertEqual(property_state.address_line_1, '123 Main St')
         self.assertEqual(property_state.property_type, 'Office')
-        self.assertEqual(property_state.extra_data.get("audit_date"), None)
-        self.assertEqual(property_state.extra_data.get("audit_date_type"), None)
+        self.assertEqual(property_state.extra_data.get('audit_date'), None)
+        self.assertEqual(property_state.extra_data.get('audit_date_type'), None)
         self.assertEqual(messages, {'errors': [], 'warnings': []})
 
     def test_buildingsync_constructor_diff_ns(self):
@@ -126,8 +122,8 @@ class TestBuildingFiles(TestCase):
         status, property_state, property_view, messages = bf.process(self.org.id, self.org.cycles.first())
         self.assertTrue(status, f'Expected process() to succeed; messages: {messages}')
         self.assertEqual(property_state.address_line_1, '123 Example Street')
-        self.assertEqual(property_state.extra_data.get("audit_date"), "2019-07-01")
-        self.assertEqual(property_state.extra_data.get("audit_date_type"), "Level 2: Energy Survey and Analysis")
+        self.assertEqual(property_state.extra_data.get('audit_date'), '2019-07-01')
+        self.assertEqual(property_state.extra_data.get('audit_date_type'), 'Level 2: Energy Survey and Analysis')
         self.assertEqual(messages['errors'], [])
 
         # we expect warnings indicating skipped scenarios and meters
@@ -135,26 +131,26 @@ class TestBuildingFiles(TestCase):
         # "junk" scenarios/meters that Audit Template puts into the BuildingSync file
         expected_warnings = [
             "Skipping Scenario ScenarioType-69909976065980 because it doesn't include measures or meter data.",
-            "Skipping resource use ResourceUseType-69909985411100 due to missing type or units",
+            'Skipping resource use ResourceUseType-69909985411100 due to missing type or units',
             "Skipping Scenario ScenarioType-69909985343680 because it doesn't include measures or meter data.",
             "Skipping Scenario ScenarioType-69909979554640 because it doesn't include measures or meter data.",
             "Skipping Scenario ScenarioType-69909979696200 because it doesn't include measures or meter data.",
-            "Skipping meter ResourceUseType-69909980009880 because it had no valid readings.",
+            'Skipping meter ResourceUseType-69909980009880 because it had no valid readings.',
             "Skipping Scenario ScenarioType-69909937717840 because it doesn't include measures or meter data.",
-            "Skipping meter ResourceUseType-69909964194040 because it had no valid readings.",
+            'Skipping meter ResourceUseType-69909964194040 because it had no valid readings.',
             "Skipping Scenario ScenarioType-69909937754040 because it doesn't include measures or meter data.",
-            "Skipping meter ResourceUseType-69909940642500 because it had no valid readings.",
+            'Skipping meter ResourceUseType-69909940642500 because it had no valid readings.',
             "Skipping Scenario ScenarioType-69909943858060 because it doesn't include measures or meter data.",
-            "Skipping meter ResourceUseType-69909941989860 because it had no valid readings.",
-            "Skipping meter ResourceUseType-69909942271180 because it had no valid readings.",
-            "Skipping meter ResourceUseType-69909942496220 because it had no valid readings.",
-            "Skipping meter ResourceUseType-69909942808020 because it had no valid readings.",
-            "Skipping meter ResourceUseType-69909942954100 because it had no valid readings.",
+            'Skipping meter ResourceUseType-69909941989860 because it had no valid readings.',
+            'Skipping meter ResourceUseType-69909942271180 because it had no valid readings.',
+            'Skipping meter ResourceUseType-69909942496220 because it had no valid readings.',
+            'Skipping meter ResourceUseType-69909942808020 because it had no valid readings.',
+            'Skipping meter ResourceUseType-69909942954100 because it had no valid readings.',
             "Skipping Scenario ScenarioType-69909940756840 because it doesn't include measures or meter data.",
-            "Skipping meter ResourceUseType-69909944487040 because it had no valid readings.",
-            "Skipping meter ResourceUseType-69909944645960 because it had no valid readings.",
+            'Skipping meter ResourceUseType-69909944487040 because it had no valid readings.',
+            'Skipping meter ResourceUseType-69909944645960 because it had no valid readings.',
             "Skipping Scenario ScenarioType-69909944388980 because it doesn't include measures or meter data.",
-            "Skipped meter Site Energy Use ResourceUseType-69909963979840 because it had no valid readings"
+            'Skipped meter Site Energy Use ResourceUseType-69909963979840 because it had no valid readings',
         ]
         self.assertEqual(
             messages['warnings'],

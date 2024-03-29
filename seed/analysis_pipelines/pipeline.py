@@ -2,6 +2,7 @@
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 import abc
 import functools
 import inspect
@@ -124,7 +125,7 @@ def analysis_pipeline_task(expected_status):
                 log_message = {
                     'analysis_id': _analysis_id,
                     'debug_message': 'Analysis no longer exists before starting the task. '
-                                     'Assuming the analysis was deleted and stopping the celery task chain.'
+                    'Assuming the analysis was deleted and stopping the celery task chain.',
                 }
                 logger.info(json.dumps(log_message))
                 _stop_task_chain(_self)
@@ -138,7 +139,7 @@ def analysis_pipeline_task(expected_status):
                 log_message = {
                     'analysis_id': _analysis_id,
                     'debug_message': 'Analysis has already been stopped or failed before starting the task. '
-                                     'Not running the task and stopping the task chain.'
+                    'Not running the task and stopping the task chain.',
                 }
                 logger.info(json.dumps(log_message))
                 _stop_task_chain(_self)
@@ -146,7 +147,9 @@ def analysis_pipeline_task(expected_status):
             else:
                 # something Bad has happened
                 # TODO: we should probably try to fail the analysis at this point, but putting it off for now
-                raise AnalysisPipelineException(f'When preparing to run the task {func}, expected analysis status to be {expected_status} but it was {analysis.status}')
+                raise AnalysisPipelineException(
+                    f'When preparing to run the task {func}, expected analysis status to be {expected_status} but it was {analysis.status}'
+                )
 
             #
             # Run the task and catch all exceptions
@@ -158,7 +161,7 @@ def analysis_pipeline_task(expected_status):
                 log_message = {
                     'analysis_id': _analysis_id,
                     'debug_message': 'StopAnalysisTaskChain exception raised, stopping the celery task chain.',
-                    'exception': repr(e)
+                    'exception': repr(e),
                 }
                 logger.info(json.dumps(log_message))
                 _stop_task_chain(_self)
@@ -169,11 +172,7 @@ def analysis_pipeline_task(expected_status):
                 try:
                     with transaction.atomic():
                         # don't wait for lock to avoid deadlock
-                        locked_analysis = (
-                            Analysis.objects
-                            .select_for_update(nowait=True)
-                            .get(id=_analysis_id)
-                        )
+                        locked_analysis = Analysis.objects.select_for_update(nowait=True).get(id=_analysis_id)
 
                         # analysis still exists, and we were able to get a lock on it
                         # something unexpected happened during the task
@@ -182,8 +181,8 @@ def analysis_pipeline_task(expected_status):
                             log_message = {
                                 'analysis_id': _analysis_id,
                                 'debug_message': 'Task raised unhandled exception, but the analysis was already in a terminal state. '
-                                                 'Ignoring the exception and stopping the celery task chain.',
-                                'exception': repr(e)
+                                'Ignoring the exception and stopping the celery task chain.',
+                                'exception': repr(e),
                             }
                             logger.info(json.dumps(log_message))
                             _stop_task_chain(_self)
@@ -197,7 +196,7 @@ def analysis_pipeline_task(expected_status):
                                 type_=AnalysisMessage.ERROR,
                                 user_message='Unexpected error occurred.',
                                 debug_message='Caught unexpected exception occurred during analysis task and the analysis still exists. '
-                                              'Failing the analysis and re-raising the exception.',
+                                'Failing the analysis and re-raising the exception.',
                                 analysis_id=_analysis_id,
                                 analysis_property_view_id=None,
                                 exception=e,
@@ -212,9 +211,9 @@ def analysis_pipeline_task(expected_status):
                     log_message = {
                         'analysis_id': _analysis_id,
                         'debug_message': 'Caught unexpected exception occurred during analysis task (and analysis still exists). '
-                                         'Unable to acquire lock on analysis so it will likely be in an invalid state. '
-                                         'Re-raising the exception.',
-                        'exception': repr(e)
+                        'Unable to acquire lock on analysis so it will likely be in an invalid state. '
+                        'Re-raising the exception.',
+                        'exception': repr(e),
                     }
                     logger.error(json.dumps(log_message))
                     # no need to stop the task chain b/c raising the exception should do that
@@ -225,9 +224,9 @@ def analysis_pipeline_task(expected_status):
                     log_message = {
                         'analysis_id': _analysis_id,
                         'debug_message': 'Task raised unhandled exception, but the analysis no longer exists. '
-                                         'Assuming the analysis was deleted. '
-                                         'Ignoring the exception and stopping the celery task chain.',
-                        'exception': repr(e)
+                        'Assuming the analysis was deleted. '
+                        'Ignoring the exception and stopping the celery task chain.',
+                        'exception': repr(e),
                     }
                     logger.info(json.dumps(log_message))
                     _stop_task_chain(_self)
@@ -237,6 +236,7 @@ def analysis_pipeline_task(expected_status):
                     raise e
 
         return _run_task
+
     return decorator_analysis_pipeline_task
 
 
@@ -324,7 +324,9 @@ class AnalysisPipeline(abc.ABC):
                 )
             else:
                 statuses = dict(Analysis.STATUS_TYPES)
-                raise AnalysisPipelineException(f'Analysis cannot be started. Its status should be "{statuses[Analysis.READY]}" but it is "{statuses[locked_analysis.status]}"')
+                raise AnalysisPipelineException(
+                    f'Analysis cannot be started. Its status should be "{statuses[Analysis.READY]}" but it is "{statuses[locked_analysis.status]}"'
+                )
 
         self._start_analysis()
         return progress_data.result()
@@ -372,7 +374,7 @@ class AnalysisPipeline(abc.ABC):
             if locked_analysis.in_terminal_state():
                 log_message = {
                     'analysis_id': self._analysis_id,
-                    'debug_message': 'Attempted to stop analysis when already in a terminal state'
+                    'debug_message': 'Attempted to stop analysis when already in a terminal state',
                 }
                 logger.info(json.dumps(log_message))
                 return
@@ -414,7 +416,7 @@ class AnalysisPipeline(abc.ABC):
             else:
                 statuses = dict(Analysis.STATUS_TYPES)
                 raise AnalysisPipelineException(
-                    f'Analysis status can\'t be set to READY. '
+                    f"Analysis status can't be set to READY. "
                     f'Its status should be "{statuses[Analysis.CREATING]}" but it is "{statuses[locked_analysis.status]}"'
                 )
 
@@ -442,15 +444,12 @@ class AnalysisPipeline(abc.ABC):
                 locked_analysis.start_time = tz.now()
                 locked_analysis.save()
 
-                return ProgressData(
-                    self._get_progress_data_key_prefix(locked_analysis),
-                    locked_analysis.id
-                )
+                return ProgressData(self._get_progress_data_key_prefix(locked_analysis), locked_analysis.id)
             else:
                 statuses = dict(Analysis.STATUS_TYPES)
                 valid_statuses_str = ' or '.join([statuses[s] for s in valid_statuses])
                 raise AnalysisPipelineException(
-                    f'Analysis status can\'t be set to RUNNING. '
+                    f"Analysis status can't be set to RUNNING. "
                     f'Its status should be {valid_statuses_str} but it is "{statuses[locked_analysis.status]}"'
                 )
 
@@ -477,7 +476,7 @@ class AnalysisPipeline(abc.ABC):
             else:
                 statuses = dict(Analysis.STATUS_TYPES)
                 raise AnalysisPipelineException(
-                    f'Analysis status can\'t be set to COMPLETED. '
+                    f"Analysis status can't be set to COMPLETED. "
                     f'Its status should be "{statuses[Analysis.RUNNING]}" but it is "{statuses[locked_analysis.status]}"'
                 )
 
@@ -504,10 +503,7 @@ class AnalysisPipeline(abc.ABC):
         ):
             return None
 
-        progress_key = get_prog_key(
-            self._get_progress_data_key_prefix(analysis),
-            self._analysis_id
-        )
+        progress_key = get_prog_key(self._get_progress_data_key_prefix(analysis), self._analysis_id)
         try:
             return ProgressData.from_key(progress_key)
         except Exception:

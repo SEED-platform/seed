@@ -1,9 +1,9 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 import datetime
 import json
 
@@ -16,10 +16,10 @@ class TestCycleViewSetPermissions(AccessLevelBaseTestCase, DeleteModelsTestCase)
     def setUp(self):
         super().setUp()
         self.cycle = self.cycle_factory.get_cycle(organization=self.org)
-        self.payload = {"name": "boo", "start": datetime.date(2000, 1, 1).isoformat(), "end": datetime.date(2000, 1, 1).isoformat()}
+        self.payload = {'name': 'boo', 'start': datetime.date(2000, 1, 1).isoformat(), 'end': datetime.date(2000, 1, 1).isoformat()}
 
     def test_cycle_create_permissions(self):
-        url = reverse_lazy('api:v3:cycles-list') + "?organization_id=" + str(self.org.id)
+        url = reverse_lazy('api:v3:cycles-list') + '?organization_id=' + str(self.org.id)
 
         # child user cannot
         self.login_as_child_member()
@@ -32,7 +32,7 @@ class TestCycleViewSetPermissions(AccessLevelBaseTestCase, DeleteModelsTestCase)
         assert response.status_code == 201
 
     def test_cycle_delete_permissions(self):
-        url = reverse_lazy('api:v3:cycles-detail', args=[self.cycle.id]) + "?organization_id=" + str(self.org.id)
+        url = reverse_lazy('api:v3:cycles-detail', args=[self.cycle.id]) + '?organization_id=' + str(self.org.id)
 
         # child user cannot
         self.login_as_child_member()
@@ -50,7 +50,7 @@ class TestCycleViewSetPermissions(AccessLevelBaseTestCase, DeleteModelsTestCase)
         assert response.status_code == 200
 
     def test_cycle_update_permissions(self):
-        url = reverse_lazy('api:v3:cycles-detail', args=[self.cycle.id]) + "?organization_id=" + str(self.org.id)
+        url = reverse_lazy('api:v3:cycles-detail', args=[self.cycle.id]) + '?organization_id=' + str(self.org.id)
 
         # child user cannot
         self.login_as_child_member()

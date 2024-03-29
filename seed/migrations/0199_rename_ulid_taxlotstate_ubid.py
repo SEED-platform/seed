@@ -18,7 +18,6 @@ def rename_ulid_column(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('seed', '0198_auto_20230703_0828'),
     ]

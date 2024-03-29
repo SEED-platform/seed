@@ -1,9 +1,9 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 import json
 from datetime import datetime
 
@@ -11,13 +11,9 @@ import dateutil
 
 
 class CeleryDatetimeSerializer(json.JSONEncoder):
-
     def default(self, obj):
         if isinstance(obj, datetime):
-            return {
-                '__type__': '__datetime__',
-                'iso8601': obj.isoformat()
-            }
+            return {'__type__': '__datetime__', 'iso8601': obj.isoformat()}
         else:
             return json.JSONEncoder.default(self, obj)
 

@@ -1,9 +1,9 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 import datetime
 import logging
 import os.path as osp
@@ -15,11 +15,7 @@ from django.utils import timezone as tz
 from quantityfield.units import ureg
 
 from seed.data_importer import match, tasks
-from seed.data_importer.tests.util import (
-    FAKE_EXTRA_DATA,
-    FAKE_MAPPINGS,
-    FAKE_ROW
-)
+from seed.data_importer.tests.util import FAKE_EXTRA_DATA, FAKE_MAPPINGS, FAKE_ROW
 from seed.lib.progress_data.progress_data import ProgressData
 from seed.models import (
     ASSESSED_BS,
@@ -33,7 +29,7 @@ from seed.models import (
     PropertyState,
     PropertyView,
     TaxLot,
-    TaxLotState
+    TaxLotState,
 )
 from seed.tests.util import DataMappingBaseTestCase
 
@@ -50,10 +46,7 @@ class TestCaseMultipleDuplicateMatching(DataMappingBaseTestCase):
         selfvars = self.set_up(import_file_source_type)
         self.user, self.org, self.import_file, self.import_record, self.cycle = selfvars
         filepath = osp.join(osp.dirname(__file__), '..', 'data', filename)
-        self.import_file.file = SimpleUploadedFile(
-            name=filename,
-            content=pathlib.Path(filepath).read_bytes()
-        )
+        self.import_file.file = SimpleUploadedFile(name=filename, content=pathlib.Path(filepath).read_bytes())
         self.import_file.save()
 
         tasks.save_raw_data(self.import_file.pk)
@@ -61,16 +54,14 @@ class TestCaseMultipleDuplicateMatching(DataMappingBaseTestCase):
         tasks.map_data(self.import_file.pk)
 
     def test_hash(self):
-        self.assertEqual(tasks.hash_state_object(PropertyState()),
-                         tasks.hash_state_object(PropertyState(organization=self.org)))
+        self.assertEqual(tasks.hash_state_object(PropertyState()), tasks.hash_state_object(PropertyState(organization=self.org)))
 
-        self.assertEqual(tasks.hash_state_object(TaxLotState()),
-                         tasks.hash_state_object(TaxLotState(organization=self.org)))
+        self.assertEqual(tasks.hash_state_object(TaxLotState()), tasks.hash_state_object(TaxLotState(organization=self.org)))
 
-        ps1 = PropertyState(address_line_1='123 fake st', extra_data={"a": "100"})
-        ps2 = PropertyState(address_line_1='123 fake st', extra_data={"a": "200"})
-        ps3 = PropertyState(extra_data={"a": "200"})
-        ps4 = PropertyState(extra_data={"a": "100"})
+        ps1 = PropertyState(address_line_1='123 fake st', extra_data={'a': '100'})
+        ps2 = PropertyState(address_line_1='123 fake st', extra_data={'a': '200'})
+        ps3 = PropertyState(extra_data={'a': '200'})
+        ps4 = PropertyState(extra_data={'a': '100'})
         ps5 = PropertyState(address_line_1='123 fake st')
 
         self.assertEqual(len(set(map(tasks.hash_state_object, [ps1, ps2, ps3, ps4, ps5]))), 5)
@@ -78,7 +69,7 @@ class TestCaseMultipleDuplicateMatching(DataMappingBaseTestCase):
         # large PropertyState objects -- make sure size is still 32 (why wouldn't it be?)
         extra_data = {}
         for i in range(1000):
-            extra_data["entry_%s" % i] = "Value as string %s" % i
+            extra_data['entry_%s' % i] = 'Value as string %s' % i
 
         ps6 = PropertyState(address_line_1='123 fake st', extra_data=extra_data)
         hash_res = tasks.hash_state_object(ps6)
@@ -89,7 +80,7 @@ class TestCaseMultipleDuplicateMatching(DataMappingBaseTestCase):
         ps1 = PropertyState.objects.create(
             organization=self.org,
             address_line_1='123 fake st',
-            extra_data={"a": "result"},
+            extra_data={'a': 'result'},
             data_state=DATA_STATE_IMPORT,
             import_file_id=0,
         )
@@ -100,7 +91,7 @@ class TestCaseMultipleDuplicateMatching(DataMappingBaseTestCase):
             merge_state=MERGE_STATE_MERGED,
             import_file_id=27,
             source_type=ASSESSED_BS,
-            extra_data={"a": "result"},
+            extra_data={'a': 'result'},
         )
         self.assertEqual(ps1.hash_object, ps2.hash_object)
 
@@ -153,8 +144,8 @@ class TestCaseMultipleDuplicateMatching(DataMappingBaseTestCase):
 
     def test_hash_geometry(self):
         # The hash_state_object method can handle Geometry objects such as Polygon.
-        ps1_and_3_footprint = "POLYGON ((0 0, 1 1, 1 0, 0 0))"
-        ps2_footprint = "POLYGON ((2 2, 3 3, 3 2, 2 2))"
+        ps1_and_3_footprint = 'POLYGON ((0 0, 1 1, 1 0, 0 0))'
+        ps2_footprint = 'POLYGON ((2 2, 3 3, 3 2, 2 2))'
 
         ps1 = PropertyState.objects.create(
             organization=self.org,
@@ -216,7 +207,7 @@ class TestCaseMultipleDuplicateMatching(DataMappingBaseTestCase):
 
         pv = PropertyView.objects.filter(state__pm_property_id='2264').first()
         self.assertEqual(pv.state.pm_property_id, '2264')
-        self.assertEqual(pv.state.gross_floor_area, 12555 * ureg.feet ** 2)
+        self.assertEqual(pv.state.gross_floor_area, 12555 * ureg.feet**2)
         self.assertEqual(pv.state.energy_score, 75)
 
         self.assertEqual(TaxLot.objects.count(), 0)

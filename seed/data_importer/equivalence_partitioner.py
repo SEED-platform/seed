@@ -1,10 +1,8 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
-from __future__ import absolute_import
 
 import collections
 
@@ -15,7 +13,7 @@ from seed.models import PropertyState, TaxLotState
 _log = get_task_logger(__name__)
 
 
-class EquivalencePartitioner(object):
+class EquivalencePartitioner:
     """Class for calculating equivalence classes on model States
 
     The EquivalencePartitioner is configured with a list of rules
@@ -58,14 +56,9 @@ class EquivalencePartitioner(object):
         the two objects are definitely different object)
         """
 
-        self.equiv_comparison_key_func = self.make_resolved_key_calculation_function(
-            equivalence_class_description)
-        self.equiv_canonical_key_func = self.make_canonical_key_calculation_function(
-            equivalence_class_description)
-        self.identity_key_func = self.make_canonical_key_calculation_function(
-            [(x,) for x in identity_fields])
-
-        return
+        self.equiv_comparison_key_func = self.make_resolved_key_calculation_function(equivalence_class_description)
+        self.equiv_canonical_key_func = self.make_canonical_key_calculation_function(equivalence_class_description)
+        self.identity_key_func = self.make_canonical_key_calculation_function([(x,) for x in identity_fields])
 
     @classmethod
     def make_default_state_equivalence(kls, equivalence_type):
@@ -78,19 +71,13 @@ class EquivalencePartitioner(object):
         elif equivalence_type == TaxLotState:
             return kls.make_taxlotstate_equivalence()
         else:
-            err_msg = ("Type '{}' does not have a default "
-                       "EquivalencePartitioner set.".format(equivalence_type.__class__.__name__))
+            err_msg = f"Type '{equivalence_type.__class__.__name__}' does not have a default " 'EquivalencePartitioner set.'
             raise ValueError(err_msg)
 
     @classmethod
     def make_propertystate_equivalence(kls):
-        property_equivalence_fields = [
-            ("ubid",),
-            ("pm_property_id", "custom_id_1"),
-            ("custom_id_1",),
-            ("normalized_address",)
-        ]
-        property_noequivalence_fields = ["pm_property_id"]
+        property_equivalence_fields = [('ubid',), ('pm_property_id', 'custom_id_1'), ('custom_id_1',), ('normalized_address',)]
+        property_noequivalence_fields = ['pm_property_id']
 
         return kls(property_equivalence_fields, property_noequivalence_fields)
 
@@ -109,13 +96,8 @@ class EquivalencePartitioner(object):
 
         - Their jurisdiction_tax_lot_ids do not match.
         """
-        tax_lot_equivalence_fields = [
-            ("jurisdiction_tax_lot_id", "custom_id_1"),
-            ("ubid",),
-            ("custom_id_1",),
-            ("normalized_address",)
-        ]
-        tax_lot_noequivalence_fields = ["jurisdiction_tax_lot_id"]
+        tax_lot_equivalence_fields = [('jurisdiction_tax_lot_id', 'custom_id_1'), ('ubid',), ('custom_id_1',), ('normalized_address',)]
+        tax_lot_noequivalence_fields = ['jurisdiction_tax_lot_id']
         return kls(tax_lot_equivalence_fields, tax_lot_noequivalence_fields)
 
     @staticmethod
@@ -133,12 +115,7 @@ class EquivalencePartitioner(object):
     def make_resolved_key_calculation_function(kls, list_of_fieldlists):
         # This "resolves" the object to the best potential value in
         # each field.
-        return (
-            lambda obj: tuple(
-                [kls._get_resolved_value_from_object(obj, list_of_fields) for list_of_fields in
-                 list_of_fieldlists]
-            )
-        )
+        return lambda obj: tuple([kls._get_resolved_value_from_object(obj, list_of_fields) for list_of_fields in list_of_fieldlists])
 
     @staticmethod
     def _get_resolved_value_from_object(obj, list_of_fields):
@@ -146,16 +123,14 @@ class EquivalencePartitioner(object):
             val = getattr(obj, f)
             if val:
                 return val
-        else:
-            return None
+        return None
 
     @staticmethod
     def calculate_key_equivalence(key1, key2):
         for key1_value, key2_value in list(zip(key1, key2)):
             if key1_value == key2_value and key1_value is not None:
                 return True
-        else:
-            return False
+        return False
 
     def calculate_comparison_key(self, obj):
         return self.equiv_comparison_key_func(obj)
@@ -176,13 +151,12 @@ class EquivalencePartitioner(object):
 
     @staticmethod
     def identities_are_different(key1, key2):
-        for (x, y) in list(zip(key1, key2)):
+        for x, y in list(zip(key1, key2)):
             if x is None or y is None:
                 continue
             if x != y:
                 return True
-        else:
-            return False
+        return False
 
     def calculate_equivalence_classes(self, list_of_obj):
         """
@@ -202,15 +176,14 @@ class EquivalencePartitioner(object):
         equivalence_classes = collections.defaultdict(list)
         identities_for_equivalence = {}
 
-        for (ndx, obj) in enumerate(list_of_obj):
+        for ndx, obj in enumerate(list_of_obj):
             cmp_key = self.calculate_comparison_key(obj)
             identity_key = self.calculate_identity_key(obj)
 
             for class_key in equivalence_classes:
-                if self.calculate_key_equivalence(class_key, cmp_key) and not \
-                    self.identities_are_different(identities_for_equivalence[class_key],
-                                                  identity_key):
-
+                if self.calculate_key_equivalence(class_key, cmp_key) and not self.identities_are_different(
+                    identities_for_equivalence[class_key], identity_key
+                ):
                     equivalence_classes[class_key].append(ndx)
 
                     if self.key_needs_merging(class_key, cmp_key):

@@ -2,6 +2,7 @@
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 from django.core.exceptions import ValidationError
 from rest_framework import serializers
 
@@ -9,7 +10,6 @@ from seed.models import Goal
 
 
 class GoalSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Goal
         fields = '__all__'
@@ -32,11 +32,13 @@ class GoalSerializer(serializers.ModelSerializer):
         if baseline_cycle.end > current_cycle.end:
             raise ValidationError('Baseline Cycle must precede Current Cycle.')
 
-        if not all([
-            getattr(baseline_cycle, 'organization', None) == organization,
-            getattr(current_cycle, 'organization', None) == organization,
-            getattr(ali, 'organization', None) == organization
-        ]):
+        if not all(
+            [
+                getattr(baseline_cycle, 'organization', None) == organization,
+                getattr(current_cycle, 'organization', None) == organization,
+                getattr(ali, 'organization', None) == organization,
+            ]
+        ):
             raise ValidationError('Organization mismatch.')
 
         # non Null columns must be unique

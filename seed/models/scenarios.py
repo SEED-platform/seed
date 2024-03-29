@@ -1,10 +1,8 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
-from __future__ import unicode_literals
 
 import logging
 
@@ -44,8 +42,7 @@ class Scenario(models.Model):
     )
 
     name = models.CharField(max_length=255)
-    temporal_status = models.IntegerField(choices=TEMPORAL_STATUS_TYPES,
-                                          default=TEMPORAL_STATUS_CURRENT)
+    temporal_status = models.IntegerField(choices=TEMPORAL_STATUS_TYPES, default=TEMPORAL_STATUS_CURRENT)
     description = models.TextField(null=True)
 
     property_state = models.ForeignKey('PropertyState', on_delete=models.CASCADE, related_name='scenarios')

@@ -1,9 +1,9 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 import logging
 
 from django.conf import settings
@@ -60,13 +60,9 @@ class OrganizationUser(models.Model):
 
     user = models.ForeignKey(USER_MODEL, on_delete=models.CASCADE)
     organization = models.ForeignKey('Organization', on_delete=models.CASCADE)
-    status = models.CharField(
-        max_length=12, default=STATUS_PENDING, choices=STATUS_CHOICES
-    )
-    role_level = models.IntegerField(
-        default=ROLE_OWNER, choices=ROLE_LEVEL_CHOICES
-    )
-    access_level_instance = models.ForeignKey("AccessLevelInstance", on_delete=models.CASCADE, null=False, related_name="users")
+    status = models.CharField(max_length=12, default=STATUS_PENDING, choices=STATUS_CHOICES)
+    role_level = models.IntegerField(default=ROLE_OWNER, choices=ROLE_LEVEL_CHOICES)
+    access_level_instance = models.ForeignKey('AccessLevelInstance', on_delete=models.CASCADE, null=False, related_name='users')
 
     def delete(self, *args, **kwargs):
         """Ensure we preserve at least one Owner for this org."""
@@ -76,8 +72,7 @@ class OrganizationUser(models.Model):
             all_org_users = OrganizationUser.objects.filter(
                 organization=self.organization,
             ).exclude(pk=self.pk)
-            if (all_org_users.exists() and all_org_users.filter(
-                    role_level=ROLE_OWNER).count() == 0):
+            if all_org_users.exists() and all_org_users.filter(role_level=ROLE_OWNER).count() == 0:
                 # Make next most high ranking person the owner.
                 other_user = all_org_users.order_by('-role_level', '-pk')[0]
                 if other_user.role_level > ROLE_VIEWER:
@@ -88,9 +83,7 @@ class OrganizationUser(models.Model):
         super().delete(*args, **kwargs)
 
     def __str__(self):
-        return 'OrganizationUser: {0} <{1}> ({2})'.format(
-            self.user.username, self.organization.name, self.pk
-        )
+        return f'OrganizationUser: {self.user.username} <{self.organization.name}> ({self.pk})'
 
 
 @receiver(pre_save, sender=OrganizationUser)
@@ -101,6 +94,7 @@ def presave_organization_user(sender, instance, **kwargs):
 
 class AccessLevelInstance(NS_Node):
     """Node in the Accountability Hierarchy tree"""
+
     name = models.CharField(max_length=100, null=False)
     organization = models.ForeignKey('Organization', on_delete=models.CASCADE)
     # path automatically maintained dict of ancestors names by access level names.
@@ -112,21 +106,16 @@ class AccessLevelInstance(NS_Node):
     # TODO: Add constraint that siblings cannot have same name.
 
     def get_path(self):
-        """get a dictionary detailing the ancestors of this Access Level Instance
-        """
+        """get a dictionary detailing the ancestors of this Access Level Instance"""
         level_names = self.organization.access_level_names
-        ancestors = {
-            level_names[depth - 1]: name
-            for depth, name
-            in self.get_ancestors().values_list("depth", "name")
-        }
+        ancestors = {level_names[depth - 1]: name for depth, name in self.get_ancestors().values_list('depth', 'name')}
         ancestors[level_names[self.depth - 1]] = self.name
 
         return ancestors
 
     def __str__(self):
         access_level_name = self.organization.access_level_names[self.depth - 1]
-        return f"{self.name}: {self.organization.name} Access Level {access_level_name}"
+        return f'{self.name}: {self.organization.name} Access Level {access_level_name}'
 
 
 @receiver(pre_save, sender=AccessLevelInstance)
@@ -218,7 +207,7 @@ class Organization(models.Model):
         ordering = ['name']
         constraints = [
             models.CheckConstraint(
-                name="ubid_threshold_range",
+                name='ubid_threshold_range',
                 check=models.Q(ubid_threshold__range=(0, 1)),
             ),
         ]
@@ -232,22 +221,12 @@ class Organization(models.Model):
 
     parent_org = models.ForeignKey('Organization', on_delete=models.CASCADE, blank=True, null=True, related_name='child_orgs')
 
-    display_units_eui = models.CharField(max_length=32,
-                                         choices=MEASUREMENT_CHOICES_EUI,
-                                         blank=False,
-                                         default='kBtu/ft**2/year')
-    display_units_area = models.CharField(max_length=32,
-                                          choices=MEASUREMENT_CHOICES_AREA,
-                                          blank=False,
-                                          default='ft**2')
-    display_units_ghg = models.CharField(max_length=32,
-                                         choices=MEASUREMENT_CHOICES_GHG,
-                                         blank=False,
-                                         default='MtCO2e/year')
-    display_units_ghg_intensity = models.CharField(max_length=32,
-                                                   choices=MEASUREMENT_CHOICES_GHG_INTENSITY,
-                                                   blank=False,
-                                                   default='kgCO2e/ft**2/year')
+    display_units_eui = models.CharField(max_length=32, choices=MEASUREMENT_CHOICES_EUI, blank=False, default='kBtu/ft**2/year')
+    display_units_area = models.CharField(max_length=32, choices=MEASUREMENT_CHOICES_AREA, blank=False, default='ft**2')
+    display_units_ghg = models.CharField(max_length=32, choices=MEASUREMENT_CHOICES_GHG, blank=False, default='MtCO2e/year')
+    display_units_ghg_intensity = models.CharField(
+        max_length=32, choices=MEASUREMENT_CHOICES_GHG_INTENSITY, blank=False, default='kgCO2e/ft**2/year'
+    )
     display_decimal_places = models.PositiveSmallIntegerField(blank=False, default=2)
 
     created = models.DateTimeField(auto_now_add=True, null=True)
@@ -265,14 +244,18 @@ class Organization(models.Model):
     geocoding_enabled = models.BooleanField(default=True)
 
     # new user email fields
-    new_user_email_from = models.CharField(max_length=128, blank=False, default="info@seed-platform.org")
-    new_user_email_subject = models.CharField(max_length=128, blank=False, default="New SEED account")
-    new_user_email_content = models.CharField(max_length=1024, blank=False, default="Hello {{first_name}},\nYou are receiving this e-mail because you have been registered for a SEED account.\nSEED is easy, flexible, and cost effective software designed to help organizations clean, manage and share information about large portfolios of buildings. SEED is a free, open source web application that you can use privately.  While SEED was originally designed to help cities and States implement benchmarking programs for public or private buildings, it has the potential to be useful for many other activities by public entities, efficiency programs and private companies.\nPlease go to the following page and setup your account:\n{{sign_up_link}}")
-    new_user_email_signature = models.CharField(max_length=128, blank=False, default="The SEED Team")
+    new_user_email_from = models.CharField(max_length=128, blank=False, default='info@seed-platform.org')
+    new_user_email_subject = models.CharField(max_length=128, blank=False, default='New SEED account')
+    new_user_email_content = models.CharField(
+        max_length=1024,
+        blank=False,
+        default='Hello {{first_name}},\nYou are receiving this e-mail because you have been registered for a SEED account.\nSEED is easy, flexible, and cost effective software designed to help organizations clean, manage and share information about large portfolios of buildings. SEED is a free, open source web application that you can use privately.  While SEED was originally designed to help cities and States implement benchmarking programs for public or private buildings, it has the potential to be useful for many other activities by public entities, efficiency programs and private companies.\nPlease go to the following page and setup your account:\n{{sign_up_link}}',
+    )
+    new_user_email_signature = models.CharField(max_length=128, blank=False, default='The SEED Team')
 
     # display settings
-    property_display_field = models.CharField(max_length=32, blank=False, default="address_line_1")
-    taxlot_display_field = models.CharField(max_length=32, blank=False, default="address_line_1")
+    property_display_field = models.CharField(max_length=32, blank=False, default='address_line_1')
+    taxlot_display_field = models.CharField(max_length=32, blank=False, default='address_line_1')
 
     thermal_conversion_assumption = models.IntegerField(choices=THERMAL_CONVERSION_ASSUMPTION_CHOICES, default=US)
 
@@ -303,8 +286,10 @@ class Organization(models.Model):
 
         # Create a default cycle for the organization if there isn't one already
         from seed.models import Cycle
+
         Cycle.get_or_create_default(self)
         from seed.models import Measure
+
         Measure.populate_measures(self.id)
 
     def is_member(self, user):
@@ -321,7 +306,9 @@ class Organization(models.Model):
             user.is_active = True
             user.save()
 
-        _, created = OrganizationUser.objects.get_or_create(user=user, organization=self, access_level_instance_id=access_level_instance_id, role_level=role)
+        _, created = OrganizationUser.objects.get_or_create(
+            user=user, organization=self, access_level_instance_id=access_level_instance_id, role_level=role
+        )
 
         return created
 
@@ -330,7 +317,7 @@ class Organization(models.Model):
         try:
             user = OrganizationUser.objects.get(user=user, organization=self)
         except OrganizationUser.DoesNotExist:
-            _log.info("Could not find user in organization")
+            _log.info('Could not find user in organization')
             return None
 
         return user.delete()
@@ -341,7 +328,9 @@ class Organization(models.Model):
         owner.
         """
         return OrganizationUser.objects.filter(
-            user=user, role_level=ROLE_OWNER, organization=self,
+            user=user,
+            role_level=ROLE_OWNER,
+            organization=self,
         ).exists()
 
     def has_role_member(self, user):
@@ -350,7 +339,9 @@ class Organization(models.Model):
         member.
         """
         return OrganizationUser.objects.filter(
-            user=user, role_level=ROLE_MEMBER, organization=self,
+            user=user,
+            role_level=ROLE_MEMBER,
+            organization=self,
         ).exists()
 
     def is_user_ali_root(self, user):
@@ -360,7 +351,8 @@ class Organization(models.Model):
         is_root = False
 
         ou = OrganizationUser.objects.filter(
-            user=user, organization=self,
+            user=user,
+            organization=self,
         )
         if ou.count() > 0:
             ou = ou.first()
@@ -420,7 +412,7 @@ class Organization(models.Model):
         return AccessLevelInstance.dump_bulk(from_ali)
 
     def __str__(self):
-        return 'Organization: {0}({1})'.format(self.name, self.pk)
+        return f'Organization: {self.name}({self.pk})'
 
     @property
     def root(self):
@@ -452,13 +444,16 @@ def presave_organization(sender, instance, **kwargs):
         _assert_alns_are_valid(instance)
         _update_alis_path_keys(instance, previous_access_level_names)
 
-    taken_names = Column.objects.filter(organization=instance, display_name__in=instance.access_level_names).values_list("display_name", flat=True)
+    taken_names = Column.objects.filter(organization=instance, display_name__in=instance.access_level_names).values_list(
+        'display_name', flat=True
+    )
     if len(taken_names) > 0:
-        raise ValueError(f"{taken_names} are column names.")
+        raise ValueError(f'{taken_names} are column names.')
 
 
 def _assert_alns_are_valid(org):
     from seed.models import Column
+
     alns = org.access_level_names
 
     if len(set(alns)) != len(alns):  # if not unique
@@ -466,13 +461,12 @@ def _assert_alns_are_valid(org):
 
     columns_with_same_names = Column.objects.filter(organization=org, display_name__in=alns)
     if columns_with_same_names.count() > 0:
-        repeated_names = set(columns_with_same_names.values_list("display_name", flat=True))
-        raise ValueError(f"Access level names cannot match SEED column names: {list(repeated_names)}")
+        repeated_names = set(columns_with_same_names.values_list('display_name', flat=True))
+        raise ValueError(f'Access level names cannot match SEED column names: {list(repeated_names)}')
 
 
 def _update_alis_path_keys(org, previous_access_level_names):
-    """For each instance.access_level_names item changed, update the ali.paths
-    """
+    """For each instance.access_level_names item changed, update the ali.paths"""
     alis = AccessLevelInstance.objects.filter(organization=org)
     min_len = min(len(previous_access_level_names), len(org.access_level_names))
 
@@ -500,6 +494,6 @@ def post_save_organization(sender, instance, created, **kwargs):
         if not instance.access_level_names:
             instance.access_level_names = [instance.name]
 
-        root = AccessLevelInstance.add_root(organization=instance, name="root")
+        root = AccessLevelInstance.add_root(organization=instance, name='root')
         root.save()
         instance.save()

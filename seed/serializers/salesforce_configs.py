@@ -1,5 +1,4 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
@@ -47,5 +46,5 @@ class SalesforceConfigSerializer(serializers.ModelSerializer):
             'benchmark_contact_fieldname',
             'update_at_hour',
             'update_at_minute',
-            'delete_label_after_sync'
+            'delete_label_after_sync',
         )

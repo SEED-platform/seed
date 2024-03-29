@@ -1,9 +1,9 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 import json
 
 from django.contrib.auth import get_user_model
@@ -14,11 +14,7 @@ from django.urls import reverse, reverse_lazy
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 
-from seed.lib.superperms.orgs.models import (
-    ROLE_OWNER,
-    Organization,
-    OrganizationUser
-)
+from seed.lib.superperms.orgs.models import ROLE_OWNER, Organization, OrganizationUser
 from seed.utils.organizations import create_organization
 
 # Custom user model compatibility
@@ -26,17 +22,12 @@ User = get_user_model()
 
 
 class AdminViewsTest(TestCase):
-
     def setUp(self):
-        admin_user_details = {'username': 'admin@testserver',
-                              'email': 'admin@testserver',
-                              'password': 'admin_passS1'}
+        admin_user_details = {'username': 'admin@testserver', 'email': 'admin@testserver', 'password': 'admin_passS1'}
         self.admin_user = User.objects.create_superuser(**admin_user_details)
         self.client.login(**admin_user_details)
 
-        user_details = {'username': 'testuser@testserver',
-                        'email': 'testuser@testserver',
-                        'password': 'user_passS1'}
+        user_details = {'username': 'testuser@testserver', 'email': 'testuser@testserver', 'password': 'user_passS1'}
         self.user = User.objects.create_user(**user_details)
 
         # for some reason we can't reverse api:v3:organizations-create
@@ -49,9 +40,7 @@ class AdminViewsTest(TestCase):
         Handles posting a python object as json to a given url.
         """
         data_json = json.dumps(data)
-        res = self.client.post(url,
-                               data_json,
-                               content_type='application/json')
+        res = self.client.post(url, data_json, content_type='application/json')
         res.body = json.loads(res.content)
         return res
 
@@ -60,16 +49,13 @@ class AdminViewsTest(TestCase):
         Tests whether a given user is the owner of an org.
         Handles traversing the somewhat ugly org object relationships.
         """
-        return OrganizationUser.objects.filter(
-            organization=org, user=user, role_level=ROLE_OWNER
-        ).exists()
+        return OrganizationUser.objects.filter(organization=org, user=user, role_level=ROLE_OWNER).exists()
 
     def test_add_org(self):
         """
         Happy path test for creating a new org.
         """
-        data = {'user_id': self.admin_user.pk,
-                'organization_name': 'New Org'}
+        data = {'user_id': self.admin_user.pk, 'organization_name': 'New Org'}
         res = self._post_json(self.add_org_url, data)
 
         self.assertEqual(res.body['status'], 'success')
@@ -84,10 +70,7 @@ class AdminViewsTest(TestCase):
         Trying to create an org with a dupe name fails.
         """
         create_organization(user=self.admin_user, org_name='Orgname')
-        data = {
-            'user_id': self.user.pk,
-            'organization_name': 'Orgname'
-        }
+        data = {'user_id': self.user.pk, 'organization_name': 'Orgname'}
 
         res = self._post_json(self.add_org_url, data)
 
@@ -103,9 +86,7 @@ class AdminViewsTest(TestCase):
         Test creating a new user, adding them to an existing org
         in the process.
         """
-        org, org_user, _user_created = create_organization(
-            self.admin_user, name='Existing Org'
-        )
+        org, org_user, _user_created = create_organization(self.admin_user, name='Existing Org')
         data = {
             'first_name': 'New',
             'last_name': 'User',
@@ -128,9 +109,9 @@ class AdminViewsTest(TestCase):
 
     def test_add_owner_existing_org_to_non_root(self):
         org, _, _ = create_organization(self.admin_user, name='Existing Org')
-        org.access_level_names += ["2nd gen", "3rd_gen"]
+        org.access_level_names += ['2nd gen', '3rd_gen']
         org.save()
-        child = org.add_new_access_level_instance(org.root.id, "child")
+        child = org.add_new_access_level_instance(org.root.id, 'child')
 
         data = {
             'first_name': 'New',
@@ -147,12 +128,14 @@ class AdminViewsTest(TestCase):
         """
         Create a new user and a new org at the same time.
         """
-        org, _, _ = create_organization(self.user, "test-organization-a")
-        data = {'org_name': 'New Org',
-                'first_name': 'New',
-                'last_name': 'Owner',
-                'organization_id': org.id,
-                'email': 'new_owner@testserver'}
+        org, _, _ = create_organization(self.user, 'test-organization-a')
+        data = {
+            'org_name': 'New Org',
+            'first_name': 'New',
+            'last_name': 'Owner',
+            'organization_id': org.id,
+            'email': 'new_owner@testserver',
+        }
         res = self._post_json(self.add_user_url, data)
         self.assertEqual(res.body['status'], 'success')
         user = User.objects.get(username=data['email'])
@@ -168,9 +151,7 @@ class AdminViewsTest(TestCase):
         Should not be able to create a new user without either
         selecting or creating an org at the same time.
         """
-        data = {'first_name': 'New',
-                'last_name': 'User',
-                'email': 'bad_user@testserver'}
+        data = {'first_name': 'New', 'last_name': 'User', 'email': 'bad_user@testserver'}
         res = self._post_json(self.add_user_url, data)
         self.assertEqual(res.body['status'], 'error')
 
@@ -183,12 +164,8 @@ class AdminViewsTest(TestCase):
         account creation by an admin to receiving the signup email
         to confirming the account and setting a password.
         """
-        org, _, _ = create_organization(self.user, "test-organization-a")
-        data = {'first_name': 'New',
-                'last_name': 'User',
-                'email': 'new_user@testserver',
-                'organization_id': org.id,
-                'org_name': 'New Org'}
+        org, _, _ = create_organization(self.user, 'test-organization-a')
+        data = {'first_name': 'New', 'last_name': 'User', 'email': 'new_user@testserver', 'organization_id': org.id, 'org_name': 'New Org'}
         res = self._post_json(self.add_user_url, data)
         self.client.logout()  # stop being the admin user
         self.assertEqual(res.body['status'], 'success')  # to help debug fails
@@ -199,10 +176,7 @@ class AdminViewsTest(TestCase):
         self.assertFalse(user.has_usable_password())
 
         token = default_token_generator.make_token(user)
-        signup_url = reverse("landing:signup", kwargs={
-            'uidb64': urlsafe_base64_encode(force_bytes(user.pk)),
-            "token": token
-        })
+        signup_url = reverse('landing:signup', kwargs={'uidb64': urlsafe_base64_encode(force_bytes(user.pk)), 'token': token})
 
         # make sure we sent an email to the right address
         # and it contains the signup url
@@ -216,13 +190,11 @@ class AdminViewsTest(TestCase):
         self.assertEqual(res.status_code, 302)
 
         # post the new password
-        password_post = {'new_password1': 'newpassS2',
-                         'new_password2': 'newpassS2'}
+        password_post = {'new_password1': 'newpassS2', 'new_password2': 'newpassS2'}
 
-        set_password_url = reverse("landing:signup", kwargs={
-            'uidb64': urlsafe_base64_encode(force_bytes(user.pk)),
-            "token": 'set-password'
-        })
+        set_password_url = reverse(
+            'landing:signup', kwargs={'uidb64': urlsafe_base64_encode(force_bytes(user.pk)), 'token': 'set-password'}
+        )
         res = self.client.post(set_password_url, data=password_post)
 
         # reload the user
@@ -235,12 +207,14 @@ class AdminViewsTest(TestCase):
         """
         Simulates the signup and login forcing login username to lowercase
         """
-        org, _, _ = create_organization(self.user, "test-organization-a")
-        data = {'first_name': 'New',
-                'last_name': 'User',
-                'email': 'New_Lower_User@testserver.com',
-                'organization_id': org.id,
-                'org_name': 'New Org'}
+        org, _, _ = create_organization(self.user, 'test-organization-a')
+        data = {
+            'first_name': 'New',
+            'last_name': 'User',
+            'email': 'New_Lower_User@testserver.com',
+            'organization_id': org.id,
+            'org_name': 'New Org',
+        }
         res = self._post_json(self.add_user_url, data)
         self.client.logout()  # stop being the admin user
         self.assertEqual(res.body['status'], 'success')  # to help debug fails
@@ -251,10 +225,7 @@ class AdminViewsTest(TestCase):
         self.assertFalse(user.has_usable_password())
 
         token = default_token_generator.make_token(user)
-        signup_url = reverse("landing:signup", kwargs={
-            'uidb64': urlsafe_base64_encode(force_bytes(user.pk)),
-            "token": token
-        })
+        signup_url = reverse('landing:signup', kwargs={'uidb64': urlsafe_base64_encode(force_bytes(user.pk)), 'token': token})
 
         # make sure we sent an email to the right address
         # and it contains the signup url
@@ -268,13 +239,11 @@ class AdminViewsTest(TestCase):
         self.assertEqual(res.status_code, 302)
 
         # post the new password
-        password_post = {'new_password1': 'newpassS3',
-                         'new_password2': 'newpassS3'}
+        password_post = {'new_password1': 'newpassS3', 'new_password2': 'newpassS3'}
 
-        set_password_url = reverse("landing:signup", kwargs={
-            'uidb64': urlsafe_base64_encode(force_bytes(user.pk)),
-            "token": 'set-password'
-        })
+        set_password_url = reverse(
+            'landing:signup', kwargs={'uidb64': urlsafe_base64_encode(force_bytes(user.pk)), 'token': 'set-password'}
+        )
         res = self.client.post(set_password_url, data=password_post)
 
         # reload the user
@@ -285,10 +254,7 @@ class AdminViewsTest(TestCase):
         self.assertEqual(user.username, data['email'].lower())
 
         # test that login works
-        resp = self.client.post(
-            reverse('landing:login'),
-            {'email': data['email'], 'password': 'newpassS3'}
-        )
+        resp = self.client.post(reverse('landing:login'), {'email': data['email'], 'password': 'newpassS3'})
         # good logins will have 302 and no content
         user = User.objects.get(pk=user.pk)
         self.assertEqual(resp.status_code, 302)

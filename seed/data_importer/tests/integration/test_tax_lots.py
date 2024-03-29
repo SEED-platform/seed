@@ -1,9 +1,9 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 import copy
 import os.path as osp
 import pathlib
@@ -12,15 +12,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 
 from seed.data_importer import tasks
 from seed.data_importer.tests.util import FAKE_MAPPINGS
-from seed.models import (
-    ASSESSED_RAW,
-    DATA_STATE_MATCHING,
-    MERGE_STATE_MERGED,
-    MERGE_STATE_NEW,
-    MERGE_STATE_UNKNOWN,
-    Column,
-    TaxLotState
-)
+from seed.models import ASSESSED_RAW, DATA_STATE_MATCHING, MERGE_STATE_MERGED, MERGE_STATE_NEW, MERGE_STATE_UNKNOWN, Column, TaxLotState
 from seed.tests.util import DataMappingBaseTestCase
 
 
@@ -32,10 +24,7 @@ class TestProperties(DataMappingBaseTestCase):
         selfvars = self.set_up(ASSESSED_RAW)
         self.user, self.org, self.import_file, self.import_record, self.cycle = selfvars
         filepath = osp.join(osp.dirname(__file__), '..', 'data', filename)
-        self.import_file.file = SimpleUploadedFile(
-            name=filename,
-            content=pathlib.Path(filepath).read_bytes()
-        )
+        self.import_file.file = SimpleUploadedFile(name=filename, content=pathlib.Path(filepath).read_bytes())
         self.import_file.save()
 
         tasks.save_raw_data(self.import_file.pk)
@@ -48,10 +37,7 @@ class TestProperties(DataMappingBaseTestCase):
         self.fake_mappings = copy.copy(FAKE_MAPPINGS['taxlot'])
         _, self.import_file_2 = self.create_import_file(self.user, self.org, self.cycle)
         filepath = osp.join(osp.dirname(__file__), '..', 'data', filename_2)
-        self.import_file_2.file = SimpleUploadedFile(
-            name=filename_2,
-            content=pathlib.Path(filepath).read_bytes()
-        )
+        self.import_file_2.file = SimpleUploadedFile(name=filename_2, content=pathlib.Path(filepath).read_bytes())
         self.import_file_2.save()
 
         tasks.save_raw_data(self.import_file_2.pk)
@@ -80,7 +66,7 @@ class TestProperties(DataMappingBaseTestCase):
             jurisdiction_tax_lot_id='1552813',
             import_file_id=self.import_file,
             data_state__in=[DATA_STATE_MATCHING],
-            merge_state__in=[MERGE_STATE_UNKNOWN, MERGE_STATE_NEW]
+            merge_state__in=[MERGE_STATE_UNKNOWN, MERGE_STATE_NEW],
         ).first()
 
         coparent, count = TaxLotState.coparent(taxlot_state.id)
@@ -95,9 +81,7 @@ class TestProperties(DataMappingBaseTestCase):
     def test_get_history(self):
         # get the taxlot state that was merged to test the history method
         taxlot_state = TaxLotState.objects.filter(
-            jurisdiction_tax_lot_id='1552813',
-            data_state__in=[DATA_STATE_MATCHING],
-            merge_state__in=[MERGE_STATE_MERGED]
+            jurisdiction_tax_lot_id='1552813', data_state__in=[DATA_STATE_MATCHING], merge_state__in=[MERGE_STATE_MERGED]
         ).first()
         self.assertIsNotNone(taxlot_state)
         history, master = taxlot_state.history()

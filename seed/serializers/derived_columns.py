@@ -1,9 +1,9 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 from django.core.exceptions import ValidationError
 from django.db import transaction
 from rest_framework import serializers
@@ -34,10 +34,7 @@ class DerivedColumnSerializer(serializers.ModelSerializer):
                 derived_column = DerivedColumn.objects.create(**validated_data)
 
                 for parameter_data in parameters_data:
-                    DerivedColumnParameter.objects.create(
-                        derived_column=derived_column,
-                        **parameter_data
-                    )
+                    DerivedColumnParameter.objects.create(derived_column=derived_column, **parameter_data)
                 return derived_column
         except ValidationError as e:
             # This validation error is raised when the column name is not unique

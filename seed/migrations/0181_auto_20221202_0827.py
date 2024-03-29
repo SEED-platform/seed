@@ -5,7 +5,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('seed', '0180_remove_property_campus'),
     ]
@@ -18,7 +17,9 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='compliancemetric',
             name='filter_group',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, related_name='filter_group', to='seed.filtergroup'),
+            field=models.ForeignKey(
+                null=True, on_delete=django.db.models.deletion.CASCADE, related_name='filter_group', to='seed.filtergroup'
+            ),
         ),
         migrations.AlterField(
             model_name='compliancemetric',

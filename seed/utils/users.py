@@ -1,14 +1,10 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
-from seed.lib.superperms.orgs.models import (
-    ROLE_MEMBER,
-    ROLE_OWNER,
-    ROLE_VIEWER
-)
+
+from seed.lib.superperms.orgs.models import ROLE_MEMBER, ROLE_OWNER, ROLE_VIEWER
 
 
 def get_js_role(role):

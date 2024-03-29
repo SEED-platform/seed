@@ -1,35 +1,36 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 import re
 
 import usaddress
+
 # from past.builtins import basestring
 from streetaddress import StreetAddressFormatter
 
 
 def _normalize_subaddress_type(subaddress_type):
     subaddress_type = subaddress_type.lower().replace('.', '')
-    map = {
+    subaddress_map = {
         'bldg': 'building',
         'blg': 'building',
     }
-    if subaddress_type in map:
-        return map[subaddress_type]
+    if subaddress_type in subaddress_map:
+        return subaddress_map[subaddress_type]
     return subaddress_type
 
 
 def _normalize_occupancy_type(occupancy_id):
     occupancy_id = occupancy_id.lower().replace('.', '')
-    map = {
+    occupancy_map = {
         'ste': 'suite',
         'suite': 'suite',
     }
-    if occupancy_id in map:
-        return map[occupancy_id]
+    if occupancy_id in occupancy_map:
+        return occupancy_map[occupancy_id]
     return occupancy_id
 
 
@@ -43,7 +44,7 @@ def _normalize_address_direction(direction):
         'northeast': 'ne',
         'northwest': 'nw',
         'southeast': 'se',
-        'southwest': 'sw'
+        'southwest': 'sw',
     }
     if direction in direction_map:
         return direction_map[direction]
@@ -60,7 +61,7 @@ def _normalize_address_post_type(post_type):
     return POST_TYPE_MAP.get(value, value)
 
 
-ADDRESS_NUMBER_RE = re.compile((
+ADDRESS_NUMBER_RE = re.compile(
     r''
     r'(?P<start>[0-9]+)'  # The left part of the range
     r'\s?'  # Optional whitespace before the separator
@@ -68,7 +69,7 @@ ADDRESS_NUMBER_RE = re.compile((
     r'\s?'  # Optional whitespace after the separator
     r'(?<=[\s\\/-])'  # Enforce match of at least one separator char.
     r'(?P<end>[0-9]+)'  # THe right part of the range
-))
+)
 
 
 def _normalize_address_number(address_number):
@@ -84,8 +85,8 @@ def _normalize_address_number(address_number):
     if match:
         # This address number is a range, so normalize it.
         components = match.groupdict()
-        range_start = components['start'].lstrip("0")
-        range_end = components['end'].lstrip("0")
+        range_start = components['start'].lstrip('0')
+        range_end = components['end'].lstrip('0')
         if len(range_end) < len(range_start):
             # The end range value is omitting a common prefix.  Add it back.
             prefix_length = len(range_start) - len(range_end)
@@ -93,7 +94,7 @@ def _normalize_address_number(address_number):
         return '-'.join([range_start, range_end])
 
     # some addresses have leading zeros, strip them here
-    return address_number.lstrip("0")
+    return address_number.lstrip('0')
 
 
 def normalize_address_str(address_val):
@@ -120,7 +121,7 @@ def normalize_address_str(address_val):
     # Do some string replacements to remove odd characters that we come across
     replacements = {
         '\xef\xbf\xbd': '',
-        '\uFFFD': '',
+        '\ufffd': '',
     }
     for k, v in replacements.items():
         address_val = address_val.replace(k, v)
@@ -140,24 +141,20 @@ def normalize_address_str(address_val):
         normalized_address = ''
 
         if 'AddressNumber' in addr and addr['AddressNumber'] is not None:
-            normalized_address = _normalize_address_number(
-                addr['AddressNumber'])
+            normalized_address = _normalize_address_number(addr['AddressNumber'])
 
         if 'StreetNamePreDirectional' in addr and addr['StreetNamePreDirectional'] is not None:
-            normalized_address = normalized_address + ' ' + _normalize_address_direction(
-                addr['StreetNamePreDirectional'])
+            normalized_address = normalized_address + ' ' + _normalize_address_direction(addr['StreetNamePreDirectional'])
 
         if 'StreetName' in addr and addr['StreetName'] is not None:
             normalized_address = normalized_address + ' ' + addr['StreetName']
 
         if 'StreetNamePostType' in addr and addr['StreetNamePostType'] is not None:
             # remove any periods from abbreviations
-            normalized_address = normalized_address + ' ' + _normalize_address_post_type(
-                addr['StreetNamePostType'])
+            normalized_address = normalized_address + ' ' + _normalize_address_post_type(addr['StreetNamePostType'])
 
         if 'StreetNamePostDirectional' in addr and addr['StreetNamePostDirectional'] is not None:
-            normalized_address = normalized_address + ' ' + _normalize_address_direction(
-                addr['StreetNamePostDirectional'])
+            normalized_address = normalized_address + ' ' + _normalize_address_direction(addr['StreetNamePostDirectional'])
 
         if 'SubaddressType' in addr and addr['SubaddressType'] is not None:
             normalized_address = normalized_address + ' ' + _normalize_subaddress_type(addr['SubaddressType'])

@@ -1,9 +1,9 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 from django.db import models
 
 from seed.models import Column, ColumnListProfile
@@ -18,4 +18,4 @@ class ColumnListProfileColumn(models.Model):
     pinned = models.BooleanField(default=False)
 
     def __str__(self):
-        return f"{self.column_list_profile.name} {self.order} {self.pinned}"
+        return f'{self.column_list_profile.name} {self.order} {self.pinned}'

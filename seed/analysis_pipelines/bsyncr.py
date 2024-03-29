@@ -1,9 +1,9 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 import logging
 import pathlib
 from tempfile import TemporaryDirectory, TemporaryFile
@@ -24,17 +24,10 @@ from seed.analysis_pipelines.pipeline import (
     AnalysisPipelineException,
     StopAnalysisTaskChain,
     analysis_pipeline_task,
-    task_create_analysis_property_views
+    task_create_analysis_property_views,
 )
 from seed.building_sync.mappings import BUILDINGSYNC_URI, NAMESPACES
-from seed.models import (
-    Analysis,
-    AnalysisInputFile,
-    AnalysisMessage,
-    AnalysisOutputFile,
-    AnalysisPropertyView,
-    Meter
-)
+from seed.models import Analysis, AnalysisInputFile, AnalysisMessage, AnalysisOutputFile, AnalysisPropertyView, Meter
 
 logger = logging.getLogger(__name__)
 
@@ -64,8 +57,10 @@ def _validate_bsyncr_config(analysis):
 
     model_type = config['model_type']
     if model_type not in BSYNCR_MODEL_TYPE_MAP:
-        return [f'Analysis configuration.model_type "{model_type}" is invalid. '
-                f'Must be one of the following: {", ".join(BSYNCR_MODEL_TYPE_MAP.keys())}']
+        return [
+            f'Analysis configuration.model_type "{model_type}" is invalid. '
+            f'Must be one of the following: {", ".join(BSYNCR_MODEL_TYPE_MAP.keys())}'
+        ]
 
     return []
 
@@ -100,7 +95,7 @@ class BsyncrPipeline(AnalysisPipeline):
         chain(
             task_create_analysis_property_views.si(self._analysis_id, property_view_ids),
             _prepare_all_properties.s(self._analysis_id),
-            _finish_preparation.si(self._analysis_id, start_analysis)
+            _finish_preparation.si(self._analysis_id, start_analysis),
         ).apply_async()
 
     def _start_analysis(self):
@@ -139,14 +134,10 @@ def _prepare_all_properties(self, analysis_view_ids_by_property_view_id, analysi
     analysis_property_views = AnalysisPropertyView.objects.filter(id__in=analysis_view_ids_by_property_view_id.values())
     input_file_paths = []
     for analysis_property_view in analysis_property_views:
-        meters = (
-            Meter.objects
-            .annotate(readings_count=Count('meter_readings'))
-            .filter(
-                property=analysis_property_view.property,
-                type__in=[Meter.ELECTRICITY_GRID, Meter.ELECTRICITY_SOLAR, Meter.ELECTRICITY_WIND, Meter.ELECTRICITY_UNKNOWN],
-                readings_count__gte=12,
-            )
+        meters = Meter.objects.annotate(readings_count=Count('meter_readings')).filter(
+            property=analysis_property_view.property,
+            type__in=[Meter.ELECTRICITY_GRID, Meter.ELECTRICITY_SOLAR, Meter.ELECTRICITY_WIND, Meter.ELECTRICITY_UNKNOWN],
+            readings_count__gte=12,
         )
         if meters.count() == 0:
             AnalysisMessage.log_and_create(
@@ -155,7 +146,7 @@ def _prepare_all_properties(self, analysis_view_ids_by_property_view_id, analysi
                 analysis_id=analysis.id,
                 analysis_property_view_id=analysis_property_view.id,
                 user_message='Property not used in analysis: Property has no linked electricity meters with 12 or more readings',
-                debug_message=''
+                debug_message='',
             )
             continue
 
@@ -175,10 +166,7 @@ def _prepare_all_properties(self, analysis_view_ids_by_property_view_id, analysi
                 )
             continue
 
-        analysis_input_file = AnalysisInputFile(
-            content_type=AnalysisInputFile.BUILDINGSYNC,
-            analysis=analysis
-        )
+        analysis_input_file = AnalysisInputFile(content_type=AnalysisInputFile.BUILDINGSYNC, analysis=analysis)
         analysis_input_file.file.save(f'{analysis_property_view.id}.xml', ContentFile(bsync_doc))
         analysis_input_file.clean()
         analysis_input_file.save()
@@ -237,81 +225,72 @@ def _build_bsyncr_input(analysis_property_view, meter):
         'xsi': XSI_URI,
     }
     nsmap.update(NAMESPACES)
-    E = ElementMaker(
-        namespace=BUILDINGSYNC_URI,
-        nsmap=nsmap
-    )
+    E = ElementMaker(namespace=BUILDINGSYNC_URI, nsmap=nsmap)
 
     elec_resource_id = 'Resource-Elec'
-    doc = (
-        E.BuildingSync(
-            {
-                etree.QName(XSI_URI, 'schemaLocation'): 'http://buildingsync.net/schemas/bedes-auc/2019 https://raw.github.com/BuildingSync/schema/v2.2.0/BuildingSync.xsd',
-                'version': '2.2.0'
-            },
-            E.Facilities(
-                E.Facility(
-                    {'ID': 'Facility-1'},
-                    E.Sites(
-                        E.Site(
-                            {'ID': 'Site-1'},
-                            E.Buildings(
-                                E.Building(
-                                    {'ID': 'Building-1'},
-                                    E.PremisesName('My-Building'),
-                                    E.PremisesIdentifiers(
-                                        E.PremisesIdentifier(
-                                            E.IdentifierLabel('Custom'),
-                                            E.IdentifierCustomName(PREMISES_ID_NAME),
-                                            E.IdentifierValue(str(analysis_property_view.id)),
-                                        )
-                                    ),
-                                    E.Longitude(str(analysis_property_view.property_state.longitude)),
-                                    E.Latitude(str(analysis_property_view.property_state.latitude)),
-                                )
-                            )
-                        )
-                    ),
-                    E.Reports(
-                        E.Report(
-                            {'ID': 'Report-1'},
-                            E.Scenarios(
-                                E.Scenario(
-                                    {'ID': 'Scenario-Measured'},
-                                    E.ScenarioType(
-                                        E.CurrentBuilding(
-                                            E.CalculationMethod(
-                                                E.Measured()
-                                            )
-                                        )
-                                    ),
-                                    E.ResourceUses(
-                                        E.ResourceUse(
-                                            {'ID': elec_resource_id},
-                                            E.EnergyResource('Electricity'),
-                                            E.ResourceUnits('kWh'),
-                                            E.EndUse('All end uses')
-                                        )
-                                    ),
-                                    E.TimeSeriesData(
-                                        *[
-                                            E.TimeSeries(
-                                                {'ID': f'TimeSeries-{i}'},
-                                                E.StartTimestamp(reading.start_time.isoformat()),
-                                                E.IntervalFrequency('Month'),
-                                                E.IntervalReading(str(reading.reading)),
-                                                E.ResourceUseID({'IDref': elec_resource_id}),
-                                            )
-                                            for i, reading in enumerate(meter.meter_readings.all())
-                                        ]
+    doc = E.BuildingSync(
+        {
+            etree.QName(
+                XSI_URI, 'schemaLocation'
+            ): 'http://buildingsync.net/schemas/bedes-auc/2019 https://raw.github.com/BuildingSync/schema/v2.2.0/BuildingSync.xsd',
+            'version': '2.2.0',
+        },
+        E.Facilities(
+            E.Facility(
+                {'ID': 'Facility-1'},
+                E.Sites(
+                    E.Site(
+                        {'ID': 'Site-1'},
+                        E.Buildings(
+                            E.Building(
+                                {'ID': 'Building-1'},
+                                E.PremisesName('My-Building'),
+                                E.PremisesIdentifiers(
+                                    E.PremisesIdentifier(
+                                        E.IdentifierLabel('Custom'),
+                                        E.IdentifierCustomName(PREMISES_ID_NAME),
+                                        E.IdentifierValue(str(analysis_property_view.id)),
                                     )
-                                )
+                                ),
+                                E.Longitude(str(analysis_property_view.property_state.longitude)),
+                                E.Latitude(str(analysis_property_view.property_state.latitude)),
                             )
-                        )
+                        ),
                     )
-                )
+                ),
+                E.Reports(
+                    E.Report(
+                        {'ID': 'Report-1'},
+                        E.Scenarios(
+                            E.Scenario(
+                                {'ID': 'Scenario-Measured'},
+                                E.ScenarioType(E.CurrentBuilding(E.CalculationMethod(E.Measured()))),
+                                E.ResourceUses(
+                                    E.ResourceUse(
+                                        {'ID': elec_resource_id},
+                                        E.EnergyResource('Electricity'),
+                                        E.ResourceUnits('kWh'),
+                                        E.EndUse('All end uses'),
+                                    )
+                                ),
+                                E.TimeSeriesData(
+                                    *[
+                                        E.TimeSeries(
+                                            {'ID': f'TimeSeries-{i}'},
+                                            E.StartTimestamp(reading.start_time.isoformat()),
+                                            E.IntervalFrequency('Month'),
+                                            E.IntervalReading(str(reading.reading)),
+                                            E.ResourceUseID({'IDref': elec_resource_id}),
+                                        )
+                                        for i, reading in enumerate(meter.meter_readings.all())
+                                    ]
+                                ),
+                            )
+                        ),
+                    )
+                ),
             )
-        )
+        ),
     )
 
     return etree.tostring(doc, pretty_print=True), []
@@ -330,9 +309,7 @@ def _parse_analysis_property_view_id(filepath):
 @shared_task(bind=True)
 @analysis_pipeline_task(Analysis.QUEUED)
 def _start_analysis(self, analysis_id):
-    """Start bsyncr analysis by making requests to the service
-
-    """
+    """Start bsyncr analysis by making requests to the service"""
     pipeline = BsyncrPipeline(analysis_id)
     progress_data = pipeline.set_analysis_status_to_running()
     progress_data.step('Sending requests to bsyncr service')
@@ -428,6 +405,7 @@ def _parse_bsyncr_results(filepath):
     :param filepath: str
     :returns: dict
     """
+
     def elem2dict(node):
         """
         Convert an lxml.etree node tree into a dict.
@@ -461,9 +439,7 @@ def _bsyncr_service_request(file_, model_type):
     :param model_type: str
     :returns: requests.Response
     """
-    files = [
-        ('file', file_)
-    ]
+    files = [('file', file_)]
 
     return requests.request(
         method='POST',

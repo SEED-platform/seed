@@ -1,9 +1,9 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 import copy
 import csv
 import logging
@@ -40,18 +40,13 @@ class ColumnCastException(Exception):
 
 class Column(models.Model):
     """The name of a column for a given organization."""
+
     SHARED_NONE = 0
     SHARED_PUBLIC = 1
 
-    SHARED_FIELD_TYPES = (
-        (SHARED_NONE, 'None'),
-        (SHARED_PUBLIC, 'Public')
-    )
+    SHARED_FIELD_TYPES = ((SHARED_NONE, 'None'), (SHARED_PUBLIC, 'Public'))
 
-    PINNED_COLUMNS = [
-        ('PropertyState', 'pm_property_id'),
-        ('TaxLotState', 'jurisdiction_tax_lot_id')
-    ]
+    PINNED_COLUMNS = [('PropertyState', 'pm_property_id'), ('TaxLotState', 'jurisdiction_tax_lot_id')]
 
     # Do not return these columns to the front end -- when using the tax_lot_properties
     # get_related method.
@@ -88,10 +83,7 @@ class Column(models.Model):
 
     COLUMN_MERGE_FAVOR_NEW = 0
     COLUMN_MERGE_FAVOR_EXISTING = 1
-    COLUMN_MERGE_PROTECTION = [
-        (COLUMN_MERGE_FAVOR_NEW, 'Favor New'),
-        (COLUMN_MERGE_FAVOR_EXISTING, 'Favor Existing')
-    ]
+    COLUMN_MERGE_PROTECTION = [(COLUMN_MERGE_FAVOR_NEW, 'Favor New'), (COLUMN_MERGE_FAVOR_EXISTING, 'Favor Existing')]
 
     # These fields are excluded from being returned to the front end via the API and the
     # Column.retrieve_all method. Note that not all the endpoints are respecting this at the moment.
@@ -205,190 +197,221 @@ class Column(models.Model):
             'display_name': 'PM Property ID',
             'column_description': 'PM Property ID',
             'data_type': 'string',
-        }, {
+        },
+        {
             'column_name': 'pm_parent_property_id',
             'table_name': 'PropertyState',
             'display_name': 'PM Parent Property ID',
             'column_description': 'PM Parent Property ID',
             'data_type': 'string',
-        }, {
+        },
+        {
             'column_name': 'jurisdiction_tax_lot_id',
             'table_name': 'TaxLotState',
             'display_name': 'Jurisdiction Tax Lot ID',
             'column_description': 'Jurisdiction Tax Lot ID',
             'data_type': 'string',
-        }, {
+        },
+        {
             'column_name': 'jurisdiction_property_id',
             'table_name': 'PropertyState',
             'display_name': 'Jurisdiction Property ID',
             'column_description': 'Jurisdiction Property ID',
             'data_type': 'string',
-        }, {
+        },
+        {
             'column_name': 'ubid',
             'table_name': 'TaxLotState',
             'display_name': 'UBID',
             'column_description': 'UBID',
             'data_type': 'string',
-        }, {
+        },
+        {
             'column_name': 'ubid',
             'table_name': 'PropertyState',
             'display_name': 'UBID',
             'column_description': 'UBID',
             'data_type': 'string',
-        }, {
+        },
+        {
             'column_name': 'custom_id_1',
             'table_name': 'PropertyState',
             'display_name': 'Custom ID 1',
             'column_description': 'Custom ID 1',
             'data_type': 'string',
-        }, {
+        },
+        {
             'column_name': 'custom_id_1',
             'table_name': 'TaxLotState',
             'display_name': 'Custom ID 1',
             'column_description': 'Custom ID 1',
             'data_type': 'string',
-        }, {
+        },
+        {
             'column_name': 'audit_template_building_id',
             'table_name': 'PropertyState',
             'display_name': 'Audit Template Building ID',
             'column_description': 'Audit Template Building ID',
             'data_type': 'string',
-        }, {
+        },
+        {
             'column_name': 'address_line_1',
             'table_name': 'PropertyState',
             'display_name': 'Address Line 1',
             'column_description': 'Address Line 1',
             'data_type': 'string',
-        }, {
+        },
+        {
             'column_name': 'address_line_1',
             'table_name': 'TaxLotState',
             'display_name': 'Address Line 1',
             'column_description': 'Address Line 1',
             'data_type': 'string',
-        }, {
+        },
+        {
             'column_name': 'address_line_2',
             'table_name': 'PropertyState',
             'display_name': 'Address Line 2',
             'column_description': 'Address Line 2',
             'data_type': 'string',
-        }, {
+        },
+        {
             'column_name': 'address_line_2',
             'table_name': 'TaxLotState',
             'display_name': 'Address Line 2',
             'column_description': 'Address Line 2',
             'data_type': 'string',
-        }, {
+        },
+        {
             'column_name': 'city',
             'table_name': 'PropertyState',
             'display_name': 'City',
             'column_description': 'City',
             'data_type': 'string',
-        }, {
+        },
+        {
             'column_name': 'city',
             'table_name': 'TaxLotState',
             'display_name': 'City',
             'column_description': 'City',
             'data_type': 'string',
-        }, {
+        },
+        {
             'column_name': 'state',
             'table_name': 'PropertyState',
             'display_name': 'State',
             'column_description': 'State',
             'data_type': 'string',
-        }, {
+        },
+        {
             'column_name': 'state',
             'table_name': 'TaxLotState',
             'display_name': 'State',
             'column_description': 'State',
             'data_type': 'string',
-        }, {
+        },
+        {
             # This should never be mapped to!
             'column_name': 'normalized_address',
             'table_name': 'PropertyState',
             'display_name': 'Normalized Address',
             'column_description': 'Normalized Address',
             'data_type': 'string',
-        }, {
+        },
+        {
             # This should never be mapped to!
             'column_name': 'normalized_address',
             'table_name': 'TaxLotState',
             'display_name': 'Normalized Address',
             'column_description': 'Normalized Address',
             'data_type': 'string',
-        }, {
+        },
+        {
             'column_name': 'postal_code',
             'table_name': 'PropertyState',
             'display_name': 'Postal Code',
             'column_description': 'Postal Code',
             'data_type': 'string',
-        }, {
+        },
+        {
             'column_name': 'postal_code',
             'table_name': 'TaxLotState',
             'display_name': 'Postal Code',
             'column_description': 'Postal Code',
             'data_type': 'string',
-        }, {
+        },
+        {
             # This field should never be mapped to!
             'column_name': 'lot_number',
             'table_name': 'PropertyState',
             'display_name': 'Associated Tax Lot ID',
             'column_description': 'Associated Tax Lot ID',
             'data_type': 'string',
-        }, {
+        },
+        {
             'column_name': 'property_name',
             'table_name': 'PropertyState',
             'display_name': 'Property Name',
             'column_description': 'Property Name',
             'data_type': 'string',
-        }, {
+        },
+        {
             'column_name': 'latitude',
             'table_name': 'PropertyState',
             'display_name': 'Latitude',
             'column_description': 'Latitude',
             'data_type': 'number',
-        }, {
+        },
+        {
             'column_name': 'longitude',
             'table_name': 'PropertyState',
             'display_name': 'Longitude',
             'column_description': 'Longitude',
             'data_type': 'number',
-        }, {
+        },
+        {
             'column_name': 'latitude',
             'table_name': 'TaxLotState',
             'display_name': 'Latitude',
             'column_description': 'Latitude',
             'data_type': 'number',
-        }, {
+        },
+        {
             'column_name': 'longitude',
             'table_name': 'TaxLotState',
             'display_name': 'Longitude',
             'column_description': 'Longitude',
             'data_type': 'number',
-        }, {
+        },
+        {
             'column_name': 'geocoding_confidence',
             'table_name': 'PropertyState',
             'display_name': 'Geocoding Confidence',
             'column_description': 'Geocoding Confidence',
             'data_type': 'string',
-        }, {
+        },
+        {
             'column_name': 'geocoding_confidence',
             'table_name': 'TaxLotState',
             'display_name': 'Geocoding Confidence',
             'column_description': 'Geocoding Confidence',
             'data_type': 'string',
-        }, {
+        },
+        {
             'column_name': 'property_footprint',
             'table_name': 'PropertyState',
             'display_name': 'Property Footprint',
             'column_description': 'Property Footprint',
             'data_type': 'geometry',
-        }, {
+        },
+        {
             'column_name': 'taxlot_footprint',
             'table_name': 'TaxLotState',
             'display_name': 'Tax Lot Footprint',
             'column_description': 'Tax Lot Footprint',
             'data_type': 'geometry',
-        }, {
+        },
+        {
             'column_name': 'updated',
             'table_name': 'PropertyState',
             'display_name': 'Updated',
@@ -396,7 +419,8 @@ class Column(models.Model):
             'data_type': 'datetime',
             # 'type': 'date',
             # 'cellFilter': 'date:\'yyyy-MM-dd h:mm a\'',
-        }, {
+        },
+        {
             'column_name': 'created',
             'table_name': 'PropertyState',
             'display_name': 'Created',
@@ -404,7 +428,8 @@ class Column(models.Model):
             'data_type': 'datetime',
             # 'type': 'date',
             # 'cellFilter': 'date:\'yyyy-MM-dd h:mm a\'',
-        }, {
+        },
+        {
             'column_name': 'updated',
             'table_name': 'TaxLotState',
             'display_name': 'Updated',
@@ -412,7 +437,8 @@ class Column(models.Model):
             'data_type': 'datetime',
             # 'type': 'date',
             # 'cellFilter': 'date:\'yyyy-MM-dd h:mm a\'',
-        }, {
+        },
+        {
             'column_name': 'created',
             'table_name': 'TaxLotState',
             'display_name': 'Created',
@@ -420,77 +446,89 @@ class Column(models.Model):
             'data_type': 'datetime',
             # 'type': 'date',
             # 'cellFilter': 'date:\'yyyy-MM-dd h:mm a\'',
-        }, {
+        },
+        {
             'column_name': 'gross_floor_area',
             'table_name': 'PropertyState',
             'display_name': 'Gross Floor Area',
             'column_description': 'Gross Floor Area',
             'data_type': 'area',
             # 'type': 'number',
-        }, {
+        },
+        {
             'column_name': 'use_description',
             'table_name': 'PropertyState',
             'display_name': 'Use Description',
             'column_description': 'Use Description',
             'data_type': 'string',
-        }, {
+        },
+        {
             'column_name': 'energy_score',
             'table_name': 'PropertyState',
             'display_name': 'ENERGY STAR Score',
             'column_description': 'ENERGY STAR Score',
             'data_type': 'integer',
             # 'type': 'number',
-        }, {
+        },
+        {
             'column_name': 'property_notes',
             'table_name': 'PropertyState',
             'display_name': 'Property Notes',
             'column_description': 'Property Notes',
             'data_type': 'string',
-        }, {
+        },
+        {
             'column_name': 'property_type',
             'table_name': 'PropertyState',
             'display_name': 'Property Type',
             'column_description': 'Property Type',
             'data_type': 'string',
-        }, {
+        },
+        {
             'column_name': 'year_ending',
             'table_name': 'PropertyState',
             'display_name': 'Year Ending',
             'column_description': 'Year Ending',
             'data_type': 'date',
-        }, {
+        },
+        {
             'column_name': 'owner',
             'table_name': 'PropertyState',
             'display_name': 'Owner',
             'column_description': 'Owner',
             'data_type': 'string',
-        }, {
+        },
+        {
             'column_name': 'owner_email',
             'table_name': 'PropertyState',
             'display_name': 'Owner Email',
             'column_description': 'Owner Email',
             'data_type': 'string',
-        }, {
+        },
+        {
             'column_name': 'owner_telephone',
             'table_name': 'PropertyState',
             'display_name': 'Owner Telephone',
             'column_description': 'Owner Telephone',
             'data_type': 'string',
-        }, {
+        },
+        {
             'column_name': 'building_count',
             'table_name': 'PropertyState',
             'display_name': 'Building Count',
             'column_description': 'Building Count',
             'data_type': 'integer',
             # 'type': 'number',
-        }, {
+        },
+        {
             'column_name': 'year_built',
             'table_name': 'PropertyState',
             'display_name': 'Year Built',
             'column_description': 'Year Built',
             'data_type': 'integer',
             # 'type': 'number',
-        }, {
+        },
+        {
             'column_name': 'recent_sale_date',
             'table_name': 'PropertyState',
             'display_name': 'Recent Sale Date',
@@ -498,7 +536,8 @@ class Column(models.Model):
             'data_type': 'datetime',
             # 'type': 'date',
             # 'cellFilter': 'date:\'yyyy-MM-dd h:mm a\'',
-        }, {
+        },
+        {
             'column_name': 'conditioned_floor_area',
             'table_name': 'PropertyState',
             'display_name': 'Conditioned Floor Area',
@@ -506,38 +545,44 @@ class Column(models.Model):
             'data_type': 'area',
             # 'type': 'number',
             # 'dbField': True,
-        }, {
+        },
+        {
             'column_name': 'occupied_floor_area',
             'table_name': 'PropertyState',
             'display_name': 'Occupied Floor Area',
             'column_description': 'Occupied Floor Area',
             'data_type': 'area',
             # 'type': 'number',
-        }, {
+        },
+        {
             'column_name': 'owner_address',
             'table_name': 'PropertyState',
             'display_name': 'Owner Address',
             'column_description': 'Owner Address',
             'data_type': 'string',
-        }, {
+        },
+        {
             'column_name': 'owner_city_state',
             'table_name': 'PropertyState',
             'display_name': 'Owner City/State',
             'column_description': 'Owner City/State',
             'data_type': 'string',
-        }, {
+        },
+        {
             'column_name': 'owner_postal_code',
             'table_name': 'PropertyState',
             'display_name': 'Owner Postal Code',
             'column_description': 'Owner Postal Code',
             'data_type': 'string',
-        }, {
+        },
+        {
             'column_name': 'home_energy_score_id',
             'table_name': 'PropertyState',
             'display_name': 'Home Energy Score ID',
             'column_description': 'Home Energy Score ID',
             'data_type': 'string',
-        }, {
+        },
+        {
             'column_name': 'generation_date',
             'table_name': 'PropertyState',
             'display_name': 'PM Generation Date',
@@ -545,7 +590,8 @@ class Column(models.Model):
             'data_type': 'datetime',
             # 'type': 'date',
             # 'cellFilter': 'date:\'yyyy-MM-dd h:mm a\'',
-        }, {
+        },
+        {
             'column_name': 'release_date',
             'table_name': 'PropertyState',
             'display_name': 'PM Release Date',
@@ -553,122 +599,140 @@ class Column(models.Model):
             'data_type': 'datetime',
             # 'type': 'date',
             # 'cellFilter': 'date:\'yyyy-MM-dd h:mm a\'',
-        }, {
+        },
+        {
             'column_name': 'site_eui',
             'table_name': 'PropertyState',
             'display_name': 'Site EUI',
             'column_description': 'Site EUI',
             'data_type': 'eui',
             # 'type': 'number',
-        }, {
+        },
+        {
             'column_name': 'site_eui_weather_normalized',
             'table_name': 'PropertyState',
             'display_name': 'Site EUI Weather Normalized',
             'column_description': 'Site EUI Weather Normalized',
             'data_type': 'eui',
             # 'type': 'number',
-        }, {
+        },
+        {
             'column_name': 'site_eui_modeled',
             'table_name': 'PropertyState',
             'display_name': 'Site EUI Modeled',
             'column_description': 'Site EUI Modeled',
             'data_type': 'eui',
             # 'type': 'number',
-        }, {
+        },
+        {
             'column_name': 'source_eui',
             'table_name': 'PropertyState',
             'display_name': 'Source EUI',
             'column_description': 'Source EUI',
             'data_type': 'eui',
             # 'type': 'number',
-        }, {
+        },
+        {
             'column_name': 'source_eui_weather_normalized',
             'table_name': 'PropertyState',
             'display_name': 'Source EUI Weather Normalized',
             'column_description': 'Source EUI Weather Normalized',
             'data_type': 'eui',
             # 'type': 'number',
-        }, {
+        },
+        {
             'column_name': 'source_eui_modeled',
             'table_name': 'PropertyState',
             'display_name': 'Source EUI Modeled',
             'column_description': 'Source EUI Modeled',
             'data_type': 'eui',
             # 'type': 'number',
-        }, {
+        },
+        {
             'column_name': 'energy_alerts',
             'table_name': 'PropertyState',
             'display_name': 'Energy Alerts',
             'column_description': 'Energy Alerts',
             'data_type': 'string',
-        }, {
+        },
+        {
             'column_name': 'space_alerts',
             'table_name': 'PropertyState',
             'display_name': 'Space Alerts',
             'column_description': 'Space Alerts',
             'data_type': 'string',
-        }, {
+        },
+        {
             'column_name': 'building_certification',
             'table_name': 'PropertyState',
             'display_name': 'Building Certification',
             'column_description': 'Building Certification',
             'data_type': 'string',
-        }, {
+        },
+        {
             'column_name': 'number_properties',
             'table_name': 'TaxLotState',
             'display_name': 'Number Properties',
             'column_description': 'Number Properties',
             'data_type': 'integer',
             # 'type': 'number',
-        }, {
+        },
+        {
             'column_name': 'block_number',
             'table_name': 'TaxLotState',
             'display_name': 'Block Number',
             'column_description': 'Block Number',
             'data_type': 'string',
-        }, {
+        },
+        {
             'column_name': 'district',
             'table_name': 'TaxLotState',
             'display_name': 'District',
             'column_description': 'District',
             'data_type': 'string',
-        }, {
+        },
+        {
             'column_name': 'egrid_subregion_code',
             'table_name': 'PropertyState',
             'display_name': 'eGRID Subregion Code',
             'column_description': 'eGRID Subregion Code',
             'data_type': 'string',
-        }, {
+        },
+        {
             'column_name': 'total_ghg_emissions',
             'table_name': 'PropertyState',
             'display_name': 'Total GHG Emissions',
             'column_description': 'Total GHG Emissions',
             'data_type': 'ghg',
-        }, {
+        },
+        {
             'column_name': 'total_marginal_ghg_emissions',
             'table_name': 'PropertyState',
             'display_name': 'Total Marginal GHG Emissions',
             'column_description': 'Total Marginal GHG Emissions',
             'data_type': 'ghg',
-        }, {
+        },
+        {
             'column_name': 'total_ghg_emissions_intensity',
             'table_name': 'PropertyState',
             'display_name': 'Total GHG Emissions Intensity',
             'column_description': 'Total GHG Emissions Intensity',
             'data_type': 'ghg_intensity',
-        }, {
+        },
+        {
             'column_name': 'total_marginal_ghg_emissions_intensity',
             'table_name': 'PropertyState',
             'display_name': 'Total Marginal GHG Emissions Intensity',
             'column_description': 'Total Marginal GHG Emissions Intensity',
             'data_type': 'ghg_intensity',
-        }, {
+        },
+        {
             'column_name': 'property_timezone',
             'table_name': 'PropertyState',
             'display_name': 'Property Time Zone',
             'column_description': 'Time zone of the property',
             'data_type': 'string',
-        }
+        },
     ]
     organization = models.ForeignKey(SuperOrganization, on_delete=models.CASCADE, blank=True, null=True)
     column_name = models.CharField(max_length=512, db_index=True)
@@ -698,8 +762,7 @@ class Column(models.Model):
 
     # By default, when two records are merge the new data will take precedence over the existing
     # data, however, the user can override this on a column-by-column basis.
-    merge_protection = models.IntegerField(choices=COLUMN_MERGE_PROTECTION,
-                                           default=COLUMN_MERGE_FAVOR_NEW)
+    merge_protection = models.IntegerField(choices=COLUMN_MERGE_PROTECTION, default=COLUMN_MERGE_FAVOR_NEW)
 
     recognize_empty = models.BooleanField(default=False)
 
@@ -713,11 +776,11 @@ class Column(models.Model):
             # table_name (property or tax lot), if it is extra_data. Note that this may require some
             # database cleanup because older organizations might have imported data before the `units_pint`
             # column existed and there will be duplicates.
-            models.UniqueConstraint(fields=['organization', 'column_name', 'table_name', 'is_extra_data'], name='unique_column_name')
+            models.UniqueConstraint(fields=['organization', 'column_name', 'table_name', 'is_extra_data'], name='unique_column_name'),
         ]
 
     def __str__(self):
-        return '{} - {}:{}'.format(self.pk, self.table_name, self.column_name)
+        return f'{self.pk} - {self.table_name}:{self.column_name}'
 
     def clean(self):
         if self.derived_column:
@@ -732,9 +795,13 @@ class Column(models.Model):
 
             if not found:
                 raise ValidationError(
-                    {'is_extra_data': _(
-                        'Column \'%s\':\'%s\' is not a field in the database and not marked as extra data. Mark as extra data to save column.') % (
-                        self.table_name, self.column_name)})
+                    {
+                        'is_extra_data': _(
+                            "Column '%s':'%s' is not a field in the database and not marked as extra data. Mark as extra data to save column."
+                        )
+                        % (self.table_name, self.column_name)
+                    }
+                )
 
     def cast(self, value: Any) -> Any:
         """Cast the value to the correct type for the column.
@@ -768,12 +835,11 @@ class Column(models.Model):
 
         from seed.models.properties import PropertyState
         from seed.models.tax_lots import DATA_STATE_MATCHING, TaxLotState
+
         STR_TO_CLASS = {'TaxLotState': TaxLotState, 'PropertyState': PropertyState}
 
         def _serialize_for_extra_data(column_value):
-            if isinstance(column_value, datetime_type):
-                return column_value.isoformat()
-            elif isinstance(column_value, date_type):
+            if isinstance(column_value, (date_type, datetime_type)):
                 return column_value.isoformat()
             elif isinstance(column_value, ureg.Quantity):
                 return column_value.magnitude
@@ -785,15 +851,13 @@ class Column(models.Model):
             return [False, "Column name '%s' is a reserved name. Choose another." % new_column_name]
 
         # Do not allow moving data out of the property based columns
-        if self.column_name in self.EXCLUDED_RENAME_FROM_FIELDS or \
-                self.table_name in ['Property', 'TaxLot']:
+        if self.column_name in self.EXCLUDED_RENAME_FROM_FIELDS or self.table_name in ['Property', 'TaxLot']:
             return [False, "Can't move data out of reserved column '%s'" % self.column_name]
 
         try:
             with transaction.atomic():
                 # check if the new_column already exists
-                new_column = Column.objects.filter(table_name=self.table_name, column_name=new_column_name,
-                                                   organization=self.organization)
+                new_column = Column.objects.filter(table_name=self.table_name, column_name=new_column_name, organization=self.organization)
                 if len(new_column) > 0:
                     if not force:
                         return [False, 'New column already exists, specify overwrite data if desired']
@@ -825,15 +889,12 @@ class Column(models.Model):
                         # unit_pint  # Do not import unit_pint since that only works with db fields
                         import_file=self.import_file,
                         shared_field_type=self.shared_field_type,
-                        merge_protection=self.merge_protection
+                        merge_protection=self.merge_protection,
                     )
 
                 # go through the data and move it to the new field. I'm not sure yet on how long this is
                 # going to take to run, so we may have to move this to a background task
-                orig_data = STR_TO_CLASS[self.table_name].objects.filter(
-                    organization=self.organization,
-                    data_state=DATA_STATE_MATCHING
-                )
+                orig_data = STR_TO_CLASS[self.table_name].objects.filter(organization=self.organization, data_state=DATA_STATE_MATCHING)
                 if new_column.is_extra_data:
                     if self.is_extra_data:
                         for datum in orig_data:
@@ -846,21 +907,26 @@ class Column(models.Model):
                             datum.extra_data[new_column.column_name] = column_value
                             setattr(datum, self.column_name, None)
                             datum.save()
+                elif self.is_extra_data:
+                    for datum in orig_data:
+                        setattr(datum, new_column.column_name, datum.extra_data.get(self.column_name, None))
+                        datum.extra_data.pop(self.column_name, None)
+                        datum.save()
                 else:
-                    if self.is_extra_data:
-                        for datum in orig_data:
-                            setattr(datum, new_column.column_name, datum.extra_data.get(self.column_name, None))
-                            datum.extra_data.pop(self.column_name, None)
-                            datum.save()
-                    else:
-                        for datum in orig_data:
-                            setattr(datum, new_column.column_name, getattr(datum, self.column_name))
-                            setattr(datum, self.column_name, None)
-                            datum.save()
+                    for datum in orig_data:
+                        setattr(datum, new_column.column_name, getattr(datum, self.column_name))
+                        setattr(datum, self.column_name, None)
+                        datum.save()
         except (ValidationError, DataError):
-            return [False, "The column data aren't formatted properly for the new column due to type constraints (e.g., Datatime, Quantities, etc.)."]
+            return [
+                False,
+                "The column data aren't formatted properly for the new column due to type constraints (e.g., Datatime, Quantities, etc.).",
+            ]
         except DimensionalityError:
-            return [False, "The column data can't be converted to the new column due to conversion constraints (e.g., converting square feet to kBtu etc.)."]
+            return [
+                False,
+                "The column data can't be converted to the new column due to conversion constraints (e.g., converting square feet to kBtu etc.).",
+            ]
 
         # Return true if this operation was successful
         return [True, 'Successfully renamed column and moved data']
@@ -889,22 +955,22 @@ class Column(models.Model):
 
         mappings = []
         if os.path.isfile(filename):
-            with open(filename, 'r', newline=None) as csvfile:
+            with open(filename, newline=None) as csvfile:
                 for row in csv.reader(csvfile):
                     data = {
-                        "from_field": row[0],
-                        "to_table_name": row[1],
-                        "to_field": row[2],
+                        'from_field': row[0],
+                        'to_table_name': row[1],
+                        'to_field': row[2],
                         # "to_display_name": row[3],
                         # "to_data_type": row[4],
                         # "to_unit_type": row[5],
                     }
                     mappings.append(data)
         else:
-            raise Exception("Mapping file does not exist: {}".format(filename))
+            raise Exception(f'Mapping file does not exist: {filename}')
 
         if len(mappings) == 0:
-            raise Exception("No mappings in file: {}".format(filename))
+            raise Exception(f'No mappings in file: {filename}')
         else:
             return Column.create_mappings(mappings, organization, user, import_file_id)
 
@@ -980,11 +1046,9 @@ class Column(models.Model):
                 column_mapping.column_mapped.clear()
 
                 # Add all that we got back from the interface back in the M2M rel.
-                [column_mapping.column_raw.add(raw_col) for raw_col in
-                 mapping['from_column_object']]
+                [column_mapping.column_raw.add(raw_col) for raw_col in mapping['from_column_object']]
                 if mapping['to_column_object'] is not None:
-                    [column_mapping.column_mapped.add(dest_col) for dest_col in
-                     mapping['to_column_object']]
+                    [column_mapping.column_mapped.add(dest_col) for dest_col in mapping['to_column_object']]
 
                 column_mapping.user = user
                 column_mapping.save()
@@ -998,11 +1062,12 @@ class Column(models.Model):
                     }
                 )
             else:
-                raise TypeError("Mapping object needs to be of type dict")
+                raise TypeError('Mapping object needs to be of type dict')
 
         # save off the cached mappings into the file id that was passed
         if import_file_id:
             from seed.models import ImportFile
+
             import_file = ImportFile.objects.get(id=import_file_id)
             import_file.save_cached_mapped_columns(cache_column_mapping)
             import_file.save()
@@ -1051,19 +1116,16 @@ class Column(models.Model):
 
         for field in fields:
             new_field = field
-            is_ah_data = any([
-                field['to_field'] == name for name in organization.access_level_names
-            ])
-            is_extra_data = not any([
-                field['to_table_name'] == c['table_name'] and field['to_field'] == c['column_name']
-                for c in Column.DATABASE_COLUMNS
-            ])
+            is_ah_data = any(field['to_field'] == name for name in organization.access_level_names)
+            is_extra_data = not any(
+                field['to_table_name'] == c['table_name'] and field['to_field'] == c['column_name'] for c in Column.DATABASE_COLUMNS
+            )
 
             to_col_params = {
-                "organization": organization,
-                "column_name": field['to_field'],
-                "table_name": '' if is_ah_data else field['to_table_name'],
-                "is_extra_data": is_extra_data,
+                'organization': organization,
+                'column_name': field['to_field'],
+                'table_name': '' if is_ah_data else field['to_table_name'],
+                'is_extra_data': is_extra_data,
             }
             if is_root_user or is_ah_data:
                 to_org_col, _ = Column.objects.get_or_create(**to_col_params)
@@ -1080,7 +1142,7 @@ class Column(models.Model):
                 table_name='',
                 column_name=field['from_field'],
                 is_extra_data=False,  # Column objects representing raw/header rows are NEVER extra data
-                defaults={'units_pint': field.get('from_units', None)}
+                defaults={'units_pint': field.get('from_units', None)},
             )
 
             new_field['to_column_object'] = [to_org_col]
@@ -1106,7 +1168,7 @@ class Column(models.Model):
             # handle the special edge-case where an old organization may have duplicate columns
             # in the database. We should make this a migration in the future and put a validation
             # in the db.
-            for i in range(0, 5):
+            for i in range(5):
                 while True:
                     try:
                         Column.objects.get_or_create(
@@ -1116,29 +1178,30 @@ class Column(models.Model):
                             organization=model_obj.organization,
                         )
                     except Column.MultipleObjectsReturned:
-                        _log.debug(
-                            "Column.MultipleObjectsReturned for {} in save_column_names".format(
-                                key[:511]))
+                        _log.debug(f'Column.MultipleObjectsReturned for {key[:511]} in save_column_names')
 
-                        columns = Column.objects.filter(table_name=model_obj.__class__.__name__,
-                                                        column_name=key[:511],
-                                                        is_extra_data=is_extra_data,
-                                                        organization=model_obj.organization)
+                        columns = Column.objects.filter(
+                            table_name=model_obj.__class__.__name__,
+                            column_name=key[:511],
+                            is_extra_data=is_extra_data,
+                            organization=model_obj.organization,
+                        )
                         for c in columns:
-                            if not ColumnMapping.objects.filter(
-                                    Q(column_raw=c) | Q(column_mapped=c)).exists():
-                                _log.debug("Deleting column object {}".format(c.column_name))
+                            if not ColumnMapping.objects.filter(Q(column_raw=c) | Q(column_mapped=c)).exists():
+                                _log.debug(f'Deleting column object {c.column_name}')
                                 c.delete()
 
                         # Check if there are more than one column still
-                        if Column.objects.filter(
+                        if (
+                            Column.objects.filter(
                                 table_name=model_obj.__class__.__name__,
                                 column_name=key[:511],
                                 is_extra_data=is_extra_data,
-                                organization=model_obj.organization).count() > 1:
-                            raise Exception(
-                                "Could not fix duplicate columns for {}. Contact dev team").format(
-                                key)
+                                organization=model_obj.organization,
+                            ).count()
+                            > 1
+                        ):
+                            raise Exception(f'Could not fix duplicate columns for {key}. Contact dev team')
 
                         continue
 
@@ -1213,7 +1276,7 @@ class Column(models.Model):
             'area': 'float',
             'eui': 'float',
             'ghg': 'float',
-            'ghg_intensity': 'float'
+            'ghg_intensity': 'float',
         }
 
         types = OrderedDict()
@@ -1221,7 +1284,7 @@ class Column(models.Model):
             try:
                 types[c['column_name']] = MAP_TYPES[c['data_type']]
             except KeyError:
-                _log.error("could not find data_type for %s" % c)
+                _log.error('could not find data_type for %s' % c)
                 types[c['column_name']] = ''
 
         return {'types': types}
@@ -1238,9 +1301,14 @@ class Column(models.Model):
         """
 
         result = list(
-            set(list(Column.objects.filter(organization_id=org_id, is_extra_data=False).order_by(
-                'column_name').exclude(
-                table_name='').exclude(table_name=None).values_list('column_name', flat=True))))
+            set(
+                Column.objects.filter(organization_id=org_id, is_extra_data=False)
+                    .order_by('column_name')
+                    .exclude(table_name='')
+                    .exclude(table_name=None)
+                    .values_list('column_name', flat=True)
+            )
+        )
 
         return result
 
@@ -1252,15 +1320,15 @@ class Column(models.Model):
         .. code-block:: python
 
             [
-              ('PropertyState', 'address_line_1'),
-              ('PropertyState', 'address_line_2'),
-              ('PropertyState', 'building_certification'),
-              ('PropertyState', 'building_count'),
-              ('TaxLotState', 'address_line_1'),
-              ('TaxLotState', 'address_line_2'),
-              ('TaxLotState', 'block_number'),
-              ('TaxLotState', 'city'),
-              ('TaxLotState', 'jurisdiction_tax_lot_id'),
+                ('PropertyState', 'address_line_1'),
+                ('PropertyState', 'address_line_2'),
+                ('PropertyState', 'building_certification'),
+                ('PropertyState', 'building_count'),
+                ('TaxLotState', 'address_line_1'),
+                ('TaxLotState', 'address_line_2'),
+                ('TaxLotState', 'block_number'),
+                ('TaxLotState', 'city'),
+                ('TaxLotState', 'jurisdiction_tax_lot_id'),
             ]
 
         :return:list of tuples
@@ -1269,7 +1337,7 @@ class Column(models.Model):
         for d in Column.retrieve_db_fields_from_db_tables():
             result.add((d['table_name'], d['column_name']))
 
-        return list(sorted(result))
+        return sorted(result)
 
     @staticmethod
     def retrieve_db_field_name_for_hash_comparison():
@@ -1286,7 +1354,7 @@ class Column(models.Model):
         for c in columns:
             result.append(c['column_name'])
 
-        return list(sorted(set(result)))
+        return sorted(set(result))
 
     @staticmethod
     def retrieve_db_fields_from_db_tables():
@@ -1297,15 +1365,13 @@ class Column(models.Model):
         :return:
         """
         all_columns = []
-        for f in apps.get_model('seed', 'PropertyState')._meta.fields + \
-                apps.get_model('seed', 'TaxLotState')._meta.fields:
-
+        for f in apps.get_model('seed', 'PropertyState')._meta.fields + apps.get_model('seed', 'TaxLotState')._meta.fields:
             # this remove import_file and others
             if f.get_internal_type() == 'ForeignKey':
                 continue
 
             if f.name not in Column.COLUMN_EXCLUDE_FIELDS:
-                dt = f.get_internal_type() if f.get_internal_type else 'string',
+                dt = (f.get_internal_type() if f.get_internal_type else 'string',)
                 dt = Column.INTERNAL_TYPE_TO_DATA_TYPE[dt[0]]
                 all_columns.append(
                     {
@@ -1327,8 +1393,7 @@ class Column(models.Model):
         """
         from seed.serializers.columns import ColumnSerializer
 
-        columns_db = Column.objects.filter(organization_id=org_id).exclude(table_name='').exclude(
-            table_name=None)
+        columns_db = Column.objects.filter(organization_id=org_id).exclude(table_name='').exclude(table_name=None)
         columns = []
         for c in columns_db:
             if c.column_name in Column.COLUMN_EXCLUDE_FIELDS or c.column_name in Column.EXCLUDED_MAPPING_FIELDS:
@@ -1338,12 +1403,15 @@ class Column(models.Model):
             new_c = ColumnSerializer(c).data
 
             if inventory_type:
-                related = not (inventory_type.lower() in new_c['table_name'].lower())
+                related = inventory_type.lower() not in new_c['table_name'].lower()
                 if related:
                     continue
-                if inventory_type == 'property' and c.column_name in Column.UNMAPPABLE_PROPERTY_FIELDS:
-                    continue
-                elif inventory_type == 'taxlot' and c.column_name in Column.UNMAPPABLE_TAXLOT_FIELDS:
+                if (
+                    inventory_type == 'property'
+                    and c.column_name in Column.UNMAPPABLE_PROPERTY_FIELDS
+                    or inventory_type == 'taxlot'
+                    and c.column_name in Column.UNMAPPABLE_TAXLOT_FIELDS
+                ):
                     continue
 
             new_c['sharedFieldType'] = new_c['shared_field_type']
@@ -1382,7 +1450,7 @@ class Column(models.Model):
         only_used: bool = False,
         include_related: bool = True,
         exclude_derived: bool = False,
-        column_ids: Optional[list[int]] = None
+        column_ids: Optional[list[int]] = None,
     ) -> list[dict]:
         """
         Retrieve all the columns for an organization. This method will query for all the columns in the
@@ -1402,11 +1470,9 @@ class Column(models.Model):
         # table_name. Order extra_data last so that extra data duplicate-checking will happen after
         # processing standard columns
         if column_ids:
-            column_query = Column.objects.filter(organization_id=org_id, id__in=column_ids).exclude(
-                table_name='').exclude(table_name=None)
+            column_query = Column.objects.filter(organization_id=org_id, id__in=column_ids).exclude(table_name='').exclude(table_name=None)
         else:
-            column_query = Column.objects.filter(organization_id=org_id).exclude(
-                table_name='').exclude(table_name=None)
+            column_query = Column.objects.filter(organization_id=org_id).exclude(table_name='').exclude(table_name=None)
         if exclude_derived:
             column_query = column_query.exclude(derived_column__isnull=False)
         columns_db = column_query.order_by('is_extra_data', 'column_name')
@@ -1440,11 +1506,10 @@ class Column(models.Model):
             # Related fields
             new_c['related'] = False
             if inventory_type:
-                new_c['related'] = not (inventory_type.lower() in new_c['table_name'].lower())
+                new_c['related'] = inventory_type.lower() not in new_c['table_name'].lower()
                 if new_c['related']:
                     # if it is related then have the display name show the other table
-                    new_c['display_name'] = new_c['display_name'] + ' (%s)' % INVENTORY_DISPLAY[
-                        new_c['table_name']]
+                    new_c['display_name'] = new_c['display_name'] + ' (%s)' % INVENTORY_DISPLAY[new_c['table_name']]
 
             include_column = True
             if only_used:
@@ -1495,12 +1560,7 @@ class Column(models.Model):
         """
         columns = Column.retrieve_all(org_id, 'property', False)
         # The TaxLot and Property are not used in merging, they are just here to prevent errors
-        priorities = {
-            'PropertyState': {'extra_data': {}},
-            'TaxLotState': {'extra_data': {}},
-            'Property': {},
-            'TaxLot': {}
-        }
+        priorities = {'PropertyState': {'extra_data': {}}, 'TaxLotState': {'extra_data': {}}, 'Property': {}, 'TaxLot': {}}
         for column in columns:
             tn = column['table_name']
             cn = column['column_name']
@@ -1519,15 +1579,15 @@ class Column(models.Model):
         .. code-block:: python
 
             [
-              ('PropertyState', 'address_line_1'),
-              ('PropertyState', 'address_line_2'),
-              ('PropertyState', 'building_certification'),
-              ('PropertyState', 'building_count'),
-              ('TaxLotState', 'address_line_1'),
-              ('TaxLotState', 'address_line_2'),
-              ('TaxLotState', 'block_number'),
-              ('TaxLotState', 'city'),
-              ('TaxLotState', 'jurisdiction_tax_lot_id'),
+                ('PropertyState', 'address_line_1'),
+                ('PropertyState', 'address_line_2'),
+                ('PropertyState', 'building_certification'),
+                ('PropertyState', 'building_count'),
+                ('TaxLotState', 'address_line_1'),
+                ('TaxLotState', 'address_line_2'),
+                ('TaxLotState', 'block_number'),
+                ('TaxLotState', 'city'),
+                ('TaxLotState', 'jurisdiction_tax_lot_id'),
             ]
 
         :param org_id: int, Organization ID
@@ -1550,12 +1610,12 @@ def validate_model(sender, **kwargs):
 
     if instance.display_name is not None and instance.organization is not None:
         if instance.display_name in instance.organization.access_level_names:
-            raise IntegrityError("This display name is already an access level name and cannot be used.")
+            raise IntegrityError('This display name is already an access level name and cannot be used.')
 
     if instance.organization_id:
         org = SuperOrganization.objects.get(pk=instance.organization_id)
         if instance.display_name in org.access_level_names:
-            raise ValidationError("This display name is an organization access level name.")
+            raise ValidationError('This display name is an organization access level name.')
 
 
 pre_save.connect(validate_model, sender=Column)

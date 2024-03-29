@@ -2,6 +2,7 @@
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 import json
 import logging
 from tempfile import NamedTemporaryFile, TemporaryDirectory
@@ -16,7 +17,6 @@ logger = logging.getLogger(__name__)
 
 
 class BETTERClient:
-
     HOST = settings.BETTER_HOST
     API_URL = f'{HOST}/api/v1'
 
@@ -35,7 +35,7 @@ class BETTERClient:
         }
 
         try:
-            response = requests.request("GET", url, headers=headers)
+            response = requests.request('GET', url, headers=headers)
             return response.status_code == 200
         except Exception:
             return False
@@ -52,7 +52,7 @@ class BETTERClient:
         }
 
         try:
-            response = requests.request("GET", url, headers=headers)
+            response = requests.request('GET', url, headers=headers)
             if response.status_code != 200:
                 return None, [f'Expected 200 response from BETTER but got {response.status_code}: {response.content}']
         except Exception as e:
@@ -67,17 +67,14 @@ class BETTERClient:
         :returns: tuple(int, list[str]), portfolio id followed by list of errors
         """
         url = f'{self.API_URL}/portfolios/'
-        data = {
-            'name': name,
-            'portfolio_currency': 'USD'
-        }
+        data = {'name': name, 'portfolio_currency': 'USD'}
         headers = {
             'accept': 'application/json',
             'Authorization': self._token,
         }
 
         try:
-            response = requests.request("POST", url, headers=headers, data=data)
+            response = requests.request('POST', url, headers=headers, data=data)
             if response.status_code == 201:
                 data = response.json()
                 portfolio_id = data['id']
@@ -105,7 +102,7 @@ class BETTERClient:
         }
 
         try:
-            response = requests.request("POST", url, headers=headers, data=data)
+            response = requests.request('POST', url, headers=headers, data=data)
             if response.status_code == 201:
                 data = response.json()
                 logger.info(f'CREATED Analysis: {data}')
@@ -132,7 +129,7 @@ class BETTERClient:
         }
 
         try:
-            response = requests.request("GET", url, headers=headers)
+            response = requests.request('GET', url, headers=headers)
             if response.status_code not in [200, 202]:
                 return None, [f'Expected 200 or 202 response from BETTER but got {response.status_code}: {response.content}']
         except Exception as e:
@@ -155,7 +152,7 @@ class BETTERClient:
         }
 
         try:
-            response = requests.request("GET", url, headers=headers)
+            response = requests.request('GET', url, headers=headers)
             if response.status_code != 200:
                 return None, [f'Expected 200 response from BETTER but got {response.status_code}: {response.content}']
         except Exception as e:
@@ -177,7 +174,7 @@ class BETTERClient:
         }
 
         try:
-            response = requests.request("GET", url, headers=headers)
+            response = requests.request('GET', url, headers=headers)
             if response.status_code != 200:
                 return [f'Expected 200 response from BETTER but got {response.status_code}: {response.content}']
         except Exception as e:
@@ -193,13 +190,7 @@ class BETTERClient:
             if errors:
                 raise Exception('; '.join(errors))
 
-            if response['generation_result'] == 'COMPLETE':
-                return True
-            # if portfolio analysis has failed, exit the polling loop.
-            elif response['generation_result'] == 'FAILED':
-                return True
-            else:
-                return False
+            return response['generation_result'] == 'COMPLETE' or response['generation_result'] == 'FAILED'
 
         POLLING_TIMEOUT_SECS = 300
         try:
@@ -239,7 +230,7 @@ class BETTERClient:
         params = {'unit': 'IP'}
 
         try:
-            response = requests.request("GET", url, headers=headers, params=params)
+            response = requests.request('GET', url, headers=headers, params=params)
             if response.status_code != 200:
                 return None, [f'Expected 200 response from BETTER but got {response.status_code}: {response.content}']
 
@@ -263,11 +254,11 @@ class BETTERClient:
         :returns: tuple(int, list[str]), BETTER Building ID followed by list of errors
         """
         if better_portfolio_id is None:
-            url = f"{self.API_URL}/buildings/"
+            url = f'{self.API_URL}/buildings/'
         else:
-            url = f"{self.API_URL}/portfolios/{better_portfolio_id}/buildings/"
+            url = f'{self.API_URL}/portfolios/{better_portfolio_id}/buildings/'
 
-        with open(bsync_xml, 'r') as file:
+        with open(bsync_xml) as file:
             bsync_content = file.read()
 
         headers = {
@@ -275,7 +266,7 @@ class BETTERClient:
             'Content-Type': 'buildingsync/xml',
         }
         try:
-            response = requests.request("POST", url, headers=headers, data=bsync_content)
+            response = requests.request('POST', url, headers=headers, data=bsync_content)
             if response.status_code == 201:
                 data = response.json()
                 building_id = data['id']
@@ -295,7 +286,7 @@ class BETTERClient:
         :param config: request body with building_id, savings_target, benchmark_data_type, min_model_r_squared
         :returns: requests.Response
         """
-        url = f"{self.API_URL}/buildings/{building_id}/analytics/"
+        url = f'{self.API_URL}/buildings/{building_id}/analytics/'
 
         headers = {
             'accept': 'application/json',
@@ -304,7 +295,7 @@ class BETTERClient:
         }
 
         try:
-            response = requests.request("POST", url, headers=headers, data=json.dumps(config))
+            response = requests.request('POST', url, headers=headers, data=json.dumps(config))
         except ConnectionError:
             message = 'BETTER service could not create analytics for this building'
             raise AnalysisPipelineException(message)
@@ -317,7 +308,7 @@ class BETTERClient:
         :params: analysis id
         :returns: tuple(tempfile.TemporaryDirectory, list[str]), temporary directory containing result files and list of error messages
         """
-        url = f"{self.API_URL}/standalone_html/building_analytics/{analysis_id}/"
+        url = f'{self.API_URL}/standalone_html/building_analytics/{analysis_id}/'
         headers = {
             'accept': '*/*',
             'Authorization': self._token,
@@ -325,7 +316,7 @@ class BETTERClient:
         params = {'unit': 'IP'}
 
         try:
-            response = requests.request("GET", url, headers=headers, params=params)
+            response = requests.request('GET', url, headers=headers, params=params)
             standalone_html = response.text.encode('utf8').decode()
 
         except ConnectionError:
@@ -353,7 +344,7 @@ class BETTERClient:
             'Authorization': self._token,
         }
         try:
-            response = requests.request("GET", url, headers=headers)
+            response = requests.request('GET', url, headers=headers)
             if response.status_code == 404:
                 return None, [f'BETTER analysis could not be fetched: Status Code: 404 {response.json()["detail"]}']
             if response.status_code != 200:
@@ -379,11 +370,10 @@ class BETTERClient:
             return None, [f'Failed to create analysis for building: {e}']
 
         if response.status_code != 201:
-            return None, ['BETTER analysis could not be completed and got the following response: {message}'.format(
-                message=response.text)]
+            return None, [f'BETTER analysis could not be completed and got the following response: {response.text}']
 
         # Make sure the analysis is done. Poll response until key 'generation_result' is 'COMPLETE'
-        url = f"{self.API_URL}/buildings/{building_id}/analytics/"
+        url = f'{self.API_URL}/buildings/{building_id}/analytics/'
 
         headers = {
             'accept': 'application/json',
@@ -396,14 +386,10 @@ class BETTERClient:
             :return: bool
             """
             generation_result = res.json()[0]['generation_result']
-            return generation_result == 'COMPLETE' or generation_result == 'FAILED'
+            return generation_result in ('COMPLETE', 'FAILED')
 
         try:
-            response = polling.poll(
-                lambda: requests.request("GET", url, headers=headers),
-                check_success=is_ready,
-                timeout=300,
-                step=5)
+            response = polling.poll(lambda: requests.request('GET', url, headers=headers), check_success=is_ready, timeout=300, step=5)
         except TimeoutError:
             return None, ['BETTER analysis timed out']
 

@@ -1,9 +1,9 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 import csv
 import datetime
 import io
@@ -23,13 +23,7 @@ from rest_framework.viewsets import GenericViewSet
 from seed.decorators import ajax_request_class
 from seed.lib.progress_data.progress_data import ProgressData
 from seed.lib.superperms.orgs.decorators import has_perm_class
-from seed.models import (
-    AccessLevelInstance,
-    ColumnListProfile,
-    PropertyView,
-    TaxLotProperty,
-    TaxLotView
-)
+from seed.models import AccessLevelInstance, ColumnListProfile, PropertyView, TaxLotProperty, TaxLotView
 from seed.models.meters import Meter, MeterReading
 from seed.models.property_measures import PropertyMeasure
 from seed.models.scenarios import Scenario
@@ -52,16 +46,14 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
     This method presently only works with the CSV, but should eventually be extended to be the
     viewset for any tax lot / property join API call.
     """
+
     renderer_classes = (JSONRenderer,)
     serializer_class = TaxLotPropertySerializer
 
     @swagger_auto_schema(
         manual_parameters=[
             AutoSchemaHelper.query_org_id_field(),
-            AutoSchemaHelper.query_string_field(
-                "inventory_type",
-                False,
-                "Either 'taxlots' or 'properties' and defaults to 'properties'."),
+            AutoSchemaHelper.query_string_field('inventory_type', False, "Either 'taxlots' or 'properties' and defaults to 'properties'."),
         ],
         request_body=AutoSchemaHelper.schema_factory(
             {
@@ -74,12 +66,12 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
                 'include_meter_readings': 'boolean',
             },
             description='- ids: (View) IDs for records to be exported\n'
-                        '- filename: desired filename including extension (defaulting to \'ExportedData.{export_type}\')\n'
-                        '- export_types: \'csv\', \'geojson\', \'xlsx\' (defaulting to \'csv\')\n'
-                        '- profile_id: Column List Profile ID to use for customizing fields included in export'
-                        '- progress_key: (Optional) Used to find and update the ProgressData object. If none is provided, a ProgressData object will be created.'
-                        '- include_notes: (Optional) Include notes in the export. Defaults to False.'
-                        '- include_meter_readings: (Optional) Include notes in the export. Defaults to False.'
+            "- filename: desired filename including extension (defaulting to 'ExportedData.{export_type}')\n"
+            "- export_types: 'csv', 'geojson', 'xlsx' (defaulting to 'csv')\n"
+            '- profile_id: Column List Profile ID to use for customizing fields included in export'
+            '- progress_key: (Optional) Used to find and update the ProgressData object. If none is provided, a ProgressData object will be created.'
+            '- include_notes: (Optional) Include notes in the export. Defaults to False.'
+            '- include_meter_readings: (Optional) Include notes in the export. Defaults to False.',
         ),
     )
     @api_endpoint_class
@@ -113,10 +105,7 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
 
         # Set the first column to be the ID
         column_name_mappings = OrderedDict([('id', 'ID')])
-        column_ids, add_column_name_mappings, columns_from_database = ColumnListProfile.return_columns(
-            org_id,
-            profile_id,
-            view_klass_str)
+        column_ids, add_column_name_mappings, columns_from_database = ColumnListProfile.return_columns(org_id, profile_id, view_klass_str)
         column_name_mappings.update(add_column_name_mappings)
 
         select_related = ['state', 'cycle']
@@ -143,8 +132,9 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
             column_name_mappings['taxlot_notes'] = 'Tax Lot Notes'
             column_name_mappings['taxlot_labels'] = 'Tax Lot Labels'
 
-        model_views = view_klass.objects.select_related(*select_related).prefetch_related(
-            *prefetch_related).filter(**filter_str).order_by('id')
+        model_views = (
+            view_klass.objects.select_related(*select_related).prefetch_related(*prefetch_related).filter(**filter_str).order_by('id')
+        )
 
         # get the data in a dict which includes the related data
         progress_data.step('Exporting Inventory...')
@@ -166,10 +156,7 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
                 label_string.append(label.name)
             if include_notes:
                 for note in list(record.notes.all().order_by('created')):
-                    note_string.append(
-                        note.created.astimezone().strftime("%Y-%m-%d %I:%M:%S %p") + "\n" +
-                        note.text
-                    )
+                    note_string.append(note.created.astimezone().strftime('%Y-%m-%d %I:%M:%S %p') + '\n' + note.text)
 
             if hasattr(record, 'property'):
                 data[i]['property_labels'] = ','.join(label_string)
@@ -205,13 +192,13 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
                 view_id_str = 'taxlot_view_id'
             data.sort(key=lambda inventory_obj: order_dict[inventory_obj[view_id_str]])
 
-        filename = request.data.get('filename', f"ExportedData.{export_type}")
+        filename = request.data.get('filename', f'ExportedData.{export_type}')
         progress_data.finish_with_success()
-        if export_type == "csv":
+        if export_type == 'csv':
             return self._csv_response(filename, data, column_name_mappings)
-        elif export_type == "geojson":
+        elif export_type == 'geojson':
             return self._json_response(filename, data, column_name_mappings)
-        elif export_type == "xlsx":
+        elif export_type == 'xlsx':
             return self._spreadsheet_response(filename, data, column_name_mappings)
 
     @api_endpoint_class
@@ -231,7 +218,7 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
 
     def _csv_response(self, filename, data, column_name_mappings):
         response = HttpResponse(content_type='text/csv')
-        response['Content-Disposition'] = 'attachment; filename="{}"'.format(filename)
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
 
         writer = csv.writer(response)
 
@@ -256,9 +243,9 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
                 if isinstance(row_result, ureg.Quantity):
                     row_result = row_result.magnitude
                 elif isinstance(row_result, datetime.datetime):
-                    row_result = row_result.strftime("%Y-%m-%d %H:%M:%S")
+                    row_result = row_result.strftime('%Y-%m-%d %H:%M:%S')
                 elif isinstance(row_result, datetime.date):
-                    row_result = row_result.strftime("%Y-%m-%d")
+                    row_result = row_result.strftime('%Y-%m-%d')
                 row.append(row_result)
 
             writer.writerow(row)
@@ -266,16 +253,25 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
         return response
 
     def _spreadsheet_response(self, filename, data, column_name_mappings):
-        response = HttpResponse(
-            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-        response['Content-Disposition'] = 'attachment; filename="{}"'.format(filename)
+        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
 
         scenario_keys = (
-            'id', 'name', 'description', 'annual_site_energy_savings', 'annual_source_energy_savings',
-            'annual_cost_savings', 'annual_electricity_savings',
-            'annual_natural_gas_savings', 'annual_site_energy', 'annual_source_energy', 'annual_natural_gas_energy',
-            'annual_electricity_energy', 'annual_peak_demand', 'annual_site_energy_use_intensity',
-            'annual_source_energy_use_intensity'
+            'id',
+            'name',
+            'description',
+            'annual_site_energy_savings',
+            'annual_source_energy_savings',
+            'annual_cost_savings',
+            'annual_electricity_savings',
+            'annual_natural_gas_savings',
+            'annual_site_energy',
+            'annual_source_energy',
+            'annual_natural_gas_energy',
+            'annual_electricity_energy',
+            'annual_peak_demand',
+            'annual_site_energy_use_intensity',
+            'annual_source_energy_use_intensity',
         )
         scenario_key_mappings = {
             'annual_site_energy_savings': 'annual_site_energy_savings_mmbtu',
@@ -289,12 +285,19 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
             'annual_electricity_energy': 'annual_electricity_energy_mmbtu',
             'annual_peak_demand': 'annual_peak_demand_kw',
             'annual_electricity_savings': 'annual_electricity_savings_kbtu',
-            'annual_natural_gas_savings': 'annual_natural_gas_savings_kbtu'
+            'annual_natural_gas_savings': 'annual_natural_gas_savings_kbtu',
         }
 
         property_measure_keys = (
-            'id', 'property_measure_name', 'measure_id', 'cost_mv', 'cost_total_first',
-            'cost_installation', 'cost_material', 'cost_capital_replacement', 'cost_residual_value'
+            'id',
+            'property_measure_name',
+            'measure_id',
+            'cost_mv',
+            'cost_total_first',
+            'cost_installation',
+            'cost_material',
+            'cost_capital_replacement',
+            'cost_residual_value',
         )
         measure_keys = ('name', 'display_name', 'category', 'category_display_name')
         # find measures and scenarios
@@ -351,9 +354,9 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
                 if isinstance(row_result, ureg.Quantity):
                     row_result = row_result.magnitude
                 elif isinstance(row_result, datetime.datetime):
-                    row_result = row_result.strftime("%Y-%m-%d %H:%M:%S")
+                    row_result = row_result.strftime('%Y-%m-%d %H:%M:%S')
                 elif isinstance(row_result, datetime.date):
-                    row_result = row_result.strftime("%Y-%m-%d")
+                    row_result = row_result.strftime('%Y-%m-%d')
                 ws1.write(row, index, row_result)
 
             # measures
@@ -388,7 +391,7 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
                     # grab headers
                     for key in scenario_keys:
                         # double check scenario_key_mappings in case a different header is desired
-                        if key in scenario_key_mappings.keys():
+                        if key in scenario_key_mappings:
                             key = scenario_key_mappings[key]
                         ws3.write(row3, col3, key, bold)
                         col3 += 1
@@ -446,7 +449,7 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
         return response
 
     def _json_response(self, filename, data, column_name_mappings):
-        polygon_fields = ["bounding_box", "centroid", "property_footprint", "taxlot_footprint", "long_lat"]
+        polygon_fields = ['bounding_box', 'centroid', 'property_footprint', 'taxlot_footprint', 'long_lat']
         features = []
 
         # extract related records
@@ -455,11 +458,10 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
         # append related_records to data
         complete_data = data + related_records
 
+        response_dict = {}
+
         for datum in complete_data:
-            feature = {
-                "type": "Feature",
-                "properties": {}
-            }
+            feature = {'type': 'Feature', 'properties': {}}
 
             feature_geometries = []
             for key, value in datum.items():
@@ -467,13 +469,15 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
                     continue
 
                 if isinstance(value, ureg.Quantity):
-                    value = value.magnitude
+                    formatted_value = value.magnitude
                 elif isinstance(value, datetime.datetime):
-                    value = value.strftime("%Y-%m-%d %H:%M:%S")
+                    formatted_value = value.strftime('%Y-%m-%d %H:%M:%S')
                 elif isinstance(value, datetime.date):
-                    value = value.strftime("%Y-%m-%d")
+                    formatted_value = value.strftime('%Y-%m-%d')
+                else:
+                    formatted_value = value
 
-                if value and any(k in key for k in polygon_fields):
+                if formatted_value and any(k in key for k in polygon_fields):
                     """
                     If object is a polygon and is populated, add the 'geometry'
                     key-value-pair in the appropriate GeoJSON format.
@@ -484,46 +488,44 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
 
                     # long_lat
                     if key == 'long_lat':
-                        coordinates = self._serialized_point(value)
+                        coordinates = self._serialized_point(formatted_value)
                         # point
-                        feature_geometries.append({
-                            "type": "Point",
-                            "coordinates": coordinates,
-                        })
+                        feature_geometries.append(
+                            {
+                                'type': 'Point',
+                                'coordinates': coordinates,
+                            }
+                        )
                     else:
                         # polygons
-                        coordinates = self._serialized_coordinates(value)
-                        feature_geometries.append({
-                            "type": "Polygon",
-                            "coordinates": [coordinates],
-                        })
+                        coordinates = self._serialized_coordinates(formatted_value)
+                        feature_geometries.append(
+                            {
+                                'type': 'Polygon',
+                                'coordinates': [coordinates],
+                            }
+                        )
                 else:
                     """
                     Non-polygon data
                     """
-                    if key == "_meters":
-                        if feature["properties"].get("meters") is None:
-                            feature["properties"]["meters"] = value
+                    if key == '_meters':
+                        if feature['properties'].get('meters') is None:
+                            feature['properties']['meters'] = formatted_value
                         else:
-                            logging.warning("meters already exists in properties, not adding")
+                            logging.warning('meters already exists in properties, not adding')
                     else:
                         display_key = column_name_mappings.get(key, key)
-                        feature["properties"][display_key] = value
+                        feature['properties'][display_key] = formatted_value
 
             # now add in the geometry data depending on how many geometries were found
             if len(feature_geometries) == 0:
                 # no geometry found -- save an empty polygon geometry
-                feature["geometry"] = {
-                    "type": "Polygon",
-                    "coordinates": []
-                }
+                feature['geometry'] = {'type': 'Polygon', 'coordinates': []}
             elif len(feature_geometries) == 1:
-                feature["geometry"] = feature_geometries[0]
+                feature['geometry'] = feature_geometries[0]
             else:
-                feature["geometry"] = {
-                    "type": "GeometryCollection",
-                    "geometries": feature_geometries
-                }
+                feature['geometry'] = {'type': 'GeometryCollection', 'geometries': feature_geometries}
 
             """
             Before appending feature, ensure that if there is no geometry recorded.
@@ -531,27 +533,23 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
             """
 
             # add style information
-            if feature["properties"].get("property_state_id") is not None:
-                feature["properties"]["stroke"] = "#185189"  # buildings color
-            elif feature["properties"].get("taxlot_state_id") is not None:
-                feature["properties"]["stroke"] = "#10A0A0"  # buildings color
-            feature["properties"]["marker-color"] = "#E74C3C"
+            if feature['properties'].get('property_state_id') is not None:
+                feature['properties']['stroke'] = '#185189'  # buildings color
+            elif feature['properties'].get('taxlot_state_id') is not None:
+                feature['properties']['stroke'] = '#10A0A0'  # buildings color
+            feature['properties']['marker-color'] = '#E74C3C'
             # feature["properties"]["stroke-width"] = 3
-            feature["properties"]["fill-opacity"] = 0
+            feature['properties']['fill-opacity'] = 0
 
             # append feature
             features.append(feature)
 
             # per geojsonlint.com, the CRS we were defining was the default and should not
             # be included.
-            response_dict = {
-                "type": "FeatureCollection",
-                "name": f"SEED Export - {filename.replace('.geojson', '')}",
-                "features": features
-            }
+            response_dict = {'type': 'FeatureCollection', 'name': f"SEED Export - {filename.replace('.geojson', '')}", 'features': features}
 
         response = JsonResponse(response_dict)
-        response['Content-Disposition'] = 'attachment; filename="{}"'.format(filename)
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
 
         return response
 
@@ -579,21 +577,21 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
         related = []
 
         # figure out if we are dealing with properties or taxlots
-        if data[0].get("property_state_id", None) is not None:
+        if data[0].get('property_state_id', None) is not None:
             is_property = True
-        elif data[0].get("taxlot_state_id", None) is not None:
+        elif data[0].get('taxlot_state_id', None) is not None:
             is_property = False
 
         for datum in data:
-            if datum.get("related", None) is not None:
-                for record in datum["related"]:
+            if datum.get('related', None) is not None:
+                for record in datum['related']:
                     related.append(record)
 
         # make array unique
         if is_property:
-            unique = [dict(p) for p in set(tuple(i.items()) for i in related)]
+            unique = [dict(p) for p in {tuple(i.items()) for i in related}]
         else:
-            unique = [dict(p) for p in set(tuple(i.items()) for i in related)]
+            unique = [dict(p) for p in {tuple(i.items()) for i in related}]
 
         return unique
 
@@ -622,16 +620,19 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
         progress_key = request.data.get('progress_key')
 
         access_level_instance = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
-        property_view_ids = list(PropertyView.objects.filter(
-            id__in=property_view_ids,
-            property__access_level_instance__lft__gte=access_level_instance.lft,
-            property__access_level_instance__rgt__lte=access_level_instance.rgt,
-        ).values_list("id", flat=True))
-        taxlot_view_ids = list(TaxLotView.objects.filter(
-            taxlot__access_level_instance__lft__gte=access_level_instance.lft,
-            taxlot__access_level_instance__rgt__lte=access_level_instance.rgt,
-            id__in=taxlot_view_ids
-        ).values_list("id", flat=True))
+        property_view_ids = list(
+            PropertyView.objects.filter(
+                id__in=property_view_ids,
+                property__access_level_instance__lft__gte=access_level_instance.lft,
+                property__access_level_instance__rgt__lte=access_level_instance.rgt,
+            ).values_list('id', flat=True)
+        )
+        taxlot_view_ids = list(
+            TaxLotView.objects.filter(
+                taxlot__access_level_instance__lft__gte=access_level_instance.lft,
+                taxlot__access_level_instance__rgt__lte=access_level_instance.rgt,
+                id__in=taxlot_view_ids,
+            ).values_list('id', flat=True)
+        )
 
         set_update_to_now.subtask([property_view_ids, taxlot_view_ids, progress_key]).apply_async()
-        return

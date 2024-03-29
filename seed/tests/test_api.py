@@ -1,9 +1,9 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 import base64
 import json
 from datetime import date
@@ -35,7 +35,7 @@ class TestApi(TestCase):
             'password': 'test_pass',
             'email': 'test_user@demo.com',
             'first_name': 'Jaqen',
-            'last_name': 'H\'ghar'
+            'last_name': "H'ghar",
         }
         self.user = User.objects.create_user(**user_details)
         self.user.generate_key()
@@ -47,9 +47,7 @@ class TestApi(TestCase):
             start=date(2015, 1, 1),
             end=date(2015, 12, 31),
         )
-        auth_string = base64.urlsafe_b64encode(bytes(
-            '{}:{}'.format(self.user.username, self.user.api_key), 'utf-8'
-        ))
+        auth_string = base64.urlsafe_b64encode(bytes(f'{self.user.username}:{self.user.api_key}', 'utf-8'))
         self.auth_string = 'Basic {}'.format(auth_string.decode('utf-8'))
         self.headers = {'Authorization': self.auth_string}
 
@@ -72,16 +70,11 @@ class TestApi(TestCase):
         r = json.loads(r.content)
         self.assertEqual(r['status'], 'success')
         self.assertEqual(r['first_name'], 'Jaqen')
-        self.assertEqual(r['last_name'], 'H\'ghar')
+        self.assertEqual(r['last_name'], "H'ghar")
         self.client.logout()
 
     def test_with_http_authorization(self):
-        r = self.client.get(
-            '/api/v3/users/{}/'.format(str(self.user.pk)),
-            follow=True,
-            data={},
-            **self.headers
-        )
+        r = self.client.get(f'/api/v3/users/{self.user.pk!s}/', follow=True, data={}, **self.headers)
         self.assertEqual(r.status_code, 200)
         r = json.loads(r.content)
         self.assertNotEqual(r, None)
@@ -123,18 +116,23 @@ class TestApi(TestCase):
         self.assertEqual(r['organizations'][0]['number_of_users'], 1)
         self.assertEqual(r['organizations'][0]['user_role'], 'owner')
         self.assertEqual(r['organizations'][0]['owners'][0]['first_name'], 'Jaqen')
-        self.assertEqual(r['organizations'][0]['cycles'], [
-            {
-                'name': str(date.today().year - 1) + ' Calendar Year',
-                'num_properties': 0,
-                'num_taxlots': 0,
-                'cycle_id': self.default_cycle.pk,
-            }, {
-                'name': 'Test Hack Cycle 2015',
-                'num_properties': 0,
-                'num_taxlots': 0,
-                'cycle_id': self.cycle.pk,
-            }])
+        self.assertEqual(
+            r['organizations'][0]['cycles'],
+            [
+                {
+                    'name': str(date.today().year - 1) + ' Calendar Year',
+                    'num_properties': 0,
+                    'num_taxlots': 0,
+                    'cycle_id': self.default_cycle.pk,
+                },
+                {
+                    'name': 'Test Hack Cycle 2015',
+                    'num_properties': 0,
+                    'num_taxlots': 0,
+                    'cycle_id': self.cycle.pk,
+                },
+            ],
+        )
 
     def test_organization_details(self):
         r = self.client.get('/api/v3/organizations/', follow=True, **self.headers)
@@ -142,8 +140,7 @@ class TestApi(TestCase):
         organization_id = self.get_org_id(r, self.user.username)
 
         # get details on the organization
-        r = self.client.get('/api/v3/organizations/' + str(organization_id) + '/', follow=True,
-                            **self.headers)
+        r = self.client.get('/api/v3/organizations/' + str(organization_id) + '/', follow=True, **self.headers)
         self.assertEqual(r.status_code, 200)
 
         # {
@@ -176,13 +173,10 @@ class TestApi(TestCase):
         self.assertEqual(r['organization']['user_is_owner'], True)
 
     def test_update_user(self):
-        user_payload = {
-            'first_name': 'Arya',
-            'last_name': 'Stark',
-            'email': self.user.username
-        }
-        r = self.client.put('/api/v3/users/{}/'.format(self.user.pk), data=json.dumps(user_payload),
-                            content_type='application/json', **self.headers)
+        user_payload = {'first_name': 'Arya', 'last_name': 'Stark', 'email': self.user.username}
+        r = self.client.put(
+            f'/api/v3/users/{self.user.pk}/', data=json.dumps(user_payload), content_type='application/json', **self.headers
+        )
 
         # re-retrieve the user profile
         r = self.client.get('/api/v3/users/' + str(self.user.pk) + '/', follow=True, **self.headers)
@@ -203,24 +197,24 @@ class TestApi(TestCase):
             'last_name': 'Tarth',
             'email': 'test+1@demo.com',
             'role': 'member',
-            "access_level_instance_id": root.id,
+            'access_level_instance_id': root.id,
         }
 
-        r = self.client.post('/api/v3/users/?organization_id=' + str(organization_id),
-                             data=json.dumps(new_user),
-                             content_type='application/json',
-                             **self.headers)
+        r = self.client.post(
+            '/api/v3/users/?organization_id=' + str(organization_id),
+            data=json.dumps(new_user),
+            content_type='application/json',
+            **self.headers,
+        )
         self.assertEqual(r.status_code, 200)
 
-        r = self.client.get('/api/v3/organizations/%s/' % organization_id, follow=True,
-                            **self.headers)
+        r = self.client.get('/api/v3/organizations/%s/' % organization_id, follow=True, **self.headers)
         self.assertEqual(r.status_code, 200)
         r = json.loads(r.content)
         self.assertEqual(r['organization']['number_of_users'], 2)
 
         # get org users
-        r = self.client.get('/api/v3/organizations/%s/users/' % organization_id,
-                            content_type='application/json', **self.headers)
+        r = self.client.get('/api/v3/organizations/%s/users/' % organization_id, content_type='application/json', **self.headers)
         self.assertEqual(r.status_code, 200)
         # {
         #     "status": "success",
@@ -250,25 +244,22 @@ class TestApi(TestCase):
         user_id = [i for i in r['users'] if i['last_name'] == 'Tarth'][0]['user_id']
 
         # Change the user role
-        payload = {
-            'organization_id': organization_id,
-            'role': 'owner'
-        }
+        payload = {'organization_id': organization_id, 'role': 'owner'}
 
         r = self.client.put(
-            '/api/v3/users/{}/role/?organization_id={}'.format(user_id, organization_id),
+            f'/api/v3/users/{user_id}/role/?organization_id={organization_id}',
             data=json.dumps(payload),
             content_type='application/json',
-            **self.headers)
+            **self.headers,
+        )
         self.assertEqual(r.status_code, 200)
         r = json.loads(r.content)
         self.assertEqual(r['status'], 'success')
 
-        r = self.client.get('/api/v3/organizations/%s/users/' % organization_id,
-                            content_type='application/json', **self.headers)
+        r = self.client.get('/api/v3/organizations/%s/users/' % organization_id, content_type='application/json', **self.headers)
         self.assertEqual(r.status_code, 200)
         r = json.loads(r.content)
-        new_user = [i for i in r['users'] if i['last_name'] == 'Tarth'][0]
+        new_user = next(i for i in r['users'] if i['last_name'] == 'Tarth')
         self.assertEqual(new_user['role'], 'owner')
 
     def test_get_query_threshold(self):
@@ -276,9 +267,7 @@ class TestApi(TestCase):
         r = json.loads(r.content)
         organization_id = self.get_org_id(r, self.user.username)
 
-        r = self.client.get("/api/v3/organizations/%s/query_threshold/" % organization_id,
-                            follow=True,
-                            **self.headers)
+        r = self.client.get('/api/v3/organizations/%s/query_threshold/' % organization_id, follow=True, **self.headers)
         self.assertEqual(r.status_code, 200)
         r = json.loads(r.content)
         self.assertEqual(r['status'], 'success')
@@ -289,9 +278,7 @@ class TestApi(TestCase):
         r = json.loads(r.content)
         organization_id = self.get_org_id(r, self.user.username)
 
-        r = self.client.get("/api/v3/organizations/%s/shared_fields/" % organization_id,
-                            follow=True,
-                            **self.headers)
+        r = self.client.get('/api/v3/organizations/%s/shared_fields/' % organization_id, follow=True, **self.headers)
 
         self.assertEqual(r.status_code, 200)
         r = json.loads(r.content)

@@ -1,10 +1,9 @@
-
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 from collections import OrderedDict
 
 from rest_framework.pagination import PageNumberPagination
@@ -17,13 +16,17 @@ class ResultsListPagination(PageNumberPagination):
     def get_paginated_response(self, data):
         page_num = self.page.number
 
-        return Response(OrderedDict([
-            ('page', page_num),
-            ('start', self.page.start_index()),
-            ('end', self.page.end_index()),
-            ('num_pages', self.page.paginator.num_pages),
-            ('has_next', self.page.has_next()),
-            ('has_previous', self.page.has_previous()),
-            ('total', self.page.paginator.count),
-            ('results', data)
-        ]))
+        return Response(
+            OrderedDict(
+                [
+                    ('page', page_num),
+                    ('start', self.page.start_index()),
+                    ('end', self.page.end_index()),
+                    ('num_pages', self.page.paginator.num_pages),
+                    ('has_next', self.page.has_next()),
+                    ('has_previous', self.page.has_previous()),
+                    ('total', self.page.paginator.count),
+                    ('results', data),
+                ]
+            )
+        )

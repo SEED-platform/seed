@@ -1,33 +1,23 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 import re
 from collections import namedtuple
 from functools import wraps
 from importlib import import_module
 
 from django.conf import settings
-from django.core.exceptions import (
-    ObjectDoesNotExist,
-    PermissionDenied,
-    ValidationError
-)
+from django.core.exceptions import ObjectDoesNotExist, PermissionDenied, ValidationError
 from django.http import JsonResponse
 from past.builtins import basestring
 from rest_framework import exceptions, status
 
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.permissions import get_org_id, get_user_org
-from seed.models import (
-    VIEW_LIST,
-    VIEW_LIST_PROPERTY,
-    Column,
-    ColumnListProfile,
-    ColumnListProfileColumn
-)
+from seed.models import VIEW_LIST, VIEW_LIST_PROPERTY, Column, ColumnListProfile, ColumnListProfileColumn
 
 OrgValidator = namedtuple('OrgValidator', ['key', 'field'])
 
@@ -40,7 +30,7 @@ def get_api_endpoints():
     urlconf = import_module(settings.ROOT_URLCONF)
     urllist = urlconf.urlpatterns
     api_endpoints = {}
-    for (url, callback) in get_all_urls(urllist):
+    for url, callback in get_all_urls(urllist):
         if getattr(callback, 'is_api_endpoint', False):
             clean_url = clean_api_regex(url)
             api_endpoints[clean_url] = callback
@@ -52,7 +42,7 @@ def format_api_docstring(docstring):
     Cleans up a python method docstring for human consumption.
     """
     if not isinstance(docstring, basestring):
-        return "INVALID DOCSTRING"
+        return 'INVALID DOCSTRING'
     whitespace_regex = r'\s+'
     ret = re.sub(whitespace_regex, ' ', docstring)
     ret = ret.strip()
@@ -81,8 +71,7 @@ def get_all_urls(urllist, prefix=''):
     """
     for entry in urllist:
         if hasattr(entry, 'url_patterns'):
-            for url in get_all_urls(entry.url_patterns,
-                                    prefix + entry.pattern.regex.pattern):
+            for url in get_all_urls(entry.url_patterns, prefix + entry.pattern.regex.pattern):
                 try:
                     yield url
                 except StopIteration:
@@ -172,7 +161,7 @@ def get_api_request_user(request):
 
 
 # pylint: disable=too-few-public-methods
-class APIBypassCSRFMiddleware(object):
+class APIBypassCSRFMiddleware:
     """
     This middleware turns off CSRF protection for API clients.
 
@@ -189,10 +178,13 @@ class APIBypassCSRFMiddleware(object):
             if get_api_request_user(request):
                 request.csrf_processing_done = True
         except exceptions.AuthenticationFailed as e:
-            return JsonResponse({
-                'status': 'error',
-                'message': str(e),
-            }, status=status.HTTP_401_UNAUTHORIZED)
+            return JsonResponse(
+                {
+                    'status': 'error',
+                    'message': str(e),
+                },
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
         return response
 
 
@@ -241,7 +233,7 @@ def get_org_id_from_validator(instance, field):
     return rgetattr(instance, fields)
 
 
-class ProfileIdMixin(object):
+class ProfileIdMixin:
     """
     Provides methods to get the columns to show based on a profile ID
     """
@@ -261,32 +253,31 @@ class ProfileIdMixin(object):
         show_columns = {
             # TODO: decide if we want to make these visible in the result
             'fields': ['extra_data', 'id'],  # , 'bounding_box', 'long_lat', 'centroid',
-            'extra_data': []
+            'extra_data': [],
         }
         profile_exists = ColumnListProfile.objects.filter(
-            organization_id=org_id,
-            id=profile_id,
-            profile_location=VIEW_LIST,
-            inventory_type=VIEW_LIST_PROPERTY
+            organization_id=org_id, id=profile_id, profile_location=VIEW_LIST, inventory_type=VIEW_LIST_PROPERTY
         ).exists()
         if profile_id is None or profile_id == -1 or not profile_exists:
-            show_columns['fields'] += list(Column.objects.filter(
-                organization_id=org_id,
-                table_name='PropertyState',
-                is_extra_data=False).values_list('column_name', flat=True))
-            show_columns['extra_data'] += list(Column.objects.filter(
-                organization_id=org_id,
-                table_name='PropertyState',
-                is_extra_data=True).values_list('column_name', flat=True))
+            show_columns['fields'] += list(
+                Column.objects.filter(organization_id=org_id, table_name='PropertyState', is_extra_data=False).values_list(
+                    'column_name', flat=True
+                )
+            )
+            show_columns['extra_data'] += list(
+                Column.objects.filter(organization_id=org_id, table_name='PropertyState', is_extra_data=True).values_list(
+                    'column_name', flat=True
+                )
+            )
         else:
             profile = ColumnListProfile.objects.get(
-                organization_id=org_id,
-                id=profile_id,
-                profile_location=VIEW_LIST,
-                inventory_type=VIEW_LIST_PROPERTY
+                organization_id=org_id, id=profile_id, profile_location=VIEW_LIST, inventory_type=VIEW_LIST_PROPERTY
             )
-            for col in list(ColumnListProfileColumn.objects.filter(column_list_profile_id=profile.id).values(
-                    'column__column_name', 'column__is_extra_data')):
+            for col in list(
+                ColumnListProfileColumn.objects.filter(column_list_profile_id=profile.id).values(
+                    'column__column_name', 'column__is_extra_data'
+                )
+            ):
                 if col['column__is_extra_data']:
                     show_columns['extra_data'].append(col['column__column_name'])
                 else:
@@ -295,7 +286,7 @@ class ProfileIdMixin(object):
         return show_columns
 
 
-class OrgMixin(object):
+class OrgMixin:
     """
     Provides get_organization and get_parent_org method
     """
@@ -368,7 +359,7 @@ class OrgCreateUpdateMixin(OrgCreateMixin, OrgUpdateMixin):
     """
 
 
-class OrgValidateMixin(object):
+class OrgValidateMixin:
     """
     Mixin to provide a validate() method organization to ensure users belongs
     to the same org as the instance referenced by a foreign key..
@@ -414,9 +405,7 @@ class OrgValidateMixin(object):
         try:
             user.orgs.get(pk=pk)
         except ObjectDoesNotExist:
-            msg = 'User is not a member of {} organization.'.format(
-                validator.key
-            )
+            msg = f'User is not a member of {validator.key} organization.'
             raise PermissionDenied(msg)
 
     def validate(self, data):
@@ -428,9 +417,7 @@ class OrgValidateMixin(object):
         """
         org_validators = getattr(self, 'org_validators', None)
         if not org_validators:
-            raise ValidationError(
-                'org_validators attribute not set on serializer'
-            )
+            raise ValidationError('org_validators attribute not set on serializer')
         else:
             for validator in org_validators:
                 instance = data.get(validator.key)
@@ -456,7 +443,7 @@ class OrgQuerySetMixin(OrgMixin):
     """
 
     def get_queryset(self):
-        """"get_queryset filtered on organization"""
+        """ "get_queryset filtered on organization"""
         # pylint:disable=invalid-name
         # raises Attribute Error if not set
         Model = self.model

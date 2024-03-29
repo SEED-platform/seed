@@ -1,9 +1,9 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 import os
 import re
 from collections import namedtuple
@@ -15,7 +15,7 @@ from django.shortcuts import render
 
 from seed.views.main import _get_default_org
 
-YAML_DOC_BOUNDARY = re.compile(r"^-{3,}\s*$", re.MULTILINE)
+YAML_DOC_BOUNDARY = re.compile(r'^-{3,}\s*$', re.MULTILINE)
 FaqItem = namedtuple('FaqItem', ['question', 'answer', 'tags'])
 
 
@@ -41,9 +41,7 @@ def parse_faq_file(faq_file):
         _, frontmatter, body = YAML_DOC_BOUNDARY.split(f.read(), 2)
     parsed_frontmatter = yaml.safe_load(frontmatter)
     faq_item = FaqItem(
-        question=parsed_frontmatter.get('question', ''),
-        answer=markdown.markdown(body),
-        tags=parsed_frontmatter.get('tags', [])
+        question=parsed_frontmatter.get('question', ''), answer=markdown.markdown(body), tags=parsed_frontmatter.get('tags', [])
     )
     return faq_item
 
@@ -64,9 +62,15 @@ def faq_page(request):
                 faq_data[category_name].append(parsed_faq._asdict())
 
     if not request.user.is_anonymous:
-        initial_org_id, initial_org_name, initial_org_user_role, access_level_instance_name, access_level_instance_id, is_ali_root, is_ali_leaf = _get_default_org(
-            request.user
-        )
+        (
+            initial_org_id,
+            initial_org_name,
+            initial_org_user_role,
+            access_level_instance_name,
+            access_level_instance_id,
+            is_ali_root,
+            is_ali_leaf,
+        ) = _get_default_org(request.user)
     debug = settings.DEBUG
 
     return render(request, 'docs/faq.html', locals())

@@ -1,9 +1,9 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 import logging
 import os.path as osp
 import pathlib
@@ -14,23 +14,9 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 
 from seed.data_importer import tasks
 from seed.data_importer.models import ImportFile, ImportRecord
-from seed.data_importer.tests.util import (
-    FAKE_EXTRA_DATA,
-    FAKE_MAPPINGS,
-    FAKE_ROW,
-    PROPERTY_FOOTPRINT_MAPPING,
-    TAXLOT_FOOTPRINT_MAPPING
-)
+from seed.data_importer.tests.util import FAKE_EXTRA_DATA, FAKE_MAPPINGS, FAKE_ROW, PROPERTY_FOOTPRINT_MAPPING, TAXLOT_FOOTPRINT_MAPPING
 from seed.landing.models import SEEDUser as User
-from seed.models import (
-    ASSESSED_RAW,
-    DATA_STATE_IMPORT,
-    DATA_STATE_MAPPING,
-    Column,
-    Cycle,
-    PropertyState,
-    TaxLotState
-)
+from seed.models import ASSESSED_RAW, DATA_STATE_IMPORT, DATA_STATE_MAPPING, Column, Cycle, PropertyState, TaxLotState
 from seed.models.data_quality import DataQualityCheck
 from seed.tests.util import DataMappingBaseTestCase
 from seed.utils.organizations import create_organization
@@ -46,7 +32,7 @@ class TestDemoV2(DataMappingBaseTestCase):
         import_file_data_state = getattr(self, 'import_file_data_state', DATA_STATE_IMPORT)
 
         user = User.objects.create(username='test')
-        org, _, _ = create_organization(user, "test-organization-a")
+        org, _, _ = create_organization(user, 'test-organization-a')
 
         cycle, _ = Cycle.objects.get_or_create(
             name='Test Hack Cycle 2015',
@@ -58,14 +44,12 @@ class TestDemoV2(DataMappingBaseTestCase):
         import_record_1 = ImportRecord.objects.create(
             owner=user, last_modified_by=user, super_organization=org, access_level_instance=org.root
         )
-        import_file_1 = ImportFile.objects.create(import_record=import_record_1,
-                                                  cycle=cycle)
+        import_file_1 = ImportFile.objects.create(import_record=import_record_1, cycle=cycle)
 
         import_record_2 = ImportRecord.objects.create(
             owner=user, last_modified_by=user, super_organization=org, access_level_instance=org.root
         )
-        import_file_2 = ImportFile.objects.create(import_record=import_record_2,
-                                                  cycle=cycle)
+        import_file_2 = ImportFile.objects.create(import_record=import_record_2, cycle=cycle)
 
         import_file_1.source_type = import_file_source_type
         import_file_1.data_state = import_file_data_state
@@ -87,26 +71,22 @@ class TestDemoV2(DataMappingBaseTestCase):
         self.fake_row = FAKE_ROW
         selfvars = self.set_up(import_file_source_type)
 
-        (self.user,
-         self.org,
-         self.import_file_property,
-         self.import_record_property,
-         self.import_file_tax_lot,
-         self.import_record_tax_lot,
-         self.cycle) = selfvars
+        (
+            self.user,
+            self.org,
+            self.import_file_property,
+            self.import_record_property,
+            self.import_file_tax_lot,
+            self.import_record_tax_lot,
+            self.cycle,
+        ) = selfvars
 
         filepath = osp.join(osp.dirname(__file__), '..', 'data', tax_lot_filename)
-        self.import_file_tax_lot.file = SimpleUploadedFile(
-            name=tax_lot_filename,
-            content=pathlib.Path(filepath).read_bytes()
-        )
+        self.import_file_tax_lot.file = SimpleUploadedFile(name=tax_lot_filename, content=pathlib.Path(filepath).read_bytes())
         self.import_file_tax_lot.save()
 
         filepath = osp.join(osp.dirname(__file__), '..', 'data', property_filename)
-        self.import_file_property.file = SimpleUploadedFile(
-            name=property_filename,
-            content=pathlib.Path(filepath).read_bytes()
-        )
+        self.import_file_property.file = SimpleUploadedFile(name=property_filename, content=pathlib.Path(filepath).read_bytes())
         self.import_file_property.save()
 
     def test_demo_v2(self):
@@ -173,25 +153,26 @@ class TestDemoV2(DataMappingBaseTestCase):
         tdq.check_data('TaxLotState', [tax_lot_1, tax_lot_2, tax_lot_3])
         initial_tdq_rules_count = tdq.rules.count()
         self.assertEqual(tdq.results.get(tax_lot_1.id, None), None)
-        self.assertEqual(tdq.results[tax_lot_2.id]['data_quality_results'][0]['detailed_message'], "'(( -121.927490629756 37.3...' is not a valid geometry")
+        self.assertEqual(
+            tdq.results[tax_lot_2.id]['data_quality_results'][0]['detailed_message'],
+            "'(( -121.927490629756 37.3...' is not a valid geometry",
+        )
         self.assertEqual(tdq.results[tax_lot_3.id]['data_quality_results'][0]['detailed_message'], "'' is not a valid geometry")
 
         pdq = DataQualityCheck.retrieve(self.org.id)
         pdq.check_data('PropertyState', [property_1, property_2, property_3])
         self.assertEqual(pdq.results.get(property_1.id, None), None)
-        self.assertEqual(pdq.results[property_2.id]['data_quality_results'][0]['detailed_message'], "'{}' is not a valid geometry".format(invalid_property_footprint_string))
+        self.assertEqual(
+            pdq.results[property_2.id]['data_quality_results'][0]['detailed_message'],
+            f"'{invalid_property_footprint_string}' is not a valid geometry",
+        )
         self.assertEqual(pdq.results[property_3.id]['data_quality_results'][0]['detailed_message'], "'123' is not a valid geometry")
 
         # Run new import, and check that duplicate rules are not created
-        new_import_file_tax_lot = ImportFile.objects.create(
-            import_record=self.import_record_tax_lot, cycle=self.cycle
-        )
+        new_import_file_tax_lot = ImportFile.objects.create(import_record=self.import_record_tax_lot, cycle=self.cycle)
         tax_lot_filename = getattr(self, 'filename', 'example-data-taxlots-1-invalid-footprint.xlsx')
         filepath = osp.join(osp.dirname(__file__), '..', 'data', tax_lot_filename)
-        new_import_file_tax_lot.file = SimpleUploadedFile(
-            name=tax_lot_filename,
-            content=pathlib.Path(filepath).read_bytes()
-        )
+        new_import_file_tax_lot.file = SimpleUploadedFile(name=tax_lot_filename, content=pathlib.Path(filepath).read_bytes())
         new_import_file_tax_lot.save()
 
         tasks.save_raw_data(new_import_file_tax_lot.pk)

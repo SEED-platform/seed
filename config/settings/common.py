@@ -2,7 +2,6 @@
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
-from __future__ import absolute_import
 
 import os
 from distutils.util import strtobool
@@ -41,12 +40,9 @@ LANGUAGES = (
 LOCALE_PATHS = ('locale',)
 LANGUAGE_CODE = 'en-us'
 
-SECRET_KEY = os.environ.get(
-    'SECRET_KEY',
-    'default-ns=nb-w)#2ue-mtu!s&2krzfee1-t)^z7y8gyrp6mx^d*weifh'
-)
+SECRET_KEY = os.environ.get('SECRET_KEY', 'default-ns=nb-w)#2ue-mtu!s&2krzfee1-t)^z7y8gyrp6mx^d*weifh')
 
-SESSION_ENGINE = "django.contrib.sessions.backends.signed_cookies"
+SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
 
 TEMPLATES = [
     {
@@ -133,9 +129,7 @@ HIGH_DEPENDENCY_APPS = ('seed.landing',)  # 'landing' contains SEEDUser
 INSTALLED_APPS = HIGH_DEPENDENCY_APPS + DJANGO_CORE_APPS + SEED_CORE_APPS
 
 # apps to auto load name spaced URLs for JS use (see seed.urls)
-SEED_URL_APPS = (
-    'seed',
-)
+SEED_URL_APPS = ('seed',)
 
 MEDIA_URL = '/api/v3/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
@@ -149,19 +143,15 @@ COMPRESS_FILTERS = {
     ],
     'js': [
         'compressor.filters.jsmin.JSMinFilter',
-    ]
+    ],
 }
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'vendors')
-]
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'vendors')]
 STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
     'compressor.finders.CompressorFinder',
 )
-COMPRESS_PRECOMPILERS = (
-    ('text/x-scss', 'npx sass {infile} {outfile}'),
-)
+COMPRESS_PRECOMPILERS = (('text/x-scss', 'npx sass {infile} {outfile}'),)
 AWS_QUERYSTRING_AUTH = False
 
 # django-longer-username-and-email
@@ -176,16 +166,12 @@ LOGGING = {
     'version': 1,
     'disable_existing_loggers': True,
     'formatters': {
-        'plain': {
-            'format': '%(message)s'
-        },
+        'plain': {'format': '%(message)s'},
         'verbose': {
-            'format': "%(levelname)5.5s %(asctime)24.24s %(name).20s line \
-            %(lineno)d\n%(pathname)s\n%(message)s"
+            'format': '%(levelname)5.5s %(asctime)24.24s %(name).20s line \
+            %(lineno)d\n%(pathname)s\n%(message)s'
         },
-        'abbreviated': {
-            'format': '%(name)20.20s:%(lineno)05d %(message).55s'
-        },
+        'abbreviated': {'format': '%(name)20.20s:%(lineno)05d %(message).55s'},
     },
     'handlers': {
         'console': {
@@ -202,24 +188,28 @@ LOGGING = {
             'level': 'DEBUG',
             'class': 'logging.StreamHandler',
             'formatter': 'verbose',
-        }
+        },
     },
     'loggers': {
         '': {
             'level': 'INFO',
             'handlers': ['console'],
         }
-    }
+    },
 }
 
-LOGIN_REDIRECT_URL = "/app/"
+LOGIN_REDIRECT_URL = '/app/'
 
 APPEND_SLASH = True
 
 # Register our custom JSON serializer so we can serialize datetime objects in celery.
-register('seed_json', CeleryDatetimeSerializer.seed_dumps,
-         CeleryDatetimeSerializer.seed_loads,
-         content_type='application/json', content_encoding='utf-8')
+register(
+    'seed_json',
+    CeleryDatetimeSerializer.seed_dumps,
+    CeleryDatetimeSerializer.seed_loads,
+    content_type='application/json',
+    content_encoding='utf-8',
+)
 CELERY_WORKER_MAX_TASKS_PER_CHILD = 1
 CELERY_ACCEPT_CONTENT = ['seed_json', 'pickle']
 CELERY_TASK_SERIALIZER = 'seed_json'
@@ -242,7 +232,7 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
         'OPTIONS': {
             'min_length': 8,
-        }
+        },
     },
     {
         'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
@@ -251,19 +241,19 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'seed.validators.PasswordUppercaseCharacterValidator',
         'OPTIONS': {
             'quantity': 1,
-        }
+        },
     },
     {
         'NAME': 'seed.validators.PasswordLowercaseCharacterValidator',
         'OPTIONS': {
             'quantity': 1,
-        }
+        },
     },
     {
         'NAME': 'seed.validators.PasswordDigitValidator',
         'OPTIONS': {
             'quantity': 1,
-        }
+        },
     },
 ]
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
@@ -275,23 +265,16 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.SessionAuthentication',
         'seed.authentication.SEEDAuthentication',
     ),
-    'DEFAULT_FILTER_BACKENDS': (
-        'django_filters.rest_framework.DjangoFilterBackend',
-    ),
-    'DEFAULT_PERMISSION_CLASSES': (
-        'rest_framework.permissions.IsAuthenticated',
-    ),
-    'DEFAULT_PAGINATION_CLASS':
-        'seed.utils.pagination.ResultsListPagination',
+    'DEFAULT_FILTER_BACKENDS': ('django_filters.rest_framework.DjangoFilterBackend',),
+    'DEFAULT_PERMISSION_CLASSES': ('rest_framework.permissions.IsAuthenticated',),
+    'DEFAULT_PAGINATION_CLASS': 'seed.utils.pagination.ResultsListPagination',
     'DEFAULT_RENDERER_CLASSES': [
         'rest_framework.renderers.JSONRenderer',
     ],
     'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema',
     'PAGE_SIZE': 25,
     'TEST_REQUEST_DEFAULT_FORMAT': 'json',
-    'DATETIME_INPUT_FORMATS': (
-        '%Y:%m:%d', 'iso-8601', '%Y-%m-%d'
-    ),
+    'DATETIME_INPUT_FORMATS': ('%Y:%m:%d', 'iso-8601', '%Y-%m-%d'),
     'EXCEPTION_HANDLER': 'seed.exception_handler.custom_exception_handler',
 }
 

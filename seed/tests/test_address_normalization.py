@@ -1,16 +1,15 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 from django.test import TestCase
 
 from seed.utils.address import normalize_address_str
 
 
 class TestAddressNormalization(TestCase):
-
     def test_normalization(self):
         cases = [
             # case, test str, expected resulting string, actual response
@@ -38,8 +37,7 @@ class TestAddressNormalization(TestCase):
             # https://github.com/SEED-platform/seed/issues/378
             ('regression 1', '100 Peach Ave. East', '100 peach ave e'),
             ('regression 2', '100 Peach Avenue E.', '100 peach ave e'),
-            ('multiple addresses', 'M St., N St., 4th St., Delaware St., SW',
-             'm st., n st., 4th st., delaware st., sw'),
+            ('multiple addresses', 'M St., N St., 4th St., Delaware St., SW', 'm st., n st., 4th st., delaware st., sw'),
             # House numbers declared as ranges
             ('no range separator', '300 322 S Green St', '300-322 s green st'),
             ('- as separator no whitespace', '300-322 S Green St', '300-322 s green st'),
@@ -51,7 +49,7 @@ class TestAddressNormalization(TestCase):
             # Ranges which leave off common prefix.
             ('end of range leaves off common prefix', '300-22 S Green St', '300-322 s green st'),
             # Odd characters
-            ('unicode characters', '123 Main St\uFFFD', '123 main st'),
+            ('unicode characters', '123 Main St\ufffd', '123 main st'),
             # Straight numbers
             ('straight numbers', 56195600100, '56195600100'),
             # bytestrings

@@ -1,28 +1,18 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
+import pytest
 from django.forms.models import model_to_dict
 from quantityfield.units import ureg
 
 from seed.models import Column, DerivedColumnParameter, PropertyView
-from seed.models.data_quality import (
-    DataQualityCheck,
-    DataQualityTypeCastError,
-    Rule,
-    StatusLabel,
-    UnitMismatchError
-)
+from seed.models.data_quality import DataQualityCheck, DataQualityTypeCastError, Rule, StatusLabel, UnitMismatchError
 from seed.models.derived_columns import DerivedColumn
 from seed.models.models import ASSESSED_RAW
-from seed.test_helpers.fake import (
-    FakeDerivedColumnFactory,
-    FakePropertyFactory,
-    FakePropertyStateFactory,
-    FakeTaxLotStateFactory
-)
+from seed.test_helpers.fake import FakeDerivedColumnFactory, FakePropertyFactory, FakePropertyStateFactory, FakeTaxLotStateFactory
 from seed.tests.util import AssertDictSubsetMixin, DataMappingBaseTestCase
 
 
@@ -52,9 +42,7 @@ class DataQualityCheckTests(AssertDictSubsetMixin, DataMappingBaseTestCase):
             'units': 'ft**2',
         }
 
-        rule = Rule.objects.filter(
-            table_name='PropertyState', field='conditioned_floor_area', severity=Rule.SEVERITY_ERROR
-        )
+        rule = Rule.objects.filter(table_name='PropertyState', field='conditioned_floor_area', severity=Rule.SEVERITY_ERROR)
         self.assertDictContainsSubset(ex_rule, model_to_dict(rule.first()))
 
     def test_remove_rules(self):
@@ -90,11 +78,10 @@ class DataQualityCheckTests(AssertDictSubsetMixin, DataMappingBaseTestCase):
             'table_name_does_not_exist': 'PropertyState',
         }
 
-        with self.assertRaises(Exception) as exc:
+        with pytest.raises(Exception) as exc:  # noqa: PT011
             dq.add_rule(ex_rule)
         self.assertEqual(
-            str(exc.exception),
-            "Rule data is not defined correctly: Rule() got an unexpected keyword argument 'table_name_does_not_exist'"
+            str(exc.value), "Rule data is not defined correctly: Rule() got an unexpected keyword argument 'table_name_does_not_exist'"
         )
 
     def test_check_property_state_example_data(self):
@@ -122,7 +109,7 @@ class DataQualityCheckTests(AssertDictSubsetMixin, DataMappingBaseTestCase):
             'max': None,
             'text_match': 'zzzzzzzzz',
             'severity': Rule.SEVERITY_ERROR,
-            'units': "",
+            'units': '',
         }
         dq.add_rule(rule_info)
 
@@ -191,19 +178,13 @@ class DataQualityCheckTests(AssertDictSubsetMixin, DataMappingBaseTestCase):
                 'range_and_out_of_range': 1,
                 'include_and_doesnt': 'aaaaa',
                 'exclude_and_does': 'foo',
-            }
+            },
         }
         ps = self.property_state_factory.get_property_state(None, **ps_data)
 
         # Create 5 column objects that correspond to the 3 ED rules since rules don't get
         # checked for anything other than REQUIRED if they don't have a corresponding col object
-        column_names = [
-            'required_and_missing',
-            'not_null_and_missing',
-            'range_and_out_of_range',
-            'include_and_doesnt',
-            'exclude_and_does'
-        ]
+        column_names = ['required_and_missing', 'not_null_and_missing', 'range_and_out_of_range', 'include_and_doesnt', 'exclude_and_does']
         for col_name in column_names:
             Column.objects.create(
                 column_name=col_name,
@@ -227,7 +208,7 @@ class DataQualityCheckTests(AssertDictSubsetMixin, DataMappingBaseTestCase):
             'max': None,
             'text_match': None,
             'severity': Rule.SEVERITY_ERROR,
-            'units': "",
+            'units': '',
         }
         dq.add_rule(rule_info)
 
@@ -300,9 +281,7 @@ class DataQualityCheckTests(AssertDictSubsetMixin, DataMappingBaseTestCase):
         }
         ps = self.property_state_factory.get_property_state(None, **ps_data)
         property = self.property_factory.get_property()
-        PropertyView.objects.create(
-            property=property, cycle=self.cycle, state=ps
-        )
+        PropertyView.objects.create(property=property, cycle=self.cycle, state=ps)
 
         dq.check_data(ps.__class__.__name__, [ps])
 
@@ -345,20 +324,20 @@ class DataQualityCheckTests(AssertDictSubsetMixin, DataMappingBaseTestCase):
         self.assertEqual(rule.str_to_data_type('   '), None)
         self.assertEqual(rule.str_to_data_type(None), None)
         self.assertEqual(rule.str_to_data_type(27.5), 27.5)
-        with self.assertRaises(DataQualityTypeCastError):
+        with pytest.raises(DataQualityTypeCastError):
             self.assertEqual(rule.str_to_data_type('not-a-number'), '')
 
     def test_str_to_data_type_date(self):
         rule = Rule.objects.create(name='date_rule', data_type=Rule.TYPE_DATE)
         d = rule.str_to_data_type('07/04/2000 08:55:30')
-        self.assertEqual(d.strftime("%Y-%m-%d %H  %M  %S"), '2000-07-04 08  55  30')
+        self.assertEqual(d.strftime('%Y-%m-%d %H  %M  %S'), '2000-07-04 08  55  30')
         self.assertEqual(rule.str_to_data_type(None), None)
         self.assertEqual(rule.str_to_data_type(27.5), 27.5)  # floats should return float
 
     def test_str_to_data_type_datetime(self):
         rule = Rule.objects.create(name='year_rule', data_type=Rule.TYPE_YEAR)
         d = rule.str_to_data_type('07/04/2000')
-        self.assertEqual(d.strftime("%Y-%m-%d"), '2000-07-04')
+        self.assertEqual(d.strftime('%Y-%m-%d'), '2000-07-04')
         self.assertEqual(rule.str_to_data_type(None), None)
         self.assertEqual(rule.str_to_data_type(27.5), 27.5)  # floats should return float
 
@@ -368,7 +347,7 @@ class DataQualityCheckTests(AssertDictSubsetMixin, DataMappingBaseTestCase):
         self.assertTrue(rule.minimum_valid('1000'))
         self.assertFalse(rule.minimum_valid(0.1))
         self.assertFalse(rule.minimum_valid('0.1'))
-        with self.assertRaises(DataQualityTypeCastError):
+        with pytest.raises(DataQualityTypeCastError):
             self.assertEqual(rule.minimum_valid('not-a-number'), '')
 
     def test_max_value(self):
@@ -377,7 +356,7 @@ class DataQualityCheckTests(AssertDictSubsetMixin, DataMappingBaseTestCase):
         self.assertTrue(rule.maximum_valid('0.1'))
         self.assertFalse(rule.maximum_valid(9999))
         self.assertFalse(rule.maximum_valid('9999'))
-        with self.assertRaises(DataQualityTypeCastError):
+        with pytest.raises(DataQualityTypeCastError):
             self.assertEqual(rule.maximum_valid('not-a-number'), '')
 
     def test_min_value_quantities(self):
@@ -393,43 +372,40 @@ class DataQualityCheckTests(AssertDictSubsetMixin, DataMappingBaseTestCase):
 
         # All of these should value since they are less than 10 (e.g., 5 kbtu/m2/year =~ 0.5 kbtu/ft2/year)
         # different units on check data
-        self.assertFalse(rule.minimum_valid(ureg.Quantity(5, "kBtu/ft**2/year")))
-        self.assertFalse(rule.minimum_valid(ureg.Quantity(5, "kBtu/m**2/year")))  # ~ 0.5 kbtu/ft2/year
-        self.assertFalse(rule.maximum_valid(ureg.Quantity(110, "kBtu/ft**2/year")))
-        self.assertFalse(rule.maximum_valid(ureg.Quantity(1100, "kBtu/m**2/year")))  # ~ 102.2 kbtu/ft2/year
+        self.assertFalse(rule.minimum_valid(ureg.Quantity(5, 'kBtu/ft**2/year')))
+        self.assertFalse(rule.minimum_valid(ureg.Quantity(5, 'kBtu/m**2/year')))  # ~ 0.5 kbtu/ft2/year
+        self.assertFalse(rule.maximum_valid(ureg.Quantity(110, 'kBtu/ft**2/year')))
+        self.assertFalse(rule.maximum_valid(ureg.Quantity(1100, 'kBtu/m**2/year')))  # ~ 102.2 kbtu/ft2/year
 
         # these should all pass
-        self.assertTrue(rule.minimum_valid(ureg.Quantity(10, "kBtu/ft**2/year")))
-        self.assertTrue(rule.minimum_valid(ureg.Quantity(110, "kBtu/m**2/year")))  # 10.22 kbtu/ft2/year
+        self.assertTrue(rule.minimum_valid(ureg.Quantity(10, 'kBtu/ft**2/year')))
+        self.assertTrue(rule.minimum_valid(ureg.Quantity(110, 'kBtu/m**2/year')))  # 10.22 kbtu/ft2/year
 
         # test the rule with different units
         rule = Rule.objects.create(name='min_str_rule', data_type=Rule.TYPE_EUI, min=10, max=100, units='kBtu/m**2/year')
-        self.assertFalse(rule.minimum_valid(ureg.Quantity(0.05, "kBtu/ft**2/year")))  # ~ 0.538 kbtu/m2/year
-        self.assertFalse(rule.maximum_valid(ureg.Quantity(15, "kBtu/ft**2/year")))  # ~ 161 kbtu/m2/year
-        self.assertFalse(rule.minimum_valid(ureg.Quantity(5, "kBtu/m**2/year")))
-        self.assertFalse(rule.maximum_valid(ureg.Quantity(110, "kBtu/m**2/year")))
+        self.assertFalse(rule.minimum_valid(ureg.Quantity(0.05, 'kBtu/ft**2/year')))  # ~ 0.538 kbtu/m2/year
+        self.assertFalse(rule.maximum_valid(ureg.Quantity(15, 'kBtu/ft**2/year')))  # ~ 161 kbtu/m2/year
+        self.assertFalse(rule.minimum_valid(ureg.Quantity(5, 'kBtu/m**2/year')))
+        self.assertFalse(rule.maximum_valid(ureg.Quantity(110, 'kBtu/m**2/year')))
 
     def test_incorrect_pint_unit_conversions(self):
         rule = Rule.objects.create(name='min_str_rule', data_type=Rule.TYPE_EUI, min=10, max=100, units='ft**2')
         # this should error out nicely
-        with self.assertRaises(UnitMismatchError):
-            self.assertFalse(rule.minimum_valid(ureg.Quantity(5, "kBtu/ft**2/year")))
+        with pytest.raises(UnitMismatchError):
+            self.assertFalse(rule.minimum_valid(ureg.Quantity(5, 'kBtu/ft**2/year')))
 
-        with self.assertRaises(UnitMismatchError):
-            self.assertFalse(rule.maximum_valid(ureg.Quantity(5, "kBtu/ft**2/year")))
+        with pytest.raises(UnitMismatchError):
+            self.assertFalse(rule.maximum_valid(ureg.Quantity(5, 'kBtu/ft**2/year')))
 
     def test_works_with_derived_columns(self):
         # -- Setup
         # create a derived column and properties that have the necessary data
         derived_column_name = 'my_derived_column'
-        derived_column = self.derived_column_factory.get_derived_column(
-            expression='$gross_floor_area + 1',
-            name=derived_column_name
-        )
+        derived_column = self.derived_column_factory.get_derived_column(expression='$gross_floor_area + 1', name=derived_column_name)
         DerivedColumnParameter.objects.create(
             parameter_name='gross_floor_area',
             derived_column=derived_column,
-            source_column=Column.objects.get(column_name='gross_floor_area', table_name='PropertyState')
+            source_column=Column.objects.get(column_name='gross_floor_area', table_name='PropertyState'),
         )
         # good b/c 0 + 1 will be in our DQ range
         ps_good = self.property_state_factory.get_property_state(gross_floor_area=0)
@@ -463,7 +439,4 @@ class DataQualityCheckTests(AssertDictSubsetMixin, DataMappingBaseTestCase):
         self.assertIsNone(good_results)
 
         bad_results = dq.results[ps_bad.id]['data_quality_results']
-        self.assertDictContainsSubset(
-            {'field': derived_column_name, 'message': f'{derived_column_name} out of range'},
-            bad_results[0]
-        )
+        self.assertDictContainsSubset({'field': derived_column_name, 'message': f'{derived_column_name} out of range'}, bad_results[0])

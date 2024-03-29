@@ -1,11 +1,11 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 Utility methods pertaining to data import tasks (save, mapping, matching).
 """
+
 from collections import defaultdict
 
 
@@ -24,9 +24,9 @@ def kbtu_thermal_conversion_factors(country):
     needed irrespective of any Organization's preferences.
     """
 
-    factors = defaultdict(lambda: {})
+    factors = defaultdict(dict)
 
-    if country == "US":
+    if country == 'US':
         factors['Coal (anthracite)']['GJ'] = 947.82
         factors['Coal (anthracite)']['Btu'] = 0.001
         factors['Coal (anthracite)']['kBtu (thousand Btu)'] = 1.00
@@ -204,7 +204,7 @@ def kbtu_thermal_conversion_factors(country):
         factors['Wood']['MBtu/MMBtu (million Btu)'] = 1000.00
         factors['Wood']['Tonnes (metric)'] = 15857.50
         factors['Wood']['Tons'] = 17480.00
-    elif country == "CAN":
+    elif country == 'CAN':
         factors['Coal (anthracite)']['GJ'] = 947.82
         factors['Coal (anthracite)']['Btu'] = 0.001
         factors['Coal (anthracite)']['kBtu (thousand Btu)'] = 1.00
@@ -394,7 +394,7 @@ def usage_point_id(raw_source_id):
     """
     if raw_source_id and '/' in raw_source_id:
         id_split = raw_source_id.split('/')
-        usage_point_index = next(i for i, substr in enumerate(id_split) if substr == "UsagePoint") + 1
+        usage_point_index = next(i for i, substr in enumerate(id_split) if substr == 'UsagePoint') + 1
         return id_split[usage_point_index]
     else:
         return raw_source_id

@@ -2,34 +2,21 @@
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 import os
 import tempfile
 
+import pytest
 from django.conf import settings
 from django.core.files.base import ContentFile
 from django.test import TestCase
 
 from seed.data_importer.models import ImportRecord
 from seed.landing.models import SEEDUser as User
-from seed.lib.superperms.orgs.models import (
-    AccessLevelInstance,
-    OrganizationUser
-)
-from seed.models import (
-    AnalysisInputFile,
-    AnalysisOutputFile,
-    BuildingFile,
-    ImportFile,
-    InventoryDocument,
-    Organization
-)
-from seed.test_helpers.fake import (
-    FakeAnalysisFactory,
-    FakeAnalysisPropertyViewFactory,
-    FakePropertyFactory,
-    FakePropertyStateFactory
-)
-from seed.views.v3.media import ModelForFileNotFound, check_file_permission
+from seed.lib.superperms.orgs.models import AccessLevelInstance, OrganizationUser
+from seed.models import AnalysisInputFile, AnalysisOutputFile, BuildingFile, ImportFile, InventoryDocument, Organization
+from seed.test_helpers.fake import FakeAnalysisFactory, FakeAnalysisPropertyViewFactory, FakePropertyFactory, FakePropertyStateFactory
+from seed.views.v3.media import ModelForFileNotFoundError, check_file_permission
 from seed.views.v3.uploads import get_upload_path
 
 
@@ -45,12 +32,8 @@ class TestMeasures(TestCase):
         self.org_b = Organization.objects.create()
         self.root_b = AccessLevelInstance.objects.get(organization_id=self.org_b, depth=1)
 
-        OrganizationUser.objects.create(
-            user=self.user_a, organization=self.org_a, access_level_instance_id=self.root_a.id
-        )
-        OrganizationUser.objects.create(
-            user=self.user_b, organization=self.org_b, access_level_instance_id=self.root_b.id
-        )
+        OrganizationUser.objects.create(user=self.user_a, organization=self.org_a, access_level_instance_id=self.root_a.id)
+        OrganizationUser.objects.create(user=self.user_b, organization=self.org_b, access_level_instance_id=self.root_b.id)
 
     @classmethod
     def setUpClass(cls):
@@ -102,15 +85,10 @@ class TestMeasures(TestCase):
         # create an import file like we do in uploads API
         # b/c this is for org_a, user_a should be able to access it
         import_record = ImportRecord.objects.create(
-            owner=self.user_a,
-            last_modified_by=self.user_a,
-            super_organization=self.org_a,
-            access_level_instance=self.org_a.root
+            owner=self.user_a, last_modified_by=self.user_a, super_organization=self.org_a, access_level_instance=self.org_a.root
         )
         ImportFile.objects.create(
-            import_record=import_record,
-            uploaded_filename=os.path.basename(self.uploads_file),
-            file=self.absolute_uploads_file
+            import_record=import_record, uploaded_filename=os.path.basename(self.uploads_file), file=self.absolute_uploads_file
         )
 
         # Act
@@ -128,12 +106,10 @@ class TestMeasures(TestCase):
             last_modified_by=self.user_a,
             # use suborg of org_a
             super_organization=self.org_a_sub,
-            access_level_instance=self.org_a.root
+            access_level_instance=self.org_a.root,
         )
         ImportFile.objects.create(
-            import_record=import_record,
-            uploaded_filename=os.path.basename(self.uploads_file),
-            file=self.absolute_uploads_file
+            import_record=import_record, uploaded_filename=os.path.basename(self.uploads_file), file=self.absolute_uploads_file
         )
 
         # Act
@@ -147,15 +123,10 @@ class TestMeasures(TestCase):
         # create an import file like we do in uploads API
         # b/c this is for org_a, user_b should NOT be able to access it
         import_record = ImportRecord.objects.create(
-            owner=self.user_a,
-            last_modified_by=self.user_a,
-            super_organization=self.org_a,
-            access_level_instance=self.org_a.root
+            owner=self.user_a, last_modified_by=self.user_a, super_organization=self.org_a, access_level_instance=self.org_a.root
         )
         ImportFile.objects.create(
-            import_record=import_record,
-            uploaded_filename=os.path.basename(self.uploads_file),
-            file=self.absolute_uploads_file
+            import_record=import_record, uploaded_filename=os.path.basename(self.uploads_file), file=self.absolute_uploads_file
         )
 
         # Act
@@ -172,8 +143,7 @@ class TestMeasures(TestCase):
             file=self.absolute_bsync_file,
             filename=os.path.basename(self.bsync_file),
             file_type=BuildingFile.BUILDINGSYNC,
-            property_state=(FakePropertyStateFactory(organization=self.org_a)
-                            .get_property_state())
+            property_state=(FakePropertyStateFactory(organization=self.org_a).get_property_state()),
         )
 
         # Act
@@ -189,8 +159,7 @@ class TestMeasures(TestCase):
             file=self.absolute_bsync_file,
             filename=os.path.basename(self.bsync_file),
             file_type=BuildingFile.BUILDINGSYNC,
-            property_state=(FakePropertyStateFactory(organization=self.org_a)
-                            .get_property_state())
+            property_state=(FakePropertyStateFactory(organization=self.org_a).get_property_state()),
         )
 
         # Act
@@ -202,16 +171,12 @@ class TestMeasures(TestCase):
 
     def test_successfully_get_analysis_input_file_when_user_is_org_member(self):
         # Setup
-        analysis = (FakeAnalysisFactory(organization=self.org_a, user=self.user_a)
-                    .get_analysis())
+        analysis = FakeAnalysisFactory(organization=self.org_a, user=self.user_a).get_analysis()
 
         # create AnalysisInputFile for org_a
         # note we have to create the actual file here instead of in the setUp method
         # because the path is dependent on the analysis ID
-        analysis_input_file = AnalysisInputFile.objects.create(
-            analysis=analysis,
-            content_type=AnalysisInputFile.BUILDINGSYNC
-        )
+        analysis_input_file = AnalysisInputFile.objects.create(analysis=analysis, content_type=AnalysisInputFile.BUILDINGSYNC)
         analysis_input_file.file.save('test.xml', ContentFile(b'Hello World'))
         analysis_input_file.save()
 
@@ -223,16 +188,12 @@ class TestMeasures(TestCase):
 
     def test_fails_get_analysis_input_file_when_user_is_not_org_member(self):
         # Setup
-        analysis = (FakeAnalysisFactory(organization=self.org_a, user=self.user_a)
-                    .get_analysis())
+        analysis = FakeAnalysisFactory(organization=self.org_a, user=self.user_a).get_analysis()
 
         # create AnalysisInputFile for org_a
         # note we have to create the actual file here instead of in the setUp method
         # because the path is dependent on the analysis ID
-        analysis_input_file = AnalysisInputFile.objects.create(
-            analysis=analysis,
-            content_type=AnalysisInputFile.BUILDINGSYNC
-        )
+        analysis_input_file = AnalysisInputFile.objects.create(analysis=analysis, content_type=AnalysisInputFile.BUILDINGSYNC)
         analysis_input_file.file.save('test.xml', ContentFile(b'Hello World'))
         analysis_input_file.save()
 
@@ -246,16 +207,12 @@ class TestMeasures(TestCase):
     def test_successfully_get_analysis_output_file_when_user_is_org_member(self):
         # Setup
         # create AnalysisOutputFile for org_a
-        analysis = (FakeAnalysisFactory(organization=self.org_a, user=self.user_a)
-                    .get_analysis())
+        analysis = FakeAnalysisFactory(organization=self.org_a, user=self.user_a).get_analysis()
         analysis_property_view = FakeAnalysisPropertyViewFactory(
-            organization=self.org_a,
-            user=self.user_a,
-            analysis=analysis
+            organization=self.org_a, user=self.user_a, analysis=analysis
         ).get_analysis_property_view()
         analysis_output_file = AnalysisOutputFile.objects.create(
-            content_type=AnalysisOutputFile.BUILDINGSYNC,
-            file=self.absolute_analysis_output_file
+            content_type=AnalysisOutputFile.BUILDINGSYNC, file=self.absolute_analysis_output_file
         )
         analysis_output_file.analysis_property_views.set([analysis_property_view.id])
 
@@ -268,16 +225,12 @@ class TestMeasures(TestCase):
     def test_fails_get_analysis_output_file_when_user_is_not_org_member(self):
         # Setup
         # create AnalysisOutputFile for org_a
-        analysis = (FakeAnalysisFactory(organization=self.org_a, user=self.user_a)
-                    .get_analysis())
+        analysis = FakeAnalysisFactory(organization=self.org_a, user=self.user_a).get_analysis()
         analysis_property_view = FakeAnalysisPropertyViewFactory(
-            organization=self.org_a,
-            user=self.user_a,
-            analysis=analysis
+            organization=self.org_a, user=self.user_a, analysis=analysis
         ).get_analysis_property_view()
         analysis_output_file = AnalysisOutputFile.objects.create(
-            content_type=AnalysisOutputFile.BUILDINGSYNC,
-            file=self.absolute_analysis_output_file
+            content_type=AnalysisOutputFile.BUILDINGSYNC, file=self.absolute_analysis_output_file
         )
         analysis_output_file.analysis_property_views.set([analysis_property_view.id])
 
@@ -295,7 +248,7 @@ class TestMeasures(TestCase):
             file=self.absolute_inv_doc_file,
             filename=os.path.basename(self.inv_doc_file),
             file_type=InventoryDocument.OSM,
-            property=(FakePropertyFactory(organization=self.org_a).get_property())
+            property=(FakePropertyFactory(organization=self.org_a).get_property()),
         )
 
         # Act
@@ -311,7 +264,7 @@ class TestMeasures(TestCase):
             file=self.absolute_inv_doc_file,
             filename=os.path.basename(self.inv_doc_file),
             file_type=InventoryDocument.OSM,
-            property=(FakePropertyFactory(organization=self.org_a).get_property())
+            property=(FakePropertyFactory(organization=self.org_a).get_property()),
         )
 
         # Act
@@ -323,47 +276,29 @@ class TestMeasures(TestCase):
 
     def test_fails_when_path_does_not_match(self):
         # test import files
-        with self.assertRaises(ModelForFileNotFound):
-            check_file_permission(
-                self.user_a,
-                'uploads/bogus.txt'
-            )
+        with pytest.raises(ModelForFileNotFoundError):
+            check_file_permission(self.user_a, 'uploads/bogus.txt')
 
         # test buildingsync files
-        with self.assertRaises(ModelForFileNotFound):
-            check_file_permission(
-                self.user_a,
-                'buildingsync_files/bogus.txt'
-            )
+        with pytest.raises(ModelForFileNotFoundError):
+            check_file_permission(self.user_a, 'buildingsync_files/bogus.txt')
 
         # test analysis input files
-        with self.assertRaises(ModelForFileNotFound):
-            check_file_permission(
-                self.user_a,
-                'analysis_input_files/bogus/bogus.txt'
-            )
+        with pytest.raises(ModelForFileNotFoundError):
+            check_file_permission(self.user_a, 'analysis_input_files/bogus/bogus.txt')
 
         # test analysis output files
-        with self.assertRaises(ModelForFileNotFound):
-            check_file_permission(
-                self.user_a,
-                'analysis_output_files/bogus.txt'
-            )
+        with pytest.raises(ModelForFileNotFoundError):
+            check_file_permission(self.user_a, 'analysis_output_files/bogus.txt')
 
         # test bad path
-        with self.assertRaises(ModelForFileNotFound):
-            check_file_permission(
-                self.user_a,
-                '/inventory_documents/file.txt'
-            )
+        with pytest.raises(ModelForFileNotFoundError):
+            check_file_permission(self.user_a, '/inventory_documents/file.txt')
 
         # test bad path
-        with self.assertRaises(ModelForFileNotFound):
-            check_file_permission(
-                self.user_a,
-                '/super-secret/file.txt'
-            )
+        with pytest.raises(ModelForFileNotFoundError):
+            check_file_permission(self.user_a, '/super-secret/file.txt')
 
         # test bad path
-        with self.assertRaises(ModelForFileNotFound):
+        with pytest.raises(ModelForFileNotFoundError):
             check_file_permission(self.user_a, '')

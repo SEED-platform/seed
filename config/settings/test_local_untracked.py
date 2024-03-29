@@ -13,6 +13,7 @@ seed local_untracked.py
             CACHES (i.e., everything here starting with 'your-')
     For local dev, all these services can run locally on localhost, 127.0.0.1, or 0.0.0.0.
 """
+
 import os
 
 from kombu import Exchange, Queue
@@ -51,13 +52,7 @@ else:
     }
     CELERY_RESULT_BACKEND = CELERY_BROKER_URL
     CELERY_TASK_DEFAULT_QUEUE = 'seed-local'
-    CELERY_TASK_QUEUES = (
-        Queue(
-            CELERY_TASK_DEFAULT_QUEUE,
-            Exchange(CELERY_TASK_DEFAULT_QUEUE),
-            routing_key=CELERY_TASK_DEFAULT_QUEUE
-        ),
-    )
+    CELERY_TASK_QUEUES = (Queue(CELERY_TASK_DEFAULT_QUEUE, Exchange(CELERY_TASK_DEFAULT_QUEUE), routing_key=CELERY_TASK_DEFAULT_QUEUE),)
     CELERY_TASK_ALWAYS_EAGER = False
     CELERY_TASK_EAGER_PROPAGATES = False
 

@@ -1,30 +1,20 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 :author Paul Munday <paul@paulmunday.net>
 """
+
 # pylint:disable=no-name-in-module
-import mock
+from unittest import mock
+
+import pytest
 from django.test import TestCase
 
 from seed.landing.models import SEEDUser as User
-from seed.lib.superperms.orgs.models import (
-    ROLE_MEMBER,
-    ROLE_OWNER,
-    ROLE_VIEWER,
-    Organization,
-    OrganizationUser
-)
-from seed.lib.superperms.orgs.permissions import (
-    SEEDOrgPermissions,
-    SEEDPublicPermissions,
-    get_org_id,
-    get_org_or_id,
-    get_user_org
-)
+from seed.lib.superperms.orgs.models import ROLE_MEMBER, ROLE_OWNER, ROLE_VIEWER, Organization, OrganizationUser
+from seed.lib.superperms.orgs.permissions import SEEDOrgPermissions, SEEDPublicPermissions, get_org_id, get_org_or_id, get_user_org
 from seed.utils.organizations import create_organization
 
 
@@ -34,7 +24,7 @@ def mock_request_factory(view_authz_org_id_kwarg=None, parser_kwargs=None, path=
     mock_view_dict = {} if view_authz_org_id_kwarg is None else {'authz_org_id_kwarg': view_authz_org_id_kwarg}
     mock_request.parser_context = {
         'view': type('MockView', (object,), mock_view_dict),
-        'kwargs': parser_kwargs if parser_kwargs is not None else {}
+        'kwargs': parser_kwargs if parser_kwargs is not None else {},
     }
     mock_request._request = type('MockRequest', (object,), {'path': path})
     mock_request.query_params = query_params if query_params is not None else {}
@@ -72,7 +62,7 @@ class PermissionsFunctionsTests(TestCase):
             parser_kwargs={'not_org_id': 1},
             path='/api/v3/nope/2/',
             query_params={'not_org_id': 3},
-            data={'not_org_id': 4}
+            data={'not_org_id': 4},
         )
         result = get_org_id(mock_request)
         self.assertEqual(None, result)
@@ -85,7 +75,7 @@ class PermissionsFunctionsTests(TestCase):
             # comes from path but useful in demonstrating source priorities
             path='/api/v3/organizations/2',
             query_params={'organization_id': 3},
-            data={'organization_id': 4}
+            data={'organization_id': 4},
         )
         result = get_org_id(mock_request)
         self.assertEqual(1, result)
@@ -96,7 +86,7 @@ class PermissionsFunctionsTests(TestCase):
             parser_kwargs={'not_org_id': 1},
             path='/api/v3/organizations/2',
             query_params={'organization_id': 3},
-            data={'organization_id': 4}
+            data={'organization_id': 4},
         )
         result = get_org_id(mock_request)
         self.assertEqual(2, result)
@@ -107,7 +97,7 @@ class PermissionsFunctionsTests(TestCase):
             parser_kwargs={'not_org_id': 1},
             path='/api/v3/nope/2/',
             query_params={'organization_id': 3},
-            data={'organization_id': 4}
+            data={'organization_id': 4},
         )
         result = get_org_id(mock_request)
         self.assertEqual(3, result)
@@ -118,7 +108,7 @@ class PermissionsFunctionsTests(TestCase):
             parser_kwargs={'not_org_id': 1},
             path='/api/v3/nope/2/',
             query_params={'not_org_id': 3},
-            data={'organization_id': 4}
+            data={'organization_id': 4},
         )
         result = get_org_id(mock_request)
         self.assertEqual(4, result)
@@ -127,11 +117,7 @@ class PermissionsFunctionsTests(TestCase):
         # not sure why request wouldn't have data, but this is an older test
         # so keeping it here.
         mock_request = mock_request_factory(
-            view_authz_org_id_kwarg=None,
-            parser_kwargs={'not_org_id': 1},
-            path='/api/v3/nope/2/',
-            query_params={'not_org_id': 3},
-            data={}
+            view_authz_org_id_kwarg=None, parser_kwargs={'not_org_id': 1}, path='/api/v3/nope/2/', query_params={'not_org_id': 3}, data={}
         )
         mock_value_error = mock.PropertyMock(side_effect=ValueError)
         type(mock_request).data = mock_value_error
@@ -144,7 +130,7 @@ class PermissionsFunctionsTests(TestCase):
             parser_kwargs={'not_org_id': 1},
             path='/api/v3/nope/2/',
             query_params={'organization_id': 'invalid_id'},
-            data={'organization_id': 4}
+            data={'organization_id': 4},
         )
         result = get_org_id(mock_request)
         self.assertEqual(-1, result)
@@ -154,7 +140,7 @@ class PermissionsFunctionsTests(TestCase):
             parser_kwargs={'not_org_id': 1},
             path='/api/v3/nope/2/',
             query_params={'not_org_id': 2},
-            data={'organization_id': 'invalid_id'}
+            data={'organization_id': 'invalid_id'},
         )
         result = get_org_id(mock_request)
         self.assertEqual(-1, result)
@@ -165,15 +151,9 @@ class PermissionsFunctionsTests(TestCase):
         fake_org_1 = Organization.objects.create()
         fake_org_2 = Organization.objects.create()
         fake_org_3 = Organization.objects.create()
-        OrganizationUser.objects.create(
-            user=fake_user, organization=fake_org_1, access_level_instance_id=fake_org_1.root.id
-        )
-        OrganizationUser.objects.create(
-            user=fake_user, organization=fake_org_2, access_level_instance_id=fake_org_2.root.id
-        )
-        OrganizationUser.objects.create(
-            user=fake_user, organization=fake_org_3, access_level_instance_id=fake_org_3.root.id
-        )
+        OrganizationUser.objects.create(user=fake_user, organization=fake_org_1, access_level_instance_id=fake_org_1.root.id)
+        OrganizationUser.objects.create(user=fake_user, organization=fake_org_2, access_level_instance_id=fake_org_2.root.id)
+        OrganizationUser.objects.create(user=fake_user, organization=fake_org_3, access_level_instance_id=fake_org_3.root.id)
         # no default_organization and no parent org
         result = get_user_org(fake_user)
         self.assertIn(result, fake_user.orgs.all())
@@ -286,12 +266,7 @@ class SEEDOrgPermissionsTests(TestCase):
         mock_value_error = mock.PropertyMock(side_effect=ValueError)
         type(mock_view).get_queryset = mock_value_error
         mock_view.queryset = None
-        self.assertRaises(
-            AssertionError,
-            permissions.has_permission,
-            mock_request,
-            mock_view
-        )
+        pytest.raises(AssertionError, permissions.has_permission, mock_request, mock_view)
 
 
 class SEEDPublicPermissionsTests(TestCase):

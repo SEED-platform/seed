@@ -11,7 +11,6 @@ def update_display_meter_units_options(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('orgs', '0017_auto_20210218_1715'),
     ]

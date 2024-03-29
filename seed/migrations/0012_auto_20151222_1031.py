@@ -1,6 +1,3 @@
-# -*- coding: utf-8 -*-
-from __future__ import unicode_literals
-
 from django.db import migrations
 
 
@@ -18,15 +15,12 @@ def merge_extra_data(b1, b2, default=None):
     non_default_extra_data = getattr(non_default, 'extra_data', {})
 
     all_keys = set(list(default_extra_data.keys()) + list(non_default_extra_data.keys()))
-    extra_data = {
-        k: default_extra_data.get(k) or non_default_extra_data.get(k)
-        for k in all_keys
-    }
+    extra_data = {k: default_extra_data.get(k) or non_default_extra_data.get(k) for k in all_keys}
 
     for item in extra_data:
-        if item in default_extra_data and default_extra_data[item]:
+        if default_extra_data.get(item):
             extra_data_sources[item] = default.pk
-        elif item in non_default_extra_data and non_default_extra_data[item]:
+        elif non_default_extra_data.get(item):
             extra_data_sources[item] = non_default.pk
         else:
             extra_data_sources[item] = default.pk

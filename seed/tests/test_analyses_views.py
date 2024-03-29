@@ -1,9 +1,9 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 import json
 
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -12,24 +12,13 @@ from django.urls import reverse_lazy
 from django.utils import timezone as tz
 
 from seed.landing.models import SEEDUser as User
-from seed.models import (
-    Analysis,
-    AnalysisOutputFile,
-    AnalysisPropertyView,
-    Meter,
-    MeterReading
-)
-from seed.test_helpers.fake import (
-    FakeCycleFactory,
-    FakePropertyFactory,
-    FakePropertyStateFactory
-)
+from seed.models import Analysis, AnalysisOutputFile, AnalysisPropertyView, Meter, MeterReading
+from seed.test_helpers.fake import FakeCycleFactory, FakePropertyFactory, FakePropertyStateFactory
 from seed.tests.util import AccessLevelBaseTestCase
 from seed.utils.organizations import create_organization
 
 
 class TestAnalysesView(TestCase):
-
     def setUp(self):
         user_details = {
             'username': 'test_user@demo.com',
@@ -44,8 +33,8 @@ class TestAnalysesView(TestCase):
         self.client.login(**user_details)
 
         cycle_factory = FakeCycleFactory(organization=self.org, user=self.user)
-        cycle_a = cycle_factory.get_cycle(name="Cycle A")
-        cycle_b = cycle_factory.get_cycle(name="Cycle B")
+        cycle_a = cycle_factory.get_cycle(name='Cycle A')
+        cycle_b = cycle_factory.get_cycle(name='Cycle B')
 
         property_factory = FakePropertyFactory(organization=self.org)
         self.property_a = property_factory.get_property()
@@ -67,16 +56,10 @@ class TestAnalysesView(TestCase):
             access_level_instance=self.org.root,
         )
         self.analysis_property_view_a = AnalysisPropertyView.objects.create(
-            analysis=self.analysis_a,
-            property=self.property_a,
-            cycle=cycle_a,
-            property_state=property_state_a
+            analysis=self.analysis_a, property=self.property_a, cycle=cycle_a, property_state=property_state_a
         )
         self.analysis_property_view_b = AnalysisPropertyView.objects.create(
-            analysis=self.analysis_a,
-            property=self.property_a,
-            cycle=cycle_b,
-            property_state=property_state_b
+            analysis=self.analysis_a, property=self.property_a, cycle=cycle_b, property_state=property_state_b
         )
 
         # create an analysis with two property views, each with the same cycle but a different property
@@ -89,16 +72,10 @@ class TestAnalysesView(TestCase):
             access_level_instance=self.org.root,
         )
         self.analysis_property_view_c = AnalysisPropertyView.objects.create(
-            analysis=self.analysis_b,
-            property=self.property_a,
-            cycle=cycle_a,
-            property_state=property_state_c
+            analysis=self.analysis_b, property=self.property_a, cycle=cycle_a, property_state=property_state_c
         )
         self.analysis_property_view_d = AnalysisPropertyView.objects.create(
-            analysis=self.analysis_b,
-            property=property_b,
-            cycle=cycle_a,
-            property_state=property_state_d
+            analysis=self.analysis_b, property=property_b, cycle=cycle_a, property_state=property_state_d
         )
 
         # create an analysis with no property views
@@ -123,8 +100,7 @@ class TestAnalysesView(TestCase):
 
         # create an output file and add to 3 analysis property views
         self.analysis_output_file_a = AnalysisOutputFile.objects.create(
-            file=SimpleUploadedFile('test file a', b'test file a contents'),
-            content_type=AnalysisOutputFile.BUILDINGSYNC
+            file=SimpleUploadedFile('test file a', b'test file a contents'), content_type=AnalysisOutputFile.BUILDINGSYNC
         )
         self.analysis_output_file_a.analysis_property_views.add(self.analysis_property_view_a)
         self.analysis_output_file_a.analysis_property_views.add(self.analysis_property_view_b)
@@ -132,8 +108,7 @@ class TestAnalysesView(TestCase):
 
         # create an output file and add to 1 analysis property view
         self.analysis_output_file_b = AnalysisOutputFile.objects.create(
-            file=SimpleUploadedFile('test file b', b'test file b contents'),
-            content_type=AnalysisOutputFile.BUILDINGSYNC
+            file=SimpleUploadedFile('test file b', b'test file b contents'), content_type=AnalysisOutputFile.BUILDINGSYNC
         )
         self.analysis_output_file_b.analysis_property_views.add(self.analysis_property_view_a)
 
@@ -160,9 +135,16 @@ class TestAnalysesView(TestCase):
         self.assertEqual(len(analysis_c['cycles']), 0)
 
     def test_list_with_property(self):
-        response = self.client.get("".join([
-            '/api/v3/properties/', str(self.property_a.pk), '/analyses/?organization_id=', str(self.org.pk),
-        ]))
+        response = self.client.get(
+            ''.join(
+                [
+                    '/api/v3/properties/',
+                    str(self.property_a.pk),
+                    '/analyses/?organization_id=',
+                    str(self.org.pk),
+                ]
+            )
+        )
         self.assertEqual(response.status_code, 200)
         result = json.loads(response.content)
         self.assertEqual(result['status'], 'success')
@@ -183,12 +165,7 @@ class TestAnalysesView(TestCase):
         self.assertEqual(response.status_code, 400)
 
     def test_retrieve_with_organization(self):
-        response = self.client.get("".join([
-            '/api/v3/analyses/',
-            str(self.analysis_a.pk),
-            '/?organization_id=',
-            str(self.org.pk)
-        ]))
+        response = self.client.get(''.join(['/api/v3/analyses/', str(self.analysis_a.pk), '/?organization_id=', str(self.org.pk)]))
         self.assertEqual(response.status_code, 200)
         result = json.loads(response.content)
         self.assertEqual(result['status'], 'success')
@@ -201,12 +178,7 @@ class TestAnalysesView(TestCase):
         self.assertEqual(response.status_code, 400)
 
     def test_list_views(self):
-        response = self.client.get("".join([
-            '/api/v3/analyses/',
-            str(self.analysis_a.pk),
-            '/views/?organization_id=',
-            str(self.org.pk)
-        ]))
+        response = self.client.get(''.join(['/api/v3/analyses/', str(self.analysis_a.pk), '/views/?organization_id=', str(self.org.pk)]))
         self.assertEqual(response.status_code, 200)
         result = json.loads(response.content)
         self.assertEqual(result['status'], 'success')
@@ -221,14 +193,18 @@ class TestAnalysesView(TestCase):
         self.assertEqual(len(view_b['output_files']), 1)
 
     def test_retrieve_view_with_output_file(self):
-        response = self.client.get("".join([
-            '/api/v3/analyses/',
-            str(self.analysis_b.pk),
-            '/views/',
-            str(self.analysis_property_view_c.pk),
-            '/?organization_id=',
-            str(self.org.pk)
-        ]))
+        response = self.client.get(
+            ''.join(
+                [
+                    '/api/v3/analyses/',
+                    str(self.analysis_b.pk),
+                    '/views/',
+                    str(self.analysis_property_view_c.pk),
+                    '/?organization_id=',
+                    str(self.org.pk),
+                ]
+            )
+        )
         self.assertEqual(response.status_code, 200)
         result = json.loads(response.content)
         self.assertEqual(result['status'], 'success')
@@ -236,14 +212,18 @@ class TestAnalysesView(TestCase):
         self.assertEqual(len(result['view']['output_files']), 1)
 
     def test_retrieve_view_with_no_output_file(self):
-        response = self.client.get("".join([
-            '/api/v3/analyses/',
-            str(self.analysis_b.pk),
-            '/views/',
-            str(self.analysis_property_view_d.pk),
-            '/?organization_id=',
-            str(self.org.pk)
-        ]))
+        response = self.client.get(
+            ''.join(
+                [
+                    '/api/v3/analyses/',
+                    str(self.analysis_b.pk),
+                    '/views/',
+                    str(self.analysis_property_view_d.pk),
+                    '/?organization_id=',
+                    str(self.org.pk),
+                ]
+            )
+        )
         self.assertEqual(response.status_code, 200)
         result = json.loads(response.content)
         self.assertEqual(result['status'], 'success')
@@ -255,7 +235,7 @@ class TestAnalysesViewPermissions(AccessLevelBaseTestCase):
     def setUp(self):
         super().setUp()
 
-        self.cycle = self.cycle_factory.get_cycle(name="Cycle A")
+        self.cycle = self.cycle_factory.get_cycle(name='Cycle A')
         self.root_analysis = Analysis.objects.create(
             name='test',
             service=Analysis.BSYNCR,
@@ -273,59 +253,50 @@ class TestAnalysesViewPermissions(AccessLevelBaseTestCase):
         self.child_view = self.property_view_factory.get_property_view(prprty=self.child_property, cycle=self.cycle)
 
         self.root_analysis_property_view = AnalysisPropertyView.objects.create(
-            analysis=self.root_analysis,
-            property=self.root_property,
-            cycle=self.cycle,
-            property_state=self.root_view.state
+            analysis=self.root_analysis, property=self.root_property, cycle=self.cycle, property_state=self.root_view.state
         )
         self.child_analysis_property_view = AnalysisPropertyView.objects.create(
-            analysis=self.root_analysis,
-            property=self.child_property,
-            cycle=self.cycle,
-            property_state=self.child_view.state
+            analysis=self.root_analysis, property=self.child_property, cycle=self.cycle, property_state=self.child_view.state
         )
 
         self.meter = Meter.objects.create(
             property=self.root_property,
             source=Meter.PORTFOLIO_MANAGER,
-            source_id="Source ID",
+            source_id='Source ID',
             type=Meter.ELECTRICITY_GRID,
         )
         self.meter.save()
         MeterReading.objects.create(
-            meter=self.meter,
-            start_time=tz.now(),
-            end_time=tz.now(),
-            reading=12345,
-            source_unit='kWh',
-            conversion_factor=1.00
+            meter=self.meter, start_time=tz.now(), end_time=tz.now(), reading=12345, source_unit='kWh', conversion_factor=1.00
         )
 
     def test_analysis_list(self):
-        url = reverse_lazy('api:v3:analyses-list') + "?organization_id=" + str(self.org.id)
+        url = reverse_lazy('api:v3:analyses-list') + '?organization_id=' + str(self.org.id)
 
         # child user can
         self.login_as_child_member()
         response = self.client.get(url, content_type='application/json')
-        assert len(response.json()["analyses"]) == 0
+        assert len(response.json()['analyses']) == 0
         assert response.status_code == 200
 
         # root users can
         self.login_as_root_member()
         response = self.client.get(url, content_type='application/json')
-        assert len(response.json()["analyses"]) == 1
+        assert len(response.json()['analyses']) == 1
         assert response.status_code == 200
 
     def test_analysis_create(self):
-        url = reverse_lazy('api:v3:analyses-list') + "?organization_id=" + str(self.org.id)
-        params = json.dumps({
-            "service": "EUI",
-            "property_view_ids": [self.root_view.id],
-            "name": "boo",
-            "access_level_instance_id": self.root_level_instance.id,
-            "end_time": "2016-02-01 00:00:00",
-            "configuration": {"select_meters": "all"},
-        })
+        url = reverse_lazy('api:v3:analyses-list') + '?organization_id=' + str(self.org.id)
+        params = json.dumps(
+            {
+                'service': 'EUI',
+                'property_view_ids': [self.root_view.id],
+                'name': 'boo',
+                'access_level_instance_id': self.root_level_instance.id,
+                'end_time': '2016-02-01 00:00:00',
+                'configuration': {'select_meters': 'all'},
+            }
+        )
 
         # child user cannot
         self.login_as_child_member()
@@ -338,7 +309,7 @@ class TestAnalysesViewPermissions(AccessLevelBaseTestCase):
         assert response.status_code == 200
 
     def test_analysis_get(self):
-        url = reverse_lazy('api:v3:analyses-detail', args=[self.root_analysis.pk]) + "?organization_id=" + str(self.org.id)
+        url = reverse_lazy('api:v3:analyses-detail', args=[self.root_analysis.pk]) + '?organization_id=' + str(self.org.id)
 
         # child user cannot
         self.login_as_child_member()
@@ -351,7 +322,7 @@ class TestAnalysesViewPermissions(AccessLevelBaseTestCase):
         assert response.status_code == 200
 
     def test_analysis_destroy(self):
-        url = reverse_lazy('api:v3:analyses-detail', args=[self.root_analysis.pk]) + "?organization_id=" + str(self.org.id)
+        url = reverse_lazy('api:v3:analyses-detail', args=[self.root_analysis.pk]) + '?organization_id=' + str(self.org.id)
 
         # child user cannot
         self.login_as_child_member()
@@ -364,7 +335,7 @@ class TestAnalysesViewPermissions(AccessLevelBaseTestCase):
         assert response.status_code == 200
 
     def test_analysis_start(self):
-        url = reverse_lazy('api:v3:analyses-start', args=[self.root_analysis.pk]) + "?organization_id=" + str(self.org.id)
+        url = reverse_lazy('api:v3:analyses-start', args=[self.root_analysis.pk]) + '?organization_id=' + str(self.org.id)
 
         # child user cannot
         self.login_as_child_member()
@@ -377,7 +348,7 @@ class TestAnalysesViewPermissions(AccessLevelBaseTestCase):
         assert response.status_code == 200
 
     def test_analysis_stop(self):
-        url = reverse_lazy('api:v3:analyses-stop', args=[self.root_analysis.pk]) + "?organization_id=" + str(self.org.id)
+        url = reverse_lazy('api:v3:analyses-stop', args=[self.root_analysis.pk]) + '?organization_id=' + str(self.org.id)
 
         # child user cannot
         self.login_as_child_member()
@@ -390,7 +361,7 @@ class TestAnalysesViewPermissions(AccessLevelBaseTestCase):
         assert response.status_code == 200
 
     def test_analysis_progress_key(self):
-        url = reverse_lazy('api:v3:analyses-progress-key', args=[self.root_analysis.pk]) + "?organization_id=" + str(self.org.id)
+        url = reverse_lazy('api:v3:analyses-progress-key', args=[self.root_analysis.pk]) + '?organization_id=' + str(self.org.id)
 
         # child user cannot
         self.login_as_child_member()
@@ -403,26 +374,26 @@ class TestAnalysesViewPermissions(AccessLevelBaseTestCase):
         assert response.status_code == 200
 
     def test_analysis_stats(self):
-        url = reverse_lazy('api:v3:analyses-stats') + "?organization_id=" + str(self.org.id) + "&cycle_id=" + str(self.cycle.pk)
+        url = reverse_lazy('api:v3:analyses-stats') + '?organization_id=' + str(self.org.id) + '&cycle_id=' + str(self.cycle.pk)
 
         # child user can
         self.login_as_child_member()
         response = self.client.get(url, content_type='application/json')
         assert response.status_code == 200
-        assert response.json()["total_records"] == 1
+        assert response.json()['total_records'] == 1
 
         # root users can
         self.login_as_root_member()
         response = self.client.get(url, content_type='application/json')
         assert response.status_code == 200
-        assert response.json()["total_records"] == 2
+        assert response.json()['total_records'] == 2
 
 
 class TestAnalysesViewViewPermissions(AccessLevelBaseTestCase):
     def setUp(self):
         super().setUp()
 
-        self.cycle = self.cycle_factory.get_cycle(name="Cycle A")
+        self.cycle = self.cycle_factory.get_cycle(name='Cycle A')
         self.root_analysis = Analysis.objects.create(
             name='test',
             service=Analysis.BSYNCR,
@@ -440,36 +411,25 @@ class TestAnalysesViewViewPermissions(AccessLevelBaseTestCase):
         self.child_view = self.property_view_factory.get_property_view(prprty=self.child_property, cycle=self.cycle)
 
         self.root_analysis_property_view = AnalysisPropertyView.objects.create(
-            analysis=self.root_analysis,
-            property=self.root_property,
-            cycle=self.cycle,
-            property_state=self.root_view.state
+            analysis=self.root_analysis, property=self.root_property, cycle=self.cycle, property_state=self.root_view.state
         )
         self.child_analysis_property_view = AnalysisPropertyView.objects.create(
-            analysis=self.root_analysis,
-            property=self.child_property,
-            cycle=self.cycle,
-            property_state=self.child_view.state
+            analysis=self.root_analysis, property=self.child_property, cycle=self.cycle, property_state=self.child_view.state
         )
 
         self.meter = Meter.objects.create(
             property=self.root_property,
             source=Meter.PORTFOLIO_MANAGER,
-            source_id="Source ID",
+            source_id='Source ID',
             type=Meter.ELECTRICITY_GRID,
         )
         self.meter.save()
         MeterReading.objects.create(
-            meter=self.meter,
-            start_time=tz.now(),
-            end_time=tz.now(),
-            reading=12345,
-            source_unit='kWh',
-            conversion_factor=1.00
+            meter=self.meter, start_time=tz.now(), end_time=tz.now(), reading=12345, source_unit='kWh', conversion_factor=1.00
         )
 
     def test_analysis_view_lit(self):
-        url = reverse_lazy('api:v3:analysis-views-list', args=[self.root_analysis.pk]) + "?organization_id=" + str(self.org.id)
+        url = reverse_lazy('api:v3:analysis-views-list', args=[self.root_analysis.pk]) + '?organization_id=' + str(self.org.id)
 
         # child user cannot
         self.login_as_child_member()
@@ -483,7 +443,7 @@ class TestAnalysesViewViewPermissions(AccessLevelBaseTestCase):
 
     def test_analysis_view_get(self):
         url = reverse_lazy('api:v3:analysis-views-detail', args=[self.root_analysis.pk, self.root_analysis_property_view.pk])
-        url += "?organization_id=" + str(self.org.id)
+        url += '?organization_id=' + str(self.org.id)
 
         # child user cannot
         self.login_as_child_member()

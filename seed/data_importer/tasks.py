@@ -1,10 +1,8 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
-from __future__ import absolute_import
 
 import collections
 import copy
@@ -16,7 +14,6 @@ import time
 import traceback
 import zipfile
 from bisect import bisect_left
-from builtins import str
 from collections import defaultdict, namedtuple
 from datetime import date, datetime
 from itertools import chain
@@ -39,19 +36,11 @@ from past.builtins import basestring
 
 from seed.building_sync import validation_client
 from seed.building_sync.building_sync import BuildingSync
-from seed.data_importer.access_level_instances_parser import (
-    AccessLevelInstancesParser
-)
+from seed.data_importer.access_level_instances_parser import AccessLevelInstancesParser
 from seed.data_importer.equivalence_partitioner import EquivalencePartitioner
-from seed.data_importer.match import (
-    match_and_link_incoming_properties_and_taxlots
-)
+from seed.data_importer.match import match_and_link_incoming_properties_and_taxlots
 from seed.data_importer.meters_parser import MetersParser
-from seed.data_importer.models import (
-    STATUS_READY_TO_MERGE,
-    ImportFile,
-    ImportRecord
-)
+from seed.data_importer.models import STATUS_READY_TO_MERGE, ImportFile, ImportRecord
 from seed.data_importer.sensor_readings_parser import SensorsReadingsParser
 from seed.data_importer.utils import usage_point_id
 from seed.lib.mcm import cleaners, mapper, reader
@@ -90,16 +79,12 @@ from seed.models import (
     TaxLotAuditLog,
     TaxLotProperty,
     TaxLotState,
-    TaxLotView
+    TaxLotView,
 )
 from seed.models.auditlog import AUDIT_IMPORT
 from seed.models.data_quality import DataQualityCheck, Rule
 from seed.utils.buildings import get_source_type
-from seed.utils.geocode import (
-    MapQuestAPIKeyError,
-    create_geocoded_additional_columns,
-    geocode_buildings
-)
+from seed.utils.geocode import MapQuestAPIKeyError, create_geocoded_additional_columns, geocode_buildings
 from seed.utils.match import update_sub_progress_total
 from seed.utils.ubid import decode_unique_ids
 
@@ -155,19 +140,17 @@ def do_checks(org_id, propertystate_ids, taxlotstate_ids, import_file_id=None):
 
     if import_file_id:
         propertystate_ids = list(
-            PropertyState.objects.filter(import_file=import_file_id).exclude(
-                data_state__in=[DATA_STATE_UNKNOWN, DATA_STATE_IMPORT,
-                                DATA_STATE_DELETE]).values_list('id', flat=True)
+            PropertyState.objects.filter(import_file=import_file_id)
+            .exclude(data_state__in=[DATA_STATE_UNKNOWN, DATA_STATE_IMPORT, DATA_STATE_DELETE])
+            .values_list('id', flat=True)
         )
         taxlotstate_ids = list(
-            TaxLotState.objects.filter(import_file=import_file_id).exclude(
-                data_state__in=[DATA_STATE_UNKNOWN, DATA_STATE_IMPORT,
-                                DATA_STATE_DELETE]).values_list('id', flat=True)
+            TaxLotState.objects.filter(import_file=import_file_id)
+            .exclude(data_state__in=[DATA_STATE_UNKNOWN, DATA_STATE_IMPORT, DATA_STATE_DELETE])
+            .values_list('id', flat=True)
         )
 
-    tasks = _data_quality_check_create_tasks(
-        org_id, propertystate_ids, taxlotstate_ids, dq_id
-    )
+    tasks = _data_quality_check_create_tasks(org_id, propertystate_ids, taxlotstate_ids, dq_id)
     progress_data.total = len(tasks)
     progress_data.save()
     if tasks:
@@ -202,7 +185,7 @@ def finish_mapping(import_file_id, mark_as_done, progress_key):
             value = False
             if state == 'done':
                 value = True
-            setattr(import_record, '{0}_{1}'.format(action, state), value)
+            setattr(import_record, f'{action}_{state}', value)
 
     import_record.finish_time = tz.now()
     import_record.status = STATUS_READY_TO_MERGE
@@ -251,8 +234,7 @@ def _build_cleaner(org):
         ontology['types'][column.column_name] = ('quantity', column.units_pint)
 
     # find all the extra data columns with units and add them as well
-    for column in Column.objects.filter(organization=org,
-                                        is_extra_data=True).select_related('unit'):
+    for column in Column.objects.filter(organization=org, is_extra_data=True).select_related('unit'):
         if column.unit:
             column_type = _translate_unit_to_type(column.unit.get_unit_type_display())
             ontology['types'][column.column_name] = column_type
@@ -305,10 +287,9 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, **kwargs):
     # hard coded
     delimited_fields = {}
     if 'TaxLotState' in table_mappings:
-        jurisdiction_tax_lot_id_table_mapping = next(iter(
-            k for k, v in table_mappings["TaxLotState"].items()
-            if v[1] == "jurisdiction_tax_lot_id"
-        ), None)
+        jurisdiction_tax_lot_id_table_mapping = next(
+            iter(k for k, v in table_mappings['TaxLotState'].items() if v[1] == 'jurisdiction_tax_lot_id'), None
+        )
 
         if jurisdiction_tax_lot_id_table_mapping:
             delimited_fields['jurisdiction_tax_lot_id'] = {
@@ -326,9 +307,12 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, **kwargs):
     # not created.
     if 'PropertyState' in table_mappings:
         if delimited_fields and delimited_fields['jurisdiction_tax_lot_id']:
-            table_mappings['PropertyState'][
-                delimited_fields['jurisdiction_tax_lot_id']['from_field']] = (
-                'PropertyState', 'lot_number', 'Lot Number', False)
+            table_mappings['PropertyState'][delimited_fields['jurisdiction_tax_lot_id']['from_field']] = (
+                'PropertyState',
+                'lot_number',
+                'Lot Number',
+                False,
+            )
     # *** END BREAK OUT ***
     try:
         with transaction.atomic():
@@ -352,8 +336,7 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, **kwargs):
                         footprint_details['obj_field'] = v[1]
 
                 # All the data live in the PropertyState.extra_data field when the data are imported
-                data = PropertyState.objects.filter(id__in=ids).only('extra_data',
-                                                                     'bounding_box').iterator()
+                data = PropertyState.objects.filter(id__in=ids).only('extra_data', 'bounding_box').iterator()
 
                 # Since we are importing CSV, then each extra_data field will have the same fields.
                 # So save the map_model_obj outside of for loop to pass into the `save_column_names`
@@ -377,17 +360,8 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, **kwargs):
                     # _log.debug("delimited_field_list is set to {}".format(delimited_field_list))
 
                     # The raw data upon import is in the extra_data column
-                    for row in expand_rows(
-                        original_row.extra_data, delimited_field_list, expand_row
-                    ):
-                        map_model_obj = mapper.map_row(
-                            row,
-                            mappings,
-                            STR_TO_CLASS[table],
-                            extra_data_fields,
-                            cleaner=map_cleaner,
-                            **kwargs
-                        )
+                    for row in expand_rows(original_row.extra_data, delimited_field_list, expand_row):
+                        map_model_obj = mapper.map_row(row, mappings, STR_TO_CLASS[table], extra_data_fields, cleaner=map_cleaner, **kwargs)
 
                         # save cross related data, that is data that needs to go into the other
                         # model's collection as well.
@@ -398,7 +372,7 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, **kwargs):
                         map_model_obj.source_type = save_type
                         map_model_obj.organization = import_file.import_record.super_organization
                         # _process_ali_data(map_model_obj, import_file.access_level_instance)
-                        _process_ali_data(map_model_obj, row, import_file.access_level_instance, table_mappings.get(""))
+                        _process_ali_data(map_model_obj, row, import_file.access_level_instance, table_mappings.get(''))
 
                         if hasattr(map_model_obj, 'data_state'):
                             map_model_obj.data_state = DATA_STATE_MAPPING
@@ -410,13 +384,11 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, **kwargs):
                         # make sure that the object hasn't already been created. For example, in
                         # the test data the tax lot id is the same for many rows. Make sure
                         # to only create/save the object if it hasn't been created before.
-                        if hash_state_object(map_model_obj, include_extra_data=False) == \
-                            hash_state_object(
-                                STR_TO_CLASS[table](organization=map_model_obj.organization),
-                                include_extra_data=False):
+                        if hash_state_object(map_model_obj, include_extra_data=False) == hash_state_object(
+                            STR_TO_CLASS[table](organization=map_model_obj.organization), include_extra_data=False
+                        ):
                             # Skip this object as it has no data...
-                            _log.warning(
-                                "Skipping property or taxlot during mapping because it is identical to another row")
+                            _log.warning('Skipping property or taxlot during mapping because it is identical to another row')
                             continue
 
                         # If a footprint was provided but footprint was not populated/valid,
@@ -424,8 +396,9 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, **kwargs):
                         # Also create a new rule for this new column
                         if footprint_details.get('obj_field'):
                             if getattr(map_model_obj, footprint_details['obj_field']) is None:
-                                _store_raw_footprint_and_create_rule(footprint_details, table, org, import_file,
-                                                                     original_row, map_model_obj)
+                                _store_raw_footprint_and_create_rule(
+                                    footprint_details, table, org, import_file, original_row, map_model_obj
+                                )
 
                         # There was an error with a field being too long [> 255 chars].
                         map_model_obj.save()
@@ -435,7 +408,9 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, **kwargs):
                             raw_ps_id = original_row.id
                             xml_filename = import_file.raw_property_state_to_filename.get(str(raw_ps_id))
                             if xml_filename is None:
-                                raise Exception('Expected ImportFile to have the raw PropertyStates id in its raw_property_state_to_filename dict')
+                                raise Exception(
+                                    'Expected ImportFile to have the raw PropertyStates id in its raw_property_state_to_filename dict'
+                                )
 
                             from_zipfile = import_file.uploaded_filename.endswith('.zip')
                             # if user uploaded a zipfile, find the xml file related to this property and use it
@@ -443,17 +418,14 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, **kwargs):
                             if from_zipfile:
                                 with zipfile.ZipFile(import_file.file, 'r', zipfile.ZIP_STORED) as openzip:
                                     new_file = SimpleUploadedFile(
-                                        name=xml_filename,
-                                        content=openzip.read(xml_filename),
-                                        content_type='application/xml')
+                                        name=xml_filename, content=openzip.read(xml_filename), content_type='application/xml'
+                                    )
                             else:
                                 xml_filename = import_file.uploaded_filename
                                 if xml_filename == '':
                                     raise Exception('Expected ImportFiles uploaded_filename to be non-empty')
                                 new_file = SimpleUploadedFile(
-                                    name=xml_filename,
-                                    content=import_file.file.read(),
-                                    content_type='application/xml'
+                                    name=xml_filename, content=import_file.file.read(), content_type='application/xml'
                                 )
 
                             building_file = BuildingFile.objects.create(
@@ -468,15 +440,14 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, **kwargs):
 
                         # Create an audit log record for the new map_model_obj that was created.
 
-                        AuditLogClass = PropertyAuditLog if isinstance(
-                            map_model_obj, PropertyState) else TaxLotAuditLog
+                        AuditLogClass = PropertyAuditLog if isinstance(map_model_obj, PropertyState) else TaxLotAuditLog
                         AuditLogClass.objects.create(
                             organization=org,
                             state=map_model_obj,
                             name='Import Creation',
                             description='Creation from Import file.',
                             import_filename=import_file,
-                            record_type=AUDIT_IMPORT
+                            record_type=AUDIT_IMPORT,
                         )
 
                 # Make sure that we've saved all of the extra_data column names from the first item
@@ -485,15 +456,15 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, **kwargs):
                     Column.save_column_names(map_model_obj)
     except IntegrityError as e:
         progress_data.finish_with_error('Could not map_row_chunk with error', str(e))
-        raise IntegrityError("Could not map_row_chunk with error: %s" % str(e))
+        raise IntegrityError('Could not map_row_chunk with error: %s' % str(e))
     except DataError as e:
         _log.error(traceback.format_exc())
         progress_data.finish_with_error('Invalid data found', str(e))
-        raise DataError("Invalid data found: %s" % str(e))
+        raise DataError('Invalid data found: %s' % str(e))
     except TypeError as e:
         _log.error('Error mapping data with error: %s' % str(e))
         progress_data.finish_with_error('Invalid type found while mapping data', str(e))
-        raise DataError("Invalid type found while mapping data: %s" % str(e))
+        raise DataError('Invalid type found while mapping data: %s' % str(e))
 
     progress_data.step()
 
@@ -510,23 +481,23 @@ def _process_ali_data(model, raw_data, import_file_ali, ah_mappings):
 
     # if not mappings
     if not ah_mappings:
-        model.raw_access_level_instance_error = "Missing Access Level mappings."
+        model.raw_access_level_instance_error = 'Missing Access Level mappings.'
         return
 
     # clean ali_info
     ali_info = {
         to_col: raw_data.get(from_col)
         for from_col, (_, to_col, _, _) in ah_mappings.items()
-        if raw_data.get(from_col) is not None and raw_data.get(from_col) != ""
+        if raw_data.get(from_col) is not None and raw_data.get(from_col) != ''
     }
     if not ali_info:
-        model.raw_access_level_instance_error = "Missing Access Level Column data."
+        model.raw_access_level_instance_error = 'Missing Access Level Column data.'
         return
 
     # ensure we have a valid set of keys, else error out
-    needed_keys = set(org_alns[:len(ali_info)])
+    needed_keys = set(org_alns[: len(ali_info)])
     if needed_keys != ali_info.keys():
-        model.raw_access_level_instance_error = "Missing/Incomplete Access Level Column."
+        model.raw_access_level_instance_error = 'Missing/Incomplete Access Level Column.'
         return
 
     # try to get ali matching ali info within subtree
@@ -543,9 +514,9 @@ def _process_ali_data(model, raw_data, import_file_ali, ah_mappings):
         # 1. the user can see the ali but cannot access, or
         # 2. the ali cannot be seen by the user and/or doesn't exist.
         if ancestor_ali is not None:
-            model.raw_access_level_instance_error = "Access Level Instance cannot be accessed with the permissions of this import file."
+            model.raw_access_level_instance_error = 'Access Level Instance cannot be accessed with the permissions of this import file.'
         else:
-            model.raw_access_level_instance_error = "Access Level Information does not match any existing Access Level Instance."
+            model.raw_access_level_instance_error = 'Access Level Information does not match any existing Access Level Instance.'
 
         return
 
@@ -556,12 +527,7 @@ def _process_ali_data(model, raw_data, import_file_ali, ah_mappings):
 def _store_raw_footprint_and_create_rule(footprint_details, table, org, import_file, original_row, map_model_obj):
     column_name = footprint_details['raw_field'] + ' (Invalid Footprint)'
 
-    column_mapping_for_cache = {
-        'from_field': column_name,
-        'from_units': None,
-        'to_field': column_name,
-        'to_table_name': table
-    }
+    column_mapping_for_cache = {'from_field': column_name, 'from_units': None, 'to_field': column_name, 'to_table_name': table}
 
     column_mapping = column_mapping_for_cache.copy()
     column_mapping['to_field_display_name'] = column_name
@@ -607,18 +573,21 @@ def _map_data_create_tasks(import_file_id, progress_key):
 
     source_type = SEED_DATA_SOURCES_MAPPING.get(import_file.source_type, ASSESSED_RAW)
 
-    qs = PropertyState.objects.filter(
-        import_file=import_file,
-        source_type=source_type,
-        data_state=DATA_STATE_IMPORT,
-    ).only('id').iterator()
+    qs = (
+        PropertyState.objects.filter(
+            import_file=import_file,
+            source_type=source_type,
+            data_state=DATA_STATE_IMPORT,
+        )
+        .only('id')
+        .iterator()
+    )
 
     id_chunks = [[obj.id for obj in chunk] for chunk in batch(qs, 100)]
 
     progress_data.total = len(id_chunks)
     progress_data.save()
-    tasks = [map_row_chunk.si(ids, import_file_id, source_type, progress_data.key)
-             for ids in id_chunks]
+    tasks = [map_row_chunk.si(ids, import_file_id, source_type, progress_data.key) for ids in id_chunks]
 
     return tasks
 
@@ -644,14 +613,14 @@ def _data_quality_check_create_tasks(org_id, property_state_ids, taxlot_state_id
 
     tasks = []
     if property_state_ids:
-        id_chunks = [[obj for obj in chunk] for chunk in batch(property_state_ids, 100)]
+        id_chunks = [list(chunk) for chunk in batch(property_state_ids, 100)]
         for ids in id_chunks:
-            tasks.append(check_data_chunk.s("PropertyState", ids, dq_id))
+            tasks.append(check_data_chunk.s('PropertyState', ids, dq_id))
 
     if taxlot_state_ids:
-        id_chunks_tl = [[obj for obj in chunk] for chunk in batch(taxlot_state_ids, 100)]
+        id_chunks_tl = [list(chunk) for chunk in batch(taxlot_state_ids, 100)]
         for ids in id_chunks_tl:
-            tasks.append(check_data_chunk.s("TaxLotState", ids, dq_id))
+            tasks.append(check_data_chunk.s('TaxLotState', ids, dq_id))
 
     return tasks
 
@@ -680,15 +649,19 @@ def map_data_synchronous(import_file_id: int) -> dict:
     for header in column_headers:
         duplicate_tracker[header] += 1
         if duplicate_tracker[header] > 1:
-            raise Exception("Duplicate column found in file: %s" % (header))
+            raise Exception('Duplicate column found in file: %s' % (header))
 
     source_type = SEED_DATA_SOURCES_MAPPING.get(import_file.source_type, ASSESSED_RAW)
 
-    qs = PropertyState.objects.filter(
-        import_file=import_file,
-        source_type=source_type,
-        data_state=DATA_STATE_IMPORT,
-    ).only('id').iterator()
+    qs = (
+        PropertyState.objects.filter(
+            import_file=import_file,
+            source_type=source_type,
+            data_state=DATA_STATE_IMPORT,
+        )
+        .only('id')
+        .iterator()
+    )
 
     # This version of the `map_data` should only be run when the data
     # set is reasonably small because it will block operations and prevent
@@ -722,7 +695,7 @@ def map_data(import_file_id, remap=False, mark_as_done=True):
     for header in column_headers:
         duplicate_tracker[header] += 1
         if duplicate_tracker[header] > 1:
-            raise Exception("Duplicate column found in file: %s" % (header))
+            raise Exception('Duplicate column found in file: %s' % (header))
 
     if remap:
         # Check to ensure that import files has not already been matched/merged.
@@ -759,7 +732,7 @@ def map_data(import_file_id, remap=False, mark_as_done=True):
     if tasks:
         chord(tasks)(finish_mapping.si(import_file_id, mark_as_done, progress_data.key))
     else:
-        _log.debug("Not creating finish_mapping chord, calling directly")
+        _log.debug('Not creating finish_mapping chord, calling directly')
         finish_mapping.si(import_file_id, mark_as_done, progress_data.key)
 
     return progress_data.result()
@@ -785,8 +758,7 @@ def _save_raw_data_chunk(chunk, file_pk, progress_key):
     try:
         with transaction.atomic():
             for c in chunk:
-                raw_property = PropertyState(
-                    organization=import_file.import_record.super_organization)
+                raw_property = PropertyState(organization=import_file.import_record.super_organization)
                 raw_property.import_file = import_file
 
                 # sanitize c and remove any diacritics
@@ -796,15 +768,14 @@ def _save_raw_data_chunk(chunk, file_pk, progress_key):
                     key = k.strip()
 
                     source_filename = None
-                    if key == "bounding_box":  # capture bounding_box GIS field on raw record
+                    if key == 'bounding_box':  # capture bounding_box GIS field on raw record
                         raw_property.bounding_box = v
-                    elif key == "_source_filename":  # grab source filename (for BSync)
+                    elif key == '_source_filename':  # grab source filename (for BSync)
                         source_filename = v
                     elif isinstance(v, basestring):
                         new_chunk[key] = normalize_unicode_and_characters(v)
                     elif isinstance(v, (datetime, date)):
-                        raise TypeError(
-                            "Datetime class not supported in Extra Data. Needs to be a string.")
+                        raise TypeError('Datetime class not supported in Extra Data. Needs to be a string.')
                     else:
                         new_chunk[key] = v
                 raw_property.extra_data = new_chunk
@@ -817,7 +788,7 @@ def _save_raw_data_chunk(chunk, file_pk, progress_key):
                     raw_property_state_to_filename[str(raw_property.id)] = source_filename
 
     except IntegrityError as e:
-        raise IntegrityError("Could not save_raw_data_chunk with error: %s" % (e))
+        raise IntegrityError('Could not save_raw_data_chunk with error: %s' % (e))
 
     # Indicate progress
     progress_data = ProgressData.from_key(progress_key)
@@ -844,8 +815,10 @@ def finish_raw_save(results, file_pk, progress_key):
     import_file = ImportFile.objects.get(pk=file_pk)
     import_file.raw_save_done = True
 
-    if import_file.source_type in [SEED_DATA_SOURCES[PORTFOLIO_METER_USAGE][1],
-                                   SEED_DATA_SOURCES[GREEN_BUTTON][1]] and progress_data.summary() is not None:
+    if (
+        import_file.source_type in [SEED_DATA_SOURCES[PORTFOLIO_METER_USAGE][1], SEED_DATA_SOURCES[GREEN_BUTTON][1]]
+        and progress_data.summary() is not None
+    ):
         import_file.cycle_id = None
 
         new_summary = _append_meter_import_results_to_summary(results, progress_data.summary())
@@ -900,7 +873,7 @@ def cache_first_rows(import_file, parser):
 
     # _log.debug(first_five_rows)
 
-    import_file.cached_second_to_fifth_row = "\n".join(first_five_rows)
+    import_file.cached_second_to_fifth_row = '\n'.join(first_five_rows)
     if first_row:
         first_row = reader.ROW_DELIMITER.join(first_row)
     import_file.cached_first_row = first_row or ''
@@ -976,15 +949,12 @@ def _save_sensor_data_create_tasks(file_pk, progress_key):
 
     sensors = []
     for sensor_datum in sensor_data:
-        s, _ = Sensor.objects.get_or_create(**{
-            "column_name": sensor_datum["column_name"],
-            "data_logger": data_logger
-        })
-        s.display_name = sensor_datum["display_name"]
-        s.location_description = sensor_datum["location_description"]
-        s.description = sensor_datum["description"]
-        s.sensor_type = sensor_datum["type"]
-        s.units = sensor_datum["units"]
+        s, _ = Sensor.objects.get_or_create(column_name=sensor_datum['column_name'], data_logger=data_logger)
+        s.display_name = sensor_datum['display_name']
+        s.location_description = sensor_datum['location_description']
+        s.description = sensor_datum['description']
+        s.sensor_type = sensor_datum['type']
+        s.units = sensor_datum['units']
 
         s.save()
         sensors.append(s)
@@ -1008,17 +978,13 @@ def _save_sensor_readings_data_create_tasks(file_pk, progress_key):
     import_file.matching_results_data = {}
     import_file.save()
 
-    parser = SensorsReadingsParser.factory(
-        import_file.local_file,
-        org_id,
-        data_logger_id=data_logger_id
-    )
+    parser = SensorsReadingsParser.factory(import_file.local_file, org_id, data_logger_id=data_logger_id)
     sensor_readings_data = parser.sensor_readings_details
 
     tasks = []
     chunk_size = 500
     for sensor_column_name, readings in sensor_readings_data.items():
-        readings_tuples = [t for t in readings.items()]
+        readings_tuples = list(readings.items())
         for batch_readings in batch(readings_tuples, chunk_size):
             tasks.append(_save_sensor_readings_task.s(batch_readings, data_logger_id, sensor_column_name, progress_data.key))
 
@@ -1052,11 +1018,11 @@ def _save_sensor_readings_task(readings_tuples, data_logger_id, sensor_column_na
                     reading_strings.append(f"({sensor.id}, '{timestamp}', '{value}', '{is_occupied}')")
 
                 sql = (
-                    'INSERT INTO seed_sensorreading(sensor_id, timestamp, reading, is_occupied)' +
-                    ' VALUES ' + ', '.join(reading_strings) +
-                    ' ON CONFLICT (sensor_id, timestamp)' +
-                    ' DO UPDATE SET reading = EXCLUDED.reading' +
-                    ' RETURNING reading;'
+                    f'INSERT INTO seed_sensorreading(sensor_id, timestamp, reading, is_occupied)'  # noqa: S608
+                    f' VALUES {", ".join(reading_strings)}'
+                    f' ON CONFLICT (sensor_id, timestamp)'
+                    f' DO UPDATE SET reading = EXCLUDED.reading'
+                    f' RETURNING reading;'
                 )
                 with connection.cursor() as cursor:
                     cursor.execute(sql)
@@ -1068,9 +1034,9 @@ def _save_sensor_readings_task(readings_tuples, data_logger_id, sensor_column_na
                 progress_data.finish_with_error('data failed to import')
                 raise e
         except DataError as e:
-            if "date/time field" in str(e):
+            if 'date/time field' in str(e):
                 result[sensor_column_name] = {'error': 'Invalid readings. Ensure timestamps are in iso format.'}
-            elif "invalid input syntax for type double precision" in str(e):
+            elif 'invalid input syntax for type double precision' in str(e):
                 result[sensor_column_name] = {'error': 'Invalid readings. Ensure readings are numbers.'}
             else:
                 result[sensor_column_name] = {'error': 'Invalid readings.'}
@@ -1101,7 +1067,7 @@ def _save_access_level_instances_task(rows, org_id, progress_key):
     # determine whether root level was provided in file (if not, remove from list)
     has_root = True
     if rows:
-        headers = [x.lower() for x in rows[0].keys()]
+        headers = [x.lower() for x in rows[0]]
 
         if access_level_names[0] not in headers:
             access_level_names.pop(0)
@@ -1122,11 +1088,11 @@ def _save_access_level_instances_task(rows, org_id, progress_key):
         for key, val in row.items():
             # check headers
             if key not in access_level_names:
-                message = f"Error reading CSV data row: {row}...no access level for column {key} found"
+                message = f'Error reading CSV data row: {row}...no access level for column {key} found'
                 break
             # check for empty value (don't add blanks)
             if not val:
-                message = f"Blank value for column {key} in CSV data row: {row}...skipping"
+                message = f'Blank value for column {key} in CSV data row: {row}...skipping'
                 break
 
             # does this level exist already?
@@ -1169,10 +1135,7 @@ def _save_access_level_instances_data_create_tasks(filename, org_id, progress_ke
     progress_data = ProgressData.from_key(progress_key)
 
     # open and read in file
-    parser = AccessLevelInstancesParser.factory(
-        open(filename, 'r'),
-        org_id
-    )
+    parser = AccessLevelInstancesParser.factory(open(filename), org_id)
     access_level_instances_data = parser.access_level_instances_details
 
     progress_data.total = len(access_level_instances_data)
@@ -1199,26 +1162,21 @@ def _save_greenbutton_data_task(readings, meter_id, meter_usage_point_id, progre
     meter = Meter.objects.get(pk=meter_id)
 
     result = {}
-    result_summary_key = "{} - {} - {}".format(
-        meter.property_id,
-        meter_usage_point_id,
-        meter.get_type_display()
-    )
+    result_summary_key = f'{meter.property_id} - {meter_usage_point_id} - {meter.get_type_display()}'
 
     try:
         with transaction.atomic():
             reading_strings = [
                 f"({meter_id}, '{reading['start_time'].isoformat(' ')}', '{reading['end_time'].isoformat(' ')}', {reading['reading']}, '{reading['source_unit']}', {reading['conversion_factor']})"
-                for reading
-                in readings
+                for reading in readings
             ]
 
             sql = (
-                'INSERT INTO seed_meterreading(meter_id, start_time, end_time, reading, source_unit, conversion_factor)' +
-                ' VALUES ' + ', '.join(reading_strings) +
-                ' ON CONFLICT (meter_id, start_time, end_time)' +
-                ' DO UPDATE SET reading = EXCLUDED.reading, source_unit = EXCLUDED.source_unit, conversion_factor = EXCLUDED.conversion_factor' +
-                ' RETURNING reading;'
+                f'INSERT INTO seed_meterreading(meter_id, start_time, end_time, reading, source_unit, conversion_factor)'  # noqa: S608
+                f' VALUES {", ".join(reading_strings)}'
+                f' ON CONFLICT (meter_id, start_time, end_time)'
+                f' DO UPDATE SET reading = EXCLUDED.reading, source_unit = EXCLUDED.source_unit, conversion_factor = EXCLUDED.conversion_factor'
+                f' RETURNING reading;'
             )
             with connection.cursor() as cursor:
                 cursor.execute(sql)
@@ -1267,32 +1225,25 @@ def _save_pm_meter_usage_data_task(meter_readings, file_pk, progress_key):
 
             reading_strings = [
                 f"({meter.id}, '{reading['start_time'].isoformat(' ')}', '{reading['end_time'].isoformat(' ')}', {reading['reading']}, '{reading['source_unit']}', {reading['conversion_factor']})"
-                for reading
-                in readings
+                for reading in readings
             ]
 
             sql = (
-                'INSERT INTO seed_meterreading(meter_id, start_time, end_time, reading, source_unit, conversion_factor)' +
-                ' VALUES ' + ', '.join(reading_strings) +
-                ' ON CONFLICT (meter_id, start_time, end_time)' +
-                ' DO UPDATE SET reading = EXCLUDED.reading, source_unit = EXCLUDED.source_unit, conversion_factor = EXCLUDED.conversion_factor' +
-                ' RETURNING reading;'
+                f'INSERT INTO seed_meterreading(meter_id, start_time, end_time, reading, source_unit, conversion_factor)'  # noqa: S608
+                f' VALUES {", ".join(reading_strings)}'
+                f' ON CONFLICT (meter_id, start_time, end_time)'
+                f' DO UPDATE SET reading = EXCLUDED.reading, source_unit = EXCLUDED.source_unit, conversion_factor = EXCLUDED.conversion_factor'
+                f' RETURNING reading;'
             )
             with connection.cursor() as cursor:
                 cursor.execute(sql)
-                key = "{} - {} - {}".format(
-                    meter.property_id,
-                    meter.source_id,
-                    meter.get_type_display()
-                )
+                key = f'{meter.property_id} - {meter.source_id} - {meter.get_type_display()}'
                 result[key] = {'count': len(cursor.fetchall())}
     except ProgrammingError as e:
         if 'ON CONFLICT DO UPDATE command cannot affect row a second time' in str(e):
             type_lookup = dict(Meter.ENERGY_TYPES)
-            key = "{} - {} - {}".format(
-                meter_readings.get('property_id'),
-                meter_readings.get('source_id'),
-                type_lookup[meter_readings['type']]
+            key = '{} - {} - {}'.format(
+                meter_readings.get('property_id'), meter_readings.get('source_id'), type_lookup[meter_readings['type']]
             )
             result[key] = {'error': 'Import failed. Unable to import data with duplicate start and end date pairs.'}
         else:
@@ -1371,11 +1322,7 @@ def _append_meter_import_results_to_summary(import_results, incoming_summary):
 
     # Next update summary of incoming meters imports with aggregated results.
     for import_info in incoming_summary:
-        key = "{} - {} - {}".format(
-            import_info['property_id'],
-            import_info['source_id'],
-            import_info['type']
-        )
+        key = '{} - {} - {}'.format(import_info['property_id'], import_info['source_id'], import_info['type'])
 
         # check if there has already been a successfully_imported count on this key
         successfully_imported = import_info.get('successfully_imported', 0)
@@ -1390,12 +1337,12 @@ def _append_meter_import_results_to_summary(import_results, incoming_summary):
 def _append_sensor_import_results_to_summary(import_results):
     return [
         {
-            "display_name": sensor.display_name,
-            "type": sensor.sensor_type,
-            "location_description": sensor.location_description,
-            "units": sensor.units,
-            "column_name": sensor.column_name,
-            "description": sensor.description,
+            'display_name': sensor.display_name,
+            'type': sensor.sensor_type,
+            'location_description': sensor.location_description,
+            'units': sensor.units,
+            'column_name': sensor.column_name,
+            'description': sensor.description,
         }
         for sensor in import_results
     ]
@@ -1407,17 +1354,13 @@ def _append_sensor_readings_import_results_to_summary(import_results):
         sensor_name, result = list(import_result.items())[0]
 
         if sensor_name not in summary:
-            summary[sensor_name] = {
-                "column_name": sensor_name,
-                "num_readings": 0,
-                "errors": ""
-            }
+            summary[sensor_name] = {'column_name': sensor_name, 'num_readings': 0, 'errors': ''}
 
-        if "count" in result:
-            summary[sensor_name]["num_readings"] += result["count"]
+        if 'count' in result:
+            summary[sensor_name]['num_readings'] += result['count']
 
-        if "error" in result:
-            summary[sensor_name]["errors"] = result["error"]
+        if 'error' in result:
+            summary[sensor_name]['errors'] = result['error']
 
     return list(summary.values())
 
@@ -1436,19 +1379,21 @@ def _save_raw_data_create_tasks(file_pk, progress_key):
     import_file = ImportFile.objects.get(pk=file_pk)
     file_extension = os.path.splitext(import_file.file.name)[1]
 
-    if file_extension == '.json' or file_extension == '.geojson':
+    if file_extension in ('.json', '.geojson'):
         parser = reader.GeoJSONParser(import_file.local_file)
     elif import_file.source_type == SEED_DATA_SOURCES[BUILDINGSYNC_RAW][1]:
         try:
             parser = xml_reader.BuildingSyncParser(import_file.file)
         except Exception as e:
-            return progress_data.finish_with_error(f'Failed to parse BuildingSync data: {str(e)}')
+            return progress_data.finish_with_error(f'Failed to parse BuildingSync data: {e!s}')
     else:
         try:
             parser = reader.MCMParser(import_file.local_file)
         except Exception as e:
-            _log.debug(f'Error reading XLSX file: {str(e)}')
-            return progress_data.finish_with_error('Failed to parse XLSX file. Please review your import file - all headers should be present and non-numeric.')
+            _log.debug(f'Error reading XLSX file: {e!s}')
+            return progress_data.finish_with_error(
+                'Failed to parse XLSX file. Please review your import file - all headers should be present and non-numeric.'
+            )
 
     if any('{' in header or '}' in header for header in parser.headers):
         return progress_data.finish_with_error('Failed to import. Please review your import file - headers cannot contain braces: { }')
@@ -1479,7 +1424,7 @@ def _save_raw_data_create_tasks(file_pk, progress_key):
 
 
 def save_raw_access_level_instances_data(filename, org_id):
-    """ save data and keep progress """
+    """save data and keep progress"""
     progress_data = ProgressData(func_name='save_raw_access_level_instances_data', unique_id=int(time.time()))
     try:
         # queue up the tasks and immediately return. This is needed in the case of large hierarchy files
@@ -1518,8 +1463,10 @@ def save_raw_espm_data_synchronous(file_pk: int) -> dict:
         try:
             parser = reader.MCMParser(import_file.local_file)
         except Exception as e:
-            _log.debug(f'Error reading XLSX file: {str(e)}')
-            return progress_data.finish_with_error('Failed to parse XLSX file. Please review your import file - all headers should be present and non-numeric.')
+            _log.debug(f'Error reading XLSX file: {e!s}')
+            return progress_data.finish_with_error(
+                'Failed to parse XLSX file. Please review your import file - all headers should be present and non-numeric.'
+            )
 
         import_file.has_generated_headers = False
         if hasattr(parser, 'has_generated_headers'):
@@ -1615,19 +1562,13 @@ def geocode_and_match_buildings_task(file_pk):
 
     if not import_file.mapping_done:
         _log.debug('Mapping is not done yet')
-        return progress_data.finish_with_error(
-            'Import file is not complete. Retry after mapping is complete')
+        return progress_data.finish_with_error('Import file is not complete. Retry after mapping is complete')
 
     if import_file.cycle is None:
-        _log.warning("Import file cycle is None; This should never happen in production")
+        _log.warning('Import file cycle is None; This should never happen in production')
 
     # get the properties and chunk them into tasks
-    property_states = (
-        PropertyState.objects.filter(import_file_id=file_pk)
-        .exclude(data_state=DATA_STATE_IMPORT)
-        .only('id')
-        .iterator()
-    )
+    property_states = PropertyState.objects.filter(import_file_id=file_pk).exclude(data_state=DATA_STATE_IMPORT).only('id').iterator()
 
     # If multiple cycle upload, split properties by cycle
     # and map each cycle individually
@@ -1659,16 +1600,14 @@ def geocode_and_match_buildings_task(file_pk):
 
         map_additional_models_group = group(
             _map_additional_models.si(property_state_ids_by_cycle[cycle_id], file_pk, progress_data.key, cycle_id)
-            for cycle_id in property_state_ids_by_cycle.keys()
+            for cycle_id in property_state_ids_by_cycle
         )
 
     else:
         # get the properties and chunk them into tasks
         property_state_ids_by_cycle = None
         id_chunks = [[obj.id for obj in chunk] for chunk in batch(property_states, 100)]
-        map_additional_models_group = group(
-            _map_additional_models.si(id_chunk, file_pk, progress_data.key) for id_chunk in id_chunks
-        )
+        map_additional_models_group = group(_map_additional_models.si(id_chunk, file_pk, progress_data.key) for id_chunk in id_chunks)
 
     progress_data.total = (
         1  # geocoding
@@ -1748,7 +1687,7 @@ def hash_state_object(obj, include_extra_data=True):
     def add_dictionary_repr_to_hash(hash_obj, dict_obj):
         assert isinstance(dict_obj, dict)
 
-        for (key, value) in sorted(dict_obj.items(), key=lambda x_y: x_y[0]):
+        for key, value in sorted(dict_obj.items(), key=lambda x_y: x_y[0]):
             if isinstance(value, dict):
                 add_dictionary_repr_to_hash(hash_obj, value)
             else:
@@ -1817,9 +1756,7 @@ def _map_additional_models(ids, file_pk, progress_key, cycle_id=None):
             # b/c that will be handled in the match/merge/linking later on
             building_file = property_state.building_files.get()
             success, property_state, _, messages = building_file.process(
-                org.id,
-                Cycle.objects.get(id=cycle_id),
-                promote_property_state=False
+                org.id, Cycle.objects.get(id=cycle_id), promote_property_state=False
             )
 
             if not success or messages.get('errors') or messages.get('warnings'):
@@ -1827,9 +1764,7 @@ def _map_additional_models(ids, file_pk, progress_key, cycle_id=None):
 
     progress_data.step()
 
-    return {
-        'import_file_records': len(ids)
-    }
+    return {'import_file_records': len(ids)}
 
 
 def list_canonical_property_states(org_id):
@@ -1843,10 +1778,11 @@ def list_canonical_property_states(org_id):
         QuerySet
 
     """
-    pvs = PropertyView.objects.filter(
-        state__organization=org_id,
-        state__data_state__in=[DATA_STATE_MATCHING]
-    ).select_related('state').order_by('state__id')
+    pvs = (
+        PropertyView.objects.filter(state__organization=org_id, state__data_state__in=[DATA_STATE_MATCHING])
+        .select_related('state')
+        .order_by('state__id')
+    )
 
     ids = [p.state.id for p in pvs]
     return PropertyState.objects.filter(pk__in=ids)
@@ -1889,12 +1825,12 @@ def pair_new_states(merged_property_views, merged_taxlot_views, sub_progress_key
         ('jurisdiction_property_id',),
     ]
     sub_progress_data.step('Pairing Data')
-    tax_comparison_fields = sorted(list(set(chain.from_iterable(tax_cmp_fmt))))
-    prop_comparison_fields = sorted(list(set(chain.from_iterable(prop_cmp_fmt))))
+    tax_comparison_fields = sorted(set(chain.from_iterable(tax_cmp_fmt)))
+    prop_comparison_fields = sorted(set(chain.from_iterable(prop_cmp_fmt)))
 
     sub_progress_data.step('Pairing Data')
-    tax_comparison_field_names = list(map(lambda s: "state__{}".format(s), tax_comparison_fields))
-    prop_comparison_field_names = list(map(lambda s: "state__{}".format(s), prop_comparison_fields))
+    tax_comparison_field_names = [f'state__{s}' for s in tax_comparison_fields]
+    prop_comparison_field_names = [f'state__{s}' for s in prop_comparison_fields]
 
     # This is a not so nice hack. but it's the only special case/field
     # that isn't on the join to the State.
@@ -1914,13 +1850,10 @@ def pair_new_states(merged_property_views, merged_taxlot_views, sub_progress_key
 
     sub_progress_data.step('Pairing Data')
     taxlot_m2m_keygen = EquivalencePartitioner(tax_cmp_fmt, ['jurisdiction_tax_lot_id'])
-    property_m2m_keygen = EquivalencePartitioner(prop_cmp_fmt,
-                                                 ['pm_property_id', 'jurisdiction_property_id'])
+    property_m2m_keygen = EquivalencePartitioner(prop_cmp_fmt, ['pm_property_id', 'jurisdiction_property_id'])
 
-    property_views = PropertyView.objects.filter(state__organization=org, cycle=cycle).values_list(
-        *prop_comparison_field_names)
-    taxlot_views = TaxLotView.objects.filter(state__organization=org, cycle=cycle).values_list(
-        *tax_comparison_field_names)
+    property_views = PropertyView.objects.filter(state__organization=org, cycle=cycle).values_list(*prop_comparison_field_names)
+    taxlot_views = TaxLotView.objects.filter(state__organization=org, cycle=cycle).values_list(*tax_comparison_field_names)
 
     sub_progress_data.step('Pairing Data')
     # For each of the view objects, make an
@@ -1943,8 +1876,7 @@ def pair_new_states(merged_property_views, merged_taxlot_views, sub_progress_key
 
     sub_progress_data.step('Pairing Data')
     # Calculate a key for each of the split fields.
-    property_keys_orig = dict(
-        [(property_m2m_keygen.calculate_comparison_key(p), p.pk) for p in property_objects])
+    property_keys_orig = {property_m2m_keygen.calculate_comparison_key(p): p.pk for p in property_objects}
 
     # property_keys = copy.deepcopy(property_keys_orig)
 
@@ -1952,16 +1884,15 @@ def pair_new_states(merged_property_views, merged_taxlot_views, sub_progress_key
     # Do this inelegant step to make sure we are correctly splitting.
     property_keys = collections.defaultdict(list)
     for k in property_keys_orig:
-        if k[0] and ";" in k[0]:
-            for lotnum in map(lambda x: x.strip(), k[0].split(";")):
+        if k[0] and ';' in k[0]:
+            for lotnum in (x.strip() for x in k[0].split(';')):
                 k_copy = list(copy.deepcopy(k))
                 k_copy[0] = lotnum
                 property_keys[tuple(k_copy)] = property_keys_orig[k]
         else:
             property_keys[k] = property_keys_orig[k]
 
-    taxlot_keys = dict(
-        [(taxlot_m2m_keygen.calculate_comparison_key(p), p.pk) for p in taxlot_objects])
+    taxlot_keys = {taxlot_m2m_keygen.calculate_comparison_key(p): p.pk for p in taxlot_objects}
 
     # property_comparison_keys = {property_m2m_keygen.calculate_comparison_key_key(p): p.pk for p in property_objects}
     # property_canonical_keys = {property_m2m_keygen.calculate_canonical_key(p): p.pk for p in property_objects}
@@ -1976,16 +1907,15 @@ def pair_new_states(merged_property_views, merged_taxlot_views, sub_progress_key
         pv_key = property_m2m_keygen.calculate_comparison_key(pv.state)
         # TODO: Refactor pronto.  Iterating over the tax lot is bad implementation.
         for tlk in taxlot_keys:
-            if pv_key[0] and ";" in pv_key[0]:
-                for lotnum in map(lambda x: x.strip(), pv_key[0].split(";")):
+            if pv_key[0] and ';' in pv_key[0]:
+                for lotnum in (x.strip() for x in pv_key[0].split(';')):
                     pv_key_copy = list(copy.deepcopy(pv_key))
                     pv_key_copy[0] = lotnum
                     pv_key_copy = tuple(pv_key_copy)
                     if property_m2m_keygen.calculate_key_equivalence(pv_key_copy, tlk):
                         possible_merges.append((property_keys[pv_key_copy], taxlot_keys[tlk]))
-            else:
-                if property_m2m_keygen.calculate_key_equivalence(pv_key, tlk):
-                    possible_merges.append((property_keys[pv_key], taxlot_keys[tlk]))
+            elif property_m2m_keygen.calculate_key_equivalence(pv_key, tlk):
+                possible_merges.append((property_keys[pv_key], taxlot_keys[tlk]))
 
     sub_progress_data.step('Pairing Data')
     for tlv in merged_taxlot_views:
@@ -2001,21 +1931,13 @@ def pair_new_states(merged_property_views, merged_taxlot_views, sub_progress_key
         # PropertyView.objects.get(pk=pv_pk)
         # TaxLotView.objects.get(pk=tlv_pk)
 
-        count = TaxLotProperty.objects.filter(
-            property_view_id=pv_pk,
-            taxlot_view_id=tlv_pk
-        ).count()
+        count = TaxLotProperty.objects.filter(property_view_id=pv_pk, taxlot_view_id=tlv_pk).count()
 
         if count:
             continue
 
         is_primary = TaxLotProperty.objects.filter(property_view_id=pv_pk).count() == 0
-        m2m_join = TaxLotProperty(
-            property_view_id=pv_pk,
-            taxlot_view_id=tlv_pk,
-            cycle=cycle,
-            primary=is_primary
-        )
+        m2m_join = TaxLotProperty(property_view_id=pv_pk, taxlot_view_id=tlv_pk, cycle=cycle, primary=is_primary)
         m2m_join.save()
 
     sub_progress_data.finish_with_success()
@@ -2051,17 +1973,17 @@ def _validate_use_cases(file_pk, progress_key):
             bs.import_file(import_file.file)
             found_version = bs.version
         all_files_valid, file_summaries = validation_client.validate_use_case(
-            import_file.file,
-            filename=import_file.uploaded_filename,
-            schema_version=found_version
+            import_file.file, filename=import_file.uploaded_filename, schema_version=found_version
         )
         if all_files_valid is False:
             import_file.delete()
         progress_data.finish_with_success(
-            message=json.dumps({
-                'valid': all_files_valid,
-                'issues': file_summaries,
-            }),
+            message=json.dumps(
+                {
+                    'valid': all_files_valid,
+                    'issues': file_summaries,
+                }
+            ),
         )
     except validation_client.ValidationClientException as e:
         _log.debug(f'ValidationClientException while validating import_file `{file_pk}`: {e}')

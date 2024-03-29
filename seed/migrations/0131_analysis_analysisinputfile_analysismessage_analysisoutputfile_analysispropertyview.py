@@ -6,7 +6,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('orgs', '0014_organization_geocoding_enabled'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
@@ -22,11 +21,27 @@ class Migration(migrations.Migration):
                 ('service', models.IntegerField(choices=[(1, 'BSyncr')])),
                 ('start_time', models.DateTimeField(blank=True, null=True)),
                 ('end_time', models.DateTimeField(blank=True, null=True)),
-                ('status', models.IntegerField(choices=[(10, 'Creating'), (20, 'Ready'), (30, 'Queued'), (40, 'Running'), (50, 'Failed'), (60, 'Stopped'), (70, 'Completed')])),
+                (
+                    'status',
+                    models.IntegerField(
+                        choices=[
+                            (10, 'Creating'),
+                            (20, 'Ready'),
+                            (30, 'Queued'),
+                            (40, 'Running'),
+                            (50, 'Failed'),
+                            (60, 'Stopped'),
+                            (70, 'Completed'),
+                        ]
+                    ),
+                ),
                 ('configuration', models.JSONField(blank=True, default=dict)),
                 ('parsed_results', models.JSONField(blank=True, default=dict)),
                 ('organization', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='orgs.Organization')),
-                ('user', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to=settings.AUTH_USER_MODEL)),
+                (
+                    'user',
+                    models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to=settings.AUTH_USER_MODEL),
+                ),
             ],
         ),
         migrations.CreateModel(
@@ -57,7 +72,10 @@ class Migration(migrations.Migration):
                 ('user_message', models.CharField(default=None, max_length=255)),
                 ('debug_message', models.CharField(blank=True, max_length=255)),
                 ('analysis', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='seed.Analysis')),
-                ('analysis_property_view', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='seed.AnalysisPropertyView')),
+                (
+                    'analysis_property_view',
+                    models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='seed.AnalysisPropertyView'),
+                ),
             ],
         ),
         migrations.CreateModel(

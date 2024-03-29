@@ -1,17 +1,18 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 :author Paul Munday <paul@paulmunday.net>
 """
+
 import json
 import os
 from os import path
 from pathlib import Path
 from unittest import skip, skipIf
 
+import pytest
 import requests
 import xmltodict
 from django.test import TestCase
@@ -28,12 +29,12 @@ PM_UN = 'SEED_PM_UN'
 PM_PW = 'SEED_PM_PW'
 pm_skip_test_check = skipIf(
     not os.environ.get(PM_UN, False) and not os.environ.get(PM_PW, False),
-    'Cannot run "expect-pass" PM unit tests without %s and %s in environment' % (PM_UN, PM_PW)
+    f'Cannot run "expect-pass" PM unit tests without {PM_UN} and {PM_PW} in environment',
 )
 
 # override this decorator for more pressing conditions
 try:
-    pm_avail_check = requests.get('http://isthewallbuilt.inbelievable.com/api.json', timeout=5)
+    pm_avail_check = requests.get('https://isthewallbuilt.inbelievable.com/api.json', timeout=5)
     string_response = pm_avail_check.json()['status']
     if string_response != 'no':
         skip_due_to_espm_down = False
@@ -48,10 +49,10 @@ except Exception:
 
 class PortfolioManagerImportTest(TestCase):
     def test_unsuccessful_login(self):
-        # To test a successful login, we'd have to include valid PM credentials, which we don't want to do
+        # To test a successful login, we'd have to include valid PM credentials, which we don't want to do,
         # so I will at least test an unsuccessful login attempt here
         pmi = PortfolioManagerImport('bad_username', 'bad_password')
-        with self.assertRaises(Exception):
+        with pytest.raises(Exception):  # noqa: PT011
             pmi.login_and_set_cookie_header()
 
     def test_get_template_by_name(self):
@@ -60,7 +61,7 @@ class PortfolioManagerImportTest(TestCase):
         template_set = [template_1, template_2]
         self.assertDictEqual(template_1, PortfolioManagerImport.get_template_by_name(template_set, 'first'))
         self.assertDictEqual(template_2, PortfolioManagerImport.get_template_by_name(template_set, 'second'))
-        with self.assertRaises(Exception):
+        with pytest.raises(Exception):  # noqa: PT011
             PortfolioManagerImport.get_template_by_name(template_set, 'missing')
 
 
@@ -83,9 +84,7 @@ class PortfolioManagerTemplateListViewTestsFailure(TestCase):
 
     def test_template_list_interface_no_username(self):
         resp = self.client.post(
-            reverse_lazy('api:v3:portfolio_manager-template-list'),
-            json.dumps({'password': 'nothing'}),
-            content_type='application/json'
+            reverse_lazy('api:v3:portfolio_manager-template-list'), json.dumps({'password': 'nothing'}), content_type='application/json'
         )
         # resp should have status, message, and code = 400
         # status should be error
@@ -132,7 +131,6 @@ class PortfolioManagerTemplateListViewTestsFailure(TestCase):
 
 
 class PortfolioManagerTemplateListViewTestsSuccess(TestCase):
-
     def setUp(self):
         user_details = {
             'username': 'test_user@demo.com',
@@ -152,7 +150,7 @@ class PortfolioManagerTemplateListViewTestsSuccess(TestCase):
         pm_un = os.environ.get(PM_UN, False)
         pm_pw = os.environ.get(PM_PW, False)
         if not pm_un or not pm_pw:
-            self.fail('Somehow PM test was initiated without %s or %s in the environment' % (PM_UN, PM_PW))
+            self.fail(f'Somehow PM test was initiated without {PM_UN} or {PM_PW} in the environment')
 
         # so now we'll make the call out to PM
         resp = self.client.post(
@@ -190,7 +188,6 @@ class PortfolioManagerTemplateListViewTestsSuccess(TestCase):
 
 
 class PortfolioManagerReportGenerationViewTestsFailure(TestCase):
-
     def setUp(self):
         user_details = {
             'username': 'test_user@demo.com',
@@ -256,13 +253,7 @@ class PortfolioManagerReportGenerationViewTestsFailure(TestCase):
         resp = self.client.post(
             reverse_lazy('api:v3:portfolio_manager-report'),
             json.dumps(
-                {
-                    'password': 'nothing',
-                    'username': 'nothing',
-                    'template': {
-                        'id': 1, 'name': 'template_name', 'z_seed_child_row': False
-                    }
-                }
+                {'password': 'nothing', 'username': 'nothing', 'template': {'id': 1, 'name': 'template_name', 'z_seed_child_row': False}}
             ),
             content_type='application/json',
         )
@@ -278,7 +269,6 @@ class PortfolioManagerReportGenerationViewTestsFailure(TestCase):
 
 
 class PortfolioManagerReportGenerationViewTestsSuccess(TestCase):
-
     def setUp(self):
         user_details = {
             'username': 'test_user@demo.com',
@@ -296,11 +286,10 @@ class PortfolioManagerReportGenerationViewTestsSuccess(TestCase):
         self.pm_un = os.environ.get(PM_UN, False)
         self.pm_pw = os.environ.get(PM_PW, False)
         if not self.pm_un or not self.pm_pw:
-            self.fail('Somehow PM test was initiated without %s or %s in the environment' % (PM_UN, PM_PW))
+            self.fail(f'Somehow PM test was initiated without {PM_UN} or {PM_PW} in the environment')
 
     @pm_skip_test_check
     def test_report_generation_parent_template(self):
-
         parent_template = {
             'display_name': 'SEED City Test Report',
             'name': 'SEED City Test Report',
@@ -308,7 +297,7 @@ class PortfolioManagerReportGenerationViewTestsSuccess(TestCase):
             'z_seed_child_row': False,
             'type': 0,
             'children': [],
-            'pending': 0
+            'pending': 0,
         }
 
         # so now we'll call out to PM to get a parent template report
@@ -337,7 +326,6 @@ class PortfolioManagerReportGenerationViewTestsSuccess(TestCase):
 
     @pm_skip_test_check
     def test_report_generation_empty_child_template(self):
-
         child_template = {
             'display_name': '  -  Data Request:SEED City Test Report April 24 2018',
             'name': 'Data Request:SEED City Test Report April 24 2018',
@@ -347,7 +335,7 @@ class PortfolioManagerReportGenerationViewTestsSuccess(TestCase):
             'hasChildrenRows': False,
             'type': 1,
             'children': [],
-            'pending': 0
+            'pending': 0,
         }
 
         # so now we'll call out to PM to get a child template report
@@ -380,9 +368,7 @@ class PortfolioManagerReportSinglePropertyUploadTest(TestCase):
             'username': 'test_user@demo.com',
             'password': 'test_pass',
         }
-        self.user = User.objects.create_superuser(
-            email='test_user@demo.com', **user_details
-        )
+        self.user = User.objects.create_superuser(email='test_user@demo.com', **user_details)
         self.org, _, _ = create_organization(self.user)
         self.client.login(**user_details)
 
@@ -399,24 +385,23 @@ class PortfolioManagerReportSinglePropertyUploadTest(TestCase):
         self.pm_un = os.environ.get(PM_UN, False)
         self.pm_pw = os.environ.get(PM_PW, False)
         if not self.pm_un or not self.pm_pw:
-            self.fail('Somehow PM test was initiated without %s or %s in the environment' % (PM_UN, PM_PW))
+            self.fail(f'Somehow PM test was initiated without {PM_UN} or {PM_PW} in the environment')
 
     @pm_skip_test_check
     def test_single_property_template_for_upload(self):
-
         # create a single ESPM property report with template
         template = {
-            "children": [],
-            "display_name": "SEED_Test - Single Property",
-            "id": 2807325,
-            "name": "SEED_Test - Single Property",
-            "newReport": 0,
-            "z_seed_child_row": 0
+            'children': [],
+            'display_name': 'SEED_Test - Single Property',
+            'id': 2807325,
+            'name': 'SEED_Test - Single Property',
+            'newReport': 0,
+            'z_seed_child_row': 0,
         }
 
         report_response = self.client.post(
             reverse_lazy('api:v3:portfolio_manager-report'),
-            json.dumps({"username": self.pm_un, "password": self.pm_pw, "template": template}),
+            json.dumps({'username': self.pm_un, 'password': self.pm_pw, 'template': template}),
             content_type='application/json',
         )
         self.assertEqual(200, report_response.status_code)
@@ -428,10 +413,7 @@ class PortfolioManagerReportSinglePropertyUploadTest(TestCase):
         # add report to SEED's dataset
         response = self.client.post(
             reverse_lazy('api:v3:upload-create-from-pm-import'),
-            json.dumps({
-                'properties': property_info['properties'],
-                'import_record_id': self.dataset_id,
-                'organization_id': self.org.pk}),
+            json.dumps({'properties': property_info['properties'], 'import_record_id': self.dataset_id, 'organization_id': self.org.pk}),
             content_type='application/json',
         )
         self.assertEqual(200, response.status_code)
@@ -444,17 +426,19 @@ class UploadViewSetPermission(AccessLevelBaseTestCase):
         self.child_property = self.property_factory.get_property(access_level_instance=self.child_level_instance)
 
         self.import_record = ImportRecord.objects.create(
-            owner=self.root_member_user, last_modified_by=self.root_member_user, super_organization=self.org, access_level_instance=self.org.root
+            owner=self.root_member_user,
+            last_modified_by=self.root_member_user,
+            super_organization=self.org,
+            access_level_instance=self.org.root,
         )
 
     def test_create(self):
         filename = path.join(path.dirname(__file__), 'data', 'property_sample_data.json')
         with open(filename, 'rb') as f:
-
             url = reverse_lazy('api:v3:upload-list')
-            url += "?organization_id=" + str(self.org.id)
-            url += "&import_record=" + str(self.import_record.id)
-            params = {"file": f}
+            url += '?organization_id=' + str(self.org.id)
+            url += '&import_record=' + str(self.import_record.id)
+            params = {'file': f}
 
             self.login_as_child_member()
             response = self.client.post(url, data=params)
@@ -466,11 +450,7 @@ class UploadViewSetPermission(AccessLevelBaseTestCase):
 
     def test_create_from_pm_import(self):
         url = reverse_lazy('api:v3:upload-create-from-pm-import')
-        params = json.dumps({
-            'properties': [],
-            'import_record_id': self.import_record.pk,
-            'organization_id': self.org.pk
-        })
+        params = json.dumps({'properties': [], 'import_record_id': self.import_record.pk, 'organization_id': self.org.pk})
 
         self.login_as_child_member()
         response = self.client.post(url, params, content_type='application/json')
@@ -489,16 +469,14 @@ class PortfolioManagerSingleReportXSLX(TestCase):
             'username': 'test_user@demo.com',
             'password': 'test_pass',
         }
-        self.user = User.objects.create_superuser(
-            email='test_user@demo.com', **user_details
-        )
+        self.user = User.objects.create_superuser(email='test_user@demo.com', **user_details)
         self.org, _, _ = create_organization(self.user)
         self.client.login(**user_details)
 
         self.pm_un = os.environ.get(PM_UN, False)
         self.pm_pw = os.environ.get(PM_PW, False)
         if not self.pm_un or not self.pm_pw:
-            self.fail('Somehow PM test was initiated without %s or %s in the environment' % (PM_UN, PM_PW))
+            self.fail(f'Somehow PM test was initiated without {PM_UN} or {PM_PW} in the environment')
 
         self.output_dir = Path(__file__).parent.absolute() / 'output'
         if not self.output_dir.exists():
@@ -510,7 +488,7 @@ class PortfolioManagerSingleReportXSLX(TestCase):
         pm_id = 22178850
 
         # remove the file if it exists
-        new_file = self.output_dir / f"single_property_{pm_id}.xlsx"
+        new_file = self.output_dir / f'single_property_{pm_id}.xlsx'
         if new_file.exists():
             new_file.unlink()
         self.assertFalse(new_file.exists())
@@ -539,7 +517,7 @@ class PortfolioManagerSingleReportXSLX(TestCase):
         pm_id = 22178850
         response = self.client.post(
             reverse_lazy('api:v3:portfolio_manager-download', args=[pm_id]),
-            json.dumps({"username": self.pm_un, "password": self.pm_pw}),
+            json.dumps({'username': self.pm_un, 'password': self.pm_pw}),
             content_type='application/json',
         )
         self.assertEqual(200, response.status_code)
@@ -552,7 +530,7 @@ class PortfolioManagerReportParsingTest(TestCase):
     def test_parse_pm_report(self):
         pm = PortfolioManagerImport('not_a_real_password', 'not_a_real_password')
         xml_path = Path(__file__).parent.absolute() / 'data' / 'portfolio-manager-report.xml'
-        with open(xml_path, 'r') as file:
+        with open(xml_path) as file:
             content_object = xmltodict.parse(file.read(), dict_constructor=dict)
 
             success, properties = pm._parse_properties_v2(content_object)

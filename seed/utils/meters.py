@@ -1,9 +1,9 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 from calendar import monthrange
 from collections import defaultdict
 from datetime import datetime, time, timedelta
@@ -13,15 +13,12 @@ from django.utils.timezone import make_aware
 from pytz import timezone
 
 from config.settings.common import TIME_ZONE
-from seed.data_importer.utils import (
-    kbtu_thermal_conversion_factors,
-    usage_point_id
-)
+from seed.data_importer.utils import kbtu_thermal_conversion_factors, usage_point_id
 from seed.lib.superperms.orgs.models import Organization
 from seed.models import Meter
 
 
-class PropertyMeterReadingsExporter():
+class PropertyMeterReadingsExporter:
     """
     Returns readings and column definitions for UI-Grid. These readings can be
     returned in different intervals: exact, monthly, and yearly.
@@ -35,9 +32,7 @@ class PropertyMeterReadingsExporter():
         self._cache_org_country = None
 
         scenario_ids = scenario_ids if scenario_ids is not None else []
-        self.meters = Meter.objects.filter(
-            Q(property_id=property_id) | Q(scenario_id__in=scenario_ids)
-        ).exclude(pk__in=excluded_meter_ids)
+        self.meters = Meter.objects.filter(Q(property_id=property_id) | Q(scenario_id__in=scenario_ids)).exclude(pk__in=excluded_meter_ids)
         self.org_id = org_id
         self.org_meter_display_settings = Organization.objects.get(pk=org_id).display_meter_units
         self.tz = timezone(TIME_ZONE)
@@ -71,7 +66,7 @@ class PropertyMeterReadingsExporter():
         """
 
         # Used to consolidate different readings (types) within the same time window
-        start_end_times = defaultdict(lambda: {})
+        start_end_times = defaultdict(dict)
 
         # Construct column_defs using this dictionary's values for frontend to use
         column_defs = {
@@ -85,7 +80,7 @@ class PropertyMeterReadingsExporter():
             },
         }
 
-        time_format = "%Y-%m-%d %H:%M:%S"
+        time_format = '%Y-%m-%d %H:%M:%S'
 
         for meter in self.meters:
             field_name, conversion_factor = self._build_column_def(meter, column_defs)
@@ -94,16 +89,13 @@ class PropertyMeterReadingsExporter():
                 start_time = meter_reading.start_time.astimezone(tz=self.tz).strftime(time_format)
                 end_time = meter_reading.end_time.astimezone(tz=self.tz).strftime(time_format)
 
-                times_key = "-".join([start_time, end_time])
+                times_key = '-'.join([start_time, end_time])
 
                 start_end_times[times_key]['start_time'] = start_time
                 start_end_times[times_key]['end_time'] = end_time
                 start_end_times[times_key][field_name] = meter_reading.reading / conversion_factor
 
-        return {
-            'readings': list(start_end_times.values()),
-            'column_defs': list(column_defs.values())
-        }
+        return {'readings': list(start_end_times.values()), 'column_defs': list(column_defs.values())}
 
     def _usages_by_month(self):
         """
@@ -116,7 +108,7 @@ class PropertyMeterReadingsExporter():
             - For each month in the date range, aggregate the readings found in that month using a linear relationship down to the second.
         """
         # Used to consolidate different readings (types) within the same month
-        monthly_readings = defaultdict(lambda: {})
+        monthly_readings = defaultdict(dict)
 
         # Construct column_defs using this dictionary's values for frontend to use
         column_defs = {
@@ -146,12 +138,9 @@ class PropertyMeterReadingsExporter():
                         monthly_readings[month_key] = monthly_readings.get(month_key, {'month': month_key})
                         monthly_readings[month_key][field_name] = round(monthly_readings[month_key].get(field_name, 0) + reading, 2)
 
-        sorted_readings = sorted(list(monthly_readings.values()), key=lambda reading: datetime.strptime(reading['month'], '%B %Y'))
+        sorted_readings = sorted(monthly_readings.values(), key=lambda reading: datetime.strptime(reading['month'], '%B %Y'))
 
-        return {
-            'readings': sorted_readings,
-            'column_defs': list(column_defs.values())
-        }
+        return {'readings': sorted_readings, 'column_defs': list(column_defs.values())}
 
     def _get_month_ranges(self, st, et):
         """
@@ -165,8 +154,10 @@ class PropertyMeterReadingsExporter():
         month_count = (et.year - st.year) * 12 + et.month - st.month + 1
         start = st
         ranges = []
-        for idx in range(0, month_count):
-            end_of_month = make_aware(datetime.combine(start.replace(day=monthrange(start.year, start.month)[1]), time.max), timezone=self.tz)
+        for idx in range(month_count):
+            end_of_month = make_aware(
+                datetime.combine(start.replace(day=monthrange(start.year, start.month)[1]), time.max), timezone=self.tz
+            )
             if end_of_month >= et:
                 end_of_month = et
             ranges.append([start, end_of_month])
@@ -179,7 +170,7 @@ class PropertyMeterReadingsExporter():
         formatted and aggregated to display all records in yearly intervals.
         """
         # Used to consolidate different readings (types) within the same year
-        yearly_readings = defaultdict(lambda: {})
+        yearly_readings = defaultdict(dict)
 
         # Construct column_defs using this dictionary's values for frontend to use
         column_defs = {
@@ -202,7 +193,9 @@ class PropertyMeterReadingsExporter():
                 end_of_year = make_aware(unaware_end, timezone=self.tz)
 
                 # Find all meters fully contained within this month (second-level granularity)
-                interval_readings = meter.meter_readings.filter(start_time__range=(current_year_time, end_of_year), end_time__range=(current_year_time, end_of_year))
+                interval_readings = meter.meter_readings.filter(
+                    start_time__range=(current_year_time, end_of_year), end_time__range=(current_year_time, end_of_year)
+                )
                 if interval_readings.exists():
                     readings_list = list(interval_readings.order_by('end_time'))
                     reading_year_total = self._max_reading_total(readings_list)
@@ -214,10 +207,7 @@ class PropertyMeterReadingsExporter():
 
                 current_year_time = end_of_year
 
-        return {
-            'readings': list(yearly_readings.values()),
-            'column_defs': list(column_defs.values())
-        }
+        return {'readings': list(yearly_readings.values()), 'column_defs': list(column_defs.values())}
 
     def _build_column_def(self, meter, column_defs):
         type_text = meter.get_type_display()
@@ -227,22 +217,21 @@ class PropertyMeterReadingsExporter():
         else:
             source_id = meter.source_id
 
-        field_name = '{} - {} - {}'.format(type_text, source, source_id)
+        field_name = f'{type_text} - {source} - {source_id}'
 
         if meter.type == Meter.COST:
-            display_unit = "{} Dollars".format(self._org_country)
+            display_unit = f'{self._org_country} Dollars'
             conversion_factor = 1.00
+        elif type_text in self.org_meter_display_settings:
+            display_unit = self.org_meter_display_settings[type_text]
+            conversion_factor = self.factors[type_text][display_unit]
         else:
-            if type_text in self.org_meter_display_settings:
-                display_unit = self.org_meter_display_settings[type_text]
-                conversion_factor = self.factors[type_text][display_unit]
-            else:
-                display_unit = self.org_meter_display_settings['Default']
-                conversion_factor = self.factors['Default'][display_unit]
+            display_unit = self.org_meter_display_settings['Default']
+            conversion_factor = self.factors['Default'][display_unit]
 
         column_defs[field_name] = {
             'field': field_name,
-            'displayName': '{} ({})'.format(field_name, display_unit),
+            'displayName': f'{field_name} ({display_unit})',
             '_filter_type': 'reading',
         }
 
@@ -300,7 +289,7 @@ class PropertyMeterReadingsExporter():
             latest_index = self._latest_nonintersecting_index(sorted_readings, i)
 
             # If a latest index was found, add it's running_max value to curr_max
-            if (latest_index != -1):
+            if latest_index != -1:
                 curr_max += running_max[latest_index]
 
             # Store maximum of curr_max and the prior running_max entry

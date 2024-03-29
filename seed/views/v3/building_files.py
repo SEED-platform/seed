@@ -1,9 +1,9 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 import os
 import zipfile
 from tempfile import NamedTemporaryFile
@@ -24,14 +24,8 @@ from seed.utils.api_schema import AutoSchemaHelper
 from seed.utils.viewsets import SEEDOrgReadOnlyModelViewSet
 
 
-@method_decorator(
-    name='list',
-    decorator=[has_perm_class('requires_viewer')]
-)
-@method_decorator(
-    name='retrieve',
-    decorator=[has_perm_class('requires_viewer')]
-)
+@method_decorator(name='list', decorator=[has_perm_class('requires_viewer')])
+@method_decorator(name='retrieve', decorator=[has_perm_class('requires_viewer')])
 class BuildingFileViewSet(SEEDOrgReadOnlyModelViewSet):
     model = BuildingFile
     orgfilter = 'property_state__organization'
@@ -58,11 +52,7 @@ class BuildingFileViewSet(SEEDOrgReadOnlyModelViewSet):
     @swagger_auto_schema(
         manual_parameters=[
             AutoSchemaHelper.query_org_id_field(),
-            AutoSchemaHelper.query_integer_field(
-                'cycle_id',
-                required=True,
-                description='Cycle to upload to'
-            ),
+            AutoSchemaHelper.query_integer_field('cycle_id', required=True, description='Cycle to upload to'),
             AutoSchemaHelper.upload_file_field(
                 'file',
                 required=True,
@@ -83,10 +73,7 @@ class BuildingFileViewSet(SEEDOrgReadOnlyModelViewSet):
         access_level_instance = AccessLevelInstance.objects.get(pk=self.request.access_level_instance_id)
 
         if len(request.FILES) == 0:
-            return JsonResponse({
-                'success': False,
-                'message': 'Must pass file in as a Multipart/Form post'
-            })
+            return JsonResponse({'success': False, 'message': 'Must pass file in as a Multipart/Form post'})
 
         the_file = request.data['file']
         file_type = BuildingFile.str_to_file_type(request.data.get('file_type', 'Unknown'))
@@ -95,10 +82,7 @@ class BuildingFileViewSet(SEEDOrgReadOnlyModelViewSet):
         cycle = request.query_params.get('cycle_id', None)
 
         if not cycle:
-            return JsonResponse({
-                'success': False,
-                'message': 'Cycle ID is not defined'
-            })
+            return JsonResponse({'success': False, 'message': 'Cycle ID is not defined'})
         else:
             cycle = Cycle.objects.get(pk=cycle)
 
@@ -114,7 +98,7 @@ class BuildingFileViewSet(SEEDOrgReadOnlyModelViewSet):
             # ZIP FILE, extract and process files one by one
             # print("This file is a ZIP")
 
-            with zipfile.ZipFile(the_file, "r", zipfile.ZIP_STORED) as openzip:
+            with zipfile.ZipFile(the_file, 'r', zipfile.ZIP_STORED) as openzip:
                 filelist = openzip.infolist()
                 for f in filelist:
                     # print("FILE: {}".format(f.filename))
@@ -127,9 +111,7 @@ class BuildingFileViewSet(SEEDOrgReadOnlyModelViewSet):
                             size = os.path.getsize(data_file.name)
                             content_type = 'text/xml'
 
-                            a_file = InMemoryUploadedFile(
-                                data_file, 'data_file', f.filename, content_type,
-                                size, charset=None)
+                            a_file = InMemoryUploadedFile(data_file, 'data_file', f.filename, content_type, size, charset=None)
 
                             building_file = BuildingFile.objects.create(
                                 file=a_file,
@@ -137,13 +119,15 @@ class BuildingFileViewSet(SEEDOrgReadOnlyModelViewSet):
                                 file_type=file_type,
                             )
 
-                        p_status_tmp, property_state_tmp, property_view, messages_tmp = building_file.process(organization_id, cycle, access_level_instance=access_level_instance)
+                        p_status_tmp, property_state_tmp, property_view, messages_tmp = building_file.process(
+                            organization_id, cycle, access_level_instance=access_level_instance
+                        )
 
                         # append errors to overall messages
                         for i in messages_tmp['errors']:
-                            messages['errors'].append(f.filename + ": " + i)
+                            messages['errors'].append(f.filename + ': ' + i)
                         for i in messages_tmp['warnings']:
-                            messages['warnings'].append(f.filename + ": " + i)
+                            messages['warnings'].append(f.filename + ': ' + i)
 
                         if not p_status_tmp:
                             # capture error
@@ -160,32 +144,34 @@ class BuildingFileViewSet(SEEDOrgReadOnlyModelViewSet):
                 file_type=file_type,
             )
 
-            p_status, property_state, property_view, messages = building_file.process(organization_id, cycle, access_level_instance=access_level_instance)
+            p_status, property_state, property_view, messages = building_file.process(
+                organization_id, cycle, access_level_instance=access_level_instance
+            )
 
         if p_status and property_state:
             if len(messages['warnings']) > 0:
-                return JsonResponse({
-                    'success': True,
-                    'status': 'success',
-                    'message': {'warnings': messages['warnings']},
-                    'data': {
-                        'property_view': PropertyViewAsStateSerializer(property_view).data,
-                        # 'property_state': PropertyStateWritableSerializer(property_state).data,
-                    },
-                })
+                return JsonResponse(
+                    {
+                        'success': True,
+                        'status': 'success',
+                        'message': {'warnings': messages['warnings']},
+                        'data': {
+                            'property_view': PropertyViewAsStateSerializer(property_view).data,
+                            # 'property_state': PropertyStateWritableSerializer(property_state).data,
+                        },
+                    }
+                )
             else:
-                return JsonResponse({
-                    'success': True,
-                    'status': 'success',
-                    'message': {'warnings': []},
-                    'data': {
-                        'property_view': PropertyViewAsStateSerializer(property_view).data,
-                        # 'property_state': PropertyStateWritableSerializer(property_state).data,
-                    },
-                })
+                return JsonResponse(
+                    {
+                        'success': True,
+                        'status': 'success',
+                        'message': {'warnings': []},
+                        'data': {
+                            'property_view': PropertyViewAsStateSerializer(property_view).data,
+                            # 'property_state': PropertyStateWritableSerializer(property_state).data,
+                        },
+                    }
+                )
         else:
-            return JsonResponse({
-                'success': False,
-                'status': 'error',
-                'message': messages
-            }, status=status.HTTP_400_BAD_REQUEST)
+            return JsonResponse({'success': False, 'status': 'error', 'message': messages}, status=status.HTTP_400_BAD_REQUEST)

@@ -6,6 +6,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 def session_key(request):
     from django.conf import settings
+
     try:
         return {'SESSION_KEY': request.COOKIES[settings.SESSION_COOKIE_NAME]}
     except BaseException:

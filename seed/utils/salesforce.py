@@ -1,9 +1,9 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 import datetime
 import json
 
@@ -20,12 +20,11 @@ from seed.models.salesforce_mappings import SalesforceMapping
 from seed.serializers.properties import PropertyViewSerializer
 from seed.utils.encrypt import decrypt
 
-AUTO_SYNC_NAME = "salesforce_sync_org-"
+AUTO_SYNC_NAME = 'salesforce_sync_org-'
 
 
 def test_connection(params):
-    """ test Salesforce connection with credentials stored in the salesforce_config model
-    """
+    """test Salesforce connection with credentials stored in the salesforce_config model"""
     status = False
     message = None
     try:
@@ -34,13 +33,12 @@ def test_connection(params):
             status = True
         return status, message, sf
     except Exception as e:
-        message = " ".join(["Salesforce Authentication Failed:", str(e)])
+        message = ' '.join(['Salesforce Authentication Failed:', str(e)])
         return status, message, None
 
 
 def check_salesforce_enabled(org_id):
-    """ check that salesforce process is enabled before syncing
-    """
+    """check that salesforce process is enabled before syncing"""
     enabled = False
     org = Organization.objects.get(pk=org_id)
     if org.salesforce_enabled:
@@ -49,7 +47,6 @@ def check_salesforce_enabled(org_id):
 
 
 def schedule_sync(data, org_id):
-
     timezone = data.get('timezone', get_current_timezone())
 
     if 'update_at_hour' in data and 'update_at_minute' in data:
@@ -60,17 +57,14 @@ def schedule_sync(data, org_id):
             day_of_week='*',
             day_of_month='*',
             month_of_year='*',
-            timezone=timezone
+            timezone=timezone,
         )
 
         # then schedule task (create/update with new crontab)
         tasks = PeriodicTask.objects.filter(name=AUTO_SYNC_NAME + str(org_id))
         if not tasks:
             PeriodicTask.objects.create(
-                crontab=schedule,
-                name=AUTO_SYNC_NAME + str(org_id),
-                task='seed.tasks.sync_salesforce',
-                args=json.dumps([org_id])
+                crontab=schedule, name=AUTO_SYNC_NAME + str(org_id), task='seed.tasks.sync_salesforce', args=json.dumps([org_id])
             )
         else:
             task = tasks.first()
@@ -83,8 +77,8 @@ def schedule_sync(data, org_id):
 
 
 def toggle_salesforce_sync(salesforce_enabled, org_id):
-    """ when salesforce_enabled value is toggled, also toggle the auto sync
-        task status if it exists
+    """when salesforce_enabled value is toggled, also toggle the auto sync
+    task status if it exists
     """
     tasks = PeriodicTask.objects.filter(name=AUTO_SYNC_NAME + str(org_id))
     if tasks:
@@ -94,8 +88,7 @@ def toggle_salesforce_sync(salesforce_enabled, org_id):
 
 
 def retrieve_connection_params(org_id):
-    """ retrieve salesforce connection params from the salesforce_config model by org_id
-    """
+    """retrieve salesforce connection params from the salesforce_config model by org_id"""
     params = {}
     try:
         config = SalesforceConfig.objects.filter(organization_id=org_id)
@@ -122,7 +115,7 @@ def _get_label_names(labels_arr):
 
     labels = []
     if labels_arr:
-        labels = list(Label.objects.filter(pk__in=labels_arr).values_list("name", flat=True))
+        labels = list(Label.objects.filter(pk__in=labels_arr).values_list('name', flat=True))
 
     return labels
 
@@ -136,28 +129,18 @@ def _get_property_view(property_id, org_id):
     :return:
     """
     try:
-        property_view = PropertyView.objects.select_related(
-            'property', 'cycle', 'state'
-        ).get(
-            id=property_id,
-            property__organization_id=org_id
+        property_view = PropertyView.objects.select_related('property', 'cycle', 'state').get(
+            id=property_id, property__organization_id=org_id
         )
 
-        result = {
-            'status': 'success',
-            'property_view': property_view
-        }
+        result = {'status': 'success', 'property_view': property_view}
     except PropertyView.DoesNotExist:
-        result = {
-            'status': 'error',
-            'message': 'property view with id {} does not exist'.format(property_id)
-        }
+        result = {'status': 'error', 'message': f'property view with id {property_id} does not exist'}
     return result
 
 
 def update_salesforce_property(org_id, property_id, salesforce_client=None, config=None, mappings={}):
-    """ Sync a specific SEED property record with Salesforce
-    """
+    """Sync a specific SEED property record with Salesforce"""
     status = False
     message = None
     params = {}
@@ -195,8 +178,12 @@ def update_salesforce_property(org_id, property_id, salesforce_client=None, conf
 
     # check if indication label is applied (used for manual sync on inventory detail page)
     if not config.indication_label_id or config.indication_label_id not in result['labels']:
-        message = 'Cannot update Property ' + str(property_id) + ': missing indication \
+        message = (
+            'Cannot update Property '
+            + str(property_id)
+            + ': missing indication \
                    label for Salesforce sync. Apply the label to this property and try again.'
+        )
         return status, message
 
     # flatten state / extra_data
@@ -224,16 +211,15 @@ def update_salesforce_property(org_id, property_id, salesforce_client=None, conf
 
     # we don't know if this will be in extra_data or canonical fields
     benchmark_id = None
-    if benchmark_id_colname.display_name is not None and benchmark_id_colname.display_name != "":
+    if benchmark_id_colname.display_name is not None and benchmark_id_colname.display_name != '':
         if benchmark_id_colname.display_name in flat_state:
             benchmark_id = flat_state[benchmark_id_colname.display_name]
-    else:
-        if benchmark_id_colname.column_name in flat_state:
-            benchmark_id = flat_state[benchmark_id_colname.column_name]
+    elif benchmark_id_colname.column_name in flat_state:
+        benchmark_id = flat_state[benchmark_id_colname.column_name]
 
     # print(f"benchmark ID is: {benchmark_id}")
     if not benchmark_id:
-        message = f"SEED Unique Benchmark ID Column data on property {property_view.id} is undefined. Update your property record with this information."
+        message = f'SEED Unique Benchmark ID Column data on property {property_view.id} is undefined. Update your property record with this information.'
         return status, message
 
     """ CONTACT/ACCOUNT CREATION """
@@ -242,10 +228,12 @@ def update_salesforce_property(org_id, property_id, salesforce_client=None, conf
     # if it doesn't: first try to get Account as specified in Account Name column. If there's nothing in that column,
     # or if it is invalid, use the provided default account name. if that's not provided either, error out.
     # NOTE: skipping this if not configured (not erroring out)
-    if config.contact_email_column_id and config.benchmark_contact_fieldname and (config.account_name_column_id or config.default_contact_account_name):
-        fields = {'email': config.contact_email_column_id,
-                  'contact_name': config.contact_name_column_id
-                  }
+    if (
+        config.contact_email_column_id
+        and config.benchmark_contact_fieldname
+        and (config.account_name_column_id or config.default_contact_account_name)
+    ):
+        fields = {'email': config.contact_email_column_id, 'contact_name': config.contact_name_column_id}
 
         # do we have an account_name column specified?
         if config.account_name_column_id:
@@ -255,29 +243,29 @@ def update_salesforce_property(org_id, property_id, salesforce_client=None, conf
         contact_info = {}
         for key, val in fields.items():
             colname = Column.objects.get(pk=val)
-            contact_info[key] = ""
+            contact_info[key] = ''
             if colname.display_name and colname.display_name in flat_state:
                 contact_info[key] = flat_state[colname.display_name]
                 if not contact_info[key] and key != 'account_name':
                     # validate that field is not blank
-                    message = f"SEED {colname.display_name} Column on property {property_view.id} is undefined. \
+                    message = f'SEED {colname.display_name} Column on property {property_view.id} is undefined. \
                                 This information is needed for Salesforce Contact creation. Update your property record with \
                                 this information or clear out the contact creation Salesforce functionality on your \
-                                organization settings page."
+                                organization settings page.'
                     return status, message
             elif colname.column_name in flat_state:
                 contact_info[key] = flat_state[colname.column_name]
                 if not contact_info[key] and key != 'account_name':
                     # validate that field is not blank
-                    message = f"SEED {colname.column_name} Column on property {property_view.id} is undefined. \
+                    message = f'SEED {colname.column_name} Column on property {property_view.id} is undefined. \
                                 This information is needed for Salesforce Contact creation. Update your property record with \
                                 this information or clear out the contact creation Salesforce functionality on your \
-                                organization settings page."
+                                organization settings page.'
                     return status, message
         try:
             contact_record = salesforce_client.find_contact_by_email(contact_info['email'])
         except Exception as e:
-            message = f"Error retrieving Salesforce Contact by email for property {property_view.id}: {str(e)}"
+            message = f'Error retrieving Salesforce Contact by email for property {property_view.id}: {e!s}'
             return status, message
 
         if not contact_record:
@@ -295,15 +283,15 @@ def update_salesforce_property(org_id, property_id, salesforce_client=None, conf
                     account_name = config.default_contact_account_name
                 if account_name is None:
                     # error, no valid account name
-                    message = f"No contact account name specified in SEED or default contact account name given \
+                    message = f'No contact account name specified in SEED or default contact account name given \
                             for SEED property {property_view.id}. This information is needed to create a \
                             Salesforce Contact. Update the property record or enter a default account name on \
-                            the organization settings page."
+                            the organization settings page.'
                     return status, message
 
                 account_record = salesforce_client.find_account_by_name(account_name)
             except Exception as e:
-                message = f"Error retrieving Salesforce Account '{account_name}' by name for property {property_view.id}: {str(e)}"
+                message = f"Error retrieving Salesforce Account '{account_name}' by name for property {property_view.id}: {e!s}"
                 return status, message
             if not account_record:
                 # create account
@@ -314,7 +302,7 @@ def update_salesforce_property(org_id, property_id, salesforce_client=None, conf
                     account_record = salesforce_client.create_account(account_name, **a_details)
                     # print(f"created account record: {account_record}")
                 except Exception as e:
-                    message = f"Error creating Salesforce Account for SEED property {property_view.id}: {str(e)}"
+                    message = f'Error creating Salesforce Account for SEED property {property_view.id}: {e!s}'
                     return status, message
 
             account_id = account_record['Id']
@@ -329,16 +317,18 @@ def update_salesforce_property(org_id, property_id, salesforce_client=None, conf
             try:
                 contact_record = salesforce_client.create_contact(contact_info['email'], **c_details)
             except Exception as e:
-                message = f"Error creating Salesforce Contact for SEED property {property_view.id}: {str(e)}"
+                message = f'Error creating Salesforce Contact for SEED property {property_view.id}: {e!s}'
                 return status, message
         # add contact ID to benchmark contact params
         params[config.benchmark_contact_fieldname] = contact_record['Id']
 
     """ DATA ADMIN CONTACT CREATION """
-    if config.data_admin_email_column_id and config.data_admin_contact_fieldname and (config.data_admin_account_name_column_id or config.default_data_admin_account_name):
-        fields = {'email': config.data_admin_email_column_id,
-                  'contact_name': config.data_admin_name_column_id
-                  }
+    if (
+        config.data_admin_email_column_id
+        and config.data_admin_contact_fieldname
+        and (config.data_admin_account_name_column_id or config.default_data_admin_account_name)
+    ):
+        fields = {'email': config.data_admin_email_column_id, 'contact_name': config.data_admin_name_column_id}
 
         # do we have an account_name column specified?
         if config.data_admin_account_name_column_id:
@@ -347,29 +337,29 @@ def update_salesforce_property(org_id, property_id, salesforce_client=None, conf
         contact_info = {}
         for key, val in fields.items():
             colname = Column.objects.get(pk=val)
-            contact_info[key] = ""
+            contact_info[key] = ''
             if colname.display_name and colname.display_name in flat_state:
                 contact_info[key] = flat_state[colname.display_name]
                 if not contact_info[key] and key != 'account_name':
                     # validate that field is not blank
-                    message = f"SEED {colname.display_name} Column on property {property_view.id} is undefined. \
+                    message = f'SEED {colname.display_name} Column on property {property_view.id} is undefined. \
                                 This information is needed for Salesforce Data Administration Contact creation. Update your property record with \
                                 this information or clear out the contact creation Salesforce functionality on your \
-                                organization settings page."
+                                organization settings page.'
                     return status, message
             elif colname.column_name in flat_state:
                 contact_info[key] = flat_state[colname.column_name]
                 if not contact_info[key] and key != 'account_name':
                     # validate that field is not blank
-                    message = f"SEED {colname.column_name} Column on property {property_view.id} is undefined. \
+                    message = f'SEED {colname.column_name} Column on property {property_view.id} is undefined. \
                                 This information is needed for Salesforce Data Administrator Contact creation. Update your property record with \
                                 this information or clear out the contact creation Salesforce functionality on your \
-                                organization settings page."
+                                organization settings page.'
                     return status, message
         try:
             contact_record = salesforce_client.find_contact_by_email(contact_info['email'])
         except Exception as e:
-            message = f"Error retrieving Salesforce Contact by email for property {property_view.id}: {str(e)}"
+            message = f'Error retrieving Salesforce Contact by email for property {property_view.id}: {e!s}'
             return status, message
 
         if not contact_record:
@@ -387,16 +377,16 @@ def update_salesforce_property(org_id, property_id, salesforce_client=None, conf
                     account_name = config.default_data_admin_account_name
                 if account_name is None:
                     # error, no valid account name
-                    message = f"No data administrator account name specified in SEED or default data administrator account \
+                    message = f'No data administrator account name specified in SEED or default data administrator account \
                             name given for SEED property {property_view.id}. This information is needed to create a \
                             Salesforce Contact. Update the property record or enter a default account name on \
-                            the organization settings page."
+                            the organization settings page.'
                     return status, message
 
                 account_record = salesforce_client.find_account_by_name(account_name)
 
             except Exception as e:
-                message = f"Error retrieving Salesforce Account by name for property {property_view.id}: {str(e)}"
+                message = f'Error retrieving Salesforce Account by name for property {property_view.id}: {e!s}'
                 return status, message
 
             if not account_record:
@@ -408,7 +398,7 @@ def update_salesforce_property(org_id, property_id, salesforce_client=None, conf
                     account_record = salesforce_client.create_account(contact_info['account_name'], **a_details)
                     # print(f"created account record: {account_record}")
                 except Exception as e:
-                    message = f"Error creating Salesforce Account for property {property_view.id}: {str(e)}"
+                    message = f'Error creating Salesforce Account for property {property_view.id}: {e!s}'
                     return status, message
 
             account_id = account_record['Id']
@@ -423,7 +413,7 @@ def update_salesforce_property(org_id, property_id, salesforce_client=None, conf
             try:
                 contact_record = salesforce_client.create_contact(contact_info['email'], **c_details)
             except Exception as e:
-                message = f"Error creating Salesforce Contact for property {property_view.id}: {str(e)}"
+                message = f'Error creating Salesforce Contact for property {property_view.id}: {e!s}'
                 return status, message
         # add contact ID to data admin param
         params[config.data_admin_contact_fieldname] = contact_record['Id']
@@ -432,14 +422,14 @@ def update_salesforce_property(org_id, property_id, salesforce_client=None, conf
     # create benchmark params
     if config.status_fieldname:
         # check if violation or compliant label is applied
-        params[config.status_fieldname] = ""
+        params[config.status_fieldname] = ''
         if config.compliance_label_id and config.compliance_label_id in result['labels']:
             params[config.status_fieldname] = config.compliance_label.name
         elif config.violation_label_id and config.violation_label_id in result['labels']:
             params[config.status_fieldname] = config.violation_label.name
 
     if config.labels_fieldname:
-        params[config.labels_fieldname] = ";".join(result['label_names'])
+        params[config.labels_fieldname] = ';'.join(result['label_names'])
 
     # add cycle, labels, status (if used)
     if config.cycle_fieldname:
@@ -451,7 +441,7 @@ def update_salesforce_property(org_id, property_id, salesforce_client=None, conf
     if config.compliance_label_id and config.compliance_label_id in result['labels']:
         if config.violation_label_id and config.violation_label_id in result['labels']:
             # if both labels are applied, error out
-            template = "Property View {0} / Benchmark ID {1} : both compliant and violation labels applied. Benchmark not updated."
+            template = 'Property View {0} / Benchmark ID {1} : both compliant and violation labels applied. Benchmark not updated.'
             message = template.format(property_id, benchmark_id)
             return status, message
 
@@ -466,7 +456,7 @@ def update_salesforce_property(org_id, property_id, salesforce_client=None, conf
             params[mapping.salesforce_fieldname] = field_val
 
     elif config.violation_label_id and config.violation_label_id not in result['labels']:
-        template = "Property View {0} / Benchmark ID {1} : no compliant or violation labels applied. Benchmark not updated."
+        template = 'Property View {0} / Benchmark ID {1} : no compliant or violation labels applied. Benchmark not updated.'
         message = template.format(str(property_id), benchmark_id)
         return status, message
 
@@ -480,15 +470,15 @@ def update_salesforce_property(org_id, property_id, salesforce_client=None, conf
             remove_indication_label(property_id, config.indication_label_id)
 
     except Exception as ex:
-        template = "Property View {2} / Benchmark ID {3} : An exception of type {0} occurred. Arguments:\n{1!r}"
+        template = 'Property View {2} / Benchmark ID {3} : An exception of type {0} occurred. Arguments:\n{1!r}'
         message = template.format(type(ex).__name__, ex.args, str(property_id), benchmark_id)
 
     return status, message
 
 
 def remove_indication_label(property_id, label_id):
-    """ Remove the Indication Label (i.e. "Add to Salesforce") from SEED property
-        when the config delete_label_after_sync is checked
+    """Remove the Indication Label (i.e. "Add to Salesforce") from SEED property
+    when the config delete_label_after_sync is checked
     """
     try:
         pv = PropertyView.objects.get(pk=property_id)
@@ -497,12 +487,11 @@ def remove_indication_label(property_id, label_id):
     except Exception as ex:
         # could not remove label
         # TODO: We need to save this to the logger too, not just print it.
-        print(f"Error removing label: {str(ex)}")
+        print(f'Error removing label: {ex!s}')
 
 
 def update_salesforce_properties(org_id, property_ids):
-    """ Update a selection of salesforce properties (not scheduled)
-    """
+    """Update a selection of salesforce properties (not scheduled)"""
 
     status = False
     messages = []
@@ -538,14 +527,13 @@ def update_salesforce_properties(org_id, property_ids):
 
 
 def auto_sync_salesforce_properties(org_id):
-    """ scheduled Salesforce properties updates
-    """
+    """scheduled Salesforce properties updates"""
 
     status = False
     messages = []
 
     if not check_salesforce_enabled(org_id):
-        messages.append("Salesforce Workflow is not enabled. Enable Salesforce on the organization settings page")
+        messages.append('Salesforce Workflow is not enabled. Enable Salesforce on the organization settings page')
         return status, messages
 
     # get salesforce config object
@@ -562,7 +550,12 @@ def auto_sync_salesforce_properties(org_id):
     compare_date = config.last_update_date if config.last_update_date else datetime.datetime(1970, 1, 1, tzinfo=get_current_timezone())
 
     # get IDs by label and date
-    property_matches = PropertyView.objects.filter(property__organization_id=org_id).filter(property__updated__gt=compare_date).filter(labels__in=[ind_label_id]).values_list('id', flat=True)
+    property_matches = (
+        PropertyView.objects.filter(property__organization_id=org_id)
+        .filter(property__updated__gt=compare_date)
+        .filter(labels__in=[ind_label_id])
+        .values_list('id', flat=True)
+    )
 
     status, messages = update_salesforce_properties(org_id, list(property_matches))
     # can't email from here due to circular imports...emailing is done in tasks.py

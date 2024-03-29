@@ -1,9 +1,9 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 from copy import deepcopy
 
 import django.core.exceptions
@@ -21,20 +21,12 @@ from seed.models.columns import Column
 from seed.models.salesforce_configs import SalesforceConfig
 from seed.serializers.salesforce_configs import SalesforceConfigSerializer
 from seed.utils.api import OrgMixin, api_endpoint_class
-from seed.utils.api_schema import (
-    AutoSchemaHelper,
-    swagger_auto_schema_org_query_param
-)
+from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema_org_query_param
 from seed.utils.encrypt import decrypt, encrypt
-from seed.utils.salesforce import (
-    auto_sync_salesforce_properties,
-    schedule_sync,
-    test_connection
-)
+from seed.utils.salesforce import auto_sync_salesforce_properties, schedule_sync, test_connection
 
 
 def _validate_data(data, org_id):
-
     error = False
     msgs = []
 
@@ -97,10 +89,7 @@ class SalesforceConfigViewSet(viewsets.ViewSet, OrgMixin):
             if 'password' in item and item['password'] is not None:
                 item['password'] = decrypt(item['password'])[0]
 
-        return JsonResponse({
-            'status': 'success',
-            'salesforce_configs': s_data
-        }, status=status.HTTP_200_OK)
+        return JsonResponse({'status': 'success', 'salesforce_configs': s_data}, status=status.HTTP_200_OK)
 
     @swagger_auto_schema_org_query_param
     @api_endpoint_class
@@ -119,8 +108,7 @@ class SalesforceConfigViewSet(viewsets.ViewSet, OrgMixin):
         data = body.get('salesforce_config', None)
 
         if data is None:
-            return JsonResponse({'status': 'error', 'message': 'malformed request'},
-                                status=status.HTTP_400_BAD_REQUEST)
+            return JsonResponse({'status': 'error', 'message': 'malformed request'}, status=status.HTTP_400_BAD_REQUEST)
 
         # assume salesforce is enabled if you can get to this view
         # get values from form (they may not be saved yet)
@@ -136,8 +124,7 @@ class SalesforceConfigViewSet(viewsets.ViewSet, OrgMixin):
         # connect
         status_msg, message, sf = test_connection(params)
         if status_msg is False:
-            return JsonResponse({'status': 'error', 'message': message},
-                                status=status.HTTP_400_BAD_REQUEST)
+            return JsonResponse({'status': 'error', 'message': message}, status=status.HTTP_400_BAD_REQUEST)
         else:
             return JsonResponse({'status': 'success'})
 
@@ -155,16 +142,9 @@ class SalesforceConfigViewSet(viewsets.ViewSet, OrgMixin):
         the_status, messages = auto_sync_salesforce_properties(org_id)
 
         if the_status:
-            return JsonResponse({
-                'success': True,
-                'status': 'success',
-                'message': 'successfully updated Salesforce'
-            })
+            return JsonResponse({'success': True, 'status': 'success', 'message': 'successfully updated Salesforce'})
         else:
-            return JsonResponse({
-                'status': 'error',
-                'message': messages
-            }, status=status.HTTP_400_BAD_REQUEST)
+            return JsonResponse({'status': 'error', 'message': messages}, status=status.HTTP_400_BAD_REQUEST)
 
     @swagger_auto_schema_org_query_param
     @require_organization_id_class
@@ -175,31 +155,29 @@ class SalesforceConfigViewSet(viewsets.ViewSet, OrgMixin):
         organization = self.get_organization(request)
         if pk == 0:
             try:
-                return JsonResponse({
-                    'status': 'success',
-                    'salesforce_config': SalesforceConfigSerializer(
-                        SalesforceConfig.objects.filter(organization=organization).first()
-                    ).data
-                }, status=status.HTTP_200_OK)
+                return JsonResponse(
+                    {
+                        'status': 'success',
+                        'salesforce_config': SalesforceConfigSerializer(
+                            SalesforceConfig.objects.filter(organization=organization).first()
+                        ).data,
+                    },
+                    status=status.HTTP_200_OK,
+                )
             except Exception:
-                return JsonResponse({
-                    'status': 'error',
-                    'message': 'No configs exist with this identifier'
-                }, status=status.HTTP_404_NOT_FOUND)
+                return JsonResponse(
+                    {'status': 'error', 'message': 'No configs exist with this identifier'}, status=status.HTTP_404_NOT_FOUND
+                )
         else:
             try:
                 data = SalesforceConfigSerializer(SalesforceConfig.objects.get(id=pk, organization=organization)).data
                 if 'password' in data and data['password'] is not None:
                     data['password'] = decrypt(data['password'])[0]
-                return JsonResponse({
-                    'status': 'success',
-                    'salesforce_config': data
-                }, status=status.HTTP_200_OK)
+                return JsonResponse({'status': 'success', 'salesforce_config': data}, status=status.HTTP_200_OK)
             except SalesforceConfig.DoesNotExist:
-                return JsonResponse({
-                    'status': 'error',
-                    'message': f'SalesforceConfig with id {pk} does not exist'
-                }, status=status.HTTP_404_NOT_FOUND)
+                return JsonResponse(
+                    {'status': 'error', 'message': f'SalesforceConfig with id {pk} does not exist'}, status=status.HTTP_404_NOT_FOUND
+                )
 
     @swagger_auto_schema_org_query_param
     @require_organization_id_class
@@ -212,15 +190,11 @@ class SalesforceConfigViewSet(viewsets.ViewSet, OrgMixin):
         try:
             SalesforceConfig.objects.get(id=pk, organization=organization_id).delete()
         except SalesforceConfig.DoesNotExist:
-            return JsonResponse({
-                'status': 'error',
-                'message': f'SalesforceConfig with id {pk} does not exist'
-            }, status=status.HTTP_404_NOT_FOUND)
+            return JsonResponse(
+                {'status': 'error', 'message': f'SalesforceConfig with id {pk} does not exist'}, status=status.HTTP_404_NOT_FOUND
+            )
 
-        return JsonResponse({
-            'status': 'success',
-            'message': f'Successfully deleted SalesforceConfig ID {pk}'
-        }, status=status.HTTP_200_OK)
+        return JsonResponse({'status': 'success', 'message': f'Successfully deleted SalesforceConfig ID {pk}'}, status=status.HTTP_200_OK)
 
     @swagger_auto_schema(
         manual_parameters=[AutoSchemaHelper.query_org_id_field()],
@@ -256,40 +230,33 @@ class SalesforceConfigViewSet(viewsets.ViewSet, OrgMixin):
                 'update_at_hour': 'integer',
                 'update_at_minute': 'integer',
             },
-        )
+        ),
     )
     @require_organization_id_class
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_owner')
     def create(self, request):
-
         org_id = int(self.get_organization(request))
         try:
             Organization.objects.get(pk=org_id)
         except Organization.DoesNotExist:
-            return JsonResponse({'status': 'error', 'message': 'bad organization_id'},
-                                status=status.HTTP_400_BAD_REQUEST)
+            return JsonResponse({'status': 'error', 'message': 'bad organization_id'}, status=status.HTTP_400_BAD_REQUEST)
 
         data = deepcopy(request.data)
         data.update({'organization_id': org_id})
 
         # encrypt pwd
-        if 'password' in data and data['password']:
+        if data.get('password'):
             data['password'] = encrypt(data['password'])
 
         error, msgs = _validate_data(data, org_id)
-        if (error is True):
-            return JsonResponse({'status': 'error', 'message': ','.join(msgs)},
-                                status=status.HTTP_400_BAD_REQUEST)
+        if error is True:
+            return JsonResponse({'status': 'error', 'message': ','.join(msgs)}, status=status.HTTP_400_BAD_REQUEST)
         serializer = SalesforceConfigSerializer(data=data)
 
         if not serializer.is_valid():
-            error_response = {
-                'status': 'error',
-                'message': 'Data Validation Error',
-                'errors': serializer.errors
-            }
+            error_response = {'status': 'error', 'message': 'Data Validation Error', 'errors': serializer.errors}
             return JsonResponse(error_response, status=status.HTTP_400_BAD_REQUEST)
 
         try:
@@ -299,23 +266,15 @@ class SalesforceConfigViewSet(viewsets.ViewSet, OrgMixin):
             data['timezone'] = request.GET.get('timezone', None)
             schedule_sync(data, org_id)
 
-            return JsonResponse({
-                'status': 'success',
-                'salesforce_config': serializer.data
-            }, status=status.HTTP_200_OK)
+            return JsonResponse({'status': 'success', 'salesforce_config': serializer.data}, status=status.HTTP_200_OK)
         except IntegrityError:
-            return JsonResponse({
-                'status': 'error',
-                'message': 'Only one Salesforce config can be created per organization'
-            }, status=status.HTTP_400_BAD_REQUEST)
+            return JsonResponse(
+                {'status': 'error', 'message': 'Only one Salesforce config can be created per organization'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         except django.core.exceptions.ValidationError as e:
-
             message_dict = e.message_dict
-            return JsonResponse({
-                'status': 'error',
-                'message': 'Bad Request',
-                'errors': message_dict
-            }, status=status.HTTP_400_BAD_REQUEST)
+            return JsonResponse({'status': 'error', 'message': 'Bad Request', 'errors': message_dict}, status=status.HTTP_400_BAD_REQUEST)
 
     @swagger_auto_schema(
         manual_parameters=[AutoSchemaHelper.query_org_id_field()],
@@ -351,7 +310,7 @@ class SalesforceConfigViewSet(viewsets.ViewSet, OrgMixin):
                 'update_at_hour': 'integer',
                 'update_at_minute': 'integer',
             },
-        )
+        ),
     )
     @require_organization_id_class
     @api_endpoint_class
@@ -364,28 +323,24 @@ class SalesforceConfigViewSet(viewsets.ViewSet, OrgMixin):
         try:
             salesforce_config = SalesforceConfig.objects.get(id=pk, organization=org_id)
         except SalesforceConfig.DoesNotExist:
-            return JsonResponse({
-                'status': 'error',
-                'message': f'SalesforceConfig with id {pk} does not exist'
-            }, status=status.HTTP_404_NOT_FOUND)
+            return JsonResponse(
+                {'status': 'error', 'message': f'SalesforceConfig with id {pk} does not exist'}, status=status.HTTP_404_NOT_FOUND
+            )
 
         data = deepcopy(request.data)
         data.update({'organization': org_id})
-        if 'password' in data and data['password']:
+        if data.get('password'):
             data['password'] = encrypt(data['password'])
         error, msgs = _validate_data(data, org_id)
-        if (error is True):
-            return JsonResponse({'status': 'error', 'message': ','.join(msgs)},
-                                status=status.HTTP_400_BAD_REQUEST)
+        if error is True:
+            return JsonResponse({'status': 'error', 'message': ','.join(msgs)}, status=status.HTTP_400_BAD_REQUEST)
 
         serializer = SalesforceConfigSerializer(salesforce_config, data=data, partial=True)
 
         if not serializer.is_valid():
-            return JsonResponse({
-                'status': 'error',
-                'message': 'Bad Request',
-                'errors': serializer.errors
-            }, status=status.HTTP_400_BAD_REQUEST)
+            return JsonResponse(
+                {'status': 'error', 'message': 'Bad Request', 'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST
+            )
 
         # setup Salesforce update scheduled tasks (if change detected)
         if data['update_at_hour'] != salesforce_config.update_at_hour or data['update_at_minute'] != salesforce_config.update_at_minute:
@@ -399,24 +354,33 @@ class SalesforceConfigViewSet(viewsets.ViewSet, OrgMixin):
             if 'password' in return_data and return_data['password'] is not None:
                 return_data['password'] = decrypt(return_data['password'])[0]
 
-            return JsonResponse({
-                'status': 'success',
-                'salesforce_config': return_data,
-            }, status=status.HTTP_200_OK)
+            return JsonResponse(
+                {
+                    'status': 'success',
+                    'salesforce_config': return_data,
+                },
+                status=status.HTTP_200_OK,
+            )
         except django.core.exceptions.ValidationError as e:
             message_dict = e.message_dict
             # rename key __all__ to general to make it more user-friendly
             if '__all__' in message_dict:
                 message_dict['general'] = message_dict.pop('__all__')
 
-            return JsonResponse({
-                'status': 'error',
-                'message': 'Bad request',
-                'errors': message_dict,
-            }, status=status.HTTP_400_BAD_REQUEST)
+            return JsonResponse(
+                {
+                    'status': 'error',
+                    'message': 'Bad request',
+                    'errors': message_dict,
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         except Exception as e:
-            return JsonResponse({
-                'status': 'error',
-                'message': 'Bad request',
-                'errors': str(e),
-            }, status=status.HTTP_400_BAD_REQUEST)
+            return JsonResponse(
+                {
+                    'status': 'error',
+                    'message': 'Bad request',
+                    'errors': str(e),
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )

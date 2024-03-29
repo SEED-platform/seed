@@ -5,7 +5,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('orgs', '0024_salesforce_configurations'),
         ('seed', '0185_auto_20230112_0922'),
@@ -17,8 +16,19 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('salesforce_fieldname', models.CharField(max_length=255)),
-                ('column', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='salesforce_column', to='seed.column')),
-                ('organization', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='salesforce_mappings', to='orgs.organization', verbose_name='SeedOrg')),
+                (
+                    'column',
+                    models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='salesforce_column', to='seed.column'),
+                ),
+                (
+                    'organization',
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name='salesforce_mappings',
+                        to='orgs.organization',
+                        verbose_name='SeedOrg',
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
@@ -41,14 +51,49 @@ class Migration(migrations.Migration):
                 ('logging_email', models.CharField(blank=True, max_length=128, null=True)),
                 ('update_at_hour', models.IntegerField(blank=True, null=True)),
                 ('update_at_minute', models.IntegerField(blank=True, null=True)),
-                ('account_name_column', models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, related_name='account_name_column', to='seed.column')),
-                ('compliance_label', models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='compliance_label', to='seed.statuslabel')),
-                ('contact_email_column', models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, related_name='contact_email_column', to='seed.column')),
-                ('contact_name_column', models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, related_name='contact_name_column', to='seed.column')),
-                ('indication_label', models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='indication_label', to='seed.statuslabel')),
+                (
+                    'account_name_column',
+                    models.ForeignKey(
+                        null=True, on_delete=django.db.models.deletion.CASCADE, related_name='account_name_column', to='seed.column'
+                    ),
+                ),
+                (
+                    'compliance_label',
+                    models.ForeignKey(
+                        null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='compliance_label', to='seed.statuslabel'
+                    ),
+                ),
+                (
+                    'contact_email_column',
+                    models.ForeignKey(
+                        null=True, on_delete=django.db.models.deletion.CASCADE, related_name='contact_email_column', to='seed.column'
+                    ),
+                ),
+                (
+                    'contact_name_column',
+                    models.ForeignKey(
+                        null=True, on_delete=django.db.models.deletion.CASCADE, related_name='contact_name_column', to='seed.column'
+                    ),
+                ),
+                (
+                    'indication_label',
+                    models.ForeignKey(
+                        null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='indication_label', to='seed.statuslabel'
+                    ),
+                ),
                 ('organization', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, to='orgs.organization')),
-                ('seed_benchmark_id_column', models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, related_name='benchmark_id_column', to='seed.column')),
-                ('violation_label', models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='violation_label', to='seed.statuslabel')),
+                (
+                    'seed_benchmark_id_column',
+                    models.ForeignKey(
+                        null=True, on_delete=django.db.models.deletion.CASCADE, related_name='benchmark_id_column', to='seed.column'
+                    ),
+                ),
+                (
+                    'violation_label',
+                    models.ForeignKey(
+                        null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='violation_label', to='seed.statuslabel'
+                    ),
+                ),
             ],
         ),
         migrations.AddConstraint(
@@ -61,6 +106,8 @@ class Migration(migrations.Migration):
         ),
         migrations.AddConstraint(
             model_name='salesforceconfig',
-            constraint=models.CheckConstraint(check=models.Q(('update_at_minute__range', (0, 59))), name='salesforce_update_at_minute_range'),
+            constraint=models.CheckConstraint(
+                check=models.Q(('update_at_minute__range', (0, 59))), name='salesforce_update_at_minute_range'
+            ),
         ),
     ]

@@ -1,9 +1,9 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 import json
 from datetime import date
 
@@ -11,12 +11,7 @@ from django.test import TestCase
 
 from seed.data_importer.models import ImportFile, ImportRecord
 from seed.landing.models import SEEDUser as User
-from seed.lib.superperms.orgs.models import (
-    ROLE_MEMBER,
-    ROLE_OWNER,
-    Organization,
-    OrganizationUser
-)
+from seed.lib.superperms.orgs.models import ROLE_MEMBER, ROLE_OWNER, Organization, OrganizationUser
 from seed.models import (
     ASSESSED_RAW,
     DATA_STATE_IMPORT,
@@ -41,7 +36,7 @@ from seed.models import (
     TaxLotAuditLog,
     TaxLotProperty,
     TaxLotState,
-    TaxLotView
+    TaxLotView,
 )
 from seed.models.data_quality import DataQualityCheck
 from seed.test_helpers.fake import (
@@ -53,7 +48,7 @@ from seed.test_helpers.fake import (
     FakePropertyViewFactory,
     FakeTaxLotFactory,
     FakeTaxLotStateFactory,
-    FakeTaxLotViewFactory
+    FakeTaxLotViewFactory,
 )
 from seed.utils.organizations import create_organization
 
@@ -104,16 +99,17 @@ class DeleteModelsTestCase(TestCase):
 
 class AccessLevelBaseTestCase(TestCase):
     """Base Test Case Class to handle Access Levels
-       Creates a root owner user, a root member user,
-       and a child member user
-       Useful for testing "setup" API endpoints
-       as well as "data" endpoints
-       Provides methods for logging in as different
-       users
-       Sets up the factories
+    Creates a root owner user, a root member user,
+    and a child member user
+    Useful for testing "setup" API endpoints
+    as well as "data" endpoints
+    Provides methods for logging in as different
+    users
+    Sets up the factories
     """
+
     def setUp(self):
-        """ SUPERUSER """
+        """SUPERUSER"""
         self.superuser_details = {
             'username': 'test_superuser@demo.com',
             'password': 'test_pass',
@@ -122,11 +118,11 @@ class AccessLevelBaseTestCase(TestCase):
             'last_name': 'Energy',
         }
         self.superuser = User.objects.create_superuser(**self.superuser_details)
-        self.org, _, _ = create_organization(self.superuser, "test-organization-a")
+        self.org, _, _ = create_organization(self.superuser, 'test-organization-a')
         # add ALI to org (2 levels)
-        self.org.access_level_names = ["root", "child"]
+        self.org.access_level_names = ['root', 'child']
         self.root_level_instance = self.org.root
-        self.child_level_instance = self.org.add_new_access_level_instance(self.org.root.id, "child")
+        self.child_level_instance = self.org.add_new_access_level_instance(self.org.root.id, 'child')
 
         # default login as superuser/org owner
         self.client.login(**self.superuser_details)
@@ -174,15 +170,15 @@ class AccessLevelBaseTestCase(TestCase):
         self.taxlot_state_factory = FakeTaxLotStateFactory(organization=self.org)
 
     def login_as_root_owner(self):
-        """ Login to client as Root-Level owner user """
+        """Login to client as Root-Level owner user"""
         self.client.login(**self.root_owner_user_details)
 
     def login_as_root_member(self):
-        """ Login to client as Root-Level member user """
+        """Login to client as Root-Level member user"""
         self.client.login(**self.root_member_user_details)
 
     def login_as_child_member(self):
-        """ Login to client as Child-Level member user """
+        """Login to client as Child-Level member user"""
         self.client.login(**self.child_member_user_details)
 
 
@@ -198,7 +194,7 @@ class DataMappingBaseTestCase(DeleteModelsTestCase):
         else:
             user = User.objects.get(username=user_name)
 
-        org, _, _ = create_organization(user, "test-organization-a")
+        org, _, _ = create_organization(user, 'test-organization-a')
 
         cycle, _ = Cycle.objects.get_or_create(
             name='Test Hack Cycle 2015',
@@ -208,13 +204,16 @@ class DataMappingBaseTestCase(DeleteModelsTestCase):
         )
 
         import_record, import_file = self.create_import_file(
-            user, org, cycle, import_file_source_type, import_file_data_state,
+            user,
+            org,
+            cycle,
+            import_file_source_type,
+            import_file_data_state,
         )
 
         return user, org, import_file, import_record, cycle
 
-    def create_import_file(self, user, org, cycle, source_type=ASSESSED_RAW,
-                           data_state=DATA_STATE_IMPORT):
+    def create_import_file(self, user, org, cycle, source_type=ASSESSED_RAW, data_state=DATA_STATE_IMPORT):
         import_record = ImportRecord.objects.create(
             owner=user, last_modified_by=user, super_organization=org, access_level_instance=org.root
         )
@@ -226,13 +225,14 @@ class DataMappingBaseTestCase(DeleteModelsTestCase):
         return import_record, import_file
 
 
-class FakeRequest(object):
+class FakeRequest:
     """A simple request stub."""
+
     __name__ = 'FakeRequest'
     META = {'REMOTE_ADDR': '127.0.0.1'}
     path = 'fake_login_path'
     body = None
-    GET = POST = {}  # type: ignore
+    GET = POST = {}  # type: ignore[misc]
 
     def __init__(self, data=None, headers=None, user=None, method='POST', **kwargs):
         if 'body' in kwargs:
@@ -247,7 +247,7 @@ class FakeRequest(object):
             self.user = user
 
 
-class FakeClient(object):
+class FakeClient:
     """An extremely light-weight test client."""
 
     def _gen_req(self, view_func, data, headers, method='POST', **kwargs):
@@ -269,7 +269,7 @@ class FakeClient(object):
 
 
 class AssertDictSubsetMixin:
-    def assertDictContainsSubset(self, subset, dictionary):
+    def assertDictContainsSubset(self, subset, dictionary):  # noqa: N802
         """Checks whether dictionary is a superset of subset
 
         This is a necessary polyfill b/c assertDictContainsSubset was deprecated

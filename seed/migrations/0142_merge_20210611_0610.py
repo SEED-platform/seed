@@ -4,11 +4,9 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('seed', '0141_auto_20210611_0539'),
         ('seed', '0141_propertymeasure_useful_life'),
     ]
 
-    operations = [
-    ]
+    operations = []

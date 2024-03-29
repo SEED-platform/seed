@@ -1,12 +1,10 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 :author nicholas.long@nrel.gov
 """
-from __future__ import unicode_literals
 
 import logging
 
@@ -14,7 +12,7 @@ from django.db import models
 
 from seed.building_sync.building_sync import BuildingSync, ParsingError
 from seed.data_importer.utils import kbtu_thermal_conversion_factors
-from seed.hpxml.hpxml import HPXML as HPXMLParser
+from seed.hpxml.hpxml import HPXML as HPXMLParser  # noqa: N811
 from seed.lib.merging.merging import merge_state
 from seed.models import (
     AUDIT_IMPORT,
@@ -27,7 +25,7 @@ from seed.models import (
     PropertyAuditLog,
     PropertyMeasure,
     PropertyState,
-    Scenario
+    Scenario,
 )
 
 _log = logging.getLogger(__name__)
@@ -36,28 +34,22 @@ _log = logging.getLogger(__name__)
 class BuildingFile(models.Model):
     """
     BuildingFile contains any building related file, such as a BuildingSync file, that
-    are attached to a PropertyState. Typically the file is used to create/update the
+    are attached to a PropertyState. Typically, the file is used to create/update the
     PropertyState record.
     """
+
     UNKNOWN = 0
     BUILDINGSYNC = 1
     HPXML = 3
 
-    BUILDING_FILE_TYPES = (
-        (UNKNOWN, 'Unknown'),
-        (BUILDINGSYNC, 'BuildingSync'),
-        (HPXML, 'HPXML')
-    )
+    BUILDING_FILE_TYPES = ((UNKNOWN, 'Unknown'), (BUILDINGSYNC, 'BuildingSync'), (HPXML, 'HPXML'))
 
-    BUILDING_FILE_PARSERS = {
-        HPXML: HPXMLParser,
-        BUILDINGSYNC: BuildingSync
-    }
+    BUILDING_FILE_PARSERS = {HPXML: HPXMLParser, BUILDINGSYNC: BuildingSync}
 
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
     property_state = models.ForeignKey('PropertyState', on_delete=models.CASCADE, related_name='building_files', null=True)
-    file = models.FileField(upload_to="buildingsync_files", max_length=500, blank=True, null=True)
+    file = models.FileField(upload_to='buildingsync_files', max_length=500, blank=True, null=True)
     file_type = models.IntegerField(choices=BUILDING_FILE_TYPES, default=UNKNOWN)
     filename = models.CharField(blank=True, max_length=255)
 
@@ -81,8 +73,7 @@ class BuildingFile(models.Model):
         except ValueError:
             pass
 
-        value = [y[0] for x, y in enumerate(cls.BUILDING_FILE_TYPES) if
-                 y[1].lower() == file_type.lower()]
+        value = [y[0] for x, y in enumerate(cls.BUILDING_FILE_TYPES) if y[1].lower() == file_type.lower()]
         if len(value) == 1:
             return value[0]
         else:
@@ -98,7 +89,7 @@ class BuildingFile(models.Model):
         """
         # sub-select the data that are needed to create the PropertyState object
         db_columns = Column.retrieve_db_field_table_and_names_from_db_tables()
-        create_data = {"organization_id": organization_id}
+        create_data = {'organization_id': organization_id}
         extra_data = {}
         for k, v in data.items():
             # Skip the keys that are for measures and reports and process later
@@ -120,7 +111,7 @@ class BuildingFile(models.Model):
             name='Import Creation',
             description='Creation from Import file.',
             import_filename=self.file.path,
-            record_type=AUDIT_IMPORT
+            record_type=AUDIT_IMPORT,
         )
         # set the property_state_id so that we can list the building files by properties
         self.property_state_id = property_state.id
@@ -133,7 +124,7 @@ class BuildingFile(models.Model):
     def _kbtu_thermal_conversion_factors(self):
         if self._cache_kbtu_thermal_conversion_factors is None:
             # assuming "US" for conversion_factor but could be "CAN"
-            self._cache_kbtu_thermal_conversion_factors = kbtu_thermal_conversion_factors("US")
+            self._cache_kbtu_thermal_conversion_factors = kbtu_thermal_conversion_factors('US')
 
         return self._cache_kbtu_thermal_conversion_factors
 
@@ -151,10 +142,8 @@ class BuildingFile(models.Model):
 
         Parser = self.BUILDING_FILE_PARSERS.get(self.file_type, None)
         if not Parser:
-            acceptable_file_types = ', '.join(
-                map(dict(self.BUILDING_FILE_TYPES).get, list(self.BUILDING_FILE_PARSERS.keys()))
-            )
-            return False, None, None, "File format was not one of: {}".format(acceptable_file_types)
+            acceptable_file_types = ', '.join(map(dict(self.BUILDING_FILE_TYPES).get, list(self.BUILDING_FILE_PARSERS.keys())))
+            return False, None, None, f'File format was not one of: {acceptable_file_types}'
 
         parser = Parser()
         try:
@@ -185,16 +174,22 @@ class BuildingFile(models.Model):
             # Find the measure in the database
             try:
                 measure = Measure.objects.get(
-                    category=m['category'], name=m['name'], organization_id=organization_id,
+                    category=m['category'],
+                    name=m['name'],
+                    organization_id=organization_id,
                 )
             except Measure.DoesNotExist:
-                messages['warnings'].append('Measure category and name is not valid %s:%s' % (m['category'], m['name']))
+                messages['warnings'].append(f'Measure category and name is not valid {m["category"]}:{m["name"]}')
                 continue
 
             # Add the measure to the join table.
             # Need to determine what constitutes the unique measure for a property
             implementation_status = m['implementation_status'] if m.get('implementation_status') else 'Proposed'
-            application_scale = m['application_scale_of_application'] if m.get('application_scale_of_application') else PropertyMeasure.SCALE_ENTIRE_FACILITY
+            application_scale = (
+                m['application_scale_of_application']
+                if m.get('application_scale_of_application')
+                else PropertyMeasure.SCALE_ENTIRE_FACILITY
+            )
             category_affected = m['system_category_affected'] if m.get('system_category_affected') else PropertyMeasure.CATEGORY_OTHER
             # for some reason this is returning none if the field is empty. So none and true should both be true.
             recommended = str(m.get('recommended', 'true')).lower() in ['true', 'none']
@@ -217,10 +212,7 @@ class BuildingFile(models.Model):
             join.useful_life = m.get('useful_life')
             join.save()
 
-        scenario_temporal_status_map = {
-            status_name: status_enum
-            for status_enum, status_name in Scenario.TEMPORAL_STATUS_TYPES
-        }
+        scenario_temporal_status_map = {status_name: status_enum for status_enum, status_name in Scenario.TEMPORAL_STATUS_TYPES}
         # add in scenarios
         linked_meters = []
         scenarios = []
@@ -254,10 +246,7 @@ class BuildingFile(models.Model):
             scenario.annual_electricity_energy = s.get('annual_electricity_energy')
             scenario.annual_peak_demand = s.get('annual_peak_demand')
             scenario.annual_peak_electricity_reduction = s.get('annual_peak_electricity_reduction')
-            scenario.temporal_status = scenario_temporal_status_map.get(
-                s.get('temporal_status'),
-                Scenario.TEMPORAL_STATUS_CURRENT
-            )
+            scenario.temporal_status = scenario_temporal_status_map.get(s.get('temporal_status'), Scenario.TEMPORAL_STATUS_CURRENT)
 
             if s.get('reference_case'):
                 ref_case = Scenario.objects.filter(
@@ -278,7 +267,9 @@ class BuildingFile(models.Model):
                     )
                 except PropertyMeasure.DoesNotExist:
                     # PropertyMeasure is not in database, skipping silently
-                    messages['warnings'].append('Measure associated with scenario not found. Scenario: %s, Measure name: %s' % (s.get('name'), measure_name))
+                    messages['warnings'].append(
+                        f'Measure associated with scenario not found. Scenario: {s.get("name")}, Measure name: {measure_name}'
+                    )
                     continue
 
                 scenario.measures.add(measure)
@@ -292,11 +283,7 @@ class BuildingFile(models.Model):
                 num_skipped_readings = 0
                 valid_readings = []
                 for mr in m.get('readings', []):
-                    is_usable = (
-                        mr.get('start_time') is not None
-                        and mr.get('end_time') is not None
-                        and mr.get('reading') is not None
-                    )
+                    is_usable = mr.get('start_time') is not None and mr.get('end_time') is not None and mr.get('reading') is not None
                     if is_usable:
                         valid_readings.append(mr)
                     else:
@@ -343,7 +330,7 @@ class BuildingFile(models.Model):
                         reading=float(mr.get('reading', 0)) * meter_conversions.get(mr.get('source_unit'), 1.00),
                         source_unit=mr.get('source_unit'),
                         meter_id=meter.id,
-                        conversion_factor=meter_conversions.get(mr.get('source_unit'), 1.00)
+                        conversion_factor=meter_conversions.get(mr.get('source_unit'), 1.00),
                     )
                     for mr in valid_readings
                 }
@@ -357,9 +344,7 @@ class BuildingFile(models.Model):
             # assume the same cycle id as the former state.
             # should merge_state also copy/move over the relationships?
             priorities = Column.retrieve_priorities(organization_id)
-            merged_state = merge_state(
-                merged_state, property_view.state, property_state, priorities['PropertyState']
-            )
+            merged_state = merge_state(merged_state, property_view.state, property_state, priorities['PropertyState'])
 
             # log the merge
             # Not a fan of the parent1/parent2 logic here, seems error prone, what this
@@ -374,7 +359,7 @@ class BuildingFile(models.Model):
                 name='System Match',
                 description='Automatic Merge',
                 import_filename=None,
-                record_type=AUDIT_IMPORT
+                record_type=AUDIT_IMPORT,
             )
 
             property_view.state = merged_state

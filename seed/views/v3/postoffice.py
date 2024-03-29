@@ -1,57 +1,32 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 from django.conf import settings
 from django.forms.models import model_to_dict
 from django.utils.decorators import method_decorator
 from post_office import mail
 
 from seed.lib.superperms.orgs.decorators import has_perm_class
-from seed.models import (
-    PostOfficeEmail,
-    PostOfficeEmailTemplate,
-    PropertyState,
-    TaxLotState
-)
-from seed.serializers.postoffice import (
-    PostOfficeEmailSerializer,
-    PostOfficeSerializer
-)
+from seed.models import PostOfficeEmail, PostOfficeEmailTemplate, PropertyState, TaxLotState
+from seed.serializers.postoffice import PostOfficeEmailSerializer, PostOfficeSerializer
 from seed.utils.viewsets import SEEDOrgModelViewSet
 
 
-@method_decorator(
-    name='list',
-    decorator=[has_perm_class('requires_owner')]
-)
-@method_decorator(
-    name='retrieve',
-    decorator=[has_perm_class('requires_owner')]
-)
-@method_decorator(
-    name='update',
-    decorator=[has_perm_class('requires_owner')]
-)
-@method_decorator(
-    name='destroy',
-    decorator=[has_perm_class('requires_owner')]
-)
-@method_decorator(
-    name='create',
-    decorator=[has_perm_class('requires_owner')]
-)
+@method_decorator(name='list', decorator=[has_perm_class('requires_owner')])
+@method_decorator(name='retrieve', decorator=[has_perm_class('requires_owner')])
+@method_decorator(name='update', decorator=[has_perm_class('requires_owner')])
+@method_decorator(name='destroy', decorator=[has_perm_class('requires_owner')])
+@method_decorator(name='create', decorator=[has_perm_class('requires_owner')])
 class PostOfficeViewSet(SEEDOrgModelViewSet):
     model = PostOfficeEmailTemplate
     serializer_class = PostOfficeSerializer
     pagination_class = None
 
     def get_queryset(self):
-        return PostOfficeEmailTemplate.objects.filter(
-            organization_id=self.get_organization(self.request)
-        ).order_by('name')
+        return PostOfficeEmailTemplate.objects.filter(organization_id=self.get_organization(self.request)).order_by('name')
 
     def perform_create(self, serializer):
         org_id = self.get_organization(self.request)
@@ -59,26 +34,11 @@ class PostOfficeViewSet(SEEDOrgModelViewSet):
         serializer.save(organization_id=org_id, user=user)
 
 
-@method_decorator(
-    name='list',
-    decorator=[has_perm_class('requires_owner')]
-)
-@method_decorator(
-    name='retrieve',
-    decorator=[has_perm_class('requires_owner')]
-)
-@method_decorator(
-    name='update',
-    decorator=[has_perm_class('requires_owner')]
-)
-@method_decorator(
-    name='destroy',
-    decorator=[has_perm_class('requires_owner')]
-)
-@method_decorator(
-    name='create',
-    decorator=[has_perm_class('requires_owner')]
-)
+@method_decorator(name='list', decorator=[has_perm_class('requires_owner')])
+@method_decorator(name='retrieve', decorator=[has_perm_class('requires_owner')])
+@method_decorator(name='update', decorator=[has_perm_class('requires_owner')])
+@method_decorator(name='destroy', decorator=[has_perm_class('requires_owner')])
+@method_decorator(name='create', decorator=[has_perm_class('requires_owner')])
 class PostOfficeEmailViewSet(SEEDOrgModelViewSet):
     model = PostOfficeEmail
     serializer_class = PostOfficeEmailSerializer
@@ -90,7 +50,7 @@ class PostOfficeEmailViewSet(SEEDOrgModelViewSet):
     def perform_create(self, serializer):
         template_id = self.request.data.get('template_id')
         inventory_id = self.request.data.get('inventory_id', [])
-        if self.request.data.get('inventory_type') == "properties":
+        if self.request.data.get('inventory_type') == 'properties':
             state = PropertyState
             org_filter = 'propertyview__property__organization_id'
         else:
@@ -98,10 +58,7 @@ class PostOfficeEmailViewSet(SEEDOrgModelViewSet):
             org_filter = 'taxlotview__taxlot__organization_id'
 
         org_id = self.get_organization(self.request)
-        properties = state.objects.filter(
-            id__in=inventory_id,
-            **{org_filter: org_id}
-        )
+        properties = state.objects.filter(id__in=inventory_id, **{org_filter: org_id})
 
         for prop in properties:  # loop to include details in template
             context = {}
@@ -112,7 +69,7 @@ class PostOfficeEmailViewSet(SEEDOrgModelViewSet):
                 settings.SERVER_EMAIL,
                 template=PostOfficeEmailTemplate.objects.get(id=template_id, organization_id=org_id),
                 context=context,
-                backend='post_office_backend'
+                backend='post_office_backend',
             )
 
             user = self.request.user
@@ -137,7 +94,7 @@ class PostOfficeEmailViewSet(SEEDOrgModelViewSet):
                 'template_id': ptr.template_id,
                 'backend_alias': ptr.backend_alias,
                 'number_of_retries': ptr.number_of_retries,
-                'expires_at': ptr.expires_at
+                'expires_at': ptr.expires_at,
             }
 
             serializer.save(**email_data, organization_id=org_id, user=user)

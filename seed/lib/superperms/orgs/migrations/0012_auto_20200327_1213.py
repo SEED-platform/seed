@@ -6,7 +6,6 @@ import seed.lib.superperms.orgs.models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('orgs', '0011_auto_20190714_2159'),
     ]

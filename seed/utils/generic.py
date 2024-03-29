@@ -1,9 +1,9 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 import json
 import logging
 import math
@@ -65,11 +65,20 @@ def obj_to_dict(obj, include_m2m=True):
     """
     # http://www.django-rest-framework.org/api-guide/fields/#jsonfield
     if include_m2m:
-        data = serializers.serialize('json', [obj, ])
+        data = serializers.serialize(
+            'json',
+            [
+                obj,
+            ],
+        )
     else:
-        data = serializers.serialize('json', [obj, ], fields=tuple(
-            [f.name for f in obj.__class__._meta.local_fields]
-        ))
+        data = serializers.serialize(
+            'json',
+            [
+                obj,
+            ],
+            fields=tuple([f.name for f in obj.__class__._meta.local_fields]),
+        )
 
     struct = json.loads(data)[0]
     response = struct['fields']
@@ -92,7 +101,12 @@ def pp(model_obj):
     Pretty Print the model object
     """
 
-    data = serializers.serialize('json', [model_obj, ])
+    data = serializers.serialize(
+        'json',
+        [
+            model_obj,
+        ],
+    )
     # from django.forms.models import model_to_dict
     # j = model_to_dict(model_obj)
     print(json.dumps(json.loads(data), indent=2))
@@ -116,9 +130,6 @@ def compare_orgs_between_label_and_target(sender, pk_set, instance, model, actio
         label = model.objects.get(pk=id)
         if instance.cycle.organization.get_parent().id != label.super_organization_id:
             raise IntegrityError(
-                'Label with super_organization_id={} cannot be applied to a record with parent '
-                'organization_id={}.'.format(
-                    label.super_organization_id,
-                    instance.cycle.organization.get_parent().id
-                )
+                f'Label with super_organization_id={label.super_organization_id} cannot be applied to a record with parent '
+                f'organization_id={instance.cycle.organization.get_parent().id}.'
             )

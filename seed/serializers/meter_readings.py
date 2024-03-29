@@ -1,9 +1,9 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 from typing import Tuple
 
 import dateutil.parser
@@ -26,18 +26,16 @@ meter_fields = ['meter_id', 'start_time', 'end_time', 'reading', 'source_unit', 
 class MeterReadingBulkCreateUpdateSerializer(serializers.ListSerializer):
     def to_internal_value(self, data):
         for datum in data:
-            datum['start_time'] = make_aware(dateutil.parser.parse(
-                datum['start_time']), timezone=timezone(TIME_ZONE))
-            datum['end_time'] = make_aware(dateutil.parser.parse(
-                datum['end_time']), timezone=timezone(TIME_ZONE))
+            datum['start_time'] = make_aware(dateutil.parser.parse(datum['start_time']), timezone=timezone(TIME_ZONE))
+            datum['end_time'] = make_aware(dateutil.parser.parse(datum['end_time']), timezone=timezone(TIME_ZONE))
         return data
 
     def create(self, validated_data) -> list[MeterReading]:
         upsert_sql = (
             f"INSERT INTO seed_meterreading({', '.join(meter_fields)}) "
-            'VALUES %s '
-            'ON CONFLICT (meter_id, start_time, end_time) '
-            'DO UPDATE SET reading=excluded.reading, source_unit=excluded.source_unit, conversion_factor=excluded.conversion_factor '
+            "VALUES %s "
+            "ON CONFLICT (meter_id, start_time, end_time) "
+            "DO UPDATE SET reading=excluded.reading, source_unit=excluded.source_unit, conversion_factor=excluded.conversion_factor "
             f"RETURNING {', '.join(meter_fields)}"
         )
 
@@ -47,11 +45,11 @@ class MeterReadingBulkCreateUpdateSerializer(serializers.ListSerializer):
                 upsert_sql,
                 validated_data,
                 template='(%(meter_id)s, %(start_time)s, %(end_time)s, %(reading)s, %(source_unit)s, %(conversion_factor)s)',
-                fetch=True
+                fetch=True,
             )
 
         # Convert list of tuples to list of MeterReadings for response
-        updated_readings = list(map(lambda result: MeterReading(**{field: result[i] for i, field in enumerate(meter_fields)}), results))
+        updated_readings = [MeterReading(**{field: result[i] for i, field in enumerate(meter_fields)}) for result in results]
 
         return updated_readings
 
@@ -70,7 +68,7 @@ class MeterReadingBulkCreateUpdateSerializer(serializers.ListSerializer):
 class MeterReadingSerializer(serializers.ModelSerializer):
     class Meta:
         model = MeterReading
-        exclude = ('meter', )
+        exclude = ('meter',)
         list_serializer_class = MeterReadingBulkCreateUpdateSerializer
 
     def _tz_aware(self, dt):
@@ -95,9 +93,9 @@ class MeterReadingSerializer(serializers.ModelSerializer):
         # Can't use update_or_insert here due to manually setting the primary key for timescale
         upsert_sql = (
             f"INSERT INTO seed_meterreading({', '.join(meter_fields)}) "
-            'VALUES (%(meter_id)s, %(start_time)s, %(end_time)s, %(reading)s, %(source_unit)s, %(conversion_factor)s) '
-            'ON CONFLICT (meter_id, start_time, end_time) DO UPDATE '
-            'SET reading=excluded.reading, source_unit=excluded.source_unit, conversion_factor=excluded.conversion_factor '
+            "VALUES (%(meter_id)s, %(start_time)s, %(end_time)s, %(reading)s, %(source_unit)s, %(conversion_factor)s) "
+            "ON CONFLICT (meter_id, start_time, end_time) DO UPDATE "
+            "SET reading=excluded.reading, source_unit=excluded.source_unit, conversion_factor=excluded.conversion_factor "
             f"RETURNING {', '.join(meter_fields)}"
         )
 

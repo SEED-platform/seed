@@ -1,9 +1,9 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 from celery import shared_task
 from django.contrib.postgres.aggregates.general import ArrayAgg
 from django.db import transaction
@@ -12,16 +12,7 @@ from django.db.models.aggregates import Count
 
 from seed.lib.progress_data.progress_data import ProgressData
 from seed.lib.superperms.orgs.models import AccessLevelInstance
-from seed.models import (
-    Column,
-    Cycle,
-    Property,
-    PropertyState,
-    PropertyView,
-    TaxLot,
-    TaxLotState,
-    TaxLotView
-)
+from seed.models import Column, Cycle, Property, PropertyState, PropertyView, TaxLot, TaxLotState, TaxLotView
 from seed.utils.merge import merge_states_with_views
 from seed.utils.properties import properties_across_cycles
 from seed.utils.taxlots import taxlots_across_cycles
@@ -58,11 +49,7 @@ def matching_filter_criteria(state, column_names):
 
     This dictionary is frequently unpacked for a QuerySet filter or exclude.
     """
-    return {
-        column_name: getattr(state, column_name, None)
-        for column_name
-        in column_names
-    }
+    return {column_name: getattr(state, column_name, None) for column_name in column_names}
 
 
 def matching_criteria_column_names(organization_id, table_name):
@@ -73,13 +60,8 @@ def matching_criteria_column_names(organization_id, table_name):
     happen anyway.
     """
     return {
-        'normalized_address' if c.column_name == "address_line_1" else c.column_name
-        for c
-        in Column.objects.filter(
-            organization_id=organization_id,
-            is_matching_criteria=True,
-            table_name=table_name
-        )
+        'normalized_address' if c.column_name == 'address_line_1' else c.column_name
+        for c in Column.objects.filter(organization_id=organization_id, is_matching_criteria=True, table_name=table_name)
     }
 
 
@@ -100,21 +82,18 @@ def _merge_matches_across_cycles(matching_views, org_id, given_state_id, StateCl
     """
     # Group matching -Views by Cycle and capture state_ids to be merged
     # For the purpose of merging, we only care if match_count is greater than 1.
-    states_to_merge = matching_views.values('cycle_id').\
-        annotate(state_ids=ArrayAgg('state_id'), match_count=Count('id')).\
-        filter(match_count__gt=1).\
-        values_list('state_ids', flat=True)
+    states_to_merge = (
+        matching_views.values('cycle_id')
+        .annotate(state_ids=ArrayAgg('state_id'), match_count=Count('id'))
+        .filter(match_count__gt=1)
+        .values_list('state_ids', flat=True)
+    )
 
     target_state_id = given_state_id
     count = 0
 
     for state_ids in states_to_merge:
-        ordered_ids = list(
-            StateClass.objects.
-            filter(id__in=state_ids).
-            order_by('updated').
-            values_list('id', flat=True)
-        )
+        ordered_ids = list(StateClass.objects.filter(id__in=state_ids).order_by('updated').values_list('id', flat=True))
 
         if given_state_id in ordered_ids:
             # If the given -State ID is included, give it precedence and
@@ -155,11 +134,12 @@ def _link_matches(matching_views, org_id, view, ViewClass):
         canonical_id_col = 'taxlot_id'
 
     # Exclude target and capture unique canonical IDs
-    unique_canonical_ids = matching_views.\
-        exclude(id=view.id).\
-        values(canonical_id_col).\
-        annotate(state_ids=ArrayAgg(canonical_id_col)).\
-        values_list(canonical_id_col, flat=True)
+    unique_canonical_ids = (
+        matching_views.exclude(id=view.id)
+        .values(canonical_id_col)
+        .annotate(state_ids=ArrayAgg(canonical_id_col))
+        .values_list(canonical_id_col, flat=True)
+    )
 
     if unique_canonical_ids.exists() is False:
         # If no matches found - check for past links and disassociate if necessary
@@ -190,7 +170,7 @@ def _link_matches(matching_views, org_id, view, ViewClass):
 
         if CanonicalClass == Property:
             # Copy meters by highest ID order and lastly for the given Property
-            sorted_canonical_ids = sorted(list(unique_canonical_ids))
+            sorted_canonical_ids = sorted(unique_canonical_ids)
             sorted_canonical_ids.append(view.property_id)
             for id in sorted_canonical_ids:
                 new_record.copy_meters(id)
@@ -202,7 +182,7 @@ def _link_matches(matching_views, org_id, view, ViewClass):
     return matching_views.count() - 1
 
 
-def match(state_id, cycle_id, StateClass, StateClassName, ViewClass):
+def match(state_id, cycle_id, StateClass, StateClassName, ViewClass):  # noqa: N803
     state = StateClass.objects.get(pk=state_id)
     org_id = state.organization_id
 
@@ -215,11 +195,7 @@ def match(state_id, cycle_id, StateClass, StateClassName, ViewClass):
     # Create matching criteria filter
     column_names = matching_criteria_column_names(org_id, StateClassName)
     matching_criteria = matching_filter_criteria(state, column_names)
-    state_appended_matching_criteria = {
-        'state__' + col_name: v
-        for col_name, v
-        in matching_criteria.items()
-    }
+    state_appended_matching_criteria = {'state__' + col_name: v for col_name, v in matching_criteria.items()}
 
     # If matching criteria for this state is None, return no matches (empty querysets)
     if all(v is None for v in matching_criteria.values()):
@@ -227,8 +203,7 @@ def match(state_id, cycle_id, StateClass, StateClassName, ViewClass):
 
     # Get matching view in and outside of the cycle
     all_matching_views = ViewClass.objects.prefetch_related('state').filter(
-        state__organization_id=org_id,
-        **state_appended_matching_criteria
+        state__organization_id=org_id, **state_appended_matching_criteria
     )
     if self_view:
         all_matching_views = all_matching_views.exclude(id=self_view.id)
@@ -241,7 +216,7 @@ def match(state_id, cycle_id, StateClass, StateClassName, ViewClass):
 
 def _get_ali(view, matching_views, highest_ali, class_name, ViewClass):
     # Get the ali of the matching views
-    matching_ali_ids = list(set(matching_views.values_list(f"{class_name}__access_level_instance", flat=True)))
+    matching_ali_ids = list(set(matching_views.values_list(f'{class_name}__access_level_instance', flat=True)))
     if len(matching_ali_ids) == 0:
         matching_ali_id = None
     elif len(matching_ali_ids) == 1:
@@ -251,7 +226,7 @@ def _get_ali(view, matching_views, highest_ali, class_name, ViewClass):
 
     # get the ali of the view
     if view:
-        view_ali_id = list(ViewClass.objects.filter(id=view.id).values_list(f"{class_name}__access_level_instance", flat=True))[0]
+        view_ali_id = list(ViewClass.objects.filter(id=view.id).values_list(f'{class_name}__access_level_instance', flat=True))[0]
     else:
         view_ali_id = None
 
@@ -275,10 +250,7 @@ def _get_ali(view, matching_views, highest_ali, class_name, ViewClass):
     ali = AccessLevelInstance.objects.get(pk=ali_id)
 
     # if we don't has access to matching_ali, raise an access error
-    if highest_ali and not (
-        ali == highest_ali or
-        ali.is_descendant_of(highest_ali)
-    ):
+    if highest_ali and not (ali == highest_ali or ali.is_descendant_of(highest_ali)):
         raise NoAccessError
 
     return ali
@@ -288,11 +260,11 @@ def match_merge_link(state_id, StateClassName, highest_ali, cycle):
     if StateClassName == 'PropertyState':
         StateClass = PropertyState
         ViewClass = PropertyView
-        class_name = "property"
+        class_name = 'property'
     elif StateClassName == 'TaxLotState':
         StateClass = TaxLotState
         ViewClass = TaxLotView
-        class_name = "taxlot"
+        class_name = 'taxlot'
 
     state = StateClass.objects.get(pk=state_id)
     org_id = state.organization_id
@@ -313,9 +285,7 @@ def match_merge_link(state_id, StateClassName, highest_ali, cycle):
     # the out of cycle views need to merge? Why would both the target state and view need to be
     # passed? We should take a look at this, But for now, I don't want to anger it.
     all_matching_views = (
-        ViewClass.objects.filter(pk=view.id).prefetch_related('state') |
-        matching_views_in_cycle |
-        matching_views_out_of_cycle
+        ViewClass.objects.filter(pk=view.id).prefetch_related('state') | matching_views_in_cycle | matching_views_out_of_cycle
     )
     merge_count, target_state_id = _merge_matches_across_cycles(all_matching_views, org_id, state_id, StateClass)
     view = ViewClass.objects.get(state_id=target_state_id)
@@ -389,11 +359,7 @@ def whole_org_match_merge_link(org_id, state_class_name, proposed_columns=[]):
 
     if proposed_columns:
         # Use column names as given (replacing address_line_1 with normalized_address)
-        column_names = [
-            column_name if column_name != 'address_line_1' else 'normalized_address'
-            for column_name
-            in proposed_columns
-        ]
+        column_names = [column_name if column_name != 'address_line_1' else 'normalized_address' for column_name in proposed_columns]
         preview_run = True
     else:
         column_names = matching_criteria_column_names(org_id, state_class_name)
@@ -406,21 +372,17 @@ def whole_org_match_merge_link(org_id, state_class_name, proposed_columns=[]):
         for cycle_id in cycle_ids:
             view_in_cycle = ViewClass.objects.filter(cycle_id=cycle_id)
 
-            matched_id_groups = StateClass.objects.\
-                filter(id__in=Subquery(view_in_cycle.values('state_id'))).\
-                exclude(**empty_matching_criteria).\
-                values(*column_names).\
-                annotate(matched_ids=ArrayAgg('id'), matched_count=Count('id')).\
-                values_list('matched_ids', flat=True).\
-                filter(matched_count__gt=1)
+            matched_id_groups = (
+                StateClass.objects.filter(id__in=Subquery(view_in_cycle.values('state_id')))
+                .exclude(**empty_matching_criteria)
+                .values(*column_names)
+                .annotate(matched_ids=ArrayAgg('id'), matched_count=Count('id'))
+                .values_list('matched_ids', flat=True)
+                .filter(matched_count__gt=1)
+            )
 
             for state_ids in matched_id_groups:
-                ordered_ids = list(
-                    StateClass.objects.
-                    filter(id__in=state_ids).
-                    order_by('updated').
-                    values_list('id', flat=True)
-                )
+                ordered_ids = list(StateClass.objects.filter(id__in=state_ids).order_by('updated').values_list('id', flat=True))
 
                 merge_states_with_views(ordered_ids, org_id, 'System Match', StateClass)
 
@@ -429,36 +391,28 @@ def whole_org_match_merge_link(org_id, state_class_name, proposed_columns=[]):
         # Match link across the whole Organization
         # Append 'state__' to dict keys used for filtering so that filtering can be done across associations
         state_appended_col_names = {'state__' + col_name for col_name in column_names}
-        state_appended_empty_matching_criteria = {
-            'state__' + col_name: v
-            for col_name, v
-            in empty_matching_criteria.items()
-        }
+        state_appended_empty_matching_criteria = {'state__' + col_name: v for col_name, v in empty_matching_criteria.items()}
 
         canonical_id_col = 'property_id' if StateClass == PropertyState else 'taxlot_id'
 
         # Looking at all -Views in Org across Cycles
-        org_views = ViewClass.objects.\
-            filter(cycle_id__in=cycle_ids).\
-            select_related('state')
+        org_views = ViewClass.objects.filter(cycle_id__in=cycle_ids).select_related('state')
 
         # Identify all canonical_ids that are currently used once and are potentially reusable
-        reusable_canonical_ids = org_views.\
-            values(canonical_id_col).\
-            annotate(use_count=Count(canonical_id_col)).\
-            values_list(canonical_id_col, flat=True).\
-            filter(use_count=1)
+        reusable_canonical_ids = (
+            org_views.values(canonical_id_col)
+            .annotate(use_count=Count(canonical_id_col))
+            .values_list(canonical_id_col, flat=True)
+            .filter(use_count=1)
+        )
 
         # Ignoring -Views associated to -States with empty matching criteria, group by columns
-        link_groups = org_views.\
-            exclude(**state_appended_empty_matching_criteria).\
-            values(*state_appended_col_names).\
-            annotate(
-                canonical_ids=ArrayAgg(canonical_id_col),
-                view_ids=ArrayAgg('id'),
-                link_count=Count('id')
-            ).\
-            values_list('canonical_ids', 'view_ids', 'link_count')
+        link_groups = (
+            org_views.exclude(**state_appended_empty_matching_criteria)
+            .values(*state_appended_col_names)
+            .annotate(canonical_ids=ArrayAgg(canonical_id_col), view_ids=ArrayAgg('id'), link_count=Count('id'))
+            .values_list('canonical_ids', 'view_ids', 'link_count')
+        )
 
         unused_canonical_ids = []
         for canonical_ids, view_ids, link_count in link_groups:
@@ -481,10 +435,11 @@ def whole_org_match_merge_link(org_id, state_class_name, proposed_columns=[]):
             unused_canonical_ids += canonical_ids
 
         # For records with empty criteria and without reusable canonical IDs, apply a new ID.
-        empty_criteria_views = ViewClass.objects.\
-            select_related('state').\
-            filter(cycle_id__in=cycle_ids, **state_appended_empty_matching_criteria).\
-            exclude(**{canonical_id_col + "__in": reusable_canonical_ids})
+        empty_criteria_views = (
+            ViewClass.objects.select_related('state')
+            .filter(cycle_id__in=cycle_ids, **state_appended_empty_matching_criteria)
+            .exclude(**{canonical_id_col + '__in': reusable_canonical_ids})
+        )
 
         for view in empty_criteria_views:
             # Create a new canonical record, copy meters if applicable, and apply the new record to old -Views

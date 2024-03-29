@@ -5,7 +5,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('seed', '0132_auto_20201211_1949_squashed_0134_auto_20201211_2053'),
     ]

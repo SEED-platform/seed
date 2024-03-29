@@ -28,11 +28,21 @@ def forwards(apps, schema_editor):
     #                                -> !not_null -> required: (+)required;
 
     def create_rule(rule, condition):
-        Rule.objects.get_or_create(name=rule['name'], description=rule['description'], table_name=rule['table_name'],
-                                   field=rule['field'], enabled=rule['enabled'], data_type=rule['data_type'],
-                                   rule_type=rule['rule_type'], min=None, max=None, units=rule['units'],
-                                   data_quality_check_id=rule['data_quality_check_id'],
-                                   text_match=None, condition=condition)
+        Rule.objects.get_or_create(
+            name=rule['name'],
+            description=rule['description'],
+            table_name=rule['table_name'],
+            field=rule['field'],
+            enabled=rule['enabled'],
+            data_type=rule['data_type'],
+            rule_type=rule['rule_type'],
+            min=None,
+            max=None,
+            units=rule['units'],
+            data_quality_check_id=rule['data_quality_check_id'],
+            text_match=None,
+            condition=condition,
+        )
 
     Rule.objects.filter(data_type=1, text_match=None, not_null=True).update(condition='not_null')
     Rule.objects.filter(data_type=1, text_match=None, required=True, not_null=False).update(condition='required')
@@ -45,26 +55,36 @@ def forwards(apps, schema_editor):
     for rule in Rule.objects.filter(data_type=1).exclude(text_match=None).exclude(text_match='').filter(not_null=True).values():
         create_rule(rule, 'not_null')
 
-    for rule in Rule.objects.filter(data_type=1).exclude(text_match=None).exclude(text_match='').filter(required=True, not_null=False).values():
+    for rule in (
+        Rule.objects.filter(data_type=1).exclude(text_match=None).exclude(text_match='').filter(required=True, not_null=False).values()
+    ):
         create_rule(rule, 'required')
 
     Rule.objects.filter(data_type__in=[0, 2, 3, 4, 5], min=None, max=None, not_null=True).update(condition='not_null')
     Rule.objects.filter(data_type__in=[0, 2, 3, 4, 5], min=None, max=None, required=True, not_null=False).update(condition='required')
-    Rule.objects.filter(data_type__in=[0, 2, 3, 4, 5], min=None, max=None, required=False, not_null=False).update(condition='', enabled=False)
+    Rule.objects.filter(data_type__in=[0, 2, 3, 4, 5], min=None, max=None, required=False, not_null=False).update(
+        condition='', enabled=False
+    )
     Rule.objects.filter(data_type__in=[0, 2, 3, 4, 5]).exclude(min=None, max=None).update(condition='range')
 
     for rule in Rule.objects.filter(data_type__in=[0, 2, 3, 4, 5]).exclude(min=None, max=None).filter(not_null=True).values():
         create_rule(rule, 'not_null')
 
-    for rule in Rule.objects.filter(data_type__in=[0, 2, 3, 4, 5]).exclude(min=None, max=None).filter(required=True, not_null=False).values():
+    for rule in (
+        Rule.objects.filter(data_type__in=[0, 2, 3, 4, 5]).exclude(min=None, max=None).filter(required=True, not_null=False).values()
+    ):
         create_rule(rule, 'required')
 
     Rule.objects.filter(data_type=None, min=None, max=None, text_match=None, not_null=True).update(condition='not_null')
     Rule.objects.filter(data_type=None, min=None, max=None, text_match=None, required=True, not_null=False).update(condition='required')
-    Rule.objects.filter(data_type=None, min=None, max=None, text_match=None, required=False, not_null=False).update(condition='', enabled=False)
+    Rule.objects.filter(data_type=None, min=None, max=None, text_match=None, required=False, not_null=False).update(
+        condition='', enabled=False
+    )
     Rule.objects.filter(data_type=None, min=None, max=None, text_match='', not_null=True).update(condition='not_null')
     Rule.objects.filter(data_type=None, min=None, max=None, text_match='', required=True, not_null=False).update(condition='required')
-    Rule.objects.filter(data_type=None, min=None, max=None, text_match='', required=False, not_null=False).update(condition='', enabled=False)
+    Rule.objects.filter(data_type=None, min=None, max=None, text_match='', required=False, not_null=False).update(
+        condition='', enabled=False
+    )
 
     Rule.objects.filter(data_type=None).exclude(text_match='').exclude(text_match=None).update(condition='include')
     for rule in Rule.objects.exclude(text_match='').exclude(text_match=None).filter(data_type=None, not_null=True).values():
@@ -82,7 +102,6 @@ def forwards(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('seed', '0124_auto_20200323_1509'),
     ]
@@ -93,6 +112,5 @@ class Migration(migrations.Migration):
             name='condition',
             field=models.CharField(blank=True, default='', max_length=200),
         ),
-
         migrations.RunPython(forwards),
     ]

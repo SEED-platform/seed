@@ -4,7 +4,6 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('orgs', '0019_organization_better_analysis_api_key'),
     ]

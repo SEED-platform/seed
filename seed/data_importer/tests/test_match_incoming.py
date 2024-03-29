@@ -1,25 +1,21 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 import json
 import os.path as osp
 from datetime import date, datetime
+from unittest.mock import patch
 
 import pytz
 from django.core.files.uploadedfile import SimpleUploadedFile
-from mock import patch
 
 from config.settings.common import BASE_DIR
 from seed.data_importer.match import filter_duplicate_states, save_state_match
 from seed.data_importer.models import ImportFile
-from seed.data_importer.tasks import (
-    geocode_and_match_buildings_task,
-    map_data,
-    save_raw_data
-)
+from seed.data_importer.tasks import geocode_and_match_buildings_task, map_data, save_raw_data
 from seed.lib.progress_data.progress_data import ProgressData
 from seed.lib.xml_mapping.mapper import default_buildingsync_profile_mappings
 from seed.models import (
@@ -45,12 +41,9 @@ from seed.models import (
     TaxLot,
     TaxLotAuditLog,
     TaxLotState,
-    TaxLotView
+    TaxLotView,
 )
-from seed.test_helpers.fake import (
-    FakePropertyStateFactory,
-    FakeTaxLotStateFactory
-)
+from seed.test_helpers.fake import FakePropertyStateFactory, FakeTaxLotStateFactory
 from seed.tests.util import DataMappingBaseTestCase
 
 
@@ -68,7 +61,7 @@ class TestMatchingInImportFile(DataMappingBaseTestCase):
             'import_file_id': self.import_file.id,
             'data_state': DATA_STATE_MAPPING,
             'no_default_data': False,
-            "raw_access_level_instance_id": self.org.root.id,
+            'raw_access_level_instance_id': self.org.root.id,
         }
         # Create pair of properties that are exact duplicates
         self.property_state_factory.get_property_state(**base_details)
@@ -100,7 +93,7 @@ class TestMatchingInImportFile(DataMappingBaseTestCase):
             'import_file_id': self.import_file.id,
             'data_state': DATA_STATE_MAPPING,
             'no_default_data': False,
-            "raw_access_level_instance_id": self.org.root.id,
+            'raw_access_level_instance_id': self.org.root.id,
         }
         # Create pair of properties that are exact duplicates
         self.taxlot_state_factory.get_taxlot_state(**base_details)
@@ -132,7 +125,7 @@ class TestMatchingInImportFile(DataMappingBaseTestCase):
             'import_file_id': self.import_file.id,
             'data_state': DATA_STATE_MAPPING,
             'no_default_data': False,
-            "raw_access_level_instance_id": self.org.root.id,
+            'raw_access_level_instance_id': self.org.root.id,
         }
         # Create first set of properties that match each other
         ps_1 = self.property_state_factory.get_property_state(**base_details)
@@ -168,14 +161,11 @@ class TestMatchingInImportFile(DataMappingBaseTestCase):
         self.assertEqual(rps_2.data_state, DATA_STATE_MAPPING)
         self.assertEqual(rps_2.merge_state, MERGE_STATE_UNKNOWN)
 
-        ps_1_plus_2 = PropertyState.objects.filter(
-            pm_property_id__isnull=True,
-            city='Denver',
-            custom_id_1='123 Match Custom ID'
-        ).exclude(
-            data_state=DATA_STATE_MAPPING,
-            merge_state=MERGE_STATE_UNKNOWN
-        ).get()
+        ps_1_plus_2 = (
+            PropertyState.objects.filter(pm_property_id__isnull=True, city='Denver', custom_id_1='123 Match Custom ID')
+            .exclude(data_state=DATA_STATE_MAPPING, merge_state=MERGE_STATE_UNKNOWN)
+            .get()
+        )
 
         self.assertEqual(ps_1_plus_2.data_state, DATA_STATE_MATCHING)
         self.assertEqual(ps_1_plus_2.merge_state, MERGE_STATE_MERGED)
@@ -188,14 +178,11 @@ class TestMatchingInImportFile(DataMappingBaseTestCase):
         self.assertEqual(rps_4.data_state, DATA_STATE_MAPPING)
         self.assertEqual(rps_4.merge_state, MERGE_STATE_UNKNOWN)
 
-        ps_3_plus_4 = PropertyState.objects.filter(
-            pm_property_id='11111',
-            city='Philadelphia',
-            custom_id_1='123 Match Custom ID'
-        ).exclude(
-            data_state=DATA_STATE_MAPPING,
-            merge_state=MERGE_STATE_UNKNOWN
-        ).get()
+        ps_3_plus_4 = (
+            PropertyState.objects.filter(pm_property_id='11111', city='Philadelphia', custom_id_1='123 Match Custom ID')
+            .exclude(data_state=DATA_STATE_MAPPING, merge_state=MERGE_STATE_UNKNOWN)
+            .get()
+        )
         self.assertEqual(ps_3_plus_4.data_state, DATA_STATE_MATCHING)
         self.assertEqual(ps_3_plus_4.merge_state, MERGE_STATE_MERGED)
 
@@ -212,7 +199,7 @@ class TestMatchingInImportFile(DataMappingBaseTestCase):
             'import_file_id': self.import_file.id,
             'data_state': DATA_STATE_MAPPING,
             'no_default_data': False,
-            "raw_access_level_instance_id": self.org.root.id,
+            'raw_access_level_instance_id': self.org.root.id,
         }
         # Create first set of taxlots that match each other
         tls_1 = self.taxlot_state_factory.get_taxlot_state(**base_details)
@@ -248,14 +235,11 @@ class TestMatchingInImportFile(DataMappingBaseTestCase):
         self.assertEqual(rtls_2.data_state, DATA_STATE_MAPPING)
         self.assertEqual(rtls_2.merge_state, MERGE_STATE_UNKNOWN)
 
-        tls_1_plus_2 = TaxLotState.objects.filter(
-            jurisdiction_tax_lot_id__isnull=True,
-            city='Denver',
-            address_line_1='123 Match Street'
-        ).exclude(
-            data_state=DATA_STATE_MAPPING,
-            merge_state=MERGE_STATE_UNKNOWN
-        ).get()
+        tls_1_plus_2 = (
+            TaxLotState.objects.filter(jurisdiction_tax_lot_id__isnull=True, city='Denver', address_line_1='123 Match Street')
+            .exclude(data_state=DATA_STATE_MAPPING, merge_state=MERGE_STATE_UNKNOWN)
+            .get()
+        )
 
         self.assertEqual(tls_1_plus_2.data_state, DATA_STATE_MATCHING)
         self.assertEqual(tls_1_plus_2.merge_state, MERGE_STATE_MERGED)
@@ -268,14 +252,11 @@ class TestMatchingInImportFile(DataMappingBaseTestCase):
         self.assertEqual(rtls_4.data_state, DATA_STATE_MAPPING)
         self.assertEqual(rtls_4.merge_state, MERGE_STATE_UNKNOWN)
 
-        tls_3_plus_4 = TaxLotState.objects.filter(
-            jurisdiction_tax_lot_id='11111',
-            city='Philadelphia',
-            address_line_1='123 Match Street'
-        ).exclude(
-            data_state=DATA_STATE_MAPPING,
-            merge_state=MERGE_STATE_UNKNOWN
-        ).get()
+        tls_3_plus_4 = (
+            TaxLotState.objects.filter(jurisdiction_tax_lot_id='11111', city='Philadelphia', address_line_1='123 Match Street')
+            .exclude(data_state=DATA_STATE_MAPPING, merge_state=MERGE_STATE_UNKNOWN)
+            .get()
+        )
         self.assertEqual(tls_3_plus_4.data_state, DATA_STATE_MATCHING)
         self.assertEqual(tls_3_plus_4.merge_state, MERGE_STATE_MERGED)
 
@@ -289,7 +270,7 @@ class TestMatchingInImportFile(DataMappingBaseTestCase):
             'import_file_id': self.import_file.id,
             'data_state': DATA_STATE_MAPPING,
             'no_default_data': False,
-            "raw_access_level_instance_id": self.org.root.id,
+            'raw_access_level_instance_id': self.org.root.id,
         }
         # Create set of properties that match each other
         self.property_state_factory.get_property_state(**base_details)
@@ -314,7 +295,7 @@ class TestMatchingInImportFile(DataMappingBaseTestCase):
             'import_file_id': self.import_file.id,
             'data_state': DATA_STATE_MAPPING,
             'no_default_data': False,
-            "raw_access_level_instance_id": self.org.root.id,
+            'raw_access_level_instance_id': self.org.root.id,
         }
         # Create set of properties that have the same address_line_1 in slightly different format
         base_details['address_line_1'] = '123 Match Street'
@@ -341,7 +322,7 @@ class TestMatchingInImportFile(DataMappingBaseTestCase):
             'import_file_id': self.import_file.id,
             'data_state': DATA_STATE_MAPPING,
             'no_default_data': False,
-            "raw_access_level_instance_id": self.org.root.id,
+            'raw_access_level_instance_id': self.org.root.id,
         }
         # Create set of taxlots that have the same address_line_1 in slightly different format
         base_details['address_line_1'] = '123 Match Street'
@@ -360,7 +341,7 @@ class TestMatchingInImportFile(DataMappingBaseTestCase):
         self.assertEqual(TaxLotView.objects.count(), 1)
         self.assertEqual(TaxLotState.objects.count(), 3)
 
-    def test_no_matches_if_all_matching_criteria_is_None(self):
+    def test_no_matches_if_all_matching_criteria_is_none(self):
         """
         Default matching criteria for PropertyStates are:
             - address_line_1 (substituted by normalized_address)
@@ -373,7 +354,7 @@ class TestMatchingInImportFile(DataMappingBaseTestCase):
             'import_file_id': self.import_file.id,
             'data_state': DATA_STATE_MAPPING,
             'no_default_data': False,
-            "raw_access_level_instance_id": self.org.root.id,
+            'raw_access_level_instance_id': self.org.root.id,
         }
 
         # Create set of properties that won't match
@@ -404,7 +385,7 @@ class TestMatchingInImportFile(DataMappingBaseTestCase):
             'import_file_id': self.import_file.id,
             'data_state': DATA_STATE_MAPPING,
             'no_default_data': False,
-            "raw_access_level_instance_id": self.org.root.id,
+            'raw_access_level_instance_id': self.org.root.id,
         }
         # Create first set of properties that match each other
         base_details['city'] = 'Philadelphia'
@@ -434,9 +415,7 @@ class TestMatchingOutsideImportFile(DataMappingBaseTestCase):
         selfvars = self.set_up(ASSESSED_RAW)
         self.user, self.org, self.import_file_1, self.import_record_1, self.cycle = selfvars
 
-        self.import_record_2, self.import_file_2 = self.create_import_file(
-            self.user, self.org, self.cycle
-        )
+        self.import_record_2, self.import_file_2 = self.create_import_file(self.user, self.org, self.cycle)
 
         self.property_state_factory = FakePropertyStateFactory(organization=self.org)
         self.taxlot_state_factory = FakeTaxLotStateFactory(organization=self.org)
@@ -447,7 +426,7 @@ class TestMatchingOutsideImportFile(DataMappingBaseTestCase):
             'import_file_id': self.import_file_1.id,
             'data_state': DATA_STATE_MAPPING,
             'no_default_data': False,
-            "raw_access_level_instance_id": self.org.root.id,
+            'raw_access_level_instance_id': self.org.root.id,
         }
         # Create property in first ImportFile
         ps_1 = self.property_state_factory.get_property_state(**base_details)
@@ -479,7 +458,7 @@ class TestMatchingOutsideImportFile(DataMappingBaseTestCase):
             'import_file_id': self.import_file_1.id,
             'data_state': DATA_STATE_MAPPING,
             'no_default_data': False,
-            "raw_access_level_instance_id": self.org.root.id,
+            'raw_access_level_instance_id': self.org.root.id,
         }
         # Create property in first ImportFile
         ps_1 = self.property_state_factory.get_property_state(**base_details)
@@ -529,14 +508,15 @@ class TestMatchingOutsideImportFile(DataMappingBaseTestCase):
         self.assertEqual(rps_2.data_state, DATA_STATE_MATCHING)
         self.assertEqual(rps_2.merge_state, MERGE_STATE_UNKNOWN)
 
-        ps_1_plus_2 = PropertyState.objects.filter(
-            pm_property_id__isnull=True,
-            city='Denver',
-            custom_id_1='123 Custom ID',
-        ).exclude(
-            data_state=DATA_STATE_MATCHING,
-            merge_state=MERGE_STATE_UNKNOWN
-        ).get()
+        ps_1_plus_2 = (
+            PropertyState.objects.filter(
+                pm_property_id__isnull=True,
+                city='Denver',
+                custom_id_1='123 Custom ID',
+            )
+            .exclude(data_state=DATA_STATE_MATCHING, merge_state=MERGE_STATE_UNKNOWN)
+            .get()
+        )
         self.assertEqual(ps_1_plus_2.data_state, DATA_STATE_MATCHING)
         self.assertEqual(ps_1_plus_2.merge_state, MERGE_STATE_MERGED)
 
@@ -551,7 +531,7 @@ class TestMatchingOutsideImportFile(DataMappingBaseTestCase):
             'import_file_id': self.import_file_1.id,
             'data_state': DATA_STATE_MAPPING,
             'no_default_data': False,
-            "raw_access_level_instance_id": self.org.root.id,
+            'raw_access_level_instance_id': self.org.root.id,
         }
         # Create 3 non-matching properties in first ImportFile
         ps_1 = self.property_state_factory.get_property_state(**base_details)
@@ -613,7 +593,7 @@ class TestMatchingOutsideImportFile(DataMappingBaseTestCase):
             'import_file_id': self.import_file_1.id,
             'data_state': DATA_STATE_MAPPING,
             'no_default_data': False,
-            "raw_access_level_instance_id": self.org.root.id,
+            'raw_access_level_instance_id': self.org.root.id,
         }
         # Create property in first ImportFile
         tls_1 = self.taxlot_state_factory.get_taxlot_state(**base_details)
@@ -663,14 +643,11 @@ class TestMatchingOutsideImportFile(DataMappingBaseTestCase):
         self.assertEqual(rtls_2.data_state, DATA_STATE_MATCHING)
         self.assertEqual(rtls_2.merge_state, MERGE_STATE_UNKNOWN)
 
-        tls_1_plus_2 = TaxLotState.objects.filter(
-            jurisdiction_tax_lot_id__isnull=True,
-            city='Denver',
-            address_line_1='123 Match Street'
-        ).exclude(
-            data_state=DATA_STATE_MATCHING,
-            merge_state=MERGE_STATE_UNKNOWN
-        ).get()
+        tls_1_plus_2 = (
+            TaxLotState.objects.filter(jurisdiction_tax_lot_id__isnull=True, city='Denver', address_line_1='123 Match Street')
+            .exclude(data_state=DATA_STATE_MATCHING, merge_state=MERGE_STATE_UNKNOWN)
+            .get()
+        )
         self.assertEqual(tls_1_plus_2.data_state, DATA_STATE_MATCHING)
         self.assertEqual(tls_1_plus_2.merge_state, MERGE_STATE_MERGED)
 
@@ -685,7 +662,7 @@ class TestMatchingOutsideImportFile(DataMappingBaseTestCase):
             'import_file_id': self.import_file_1.id,
             'data_state': DATA_STATE_MAPPING,
             'no_default_data': False,
-            "raw_access_level_instance_id": self.org.root.id,
+            'raw_access_level_instance_id': self.org.root.id,
         }
         # Create 3 non-matching taxlots in first ImportFile
         tls_1 = self.taxlot_state_factory.get_taxlot_state(**base_details)
@@ -703,9 +680,7 @@ class TestMatchingOutsideImportFile(DataMappingBaseTestCase):
         geocode_and_match_buildings_task(self.import_file_1.id)
 
         # Make all those states match
-        TaxLotState.objects.filter(pk__in=[tls_2.id, tls_3.id]).update(
-            jurisdiction_tax_lot_id='123MatchID'
-        )
+        TaxLotState.objects.filter(pk__in=[tls_2.id, tls_3.id]).update(jurisdiction_tax_lot_id='123MatchID')
 
         # Verify that none of the 3 have been merged
         self.assertEqual(TaxLot.objects.count(), 3)
@@ -740,9 +715,7 @@ class TestMatchingImportIntegration(DataMappingBaseTestCase):
         selfvars = self.set_up(ASSESSED_RAW)
         self.user, self.org, self.import_file_1, self.import_record_1, self.cycle = selfvars
 
-        self.import_record_2, self.import_file_2 = self.create_import_file(
-            self.user, self.org, self.cycle
-        )
+        self.import_record_2, self.import_file_2 = self.create_import_file(self.user, self.org, self.cycle)
 
         self.property_state_factory = FakePropertyStateFactory(organization=self.org)
         self.taxlot_state_factory = FakeTaxLotStateFactory(organization=self.org)
@@ -762,7 +735,7 @@ class TestMatchingImportIntegration(DataMappingBaseTestCase):
             'import_file_id': self.import_file_1.id,
             'data_state': DATA_STATE_MAPPING,
             'no_default_data': False,
-            "raw_access_level_instance_id": self.org.root.id,
+            'raw_access_level_instance_id': self.org.root.id,
         }
 
         # No matching_criteria values
@@ -802,7 +775,7 @@ class TestMatchingImportIntegration(DataMappingBaseTestCase):
             'import_file_id': self.import_file_2.id,
             'data_state': DATA_STATE_MAPPING,
             'no_default_data': False,
-            "raw_access_level_instance_id": self.org.root.id,
+            'raw_access_level_instance_id': self.org.root.id,
         }
 
         # Create 1 duplicate of the 'No matching_criteria values' properties
@@ -849,22 +822,15 @@ class TestMatchingImportIntegration(DataMappingBaseTestCase):
         self.assertEqual(9, PropertyView.objects.count())
         self.assertEqual(18, PropertyState.objects.count())
 
-        ps_ids_of_deleted = PropertyState.objects.filter(
-            data_state=DATA_STATE_DELETE
-        ).values_list('id', flat=True).order_by('id')
-        self.assertEqual(
-            [ps_1.id, ps_6.id, ps_9.id],
-            list(ps_ids_of_deleted)
-        )
+        ps_ids_of_deleted = PropertyState.objects.filter(data_state=DATA_STATE_DELETE).values_list('id', flat=True).order_by('id')
+        self.assertEqual([ps_1.id, ps_6.id, ps_9.id], list(ps_ids_of_deleted))
 
-        ps_ids_of_merged_in_file = PropertyState.objects.filter(
-            data_state=DATA_STATE_MAPPING,
-            merge_state=MERGE_STATE_UNKNOWN
-        ).values_list('id', flat=True).order_by('id')
-        self.assertEqual(
-            [ps_5.id, ps_7.id, ps_8.id, ps_10.id],
-            list(ps_ids_of_merged_in_file)
+        ps_ids_of_merged_in_file = (
+            PropertyState.objects.filter(data_state=DATA_STATE_MAPPING, merge_state=MERGE_STATE_UNKNOWN)
+            .values_list('id', flat=True)
+            .order_by('id')
         )
+        self.assertEqual([ps_5.id, ps_7.id, ps_8.id, ps_10.id], list(ps_ids_of_merged_in_file))
 
         ps_ids_of_all_promoted = PropertyView.objects.values_list('state_id', flat=True)
         self.assertIn(ps_2.id, ps_ids_of_all_promoted)
@@ -921,7 +887,7 @@ class TestMatchingImportIntegration(DataMappingBaseTestCase):
             'import_file_id': self.import_file_1.id,
             'data_state': DATA_STATE_MAPPING,
             'no_default_data': False,
-            "raw_access_level_instance_id": self.org.root.id,
+            'raw_access_level_instance_id': self.org.root.id,
         }
 
         # No matching_criteria values
@@ -961,7 +927,7 @@ class TestMatchingImportIntegration(DataMappingBaseTestCase):
             'import_file_id': self.import_file_2.id,
             'data_state': DATA_STATE_MAPPING,
             'no_default_data': False,
-            "raw_access_level_instance_id": self.org.root.id,
+            'raw_access_level_instance_id': self.org.root.id,
         }
 
         # Create 2 duplicates of the 'No matching_criteria values' taxlots
@@ -1004,22 +970,15 @@ class TestMatchingImportIntegration(DataMappingBaseTestCase):
         self.assertEqual(8, TaxLotView.objects.count())
         self.assertEqual(18, TaxLotState.objects.count())
 
-        tls_ids_of_deleted = TaxLotState.objects.filter(
-            data_state=DATA_STATE_DELETE
-        ).values_list('id', flat=True).order_by('id')
-        self.assertEqual(
-            [tls_1.id, tls_2.id, tls_6.id, tls_9.id],
-            list(tls_ids_of_deleted)
-        )
+        tls_ids_of_deleted = TaxLotState.objects.filter(data_state=DATA_STATE_DELETE).values_list('id', flat=True).order_by('id')
+        self.assertEqual([tls_1.id, tls_2.id, tls_6.id, tls_9.id], list(tls_ids_of_deleted))
 
-        tls_ids_of_merged_in_file = TaxLotState.objects.filter(
-            data_state=DATA_STATE_MAPPING,
-            merge_state=MERGE_STATE_UNKNOWN
-        ).values_list('id', flat=True).order_by('id')
-        self.assertEqual(
-            [tls_5.id, tls_7.id, tls_8.id, tls_10.id],
-            list(tls_ids_of_merged_in_file)
+        tls_ids_of_merged_in_file = (
+            TaxLotState.objects.filter(data_state=DATA_STATE_MAPPING, merge_state=MERGE_STATE_UNKNOWN)
+            .values_list('id', flat=True)
+            .order_by('id')
         )
+        self.assertEqual([tls_5.id, tls_7.id, tls_8.id, tls_10.id], list(tls_ids_of_merged_in_file))
 
         tls_ids_of_all_promoted = TaxLotView.objects.values_list('state_id', flat=True)
         self.assertIn(tls_3.id, tls_ids_of_all_promoted)
@@ -1071,16 +1030,15 @@ class TestMatchingHelperMethods(DataMappingBaseTestCase):
 
     def test_save_state_match(self):
         # create a couple states to merge together
-        ps_1 = self.property_state_factory.get_property_state(property_name="this should persist")
-        ps_2 = self.property_state_factory.get_property_state(
-            extra_data={"extra_1": "this should exist too"})
+        ps_1 = self.property_state_factory.get_property_state(property_name='this should persist')
+        ps_2 = self.property_state_factory.get_property_state(extra_data={'extra_1': 'this should exist too'})
 
         priorities = Column.retrieve_priorities(self.org.pk)
         merged_state = save_state_match(ps_1, ps_2, priorities)
 
         self.assertEqual(merged_state.merge_state, MERGE_STATE_MERGED)
         self.assertEqual(merged_state.property_name, ps_1.property_name)
-        self.assertEqual(merged_state.extra_data['extra_1'], "this should exist too")
+        self.assertEqual(merged_state.extra_data['extra_1'], 'this should exist too')
 
         # verify that the audit log is correct.
         pal = PropertyAuditLog.objects.get(organization=self.org, state=merged_state)
@@ -1125,17 +1083,13 @@ class TestBuildingSyncImportXml(DataMappingBaseTestCase):
         selfvars = self.set_up(import_file_source_type)
         self.user, self.org, self.import_file_bsync, self.import_record, self.cycle = selfvars
 
-        self.import_file_bsync.file = SimpleUploadedFile(
-            name=filename,
-            content=open(filepath, 'rb').read(),
-            content_type="application/xml"
-        )
+        with open(filepath, 'rb') as content:
+            self.import_file_bsync.file = SimpleUploadedFile(name=filename, content=content.read(), content_type='application/xml')
+
         self.import_file_bsync.uploaded_filename = filename
         self.import_file_bsync.save()
 
-        self.import_record_2, self.import_file_2 = self.create_import_file(
-            self.user, self.org, self.cycle
-        )
+        self.import_record_2, self.import_file_2 = self.create_import_file(self.user, self.org, self.cycle)
 
         self.property_state_factory = FakePropertyStateFactory(organization=self.org)
 
@@ -1170,7 +1124,7 @@ class TestBuildingSyncImportXml(DataMappingBaseTestCase):
             'import_file_id': self.import_file_2.id,
             'data_state': DATA_STATE_MAPPING,
             'no_default_data': False,
-            "raw_access_level_instance_id": self.org.root.id,
+            'raw_access_level_instance_id': self.org.root.id,
         }
         # Create a property which will match with the BuildingSync file
         self.property_state_factory.get_property_state(**base_details)
@@ -1181,10 +1135,7 @@ class TestBuildingSyncImportXml(DataMappingBaseTestCase):
 
         # Map the BuildingSync file which should match with the existing property
         self.map_bsync_file()
-        ps_new = PropertyState.objects.filter(
-            address_line_1=ADDRESS_LINE_1,
-            import_file=self.import_file_bsync
-        )
+        ps_new = PropertyState.objects.filter(address_line_1=ADDRESS_LINE_1, import_file=self.import_file_bsync)
         self.assertEqual(len(ps_new), 1)
 
         # -- Act
@@ -1223,7 +1174,7 @@ class TestBuildingSyncImportXml(DataMappingBaseTestCase):
             'import_file_id': self.import_file_2.id,
             'data_state': DATA_STATE_MAPPING,
             'no_default_data': False,
-            "raw_access_level_instance_id": self.org.root.id,
+            'raw_access_level_instance_id': self.org.root.id,
         }
         # Create a property which will match with the BuildingSync file
         ps_orig = self.property_state_factory.get_property_state(**base_details)
@@ -1239,7 +1190,7 @@ class TestBuildingSyncImportXml(DataMappingBaseTestCase):
         PropertyMeasure.objects.create(
             property_measure_name='My Original PropertyMeasure',
             measure_id=Measure.objects.filter(organization=self.org).first().id,
-            property_state_id=ps_orig.id
+            property_state_id=ps_orig.id,
         )
         meter = Meter.objects.create(
             scenario_id=scenario.id,
@@ -1255,10 +1206,7 @@ class TestBuildingSyncImportXml(DataMappingBaseTestCase):
 
         # Map the BuildingSync file which should match with the existing property
         self.map_bsync_file()
-        ps_new = PropertyState.objects.filter(
-            address_line_1=ADDRESS_LINE_1,
-            import_file=self.import_file_bsync
-        )
+        ps_new = PropertyState.objects.filter(address_line_1=ADDRESS_LINE_1, import_file=self.import_file_bsync)
         self.assertEqual(len(ps_new), 1)
 
         # -- Act
@@ -1284,7 +1232,6 @@ class TestBuildingSyncImportXml(DataMappingBaseTestCase):
 
 
 class TestMultiCycleImport(DataMappingBaseTestCase):
-
     def setUp(self):
         selfvars = self.set_up(ASSESSED_RAW)
         self.user, self.org, self.import_file, self.import_record, self.cycle = selfvars
@@ -1337,7 +1284,7 @@ class TestMultiCycleImport(DataMappingBaseTestCase):
             end=date(1999, 12, 31),
         )
 
-        base_details = {'import_file_id': self.import_file.id, "raw_access_level_instance_id": self.org.root.id}
+        base_details = {'import_file_id': self.import_file.id, 'raw_access_level_instance_id': self.org.root.id}
         # Properties for cycle 2010_2014
         base_details['property_name'] = 'p2010_2014a'
         base_details['year_ending'] = date(2012, 12, 12)

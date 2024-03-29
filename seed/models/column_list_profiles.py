@@ -1,9 +1,9 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 from collections import OrderedDict
 from typing import List, Tuple
 
@@ -37,8 +37,7 @@ class ColumnListProfile(models.Model):
     name = models.CharField(max_length=512, db_index=True)
     profile_location = models.IntegerField(choices=VIEW_LOCATION_TYPES, default=VIEW_LIST)
     inventory_type = models.IntegerField(choices=VIEW_LIST_INVENTORY_TYPE, default=VIEW_LIST_PROPERTY)
-    columns = models.ManyToManyField(Column, related_name='column_list_profiles',
-                                     through='seed.ColumnListProfileColumn')
+    columns = models.ManyToManyField(Column, related_name='column_list_profiles', through='seed.ColumnListProfileColumn')
     derived_columns = models.ManyToManyField(DerivedColumn, related_name='column_list_profiles')
 
     PROFILE_TYPE = {'properties': VIEW_LIST_PROPERTY, 'taxlots': VIEW_LIST_TAXLOT}
@@ -57,10 +56,7 @@ class ColumnListProfile(models.Model):
         """
         try:
             profile = ColumnListProfile.objects.get(
-                organization=organization_id,
-                id=profile_id,
-                profile_location=VIEW_LIST,
-                inventory_type=cls.PROFILE_TYPE[inventory_type]
+                organization=organization_id, id=profile_id, profile_location=VIEW_LIST, inventory_type=cls.PROFILE_TYPE[inventory_type]
             )
             profile_id = profile.id
 
@@ -73,13 +69,11 @@ class ColumnListProfile(models.Model):
         selected_columns_from_database = []
 
         if profile_id:
-            for c in apps.get_model('seed', 'ColumnListProfileColumn').objects.filter(
-                column_list_profile_id=profile_id
-            ).order_by('order'):
+            for c in apps.get_model('seed', 'ColumnListProfileColumn').objects.filter(column_list_profile_id=profile_id).order_by('order'):
                 # find the items from the columns_from_database object and return only the ones that are in the
                 # selected profile
                 for c_db in columns_from_database:
-                    if "%s_%s" % (c.column.column_name, c.column.id) == c_db['name']:
+                    if f'{c.column.column_name}_{c.column.id}' == c_db['name']:
                         selected_columns_from_database.append(c_db)
                         column_ids.append(c_db['id'])
                         column_name_mappings[c_db['name']] = c_db['display_name']

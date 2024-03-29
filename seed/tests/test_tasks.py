@@ -1,9 +1,9 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 import logging
 import pathlib
 from os import path
@@ -36,10 +36,7 @@ class TestTasks(TestCase):
             import_record=self.import_record,
             source_type=SEED_DATA_SOURCES[PORTFOLIO_RAW][1],
         )
-        self.import_file.file = SimpleUploadedFile(
-            name='portfolio-manager-sample.csv',
-            content=pathlib.Path(filepath).read_bytes()
-        )
+        self.import_file.file = SimpleUploadedFile(name='portfolio-manager-sample.csv', content=pathlib.Path(filepath).read_bytes())
         self.import_file.save()
 
         # Mimic the representation in the PM file. #ThanksAaron
@@ -71,35 +68,23 @@ class TestTasks(TestCase):
             'Name': 'The Whitehouse',
             'Address Line 1': '1600 Pennsylvania Ave.',
             'Year Built': '1803',
-            'Double Tester': 'Just a note from bob'
+            'Double Tester': 'Just a note from bob',
         }
 
         self.import_record.super_organization = self.fake_org
         self.import_record.save()
 
-        self.fake_mappings = {
-            'property_name': 'Name',
-            'address_line_1': 'Address Line 1',
-            'year_built': 'Year Built'
-        }
+        self.fake_mappings = {'property_name': 'Name', 'address_line_1': 'Address Line 1', 'year_built': 'Year Built'}
 
     def test_delete_organization(self):
-        self.assertTrue(
-            User.objects.filter(pk=self.fake_user.pk).exists())
-        self.assertTrue(
-            Organization.objects.filter(pk=self.fake_org.pk).exists())
-        self.assertTrue(
-            ImportRecord.objects.filter(pk=self.import_record.pk).exists())
-        self.assertTrue(
-            ImportFile.objects.filter(pk=self.import_file.pk).exists())
+        self.assertTrue(User.objects.filter(pk=self.fake_user.pk).exists())
+        self.assertTrue(Organization.objects.filter(pk=self.fake_org.pk).exists())
+        self.assertTrue(ImportRecord.objects.filter(pk=self.import_record.pk).exists())
+        self.assertTrue(ImportFile.objects.filter(pk=self.import_file.pk).exists())
 
         tasks.delete_organization(self.fake_org.pk)
 
-        self.assertTrue(
-            User.objects.filter(pk=self.fake_user.pk).exists())
-        self.assertFalse(
-            Organization.objects.filter(pk=self.fake_org.pk).exists())
-        self.assertFalse(
-            ImportRecord.objects.filter(pk=self.import_record.pk).exists())
-        self.assertFalse(
-            ImportFile.objects.filter(pk=self.import_file.pk).exists())
+        self.assertTrue(User.objects.filter(pk=self.fake_user.pk).exists())
+        self.assertFalse(Organization.objects.filter(pk=self.fake_org.pk).exists())
+        self.assertFalse(ImportRecord.objects.filter(pk=self.import_record.pk).exists())
+        self.assertFalse(ImportFile.objects.filter(pk=self.import_file.pk).exists())

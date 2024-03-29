@@ -1,8 +1,8 @@
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 from django.db import models
 
 from seed.models import Property
@@ -16,8 +16,8 @@ class DataLogger(models.Model):
     )
 
     display_name = models.CharField(max_length=255)
-    identifier = models.CharField(max_length=255, default="")
-    location_description = models.CharField(max_length=2047, default="")
+    identifier = models.CharField(max_length=255, default='')
+    location_description = models.CharField(max_length=2047, default='')
     is_occupied_data = models.JSONField(null=False, default=dict)
     manufacturer_name = models.CharField(max_length=255, null=True)
     model_name = models.CharField(max_length=255, null=True)
@@ -35,8 +35,8 @@ class Sensor(models.Model):
     )
 
     display_name = models.CharField(max_length=255)
-    location_description = models.CharField(max_length=2047, default="")
-    description = models.CharField(max_length=2047, default="")
+    location_description = models.CharField(max_length=2047, default='')
+    description = models.CharField(max_length=2047, default='')
 
     sensor_type = models.CharField(max_length=63)
     units = models.CharField(max_length=63)
@@ -44,10 +44,7 @@ class Sensor(models.Model):
     column_name = models.CharField(max_length=255)
 
     class Meta:
-        unique_together = (
-            ('data_logger', 'display_name'),
-            ('data_logger', 'column_name')
-        )
+        unique_together = (('data_logger', 'display_name'), ('data_logger', 'column_name'))
 
 
 class SensorReading(models.Model):

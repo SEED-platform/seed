@@ -1,9 +1,9 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 from copy import deepcopy
 
 import django.core.exceptions
@@ -18,10 +18,7 @@ from seed.lib.superperms.orgs.models import AccessLevelInstance, Organization
 from seed.models.compliance_metrics import ComplianceMetric
 from seed.serializers.compliance_metrics import ComplianceMetricSerializer
 from seed.utils.api import OrgMixin, api_endpoint_class
-from seed.utils.api_schema import (
-    AutoSchemaHelper,
-    swagger_auto_schema_org_query_param
-)
+from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema_org_query_param
 
 
 class ComplianceMetricViewSet(viewsets.ViewSet, OrgMixin):
@@ -37,10 +34,10 @@ class ComplianceMetricViewSet(viewsets.ViewSet, OrgMixin):
         organization_id = self.get_organization(request)
         compliance_metric_queryset = ComplianceMetric.objects.filter(organization=organization_id)
 
-        return JsonResponse({
-            'status': 'success',
-            'compliance_metrics': ComplianceMetricSerializer(compliance_metric_queryset, many=True).data
-        }, status=status.HTTP_200_OK)
+        return JsonResponse(
+            {'status': 'success', 'compliance_metrics': ComplianceMetricSerializer(compliance_metric_queryset, many=True).data},
+            status=status.HTTP_200_OK,
+        )
 
     @swagger_auto_schema_org_query_param
     @require_organization_id_class
@@ -51,30 +48,32 @@ class ComplianceMetricViewSet(viewsets.ViewSet, OrgMixin):
         organization = self.get_organization(request)
         if pk == 0:
             try:
-                return JsonResponse({
-                    'status': 'success',
-                    'compliance_metric': ComplianceMetricSerializer(
-                        ComplianceMetric.objects.filter(organization=organization).first()
-                    ).data
-                }, status=status.HTTP_200_OK)
+                return JsonResponse(
+                    {
+                        'status': 'success',
+                        'compliance_metric': ComplianceMetricSerializer(
+                            ComplianceMetric.objects.filter(organization=organization).first()
+                        ).data,
+                    },
+                    status=status.HTTP_200_OK,
+                )
             except Exception:
-                return JsonResponse({
-                    'status': 'error',
-                    'message': 'No Programs exist'
-                }, status=status.HTTP_404_NOT_FOUND)
+                return JsonResponse({'status': 'error', 'message': 'No Programs exist'}, status=status.HTTP_404_NOT_FOUND)
         else:
             try:
-                return JsonResponse({
-                    'status': 'success',
-                    'compliance_metric': ComplianceMetricSerializer(
-                        ComplianceMetric.objects.get(id=pk, organization=organization)
-                    ).data
-                }, status=status.HTTP_200_OK)
+                return JsonResponse(
+                    {
+                        'status': 'success',
+                        'compliance_metric': ComplianceMetricSerializer(
+                            ComplianceMetric.objects.get(id=pk, organization=organization)
+                        ).data,
+                    },
+                    status=status.HTTP_200_OK,
+                )
             except ComplianceMetric.DoesNotExist:
-                return JsonResponse({
-                    'status': 'error',
-                    'message': f'ComplianceMetric with id {pk} does not exist'
-                }, status=status.HTTP_404_NOT_FOUND)
+                return JsonResponse(
+                    {'status': 'error', 'message': f'ComplianceMetric with id {pk} does not exist'}, status=status.HTTP_404_NOT_FOUND
+                )
 
     @swagger_auto_schema_org_query_param
     @require_organization_id_class
@@ -87,15 +86,11 @@ class ComplianceMetricViewSet(viewsets.ViewSet, OrgMixin):
         try:
             ComplianceMetric.objects.get(id=pk, organization=organization_id).delete()
         except ComplianceMetric.DoesNotExist:
-            return JsonResponse({
-                'status': 'error',
-                'message': f'ComplianceMetric with id {pk} does not exist'
-            }, status=status.HTTP_404_NOT_FOUND)
+            return JsonResponse(
+                {'status': 'error', 'message': f'ComplianceMetric with id {pk} does not exist'}, status=status.HTTP_404_NOT_FOUND
+            )
 
-        return JsonResponse({
-            'status': 'success',
-            'message': f'Successfully deleted ComplianceMetric ID {pk}'
-        }, status=status.HTTP_200_OK)
+        return JsonResponse({'status': 'success', 'message': f'Successfully deleted ComplianceMetric ID {pk}'}, status=status.HTTP_200_OK)
 
     @swagger_auto_schema(
         manual_parameters=[AutoSchemaHelper.query_org_id_field()],
@@ -113,48 +108,34 @@ class ComplianceMetricViewSet(viewsets.ViewSet, OrgMixin):
                 'filter_group': 'integer',
                 'x_axis_columns': ['integer'],
             },
-        )
+        ),
     )
     @require_organization_id_class
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_root_member_access')
     def create(self, request):
-
         org_id = int(self.get_organization(request))
         try:
             Organization.objects.get(pk=org_id)
         except Organization.DoesNotExist:
-            return JsonResponse({'status': 'error', 'message': 'bad organization_id'},
-                                status=status.HTTP_400_BAD_REQUEST)
+            return JsonResponse({'status': 'error', 'message': 'bad organization_id'}, status=status.HTTP_400_BAD_REQUEST)
 
         data = deepcopy(request.data)
         data.update({'organization_id': org_id})
         serializer = ComplianceMetricSerializer(data=data)
 
         if not serializer.is_valid():
-            error_response = {
-                'status': 'error',
-                'message': 'Data Validation Error',
-                'errors': serializer.errors
-            }
+            error_response = {'status': 'error', 'message': 'Data Validation Error', 'errors': serializer.errors}
 
             return JsonResponse(error_response, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             serializer.save()
-            return JsonResponse({
-                'status': 'success',
-                'compliance_metric': serializer.data
-            }, status=status.HTTP_200_OK)
+            return JsonResponse({'status': 'success', 'compliance_metric': serializer.data}, status=status.HTTP_200_OK)
         except django.core.exceptions.ValidationError as e:
-
             message_dict = e.message_dict
-            return JsonResponse({
-                'status': 'error',
-                'message': 'Bad Request',
-                'errors': message_dict
-            }, status=status.HTTP_400_BAD_REQUEST)
+            return JsonResponse({'status': 'error', 'message': 'Bad Request', 'errors': message_dict}, status=status.HTTP_400_BAD_REQUEST)
 
     @swagger_auto_schema(
         manual_parameters=[AutoSchemaHelper.query_org_id_field()],
@@ -172,7 +153,7 @@ class ComplianceMetricViewSet(viewsets.ViewSet, OrgMixin):
                 'filter_group': 'integer',
                 'x_axis_columns': ['integer'],
             },
-        )
+        ),
     )
     @require_organization_id_class
     @api_endpoint_class
@@ -185,27 +166,27 @@ class ComplianceMetricViewSet(viewsets.ViewSet, OrgMixin):
         try:
             compliance_metric = ComplianceMetric.objects.get(id=pk, organization=org_id)
         except ComplianceMetric.DoesNotExist:
-            return JsonResponse({
-                'status': 'error',
-                'message': f'ComplianceMetric with id {pk} does not exist'
-            }, status=status.HTTP_404_NOT_FOUND)
+            return JsonResponse(
+                {'status': 'error', 'message': f'ComplianceMetric with id {pk} does not exist'}, status=status.HTTP_404_NOT_FOUND
+            )
 
         data = deepcopy(request.data)
         data.update({'organization': org_id})
         serializer = ComplianceMetricSerializer(compliance_metric, data=data, partial=True)
         if not serializer.is_valid():
-            return JsonResponse({
-                'status': 'error',
-                'message': 'Bad Request',
-                'errors': serializer.errors
-            }, status=status.HTTP_400_BAD_REQUEST)
+            return JsonResponse(
+                {'status': 'error', 'message': 'Bad Request', 'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST
+            )
 
         try:
             serializer.save()
-            return JsonResponse({
-                'status': 'success',
-                'compliance_metric': serializer.data,
-            }, status=status.HTTP_200_OK)
+            return JsonResponse(
+                {
+                    'status': 'success',
+                    'compliance_metric': serializer.data,
+                },
+                status=status.HTTP_200_OK,
+            )
         except django.core.exceptions.ValidationError as e:
             message_dict = e.message_dict
 
@@ -213,15 +194,16 @@ class ComplianceMetricViewSet(viewsets.ViewSet, OrgMixin):
             if '__all__' in message_dict:
                 message_dict['general'] = message_dict.pop('__all__')
 
-            return JsonResponse({
-                'status': 'error',
-                'message': 'Bad request',
-                'errors': message_dict,
-            }, status=status.HTTP_400_BAD_REQUEST)
+            return JsonResponse(
+                {
+                    'status': 'error',
+                    'message': 'Bad request',
+                    'errors': message_dict,
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
-    @swagger_auto_schema(
-        manual_parameters=[AutoSchemaHelper.query_org_id_field()]
-    )
+    @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_org_id_field()])
     @require_organization_id_class
     @api_endpoint_class
     @ajax_request_class
@@ -234,15 +216,9 @@ class ComplianceMetricViewSet(viewsets.ViewSet, OrgMixin):
         try:
             compliance_metric = ComplianceMetric.objects.get(id=pk, organization=organization)
         except Exception:
-            return JsonResponse({
-                'status': 'error',
-                'message': 'ComplianceMetric does not exist'
-            }, status=status.HTTP_404_NOT_FOUND)
+            return JsonResponse({'status': 'error', 'message': 'ComplianceMetric does not exist'}, status=status.HTTP_404_NOT_FOUND)
 
         user_ali = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
         response = compliance_metric.evaluate(user_ali)
 
-        return JsonResponse({
-            'status': 'success',
-            'data': response
-        })
+        return JsonResponse({'status': 'success', 'data': response})

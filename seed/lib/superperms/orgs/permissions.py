@@ -1,5 +1,4 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
@@ -9,6 +8,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 Provides permissions classes for use in DRF views and viewsets to control
 access based on Organization and OrganizationUser.role_level.
 """
+
 from typing import Union
 
 from django import VERSION as DJANGO_VERSION
@@ -16,13 +16,7 @@ from django.conf import settings
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import BasePermission
 
-from seed.lib.superperms.orgs.models import (
-    ROLE_MEMBER,
-    ROLE_OWNER,
-    ROLE_VIEWER,
-    Organization,
-    OrganizationUser
-)
+from seed.lib.superperms.orgs.models import ROLE_MEMBER, ROLE_OWNER, ROLE_VIEWER, Organization, OrganizationUser
 
 # Allow Super Users to ignore permissions.
 ALLOW_SUPER_USER_PERMS = getattr(settings, 'ALLOW_SUPER_USER_PERMS', True)
@@ -157,6 +151,7 @@ class SEEDOrgPermissions(BasePermission):
     view(set)to do this.
 
     """
+
     message = PermissionDenied.default_detail
     authenticated_users_only = True
     perm_map = {
@@ -187,9 +182,7 @@ class SEEDOrgPermissions(BasePermission):
             org = get_user_org(request.user)
             org_id = getattr(org, 'pk')
         try:
-            org_user = OrganizationUser.objects.get(
-                user=request.user, organization__id=org_id
-            )
+            org_user = OrganizationUser.objects.get(user=request.user, organization__id=org_id)
             has_perm = org_user.role_level >= required_perm
         except OrganizationUser.DoesNotExist:
             self.message = 'No relationship to organization'
@@ -218,20 +211,16 @@ class SEEDOrgPermissions(BasePermission):
                 value_error = False
 
         if value_error or queryset is None:
-            raise AssertionError('Cannot apply {} on a view that does not set `.queryset`'
-                                 ' or have a `.get_queryset()` method.'.format(view.__class__))
-
-        return (
-            request.user and
-            (
-                is_authenticated(request.user) or not self.authenticated_users_only
+            raise AssertionError(
+                f'Cannot apply {view.__class__} on a view that does not set `.queryset`' ' or have a `.get_queryset()` method.'
             )
-            and self.has_perm(request)
-        )
+
+        return request.user and (is_authenticated(request.user) or not self.authenticated_users_only) and self.has_perm(request)
 
 
 class SEEDPublicPermissions(SEEDOrgPermissions):
     """Allow anonymous users read-only access"""
+
     authenticated_users_only = False
     safe_methods = ['GET', 'OPTIONS', 'HEAD']
 

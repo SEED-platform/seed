@@ -1,11 +1,11 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 :author nicholas.long@nrel.gov
 """
+
 import json
 
 from django.test import TestCase
@@ -14,22 +14,14 @@ from rest_framework import status
 
 from seed.landing.models import SEEDUser as User
 from seed.models import NoteEvent, Property, TaxLot
-from seed.test_helpers.fake import (
-    FakeNoteFactory,
-    FakePropertyViewFactory,
-    FakeTaxLotViewFactory
-)
+from seed.test_helpers.fake import FakeNoteFactory, FakePropertyViewFactory, FakeTaxLotViewFactory
 from seed.tests.util import AccessLevelBaseTestCase
 from seed.utils.organizations import create_organization
 
 
 class NoteViewTests(TestCase):
     def setUp(self):
-        user_details = {
-            'username': 'test_user@demo.com',
-            'password': 'test_pass',
-            'email': 'test_user@demo.com'
-        }
+        user_details = {'username': 'test_user@demo.com', 'password': 'test_pass', 'email': 'test_user@demo.com'}
         self.user = User.objects.create_superuser(**user_details)
         self.org, _, _ = create_organization(self.user)
 
@@ -66,13 +58,7 @@ class NoteViewTests(TestCase):
 
         # most recent log is displayed first
         expected_log_data = {
-            'property_state': [
-                {
-                    'field': 'address_line_1',
-                    'previous_value': '123 Main Street',
-                    'new_value': '742 Evergreen Terrace'
-                }
-            ]
+            'property_state': [{'field': 'address_line_1', 'previous_value': '123 Main Street', 'new_value': '742 Evergreen Terrace'}]
         }
         self.assertEqual(results[0]['log_data'], expected_log_data)
         self.assertEqual(results[1]['note_type'], 'Note')
@@ -81,9 +67,9 @@ class NoteViewTests(TestCase):
         url = reverse('api:v3:property-notes-list', args=[self.pv.pk]) + f'?organization_id={self.org.pk}'
 
         payload = {
-            "note_type": "Note",
-            "name": "A New Note",
-            "text": "This building is much bigger than reported",
+            'note_type': 'Note',
+            'name': 'A New Note',
+            'text': 'This building is much bigger than reported',
         }
         response = self.client.post(url, data=json.dumps(payload), content_type='application/json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
@@ -100,15 +86,15 @@ class NoteViewTests(TestCase):
         events = NoteEvent.objects.all().values()
         self.assertEqual(1, len(events))
         event = events[0]
-        self.assertEqual(result["id"], event["note_id"])
+        self.assertEqual(result['id'], event['note_id'])
 
     def test_create_note_taxlot(self):
         url = reverse('api:v3:taxlot-notes-list', args=[self.tl.pk]) + f'?organization_id={self.org.pk}'
 
         payload = {
-            "note_type": "Note",
-            "name": "A New Note",
-            "text": "The taxlot is not correct",
+            'note_type': 'Note',
+            'name': 'A New Note',
+            'text': 'The taxlot is not correct',
         }
         response = self.client.post(url, data=json.dumps(payload), content_type='application/json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
@@ -123,19 +109,12 @@ class NoteViewTests(TestCase):
     def test_update_note(self):
         url = reverse('api:v3:taxlot-notes-detail', args=[self.tl.pk, self.note3.pk]) + f'?organization_id={self.org.pk}'
 
-        payload = {
-            "name": "update, validation should fail"
-        }
+        payload = {'name': 'update, validation should fail'}
         response = self.client.put(url, data=json.dumps(payload), content_type='application/json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(json.loads(response.content),
-                         {"text": ["This field is required."], "note_type": ["This field is required."]})
+        self.assertEqual(json.loads(response.content), {'text': ['This field is required.'], 'note_type': ['This field is required.']})
 
-        payload = {
-            "name": "update",
-            "text": "new data with put",
-            "note_type": "Note"
-        }
+        payload = {'name': 'update', 'text': 'new data with put', 'note_type': 'Note'}
         response = self.client.put(url, data=json.dumps(payload), content_type='application/json')
         result = json.loads(response.content)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -177,10 +156,7 @@ class PropertyNoteViewPermissionsTests(AccessLevelBaseTestCase, TestCase):
         self.view.save()
 
     def test_note_get_all(self):
-        url = (
-            reverse('api:v3:property-notes-list', args=[self.view.id]) +
-            f'?organization_id={self.org.pk}'
-        )
+        url = reverse('api:v3:property-notes-list', args=[self.view.id]) + f'?organization_id={self.org.pk}'
 
         # root member can
         self.login_as_root_member()
@@ -193,13 +169,7 @@ class PropertyNoteViewPermissionsTests(AccessLevelBaseTestCase, TestCase):
         assert resp.status_code == 404
 
     def test_note_get(self):
-        url = (
-            reverse(
-                'api:v3:property-notes-detail',
-                args=[self.view.id, self.note.id]
-            )
-            + f'?organization_id={self.org.pk}'
-        )
+        url = reverse('api:v3:property-notes-detail', args=[self.view.id, self.note.id]) + f'?organization_id={self.org.pk}'
 
         # root member can
         self.login_as_root_member()
@@ -212,14 +182,8 @@ class PropertyNoteViewPermissionsTests(AccessLevelBaseTestCase, TestCase):
         assert resp.status_code == 404
 
     def test_note_create(self):
-        url = (
-            reverse(
-                'api:v3:property-notes-list',
-                args=[self.view.id]
-            )
-            + f'?organization_id={self.org.pk}'
-        )
-        post_params = json.dumps({"note_type": "Note", "name": "A New Note", "text": "hoi"})
+        url = reverse('api:v3:property-notes-list', args=[self.view.id]) + f'?organization_id={self.org.pk}'
+        post_params = json.dumps({'note_type': 'Note', 'name': 'A New Note', 'text': 'hoi'})
 
         # root member can
         self.login_as_root_member()
@@ -232,14 +196,8 @@ class PropertyNoteViewPermissionsTests(AccessLevelBaseTestCase, TestCase):
         assert resp.status_code == 404
 
     def test_note_update(self):
-        url = (
-            reverse(
-                'api:v3:property-notes-detail',
-                args=[self.view.id, self.note.id]
-            )
-            + f'?organization_id={self.org.pk}'
-        )
-        post_params = json.dumps({"note_type": "Note", "name": "A New Note", "text": "hoi"})
+        url = reverse('api:v3:property-notes-detail', args=[self.view.id, self.note.id]) + f'?organization_id={self.org.pk}'
+        post_params = json.dumps({'note_type': 'Note', 'name': 'A New Note', 'text': 'hoi'})
 
         # root member can
         self.login_as_root_member()
@@ -252,13 +210,7 @@ class PropertyNoteViewPermissionsTests(AccessLevelBaseTestCase, TestCase):
         assert resp.status_code == 404
 
     def test_note_delete(self):
-        url = (
-            reverse(
-                'api:v3:property-notes-detail',
-                args=[self.view.id, self.note.id]
-            )
-            + f'?organization_id={self.org.pk}'
-        )
+        url = reverse('api:v3:property-notes-detail', args=[self.view.id, self.note.id]) + f'?organization_id={self.org.pk}'
 
         # child member cannot
         self.login_as_child_member()
@@ -285,10 +237,7 @@ class TaxlotNoteViewPermissionsTests(AccessLevelBaseTestCase, TestCase):
         self.view.save()
 
     def test_note_get_all(self):
-        url = (
-            reverse('api:v3:taxlot-notes-list', args=[self.view.id]) +
-            f'?organization_id={self.org.pk}'
-        )
+        url = reverse('api:v3:taxlot-notes-list', args=[self.view.id]) + f'?organization_id={self.org.pk}'
 
         # root member can
         self.login_as_root_member()
@@ -301,13 +250,7 @@ class TaxlotNoteViewPermissionsTests(AccessLevelBaseTestCase, TestCase):
         assert resp.status_code == 404
 
     def test_note_get(self):
-        url = (
-            reverse(
-                'api:v3:taxlot-notes-detail',
-                args=[self.view.id, self.note.id]
-            )
-            + f'?organization_id={self.org.pk}'
-        )
+        url = reverse('api:v3:taxlot-notes-detail', args=[self.view.id, self.note.id]) + f'?organization_id={self.org.pk}'
 
         # root member can
         self.login_as_root_member()
@@ -320,14 +263,8 @@ class TaxlotNoteViewPermissionsTests(AccessLevelBaseTestCase, TestCase):
         assert resp.status_code == 404
 
     def test_note_create(self):
-        url = (
-            reverse(
-                'api:v3:taxlot-notes-list',
-                args=[self.view.id]
-            )
-            + f'?organization_id={self.org.pk}'
-        )
-        post_params = json.dumps({"note_type": "Note", "name": "A New Note", "text": "hoi"})
+        url = reverse('api:v3:taxlot-notes-list', args=[self.view.id]) + f'?organization_id={self.org.pk}'
+        post_params = json.dumps({'note_type': 'Note', 'name': 'A New Note', 'text': 'hoi'})
 
         # root member can
         self.login_as_root_member()
@@ -340,14 +277,8 @@ class TaxlotNoteViewPermissionsTests(AccessLevelBaseTestCase, TestCase):
         assert resp.status_code == 404
 
     def test_note_update(self):
-        url = (
-            reverse(
-                'api:v3:taxlot-notes-detail',
-                args=[self.view.id, self.note.id]
-            )
-            + f'?organization_id={self.org.pk}'
-        )
-        post_params = json.dumps({"note_type": "Note", "name": "A New Note", "text": "hoi"})
+        url = reverse('api:v3:taxlot-notes-detail', args=[self.view.id, self.note.id]) + f'?organization_id={self.org.pk}'
+        post_params = json.dumps({'note_type': 'Note', 'name': 'A New Note', 'text': 'hoi'})
 
         # root member can
         self.login_as_root_member()
@@ -360,13 +291,7 @@ class TaxlotNoteViewPermissionsTests(AccessLevelBaseTestCase, TestCase):
         assert resp.status_code == 404
 
     def test_note_delete(self):
-        url = (
-            reverse(
-                'api:v3:taxlot-notes-detail',
-                args=[self.view.id, self.note.id]
-            )
-            + f'?organization_id={self.org.pk}'
-        )
+        url = reverse('api:v3:taxlot-notes-detail', args=[self.view.id, self.note.id]) + f'?organization_id={self.org.pk}'
 
         # child member cannot
         self.login_as_child_member()

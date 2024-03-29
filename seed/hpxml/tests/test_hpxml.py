@@ -1,9 +1,9 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 import pathlib
 from os import path
 
@@ -17,11 +17,7 @@ from seed.utils.organizations import create_organization
 
 class TestBuildingFiles(TestCase):
     def setUp(self):
-        user_details = {
-            'username': 'test_user@demo.com',
-            'password': 'test_pass',
-            'email': 'test_user@demo.com'
-        }
+        user_details = {'username': 'test_user@demo.com', 'password': 'test_pass', 'email': 'test_user@demo.com'}
         self.user = User.objects.create_superuser(**user_details)
         self.org, _, _ = create_organization(self.user)
 
@@ -35,11 +31,7 @@ class TestBuildingFiles(TestCase):
         filename = path.join(path.dirname(__file__), 'data', 'audit.xml')
         simple_uploaded_file = SimpleUploadedFile(filename, pathlib.Path(filename).read_bytes())
 
-        bf = BuildingFile.objects.create(
-            file=simple_uploaded_file,
-            filename=filename,
-            file_type=BuildingFile.HPXML
-        )
+        bf = BuildingFile.objects.create(file=simple_uploaded_file, filename=filename, file_type=BuildingFile.HPXML)
 
         status, property_state, property_view, messages = bf.process(self.org.id, self.org.cycles.first())
         self.assertTrue(status)

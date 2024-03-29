@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('seed', '0160_merge_0159_auto_20220310_1648_0159_inventorydocument'),
     ]

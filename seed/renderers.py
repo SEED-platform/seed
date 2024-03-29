@@ -1,5 +1,4 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
@@ -18,6 +17,7 @@ Use of the custom class(es) will generate the correct format, setting 'status'
 based on the HTTP status code from the response, obviating the need to
 override View(Set) methods unnecessarily, if e.g., ModelViewSet is used.
 """
+
 from rest_framework import status
 from rest_framework.renderers import JSONRenderer
 
@@ -57,7 +57,7 @@ class SEEDJSONRenderer(JSONRenderer):
         response = renderer_context.get('response')
         if status.is_success(response.status_code):
             status_type = 'success'
-            if hasattr(data, 'keys') and 'results' in data.keys():
+            if hasattr(data, 'keys') and 'results' in data:
                 results = data.pop('results', None)
                 pagination = data
         else:
@@ -69,8 +69,4 @@ class SEEDJSONRenderer(JSONRenderer):
         if pagination:
             data['pagination'] = pagination
 
-        return super().render(
-            data,
-            accepted_media_type=accepted_media_type,
-            renderer_context=renderer_context
-        )
+        return super().render(data, accepted_media_type=accepted_media_type, renderer_context=renderer_context)

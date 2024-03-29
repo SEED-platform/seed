@@ -4,14 +4,13 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('seed', '0170_column_derived_column'),
     ]
 
     def forwards(apps, schema_editor):
-        Column = apps.get_model("seed", "Column")
-        Organization = apps.get_model("orgs", "Organization")
+        Column = apps.get_model('seed', 'Column')
+        Organization = apps.get_model('orgs', 'Organization')
 
         new_db_field = {
             'column_name': 'audit_template_building_id',
@@ -41,10 +40,10 @@ class Migration(migrations.Migration):
                         column.data_type = new_db_field['data_type']
                 column.save()
             else:
-                print("  More than one column returned")
+                print('  More than one column returned')
 
     def backwards(apps, schema_editor):
-        print("  Nothing to undo!")
+        print('  Nothing to undo!')
 
     operations = [
         migrations.AddField(

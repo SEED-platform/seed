@@ -1,5 +1,4 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
@@ -8,12 +7,12 @@ The Reader module is intended to contain only code which reads data
 out of CSV files. Fuzzy matches, application to data models happens
 elsewhere.
 """
+
 import json
 import logging
 import mmap
 import operator
 import re
-from builtins import str
 from csv import DictReader, Sniffer
 
 import xmltodict
@@ -36,8 +35,8 @@ from seed.lib.mcm.cleaners import normalize_unicode_and_characters
     XL_CELL_BLANK,
 ) = range(7)
 
-ROW_DELIMITER = "|#*#|"
-SEED_GENERATED_HEADER_PREFIX = "SEED Generated Header"
+ROW_DELIMITER = '|#*#|'
+SEED_GENERATED_HEADER_PREFIX = 'SEED Generated Header'
 
 
 _log = logging.getLogger(__name__)
@@ -65,11 +64,11 @@ def clean_fieldnames(fieldnames):
     return new_fieldnames, num_generated_headers > 0
 
 
-class SheetDoesNotExist(Exception):
+class SheetDoesNotExistError(Exception):
     """Exception when parsing an Excel workbook and the specified sheet does not exist"""
 
 
-class GreenButtonParser(object):
+class GreenButtonParser:
     """
     This class accepts GreenButton data in XML format.
 
@@ -99,22 +98,22 @@ class GreenButtonParser(object):
             169: 'therms',  # listed as 'therm'
         }
         self.power_of_ten_codes = {
-            -12: 'p',      # Pico: 10^-12
-            -9: 'n',      # Nano: 10^-9
+            -12: 'p',  # Pico: 10^-12
+            -9: 'n',  # Nano: 10^-9
             -6: 'micro',  # Micro: 10^-6
-            -3: 'm',      # Milli: 10^-3
-            -1: 'd',      # Deci: 10^-1
-            0: '',       # N/A
-            1: 'da',     # Deca: 10^1
-            2: 'h',      # Hecto: 10^2
-            3: 'k',      # Kilo: 10^3
-            6: 'M',      # Mega: 10^6
-            9: 'G',      # Giga: 10^9
-            12: 'T',      # Tera: 10^12
+            -3: 'm',  # Milli: 10^-3
+            -1: 'd',  # Deci: 10^-1
+            0: '',  # N/A
+            1: 'da',  # Deca: 10^1
+            2: 'h',  # Hecto: 10^2
+            3: 'k',  # Kilo: 10^3
+            6: 'M',  # Mega: 10^6
+            9: 'G',  # Giga: 10^9
+            12: 'T',  # Tera: 10^12
         }
 
         # US factors work for CAN factors as this is only used to find valid unit types for a given energy type
-        self._thermal_factors = kbtu_thermal_conversion_factors("US")
+        self._thermal_factors = kbtu_thermal_conversion_factors('US')
 
         # These are the valid unit prefixes found in thermal conversions
         self.thermal_factor_prefixes = {
@@ -155,8 +154,7 @@ class GreenButtonParser(object):
                         'Usage Units': unit,
                         'Usage/Quantity': float(reading['value']) * multiplier,
                     }
-                    for reading
-                    in readings
+                    for reading in readings
                 ]
             else:
                 self._cache_data = []
@@ -185,11 +183,7 @@ class GreenButtonParser(object):
 
         power_of_ten_multiplier = int(uom_entry['powerOfTenMultiplier'])
 
-        resulting_unit, multiplier = self._parse_valid_unit_and_multiplier(
-            type,
-            power_of_ten_multiplier,
-            raw_base_unit
-        )
+        resulting_unit, multiplier = self._parse_valid_unit_and_multiplier(type, power_of_ten_multiplier, raw_base_unit)
 
         return type, resulting_unit, multiplier
 
@@ -219,50 +213,41 @@ class GreenButtonParser(object):
         valid_units_for_type = self._thermal_factors[type].keys()
 
         raw_prefix_unit = self.power_of_ten_codes.get(power_of_ten_multiplier, None)
-        raw_full_unit = "{}{}".format(raw_prefix_unit, raw_base_unit)
+        raw_full_unit = f'{raw_prefix_unit}{raw_base_unit}'
 
         # Check if the raw full unit is an exact match (or left match) with a known valid unit
-        exact_match_full_unit = next(
-            (key for key in valid_units_for_type if key.startswith(raw_full_unit)),
-            None
-        )
+        exact_match_full_unit = next((key for key in valid_units_for_type if key.startswith(raw_full_unit)), None)
         if exact_match_full_unit is not None:
             return exact_match_full_unit, 1
 
         # Check if just the base unit is an exact match with a known valid unit
-        base_unit_only_match = next(
-            (key for key in valid_units_for_type if raw_base_unit == key),
-            None
-        )
+        base_unit_only_match = next((key for key in valid_units_for_type if raw_base_unit == key), None)
         if base_unit_only_match is not None:
-            multiplier = 10**(power_of_ten_multiplier)
+            multiplier = 10 ** (power_of_ten_multiplier)
             return base_unit_only_match, multiplier
 
         # Check if just the base unit is similar to a known valid unit
-        approx_match_base_unit = next(
-            (key for key in valid_units_for_type if raw_base_unit in key),
-            None
-        )
+        approx_match_base_unit = next((key for key in valid_units_for_type if raw_base_unit in key), None)
         if approx_match_base_unit is not None:
             # this assumes the prefix is one character long
             factor_prefix = approx_match_base_unit[0]
 
             # an exact match is expected for factor_prefix - if not, this should error
-            multiplier = 10**(power_of_ten_multiplier - self.thermal_factor_prefixes[factor_prefix])
+            multiplier = 10 ** (power_of_ten_multiplier - self.thermal_factor_prefixes[factor_prefix])
 
             return approx_match_base_unit, multiplier
 
         return None, 1
 
 
-class GeoJSONParser(object):
+class GeoJSONParser:
     def __init__(self, json_file):
         raw_data = json.load(json_file)
-        features = raw_data.get("features")
-        raw_column_names = features[0].get("properties").keys()
+        features = raw_data.get('features')
+        raw_column_names = features[0].get('properties').keys()
 
         # add in the property footprint to the headers/columns
-        self.headers = [self._display_name(col) for col in raw_column_names] + ["property_footprint"]
+        self.headers = [self._display_name(col) for col in raw_column_names] + ['property_footprint']
         self.column_translations = {col: self._display_name(col) for col in raw_column_names}
         self.first_five_rows = [self._capture_row(feature) for feature in features[:5]]
 
@@ -271,7 +256,7 @@ class GeoJSONParser(object):
             properties = feature.get('properties')
 
             entry = {self.column_translations.get(k, k): v for k, v in properties.items()}
-            entry["property_footprint"] = self._get_bounding_box(feature)
+            entry['property_footprint'] = self._get_bounding_box(feature)
 
             self.data.append(entry)
 
@@ -281,19 +266,19 @@ class GeoJSONParser(object):
 
     def _get_bounding_box(self, feature):
         raw_coordinates = feature.get('geometry').get('coordinates')[0]
-        coords_strings = [f"{coords[0]} {coords[1]}" for coords in raw_coordinates]
+        coords_strings = [f'{coords[0]} {coords[1]}' for coords in raw_coordinates]
 
         return f"POLYGON (({', '.join(coords_strings)}))"
 
     def _capture_row(self, feature):
         stringified_values = [str(value) for value in feature.get('properties').values()] + ['Property Footprint - Not Displayed']
-        return "|#*#|".join(stringified_values)
+        return '|#*#|'.join(stringified_values)
 
     def num_columns(self):
         return len(self.headers)
 
 
-class ExcelParser(object):
+class ExcelParser:
     """MS Excel (.xls, .xlsx) file parser for MCMParser
 
     usage:
@@ -360,10 +345,11 @@ class ExcelParser(object):
         if item.ctype == XL_CELL_DATE:
             try:
                 date = xldate.xldate_as_datetime(item.value, self._workbook.datemode)
-                return date.strftime("%Y-%m-%d %H:%M:%S")
+                return date.strftime('%Y-%m-%d %H:%M:%S')
             except XLDateAmbiguous:
-                raise Exception('Date fields are not in a format that SEED can interpret. '
-                                'A possible solution is to save as a CSV file and reimport.')
+                raise Exception(
+                    'Date fields are not in a format that SEED can interpret. ' 'A possible solution is to save as a CSV file and reimport.'
+                )
 
         if item.ctype == XL_CELL_NUMBER:
             if item.value % 1 == 0:  # integers
@@ -386,7 +372,7 @@ class ExcelParser(object):
                 # remove leading and trailing whitespace
                 value = item.value.strip()
                 # remove any double spaces within the string
-                value = " ".join(value.split())
+                value = ' '.join(value.split())
             else:
                 value = item.value
             return normalize_unicode_and_characters(value)
@@ -412,18 +398,12 @@ class ExcelParser(object):
         def item(i, j):
             """returns a tuple (column header, cell value)"""
             # self.cache_headers[j],
-            return (
-                self.get_value(sheet.cell(header_row, j), trim_and_clean_strings=True),
-                self.get_value(sheet.cell(i, j))
-            )
+            return (self.get_value(sheet.cell(header_row, j), trim_and_clean_strings=True), self.get_value(sheet.cell(i, j)))
 
         # return a generator, using yield here wouldn't run until the first
         # usage causing the try/except in MCMParser _get_reader to return
         # ExcelReader for csv files
-        return (
-            dict(item(i, j) for j in range(sheet.ncols))
-            for i in range(header_row + 1, sheet.nrows)
-        )
+        return (dict(item(i, j) for j in range(sheet.ncols)) for i in range(header_row + 1, sheet.nrows))
 
     def seek_to_beginning(self):
         """seeks to the beginning of the file
@@ -444,7 +424,7 @@ class ExcelParser(object):
         return self.cache_headers
 
 
-class CSVParser(object):
+class CSVParser:
     """CSV (.csv) file parser for MCMParser
 
     usage:
@@ -469,16 +449,14 @@ class CSVParser(object):
         try:
             dialect = Sniffer().sniff(self.csvfile.read(16384))
             if dialect.delimiter != ',':
-                _log.warn('CSV file has a non-standard delimiter, converting to \'comma\'')
+                _log.warn("CSV file has a non-standard delimiter, converting to 'comma'")
                 dialect.delimiter = ','
         except SyntaxError:
-            raise Exception("CSV file is not in a format that SEED can interpret. Try converting to XLSX.")
+            raise Exception('CSV file is not in a format that SEED can interpret. Try converting to XLSX.')
 
         self.csvfile.seek(0)
 
-        fieldnames, generated_headers = clean_fieldnames(
-            DictReader(self.csvfile, dialect=dialect).fieldnames
-        )
+        fieldnames, generated_headers = clean_fieldnames(DictReader(self.csvfile, dialect=dialect).fieldnames)
         self.has_generated_headers = generated_headers
         self.csvfile.seek(0)  # not positive this is required, but adding it just in case
         self.csvreader = DictReader(self.csvfile, dialect=dialect, fieldnames=fieldnames)
@@ -500,7 +478,7 @@ class CSVParser(object):
         return [entry.strip() for entry in self.csvreader.fieldnames]
 
 
-class MCMParser(object):
+class MCMParser:
     """
     This Parser is a wrapper around CSVReader and ExcelParser which matches
     columnar data against a set of known ontologies and separates data
@@ -543,7 +521,7 @@ class MCMParser(object):
             if 'Unsupported format' in str(e):
                 return CSVParser(import_file)
             elif 'No sheet named' in str(e):
-                raise SheetDoesNotExist(str(e))
+                raise SheetDoesNotExistError(str(e))
             else:
                 raise Exception('Cannot parse file')
 

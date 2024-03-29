@@ -1,11 +1,11 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 :author 'Piper Merriam <pmerriam@quickleft.com>'
 """
+
 from django.utils.decorators import method_decorator
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework.parsers import FormParser, JSONParser
@@ -25,47 +25,53 @@ from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
 @method_decorator(
     name='retrieve',
     decorator=swagger_auto_schema(
-        manual_parameters=[AutoSchemaHelper.query_org_id_field(
-            required=False,
-            description="Optional org id which overrides the users (default) current org id")]
+        manual_parameters=[
+            AutoSchemaHelper.query_org_id_field(
+                required=False, description='Optional org id which overrides the users (default) current org id'
+            )
+        ]
     ),
 )
 @method_decorator(
     name='list',
     decorator=swagger_auto_schema(
-        manual_parameters=[AutoSchemaHelper.query_org_id_field(
-            required=False,
-            description="Optional org id which overrides the users (default) current org id")]
+        manual_parameters=[
+            AutoSchemaHelper.query_org_id_field(
+                required=False, description='Optional org id which overrides the users (default) current org id'
+            )
+        ]
     ),
 )
 @method_decorator(
     name='create',
     decorator=[
         swagger_auto_schema(
-            manual_parameters=[AutoSchemaHelper.query_org_id_field(
-                required=False,
-                description="Optional org id which overrides the users (default) current org id")],
+            manual_parameters=[
+                AutoSchemaHelper.query_org_id_field(
+                    required=False, description='Optional org id which overrides the users (default) current org id'
+                )
+            ],
             request_body=AutoSchemaHelper.schema_factory(
                 {
                     'name': 'string',
                     'color': 'string',
                 },
                 required=['name'],
-                description='An object containing meta data for a new label'
-            )
+                description='An object containing meta data for a new label',
+            ),
         ),
         has_perm_class('requires_root_member_access'),
-
     ],
 )
 @method_decorator(
     name='destroy',
     decorator=[
         swagger_auto_schema(
-            manual_parameters=[AutoSchemaHelper.query_org_id_field(
-                required=False,
-                description="Optional org id which overrides the users (default) current org id"
-            )]
+            manual_parameters=[
+                AutoSchemaHelper.query_org_id_field(
+                    required=False, description='Optional org id which overrides the users (default) current org id'
+                )
+            ]
         ),
         has_perm_class('requires_root_member_access'),
     ],
@@ -79,17 +85,19 @@ from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
 @method_decorator(
     name='update',
     decorator=swagger_auto_schema(
-        manual_parameters=[AutoSchemaHelper.query_org_id_field(
-            required=False,
-            description="Optional org id which overrides the users (default) current org id")],
+        manual_parameters=[
+            AutoSchemaHelper.query_org_id_field(
+                required=False, description='Optional org id which overrides the users (default) current org id'
+            )
+        ],
         request_body=AutoSchemaHelper.schema_factory(
             {
                 'name': 'string',
                 'color': 'string',
             },
             required=['name'],
-            description='An object containing meta data for updating a label'
-        )
+            description='An object containing meta data for updating a label',
+        ),
     ),
 )
 class LabelViewSet(DecoratorMixin(drf_api_endpoint), SEEDOrgNoPatchOrOrgCreateModelViewSet):  # type: ignore[misc]
@@ -109,6 +117,7 @@ class LabelViewSet(DecoratorMixin(drf_api_endpoint), SEEDOrgNoPatchOrOrgCreateMo
     update:
         Update a label record.
     """
+
     serializer_class = LabelSerializer
     renderer_classes = (JSONRenderer,)
     parser_classes = (JSONParser, FormParser)
@@ -118,15 +127,11 @@ class LabelViewSet(DecoratorMixin(drf_api_endpoint), SEEDOrgNoPatchOrOrgCreateMo
     _organization = None
 
     def get_queryset(self):
-        labels = Label.objects.filter(
-            super_organization=self.get_parent_org(self.request)
-        ).order_by("name").distinct()
+        labels = Label.objects.filter(super_organization=self.get_parent_org(self.request)).order_by('name').distinct()
         return labels
 
     def get_serializer(self, *args, **kwargs):
         kwargs['super_organization'] = self.get_organization(self.request)
-        inventory = filter_labels_for_inv_type(
-            request=self.request
-        )
+        inventory = filter_labels_for_inv_type(request=self.request)
         kwargs['inventory'] = inventory
         return super().get_serializer(*args, **kwargs)

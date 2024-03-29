@@ -11,7 +11,6 @@ def _import_uniformat(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('seed', '0206_auto_20230908_1319'),
     ]

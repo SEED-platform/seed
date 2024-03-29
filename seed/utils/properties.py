@@ -1,9 +1,9 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 import itertools
 import json
 import logging
@@ -22,16 +22,12 @@ from seed.models import (
     ColumnListProfileColumn,
     PropertyView,
     TaxLotProperty,
-    TaxLotView
+    TaxLotView,
 )
 from seed.serializers.pint import apply_display_unit_preferences
 from seed.utils.search import build_view_filters_and_sorts
 
-logging.basicConfig(
-    format='%(asctime)s %(levelname)-8s %(message)s',
-    level=logging.ERROR,
-    datefmt='%Y-%m-%d %H:%M:%S'
-)
+logging.basicConfig(format='%(asctime)s %(levelname)-8s %(message)s', level=logging.ERROR, datefmt='%Y-%m-%d %H:%M:%S')
 
 
 def get_changed_fields(old, new):
@@ -49,10 +45,7 @@ def get_changed_fields(old, new):
     if not (changed_fields or changed_extra_data):
         return None, None
     else:
-        return json.dumps({
-            'regular_fields': changed_fields,
-            'extra_data_fields': changed_extra_data
-        }), previous_data
+        return json.dumps({'regular_fields': changed_fields, 'extra_data_fields': changed_extra_data}), previous_data
 
 
 def diffupdate(old, new):
@@ -93,69 +86,48 @@ def pair_unpair_property_taxlot(property_id, taxlot_id, organization_id, pair):
     try:
         property_view = PropertyView.objects.get(pk=property_id)
     except PropertyView.DoesNotExist:
-        return JsonResponse({
-            'status': 'error',
-            'message': 'property view with id {} does not exist'.format(property_id)
-        }, status=status.HTTP_404_NOT_FOUND)
+        return JsonResponse(
+            {'status': 'error', 'message': f'property view with id {property_id} does not exist'}, status=status.HTTP_404_NOT_FOUND
+        )
     try:
         taxlot_view = TaxLotView.objects.get(pk=taxlot_id)
     except TaxLotView.DoesNotExist:
-        return JsonResponse({
-            'status': 'error',
-            'message': 'tax lot view with id {} does not exist'.format(taxlot_id)
-        }, status=status.HTTP_404_NOT_FOUND)
+        return JsonResponse(
+            {'status': 'error', 'message': f'tax lot view with id {taxlot_id} does not exist'}, status=status.HTTP_404_NOT_FOUND
+        )
 
     pv_cycle = property_view.cycle_id
     tv_cycle = taxlot_view.cycle_id
 
     if pv_cycle != tv_cycle:
-        return JsonResponse({
-            'status': 'error',
-            'message': 'Cycle mismatch between PropertyView and TaxLotView'
-        }, status=status.HTTP_400_BAD_REQUEST)
+        return JsonResponse(
+            {'status': 'error', 'message': 'Cycle mismatch between PropertyView and TaxLotView'}, status=status.HTTP_400_BAD_REQUEST
+        )
 
     if pair:
         string = 'pair'
 
-        if TaxLotProperty.objects.filter(property_view_id=property_id,
-                                         taxlot_view_id=taxlot_id).exists():
-            return JsonResponse({
-                'status': 'success',
-                'message': 'taxlot {} and property {} are already {}ed'.format(taxlot_id,
-                                                                               property_id, string)
-            })
-        TaxLotProperty(primary=True, cycle_id=pv_cycle, property_view_id=property_id,
-                       taxlot_view_id=taxlot_id) \
-            .save()
+        if TaxLotProperty.objects.filter(property_view_id=property_id, taxlot_view_id=taxlot_id).exists():
+            return JsonResponse({'status': 'success', 'message': f'taxlot {taxlot_id} and property {property_id} are already {string}ed'})
+        TaxLotProperty(primary=True, cycle_id=pv_cycle, property_view_id=property_id, taxlot_view_id=taxlot_id).save()
 
         success = True
     else:
         string = 'unpair'
 
-        if not TaxLotProperty.objects.filter(property_view_id=property_id,
-                                             taxlot_view_id=taxlot_id).exists():
-            return JsonResponse({
-                'status': 'success',
-                'message': 'taxlot {} and property {} are already {}ed'.format(taxlot_id,
-                                                                               property_id, string)
-            })
-        TaxLotProperty.objects.filter(property_view_id=property_id, taxlot_view_id=taxlot_id) \
-            .delete()
+        if not TaxLotProperty.objects.filter(property_view_id=property_id, taxlot_view_id=taxlot_id).exists():
+            return JsonResponse({'status': 'success', 'message': f'taxlot {taxlot_id} and property {property_id} are already {string}ed'})
+        TaxLotProperty.objects.filter(property_view_id=property_id, taxlot_view_id=taxlot_id).delete()
 
         success = True
 
     if success:
-        return JsonResponse({
-            'status': 'success',
-            'message': 'taxlot {} and property {} are now {}ed'.format(taxlot_id, property_id,
-                                                                       string)
-        })
+        return JsonResponse({'status': 'success', 'message': f'taxlot {taxlot_id} and property {property_id} are now {string}ed'})
     else:
-        return JsonResponse({
-            'status': 'error',
-            'message': 'Could not {} because reasons, maybe bad organization id={}'.format(string,
-                                                                                           organization_id)
-        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return JsonResponse(
+            {'status': 'error', 'message': f'Could not {string} because reasons, maybe bad organization id={organization_id}'},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
 
 
 def properties_across_cycles(org_id, ali, profile_id, cycle_ids=[]):
@@ -163,33 +135,31 @@ def properties_across_cycles(org_id, ali, profile_id, cycle_ids=[]):
     columns_from_database = Column.retrieve_all(org_id, 'property', False)
 
     if profile_id == -1:
-        show_columns = list(Column.objects.filter(
-            organization_id=org_id
-        ).values_list('id', flat=True))
+        show_columns = list(Column.objects.filter(organization_id=org_id).values_list('id', flat=True))
     else:
         try:
             profile = ColumnListProfile.objects.get(
-                organization_id=org_id,
-                id=profile_id,
-                profile_location=VIEW_LIST,
-                inventory_type=VIEW_LIST_PROPERTY
+                organization_id=org_id, id=profile_id, profile_location=VIEW_LIST, inventory_type=VIEW_LIST_PROPERTY
             )
-            show_columns = list(ColumnListProfileColumn.objects.filter(
-                column_list_profile_id=profile.id
-            ).values_list('column_id', flat=True))
+            show_columns = list(
+                ColumnListProfileColumn.objects.filter(column_list_profile_id=profile.id).values_list('column_id', flat=True)
+            )
         except ColumnListProfile.DoesNotExist:
             show_columns = None
 
     results = {}
     for cycle_id in cycle_ids:
         # get -Views for this Cycle
-        property_views = PropertyView.objects.select_related('property', 'state', 'cycle') \
+        property_views = (
+            PropertyView.objects.select_related('property', 'state', 'cycle')
             .filter(
                 property__organization_id=org_id,
                 cycle_id=cycle_id,
                 property__access_level_instance__lft__gte=ali.lft,
                 property__access_level_instance__rgt__lte=ali.rgt,
-        ).order_by('id')
+            )
+            .order_by('id')
+        )
 
         related_results = TaxLotProperty.serialize(property_views, show_columns, columns_from_database)
 
@@ -220,31 +190,19 @@ def properties_across_cycles_with_filters(org_id, user_ali, cycle_ids=[], query_
 
 # helper function for getting filtered properties
 def _get_filter_group_views(org_id, cycles, query_dict, user_ali):
-
-    columns = Column.retrieve_all(
-        org_id=org_id,
-        inventory_type='property',
-        only_used=False,
-        include_related=False
-    )
+    columns = Column.retrieve_all(org_id=org_id, inventory_type='property', only_used=False, include_related=False)
 
     annotations = {}
     try:
         filters, annotations, order_by = build_view_filters_and_sorts(query_dict, columns, 'property')
     except Exception:
-        return JsonResponse({
-            'status': 'error',
-            'message': 'error with filter group'
-        }, status=status.HTTP_404_NOT_FOUND)
+        return JsonResponse({'status': 'error', 'message': 'error with filter group'}, status=status.HTTP_404_NOT_FOUND)
 
-    views_list = (
-        PropertyView.objects.select_related('property', 'state', 'cycle')
-        .filter(
-            property__organization_id=org_id,
-            cycle__in=cycles,
-            property__access_level_instance__lft__gte=user_ali.lft,
-            property__access_level_instance__rgt__lte=user_ali.rgt,
-        )
+    views_list = PropertyView.objects.select_related('property', 'state', 'cycle').filter(
+        property__organization_id=org_id,
+        cycle__in=cycles,
+        property__access_level_instance__lft__gte=user_ali.lft,
+        property__access_level_instance__rgt__lte=user_ali.rgt,
     )
 
     views_list = views_list.annotate(**annotations).filter(filters).order_by('id')
@@ -259,9 +217,11 @@ def properties_across_cycles_with_columns(org_id, show_columns=[], cycle_ids=[])
     results = {}
     for cycle_id in cycle_ids:
         # get -Views for this Cycle
-        property_views = PropertyView.objects.select_related('property', 'state', 'cycle') \
-            .filter(property__organization_id=org_id, cycle_id=cycle_id) \
+        property_views = (
+            PropertyView.objects.select_related('property', 'state', 'cycle')
+            .filter(property__organization_id=org_id, cycle_id=cycle_id)
             .order_by('id')
+        )
 
         related_results = TaxLotProperty.serialize(property_views, show_columns, columns_from_database)
 

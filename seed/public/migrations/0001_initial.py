@@ -1,13 +1,9 @@
-# -*- coding: utf-8 -*-
-from __future__ import unicode_literals
-
 import django.utils.timezone
 import django_extensions.db.fields
 from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('orgs', '__first__'),
     ]
@@ -17,8 +13,18 @@ class Migration(migrations.Migration):
             name='SharedBuildingField',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('created', django_extensions.db.fields.CreationDateTimeField(default=django.utils.timezone.now, verbose_name='created', editable=False, blank=True)),
-                ('modified', django_extensions.db.fields.ModificationDateTimeField(default=django.utils.timezone.now, verbose_name='modified', editable=False, blank=True)),
+                (
+                    'created',
+                    django_extensions.db.fields.CreationDateTimeField(
+                        default=django.utils.timezone.now, verbose_name='created', editable=False, blank=True
+                    ),
+                ),
+                (
+                    'modified',
+                    django_extensions.db.fields.ModificationDateTimeField(
+                        default=django.utils.timezone.now, verbose_name='modified', editable=False, blank=True
+                    ),
+                ),
                 ('field_type', models.IntegerField(default=0, choices=[(0, b'Internal'), (1, b'Public')])),
                 ('field', models.ForeignKey(on_delete=models.deletion.CASCADE, to='orgs.ExportableField')),
                 ('org', models.ForeignKey(on_delete=models.deletion.CASCADE, to='orgs.Organization')),

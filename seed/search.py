@@ -1,11 +1,11 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 Search methods pertaining to buildings.
 """
+
 from __future__ import annotations
 
 import json
@@ -19,15 +19,7 @@ from past.builtins import basestring
 
 from seed.lib.superperms.orgs.models import Organization
 
-from .models import (
-    Column,
-    Property,
-    PropertyState,
-    PropertyView,
-    TaxLot,
-    TaxLotState,
-    TaxLotView
-)
+from .models import Column, Property, PropertyState, PropertyView, TaxLot, TaxLotState, TaxLotView
 
 _log = logging.getLogger(__name__)
 
@@ -41,9 +33,7 @@ def _search(q, fieldnames, queryset):
     """
     if q == '':
         return queryset
-    qgroup = reduce(operator.or_, (
-        Q(**{fieldname + '__icontains': q}) for fieldname in fieldnames
-    ))
+    qgroup = reduce(operator.or_, (Q(**{fieldname + '__icontains': q}) for fieldname in fieldnames))
     return queryset.filter(qgroup)
 
 
@@ -52,9 +42,7 @@ def search_properties(q, fieldnames=None, queryset=None):
         return PropertyState.objects.none()
     if fieldnames is None:
         fieldnames = [
-            'pm_parent_property_id'
-            'jurisdiction_property_id'
-            'address_line_1',
+            'pm_parent_property_id' 'jurisdiction_property_id' 'address_line_1',
             'property_name',
         ]
     return _search(q, fieldnames, queryset)
@@ -64,11 +52,7 @@ def search_taxlots(q, fieldnames=None, queryset=None):
     if queryset is None:
         return TaxLotState.objects.none()
     if fieldnames is None:
-        fieldnames = [
-            'jurisdiction_tax_lot_id',
-            'address'
-            'block_number'
-        ]
+        fieldnames = ['jurisdiction_tax_lot_id', 'address' 'block_number']
     return _search(q, fieldnames, queryset)
 
 
@@ -143,9 +127,7 @@ def process_search_params(params, user, is_api_request=False):
     if 'show_shared_buildings' in params:
         show_shared_buildings = params.get('show_shared_buildings')
     elif not is_api_request:
-        show_shared_buildings = getattr(
-            user, 'show_shared_buildings', False
-        )
+        show_shared_buildings = getattr(user, 'show_shared_buildings', False)
     else:
         show_shared_buildings = False
 
@@ -159,7 +141,7 @@ def process_search_params(params, user, is_api_request=False):
         'show_shared_buildings': show_shared_buildings,
         'q': q,
         'other_search_params': other_search_params,
-        'project_id': params.get('project_id')
+        'project_id': params.get('project_id'),
     }
 
 
@@ -183,19 +165,13 @@ def build_shared_buildings_orgs(orgs):
 
 def get_orgs_w_public_fields():
     """returns a list of orgs that have publicly shared fields"""
-    return list(Organization.objects.filter(
-        column__shared_field_type=Column.SHARED_PUBLIC
-    ).distinct())
+    return list(Organization.objects.filter(column__shared_field_type=Column.SHARED_PUBLIC).distinct())
 
 
 def get_inventory_fieldnames(inventory_type):
-    """returns a list of field names that will be searched against
-    """
+    """returns a list of field names that will be searched against"""
     return {
-        'property': [
-            'address_line_1', 'pm_property_id',
-            'jurisdiction_property_identifier'
-        ],
+        'property': ['address_line_1', 'pm_property_id', 'jurisdiction_property_identifier'],
         'taxlot': ['jurisdiction_taxlot_id', 'address'],
         'property_view': ['property_id', 'cycle_id', 'state_id'],
         'taxlot_view': ['taxlot_id', 'cycle_id', 'state_id'],
@@ -210,8 +186,10 @@ def search_inventory(inventory_type, q, fieldnames=None, queryset=None):
     :returns: :queryset: queryset of matching buildings
     """
     Model = {
-        'property': Property, 'property_view': PropertyView,
-        'taxlot': TaxLot, 'taxlot_view': TaxLotView,
+        'property': Property,
+        'property_view': PropertyView,
+        'taxlot': TaxLot,
+        'taxlot_view': TaxLotView,
     }[inventory_type]
     if not fieldnames:
         fieldnames = get_inventory_fieldnames(inventory_type)
@@ -219,9 +197,7 @@ def search_inventory(inventory_type, q, fieldnames=None, queryset=None):
         queryset = Model.objects.none()
     if q == '':
         return queryset
-    qgroup = reduce(operator.or_, (
-        Q(**{fieldname + '__icontains': q}) for fieldname in fieldnames
-    ))
+    qgroup = reduce(operator.or_, (Q(**{fieldname + '__icontains': q}) for fieldname in fieldnames))
     return queryset.filter(qgroup)
 
 
@@ -251,27 +227,26 @@ def create_inventory_queryset(inventory_type, orgs, exclude, order_by, other_org
     distinct_order_by = order_by.lstrip('-')
 
     if inventory_type.endswith('view'):
-        filter_key = "{}__organization_id__in".format(
-            inventory_type.split('_')[0]
-        )
+        filter_key = '{}__organization_id__in'.format(inventory_type.split('_')[0])
     else:
-        filter_key = "organization_id__in"
+        filter_key = 'organization_id__in'
     orgs_filter_dict = {filter_key: orgs}
     other_orgs_filter_dict = {filter_key: other_orgs}
 
     if other_orgs:
-        return Model.objects.order_by(order_by, 'pk').filter(
-            (
-                Q(**orgs_filter_dict) | Q(**other_orgs_filter_dict)
-            ),
-        ).exclude(**exclude).distinct(distinct_order_by, 'pk')
+        return (
+            Model.objects.order_by(order_by, 'pk')
+            .filter(
+                (Q(**orgs_filter_dict) | Q(**other_orgs_filter_dict)),
+            )
+            .exclude(**exclude)
+            .distinct(distinct_order_by, 'pk')
+        )
     else:
         if inventory_type.endswith('view') and cycle_id is not None and cycle_id.isdigit():
             orgs_filter_dict['cycle_id'] = cycle_id
 
-        result = Model.objects.order_by(order_by, 'pk').filter(
-            **orgs_filter_dict
-        ).exclude(**exclude).distinct(distinct_order_by, 'pk')
+        result = Model.objects.order_by(order_by, 'pk').filter(**orgs_filter_dict).exclude(**exclude).distinct(distinct_order_by, 'pk')
 
     return result
 
@@ -283,7 +258,7 @@ def inventory_search_filter_sort(inventory_type, params, user, cycle_id=None):
     """
     sort_reverse = params['sort_reverse']
     order_by = params['order_by']
-    order_by = "-{}".format(order_by) if sort_reverse else order_by
+    order_by = f'-{order_by}' if sort_reverse else order_by
 
     # get all buildings for a user's orgs and sibling orgs
     orgs = user.orgs.all().filter(pk=params['organization_id'])
@@ -303,8 +278,6 @@ def inventory_search_filter_sort(inventory_type, params, user, cycle_id=None):
 
     if inventory:
         # full text search across a couple common fields
-        inventory = search_inventory(
-            inventory_type, params['q'], queryset=inventory
-        )
+        inventory = search_inventory(inventory_type, params['q'], queryset=inventory)
 
     return inventory

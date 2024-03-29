@@ -1,9 +1,9 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 from django.db import models
 
 from seed.models import AnalysisPropertyView
@@ -13,6 +13,7 @@ class AnalysisOutputFile(models.Model):
     """
     The AnalysisOutputFile is a file returned as output from an analysis.
     """
+
     BUILDINGSYNC = 1
     HTML = 2
     IMAGE_PNG = 100
@@ -23,7 +24,7 @@ class AnalysisOutputFile(models.Model):
         (IMAGE_PNG, 'PNG'),
     )
 
-    file = models.FileField(upload_to="analysis_output_files", max_length=500)
+    file = models.FileField(upload_to='analysis_output_files', max_length=500)
     content_type = models.IntegerField(choices=CONTENT_TYPES)
 
     # An output file can be linked to one or more properties

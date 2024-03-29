@@ -1,17 +1,13 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 import json
 from functools import wraps
 
-from django.http import (
-    HttpResponse,
-    HttpResponseBadRequest,
-    HttpResponseForbidden
-)
+from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseForbidden
 
 from seed.lib.superperms.orgs.models import OrganizationUser
 from seed.serializers.pint import PintJSONEncoder
@@ -29,7 +25,7 @@ FORMAT_TYPES = {
 
 def _get_cache_key(prefix, import_file_pk):
     """Makes a key like 'SEED:save_raw_data:LOCK:45'."""
-    return make_key('{0}:{1}'.format(prefix, import_file_pk))
+    return make_key(f'{prefix}:{import_file_pk}')
 
 
 def _get_lock_key(func_name, import_file_pk):
@@ -88,8 +84,9 @@ def ajax_request(func):
         def my_view(request):
             news = News.objects.all()
             news_titles = [entry.title for entry in news]
-            return { 'news_titles': news_titles }
+            return {'news_titles': news_titles}
     """
+
     @wraps(func)
     def wrapper(request, *args, **kwargs):
         for accepted_type in request.META.get('HTTP_ACCEPT', '').split(','):
@@ -133,7 +130,7 @@ def ajax_request_class(func):
         def my_view(self, request):
             news = News.objects.all()
             news_titles = [entry.title for entry in news]
-            return { 'news_titles': news_titles }
+            return {'news_titles': news_titles}
     """
 
     @wraps(func)
@@ -156,8 +153,7 @@ def ajax_request_class(func):
         # convert the response into an HttpResponse if it is not already.
         if not isinstance(response, HttpResponse):
             data = FORMAT_TYPES[format_type](response)
-            response = HttpResponse(data, content_type=format_type,
-                                    status=status_code)
+            response = HttpResponse(data, content_type=format_type, status=status_code)
             response['content-length'] = len(data)
         return response
 
@@ -179,10 +175,7 @@ def require_organization_id(func):
 
         if error:
             format_type = 'application/json'
-            message = {
-                'status': 'error',
-                'message': 'Invalid organization_id: either blank or not an integer'
-            }
+            message = {'status': 'error', 'message': 'Invalid organization_id: either blank or not an integer'}
 
             # NL: I think the error code should be 401: unauthorized, not 400: bad request.
             # Leaving as 400 for now in case this breaks something else.
@@ -202,13 +195,11 @@ def require_organization_id_class(fn):
     def _wrapped(self, request, *args, **kwargs):
         org_id = request.query_params.get('organization_id', None)
         if org_id is None:
-            return HttpResponseBadRequest(
-                'Valid organization_id is required in the query parameters.')
+            return HttpResponseBadRequest('Valid organization_id is required in the query parameters.')
         try:
             int(org_id)
         except (TypeError, ValueError):
-            return HttpResponseBadRequest(
-                'Invalid organization_id in the query parameters, must be integer')
+            return HttpResponseBadRequest('Invalid organization_id in the query parameters, must be integer')
         return fn(self, request, *args, **kwargs)
 
     return _wrapped
@@ -221,9 +212,7 @@ def require_organization_membership(fn):
 
     @wraps(fn)
     def _wrapped(request, *args, **kwargs):
-        if not OrganizationUser.objects.filter(
-                organization_id=request.GET['organization_id'],
-                user=request.user).exists():
+        if not OrganizationUser.objects.filter(organization_id=request.GET['organization_id'], user=request.user).exists():
             return HttpResponseForbidden()
 
         return fn(request, *args, **kwargs)
@@ -238,14 +227,17 @@ def DecoratorMixin(decorator):
     Example::
 
         LoginRequiredMixin = DecoratorMixin(login_required)
+
+
         class MyView(LoginRequiredMixin):
             pass
+
 
         class SomeView(DecoratorMixin(some_decorator), DecoratorMixin(something_else)):
             pass
     """
 
-    class Mixin(object):
+    class Mixin:
         __doc__ = decorator.__doc__
 
         @classmethod
@@ -253,5 +245,5 @@ def DecoratorMixin(decorator):
             view = super().as_view(*args, **kwargs)
             return decorator(view)
 
-    Mixin.__name__ = 'DecoratorMixin{0}'.format(decorator.__name__)
+    Mixin.__name__ = f'DecoratorMixin{decorator.__name__}'
     return Mixin

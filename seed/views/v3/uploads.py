@@ -2,6 +2,7 @@
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 import csv
 import datetime
 import logging
@@ -20,10 +21,7 @@ from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
 
 from seed.data_importer.models import ImportFile, ImportRecord
 from seed.decorators import ajax_request_class
-from seed.lib.superperms.orgs.decorators import (
-    has_hierarchy_access,
-    has_perm_class
-)
+from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm_class
 from seed.models import PORTFOLIO_RAW, SEED_DATA_SOURCES
 from seed.utils.api import OrgMixin, api_endpoint_class
 from seed.utils.api_schema import AutoSchemaHelper
@@ -32,7 +30,7 @@ _log = logging.getLogger(__name__)
 
 
 def get_upload_path(filename):
-    path = os.path.join(settings.MEDIA_ROOT, "uploads", filename)
+    path = os.path.join(settings.MEDIA_ROOT, 'uploads', filename)
 
     # Get a unique filename using the get_available_name method in FileSystemStorage
     s = FileSystemStorage()
@@ -52,48 +50,36 @@ class UploadViewSet(viewsets.ViewSet, OrgMixin):
         }
 
     """
+
     parser_classes = (FormParser, MultiPartParser)
 
     @swagger_auto_schema(
         request_body=no_body,
         manual_parameters=[
             AutoSchemaHelper.query_org_id_field(),
-            AutoSchemaHelper.upload_file_field(
-                name='file',
-                required=True,
-                description='File to Upload'
-            ),
+            AutoSchemaHelper.upload_file_field(name='file', required=True, description='File to Upload'),
             AutoSchemaHelper.form_integer_field(
-                name='import_record',
-                required=True,
-                description='the dataset ID you want to associate this file with.'
+                name='import_record', required=True, description='the dataset ID you want to associate this file with.'
             ),
             AutoSchemaHelper.form_string_field(
-                name='source_type',
-                required=True,
-                description='the type of file (e.g., "Portfolio Raw" or "Assessed Raw")'
+                name='source_type', required=True, description='the type of file (e.g., "Portfolio Raw" or "Assessed Raw")'
             ),
             AutoSchemaHelper.form_string_field(
-                name='source_program_version',
-                required=False,
-                description='the version of the file as related to the source_type'
+                name='source_program_version', required=False, description='the version of the file as related to the source_type'
             ),
-        ]
+        ],
     )
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
-    @has_hierarchy_access(param_import_record_id="import_record")
+    @has_hierarchy_access(param_import_record_id='import_record')
     def create(self, request):
         """
         Upload a new file to an import_record. This is a multipart/form upload.
         """
 
         if len(request.FILES) == 0:
-            return JsonResponse({
-                'success': False,
-                'message': "Must pass file in as a Multipart/Form post"
-            })
+            return JsonResponse({'success': False, 'message': 'Must pass file in as a Multipart/Form post'})
 
         # Fineuploader requires the field to be qqfile it appears... so why not support both? ugh.
         if 'qqfile' in request.data:
@@ -107,8 +93,8 @@ class UploadViewSet(viewsets.ViewSet, OrgMixin):
         if not os.path.exists(os.path.dirname(path)):
             os.makedirs(os.path.dirname(path))
 
-        extension = the_file.name.split(".")[-1]
-        if extension == "xlsx" or extension == "xls":
+        extension = the_file.name.split('.')[-1]
+        if extension in ('xls', 'xlsx'):
             workbook = xlrd.open_workbook(file_contents=the_file.read())
             all_sheets_empty = True
             for sheet_name in workbook.sheet_names():
@@ -121,10 +107,7 @@ class UploadViewSet(viewsets.ViewSet, OrgMixin):
                     pass
 
             if all_sheets_empty:
-                return JsonResponse({
-                    'success': False,
-                    'message': "Import %s was empty" % the_file.name
-                })
+                return JsonResponse({'success': False, 'message': 'Import %s was empty' % the_file.name})
 
         # save the file
         with open(path, 'wb+') as temp_file:
@@ -133,31 +116,20 @@ class UploadViewSet(viewsets.ViewSet, OrgMixin):
         org_id = self.get_organization(request)
         import_record_pk = request.POST.get('import_record', request.GET.get('import_record'))
         try:
-            record = ImportRecord.objects.get(
-                pk=import_record_pk,
-                super_organization_id=org_id
-            )
+            record = ImportRecord.objects.get(pk=import_record_pk, super_organization_id=org_id)
         except ImportRecord.DoesNotExist:
             # clean up the uploaded file
             os.unlink(path)
-            return JsonResponse({
-                'success': False,
-                'message': "Import Record %s not found" % import_record_pk
-            })
+            return JsonResponse({'success': False, 'message': 'Import Record %s not found' % import_record_pk})
 
         source_type = request.POST.get('source_type', request.GET.get('source_type'))
 
         # Add Program & Version fields (empty string if not given)
-        kw_fields = {field: request.POST.get(field, request.GET.get(field, ''))
-                     for field in ['source_program', 'source_program_version']}
+        kw_fields = {field: request.POST.get(field, request.GET.get(field, '')) for field in ['source_program', 'source_program_version']}
 
-        f = ImportFile.objects.create(import_record=record,
-                                      uploaded_filename=filename,
-                                      file=path,
-                                      source_type=source_type,
-                                      **kw_fields)
+        f = ImportFile.objects.create(import_record=record, uploaded_filename=filename, file=path, source_type=source_type, **kw_fields)
 
-        return JsonResponse({'success': True, "import_file_id": f.pk})
+        return JsonResponse({'success': True, 'import_file_id': f.pk})
 
     @staticmethod
     def _get_pint_var_from_pm_value_object(pm_value):
@@ -168,8 +140,7 @@ class UploadViewSet(viewsets.ViewSet, OrgMixin):
             try:
                 float_value = float(string_value)
             except ValueError:
-                return {'success': False,
-                        'message': 'Could not cast value to float: \"%s\"' % string_value}
+                return {'success': False, 'message': 'Could not cast value to float: "%s"' % string_value}
             original_unit_string = pm_value['@uom']
             if original_unit_string == 'kBtu':
                 pint_val = float_value * units.kBTU
@@ -180,37 +151,36 @@ class UploadViewSet(viewsets.ViewSet, OrgMixin):
             elif original_unit_string == 'kgCO2e/ft²':
                 pint_val = float_value * units.kilogram / units.sq_ft
             else:
-                return {'success': False,
-                        'message': 'Unsupported units string: \"%s\"' % original_unit_string}
+                return {'success': False, 'message': 'Unsupported units string: "%s"' % original_unit_string}
             return {'success': True, 'pint_value': pint_val}
 
     @swagger_auto_schema(
-        manual_parameters=[
-            AutoSchemaHelper.query_org_id_field()
-        ],
+        manual_parameters=[AutoSchemaHelper.query_org_id_field()],
         request_body=AutoSchemaHelper.schema_factory(
             {
                 'import_record_id': 'integer',
-                'properties': [{
-                    'address_1': 'string',
-                    'city': 'string',
-                    'state_province': 'string',
-                    'postal_code': 'string',
-                    'county': 'string',
-                    'country': 'string',
-                    'property_name': 'string',
-                    'property_id': 'integer',
-                    'year_built': 'integer',
-                }],
+                'properties': [
+                    {
+                        'address_1': 'string',
+                        'city': 'string',
+                        'state_province': 'string',
+                        'postal_code': 'string',
+                        'county': 'string',
+                        'country': 'string',
+                        'property_name': 'string',
+                        'property_id': 'integer',
+                        'year_built': 'integer',
+                    }
+                ],
             },
             required=['import_record_id', 'properties'],
-            description='An object containing meta data for a property'
-        )
+            description='An object containing meta data for a property',
+        ),
     )
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
-    @has_hierarchy_access(body_import_record_id="import_record_id")
+    @has_hierarchy_access(body_import_record_id='import_record_id')
     @action(detail=False, methods=['POST'], parser_classes=(JSONParser,))
     def create_from_pm_import(self, request):
         """
@@ -225,17 +195,16 @@ class UploadViewSet(viewsets.ViewSet, OrgMixin):
         doing_pint = False
 
         if 'properties' not in request.data:
-            return JsonResponse({
-                'success': False,
-                'message': "Must pass properties in the request body."
-            }, status=status.HTTP_400_BAD_REQUEST)
+            return JsonResponse(
+                {'success': False, 'message': 'Must pass properties in the request body.'}, status=status.HTTP_400_BAD_REQUEST
+            )
 
         # base file name (will be appended with a random string to ensure uniqueness if multiple on the same day)
         today_date = datetime.datetime.today().strftime('%Y-%m-%d')
-        file_name = "pm_import_%s.csv" % today_date
+        file_name = 'pm_import_%s.csv' % today_date
 
         # create a folder to keep pm_import files
-        path = os.path.join(settings.MEDIA_ROOT, "uploads", "pm_imports", file_name)
+        path = os.path.join(settings.MEDIA_ROOT, 'uploads', 'pm_imports', file_name)
 
         # Get a unique filename using the get_available_name method in FileSystemStorage
         s = FileSystemStorage()
@@ -286,32 +255,27 @@ class UploadViewSet(viewsets.ViewSet, OrgMixin):
         rows.append(header_row)
 
         num_properties = len(request.data['properties'])
-        property_num = 0
         last_time = datetime.datetime.now()
 
-        _log.debug("About to try to import %s properties from ESPM" % num_properties)
-        _log.debug("Starting at %s" % last_time)
+        _log.debug('About to try to import %s properties from ESPM' % num_properties)
+        _log.debug('Starting at %s' % last_time)
 
         # Create a single row for each building
-        for pm_property in request.data['properties']:
-
+        for property_num, pm_property in enumerate(request.data['properties'], 1):
             # report some helpful info every 20 properties
-            property_num += 1
             if property_num % 20 == 0:
                 new_time = datetime.datetime.now()
-                _log.debug("On property number %s; current time: %s" % (property_num, new_time))
+                _log.debug(f'On property number {property_num}; current time: {new_time}')
 
             this_row = []
 
             # Loop through all known PM variables
             for pm_variable, _ in pm_key_to_column_heading_map.items():
-
                 # Initialize this to False for each pm_variable we will search through
                 added = False
 
                 # Check if this PM export has this variable in it
                 if pm_variable in pm_property:
-
                     # If so, create a convenience variable to store it
                     this_pm_variable = pm_property[pm_variable]
 
@@ -331,20 +295,18 @@ class UploadViewSet(viewsets.ViewSet, OrgMixin):
                             added = True
 
                     # If it isn't a string, it should be a dictionary, storing numeric data and units, etc.
-                    else:
-                        # As long as it is a valid dictionary, try to get a meaningful value out of it
-                        if this_pm_variable and '#text' in this_pm_variable and this_pm_variable['#text'] != 'Not Available':
-                            # Coerce the value into a proper set of Pint units for us
-                            if doing_pint:
-                                new_var = UploadViewSet._get_pint_var_from_pm_value_object(this_pm_variable)
-                                if new_var['success']:
-                                    pint_value = new_var['pint_value']
-                                    this_row.append(pint_value.magnitude)
-                                    added = True
-                                    # TODO: What to do with the pint_value.units here?
-                            else:
-                                this_row.append(float(this_pm_variable['#text']))
+                    elif this_pm_variable and '#text' in this_pm_variable and this_pm_variable['#text'] != 'Not Available':
+                        # Coerce the value into a proper set of Pint units for us
+                        if doing_pint:
+                            new_var = UploadViewSet._get_pint_var_from_pm_value_object(this_pm_variable)
+                            if new_var['success']:
+                                pint_value = new_var['pint_value']
+                                this_row.append(pint_value.magnitude)
                                 added = True
+                                # TODO: What to do with the pint_value.units here?
+                        else:
+                            this_row.append(float(this_pm_variable['#text']))
+                            added = True
 
                 # And finally, if we haven't set the added flag, give the csv column a blank value
                 if not added:
@@ -363,25 +325,21 @@ class UploadViewSet(viewsets.ViewSet, OrgMixin):
         org_id = request.data['organization_id']
         import_record_pk = request.data['import_record_id']
         try:
-            record = ImportRecord.objects.get(
-                pk=import_record_pk,
-                super_organization_id=org_id
-            )
+            record = ImportRecord.objects.get(pk=import_record_pk, super_organization_id=org_id)
         except ImportRecord.DoesNotExist:
             # clean up the uploaded file
             os.unlink(path)
-            return JsonResponse({
-                'success': False,
-                'message': "Import Record %s not found" % import_record_pk
-            })
+            return JsonResponse({'success': False, 'message': 'Import Record %s not found' % import_record_pk})
 
         # Create a new import file object in the database
-        f = ImportFile.objects.create(import_record=record,
-                                      uploaded_filename=file_name,
-                                      file=path,
-                                      source_type=SEED_DATA_SOURCES[PORTFOLIO_RAW][1],
-                                      source_program='PortfolioManager',
-                                      source_program_version='1.0')
+        f = ImportFile.objects.create(
+            import_record=record,
+            uploaded_filename=file_name,
+            file=path,
+            source_type=SEED_DATA_SOURCES[PORTFOLIO_RAW][1],
+            source_program='PortfolioManager',
+            source_program_version='1.0',
+        )
 
         # Return the newly created import file ID
         return JsonResponse({'success': True, 'import_file_id': f.pk})

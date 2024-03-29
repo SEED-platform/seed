@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
@@ -13,7 +12,7 @@ def write_to_file(msg):
 
 
 def logging_info(msg):
-    s = "INFO: {}".format(msg)
+    s = f'INFO: {msg}'
     print(s)
     write_to_file(s)
 

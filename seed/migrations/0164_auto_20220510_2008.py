@@ -5,8 +5,8 @@ from django.db import migrations
 
 
 def forwards(apps, schema_editor):
-    Column = apps.get_model("seed", "Column")
-    Organization = apps.get_model("orgs", "Organization")
+    Column = apps.get_model('seed', 'Column')
+    Organization = apps.get_model('orgs', 'Organization')
 
     new_db_fields = [
         {
@@ -14,22 +14,25 @@ def forwards(apps, schema_editor):
             'table_name': 'PropertyState',
             'display_name': 'Total GHG Emissions',
             'data_type': 'number',
-        }, {
+        },
+        {
             'column_name': 'total_marginal_ghg_emissions',
             'table_name': 'PropertyState',
             'display_name': 'Total Marginal GHG Emissions',
             'data_type': 'number',
-        }, {
+        },
+        {
             'column_name': 'total_ghg_emissions_intensity',
             'table_name': 'PropertyState',
             'display_name': 'Total GHG Emissions Intensity',
             'data_type': 'number',
-        }, {
+        },
+        {
             'column_name': 'total_marginal_ghg_emissions_intensity',
             'table_name': 'PropertyState',
             'display_name': 'Total Marginal GHG Emissions Intensity',
             'data_type': 'number',
-        }
+        },
     ]
 
     # Go through all the organizations
@@ -54,11 +57,10 @@ def forwards(apps, schema_editor):
                     c.data_type = new_db_field['data_type']
                 c.save()
             else:
-                print("  More than one column returned")
+                print('  More than one column returned')
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('seed', '0163_add_bae_assets_to_buildingsync_default_profile'),
     ]
@@ -72,7 +74,9 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='propertystate',
             name='total_ghg_emissions_intensity',
-            field=quantityfield.fields.QuantityField(base_units='kgCO2e/ft**2/year', blank=True, null=True, unit_choices=['kgCO2e/ft**2/year']),
+            field=quantityfield.fields.QuantityField(
+                base_units='kgCO2e/ft**2/year', blank=True, null=True, unit_choices=['kgCO2e/ft**2/year']
+            ),
         ),
         migrations.AddField(
             model_name='propertystate',
@@ -82,7 +86,9 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='propertystate',
             name='total_marginal_ghg_emissions_intensity',
-            field=quantityfield.fields.QuantityField(base_units='kgCO2e/ft**2/year', blank=True, null=True, unit_choices=['kgCO2e/ft**2/year']),
+            field=quantityfield.fields.QuantityField(
+                base_units='kgCO2e/ft**2/year', blank=True, null=True, unit_choices=['kgCO2e/ft**2/year']
+            ),
         ),
-        migrations.RunPython(forwards)
+        migrations.RunPython(forwards),
     ]

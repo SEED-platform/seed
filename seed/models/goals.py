@@ -9,13 +9,7 @@ from django.db.models import Q
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
-from seed.models import (
-    AccessLevelInstance,
-    Column,
-    Cycle,
-    Organization,
-    Property
-)
+from seed.models import AccessLevelInstance, Column, Cycle, Organization, Property
 
 
 class Goal(models.Model):
@@ -32,19 +26,18 @@ class Goal(models.Model):
     name = models.CharField(max_length=255, unique=True)
 
     def __str__(self):
-        return f"Goal - {self.name}"
+        return f'Goal - {self.name}'
 
     def eui_columns(self):
-        """ Preferred column order """
+        """Preferred column order"""
         eui_columns = [self.eui_column1, self.eui_column2, self.eui_column3]
         return [column for column in eui_columns if column]
 
     def properties(self):
         properties = Property.objects.filter(
-            Q(views__cycle=self.baseline_cycle) |
-            Q(views__cycle=self.current_cycle),
+            Q(views__cycle=self.baseline_cycle) | Q(views__cycle=self.current_cycle),
             access_level_instance__lft__gte=self.access_level_instance.lft,
-            access_level_instance__rgt__lte=self.access_level_instance.rgt
+            access_level_instance__rgt__lte=self.access_level_instance.rgt,
         ).distinct()
 
         return properties

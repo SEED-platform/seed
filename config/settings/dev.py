@@ -2,13 +2,12 @@
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
-from __future__ import absolute_import
 
 # use importlib module to find the local_untracked file rather than a hard-coded path
 import importlib
 import os
 
-from config.settings.common import *  # noqa
+from config.settings.common import *  # noqa: F403
 
 DEBUG = True
 compress = False
@@ -33,31 +32,20 @@ DATABASES = {
     },
 }
 
-MIDDLEWARE = ('seed.utils.nocache.DisableClientSideCachingMiddleware',) + MIDDLEWARE # noqa F405
+MIDDLEWARE = ('seed.utils.nocache.DisableClientSideCachingMiddleware', *MIDDLEWARE)  # noqa: F405
 
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
-    'formatters': {
-        'plain': {
-            'format': '%(message)s'
-        },
-        'file_line_number': {
-            'format': "%(pathname)s:%(lineno)d - %(message)s"
-        }
-    },
-    'filters': {
-        'mute_markdown_import': {
-            '()': 'seed.utils.generic.MarkdownPackageDebugFilter'
-        }
-    },
+    'formatters': {'plain': {'format': '%(message)s'}, 'file_line_number': {'format': '%(pathname)s:%(lineno)d - %(message)s'}},
+    'filters': {'mute_markdown_import': {'()': 'seed.utils.generic.MarkdownPackageDebugFilter'}},
     # set up some log message handlers to choose from
     'handlers': {
         'console': {
             'level': 'DEBUG',
             'class': 'logging.StreamHandler',
             'formatter': 'file_line_number',
-            'filters': ['mute_markdown_import']
+            'filters': ['mute_markdown_import'],
         }
     },
     'loggers': {
@@ -82,6 +70,6 @@ ALLOWED_HOSTS = ['*']
 
 local_untracked_spec = importlib.util.find_spec('config.settings.local_untracked')
 if local_untracked_spec is None:
-    raise Exception("Unable to find the local_untracked in config/settings/local_untracked.py")
+    raise Exception('Unable to find the local_untracked in config/settings/local_untracked.py')
 else:
-    from config.settings.local_untracked import *  # noqa
+    from config.settings.local_untracked import *  # noqa: F403

@@ -1,9 +1,9 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 import logging
 
 from django.test import TestCase
@@ -25,7 +25,7 @@ class TestCleaner(TestCase):
             username='test_user@demo.com',
             password='secret',
         )
-        self.org, _, _ = create_organization(self.user, "test-organization-a")
+        self.org, _, _ = create_organization(self.user, 'test-organization-a')
 
         # Float
         float_unit = Unit.objects.create(
@@ -44,9 +44,7 @@ class TestCleaner(TestCase):
             organization=self.org,
             is_extra_data=True,
         )
-        mapping = ColumnMapping.objects.create(
-            super_organization=self.org
-        )
+        mapping = ColumnMapping.objects.create(super_organization=self.org)
         mapping.column_raw.add(float_raw)
         mapping.column_mapped.add(float_mapped)
 
@@ -67,9 +65,7 @@ class TestCleaner(TestCase):
             organization=self.org,
             is_extra_data=True,
         )
-        mapping = ColumnMapping.objects.create(
-            super_organization=self.org
-        )
+        mapping = ColumnMapping.objects.create(super_organization=self.org)
         mapping.column_raw.add(str_raw)
         mapping.column_mapped.add(str_mapped)
 
@@ -79,30 +75,15 @@ class TestCleaner(TestCase):
         # data is cleaned correctly for fields on PropertyState
         # model
         bs_field = 'gross_floor_area'
-        self.assertEqual(
-            cleaner.clean_value('1,456', bs_field),
-            1456
-        )
+        self.assertEqual(cleaner.clean_value('1,456', bs_field), 1456)
 
         # data are cleaned correctly for mapped fields that have float unit
-        self.assertEqual(
-            cleaner.clean_value('2,456', self.float_col),
-            2456
-        )
+        self.assertEqual(cleaner.clean_value('2,456', self.float_col), 2456)
 
         # String test
-        self.assertEqual(
-            cleaner.clean_value('123,456 Nothingness', self.string_col),
-            '123,456 Nothingness'
-        )
+        self.assertEqual(cleaner.clean_value('123,456 Nothingness', self.string_col), '123,456 Nothingness')
 
-        self.assertEqual(
-            cleaner.clean_value('3,456', self.float_col),
-            3456
-        )
+        self.assertEqual(cleaner.clean_value('3,456', self.float_col), 3456)
 
         # other fields are just strings
-        self.assertEqual(
-            cleaner.clean_value('123,456', 'random'),
-            '123,456'
-        )
+        self.assertEqual(cleaner.clean_value('123,456', 'random'), '123,456')
