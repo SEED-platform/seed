@@ -161,12 +161,13 @@ def get_filtered_results(request: Request, inventory_type: Literal['property', '
                 status=status.HTTP_400_BAD_REQUEST
             )
         # determine if filters are looking for blank values 
-
         filter_for_blank = False
+        filter_for_multiple = False
         for k, v in request.query_params.lists():
-            if k.endswith('__exact') and '' in v and not filter_for_blank:
+            if not filter_for_blank and k.endswith('__exact') and '' in v:
                 filter_for_blank = True
-                break
+            if not filter_for_multiple and k.endswith('__icontains') and ';' in v:
+                filter_for_multiple = True
 
         # If the children have filters, filter views_list by their children.
         if len(filters) > 0 or len(annotations) > 0:
