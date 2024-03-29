@@ -960,8 +960,8 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
       });
     };
     $scope.resizeGridByScenarioId = (scenarioId) => {
-      $scope.scenarioId = scenarioId
-      $scope.show_uigrid[scenarioId] = !$scope.show_uigrid[scenarioId]
+      $scope.scenarioId = scenarioId;
+      $scope.show_uigrid[scenarioId] = !$scope.show_uigrid[scenarioId];
     };
 
     // Only render scenario uigrids when user expands a scenario.
