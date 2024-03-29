@@ -149,8 +149,6 @@ def get_filtered_results(request: Request, inventory_type: Literal['property', '
         )
         try:
             filters, annotations, _ = build_view_filters_and_sorts(request.query_params, other_columns_from_database, other_inventory_type)
-            # logging.error('>>> other filters %s', filters)
-            # logging.error('>>> other annotations %s', annotations)
         except FilterException as e:
             return JsonResponse(
                 {
