@@ -140,7 +140,7 @@ angular.module('BE.seed.controller.derived_columns_editor', []).controller('deri
     // a = b
     // b = a ----> b = b
     const check_for_circular_definition = (source_column) => {
-      if (!source_column.derived_column) {
+      if (!source_column.derived_column || !$scope.derived_column.id) {
         return false;
       }
       if (source_column.derived_column === $scope.derived_column.id) {
