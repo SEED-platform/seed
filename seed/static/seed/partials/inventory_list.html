@@ -114,6 +114,7 @@
         <tags-input
           id="and-tags-input"
           class="remove-editing ti-input-sm tags-input-style grow"
+          ng-if="show_tags_input.and"
           ng-model="selected_and_labels"
           on-tag-added="filterUsingLabels()"
           on-tag-removed="filterUsingLabels()"
@@ -134,6 +135,7 @@
         <tags-input
           id="or-tags-input"
           class="remove-editing ti-input-sm tags-input-style grow"
+          ng-if="show_tags_input.or"
           ng-model="selected_or_labels"
           on-tag-added="filterUsingLabels()"
           on-tag-removed="filterUsingLabels()"
@@ -154,6 +156,7 @@
         <tags-input
           id="exclude-tags-input"
           class="remove-editing ti-input-sm tags-input-style grow"
+          ng-if="show_tags_input.exclude"
           ng-model="selected_exclude_labels"
           on-tag-added="filterUsingLabels()"
           on-tag-removed="filterUsingLabels()"

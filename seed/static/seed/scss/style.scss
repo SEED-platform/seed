@@ -4579,6 +4579,12 @@ ul.r-list {
   background-color: $infoBackground;
 }
 
+.r-error {
+  color: $errorText;
+  background-color: $errorBackground;
+  border: 1px solid $errorBorder;
+}
+
 .r-panel {
   border: 1px solid #eee;
   padding: 10px;
@@ -4589,12 +4595,6 @@ ul.r-list {
     color: $warningText;
     background-color: $warningBackground;
     border: 1px solid $warningBorder;
-  }
-
-  &.r-error {
-    color: $errorText;
-    background-color: $errorBackground;
-    border: 1px solid $errorBorder;
   }
 
   &.r-success {

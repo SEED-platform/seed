@@ -471,6 +471,7 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
       return Math.min(maxWidth, $scope.max_label_width);
     };
 
+    $scope.show_tags_input = { and: true, or: true, exclude: true };
     // Reduce labels to only records found in the current cycle
     $scope.selected_and_labels = [];
     $scope.selected_or_labels = [];
@@ -479,10 +480,21 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
     const localStorageKey = `grid.${$scope.inventory_type}`;
     const localStorageLabelKey = `grid.${$scope.inventory_type}.labels`;
 
+    // reset the selected_labels to [] and re-render the <tags-input> component as invalid text is not attached to the model.
     $scope.clear_labels = (action) => {
-      if (action === 'and') $scope.selected_and_labels = [];
-      if (action === 'or') $scope.selected_or_labels = [];
-      if (action === 'exclude') $scope.selected_exclude_labels = [];
+      const selected_labels = {
+        and: $scope.selected_and_labels,
+        or: $scope.selected_or_labels,
+        exclude: $scope.selected_exclude_labels
+      };
+      selected_labels[action].splice(0);
+      $scope.show_tags_input[action] = false;
+      // immediately re-render
+      setTimeout(() => {
+        $scope.$apply(() => {
+          $scope.show_tags_input[action] = true;
+        });
+      }, 0);
       $scope.filterUsingLabels();
     };
 
