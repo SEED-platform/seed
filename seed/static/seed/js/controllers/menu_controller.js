@@ -20,7 +20,24 @@ angular.module('BE.seed.controller.menu', []).controller('menu_controller', [
   '$state',
   '$stateParams',
   // eslint-disable-next-line func-names
-  function ($rootScope, $scope, $location, $window, $uibModal, $log, urls, auth_service, organization_service, user_service, dataset_service, modified_service, inventory_service, $timeout, $state, $stateParams) {
+  function (
+    $rootScope,
+    $scope,
+    $location,
+    $window,
+    $uibModal,
+    $log,
+    urls,
+    auth_service,
+    organization_service,
+    user_service,
+    dataset_service,
+    modified_service,
+    inventory_service,
+    $timeout,
+    $state,
+    $stateParams
+  ) {
     // initial state of css classes for menu and sidebar
     $scope.expanded_controller = false;
     $scope.collapsed_controller = false;

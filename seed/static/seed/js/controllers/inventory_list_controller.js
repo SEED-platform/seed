@@ -1064,10 +1064,10 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
       const column = $scope.columns[i];
       if (column.related) {
         column.enableSorting = false;
-        let title = 'Filtering disabled for property columns on the taxlot list.';
-        if ($scope.inventory_type === 'properties') {
-          title = 'Filtering disabled for taxlot columns on the property list.';
-        }
+        // let title = 'Filtering disabled for property columns on the taxlot list.';
+        // if ($scope.inventory_type === 'properties') {
+        //   title = 'Filtering disabled for taxlot columns on the property list.';
+        // }
       }
       if (column.derived_column != null) {
         column.enableSorting = false;
@@ -1100,15 +1100,12 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
         const relatedIndex = trueIndex;
         let aggregations = {};
         for (let j = 0; j < related.length; ++j) {
-          const updated = _.reduce(
-            related[j],
-            (result, value, key) => {
-              if (_.includes(columnNamesToAggregate, key)) aggregations[key] = (aggregations[key] || []).concat(_.split(value, '; '));
-              result[key] = value;
-              return result;
-            },
-            {}
-          );
+          // eslint-disable-next-line no-loop-func
+          const updated = Object.entries(related[j]).reduce((result, [key, value]) => {
+            if (columnNamesToAggregate.includes(key)) aggregations[key] = (aggregations[key] ?? []).concat(value.split('; '));
+            result[key] = value;
+            return result;
+          }, {});
 
           data.splice(++trueIndex, 0, _.pick(updated, visibleColumns));
         }

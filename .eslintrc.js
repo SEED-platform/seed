@@ -64,6 +64,7 @@ module.exports = {
         ignoreTemplateLiterals: true
       }
     ],
+    'no-continue': 'off',
     'no-plusplus': 'off',
     'no-restricted-globals': ['error', {
       name: 'isFinite',
@@ -74,7 +75,7 @@ module.exports = {
     }],
     'no-restricted-syntax': [
       'error',
-      'ForInStatement',
+      // 'ForInStatement',
       'LabeledStatement',
       'WithStatement'
     ],
@@ -99,6 +100,7 @@ module.exports = {
     camelcase: 'off',
     'consistent-return': 'off',
     'default-case': 'off',
+    'guard-for-in': 'off',
     'no-alert': 'off',
     'no-console': 'off',
     'no-param-reassign': 'off',
@@ -106,5 +108,15 @@ module.exports = {
     'no-underscore-dangle': 'off',
     'no-use-before-define': 'off',
     'prefer-destructuring': 'off'
-  }
+  },
+  overrides: [{
+    files: [
+      'seed/static/seed/js/controllers/data_quality_modal_controller.js',
+      'seed/static/seed/js/directives/sdScrollSync.js',
+      'seed/static/seed/js/services/search_service.js'
+    ],
+    rules: {
+      'func-names': 'off'
+    }
+  }]
 };
