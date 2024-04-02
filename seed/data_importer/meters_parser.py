@@ -158,7 +158,7 @@ class MetersParser:
             # reset _cache_proposed_imports
             self._cache_proposed_imports = None
 
-            if self._source_type in (Meter.PORTFOLIO_MANAGER, Meter.PORTFOLIO_MANAGER_DATA_REQUEST):
+            if self._source_type in {Meter.PORTFOLIO_MANAGER, Meter.PORTFOLIO_MANAGER_DATA_REQUEST}:
                 self._parse_pm_meter_details()
             elif self._source_type == Meter.GREENBUTTON:
                 self._parse_gb_meter_details()

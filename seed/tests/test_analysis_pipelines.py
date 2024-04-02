@@ -1118,8 +1118,8 @@ class TestEeejPipeline(TestCase):
 
         apv_ids = [self.property_view_dac.id, self.property_view_not_dac.id]
         apvs = [self.property_view_dac, self.property_view_not_dac]
-        loc_data_by_property_view, errors_by_property_view_id = _get_data_for_census_tract_fetch(apv_ids, self.org, True)
-        results, errors_by_apv_id = _get_eeej_indicators(apvs, loc_data_by_property_view)
+        loc_data_by_property_view, _errors_by_property_view_id = _get_data_for_census_tract_fetch(apv_ids, self.org, True)
+        results, _errors_by_apv_id = _get_eeej_indicators(apvs, loc_data_by_property_view)
         self.assertEqual(len(results), 2)
         # DAC
         self.assertEqual(results[self.property_view_dac.id]['census_tract'], '08059011402')

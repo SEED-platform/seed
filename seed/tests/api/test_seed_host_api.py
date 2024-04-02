@@ -39,6 +39,7 @@ some apps.
 import base64
 import datetime as dt
 import json
+import locale
 import os
 import sys
 import time
@@ -59,7 +60,7 @@ if '--standalone' in sys.argv:
 
 if '--noinput' in sys.argv:
     print('Path to json is: {}'.format(os.path.join(location, 'api_test_user.json')))
-    with open(os.path.join(location, 'api_test_user.json')) as f:
+    with open(os.path.join(location, 'api_test_user.json'), encoding=locale.getpreferredencoding(False)) as f:
         j_data = json.load(f)
         hostname = j_data['name']
         main_url = j_data['host']
@@ -69,7 +70,7 @@ else:
     defaultchoice = input('Use "api_test_user.json" credentials? [Y]es or Press Any Key ')
 
     if defaultchoice.upper() == 'Y':
-        with open(os.path.join(location, 'api_test_user.json')) as f:
+        with open(os.path.join(location, 'api_test_user.json'), encoding=locale.getpreferredencoding(False)) as f:
             j_data = json.load(f)
             hostname = j_data['name']
             main_url = j_data['host']
@@ -103,7 +104,7 @@ if '--nofile' not in sys.argv:
     log = setup_logger(fileout_name)
 
     # Set up output file
-    fileout = open(fileout_name, 'w')
+    fileout = open(fileout_name, 'w', encoding=locale.getpreferredencoding(False))
     fileout.write('Hostname: \t' + hostname)
     fileout.write('\nURL: \t\t' + main_url)
     fileout.write('\nTest Date:\t' + dt.datetime.strftime(dt.datetime.now(), '%Y-%m-%d %H:%M:%S'))

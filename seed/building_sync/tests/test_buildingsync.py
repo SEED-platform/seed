@@ -42,7 +42,7 @@ class TestBuildingFiles(TestCase):
             file_type=BuildingFile.BUILDINGSYNC,
         )
 
-        status, property_state, property_view, messages = bf.process(self.org.id, self.org.cycles.first())
+        status, property_state, _property_view, messages = bf.process(self.org.id, self.org.cycles.first())
         self.assertTrue(status)
         self.assertEqual(property_state.address_line_1, '123 Main St')
         self.assertEqual(property_state.property_type, 'Office')
@@ -61,7 +61,7 @@ class TestBuildingFiles(TestCase):
             file_type=BuildingFile.BUILDINGSYNC,
         )
 
-        status, property_state, property_view, messages = bf.process(self.org.id, self.org.cycles.first())
+        status, property_state, _property_view, messages = bf.process(self.org.id, self.org.cycles.first())
         self.assertTrue(status)
         self.assertEqual(property_state.address_line_1, '1215 - 18th St')
         self.assertEqual(messages, {'errors': [], 'warnings': []})
@@ -78,7 +78,7 @@ class TestBuildingFiles(TestCase):
             file_type=BuildingFile.BUILDINGSYNC,
         )
 
-        status, property_state, property_view, messages = bf.process(self.org.id, self.org.cycles.first())
+        status, property_state, _property_view, messages = bf.process(self.org.id, self.org.cycles.first())
         self.assertTrue(status)
         self.assertEqual(property_state.address_line_1, '123 Main St')
         self.assertEqual(messages, {'errors': [], 'warnings': []})
@@ -94,7 +94,7 @@ class TestBuildingFiles(TestCase):
             file_type=BuildingFile.BUILDINGSYNC,
         )
 
-        status, property_state, property_view, messages = bf.process(self.org.id, self.org.cycles.first())
+        status, property_state, _property_view, messages = bf.process(self.org.id, self.org.cycles.first())
         self.assertTrue(status, f'Expected process() to succeed; messages: {messages}')
         self.assertEqual(property_state.address_line_1, '123 MAIN BLVD')
         self.assertEqual(messages, {'errors': [], 'warnings': []})
@@ -119,7 +119,7 @@ class TestBuildingFiles(TestCase):
             file_type=BuildingFile.BUILDINGSYNC,
         )
 
-        status, property_state, property_view, messages = bf.process(self.org.id, self.org.cycles.first())
+        status, property_state, _property_view, messages = bf.process(self.org.id, self.org.cycles.first())
         self.assertTrue(status, f'Expected process() to succeed; messages: {messages}')
         self.assertEqual(property_state.address_line_1, '123 Example Street')
         self.assertEqual(property_state.extra_data.get('audit_date'), '2019-07-01')

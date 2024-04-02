@@ -7,6 +7,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
 import json
+import locale
 import logging
 import os
 import re
@@ -148,7 +149,7 @@ def get_pm_mapping(raw_columns, mapping_data=None, resolve_duplicates=True):
     from_columns = create_column_regexes(raw_columns)
 
     if not mapping_data:
-        f = open(os.path.join(MAPPING_DATA_DIR, 'pm-mapping.json'))
+        f = open(os.path.join(MAPPING_DATA_DIR, 'pm-mapping.json'), encoding=locale.getpreferredencoding(False))
         mapping_data = json.load(f)
 
     # transform the data into the format expected by the mapper. (see mapping_columns.final_mappings)

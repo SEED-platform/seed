@@ -37,7 +37,7 @@ class SignupTokenGenerator:
         """
         # Parse the token
         try:
-            ts_b36, hash = token.split('-')
+            ts_b36, _hash = token.split('-')
         except ValueError:
             return False
 
@@ -55,10 +55,7 @@ class SignupTokenGenerator:
             token_expires,
             (self._num_days(self._today()) - ts) > settings.PASSWORD_RESET_TIMEOUT_DAYS,
         )
-        if token_is_expired:
-            return False
-
-        return True
+        return not token_is_expired
 
     def _make_token_with_timestamp(self, user, timestamp):
         # timestamp is number of days since 2001-1-1.  Converted to

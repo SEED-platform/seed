@@ -8,6 +8,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 import csv
 import json
+import locale
 import sys
 
 from seed.lib.mappings import mapper
@@ -27,7 +28,7 @@ def create_map(path_in, path_out):
     :return: None
     """
     bedes_flag = mapper.Mapping.META_BEDES
-    infile = csv.reader(open(path_in, newline=None))
+    infile = csv.reader(open(path_in, newline=None, encoding=locale.getpreferredencoding(False)))
     header = infile.next()
     assert len(header) >= 5
     map = {}
@@ -52,7 +53,7 @@ def create_map(path_in, path_out):
     if path_out == '-':
         outfile = sys.stdout
     else:
-        outfile = open(path_out, 'w')
+        outfile = open(path_out, 'w', encoding=locale.getpreferredencoding(False))
     json.dump(map, outfile, encoding='latin_1')
 
 
@@ -66,9 +67,9 @@ def apply_map(map_path, data_path, out_file):
     Return:
       None
     """
-    map_file = open(map_path)
+    map_file = open(map_path, encoding=locale.getpreferredencoding(False))
     mapping = mapper.Mapping(map_file, encoding='latin_1')
-    data_file = open(data_path, newline=None)
+    data_file = open(data_path, newline=None, encoding=locale.getpreferredencoding(False))
     data_csv = csv.reader(data_file)
     # map each field
     d = {}
@@ -100,9 +101,9 @@ def find_duplicates(map_path, data_path, out_file):
     Return:
       None
     """
-    map_file = open(map_path)
+    map_file = open(map_path, encoding=locale.getpreferredencoding(False))
     mapping = mapper.Mapping(map_file, encoding='latin-1')
-    data_file = open(data_path, newline=None)
+    data_file = open(data_path, newline=None, encoding=locale.getpreferredencoding(False))
     data_csv = csv.reader(data_file)
     hdr = data_csv.next()
     seen_values, dup = {}, {}

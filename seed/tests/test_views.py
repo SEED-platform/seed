@@ -279,8 +279,8 @@ class TestMCMViews(TestCase):
         # BEDES columns in the database; confidence will also change
         # depending on the columns in the db and the mapper implementation
         for orig_col in actual:
-            expected_dest, expected_confidence = expected[orig_col]
-            dest_col, suggested_confidence = actual[orig_col]
+            expected_dest, _expected_confidence = expected[orig_col]
+            dest_col, _suggested_confidence = actual[orig_col]
 
             # don't assert confidence matches since the implementation
             # is changing and it depends on the mappings in the system

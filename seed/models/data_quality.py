@@ -749,13 +749,13 @@ class DataQualityCheck(models.Model):
                 elif rule.condition == Rule.RULE_NOT_NULL:
                     self.add_result_is_null(row.id, rule, display_name, value)
                     label_applied = self.update_status_label(label, rule, linked_id, row.id)
-            elif rule.condition in (Rule.RULE_INCLUDE, Rule.RULE_EXCLUDE):
+            elif rule.condition in {Rule.RULE_INCLUDE, Rule.RULE_EXCLUDE}:
                 if not rule.valid_text(value):
                     self.add_result_string_error(row.id, rule, display_name, value)
                     label_applied = self.update_status_label(label, rule, linked_id, row.id)
             elif rule.condition == Rule.RULE_RANGE:
                 try:
-                    if not rule.minimum_valid(value) and rule.severity in (Rule.SEVERITY_ERROR, Rule.SEVERITY_WARNING):
+                    if not rule.minimum_valid(value) and rule.severity in {Rule.SEVERITY_ERROR, Rule.SEVERITY_WARNING}:
                         s_min, s_max, s_value = rule.format_strings(value)
                         self.add_result_min_error(row.id, rule, display_name, s_value, s_min)
                         label_applied = self.update_status_label(label, rule, linked_id, row.id)
@@ -772,7 +772,7 @@ class DataQualityCheck(models.Model):
                     continue
 
                 try:
-                    if not rule.maximum_valid(value) and rule.severity in (Rule.SEVERITY_ERROR, Rule.SEVERITY_WARNING):
+                    if not rule.maximum_valid(value) and rule.severity in {Rule.SEVERITY_ERROR, Rule.SEVERITY_WARNING}:
                         s_min, s_max, s_value = rule.format_strings(value)
                         self.add_result_max_error(row.id, rule, display_name, s_value, s_max)
                         label_applied = self.update_status_label(label, rule, linked_id, row.id)

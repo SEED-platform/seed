@@ -452,7 +452,7 @@ def create_cases(org, cycle, tax_lots, properties):
         if created:
             created_property_views.append(prop_view)
 
-        tlp, created = seed.models.TaxLotProperty.objects.get_or_create(property_view=prop_view, taxlot_view=taxlot_view, cycle=cycle)
+        _tlp, created = seed.models.TaxLotProperty.objects.get_or_create(property_view=prop_view, taxlot_view=taxlot_view, cycle=cycle)
 
     return created_taxlot_views, created_property_views
 

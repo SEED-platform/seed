@@ -7,6 +7,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
 import json
+import locale
 import os
 from os import path
 from pathlib import Path
@@ -530,7 +531,7 @@ class PortfolioManagerReportParsingTest(TestCase):
     def test_parse_pm_report(self):
         pm = PortfolioManagerImport('not_a_real_password', 'not_a_real_password')
         xml_path = Path(__file__).parent.absolute() / 'data' / 'portfolio-manager-report.xml'
-        with open(xml_path) as file:
+        with open(xml_path, encoding=locale.getpreferredencoding(False)) as file:
             content_object = xmltodict.parse(file.read(), dict_constructor=dict)
 
             success, properties = pm._parse_properties_v2(content_object)

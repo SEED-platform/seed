@@ -6,6 +6,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 import copy
 import csv
+import locale
 import logging
 import os.path
 from collections import OrderedDict
@@ -854,7 +855,7 @@ class Column(models.Model):
             return [False, "Column name '%s' is a reserved name. Choose another." % new_column_name]
 
         # Do not allow moving data out of the property based columns
-        if self.column_name in self.EXCLUDED_RENAME_FROM_FIELDS or self.table_name in ['Property', 'TaxLot']:
+        if self.column_name in self.EXCLUDED_RENAME_FROM_FIELDS or self.table_name in {'Property', 'TaxLot'}:
             return [False, "Can't move data out of reserved column '%s'" % self.column_name]
 
         try:
@@ -958,7 +959,7 @@ class Column(models.Model):
 
         mappings = []
         if os.path.isfile(filename):
-            with open(filename, newline=None) as csvfile:
+            with open(filename, newline=None, encoding=locale.getpreferredencoding(False)) as csvfile:
                 for row in csv.reader(csvfile):
                     data = {
                         'from_field': row[0],

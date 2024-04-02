@@ -41,7 +41,7 @@ class TestEquivalenceWithFile(DataMappingBaseTestCase):
         all_unmatched_properties = self.import_file.find_unmatched_property_states()
         sub_progress_data = ProgressData(func_name='match_sub_progress', unique_id=123)
         sub_progress_data.save()
-        unmatched_property_ids, _, duplicate_property_count = match.filter_duplicate_states(
+        unmatched_property_ids, _, _duplicate_property_count = match.filter_duplicate_states(
             all_unmatched_properties,
             sub_progress_data.key,
         )

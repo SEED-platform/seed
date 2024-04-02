@@ -49,5 +49,5 @@ class Command(BaseCommand):
             org.add_member(u, org.root.id, ROLE_OWNER)
         else:
             self.stdout.write('Creating org <%s> ...' % options['organization'], ending=' ')
-            org, _, user_added = create_organization(u, options['organization'])
+            org, _, _user_added = create_organization(u, options['organization'])
             self.stdout.write('Created!', ending='\n')

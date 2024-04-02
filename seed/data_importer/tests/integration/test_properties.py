@@ -98,7 +98,7 @@ class TestProperties(DataMappingBaseTestCase):
         # TODO: Python3 I assume the address normalization cleanup is causing this to merge strange
         # which makes me think that something else is really going on. Look for the 125,000 ft2.
         if property_state:
-            history, master = property_state.history()
+            history, _master = property_state.history()
 
             # grab all the other relationships that this would have merged
             # for now just verify that 3 records were merged.

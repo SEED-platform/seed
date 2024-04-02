@@ -4,6 +4,7 @@ SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and othe
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
+import locale
 import os
 import re
 from collections import namedtuple
@@ -37,7 +38,7 @@ def parse_faq_file(faq_file):
     :param faq_file: str | DirEntry
     :return: FaqItem
     """
-    with open(faq_file) as f:
+    with open(faq_file, encoding=locale.getpreferredencoding(False)) as f:
         _, frontmatter, body = YAML_DOC_BOUNDARY.split(f.read(), 2)
     parsed_frontmatter = yaml.safe_load(frontmatter)
     faq_item = FaqItem(

@@ -105,9 +105,7 @@ def can_modify_org_settings(org_user):
     # otherwise, there may be a parent org, so see if this user
     # is an owner of the parent.
     org = org_user.organization
-    if org.parent_org is not None and org.parent_org.is_owner(org_user.user):
-        return True
-    return False
+    return org.parent_org is not None and org.parent_org.is_owner(org_user.user)
 
 
 def can_view_sub_org_settings(org_user):
@@ -167,7 +165,7 @@ def _make_resp(message_name):
 # Return nothing if valid, otherwise return Forbidden response
 def _validate_permissions(perm_name, request, requires_org):
     if not requires_org:
-        if perm_name not in ['requires_superuser', 'requires_owner_or_superuser_without_org']:
+        if perm_name not in {'requires_superuser', 'requires_owner_or_superuser_without_org'}:
             raise AssertionError(
                 'requires_org=False can only be combined with requires_superuser or ' 'requires_owner_or_superuser_without_org'
             )

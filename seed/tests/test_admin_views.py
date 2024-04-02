@@ -86,7 +86,7 @@ class AdminViewsTest(TestCase):
         Test creating a new user, adding them to an existing org
         in the process.
         """
-        org, org_user, _user_created = create_organization(self.admin_user, name='Existing Org')
+        org, _, _ = create_organization(self.admin_user, name='Existing Org')
         data = {
             'first_name': 'New',
             'last_name': 'User',

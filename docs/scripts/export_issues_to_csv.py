@@ -2,6 +2,7 @@
 
 import argparse
 import csv
+import locale
 from typing import List
 
 import github3
@@ -118,7 +119,7 @@ if args.csv:
     lines = sorted(lines, key=lambda x: (x[0]))
 
     # write out the lines
-    with open('seed_issues.csv', 'w') as csv_file:
+    with open('seed_issues.csv', 'w', encoding=locale.getpreferredencoding(False)) as csv_file:
         writer = csv.writer(csv_file, delimiter=',')
         writer.writerow(header)
 

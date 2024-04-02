@@ -72,7 +72,7 @@ class AuditTemplate:
             return None, message
 
         # validate format
-        if report_format.lower() not in ['json', 'xml', 'pdf']:
+        if report_format.lower() not in {'json', 'xml', 'pdf'}:
             report_format = 'pdf'
 
         # set headers

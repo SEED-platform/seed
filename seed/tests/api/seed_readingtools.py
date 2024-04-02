@@ -5,6 +5,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
 import csv
+import locale
 import logging
 import os
 import pathlib
@@ -69,7 +70,7 @@ def check_status(result_out, part_msg, log, piid_flag=None):
     passed = '\033[1;32m...passed\033[1;0m'
     failed = '\033[1;31m...failed\033[1;0m'
 
-    if result_out.status_code in [200, 201, 403, 401]:
+    if result_out.status_code in {200, 201, 403, 401}:
         try:
             if piid_flag == 'export':
                 content_str = result_out.content.decode()
@@ -105,7 +106,7 @@ def check_status(result_out, part_msg, log, piid_flag=None):
         log.info(part_msg + passed)
         log.debug(msg)
 
-    elif result_out.status_code in [204]:
+    elif result_out.status_code in {204}:
         msg = result_out.content
         log.info(part_msg + passed)
         log.debug(msg)
@@ -144,8 +145,8 @@ def read_map_file(mapfile_path):
 
     assert os.path.isfile(mapfile_path), 'Cannot find file:\t' + mapfile_path
 
-    map_reader = csv.reader(open(mapfile_path))
-    map_reader.__next__()  # Skip the header
+    map_reader = csv.reader(open(mapfile_path, encoding=locale.getpreferredencoding(False)))
+    next(map_reader)  # Skip the header
 
     # Open the mapping file and fill list
     maplist = []
@@ -191,6 +192,6 @@ def setup_logger(filename, write_file=True):
 def write_out_django_debug(partmsg, result):
     if result.status_code != 200:
         filename = f'{partmsg}_fail.html'
-        with open(filename, 'w') as fail:
+        with open(filename, 'w', encoding=locale.getpreferredencoding(False)) as fail:
             fail.writelines(result.text)
         print(f'Wrote debug -> {filename}')

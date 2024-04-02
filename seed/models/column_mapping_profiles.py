@@ -5,6 +5,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
 import csv
+import locale
 import os
 
 from django.db import models
@@ -71,7 +72,7 @@ class ColumnMappingProfile(models.Model):
         """
         mappings = []
         if os.path.isfile(filename):
-            with open(filename, newline=None) as csvfile:
+            with open(filename, newline=None, encoding=locale.getpreferredencoding(False)) as csvfile:
                 csvreader = csv.reader(csvfile)
                 next(csvreader)  # skip header
                 for row in csvreader:

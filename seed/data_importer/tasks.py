@@ -8,6 +8,7 @@ import collections
 import copy
 import hashlib
 import json
+import locale
 import os
 import tempfile
 import time
@@ -133,7 +134,7 @@ def do_checks(org_id, propertystate_ids, taxlotstate_ids, import_file_id=None):
     """
     # If import_file_id, then use that as the identifier, otherwise, initialize_cache will
     # create a new random id
-    cache_key, dq_id = DataQualityCheck.initialize_cache(import_file_id, org_id)
+    _cache_key, dq_id = DataQualityCheck.initialize_cache(import_file_id, org_id)
 
     progress_data = ProgressData(func_name='check_data', unique_id=dq_id)
     progress_data.delete()
@@ -330,7 +331,7 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, **kwargs):
                     if v[3]:
                         extra_data_fields.append(k)
 
-                    if v[1] in ['taxlot_footprint', 'property_footprint']:
+                    if v[1] in {'taxlot_footprint', 'property_footprint'}:
                         footprint_details['raw_field'] = k
                         footprint_details['obj_field'] = v[1]
 
@@ -815,7 +816,7 @@ def finish_raw_save(results, file_pk, progress_key):
     import_file.raw_save_done = True
 
     if (
-        import_file.source_type in [SEED_DATA_SOURCES[PORTFOLIO_METER_USAGE][1], SEED_DATA_SOURCES[GREEN_BUTTON][1]]
+        import_file.source_type in {SEED_DATA_SOURCES[PORTFOLIO_METER_USAGE][1], SEED_DATA_SOURCES[GREEN_BUTTON][1]}
         and progress_data.summary() is not None
     ):
         import_file.cycle_id = None
@@ -1134,7 +1135,7 @@ def _save_access_level_instances_data_create_tasks(filename, org_id, progress_ke
     progress_data = ProgressData.from_key(progress_key)
 
     # open and read in file
-    parser = AccessLevelInstancesParser.factory(open(filename), org_id)
+    parser = AccessLevelInstancesParser.factory(open(filename, encoding=locale.getpreferredencoding(False)), org_id)
     access_level_instances_data = parser.access_level_instances_details
 
     progress_data.total = len(access_level_instances_data)
@@ -1378,7 +1379,7 @@ def _save_raw_data_create_tasks(file_pk, progress_key):
     import_file = ImportFile.objects.get(pk=file_pk)
     file_extension = os.path.splitext(import_file.file.name)[1]
 
-    if file_extension in ('.json', '.geojson'):
+    if file_extension in {'.json', '.geojson'}:
         parser = reader.GeoJSONParser(import_file.local_file)
     elif import_file.source_type == SEED_DATA_SOURCES[BUILDINGSYNC_RAW][1]:
         try:

@@ -94,7 +94,7 @@ class UploadViewSet(viewsets.ViewSet, OrgMixin):
             os.makedirs(os.path.dirname(path))
 
         extension = the_file.name.split('.')[-1]
-        if extension in ('xls', 'xlsx'):
+        if extension in {'xls', 'xlsx'}:
             workbook = xlrd.open_workbook(file_contents=the_file.read())
             all_sheets_empty = True
             for sheet_name in workbook.sheet_names():

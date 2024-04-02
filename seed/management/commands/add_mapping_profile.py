@@ -4,6 +4,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
 import csv
+import locale
 import os
 import sys
 
@@ -41,9 +42,9 @@ class Command(BaseCommand):
             sys.exit(1)
 
         mappings = []
-        with open(options['csv_file']) as f:
+        with open(options['csv_file'], encoding=locale.getpreferredencoding(False)) as f:
             data = csv.reader(f, delimiter=',', quotechar='"')
-            data.__next__()  # skip the header row
+            next(data)  # skip the header row
             for row in data:
                 units = row[1]
                 if units == '':

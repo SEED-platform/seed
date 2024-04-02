@@ -4,6 +4,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
 import csv
+import locale
 import random
 from math import floor
 
@@ -55,7 +56,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         data_faker = DataFaker()
-        with open(options['savefile'], mode='w') as f:
+        with open(options['savefile'], mode='w', encoding=locale.getpreferredencoding(False)) as f:
             writer = csv.writer(f, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 
             header, _ = data_faker.create_sample_data(0)

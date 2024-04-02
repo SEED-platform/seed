@@ -4,6 +4,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
 import cProfile
+import locale
 import pstats
 
 from django.utils.functional import wraps
@@ -36,6 +37,6 @@ def _print_profile(profile, sort_by='cumulative', n=20):
 
 def _dump_profile(profile, filename, sort_by='time'):
     """Dump full profiling to file."""
-    f = open(filename, 'a')
+    f = open(filename, 'a', encoding=locale.getpreferredencoding(False))
     pstats.Stats(profile, stream=f).sort_stats(sort_by).print_stats()
     f.close()

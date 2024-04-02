@@ -93,7 +93,7 @@ class PropertyScenarioViewSet(SEEDOrgNoPatchNoCreateModelViewSet):
         except Scenario.DoesNotExist:
             return JsonResponse({'status': 'error', 'message': 'No scenario found with given pks'}, status=status.HTTP_404_NOT_FOUND)
 
-        possible_fields = [f.name for f in scenario._meta.get_fields() if f.name not in ['measures', 'property_state', 'reference_case']]
+        possible_fields = [f.name for f in scenario._meta.get_fields() if f.name not in {'measures', 'property_state', 'reference_case'}]
 
         for key, value in request.data.items():
             if key in possible_fields:

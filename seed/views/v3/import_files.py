@@ -341,7 +341,7 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
 
         result = {'status': 'success'}
 
-        if inventory_type in ('properties', 'all'):
+        if inventory_type in {'properties', 'all'}:
             properties = (
                 PropertyState.objects.filter(
                     import_file_id=import_file_id,
@@ -372,7 +372,7 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
 
             result['properties'] = property_results
 
-        if inventory_type in ('taxlots', 'all'):
+        if inventory_type in {'taxlots', 'all'}:
             tax_lots = (
                 TaxLotState.objects.filter(
                     import_file_id=import_file_id,

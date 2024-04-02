@@ -194,7 +194,7 @@ def _get_filter_group_views(org_id, cycles, query_dict, user_ali):
 
     annotations = {}
     try:
-        filters, annotations, order_by = build_view_filters_and_sorts(query_dict, columns, 'property')
+        filters, annotations, _order_by = build_view_filters_and_sorts(query_dict, columns, 'property')
     except Exception:
         return JsonResponse({'status': 'error', 'message': 'error with filter group'}, status=status.HTTP_404_NOT_FOUND)
 

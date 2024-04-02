@@ -112,7 +112,7 @@ class SalesforceViewTests(DataMappingBaseTestCase):
 
     def test_save_salesforce_config(self):
         # use new org b/c can only have 1 config record on an org
-        temp_org, temp_org_user, _ = create_organization(self.user)
+        temp_org, _, _ = create_organization(self.user)
 
         ind_label = Label.objects.create(name='Indication Label', super_organization=temp_org)
         violation_label = Label.objects.create(name='Violation Label', super_organization=temp_org)
@@ -259,7 +259,7 @@ class SalesforceViewTests(DataMappingBaseTestCase):
             self.sf_config.domain = SF_DOMAIN
         self.sf_config.save()
 
-        status, message = update_salesforce_property(self.org.id, view.id)
+        status, _message = update_salesforce_property(self.org.id, view.id)
 
         self.assertEqual(status, True)
 
@@ -336,7 +336,7 @@ class SalesforceViewTestPermissions(AccessLevelBaseTestCase):
 
     def test_save_salesforce_config_perms(self):
         # use new org b/c can only have 1 config record on an org
-        temp_org, temp_org_user, _ = create_organization(self.root_owner_user)
+        temp_org, _, _ = create_organization(self.root_owner_user)
         # add child  member to this new org
         temp_org.access_level_names = ['root', 'child']
         temp_child_level_instance = temp_org.add_new_access_level_instance(temp_org.root.id, 'child')

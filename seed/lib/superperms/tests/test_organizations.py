@@ -41,9 +41,9 @@ class TestOrganizations(TestCase):
 
         user_details_3 = {'username': 'test_user_3@demo.com', 'password': 'test_pass', 'email': 'test_user_3@demo.com'}
         user3 = User.objects.create(**user_details_3)
-        created, suborg, org_user = create_suborganization(user2, self.fake_org, 'sub org name')
+        created, suborg, _org_user = create_suborganization(user2, self.fake_org, 'sub org name')
         self.assertTrue(created)
 
-        created, message, org_user = create_suborganization(user3, suborg, 'sub org of sub org')
+        created, message, _org_user = create_suborganization(user3, suborg, 'sub org of sub org')
         self.assertFalse(created)
         self.assertEqual(message, 'Tried to create child of a child organization.')

@@ -5,6 +5,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
 import json
+import locale
 import os
 from unittest.mock import patch
 
@@ -26,8 +27,8 @@ class TestValidationClient(TestCase):
     def setUp(self):
         # NOTE: the contents of these files are not actually used, it's just convenient
         # to use these files so we don't have to create tmp ones and clean them up
-        self.single_file = open(os.path.join(BASE_DIR, 'seed', 'building_sync', 'tests', 'data', 'buildingsync_v2_0_bricr_workflow.xml'))
-        self.zip_file = open(os.path.join(BASE_DIR, 'seed', 'building_sync', 'tests', 'data', 'ex_1_and_buildingsync_ex01_measures.zip'))
+        self.single_file = open(os.path.join(BASE_DIR, 'seed', 'building_sync', 'tests', 'data', 'buildingsync_v2_0_bricr_workflow.xml'), encoding=locale.getpreferredencoding(False))
+        self.zip_file = open(os.path.join(BASE_DIR, 'seed', 'building_sync', 'tests', 'data', 'ex_1_and_buildingsync_ex01_measures.zip'), encoding=locale.getpreferredencoding(False))
 
     def tearDown(self) -> None:
         self.single_file.close()

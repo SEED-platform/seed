@@ -479,7 +479,7 @@ class PropertyViewAsStateSerializer(serializers.ModelSerializer):
                 state = PropertyStateWritableSerializer(instance=state_obj).data
             except TypeError:
                 pass  # already a PropertyStateWritableSerializer object
-            required = self.context['request'].method in ['PUT', 'POST']
+            required = self.context['request'].method in {'PUT', 'POST'}
             org = state.get('organization')
             org_id = org if org else org_id
             if not org_id and required:
@@ -499,7 +499,7 @@ class PropertyViewAsStateSerializer(serializers.ModelSerializer):
         missing = []
         wrong_type = []
         unique = []
-        required = self.context['request'].method in ['PUT', 'POST']
+        required = self.context['request'].method in {'PUT', 'POST'}
         if required:
             for field in required_fields:
                 if field not in required_fields:

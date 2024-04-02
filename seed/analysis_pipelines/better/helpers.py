@@ -3,6 +3,7 @@ SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and othe
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
+import locale
 import logging
 import pathlib
 from collections import namedtuple
@@ -165,7 +166,7 @@ def _store_better_portfolio_analysis_results(better_portfolio_building_analyses,
     results_dir, errors = context.client.get_portfolio_analysis_standalone_html(better_analysis_id)
     _check_errors(errors, 'Failed to get BETTER portfolio analysis standalone HTML', context, fail_on_error=True)
     for result_file_path in pathlib.Path(results_dir.name).iterdir():
-        with open(result_file_path) as f:
+        with open(result_file_path, encoding=locale.getpreferredencoding(False)) as f:
             if result_file_path.suffix != '.html':
                 raise AnalysisPipelineException(f'Received unhandled file type from BETTER: {result_file_path.name}')
 
@@ -275,7 +276,7 @@ def _store_better_building_analysis_results(better_building_analyses, context):
             continue
 
         for result_file_path in pathlib.Path(results_dir.name).iterdir():
-            with open(result_file_path) as f:
+            with open(result_file_path, encoding=locale.getpreferredencoding(False)) as f:
                 if result_file_path.suffix == '.html':
                     content_type = AnalysisOutputFile.HTML
                     file_ = BaseFile(f)

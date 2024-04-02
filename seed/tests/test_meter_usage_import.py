@@ -839,7 +839,7 @@ class MeterUsageImportAdjustedScenarioTest(DataMappingBaseTestCase):
         self.import_file_1.save()
         geocode_and_match_buildings_task(self.import_file_1.id)
 
-        import_record_2, import_file_2 = self.create_import_file(self.user, self.org, self.cycle)
+        _import_record_2, import_file_2 = self.create_import_file(self.user, self.org, self.cycle)
 
         # Create another duplicate property coming from second ImportFile
         base_details['import_file_id'] = import_file_2.id

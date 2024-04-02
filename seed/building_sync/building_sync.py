@@ -7,6 +7,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
 import copy
+import locale
 import logging
 import os
 import re
@@ -77,7 +78,7 @@ class BuildingSync:
         if isinstance(source, str):
             if not os.path.isfile(source):
                 raise ParsingError(f'File not found: {source}')
-            with open(source) as f:
+            with open(source, encoding=locale.getpreferredencoding(False)) as f:
                 self.element_tree = etree.parse(f)
         else:
             self.element_tree = etree.parse(source)

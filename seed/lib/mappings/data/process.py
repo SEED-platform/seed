@@ -4,10 +4,11 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
 import json
+import locale
 import re
 from os.path import dirname, join, realpath
 
-f = open(join(dirname(realpath(__file__)), 'pm-mapping-orig.json'))
+f = open(join(dirname(realpath(__file__)), 'pm-mapping-orig.json'), encoding=locale.getpreferredencoding(False))
 data = json.load(f)
 
 
@@ -41,5 +42,5 @@ for key, d in data.items():
 # sort the data
 new_data = sorted(new_data, key=lambda k: k['to_field'])
 
-with open('outputfile.json', 'w') as out:
+with open('outputfile.json', 'w', encoding=locale.getpreferredencoding(False)) as out:
     json.dump(new_data, out)

@@ -106,7 +106,7 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet, Org
         org_id = self.get_organization(self.request)
 
         table_name = self.request.data.get('table_name')
-        if table_name not in ('PropertyState', 'TaxLotState'):
+        if table_name not in {'PropertyState', 'TaxLotState'}:
             return JsonResponse(
                 {'status': 'error', 'message': 'table_name must be "PropertyState" or "TaxLotState"'}, status=status.HTTP_400_BAD_REQUEST
             )
@@ -184,7 +184,7 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet, Org
         if not column.is_extra_data:
             return JsonResponse({'success': False, 'message': 'Only extra_data columns can be deleted'}, status=status.HTTP_400_BAD_REQUEST)
 
-        if column.table_name not in ('PropertyState', 'TaxLotState'):
+        if column.table_name not in {'PropertyState', 'TaxLotState'}:
             return JsonResponse(
                 {'success': False, 'message': f"Unexpected table_name '{column.table_name}' for column with pk={pk}"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -243,7 +243,7 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet, Org
         """
         organization_id = int(self.get_organization(request))
         inventory_type = request.query_params.get('inventory_type')
-        if inventory_type not in ['property', 'taxlot']:
+        if inventory_type not in {'property', 'taxlot'}:
             return JsonResponse({'status': 'error', 'message': 'Query param `inventory_type` must be "property" or "taxlot"'})
         columns = Column.retrieve_mapping_columns(organization_id, inventory_type)
 

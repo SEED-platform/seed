@@ -297,7 +297,7 @@ def _analyze_location(result):
     quality = result.get('locations')[0].get('geocodeQualityCode')
     granularity_level = quality[0:2]
     confidence_level = quality[2:5]
-    is_acceptable_granularity = granularity_level in ['P1', 'L1']
+    is_acceptable_granularity = granularity_level in {'P1', 'L1'}
     is_acceptable_confidence = not ('C' in confidence_level or 'X' in confidence_level)
 
     # The Geocoded data will look something like this:

@@ -15,7 +15,7 @@ def set_conversion_factor(apps, schema_editor):
     bad_readings = []
     for reading in readings:
         reading_unit = reading.source_unit.lower().strip()
-        if reading_unit not in ('kbtu', 'kbtu (thousand btu)'):
+        if reading_unit not in {'kbtu', 'kbtu (thousand btu)'}:
             bad_readings.append(
                 {
                     'meter': reading.meter.id,

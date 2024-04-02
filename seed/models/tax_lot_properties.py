@@ -112,7 +112,7 @@ class TaxLotProperty(models.Model):
                 continue
 
             # fix specific time stamps
-            if f.name in ['recent_sale_date', 'release_date', 'generation_date']:
+            if f.name in {'recent_sale_date', 'release_date', 'generation_date'}:
                 value = f.value_from_object(instance)
                 if value:
                     value = make_naive(value).isoformat()

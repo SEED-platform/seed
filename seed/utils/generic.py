@@ -16,9 +16,7 @@ from past.builtins import basestring
 
 class MarkdownPackageDebugFilter(logging.Filter):
     def filter(self, record):
-        if 'markdown.extensions.headerid' in record.msg:
-            return False
-        return True
+        return 'markdown.extensions.headerid' not in record.msg
 
 
 def split_model_fields(obj, fields):

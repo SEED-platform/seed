@@ -4,6 +4,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
 import json
+import locale
 import re
 import sys
 
@@ -53,7 +54,7 @@ class Command(BaseCommand):
             if options['file'] == 'none':
                 print(json.dumps(data))
             else:
-                with open(options['file'], 'w') as outfile:
+                with open(options['file'], 'w', encoding=locale.getpreferredencoding(False)) as outfile:
                     json.dump(data, outfile, indent=2)
 
         else:

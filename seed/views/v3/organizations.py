@@ -6,6 +6,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 import contextlib
 import functools
 import json
+import locale
 import logging
 import operator
 from collections import defaultdict
@@ -572,7 +573,7 @@ class OrganizationViewSet(viewsets.ViewSet):
         # update the ubid threshold option
         ubid_threshold = posted_org.get('ubid_threshold')
         if ubid_threshold is not None and ubid_threshold != org.ubid_threshold:
-            if type(ubid_threshold) not in (float, int) or ubid_threshold < 0 or ubid_threshold > 1:
+            if type(ubid_threshold) not in {float, int} or ubid_threshold < 0 or ubid_threshold > 1:
                 return JsonResponse(
                     {'status': 'error', 'message': 'ubid_threshold must be a float between 0 and 1'}, status=status.HTTP_400_BAD_REQUEST
                 )
@@ -1176,7 +1177,7 @@ class OrganizationViewSet(viewsets.ViewSet):
         filename_pd = 'property_sample_data.json'
         filepath_pd = f'{Path(__file__).parent.absolute()}/../../tests/data/{filename_pd}'
 
-        with open(filepath_pd) as file:
+        with open(filepath_pd, encoding=locale.getpreferredencoding(False)) as file:
             property_details = json.load(file)
 
         property_views = []
@@ -1195,7 +1196,7 @@ class OrganizationViewSet(viewsets.ViewSet):
             property_views.append(propertyview)
 
             # create labels and add to records
-            new_label, created = Label.objects.get_or_create(color='red', name='Housing', super_organization=org)
+            new_label, _created = Label.objects.get_or_create(color='red', name='Housing', super_organization=org)
             if state.extra_data.get('Note') == 'Residential':
                 propertyview.labels.add(new_label)
 

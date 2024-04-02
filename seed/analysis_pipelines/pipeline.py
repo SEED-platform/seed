@@ -134,7 +134,7 @@ def analysis_pipeline_task(expected_status):
             if analysis.status == expected_status:
                 # everything is as expected, continue to run the task
                 pass
-            elif analysis.status in [Analysis.STOPPED, Analysis.FAILED]:
+            elif analysis.status in {Analysis.STOPPED, Analysis.FAILED}:
                 # assume someone else stopped or failed the analysis and that we shouldn't run the task
                 log_message = {
                     'analysis_id': _analysis_id,

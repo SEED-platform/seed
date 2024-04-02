@@ -122,7 +122,7 @@ class SalesforceConfigViewSet(viewsets.ViewSet, OrgMixin):
             params['domain'] = data.get('domain')
 
         # connect
-        status_msg, message, sf = test_connection(params)
+        status_msg, message, _sf = test_connection(params)
         if status_msg is False:
             return JsonResponse({'status': 'error', 'message': message}, status=status.HTTP_400_BAD_REQUEST)
         else:

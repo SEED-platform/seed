@@ -8,6 +8,7 @@ import contextlib
 import csv
 import hashlib
 import json
+import locale
 import logging
 import math
 import tempfile
@@ -389,7 +390,7 @@ class ImportRecord(NotDeletableModel):
                 return 100.0 * total_percent / num_mapping
             else:
                 return 0
-        elif self.status in (STATUS_CLEANING, STATUS_MAPPING):
+        elif self.status in {STATUS_CLEANING, STATUS_MAPPING}:
             return 100.0 * self.status_numerator / self.status_denominator
         elif self.premerge_analysis_active:
             return self.pct_premerge_complete or 100.0
@@ -483,14 +484,11 @@ class ImportRecord(NotDeletableModel):
 
     @property
     def display_as_in_progress(self):
-        return self.status in [STATUS_MACHINE_MAPPING, STATUS_MACHINE_CLEANING, STATUS_PRE_MERGING, STATUS_MERGING]
+        return self.status in {STATUS_MACHINE_MAPPING, STATUS_MACHINE_CLEANING, STATUS_PRE_MERGING, STATUS_MERGING}
 
     @property
     def is_mapping_or_cleaning(self):
-        return self.status in [
-            STATUS_MAPPING,
-            STATUS_CLEANING,
-        ]
+        return self.status in {STATUS_MAPPING, STATUS_CLEANING}
 
     @property
     def status_is_live(self):
@@ -631,7 +629,7 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
             temp_file.flush()
             temp_file.close()
             self.file.close()
-            self._local_file = open(temp_file.name, newline=None)
+            self._local_file = open(temp_file.name, newline=None, encoding=locale.getpreferredencoding(False))
 
         self._local_file.seek(0)
         return self._local_file
@@ -945,7 +943,7 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
 
         from seed.models import DATA_STATE_MAPPING, PropertyState, TaxLotState
 
-        assert kls in [PropertyState, TaxLotState], 'Must be one of our State objects [PropertyState, TaxLotState]!'
+        assert kls in {PropertyState, TaxLotState}, 'Must be one of our State objects [PropertyState, TaxLotState]!'
 
         return kls.objects.filter(
             data_state__in=[DATA_STATE_MAPPING],

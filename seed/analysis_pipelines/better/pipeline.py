@@ -191,7 +191,7 @@ def get_meter_readings(property_id, preprocess_meters, config):
             # filtering on readings >= 1.0 b/c BETTER flails when readings are less than 1 currently
             readings = []
 
-            if config.get('select_meters') in ['date_range', 'select_cycle']:
+            if config.get('select_meters') in {'date_range', 'select_cycle'}:
                 try:
                     readings = meter.meter_readings.filter(start_time__range=[value1, value2], reading__gte=1.0).order_by('start_time')
                 except Exception as err:
@@ -492,7 +492,7 @@ def _process_results(self, analysis_id):
             )
         except Exception:
             if analysis.can_create():
-                column, created = Column.objects.create(
+                column, _created = Column.objects.create(
                     is_extra_data=True,
                     column_name=column_data_path.column_name,
                     organization=analysis.organization,

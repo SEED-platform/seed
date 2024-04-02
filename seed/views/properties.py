@@ -458,7 +458,7 @@ class PropertyViewSet(ViewSet, ProfileIdMixin):
 
         merged_state = merge_properties(state_ids, organization_id, 'Manual Match')
 
-        merge_count, link_count, view_id = match_merge_link(merged_state.id, 'PropertyState')
+        merge_count, link_count, _view_id = match_merge_link(merged_state.id, 'PropertyState')
 
         result = {'status': 'success'}
 
@@ -543,12 +543,12 @@ class PropertyViewSet(ViewSet, ProfileIdMixin):
         merged_state.save()
 
         # Change the merge_state of the individual states
-        if log.parent1.name in ['Import Creation', 'Manual Edit'] and log.parent1.import_filename is not None:
+        if log.parent1.name in {'Import Creation', 'Manual Edit'} and log.parent1.import_filename is not None:
             # State belongs to a new record
             state1.merge_state = MERGE_STATE_NEW
         else:
             state1.merge_state = MERGE_STATE_MERGED
-        if log.parent2.name in ['Import Creation', 'Manual Edit'] and log.parent2.import_filename is not None:
+        if log.parent2.name in {'Import Creation', 'Manual Edit'} and log.parent2.import_filename is not None:
             # State belongs to a new record
             state2.merge_state = MERGE_STATE_NEW
         else:
@@ -1015,7 +1015,7 @@ class PropertyViewSet(ViewSet, ProfileIdMixin):
 
                 log = PropertyAuditLog.objects.select_related().filter(state=property_view.state).order_by('-id').first()
 
-                if log.name in ['Manual Edit', 'Manual Match', 'System Match', 'Merge current state in migration']:
+                if log.name in {'Manual Edit', 'Manual Match', 'System Match', 'Merge current state in migration'}:
                     # Convert this to using the serializer to save the data. This will override the previous values
                     # in the state object.
 
@@ -1137,7 +1137,7 @@ class PropertyViewSet(ViewSet, ProfileIdMixin):
         property_state_id = pv.state.pk
 
         for m in add_measure_ids:
-            join, created = PropertyMeasure.objects.get_or_create(
+            _join, created = PropertyMeasure.objects.get_or_create(
                 property_state_id=property_state_id, measure_id=m, implementation_status=implementation_status
             )
             if created:

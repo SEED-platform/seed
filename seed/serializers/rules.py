@@ -86,7 +86,7 @@ class RuleSerializer(serializers.ModelSerializer):
 
         if (severity_is_valid and severity_unchanged) or severity_will_be_valid:
             # Defaulting to "FOO" enables a value check of either "" or None (even if key doesn't exist)
-            label_will_be_removed = data.get('status_label', 'FOO') in ['', None]
+            label_will_be_removed = data.get('status_label', 'FOO') in {'', None}
             label_unchanged = 'status_label' not in data
             if label_will_be_removed or (label_is_not_associated and label_unchanged):
                 data_invalid = True
@@ -97,14 +97,14 @@ class RuleSerializer(serializers.ModelSerializer):
             # Rule is new, so severity "could not have been" include or exclude.
             is_include_or_exclude = False
         else:
-            is_include_or_exclude = self.instance.condition in [Rule.RULE_INCLUDE, Rule.RULE_EXCLUDE]
+            is_include_or_exclude = self.instance.condition in {Rule.RULE_INCLUDE, Rule.RULE_EXCLUDE}
         condition_unchanged = 'condition' not in data
-        will_be_include_or_exclude = data.get('condition') in [Rule.RULE_INCLUDE, Rule.RULE_EXCLUDE]
+        will_be_include_or_exclude = data.get('condition') in {Rule.RULE_INCLUDE, Rule.RULE_EXCLUDE}
 
         if (is_include_or_exclude and condition_unchanged) or will_be_include_or_exclude:
             # Defaulting to "FOO" enables a value check of either "" or None (only if key exists)
-            text_match_will_be_empty = data.get('text_match', 'FOO') in ['', None]
-            text_match_is_empty = getattr(self.instance, 'text_match', 'FOO') in ['', None]
+            text_match_will_be_empty = data.get('text_match', 'FOO') in {'', None}
+            text_match_is_empty = getattr(self.instance, 'text_match', 'FOO') in {'', None}
             text_match_unchanged = 'text_match' not in data
 
             if text_match_will_be_empty or (text_match_is_empty and text_match_unchanged):

@@ -47,7 +47,7 @@ class TestColumnListProfile(TestCase):
 
     def test_returning_columns_no_profile(self):
         # do not set up a profile and return the columns, should be all columns
-        ids, name_mappings, objs = ColumnListProfile.return_columns(self.fake_org, None)
+        ids, name_mappings, _objs = ColumnListProfile.return_columns(self.fake_org, None)
 
         # not the most robust tests, but they are least check for non-zero results
         self.assertIsInstance(ids[0], int)
@@ -73,7 +73,7 @@ class TestColumnListProfile(TestCase):
         ColumnListProfileColumn.objects.create(column=col2, column_list_profile=new_list_profile, order=2, pinned=True)
 
         # do not set up a profile and return the columns, should be all columns
-        ids, name_mappings, objs = ColumnListProfile.return_columns(self.fake_org, new_list_profile.id)
+        ids, name_mappings, _objs = ColumnListProfile.return_columns(self.fake_org, new_list_profile.id)
 
         # not the most robust tests, but they are least check for non-zero results
         self.assertIsInstance(ids[0], int)

@@ -4,6 +4,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
 import json
+import locale
 import logging
 from tempfile import NamedTemporaryFile, TemporaryDirectory
 
@@ -130,7 +131,7 @@ class BETTERClient:
 
         try:
             response = requests.request('GET', url, headers=headers)
-            if response.status_code not in [200, 202]:
+            if response.status_code not in {200, 202}:
                 return None, [f'Expected 200 or 202 response from BETTER but got {response.status_code}: {response.content}']
         except Exception as e:
             return None, [f'Unexpected error getting BETTER portfolio analysis: {e}']
@@ -240,7 +241,7 @@ class BETTERClient:
 
         # save the file from the response
         temporary_results_dir = TemporaryDirectory()
-        with NamedTemporaryFile(mode='w', suffix='.html', dir=temporary_results_dir.name, delete=False) as file:
+        with NamedTemporaryFile(mode='w', suffix='.html', dir=temporary_results_dir.name, delete=False, encoding=locale.getpreferredencoding(False)) as file:
             file.write(standalone_html)
 
         return temporary_results_dir, []
@@ -258,7 +259,7 @@ class BETTERClient:
         else:
             url = f'{self.API_URL}/portfolios/{better_portfolio_id}/buildings/'
 
-        with open(bsync_xml) as file:
+        with open(bsync_xml, encoding=locale.getpreferredencoding(False)) as file:
             bsync_content = file.read()
 
         headers = {
@@ -325,7 +326,7 @@ class BETTERClient:
 
         # save the file from the response
         temporary_results_dir = TemporaryDirectory()
-        with NamedTemporaryFile(mode='w', suffix='.html', dir=temporary_results_dir.name, delete=False) as file:
+        with NamedTemporaryFile(mode='w', suffix='.html', dir=temporary_results_dir.name, delete=False, encoding=locale.getpreferredencoding(False)) as file:
             file.write(standalone_html)
 
         return temporary_results_dir, []
@@ -386,7 +387,7 @@ class BETTERClient:
             :return: bool
             """
             generation_result = res.json()[0]['generation_result']
-            return generation_result in ('COMPLETE', 'FAILED')
+            return generation_result in {'COMPLETE', 'FAILED'}
 
         try:
             response = polling.poll(lambda: requests.request('GET', url, headers=headers), check_success=is_ready, timeout=300, step=5)

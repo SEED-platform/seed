@@ -5,6 +5,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
 import json
+import locale
 from datetime import datetime
 from unittest import mock
 
@@ -186,7 +187,7 @@ class AuditTemplateBatchTests(TestCase):
         self.good_batch_xml_response = mock.Mock()
         self.good_batch_xml_response.status_code = 200
         file_path = 'seed/tests/data/building_sync_xml.txt'
-        with open(file_path) as file:
+        with open(file_path, encoding=locale.getpreferredencoding(False)) as file:
             sample_xml = file.read()
         self.good_batch_xml_response.text = sample_xml.encode().decode('unicode_escape')
 

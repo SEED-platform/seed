@@ -363,7 +363,7 @@ def link_views_and_states(merged_views, new_views, errored_new_states, ViewClass
     (
         merged_and_linked_views,
         merged_views,
-        merge_and_linked_states_errors,
+        _merge_and_linked_states_errors,
         _,
     ) = link_states([v.state for v in merged_views], *shared_args)
 

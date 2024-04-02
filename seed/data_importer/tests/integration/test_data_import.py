@@ -7,6 +7,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 import copy
 import csv
 import json
+import locale
 import logging
 import os.path as osp
 import pathlib
@@ -620,7 +621,7 @@ class TestPromotingProperties(DataMappingBaseTestCase):
         # save the new file
         new_file_name = f'tmp_{osp.splitext(osp.basename(filename))[0]}_flat.csv'
         f_new = osp.join(osp.dirname(__file__), 'data', new_file_name)
-        with open(f_new, 'w') as csvfile:
+        with open(f_new, 'w', encoding=locale.getpreferredencoding(False)) as csvfile:
             writer = csv.DictWriter(csvfile, fieldnames=keys)
             writer.writeheader()
             for d in data:
@@ -629,13 +630,13 @@ class TestPromotingProperties(DataMappingBaseTestCase):
         # save the keys this does not appear to be used anywhere
         new_file_name = f'tmp_{osp.splitext(osp.basename(filename))[0]}_keys.csv'
         f_new = osp.join(osp.dirname(__file__), 'data', new_file_name)
-        with open(f_new, 'w') as outfile:
+        with open(f_new, 'w', encoding=locale.getpreferredencoding(False)) as outfile:
             outfile.writelines([str(key) + '\n' for key in keys])
 
         # Continue saving the raw data
         new_file_name = f'tmp_{osp.splitext(osp.basename(filename))[0]}_flat.csv'
         f_new = osp.join(osp.dirname(__file__), 'data', new_file_name)
-        with open(f_new) as file:
+        with open(f_new, encoding=locale.getpreferredencoding(False)) as file:
             self.import_file.file = File(file)
             self.import_file.save()
 

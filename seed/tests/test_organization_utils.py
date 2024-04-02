@@ -18,7 +18,7 @@ class TestOrganizationCreation(TestCase):
     def test_organization_creation_creates_default_labels(self):
         """Make sure last organization user is change to owner."""
         user = User.objects.create(email='test-user@example.com')
-        org, org_user, user_added = create_organization(
+        org, _, _ = create_organization(
             user=user,
             org_name='test-organization',
         )
@@ -29,7 +29,7 @@ class TestOrganizationCreation(TestCase):
 
     def test_organization_creation_creates_matching_criteria_columns(self):
         user = User.objects.create(email='test-user@example.com')
-        org, org_user, user_added = create_organization(
+        org, _, _ = create_organization(
             user=user,
             org_name='test-organization',
         )

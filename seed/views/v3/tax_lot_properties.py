@@ -95,7 +95,7 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
 
         profile_id = None
         column_profile = None
-        if 'profile_id' in request.data and str(request.data['profile_id']) not in ['None', '']:
+        if 'profile_id' in request.data and str(request.data['profile_id']) not in {'None', ''}:
             profile_id = request.data['profile_id']
             column_profile = ColumnListProfile.objects.get(id=profile_id)
 

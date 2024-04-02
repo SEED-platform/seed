@@ -254,7 +254,7 @@ class TaxLotState(models.Model):
             }
 
             # Traverse parents and add to history
-            if log.name in ['Manual Match', 'System Match', 'Merge current state in migration']:
+            if log.name in {'Manual Match', 'System Match', 'Merge current state in migration'}:
                 done_searching = False
 
                 while not done_searching:
@@ -268,7 +268,7 @@ class TaxLotState(models.Model):
                     # Check if parent2 has any other parents or is the original import creation. Start with parent2
                     # because parent2 will be the most recent import file.
                     if log.parent2:
-                        if log.parent2.name in ['Import Creation', 'Manual Edit']:
+                        if log.parent2.name in {'Import Creation', 'Manual Edit'}:
                             record = record_dict(log.parent2)
                             history.append(record)
                         elif (
@@ -286,7 +286,7 @@ class TaxLotState(models.Model):
                             tree = log.parent2
 
                     if log.parent1:
-                        if log.parent1.name in ['Import Creation', 'Manual Edit']:
+                        if log.parent1.name in {'Import Creation', 'Manual Edit'}:
                             record = record_dict(log.parent1)
                             history.append(record)
                         elif (

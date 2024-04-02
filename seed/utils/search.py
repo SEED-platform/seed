@@ -40,16 +40,12 @@ def strip_suffixes(k, suffixes):
 
 def is_column(k, columns):
     sanitized = strip_suffixes(k, SUFFIXES)
-    if sanitized in columns:
-        return True
-    return False
+    return sanitized in columns
 
 
 def is_date_field(k):
     sanitized = strip_suffixes(k, SUFFIXES)
-    if sanitized in DATE_FIELDS:
-        return True
-    return False
+    return sanitized in DATE_FIELDS
 
 
 def is_string_query(q):
@@ -292,7 +288,7 @@ def _build_extra_data_annotations(column_name: str, data_type: str) -> tuple[str
                 )
             }
         )
-    elif data_type in ['number', 'float', 'area', 'eui', 'ghg', 'ghg_intensity']:
+    elif data_type in {'number', 'float', 'area', 'eui', 'ghg', 'ghg_intensity'}:
         annotations.update(
             {
                 final_field_name: Cast(
@@ -302,7 +298,7 @@ def _build_extra_data_annotations(column_name: str, data_type: str) -> tuple[str
                 )
             }
         )
-    elif data_type in ['date', 'datetime']:
+    elif data_type in {'date', 'datetime'}:
         annotations.update({final_field_name: Cast(text_field_name, output_field=models.DateTimeField())})
     elif data_type == 'boolean':
         annotations.update({final_field_name: Cast(text_field_name, output_field=models.BooleanField())})
@@ -397,7 +393,7 @@ def _parse_view_sort(
             return None, {}
         elif column['is_extra_data']:
             new_field_name, annotations = _build_extra_data_annotations(column_name, column['data_type'])
-            if column['data_type'] in ['None', 'string']:
+            if column['data_type'] in {'None', 'string'}:
                 # Natural sort json text data
                 if not direction:
                     return Collate(new_field_name, 'natural_sort'), annotations
@@ -485,7 +481,7 @@ def build_view_filters_and_sorts(
             # if column data_type is "string", also filter on the empty string
             filter = QueryFilter.parse(filter_expression)
             column_data_type = columns_by_name.get(filter.field_name, {}).get('data_type')
-            if column_data_type in ['string', 'None']:
+            if column_data_type in {'string', 'None'}:
                 empty_string_parsed_filters, _ = _parse_view_filter(
                     filter_expression, filter_value, columns_by_name, inventory_type, access_level_names
                 )

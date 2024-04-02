@@ -47,7 +47,7 @@ class TestBuildingFiles(TestCase):
             file_type=BuildingFile.BUILDINGSYNC,
         )
 
-        status, property_state, property_view, messages = bf.process(
+        status, property_state, _property_view, messages = bf.process(
             self.org.id, self.org.cycles.first(), access_level_instance=self.org.root
         )
         self.assertTrue(status)
@@ -66,7 +66,7 @@ class TestBuildingFiles(TestCase):
             file_type=BuildingFile.BUILDINGSYNC,
         )
 
-        status, property_state, property_view, messages = bf.process(
+        status, property_state, _property_view, messages = bf.process(
             self.org.id, self.org.cycles.first(), access_level_instance=self.org.root
         )
         self.assertTrue(status)
@@ -111,7 +111,7 @@ class TestBuildingFiles(TestCase):
             file_type=BuildingFile.BUILDINGSYNC,
         )
 
-        status, property_state, property_view, messages = bf.process(
+        status, property_state, _property_view, messages = bf.process(
             self.org.id, self.org.cycles.first(), access_level_instance=self.org.root
         )
         self.assertTrue(status, f'Expected process() to succeed; messages: {messages}')
@@ -184,7 +184,7 @@ class TestBuildingFiles(TestCase):
 
         bf = BuildingFile.objects.create(file=simple_uploaded_file, filename=filename, file_type=BuildingFile.HPXML)
 
-        status, property_state, property_view, messages = bf.process(
+        status, property_state, _property_view, messages = bf.process(
             self.org.id, self.org.cycles.first(), access_level_instance=self.org.root
         )
         self.assertTrue(status)

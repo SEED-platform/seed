@@ -4,6 +4,7 @@ SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and othe
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
+import locale
 from json import load
 
 from seed.lib.superperms.orgs.exceptions import TooManyNestedOrgs
@@ -14,7 +15,7 @@ from seed.models.data_quality import DataQualityCheck
 
 
 def default_pm_mappings():
-    with open('./seed/lib/mappings/data/pm-mapping.json') as read_file:
+    with open('./seed/lib/mappings/data/pm-mapping.json', encoding=locale.getpreferredencoding(False)) as read_file:
         raw_mappings = load(read_file)
 
     # Verify that from_field values are all uniq

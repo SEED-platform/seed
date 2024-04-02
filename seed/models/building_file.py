@@ -93,7 +93,7 @@ class BuildingFile(models.Model):
         extra_data = {}
         for k, v in data.items():
             # Skip the keys that are for measures and reports and process later
-            if k in ['measures', 'reports', 'scenarios']:
+            if k in {'measures', 'reports', 'scenarios'}:
                 continue
 
             # Check if the column exists, if not, then create one.
@@ -192,7 +192,7 @@ class BuildingFile(models.Model):
             )
             category_affected = m['system_category_affected'] if m.get('system_category_affected') else PropertyMeasure.CATEGORY_OTHER
             # for some reason this is returning none if the field is empty. So none and true should both be true.
-            recommended = str(m.get('recommended', 'true')).lower() in ['true', 'none']
+            recommended = str(m.get('recommended', 'true')).lower() in {'true', 'none'}
             join, _ = PropertyMeasure.objects.get_or_create(
                 property_state_id=self.property_state_id,
                 measure_id=measure.pk,

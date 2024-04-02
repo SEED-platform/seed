@@ -7,6 +7,7 @@
 
 import argparse
 import csv
+import locale
 import os
 
 import github3
@@ -33,7 +34,7 @@ impact_labels = ['Impact-1', 'Impact-2', 'Impact-3']
 estimate_impact = ['1 Point', '2 Points', '3 Points', '5 Points', '8 Points']
 points_map = {1: '1 Point', 2: '2 Points', 3: '3 Points', 5: '5 Points', 8: '8 Points'}
 
-with open(args.infile) as csvfile:
+with open(args.infile, encoding=locale.getpreferredencoding(False)) as csvfile:
     reader = csv.reader(csvfile)
     for index, row in enumerate(reader):
         if index >= 1:  # skip header row

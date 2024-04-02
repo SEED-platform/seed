@@ -3,6 +3,7 @@ SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and othe
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
+import locale
 import os
 import tempfile
 
@@ -47,7 +48,7 @@ class TestMeasures(TestCase):
         cls.absolute_uploads_file = get_upload_path('test_uploads.txt')
         cls.uploads_file = os.path.relpath(cls.absolute_uploads_file, settings.MEDIA_ROOT)
         os.makedirs(os.path.dirname(cls.absolute_uploads_file), exist_ok=True)
-        with open(cls.absolute_uploads_file, 'w') as f:
+        with open(cls.absolute_uploads_file, 'w', encoding=locale.getpreferredencoding(False)) as f:
             f.write('Hello world')
 
         # BuildingSync file
@@ -55,7 +56,7 @@ class TestMeasures(TestCase):
         cls.absolute_bsync_file = os.path.join(settings.MEDIA_ROOT, upload_to, 'test_bsync.xml')
         os.makedirs(os.path.dirname(cls.absolute_bsync_file), exist_ok=True)
         cls.bsync_file = os.path.relpath(cls.absolute_bsync_file, settings.MEDIA_ROOT)
-        with open(cls.absolute_bsync_file, 'w') as f:
+        with open(cls.absolute_bsync_file, 'w', encoding=locale.getpreferredencoding(False)) as f:
             f.write('Hello world')
 
         # analysis output file
@@ -63,7 +64,7 @@ class TestMeasures(TestCase):
         cls.absolute_analysis_output_file = os.path.join(settings.MEDIA_ROOT, upload_to, 'test_analysis_output.xml')
         os.makedirs(os.path.dirname(cls.absolute_analysis_output_file), exist_ok=True)
         cls.analysis_output_file = os.path.relpath(cls.absolute_analysis_output_file, settings.MEDIA_ROOT)
-        with open(cls.absolute_analysis_output_file, 'w') as f:
+        with open(cls.absolute_analysis_output_file, 'w', encoding=locale.getpreferredencoding(False)) as f:
             f.write('Hello world')
 
         # inventory document file
@@ -71,7 +72,7 @@ class TestMeasures(TestCase):
         cls.absolute_inv_doc_file = os.path.join(settings.MEDIA_ROOT, upload_to, 'test_inv_doc.osm')
         os.makedirs(os.path.dirname(cls.absolute_inv_doc_file), exist_ok=True)
         cls.inv_doc_file = os.path.relpath(cls.absolute_inv_doc_file, settings.MEDIA_ROOT)
-        with open(cls.absolute_inv_doc_file, 'w') as f:
+        with open(cls.absolute_inv_doc_file, 'w', encoding=locale.getpreferredencoding(False)) as f:
             f.write('Hello world')
 
     @classmethod

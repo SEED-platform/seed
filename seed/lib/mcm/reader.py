@@ -359,11 +359,11 @@ class ExcelParser:
 
         # If Excel reports an ERROR (typically the #VALUE! or #NAME! in the cell), then return None,
         # otherwise the item.value will be the error code and saved in SEED incorrectly.
-        if item.ctype in [XL_CELL_ERROR]:
+        if item.ctype in {XL_CELL_ERROR}:
             return None
 
         # If it is blank or empty, then return empty string
-        if item.ctype in [XL_CELL_EMPTY, XL_CELL_BLANK]:
+        if item.ctype in {XL_CELL_EMPTY, XL_CELL_BLANK}:
             return ''
 
         # XL_CELL_TEXT
@@ -466,7 +466,7 @@ class CSVParser:
         self.csvfile.seek(0)
 
         # skip header row
-        self.csvfile.__next__()
+        next(self.csvfile)
 
     def num_columns(self):
         """gets the number of columns for the file"""
@@ -563,7 +563,7 @@ class MCMParser:
         validation_rows = []
         for i in range(5):
             try:
-                row = self.__next__()
+                row = next(self)
                 if row:
                     # Trim out the spaces around the keys
                     new_row = {}

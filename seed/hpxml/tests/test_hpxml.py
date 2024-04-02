@@ -33,7 +33,7 @@ class TestBuildingFiles(TestCase):
 
         bf = BuildingFile.objects.create(file=simple_uploaded_file, filename=filename, file_type=BuildingFile.HPXML)
 
-        status, property_state, property_view, messages = bf.process(self.org.id, self.org.cycles.first())
+        status, property_state, _property_view, messages = bf.process(self.org.id, self.org.cycles.first())
         self.assertTrue(status)
         self.assertEqual(property_state.owner, 'Jane Customer')
         self.assertEqual(property_state.energy_score, 8)

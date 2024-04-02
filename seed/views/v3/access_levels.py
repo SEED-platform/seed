@@ -236,7 +236,7 @@ class AccessLevelViewSet(viewsets.ViewSet):
             os.makedirs(os.path.dirname(path))
 
         extension = the_file.name.split('.')[-1]
-        if extension in ('xls', 'xlsx'):
+        if extension in {'xls', 'xlsx'}:
             workbook = xlrd.open_workbook(file_contents=the_file.read())
             all_sheets_empty = True
             headers = []

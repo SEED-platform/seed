@@ -267,7 +267,7 @@ class HPXML:
             try:
                 found_energy_score = False
                 for energy_score_el in bldg_const.EnergyScore:
-                    if energy_score_type in (energy_score_el.ScoreType, getattr(energy_score_el, 'OtherScoreType', None)):
+                    if energy_score_type in {energy_score_el.ScoreType, getattr(energy_score_el, 'OtherScoreType', None)}:
                         found_energy_score = True
                         break
                 if not found_energy_score:

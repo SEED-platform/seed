@@ -508,7 +508,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             with transaction.atomic():
                 merged_state = merge_properties(property_state_ids, organization_id, 'Manual Match')
                 view = merged_state.propertyview_set.first()
-                merge_count, link_count, view_id = match_merge_link(
+                merge_count, link_count, _view_id = match_merge_link(
                     merged_state.id, 'PropertyState', view.property.access_level_instance, view.cycle
                 )
 
@@ -597,12 +597,12 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         merged_state.save()
 
         # Change the merge_state of the individual states
-        if log.parent1.name in ['Import Creation', 'Manual Edit'] and log.parent1.import_filename is not None:
+        if log.parent1.name in {'Import Creation', 'Manual Edit'} and log.parent1.import_filename is not None:
             # State belongs to a new record
             state1.merge_state = MERGE_STATE_NEW
         else:
             state1.merge_state = MERGE_STATE_MERGED
-        if log.parent2.name in ['Import Creation', 'Manual Edit'] and log.parent2.import_filename is not None:
+        if log.parent2.name in {'Import Creation', 'Manual Edit'} and log.parent2.import_filename is not None:
             # State belongs to a new record
             state2.merge_state = MERGE_STATE_NEW
         else:
@@ -1164,7 +1164,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
 
                 log = PropertyAuditLog.objects.select_related().filter(state=property_view.state).order_by('-id').first()
 
-                if log.name in ['Manual Edit', 'Manual Match', 'System Match', 'Merge current state in migration']:
+                if log.name in {'Manual Edit', 'Manual Match', 'System Match', 'Merge current state in migration'}:
                     # Convert this to using the serializer to save the data. This will override the previous values
                     # in the state object.
 

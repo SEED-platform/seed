@@ -4,12 +4,13 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
 import json
+import locale
 
 from setuptools import find_packages, setup
 
 
 def get_version():
-    with open('package.json') as f:
+    with open('package.json', encoding=locale.getpreferredencoding(False)) as f:
         j = json.load(f)
 
     return j['version']

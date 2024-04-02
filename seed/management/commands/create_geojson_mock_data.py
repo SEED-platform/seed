@@ -5,6 +5,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 import csv
 import json
+import locale
 import os
 
 import geojson
@@ -201,7 +202,7 @@ class Command(BaseCommand):
         print(json.dumps(data, indent=2))
 
         # save the data to CSV files
-        with open('seed/tests/data/san-jose-test-taxlots.csv', 'w') as f:
+        with open('seed/tests/data/san-jose-test-taxlots.csv', 'w', encoding=locale.getpreferredencoding(False)) as f:
             writer = csv.writer(f)
             # write the header, which are all the mapping fields with taxlot / property appended
             row = []
@@ -221,7 +222,7 @@ class Command(BaseCommand):
                     writer.writerow(row)
 
         # save the data to CSV files
-        with open('seed/tests/data/san-jose-test-properties.csv', 'w') as f:
+        with open('seed/tests/data/san-jose-test-properties.csv', 'w', encoding=locale.getpreferredencoding(False)) as f:
             writer = csv.writer(f)
             # write the header, which are all the mapping fields with taxlot / property appended
             row = []

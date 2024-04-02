@@ -4,6 +4,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
 import json
+import locale
 import logging
 import re
 import string
@@ -72,7 +73,7 @@ class Measure(models.Model):
         :return:
         """
         filename = 'seed/building_sync/lib/enumerations.json'
-        with open(filename) as f:
+        with open(filename, encoding=locale.getpreferredencoding(False)) as f:
             data = json.load(f)
 
             for datum in data:
