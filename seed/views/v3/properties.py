@@ -665,29 +665,22 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
 
         # Clone the property record twice, then copy over meters
         old_property = old_view.property
-        new_property = old_property
-        new_property.save()
 
-        new_property_2 = Property.objects.get(pk=new_property.id)
+        new_property_2 = Property.objects.get(pk=old_property.id)
         new_property_2.id = None
         new_property_2.save()
 
-        Property.objects.get(pk=new_property.id).copy_meters(old_view.property_id)
         Property.objects.get(pk=new_property_2.id).copy_meters(old_view.property_id)
-
-        # If canonical Property is NOT associated to a different -View, delete it
-        if not PropertyView.objects.filter(property_id=old_view.property_id).exclude(id=old_view.id).exists():
-            Property.objects.get(pk=old_view.property_id).delete()
 
         # Create the views
         new_view1 = PropertyView(
             cycle_id=cycle_id,
-            property_id=new_property.id,
+            property=old_property,
             state=state1
         )
         new_view2 = PropertyView(
             cycle_id=cycle_id,
-            property_id=new_property_2.id,
+            property=new_property_2,
             state=state2
         )
 

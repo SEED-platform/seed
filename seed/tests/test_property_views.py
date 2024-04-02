@@ -1914,21 +1914,6 @@ class PropertyUnmergeViewTests(DataMappingBaseTestCase):
             label_names = list(new_view.labels.values_list('name', flat=True))
             self.assertCountEqual(label_names, [label_1.name, label_2.name])
 
-    def test_unmerging_assigns_new_canonical_records_to_each_resulting_records(self):
-        # Capture old property_ids
-        view = PropertyView.objects.first()  # There's only one PropertyView
-        existing_property_ids = [
-            view.property_id,
-            self.property_1.id,
-            self.property_2.id,
-        ]
-
-        # Unmerge the properties
-        url = reverse('api:v3:properties-unmerge', args=[view.id]) + '?organization_id={}'.format(self.org.pk)
-        self.client.put(url, content_type='application/json')
-
-        self.assertFalse(PropertyView.objects.filter(property_id__in=existing_property_ids).exists())
-
     def test_unmerging_two_properties_with_meters_gives_meters_to_both_of_the_resulting_records(self):
         # Unmerge the properties
         view_id = PropertyView.objects.first().id  # There's only one PropertyView
@@ -1966,7 +1951,7 @@ class PropertyUnmergeViewTests(DataMappingBaseTestCase):
         url = reverse('api:v3:properties-unmerge', args=[view.id]) + '?organization_id={}'.format(self.org.pk)
         self.client.put(url, content_type='application/json')
 
-        self.assertFalse(Property.objects.filter(pk=property_id).exists())
+        self.assertTrue(Property.objects.filter(pk=property_id).exists())
         self.assertEqual(Property.objects.count(), 2)
 
     def test_unmerge_results_in_the_persistence_of_old_canonical_state_if_related_to_any_views(self):
@@ -1987,7 +1972,7 @@ class PropertyUnmergeViewTests(DataMappingBaseTestCase):
         self.client.put(url, content_type='application/json')
 
         self.assertTrue(Property.objects.filter(pk=view.property_id).exists())
-        self.assertEqual(Property.objects.count(), 3)
+        self.assertEqual(Property.objects.count(), 2)
 
 
 class PropertyViewExportTests(DataMappingBaseTestCase):
