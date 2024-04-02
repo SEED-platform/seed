@@ -52,7 +52,7 @@ angular.module('BE.seed.controller.data_logger_upload_or_update_modal', []).cont
           })
           .catch((err) => {
             if (err.status === 400) {
-              $scope.data_logger_display_name_not_unique_alert = true;
+              $scope.error_message = format_errors(err.data.errors);
             }
           });
       } else {
@@ -73,7 +73,7 @@ angular.module('BE.seed.controller.data_logger_upload_or_update_modal', []).cont
         })
         .catch((err) => {
           if (err.status === 400) {
-            $scope.data_logger_display_name_not_unique_alert = true;
+            $scope.error_message = format_errors(err.data.errors);
           }
         });
       }
@@ -86,6 +86,12 @@ angular.module('BE.seed.controller.data_logger_upload_or_update_modal', []).cont
 
     $scope.cancel = () => {
       $uibModalInstance.dismiss('cancel');
+    };
+
+    const format_errors = (errors) => {
+      return Object.entries(errors)
+        .map(([key, value]) => key === 'non_field_errors' ? ` ${value.join('. ')}` : ` ${key}: ${value.join('. ')}`)
+        .join('. ')
     };
   }
 ]);
