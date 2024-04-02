@@ -2,13 +2,13 @@ fix = true
 line-length = 140
 
 [format]
-preview = true
+# preview = true
 quote-style = "single"
 docstring-code-format = true
 
 # https://docs.astral.sh/ruff/linter/#rule-selection
 [lint]
-preview = true
+# preview = true
 # Enable these rules
 extend-select = [
     "A",   # flake8-builtins
@@ -51,6 +51,7 @@ ignore = [
     "E501",    # line-too-long
     "ISC001",  # single-line-implicit-string-concatenation
     "N806",    # non-lowercase-variable-in-function
+    "PLC1901", # compare-to-empty-string (preview)
     "PLR0402", # manual-from-import
     "PLR0911", # too-many-return-statements
     "PLR0912", # too-many-branches
