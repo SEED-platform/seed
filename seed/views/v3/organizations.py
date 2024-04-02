@@ -3,6 +3,7 @@ SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and othe
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
+import contextlib
 import functools
 import json
 import logging
@@ -162,10 +163,8 @@ def _dict_org_brief(request, organizations):
     orgs = []
     for o in organizations:
         user_role = None
-        try:
+        with contextlib.suppress(KeyError):
             user_role = role_levels[o.id]
-        except KeyError:
-            pass
 
         org = {
             'name': o.name,

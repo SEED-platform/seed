@@ -41,9 +41,8 @@ def set_cache(progress_key, status, data):
 
 def get_cache(progress_key, default=None):
     """Unpickles the cache key to a dictionary and resets the timeout"""
-    if default is not None:
-        if not isinstance(default, dict):
-            default = {'status': 'Unknown', 'progress': default}
+    if default is not None and not isinstance(default, dict):
+        default = {'status': 'Unknown', 'progress': default}
     data = get_cache_raw(progress_key, default)
     if data is None:
         # Cache accessed before it was created
@@ -67,9 +66,8 @@ def set_cache_state(progress_key, state):
 
 def get_cache_state(progress_key, default=None):
     """Gets the state of progress_key"""
-    if default is not None:
-        if not isinstance(default, bool):
-            raise ValueError('Invalid value for default; must be a bool')
+    if default is not None and not isinstance(default, bool):
+        raise ValueError('Invalid value for default; must be a bool')
     data = get_cache_raw(progress_key, default)
     return data
 

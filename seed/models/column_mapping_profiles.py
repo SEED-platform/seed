@@ -46,7 +46,7 @@ class ColumnMappingProfile(models.Model):
         """
         if isinstance(profile_type, int):
             return profile_type
-        types_dict = dict((v, k) for k, v in cls.COLUMN_MAPPING_PROFILE_TYPES)
+        types_dict = {v: k for k, v in cls.COLUMN_MAPPING_PROFILE_TYPES}
         if profile_type in types_dict:
             return types_dict[profile_type]
         raise Exception(f'Invalid profile type "{profile_type}"')

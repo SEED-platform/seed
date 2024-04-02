@@ -2,11 +2,13 @@ fix = true
 line-length = 140
 
 [format]
+preview = true
 quote-style = "single"
 docstring-code-format = true
 
 # https://docs.astral.sh/ruff/linter/#rule-selection
 [lint]
+preview = true
 # Enable these rules
 extend-select = [
     "A",   # flake8-builtins

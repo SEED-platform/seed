@@ -305,14 +305,13 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, **kwargs):
     # an extra custom mapping for the cross-related data. If the data are not being imported into
     # the property table then make sure to skip this so that superfluous property entries are
     # not created.
-    if 'PropertyState' in table_mappings:
-        if delimited_fields and delimited_fields['jurisdiction_tax_lot_id']:
-            table_mappings['PropertyState'][delimited_fields['jurisdiction_tax_lot_id']['from_field']] = (
-                'PropertyState',
-                'lot_number',
-                'Lot Number',
-                False,
-            )
+    if 'PropertyState' in table_mappings and delimited_fields and delimited_fields['jurisdiction_tax_lot_id']:
+        table_mappings['PropertyState'][delimited_fields['jurisdiction_tax_lot_id']['from_field']] = (
+            'PropertyState',
+            'lot_number',
+            'Lot Number',
+            False,
+        )
     # *** END BREAK OUT ***
     try:
         with transaction.atomic():
@@ -1304,14 +1303,14 @@ def _append_meter_import_results_to_summary(import_results, incoming_summary):
         ]
     """
     agg_results_summary = collections.defaultdict(lambda: 0)
-    error_comments = collections.defaultdict(lambda: set())
+    error_comments = collections.defaultdict(set)
 
     if not isinstance(import_results, list):
         import_results = [import_results]
 
     # First aggregate import_results by key
     for result in import_results:
-        key = list(result.keys())[0]
+        key = next(iter(result.keys()))
 
         success_count = result[key].get('count')
 
@@ -1351,7 +1350,7 @@ def _append_sensor_import_results_to_summary(import_results):
 def _append_sensor_readings_import_results_to_summary(import_results):
     summary = {}
     for import_result in import_results:
-        sensor_name, result = list(import_result.items())[0]
+        sensor_name, result = next(iter(import_result.items()))
 
         if sensor_name not in summary:
             summary[sensor_name] = {'column_name': sensor_name, 'num_readings': 0, 'errors': ''}
@@ -1955,16 +1954,15 @@ def _validate_use_cases(file_pk, progress_key):
 
         # if this is a zip, ensure all zipped versions are the same...
         if zipfile.is_zipfile(import_file.file.name):
-            with zipfile.ZipFile(import_file.file, 'r') as zip_file:
-                with tempfile.TemporaryDirectory() as temp_dir:
-                    zip_file.extractall(path=temp_dir)
-                    for file_name in zip_file.namelist():
-                        bs = BuildingSync()
-                        bs.import_file(f'{temp_dir}/{file_name}')
-                        if found_version == 0:
-                            found_version = bs.version
-                        elif found_version != bs.version:
-                            raise Exception(f'Zip contains multiple BuildingSync versions (found {found_version} and {bs.version})')
+            with zipfile.ZipFile(import_file.file, 'r') as zip_file, tempfile.TemporaryDirectory() as temp_dir:
+                zip_file.extractall(path=temp_dir)
+                for file_name in zip_file.namelist():
+                    bs = BuildingSync()
+                    bs.import_file(f'{temp_dir}/{file_name}')
+                    if found_version == 0:
+                        found_version = bs.version
+                    elif found_version != bs.version:
+                        raise Exception(f'Zip contains multiple BuildingSync versions (found {found_version} and {bs.version})')
             import_file.refresh_from_db()
 
         # it's not a zip, just get the version directly...

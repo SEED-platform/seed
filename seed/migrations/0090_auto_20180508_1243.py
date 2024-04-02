@@ -13,11 +13,7 @@ def exist_in_db_columns(column, db_columns):
     #     'display_name': 'UBID',
     #     'data_type': 'string',
     # }
-    for db_col in db_columns:
-        if column.table_name == db_col['table_name'] and column.column_name == db_col['column_name']:
-            return True
-
-    return False
+    return any(column.table_name == db_col['table_name'] and column.column_name == db_col['column_name'] for db_col in db_columns)
 
 
 def forwards(apps, schema_editor):

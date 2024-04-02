@@ -607,7 +607,7 @@ def _create_case_D(org, cycle, taxlots, properties, campus, number_records_per_c
     property_objs.insert(0, campus_property)
     taxlot_objs = [seed.models.TaxLot.objects.create(organization=org) for t in taxlots]
 
-    property_states = _create_states_with_extra_data(seed.models.PropertyState, [property_] + properties)
+    property_states = _create_states_with_extra_data(seed.models.PropertyState, [property_, *properties])
     property_views = [
         seed.models.PropertyView.objects.get_or_create(property=property, cycle=cycle, state=prop_state)[0]
         for (property, prop_state) in list(zip(property_objs, property_states))

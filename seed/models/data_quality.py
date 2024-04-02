@@ -371,9 +371,8 @@ class Rule(models.Model):
             elif self.condition == Rule.RULE_INCLUDE:
                 if not re.search(self.text_match, value, re.IGNORECASE):
                     return False
-            elif self.condition == Rule.RULE_EXCLUDE:
-                if re.search(self.text_match, value, re.IGNORECASE):
-                    return False
+            elif self.condition == Rule.RULE_EXCLUDE and re.search(self.text_match, value, re.IGNORECASE):
+                return False
 
         return True
 

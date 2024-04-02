@@ -56,7 +56,7 @@ class Note(models.Model):
         index_together = [['organization', 'note_type']]
 
     @classmethod
-    def create_from_edit(self, user_id, view, new_values, previous_values):
+    def create_from_edit(cls, user_id, view, new_values, previous_values):
         """
         Create a Log Note given before and after edit values for a -View's
         -State at the time.
@@ -97,7 +97,7 @@ class Note(models.Model):
         # Create note attributes to be then updated with appropriate -View "type".
         note_attrs = {
             'name': 'Automatically Created',
-            'note_type': self.LOG,
+            'note_type': cls.LOG,
             'organization_id': view.cycle.organization_id,
             'user_id': user_id,
             'log_data': log_data,
@@ -108,7 +108,7 @@ class Note(models.Model):
         elif view.__class__ == TaxLotView:
             note_attrs['taxlot_view_id'] = view.id
 
-        return self.objects.create(**note_attrs)
+        return cls.objects.create(**note_attrs)
 
     def to_dict(self):
         return obj_to_dict(self)

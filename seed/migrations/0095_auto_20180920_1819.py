@@ -11,6 +11,6 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AlterUniqueTogether(
             name='propertymeasure',
-            unique_together=set([('property_measure_name', 'property_state', 'measure', 'application_scale', 'implementation_status')]),
+            unique_together={('property_measure_name', 'property_state', 'measure', 'application_scale', 'implementation_status')},
         ),
     ]

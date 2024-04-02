@@ -229,9 +229,9 @@ class TaxLotProperty(models.Model):
 
         # gather the _shown_ columns
         if show_columns is None:
-            filtered_fields = set([col['column_name'] for col in obj_columns if not col['is_extra_data']])
+            filtered_fields = {col['column_name'] for col in obj_columns if not col['is_extra_data']}
         else:
-            filtered_fields = set([col['column_name'] for col in obj_columns if not col['is_extra_data'] and col['id'] in show_columns])
+            filtered_fields = {col['column_name'] for col in obj_columns if not col['is_extra_data'] and col['id'] in show_columns}
             extra_data_units = {}
             filtered_extra_data_fields = set()
             for col in obj_columns:
@@ -326,12 +326,12 @@ class TaxLotProperty(models.Model):
         related_map = {}
 
         if show_columns is None:
-            filtered_fields = set([col['column_name'] for col in related_columns if not col['is_extra_data']])
+            filtered_fields = {col['column_name'] for col in related_columns if not col['is_extra_data']}
         else:
-            filtered_fields = set([col['column_name'] for col in related_columns if not col['is_extra_data'] and col['id'] in show_columns])
-            filtered_extra_data_fields = set(
-                [col['column_name'] for col in related_columns if col['is_extra_data'] and col['id'] in show_columns]
-            )
+            filtered_fields = {col['column_name'] for col in related_columns if not col['is_extra_data'] and col['id'] in show_columns}
+            filtered_extra_data_fields = {
+                col['column_name'] for col in related_columns if col['is_extra_data'] and col['id'] in show_columns
+            }
 
         for related_view in related_views:
             related_dict = TaxLotProperty.model_to_dict_with_mapping(

@@ -11,18 +11,18 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AlterIndexTogether(
             name='propertyauditlog',
-            index_together=set([('state', 'name'), ('parent_state1', 'parent_state2')]),
+            index_together={('state', 'name'), ('parent_state1', 'parent_state2')},
         ),
         migrations.AlterIndexTogether(
             name='propertystate',
-            index_together=set([('import_file', 'data_state'), ('import_file', 'data_state', 'merge_state')]),
+            index_together={('import_file', 'data_state'), ('import_file', 'data_state', 'merge_state')},
         ),
         migrations.AlterIndexTogether(
             name='taxlotauditlog',
-            index_together=set([('state', 'name'), ('parent_state1', 'parent_state2')]),
+            index_together={('state', 'name'), ('parent_state1', 'parent_state2')},
         ),
         migrations.AlterIndexTogether(
             name='taxlotstate',
-            index_together=set([('import_file', 'data_state'), ('import_file', 'data_state', 'merge_state')]),
+            index_together={('import_file', 'data_state'), ('import_file', 'data_state', 'merge_state')},
         ),
     ]

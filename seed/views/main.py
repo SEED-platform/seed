@@ -118,7 +118,7 @@ def celery_queue(request):
                 total = len(response)
                 results[method] = {'total': total}
                 if total > 0:
-                    results[method]['tasks'] = list(set([t['name'] for t in response]))
+                    results[method]['tasks'] = list({t['name'] for t in response})
             else:
                 results[method] = {'total': 0}
 

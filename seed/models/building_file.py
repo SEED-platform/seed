@@ -317,10 +317,7 @@ class BuildingFile(models.Model):
                 linked_meters.append(meter)
 
                 # meterreadings
-                if meter.type in energy_types:
-                    meter_type = energy_types[meter.type]
-                else:
-                    meter_type = None
+                meter_type = energy_types.get(meter.type, None)
                 meter_conversions = self._kbtu_thermal_conversion_factors().get(meter_type, {})
 
                 valid_reading_models = {

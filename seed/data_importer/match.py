@@ -791,28 +791,27 @@ def save_state_match(state1, state2, priorities):
     # Possible conditions:
     # state1.data_state = 2, state1.merge_state = 0 and state2.data_state = 2, state2.merge_state = 0
     # state1.data_state = 0, state1.merge_state = 2 and state2.data_state = 2, state2.merge_state = 0
-    if state1.import_file_id == state2.import_file_id:
-        if (
-            state1.data_state == DATA_STATE_MAPPING
-            and state1.merge_state == MERGE_STATE_UNKNOWN
-            and state2.data_state == DATA_STATE_MAPPING
-            and state2.merge_state == MERGE_STATE_UNKNOWN
-        ) or (
-            state1.data_state == DATA_STATE_UNKNOWN
-            and state1.merge_state == MERGE_STATE_MERGED
-            and state2.data_state == DATA_STATE_MAPPING
-            and state2.merge_state == MERGE_STATE_UNKNOWN
-        ):
-            merged_state.import_file_id = state1.import_file_id
+    if state1.import_file_id == state2.import_file_id and ((
+        state1.data_state == DATA_STATE_MAPPING
+        and state1.merge_state == MERGE_STATE_UNKNOWN
+        and state2.data_state == DATA_STATE_MAPPING
+        and state2.merge_state == MERGE_STATE_UNKNOWN
+    ) or (
+        state1.data_state == DATA_STATE_UNKNOWN
+        and state1.merge_state == MERGE_STATE_MERGED
+        and state2.data_state == DATA_STATE_MAPPING
+        and state2.merge_state == MERGE_STATE_UNKNOWN
+    )):
+        merged_state.import_file_id = state1.import_file_id
 
-            if isinstance(merged_state, PropertyState):
-                joined_lots = set()
-                if state1.lot_number:
-                    joined_lots = joined_lots.union(state1.lot_number.split(';'))
-                if state2.lot_number:
-                    joined_lots = joined_lots.union(state2.lot_number.split(';'))
-                if joined_lots:
-                    merged_state.lot_number = ';'.join(joined_lots)
+        if isinstance(merged_state, PropertyState):
+            joined_lots = set()
+            if state1.lot_number:
+                joined_lots = joined_lots.union(state1.lot_number.split(';'))
+            if state2.lot_number:
+                joined_lots = joined_lots.union(state2.lot_number.split(';'))
+            if joined_lots:
+                merged_state.lot_number = ';'.join(joined_lots)
 
     # Set the merged_state to merged
     merged_state.merge_state = MERGE_STATE_MERGED

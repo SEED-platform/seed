@@ -46,11 +46,10 @@ def median(lst):
     if not lst:
         return
     # ensure list of not a bunch of "None"
-    if set(lst) is {None}:
+    if set(lst) == {None}:
         return
     index = (len(lst) - 1) // 2
     if len(lst) % 2:
-        #
         return sorted(lst)[index]
     return (sorted(lst)[index] + sorted(lst)[index + 1]) / 2.0
 

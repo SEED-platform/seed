@@ -107,7 +107,8 @@ class Column(models.Model):
         'raw_access_level_instance_id',
         'source_type',
         'updated',
-    ] + EXCLUDED_COLUMN_RETURN_FIELDS
+        *EXCLUDED_COLUMN_RETURN_FIELDS,
+    ]
 
     # These are columns that you cannot rename fields to
     EXCLUDED_RENAME_TO_FIELDS = [
@@ -118,7 +119,8 @@ class Column(models.Model):
         'property_footprint',
         'created',
         'updated',
-    ] + COLUMN_EXCLUDE_FIELDS
+        *COLUMN_EXCLUDE_FIELDS,
+    ]
 
     # These are column names that you can't rename at all
     EXCLUDED_RENAME_FROM_FIELDS = [
@@ -126,7 +128,8 @@ class Column(models.Model):
         'year_built',
         'property_footprint',
         'taxlot_footprint',
-    ] + COLUMN_EXCLUDE_FIELDS
+        *COLUMN_EXCLUDE_FIELDS,
+    ]
 
     # These are fields that should not be mapped to, ever. AKA Protected column fields
     # for either PropertyState or TaxLotState. They will not be shown in the mapping
@@ -1407,10 +1410,8 @@ class Column(models.Model):
                 if related:
                     continue
                 if (
-                    inventory_type == 'property'
-                    and c.column_name in Column.UNMAPPABLE_PROPERTY_FIELDS
-                    or inventory_type == 'taxlot'
-                    and c.column_name in Column.UNMAPPABLE_TAXLOT_FIELDS
+                    (inventory_type == 'property' and c.column_name in Column.UNMAPPABLE_PROPERTY_FIELDS)
+                    or (inventory_type == 'taxlot' and c.column_name in Column.UNMAPPABLE_TAXLOT_FIELDS)
                 ):
                     continue
 

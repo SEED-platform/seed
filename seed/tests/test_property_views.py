@@ -78,6 +78,7 @@ COLUMNS_TO_SEND = [
     'jurisdiction_tax_lot_id',
 ]
 
+
 class PropertyViewTests(DataMappingBaseTestCase):
     def setUp(self):
         user_details = {'username': 'test_user@demo.com', 'password': 'test_pass', 'email': 'test_user@demo.com'}

@@ -241,7 +241,7 @@ class TestApi(TestCase):
         self.assertEqual(len(r['users']), 2)
 
         # get the user id of the new user
-        user_id = [i for i in r['users'] if i['last_name'] == 'Tarth'][0]['user_id']
+        user_id = next(i for i in r['users'] if i['last_name'] == 'Tarth')['user_id']
 
         # Change the user role
         payload = {'organization_id': organization_id, 'role': 'owner'}

@@ -604,7 +604,7 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
         Generate a ProgressData object that will be used to monitor the set "update" of selected
         properties and tax lots to now
         """
-        progress_data = ProgressData(func_name='set_update_to_now', unique_id=f'metadata{randint(10000,99999)}')
+        progress_data = ProgressData(func_name='set_update_to_now', unique_id=f'metadata{randint(10000, 99999)}')
         return progress_data.result()
 
     @api_endpoint_class

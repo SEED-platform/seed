@@ -223,11 +223,11 @@ class TestBuildingFilesPermission(AccessLevelBaseTestCase):
 
         self.login_as_root_member()
         result = self.client.get(url)
-        assert set([d['id'] for d in result.json()['data']]) == {self.root_bf.id, self.child_bf.id}
+        assert {d['id'] for d in result.json()['data']} == {self.root_bf.id, self.child_bf.id}
 
         self.login_as_child_member()
         result = self.client.get(url)
-        assert set([d['id'] for d in result.json()['data']]) == {self.child_bf.id}
+        assert {d['id'] for d in result.json()['data']} == {self.child_bf.id}
 
     def test_get(self):
         url = reverse('api:v3:building_files-detail', args=[self.root_bf.id]) + f'?organization_id={self.org.id}'

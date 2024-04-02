@@ -229,7 +229,7 @@ class TestTaxLotProperty(DataMappingBaseTestCase):
 
         time.sleep(1)
 
-        progress_data = ProgressData(func_name='set_update_to_now', unique_id=f'metadata{randint(10000,99999)}')
+        progress_data = ProgressData(func_name='set_update_to_now', unique_id=f'metadata{randint(10000, 99999)}')
         set_update_to_now(property_view_ids, taxlot_view_ids, progress_data.key)
 
         for pv in PropertyView.objects.filter(id__in=property_view_ids):
@@ -356,7 +356,7 @@ class TestTaxLotPropertyAccessLevel(AccessLevelBaseTestCase):
         start_of_test = datetime.now(pytz.UTC)
         time.sleep(1)
 
-        progress_data = ProgressData(func_name='set_update_to_now', unique_id=f'metadata{randint(10000,99999)}')
+        progress_data = ProgressData(func_name='set_update_to_now', unique_id=f'metadata{randint(10000, 99999)}')
         url = reverse_lazy('api:v3:tax_lot_properties-set-update-to-now')
         url += f'?organization_id={self.org.pk}'
         params = json.dumps(

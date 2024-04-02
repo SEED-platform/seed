@@ -154,14 +154,14 @@ class Migration(migrations.Migration):
         ),
         migrations.AlterUniqueTogether(
             name='taxlotview',
-            unique_together=set([('taxlot', 'cycle')]),
+            unique_together={('taxlot', 'cycle')},
         ),
         migrations.AlterUniqueTogether(
             name='taxlotproperty',
-            unique_together=set([('property_view', 'taxlot_view')]),
+            unique_together={('property_view', 'taxlot_view')},
         ),
         migrations.AlterUniqueTogether(
             name='propertyview',
-            unique_together=set([('property', 'cycle')]),
+            unique_together={('property', 'cycle')},
         ),
     ]

@@ -508,9 +508,7 @@ def _run_analysis(self, loc_data_by_analysis_property_view, analysis_id):
             'Low Income': results[analysis_property_view.id]['low_income'],
             'Share of Neighboring Disadvantaged Tracts': results[analysis_property_view.id]['share_neighbors_disadvantaged'],
             'Number of Affordable Housing Locations in Tract': results[analysis_property_view.id]['number_affordable_housing'],
-            'EJ Screen Report URL': results[analysis_property_view.id]['ejscreen_report']
-            if 'ejscreen_report' in results[analysis_property_view.id]
-            else None,
+            'EJ Screen Report URL': results[analysis_property_view.id].get('ejscreen_report', None),
         }
 
         analysis_property_view.save()

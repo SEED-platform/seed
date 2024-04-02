@@ -89,10 +89,10 @@ class Migration(migrations.Migration):
         ),
         migrations.AlterUniqueTogether(
             name='projecttaxlotview',
-            unique_together=set([('taxlot_view', 'project')]),
+            unique_together={('taxlot_view', 'project')},
         ),
         migrations.AlterUniqueTogether(
             name='projectpropertyview',
-            unique_together=set([('property_view', 'project')]),
+            unique_together={('property_view', 'project')},
         ),
     ]

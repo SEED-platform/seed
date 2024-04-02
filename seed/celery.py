@@ -14,7 +14,7 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings.dev')
 
 app = celery.Celery('seed')
 app.config_from_object('django.conf:settings', namespace='CELERY')
-app.autodiscover_tasks(lambda: settings.SEED_CORE_APPS + ('seed.analysis_pipelines',))
+app.autodiscover_tasks(lambda: (*settings.SEED_CORE_APPS, 'seed.analysis_pipelines'))
 
 if __name__ == '__main__':
     app.start()

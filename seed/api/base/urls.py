@@ -15,6 +15,4 @@ deprecated_apis = [
     re_path(r'^v2\.1/', error410, name='v2.1'),
 ]
 
-urlpatterns = deprecated_apis + [
-    re_path(r'^v3/', include((api_v3, 'seed'), namespace='v3')),
-]
+urlpatterns = [*deprecated_apis, re_path(r'^v3/', include((api_v3, 'seed'), namespace='v3'))]

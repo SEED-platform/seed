@@ -40,8 +40,8 @@ from seed.models.tax_lot_properties import TaxLotProperty
 from seed.utils.address import normalize_address_str
 from seed.utils.generic import compare_orgs_between_label_and_target, obj_to_dict, split_model_fields
 from seed.utils.time import convert_datestr, convert_to_js_timestamp
+from seed.utils.ubid import decode_unique_ids
 
-from ..utils.ubid import decode_unique_ids
 from .auditlog import AUDIT_IMPORT, DATA_UPDATE_TYPE
 
 _log = logging.getLogger(__name__)

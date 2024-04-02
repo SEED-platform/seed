@@ -31,12 +31,11 @@ def forwards(apps, schema_editor):
                 c.is_extra_data = False
                 c.save()
 
-        if cm_mapped.count() == 1:
-            if c.table_name == '':
-                print("    mapped column has table_name set to '', setting to PropertyState")
-                c.table_name = 'PropertyState'
-                c.extra_data_source = 'P'
-                c.save()
+        if cm_mapped.count() == 1 and c.table_name == '':
+            print("    mapped column has table_name set to '', setting to PropertyState")
+            c.table_name = 'PropertyState'
+            c.extra_data_source = 'P'
+            c.save()
 
 
 class Migration(migrations.Migration):

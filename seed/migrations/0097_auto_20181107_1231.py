@@ -15,7 +15,7 @@ class Migration(migrations.Migration):
         ),
         migrations.AlterUniqueTogether(
             name='buildingattributevariant',
-            unique_together=set([]),
+            unique_together=set(),
         ),
         migrations.RemoveField(
             model_name='buildingattributevariant',

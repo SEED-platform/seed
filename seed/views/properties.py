@@ -4,6 +4,7 @@ SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and othe
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
+import contextlib
 import json
 
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
@@ -404,10 +405,8 @@ class PropertyViewSet(ViewSet, ProfileIdMixin):
             profile_id = request.data['profile_id']
 
             # ensure that profile_id is an int
-            try:
+            with contextlib.suppress(TypeError):
                 profile_id = int(profile_id)
-            except TypeError:
-                pass
 
         return self._get_filtered_results(request, profile_id=profile_id)
 

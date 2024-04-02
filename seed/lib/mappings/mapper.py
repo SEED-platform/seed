@@ -17,7 +17,7 @@ from past.builtins import basestring
 
 from seed.lib.mcm.cleaners import normalize_unicode_and_characters
 
-LINEAR_UNITS = set(['ft', 'm', 'in'])
+LINEAR_UNITS = {'ft', 'm', 'in'}
 MAPPING_DATA_DIR = join(dirname(realpath(__file__)), 'data')
 
 

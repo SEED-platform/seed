@@ -24,7 +24,7 @@ class Migration(migrations.Migration):
         ),
         migrations.AlterIndexTogether(
             name='timeseries',
-            index_together=set([]),
+            index_together=set(),
         ),
         migrations.RemoveField(
             model_name='timeseries',
@@ -124,6 +124,6 @@ class Migration(migrations.Migration):
         migrations.RunSQL("SELECT create_hypertable('seed_meterreading', 'start_time');"),
         migrations.AlterUniqueTogether(
             name='meterreading',
-            unique_together=set([('meter', 'start_time', 'end_time')]),
+            unique_together={('meter', 'start_time', 'end_time')},
         ),
     ]

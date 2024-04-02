@@ -138,6 +138,6 @@ class Migration(migrations.Migration):
         ),
         migrations.AlterUniqueTogether(
             name='greenassessment',
-            unique_together=set([('organization', 'name', 'award_body')]),
+            unique_together={('organization', 'name', 'award_body')},
         ),
     ]

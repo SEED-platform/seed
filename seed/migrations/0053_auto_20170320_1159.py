@@ -11,6 +11,6 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AlterUniqueTogether(
             name='column',
-            unique_together=set([]),
+            unique_together=set(),
         ),
     ]

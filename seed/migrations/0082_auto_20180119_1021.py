@@ -48,6 +48,6 @@ class Migration(migrations.Migration):
         ),
         migrations.AlterIndexTogether(
             name='note',
-            index_together=set([('organization', 'note_type')]),
+            index_together={('organization', 'note_type')},
         ),
     ]

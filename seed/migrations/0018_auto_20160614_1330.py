@@ -11,6 +11,6 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AlterUniqueTogether(
             name='column',
-            unique_together=set([('organization', 'column_name', 'is_extra_data', 'extra_data_source')]),
+            unique_together={('organization', 'column_name', 'is_extra_data', 'extra_data_source')},
         ),
     ]

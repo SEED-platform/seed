@@ -43,6 +43,6 @@ class Migration(migrations.Migration):
         ),
         migrations.AlterUniqueTogether(
             name='exportablefield',
-            unique_together=set([('field_model', 'name', 'organization')]),
+            unique_together={('field_model', 'name', 'organization')},
         ),
     ]

@@ -4,6 +4,7 @@ SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and othe
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
+import contextlib
 import logging
 
 from django.db import models
@@ -219,10 +220,8 @@ class DataView(models.Model):
         q_set = states.values(extra_data_col)
         values = []
         for val in list(q_set):
-            try:
+            with contextlib.suppress(ValueError, TypeError):
                 values.append(float(val[extra_data_col]))
-            except (ValueError, TypeError):
-                pass
         if values:
             type_to_aggregate = {Avg: sum(values) / len(values), Count: len(values), Max: max(values), Min: min(values), Sum: sum(values)}
             return round(type_to_aggregate[aggregation], 2)

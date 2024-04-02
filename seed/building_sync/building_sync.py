@@ -451,7 +451,7 @@ class BuildingSync:
         result = apply_mapping(self.element_tree, merged_mapping, messages, NAMESPACES, xpaths_as_keys=True)
 
         # flatten the dictionary and make all keys absolute xpaths
-        base_xpath = list(result.keys())[0]  # only one key in result, the property xpath
+        base_xpath = next(iter(result.keys()))  # only one key in result, the property xpath
         flattened_result = {}
         for relative_xpath, value in result[base_xpath].items():
             abs_xpath = base_xpath.rstrip('/') + '/' + relative_xpath.lstrip('./')

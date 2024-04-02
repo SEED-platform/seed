@@ -37,9 +37,8 @@ def forwards(apps, schema_editor):
         print('\n----PropertyAuditLog----')
         print(f'ID: {p.pk}   Description:  {p.description}')
 
-        if not p.name:
-            if p.description == 'Initial audit log added on creation/save.':
-                p.name = 'Import Creation'
+        if not p.name and p.description == 'Initial audit log added on creation/save.':
+            p.name = 'Import Creation'
 
         property_state_1 = None
         property_state_2 = None
@@ -60,9 +59,8 @@ def forwards(apps, schema_editor):
         print('\n----TaxLotAuditLog----')
         print(f'ID: {t.pk}   Description:  {t.description}')
 
-        if not t.name:
-            if t.description == 'Initial audit log added on creation/save.':
-                t.name = 'Import Creation'
+        if not t.name and t.description == 'Initial audit log added on creation/save.':
+            t.name = 'Import Creation'
 
         tax_lot_state_1 = None
         tax_lot_state_2 = None

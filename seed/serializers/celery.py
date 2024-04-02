@@ -19,9 +19,8 @@ class CeleryDatetimeSerializer(json.JSONEncoder):
 
     @staticmethod
     def seed_decoder(obj):
-        if '__type__' in obj:
-            if obj['__type__'] == '__datetime__':
-                return dateutil.parser.parse(obj['iso8601'])
+        if '__type__' in obj and obj['__type__'] == '__datetime__':
+            return dateutil.parser.parse(obj['iso8601'])
         return obj
 
     # Encoder function

@@ -81,7 +81,7 @@ def arithmetic_st(draw, operators, operand_st=good_floats, max_operands=10, in_p
     result = ''
     # insert an operator between each operand
     for idx, operator in enumerate(operators):
-        result += f'{operands[idx]} {operators[idx]} '
+        result += f'{operands[idx]} {operator} '
     result += str(operands[-1])
 
     if draw(in_parens_st):
@@ -106,15 +106,17 @@ atomic_no_params_st = (
     good_floats.map(str) | pow_st() | func_st(st.sampled_from(['min', 'max']), min_args=2) | func_st(st.just('abs'), min_args=1, max_args=1)
 )
 
+
 # function for recursive strategy
 # avoiding the division operator b/c it can cause unexpected divide by zero issues
-recursive_st_func = (
-    lambda children: arithmetic_st(operators=['+', '-', '*'], operand_st=children, max_operands=3, in_parens_st=st.booleans())
-    | func_st(st.sampled_from(['min', 'max']), children, min_args=2)
-    | func_st(st.just('abs'), st.one_of(children), min_args=1, max_args=1)
-)
+def recursive_st_func(children):
+    return (arithmetic_st(operators=['+', '-', '*'], operand_st=children, max_operands=3, in_parens_st=st.booleans())
+            | func_st(st.sampled_from(['min', 'max']), children, min_args=2)
+            | func_st(st.just('abs'), st.one_of(children), min_args=1, max_args=1))
 
 # strategy for generating complex / nested expressions WITHOUT parameters
+
+
 full_expression_no_params_st = st.recursive(atomic_no_params_st, recursive_st_func, max_leaves=50)
 
 

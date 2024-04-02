@@ -479,8 +479,8 @@ class AccountsViewTests(TestCase):
         url = reverse_lazy('api:v3:organizations-save-settings', args=[self.org.pk])
 
         columns = list(Column.objects.filter(organization=self.org).values('id', 'table_name', 'column_name'))
-        ubid_id = [c for c in columns if c['table_name'] == 'PropertyState' and c['column_name'] == 'ubid'][0]['id']
-        address_line_1_id = [c for c in columns if c['table_name'] == 'PropertyState' and c['column_name'] == 'address_line_1'][0]['id']
+        ubid_id = next(c for c in columns if c['table_name'] == 'PropertyState' and c['column_name'] == 'ubid')['id']
+        address_line_1_id = next(c for c in columns if c['table_name'] == 'PropertyState' and c['column_name'] == 'address_line_1')['id']
 
         # There are already several columns in the database due to the create_organization method
         payload = {

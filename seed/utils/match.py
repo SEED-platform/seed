@@ -226,7 +226,7 @@ def _get_ali(view, matching_views, highest_ali, class_name, ViewClass):
 
     # get the ali of the view
     if view:
-        view_ali_id = list(ViewClass.objects.filter(id=view.id).values_list(f'{class_name}__access_level_instance', flat=True))[0]
+        view_ali_id = next(iter(ViewClass.objects.filter(id=view.id).values_list(f'{class_name}__access_level_instance', flat=True)))
     else:
         view_ali_id = None
 

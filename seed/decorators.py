@@ -100,9 +100,8 @@ def ajax_request(func):
 
         # determine the status code if the object is a dictionary
         status_code = 200
-        if isinstance(response, dict):
-            if response.get('status') == 'error' or response.get('success') is False:
-                status_code = 400
+        if isinstance(response, dict) and (response.get('status') == 'error' or response.get('success') is False):
+            status_code = 400
 
         # convert the response into an HttpResponse if it is not already.
         if not isinstance(response, HttpResponse):
@@ -146,9 +145,8 @@ def ajax_request_class(func):
 
         # determine the status code if the object is a dictionary
         status_code = 200
-        if isinstance(response, dict):
-            if response.get('status') == 'error' or response.get('success') is False:
-                status_code = 400
+        if isinstance(response, dict) and (response.get('status') == 'error' or response.get('success') is False):
+            status_code = 400
 
         # convert the response into an HttpResponse if it is not already.
         if not isinstance(response, HttpResponse):

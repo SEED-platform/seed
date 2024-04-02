@@ -6,6 +6,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 :author noel.merket@nrel.gov
 """
 
+import contextlib
 import functools
 import logging
 import os
@@ -342,14 +343,9 @@ class HPXML:
             owner_name = ' '.join(self.xpath('h:Name/*/text()', start_from=owner))
             if owner_name:
                 res['owner'] = owner_name
-            try:
+            with contextlib.suppress(AttributeError):
                 res['owner_email'] = owner.Email.EmailAddress.text
-            except AttributeError:
-                pass
-            try:
                 res['owner_telephone'] = owner.Person.Telephone.TelephoneNumber.text
-            except AttributeError:
-                pass
             res['owner_address'] = ' '.join(
                 self.xpath(
                     '|'.join([f'h:MailingAddress/h:Address{i}/text()' for i in (1, 2)]),
@@ -366,16 +362,12 @@ class HPXML:
             )
             if not res['owner_city_state']:
                 del res['owner_city_state']
-            try:
+            with contextlib.suppress(AttributeError):
                 res['owner_postal_code'] = owner.getparent().MailingAddress.ZipCode.text
-            except AttributeError:
-                pass
 
         # Building Certification / Program Certificate
-        try:
+        with contextlib.suppress(AttributeError):
             res['building_certification'] = self.root.Project.ProjectDetails.ProgramCertificate.text
-        except AttributeError:
-            pass
 
         # Energy Score Type
         try:
@@ -385,10 +377,8 @@ class HPXML:
         else:
             score_type = energy_score.ScoreType.text
             if score_type == 'other':
-                try:
+                with contextlib.suppress(AttributeError):
                     score_type = energy_score.OtherScoreType.text
-                except AttributeError:
-                    pass
                 res['energy_score_type'] = score_type
             else:
                 res['energy_score_type'] = score_type

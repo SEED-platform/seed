@@ -492,7 +492,7 @@ class Migration(migrations.Migration):
         ),
         migrations.AlterUniqueTogether(
             name='statuslabel',
-            unique_together=set([('name', 'super_organization')]),
+            unique_together={('name', 'super_organization')},
         ),
         migrations.AddField(
             model_name='projectbuilding',
@@ -502,7 +502,7 @@ class Migration(migrations.Migration):
         ),
         migrations.AlterUniqueTogether(
             name='projectbuilding',
-            unique_together=set([('building_snapshot', 'project')]),
+            unique_together={('building_snapshot', 'project')},
         ),
         migrations.AddField(
             model_name='project',
@@ -571,7 +571,7 @@ class Migration(migrations.Migration):
         ),
         migrations.AlterUniqueTogether(
             name='column',
-            unique_together=set([('organization', 'column_name', 'is_extra_data')]),
+            unique_together={('organization', 'column_name', 'is_extra_data')},
         ),
         migrations.AddField(
             model_name='buildingsnapshot',
@@ -841,7 +841,7 @@ class Migration(migrations.Migration):
         ),
         migrations.AlterUniqueTogether(
             name='buildingattributevariant',
-            unique_together=set([('field_name', 'building_snapshot')]),
+            unique_together={('field_name', 'building_snapshot')},
         ),
         migrations.AddField(
             model_name='attributeoption',

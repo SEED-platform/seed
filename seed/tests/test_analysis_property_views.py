@@ -128,5 +128,5 @@ class TestAnalysisPropertyViews(TestCase):
         self.assertEqual(len(analysis_view_ids), len(self.property_views_a))
         failure_ids = [failure.property_view_id for failure in failures]
         # the failures should all be from other org
-        self.assertEqual(set(failure_ids), set([p.id for p in self.property_views_b]))
+        self.assertEqual(set(failure_ids), {p.id for p in self.property_views_b})
         self.assertEqual(failures[0].message, 'No such PropertyView')
