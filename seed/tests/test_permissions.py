@@ -2,7 +2,7 @@
 # encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
-See also https://github.com/seed-platform/seed/main/LICENSE.md
+See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 :author Paul Munday <paul@paulmunday.net>
 """
@@ -138,6 +138,27 @@ class PermissionsFunctionsTests(TestCase):
         result = get_org_id(mock_request)
         self.assertEqual(None, result)
 
+        # invalid ids are returned as -1 (not found)
+        mock_request = mock_request_factory(
+            view_authz_org_id_kwarg=None,
+            parser_kwargs={'not_org_id': 1},
+            path='/api/v3/nope/2/',
+            query_params={'organization_id': 'invalid_id'},
+            data={'organization_id': 4}
+        )
+        result = get_org_id(mock_request)
+        self.assertEqual(-1, result)
+
+        mock_request = mock_request_factory(
+            view_authz_org_id_kwarg=None,
+            parser_kwargs={'not_org_id': 1},
+            path='/api/v3/nope/2/',
+            query_params={'not_org_id': 2},
+            data={'organization_id': 'invalid_id'}
+        )
+        result = get_org_id(mock_request)
+        self.assertEqual(-1, result)
+
     def test_get_user_org(self):
         """Test getting org from user"""
         fake_user = User.objects.create(username='test')
@@ -145,13 +166,13 @@ class PermissionsFunctionsTests(TestCase):
         fake_org_2 = Organization.objects.create()
         fake_org_3 = Organization.objects.create()
         OrganizationUser.objects.create(
-            user=fake_user, organization=fake_org_1
+            user=fake_user, organization=fake_org_1, access_level_instance_id=fake_org_1.root.id
         )
         OrganizationUser.objects.create(
-            user=fake_user, organization=fake_org_2
+            user=fake_user, organization=fake_org_2, access_level_instance_id=fake_org_2.root.id
         )
         OrganizationUser.objects.create(
-            user=fake_user, organization=fake_org_3
+            user=fake_user, organization=fake_org_3, access_level_instance_id=fake_org_3.root.id
         )
         # no default_organization and no parent org
         result = get_user_org(fake_user)

@@ -1,6 +1,6 @@
 /**
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
- * See also https://github.com/seed-platform/seed/main/LICENSE.md
+ * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
 angular.module('BE.seed.service.sensor', []).factory('sensor_service', [
   '$http',
@@ -23,11 +23,38 @@ angular.module('BE.seed.service.sensor', []).factory('sensor_service', [
       }
     }).then((response) => response.data);
 
+
+    sensor_factory.update_data_logger = (organization_id, id, display_name, location_description, manufacturer_name, model_name, serial_number, identifier) => {
+      let url = `/api/v3/data_loggers/${id}/?organization_id=${organization_id}`;
+      return $http({
+        url: url,
+        method: 'PUT',
+        data: {
+          display_name,
+          location_description,
+          manufacturer_name,
+          model_name,
+          serial_number,
+          identifier
+        }
+      }).then((response) => response.data);
+    };
+
+    sensor_factory.delete_data_logger = (data_logger_id, organization_id) => {
+      let url = `/api/v3/data_loggers/${data_logger_id}?organization_id=${organization_id}`;
+      return $http.delete(url).then(resp => resp.data);
+    };
+
+    sensor_factory.delete_sensor = (view_id, sensor_id, organization_id) => {
+      let url = `/api/v3/properties/${view_id}/sensors/${sensor_id}?organization_id=${organization_id}`;
+      return $http.delete(url).then(resp => resp.data);
+    };
+
     sensor_factory.get_sensors = (property_view_id, organization_id) => $http.get(`/api/v3/properties/${property_view_id}/sensors/`, { params: { organization_id } }).then((response) => response.data);
 
     sensor_factory.property_sensor_usage = (property_view_id, organization_id, interval, showOnlyOccupiedReadings, excluded_sensor_ids, page, per_page) => {
       if (_.isUndefined(excluded_sensor_ids)) excluded_sensor_ids = [];
-      let url = `/api/v3/properties/${property_view_id}/sensor_usage/?organization_id=${organization_id}`;
+      let url = `/api/v3/properties/${property_view_id}/sensors/usage/?organization_id=${organization_id}`;
       if (page != null) {
         url += `&page=${page}`;
       }
@@ -41,6 +68,23 @@ angular.module('BE.seed.service.sensor', []).factory('sensor_service', [
           showOnlyOccupiedReadings
         })
         .then((response) => response.data);
+    };
+
+    sensor_factory.update_sensor = (organization_id, view_id, id, display_name, location_description, description, sensor_type, units, column_name) => {
+      let url = `/api/v3/properties/${view_id}/sensors/${id}/?organization_id=${organization_id}`;
+      return $http({
+        url: url,
+        method: 'PUT',
+        data: {
+          id,
+          display_name,
+          location_description,
+          description,
+          sensor_type,
+          units,
+          column_name
+        }
+      }).then((response) => response.data);
     };
 
     return sensor_factory;

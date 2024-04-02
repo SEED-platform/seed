@@ -15,12 +15,19 @@
     <div class="content_block row insights-header">
         <div ng-show="!data">
           <div ng-if="auth.requires_member" class="compliance-setup">
-            <p>If you are not seeing a chart on this page, visit the <a ui-sref="programs(::{organization_id: organization.id})">Program</a> page to configure your program's metrics.</p>
+            <p>Configure your program's metrics:</p>
+            <button class="btn btn-primary" type="submit" ng-click="open_program_setup_modal()">
+              Program Configuration
+            </button>
           </div>
         </div>
         <div ng-show="data">
           <div ng-if="auth.requires_member" class="compliance-setup">
-            <p><span translate>CONFIGURE_PROGRAM</span> <a ui-sref="programs(::{organization_id: organization.id})" translate>Program Configuration page</a>.</p>
+            <p>Need to configure your Program?
+              <button class="btn btn-primary" type="submit" ng-click="open_program_setup_modal()">
+                Program Configuration
+              </button>
+            </p>
           </div>
         </div>
     </div>
@@ -28,10 +35,14 @@
       <div ng-show="data">
         <div class="col-md-2">
           <div class="chart-options">
-            <div class="title"><span translate>Chart Options</span><span class="help-text-icon" ng-click="toggle_help()"><i class="fa-solid fa-circle-question" aria-label="display help text"></i></span></div>
-              <div ng-show="show_help">
-                <p class="small-text" translate>INSIGHTS_HELP_TEXT</p>
-              </div>
+            <div class="title">
+              <span translate>Chart Options</span>
+              <span class="help-text-icon" ng-click="toggle_help()">
+                <i class="fa-solid fa-circle-question" aria-label="display help text"></i>
+              </span>
+            </div>
+            <div ng-show="show_help">
+              <p class="small-text" translate>INSIGHTS_HELP_TEXT</p>
             </div>
 
             <div class="form-group">
@@ -54,7 +65,7 @@
               <select class="form-control" id="xSelect" ng-model="configs.chart_xaxis" ng-change="update()" ng-options="operator.id as operator.display_name for operator in x_axis_options"></select>
             </div>
 
-            <div class="button-grid chart-buttons">
+            <div ng-show="menu.user.organization.user_role !== 'viewer'" class="button-grid chart-buttons">
               <div class="flex-button-child"><button type="button" class="btn btn-primary" ng-click="open_update_labels_modal()" ng-disabled="!visibleIds().length" translate>Update Property Labels</button></div>
             </div>
           </div>

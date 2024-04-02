@@ -2,7 +2,7 @@
 # encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
-See also https://github.com/seed-platform/seed/main/LICENSE.md
+See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 import logging
 import re
@@ -51,29 +51,38 @@ TRACT_FIELDNAME = 'analysis_census_tract'
 EJSCREEN_URL_STUB = 'https://ejscreen.epa.gov/mapper/EJscreen_SOE_report.aspx?namestr=&geometry={"spatialReference":{"wkid":4326},"x":LONG,"y":LAT}&distance=1&unit=9035&areatype=&areaid=&f=report'
 
 
-def _get_data_for_census_tract_fetch(property_view_ids, organization):
+def _get_data_for_census_tract_fetch(property_view_ids, organization, can_create_columns):
     """Performs basic validation of the properties for running EEEJ and returns any errors
     Fetches census tract information based on address if it doesn't exist already
 
     :param property_view_ids
     :param organization
+    :param can_create_columns - does the user have permission to create columns
     :returns: dictionary[id:str], dictionary of property_view_ids to error message
     """
     # invalid_location = []
     loc_data_by_property_view = {}
     errors_by_property_view_id = {}
 
-    # make sure the Census Tract column exists
-    column, created = Column.objects.get_or_create(
-        is_extra_data=True,
-        column_name=TRACT_FIELDNAME,
-        organization=organization,
-        table_name='PropertyState',
-    )
-    if created:
-        column.display_name = 'Census Tract'
-        column.column_description = '2010 Census Tract'
-        column.save()
+    # check that Census Tract column exists. If not, create if you can
+    try:
+        Column.objects.get(
+            column_name=TRACT_FIELDNAME,
+            organization=organization,
+            table_name='PropertyState',
+        )
+    except Exception:
+        # does user have permission to create?
+        if can_create_columns:
+            column = Column.objects.create(
+                column_name=TRACT_FIELDNAME,
+                organization=organization,
+                table_name='PropertyState',
+                is_extra_data=True,
+            )
+            column.display_name = 'Census Tract'
+            column.column_description = '2010 Census Tract'
+            column.save()
 
     property_views = PropertyView.objects.filter(id__in=property_view_ids)
     for property_view in property_views:
@@ -327,8 +336,8 @@ class EEEJPipeline(AnalysisPipeline):
         # current implementation will *always* start the analysis immediately
         analysis = Analysis.objects.get(id=self._analysis_id)
 
-        # TODO: check that we have the data we need to retrieve census tract for each property
-        loc_data_by_property_view, errors_by_property_view_id = _get_data_for_census_tract_fetch(property_view_ids, analysis.organization)
+        # check that we have the data we need to retrieve census tract for each property
+        loc_data_by_property_view, errors_by_property_view_id = _get_data_for_census_tract_fetch(property_view_ids, analysis.organization, analysis.can_create())
 
         if not loc_data_by_property_view:
             AnalysisMessage.log_and_create(
@@ -393,76 +402,59 @@ def _run_analysis(self, loc_data_by_analysis_property_view, analysis_id):
     progress_data = pipeline.set_analysis_status_to_running()
     progress_data.step('Calculating EEEJ Indicators')
     analysis = Analysis.objects.get(id=analysis_id)
+    # if user is at root level and has role member or owner, columns can be created
+    # otherwise set the 'missing_columns' flag for later
+    missing_columns = False
 
-    # make sure we have the extra data columns we need, don't set the
-    # displayname and description if the column already exists because
-    # the user might have changed them which would re-create new columns
-    # here.
-    column, created = Column.objects.get_or_create(
-        is_extra_data=True,
-        column_name='analysis_dac',
-        organization=analysis.organization,
-        table_name='PropertyState',
-    )
-    if created:
-        column.display_name = 'Disadvantaged Community'
-        column.column_description = 'Property located in a Disadvantaged Community as defined by CEJST'
-        column.save()
+    # make sure we have the extra data columns we need
+    column_meta = [
+        {
+            'column_name': 'analysis_dac',
+            'display_name': 'Disadvantaged Community',
+            'description': 'Property located in a Disadvantaged Community as defined by CEJST'
+        }, {
+            'column_name': 'analysis_energy_burden_low_income',
+            'display_name': 'Energy Burden and low Income?',
+            'description': 'Is this property located in an energy burdened census tract. Energy Burden defined by CEJST as greater than or equal to the 90th percentile for energy burden and is low income.'
+        }, {
+            'column_name': 'analysis_energy_burden_percentile',
+            'display_name': 'Energy Burden Percentile',
+            'description': 'Energy Burden Percentile as identified by CEJST'
+        }, {
+            'column_name': 'analysis_low_income',
+            'display_name': 'Low Income?',
+            'description': 'Is this property located in a census tract identified as Low Income by CEJST?'
+        }, {
+            'column_name': 'analysis_share_neighbors_disadvantaged',
+            'display_name': 'Share of Neighboring Tracts Identified as Disadvantaged',
+            'description': 'The percentage of neighboring census tracts that have been identified as disadvantaged by CEJST'
+        }, {
+            'column_name': 'analysis_number_affordable_housing',
+            'display_name': 'Number of Affordable Housing Locations in Tract',
+            'description': 'Number of affordable housing locations (both public housing developments and multi-family assisted housing) identified by HUD in census tract'
+        }
+    ]
 
-    column, created = Column.objects.get_or_create(
-        is_extra_data=True,
-        column_name='analysis_energy_burden_low_income',
-        organization=analysis.organization,
-        table_name='PropertyState',
-    )
-    if created:
-        column.display_name = 'Energy Burden and low Income?'
-        column.column_description = 'Is this property located in an energy burdened census tract. Energy Burden defined by CEJST as greater than or equal to the 90th percentile for energy burden and is low income.'
-        column.save()
-
-    column, created = Column.objects.get_or_create(
-        is_extra_data=True,
-        column_name='analysis_energy_burden_percentile',
-        organization=analysis.organization,
-        table_name='PropertyState',
-    )
-    if created:
-        column.display_name = 'Energy Burden Percentile'
-        column.column_description = 'Energy Burden Percentile as identified by CEJST'
-        column.save()
-
-    column, created = Column.objects.get_or_create(
-        is_extra_data=True,
-        column_name='analysis_low_income',
-        organization=analysis.organization,
-        table_name='PropertyState',
-    )
-    if created:
-        column.display_name = 'Low Income?'
-        column.column_description = 'Is this property located in a census tract identified as Low Income by CEJST?'
-        column.save()
-
-    column, created = Column.objects.get_or_create(
-        is_extra_data=True,
-        column_name='analysis_share_neighbors_disadvantaged',
-        organization=analysis.organization,
-        table_name='PropertyState',
-    )
-    if created:
-        column.display_name = 'Share of Neighboring Tracts Identified as Disadvantaged'
-        column.column_description = 'The percentage of neighboring census tracts that have been identified as disadvantaged by CEJST'
-        column.save()
-
-    column, created = Column.objects.get_or_create(
-        is_extra_data=True,
-        column_name='analysis_number_affordable_housing',
-        organization=analysis.organization,
-        table_name='PropertyState',
-    )
-    if created:
-        column.display_name = 'Number of Affordable Housing Locations in Tract'
-        column.column_description = 'Number of affordable housing locations (both public housing developments and multi-family assisted housing) identified by HUD in census tract'
-        column.save()
+    for col in column_meta:
+        try:
+            Column.objects.get(
+                column_name=col["column_name"],
+                organization=analysis.organization,
+                table_name='PropertyState',
+            )
+        except Exception:
+            if analysis.can_create():
+                column = Column.objects.create(
+                    is_extra_data=True,
+                    column_name=col["column_name"],
+                    organization=analysis.organization,
+                    table_name='PropertyState',
+                )
+                column.display_name = col["display_name"]
+                column.column_description = col["description"]
+                column.save()
+            else:
+                missing_columns = True
 
     # fix the dict b/c celery messes with it when serializing
     analysis_property_view_ids = list(loc_data_by_analysis_property_view.keys())
@@ -505,17 +497,19 @@ def _run_analysis(self, loc_data_by_analysis_property_view, analysis_id):
 
         analysis_property_view.save()
 
-        # TODO: save each indicators back to property_view
+        # save each indicators back to property_view
+        # only if you can
         property_view = property_views_by_apv_id[analysis_property_view.id]
-        property_view.state.extra_data.update({
-            'analysis_census_tract': results[analysis_property_view.id]['census_tract'],
-            'analysis_dac': results[analysis_property_view.id]['dac'],
-            'analysis_energy_burden_low_income': results[analysis_property_view.id]['energy_burden_low_income'],
-            'analysis_energy_burden_percentile': results[analysis_property_view.id]['energy_burden_percentile'],
-            'analysis_low_income': results[analysis_property_view.id]['low_income'],
-            'analysis_share_neighbors_disadvantaged': results[analysis_property_view.id]['share_neighbors_disadvantaged'],
-            'analysis_number_affordable_housing': results[analysis_property_view.id]['number_affordable_housing'],
-        })
+        if not missing_columns:
+            property_view.state.extra_data.update({
+                'analysis_census_tract': results[analysis_property_view.id]['census_tract'],
+                'analysis_dac': results[analysis_property_view.id]['dac'],
+                'analysis_energy_burden_low_income': results[analysis_property_view.id]['energy_burden_low_income'],
+                'analysis_energy_burden_percentile': results[analysis_property_view.id]['energy_burden_percentile'],
+                'analysis_low_income': results[analysis_property_view.id]['low_income'],
+                'analysis_share_neighbors_disadvantaged': results[analysis_property_view.id]['share_neighbors_disadvantaged'],
+                'analysis_number_affordable_housing': results[analysis_property_view.id]['number_affordable_housing'],
+            })
 
         # store lat/lng (if blank) Census geocoder codes at the street address level (not Point level like mapquest)
         # store anyway but record as "Census Geocoder (L1AAA)" vs. mapquest "High (P1AAA)"

@@ -1,9 +1,10 @@
 # encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
-See also https://github.com/seed-platform/seed/main/LICENSE.md
+See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 from django.core.exceptions import ObjectDoesNotExist
+from django.db import IntegrityError
 from django.http import JsonResponse
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
@@ -12,6 +13,7 @@ from seed.decorators import ajax_request_class
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.lib.superperms.orgs.models import (
+    ROLE_MEMBER,
     ROLE_OWNER,
     Organization,
     OrganizationUser
@@ -27,7 +29,7 @@ class OrganizationUserViewSet(viewsets.ViewSet):
 
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('requires_member')
+    @has_perm_class('requires_viewer')
     def list(self, request, organization_pk):
         """
         Retrieve all users belonging to an org.
@@ -38,20 +40,39 @@ class OrganizationUserViewSet(viewsets.ViewSet):
             return JsonResponse({'status': 'error',
                                  'message': 'Could not retrieve organization at organization_pk = ' + str(organization_pk)},
                                 status=status.HTTP_404_NOT_FOUND)
+
+        if request.user.is_superuser:
+            is_member_or_superuser = True
+            org_users = org.organizationuser_set.all()
+        else:
+            org_user = OrganizationUser.objects.get(user=self.request.user, organization=org)
+            is_member_or_superuser = org_user.role_level >= ROLE_MEMBER
+
+            org_users = org.organizationuser_set.filter(
+                access_level_instance__rgt__lte=org_user.access_level_instance.rgt,
+                access_level_instance__lft__gte=org_user.access_level_instance.lft,
+            )
+
         users = []
-        for u in org.organizationuser_set.all():
+        for u in org_users:
             user = u.user
-
-            user_orgs = OrganizationUser.objects.filter(user=user).count()
-
-            users.append({
+            user_info = {
                 'email': user.email,
                 'first_name': user.first_name,
                 'last_name': user.last_name,
-                'number_of_orgs': user_orgs,
                 'user_id': user.pk,
-                'role': get_js_role(u.role_level)
-            })
+            }
+            if is_member_or_superuser:
+                user_orgs = OrganizationUser.objects.filter(user=user).count()
+                user_info.update({
+                    'number_of_orgs': user_orgs,
+                    'role': get_js_role(u.role_level),
+                    'access_level_instance_id': u.access_level_instance.id,
+                    'access_level_instance_name': u.access_level_instance.name,
+                    'access_level': org.access_level_names[u.access_level_instance.depth - 1],
+                })
+
+            users.append(user_info)
 
         return JsonResponse({'status': 'success', 'users': users})
 
@@ -66,7 +87,13 @@ class OrganizationUserViewSet(viewsets.ViewSet):
         org = Organization.objects.get(pk=organization_pk)
         user = User.objects.get(pk=pk)
 
-        created = org.add_member(user)
+        try:
+            created = org.add_member(user, org.root.id)
+        except IntegrityError as e:
+            return JsonResponse({
+                'status': 'error',
+                'message': str(e)
+            }, status=status.HTTP_400_BAD_REQUEST)
 
         # Send an email if a new user has been added to the organization
         if created:

@@ -1,21 +1,22 @@
 /**
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
- * See also https://github.com/seed-platform/seed/main/LICENSE.md
+ * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
-angular.module('BE.seed.controller.data_logger_upload_modal', []).controller('data_logger_upload_modal_controller', [
+angular.module('BE.seed.controller.data_logger_upload_or_update_modal', []).controller('data_logger_upload_or_update_modal_controller', [
   '$scope',
   '$state',
   '$uibModalInstance',
+  'data_logger',
   'filler_cycle',
   'organization_id',
   'sensor_service',
   'view_id',
   // eslint-disable-next-line func-names
-  function ($scope, $state, $uibModalInstance, filler_cycle, organization_id, sensor_service, view_id) {
+  function ($scope, $state, $uibModalInstance, data_logger, filler_cycle, organization_id, sensor_service, view_id) {
     $scope.view_id = view_id;
     $scope.selectedCycle = filler_cycle;
     $scope.organization_id = organization_id;
-    $scope.data_logger = {
+    $scope.data_logger = {...data_logger} ?? {
       display_name: null,
       location_description: '',
       id: null,
@@ -26,11 +27,14 @@ angular.module('BE.seed.controller.data_logger_upload_modal', []).controller('da
     };
 
     $scope.create_data_logger = () => {
-      if ($scope.data_logger.display_name == null || $scope.data_logger.display_name === '') {
-        $scope.data_logger_display_name_not_entered_alert = true;
-      } else {
-        $scope.data_logger_display_name_not_entered_alert = false;
+      // error out if display name is empty
+      $scope.data_logger_display_name_not_entered_alert = (
+        $scope.data_logger.display_name == null || $scope.data_logger.display_name === ''
+      );
+      if ($scope.data_logger_display_name_not_entered_alert) {return};
 
+
+      if (data_logger === undefined) {
         sensor_service
           .create_data_logger(
             $scope.view_id,
@@ -51,6 +55,27 @@ angular.module('BE.seed.controller.data_logger_upload_modal', []).controller('da
               $scope.data_logger_display_name_not_unique_alert = true;
             }
           });
+      } else {
+        sensor_service
+        .update_data_logger(
+          $scope.organization_id,
+          $scope.data_logger.id,
+          $scope.data_logger.display_name,
+          $scope.data_logger.location_description,
+          $scope.data_logger.manufacturer_name,
+          $scope.data_logger.model_name,
+          $scope.data_logger.serial_number,
+          $scope.data_logger.identifier
+        )
+        .then((result) => {
+          $scope.data_logger = result;
+          $scope.refresh_page();
+        })
+        .catch((err) => {
+          if (err.status === 400) {
+            $scope.data_logger_display_name_not_unique_alert = true;
+          }
+        });
       }
     };
 

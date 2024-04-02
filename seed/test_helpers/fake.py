@@ -2,7 +2,7 @@
 # encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
-See also https://github.com/seed-platform/seed/main/LICENSE.md
+See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 This files has faker methods for generating fake data.
 The data is pseudo random, but still predictable. I.e. calling the same
@@ -134,15 +134,18 @@ class FakeColumnFactory(BaseFake):
                    table_name='PropertyState', **kw):
         """Get column details."""
         column_details = {
-            'organization': organization if organization else self.organization,
+            'organization_id': organization.pk if organization else self.organization.pk,
             'column_name': name,
             'table_name': table_name,
+            'is_extra_data': is_extra_data if is_extra_data else False,
         }
-        if is_extra_data:
-            column_details.update({
-                'is_extra_data': is_extra_data,
-            })
         column_details.update(kw)
+
+        # If the column isn't extra data, then it should be a native column
+        # which dynamically populates when a new org is created.
+        if Column.objects.filter(**column_details).exists():
+            return Column.objects.get(**column_details)
+
         return Column.objects.create(**column_details)
 
 
@@ -183,15 +186,25 @@ class FakePropertyFactory(BaseFake):
     Factory Class for producing Property instances.
     """
 
-    def __init__(self, organization=None):
+    def __init__(self, organization=None, access_level_instance=None):
         super().__init__()
         self.organization = organization
+        self.access_level_instance = access_level_instance
 
-    def get_property(self, organization=None, **kw):
+    def get_property(self, organization=None, access_level_instance=None, **kw):
         """Get property instance."""
         property_details = {
             'organization': self._get_attr('organization', organization),
         }
+        if self.access_level_instance is not None:
+            property_details["access_level_instance"] = self.access_level_instance
+        elif access_level_instance is not None:
+            property_details["access_level_instance"] = access_level_instance
+        else:
+            property_details["access_level_instance"] = property_details["organization"].root
+
+        # add in the access level if passed, otherwise it will be null.
+
         property_details.update(kw)
         return Property.objects.create(**property_details)
 
@@ -622,17 +635,26 @@ class FakeTaxLotFactory(BaseFake):
     Factory Class for producing Taxlot instances.
     """
 
-    def __init__(self, organization=None):
+    def __init__(self, organization=None, access_level_instance=None):
         super().__init__()
         self.organization = organization
         self.label_factory = FakeStatusLabelFactory(organization=organization)
+        self.access_level_instance = access_level_instance
 
-    def get_taxlot(self, organization=None):
+    def get_taxlot(self, organization=None, access_level_instance=None, **kw):
         """Get taxlot instance."""
         organization = self._get_attr('organization', organization)
         taxlot_details = {
             'organization': organization
         }
+
+        if access_level_instance is not None:
+            taxlot_details["access_level_instance"] = access_level_instance
+        elif self.access_level_instance is not None:
+            taxlot_details["access_level_instance"] = self.access_level_instance
+        else:
+            taxlot_details["access_level_instance"] = taxlot_details["organization"].root
+
         taxlot = TaxLot.objects.create(**taxlot_details)
         return taxlot
 
@@ -815,11 +837,12 @@ class FakeAnalysisFactory(BaseFake):
         self.user = user
 
     def get_analysis(self, name=None, service=None, start_time=None,
-                     organization=None, user=None, configuration=None):
+                     organization=None, user=None, configuration=None, access_level_instance=None):
 
         config = {
             'name': name if name is not None else self.fake.text(),
             'organization': organization if organization is not None else self.organization,
+            "access_level_instance": access_level_instance if access_level_instance is not None else self.organization.root,
             'user': user if user is not None else user,
             'service': service if service is not None else Analysis.BSYNCR,
             'start_time': datetime.datetime(2015, 1, 1, tzinfo=timezone.get_current_timezone()),

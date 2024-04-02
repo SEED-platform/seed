@@ -2,7 +2,7 @@
 # encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
-See also https://github.com/seed-platform/seed/main/LICENSE.md
+See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 import csv
 import logging
@@ -134,7 +134,7 @@ def check_progress(main_url, header, progress_key):
             headers=header
         )
         print("... {} ...".format(progress_result.json()['progress']))
-    except [urllib3.exceptions.ProtocolError, RemoteDisconnected, requests.exceptions.ConnectionError]:
+    except (urllib3.exceptions.ProtocolError, RemoteDisconnected, requests.exceptions.ConnectionError):
         print("Server is not responding... trying again in a few seconds")
         progress_result = None
     except Exception:

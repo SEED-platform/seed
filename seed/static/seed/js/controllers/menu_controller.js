@@ -1,6 +1,6 @@
 /**
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
- * See also https://github.com/seed-platform/seed/main/LICENSE.md
+ * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
 angular.module('BE.seed.controller.menu', []).controller('menu_controller', [
   '$rootScope',
@@ -18,8 +18,9 @@ angular.module('BE.seed.controller.menu', []).controller('menu_controller', [
   'inventory_service',
   '$timeout',
   '$state',
+  '$stateParams',
   // eslint-disable-next-line func-names
-  function ($rootScope, $scope, $location, $window, $uibModal, $log, urls, auth_service, organization_service, user_service, dataset_service, modified_service, inventory_service, $timeout, $state) {
+  function ($rootScope, $scope, $location, $window, $uibModal, $log, urls, auth_service, organization_service, user_service, dataset_service, modified_service, inventory_service, $timeout, $state, $stateParams) {
     // initial state of css classes for menu and sidebar
     $scope.expanded_controller = false;
     $scope.collapsed_controller = false;
@@ -163,11 +164,13 @@ angular.module('BE.seed.controller.menu', []).controller('menu_controller', [
      * sets the users primary organization, reloads/refreshed the page
      * @param {obj} org
      */
-    $scope.set_user_org = (org) => {
+    $scope.set_user_org = async (org) => {
       $scope.mouseout_org();
-      user_service.set_organization(org);
+      await user_service.set_organization(org);
       $scope.menu.user.organization = org;
-      console.log($scope.menu.user.organization);
+      if ($stateParams.organization_id && $stateParams.organization_id != org.id) {
+        $stateParams.organization_id = org.id
+      }
       $state.reload();
       init();
     };
@@ -240,6 +243,9 @@ angular.module('BE.seed.controller.menu', []).controller('menu_controller', [
             $scope.menu.user.organizations = data.organizations;
             // get the default org for the user
             $scope.menu.user.organization = _.find(data.organizations, { id: _.toInteger(user_service.get_organization().id) });
+            $scope.menu.user.access_level_instance_name = user_service.get_access_level_instance().name;
+            $scope.menu.user.is_ali_root = user_service.get_access_level_instance().is_ali_root;
+            $scope.menu.user.is_ali_leaf = user_service.get_access_level_instance().is_ali_leaf;
             set_auth($scope.menu.user.organization.id);
           })
           .catch((error) => {

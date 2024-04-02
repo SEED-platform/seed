@@ -1,6 +1,6 @@
 /**
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
- * See also https://github.com/seed-platform/seed/main/LICENSE.md
+ * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
 angular.module('BE.seed.controller.create_sub_organization_modal', []).controller('create_sub_organization_modal_controller', [
   '$scope',
@@ -13,6 +13,8 @@ angular.module('BE.seed.controller.create_sub_organization_modal', []).controlle
     $scope.sub_org = {};
     $scope.error_message = '';
 
+
+    $scope.org_id = organization.id;
     /**
      * creates a sub organization with an owner
      */

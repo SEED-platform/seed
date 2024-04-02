@@ -1,12 +1,14 @@
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
-See also https://github.com/seed-platform/seed/main/LICENSE.md
+See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 import json
 
+from django.db.models import Q
 from rest_framework import response, status
 
 from seed import search
+from seed.lib.superperms.orgs.models import AccessLevelInstance
 from seed.serializers.labels import LabelSerializer
 
 
@@ -47,6 +49,15 @@ def get_labels(request, qs, super_organization, inv_type):
     inventory = filter_labels_for_inv_type(
         request=request, inventory_type=inv_type
     )
+
+    # filter by AH
+    ali = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
+    if inv_type == "property_view":
+        in_subtree = Q(property__access_level_instance__lft__gte=ali.lft, property__access_level_instance__rgt__lte=ali.rgt)
+    else:
+        in_subtree = Q(taxlot__access_level_instance__lft__gte=ali.lft, taxlot__access_level_instance__rgt__lte=ali.rgt)
+    inventory = inventory.filter(in_subtree)
+
     results = [
         LabelSerializer(
             q,

@@ -2,7 +2,7 @@
 # encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
-See also https://github.com/seed-platform/seed/main/LICENSE.md
+See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 :author: Fable Turas fable@raintechpdx.com
 
@@ -51,7 +51,7 @@ RENDERER_CLASSES = (JSONRenderer,)
 PERMISSIONS_CLASSES = (SEEDOrgPermissions,)
 
 
-class UpdateWithoutPatchModelMixin(object):
+class UpdateWithoutPatchModelMixin(GenericViewSet):
     # Taken from: https://github.com/encode/django-rest-framework/pull/3081#issuecomment-518396378
     # Rebuilds the UpdateModelMixin without the patch action
     def update(self, request, *args, **kwargs):

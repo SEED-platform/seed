@@ -2,7 +2,7 @@
 # encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
-See also https://github.com/seed-platform/seed/main/LICENSE.md
+See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 :author Dan Gunter <dkgunter@lbl.gov>
 """
@@ -14,10 +14,12 @@ from collections import OrderedDict
 from os.path import dirname, join, realpath
 
 from past.builtins import basestring
-from unidecode import unidecode
+
+from seed.lib.mcm.cleaners import normalize_unicode_and_characters
 
 LINEAR_UNITS = set(['ft', 'm', 'in'])
 MAPPING_DATA_DIR = join(dirname(realpath(__file__)), 'data')
+
 
 _log = logging.getLogger(__name__)
 
@@ -34,7 +36,7 @@ def _sanitize_and_convert_keys_to_regex(key):
     # force unicode
     # TODO: python3 check if this to run in python3
     if isinstance(key, basestring):
-        key = unidecode(key)
+        key = normalize_unicode_and_characters(key)
 
     # fix superscripts - copied from old code
     found = False

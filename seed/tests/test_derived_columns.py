@@ -2,16 +2,20 @@
 # encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
-See also https://github.com/seed-platform/seed/main/LICENSE.md
+See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+import json
+from json import dumps
 from string import Template, ascii_letters, digits
 
 from django.core.exceptions import ValidationError
+from django.urls import reverse
 from hypothesis import assume, example, given, settings
 from hypothesis import strategies as st
 from hypothesis.extra.django import TestCase
 
 from seed.landing.models import SEEDUser as User
+from seed.models import PropertyView
 from seed.models.columns import Column
 from seed.models.derived_columns import (
     DerivedColumn,
@@ -24,6 +28,7 @@ from seed.test_helpers.fake import (
     FakeDerivedColumnFactory,
     FakePropertyStateFactory
 )
+from seed.tests.util import AccessLevelBaseTestCase
 from seed.utils.organizations import create_organization
 
 no_deadline = settings(deadline=None)
@@ -685,3 +690,109 @@ class TestDerivedColumns(TestCase):
             self._derived_column_for_property_factory(expression, column_parameters, name=derived_column_name)
         # validation errors return as a list of errors, so check the string representation of the list
         self.assertEqual(str(exc.exception), "['Column name PropertyState.gross_floor_area already exists, must be unique']")
+
+
+class TestDerivedColumnsPermissions(AccessLevelBaseTestCase):
+    def setUp(self):
+        super().setUp()
+        self.column = Column.objects.filter(
+            organization=self.org,
+            is_extra_data=False,
+            table_name='PropertyState',
+            data_type='integer'
+        ).first()
+
+        self.derived_column = DerivedColumn.objects.create(
+            name='hello',
+            expression='$a',
+            organization=self.org,
+            inventory_type=DerivedColumn.PROPERTY_TYPE
+        )
+        self.cycle = self.cycle_factory.get_cycle()
+
+    def test_derived_columns_create(self):
+        url = reverse('api:v3:derived_columns-list') + '?organization_id=' + str(self.org.id)
+        post_params = dumps({
+            "name": "new column",
+            "expression": "$param_a / 100",
+            "inventory_type": "Property",
+            "parameters": [
+                {"parameter_name": "param_a", "source_column": self.column.id}
+            ]
+        })
+
+        # root owner user can
+        self.login_as_root_owner()
+        response = self.client.post(url, post_params, content_type='application/json')
+        assert response.status_code == 200
+
+        # root member user cannot
+        self.login_as_root_member()
+        response = self.client.post(url, post_params, content_type='application/json')
+        assert response.status_code == 403
+
+        # child user cannot
+        self.login_as_child_member()
+        response = self.client.post(url, post_params, content_type='application/json')
+        assert response.status_code == 403
+
+    def test_derived_columns_update(self):
+        url = reverse('api:v3:derived_columns-detail', args=[self.derived_column.id]) + '?organization_id=' + str(self.org.id)
+        post_params = dumps({"name": "new column"})
+
+        # root owner user can
+        self.login_as_root_owner()
+        response = self.client.put(url, post_params, content_type='application/json')
+        assert response.status_code == 200
+
+        # root member user cannot
+        self.login_as_root_member()
+        response = self.client.put(url, post_params, content_type='application/json')
+        assert response.status_code == 403
+
+        # child user cannot
+        self.login_as_child_member()
+        response = self.client.put(url, post_params, content_type='application/json')
+        assert response.status_code == 403
+
+    def test_derived_columns_delete(self):
+        url = reverse('api:v3:derived_columns-detail', args=[self.derived_column.id]) + '?organization_id=' + str(self.org.id)
+
+        # root member user cannot
+        self.login_as_root_member()
+        response = self.client.delete(url, content_type='application/json')
+        assert response.status_code == 403
+
+        # child user cannot
+        self.login_as_child_member()
+        response = self.client.delete(url, content_type='application/json')
+        assert response.status_code == 403
+
+        # root owner user can
+        self.login_as_root_owner()
+        response = self.client.delete(url, content_type='application/json')
+        assert response.status_code == 200
+
+    def test_derived_column_evaluate_permissions(self):
+        property = self.property_factory.get_property()
+        property.access_level_instance = self.org.root
+        property.save()
+
+        property_state = self.property_state_factory.get_property_state()
+        PropertyView.objects.create(property=property, cycle=self.cycle, state=property_state)
+
+        url = reverse('api:v3:derived_columns-evaluate', args=[self.derived_column.id])
+        params = {"cycle_id": self.cycle.id, "organization_id": self.org.pk, "inventory_ids": f"{property.pk}"}
+
+        # root member user can
+        response = self.client.get(url, params, content_type='application/json')
+        data = json.loads(response.content)
+        assert response.status_code == 200
+        assert data["results"] == [{'id': property.pk, 'value': None}]
+
+        # child user cannot
+        self.login_as_child_member()
+        response = self.client.get(url, params, content_type='application/json')
+        data = json.loads(response.content)
+        assert response.status_code == 200
+        assert data["results"] == []

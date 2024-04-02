@@ -1,6 +1,6 @@
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
-See also https://github.com/seed-platform/seed/main/LICENSE.md
+See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 seed local_untracked.py
 
@@ -95,18 +95,15 @@ DATABASES = {
 }
 
 # =============================== Celery/Redis Cache Settings (No Password) =========
+CELERY_BROKER_URL = 'redis://redis-hostname:6379/1'
+
 CACHES = {
     'default': {
-        'BACKEND': 'redis_cache.cache.RedisCache',
-        'LOCATION': 'your-cache-url:your-cache-port',
-        'OPTIONS': {'DB': 1},
-        'TIMEOUT': 300
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': CELERY_BROKER_URL,
     }
 }
 
-CELERY_BROKER_URL = 'redis://%s/%s' % (
-    CACHES['default']['LOCATION'], CACHES['default']['OPTIONS']['DB']
-)
 CELERY_RESULT_BACKEND = CELERY_BROKER_URL
 CELERY_TASK_DEFAULT_QUEUE = 'seed-local'
 CELERY_TASK_QUEUES = (
@@ -118,32 +115,24 @@ CELERY_TASK_QUEUES = (
 )
 
 # =============================== Celery/Redis Cache Settings (w/Password) =========
-#CACHES = {
-#   'default': {
-#        'BACKEND': 'redis_cache.cache.RedisCache',
-#        'LOCATION': 'your-cache-url:your-cache-port',
-#        'OPTIONS': {
-#            'DB': 1,
-#             'PASSWORD': 'your-redis-password',
-#        },
-#        'TIMEOUT': 300
-#    }
-#}
+# CELERY_BROKER_URL = 'redis://:your-redis-password@your-cache-url:6379/1'
 #
-#CELERY_BROKER_URL = 'redis://:%s@%s/%s' % (
-#    CACHES['default']['OPTIONS']['PASSWORD'],
-#    CACHES['default']['LOCATION'],
-#    CACHES['default']['OPTIONS']['DB']
-#)
-#CELERY_RESULT_BACKEND = CELERY_BROKER_URL
-#CELERY_TASK_DEFAULT_QUEUE = 'seed-local'
-#CELERY_TASK_QUEUES = (
+# CACHES = {
+#   'default': {
+#        'BACKEND': 'django_redis.cache.RedisCache',
+#        'LOCATION': CELERY_BROKER_URL,
+#    }
+# }
+#
+# CELERY_RESULT_BACKEND = CELERY_BROKER_URL
+# CELERY_TASK_DEFAULT_QUEUE = 'seed-local'
+# CELERY_TASK_QUEUES = (
 #    Queue(
 #        CELERY_TASK_DEFAULT_QUEUE,
 #        Exchange(CELERY_TASK_DEFAULT_QUEUE),
 #        routing_key=CELERY_TASK_DEFAULT_QUEUE
 #    ),
-#)
+# )
 
 
 # =================================== Logging =======================================

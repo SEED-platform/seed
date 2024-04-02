@@ -1,6 +1,6 @@
 /**
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
- * See also https://github.com/seed-platform/seed/main/LICENSE.md
+ * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
 angular.module('BE.seed.controller.insights_program', []).controller('insights_program_controller', [
   '$scope',
@@ -12,15 +12,35 @@ angular.module('BE.seed.controller.insights_program', []).controller('insights_p
   'compliance_metric_service',
   'spinner_utility',
   'organization_payload',
+  'filter_groups',
   'cycles',
+  'property_columns',
   'auth_payload',
   // eslint-disable-next-line func-names
-  function ($scope, $stateParams, $state, $uibModal, urls, compliance_metrics, compliance_metric_service, spinner_utility, organization_payload, cycles, auth_payload) {
+  function (
+    $scope,
+    $stateParams,
+    $state,
+    $uibModal,
+    urls,
+    compliance_metrics,
+    compliance_metric_service,
+    spinner_utility,
+    organization_payload,
+    filter_groups,
+    cycles,
+    property_columns,
+    auth_payload
+  ) {
     $scope.id = $stateParams.id;
     $scope.cycles = cycles.cycles;
     $scope.organization = organization_payload.organization;
     $scope.initialize_chart = true;
     $scope.auth = auth_payload.auth;
+
+    // used by modal
+    $scope.filter_groups = filter_groups;
+    $scope.property_columns = property_columns;
 
     // compliance metric
     $scope.compliance_metric = {};
@@ -43,6 +63,53 @@ angular.module('BE.seed.controller.insights_program', []).controller('insights_p
 
     // CHARTS
     const colors = { compliant: '#77CCCB', 'non-compliant': '#A94455', unknown: '#DDDDDD' };
+
+    // Program Setup Modal
+    $scope.open_program_setup_modal = () => {
+      const modalInstance = $uibModal.open({
+        templateUrl: `${urls.static_url}seed/partials/program_setup.html`,
+        controller: 'program_setup_controller',
+        size: 'lg',
+        backdrop: 'static',
+        resolve: {
+          cycles: () => $scope.cycles,
+          compliance_metrics: () => $scope.compliance_metrics,
+          organization_payload: () => $scope.organization,
+          filter_groups: () => $scope.filter_groups,
+          property_columns: () => $scope.property_columns,
+          id: () => $scope.selected_metric
+        }
+      });
+      // on modal close
+      modalInstance.result.then((program) => {
+        // re-fetch compliance metrics
+        compliance_metric_service.get_compliance_metrics($scope.organization.id).then((data) => {
+          $scope.compliance_metrics = data;
+          // change selection to last selected in modal and reload
+          if ($scope.compliance_metrics.length > 0) {
+            if (program != null) {
+              $scope.compliance_metric = $scope.compliance_metrics.find((cm) => cm.id === program.id);
+              $scope.selected_metric = program.id;
+            } else {
+              // attempt to keep the selected metric
+              $scope.compliance_metric = $scope.compliance_metrics.find((cm) => cm.id === $scope.selected_metric);
+              if ($scope.compliance_metric == null) {
+                // load first metric b/c selected metric no longer exists
+                $scope.compliance_metric = $scope.compliance_metrics[0];
+                $scope.selected_metric = $scope.compliance_metric.id;
+              }
+            }
+          } else {
+            // load nothing
+            $scope.compliance_metric = {};
+            $scope.selected_metric = null;
+            $scope.data = null;
+          }
+
+          $scope.updateSelectedMetric();
+        });
+      });
+    };
 
     const _load_datasets = () => {
       // load data
@@ -173,7 +240,10 @@ angular.module('BE.seed.controller.insights_program', []).controller('insights_p
     };
 
     $scope.updateSelectedMetric = () => {
-      $scope.compliance_metric = _.find($scope.compliance_metrics, (o) => o.id === $scope.selected_metric);
+      $scope.compliance_metric = {};
+      if ($scope.selected_metric != null) {
+        $scope.compliance_metric = _.find($scope.compliance_metrics, (o) => o.id === $scope.selected_metric);
+      }
 
       // reload data for selected metric
       _load_data();

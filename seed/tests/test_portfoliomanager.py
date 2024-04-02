@@ -2,12 +2,13 @@
 # encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
-See also https://github.com/seed-platform/seed/main/LICENSE.md
+See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 :author Paul Munday <paul@paulmunday.net>
 """
 import json
 import os
+from os import path
 from pathlib import Path
 from unittest import skip, skipIf
 
@@ -17,7 +18,9 @@ from django.test import TestCase
 from django.urls import reverse_lazy
 from xlrd import open_workbook
 
+from seed.data_importer.models import ImportRecord
 from seed.landing.models import SEEDUser as User
+from seed.tests.util import AccessLevelBaseTestCase
 from seed.utils.organizations import create_organization
 from seed.views.v3.portfolio_manager import PortfolioManagerImport
 
@@ -432,6 +435,50 @@ class PortfolioManagerReportSinglePropertyUploadTest(TestCase):
             content_type='application/json',
         )
         self.assertEqual(200, response.status_code)
+
+
+class UploadViewSetPermission(AccessLevelBaseTestCase):
+    def setUp(self):
+        super().setUp()
+        self.root_property = self.property_factory.get_property(access_level_instance=self.root_level_instance)
+        self.child_property = self.property_factory.get_property(access_level_instance=self.child_level_instance)
+
+        self.import_record = ImportRecord.objects.create(
+            owner=self.root_member_user, last_modified_by=self.root_member_user, super_organization=self.org, access_level_instance=self.org.root
+        )
+
+    def test_create(self):
+        filename = path.join(path.dirname(__file__), 'data', 'property_sample_data.json')
+        with open(filename, 'rb') as f:
+
+            url = reverse_lazy('api:v3:upload-list')
+            url += "?organization_id=" + str(self.org.id)
+            url += "&import_record=" + str(self.import_record.id)
+            params = {"file": f}
+
+            self.login_as_child_member()
+            response = self.client.post(url, data=params)
+            assert response.status_code == 404
+
+            self.login_as_root_member()
+            response = self.client.post(url, data=params)
+            assert response.status_code == 200
+
+    def test_create_from_pm_import(self):
+        url = reverse_lazy('api:v3:upload-create-from-pm-import')
+        params = json.dumps({
+            'properties': [],
+            'import_record_id': self.import_record.pk,
+            'organization_id': self.org.pk
+        })
+
+        self.login_as_child_member()
+        response = self.client.post(url, params, content_type='application/json')
+        assert response.status_code == 404
+
+        self.login_as_root_member()
+        response = self.client.post(url, params, content_type='application/json')
+        assert response.status_code == 200
 
 
 class PortfolioManagerSingleReportXSLX(TestCase):

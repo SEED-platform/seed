@@ -2,11 +2,12 @@
 # encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
-See also https://github.com/seed-platform/seed/main/LICENSE.md
+See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 import json
 
 from django.core.exceptions import ValidationError
+from django.db.utils import IntegrityError
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
 from drf_yasg.utils import swagger_auto_schema
@@ -114,6 +115,7 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet, Org
 
     @api_endpoint_class
     @ajax_request_class
+    @has_perm_class('requires_root_member_access')
     def create(self, request):
         org_id = self.get_organization(self.request)
 
@@ -172,7 +174,7 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet, Org
         })
 
     @ajax_request_class
-    @has_perm_class('can_modify_data')
+    @has_perm_class('requires_root_member_access')
     def update(self, request, pk=None):
         organization_id = self.get_organization(request)
 
@@ -183,10 +185,19 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet, Org
         if request.data['comstock_mapping'] is not None:
             Column.objects.filter(organization_id=organization_id, comstock_mapping=request.data['comstock_mapping']) \
                 .update(comstock_mapping=None)
-        return super(ColumnViewSet, self).update(request, pk)
+
+        try:
+            result = super(ColumnViewSet, self).update(request, pk)
+        except IntegrityError as e:
+            return JsonResponse({
+                'status': 'error',
+                'message': str(e)
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        return result
 
     @ajax_request_class
-    @has_perm_class('can_modify_data')
+    @has_perm_class('requires_root_member_access')
     def destroy(self, request, pk=None):
         org_id = self.get_organization(request)
         try:
@@ -219,7 +230,7 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet, Org
         })
     )
     @ajax_request_class
-    @has_perm_class('can_modify_data')
+    @has_perm_class('requires_root_member_access')
     @action(detail=True, methods=['POST'])
     def rename(self, request, pk=None):
         """

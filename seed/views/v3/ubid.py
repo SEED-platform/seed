@@ -2,17 +2,22 @@
 # encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
-See also https://github.com/seed-platform/seed/main/LICENSE.md
+See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q, Subquery
 from django.http import JsonResponse
+from django.utils.decorators import method_decorator
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
 from rest_framework.decorators import action
 
 from seed.decorators import ajax_request_class
-from seed.lib.superperms.orgs.decorators import has_perm_class
+from seed.lib.superperms.orgs.decorators import (
+    has_hierarchy_access,
+    has_perm_class
+)
+from seed.lib.superperms.orgs.models import AccessLevelInstance
 from seed.models import DATA_STATE_IMPORT, UbidModel
 from seed.models.properties import PropertyState, PropertyView
 from seed.models.tax_lots import TaxLotState, TaxLotView
@@ -26,6 +31,10 @@ from seed.utils.ubid import decode_unique_ids, get_jaccard_index, validate_ubid
 from seed.utils.viewsets import ModelViewSetWithoutPatch
 
 
+@method_decorator(
+    name='destroy',
+    decorator=[has_perm_class('requires_member'), has_hierarchy_access(ubid_id_kwarg="pk")]
+)
 class UbidViewSet(ModelViewSetWithoutPatch, OrgMixin):
     model = UbidModel
     pagination_class = None
@@ -54,11 +63,14 @@ class UbidViewSet(ModelViewSetWithoutPatch, OrgMixin):
         org_id = self.get_organization(request)
         property_view_ids = body.get('property_view_ids')
         taxlot_view_ids = body.get('taxlot_view_ids')
+        access_level_instance = AccessLevelInstance.objects.get(pk=self.request.access_level_instance_id)
 
         if property_view_ids:
             property_views = PropertyView.objects.filter(
                 id__in=property_view_ids,
-                cycle__organization_id=org_id
+                cycle__organization_id=org_id,
+                property__access_level_instance__lft__gte=access_level_instance.lft,
+                property__access_level_instance__rgt__lte=access_level_instance.rgt,
             )
             properties = PropertyState.objects.filter(
                 id__in=Subquery(property_views.values('state_id'))
@@ -68,7 +80,9 @@ class UbidViewSet(ModelViewSetWithoutPatch, OrgMixin):
         if taxlot_view_ids:
             taxlot_views = TaxLotView.objects.filter(
                 id__in=taxlot_view_ids,
-                cycle__organization_id=org_id
+                cycle__organization_id=org_id,
+                taxlot__access_level_instance__lft__gte=access_level_instance.lft,
+                taxlot__access_level_instance__rgt__lte=access_level_instance.rgt,
             )
             taxlots = TaxLotState.objects.filter(
                 id__in=Subquery(taxlot_views.values('state_id'))
@@ -97,6 +111,7 @@ class UbidViewSet(ModelViewSetWithoutPatch, OrgMixin):
         """
         body = dict(request.data)
         org_id = self.get_organization(request)
+        access_level_instance = AccessLevelInstance.objects.get(pk=self.request.access_level_instance_id)
 
         ubid_unpopulated = 0
         ubid_successfully_decoded = 0
@@ -106,7 +121,9 @@ class UbidViewSet(ModelViewSetWithoutPatch, OrgMixin):
         if property_view_ids:
             property_views = PropertyView.objects.filter(
                 id__in=property_view_ids,
-                cycle__organization_id=org_id
+                cycle__organization_id=org_id,
+                property__access_level_instance__lft__gte=access_level_instance.lft,
+                property__access_level_instance__rgt__lte=access_level_instance.rgt,
             )
             property_states = PropertyState.objects.filter(id__in=Subquery(property_views.values('state_id')))
 
@@ -125,7 +142,9 @@ class UbidViewSet(ModelViewSetWithoutPatch, OrgMixin):
         if taxlot_view_ids:
             taxlot_views = TaxLotView.objects.filter(
                 id__in=taxlot_view_ids,
-                cycle__organization_id=org_id
+                cycle__organization_id=org_id,
+                taxlot__access_level_instance__lft__gte=access_level_instance.lft,
+                taxlot__access_level_instance__rgt__lte=access_level_instance.rgt,
             )
             taxlot_states = TaxLotState.objects.filter(id__in=Subquery(taxlot_views.values('state_id')))
 
@@ -215,7 +234,22 @@ class UbidViewSet(ModelViewSetWithoutPatch, OrgMixin):
     @has_perm_class('requires_viewer')
     def list(self, request):
         org_id = self.get_organization(request)
-        ubid_models = UbidModel.objects.filter(Q(property__organization_id=org_id) | Q(taxlot__organization_id=org_id))
+        access_level_instance = AccessLevelInstance.objects.get(pk=self.request.access_level_instance_id)
+
+        # Check permissions for related property and taxlot states
+        accessible_property_states = Q(
+            property__propertyview__property__access_level_instance__lft__gte=access_level_instance.lft,
+            property__propertyview__property__access_level_instance__rgt__lte=access_level_instance.rgt
+        )
+        accessible_taxlot_states = Q(
+            taxlot__taxlotview__taxlot__access_level_instance__lft__gte=access_level_instance.lft,
+            taxlot__taxlotview__taxlot__access_level_instance__rgt__lte=access_level_instance.rgt
+        )
+
+        ubid_models = UbidModel.objects.filter(
+            Q(property__organization_id=org_id) | Q(taxlot__organization_id=org_id),
+            accessible_property_states | accessible_taxlot_states
+        )
 
         return JsonResponse({
             'status': 'success',
@@ -226,6 +260,7 @@ class UbidViewSet(ModelViewSetWithoutPatch, OrgMixin):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_viewer')
+    @has_hierarchy_access(ubid_id_kwarg="pk")
     def retrieve(self, request, pk):
         org_id = self.get_organization(request)
         try:
@@ -249,6 +284,7 @@ class UbidViewSet(ModelViewSetWithoutPatch, OrgMixin):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
+    @has_hierarchy_access(body_property_state_id='property', body_taxlot_state_id='taxlot')
     def create(self, request):
         org_id = self.get_organization(request)
         serializer = UbidModelSerializer(data=request.data)
@@ -314,6 +350,7 @@ class UbidViewSet(ModelViewSetWithoutPatch, OrgMixin):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
+    @has_hierarchy_access(ubid_id_kwarg="pk")
     def update(self, request, pk):
         org_id = self.get_organization(request)
 
@@ -375,6 +412,8 @@ class UbidViewSet(ModelViewSetWithoutPatch, OrgMixin):
         view_id = body.get('view_id')
         type = body.get('type')
         accepted_types = ['property', 'taxlot']
+        access_level_instance = AccessLevelInstance.objects.get(pk=self.request.access_level_instance_id)
+
         if not view_id or not type or type.lower() not in accepted_types:
             return JsonResponse({
                 'status': 'error',
@@ -385,12 +424,16 @@ class UbidViewSet(ModelViewSetWithoutPatch, OrgMixin):
             if type.lower() == 'property':
                 view = PropertyView.objects.get(
                     id=view_id,
-                    cycle__organization_id=org_id
+                    cycle__organization_id=org_id,
+                    property__access_level_instance__lft__gte=access_level_instance.lft,
+                    property__access_level_instance__rgt__lte=access_level_instance.rgt,
                 )
             else:
                 view = TaxLotView.objects.get(
                     id=view_id,
-                    cycle__organization_id=org_id
+                    cycle__organization_id=org_id,
+                    taxlot__access_level_instance__lft__gte=access_level_instance.lft,
+                    taxlot__access_level_instance__rgt__lte=access_level_instance.rgt,
                 )
 
             ubids = view.state.ubidmodel_set.all()
@@ -401,5 +444,5 @@ class UbidViewSet(ModelViewSetWithoutPatch, OrgMixin):
         except ObjectDoesNotExist:
             return JsonResponse({
                 'status': 'error',
-                'message': f"View with id {view_id} does not exist"
+                'message': "No such resource."
             }, status=status.HTTP_404_NOT_FOUND)

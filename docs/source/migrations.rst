@@ -15,28 +15,19 @@ Docker then you will not need to do this.
     CELERY_RESULT_BACKEND = CELERY_BROKER_URL
 
 If you are using a password, then in your local_untracked.py configuration, add the password to
-the CACHES configuration option. Your final configuration should look like the following in your
+the CELERY_BROKER_URL. Your final configuration should look like the following in your
 local_untracked.py file
 
 .. code-block:: python
 
+    CELERY_BROKER_URL = 'redis://:password@127.0.0.1:6379/1'
     CACHES = {
         'default': {
-            'BACKEND': 'redis_cache.cache.RedisCache',
-            'LOCATION': "127.0.0.1:6379",
-            'OPTIONS': {
-                'DB': 1,
-                'PASSWORD': 'password',
-            },
-            'TIMEOUT': 300
+            'BACKEND': 'django_redis.cache.RedisCache',
+            'LOCATION': CELERY_BROKER_URL,
         }
     }
 
-    CELERY_BROKER_URL = 'redis://:%s@%s/%s' % (
-        CACHES['default']['OPTIONS']['PASSWORD'],
-        CACHES['default']['LOCATION'],
-        CACHES['default']['OPTIONS']['DB']
-    )
     CELERY_RESULT_BACKEND = CELERY_BROKER_URL
     CELERY_TASK_DEFAULT_QUEUE = 'seed-local'
     CELERY_TASK_QUEUES = (
@@ -46,6 +37,17 @@ local_untracked.py file
             routing_key=CELERY_TASK_DEFAULT_QUEUE
         ),
     )
+
+Version 2.22.0
+--------------
+- Run ``./manage.py migrate``.
+- There is a Redis dependency update in this release that requires users and deployments to modify their settings' ``CACHES`` config.
+   #. Update your dependencies with pip install -r requirements/base.txt
+   #. Update the CACHES BACKEND property to django_redis.cache.RedisCache
+   #. Update the CACHES LOCATION property to match the redis-py native URL notation for connection strings, including the redis protocol and database number. e.g. redis://localhost:6379/1
+
+   Since the CELERY_BROKER_URL setting must also be in the same format, it may be helpful to configure that setting first and then reference it in the caches LOCATION parameter.
+- See the `PR for an example migration <https://github.com/SEED-platform/seed/pull/4376#issue-1972716522>`_.
 
 Version 2.21.0
 --------------
@@ -223,9 +225,7 @@ Max OSX
 Version 2.5.2
 -------------
 
-- There are no manual migrations that are needed. The `./manage.py migrate` command may take awhile
-to run since the migration requires the recalculation of all the normalized addresses to parse
-bldg correct and to cast the result as a string and not a bytestring.
+- There are no manual migrations that are needed. The `./manage.py migrate` command may take awhile to run since the migration requires the recalculation of all the normalized addresses to parse bldg correct and to cast the result as a string and not a bytestring.
 
 Version 2.5.1
 -------------

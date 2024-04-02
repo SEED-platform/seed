@@ -33,16 +33,16 @@
             <tr ng-repeat="analysis in analyses | filter:filter_params:strict">
               <td><a ui-sref="analysis(::{organization_id: org.id, analysis_id: analysis.id})" ui-sref-active="active">{$:: analysis.name $}</a></td>
               <td>
-                <i class="glyphicon glyphicon-play" title="Start Analysis" aria-hidden="true" ng-if="analysis.status === 'Ready'" ng-click="start_analysis(analysis.id)"></i>
+                <i class="glyphicon glyphicon-play" title="Start Analysis" aria-hidden="true" ng-if="analysis.status === 'Ready' && menu.user.organization.user_role !== 'viewer'" ng-click="start_analysis(analysis.id)"></i>
                 <i
                   class="glyphicon glyphicon-stop"
                   title="Stop Analysis"
                   aria-hidden="true"
-                  ng-if="['Pending Creation', 'Creating', 'Queued', 'Running'].indexOf(analysis.status) >= 0"
+                  ng-if="['Pending Creation', 'Creating', 'Queued', 'Running'].indexOf(analysis.status) >= 0 && menu.user.organization.user_role !== 'viewer'"
                   ng-disabled="['Pending Creation', 'Queued'].indexOf(analysis.status) >= 0"
                   ng-click="stop_analysis(analysis.id)"
                 ></i>
-                <i class="glyphicon glyphicon-trash" title="Delete Analysis" aria-hidden="true" ng-click="delete_analysis(analysis.id)"></i>
+                <i ng-show="menu.user.organization.user_role !== 'viewer'" class="glyphicon glyphicon-trash" title="Delete Analysis" aria-hidden="true" ng-click="delete_analysis(analysis.id)"></i>
               </td>
               <td>{$:: analysis.number_of_analysis_property_views $}</td>
               <td>{$:: analysis.service $}</td>
@@ -55,7 +55,7 @@
               </td>
               <td>{$:: analysis.created_at | date : 'MM-dd-yyyy HH:mm' $}</td>
               <td class="analysis-status {$ analysis.status.toLowerCase() $}">
-                <i class="fa-solid fa-arrows-rotate fa-pulse fa-fw" style="padding-right: 0" ng-if="!analysis._finished_with_tasks"></i>
+                <i class="fa-solid fa-arrows-rotate fa-spin-pulse fa-fw" style="padding-right: 0" ng-if="!analysis._finished_with_tasks"></i>
                 {$ analysis.status $}
               </td>
               <td>{$:: analysis.start_time | date : 'MM-dd-yyyy HH:mm' $}</td>

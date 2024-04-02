@@ -2,7 +2,7 @@
 # encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
-See also https://github.com/seed-platform/seed/main/LICENSE.md
+See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 from django.contrib.postgres.aggregates.general import ArrayAgg
 from django.db.models.aggregates import Count
@@ -65,6 +65,7 @@ class TestMatchMergeLink(DataMappingBaseTestCase):
             'import_file_id': self.import_file_1.id,
             'data_state': DATA_STATE_MAPPING,
             'no_default_data': False,
+            "raw_access_level_instance_id": self.org.root.id,
         }
         self.property_state_factory.get_property_state(**base_state_details)
 
@@ -163,6 +164,7 @@ class TestMatchMergeLink(DataMappingBaseTestCase):
             'import_file_id': self.import_file_1.id,
             'data_state': DATA_STATE_MAPPING,
             'no_default_data': False,
+            "raw_access_level_instance_id": self.org.root.id,
         }
         self.taxlot_state_factory.get_taxlot_state(**base_state_details)
 

@@ -2,7 +2,7 @@
 # encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
-See also https://github.com/seed-platform/seed/main/LICENSE.md
+See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 Tests related to sharing of data between users, orgs, suborgs, etc.
 """
@@ -30,7 +30,7 @@ class SharingViewTests(TestCase):
         }
         self.admin_user = User.objects.create_superuser(**self.admin_details)
         self.parent_org = Organization.objects.create(name='Parent')
-        self.parent_org.add_member(self.admin_user, ROLE_OWNER)
+        self.parent_org.add_member(self.admin_user, self.parent_org.root.id, ROLE_OWNER)
 
         self.eng_user_details = {
             'username': 'eng_owner@demo.com',
@@ -40,7 +40,7 @@ class SharingViewTests(TestCase):
         self.eng_user = User.objects.create_user(**self.eng_user_details)
         self.eng_org = Organization.objects.create(parent_org=self.parent_org,
                                                    name='Engineers')
-        self.eng_org.add_member(self.eng_user, ROLE_OWNER)
+        self.eng_org.add_member(self.eng_user, self.eng_org.root.pk, ROLE_OWNER)
 
         self.des_user_details = {
             'username': 'des_owner@demo.com',
@@ -50,7 +50,7 @@ class SharingViewTests(TestCase):
         self.des_user = User.objects.create_user(**self.des_user_details)
         self.des_org = Organization.objects.create(parent_org=self.parent_org,
                                                    name='Designers')
-        self.des_org.add_member(self.des_user, ROLE_MEMBER)
+        self.des_org.add_member(self.des_user, self.parent_org.root.id, ROLE_MEMBER)
 
     def test_scenario(self):
         """

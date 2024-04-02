@@ -1,6 +1,6 @@
 /**
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
- * See also https://github.com/seed-platform/seed/main/LICENSE.md
+ * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
 angular.module('BE.seed.controller.insights_property', []).controller('insights_property_controller', [
   '$scope',
@@ -11,20 +11,42 @@ angular.module('BE.seed.controller.insights_property', []).controller('insights_
   'compliance_metrics',
   'compliance_metric_service',
   'organization_payload',
+  'filter_groups',
+  'property_columns',
+  'cycles',
   'spinner_utility',
   'auth_payload',
   // eslint-disable-next-line func-names
-  function ($scope, $state, $stateParams, $uibModal, urls, compliance_metrics, compliance_metric_service, organization_payload, spinner_utility, auth_payload) {
+  function (
+    $scope,
+    $state,
+    $stateParams,
+    $uibModal,
+    urls,
+    compliance_metrics,
+    compliance_metric_service,
+    organization_payload,
+    filter_groups,
+    property_columns,
+    cycles,
+    spinner_utility,
+    auth_payload
+  ) {
     $scope.id = $stateParams.id;
     $scope.static_url = urls.static_url;
     $scope.organization = organization_payload.organization;
     $scope.auth = auth_payload.auth;
 
+    // used by modal
+    $scope.filter_groups = filter_groups;
+    $scope.property_columns = property_columns;
+    $scope.all_cycles = cycles.cycles;
+
     // toggle help
     $scope.show_help = false;
     $scope.toggle_help = () => {
       $scope.show_help = !$scope.show_help;
-    }
+    };
 
     // configs ($scope.configs set to saved_configs where still applies.
     // for example, if saved_configs.compliance_metric is 1, but 1 has been deleted, it does apply.)
@@ -73,6 +95,53 @@ angular.module('BE.seed.controller.insights_property', []).controller('insights_
     $scope.y_axis_options = [];
     $scope.x_categorical = false;
 
+    // Program Setup Modal
+    $scope.open_program_setup_modal = () => {
+      const modalInstance = $uibModal.open({
+        templateUrl: `${urls.static_url}seed/partials/program_setup.html`,
+        controller: 'program_setup_controller',
+        size: 'lg',
+        backdrop: 'static',
+        resolve: {
+          cycles: () => $scope.all_cycles,
+          compliance_metrics: () => $scope.compliance_metrics,
+          organization_payload: () => $scope.organization,
+          filter_groups: () => $scope.filter_groups,
+          property_columns: () => $scope.property_columns,
+          id: () => $scope.selected_metric
+        }
+      });
+      // on modal close
+      modalInstance.result.then((program) => {
+        // re-fetch compliance metrics
+        compliance_metric_service.get_compliance_metrics($scope.organization.id).then((data) => {
+          $scope.compliance_metrics = data;
+          // change selection to last selected in modal and reload
+          if ($scope.compliance_metrics.length > 0) {
+            if (program != null) {
+              $scope.configs.compliance_metric = $scope.compliance_metrics.find((cm) => cm.id === program.id);
+              $scope.selected_metric = program.id;
+            } else {
+              // attempt to keep the selected metric
+              $scope.configs.compliance_metric = $scope.compliance_metrics.find((cm) => cm.id === $scope.selected_metric);
+              if ($scope.configs.compliance_metric == null) {
+                // load first metric b/c selected metric no longer exists
+                $scope.configs.compliance_metric = $scope.compliance_metrics[0];
+                $scope.selected_metric = $scope.configs.compliance_metric.id;
+              }
+            }
+          } else {
+            // load nothing
+            $scope.configs.compliance_metric = {};
+            $scope.selected_metric = null;
+            $scope.data = null;
+          }
+
+          $scope.update_metric();
+        });
+      });
+    };
+
     $scope.$watch(
       'configs',
       (new_configs) => {
@@ -89,6 +158,7 @@ angular.module('BE.seed.controller.insights_property', []).controller('insights_
     const _load_data = () => {
       if (_.isEmpty($scope.configs.compliance_metric)) {
         spinner_utility.hide();
+        $scope.data = null;
         return;
       }
       spinner_utility.show();
@@ -189,7 +259,10 @@ angular.module('BE.seed.controller.insights_property', []).controller('insights_
       spinner_utility.show();
 
       // compliance metric
-      $scope.configs.compliance_metric = _.find($scope.compliance_metrics, (o) => o.id === $scope.selected_metric);
+      $scope.configs.compliance_metric = {};
+      if ($scope.selected_metric != null) {
+        $scope.configs.compliance_metric = _.find($scope.compliance_metrics, (o) => o.id === $scope.selected_metric);
+      }
 
       // reload data for selected metric
       _load_data();
@@ -240,7 +313,7 @@ angular.module('BE.seed.controller.insights_property', []).controller('insights_
         item.x = _.find(prop, (v, k) => k.endsWith(`_${String($scope.configs.chart_xaxis)}`));
 
         // is x axis categorical?
-        if ($scope.x_categorical === false && Number.isNaN(item.x)) {
+        if ($scope.x_categorical === false && isNaN(item.x)) {
           $scope.x_categorical = true;
         }
 
@@ -546,7 +619,8 @@ angular.module('BE.seed.controller.insights_property', []).controller('insights_
         controller: 'update_item_labels_modal_controller',
         resolve: {
           inventory_ids: $scope.visibleIds,
-          inventory_type: () => 'properties'
+          inventory_type: () => 'properties',
+          is_ali_root: () => $scope.menu.user.is_ali_root
         }
       });
     };

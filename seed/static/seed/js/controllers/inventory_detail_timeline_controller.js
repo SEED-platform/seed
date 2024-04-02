@@ -1,6 +1,6 @@
 /**
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
- * See also https://github.com/seed-platform/seed/main/LICENSE.md
+ * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
 angular.module('BE.seed.controller.inventory_detail_timeline', []).controller('inventory_detail_timeline_controller', [
   '$scope',
@@ -14,7 +14,18 @@ angular.module('BE.seed.controller.inventory_detail_timeline', []).controller('i
   'users_payload',
   'organization_payload',
   // eslint-disable-next-line func-names
-  function ($scope, $stateParams, $timeout, uiGridConstants, cycles, events, inventory_payload, urls, users_payload, organization_payload) {
+  function (
+    $scope,
+    $stateParams,
+    $timeout,
+    uiGridConstants,
+    cycles,
+    events,
+    inventory_payload,
+    urls,
+    users_payload,
+    organization_payload
+    ) {
     $scope.organization = organization_payload.organization;
     $scope.static_url = urls.static_url;
     $scope.cycleNameById = cycles.cycles.reduce((acc, curr) => ({ ...acc, [curr.id]: curr.name }), {});

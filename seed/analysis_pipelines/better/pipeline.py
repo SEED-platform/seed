@@ -2,7 +2,7 @@
 # encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
-See also https://github.com/seed-platform/seed/main/LICENSE.md
+See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 import copy
 import logging
@@ -414,6 +414,11 @@ def _process_results(self, analysis_id):
     # gather all columns to store
     BETTER_VALID_MODEL_E_COL = 'better_valid_model_electricity'
     BETTER_VALID_MODEL_F_COL = 'better_valid_model_fuel'
+
+    # if user is at root level and has role member or owner, columns can be created
+    # otherwise set the 'missing_columns' flag for later
+    missing_columns = False
+
     column_data_paths = [
         # Combined Savings
         ExtraDataColumnPath(
@@ -523,19 +528,27 @@ def _process_results(self, analysis_id):
         # check if the column exists with the bare minimum required pieces of data. For example,
         # don't check column_description and display_name because they may be changed by
         # the user at a later time.
-        column, created = Column.objects.get_or_create(
-            is_extra_data=True,
-            column_name=column_data_path.column_name,
-            organization=analysis.organization,
-            table_name='PropertyState',
-        )
-
-        # add in the other fields of the columns only if it is a new column.
-        if created:
-            column.display_name = column_data_path.column_display_name
-            column.column_description = column_data_path.column_display_name
-
-        column.save()
+        # if column doesn't exist, and user has permission to create, then create
+        try:
+            Column.objects.get(
+                is_extra_data=True,
+                column_name=column_data_path.column_name,
+                organization=analysis.organization,
+                table_name='PropertyState',
+            )
+        except Exception:
+            if analysis.can_create():
+                column, created = Column.objects.create(
+                    is_extra_data=True,
+                    column_name=column_data_path.column_name,
+                    organization=analysis.organization,
+                    table_name='PropertyState',
+                )
+                column.display_name = column_data_path.column_display_name
+                column.column_description = column_data_path.column_display_name
+                column.save()
+            else:
+                missing_columns = True
 
     # Update the original PropertyView's PropertyState with analysis results of interest
     analysis_property_views = analysis.analysispropertyview_set.prefetch_related('property', 'cycle').all()
@@ -549,7 +562,7 @@ def _process_results(self, analysis_id):
         for data_path in column_data_paths:
             value = get_json_path(data_path.json_path, raw_better_results)
             if value is not None:
-                # some of the ee_measures return an empty string, which should be falsey
+                # some of the ee_measures return an empty string, which should be falsy
                 if 'ee_measures' in data_path.json_path and value == '':
                     value = 0.0 * data_path.unit_multiplier  # to be consistent
                 else:
@@ -596,9 +609,11 @@ def _process_results(self, analysis_id):
             else:
                 cleaned_results[col_name] = value
 
-        original_property_state = property_view_by_apv_id[analysis_property_view.id].state
-        original_property_state.extra_data.update(cleaned_results)
-        original_property_state.save()
+        # if no columns are missing, save back to property
+        if not missing_columns:
+            original_property_state = property_view_by_apv_id[analysis_property_view.id].state
+            original_property_state.extra_data.update(cleaned_results)
+            original_property_state.save()
 
 
 @shared_task(bind=True)

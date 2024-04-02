@@ -2,7 +2,7 @@
 # encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
-See also https://github.com/seed-platform/seed/main/LICENSE.md
+See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 :author Paul Munday <paul@paulmunday.net>
 :author Nicholas Long  <nicholas.long@nrel.gov>
@@ -26,6 +26,9 @@ from seed.models import (
     PropertyView,
     TaxLotProperty,
     TaxLotView
+)
+from seed.serializers.access_level_instances import (
+    AccessLevelInstanceSerializer
 )
 from seed.serializers.building_file import BuildingFileSerializer
 from seed.serializers.certification import (
@@ -109,6 +112,7 @@ class PropertySerializer(serializers.ModelSerializer):
     updated = serializers.DateTimeField("%Y-%m-%dT%H:%M:%S.%fZ", default_timezone=pytz.utc, read_only=True)
 
     inventory_documents = InventoryDocumentSerializer(many=True, read_only=True)
+    access_level_instance = AccessLevelInstanceSerializer(many=False, read_only=True)
 
     class Meta:
         model = Property
@@ -121,6 +125,27 @@ class PropertySerializer(serializers.ModelSerializer):
     def many_init(cls, *args, **kwargs):
         kwargs['child'] = PropertyMinimalSerializer()
         return PropertyListSerializer(*args, **kwargs)
+
+
+class CreatePropertySerializer(serializers.ModelSerializer):
+    # The created and updated fields are in UTC time and need to be casted accordingly in this format
+    created = serializers.DateTimeField("%Y-%m-%dT%H:%M:%S.%fZ", default_timezone=pytz.utc, read_only=True)
+    updated = serializers.DateTimeField("%Y-%m-%dT%H:%M:%S.%fZ", default_timezone=pytz.utc, read_only=True)
+
+    inventory_documents = InventoryDocumentSerializer(many=True, read_only=True)
+    access_level_instance_id = serializers.IntegerField(required=True)
+    organization_id = serializers.IntegerField(required=True)
+
+    class Meta:
+        model = Property
+        fields = (
+            'id',
+            'organization_id',
+            'access_level_instance_id',
+            'created',
+            'updated',
+            'inventory_documents',
+        )
 
 
 class PropertyMinimalSerializer(serializers.ModelSerializer):
@@ -225,6 +250,7 @@ class PropertyStatePromoteWritableSerializer(serializers.ModelSerializer):
     # to support the old state serializer method with the PROPERTY_STATE_FIELDS variables
     import_file_id = serializers.IntegerField(allow_null=True, read_only=True)
     organization_id = serializers.IntegerField()
+    raw_access_level_instance_id = serializers.IntegerField()
 
     # read-only core fields
     id = serializers.IntegerField(read_only=True)

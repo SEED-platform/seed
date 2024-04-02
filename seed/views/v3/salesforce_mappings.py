@@ -2,7 +2,7 @@
 # encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
-See also https://github.com/seed-platform/seed/main/LICENSE.md
+See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 from copy import deepcopy
 
@@ -33,7 +33,7 @@ class SalesforceMappingViewSet(viewsets.ViewSet, OrgMixin):
     @require_organization_id_class
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('requires_viewer')
+    @has_perm_class('requires_owner')
     def list(self, request):
         organization_id = self.get_organization(request)
         salesforce_mappings = SalesforceMapping.objects.filter(organization=organization_id)
@@ -47,7 +47,7 @@ class SalesforceMappingViewSet(viewsets.ViewSet, OrgMixin):
     @require_organization_id_class
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('requires_viewer')
+    @has_perm_class('requires_owner')
     def retrieve(self, request, pk=0):
         organization = self.get_organization(request)
         if pk == 0:
@@ -211,7 +211,7 @@ class SalesforceMappingViewSet(viewsets.ViewSet, OrgMixin):
     @require_organization_id_class
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('requires_viewer')
+    @has_perm_class('requires_owner')
     @action(detail=True, methods=['GET'])
     def evaluate(self, request, pk):
         organization = self.get_organization(request)

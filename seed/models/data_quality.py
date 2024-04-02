@@ -2,7 +2,7 @@
 # encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
-See also https://github.com/seed-platform/seed/main/LICENSE.md
+See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 import json
 import logging
@@ -203,7 +203,7 @@ class Rule(models.Model):
             'data_type': TYPE_DATE,
             'rule_type': RULE_TYPE_DEFAULT,
             'min': 18890101,
-            'max': 20201231,
+            'max': datetime.now().strftime("%Y1231"),
             'severity': SEVERITY_ERROR,
             'condition': RULE_RANGE,
         }, {
@@ -232,7 +232,7 @@ class Rule(models.Model):
             'data_type': TYPE_DATE,
             'rule_type': RULE_TYPE_DEFAULT,
             'min': 18890101,
-            'max': 20201231,
+            'max': datetime.now().strftime("%Y1231"),
             'severity': SEVERITY_ERROR,
             'condition': RULE_RANGE,
         }, {
@@ -241,7 +241,7 @@ class Rule(models.Model):
             'data_type': TYPE_DATE,
             'rule_type': RULE_TYPE_DEFAULT,
             'min': 18890101,
-            'max': 20201231,
+            'max': datetime.now().strftime("%Y1231"),
             'severity': SEVERITY_ERROR,
             'condition': RULE_RANGE,
         }, {
@@ -308,7 +308,7 @@ class Rule(models.Model):
             'data_type': TYPE_YEAR,
             'rule_type': RULE_TYPE_DEFAULT,
             'min': 1700,
-            'max': 2019,
+            'max': str(datetime.now().year),
             'severity': SEVERITY_ERROR,
             'condition': RULE_RANGE,
         }, {
@@ -317,7 +317,7 @@ class Rule(models.Model):
             'data_type': TYPE_DATE,
             'rule_type': RULE_TYPE_DEFAULT,
             'min': 18890101,
-            'max': 20201231,
+            'max': datetime.now().strftime("%Y1231"),
             'severity': SEVERITY_ERROR,
             'condition': RULE_RANGE,
         }

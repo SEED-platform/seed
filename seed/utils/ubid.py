@@ -2,7 +2,7 @@
 # encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
-See also https://github.com/seed-platform/seed/main/LICENSE.md
+See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 import logging
 
@@ -21,8 +21,8 @@ def centroid_wkt(state):
         return GEOSGeometry(state.centroid, srid=4326).wkt
 
 
-# Decode UBIDs from queryset or individual PropertyState/TaxLotState
 def decode_unique_ids(qs):
+    """Decode UBIDs from queryset or individual PropertyState/TaxLotState"""
     # import here to prevent circular reference
     from seed.models.properties import PropertyState
     from seed.models.tax_lots import TaxLotState
@@ -165,7 +165,7 @@ def merge_ubid_models(old_state_ids, new_state_id, StateClass):
 
 
 def find_preferred(old_states, new_state):
-    # The preferred ubid will be the first prefered ubid founnd on a list of states.
+    # The preferred ubid will be the first preferred ubid found on a list of states.
     # Where new_state is priority, and old_states[0] is least priority
     ordered_states = list(old_states)
     ordered_states.insert(0, new_state)

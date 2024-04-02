@@ -2,23 +2,37 @@
 # encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
-See also https://github.com/seed-platform/seed/main/LICENSE.md
+See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 import json
 from functools import wraps
 from inspect import signature
 
 from django.conf import settings
-from django.http import HttpResponseForbidden
+from django.core.exceptions import ObjectDoesNotExist
+from django.http import HttpResponseForbidden, JsonResponse
+from django.utils.datastructures import MultiValueDictKeyError
+from rest_framework import status
 
+from seed.data_importer.models import ImportFile, ImportRecord
 from seed.lib.superperms.orgs.models import (
     ROLE_MEMBER,
     ROLE_OWNER,
     ROLE_VIEWER,
+    AccessLevelInstance,
     Organization,
     OrganizationUser
 )
 from seed.lib.superperms.orgs.permissions import get_org_id
+from seed.models import (
+    Analysis,
+    DataLogger,
+    Goal,
+    Property,
+    PropertyView,
+    TaxLotView,
+    UbidModel
+)
 
 # Allow Super Users to ignore permissions.
 ALLOW_SUPER_USER_PERMS = getattr(settings, 'ALLOW_SUPER_USER_PERMS', True)
@@ -64,6 +78,16 @@ def requires_viewer(org_user):
 def requires_superuser(org_user):
     """Only Django superusers have superuser perms."""
     return org_user.user.is_superuser
+
+
+def requires_root_member_access(org_user):
+    """ User must be an owner or member at the root access level"""
+    return org_user.access_level_instance.depth == 1 and org_user.role_level >= ROLE_MEMBER
+
+
+def requires_non_leaf_access(org_user):
+    """ User must be a non leaf member. Exception when user is both root and leaf. """
+    return org_user.access_level_instance.is_root() or not org_user.access_level_instance.is_leaf()
 
 
 def can_create_sub_org(org_user):
@@ -130,6 +154,8 @@ PERMS = {
     'requires_owner': requires_owner,
     'requires_member': requires_member,
     'requires_viewer': requires_viewer,
+    'requires_root_member_access': requires_root_member_access,
+    'requires_non_leaf_access': requires_non_leaf_access,
     'can_create_sub_org': can_create_sub_org,
     'can_remove_org': can_remove_org,
     'can_invite_member': can_invite_member,
@@ -179,9 +205,9 @@ def _validate_permissions(perm_name, request, requires_org):
         org = Organization.objects.get(pk=org_id)
     except Organization.DoesNotExist:
         return _make_resp('org_dne')
-
     # Skip perms checks if settings allow super_users to bypass.
     if request.user.is_superuser and ALLOW_SUPER_USER_PERMS:
+        request.access_level_instance_id = org.root.id
         return
 
     try:
@@ -190,6 +216,8 @@ def _validate_permissions(perm_name, request, requires_org):
         )
     except OrganizationUser.DoesNotExist:
         return _make_resp('user_dne')
+    else:
+        request.access_level_instance_id = org_user.access_level_instance.id
 
     if not PERMS.get(perm_name, lambda x: False)(org_user):
         return _make_resp('perm_denied')
@@ -197,7 +225,6 @@ def _validate_permissions(perm_name, request, requires_org):
 
 def has_perm_class(perm_name: str, requires_org: bool = True):
     """Proceed if user from request has ``perm_name``."""
-
     def decorator(fn):
         params = list(signature(fn).parameters)
         if params and params[0] == 'self':
@@ -208,6 +235,216 @@ def has_perm_class(perm_name: str, requires_org: bool = True):
             @wraps(fn)
             def _wrapped(request, *args, **kwargs):
                 return _validate_permissions(perm_name, request, requires_org) or fn(request, *args, **kwargs)
+
+        return _wrapped
+
+    return decorator
+
+
+def assert_hierarchy_access(
+    request,
+    property_id_kwarg=None,
+    property_view_id_kwarg=None,
+    param_property_view_id=None,
+    taxlot_view_id_kwarg=None,
+    import_file_id_kwarg=None,
+    param_import_file_id=None,
+    import_record_id_kwarg=None,
+    body_ali_id=None,
+    body_import_file_id=None,
+    body_property_id=None,
+    analysis_id_kwarg=None,
+    ubid_id_kwarg=None,
+    body_import_record_id=None,
+    body_property_state_id=None,
+    body_taxlot_state_id=None,
+    param_import_record_id=None,
+    goal_id_kwarg=None,
+    data_logger_id_kwarg=None,
+    *args,
+    **kwargs
+):
+
+    """Helper function to has_hierarchy_access"""
+    body = request.data
+    params = request.GET
+    try:
+        if property_id_kwarg and property_id_kwarg in kwargs:
+            property = Property.objects.get(pk=kwargs[property_id_kwarg])
+            requests_ali = property.access_level_instance
+
+        elif body_property_id and body_property_id in body:
+            property = Property.objects.get(pk=body[body_property_id])
+            requests_ali = property.access_level_instance
+
+        elif body_property_state_id and body_property_state_id in body:
+            # there should only be one property_view with a specific property state
+            property_view = PropertyView.objects.get(state_id=body[body_property_state_id])
+            requests_ali = property_view.property.access_level_instance
+
+        elif body_taxlot_state_id and body_taxlot_state_id in body:
+            taxlot_view = TaxLotView.objects.get(state_id=body[body_taxlot_state_id])
+            requests_ali = taxlot_view.taxlot.access_level_instance
+
+        elif property_view_id_kwarg and property_view_id_kwarg in kwargs:
+            property_view = PropertyView.objects.get(pk=kwargs[property_view_id_kwarg])
+            requests_ali = property_view.property.access_level_instance
+
+        elif param_property_view_id and param_property_view_id in params:
+            property_view = PropertyView.objects.get(pk=params[param_property_view_id])
+            requests_ali = property_view.property.access_level_instance
+
+        elif param_import_file_id and param_import_file_id in params:
+            import_file = ImportFile.objects.get(pk=params[param_import_file_id])
+            requests_ali = import_file.access_level_instance
+
+        elif taxlot_view_id_kwarg and taxlot_view_id_kwarg in kwargs:
+            taxlot_view = TaxLotView.objects.get(pk=kwargs[taxlot_view_id_kwarg])
+            requests_ali = taxlot_view.taxlot.access_level_instance
+
+        elif import_file_id_kwarg and import_file_id_kwarg in kwargs:
+            import_file = ImportFile.objects.get(pk=kwargs[import_file_id_kwarg])
+            requests_ali = import_file.access_level_instance
+
+        elif body_ali_id and body_ali_id in body:
+            requests_ali = AccessLevelInstance.objects.get(pk=body[body_ali_id])
+
+        elif import_record_id_kwarg and import_record_id_kwarg in kwargs:
+            import_record = ImportRecord.objects.get(pk=kwargs[import_record_id_kwarg])
+            requests_ali = import_record.access_level_instance
+
+        elif body_import_file_id and body_import_file_id in body:
+            import_file = ImportFile.objects.get(pk=body[body_import_file_id])
+            requests_ali = import_file.access_level_instance
+
+        elif body_import_record_id and body_import_record_id in body:
+            import_record = ImportRecord.objects.get(pk=body[body_import_record_id])
+            requests_ali = import_record.access_level_instance
+
+        elif param_import_record_id and (param_import_record_id in request.POST or param_import_record_id in request.GET):
+            import_record_pk = request.POST.get(param_import_record_id, request.GET.get(param_import_record_id))
+            import_record = ImportRecord.objects.get(pk=import_record_pk)
+            requests_ali = import_record.access_level_instance
+
+        elif analysis_id_kwarg and analysis_id_kwarg in kwargs:
+            if int(kwargs[analysis_id_kwarg]) < 1:
+                return
+            analysis = Analysis.objects.get(pk=kwargs[analysis_id_kwarg])
+            requests_ali = analysis.access_level_instance
+
+        elif ubid_id_kwarg and ubid_id_kwarg in kwargs:
+            ubid = UbidModel.objects.get(pk=kwargs[ubid_id_kwarg])
+            if ubid.property:
+                requests_ali = ubid.property.propertyview_set.first().property.access_level_instance
+            else:
+                requests_ali = ubid.taxlot.taxlotview_set.first().taxlot.access_level_instance
+
+        elif goal_id_kwarg and goal_id_kwarg in kwargs:
+            goal = Goal.objects.get(pk=kwargs[goal_id_kwarg])
+            body_ali_id = body.get('access_level_instance')
+            if body_ali_id:
+                body_ali = AccessLevelInstance.objects.get(pk=body_ali_id)
+                requests_ali = body_ali if body_ali.depth < goal.access_level_instance.depth else goal.access_level_instance
+            else:
+                requests_ali = goal.access_level_instance
+
+        elif data_logger_id_kwarg and data_logger_id_kwarg in kwargs:
+            data_logger = DataLogger.objects.get(pk=kwargs[data_logger_id_kwarg])
+            requests_ali = data_logger.property.access_level_instance
+
+        else:
+            property_view = PropertyView.objects.get(pk=request.GET['property_view_id'])
+            requests_ali = property_view.property.access_level_instance
+
+    except (ObjectDoesNotExist, MultiValueDictKeyError):
+        return JsonResponse({
+            'status': 'error',
+            'message': 'No such resource.'
+        }, status=status.HTTP_404_NOT_FOUND)
+
+    user_ali = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
+    if not (user_ali == requests_ali or requests_ali.is_descendant_of(user_ali)):
+        return JsonResponse({
+            'status': 'error',
+            'message': 'No such resource.'
+        }, status=status.HTTP_404_NOT_FOUND)
+
+
+def has_hierarchy_access(
+    property_id_kwarg=None,
+    property_view_id_kwarg=None,
+    param_property_view_id=None,
+    taxlot_view_id_kwarg=None,
+    import_file_id_kwarg=None,
+    param_import_file_id=None,
+    import_record_id_kwarg=None,
+    body_ali_id=None,
+    body_import_file_id=None,
+    body_property_id=None,
+    analysis_id_kwarg=None,
+    ubid_id_kwarg=None,
+    body_import_record_id=None,
+    body_property_state_id=None,
+    body_taxlot_state_id=None,
+    param_import_record_id=None,
+    goal_id_kwarg=None,
+    data_logger_id_kwarg=None,
+):
+    """Must be called after has_perm_class"""
+    def decorator(fn):
+        params = list(signature(fn).parameters)
+        if params and params[0] == 'self':
+            @wraps(fn)
+            def _wrapped(self, request, *args, **kwargs):
+                return assert_hierarchy_access(
+                    request,
+                    property_id_kwarg,
+                    property_view_id_kwarg,
+                    param_property_view_id,
+                    taxlot_view_id_kwarg,
+                    import_file_id_kwarg,
+                    param_import_file_id,
+                    import_record_id_kwarg,
+                    body_ali_id,
+                    body_import_file_id,
+                    body_property_id,
+                    analysis_id_kwarg,
+                    ubid_id_kwarg,
+                    body_import_record_id,
+                    body_property_state_id,
+                    body_taxlot_state_id,
+                    param_import_record_id,
+                    goal_id_kwarg,
+                    data_logger_id_kwarg,
+                    *args,
+                    **kwargs
+                ) or fn(self, request, *args, **kwargs)
+        else:
+            @wraps(fn)
+            def _wrapped(request, *args, **kwargs):
+                return assert_hierarchy_access(
+                    request,
+                    property_id_kwarg,
+                    property_view_id_kwarg,
+                    param_property_view_id,
+                    taxlot_view_id_kwarg,
+                    import_file_id_kwarg,
+                    param_import_file_id,
+                    import_record_id_kwarg,
+                    body_ali_id,
+                    body_import_file_id,
+                    body_property_id,
+                    analysis_id_kwarg,
+                    ubid_id_kwarg,
+                    body_import_record_id,
+                    body_property_state_id,
+                    body_taxlot_state_id,
+                    param_import_record_id,
+                    goal_id_kwarg,
+                    data_logger_id_kwarg,
+                    *args,
+                    **kwargs
+                ) or fn(request, *args, **kwargs)
 
         return _wrapped
 

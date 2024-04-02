@@ -1,6 +1,6 @@
 /**
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
- * See also https://github.com/seed-platform/seed/main/LICENSE.md
+ * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
 describe('controller: mapping_controller', () => {
   // globals set up and used in each test scenario
@@ -251,7 +251,8 @@ describe('controller: mapping_controller', () => {
       status: 'success',
       organization: {
         display_decimal_places: 2,
-        id: 1
+        id: 1,
+        access_level_names: []
       }
     };
 

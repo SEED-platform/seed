@@ -2,7 +2,7 @@
 # encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
-See also https://github.com/seed-platform/seed/main/LICENSE.md
+See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 The Reader module is intended to contain only code which reads data
 out of CSV files. Fuzzy matches, application to data models happens
@@ -18,11 +18,11 @@ from csv import DictReader, Sniffer
 
 import xmltodict
 from past.builtins import basestring
-from unidecode import unidecode
 from xlrd import XLRDError, empty_cell, open_workbook, xldate
 from xlrd.xldate import XLDateAmbiguous
 
 from seed.data_importer.utils import kbtu_thermal_conversion_factors
+from seed.lib.mcm.cleaners import normalize_unicode_and_characters
 
 # Create a list of Excel cell types. This is copied
 # directly from the xlrd source code.
@@ -56,7 +56,7 @@ def clean_fieldnames(fieldnames):
     num_generated_headers = 0
     new_fieldnames = []
     for fieldname in fieldnames:
-        new_fieldname = unidecode(fieldname)
+        new_fieldname = normalize_unicode_and_characters(fieldname)
         if fieldname == '':
             num_generated_headers += 1
             new_fieldname = f'{SEED_GENERATED_HEADER_PREFIX} {num_generated_headers}'
@@ -389,7 +389,7 @@ class ExcelParser(object):
                 value = " ".join(value.split())
             else:
                 value = item.value
-            return unidecode(value)
+            return normalize_unicode_and_characters(value)
 
         # only remaining items should be booleans
         return item.value
@@ -400,7 +400,7 @@ class ExcelParser(object):
 
         :param sheet: xlrd Sheet
         :param header_row: the row index to start with
-        :returns: Generator yeilding a row as Dict
+        :returns: Generator yielding a row as Dict
         """
 
         # save off the headers into a member variable. Only do this once. If XLSDictReader is
@@ -605,7 +605,7 @@ class MCMParser(object):
             for x in first_row:
                 row_field = r[x]
                 if isinstance(row_field, basestring):
-                    row_field = unidecode(r[x])
+                    row_field = normalize_unicode_and_characters(r[x])
                 else:
                     row_field = str(r[x])
                 row_arr.append(row_field.strip())

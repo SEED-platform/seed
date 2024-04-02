@@ -2,7 +2,7 @@
 # encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
-See also https://github.com/seed-platform/seed/main/LICENSE.md
+See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 import logging
 
@@ -14,7 +14,6 @@ from seed.lib.superperms.orgs.models import Organization
 from seed.models.columns import Column
 from seed.models.cycles import Cycle
 from seed.models.filter_group import FilterGroup
-from seed.models.models import StatusLabel as Label
 from seed.models.properties import PropertyState, PropertyView
 from seed.utils.search import build_view_filters_and_sorts
 
@@ -25,11 +24,11 @@ class DataView(models.Model):
     cycles = models.ManyToManyField(Cycle)
     filter_groups = models.ManyToManyField(FilterGroup)
 
-    def get_inventory(self):
-        views_by_filter_group_id, _ = self.views_by_filter()
+    def get_inventory(self, user_ali):
+        views_by_filter_group_id, _ = self.views_by_filter(user_ali)
         return views_by_filter_group_id
 
-    def views_by_filter(self):
+    def views_by_filter(self, user_ali):
         filter_group_views = {}
         views_by_filter_group_id = {}
         for filter_group in self.filter_groups.all():
@@ -38,8 +37,8 @@ class DataView(models.Model):
             query_dict = QueryDict(mutable=True)
             query_dict.update(filter_group.query_dict)
             for cycle in self.cycles.all():
-                filter_views = self._get_filter_group_views(cycle, query_dict)
-                label_views = self._get_label_views(cycle, filter_group)
+                filter_views = self._get_filter_group_views(cycle, query_dict, user_ali)
+                label_views = self._get_label_views(cycle, filter_group, user_ali)
                 views = self._combine_views(filter_views, label_views)
                 filter_group_views[filter_group.id][cycle.id] = views
                 for view in views:
@@ -48,7 +47,7 @@ class DataView(models.Model):
 
         return views_by_filter_group_id, filter_group_views
 
-    def evaluate(self, columns):
+    def evaluate(self, columns, user_ali):
         # RETURN VALUE STRUCTURE
 
         # meta: {data_view: data_view.id, organization: organization.id},
@@ -68,7 +67,7 @@ class DataView(models.Model):
         #                       'Average': 123,
         #                       'Count': 123,
         #                       'Maximum': 123,
-        #                       'Minumum': 123,
+        #                       'Minimum': 123,
         #                       'Sum': 123,
         #                       'views_by_default_field: {
         #                           view.state.default_field || state.id: 123,
@@ -103,7 +102,7 @@ class DataView(models.Model):
             }
         }
 
-        response['views_by_filter_group_id'], views_by_filter = self.views_by_filter()
+        response['views_by_filter_group_id'], views_by_filter = self.views_by_filter(user_ali)
 
         # assign data based on source column id
         for column in columns:
@@ -224,7 +223,7 @@ class DataView(models.Model):
             return round(type_to_aggregate[aggregation], 2)
 
     def _evaluate_derived_column(self, states, aggregation, column):
-        # to evluate a derived_column: DerivedColumn.evaluate(propertyState)
+        # to evaluate a derived_column: DerivedColumn.evaluate(propertyState)
         values = []
 
         for state in states:
@@ -242,25 +241,33 @@ class DataView(models.Model):
         else:
             return list(filter_views)
 
-    def _get_label_views(self, cycle, filter_group):
-        if len(filter_group.labels.all()) == 0:
+    def _get_label_views(self, cycle, filter_group, user_ali):
+        if not (filter_group.and_labels.exists() or filter_group.or_labels.exists() or filter_group.exclude_labels.exists()):
             return None
 
-        logic = filter_group.label_logic
-        labels = Label.objects.filter(id__in=filter_group.labels.all())
+        permissions_filter = {
+            "property__access_level_instance__lft__gte": user_ali.lft,
+            "property__access_level_instance__rgt__lte": user_ali.rgt,
+        }
 
-        if logic == 0:  # and
-            views_all = []
-            for label in labels:
-                views = cycle.propertyview_set.filter(labels__in=[label])
-                views_all.append(views)
-            return list(set.intersection(*map(set, views_all)))
-        elif logic == 1:  # or
-            return list(cycle.propertyview_set.filter(labels__in=labels))
-        elif logic == 2:  # exclude
-            return list(cycle.propertyview_set.exclude(labels__in=labels))
+        and_labels = filter_group.and_labels.all()
+        or_labels = filter_group.or_labels.all()
+        exclude_labels = filter_group.exclude_labels.all()
+        views = None
 
-    def _get_filter_group_views(self, cycle, query_dict):
+        if and_labels.exists():  # and
+            views = views or cycle.propertyview_set.filter(**permissions_filter)
+            for label in and_labels:
+                views = views.filter(labels=label)
+        if or_labels.exists():  # or
+            views = views or cycle.propertyview_set.filter(**permissions_filter)
+            views = views.filter(labels__in=or_labels)
+        if exclude_labels.exists():  # exclude
+            views = views or cycle.propertyview_set.filter(**permissions_filter)
+            views = views.exclude(labels__in=exclude_labels)
+        return list(views)
+
+    def _get_filter_group_views(self, cycle, query_dict, user_ali):
         org_id = self.organization.id
         columns = Column.retrieve_all(
             org_id=org_id,
@@ -270,13 +277,18 @@ class DataView(models.Model):
         )
         annotations = {}
         try:
-            filters, annotations, order_by = build_view_filters_and_sorts(query_dict, columns)
+            filters, annotations, order_by = build_view_filters_and_sorts(query_dict, columns, 'property')
         except Exception:
             logging.error('error with filter group')
 
         views_list = (
             PropertyView.objects.select_related('property', 'state', 'cycle')
-            .filter(property__organization_id=org_id, cycle=cycle)
+            .filter(
+                property__organization_id=org_id,
+                cycle=cycle,
+                property__access_level_instance__lft__gte=user_ali.lft,
+                property__access_level_instance__rgt__lte=user_ali.rgt,
+            )
         )
 
         views_list = views_list.annotate(**annotations).filter(filters).order_by(*order_by)

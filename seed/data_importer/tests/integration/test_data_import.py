@@ -2,7 +2,7 @@
 # encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
-See also https://github.com/seed-platform/seed/main/LICENSE.md
+See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 import copy
 import csv
@@ -104,7 +104,7 @@ class TestDataImport(DataMappingBaseTestCase):
         """Save mappings based on user specifications."""
         # Create new import file to test
         import_record = ImportRecord.objects.create(
-            owner=self.user, last_modified_by=self.user, super_organization=self.org
+            owner=self.user, last_modified_by=self.user, super_organization=self.org, access_level_instance=self.org.root
         )
         import_file = ImportFile.objects.create(
             import_record=import_record,
@@ -515,7 +515,9 @@ class TestMappingExampleData(DataMappingBaseTestCase):
 
         # Promote the PropertyState to a PropertyView
         pv1 = ps.promote(self.cycle)
+        ps.raw_access_level_instance = self.org.root  # un-clear it
         pv2 = ps.promote(self.cycle)  # should just return the same object
+        ps.raw_access_level_instance = self.org.root  # un-clear it
         self.assertEqual(pv1, pv2)
 
         # promote the same state for a new cycle, same data
@@ -528,7 +530,7 @@ class TestMappingExampleData(DataMappingBaseTestCase):
 
 # For some reason if you comment out the next two test cases (TestMappingPropertiesOnly and
 # TestMappingTaxLotsOnly), the test_views_matching.py file will fail. I cannot figure out
-# what is causing this and it is really annoying. Inherenting from DataMappingBaseTestCase
+# what is causing this and it is really annoying. Inheriting from DataMappingBaseTestCase
 # will delete all the model data upon completion, Maybe because FAKE_MAPPINGS
 # is not a copy, rather a pointer?
 

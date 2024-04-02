@@ -1,12 +1,16 @@
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
-See also https://github.com/seed-platform/seed/main/LICENSE.md
+See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.http import JsonResponse
 from rest_framework import status, viewsets
 
+from seed.lib.superperms.orgs.decorators import (
+    has_hierarchy_access,
+    has_perm_class
+)
 from seed.models import Event
 from seed.serializers.events import EventSerializer
 from seed.utils.api import OrgMixin
@@ -16,6 +20,8 @@ from seed.utils.api_schema import swagger_auto_schema_org_query_param
 class EventViewSet(viewsets.ViewSet, OrgMixin):
 
     @swagger_auto_schema_org_query_param
+    @has_perm_class('requires_viewer')
+    @has_hierarchy_access(property_id_kwarg="property_pk")
     def list(self, request, property_pk):
         page = request.query_params.get('page', 1)
         per_page = request.query_params.get('per_page', 100000)

@@ -1,6 +1,6 @@
 /**
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
- * See also https://github.com/seed-platform/seed/main/LICENSE.md
+ * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
 angular.module('BE.seed.controller.members', []).controller('members_controller', [
   '$scope',
@@ -11,9 +11,11 @@ angular.module('BE.seed.controller.members', []).controller('members_controller'
   'auth_service',
   'organization_service',
   'user_profile_payload',
+  'access_level_tree',
   'urls',
+  'Notification',
   // eslint-disable-next-line func-names
-  function ($scope, $uibModal, users_payload, organization_payload, auth_payload, auth_service, organization_service, user_profile_payload, urls) {
+  function ($scope, $uibModal, users_payload, organization_payload, auth_payload, auth_service, organization_service, user_profile_payload, access_level_tree, urls, Notification) {
     $scope.ownerRoles = ['owner', 'member', 'viewer'];
     $scope.memberRoles = ['member', 'viewer'];
     $scope.users = users_payload.users;
@@ -21,6 +23,100 @@ angular.module('BE.seed.controller.members', []).controller('members_controller'
     $scope.filter_params = {};
     $scope.auth = auth_payload.auth;
     $scope.user_profile = user_profile_payload;
+    $scope.access_level_names = access_level_tree.access_level_names;
+    $scope.user_id_being_edited = null;
+    $scope.user_edits = {};
+
+    /* Build out access_level_instances_by_depth recursively */
+    const access_level_instances_by_depth = {};
+    const calculate_access_level_instances_by_depth = (tree, depth = 1) => {
+      if (tree === undefined) return;
+      if (access_level_instances_by_depth[depth] === undefined) access_level_instances_by_depth[depth] = [];
+      for (const ali of tree) {
+        access_level_instances_by_depth[depth].push({ id: ali.id, name: ali.data.name });
+        calculate_access_level_instances_by_depth(ali.children, depth + 1);
+      }
+    };
+    calculate_access_level_instances_by_depth(access_level_tree.access_level_tree, 0);
+
+    // Result of clicking "edit"
+    $scope.begin_user_edits = (user) => {
+      // set edited user and default edits
+      $scope.user_id_being_edited = user.user_id;
+      $scope.user_edits = {
+        "access_level_instance": {
+          "id": user.access_level_instance_id,
+          "name": user.access_level_instance_name
+        },
+        "access_level": user.access_level,
+        "role": user.role,
+      };
+
+      // the the possible access_level_instances at that level
+      access_level_idx = $scope.access_level_names.findIndex(x => x == $scope.user_edits["access_level"]);
+      $scope.access_level_instances = access_level_instances_by_depth[access_level_idx];
+    }
+
+    // Result of pick a new al. sets ali options.
+    $scope.change_access_level_instance_options = () => {
+      access_level_idx = $scope.access_level_names.findIndex(x => x == $scope.user_edits["access_level"]);
+      $scope.access_level_instances = access_level_instances_by_depth[access_level_idx];
+      $scope.user_edits["access_level_instance"] = null;
+    }
+
+    // user user edits
+    $scope.save_user_edits = () => {
+      if ($scope.user_edits["access_level_instance"] === null){
+        Notification.error('Must select an ali.');
+        return;
+      }
+      if($scope.user_edits.role == "owner" && $scope.user_edits.access_level != $scope.access_level_names[0]){
+        Notification.error('Owners must be in the root.');
+        return;
+      }
+
+      // update user
+      user = $scope.users.find(x => x.user_id == $scope.user_id_being_edited);
+      $scope.update_user(user, $scope.user_edits)
+
+      user.role = $scope.user_edits.role
+      user.access_level_instance_id = $scope.user_edits.access_level_instance.id
+      user.access_level_instance_name = $scope.user_edits.access_level_instance.name
+      user.access_level = $scope.user_edits.access_level
+
+      // reset user edits
+      $scope.user_id_being_edited = null;
+      $scope.user_edits = {};
+    }
+    /**
+     * update_user: updates a users role and access level instance
+     */
+    $scope.update_user = (user, user_edits) => {
+      // 1. update role
+      // 2. update ali
+      organization_service.update_role(user.user_id, $scope.org.id, user_edits.role)
+        .then(() => {
+          refreshRoleStatus();
+          return organization_service.update_ali(user.user_id, $scope.org.id, user_edits.access_level_instance.id)
+        })
+        .catch((data) => {
+          $scope.$emit('app_error', data);
+        })
+    }
+
+    $scope.cancel_user_edits = () => {
+      $scope.user_id_being_edited = null;
+      $scope.user_edits = {};
+    }
+
+    $scope.get_roles = (user) => {
+      user_in_root = user.access_level == $scope.org.access_level_names[0]
+      if(user_in_root){
+        return ['owner', 'member', 'viewer']
+      } else{
+        return ['member', 'viewer']
+      }
+    }
 
     /**
      * remove_member: removes a user from the org
@@ -41,20 +137,6 @@ angular.module('BE.seed.controller.members', []).controller('members_controller'
         });
     };
 
-    /**
-     * saves the changed role for the user
-     * @param  {obj} user
-     */
-    $scope.update_role = (user) => {
-      organization_service
-        .update_role(user.user_id, $scope.org.id, user.role)
-        .then((data) => {
-          refreshRoleStatus();
-        })
-        .catch((data) => {
-          $scope.$emit('app_error', data);
-        });
-    };
 
     /**
      * new_member_modal open an AngularUI modal to add/invite a new member
@@ -64,7 +146,9 @@ angular.module('BE.seed.controller.members', []).controller('members_controller'
         templateUrl: `${urls.static_url}seed/partials/new_member_modal.html`,
         controller: 'new_member_modal_controller',
         resolve: {
-          organization: () => $scope.org
+          organization: () => $scope.org,
+          access_level_tree: () => access_level_tree.access_level_tree,
+          level_names: () => access_level_tree.access_level_names
         }
       });
       modalInstance.result.then(

@@ -2,13 +2,14 @@
 # encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
-See also https://github.com/seed-platform/seed/main/LICENSE.md
+See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 from django.urls import include, re_path
 from rest_framework import routers
 from rest_framework_nested import routers as nested_routers
 
 from seed.views.main import celery_queue
+from seed.views.v3.access_levels import AccessLevelViewSet
 from seed.views.v3.analyses import AnalysisViewSet
 from seed.views.v3.analysis_messages import AnalysisMessageViewSet
 from seed.views.v3.analysis_views import AnalysisPropertyViewViewSet
@@ -30,11 +31,14 @@ from seed.views.v3.events import EventViewSet
 from seed.views.v3.filter_group import FilterGroupViewSet
 from seed.views.v3.gbr_properties import GBRPropertyViewSet
 from seed.views.v3.geocode import GeocodeViewSet
+from seed.views.v3.goal_notes import GoalNoteViewSet
+from seed.views.v3.goals import GoalViewSet
 from seed.views.v3.green_assessment_properties import (
     GreenAssessmentPropertyViewSet
 )
 from seed.views.v3.green_assessment_urls import GreenAssessmentURLViewSet
 from seed.views.v3.green_assessments import GreenAssessmentViewSet
+from seed.views.v3.historical_notes import HistoricalNoteViewSet
 from seed.views.v3.import_files import ImportFileViewSet
 from seed.views.v3.label_inventories import LabelInventoryViewSet
 from seed.views.v3.labels import LabelViewSet
@@ -51,10 +55,10 @@ from seed.views.v3.progress import ProgressViewSet
 from seed.views.v3.properties import PropertyViewSet
 from seed.views.v3.property_measures import PropertyMeasureViewSet
 from seed.views.v3.property_scenarios import PropertyScenarioViewSet
-from seed.views.v3.property_states import PropertyStateViewSet
 from seed.views.v3.property_views import PropertyViewViewSet
 from seed.views.v3.salesforce_configs import SalesforceConfigViewSet
 from seed.views.v3.salesforce_mappings import SalesforceMappingViewSet
+from seed.views.v3.sensors import SensorViewSet
 from seed.views.v3.tax_lot_properties import TaxLotPropertyViewSet
 from seed.views.v3.taxlot_views import TaxlotViewViewSet
 from seed.views.v3.taxlots import TaxlotViewSet
@@ -78,7 +82,8 @@ api_v3_router.register(r'datasets', DatasetViewSet, basename='datasets')
 api_v3_router.register(r'derived_columns', DerivedColumnViewSet, basename='derived_columns')
 api_v3_router.register(r'eeej', EEEJViewSet, basename='eeej')
 api_v3_router.register(r'filter_groups', FilterGroupViewSet, basename='filter_groups')
-api_v3_router.register(r'gbr_properties', GBRPropertyViewSet, basename='properties')
+api_v3_router.register(r'gbr_properties', GBRPropertyViewSet, basename='gbr_properties')
+api_v3_router.register(r'goals', GoalViewSet, basename='goals')
 api_v3_router.register(r'geocode', GeocodeViewSet, basename='geocode')
 api_v3_router.register(r'green_assessment_properties', GreenAssessmentPropertyViewSet, basename='green_assessment_properties')
 api_v3_router.register(r'green_assessment_urls', GreenAssessmentURLViewSet, basename='green_assessment_urls')
@@ -92,7 +97,6 @@ api_v3_router.register(r'postoffice', PostOfficeViewSet, basename='postoffice')
 api_v3_router.register(r'postoffice_email', PostOfficeEmailViewSet, basename='postoffice_email')
 api_v3_router.register(r'progress', ProgressViewSet, basename='progress')
 api_v3_router.register(r'properties', PropertyViewSet, basename='properties')
-api_v3_router.register(r'property_states', PropertyStateViewSet, basename='property_states')
 api_v3_router.register(r'property_views', PropertyViewViewSet, basename='property_views')
 api_v3_router.register(r'salesforce_configs', SalesforceConfigViewSet, basename='salesforce_configs')
 api_v3_router.register(r'salesforce_mappings', SalesforceMappingViewSet, basename='salesforce_mappings')
@@ -108,6 +112,7 @@ data_quality_checks_router.register(r'rules', DataQualityCheckRuleViewSet, basen
 
 organizations_router = nested_routers.NestedSimpleRouter(api_v3_router, r'organizations', lookup='organization')
 organizations_router.register(r'users', OrganizationUserViewSet, basename='organization-users')
+organizations_router.register(r'access_levels', AccessLevelViewSet, basename='organization-access_levels')
 
 analysis_views_router = nested_routers.NestedSimpleRouter(api_v3_router, r'analyses', lookup='analysis')
 analysis_views_router.register(r'views', AnalysisPropertyViewViewSet, basename='analysis-views')
@@ -123,6 +128,9 @@ properties_router.register(r'meters', MeterViewSet, basename='property-meters')
 properties_router.register(r'notes', NoteViewSet, basename='property-notes')
 properties_router.register(r'scenarios', PropertyScenarioViewSet, basename='property-scenarios')
 properties_router.register(r'events', EventViewSet, basename='property-events')
+properties_router.register(r'goal_notes', GoalNoteViewSet, basename='property-goal-notes')
+properties_router.register(r'historical_notes', HistoricalNoteViewSet, basename='property-historical-notes')
+properties_router.register(r'sensors', SensorViewSet, basename='property-sensors')
 
 # This is a third level router, so we need to register it with the second level router
 meters_router = nested_routers.NestedSimpleRouter(properties_router, r'meters', lookup='meter')

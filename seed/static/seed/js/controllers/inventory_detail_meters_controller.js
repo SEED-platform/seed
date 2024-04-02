@@ -1,6 +1,6 @@
 /**
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
- * See also https://github.com/seed-platform/seed/main/LICENSE.md
+ * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
 angular.module('BE.seed.controller.inventory_detail_meters', []).controller('inventory_detail_meters_controller', [
   '$state',
@@ -17,7 +17,7 @@ angular.module('BE.seed.controller.inventory_detail_meters', []).controller('inv
   'property_meter_usage',
   'spinner_utility',
   'urls',
-  'user_service',
+  // 'user_service',
   'organization_payload',
   // eslint-disable-next-line func-names
   function (
@@ -35,7 +35,7 @@ angular.module('BE.seed.controller.inventory_detail_meters', []).controller('inv
     property_meter_usage,
     spinner_utility,
     urls,
-    user_service,
+    // user_service,
     organization_payload
   ) {
     spinner_utility.show();
@@ -61,7 +61,7 @@ angular.module('BE.seed.controller.inventory_detail_meters', []).controller('inv
 
     resetSelections();
 
-    const deleteButton = '<button type="button" class="btn-primary" style="border-radius: 4px;" ng-click="grid.appScope.open_meter_deletion_modal(row.entity)" translate>Delete</button>';
+    const deleteButton = '<button type="button" ng-show="grid.appScope.menu.user.organization.user_role !== \'viewer\'" class="btn-primary" style="border-radius: 4px;" ng-click="grid.appScope.open_meter_deletion_modal(row.entity)" translate>Delete</button>';
 
     $scope.meterGridOptions = {
       data: 'sorted_meters',
@@ -144,6 +144,7 @@ angular.module('BE.seed.controller.inventory_detail_meters', []).controller('inv
         templateUrl: `${urls.static_url}seed/partials/meter_deletion_modal.html`,
         controller: 'meter_deletion_modal_controller',
         resolve: {
+          organization_id: () => $scope.organization.id,
           meter: () => meter,
           view_id: () => $scope.inventory.view_id,
           refresh_meters_and_readings: () => $scope.refresh_meters_and_readings
@@ -225,6 +226,7 @@ angular.module('BE.seed.controller.inventory_detail_meters', []).controller('inv
         [meters, property_meter_usage] = data;
 
         resetSelections();
+        $scope.meterGridApi.core.refresh()
         $scope.applyFilters();
         spinner_utility.hide();
       });

@@ -2,7 +2,7 @@
 # encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
-See also https://github.com/seed-platform/seed/main/LICENSE.md
+See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 import logging
 
@@ -249,6 +249,33 @@ FAKE_MAPPINGS = {
             "to_field": 'Double Tester',
         }
     ],
+    'unicode': [
+        {
+            "from_field": 'Custom ID 1',
+            "to_table_name": 'PropertyState',
+            "to_field": 'custom_id_1',
+        }, {
+            "from_field": 'Property Name',
+            "to_table_name": 'PropertyState',
+            "to_field": 'property_name',
+        }, {
+            "from_field": 'Extra Data - String',
+            "to_table_name": 'PropertyState',
+            "to_field": 'Extra Data - String',
+        }, {
+            "from_field": 'Extra Data - Float',
+            "to_table_name": 'PropertyState',
+            "to_field": 'Extra Data - Float',
+        }, {
+            "from_field": 'بيانات اضافية',
+            "to_table_name": 'PropertyState',
+            "to_field": 'بيانات اضافية',
+        }, {
+            "from_field": 'Notes',
+            "to_table_name": 'PropertyState',
+            "to_field": 'Notes',
+        }
+    ],
     'short': {  # Short should no longer be used and probably does not work anymore.
         'property_name': 'Name',
         'address_line_1': 'Address Line 1',
@@ -261,6 +288,7 @@ TAXLOT_FOOTPRINT_MAPPING = {
     "to_table_name": 'TaxLotState',
     "to_field": 'taxlot_footprint',
 }
+
 PROPERTY_FOOTPRINT_MAPPING = {
     "from_field": 'Property Coordinates',
     "to_table_name": 'PropertyState',

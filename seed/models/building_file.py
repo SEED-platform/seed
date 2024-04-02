@@ -2,7 +2,7 @@
 # encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
-See also https://github.com/seed-platform/seed/main/LICENSE.md
+See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 :author nicholas.long@nrel.gov
 """
@@ -137,7 +137,7 @@ class BuildingFile(models.Model):
 
         return self._cache_kbtu_thermal_conversion_factors
 
-    def process(self, organization_id, cycle, property_view=None, promote_property_state=True):
+    def process(self, organization_id, cycle, property_view=None, promote_property_state=True, access_level_instance=None):
         """
         Process the building file that was uploaded and create the correct models for the object
 
@@ -385,7 +385,8 @@ class BuildingFile(models.Model):
 
             # set the property_state to the new one
             property_state = merged_state
-        elif not property_view and promote_property_state:
+        elif not property_view and promote_property_state and access_level_instance:
+            property_state.raw_access_level_instance = access_level_instance
             property_view = property_state.promote(cycle)
         else:
             return True, property_state, None, messages

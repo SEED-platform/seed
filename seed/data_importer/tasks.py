@@ -2,7 +2,7 @@
 # encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
-See also https://github.com/seed-platform/seed/main/LICENSE.md
+See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 from __future__ import absolute_import
 
@@ -12,6 +12,7 @@ import hashlib
 import json
 import os
 import tempfile
+import time
 import traceback
 import zipfile
 from bisect import bisect_left
@@ -27,16 +28,20 @@ from celery import chord, group, shared_task
 from celery.utils.log import get_task_logger
 from dateutil import parser
 from django.contrib.gis.geos import GEOSGeometry
+from django.core.exceptions import ObjectDoesNotExist
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import DataError, IntegrityError, connection, transaction
+from django.db.models import Q
 from django.db.utils import ProgrammingError
 from django.utils import timezone as tz
 from django.utils.timezone import make_naive
 from past.builtins import basestring
-from unidecode import unidecode
 
 from seed.building_sync import validation_client
 from seed.building_sync.building_sync import BuildingSync
+from seed.data_importer.access_level_instances_parser import (
+    AccessLevelInstancesParser
+)
 from seed.data_importer.equivalence_partitioner import EquivalencePartitioner
 from seed.data_importer.match import (
     match_and_link_incoming_properties_and_taxlots
@@ -50,10 +55,11 @@ from seed.data_importer.models import (
 from seed.data_importer.sensor_readings_parser import SensorsReadingsParser
 from seed.data_importer.utils import usage_point_id
 from seed.lib.mcm import cleaners, mapper, reader
+from seed.lib.mcm.cleaners import normalize_unicode_and_characters
 from seed.lib.mcm.mapper import expand_rows
 from seed.lib.mcm.utils import batch
 from seed.lib.progress_data.progress_data import ProgressData
-from seed.lib.superperms.orgs.models import Organization
+from seed.lib.superperms.orgs.models import AccessLevelInstance, Organization
 from seed.lib.xml_mapping import reader as xml_reader
 from seed.models import (
     ASSESSED_BS,
@@ -297,21 +303,19 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, **kwargs):
     # figure out which import field is defined as the unique field that may have a delimiter of
     # individual values (e.g., tax lot ids). The definition of the delimited field is currently
     # hard coded
-    try:
-        delimited_fields = {}
-        if 'TaxLotState' in table_mappings:
-            tmp = list(table_mappings['TaxLotState'].keys())[
-                list(table_mappings['TaxLotState'].values()).index(ColumnMapping.DELIMITED_FIELD)
-            ]
+    delimited_fields = {}
+    if 'TaxLotState' in table_mappings:
+        jurisdiction_tax_lot_id_table_mapping = next(iter(
+            k for k, v in table_mappings["TaxLotState"].items()
+            if v[1] == "jurisdiction_tax_lot_id"
+        ), None)
+
+        if jurisdiction_tax_lot_id_table_mapping:
             delimited_fields['jurisdiction_tax_lot_id'] = {
-                'from_field': tmp,
+                'from_field': jurisdiction_tax_lot_id_table_mapping,
                 'to_table': 'TaxLotState',
                 'to_field_name': 'jurisdiction_tax_lot_id',
             }
-
-    except ValueError:
-        delimited_fields = {}
-        # field does not exist in mapping list, so ignoring
 
     # _log.debug("my table mappings are {}".format(table_mappings))
     # _log.debug("delimited_field that will be expanded and normalized: {}".format(delimited_fields))
@@ -393,6 +397,9 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, **kwargs):
                         map_model_obj.import_file = import_file
                         map_model_obj.source_type = save_type
                         map_model_obj.organization = import_file.import_record.super_organization
+                        # _process_ali_data(map_model_obj, import_file.access_level_instance)
+                        _process_ali_data(map_model_obj, row, import_file.access_level_instance, table_mappings.get(""))
+
                         if hasattr(map_model_obj, 'data_state'):
                             map_model_obj.data_state = DATA_STATE_MAPPING
                         if hasattr(map_model_obj, 'clean'):
@@ -491,6 +498,59 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, **kwargs):
     progress_data.step()
 
     return True
+
+
+def _process_ali_data(model, raw_data, import_file_ali, ah_mappings):
+    org_alns = model.organization.access_level_names
+
+    # if org only has root, just assign it to root, they won't have any ali info
+    if AccessLevelInstance.objects.filter(organization=model.organization).count() == 1:
+        model.raw_access_level_instance = model.organization.root
+        return
+
+    # if not mappings
+    if not ah_mappings:
+        model.raw_access_level_instance_error = "Missing Access Level mappings."
+        return
+
+    # clean ali_info
+    ali_info = {
+        to_col: raw_data.get(from_col)
+        for from_col, (_, to_col, _, _) in ah_mappings.items()
+        if raw_data.get(from_col) is not None and raw_data.get(from_col) != ""
+    }
+    if not ali_info:
+        model.raw_access_level_instance_error = "Missing Access Level Column data."
+        return
+
+    # ensure we have a valid set of keys, else error out
+    needed_keys = set(org_alns[:len(ali_info)])
+    if needed_keys != ali_info.keys():
+        model.raw_access_level_instance_error = "Missing/Incomplete Access Level Column."
+        return
+
+    # try to get ali matching ali info within subtree
+    paths_match = Q(path=ali_info)
+    in_subtree = Q(lft__gte=import_file_ali.lft, rgt__lte=import_file_ali.rgt)
+    ali = AccessLevelInstance.objects.filter(organization=model.organization).filter(Q(paths_match & in_subtree)).first()
+
+    # if ali is None, we error
+    if ali is None:
+        is_ancestor = Q(lft__lt=import_file_ali.lft, rgt__gt=import_file_ali.rgt)
+        ancestor_ali = AccessLevelInstance.objects.filter(organization=model.organization).filter(Q(is_ancestor & paths_match)).first()
+
+        # differing errors if
+        # 1. the user can see the ali but cannot access, or
+        # 2. the ali cannot be seen by the user and/or doesn't exist.
+        if ancestor_ali is not None:
+            model.raw_access_level_instance_error = "Access Level Instance cannot be accessed with the permissions of this import file."
+        else:
+            model.raw_access_level_instance_error = "Access Level Information does not match any existing Access Level Instance."
+
+        return
+
+    # success!
+    model.raw_access_level_instance = ali
 
 
 def _store_raw_footprint_and_create_rule(footprint_details, table, org, import_file, original_row, map_model_obj):
@@ -741,7 +801,7 @@ def _save_raw_data_chunk(chunk, file_pk, progress_key):
                     elif key == "_source_filename":  # grab source filename (for BSync)
                         source_filename = v
                     elif isinstance(v, basestring):
-                        new_chunk[key] = unidecode(v)
+                        new_chunk[key] = normalize_unicode_and_characters(v)
                     elif isinstance(v, (datetime, date)):
                         raise TypeError(
                             "Datetime class not supported in Extra Data. Needs to be a string.")
@@ -809,6 +869,22 @@ def finish_raw_save(results, file_pk, progress_key):
     import_file.save()
 
     return finished_progress_data
+
+
+@shared_task(ignore_result=True)
+def finish_raw_ali_save(results, progress_key):
+    """
+    Finish importing the raw Access Level Instances file.
+
+    :param results: List of results from the parent task
+    :param filename: filename that was being imported
+    :param progress_key: string, Progress Key to append progress
+    :param summary: Summary to be saved on ProgressData as a message
+    :return: results: results from the other tasks before the chord ran
+    """
+    progress_data = ProgressData.from_key(progress_key)
+
+    return progress_data.finish_with_success(results)
 
 
 def cache_first_rows(import_file, parser):
@@ -987,7 +1063,7 @@ def _save_sensor_readings_task(readings_tuples, data_logger_id, sensor_column_na
                     result[sensor_column_name] = {'count': len(cursor.fetchall())}
         except ProgrammingError as e:
             if 'ON CONFLICT DO UPDATE command cannot affect row a second time' in str(e):
-                result[sensor_column_name] = {'error': 'Overlapping readings.'}
+                result[sensor_column_name] = {'error': 'Import failed. Unable to import data with duplicate start and end date pairs.'}
             else:
                 progress_data.finish_with_error('data failed to import')
                 raise e
@@ -1006,6 +1082,103 @@ def _save_sensor_readings_task(readings_tuples, data_logger_id, sensor_column_na
     progress_data.step()
 
     return result
+
+
+@shared_task
+def _save_access_level_instances_task(rows, org_id, progress_key):
+    progress_data = ProgressData.from_key(progress_key)
+    result = {}
+
+    # get org
+    try:
+        org = Organization.objects.get(pk=org_id)
+    except ObjectDoesNotExist:
+        raise 'Could not retrieve organization at pk = ' + str(org_id)
+
+    # get access level names (array of ordered names)
+    access_level_names = AccessLevelInstancesParser._access_level_names(org_id)
+    access_level_names = [x.lower() for x in access_level_names]
+    # determine whether root level was provided in file (if not, remove from list)
+    has_root = True
+    if rows:
+        headers = [x.lower() for x in rows[0].keys()]
+
+        if access_level_names[0] not in headers:
+            access_level_names.pop(0)
+            has_root = False
+    # saves the non-existent instances
+    for row in rows:
+        message = None
+        # process in order of access_level_names
+        # create the needed instances along the way
+        current_level = None
+        children = [org.root]
+        if not has_root:
+            children = org.root.get_children()
+            current_level = org.root
+        # lowercase keys just in case
+        row = {k.lower(): v for k, v in row.items()}
+
+        for key, val in row.items():
+            # check headers
+            if key not in access_level_names:
+                message = f"Error reading CSV data row: {row}...no access level for column {key} found"
+                break
+            # check for empty value (don't add blanks)
+            if not val:
+                message = f"Blank value for column {key} in CSV data row: {row}...skipping"
+                break
+
+            # does this level exist already?
+            looking_for = val
+
+            found = False
+            for child in children:
+                if child.name == looking_for:
+                    found = True
+                    current_level = child
+                    children = current_level.get_children()
+                    break
+
+            if not found:
+                if not current_level:
+                    # this would mean they are trying to add ROOT and that can't be
+                    message = f"Error attempting to add '{val}' as another root element. Root element already defined as: {org.root.name}"
+                    break
+                # add it
+                try:
+                    current_level = org.add_new_access_level_instance(current_level.id, looking_for)
+                    current_level.refresh_from_db()
+                    # get its children (should be empty)
+                    children = current_level.get_children()
+                except Exception as e:
+                    message = f"Error has occurred when adding element '{val}' for entry: {row}: {e}"
+                    break
+
+        # add a row but only for errors
+        if message:
+            result[row[access_level_names[-1]]] = {'message': message}
+
+        progress_data.step()
+
+    return result
+
+
+@shared_task
+def _save_access_level_instances_data_create_tasks(filename, org_id, progress_key):
+    progress_data = ProgressData.from_key(progress_key)
+
+    # open and read in file
+    parser = AccessLevelInstancesParser.factory(
+        open(filename, 'r'),
+        org_id
+    )
+    access_level_instances_data = parser.access_level_instances_details
+
+    progress_data.total = len(access_level_instances_data)
+    progress_data.save()
+    results = _save_access_level_instances_task(access_level_instances_data, org_id, progress_data.key)
+    return finish_raw_ali_save(results, progress_data.key)
 
 
 @shared_task
@@ -1052,7 +1225,7 @@ def _save_greenbutton_data_task(readings, meter_id, meter_usage_point_id, progre
                 result[result_summary_key] = {'count': len(cursor.fetchall())}
     except ProgrammingError as e:
         if 'ON CONFLICT DO UPDATE command cannot affect row a second time' in str(e):
-            result[result_summary_key] = {'error': 'Overlapping readings.'}
+            result[result_summary_key] = {'error': 'Import failed. Unable to import data with duplicate start and end date pairs.'}
         else:
             progress_data.finish_with_error('data failed to import')
             raise e
@@ -1121,7 +1294,7 @@ def _save_pm_meter_usage_data_task(meter_readings, file_pk, progress_key):
                 meter_readings.get('source_id'),
                 type_lookup[meter_readings['type']]
             )
-            result[key] = {'error': 'Overlapping readings.'}
+            result[key] = {'error': 'Import failed. Unable to import data with duplicate start and end date pairs.'}
         else:
             progress_data.finish_with_error('data failed to import')
             raise e
@@ -1277,6 +1450,9 @@ def _save_raw_data_create_tasks(file_pk, progress_key):
             _log.debug(f'Error reading XLSX file: {str(e)}')
             return progress_data.finish_with_error('Failed to parse XLSX file. Please review your import file - all headers should be present and non-numeric.')
 
+    if any('{' in header or '}' in header for header in parser.headers):
+        return progress_data.finish_with_error('Failed to import. Please review your import file - headers cannot contain braces: { }')
+
     import_file.has_generated_headers = False
     if hasattr(parser, 'has_generated_headers'):
         import_file.has_generated_headers = parser.has_generated_headers
@@ -1300,6 +1476,23 @@ def _save_raw_data_create_tasks(file_pk, progress_key):
         tasks.append(_save_raw_data_chunk.s(chunk, file_pk, progress_data.key))
 
     return chord(tasks, interval=15)(finish_raw_save.s(file_pk, progress_data.key))
+
+
+def save_raw_access_level_instances_data(filename, org_id):
+    """ save data and keep progress """
+    progress_data = ProgressData(func_name='save_raw_access_level_instances_data', unique_id=int(time.time()))
+    try:
+        # queue up the tasks and immediately return. This is needed in the case of large hierarchy files
+        # causing the website to timeout due to inactivity.
+        _save_access_level_instances_data_create_tasks.s(filename, org_id, progress_data.key).delay()
+    except StopIteration:
+        progress_data.finish_with_error('StopIteration Exception', traceback.format_exc())
+    except KeyError as e:
+        progress_data.finish_with_error('Invalid Column Name: "' + str(e) + '"', traceback.format_exc())
+    except Exception as e:
+        progress_data.finish_with_error('Unhandled Error: ' + str(e), traceback.format_exc())
+
+    return progress_data.result()
 
 
 def save_raw_espm_data_synchronous(file_pk: int) -> dict:
@@ -1559,9 +1752,10 @@ def hash_state_object(obj, include_extra_data=True):
             if isinstance(value, dict):
                 add_dictionary_repr_to_hash(hash_obj, value)
             else:
-                hash_obj.update(str(unidecode(key)).encode('utf-8'))
+                # TODO: Do we need to normalize_unicode_and_characters (formerly unidecode) here?
+                hash_obj.update(str(normalize_unicode_and_characters(key)).encode('utf-8'))
                 if isinstance(value, basestring):
-                    hash_obj.update(unidecode(value).encode('utf-8'))
+                    hash_obj.update(normalize_unicode_and_characters(value).encode('utf-8'))
                 else:
                     hash_obj.update(str(value).encode('utf-8'))
         return hash_obj

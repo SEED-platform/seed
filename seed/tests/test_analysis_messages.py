@@ -2,19 +2,21 @@
 # encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
-See also https://github.com/seed-platform/seed/main/LICENSE.md
+See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 import json
 import logging
 
 from django.test import TestCase
+from django.urls import reverse_lazy
 
 from seed.landing.models import SEEDUser as User
-from seed.models import AnalysisMessage
+from seed.models import Analysis, AnalysisMessage
 from seed.test_helpers.fake import (
     FakeAnalysisFactory,
     FakeAnalysisPropertyViewFactory
 )
+from seed.tests.util import AccessLevelBaseTestCase
 from seed.utils.organizations import create_organization
 
 
@@ -75,3 +77,53 @@ class TestAnalysisMessage(TestCase):
             'exception': repr(exception),
         }
         self.assertDictEqual(expected_message, parsed_message)
+
+
+class TestAnalysesViewPermissions(AccessLevelBaseTestCase):
+    def setUp(self):
+        super().setUp()
+
+        self.cycle = self.cycle_factory.get_cycle(name="Cycle A")
+        self.root_analysis = Analysis.objects.create(
+            name='test',
+            service=Analysis.BSYNCR,
+            status=Analysis.READY,
+            user=self.root_owner_user,
+            organization=self.org,
+            access_level_instance=self.org.root,
+            configuration={'model_type': 'Simple Linear Regression'},
+        )
+
+        self.analysis_message = AnalysisMessage.objects.create(
+            analysis_id=self.root_analysis.pk,
+            type=AnalysisMessage.DEFAULT,
+            user_message="boo",
+        )
+
+    def test_analysis_message_list(self):
+        url = reverse_lazy('api:v3:analysis-messages-list', args=[self.root_analysis.pk])
+        url += "?organization_id=" + str(self.org.id)
+
+        # child user cannot
+        self.login_as_child_member()
+        response = self.client.get(url, content_type='application/json')
+        assert response.status_code == 404
+
+        # root users can create column in root
+        self.login_as_root_member()
+        response = self.client.get(url, content_type='application/json')
+        assert response.status_code == 200
+
+    def test_analysis_message_get(self):
+        url = reverse_lazy('api:v3:analysis-messages-detail', args=[self.root_analysis.pk, self.analysis_message.pk])
+        url += "?organization_id=" + str(self.org.id)
+
+        # child user cannot
+        self.login_as_child_member()
+        response = self.client.get(url, content_type='application/json')
+        assert response.status_code == 404
+
+        # root users can create column in root
+        self.login_as_root_member()
+        response = self.client.get(url, content_type='application/json')
+        assert response.status_code == 200

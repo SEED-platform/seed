@@ -2,7 +2,7 @@
 # encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
-See also https://github.com/seed-platform/seed/main/LICENSE.md
+See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 from copy import deepcopy
 
@@ -14,6 +14,7 @@ from rest_framework.decorators import action
 
 from seed.decorators import ajax_request_class, require_organization_id_class
 from seed.lib.superperms.orgs.decorators import has_perm_class
+from seed.lib.superperms.orgs.models import AccessLevelInstance
 from seed.models.columns import Column
 from seed.models.data_views import DataView
 from seed.serializers.data_views import DataViewSerializer
@@ -67,7 +68,7 @@ class DataViewViewSet(viewsets.ViewSet, OrgMixin):
     @require_organization_id_class
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('requires_member')
+    @has_perm_class('requires_root_member_access')
     def destroy(self, request, pk):
         organization_id = self.get_organization(request)
 
@@ -98,7 +99,7 @@ class DataViewViewSet(viewsets.ViewSet, OrgMixin):
     @require_organization_id_class
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('requires_member')
+    @has_perm_class('requires_root_member_access')
     def create(self, request):
         org_id = self.get_organization(request)
         data = deepcopy(request.data)
@@ -143,7 +144,7 @@ class DataViewViewSet(viewsets.ViewSet, OrgMixin):
     @require_organization_id_class
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('requires_member')
+    @has_perm_class('requires_root_member_access')
     def update(self, request, pk):
         org_id = self.get_organization(request)
 
@@ -218,7 +219,8 @@ class DataViewViewSet(viewsets.ViewSet, OrgMixin):
                 'message': f'Columns with ids {data["columns"]} do not exist'
             }, status=status.HTTP_404_NOT_FOUND)
 
-        response = data_view.evaluate(columns)
+        user_ali = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
+        response = data_view.evaluate(columns, user_ali)
         return JsonResponse({
             'status': 'success',
             'data': response
@@ -241,7 +243,8 @@ class DataViewViewSet(viewsets.ViewSet, OrgMixin):
                 'message': f'DataView with id {pk} does not exist'
             }, status=status.HTTP_404_NOT_FOUND)
 
-        response = data_view.get_inventory()
+        user_ali = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
+        response = data_view.get_inventory(user_ali)
         return JsonResponse({
             'status': 'success',
             'data': response

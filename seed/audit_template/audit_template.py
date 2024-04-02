@@ -2,7 +2,7 @@
 # encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
-See also https://github.com/seed-platform/seed/main/LICENSE.md
+See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 import json
 import logging
@@ -59,24 +59,23 @@ class AuditTemplate(object):
 
         Args:
             audit_template_submission_id (int): value of the "Submission ID" as seen on Audit Template
-            report_format (str, optional): Report format, either `xml` or `pdf`. Defaults to 'pdf'.
+            report_format (str, optional): Report format, either `json`, `xml`, or `pdf`. Defaults to 'pdf'.
 
         Returns:
             requests.response: Result from Audit Template website
         """
-        # supporting 'PDF' and 'XML' formats only for now
+        # supporting 'JSON', PDF', and 'XML' formats only for now
         token, message = self.get_api_token()
         if not token:
             return None, message
 
         # validate format
-        if report_format.lower() not in ['xml', 'pdf']:
+        if report_format.lower() not in ['json', 'xml', 'pdf']:
             report_format = 'pdf'
 
         # set headers
-        headers = {'accept': 'application/pdf'}
-        if report_format.lower() == 'xml':
-            headers = {'accept': 'application/xml'}
+        accept_type = 'application/' + report_format.lower()
+        headers = {'accept': accept_type}
 
         url = f'{self.API_URL}/rp/submissions/{audit_template_submission_id}.{report_format}?token={token}'
         try:

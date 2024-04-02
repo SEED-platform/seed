@@ -1,9 +1,10 @@
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
-See also https://github.com/seed-platform/seed/main/LICENSE.md
+See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 from collections import namedtuple
 
+from django.db import transaction
 from django.db.models import Subquery
 from django.http import JsonResponse
 from drf_yasg.utils import swagger_auto_schema
@@ -13,7 +14,11 @@ from rest_framework.parsers import JSONParser
 from rest_framework.renderers import JSONRenderer
 
 from seed.decorators import ajax_request_class
-from seed.lib.superperms.orgs.decorators import has_perm_class
+from seed.lib.superperms.orgs.decorators import (
+    has_hierarchy_access,
+    has_perm_class
+)
+from seed.lib.superperms.orgs.models import AccessLevelInstance
 from seed.models import (
     AUDIT_USER_EDIT,
     DATA_STATE_MATCHING,
@@ -43,7 +48,7 @@ from seed.utils.api_schema import (
 )
 from seed.utils.inventory_filter import get_filtered_results
 from seed.utils.labels import get_labels
-from seed.utils.match import match_merge_link
+from seed.utils.match import MergeLinkPairError, match_merge_link
 from seed.utils.merge import merge_taxlots
 from seed.utils.properties import (
     get_changed_fields,
@@ -77,6 +82,7 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
             description='IDs for taxlots to be checked for which labels are applied.'
         )
     )
+    @has_perm_class('requires_viewer')
     @action(detail=False, methods=['POST'])
     def labels(self, request):
         """
@@ -163,7 +169,8 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
                 {'status': 'error', 'message': 'Need to pass organization_id as query parameter'},
                 status=status.HTTP_400_BAD_REQUEST)
 
-        response = taxlots_across_cycles(org_id, profile_id, cycle_ids)
+        ali = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
+        response = taxlots_across_cycles(org_id, ali, profile_id, cycle_ids)
 
         return JsonResponse(response)
 
@@ -249,10 +256,13 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
         """
         body = request.data
         organization_id = int(self.get_organization(request))
+        ali = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
 
         taxlot_view_ids = body.get('taxlot_view_ids', [])
         taxlot_states = TaxLotView.objects.filter(
             id__in=taxlot_view_ids,
+            taxlot__access_level_instance__lft__gte=ali.lft,
+            taxlot__access_level_instance__rgt__lte=ali.rgt,
             cycle__organization_id=organization_id
         ).values('id', 'state_id')
         # get the state ids in order according to the given view ids
@@ -275,20 +285,23 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
                 'message': 'At least two ids are necessary to merge'
             }, status=status.HTTP_400_BAD_REQUEST)
 
-        merged_state = merge_taxlots(taxlot_state_ids, organization_id, 'Manual Match')
+        try:
+            with transaction.atomic():
+                merged_state = merge_taxlots(taxlot_state_ids, organization_id, 'Manual Match')
+                view = merged_state.taxlotview_set.first()
+                merge_count, link_count, view_id = match_merge_link(merged_state.id, 'TaxLotState', view.taxlot.access_level_instance, view.cycle)
 
-        merge_count, link_count, view_id = match_merge_link(merged_state.taxlotview_set.first().id, 'TaxLotState')
+        except MergeLinkPairError:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'These two taxlots have different alis.'
+            }, status=status.HTTP_400_BAD_REQUEST)
 
-        result = {
-            'status': 'success'
-        }
-
-        result.update({
+        return {
+            'status': 'success',
             'match_merged_count': merge_count,
             'match_link_count': link_count,
-        })
-
-        return result
+        }
 
     @swagger_auto_schema(
         manual_parameters=[AutoSchemaHelper.query_org_id_field()]
@@ -301,11 +314,14 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
         """
         Unmerge a taxlot view into two taxlot views
         """
+        ali = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
         try:
             old_view = TaxLotView.objects.select_related(
                 'taxlot', 'cycle', 'state'
             ).get(
                 id=pk,
+                taxlot__access_level_instance__lft__gte=ali.lft,
+                taxlot__access_level_instance__rgt__lte=ali.rgt,
                 taxlot__organization_id=self.get_organization(request)
             )
         except TaxLotView.DoesNotExist:
@@ -445,6 +461,7 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
+    @has_hierarchy_access(taxlot_view_id_kwarg="pk")
     @action(detail=True, methods=['GET'])
     def links(self, request, pk=None):
         """
@@ -484,6 +501,7 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
+    @has_hierarchy_access(taxlot_view_id_kwarg="pk")
     @action(detail=True, methods=['POST'])
     def match_merge_link(self, request, pk=None):
         """
@@ -498,7 +516,15 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
             pk=pk,
             cycle__organization_id=org_id
         )
-        merge_count, link_count, view_id = match_merge_link(taxlot_view.pk, 'TaxLotState')
+        try:
+            with transaction.atomic():
+                merge_count, link_count, view_id = match_merge_link(taxlot_view.state.pk, 'TaxLotState', taxlot_view.taxlot.access_level_instance, taxlot_view.cycle)
+
+        except MergeLinkPairError:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'This taxlot shares matching criteria with at least one taxlot in a different ali. This should not happen. Please contact your system administrator.'
+            }, status=status.HTTP_400_BAD_REQUEST)
 
         result = {
             'view_id': view_id,
@@ -521,6 +547,7 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
+    @has_hierarchy_access(taxlot_view_id_kwarg="pk")
     @action(detail=True, methods=['PUT'])
     def pair(self, request, pk=None):
         """
@@ -544,6 +571,7 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
+    @has_hierarchy_access(taxlot_view_id_kwarg="pk")
     @action(detail=True, methods=['PUT'])
     def unpair(self, request, pk=None):
         """
@@ -573,10 +601,13 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
         Batch delete several tax lots
         """
         org_id = self.get_organization(request)
+        ali = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
 
         taxlot_view_ids = request.data.get('taxlot_view_ids', [])
         taxlot_state_ids = TaxLotView.objects.filter(
             id__in=taxlot_view_ids,
+            taxlot__access_level_instance__lft__gte=ali.lft,
+            taxlot__access_level_instance__rgt__lte=ali.rgt,
             cycle__organization_id=org_id
         ).values_list('state_id', flat=True)
         resp = TaxLotState.objects.filter(pk__in=Subquery(taxlot_state_ids)).delete()
@@ -639,6 +670,7 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_view_data')
+    @has_hierarchy_access(taxlot_view_id_kwarg="pk")
     def retrieve(self, request, pk):
         """
         Get taxlot details
@@ -665,6 +697,7 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
+    @has_hierarchy_access(taxlot_view_id_kwarg="pk")
     def update(self, request, pk):
         """
         Update a taxlot and run the updated record through a match and merge
@@ -785,7 +818,15 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
 
                         Note.create_from_edit(request.user.id, taxlot_view, new_taxlot_state_data, previous_data)
 
-                        merge_count, link_count, view_id = match_merge_link(taxlot_view.id, 'TaxLotState')
+                        try:
+                            with transaction.atomic():
+                                merge_count, link_count, view_id = match_merge_link(taxlot_view.state_id, 'TaxLotState', taxlot_view.taxlot.access_level_instance, taxlot_view.cycle)
+
+                        except MergeLinkPairError:
+                            return JsonResponse({
+                                'status': 'error',
+                                'message': 'This change causes the taxlot to perform a forbidden merge and is thus forbidden'
+                            }, status=status.HTTP_400_BAD_REQUEST)
 
                         result.update({
                             'view_id': view_id,

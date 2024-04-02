@@ -2,7 +2,7 @@
 # encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
-See also https://github.com/seed-platform/seed/main/LICENSE.md
+See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 import logging
 import os.path as osp
@@ -14,7 +14,13 @@ from quantityfield.units import ureg
 from seed.data_importer import tasks
 from seed.data_importer.tests.util import FAKE_MAPPINGS
 from seed.lib.mcm import mapper
-from seed.models import ASSESSED_RAW, DATA_STATE_IMPORT, Column
+from seed.models import (
+    ASSESSED_RAW,
+    DATA_STATE_IMPORT,
+    DATA_STATE_MAPPING,
+    Column,
+    PropertyState
+)
 from seed.models.column_mappings import get_column_mapping
 from seed.test_helpers.fake import (
     FakePropertyFactory,
@@ -88,7 +94,7 @@ class TestMapping(DataMappingBaseTestCase):
         # for p in props:
         #     pp(p)
 
-    def test_remapping_with_and_without_unit_aware_columns_doesnt_lose_data(self):
+    def test_remapping_with_and_without_unit_aware_columns_does_not_lose_data(self):
         """
         During import, when the initial -State objects are created from the extra_data values,
         ColumnMapping objects are used to take the extra_data dictionary values and create the
@@ -253,6 +259,178 @@ class TestMapping(DataMappingBaseTestCase):
 
         self.assertAlmostEqual(state.site_eui, (100 * ureg('kWh/m**2/year')).to('kBtu/ft**2/year'))
         self.assertAlmostEqual(state.gross_floor_area, (100 * ureg('m**2')).to('ft**2'))
+
+
+class TestMappingAccessLevelInstance(DataMappingBaseTestCase):
+    def setUp(self):
+        selfvars = self.set_up(ASSESSED_RAW)
+        self.user, self.org, self.import_file, self.import_record, self.cycle = selfvars
+        self.property_state_factory = FakePropertyStateFactory(organization=self.org)
+
+        # create tree
+        self.org.access_level_names = ["1st Gen", "2nd Gen", "3rd Gen"]
+        mom = self.org.add_new_access_level_instance(self.org.root.id, "mom")
+        self.me_ali = self.org.add_new_access_level_instance(mom.id, "me")
+        self.brother_ali = self.org.add_new_access_level_instance(mom.id, "brother")
+        self.org.save()
+
+        # create state
+        self.state = self.property_state_factory.get_property_state_as_extra_data(
+            import_file_id=self.import_file.id,
+            source_type=ASSESSED_RAW,
+            data_state=DATA_STATE_IMPORT,
+            random_extra=42,
+        )
+
+        # create mappings
+        suggested_mappings = mapper.build_column_mapping(
+            list(self.state.extra_data.keys()) + self.org.access_level_names,
+            Column.retrieve_all_by_tuple(self.org),
+            previous_mapping=get_column_mapping,
+            map_args=[self.org],
+            thresh=90
+        )
+        mappings = []
+        for raw_column, suggestion in suggested_mappings.items():
+            mapping = {
+                "from_field": raw_column,
+                "from_units": None,
+                "to_table_name": suggestion[0],
+                "to_field": suggestion[1],
+                "to_field_display_name": suggestion[1],
+            }
+            mappings.append(mapping)
+        Column.create_mappings(mappings, self.org, self.user, self.import_file.id)
+
+    def test_map_good_ah_data(self):
+        # state has good AH info
+        self.state.extra_data["1st Gen"] = "root"
+        self.state.extra_data["2nd Gen"] = "mom"
+        self.state.extra_data["3rd Gen"] = "me"
+        self.state.save()
+
+        # map state
+        tasks.map_data(self.import_file.id)
+        ps = PropertyState.objects.get(
+            data_state=DATA_STATE_MAPPING,
+            organization=self.org,
+            import_file=self.import_file,
+        )
+
+        # extra data gone and raw ali set
+        assert "2nd Gen" not in ps.extra_data
+        assert "3rd Gen" not in ps.extra_data
+        assert ps.raw_access_level_instance == self.me_ali
+        assert ps.raw_access_level_instance_error is None
+
+    def test_map_good_ah_data_no_permissions_ancestor(self):
+        self.import_record.access_level_instance = self.me_ali
+        self.import_record.save()
+
+        # state has good AH info
+        self.state.extra_data["1st Gen"] = "root"
+        self.state.extra_data["2nd Gen"] = "mom"
+        self.state.extra_data["3rd Gen"] = None
+        self.state.save()
+
+        # map state
+        tasks.map_data(self.import_file.id)
+        ps = PropertyState.objects.get(
+            data_state=DATA_STATE_MAPPING,
+            organization=self.org,
+            import_file=self.import_file,
+        )
+
+        # extra data gone and raw ali set
+        assert "2nd Gen" not in ps.extra_data
+        assert "3rd Gen" not in ps.extra_data
+        assert ps.raw_access_level_instance_error == "Access Level Instance cannot be accessed with the permissions of this import file."
+
+    def test_map_good_ah_data_no_permissions(self):
+        self.import_record.access_level_instance = self.me_ali
+        self.import_record.save()
+
+        # state has good AH info
+        self.state.extra_data["1st Gen"] = "root"
+        self.state.extra_data["2nd Gen"] = "mom"
+        self.state.extra_data["3rd Gen"] = "brother"
+        self.state.save()
+
+        # map state
+        tasks.map_data(self.import_file.id)
+        ps = PropertyState.objects.get(
+            data_state=DATA_STATE_MAPPING,
+            organization=self.org,
+            import_file=self.import_file,
+        )
+
+        # extra data gone and raw ali set
+        assert "2nd Gen" not in ps.extra_data
+        assert "3rd Gen" not in ps.extra_data
+        assert ps.raw_access_level_instance_error == "Access Level Information does not match any existing Access Level Instance."
+
+    def test_map_ah_data_missing_columns(self):
+        # state has missing AH info
+        self.state.extra_data["1st Gen"] = "root"
+        # no 2nd Gen
+        self.state.extra_data["3rd Gen"] = "me"
+        self.state.save()
+
+        # map state
+        tasks.map_data(self.import_file.id)
+        ps = PropertyState.objects.get(
+            data_state=DATA_STATE_MAPPING,
+            organization=self.org,
+            import_file=self.import_file,
+        )
+
+        # extra data gone and raw ali error is set
+        assert "2nd Gen" not in ps.extra_data
+        assert "3rd Gen" not in ps.extra_data
+        assert ps.raw_access_level_instance is None
+        assert ps.raw_access_level_instance_error == "Missing/Incomplete Access Level Column."
+
+    def test_map_ah_data_missing_value(self):
+        # state has blank AH info
+        self.state.extra_data["1st Gen"] = "root"
+        self.state.extra_data["2nd Gen"] = None
+        self.state.extra_data["3rd Gen"] = "me"
+        self.state.save()
+
+        # map state
+        tasks.map_data(self.import_file.id)
+        ps = PropertyState.objects.get(
+            data_state=DATA_STATE_MAPPING,
+            organization=self.org,
+            import_file=self.import_file,
+        )
+
+        # extra data gone and raw ali error is set
+        assert "2nd Gen" not in ps.extra_data
+        assert "3rd Gen" not in ps.extra_data
+        assert ps.raw_access_level_instance is None
+        assert ps.raw_access_level_instance_error == "Missing/Incomplete Access Level Column."
+
+    def test_map_ah_data_bad_value(self):
+        # state has bad AH info
+        self.state.extra_data["1st Gen"] = "root"
+        self.state.extra_data["2nd Gen"] = "mom"
+        self.state.extra_data["3rd Gen"] = "I dont exist"
+        self.state.save()
+
+        # map state
+        tasks.map_data(self.import_file.id)
+        ps = PropertyState.objects.get(
+            data_state=DATA_STATE_MAPPING,
+            organization=self.org,
+            import_file=self.import_file,
+        )
+
+        # extra data gone and raw ali error is set
+        assert "2nd Gen" not in ps.extra_data
+        assert "3rd Gen" not in ps.extra_data
+        assert ps.raw_access_level_instance is None
+        assert ps.raw_access_level_instance_error == "Access Level Information does not match any existing Access Level Instance."
 
 
 class TestDuplicateFileHeaders(DataMappingBaseTestCase):

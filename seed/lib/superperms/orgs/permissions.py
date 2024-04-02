@@ -2,7 +2,7 @@
 # encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
-See also https://github.com/seed-platform/seed/main/LICENSE.md
+See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 :authors Paul Munday<paul@paulmunday.net> Fable Turas<fable@raintechpdx.com>
 
@@ -50,12 +50,15 @@ def get_org_or_id(dictlike: dict) -> Union[int, None]:
     # Check if there are any assigned organization values
     org_id = None
     for org_str in org_query_strings:
-        org_id = dictlike.get(org_str)
-        if org_id:
-            # Type case the organization_id as a integer
-            if '_id' in org_str:
-                org_id = int(org_id)
-            break
+        try:
+            org_id = dictlike.get(org_str)
+            if org_id:
+                # Type case the organization_id as a integer
+                if '_id' in org_str:
+                    org_id = int(org_id)
+                break
+        except (ValueError, TypeError):
+            return -1
     return org_id
 
 

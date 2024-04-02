@@ -1,6 +1,11 @@
 <div class="modal-header">
   <h4 class="modal-title" id="createOrganizationLabel" translate>Create a New Sub-Organization</h4>
 </div>
+<div class="deprecation-warning">
+  <i class="fa-solid fa-triangle-exclamation"></i>
+  <span translate>SUB_ORG_DEPRECATION</span>
+  <a ui-sref="organization_access_level_tree(::{organization_id: org_id})">Access Level Tree page</a>
+</div>
 <form class="form-horizontal" role="form" name="sub_org_form" ng-submit="submit_form(sub_org_form.$valid)">
   <div class="modal-body">
     <div class="form-group" ng-class="{ 'has-error' : sub_org_form.name.$invalid && !sub_org_form.name.$pristine }">

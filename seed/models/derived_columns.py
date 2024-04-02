@@ -2,7 +2,7 @@
 # encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
-See also https://github.com/seed-platform/seed/main/LICENSE.md
+See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 from __future__ import annotations
 
@@ -202,7 +202,7 @@ class DerivedColumn(models.Model):
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=['organization', 'name'], name='unique_name_for_organization'
+                fields=['organization', 'name', 'inventory_type'], name='unique_name_for_organization'
             )
         ]
 

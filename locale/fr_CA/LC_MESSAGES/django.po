@@ -57,8 +57,41 @@ msgstr "Une liste de vos en-têtes importés."
 msgid "A preview of your concatenated data will appear in the box below."
 msgstr "Un aperçu de vos données concaténées apparaîtra dans la case ci-dessous."
 
+msgid "ACCESS_LEVEL_DELETE_AREYOUSURE"
+msgstr "Êtes-vous sûr de vouloir supprimer cette instance de niveau d'accès ? L'opération supprimera également toutes les instances de niveau d'accès inférieures à celle-ci."
+
+msgid "ACCESS_LEVEL_DESCRIPTION"
+msgstr "Définissez des niveaux d'accès pour structurer le contenu de votre organisation. Une organisation peut avoir un ou plusieurs niveaux d'accès. Toutes les organisations ont au moins un niveau (niveau 1), nommé par défaut avec le nom de l'organisation. Tous les noms de niveaux d'accès sont personnalisables."
+
 msgid "ACCESS_LEVEL_FILENAME_UPLOADED"
 msgstr "Le fichier d'instances de niveau d'accès a été téléchargé"
+
+msgid "ACCESS_LEVEL_INSTANCE_DESCRIPTION"
+msgstr "Les instances de niveau d'accès sont des sous-groupes personnalisés qui peuvent être définis au sein de chaque niveau d'accès. Ces ALI sont utilisées pour associer du contenu et restreindre l'accès des utilisateurs aux données. Il existe une seule ALI au niveau 1 de la hiérarchie, la racine du graphe en arbre. Celui-ci est nommé « racine » par défaut, mais peut être personnalisé. Tous les autres niveaux peuvent contenir une ou plusieurs ALI."
+
+msgid "ACCESS_LEVEL_ORG_OWNER"
+msgstr "En tant que propriétaire d'une organisation, vous pouvez définir la structure de votre graphe en arbre de niveaux d'accès à l'aide des boutons ci-dessous. Ce processus doit être effectué avant d'importer des données et d'ajouter des utilisateurs à votre organisation."
+
+msgid "ACCESS_LEVEL_OWNER_END"
+msgstr "Une fois que vous avez configuré le graphe en arbre des niveaux d'accès de votre organisation, vous êtes prêt à ajouter des utilisateurs et des propriétés aux différents niveaux de l'arbre."
+
+msgid "ACCESS_LEVEL_OWNER_STEP1"
+msgstr "Configurez le numéro et le nom de vos niveaux d'accès à l'aide du bouton Modifier/Ajouter des niveaux d'accès."
+
+msgid "ACCESS_LEVEL_OWNER_STEP2"
+msgstr "Téléchargez une feuille de calcul des instances de niveau d'accès. La feuille de calcul doit avoir un colonne pour chaque niveau d'accès, avec l'en-tête correspondant à votre nom de niveau personnalisé. Les instances de niveau d'accès constituent les lignes de la feuille de calcul. Assurez-vous de définir entièrement le chemin de chaque instance de niveau d’accès. Vous pouvez également sélectionner le niveau, l'instance de niveau d'accès parent et configurer le nom d'une seule nouvelle instance de niveau d'accès à l'aide du bouton Ajouter une instance de niveau d'accès."
+
+msgid "ACCESS_LEVEL_ROOT_TEXT"
+msgstr "Il n'y a qu'une seule instance de niveau d'accès autorisée à la racine du graphe en arbre (niveau 1). Cliquez sur l'icône en forme de crayon si vous souhaitez le renommer."
+
+msgid "ACCESS_LEVEL_STRUCTURE_UPLOAD_TEXT"
+msgstr "Téléchargez votre structure organisationnelle sous forme de feuille de calcul. Le fichier doit inclure une colonne pour chaque niveau d'accès avec son en-tête de colonne égal au nom du niveau d'accès personnalisé. Chaque ligne doit contenir une instance de niveau d'accès, avec son ascendance entièrement définie (nom du nœud parent, nom du nœud grand-parent, etc.)"
+
+msgid "ACCESS_LEVEL_TREE_HELP_1"
+msgstr "Cette page vous permet de visualiser la structure du contenu de votre organisation. La structure est constituée de niveaux hiérarchiques qui définissent une arborescence ; c'est ce qu'on appelle les niveaux d'accès. Chaque niveau contient un ou plusieurs nœuds, appelés instances de niveau d'accès. Les autorisations sont gérées en associant le contenu et les utilisateurs à une instance de niveau d'accès particulière, regroupant et restreignant ainsi l'accès au contenu. Le nombre de niveaux d'accès dans votre structure, les noms des niveaux et les noms des instances de niveau d'accès sont personnalisables."
+
+msgid "ACCESS_LEVEL_UPLOAD_PROGRESS_MSG"
+msgstr "Enregistrement des instances de niveau d'accès en cours... Ce processus dépend de la taille de votre fichier et peut prendre plusieurs minutes."
 
 msgid "ADD_FILES_TO"
 msgstr "Ajoutez des fichiers à {dataset_name}."
@@ -127,6 +160,33 @@ msgstr "Acceptez"
 msgid "Accept Terms of Service?"
 msgstr "Accepter les conditions d'utilisation?"
 
+msgid "Access Level"
+msgstr "Niveau d'accès"
+
+msgid "Access Level Instance"
+msgstr "Instance de niveau d'accès"
+
+msgid "Access Level Instance Information"
+msgstr "Informations sur l'instance de niveau d'accès"
+
+msgid "Access Level Instance Tree"
+msgstr "Graphe en arbre des instances de niveau d'accès"
+
+msgid "Access Level Instances Errors"
+msgstr "Erreurs d’instances de niveau d’accès"
+
+msgid "Access Level Tree"
+msgstr "Graphe en arbre des niveaux d'accès"
+
+msgid "Access Levels"
+msgstr "Niveaux d'accès"
+
+msgid "Access Levels (AL)"
+msgstr "Niveaux d'accès (AL)"
+
+msgid "Access Levels Instances (ALI)"
+msgstr "Instances de niveaux d'accès (ALI)"
+
 msgid "Acknowledge"
 msgstr "Reconnaître"
 
@@ -149,6 +209,9 @@ msgstr "Champ réel"
 msgid "Add"
 msgstr "Ajouter"
 
+msgid "Add Access Level"
+msgstr "Ajouter un niveau d'accès"
+
 msgid "Add Column"
 msgstr "Ajouter une colonne"
 
@@ -157,6 +220,12 @@ msgstr "Ajouter des fichiers de données"
 
 msgid "Add Label"
 msgstr "Ajouter une étiquette"
+
+msgid "Add Level Instance (Node) to the Organizational Structure"
+msgstr "Ajouter une instance de niveau (nœud) à la structure organisationnelle"
+
+msgid "Add Levels to the Organizational Structure Tree"
+msgstr "Ajouter des niveaux à l'arbre de la structure organisationnelle"
 
 msgid "Add Mapping"
 msgstr "Ajouter une configuration"
@@ -278,6 +347,12 @@ msgstr "Êtes-vous sûr de vouloir annuler la fusion de ces lots fiscaux pour en
 msgid "Area"
 msgstr "Superficie"
 
+msgid "Area Column"
+msgstr "Colonne de Superficie"
+
+msgid "Area Target Column"
+msgstr "Colonne Cible de Superficie"
+
 msgid "As the admin of your SEED instance you can control what data is shared throughout your organization and between your sub-organizations as well as what data is shared externally with the public-at-large. The subset of data you choose to share with the public can be different than the subset shared between your sub-organizations."
 msgstr "En tant qu'administrateur de votre instance SEED, vous pouvez contrôler les données partagées dans votre organisation et entre vos sous-organisations ainsi que les données partagées à l'externe avec le public. Le sous-ensemble de données que vous choisissez de partager avec le public peut être différent du sous-ensemble partagé entre vos sous-organisations."
 
@@ -337,6 +412,9 @@ msgstr "Retour à la Liste"
 
 msgid "Back to Mapping"
 msgstr "Retournez à les mappages"
+
+msgid "Baseline Cycle"
+msgstr "Cycle de référence"
 
 #: seed/models/models.py:135
 #, fuzzy
@@ -439,6 +517,9 @@ msgstr "Besoin de configurer votre programme?"
 msgid "CONFIRMING_DELETE_PROFILE"
 msgstr "Êtes-vous sûr de vouloir supprimer le profil"
 
+msgid "CONFIRM_ACCESS_LEVEL_DELETE"
+msgstr "Êtes-vous sûr de vouloir supprimer ce niveau d'accès? Cette action supprimera également {num_access_levels} instances de niveau d'accès."
+
 msgid "CONFIRM_AND_START_MATCHING"
 msgstr "Confirmer et commencer l'appariement"
 
@@ -473,6 +554,9 @@ msgstr "Annuler"
 #, fuzzy
 msgid "Cannot delete protected objects while related objects still exist"
 msgstr "Impossible de supprimer des objets protégés alors que des objets apparentés existent toujours"
+
+msgid "Cannot delete this access level instance."
+msgstr "Impossible de supprimer cette instance de niveau d'accès."
 
 msgid "Change Merged Property"
 msgstr "Modifier la propriété fusionnée"
@@ -605,6 +689,9 @@ msgstr "Surface climatisé"
 
 msgid "Configuration"
 msgstr "Configuration"
+
+msgid "Configure Goals"
+msgstr "Configurer les Objectifs"
 
 #: seed/landing/templates/landing/password_reset_confirm.html:64
 #: seed/landing/templates/landing/signup.html:63
@@ -746,6 +833,12 @@ msgstr "Entre les Cycles"
 msgid "Current Column Mapping Profile"
 msgstr "Profil de mappage de colonne actuel"
 
+msgid "Current Cycle"
+msgstr "Cycle actuel"
+
+msgid "Current Cycle will be measured against Baseline Cycle"
+msgstr "Le cycle actuel sera mesuré par rapport au cycle de référence"
+
 msgid "Current Filters"
 msgstr "Filtres Actuel"
 
@@ -764,8 +857,14 @@ msgstr "ID personnalisé 1 (propriété)"
 msgid "Custom ID 1 (Tax Lot)"
 msgstr "ID personnalisé 1 (lot d'impôt)"
 
+msgid "Custom Name for Level"
+msgstr "Nom personnalisé pour le niveau"
+
 msgid "Custom Reports"
 msgstr "Rapports"
+
+msgid "Custom Reports require filter groups. Filter groups are created and configured on the"
+msgstr "Les rapports personnalisés nécessitent des groupes de filtres. Les groupes de filtres sont créés et configurés sur le"
 
 msgid "Custom emails can be sent to Building Owners using the templates defined below. The email will be sent to the SEED record's Owner Email address and is currently not configurable. The email 'from' address is the same as the server email address which is also used to email users their account information."
 msgstr "Des e-mails personnalisés peuvent être envoyés aux propriétaires d'immeubles à l'aide des modèles définis ci-dessous. L'e-mail sera envoyé à l'adresse e-mail du propriétaire de l'enregistrement SEED et n'est actuellement pas configurable. L'adresse e-mail \"de\" est la même que l'adresse e-mail du serveur qui est également utilisée pour envoyer aux utilisateurs leurs informations de compte par e-mail."
@@ -775,6 +874,9 @@ msgstr "Cycle"
 
 msgid "Cycle Name"
 msgstr "Nom du cycle"
+
+msgid "Cycle Selection"
+msgstr "Sélection des cycles"
 
 msgid "Cycle updated."
 msgstr "Cycle mis à jour."
@@ -913,6 +1015,9 @@ msgstr "Champs d'affichage par défaut"
 
 msgid "Delete"
 msgstr "Supprimer"
+
+msgid "Delete Access Level Instance"
+msgstr "Supprimer une instance de niveau d'accès"
 
 msgid "Delete All Mappings"
 msgstr "Supprimer tous les mappages"
@@ -1055,6 +1160,9 @@ msgstr "Choisissez une méthode d'importation de données EnergyStar Portfolio M
 msgid "EUI"
 msgstr "IUE"
 
+msgid "EUI Target Columns"
+msgstr "Colonnes cibles EUI"
+
 msgid "EXCLUDE"
 msgstr "EXCLURE"
 
@@ -1063,6 +1171,9 @@ msgstr "Pour les champs «données supplémentaires», cela permet à l'utilisat
 
 msgid "Edit"
 msgstr "Modifier"
+
+msgid "Edit Access Level Instance Name"
+msgstr "Modifier le nom de l'instance du niveau d'accès"
 
 msgid "Edit Name"
 msgstr "Modifier le nom"
@@ -1116,6 +1227,9 @@ msgstr "Anglais"
 msgid "Enter Email Address"
 msgstr "Entrer l'adresse e-mail"
 
+msgid "Enter a Name for the new Access Level Instance"
+msgstr "Entrez un nom pour la nouvelle instance de niveau d'accès"
+
 msgid "Enter a valid email address."
 msgstr "Entrez une adresse mail valide."
 
@@ -1142,6 +1256,9 @@ msgstr "Erreur"
 
 msgid "Error Processing Data"
 msgstr "Erreur lors du traitement des données"
+
+msgid "Example Access Level Tree"
+msgstr "Exemple de graphe en arbre de niveaux d'accès"
 
 msgid "Example Usage"
 msgstr "Exemple d'utilisation"
@@ -1364,6 +1481,12 @@ msgstr "Géocodage maintenant ..."
 msgid "GJ/m²/year"
 msgstr "GJ/m²/année"
 
+msgid "GOAL"
+msgstr "OBJECTIF"
+
+msgid "GOAL_SETUP_TEXT"
+msgstr "Configurez un ou plusieurs objectifs de réduction de l'intensité de l'utilisation d'énergie (IUE) du portefeuille ci-dessous. Sélectionnez un cycle de référence et un cycle actuel à des fins de comparaison, identifiez le niveau dans votre arborescence de niveaux d'accès auquel cet objectif s'applique, spécifiez un objectif d'amélioration de l'IUE en pourcentage et indiquez quels champs de vos données doivent être utilisés pour les informations sur l'IUE et la superficie en pieds carrés."
+
 msgid "GREENBUTTON_CONTENTS_TITLE"
 msgstr "Confirmer le contenu du fichier GreenButton"
 
@@ -1410,6 +1533,9 @@ msgstr "Aller aux compteurs"
 msgid "Go to Notes"
 msgstr "Accéder aux Notes"
 
+msgid "Goal Setup"
+msgstr "Configuration des objectifs"
+
 msgid "Gross Floor Area"
 msgstr "Surface brute"
 
@@ -1427,6 +1553,12 @@ msgstr "Erreur HTTP! Code d'état : 404. L'URL demandée est introuvable."
 
 msgid "HTTP Error! Status Code: 500. Internal Server Error."
 msgstr "Erreur HTTP! Code d'état : 500. Erreur interne du serveur."
+
+msgid "Have your organization owner update the column's data type to \"Area\""
+msgstr "Demandez au propriétaire de votre organisation d s'assurer que le type de données de la colonne est \"Area\" dans"
+
+msgid "Have your organization owner update the data type of the column to \"EUI\""
+msgstr "Demandez au propriétaire de votre organisation de mettre à jour le type de données de la colonne en \"EUI\"."
 
 #: seed/templates/seed/account_create_email.html:2
 msgid "Hello %(first_name)s, "
@@ -1648,6 +1780,15 @@ msgstr "Axe gauche"
 msgid "Left Half"
 msgstr "Moitié gauche"
 
+msgid "Level"
+msgstr "Niveau"
+
+msgid "Level Instance"
+msgstr "Instance de niveau"
+
+msgid "Loading Summary Data..."
+msgstr "Chargement des données récapitulatives..."
+
 msgid "Loading data..."
 msgstr "Chargeant les données ..."
 
@@ -1766,6 +1907,9 @@ msgstr "Gérer la conformité"
 
 msgid "Managed by"
 msgstr "Dirigé par"
+
+msgid "Managing the Access Level Tree"
+msgstr "Graphe en arbre des niveaux d'accès"
 
 msgid "Manual Matching"
 msgstr "Correspondance manuelle"
@@ -1983,13 +2127,16 @@ msgid "NUM_PROPERTY_TAXLOT_COLUMNS_AVAILABLE"
 msgstr "Il existe {num_property_columns} colonnes de propriétés et {num_taxlot_columns} colonnes de lot d'impôt qui vous sont accessibles."
 
 msgid "Name"
-msgstr "nom"
+msgstr "Nom"
 
 msgid "National Renewable Energy Laboratory"
 msgstr "Laboratoire National Des Énergies Renouvelables"
 
 msgid "New Analysis"
 msgstr "Nouvelle analyse"
+
+msgid "New Goal"
+msgstr "Nouvel Objectif"
 
 msgid "New Note"
 msgstr "Nouvelle note"
@@ -2055,6 +2202,9 @@ msgstr "Pas nul"
 
 msgid "Not all inventory items were successfully deleted"
 msgstr "Tous les éléments de l'inventaire n'ont pas été supprimés"
+
+msgid "Not seeing your column?"
+msgstr "Vous ne voyez pas votre colonne?"
 
 msgid "Note:"
 msgstr "Remarque:"
@@ -2196,6 +2346,9 @@ msgstr "Résultats d'importation de Portfolio Manager"
 msgid "PM_PROPERTY_ID_MATCHING_CRITERIA_WARNING"
 msgstr "La suppression de l'ID de propriété PM des critères de correspondance peut entraîner des problèmes inattendus pour les importations de compteurs Portfolio Manager."
 
+msgid "PORTFOLIO_SUMMARY_HEADER_TEXT"
+msgstr "La page de résumé du portefeuille compare 2 cycles pour calculer les progrès vers un objectif de réduction de l'intensité de l'utilisation d'énergie. La sélection du cycle et les détails des objectifs peuvent être personnalisés en cliquant sur le bouton Configurer les Objectifs ci-dessous."
+
 msgid "POST_GEOCODING_COUNTS"
 msgstr "Nombre mis à jour après le géocodage"
 
@@ -2287,6 +2440,15 @@ msgstr "Veuillez patienter pendant que vos données sont chargées ..."
 msgid "Populate SEED Headers with best known matches"
 msgstr "Remplissez les en-têtes SEED avec les correspondances les plus connues"
 
+msgid "Portfolio Summary"
+msgstr "Résumé du portefeuille"
+
+msgid "Portfolio Summary will only include properties belonging to this Access Level Instance."
+msgstr "Le résumé du portefeuille inclura uniquement les propriétés appartenant à cette instance de niveau d'accès."
+
+msgid "Portfolio Target"
+msgstr "Cible du portefeuille"
+
 msgid "Postal Code"
 msgstr "Code postal"
 
@@ -2313,6 +2475,9 @@ msgstr "Aperçu Chargement"
 
 msgid "Previous"
 msgstr "Précédente"
+
+msgid "Primary Column"
+msgstr "Colonne principale"
 
 msgid "Primary Tax Lot ID"
 msgstr "ID de lot d'impôt primaire"
@@ -2457,6 +2622,9 @@ msgstr "Renommer permet aux utilisateurs de modifier le nom du champ sous-jacent
 msgid "REVIEW YOUR DATA MAPPINGS"
 msgstr "EXAMINER VOS MAPPAGES DE DONNÉES"
 
+msgid "REVIEW_MATCHING_CRITERIA"
+msgstr "Vérifiez vos critères de correspondance sur la page Paramètres de colonne avant d'importer des données pour la première fois. Vous ne pourrez pas supprimer des champs des critères de correspondance une fois les données ajoutées à votre organisation."
+
 msgid "Read more here."
 msgstr "Lire la suite ici."
 
@@ -2490,6 +2658,9 @@ msgstr "Lots d'impôt connexes"
 
 msgid "Remove"
 msgstr "Supprimer"
+
+msgid "Remove Access Level"
+msgstr "Supprimer le niveau d'accès"
 
 msgid "Remove Column Mappings"
 msgstr "Supprimer les mappages de colonnes"
@@ -2802,6 +2973,9 @@ msgstr "ÉTAPE 1: Mappez vos données"
 msgid "STEP 2: Review Your Data Mappings"
 msgstr "ÉTAPE 2: Consultez vos mappages de données"
 
+msgid "SUB_ORG_DEPRECATION"
+msgstr "La fonctionnalité Sous-organisation n’est plus recommandée et sera bientôt obsolète. Visitez la page des niveaux d'accès pour définir les niveaux d'accès afin de structurer le contenu de votre organisation."
+
 #, fuzzy
 msgid "SUGGEST_TO_VERIFY"
 msgstr "Veuillez vérifier les points suivants avant de continuer."
@@ -2863,6 +3037,9 @@ msgstr "Rechercher le nom du champ"
 msgid "Search table name"
 msgstr "Rechercher le nom de la table"
 
+msgid "Secondary (optional)"
+msgstr "Secondaire (facultatif)"
+
 msgid "Security"
 msgstr "Sécurité"
 
@@ -2909,6 +3086,12 @@ msgstr "Sélectionnez les colonnes dans les listes ci-dessous pour les faire app
 
 msgid "Select one or more filter groups to load your inventory."
 msgstr "Sélectionnez un ou plusieurs groupes de filtres pour charger votre inventaire."
+
+msgid "Select the Level at which you want to add the new Instance"
+msgstr "Sélectionnez le niveau auquel vous souhaitez ajouter la nouvelle instance"
+
+msgid "Select the new Instance's Parent Access Level Instance"
+msgstr "Sélectionnez l'instance de niveau d'accès parent de la nouvelle instance"
 
 msgid "Select the type of file(s) you would like to add to"
 msgstr "Sélectionnez le type de fichier (s) que vous souhaitez ajouter à"
@@ -3038,6 +3221,12 @@ msgstr "Etat (Propriété)"
 msgid "State (Tax Lot)"
 msgstr "État (lot d'impôt)"
 
+msgid "Step 1: Add Access Levels"
+msgstr "Étape 1: ajouter des niveaux d'accès"
+
+msgid "Step 2: Upload Access Level Instances"
+msgstr "Étape 2: Télécharger les instances de niveau d'accès"
+
 msgid "Sub-Org Name"
 msgstr "Nom de la sous-organisation"
 
@@ -3104,6 +3293,9 @@ msgstr "Colonne cible"
 msgid "Target Field"
 msgstr "Champ cible"
 
+msgid "Target to quantify Portfolio EUI improvement. Must be between 0 and 100."
+msgstr "Cible pour quantifier l’amélioration de l’IUE du portefeuille. Doit être compris entre 0 et 100."
+
 msgid "Tax Lot"
 msgstr "Lot d'impôt"
 
@@ -3153,6 +3345,9 @@ msgstr "Conditions d'utilisation"
 #: src/django-tos-master/tos/templates/tos/tos_check.html:6
 msgid "Terms of Service as of %(tos.created|date:\"SHORT_DATE_FORMAT\")s"
 msgstr "Conditions de service à partir de% (tos.created | date: \"SHORT_DATE_FORMAT\") s"
+
+msgid "Tertiary (optional)"
+msgstr "Tertiaire (facultatif)"
 
 msgid "Test Connection"
 msgstr "Tester la Connexion"
@@ -3235,7 +3430,7 @@ msgstr "Il y a aussi un lien vers le forum SEED-Platform Users, où vous pouvez 
 msgid "There was an error loading the page"
 msgstr "Une erreur s'est produite lors du chargement de la page"
 
-msgid "This action replaces any of your current columns with the comma-delmited columns you provided. Would you like to continue?"
+msgid "This action replaces any of your current columns with the comma-delimited columns you provided. Would you like to continue?"
 msgstr "Cette action remplace n'importe laquelle de vos colonnes actuelles par les colonnes délimitées par des virgules que vous avez fournies. Voulez-vous continuer?"
 
 msgid "This action updates properties within the selected cycle with data from the Audit Template account associated with this organization. Only Properties with Audit Template Building IDs corresponding to those saved in Audit Template will be updated."
@@ -3435,6 +3630,12 @@ msgstr "Mettre à jour Salesforce"
 
 msgid "Update UBID"
 msgstr "Mettre à jour UBID"
+
+msgid "Update the data type of the column to \"Area\" in"
+msgstr "Assurez-vous que le type de données de la colonne est bien \"Area\" dans"
+
+msgid "Update the data type of the column to \"EUI\" in"
+msgstr "Assurez-vous que le type de données de la colonne est \"EUI\" dans"
 
 msgid "Update with Audit Template"
 msgstr "Mise à jour avec Audit Template"
@@ -3876,6 +4077,9 @@ msgstr "Prénom"
 #: seed/landing/templates/landing/password_reset_email.html:3
 msgid "for your SEED Platform user account"
 msgstr "pour votre compte utilisateur SEED Platform"
+
+msgid "goal"
+msgstr "Objectif"
 
 #: seed/models/models.py:183
 msgid "gray"
