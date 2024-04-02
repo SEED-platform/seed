@@ -87,10 +87,8 @@ angular.module('BE.seed.controller.data_logger_upload_or_update_modal', []).cont
       $uibModalInstance.dismiss('cancel');
     };
 
-    const format_errors = (errors) => {
-      return Object.entries(errors)
-        .map(([key, value]) => key === 'non_field_errors' ? ` ${value.join('. ')}` : ` ${key}: ${value.join('. ')}`)
-        .join('. ')
-    };
+    const format_errors = (errors) => Object.entries(errors)
+      .map(([key, value]) => (key === 'non_field_errors' ? ` ${value.join('. ')}` : ` ${key}: ${value.join('. ')}`))
+      .join('. ');
   }
 ]);
