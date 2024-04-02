@@ -44,7 +44,15 @@
           <option ng-show="menu.user.organization.user_role !== 'viewer'" value="open_merge_modal" ng-disabled="selectedParentCount < 2" translate>Merge</option>
           <option ng-show="menu.user.organization.user_role !== 'viewer'" value="open_delete_modal" ng-disabled="selectedCount === 0" translate>Delete</option>
           <option ng-show="menu.user.organization.user_role !== 'viewer'" value="open_export_modal" ng-disabled="selectedCount === 0" translate>Export</option>
-          <option ng-show="menu.user.organization.user_role !== 'viewer'"value="open_export_to_audit_template_modal" ng-if="::inventory_type === 'properties'" ng-disabled="selectedCount === 0" translate>Export to Audit Template</option>
+          <option
+            ng-show="menu.user.organization.user_role !== 'viewer'"
+            value="open_export_to_audit_template_modal"
+            ng-if="::inventory_type === 'properties'"
+            ng-disabled="selectedCount === 0"
+            translate
+          >
+            Export to Audit Template
+          </option>
           <option ng-show="menu.user.organization.user_role !== 'viewer'" value="open_update_labels_modal" ng-disabled="selectedCount === 0" translate>Add/Remove Labels</option>
           <option ng-show="menu.user.organization.user_role !== 'viewer'" value="run_data_quality_check" ng-disabled="selectedCount === 0" translate>Data Quality Check</option>
           <option ng-show="menu.user.organization.user_role !== 'viewer'" value="open_postoffice_modal" ng-disabled="selectedCount === 0" translate>Email</option>
@@ -54,10 +62,14 @@
           <option ng-show="menu.user.organization.user_role !== 'viewer'" value="open_ubid_decode_modal" ng-disabled="selectedCount === 0" translate>Decode UBID</option>
           <option value="open_ubid_jaccard_index_modal" ng-disabled="selectedCount > 2" translate>Compare UBIDs</option>
           <option ng-show="menu.user.organization.user_role !== 'viewer'" value="open_ubid_admin_modal" ng-disabled="selectedCount !== 1" translate>Add/Update UBID</option>
-          <option ng-show="menu.user.organization.user_role !== 'viewer'" value="update_salesforce" ng-disabled="!organization.salesforce_enabled || selectedCount === 0" translate>Update Salesforce</option>
+          <option ng-show="menu.user.organization.user_role !== 'viewer'" value="update_salesforce" ng-disabled="!organization.salesforce_enabled || selectedCount === 0" translate>
+            Update Salesforce
+          </option>
         </optgroup>
         <optgroup label="{$:: 'Options' | translate $}">
-          <option ng-show="menu.user.organization.user_role !== 'viewer'" value="open_show_populated_columns_modal" ng-if="menu.user.is_ali_root" ng-disabled="data.length === 0" translate>Only Show Populated Columns</option>
+          <option ng-show="menu.user.organization.user_role !== 'viewer'" value="open_show_populated_columns_modal" ng-if="menu.user.is_ali_root" ng-disabled="data.length === 0" translate>
+            Only Show Populated Columns
+          </option>
           <option value="toggle_access_level_instances" ng-disabled="data.length === 0">{$ show_access_level_instances ? 'Hide' : 'Show' $} Access Level Names</option>
         </optgroup>
       </select>
@@ -99,7 +111,19 @@
     <div class="row">
       <label for="and-tags-input">{$:: 'Must Include' | translate $}:</label>
       <div class="input-group input-group-sm grow">
-        <tags-input id="and-tags-input" class="remove-editing ti-input-sm tags-input-style grow" ng-if="show_tags_input.and" ng-model="selected_and_labels" on-tag-added="filterUsingLabels()" on-tag-removed="filterUsingLabels()" min-length="1" placeholder="{$:: 'Add a label' | translate $}" replace-spaces-with-dashes="false" add-from-autocomplete-only="true" ng-disabled="!labels.length">
+        <tags-input
+          id="and-tags-input"
+          class="remove-editing ti-input-sm tags-input-style grow"
+          ng-if="show_tags_input.and"
+          ng-model="selected_and_labels"
+          on-tag-added="filterUsingLabels()"
+          on-tag-removed="filterUsingLabels()"
+          min-length="1"
+          placeholder="{$:: 'Add a label' | translate $}"
+          replace-spaces-with-dashes="false"
+          add-from-autocomplete-only="true"
+          ng-disabled="!labels.length"
+        >
           <auto-complete source="loadLabelsForFilter($query)" max-results-to-show="255" min-length="0" load-on-empty="true" load-on-focus="true" ng-disabled="!labels.length"></auto-complete>
         </tags-input>
         <span ng-click="clear_labels('and')" class="btn btn-default btn-sm input-group-addon" ng-disabled="!selected_and_labels.length"><i class="fa fa-lg fa-trash"></i></span>
@@ -108,7 +132,19 @@
     <div class="row">
       <label for="or-tags-input">{$:: 'Include Any' | translate $}:</label>
       <div class="input-group input-group-sm grow">
-        <tags-input id="or-tags-input" class="remove-editing ti-input-sm tags-input-style grow" ng-if="show_tags_input.or" ng-model="selected_or_labels" on-tag-added="filterUsingLabels()" on-tag-removed="filterUsingLabels()" min-length="1" placeholder="{$:: 'Add a label' | translate $}" replace-spaces-with-dashes="false" add-from-autocomplete-only="true" ng-disabled="!labels.length">
+        <tags-input
+          id="or-tags-input"
+          class="remove-editing ti-input-sm tags-input-style grow"
+          ng-if="show_tags_input.or"
+          ng-model="selected_or_labels"
+          on-tag-added="filterUsingLabels()"
+          on-tag-removed="filterUsingLabels()"
+          min-length="1"
+          placeholder="{$:: 'Add a label' | translate $}"
+          replace-spaces-with-dashes="false"
+          add-from-autocomplete-only="true"
+          ng-disabled="!labels.length"
+        >
           <auto-complete source="loadLabelsForFilter($query)" max-results-to-show="255" min-length="0" load-on-empty="true" load-on-focus="true" ng-disabled="!labels.length"></auto-complete>
         </tags-input>
         <span ng-click="clear_labels('or')" class="btn btn-default btn-sm input-group-addon" ng-disabled="!selected_or_labels.length"><i class="fa fa-lg fa-trash"></i></span>
@@ -117,7 +153,19 @@
     <div class="row">
       <label for="exclude-tags-input">{$:: 'Exclude' | translate $}:</label>
       <div class="input-group input-group-sm grow">
-        <tags-input id="exclude-tags-input" class="remove-editing ti-input-sm tags-input-style grow" ng-if="show_tags_input.exclude" ng-model="selected_exclude_labels" on-tag-added="filterUsingLabels()" on-tag-removed="filterUsingLabels()" min-length="1" placeholder="{$:: 'Add a label' | translate $}" replace-spaces-with-dashes="false" add-from-autocomplete-only="true" ng-disabled="!labels.length">
+        <tags-input
+          id="exclude-tags-input"
+          class="remove-editing ti-input-sm tags-input-style grow"
+          ng-if="show_tags_input.exclude"
+          ng-model="selected_exclude_labels"
+          on-tag-added="filterUsingLabels()"
+          on-tag-removed="filterUsingLabels()"
+          min-length="1"
+          placeholder="{$:: 'Add a label' | translate $}"
+          replace-spaces-with-dashes="false"
+          add-from-autocomplete-only="true"
+          ng-disabled="!labels.length"
+        >
           <auto-complete source="loadLabelsForFilter($query)" max-results-to-show="255" min-length="0" load-on-empty="true" load-on-focus="true" ng-disabled="!labels.length"></auto-complete>
         </tags-input>
         <span ng-click="clear_labels('exclude')" class="btn btn-default btn-sm input-group-addon" ng-disabled="!selected_exclude_labels.length"><i class="fa fa-lg fa-trash"></i></span>

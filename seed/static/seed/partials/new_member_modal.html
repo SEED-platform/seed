@@ -26,14 +26,19 @@
     </div>
     <div class="form-group">
       <label class="control-label col-sm-3" for="newMemberAccessLevel" translate>Access Level:</label>
-        <div class="col-sm-8">
-          <select class="form-control" id="newMemberAccessLevel" ng-model="level_name_index" ng-change="change_selected_level_index()" ng-options="i as name for (i, name) in level_names"></select>
-        </div>
-      </div>
-      <div class="form-group">
-        <label class="control-label col-sm-3" for="newMemberAccessLevelInstance" translate>Access Level Instance:</label>
       <div class="col-sm-8">
-        <select class="form-control" id="newMemberAccessLevelInstance" ng-model="user.access_level_instance_id" ng-options="potential_level_instance.id as potential_level_instance.name for potential_level_instance in potential_level_instances"></select>
+        <select class="form-control" id="newMemberAccessLevel" ng-model="level_name_index" ng-change="change_selected_level_index()" ng-options="i as name for (i, name) in level_names"></select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="control-label col-sm-3" for="newMemberAccessLevelInstance" translate>Access Level Instance:</label>
+      <div class="col-sm-8">
+        <select
+          class="form-control"
+          id="newMemberAccessLevelInstance"
+          ng-model="user.access_level_instance_id"
+          ng-options="potential_level_instance.id as potential_level_instance.name for potential_level_instance in potential_level_instances"
+        ></select>
       </div>
     </div>
     <div class="form-group">
@@ -42,9 +47,7 @@
         <select class="form-control" id="newMemberRole" ng-model="user.role" ng-options="role.value as role.name for role in get_roles()"></select>
       </div>
     </div>
-    <div ng-if="error_message" class="container-fluid alert alert-danger">
-      {$ error_message $}
-    </div>
+    <div ng-if="error_message" class="container-fluid alert alert-danger">{$ error_message $}</div>
   </div>
   <div class="modal-footer">
     <button type="button" class="btn btn-default" ng-click="cancel()" translate>Cancel</button>
