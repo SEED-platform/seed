@@ -34,4 +34,4 @@ hypothesis==6.94.0
 uWSGI==2.0.23; sys_platform != "win32"
 
 # static type checking
-mypy==1.8.0
+mypy==1.9.0

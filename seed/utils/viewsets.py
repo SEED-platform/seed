@@ -72,8 +72,8 @@ class SEEDOrgModelViewSet(DecoratorMixin(drf_api_endpoint), OrgQuerySetMixin, Mo
 
 
 class SEEDOrgReadOnlyModelViewSet(
-    DecoratorMixin(drf_api_endpoint),
-    OrgQuerySetMixin,  # type: ignore[misc]
+    DecoratorMixin(drf_api_endpoint),  # type: ignore[misc]
+    OrgQuerySetMixin,
     ReadOnlyModelViewSet,
 ):
     """Viewset class customized with SEED standard attributes.

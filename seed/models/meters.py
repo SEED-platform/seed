@@ -103,7 +103,7 @@ class Meter(models.Model):
         'Diesel #2 Use': ENERGY_TYPE_BY_METER_TYPE[DIESEL],
     }
 
-    type_lookup = dict(reversed(type) for type in ENERGY_TYPES)  # type: ignore[misc]
+    type_lookup = {name: id for id, name in ENERGY_TYPES}
 
     PORTFOLIO_MANAGER = 1
     GREENBUTTON = 2

@@ -6,6 +6,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 import json
 from datetime import date
+from typing import Any, Dict
 
 from django.test import TestCase
 
@@ -232,7 +233,8 @@ class FakeRequest:
     META = {'REMOTE_ADDR': '127.0.0.1'}
     path = 'fake_login_path'
     body = None
-    GET = POST = {}  # type: ignore[misc]
+    GET: Dict[str, Any] = {}
+    POST: Dict[str, Any] = {}
 
     def __init__(self, data=None, headers=None, user=None, method='POST', **kwargs):
         if 'body' in kwargs:
