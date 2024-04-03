@@ -1271,6 +1271,7 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
     };
 
     const get_and_filter_by_labels = () => {
+      spinner_utility.show(); // closed by filterUsingLabels, which calls load_inventory.
       label_service.get_labels($scope.inventory_type, undefined, $scope.cycle.selected_cycle.id).then((current_labels) => {
         $scope.labels = _.filter(current_labels, (label) => !_.isEmpty(label.is_applied));
 
