@@ -68,7 +68,9 @@ def decode_unique_ids(qs):
         )
         state.centroid = centroid_polygon
 
-        state.latitude, state.longitude = bounding_box_obj.latlng()
+        # Round to avoid floating point errors
+        state.latitude = round(bounding_box_obj.centroid.latitudeCenter, 12)
+        state.longitude = round(bounding_box_obj.centroid.longitudeCenter, 12)
 
         state.save()
 
