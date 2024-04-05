@@ -651,7 +651,9 @@ def states_to_views(unmatched_state_ids, org, access_level_instance, cycle, Stat
             batch_size = math.ceil(len(merge_state_pairs) / 100)
             for idx, state_pair in enumerate(merge_state_pairs):
                 existing_state, newer_state = state_pair
-                existing_view = ViewClass.objects.get(state_id=existing_state.id)
+                existing_view = ViewClass.objects.filter(state_id=existing_state.id).first()
+                if not existing_view:
+                    continue
                 existing_obj = getattr(existing_view, "property" if table_name == 'PropertyState' else "taxlot")
 
                 # ensure that new ali and existing ali match and that we have access to existing ali.

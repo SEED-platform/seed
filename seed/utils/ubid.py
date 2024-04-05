@@ -99,10 +99,14 @@ def get_jaccard_index(ubid1, ubid2):
                 UBID_CodeArea_Jaccard(left_code_area, right_code_area)
             FROM
                 decoded """
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute(sql, [ubid1, ubid2])
+            result = cursor.fetchone()[0]
+    except Exception as e:
+        logging.error(e)
+        result = 0
 
-    with connection.cursor() as cursor:
-        cursor.execute(sql, [ubid1, ubid2])
-        result = cursor.fetchone()[0]
     return result
 
 
