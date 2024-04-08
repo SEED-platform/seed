@@ -843,20 +843,19 @@ def check_jaccard_match(ubid, state_ubid, ubid_threshold, matching_criteria):
     """
     Use jaccard index between an incoming ubid and an existing state_ubid to determine if states are 'matching'
 
-    :param ubid: sring, incoming ubid
+    :param ubid: string, incoming ubid
     :param state_ubid: string, existing state's ubid
     :param ubid_threshold: float, organization's ubid_threshold
     :param matching_criteria: dict, organization's matching criteria with ubid removed
     """
-    # If state_ubis is None and ubid is the only matching_criteria, no match
+    # If state_ubid is None and ubid is the only matching_criteria, no match
     if not state_ubid and not matching_criteria:
         return False
 
     # If state_ubid is None and matching_criteria exists, get_jaccard_index will default to 1.0
-    # allowing the remaining matching criteria to determine if it's a  match
+    # allowing the remaining matching criteria to determine if it's a match
     jaccard_index = get_jaccard_index(ubid, state_ubid)
 
-    # If threshold is 0 then it will match any UBID with overlap
     if ubid_threshold == 0:
         return jaccard_index > ubid_threshold
     else:

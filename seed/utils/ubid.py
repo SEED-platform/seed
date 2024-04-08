@@ -105,7 +105,7 @@ def get_jaccard_index(ubid1, ubid2):
             result = cursor.fetchone()[0]
     except Exception as e:
         logging.error(e)
-        result = 0
+        return 0.0
 
     return result
 
