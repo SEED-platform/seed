@@ -41,14 +41,19 @@ class OrganizationUserViewSet(viewsets.ViewSet):
                                  'message': 'Could not retrieve organization at organization_pk = ' + str(organization_pk)},
                                 status=status.HTTP_404_NOT_FOUND)
 
-        org_user = OrganizationUser.objects.get(user=self.request.user, organization=org)
-        is_member = org_user.role_level >= ROLE_MEMBER
+        if request.user.is_superuser:
+            is_member_or_superuser = True
+            org_users = org.organizationuser_set.all()
+        else:
+            org_user = OrganizationUser.objects.get(user=self.request.user, organization=org)
+            is_member_or_superuser = org_user.role_level >= ROLE_MEMBER
+
+            org_users = org.organizationuser_set.filter(
+                access_level_instance__rgt__lte=org_user.access_level_instance.rgt,
+                access_level_instance__lft__gte=org_user.access_level_instance.lft,
+            )
 
         users = []
-        org_users = org.organizationuser_set.filter(
-            access_level_instance__rgt__lte=org_user.access_level_instance.rgt,
-            access_level_instance__lft__gte=org_user.access_level_instance.lft,
-        )
         for u in org_users:
             user = u.user
             user_info = {
@@ -57,7 +62,7 @@ class OrganizationUserViewSet(viewsets.ViewSet):
                 'last_name': user.last_name,
                 'user_id': user.pk,
             }
-            if is_member:
+            if is_member_or_superuser:
                 user_orgs = OrganizationUser.objects.filter(user=user).count()
                 user_info.update({
                     'number_of_orgs': user_orgs,

@@ -77,8 +77,8 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
     $scope.selectedParentCount = 0;
     $scope.selectedOrder = [];
     $scope.columnDisplayByName = {};
-    for (const i in all_columns) {
-      $scope.columnDisplayByName[all_columns[i].name] = all_columns[i].displayName;
+    for (const col of all_columns) {
+      $scope.columnDisplayByName[col.name] = col.displayName;
     }
 
     $scope.inventory_type = $stateParams.inventory_type;
@@ -126,7 +126,7 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
         and_labels: [],
         or_labels: [],
         exclude_labels: [],
-        query_dict: {},
+        query_dict: {}
       }
     ];
     $scope.filterGroups = $scope.filterGroups.concat(filter_groups);
@@ -140,9 +140,9 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
     $scope.Modified = false;
 
     $scope.new_filter_group = () => {
-      const and_label_ids = $scope.selected_and_labels.map(l => l.id);
-      const or_label_ids = $scope.selected_or_labels.map(l => l.id);
-      const exclude_label_ids = $scope.selected_exclude_labels.map(l => l.id);
+      const and_label_ids = $scope.selected_and_labels.map((l) => l.id);
+      const or_label_ids = $scope.selected_or_labels.map((l) => l.id);
+      const exclude_label_ids = $scope.selected_exclude_labels.map((l) => l.id);
       const filter_group_inventory_type = $scope.inventory_type === 'properties' ? 'Property' : 'Tax Lot';
       const query_dict = inventory_service.get_format_column_filters($scope.column_filters);
 
@@ -255,20 +255,20 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
       if ($scope.filterGroups.length > 0) {
         const current_filters = inventory_service.get_format_column_filters($scope.column_filters);
         const saved_filters = $scope.currentFilterGroup.query_dict;
-        const current_and_labels = new Set($scope.selected_and_labels.map(l => l.id));
-        const current_or_labels = new Set($scope.selected_or_labels.map(l => l.id));
-        const current_exclude_labels = new Set($scope.selected_exclude_labels.map(l => l.id));
+        const current_and_labels = new Set($scope.selected_and_labels.map((l) => l.id));
+        const current_or_labels = new Set($scope.selected_or_labels.map((l) => l.id));
+        const current_exclude_labels = new Set($scope.selected_exclude_labels.map((l) => l.id));
 
         const saved_and_labels = new Set($scope.currentFilterGroup.and_labels);
         const saved_or_labels = new Set($scope.currentFilterGroup.or_labels);
         const saved_exclude_labels = new Set($scope.currentFilterGroup.exclude_labels);
 
         $scope.Modified = !(
-           _.isEqual(current_filters, saved_filters) &&
+          _.isEqual(current_filters, saved_filters) &&
            _.isEqual(current_and_labels, saved_and_labels) &&
            _.isEqual(current_or_labels, saved_or_labels) &&
            _.isEqual(current_exclude_labels, saved_exclude_labels)
-        )
+        );
       }
       return $scope.Modified;
     };
@@ -303,9 +303,9 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
 
         // Update labels
         $scope.isModified();
-        $scope.selected_and_labels = _.filter($scope.labels, label => _.includes($scope.currentFilterGroup.and_labels, label.id));
-        $scope.selected_or_labels = _.filter($scope.labels, label => _.includes($scope.currentFilterGroup.or_labels, label.id));
-        $scope.selected_exclude_labels = _.filter($scope.labels, label => _.includes($scope.currentFilterGroup.exclude_labels, label.id));
+        $scope.selected_and_labels = _.filter($scope.labels, (label) => _.includes($scope.currentFilterGroup.and_labels, label.id));
+        $scope.selected_or_labels = _.filter($scope.labels, (label) => _.includes($scope.currentFilterGroup.or_labels, label.id));
+        $scope.selected_exclude_labels = _.filter($scope.labels, (label) => _.includes($scope.currentFilterGroup.exclude_labels, label.id));
         $scope.filterUsingLabels();
 
         // clear table filters
@@ -451,7 +451,7 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
     $scope.max_label_width = 750;
     $scope.get_label_column_width = () => {
       if (!$scope.show_full_labels) {
-        return 30;
+        return 31;
       }
       let maxWidth = 0;
       const renderContainer = document.body.getElementsByClassName('ui-grid-render-container-left')[0];
@@ -467,9 +467,11 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
           }
         });
       });
-      return maxWidth > $scope.max_label_width ? $scope.max_label_width : maxWidth + 2;
+      maxWidth = Math.max(31, maxWidth + 2);
+      return Math.min(maxWidth, $scope.max_label_width);
     };
 
+    $scope.show_tags_input = { and: true, or: true, exclude: true };
     // Reduce labels to only records found in the current cycle
     $scope.selected_and_labels = [];
     $scope.selected_or_labels = [];
@@ -478,10 +480,21 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
     const localStorageKey = `grid.${$scope.inventory_type}`;
     const localStorageLabelKey = `grid.${$scope.inventory_type}.labels`;
 
-    $scope.clear_labels = function (action) {
-      if (action === 'and') $scope.selected_and_labels = [];
-      if (action === 'or') $scope.selected_or_labels = [];
-      if (action === 'exclude') $scope.selected_exclude_labels = [];
+    // reset the selected_labels to [] and re-render the <tags-input> component as invalid text is not attached to the model.
+    $scope.clear_labels = (action) => {
+      const selected_labels = {
+        and: $scope.selected_and_labels,
+        or: $scope.selected_or_labels,
+        exclude: $scope.selected_exclude_labels
+      };
+      selected_labels[action].splice(0);
+      $scope.show_tags_input[action] = false;
+      // immediately re-render
+      setTimeout(() => {
+        $scope.$apply(() => {
+          $scope.show_tags_input[action] = true;
+        });
+      }, 0);
       $scope.filterUsingLabels();
     };
 
@@ -635,7 +648,7 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
             const data = new Array(selectedViewIds.length);
 
             if ($scope.inventory_type === 'properties') {
-              return inventory_service.get_properties(1, undefined, undefined, -1, selectedViewIds).then((inventory_data) => {
+              return inventory_service.get_properties(1, undefined, $scope.cycle.selected_cycle, -1, selectedViewIds).then((inventory_data) => {
                 _.forEach(selectedViewIds, (id, index) => {
                   const match = _.find(inventory_data.results, [viewIdProp, id]);
                   if (match) {
@@ -646,7 +659,7 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
               });
             }
             if ($scope.inventory_type === 'taxlots') {
-              return inventory_service.get_taxlots(1, undefined, undefined, -1, selectedViewIds).then((inventory_data) => {
+              return inventory_service.get_taxlots(1, undefined, $scope.cycle.selected_cycle, -1, selectedViewIds).then((inventory_data) => {
                 _.forEach(selectedViewIds, (id, index) => {
                   const match = _.find(inventory_data.results, [viewIdProp, id]);
                   if (match) {
@@ -788,6 +801,8 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
       // Modify misc
       if (col.data_type === 'datetime') {
         options.cellFilter = "date:'yyyy-MM-dd h:mm a'";
+      } else if (['longitude', 'latitude'].includes(col.column_name)) {
+        options.cellFilter = 'floatingPoint';
       } else if (['area', 'eui', 'float', 'number'].includes(col.data_type)) {
         options.cellFilter = `tolerantNumber: ${$scope.organization.display_decimal_places}`;
       } else if (col.is_derived_column) {
@@ -1048,10 +1063,10 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
       const column = $scope.columns[i];
       if (column.related) {
         column.enableSorting = false;
-        let title = 'Filtering disabled for property columns on the taxlot list.';
-        if ($scope.inventory_type === 'properties') {
-          title = 'Filtering disabled for taxlot columns on the property list.';
-        }
+        // let title = 'Filtering disabled for property columns on the taxlot list.';
+        // if ($scope.inventory_type === 'properties') {
+        //   title = 'Filtering disabled for taxlot columns on the property list.';
+        // }
       }
       if (column.derived_column != null) {
         column.enableSorting = false;
@@ -1084,15 +1099,12 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
         const relatedIndex = trueIndex;
         let aggregations = {};
         for (let j = 0; j < related.length; ++j) {
-          const updated = _.reduce(
-            related[j],
-            (result, value, key) => {
-              if (_.includes(columnNamesToAggregate, key)) aggregations[key] = (aggregations[key] || []).concat(_.split(value, '; '));
-              result[key] = value;
-              return result;
-            },
-            {}
-          );
+          // eslint-disable-next-line no-loop-func
+          const updated = Object.entries(related[j]).reduce((result, [key, value]) => {
+            if (columnNamesToAggregate.includes(key)) aggregations[key] = (aggregations[key] ?? []).concat(value.split('; '));
+            result[key] = value;
+            return result;
+          }, {});
 
           data.splice(++trueIndex, 0, _.pick(updated, visibleColumns));
         }
@@ -1139,12 +1151,12 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
       let exclude_ids;
 
       if ($scope.selected_and_labels.length) {
-        let intersection = _.intersection.apply(null, _.map($scope.selected_and_labels, 'is_applied'));
+        const intersection = _.intersection.apply(null, _.map($scope.selected_and_labels, 'is_applied'));
         include_ids = intersection.length ? intersection : [0];
       }
       if ($scope.selected_or_labels.length) {
-        let union = _.union.apply(null, _.map($scope.selected_or_labels, 'is_applied'));
-        if (include_ids != undefined) {
+        const union = _.union.apply(null, _.map($scope.selected_or_labels, 'is_applied'));
+        if (include_ids !== undefined) {
           if (_.intersection(include_ids, union).length) {
             include_ids = _.intersection(include_ids, union);
           } else {
@@ -1155,7 +1167,7 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
         }
       }
       if ($scope.selected_exclude_labels.length) {
-         exclude_ids = _.union.apply(null, _.map($scope.selected_exclude_labels, 'is_applied'));
+        exclude_ids = _.union.apply(null, _.map($scope.selected_exclude_labels, 'is_applied'));
       }
 
       return fn(
@@ -1439,11 +1451,11 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
             if ($scope.selected_and_labels.length || $scope.selected_or_labels.length || $scope.selected_exclude_labels.length) {
               return [
                 'Must Have Filter Labels: "',
-                $scope.selected_and_labels.map(label => label.name).join(' - '),
+                $scope.selected_and_labels.map((label) => label.name).join(' - '),
                 '",Include Any Filter Labels: "',
-                $scope.selected_or_labels.map(label => label.name).join(' - '),
+                $scope.selected_or_labels.map((label) => label.name).join(' - '),
                 '",Exclude Filter Labels: "',
-                $scope.selected_exclude_labels.map(label => label.name).join(' - '),
+                $scope.selected_exclude_labels.map((label) => label.name).join(' - '),
                 '"'
               ].join('');
             }
@@ -1569,7 +1581,7 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
 
     $scope.open_set_update_to_now_modal = () => {
       const primary_rows = $scope.gridApi.selection.getSelectedRows().filter((r) => r.$$treeLevel === 0);
-      const secondary_rows = $scope.gridApi.selection.getSelectedRows().filter((r) => r.$$treeLevel == undefined);
+      const secondary_rows = $scope.gridApi.selection.getSelectedRows().filter((r) => r.$$treeLevel === undefined);
 
       let property_rows;
       let taxlot_rows;
@@ -1600,11 +1612,11 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
           inventory_ids: () => ($scope.inventory_type === 'properties' ? selectedViewIds : []),
           cycles: () => cycles.cycles,
           current_cycle: () => $scope.cycle.selected_cycle,
-          user:  () => $scope.menu.user
+          user: () => $scope.menu.user
         }
       });
       modalInstance.result.then(
-        (data) => {
+        () => {
           setTimeout(() => {
             Notification.primary('<a href="#/analyses" style="color: #337ab7;">Click here to view your analyses</a>');
           }, 1000);
@@ -1618,7 +1630,7 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
     $scope.update_salesforce = (selectedViewIds) => {
       inventory_service
         .update_salesforce(selectedViewIds)
-        .then((result) => {
+        .then(() => {
           Notification.success({ message: 'Salesforce Update Successful!', delay: 5000 });
         })
         .catch((result) => {
@@ -1712,7 +1724,7 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
             id: 'dynamic-export',
             title: $scope.selectedCount === 0 ? 'Export All' : 'Export Selected',
             order: 100,
-            action($event) {
+            action() {
               $scope.run_action([], 'open_export_modal');
             }
           }
@@ -1731,7 +1743,7 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
       gte: '>=',
       icontains: ''
     };
-    const operatorArr = [">", "<", "=", "!", "!=", "<=", ">="]
+    const operatorArr = ['>', '<', '=', '!', '!=', '<=', '>='];
 
     $scope.delete_filter = (filterToDelete) => {
       const column = $scope.gridApi.grid.getColumn(filterToDelete.name);
@@ -1838,14 +1850,12 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
           const subFilters = _.map(_.split(filter.term, ','), _.trim);
           for (const subFilter of subFilters) {
             if (subFilter) {
-
               // ignore filters with only an operator. user is not done typing
               if (operatorArr.includes(subFilter)) {
-                continue
+                continue;
               }
 
               const { string, operator, value } = parseFilter(subFilter);
-              const index = all_columns.findIndex((p) => p.name === column_name);
               const display = [$scope.columnDisplayByName[name], string, value].join(' ');
               $scope.column_filters.push({
                 name,

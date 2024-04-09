@@ -207,7 +207,7 @@ angular.module('BE.seed.controller.derived_columns_editor', []).controller('deri
 
       if (undeclared_parameters.length > 0) {
         $scope.expression_error_message =
-          'Expression includes references to undeclared parameters: ' + `${undeclared_parameters.map((p) => `"${p}"`).join(', ')}. ` + 'Please remove them before continuing';
+          `Expression includes references to undeclared parameters: ${undeclared_parameters.map((p) => `"${p}"`).join(', ')}. Please remove them before continuing`;
       } else {
         $scope.expression_error_message = null;
       }

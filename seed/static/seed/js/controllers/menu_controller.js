@@ -20,7 +20,24 @@ angular.module('BE.seed.controller.menu', []).controller('menu_controller', [
   '$state',
   '$stateParams',
   // eslint-disable-next-line func-names
-  function ($rootScope, $scope, $location, $window, $uibModal, $log, urls, auth_service, organization_service, user_service, dataset_service, modified_service, inventory_service, $timeout, $state, $stateParams) {
+  function (
+    $rootScope,
+    $scope,
+    $location,
+    $window,
+    $uibModal,
+    $log,
+    urls,
+    auth_service,
+    organization_service,
+    user_service,
+    dataset_service,
+    modified_service,
+    inventory_service,
+    $timeout,
+    $state,
+    $stateParams
+  ) {
     // initial state of css classes for menu and sidebar
     $scope.expanded_controller = false;
     $scope.collapsed_controller = false;
@@ -168,8 +185,8 @@ angular.module('BE.seed.controller.menu', []).controller('menu_controller', [
       $scope.mouseout_org();
       await user_service.set_organization(org);
       $scope.menu.user.organization = org;
-      if ($stateParams.organization_id && $stateParams.organization_id != org.id) {
-        $stateParams.organization_id = org.id
+      if ($stateParams.organization_id && $stateParams.organization_id !== org.id) {
+        $stateParams.organization_id = org.id;
       }
       $state.reload();
       init();
@@ -221,7 +238,7 @@ angular.module('BE.seed.controller.menu', []).controller('menu_controller', [
       true
     );
 
-    var init = () => {
+    const init = () => {
       if (!$scope.logged_in) {
         return;
       }

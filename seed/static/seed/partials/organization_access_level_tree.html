@@ -1,149 +1,152 @@
 <div class="page_header_container">
-    <div class="page_header">
-        <div class="left page_action_container">
-            <a ui-sref="organizations" class="page_action"><i class="fa-solid fa-chevron-left"></i> {$:: 'Organizations' | translate $}</a>
-        </div>
-        <div class="page_title">
-            <h1>{$:: org.name $}</h1>
-        </div>
-        <div class="right page_action_container"></div>
+  <div class="page_header">
+    <div class="left page_action_container">
+      <a ui-sref="organizations" class="page_action"><i class="fa-solid fa-chevron-left"></i> {$:: 'Organizations' | translate $}</a>
     </div>
+    <div class="page_title">
+      <h1>{$:: org.name $}</h1>
+    </div>
+    <div class="right page_action_container"></div>
+  </div>
 </div>
 <div class="section_nav_container">
-    <div class="section_nav" ng-include="::urls.static_url + 'seed/partials/accounts_nav.html'"></div>
+  <div class="section_nav" ng-include="::urls.static_url + 'seed/partials/accounts_nav.html'"></div>
 </div>
 <div class="section">
-    <div class="section_header_container">
-        <div class="section_header has_no_padding fixed_height_short">
-            <div class="section_action_container left">
-                <h2><i class="fa-solid fa-sitemap"></i> {$:: 'Access Level Tree' | translate $}</h2>
-            </div>
-        </div>
+  <div class="section_header_container">
+    <div class="section_header has_no_padding fixed_height_short">
+      <div class="section_action_container left">
+        <h2><i class="fa-solid fa-sitemap"></i> {$:: 'Access Level Tree' | translate $}</h2>
+      </div>
     </div>
-    <div class="section_content_container">
-        <div class="section_content with_padding" style="padding-top: 15px">
-            <button type="button" class="btn btn-primary" data-toggle="collapse" data-target="#instruction" ng-click="changeText(btnText)">{$ btnText $}</button>
-            <div class="section_content with_padding collapse" style="margin-bottom: 15px" id="instruction">
-              <p class="pad-top-10" translate>ACCESS_LEVEL_TREE_HELP_1</p>
-              <h3 translate>Access Levels (AL)</h3>
-              <p translate>ACCESS_LEVEL_DESCRIPTION</p>
-              <h3 translate>Access Levels Instances (ALI)</h3>
-              <p translate>ACCESS_LEVEL_INSTANCE_DESCRIPTION</p>
-              <h3 translate>Example Access Level Tree</h3>
-              <img class="tree-image" ng-src="{$ static_url $}seed/images/ali-tree-example-lg.webp">
+  </div>
+  <div class="section_content_container">
+    <div class="section_content with_padding" style="padding-top: 15px">
+      <button type="button" class="btn btn-primary" data-toggle="collapse" data-target="#instruction" ng-click="changeText(btnText)">{$ btnText $}</button>
+      <div class="section_content with_padding collapse" style="margin-bottom: 15px" id="instruction">
+        <p class="pad-top-10" translate>ACCESS_LEVEL_TREE_HELP_1</p>
+        <h3 translate>Access Levels (AL)</h3>
+        <p translate>ACCESS_LEVEL_DESCRIPTION</p>
+        <h3 translate>Access Levels Instances (ALI)</h3>
+        <p translate>ACCESS_LEVEL_INSTANCE_DESCRIPTION</p>
+        <h3 translate>Example Access Level Tree</h3>
+        <img class="tree-image" ng-src="{$ static_url $}seed/images/ali-tree-example-lg.webp" />
 
-              <h3 ng-if="auth.requires_owner" translate>Managing the Access Level Tree</h3>
-              <p ng-if="auth.requires_owner" translate>ACCESS_LEVEL_ORG_OWNER</p>
-              <ul ng-if="auth.requires_owner">
-                <li><strong>{$:: 'Step 1: Add Access Levels' | translate $}</strong> -
-                  <span translate>ACCESS_LEVEL_OWNER_STEP1</span>
-                </li>
-                <li><strong>{$:: 'Step 2: Upload Access Level Instances' | translate $}</strong> -
-                  <span translate>ACCESS_LEVEL_OWNER_STEP2</span>
-                </li>
-              </ul>
-              <p ng-if="auth.requires_owner" translate>ACCESS_LEVEL_OWNER_END</p>
+        <h3 ng-if="auth.requires_owner" translate>Managing the Access Level Tree</h3>
+        <p ng-if="auth.requires_owner" translate>ACCESS_LEVEL_ORG_OWNER</p>
+        <ul ng-if="auth.requires_owner">
+          <li>
+            <strong>{$:: 'Step 1: Add Access Levels' | translate $}</strong> -
+            <span translate>ACCESS_LEVEL_OWNER_STEP1</span>
+          </li>
+          <li>
+            <strong>{$:: 'Step 2: Upload Access Level Instances' | translate $}</strong> -
+            <span translate>ACCESS_LEVEL_OWNER_STEP2</span>
+          </li>
+        </ul>
+        <p ng-if="auth.requires_owner" translate>ACCESS_LEVEL_OWNER_END</p>
+      </div>
+      <div class="pad-top-10">
+        <h3 class="tree-header" translate>Access Levels</h3>
+        <button type="button" class="btn btn-primary tree-button" ng-show="auth.requires_owner" ng-click="open_add_level_modal()">{$:: 'Edit/Add Access Levels' | translate $}</button>
+        <div ng-if="access_level_names" class="levels-table">
+          <table class="access-level-tree trigger-table table table-bordered table-striped table-condensed">
+            <thead class="level1">
+              <tr>
+                <th ng-repeat="level in access_level_names track by $index">Level {$:: ($index + 1) $} Name</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td ng-repeat="level in access_level_names">{$:: level $}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div>
+        <h3 class="tree-header" translate>Access Level Instance Tree</h3>
+        <button type="button" class="btn btn-primary tree-button" ng-show="auth.requires_owner" ng-click="open_add_level_instance_modal()">{$:: 'Add Access Level Instance' | translate $}</button>
+        <button type="button" class="btn btn-primary tree-button" ng-show="auth.requires_owner" ng-click="open_upload_al_instances_modal()">{$:: 'Upload Access Level Instances' | translate $}</button>
+        <div id="access-level-tree">
+          <div class="level1">{$:: 'Level' | translate $} 1: {$ access_level_names[0] $}</div>
+          <div class="level0" style="width: 98%; float: right; margin-right: 10px">
+            <p ng-if="auth.requires_owner" translate>ACCESS_LEVEL_ROOT_TEXT</p>
+            {$:: access_level_tree[0].data.name $}
+            <button
+              class="btn btn-info"
+              ng-if="auth.requires_owner"
+              type="button"
+              ng-click="open_edit_al_instance_modal(access_level_tree[0].id, access_level_tree[0].data.name);
+                      $event.preventDefault(); $event.stopPropagation();"
+              tooltip-placement="right"
+              uib-tooltip="Edit {$ access_level_tree[0].data.name $}"
+            >
+              <i class="fa-solid fa-pencil fa-fw"></i>
+            </button>
+            <span>
+              <button class="btn btn-primary" type="button" ng-click="collapseAccordions(!accordionsCollapsed)" style="padding: 1px 10px; margin: 5px 10px">
+                {$ accordionsCollapsed ? 'Expand Tree Below' : 'Collapse Tree Below' $}
+              </button>
+            </span>
+          </div>
+          <div ng-if="access_level_names[1]" class="section_content" style="width: 98%; float: right; margin-right: 10px">
+            <div data-toggle="collapse">
+              <div ng-include="'tree'" ng-init="level=1;children=access_level_tree[0].children"></div>
             </div>
-            <div class="pad-top-10">
-                <h3 class="tree-header" translate>Access Levels</h3>
-                <button type="button" class="btn btn-primary tree-button" ng-show="auth.requires_owner" ng-click="open_add_level_modal()">
-                    {$:: 'Edit/Add Access Levels' | translate $}
-                </button>
-                <div ng-if="access_level_names" class="levels-table">
-                    <table class="access-level-tree trigger-table table table-bordered table-striped table-condensed">
-                        <thead class="level1"><tr>
-                            <th ng-repeat="level in access_level_names track by $index"> Level {$:: ($index + 1) $} Name</th>
-                        </tr></thead>
-                        <tbody><tr>
-                            <td ng-repeat="level in access_level_names">
-                                {$:: level $}
+          </div>
+
+          <script type="text/ng-template" id="tree">
+            <!-- scope vars: level, children -->
+            <div class="table_list_container levels_table_item_detail">
+
+                <table ng-if="children.length > 0"
+                    class="access-level-tree trigger-table table table-bordered table-striped table-condensed"
+                    ng-style=":: level > 1 ? {'border-right-width': 0} : {'border-right-width': '1px'}"
+                    >
+                    <thead>
+                        <tr>
+                        <th>{$:: 'Level' | translate $} {$ level+1 $}: {$ access_level_names[level] $}</th>
+                        <th style="width: 0">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr
+                            ng-repeat-start="child in children track by child.id"
+                            class="accordion-toggle accordion-header"
+                            data-toggle="collapse"
+                            data-target="#target-{$ child.id $}"
+                        >
+                            <td class="level-child">
+                                <i ng-if="child.children.length" class="fa-solid fa-chevron-right" id="indicator-{$ child.id $}"></i>
+                                <span>{$ child.data.name $}</span>
                             </td>
-                        </tr></tbody>
-                    </table>
-                </div>
+                            <td>
+                                <button class="btn btn-info" type="button" ng-if="auth.requires_owner" ng-click="open_edit_al_instance_modal(child.id, child.data.name);
+                                $event.preventDefault(); $event.stopPropagation();" tooltip-placement="bottom" uib-tooltip="Edit {$ child.data.name $}">
+                                    <i class="fa-solid fa-pencil fa-fw"></i>
+                                </button>
+                                <button class="btn btn-info" type="button" ng-if="auth.requires_owner" ng-click="open_delete_al_instance_modal(child.id, child.data.name);
+                                $event.preventDefault(); $event.stopPropagation();" tooltip-placement="bottom" uib-tooltip="Delete {$ child.data.name $}">
+                                    <i class="fa-solid fa-trash fa-fw"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        <tr ng-repeat-end>
+                            <td colspan="3" class="hidden-row" ng-if="child.children.length">
+                                <div class="accordian-body collapse level-collapse" id="target-{$ child.id $}">
+                                    <div class="levels-header">
+                                        <div style="padding-left: 40px" ng-include="'tree'" ng-init="level=level+1; children=child.children"></div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
-            <div>
-                <h3 class="tree-header" translate>Access Level Instance Tree</h3>
-                <button type="button" class="btn btn-primary tree-button" ng-show="auth.requires_owner" ng-click="open_add_level_instance_modal()">
-                    {$:: 'Add Access Level Instance' | translate $}
-                </button>
-                <button type="button" class="btn btn-primary tree-button" ng-show="auth.requires_owner" ng-click="open_upload_al_instances_modal()">
-                    {$:: 'Upload Access Level Instances' | translate $}
-                </button>
-                <div id="access-level-tree">
-                    <div class="level1">
-                      {$:: 'Level' | translate $} 1: {$ access_level_names[0] $}
-                    </div>
-                    <div class="level0" style="width:98%; float:right; margin-right:10px;">
-                      <p ng-if="auth.requires_owner" translate>ACCESS_LEVEL_ROOT_TEXT</p>
-                      {$:: access_level_tree[0].data.name $}
-                      <button class="btn btn-info" ng-if="auth.requires_owner" type="button" ng-click="open_edit_al_instance_modal(access_level_tree[0].id, access_level_tree[0].data.name);
-                      $event.preventDefault(); $event.stopPropagation();" tooltip-placement="right" uib-tooltip="Edit {$ access_level_tree[0].data.name $}">
-                          <i class="fa-solid fa-pencil fa-fw"></i>
-                      </button>
-                      <span>
-                        <button class="btn btn-primary" type="button" ng-click="collapseAccordions(!accordionsCollapsed)"
-                            style="padding: 1px 10px; margin: 5px 10px;">{$ accordionsCollapsed ? 'Expand Tree Below' : 'Collapse Tree Below' $}
-                        </button>
-                      </span>
-                    </div>
-                    <div ng-if="access_level_names[1]" class="section_content" style="width:98%; float:right; margin-right:10px;">
-                      <div data-toggle="collapse">
-                        <div ng-include="'tree'" ng-init="level=1;children=access_level_tree[0].children"></div>
-                      </div>
-                    </div>
-
-                    <script type="text/ng-template" id="tree">
-                        <!-- scope vars: level, children -->
-                        <div class="table_list_container levels_table_item_detail">
-
-                            <table ng-if="children.length > 0"
-                                class="access-level-tree trigger-table table table-bordered table-striped table-condensed"
-                                ng-style=":: level > 1 ? {'border-right-width': 0} : {'border-right-width': '1px'}"
-                                >
-                                <thead>
-                                    <tr>
-                                    <th>{$:: 'Level' | translate $} {$ level+1 $}: {$ access_level_names[level] $}</th>
-                                    <th style="width: 0">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr
-                                        ng-repeat-start="child in children track by child.id"
-                                        class="accordion-toggle accordion-header"
-                                        data-toggle="collapse"
-                                        data-target="#target-{$ child.id $}"
-                                    >
-                                        <td class="level-child">
-                                            <i ng-if="child.children.length" class="fa-solid fa-chevron-right" id="indicator-{$ child.id $}"></i>
-                                            <span>{$ child.data.name $}</span>
-                                        </td>
-                                        <td>
-                                            <button class="btn btn-info" type="button" ng-if="auth.requires_owner" ng-click="open_edit_al_instance_modal(child.id, child.data.name);
-                                            $event.preventDefault(); $event.stopPropagation();" tooltip-placement="bottom" uib-tooltip="Edit {$ child.data.name $}">
-                                                <i class="fa-solid fa-pencil fa-fw"></i>
-                                            </button>
-                                            <button class="btn btn-info" type="button" ng-if="auth.requires_owner" ng-click="open_delete_al_instance_modal(child.id, child.data.name);
-                                            $event.preventDefault(); $event.stopPropagation();" tooltip-placement="bottom" uib-tooltip="Delete {$ child.data.name $}">
-                                                <i class="fa-solid fa-trash fa-fw"></i>
-                                            </button>
-                                        </td>
-                                    </tr>
-                                    <tr ng-repeat-end>
-                                        <td colspan="3" class="hidden-row" ng-if="child.children.length">
-                                            <div class="accordian-body collapse level-collapse" id="target-{$ child.id $}">
-                                                <div class="levels-header">
-                                                    <div style="padding-left: 40px" ng-include="'tree'" ng-init="level=level+1; children=child.children"></div>
-                                                </div>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </script>
-                </div>
-            </div>
+          </script>
         </div>
+      </div>
     </div>
+  </div>
 </div>
