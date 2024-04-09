@@ -553,7 +553,7 @@ def states_to_views(unmatched_state_ids, org, access_level_instance, cycle, Stat
     """
     table_name = StateClass.__name__
 
-    sub_progress_data = update_sub_progress_total(100, sub_progress_key)
+    # sub_progress_data = update_sub_progress_total(100, sub_progress_key)
 
     if table_name == 'PropertyState':
         ViewClass = PropertyView
@@ -597,6 +597,144 @@ def states_to_views(unmatched_state_ids, org, access_level_instance, cycle, Stat
     # If one match is found, pass that along.
     # If multiple matches are found, merge them together, pass along the resulting record.
     # Otherwise, add current -State to be promoted as is.
+    #########3
+    # merged_between_existing_count = 0
+    # merge_state_pairs = []
+    # batch_size = math.ceil(len(unmatched_states) / 100)
+
+    # find matching states for unmatched_staets
+    # for idx, state in enumerate(unmatched_states):
+    #     matching_criteria = matching_filter_criteria(state, column_names)
+    #     # compare ubids via jaccard index instead of a direct match, drop from matching criteria
+    #     check_jaccard = False
+    #     if 'ubid' in matching_criteria.keys():
+    #         check_jaccard = True if matching_criteria.get('ubid') else False
+    #         ubid = matching_criteria.pop('ubid')
+
+    #     existing_state_matches = StateClass.objects.filter(
+    #         pk__in=Subquery(existing_cycle_views.values('state_id')),
+    #         **matching_criteria,
+    #     )
+
+    #     if check_jaccard:
+    #         existing_state_matches = [
+    #             state
+    #             for state in existing_state_matches
+    #             if check_jaccard_match(ubid, state.ubid, org.ubid_threshold)
+    #         ]
+
+    #     count = len(existing_state_matches)
+
+    #     if count > 1:
+    #         merged_between_existing_count += count
+    #         existing_state_ids = [state.id for state in sorted(existing_state_matches, key=lambda state: state.updated)]
+    #         # The following merge action ignores merge protection and prioritizes -States by most recent AuditLog
+    #         merged_state = merge_states_with_views(existing_state_ids, org.id, 'System Match', StateClass)
+    #         merge_state_pairs.append((merged_state, state))
+    #     elif count == 1:
+    #         merge_state_pairs.append((existing_state_matches[0], state))
+    #     else:
+    #         promote_states = promote_states | StateClass.objects.filter(pk=state.id)
+
+    #     if batch_size > 0 and idx % batch_size == 0:
+    #         sub_progress_data.step('Matching Data (3/6): Merging Unmatched States')
+
+    # sub_progress_data = update_sub_progress_total(100, sub_progress_key, finish=True)
+
+    # # Process -States into -Views either directly (promoted_ids) or post-merge (merge_state_pairs).
+    # _log.debug("There are %s merge_state_pairs and %s promote_states" % (len(merge_state_pairs), promote_states.count()))
+    # priorities = Column.retrieve_priorities(org.pk)
+    # try:
+    #     with transaction.atomic():
+    #         # For each merge_state_pairs, try to merge the new state into the existing property views
+    #         merged_views = []
+    #         merged_state_ids = []
+    #         errored_merged_states = []
+    #         batch_size = math.ceil(len(merge_state_pairs) / 100)
+    #         for idx, state_pair in enumerate(merge_state_pairs):
+    #             existing_state, newer_state = state_pair
+    #             existing_view = ViewClass.objects.get(state_id=existing_state.id)
+    #             existing_obj = getattr(existing_view, "property" if table_name == 'PropertyState' else "taxlot")
+
+    #             # ensure that new ali and existing ali match and that we have access to existing ali.
+    #             new_ali = newer_state.raw_access_level_instance
+    #             if new_ali is None:
+    #                 if not (
+    #                     existing_obj.access_level_instance == access_level_instance or
+    #                     existing_obj.access_level_instance.is_descendant_of(access_level_instance)
+    #                 ):
+    #                     errored_merged_states.append(newer_state)
+    #                     continue
+    #             else:
+    #                 if existing_obj.access_level_instance != new_ali:
+    #                     errored_merged_states.append(newer_state)
+    #                     continue
+
+    #             # Merge -States and assign new/merged -State to existing -View
+    #             merged_state = save_state_match(existing_state, newer_state, priorities)
+    #             merge_ubid_models([existing_state.id], merged_state.id, StateClass)
+    #             existing_view.state = merged_state
+    #             existing_view.save()
+
+    #             merged_views.append(existing_view)
+    #             merged_state_ids.append(merged_state.id)
+    #             if batch_size > 0 and idx % batch_size == 0:
+    #                 sub_progress_data.step('Matching Data (4/6): Merging State Pairs')
+
+    #         sub_progress_data = update_sub_progress_total(100, sub_progress_key, finish=True)
+
+    #         # For each state that doesn't merge into an existing property, promote it, creating a new property
+    #         new_views = []
+    #         promoted_state_ids = []
+    #         errored_new_states = []
+    #         batch_size = math.ceil(len(promote_states) / 100)
+    #         for idx, state in enumerate(promote_states):
+    #             created_view = state.promote(cycle)
+    #             if created_view is None:
+    #                 errored_new_states.append(state)
+    #             else:
+    #                 promoted_state_ids.append(state.id)
+    #                 new_views.append(created_view)
+    #             if batch_size > 0 and idx % batch_size == 0:
+    #                 sub_progress_data.step('Matching Data (5/6): Promoting States')
+    #         sub_progress_data.finish_with_success()
+
+    # except IntegrityError as e:
+    #     raise IntegrityError("Could not merge results with error: %s" % (e))
+
+    (
+        promoted_state_ids, 
+        merged_state_ids, 
+        merged_between_existing_count, 
+        merged_views, 
+        errored_merged_states, 
+        new_views, 
+        errored_new_states
+     ) = merge_unmatched_states(org, cycle, unmatched_states, column_names, ViewClass, StateClass, table_name, existing_cycle_views, access_level_instance, sub_progress_key)
+
+
+    # update merge_state while excluding any states that were a product of a previous, file-inclusive merge
+    StateClass.objects.filter(pk__in=promoted_state_ids).exclude(merge_state=MERGE_STATE_MERGED).update(
+        merge_state=MERGE_STATE_NEW
+    )
+    StateClass.objects.filter(pk__in=merged_state_ids).update(
+        data_state=DATA_STATE_MATCHING,
+        merge_state=MERGE_STATE_MERGED
+    )
+
+    return (
+        merged_between_existing_count,
+        duplicate_count,
+        list(set(merged_views)),  # so no dupes, I think?
+        errored_merged_states,
+        new_views,
+        errored_new_states,
+    )
+
+def merge_unmatched_states(org, cycle, unmatched_states, column_names, ViewClass, StateClass, table_name, existing_cycle_views, access_level_instance, sub_progress_key=False):
+    if sub_progress_key:
+        sub_progress_data = update_sub_progress_total(100, sub_progress_key)
+
     merged_between_existing_count = 0
     merge_state_pairs = []
     batch_size = math.ceil(len(unmatched_states) / 100)
@@ -634,10 +772,11 @@ def states_to_views(unmatched_state_ids, org, access_level_instance, cycle, Stat
         else:
             promote_states = promote_states | StateClass.objects.filter(pk=state.id)
 
-        if batch_size > 0 and idx % batch_size == 0:
+        if batch_size > 0 and idx % batch_size == 0 and sub_progress_key:
             sub_progress_data.step('Matching Data (3/6): Merging Unmatched States')
 
-    sub_progress_data = update_sub_progress_total(100, sub_progress_key, finish=True)
+    if sub_progress_key:
+        sub_progress_data = update_sub_progress_total(100, sub_progress_key, finish=True)
 
     # Process -States into -Views either directly (promoted_ids) or post-merge (merge_state_pairs).
     _log.debug("There are %s merge_state_pairs and %s promote_states" % (len(merge_state_pairs), promote_states.count()))
@@ -699,24 +838,6 @@ def states_to_views(unmatched_state_ids, org, access_level_instance, cycle, Stat
 
     except IntegrityError as e:
         raise IntegrityError("Could not merge results with error: %s" % (e))
-
-    # update merge_state while excluding any states that were a product of a previous, file-inclusive merge
-    StateClass.objects.filter(pk__in=promoted_state_ids).exclude(merge_state=MERGE_STATE_MERGED).update(
-        merge_state=MERGE_STATE_NEW
-    )
-    StateClass.objects.filter(pk__in=merged_state_ids).update(
-        data_state=DATA_STATE_MATCHING,
-        merge_state=MERGE_STATE_MERGED
-    )
-
-    return (
-        merged_between_existing_count,
-        duplicate_count,
-        list(set(merged_views)),  # so no dupes, I think?
-        errored_merged_states,
-        new_views,
-        errored_new_states,
-    )
 
 
 def link_states(states, ViewClass, cycle, highest_ali, sub_progress_key):

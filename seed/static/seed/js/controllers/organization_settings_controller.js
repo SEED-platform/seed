@@ -441,6 +441,10 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
       }
     };
 
+    $scope.trigger_matching = () => {
+      console.log('trigger matching')
+    }
+
     /**
      * reset the last update date (to null)
      */
