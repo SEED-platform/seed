@@ -4,6 +4,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 import json
 
+from django.contrib.postgres.aggregates.general import ArrayAgg
 from django.db.models import Q
 from rest_framework import response, status
 
@@ -52,18 +53,24 @@ def get_labels(request, qs, super_organization, inv_type):
 
     # filter by AH
     ali = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
-    if inv_type == "property_view":
-        in_subtree = Q(property__access_level_instance__lft__gte=ali.lft, property__access_level_instance__rgt__lte=ali.rgt)
-    else:
-        in_subtree = Q(taxlot__access_level_instance__lft__gte=ali.lft, taxlot__access_level_instance__rgt__lte=ali.rgt)
+    in_subtree = Q(**{
+        f"{inv_type[: -5]}__access_level_instance__lft__gte": ali.lft,
+        f"{inv_type[  :-5]}__access_level_instance__rgt__lte": ali.rgt,
+    })
     inventory = inventory.filter(in_subtree)
 
-    results = [
-        LabelSerializer(
-            q,
-            super_organization=super_organization,
-            inventory=inventory
-        ).data for q in qs
-    ]
+    # "is_applied" is a list of views with the label, but only the views that are in inventory.
+    in_inventory = (
+        Q(**{f"{inv_type[: -5]}view__in": list(inventory.values_list("id", flat=True))}) |
+        Q(**{f"{inv_type[: -5]}view__isnull": True})
+    )
+    qs = qs.filter(in_inventory).annotate(is_applied=ArrayAgg("propertyview"))
+
+    results = LabelSerializer(
+        qs,
+        super_organization=super_organization,
+        many=True
+    ).data
+
     status_code = status.HTTP_200_OK
     return response.Response(results, status=status_code)
