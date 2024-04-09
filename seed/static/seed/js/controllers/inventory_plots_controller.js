@@ -153,7 +153,7 @@ angular.module('BE.seed.controller.inventory_plots', []).controller('inventory_p
             },
             tooltip: {
               callbacks: {
-                label: (ctx) => `${ctx.dataset.labels[ctx.dataIndex]} (${ctx.parsed.x}, ${ctx.parsed.y})`
+                label: (context) => `${context.dataset.labels[context.dataIndex]} (${context.parsed.x}, ${context.parsed.y})`
               }
             }
           },
@@ -177,7 +177,9 @@ angular.module('BE.seed.controller.inventory_plots', []).controller('inventory_p
       });
     };
 
-    function hoverOnAllCharts(activePoints) {
+    let charts = [];
+
+    const hoverOnAllCharts = (activePoints) => {
       if (activePoints[0]) {
         const { index } = activePoints[0];
         for (const chart of charts) {
@@ -195,9 +197,9 @@ angular.module('BE.seed.controller.inventory_plots', []).controller('inventory_p
           chart.update();
         }
       }
-    }
+    };
 
-    var charts = $scope.chartsInfo
+    charts = $scope.chartsInfo
       .filter((chartInfo) => chartInfo.populated)
       .map((chartInfo) => createChart(
         chartInfo.chartName, // elementId
@@ -233,6 +235,16 @@ angular.module('BE.seed.controller.inventory_plots', []).controller('inventory_p
       ).then((data) => data);
     };
 
+    const populate_charts = (data) => {
+      const labels = data.map((property) => property[property_name_column.name]);
+
+      for (const chart of charts) {
+        chart.data.datasets[0].data = data;
+        chart.data.datasets[0].labels = labels;
+        chart.update();
+      }
+    };
+
     $scope.update_charts = () => {
       spinner_utility.show();
       fetchInventory().then((data) => {
@@ -247,16 +259,6 @@ angular.module('BE.seed.controller.inventory_plots', []).controller('inventory_p
         populate_charts(data.results);
         spinner_utility.hide();
       });
-    };
-
-    var populate_charts = (data) => {
-      const labels = data.map((property) => property[property_name_column.name]);
-
-      for (const chart of charts) {
-        chart.data.datasets[0].data = data;
-        chart.data.datasets[0].labels = labels;
-        chart.update();
-      }
     };
 
     $scope.update_cycle = (cycle) => {

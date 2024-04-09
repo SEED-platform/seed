@@ -23,11 +23,10 @@ angular.module('BE.seed.service.sensor', []).factory('sensor_service', [
       }
     }).then((response) => response.data);
 
-
     sensor_factory.update_data_logger = (organization_id, id, display_name, location_description, manufacturer_name, model_name, serial_number, identifier) => {
-      let url = `/api/v3/data_loggers/${id}/?organization_id=${organization_id}`;
+      const url = `/api/v3/data_loggers/${id}/?organization_id=${organization_id}`;
       return $http({
-        url: url,
+        url,
         method: 'PUT',
         data: {
           display_name,
@@ -41,13 +40,13 @@ angular.module('BE.seed.service.sensor', []).factory('sensor_service', [
     };
 
     sensor_factory.delete_data_logger = (data_logger_id, organization_id) => {
-      let url = `/api/v3/data_loggers/${data_logger_id}?organization_id=${organization_id}`;
-      return $http.delete(url).then(resp => resp.data);
+      const url = `/api/v3/data_loggers/${data_logger_id}?organization_id=${organization_id}`;
+      return $http.delete(url).then((resp) => resp.data);
     };
 
     sensor_factory.delete_sensor = (view_id, sensor_id, organization_id) => {
-      let url = `/api/v3/properties/${view_id}/sensors/${sensor_id}?organization_id=${organization_id}`;
-      return $http.delete(url).then(resp => resp.data);
+      const url = `/api/v3/properties/${view_id}/sensors/${sensor_id}?organization_id=${organization_id}`;
+      return $http.delete(url).then((resp) => resp.data);
     };
 
     sensor_factory.get_sensors = (property_view_id, organization_id) => $http.get(`/api/v3/properties/${property_view_id}/sensors/`, { params: { organization_id } }).then((response) => response.data);
@@ -71,9 +70,9 @@ angular.module('BE.seed.service.sensor', []).factory('sensor_service', [
     };
 
     sensor_factory.update_sensor = (organization_id, view_id, id, display_name, location_description, description, sensor_type, units, column_name) => {
-      let url = `/api/v3/properties/${view_id}/sensors/${id}/?organization_id=${organization_id}`;
+      const url = `/api/v3/properties/${view_id}/sensors/${id}/?organization_id=${organization_id}`;
       return $http({
-        url: url,
+        url,
         method: 'PUT',
         data: {
           id,

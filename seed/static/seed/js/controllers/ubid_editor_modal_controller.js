@@ -28,9 +28,9 @@ angular.module('BE.seed.controller.ubid_editor_modal', []).controller('ubid_edit
       $scope.update = true;
     }
 
-    const already_exists = () =>
-      // If creating, check for matching ubids. If updating, exclude the current ubid (id)
-      ubids.find((ubid) => ubid.ubid === $scope.ubid.ubid && ubid.id !== $scope.ubid.id);
+    // If creating, check for matching ubids. If updating, exclude the current ubid (id)
+    const already_exists = () => ubids.some((ubid) => ubid.ubid === $scope.ubid.ubid && ubid.id !== $scope.ubid.id);
+
     $scope.is_valid = () => {
       const invalid = !ubid_service.validate_ubid_js($scope.ubid.ubid);
       const exists = already_exists();
