@@ -61,7 +61,7 @@ def get_labels(request, qs, super_organization, inv_type):
 
     # "is_applied" is a list of views with the label, but only the views that are in inventory.
     in_inventory = (
-        Q(**{f"{inv_type[: -5]}view__in": list(inventory.values_list("id", flat=True))}) |
+        Q(**{f"{inv_type[: -5]}view__in": inventory.values_list("id", flat=True)}) |
         Q(**{f"{inv_type[: -5]}view__isnull": True})
     )
     qs = qs.filter(in_inventory).annotate(is_applied=ArrayAgg("propertyview"))
