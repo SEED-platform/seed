@@ -46,7 +46,7 @@ describe('When I visit the accounts page', () => {
     expect($('.page_title').getText()).toEqual('Organizations');
   });
 });
-describe('When I visit the the parent org', () => {
+describe('When I visit the parent org', () => {
   it('should reset sync', () => {
     browser.ignoreSynchronization = false;
   });

@@ -21,15 +21,14 @@ angular.module('BE.seed.controller.analysis_details', []).controller('analysis_d
       stop_func();
     });
 
-    const refresh_analysis = (analysis_id) =>
-      // update analysis in scope
-      analyses_service.get_analysis_for_org(analysis_id, $scope.org.id).then((data) => {
-        $scope.analysis = data.analysis;
-        return data.analysis;
-      });
+    // update analysis in scope
+    const refresh_analysis = (analysis_id) => analyses_service.get_analysis_for_org(analysis_id, $scope.org.id).then((data) => {
+      $scope.analysis = data.analysis;
+      return data.analysis;
+    });
     $scope.cycle_name = null;
     cycle_service.get_cycles().then((cycles) => {
-      const cycle = cycles.cycles.find((cycle) => $scope.analysis.cycles.includes(cycle.id));
+      const cycle = cycles.cycles.find(({ id }) => $scope.analysis.cycles.includes(id));
       $scope.cycle_name = cycle.name;
     });
 
@@ -40,7 +39,7 @@ angular.module('BE.seed.controller.analysis_details', []).controller('analysis_d
 
       // if the status of the analysis has changed since we first loaded the page, refresh everything
       // so that analysis results and messages are updated. (this is lazy, but is good enough for now)
-      if (starting_analysis_status != $scope.analysis.status) {
+      if (starting_analysis_status !== $scope.analysis.status) {
         $state.reload();
       }
     };
