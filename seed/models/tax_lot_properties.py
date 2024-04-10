@@ -22,6 +22,7 @@ from django.dispatch import receiver
 from django.utils.timezone import make_naive
 from quantityfield.units import ureg
 
+from seed.lib.superperms.orgs.models import AccessLevelInstance
 from seed.models.columns import Column
 from seed.serializers.pint import DEFAULT_UNITS
 from seed.utils.geocode import bounding_box_wkt, long_lat_wkt
@@ -163,6 +164,19 @@ class TaxLotProperty(models.Model):
         :param include_related: if False, the related data is NOT included (i.e.,
                                 only the object_list is serialized) - optional (default is True)
         """
+        # we need to get the ali path for every object. caching thi keeps us from recalculating
+        # already computed ali paths
+        ali_path_by_id = {}
+
+        def cached_ali_path(ali_id):
+            nonlocal ali_path_by_id
+
+            if ali_id not in ali_path_by_id:
+                ali = AccessLevelInstance.objects.get(id=ali_id)
+                ali_path_by_id[ali.id] = ali.path
+
+            return ali_path_by_id[ali_id]
+
         if len(object_list) == 0:
             return []
 
@@ -269,10 +283,10 @@ class TaxLotProperty(models.Model):
             obj_dict['merged_indicator'] = obj.state_id in merged_state_ids
 
             if this_cls == 'Property':
-                obj_dict.update(obj.property.access_level_instance.get_path())
-                obj_dict['meters_exist_indicator'] = len(obj.property.meters.all()) > 0
+                obj_dict.update(cached_ali_path(obj.property.access_level_instance_id))
+                obj_dict['meters_exist_indicator'] = obj.property.meters.count() > 0
             else:
-                obj_dict.update(obj.taxlot.access_level_instance.get_path())
+                obj_dict.update(cached_ali_path(obj.taxlot.access_level_instance_id))
 
             # bring in GIS data
             obj_dict[lookups['bounding_box']] = bounding_box_wkt(obj.state)
