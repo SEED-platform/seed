@@ -198,7 +198,7 @@ class DataViewViewSet(viewsets.ViewSet, OrgMixin):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_viewer')
-    @action(detail=True, methods=['PUT'])
+    @action(detail=True, methods=['POST'])
     def evaluate(self, request, pk):
         organization = self.get_organization(request)
         deepcopy(request.data)
