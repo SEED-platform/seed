@@ -453,7 +453,6 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
      */
     $scope.on_save = () => {
       $scope.open_match_merge_link_warning_modal($scope.save_item, 'edit');
-      const x = 10
     };
 
     const notify_merges_and_links = (result) => {
@@ -498,9 +497,9 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
 
     $scope.save_item = () => {
       if ($scope.inventory_type === 'properties') {
-        inventory_service.update_property($scope.inventory.view_id, $scope.diff()).then(save_item_resolve, save_item_reject).then(() => $scope.edit_form_showing=false).catch(save_item_catch);
+        inventory_service.update_property($scope.inventory.view_id, $scope.diff()).then(save_item_resolve, save_item_reject).catch(save_item_catch);
       } else if ($scope.inventory_type === 'taxlots') {
-        inventory_service.update_taxlot($scope.inventory.view_id, $scope.diff()).then(save_item_resolve, save_item_reject).then(() => $scope.edit_form_showing=false).catch(save_item_catch);
+        inventory_service.update_taxlot($scope.inventory.view_id, $scope.diff()).then(save_item_resolve, save_item_reject).catch(save_item_catch);
       }
     };
 
@@ -755,7 +754,6 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
       });
 
       modalInstance.result.then(accept_action, () => {
-        console.log('a')
         // Do nothing if cancelled
       });
     };
