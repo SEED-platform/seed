@@ -9,6 +9,7 @@ from json import load
 import logging
 import pint
 
+from django.db.models.functions import Lower
 from django.core.paginator import EmptyPage, Paginator
 from lxml import etree 
 from lxml.builder import E
@@ -191,6 +192,7 @@ def public_feed(org, request):
     """
     Format all property and taxlot state data to be displayed on a public feed
     """
+    base_url = request.build_absolute_uri('/')
     params = request.query_params
     page = get_int(params.get('page'), 1)
     per_page = get_int(params.get('per_page'), 100)
@@ -201,29 +203,39 @@ def public_feed(org, request):
 
     t_states = org.taxlotstate_set.filter(taxlotview__isnull=False).order_by('-updated')
     t_states_paginated = paginate_states(t_states, page, per_page)
-
+    max_count = p_states.count() if p_states.count() > t_states.count() else t_states.count()
     metadata = {
         'organization': org.name,
         'organization_id': org.id,
         'page': page,
         'per_page': per_page,
-        'total_pages': int((len(p_states_paginated) + len(t_states_paginated)) / per_page) + 1,
+        'total_pages': int(max_count / per_page) + 1,
         'properties': p_states.count(),
         'taxlots': t_states.count(),
         'property_key': property_key,
         'taxlot_key': taxlot_key,
     }
 
-    # gonna need public columns for properties and taxlots
-    p_public_columns = Column.objects.filter(shared_field_type=1, table_name='PropertyState').values_list('column_name', 'is_extra_data')
-    t_public_columns = Column.objects.filter(shared_field_type=1, table_name='TaxLotState').values_list('column_name', 'is_extra_data')
+    # gonna need public columns for properties and taxlots and extra data boolean
+    p_public_columns = (
+        Column.objects.filter(shared_field_type=1, table_name='PropertyState')
+        .annotate(column_name_lower=Lower('column_name'))
+        .order_by('column_name_lower')
+        .values_list('column_name', 'is_extra_data')
+    )
+    t_public_columns = (
+        Column.objects.filter(shared_field_type=1, table_name='TaxLotState')
+        .annotate(column_name_lower=Lower('column_name'))
+        .order_by('column_name_lower')
+        .values_list('column_name', 'is_extra_data')
+    )
     data = {'properties': [], 'taxlots': []}
     for p_state in p_states_paginated:
         # what if matching criteria dne? a whole bunch of None's
-        add_state_to_data(data['properties'], p_state.propertyview_set.first(), p_state, property_key, p_public_columns)
+        add_state_to_data(base_url, data['properties'], p_state.propertyview_set.first(), p_state, property_key, p_public_columns)
 
     for t_state in t_states_paginated:
-        add_state_to_data(data['taxlots'], t_state.taxlotview_set.first(), t_state, taxlot_key, t_public_columns)
+        add_state_to_data(base_url, data['taxlots'], t_state.taxlotview_set.first(), t_state, taxlot_key, t_public_columns)
         pass
 
     return {'metadata': metadata, 'data': data}
@@ -235,10 +247,11 @@ def paginate_states(states, page, per_page):
     except EmptyPage:
         return paginator.page(paginator.num_pages)
 
-def add_state_to_data(data, view, state, key, public_columns):
+def add_state_to_data(base_url, data, view, state, key, public_columns):
     state_data = {
-        key: getattr(state, key, None),
+        'id': view.id,
         'cycle': view.cycle.name,
+        key: getattr(state, key, None), # filter key
         'updated': state.updated,
         'created': state.created,
     }
@@ -252,7 +265,11 @@ def add_state_to_data(data, view, state, key, public_columns):
         if isinstance(value, pint.Quantity):
             # convert pint to string with units (json cannot display exponents)
             value = f'{value.m} {value.u}'
-        state_data[value] = value
+        state_data[name] = value
+
+    state_data['json_link'] = f'{base_url}api/v3/{"properties" if type(state) == PropertyState else "taxlots"}/{view.id}/?organization_id={view.cycle.organization.id}'
+    state_data['html_link'] = f'{base_url}app/#/{"properties" if type(state) == PropertyState else "taxlots"}/{view.id}'
+
     data.append(state_data)
 
 def get_int(value, default):
