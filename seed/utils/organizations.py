@@ -6,21 +6,26 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 import json
 from json import load
-import logging
-import pint
 
-from django.db.models.functions import Lower
+import pint
 from django.core.paginator import EmptyPage, Paginator
-from lxml import etree 
+from django.db.models.functions import Lower
+from lxml import etree
 from lxml.builder import E
+
 from seed.lib.superperms.orgs.exceptions import TooManyNestedOrgs
 from seed.lib.superperms.orgs.models import (
     ROLE_MEMBER,
     Organization,
-    OrganizationUser,
+    OrganizationUser
 )
 from seed.lib.xml_mapping.mapper import default_buildingsync_profile_mappings
-from seed.models import Column, ColumnMappingProfile, PropertyState, TaxLotState
+from seed.models import (
+    Column,
+    ColumnMappingProfile,
+    PropertyState,
+    TaxLotState
+)
 from seed.models.data_quality import DataQualityCheck
 
 
@@ -198,11 +203,18 @@ def public_feed(org, request):
     per_page = get_int(params.get('per_page'), 100)
     property_key = params.get('property_key', 'pm_property_id')
     taxlot_key = params.get('taxlot_key', 'jurisdiction_tax_lot_id')
-    p_states = org.propertystate_set.filter(propertyview__isnull=False).order_by('-updated')
-    p_states_paginated = paginate_states(p_states, page, per_page)
 
+    p_states = org.propertystate_set.filter(propertyview__isnull=False).order_by('-updated')
     t_states = org.taxlotstate_set.filter(taxlotview__isnull=False).order_by('-updated')
+
+    label_name = params.get('label_name', None)
+    if label_name is not None:
+        p_states = p_states.filter(propertyview__labels__name__in=[label_name])
+        t_states = t_states.filter(taxlotview__labels__name__in=[label_name])
+
+    p_states_paginated = paginate_states(p_states, page, per_page)
     t_states_paginated = paginate_states(t_states, page, per_page)
+
     max_count = p_states.count() if p_states.count() > t_states.count() else t_states.count()
     metadata = {
         'organization': org.name,
@@ -214,6 +226,7 @@ def public_feed(org, request):
         'taxlots': t_states.count(),
         'property_key': property_key,
         'taxlot_key': taxlot_key,
+        'label_name': label_name,
     }
 
     # gonna need public columns for properties and taxlots and extra data boolean
@@ -236,27 +249,30 @@ def public_feed(org, request):
 
     for t_state in t_states_paginated:
         add_state_to_data(base_url, data['taxlots'], t_state.taxlotview_set.first(), t_state, taxlot_key, t_public_columns)
-        pass
 
     return {'metadata': metadata, 'data': data}
 
+
 def paginate_states(states, page, per_page):
     paginator = Paginator(states, per_page)
-    try: 
+    try:
         return paginator.page(page)
     except EmptyPage:
         return paginator.page(paginator.num_pages)
+
 
 def add_state_to_data(base_url, data, view, state, key, public_columns):
     state_data = {
         'id': view.id,
         'cycle': view.cycle.name,
-        key: getattr(state, key, None), # filter key
+        key: getattr(state, key, None),
         'updated': state.updated,
         'created': state.created,
+        'labels': ', '.join(view.labels.all().values_list('name', flat=True))
     }
     for (name, extra_data) in public_columns:
-        if name in ['updated', 'created', key]: continue
+        if name in ['updated', 'created', key]:
+            continue
         if not extra_data:
             value = getattr(state, name, None)
         else:
@@ -272,12 +288,14 @@ def add_state_to_data(base_url, data, view, state, key, public_columns):
 
     data.append(state_data)
 
+
 def get_int(value, default):
-    try: 
+    try:
         result = int(float(value))
         return result if result > 0 else default
     except (ValueError, TypeError):
         return default
+
 
 def get_states(cls, query, key, page, per_page):
     # determine if key is cannonical or extra_data
@@ -286,15 +304,14 @@ def get_states(cls, query, key, page, per_page):
     order_key = key if not extra_data else f'extra_data__{key}'
     # Django's natural order is by cycle, we need to order by the matching key
     states = query.order_by(order_key)
-    
+
     paginator = Paginator(states, per_page)
-    try: 
+    try:
         return paginator.page(page)
     except EmptyPage:
         return paginator.page(paginator.num_pages)
 
 
-######### RSS ###########
 def public_feed_rss(org, request):
     """
     Format all property and taxlot state data to be displayed on a public feed
@@ -333,12 +350,16 @@ def public_feed_rss(org, request):
 
     return convert_json_to_rss(org, data, base_url, property_key, taxlot_key)
 
+
 def add_state_to_data_rss(data, type, view, state, public_columns):
     # add public_column state data to the response
     datum = {
         'type': type,
         'cycle': view.cycle.name,
-        'id': view.id
+        'id': view.id,
+        'updated': state.updated.isoformat(),
+        'created': state.created.isoformat(),
+        'labels': ', '.join(view.labels.all().values_list('name', flat=True))
     }
 
     for (name, extra_data) in public_columns:
@@ -355,6 +376,7 @@ def add_state_to_data_rss(data, type, view, state, public_columns):
         datum[name] = value
     data.append(datum)
 
+
 def convert_json_to_rss(org, json_data, base_url, property_key, taxlot_key):
     rss = E.rss(
         E.channel(
@@ -370,6 +392,6 @@ def convert_json_to_rss(org, json_data, base_url, property_key, taxlot_key):
         ),
         version="1.0"
     )
-    
+
     rss_xml = etree.tostring(rss, pretty_print=True, xml_declaration=True, encoding='UTF-8')
     return rss_xml

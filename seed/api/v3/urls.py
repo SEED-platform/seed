@@ -168,13 +168,13 @@ urlpatterns = [
     re_path(r'^celery_queue/$', celery_queue, name='celery_queue'),
     re_path(r'media/(?P<filepath>.*)$', MediaViewSet.as_view()),
     re_path(
-        r'^organizations/(?P<pk>\d+)/public_feed\.json$', 
-        OrganizationViewSet.as_view({'get': 'public_feed_json'}), 
-        name='organizations-public-feed'
+        r'^organizations/(?P<pk>\d+)/public_feed\.json$',
+        OrganizationViewSet.as_view({'get': 'public_feed_json'}),
+        name='organizations-public-feed-json'
     ),
     re_path(
-        r'^organizations/(?P<pk>\d+)/public_feed\.rss$', 
-        OrganizationViewSet.as_view({'get': 'public_feed_rss'}), 
-        name='organizations-public-feed'
+        r'^organizations/(?P<pk>\d+)/public_feed\.rss$',
+        OrganizationViewSet.as_view({'get': 'public_feed_rss'}),
+        name='organizations-public-feed-rss'
     )
 ]

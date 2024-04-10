@@ -5,23 +5,23 @@ SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and othe
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 import json
-
 from datetime import datetime
+
 from django.urls import reverse, reverse_lazy
 from xlrd import open_workbook
 
 from seed.data_importer.models import ImportFile, ImportRecord
 from seed.landing.models import SEEDUser as User
 from seed.lib.mcm.reader import ROW_DELIMITER
-from seed.models import Cycle, Column
-from seed.tests.util import AccessLevelBaseTestCase, DataMappingBaseTestCase
-from seed.utils.organizations import create_organization
+from seed.models import Column, Cycle
 from seed.test_helpers.fake import (
     FakeCycleFactory,
     FakePropertyFactory,
     FakePropertyStateFactory,
-    FakePropertyViewFactory,
+    FakePropertyViewFactory
 )
+from seed.tests.util import AccessLevelBaseTestCase, DataMappingBaseTestCase
+from seed.utils.organizations import create_organization
 
 
 class TestOrganizationViews(DataMappingBaseTestCase):
@@ -112,7 +112,6 @@ class TestOrganizationViews(DataMappingBaseTestCase):
         self.assertEqual(result['PropertyState'], default_matching_criteria_display_names['PropertyState'])
         self.assertEqual(result['TaxLotState'], default_matching_criteria_display_names['TaxLotState'])
 
-
     def test_public_feed(self):
         print('>>> TEST')
         # create public columns
@@ -128,7 +127,7 @@ class TestOrganizationViews(DataMappingBaseTestCase):
             column.shared_field_type = 1
             column.save()
 
-        # create cycles 
+        # create cycles
         cycle1 = self.cycle_factory.get_cycle(name='2010 Calendar Year', start=datetime(2010, 1, 1), end=datetime(2011, 1, 1))
         cycle2 = self.cycle_factory.get_cycle(name='2011 Calendar Year', start=datetime(2011, 1, 1), end=datetime(2012, 1, 1))
         cycle3 = self.cycle_factory.get_cycle(name='2012 Calendar Year', start=datetime(2012, 1, 1), end=datetime(2013, 1, 1))
@@ -145,26 +144,25 @@ class TestOrganizationViews(DataMappingBaseTestCase):
         state22 = self.property_state_factory.get_property_state(property_name='property 22', ubid='a+b+c-2')
         state23 = self.property_state_factory.get_property_state(property_name='property 23', ubid='a+b+c-2')
 
-        # create view{property#}{cycle#}
-        view11 = self.property_view_factory.get_property_view(prpty=property1, state=state11, cycle=cycle1)
-        view12 = self.property_view_factory.get_property_view(prpty=property1, state=state12, cycle=cycle2)
-        view21 = self.property_view_factory.get_property_view(prpty=property1, state=state13, cycle=cycle3)
-        view22 = self.property_view_factory.get_property_view(prpty=property2, state=state21, cycle=cycle1)
-        view31 = self.property_view_factory.get_property_view(prpty=property2, state=state22, cycle=cycle2)
-        view32 = self.property_view_factory.get_property_view(prpty=property2, state=state23, cycle=cycle3)
+        # create views
+        self.property_view_factory.get_property_view(prpty=property1, state=state11, cycle=cycle1)
+        self.property_view_factory.get_property_view(prpty=property1, state=state12, cycle=cycle2)
+        self.property_view_factory.get_property_view(prpty=property1, state=state13, cycle=cycle3)
+        self.property_view_factory.get_property_view(prpty=property2, state=state21, cycle=cycle1)
+        self.property_view_factory.get_property_view(prpty=property2, state=state22, cycle=cycle2)
+        self.property_view_factory.get_property_view(prpty=property2, state=state23, cycle=cycle3)
 
-        url = reverse_lazy('api:v3:organizations-public-feed', args=[self.org.id])
+        url = reverse_lazy('api:v3:organizations-public-feed-json', args=[self.org.id])
         response = self.client.get(url, content_type='application/json')
-        assert response.status_code == 200 
-        data = response.json()
+        assert response.status_code == 200
+        metadata = response.json()['metadata']
+        assert metadata['properties'] == 6
+        assert metadata['organization'] == self.org.name
 
-        assert list(data.keys()) == [state11.ubid, state21.ubid]
-        p1_data = data[state11.ubid]
-        assert list(p1_data.keys()) == [cycle1.name, cycle2.name, cycle3.name]
-        p1_c1_data = p1_data[cycle1.name]
-        assert sorted(list(p1_c1_data.keys())) == sorted(column_names)
-
-        
+        data = response.json()['data']
+        assert list(data.keys()) == ['properties', 'taxlots']
+        assert len(data['properties']) == 6
+        assert len(data['taxlots']) == 0
 
 
 class TestOrganizationPermissions(AccessLevelBaseTestCase):
