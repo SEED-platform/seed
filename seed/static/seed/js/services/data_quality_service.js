@@ -61,7 +61,8 @@ angular.module('BE.seed.service.data_quality', []).factory('data_quality_service
 
     data_quality_factory.start_data_quality_checks_for_import_file = (org_id, import_file_id) => $http.post(`/api/v3/import_files/${import_file_id}/start_data_quality_checks/?organization_id=${org_id}`).then((response) => response.data);
 
-    data_quality_factory.start_data_quality_checks = (property_view_ids, taxlot_view_ids) => data_quality_factory.start_data_quality_checks_for_org(user_service.get_organization().id, property_view_ids, taxlot_view_ids);
+    data_quality_factory.start_data_quality_checks = (property_view_ids, taxlot_view_ids) => data_quality_factory
+      .start_data_quality_checks_for_org(user_service.get_organization().id, property_view_ids, taxlot_view_ids);
 
     data_quality_factory.start_data_quality_checks_for_org = (org_id, property_view_ids, taxlot_view_ids) => $http
       .post(`/api/v3/data_quality_checks/${org_id}/start/`, {

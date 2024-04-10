@@ -618,7 +618,7 @@ def states_to_views(unmatched_state_ids, org, access_level_instance, cycle, Stat
             existing_state_matches = [
                 state
                 for state in existing_state_matches
-                if check_jaccard_match(ubid, state.ubid, org.ubid_threshold)
+                if check_jaccard_match(ubid, state.ubid, org.ubid_threshold, matching_criteria)
             ]
 
         count = len(existing_state_matches)
@@ -651,7 +651,9 @@ def states_to_views(unmatched_state_ids, org, access_level_instance, cycle, Stat
             batch_size = math.ceil(len(merge_state_pairs) / 100)
             for idx, state_pair in enumerate(merge_state_pairs):
                 existing_state, newer_state = state_pair
-                existing_view = ViewClass.objects.get(state_id=existing_state.id)
+                existing_view = ViewClass.objects.filter(state_id=existing_state.id).first()
+                if not existing_view:
+                    continue
                 existing_obj = getattr(existing_view, "property" if table_name == 'PropertyState' else "taxlot")
 
                 # ensure that new ali and existing ali match and that we have access to existing ali.
@@ -837,10 +839,23 @@ def save_state_match(state1, state2, priorities):
     return merged_state
 
 
-def check_jaccard_match(ubid, state_ubid, ubid_threshold):
+def check_jaccard_match(ubid, state_ubid, ubid_threshold, matching_criteria):
+    """
+    Use jaccard index between an incoming ubid and an existing state_ubid to determine if states are 'matching'
+
+    :param ubid: string, incoming ubid
+    :param state_ubid: string, existing state's ubid
+    :param ubid_threshold: float, organization's ubid_threshold
+    :param matching_criteria: dict, organization's matching criteria with ubid removed
+    """
+    # If state_ubid is None and ubid is the only matching_criteria, no match
+    if not state_ubid and not matching_criteria:
+        return False
+
+    # If state_ubid is None and matching_criteria exists, get_jaccard_index will default to 1.0
+    # allowing the remaining matching criteria to determine if it's a match
     jaccard_index = get_jaccard_index(ubid, state_ubid)
 
-    # If threshold is 0 then it will match any UBID with overlap
     if ubid_threshold == 0:
         return jaccard_index > ubid_threshold
     else:

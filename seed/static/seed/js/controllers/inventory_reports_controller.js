@@ -11,6 +11,7 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
   '$scope',
   '$log',
   '$stateParams',
+  'spinner_utility',
   'inventory_reports_service',
   'simple_modal_service',
   'columns',
@@ -21,7 +22,7 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
   '$translate',
   '$uibModal',
   // eslint-disable-next-line func-names
-  function ($scope, $log, $stateParams, inventory_reports_service, simple_modal_service, columns, cycles, organization_payload, urls, $sce, $translate, $uibModal) {
+  function ($scope, $log, $stateParams, spinner_utility, inventory_reports_service, simple_modal_service, columns, cycles, organization_payload, urls, $sce, $translate, $uibModal) {
     const org_id = organization_payload.organization.id;
     const base_storage_key = `report.${org_id}`;
 
@@ -94,18 +95,18 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
 
     const filtered_columns = _.filter(columns, (column) => _.includes(acceptable_column_types, column.data_type));
 
-    $scope.xAxisVars =[
+    $scope.xAxisVars = [
       {
-        name: "Count",
-        label: "Count",
-        varName: "Count",
-        axisLabel: "Count",
+        name: 'Count',
+        label: 'Count',
+        varName: 'Count',
+        axisLabel: 'Count'
       },
-      ... _.map(filtered_columns, (column) => ({
-      name: $translate.instant(column.displayName), // short name for variable, used in pulldown
-      label: $translate.instant(column.displayName), // full name for variable
-      varName: column.column_name, // name of variable, to be sent to server
-      axisLabel: parse_axis_label(column) // label to be used in charts, should include units
+      ..._.map(filtered_columns, (column) => ({
+        name: $translate.instant(column.displayName), // short name for variable, used in pulldown
+        label: $translate.instant(column.displayName), // full name for variable
+        varName: column.column_name, // name of variable, to be sent to server
+        axisLabel: parse_axis_label(column) // label to be used in charts, should include units
       // axisType: 'Measure', //DimpleJS property for axis type
       // axisTickFormat: ',.0f' //DimpleJS property for axis tick format
       }))
@@ -281,7 +282,7 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
 
       // if ($scope.invalidDates) {
       //   //Show a basic error modal
-      //   var modalOptions = {
+      //   const modalOptions = {
       //     type: 'error',
       //     okButtonText: 'OK',
       //     cancelButtonText: null,
@@ -358,7 +359,7 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
     }
 
     $scope.open_export_modal = () => {
-      $uibModal.open({
+      const modalInstance = $uibModal.open({
         templateUrl: `${urls.static_url}seed/partials/export_report_modal.html`,
         controller: 'export_report_modal_controller',
         resolve: {
@@ -368,9 +369,10 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
             yVar: $scope.chartData.yAxisVarName,
             yLabel: $scope.chartData.yAxisTitle
           }),
-          cycles: () => $scope.selected_cycles,
+          cycles: () => $scope.selected_cycles
         }
       });
+      modalInstance.result.finally(spinner_utility.hide);
     };
 
     /** Get the 'raw' (disaggregated) chart data from the server for the scatter plot chart.
@@ -527,17 +529,17 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
       return colorsArr;
     }
 
-    var localStorageSelectedCycles = `${base_storage_key}.SelectedCycles`;
+    const localStorageSelectedCycles = `${base_storage_key}.SelectedCycles`;
 
     /* Call the update method so the page initializes
        with the values set in the scope */
-    function init() {
+    const init = () => {
       // Initialize pulldowns
-      $scope.selected_cycles = JSON.parse(localStorage.getItem(localStorageSelectedCycles)) || []
+      $scope.selected_cycles = JSON.parse(localStorage.getItem(localStorageSelectedCycles)) || [];
 
       // Attempt to load selections
       $scope.updateChartData();
-    }
+    };
 
     init();
   }
