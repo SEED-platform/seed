@@ -164,19 +164,6 @@ class TaxLotProperty(models.Model):
         :param include_related: if False, the related data is NOT included (i.e.,
                                 only the object_list is serialized) - optional (default is True)
         """
-        # we need to get the ali path for every object. caching thi keeps us from recalculating
-        # already computed ali paths
-        ali_path_by_id = {}
-
-        def cached_ali_path(ali_id):
-            nonlocal ali_path_by_id
-
-            if ali_id not in ali_path_by_id:
-                ali = AccessLevelInstance.objects.get(id=ali_id)
-                ali_path_by_id[ali.id] = ali.path
-
-            return ali_path_by_id[ali_id]
-
         if len(object_list) == 0:
             return []
 
@@ -209,6 +196,22 @@ class TaxLotProperty(models.Model):
         }
 
         ids = [obj.pk for obj in object_list]
+
+        # getting these at the top keeps us querying for any ali more once, and allows us to query for them all at once.
+        if this_cls == "Property":
+            needed_ali_ids = [obj.property.access_level_instance_id for obj in object_list]
+        else:
+            needed_ali_ids = [obj.taxlot.access_level_instance_id for obj in object_list]
+        alis = AccessLevelInstance.objects.filter(id__in=needed_ali_ids)
+        ali_path_by_id = {ali.id: ali.path for ali in alis}
+
+        # gather meter counts
+        Meter = apps.get_model('seed', 'Meter')
+        if this_cls == "Property":
+            obj_meter_counts = {
+                property_id: meter_count for (property_id, meter_count) in
+                Meter.objects.filter(property__in=ids).values_list("property_id").annotate(Count("property_id"))
+            }
 
         # gather note counts
         Note = apps.get_model('seed', 'Note')
@@ -283,10 +286,10 @@ class TaxLotProperty(models.Model):
             obj_dict['merged_indicator'] = obj.state_id in merged_state_ids
 
             if this_cls == 'Property':
-                obj_dict.update(cached_ali_path(obj.property.access_level_instance_id))
-                obj_dict['meters_exist_indicator'] = obj.property.meters.count() > 0
+                obj_dict.update(ali_path_by_id[obj.property.access_level_instance_id])
+                obj_dict['meters_exist_indicator'] = obj_meter_counts.get(obj.id, 0) > 0
             else:
-                obj_dict.update(cached_ali_path(obj.taxlot.access_level_instance_id))
+                obj_dict.update(ali_path_by_id[obj.taxlot.access_level_instance_id])
 
             # bring in GIS data
             obj_dict[lookups['bounding_box']] = bounding_box_wkt(obj.state)
