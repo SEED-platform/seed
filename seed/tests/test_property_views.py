@@ -775,7 +775,7 @@ class PropertyViewTestsPermissions(AccessLevelBaseTestCase):
         resp = self.client.post(url, content_type='application/json')
         data = resp.json()
         label_data = [d for d in data if d["name"] == "test_label"][0]
-        assert "is_applied" not in label_data
+        assert label_data["is_applied"] == []
 
     def test_property_meter_usage(self):
         url = reverse('api:v3:properties-meter-usage', kwargs={'pk': self.view.id}) + f'?organization_id={self.org.pk}'

@@ -5,7 +5,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 import json
 
 from django.contrib.postgres.aggregates.general import ArrayAgg
-from django.db.models import Q
+from django.db.models import Case, Q, When
 from rest_framework import response, status
 
 from seed import search
@@ -60,11 +60,10 @@ def get_labels(request, qs, super_organization, inv_type):
     inventory = inventory.filter(in_subtree)
 
     # "is_applied" is a list of views with the label, but only the views that are in inventory.
-    in_inventory = (
-        Q(**{f"{inv_type[: -5]}view__in": inventory.values_list("id", flat=True)}) |
-        Q(**{f"{inv_type[: -5]}view__isnull": True})
-    )
-    qs = qs.filter(in_inventory).annotate(is_applied=ArrayAgg("propertyview"))
+    qs = qs.annotate(is_applied=ArrayAgg(Case(When(**{
+        f"{inv_type[: -5]}view__in": inventory.values_list("id", flat=True),
+        "then": f"{inv_type[: -5]}view"
+    }))))
 
     results = LabelSerializer(
         qs,
