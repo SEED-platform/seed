@@ -65,7 +65,7 @@
               <a ng-click="open_data_upload_audit_template_modal()">{$:: 'Update with Audit Template' | translate $}</a>
             </li>
 
-            <li  role="menuitem" ng-if="::inventory_type === 'properties'" class="upload-list-item">
+            <li role="menuitem" ng-if="::inventory_type === 'properties'" class="upload-list-item">
               <a ng-click="open_data_upload_espm_modal()">{$:: 'Update with ESPM' | translate $}</a>
             </li>
 
@@ -132,18 +132,18 @@
           </div>
         </div>
         <div class="access-level-info-section">
-          <strong style="padding-right:5px;padding-top:10px;">{$:: 'Access Level Instance Information' | translate $}:</strong>
+          <strong style="padding-right: 5px; padding-top: 10px">{$:: 'Access Level Instance Information' | translate $}:</strong>
           <div>
             <table id="ali-detail-table" class="table table-striped table_highlight_first" style="width: fit-content">
               <thead>
-              <tr>
-                <th ng-repeat="(level, name) in organization.access_level_names">{$:: 'Level' | translate $} {$ level+1 $} - {$:: name $}</th>
-              </tr>
+                <tr>
+                  <th ng-repeat="(level, name) in organization.access_level_names">{$:: 'Level' | translate $} {$ level+1 $} - {$:: name $}</th>
+                </tr>
               </thead>
               <tbody>
-              <tr>
-                <td style="border: 1px solid #ddd;" ng-repeat="(level, name) in organization.access_level_names">{$:: ali_path[name] $}</td>
-              </tr>
+                <tr>
+                  <td style="border: 1px solid #ddd" ng-repeat="(level, name) in organization.access_level_names">{$:: ali_path[name] $}</td>
+                </tr>
               </tbody>
             </table>
           </div>
@@ -218,21 +218,21 @@
               <!-- Show read-only current 'regular' field value -->
               <td ng-if="edit_form_showing===false && !col.is_extra_data && !col.derived_column && col.table_name.toLowerCase().includes('state')" ng-class="{highlight: col.changed}" class="ellipsis">
                 <span class="sd-data-content" uib-popover="{$:: item_state[col.column_description] $}" popover-trigger="'outsideClick'" popover-animation="false" popover-placement="top-left">
-                  <span>{$:: displayValue(col.data_type, item_state[col.column_name]) $}</span>
+                  <span>{$:: displayValue(col, item_state[col.column_name]) $}</span>
                 </span>
               </td>
 
               <!-- Show read-only current 'extra_data' field value -->
               <td ng-if="edit_form_showing===false && col.is_extra_data && col.table_name.toLowerCase().includes('state')" ng-class="{highlight: col.changed}" class="ellipsis">
                 <span class="sd-data-content" uib-popover="{$ item_state.extra_data[col.column_description] $}" popover-trigger="'outsideClick'" popover-animation="false" popover-placement="top-left">
-                  <span>{$:: displayValue(col.data_type, item_state.extra_data[col.column_name]) $}</span>
+                  <span>{$:: displayValue(col, item_state.extra_data[col.column_name]) $}</span>
                 </span>
               </td>
 
               <!-- Show read-only current 'property / taxlot' fields -->
               <td ng-if="edit_form_showing===false && !col.table_name.toLowerCase().includes('state') && !col.derived_column" ng-class="{highlight: col.changed}" class="ellipsis">
                 <span class="sd-data-content" uib-popover="{$ item_parent[col.column_description] $}" popover-trigger="'outsideClick'" popover-animation="false" popover-placement="top-left">
-                  <span>{$:: displayValue(col.data_type, item_parent[col.column_name]) $}</span>
+                  <span>{$:: displayValue(col, item_parent[col.column_name]) $}</span>
                 </span>
               </td>
 
@@ -268,7 +268,7 @@
                   popover-animation="false"
                   popover-placement="top-left"
                 >
-                  <span>{$:: displayValue(col.data_type, historical_item.state[col.column_name]) $}</span>
+                  <span>{$:: displayValue(col, historical_item.state[col.column_name]) $}</span>
                 </span>
                 <span
                   ng-if="::col.is_extra_data && col.table_name.toLowerCase().includes('state')"
@@ -278,7 +278,7 @@
                   popover-animation="false"
                   popover-placement="top-left"
                 >
-                  <span>{$:: displayValue(col.data_type, historical_item.state.extra_data[col.column_name]) $}</span>
+                  <span>{$:: displayValue(col, historical_item.state.extra_data[col.column_name]) $}</span>
                 </span>
               </td>
             </tr>
@@ -369,7 +369,9 @@
               </span>
             </div>
           </div>
-          <button ng-show="menu.user.organization.user_role !== 'viewer'" type="button" class="btn btn-info" ng-click="open_doc_upload_modal()" style="margin: 15px"><i class="fa-solid fa-paperclip"></i> <span translate>Add a Document</span></button>
+          <button ng-show="menu.user.organization.user_role !== 'viewer'" type="button" class="btn btn-info" ng-click="open_doc_upload_modal()" style="margin: 15px">
+            <i class="fa-solid fa-paperclip"></i> <span translate>Add a Document</span>
+          </button>
         </div>
       </div>
       <div class="section_content_container">

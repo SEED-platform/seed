@@ -1,6 +1,6 @@
 /**
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
- * See also https://github.com/seed-platform/seed/main/LICENSE.md
+ * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
 angular.module('BE.seed.controller.sensor_update_modal', []).controller('sensor_update_modal_controller', [
   '$scope',
@@ -30,30 +30,30 @@ angular.module('BE.seed.controller.sensor_update_modal', []).controller('sensor_
     sensor,
     sensor_service
   ) {
-    $scope.sensor = {...sensor};
+    $scope.sensor = { ...sensor };
 
     $scope.update_sensor = () => {
       sensor_service
-      .update_sensor(
-        organization_id,
-        view_id,
-        $scope.sensor.id,
-        $scope.sensor.display_name,
-        $scope.sensor.location_description,
-        $scope.sensor.description,
-        $scope.sensor.type,
-        $scope.sensor.units,
-        $scope.sensor.column_name,
-      )
-      .then(() => {
-        $scope.refresh_page();
-      })
-      .catch((err) => {
-        if (err.status === 400) {
-          Notification.error(err)
-        }
-      });
-    }
+        .update_sensor(
+          organization_id,
+          view_id,
+          $scope.sensor.id,
+          $scope.sensor.display_name,
+          $scope.sensor.location_description,
+          $scope.sensor.description,
+          $scope.sensor.type,
+          $scope.sensor.units,
+          $scope.sensor.column_name
+        )
+        .then(() => {
+          $scope.refresh_page();
+        })
+        .catch((err) => {
+          if (err.status === 400) {
+            Notification.error(err);
+          }
+        });
+    };
 
     $scope.refresh_page = () => {
       $state.reload();

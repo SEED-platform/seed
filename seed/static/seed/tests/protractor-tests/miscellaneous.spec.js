@@ -266,7 +266,7 @@ describe('When I do miscellaneous things', () => {
     $$('.ui-grid-icon-left-open').first().click();
 
     $$('.ui-grid-icon-angle-down').first().click();
-    var myOptions = element
+    let myOptions = element
       .all(by.repeater('item in menuItems'))
       .filter((elm) => elm.getText().then((label) =>
       // expect(label).toBe('fake');
@@ -275,7 +275,7 @@ describe('When I do miscellaneous things', () => {
     myOptions.click();
 
     $$('.ui-grid-icon-angle-down').first().click();
-    var myOptions = element
+    myOptions = element
       .all(by.repeater('item in menuItems'))
       .filter((elm) => elm.getText().then((label) =>
       // expect(label).toBe('fake');
