@@ -418,14 +418,14 @@ class TaxLotViewTestPermissions(AccessLevelBaseTestCase):
         self.login_as_root_member()
         resp = self.client.post(url, content_type='application/json')
         data = resp.json()
-        label_data = next(d for d in data if d["name"] == "test_label")
+        label_data = [d for d in data if d["name"] == "test_label"][0]
         assert label_data["is_applied"] == [self.view.pk]
 
         # child member cannot
         self.login_as_child_member()
         resp = self.client.post(url, content_type='application/json')
         data = resp.json()
-        label_data = next(d for d in data if d["name"] == "test_label")
+        label_data = [d for d in data if d["name"] == "test_label"][0]
         assert "is_applied" not in label_data
 
     def test_taxlot_list(self):
