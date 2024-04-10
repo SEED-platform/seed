@@ -1,6 +1,6 @@
 /**
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
- * See also https://github.com/seed-platform/seed/main/LICENSE.md
+ * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
 angular.module('BE.seed.controller.inventory_settings', []).controller('inventory_settings_controller', [
   '$scope',
@@ -102,7 +102,7 @@ angular.module('BE.seed.controller.inventory_settings', []).controller('inventor
       }
     };
 
-    var initializeRowSelections = () => {
+    const initializeRowSelections = () => {
       $scope.gridApi.grid.modifyRows($scope.gridOptions.data);
       _.forEach($scope.gridApi.grid.rows, (row) => {
         if (row.entity.visible !== false) {
@@ -237,8 +237,7 @@ angular.module('BE.seed.controller.inventory_settings', []).controller('inventor
     $scope.saveProfile = () => {
       const { id } = $scope.currentProfile;
       const profile = _.omit($scope.currentProfile, 'id');
-      const columns = currentColumns();
-      profile.columns = columns;
+      profile.columns = currentColumns();
       inventory_service.update_column_list_profile(id, profile).then((updatedProfile) => {
         const index = _.findIndex($scope.profiles, { id: updatedProfile.id });
         $scope.profiles[index] = updatedProfile;

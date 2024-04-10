@@ -168,6 +168,10 @@ a:not([href]) {
   font-size: 100%;
   margin-right: 5px;
   padding: 2.6px 7.8px;
+
+  &:last-child {
+    margin-right: 0;
+  }
 }
 
 .btn {
@@ -863,7 +867,7 @@ a:not([href]) {
     }
 
     .bg.jumbotron {
-      background: url('../../seed/images/kc_2.jpg') no-repeat center bottom;
+      background: url('../../seed/images/kc_2.webp') no-repeat center bottom;
       background-size: cover;
       min-height: 402px;
       margin-bottom: 0;
@@ -1458,8 +1462,7 @@ a:not([href]) {
 
       /* Builds a scrollable table */
       &.table_scroll {
-        overflow-x: scroll;
-        overflow-y: visible;
+        overflow: scroll visible;
         margin-left: 24.9%;
 
         table {
@@ -2022,8 +2025,7 @@ button[sd-uploader][disabled] {
   }
 
   .table-body-x-scroll {
-    overflow-x: hidden;
-    overflow-y: auto;
+    overflow: hidden auto;
     height: 600px;
   }
 }
@@ -3905,7 +3907,7 @@ $pairedCellWidth: 60px;
 }
 
 .levels-table {
-  margin: 10px 25px 0px 25px;
+  margin: 10px 25px 0;
 }
 
 .access-level-info-section {
@@ -4062,8 +4064,7 @@ FAQ page
     .tab-content-cards {
       display: flex;
       padding: 10px;
-      row-gap: 10px;
-      column-gap: 10px;
+      gap: 10px 10px;
       flex-wrap: wrap;
       justify-content: space-evenly;
     }
@@ -4150,8 +4151,7 @@ FAQ page
     border-bottom: 1px solid rgb(255 255 255 / 50%);
     display: flex;
     align-items: center;
-    row-gap: 10px;
-    column-gap: 10px;
+    gap: 10px 10px;
   }
 
   & > .row:first-child {
@@ -4334,7 +4334,7 @@ iframe.analysis-results {
 
 // program overview / compliance-setup
 .compliance-setup {
-  /*background-color: #eee;*/
+  /* background-color: #eee; */
   padding: 0.5em;
 
   p {
@@ -4447,7 +4447,7 @@ iframe.analysis-results {
 }
 
 .help-text-icon {
-  margin: 0px 5px;
+  margin: 0 5px;
   color: #337ab7;
 }
 
@@ -4592,6 +4592,12 @@ ul.r-list {
   background-color: $infoBackground;
 }
 
+.r-error {
+  color: $errorText;
+  background-color: $errorBackground;
+  border: 1px solid $errorBorder;
+}
+
 .r-panel {
   border: 1px solid #eee;
   padding: 10px;
@@ -4602,12 +4608,6 @@ ul.r-list {
     color: $warningText;
     background-color: $warningBackground;
     border: 1px solid $warningBorder;
-  }
-
-  &.r-error {
-    color: $errorText;
-    background-color: $errorBackground;
-    border: 1px solid $errorBorder;
   }
 
   &.r-success {
@@ -4664,15 +4664,15 @@ ul.r-list {
 }
 
 .less_pad {
-  padding: 0px 10px 10px 10px !important;
+  padding: 0 10px 10px !important;
 }
 
 .insights-header {
-  padding: 10px 10px 0px 10px !important;
+  padding: 10px 10px 0 !important;
 }
 
 .insights-table {
-  margin-top: 0px !important;
+  margin-top: 0 !important;
 }
 
 .rp-data-view {
@@ -4851,14 +4851,14 @@ ul.r-list {
 }
 
 .accordion-header[aria-expanded='true'] i {
-  &:not(.fa-pencil):not(.fa-trash) {
+  &:not(.fa-pencil, .fa-trash) {
     transform: rotate(90deg);
     transition: transform 0.5s;
   }
 }
 
 .accordion-header[aria-expanded='false'] i {
-  &:not(.fa-pencil):not(.fa-trash) {
+  &:not(.fa-pencil, .fa-trash) {
     transform: rotate(0deg);
     transition: transform 0.5s;
   }
@@ -5047,6 +5047,9 @@ ul.r-list {
 }
 
 .level-child {
+  font-weight: normal;
+  vertical-align: middle;
+
   &:has(> i.fa-chevron-right) {
     cursor: pointer;
   }
@@ -5069,11 +5072,6 @@ ul.r-list {
   margin: 3px 10px;
   font-weight: bold;
   font-size: 16px;
-}
-
-.level-child {
-  vertical-align: middle;
-  font-weight: normal;
 }
 
 .ubid-form {
@@ -5177,13 +5175,13 @@ ul.r-list {
 
       .portfolio-summary-select-option {
         font-size: 10px;
-        padding: 4px 0 6px 0;
+        padding: 4px 0 6px;
       }
 
       .portfolio-summary-constant {
         border: 1px solid gray;
         border-radius: 2px;
-        background: rgb(229, 229, 229);
+        background: rgb(229 229 229);
         overflow: hidden;
         white-space: nowrap;
         text-overflow: ellipsis;
@@ -5207,7 +5205,7 @@ ul.r-list {
     #portfolio-summary {
       width: 100%;
       padding-bottom: 30px;
-      border-bottom: 1px solid rgb(199, 199, 199);
+      border-bottom: 1px solid rgb(199 199 199);
 
       h3 {
         margin: 0;
@@ -5269,19 +5267,18 @@ ul.r-list {
   }
 
   .portfolio-summary-loading {
-    border: 1px solid rgb(188, 188, 188);
+    border: 1px solid rgb(188 188 188);
     border-radius: 5px;
     height: 100px;
     padding: 0 50px;
     position: relative;
-    background: rgba(128, 128, 128, 0.1);
-    color: rgb(128, 128, 128);
+    background: rgb(128 128 128 / 10%);
+    color: rgb(128 128 128);
   }
 
   .portfolio-summary-item-count {
     height: 64px;
     margin: 0 24px;
-
     align-items: center;
     justify-content: space-between;
     display: flex;
@@ -5290,9 +5287,9 @@ ul.r-list {
   .goal-details-container {
     padding: 10px;
     display: flex;
-    border: 1px solid rgb(197, 197, 197);
+    border: 1px solid rgb(197 197 197);
     border-radius: 5px;
-    background: rgb(241, 241, 241);
+    background: rgb(241 241 241);
     width: fit-content;
     margin: 0 24px;
 
@@ -5326,6 +5323,7 @@ ul.r-list {
 #goal-details {
   max-height: 70vh;
   overflow: scroll;
+
   // display: flex;
   // column-gap: 10px;
 

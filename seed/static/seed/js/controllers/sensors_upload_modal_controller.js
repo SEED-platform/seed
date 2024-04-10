@@ -1,6 +1,6 @@
 /**
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
- * See also https://github.com/seed-platform/seed/main/LICENSE.md
+ * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
 angular.module('BE.seed.controller.sensors_upload_modal', []).controller('sensors_upload_modal_controller', [
   '$scope',
@@ -113,7 +113,7 @@ angular.module('BE.seed.controller.sensors_upload_modal', []).controller('sensor
 
     const grid_rows_to_display = (data) => Math.min(data.length, 5);
 
-    var show_confirmation_info = () => {
+    const show_confirmation_info = () => {
       uploader_service
         .sensors_preview($scope.file_id, $scope.organization_id, $scope.view_id, $scope.data_logger.id)
         .then((result) => {
@@ -134,17 +134,7 @@ angular.module('BE.seed.controller.sensors_upload_modal', []).controller('sensor
         .catch(saveFailure);
     };
 
-    const saveSuccess = (progress_data) => {
-      // recheck progress in order to ensure message has been appended to progress_data
-      uploader_service.check_progress(progress_data.progress_key).then((data) => {
-        $scope.uploader.status_message = 'saving complete';
-        $scope.uploader.progress = 100;
-        buildImportResults(data.message);
-        $scope.step.number = 4;
-      });
-    };
-
-    var buildImportResults = (message) => {
+    const buildImportResults = (message) => {
       const col_defs = base_sensor_col_defs;
       if (_.has(message, '[0].errors')) {
         col_defs.push({
@@ -161,6 +151,16 @@ angular.module('BE.seed.controller.sensors_upload_modal', []).controller('sensor
         enableVerticalScrollbar: message.length <= 5 ? uiGridConstants.scrollbars.NEVER : uiGridConstants.scrollbars.WHEN_NEEDED,
         minRowsToShow: grid_rows_to_display(message)
       };
+    };
+
+    const saveSuccess = (progress_data) => {
+      // recheck progress in order to ensure message has been appended to progress_data
+      uploader_service.check_progress(progress_data.progress_key).then((data) => {
+        $scope.uploader.status_message = 'saving complete';
+        $scope.uploader.progress = 100;
+        buildImportResults(data.message);
+        $scope.step.number = 4;
+      });
     };
 
     $scope.accept_sensors = () => {

@@ -1,6 +1,6 @@
 /**
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
- * See also https://github.com/seed-platform/seed/main/LICENSE.md
+ * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
 angular.module('BE.seed.controller.portfolio_summary', [])
   .controller('portfolio_summary_controller', [
@@ -52,7 +52,6 @@ angular.module('BE.seed.controller.portfolio_summary', [])
       $scope.cycles = cycles.cycles;
       $scope.access_level_tree = access_level_tree.access_level_tree;
       $scope.level_names = access_level_tree.access_level_names;
-      const localStorageLabelKey = 'grid.properties.labels';
       $scope.goal = {};
       $scope.columns = property_columns;
       $scope.cycle_columns = [];
@@ -264,7 +263,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
       $scope.max_label_width = 750;
       $scope.get_label_column_width = (labels_col, key) => {
         if (!$scope.show_full_labels[key]) {
-          return 30;
+          return 31;
         }
         let maxWidth = 0;
         const renderContainer = document.body.getElementsByClassName('ui-grid-render-container-body')[1];
@@ -280,7 +279,8 @@ angular.module('BE.seed.controller.portfolio_summary', [])
             }
           });
         });
-        return maxWidth > $scope.max_label_width ? $scope.max_label_width : maxWidth + 2;
+        maxWidth = Math.max(31, maxWidth + 2);
+        return Math.min(maxWidth, $scope.max_label_width);
       };
 
       // Expand or contract labels col
@@ -304,7 +304,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
           const labels = _.filter(current_labels, (label) => !_.isEmpty(label.is_applied));
 
           // load saved label filter
-          // const ids = inventory_service.loadSelectedLabels(localStorageLabelKey);
+          // const ids = inventory_service.loadSelectedLabels('grid.properties.labels');
           // $scope.selected_labels = _.filter(labels, (label) => _.includes(ids, label.id));
 
           if (key === 'baseline') {
@@ -359,7 +359,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
       const build_label_col_def = (labels_col, key) => {
         const header_cell_template = `<i ng-click="grid.appScope.toggle_labels('${labels_col}', '${key}')" class='ui-grid-cell-contents fas fa-chevron-circle-right' id='label-header-icon-${key}' style='margin:2px; float:right;'></i>`;
         const cell_template = `<div ng-click="grid.appScope.toggle_labels('${labels_col}', '${key}')" class='ui-grid-cell-contents' ng-bind-html="grid.appScope.display_labels(row.entity, '${key}')"></div>`;
-        const width_fn = $scope.gridApi ? $scope.get_label_column_width(labels_col, key) : 30;
+        const width_fn = $scope.gridApi ? $scope.get_label_column_width(labels_col, key) : 31;
 
         return {
           name: labels_col,
@@ -385,10 +385,10 @@ angular.module('BE.seed.controller.portfolio_summary', [])
       const set_eui_goal = (baseline, current, property, preferred_columns) => {
         // only check defined columns
         for (const col of preferred_columns.filter((c) => c)) {
-          if (baseline && property.baseline_eui == undefined) {
+          if (baseline && _.isNil(property.baseline_eui)) {
             property.baseline_eui = baseline[col.name];
           }
-          if (current && property.current_eui == undefined) {
+          if (current && _.isNil(property.current_eui)) {
             property.current_eui = current[col.name];
           }
         }

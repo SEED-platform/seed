@@ -1,6 +1,6 @@
 /**
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
- * See also https://github.com/seed-platform/seed/main/LICENSE.md
+ * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
 angular.module('BE.seed.service.inventory_reports', []).factory('inventory_reports_service', [
   '$http',
@@ -47,7 +47,7 @@ angular.module('BE.seed.service.inventory_reports', []).factory('inventory_repor
           params: {
             x_var: xVar,
             y_var: yVar,
-            cycle_ids,
+            cycle_ids
           }
         })
         .then((response) => response.data)
@@ -95,7 +95,7 @@ angular.module('BE.seed.service.inventory_reports', []).factory('inventory_repor
           params: {
             x_var: xVar,
             y_var: yVar,
-            cycle_ids,
+            cycle_ids
           }
         })
         .then((response) => response.data)
@@ -121,7 +121,7 @@ angular.module('BE.seed.service.inventory_reports', []).factory('inventory_repor
             x_label: xLabel,
             y_var: yVar,
             y_label: yLabel,
-            cycle_ids,
+            cycle_ids
           },
           responseType: 'arraybuffer'
         })

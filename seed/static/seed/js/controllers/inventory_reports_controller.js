@@ -1,6 +1,6 @@
 /**
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
- * See also https://github.com/seed-platform/seed/main/LICENSE.md
+ * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  *
  * This controller handles the inventory reports page, watching for and remembering
  * the user's selections for chart parameters like date range and x and y variables,
@@ -94,18 +94,18 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
 
     const filtered_columns = _.filter(columns, (column) => _.includes(acceptable_column_types, column.data_type));
 
-    $scope.xAxisVars =[
+    $scope.xAxisVars = [
       {
-        name: "Count",
-        label: "Count",
-        varName: "Count",
-        axisLabel: "Count",
+        name: 'Count',
+        label: 'Count',
+        varName: 'Count',
+        axisLabel: 'Count'
       },
-      ... _.map(filtered_columns, (column) => ({
-      name: $translate.instant(column.displayName), // short name for variable, used in pulldown
-      label: $translate.instant(column.displayName), // full name for variable
-      varName: column.column_name, // name of variable, to be sent to server
-      axisLabel: parse_axis_label(column) // label to be used in charts, should include units
+      ..._.map(filtered_columns, (column) => ({
+        name: $translate.instant(column.displayName), // short name for variable, used in pulldown
+        label: $translate.instant(column.displayName), // full name for variable
+        varName: column.column_name, // name of variable, to be sent to server
+        axisLabel: parse_axis_label(column) // label to be used in charts, should include units
       // axisType: 'Measure', //DimpleJS property for axis type
       // axisTickFormat: ',.0f' //DimpleJS property for axis tick format
       }))
@@ -281,7 +281,7 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
 
       // if ($scope.invalidDates) {
       //   //Show a basic error modal
-      //   var modalOptions = {
+      //   const modalOptions = {
       //     type: 'error',
       //     okButtonText: 'OK',
       //     cancelButtonText: null,
@@ -368,7 +368,7 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
             yVar: $scope.chartData.yAxisVarName,
             yLabel: $scope.chartData.yAxisTitle
           }),
-          cycles: () => $scope.selected_cycles,
+          cycles: () => $scope.selected_cycles
         }
       });
     };
@@ -527,17 +527,17 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
       return colorsArr;
     }
 
-    var localStorageSelectedCycles = `${base_storage_key}.SelectedCycles`;
+    const localStorageSelectedCycles = `${base_storage_key}.SelectedCycles`;
 
     /* Call the update method so the page initializes
        with the values set in the scope */
-    function init() {
+    const init = () => {
       // Initialize pulldowns
-      $scope.selected_cycles = JSON.parse(localStorage.getItem(localStorageSelectedCycles)) || []
+      $scope.selected_cycles = JSON.parse(localStorage.getItem(localStorageSelectedCycles)) || [];
 
       // Attempt to load selections
       $scope.updateChartData();
-    }
+    };
 
     init();
   }

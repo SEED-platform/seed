@@ -1,6 +1,6 @@
 /**
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
- * See also https://github.com/seed-platform/seed/main/LICENSE.md
+ * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  *
  * Controller for the analysis modal.
  * The Property or Tax Lot ID is passed in as 'inventory_id', identified by
@@ -82,7 +82,7 @@ angular.module('BE.seed.controller.inventory_detail_analyses_modal', []).control
           };
           // only root users can create columns
           if (user.is_ali_root && ['member', 'owner'].includes(user.organization.user_role)) {
-            $scope.new_analysis.configuration.save_co2_results = true
+            $scope.new_analysis.configuration.save_co2_results = true;
           }
           break;
 

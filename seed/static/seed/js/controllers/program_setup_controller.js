@@ -1,6 +1,6 @@
 /**
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
- * See also https://github.com/seed-platform/seed/main/LICENSE.md
+ * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
 angular.module('BE.seed.controller.program_setup', []).controller('program_setup_controller', [
   '$scope',
@@ -141,7 +141,7 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
 
     $scope.click_remove_x_axis = (id) => {
       $scope.program_settings_changed();
-      $scope.selected_compliance_metric.x_axis_columns = $scope.selected_compliance_metric.x_axis_columns.filter((item) => item != id);
+      $scope.selected_compliance_metric.x_axis_columns = $scope.selected_compliance_metric.x_axis_columns.filter((item) => item !== id);
     };
 
     // Filter Groups
@@ -251,7 +251,7 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
     };
 
     $scope.click_new_compliance_metric = () => {
-      //spinner_utility.show();
+      // spinner_utility.show();
 
       // create a new metric using api and then assign it to selected_compliance_metric that
       // way it will have an id
@@ -267,8 +267,8 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
         filter_group: null,
         x_axis_columns: []
       };
-      //spinner_utility.hide();
-    }
+      // spinner_utility.hide();
+    };
 
     $scope.click_delete = (compliance_metric = null) => {
       // spinner_utility.show();

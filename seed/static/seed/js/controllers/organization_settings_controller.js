@@ -1,6 +1,6 @@
 /**
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
- * See also https://github.com/seed-platform/seed/main/LICENSE.md
+ * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
 angular.module('BE.seed.controller.organization_settings', []).controller('organization_settings_controller', [
   '$scope',
@@ -106,8 +106,8 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
       {
         label: $translate.instant('MtCO2e/year'),
         value: 'MtCO2e/year'
-      },
-    ]
+      }
+    ];
 
     $scope.unit_options_ghg_intensity = [
       {
@@ -125,8 +125,8 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
       {
         label: $translate.instant('MtCO2e/m²/year'),
         value: 'MtCO2e/m**2/year'
-      },
-    ]
+      }
+    ];
 
     // Ideally, these units and types for meters should be translatable.
     $scope.chosen_type_unit = {

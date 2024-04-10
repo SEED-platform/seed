@@ -1,6 +1,6 @@
 /**
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
- * See also https://github.com/seed-platform/seed/main/LICENSE.md
+ * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
 angular.module('BE.seed.controller.delete_cycle_modal', []).controller('delete_cycle_modal_controller', [
   '$scope',
@@ -50,14 +50,14 @@ angular.module('BE.seed.controller.delete_cycle_modal', []).controller('delete_c
     $scope.goToInventoryList = (inventory_type) => {
       user_service
         .set_organization({ id: organization_id })
-        .then((response) => {
+        .then(() => {
           inventory_service.save_last_cycle($scope.cycle_id);
           const inventory_url = $state.href('inventory_list', { inventory_type });
           $window.open(inventory_url, '_blank');
           // refresh the current page b/c we have modified the default organization
           location.reload();
         })
-        .catch((response) => {
+        .catch(() => {
           // console.error('Failed to set default org: ');
           // console.error(response);
           $scope.error_occurred = true;
@@ -79,7 +79,7 @@ angular.module('BE.seed.controller.delete_cycle_modal', []).controller('delete_c
             $scope.delete_cycle_status = 'success';
             $scope.uploader.in_progress = false;
           };
-          const errorHandler = (err) => {
+          const errorHandler = () => {
             // console.error('Failed to delete cycle: ');
             // console.error(err);
             $scope.delete_cycle_status = 'failed';
@@ -88,7 +88,7 @@ angular.module('BE.seed.controller.delete_cycle_modal', []).controller('delete_c
           };
           uploader_service.check_progress_loop(data.progress_key, 0, 1, successHandler, errorHandler, $scope.uploader);
         })
-        .catch((res) => {
+        .catch(() => {
           // console.error('Failed to delete cycle: ');
           // console.error(res);
           $scope.delete_cycle_status = 'failed';

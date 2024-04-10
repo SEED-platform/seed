@@ -1,6 +1,6 @@
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
-See also https://github.com/seed-platform/seed/main/LICENSE.md
+See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 from __future__ import absolute_import
 
@@ -97,7 +97,6 @@ DJANGO_CORE_APPS = (
     'django_extensions',
     'django_filters',
     'rest_framework',
-    'drf_yasg',
     'oauth2_provider',
     'oauth2_jwt_provider',
     'crispy_forms',  # needed to squash warnings around collectstatic with rest_framework
@@ -114,6 +113,7 @@ SEED_CORE_APPS = (
     'seed',
     'seed.lib.superperms.orgs',
     'seed.docs',
+    'drf_yasg',  # `drf_yasg` must come after `seed` to use the custom swagger-ui template
 )
 
 # Added by Ashray Wadhwa (08/19/2020)

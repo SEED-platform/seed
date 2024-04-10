@@ -1,6 +1,6 @@
 /**
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
- * See also https://github.com/seed-platform/seed/main/LICENSE.md
+ * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
 angular.module('BE.seed.controller.inventory_cycles', []).controller('inventory_cycles_controller', [
   '$scope',
@@ -59,7 +59,7 @@ angular.module('BE.seed.controller.inventory_cycles', []).controller('inventory_
     i18nService.setCurrentLang(stripRegion($translate.proposedLanguage() || $translate.use()));
 
     // Establish all cycle options and initially included cycles
-    $scope.included_cycle_ids = _.map(_.keys(inventory), (cycle_id) => parseInt(cycle_id));
+    $scope.included_cycle_ids = _.map(_.keys(inventory), (cycle_id) => parseInt(cycle_id, 10));
     $scope.cycle_options = _.map(cycles.cycles, (cycle) => {
       const selected = $scope.included_cycle_ids.includes(cycle.id);
       return {
@@ -86,7 +86,7 @@ angular.module('BE.seed.controller.inventory_cycles', []).controller('inventory_
     $scope.format_records = (raw_inventory) => _.reduce(
       raw_inventory,
       (all_records, records, cycle_id) => {
-        const cycle = _.find($scope.cycle_options, { value: parseInt(cycle_id) });
+        const cycle = _.find($scope.cycle_options, { value: parseInt(cycle_id, 10) });
         _.forEach(records, (record) => {
           record.cycle_name = cycle.label;
           record.cycle_start = cycle.start;

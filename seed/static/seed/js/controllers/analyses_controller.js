@@ -1,6 +1,6 @@
 /**
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
- * See also https://github.com/seed-platform/seed/main/LICENSE.md
+ * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
 
 angular
@@ -24,7 +24,7 @@ angular
       cycles_payload,
       organization_payload,
       organization_service,
-      //users_payload,
+      // users_payload,
       auth_payload,
       messages_payload,
       urls,
@@ -80,7 +80,7 @@ angular
       };
 
       $scope.get_cycle_name = (cycle_id) => {
-        const cycle = $scope.cycles.find((cycle) => cycle.id === cycle_id);
+        const cycle = $scope.cycles.find(({ id }) => id === cycle_id);
         return cycle?.name ?? '';
       };
 
@@ -130,7 +130,7 @@ angular
             Notification.primary('Analysis deleted');
             // stop polling and remove the analysis from the scope
             analysis_polling_stoppers[analysis_id]();
-            const analysis_index = $scope.analyses.findIndex((analysis) => analysis.id === analysis_id);
+            const analysis_index = $scope.analyses.findIndex(({ id }) => id === analysis_id);
             $scope.analyses.splice(analysis_index, 1);
           } else {
             Notification.error(`Failed to delete analysis: ${result.message}`);

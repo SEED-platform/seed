@@ -1,6 +1,6 @@
 /**
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
- * See also https://github.com/seed-platform/seed/main/LICENSE.md
+ * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
 angular.module('BE.seed.controller.data_upload_audit_template_modal', []).controller('data_upload_audit_template_modal_controller', [
   '$scope',
@@ -67,7 +67,7 @@ angular.module('BE.seed.controller.data_upload_audit_template_modal', []).contro
           $scope.error = `Error: ${result.message}`;
           $scope.busy = false;
         } else {
-          return audit_template_service.update_building_with_xml($scope.organization.id, $scope.cycle_id, $scope.view_id, $scope.fields.audit_template_building_id, result).then((result) => {
+          return audit_template_service.update_building_with_xml($scope.organization.id, $scope.cycle_id, $scope.view_id, $scope.fields.audit_template_building_id, result).then(() => {
             $scope.close();
             $scope.upload_from_file('upload_complete', null, null);
             $scope.busy = false;

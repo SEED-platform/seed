@@ -1,6 +1,6 @@
 /**
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
- * See also https://github.com/seed-platform/seed/main/LICENSE.md
+ * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
 angular.module('BE.seed.controller.inventory_detail_analyses', []).controller('inventory_detail_analyses_controller', [
   '$state',
@@ -67,7 +67,7 @@ angular.module('BE.seed.controller.inventory_detail_analyses', []).controller('i
     };
 
     const refresh_analyses = () => {
-      analyses_service.get_analyses_for_canonical_property(inventory_payload.property.id).then((data) => {
+      analyses_service.get_analyses_for_canonical_property(inventory_payload.property.id).then(() => {
         $scope.analyses = analyses_payload.analyses.filter((analysis) => analysis.cycles.includes($scope.cycle.id));
         $scope.analyses_by_type = {};
         for (const analysis in $scope.analyses) {

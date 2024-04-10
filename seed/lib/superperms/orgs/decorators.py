@@ -2,7 +2,7 @@
 # encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
-See also https://github.com/seed-platform/seed/main/LICENSE.md
+See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 import json
 from functools import wraps
@@ -26,6 +26,7 @@ from seed.lib.superperms.orgs.models import (
 from seed.lib.superperms.orgs.permissions import get_org_id
 from seed.models import (
     Analysis,
+    DataLogger,
     Goal,
     Property,
     PropertyView,
@@ -259,6 +260,7 @@ def assert_hierarchy_access(
     body_taxlot_state_id=None,
     param_import_record_id=None,
     goal_id_kwarg=None,
+    data_logger_id_kwarg=None,
     *args,
     **kwargs
 ):
@@ -346,6 +348,10 @@ def assert_hierarchy_access(
             else:
                 requests_ali = goal.access_level_instance
 
+        elif data_logger_id_kwarg and data_logger_id_kwarg in kwargs:
+            data_logger = DataLogger.objects.get(pk=kwargs[data_logger_id_kwarg])
+            requests_ali = data_logger.property.access_level_instance
+
         else:
             property_view = PropertyView.objects.get(pk=request.GET['property_view_id'])
             requests_ali = property_view.property.access_level_instance
@@ -381,7 +387,8 @@ def has_hierarchy_access(
     body_property_state_id=None,
     body_taxlot_state_id=None,
     param_import_record_id=None,
-    goal_id_kwarg=None
+    goal_id_kwarg=None,
+    data_logger_id_kwarg=None,
 ):
     """Must be called after has_perm_class"""
     def decorator(fn):
@@ -408,6 +415,7 @@ def has_hierarchy_access(
                     body_taxlot_state_id,
                     param_import_record_id,
                     goal_id_kwarg,
+                    data_logger_id_kwarg,
                     *args,
                     **kwargs
                 ) or fn(self, request, *args, **kwargs)
@@ -433,6 +441,7 @@ def has_hierarchy_access(
                     body_taxlot_state_id,
                     param_import_record_id,
                     goal_id_kwarg,
+                    data_logger_id_kwarg,
                     *args,
                     **kwargs
                 ) or fn(request, *args, **kwargs)

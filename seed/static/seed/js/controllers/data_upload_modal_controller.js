@@ -1,6 +1,6 @@
 /**
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
- * See also https://github.com/seed-platform/seed/main/LICENSE.md
+ * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  *
  * data_upload_modal_controller: the AngularJS controller for the data upload modal.
  *
@@ -95,7 +95,7 @@ angular.module('BE.seed.controller.data_upload_modal', []).controller('data_uplo
      *  newly created data set
      * file: the file being upload file.filename is the file's name
      */
-    $scope.organization = organization
+    $scope.organization = organization;
     // it would be better to resolve these from the calling controller, but
     // this modal is multi-purpose and called from all kinds of places
     // get full organization payload (to get inventory count)
@@ -395,7 +395,6 @@ angular.module('BE.seed.controller.data_upload_modal', []).controller('data_uplo
           break;
 
         case 'upload_complete':
-          const current_step = $scope.step.number;
           $scope.uploader.status_message = 'upload complete';
           $scope.dataset.filename = file.filename;
           $scope.source_type = file.source_type;
@@ -415,7 +414,7 @@ angular.module('BE.seed.controller.data_upload_modal', []).controller('data_uplo
             $scope.dataset.import_file_id = file.file_id;
 
             // Assessed Data; upload is step 2; PM import is currently treated as such, and is step 13
-            if (current_step === 2 || current_step === 13) {
+            if ($scope.step.number === 2 || $scope.step.number === 13) {
               // if importing BuildingSync, validate then save, otherwise just save
               if (file.source_type === 'BuildingSync Raw') {
                 validate_use_cases_then_save(file.file_id, file.cycle_id);
@@ -424,7 +423,7 @@ angular.module('BE.seed.controller.data_upload_modal', []).controller('data_uplo
               }
             }
             // Portfolio Data
-            if (current_step === 4) {
+            if ($scope.step.number === 4) {
               save_map_match_PM_data(file.file_id, file.cycle_id, $scope.multipleCycleUpload);
             }
           }
@@ -450,11 +449,11 @@ angular.module('BE.seed.controller.data_upload_modal', []).controller('data_uplo
     /**
      * save_map_match_PM_data: saves, maps, and matches PM data
      *
-     * @param {string} file_id: the id of the import file
-     * @param {string} cycle_id: the id of the cycle
-     * @param {boolean} multiple_cycle_upload: whether records can be imported into multiple cycles
+     * @param {string} file_id - the id of the import file
+     * @param {string} cycle_id - the id of the cycle
+     * @param {boolean} multiple_cycle_upload - whether records can be imported into multiple cycles
      */
-    var save_map_match_PM_data = (file_id, cycle_id, multiple_cycle_upload = false) => {
+    const save_map_match_PM_data = (file_id, cycle_id, multiple_cycle_upload = false) => {
       $scope.uploader.status_message = 'saving energy data';
       $scope.uploader.progress = 25;
       uploader_service.save_raw_data(file_id, cycle_id, multiple_cycle_upload).then((data) => {
@@ -467,10 +466,10 @@ angular.module('BE.seed.controller.data_upload_modal', []).controller('data_uplo
      * monitor_save_raw_data: updates progress bar from 25% to 50%,
      *   called by save_map_match_PM_data
      *
-     * @param {string} progress_key: key
-     * @param {string} file_id: id of file
+     * @param {string} progress_key - key
+     * @param {string} file_id - id of file
      */
-    var monitor_save_raw_data = (progress_key, file_id) => {
+    const monitor_save_raw_data = (progress_key, file_id) => {
       uploader_service.check_progress_loop(
         progress_key,
         25,
@@ -492,10 +491,10 @@ angular.module('BE.seed.controller.data_upload_modal', []).controller('data_uplo
      * monitor_mapping: called by monitor_save_raw_data, updates progress bar
      *   from 50% to 75%
      *
-     * @param {string} progress_key: key
-     * @param {string} file_id: id of file
+     * @param {string} progress_key - key
+     * @param {string} file_id - id of file
      */
-    var monitor_mapping = (progress_key, file_id) => {
+    const monitor_mapping = (progress_key, file_id) => {
       uploader_service.check_progress_loop(
         progress_key,
         50,
@@ -517,9 +516,9 @@ angular.module('BE.seed.controller.data_upload_modal', []).controller('data_uplo
      * monitor_matching: called by monitor_mapping, updates progress bar
      *   from 75% to 100%, then shows the PM upload completed
      *
-     * @param {string} progress_key: key
+     * @param {string} progress_key - key
      */
-    var monitor_matching = (progress_key) => {
+    const monitor_matching = (progress_key) => {
       uploader_service.check_progress_loop(
         progress_key,
         75,
@@ -591,10 +590,10 @@ angular.module('BE.seed.controller.data_upload_modal', []).controller('data_uplo
      * validate_use_cases_then_save: validates BuildingSync files for use cases
      * before saving the data
      *
-     * @param {string} file_id: the id of the import file
+     * @param {string} file_id - the id of the import file
      * @param cycle_id
      */
-    var validate_use_cases_then_save = (file_id, cycle_id) => {
+    const validate_use_cases_then_save = (file_id, cycle_id) => {
       $scope.uploader.status_message = 'validating data';
       $scope.uploader.progress = 0;
 
@@ -689,7 +688,7 @@ angular.module('BE.seed.controller.data_upload_modal', []).controller('data_uplo
      * @param is_meter_data
      * @param multiple_cycle_upload
      */
-    var save_raw_assessed_data = (file_id, cycle_id, is_meter_data, multiple_cycle_upload = false) => {
+    const save_raw_assessed_data = (file_id, cycle_id, is_meter_data, multiple_cycle_upload = false) => {
       $scope.uploader.status_message = 'saving data';
       $scope.uploader.progress = 0;
       uploader_service.save_raw_data(file_id, cycle_id, multiple_cycle_upload).then((data) => {

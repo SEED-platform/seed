@@ -1,6 +1,6 @@
 /**
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
- * See also https://github.com/seed-platform/seed/main/LICENSE.md
+ * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
 angular.module('BE.seed.service.columns', []).factory('columns_service', [
   '$http',
@@ -25,7 +25,8 @@ angular.module('BE.seed.service.columns', []).factory('columns_service', [
       })
       .then((response) => response.data);
 
-    columns_service.rename_column = (column_id, column_name, overwrite_preference) => columns_service.rename_column_for_org(user_service.get_organization().id, column_id, column_name, overwrite_preference);
+    columns_service.rename_column = (column_id, column_name, overwrite_preference) => columns_service
+      .rename_column_for_org(user_service.get_organization().id, column_id, column_name, overwrite_preference);
 
     columns_service.rename_column_for_org = (org_id, column_id, column_name, overwrite_preference) => $http
       .post(`/api/v3/columns/${column_id}/rename/`, {

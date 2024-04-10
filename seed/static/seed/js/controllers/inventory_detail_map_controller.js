@@ -1,6 +1,6 @@
 /**
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
- * See also https://github.com/seed-platform/seed/main/LICENSE.md
+ * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
 angular.module('BE.seed.controller.inventory_detail_map', []).controller('inventory_detail_map_controller', [
   '$scope',
@@ -32,7 +32,7 @@ angular.module('BE.seed.controller.inventory_detail_map', []).controller('invent
     }
 
     $scope.$watch('reload', () => {
-      $scope.reload && $state.reload();
+      if ($scope.reload) $state.reload();
     });
 
     // Controller Init Function
@@ -64,7 +64,7 @@ angular.module('BE.seed.controller.inventory_detail_map', []).controller('invent
         zIndex: $scope.layers.base_layer.zIndex // Note: This is used for layer toggling.
       });
 
-      // This uses the bounding box instead of the lat/long. See var BuildingPoint function in inventory_map_controller for reference
+      // This uses the bounding box instead of the lat/long. See BuildingPoint function in inventory_map_controller for reference
       const buildingBoundingBox = () => {
         const format = new ol.format.WKT();
 

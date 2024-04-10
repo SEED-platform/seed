@@ -1,6 +1,6 @@
 /**
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
- * See also https://github.com/seed-platform/seed/main/LICENSE.md
+ * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
 angular.module('BE.seed.controller.goal_editor_modal', [])
   .controller('goal_editor_modal_controller', [
@@ -64,7 +64,7 @@ angular.module('BE.seed.controller.goal_editor_modal', [])
       get_goals();
 
       $scope.$watch('goal', (cur, old) => {
-        $scope.goal_changed = cur != old;
+        $scope.goal_changed = cur !== old;
       }, true);
 
       const access_level_instances_by_depth = ah_service.calculate_access_level_instances_by_depth($scope.access_level_tree);
@@ -97,7 +97,7 @@ angular.module('BE.seed.controller.goal_editor_modal', [])
             const result_errors = 'errors' in result.data ? result.data.errors : result.data;
             if (result_errors instanceof Object) {
               for (const key in result_errors) {
-                const key_string = key == 'non_field_errors' ? 'Error' : key;
+                const key_string = key === 'non_field_errors' ? 'Error' : key;
                 $scope.errors.push(`${key_string}: ${JSON.stringify(result_errors[key])}`);
               }
             } else {
@@ -120,7 +120,7 @@ angular.module('BE.seed.controller.goal_editor_modal', [])
             Notification.warning({ message: 'Unexpected Error', delay: 5000 });
           }
           get_goals();
-          if (goal_id == $scope.goal.id) {
+          if (goal_id === $scope.goal.id) {
             $scope.goal = null;
           }
         });

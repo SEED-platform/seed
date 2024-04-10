@@ -1,12 +1,11 @@
 /**
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
- * See also https://github.com/seed-platform/seed/main/LICENSE.md
+ * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
 describe('controller: data_quality_modal_controller', () => {
   // globals set up and used in each test scenario
-  // var mock_uploader_service;
-  let controller; let
-    modal_state;
+  let controller;
+  let modal_state;
   let data_quality_controller_scope;
 
   const cycles = {

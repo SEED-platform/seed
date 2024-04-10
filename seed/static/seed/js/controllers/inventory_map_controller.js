@@ -1,6 +1,6 @@
 /**
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
- * See also https://github.com/seed-platform/seed/main/LICENSE.md
+ * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
 /* eslint-disable no-underscore-dangle */
 angular.module('BE.seed.controller.inventory_map', []).controller('inventory_map_controller', [
@@ -45,23 +45,20 @@ angular.module('BE.seed.controller.inventory_map', []).controller('inventory_map
 
     const chunk = 250;
     const fetchRecords = async (fn) => {
-      pagination = await fn(1, chunk, undefined, undefined).then(data => data.pagination);
+      const pagination = await fn(1, chunk, $scope.cycle.selected_cycle, undefined).then((data) => data.pagination);
 
-      $scope.progress = {current: 0, total: pagination.total, percent:0};
+      $scope.progress = { current: 0, total: pagination.total, percent: 0 };
 
-      page_numbers = [...Array(pagination.num_pages).keys()]
-      page_promises = page_numbers.map(page => {
-        return fn(page, chunk, undefined, undefined).then(data => {
-          num_data = data.pagination.end - data.pagination.start + 1;
-          $scope.progress.current += num_data;
-          $scope.progress.percent += Math.round((num_data / data.pagination.total) * 100)
-          return data.results
-        })
-      })
+      const page_numbers = [...Array(pagination.num_pages).keys()];
+      const page_promises = page_numbers.map((page) => fn(page, chunk, undefined, undefined).then((data) => {
+        const num_data = data.pagination.end - data.pagination.start + 1;
+        $scope.progress.current += num_data;
+        $scope.progress.percent += Math.round((num_data / data.pagination.total) * 100);
+        return data.results;
+      }));
 
-      return Promise.all(page_promises).then(pages => [].concat(...pages))
-    }
-
+      return Promise.all(page_promises).then((pages) => pages.flat());
+    };
 
     $scope.progress = {};
     const loadingModal = $uibModal.open({
@@ -532,9 +529,8 @@ angular.module('BE.seed.controller.inventory_map', []).controller('inventory_map
        */
       $scope.loadLabelsForFilter = (query) => {
         if (!query.trim()) return $scope.labels;
-        return $scope.labels.filter(({ name }) =>
-          // Only include label if its name contains the query string.
-          name.toLowerCase().includes(query.toLowerCase()));
+        // Only include label if its name contains the query string.
+        return $scope.labels.filter(({ name }) => name.toLowerCase().includes(query.toLowerCase()));
       };
 
       const filterUsingLabels = () => {

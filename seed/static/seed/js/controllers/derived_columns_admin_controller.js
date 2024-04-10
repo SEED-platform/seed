@@ -1,6 +1,6 @@
 /**
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
- * See also https://github.com/seed-platform/seed/main/LICENSE.md
+ * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
 angular.module('BE.seed.controller.derived_columns_admin', []).controller('derived_columns_admin_controller', [
   '$scope',
@@ -59,7 +59,9 @@ angular.module('BE.seed.controller.derived_columns_admin', []).controller('deriv
               Notification.success(`Deleted "${derived_column.name}"`);
               derived_columns_service
                 .get_derived_columns($scope.org.id, $stateParams.inventory_type)
-                .then((res) => ($scope.derived_columns = res.derived_columns))
+                .then((res) => {
+                  $scope.derived_columns = res.derived_columns;
+                })
                 .catch((err) => {
                   $log.error(err);
                   // try just refreshing the page...

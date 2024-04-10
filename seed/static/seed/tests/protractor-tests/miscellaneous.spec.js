@@ -1,6 +1,6 @@
 /**
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
- * See also https://github.com/seed-platform/seed/main/LICENSE.md
+ * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
 // test Data Quality, labels, delete function and other misc items after data is loaded
 const EC = protractor.ExpectedConditions;
@@ -266,7 +266,7 @@ describe('When I do miscellaneous things', () => {
     $$('.ui-grid-icon-left-open').first().click();
 
     $$('.ui-grid-icon-angle-down').first().click();
-    var myOptions = element
+    let myOptions = element
       .all(by.repeater('item in menuItems'))
       .filter((elm) => elm.getText().then((label) =>
       // expect(label).toBe('fake');
@@ -275,7 +275,7 @@ describe('When I do miscellaneous things', () => {
     myOptions.click();
 
     $$('.ui-grid-icon-angle-down').first().click();
-    var myOptions = element
+    myOptions = element
       .all(by.repeater('item in menuItems'))
       .filter((elm) => elm.getText().then((label) =>
       // expect(label).toBe('fake');

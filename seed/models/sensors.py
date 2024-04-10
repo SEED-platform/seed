@@ -1,7 +1,7 @@
 # encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
-See also https://github.com/seed-platform/seed/main/LICENSE.md
+See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 from django.db import models
 
@@ -44,8 +44,10 @@ class Sensor(models.Model):
     column_name = models.CharField(max_length=255)
 
     class Meta:
-        unique_together = ('data_logger', 'display_name')
-        unique_together = ('data_logger', 'column_name')
+        unique_together = (
+            ('data_logger', 'display_name'),
+            ('data_logger', 'column_name')
+        )
 
 
 class SensorReading(models.Model):

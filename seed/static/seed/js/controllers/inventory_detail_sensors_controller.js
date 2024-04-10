@@ -1,6 +1,6 @@
 /**
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
- * See also https://github.com/seed-platform/seed/main/LICENSE.md
+ * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
 angular.module('BE.seed.controller.inventory_detail_sensors', []).controller('inventory_detail_sensors_controller', [
   '$scope',
@@ -51,6 +51,14 @@ angular.module('BE.seed.controller.inventory_detail_sensors', []).controller('in
 
     const getSensorLabel = (sensor) => `${sensor.display_name} (${sensor.data_logger})`;
 
+    // On page load, all sensors and readings
+    $scope.has_sensor_readings = $scope.property_sensor_usage.readings.length > 0;
+    $scope.has_sensors = sensors.length > 0;
+    $scope.has_data_loggers = data_loggers.length > 0;
+
+    const sorted_data_loggers = _.sortBy(data_loggers, ['id']);
+    const sorted_sensors = _.sortBy(sensors, ['id']);
+
     const resetSelections = () => {
       $scope.data_logger_selections = _.map(sorted_data_loggers, (data_logger) => ({
         selected: true,
@@ -66,15 +74,6 @@ angular.module('BE.seed.controller.inventory_detail_sensors', []).controller('in
       }));
     };
 
-    // On page load, all sensors and readings
-    $scope.has_sensor_readings = $scope.property_sensor_usage.readings.length > 0;
-    $scope.has_sensors = sensors.length > 0;
-    $scope.has_data_loggers = data_loggers.length > 0;
-
-    var sorted_data_loggers = _.sortBy(data_loggers, ['id']);
-    resetSelections();
-
-    var sorted_sensors = _.sortBy(sensors, ['id']);
     resetSelections();
 
     $scope.data_logger_selection_toggled = (is_open) => {
@@ -126,20 +125,21 @@ angular.module('BE.seed.controller.inventory_detail_sensors', []).controller('in
         displayName: 'Actions',
         enableHiding: false,
         cellTemplate:
-          '<div style="display: flex; justify-content: space-around; align-content: center">' +
+          '<div style="display: flex; justify-content: space-around; align-content: center;margin:2px;">' +
           '<button type="button" ng-show="grid.appScope.menu.user.organization.user_role !== \'viewer\'" class="btn-primary" style="border-radius: 4px;" ng-click="grid.appScope.open_sensors_upload_modal(row.entity)" translate>UPLOAD_SENSORS_BUTTON</button>' +
           '<button type="button" ng-show="grid.appScope.menu.user.organization.user_role !== \'viewer\'" class="btn-primary" style="border-radius: 4px;" ng-click="grid.appScope.open_sensor_readings_upload_modal(row.entity)" translate>UPLOAD_SENSOR_READINGS_BUTTON</button>' +
+          '<button type="button" ng-show="grid.appScope.menu.user.organization.user_role !== \'viewer\'" class="btn-info" style="border-radius: 4px;" aria-label="Edit Data Logger" ng-click="grid.appScope.open_data_logger_upload_or_update_modal(row.entity)"><i class="fa-solid fa-pencil"></i></button>' +
+          '<button type="button" ng-show="grid.appScope.menu.user.organization.user_role !== \'viewer\'" class="btn-danger" style="border-radius: 4px; aria-label="Delete Data Logger" ng-click="grid.appScope.open_delete_data_logger_modal(row.entity)" ><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></button>' +
           '</div>',
         enableColumnMenu: false,
         enableColumnMoving: false,
         enableColumnResizing: false,
         enableFiltering: false,
-        enableHiding: false,
         enableSorting: false,
         exporterSuppressExport: true,
         pinnedLeft: true,
         visible: true,
-        width: 300
+        width: 330
       }
     ];
 
@@ -174,6 +174,26 @@ angular.module('BE.seed.controller.inventory_detail_sensors', []).controller('in
       {
         field: 'description',
         enableHiding: false
+      },
+      {
+        name: 'actions',
+        field: 'actions',
+        displayName: 'Actions',
+        cellTemplate:
+          '<div style="display: flex; justify-content: space-around; align-content: center; margin-top:2px;">' +
+          '<button type="button" class="btn-info" aria-label="edit sensor" style="border-radius: 4px;" ng-click="grid.appScope.open_sensor_update_modal(row.entity)"><i class="fa-solid fa-pencil"></i></button>' +
+          '<button type="button" class="btn-danger" aria-label="delete sensor" style="border-radius: 4px;" ng-click="grid.appScope.open_sensor_delete_modal(row.entity)"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></button>' +
+          '</div>',
+        enableColumnMenu: false,
+        enableColumnMoving: false,
+        enableColumnResizing: false,
+        enableFiltering: false,
+        enableHiding: false,
+        enableSorting: false,
+        exporterSuppressExport: true,
+        pinnedLeft: true,
+        visible: true,
+        width: 80
       }
     ];
 
@@ -248,7 +268,7 @@ angular.module('BE.seed.controller.inventory_detail_sensors', []).controller('in
 
     // given a list of sensor labels, it returns the filtered readings and column defs
     // This is used by the primary filterBy... functions
-    const filterBySensorLabels = function filterBySensorLabels(readings, columnDefs, sensorLabels) {
+    const filterBySensorLabels = (readings, columnDefs, sensorLabels) => {
       const timeColumns = ['timestamp', 'month', 'year'];
       const selectedColumns = sensorLabels.concat(timeColumns);
       const filteredReadings = readings.map((reading) => Object.entries(reading).reduce((newReading, _ref) => {
@@ -276,7 +296,7 @@ angular.module('BE.seed.controller.inventory_detail_sensors', []).controller('in
 
       // filter according to sensor selections
       const selectedSensorLabels = sensors
-        .filter((sensor) => selectedDataLoggerDisplayNames.includes(sensor.data_logger) & selectedSensorType.includes(sensor.type))
+        .filter((sensor) => selectedDataLoggerDisplayNames.includes(sensor.data_logger) && selectedSensorType.includes(sensor.type))
         .map((sensor) => getSensorLabel(sensor));
 
       return filterBySensorLabels(readings, columnDefs, selectedSensorLabels);
@@ -318,11 +338,12 @@ angular.module('BE.seed.controller.inventory_detail_sensors', []).controller('in
         });
     };
 
-    $scope.open_data_logger_upload_modal = (/* data_logger */) => {
+    $scope.open_data_logger_upload_or_update_modal = (data_logger) => {
       $uibModal.open({
-        templateUrl: `${urls.static_url}seed/partials/data_logger_upload_modal.html`,
-        controller: 'data_logger_upload_modal_controller',
+        templateUrl: `${urls.static_url}seed/partials/data_logger_upload_or_update_modal.html`,
+        controller: 'data_logger_upload_or_update_modal_controller',
         resolve: {
+          data_logger: () => data_logger,
           filler_cycle: () => $scope.filler_cycle,
           organization_id: () => $scope.organization.id,
           view_id: () => $scope.inventory.view_id,
@@ -352,6 +373,33 @@ angular.module('BE.seed.controller.inventory_detail_sensors', []).controller('in
       });
     };
 
+    $scope.open_sensor_delete_modal = (sensor) => {
+      $uibModal.open({
+        templateUrl: `${urls.static_url}seed/partials/sensor_delete_modal.html`,
+        controller: 'sensor_delete_modal_controller',
+        resolve: {
+          filler_cycle: () => $scope.filler_cycle,
+          organization_id: () => $scope.organization.id,
+          sensor: () => sensor,
+          sensor_service
+        }
+      });
+    };
+
+    $scope.open_sensor_update_modal = (sensor) => {
+      $uibModal.open({
+        templateUrl: `${urls.static_url}seed/partials/sensor_update_modal.html`,
+        controller: 'sensor_update_modal_controller',
+        resolve: {
+          filler_cycle: () => $scope.filler_cycle,
+          organization_id: () => $scope.organization.id,
+          view_id: () => $stateParams.view_id,
+          sensor: () => sensor,
+          sensor_service
+        }
+      });
+    };
+
     $scope.open_sensor_readings_upload_modal = (data_logger) => {
       $uibModal.open({
         templateUrl: `${urls.static_url}seed/partials/sensor_readings_upload_modal.html`,
@@ -361,6 +409,17 @@ angular.module('BE.seed.controller.inventory_detail_sensors', []).controller('in
           organization_id: () => $scope.organization.id,
           view_id: () => $scope.inventory.view_id,
           datasets: () => dataset_service.get_datasets().then((result) => result.datasets),
+          data_logger_id: () => data_logger.id
+        }
+      });
+    };
+
+    $scope.open_delete_data_logger_modal = (data_logger) => {
+      $uibModal.open({
+        templateUrl: `${urls.static_url}seed/partials/delete_data_logger_modal.html`,
+        controller: 'delete_data_logger_modal_controller',
+        resolve: {
+          organization_id: () => $scope.organization.id,
           data_logger_id: () => data_logger.id
         }
       });

@@ -1,6 +1,6 @@
 /**
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
- * See also https://github.com/seed-platform/seed/main/LICENSE.md
+ * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
 angular.module('BE.seed.controller.organization_access_level_tree', [])
   .controller('organization_access_level_tree_controller', [
@@ -55,7 +55,7 @@ angular.module('BE.seed.controller.organization_access_level_tree', [])
           resolve: {
             org_id: () => $scope.org.id,
             current_access_level_names: () => $scope.access_level_names,
-            access_level_tree: () => $scope.access_level_tree,
+            access_level_tree: () => $scope.access_level_tree
           }
         }).result.then(() => {
           spinner_utility.show();

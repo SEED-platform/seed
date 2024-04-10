@@ -1,6 +1,6 @@
 /**
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
- * See also https://github.com/seed-platform/seed/main/LICENSE.md
+ * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
 angular.module('BE.seed.controller.ubid_decode_modal', []).controller('ubid_decode_modal_controller', [
   '$scope',
@@ -23,7 +23,7 @@ angular.module('BE.seed.controller.ubid_decode_modal', []).controller('ubid_deco
       $scope.decode_ubid_state = 'verify';
     });
 
-    $scope.decode_ubids = function () {
+    $scope.decode_ubids = () => {
       if ($scope.property_view_ids) {
         ubid_service.decode_by_ids($scope.property_view_ids, $scope.taxlot_view_ids).then(() => {
           $scope.decode_ubid_state = 'decoding';
@@ -42,7 +42,7 @@ angular.module('BE.seed.controller.ubid_decode_modal', []).controller('ubid_deco
     /**
      * cancel: dismisses the modal
      */
-    $scope.cancel = function () {
+    $scope.cancel = () => {
       $uibModalInstance.dismiss({
         decode_ubid_state: $scope.decode_ubid_state,
         property_view_ids: $scope.property_view_ids,
@@ -53,7 +53,7 @@ angular.module('BE.seed.controller.ubid_decode_modal', []).controller('ubid_deco
     /**
      * close: closes the modal
      */
-    $scope.close = function () {
+    $scope.close = () => {
       $uibModalInstance.close({
         decode_ubid_state: $scope.decode_ubid_state,
         property_view_ids: $scope.property_view_ids,

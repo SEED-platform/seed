@@ -2,7 +2,7 @@
 # encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
-See also https://github.com/seed-platform/seed/main/LICENSE.md
+See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 import logging
 import os.path as osp
@@ -79,7 +79,7 @@ class TestCaseB(DataMappingBaseTestCase):
 
         tasks.geocode_and_match_buildings_task(self.import_file.id)
 
-        # make sure the the property only has one tax lot and vice versa
+        # make sure the property only has one tax lot and vice versa
         tlv = TaxLotView.objects.filter(state__jurisdiction_tax_lot_id='11160509', cycle=self.cycle)
         self.assertEqual(len(tlv), 1)
         tlv = tlv[0]

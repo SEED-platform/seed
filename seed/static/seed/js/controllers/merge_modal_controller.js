@@ -1,6 +1,6 @@
 /**
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
- * See also https://github.com/seed-platform/seed/main/LICENSE.md
+ * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
 angular.module('BE.seed.controller.merge_modal', []).controller('merge_modal_controller', [
   '$log',
@@ -134,7 +134,7 @@ angular.module('BE.seed.controller.merge_modal', []).controller('merge_modal_con
             },
             (err) => {
               $log.error(err.data.message);
-              Notification.error('Failed to merge properties: ' + err.data.message);
+              Notification.error(`Failed to merge properties: ${err.data.message}`);
             }
           )
           .finally(() => {

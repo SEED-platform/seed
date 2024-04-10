@@ -53,10 +53,10 @@
           </ul>
           <ul class="r-list">
             <li ng-if="editing">
-                <input id="input-name" class="form-control" type="text" ng-model="fields.name" />
+              <input id="input-name" class="form-control" type="text" ng-model="fields.name" />
             </li>
             <li ng-if="!editing">
-              <input id="input-name" class="form-control" type="text" ng-model="fields.name" disabled/>
+              <input id="input-name" class="form-control" type="text" ng-model="fields.name" disabled />
             </li>
           </ul>
           <ul class="r-list">
@@ -85,8 +85,15 @@
             </li>
           </ul>
           <ul class="r-list">
-            <li ng-if="!object_has_any_key(selected_filter_groups) || editing" class="r-info">
+            <li ng-if="filter_groups.length && (!object_has_any_key(selected_filter_groups) || editing)" class="r-info">
               <i class="fa-solid fa-arrow-up r-pad-right-5"></i><span translate>Select one or more filter groups to load your inventory.</span>
+            </li>
+            <li ng-if="!filter_groups.length" class="r-error">
+              <i class="fa-solid fa-arrow-up r-pad-right-5"></i>
+              <span
+                >{$:: 'Custom Reports require filter groups. Filter groups are created and configured on the' | translate $}
+                <a ui-sref="inventory_list(::{inventory_type: 'properties'})" translate>Inventory List</a></span
+              >
             </li>
           </ul>
         </div>

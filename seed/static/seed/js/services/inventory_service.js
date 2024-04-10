@@ -1,6 +1,6 @@
 /**
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
- * See also https://github.com/seed-platform/seed/main/LICENSE.md
+ * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
 angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
   '$http',
@@ -64,10 +64,10 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       ids_only = null,
       shown_column_ids = null,
       access_level_instance_id = null,
-      include_property_ids,
-      goal_id = null,
+      include_property_ids = null,
+      goal_id = null
     ) => {
-      organization_id = organization_id == undefined ? user_service.get_organization().id : organization_id;
+      organization_id = organization_id ?? user_service.get_organization().id;
 
       const params = {
         organization_id,
@@ -85,53 +85,40 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
         params.per_page = per_page || 999999999;
       }
 
-      return cycle_service
-        .get_cycles()
-        .then((cycles) => {
-          const validCycleIds = _.map(cycles.cycles, 'id');
+      if (_.has(cycle, 'id')) {
+        params.cycle = cycle.id;
+        if (save_last_cycle === true) {
+          inventory_service.save_last_cycle(cycle.id);
+        }
+      } else {
+        params.cycle = inventory_service.get_last_cycle();
+      }
 
-          const lastCycleId = inventory_service.get_last_cycle();
-          if (_.has(cycle, 'id')) {
-            params.cycle = cycle.id;
-            if (save_last_cycle === true) {
-              inventory_service.save_last_cycle(cycle.id);
-            }
-          } else if (_.includes(validCycleIds, lastCycleId)) {
-            params.cycle = lastCycleId;
-          }
+      const data = {
+        // Pass the specific ids if they exist
+        include_view_ids,
+        exclude_view_ids,
+        include_property_ids,
+        // Pass the current profile (if one exists) to limit the column data that is returned
+        profile_id
+      };
+      // add access_level_instance if it exists
+      if (access_level_instance_id) {
+        data.access_level_instance_id = access_level_instance_id;
+      }
+      if (goal_id) {
+        data.goal_id = goal_id;
+      }
 
-          const data = {
-            // Pass the specific ids if they exist
-            include_view_ids,
-            exclude_view_ids,
-            include_property_ids,
-            // Pass the current profile (if one exists) to limit the column data that is returned
-            profile_id
-          };
-          // add access_level_instance if it exists
-          if (access_level_instance_id) {
-            data.access_level_instance_id = access_level_instance_id;
+      return $http
+        .post(
+          '/api/v3/properties/filter/',
+          data,
+          {
+            params
           }
-          if (goal_id) {
-            data.goal_id = goal_id
-          }
-
-          return $http
-            .post(
-              '/api/v3/properties/filter/',
-              data,
-              {
-                params
-              }
-            )
-            .then((response) => response.data);
-        })
-        .catch((response) => {
-          if (response.data.message) {
-            return response.data;
-          }
-          throw response;
-        });
+        )
+        .then((response) => response.data);
     };
 
     inventory_service.properties_cycle = (profile_id, cycle_ids) => $http
@@ -418,7 +405,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       ids_only = null,
       shown_column_ids = null
     ) => {
-      organization_id = organization_id == undefined ? user_service.get_organization().id : organization_id;
+      organization_id = organization_id ?? user_service.get_organization().id;
 
       const params = {
         organization_id,
@@ -660,7 +647,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
     };
 
     inventory_service.save_last_cycle = (pk, organization_id = null) => {
-      organization_id = organization_id == undefined ? user_service.get_organization().id : organization_id;
+      organization_id = organization_id ?? user_service.get_organization().id;
       const cycles = JSON.parse(localStorage.getItem('cycles')) || {};
       cycles[organization_id] = _.toInteger(pk);
       localStorage.setItem('cycles', JSON.stringify(cycles));
@@ -873,10 +860,10 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
               value = Number(filterData[2].replace('\\.', '.'));
               if (operator === '!') {
                 // Not equal
-                match = cellValue != value;
+                match = String(cellValue) !== String(value);
               } else {
                 // Equal
-                match = cellValue == value;
+                match = String(cellValue) === String(value);
               }
               return match;
             }
@@ -1059,12 +1046,12 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       }
     });
 
-    inventory_service.saveSelectedLabels = (key, ids, action='') => {
+    inventory_service.saveSelectedLabels = (key, ids, action = '') => {
       key += `.${action}.${user_service.get_organization().id}`;
       localStorage.setItem(key, JSON.stringify(ids));
     };
 
-    inventory_service.loadSelectedLabels = (key, action='') => {
+    inventory_service.loadSelectedLabels = (key, action = '') => {
       key += `.${action}.${user_service.get_organization().id}`;
       return JSON.parse(localStorage.getItem(key)) || [];
     };

@@ -1,6 +1,6 @@
 /**
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
- * See also https://github.com/seed-platform/seed/main/LICENSE.md
+ * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  *
  * Provides methods to access email templates and to send emails on the server
  */
@@ -75,7 +75,8 @@ angular.module('BE.seed.service.postoffice', []).factory('postoffice_service', [
       });
     };
 
-    template_factory.send_templated_email = (template_id, inventory_id, inventory_type) => template_factory.send_templated_email_for_org(template_id, inventory_id, inventory_type, user_service.get_organization().id);
+    template_factory.send_templated_email = (template_id, inventory_id, inventory_type) => template_factory
+      .send_templated_email_for_org(template_id, inventory_id, inventory_type, user_service.get_organization().id);
 
     // Passing data from the Front End to the View
     template_factory.send_templated_email_for_org = (template_id, inventory_id, inventory_type, organization_id) => {

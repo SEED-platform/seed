@@ -1,6 +1,6 @@
 /**
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
- * See also https://github.com/seed-platform/seed/main/LICENSE.md
+ * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
 // test new orgs and sub orgs
 const EC = protractor.ExpectedConditions;
@@ -46,7 +46,7 @@ describe('When I visit the accounts page', () => {
     expect($('.page_title').getText()).toEqual('Organizations');
   });
 });
-describe('When I visit the the parent org', () => {
+describe('When I visit the parent org', () => {
   it('should reset sync', () => {
     browser.ignoreSynchronization = false;
   });

@@ -1,6 +1,6 @@
 /**
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
- * See also https://github.com/seed-platform/seed/main/LICENSE.md
+ * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
 angular.module('BE.seed.controller.cycle_admin', []).controller('cycle_admin_controller', [
   '$scope',
@@ -39,6 +39,13 @@ angular.module('BE.seed.controller.cycle_admin', []).controller('cycle_admin_con
       params // TODO XSS, discuss with Nick and Alex
     ) => $sce.getTrustedHtml($translate.instant(msg, params));
 
+    const getTruncatedName = (name) => {
+      if (name && name.length > 20) {
+        name = `${name.slice(0, 20)}…`;
+      }
+      return name;
+    };
+
     // Take user input from New Cycle form and submit to service to create a new cycle.
     $scope.submitNewCycleForm = (form) => {
       if (form.$invalid) {
@@ -67,6 +74,8 @@ angular.module('BE.seed.controller.cycle_admin', []).controller('cycle_admin_con
 
     $scope.format_date = (date) => $filter('date')(date, 'yyyy-MM-dd');
 
+    const isCycleNameUsed = (newCycleName) => $scope.cycles.some(({ name }) => name === newCycleName);
+
     /* Checks for existing cycle name for inline edit form.
        Form assumes function will return a string if there's an existing cycle */
     $scope.checkEditCycleBeforeSave = (newCycleName, currentCycleName) => {
@@ -85,8 +94,6 @@ angular.module('BE.seed.controller.cycle_admin', []).controller('cycle_admin_con
         return "'From Date' must be before 'To Date'";
       }
     };
-
-    const isCycleNameUsed = (newCycleName) => $scope.cycles.some(({ name }) => name === newCycleName);
 
     /* Submit edit when 'enter' is pressed */
     $scope.onEditCycleNameKeypress = (e, form) => {
@@ -154,13 +161,6 @@ angular.module('BE.seed.controller.cycle_admin', []).controller('cycle_admin_con
       const { start, end } = $scope.new_cycle;
       $scope.invalidDates = start === undefined || end === undefined || $scope.new_cycle.end < $scope.new_cycle.start;
     };
-
-    function getTruncatedName(name) {
-      if (name && name.length > 20) {
-        name = `${name.slice(0, 20)}…`;
-      }
-      return name;
-    }
 
     initialize_new_cycle();
 

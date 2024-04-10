@@ -2,7 +2,7 @@
 # encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
-See also https://github.com/seed-platform/seed/main/LICENSE.md
+See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 import logging
 
@@ -68,7 +68,9 @@ def decode_unique_ids(qs):
         )
         state.centroid = centroid_polygon
 
-        state.latitude, state.longitude = bounding_box_obj.latlng()
+        # Round to avoid floating point errors
+        state.latitude = round(bounding_box_obj.centroid.latitudeCenter, 12)
+        state.longitude = round(bounding_box_obj.centroid.longitudeCenter, 12)
 
         state.save()
 
@@ -99,10 +101,14 @@ def get_jaccard_index(ubid1, ubid2):
                 UBID_CodeArea_Jaccard(left_code_area, right_code_area)
             FROM
                 decoded """
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute(sql, [ubid1, ubid2])
+            result = cursor.fetchone()[0]
+    except Exception as e:
+        logging.error(e)
+        return 0.0
 
-    with connection.cursor() as cursor:
-        cursor.execute(sql, [ubid1, ubid2])
-        result = cursor.fetchone()[0]
     return result
 
 

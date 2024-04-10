@@ -1,6 +1,6 @@
 /**
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
- * See also https://github.com/seed-platform/seed/main/LICENSE.md
+ * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
 angular.module('BE.seed.controller.show_populated_columns_modal', []).controller('show_populated_columns_modal_controller', [
   '$scope',
@@ -29,7 +29,7 @@ angular.module('BE.seed.controller.show_populated_columns_modal', []).controller
 
     const notEmpty = (value) => !_.isNil(value) && value !== '';
 
-    const fetch = function (page, chunk) {
+    const fetch = (page, chunk) => {
       let fn;
       if ($scope.inventory_type === 'properties') {
         fn = inventory_service.get_properties;
@@ -45,7 +45,7 @@ angular.module('BE.seed.controller.show_populated_columns_modal', []).controller
       });
     };
 
-    const update_profile_with_populated_columns = function (inventory) {
+    const update_profile_with_populated_columns = (inventory) => {
       $scope.status = `Processing ${$scope.columns.length} columns in ${inventory.length} records`;
 
       const cols = _.reject($scope.columns, 'related');
@@ -114,7 +114,7 @@ angular.module('BE.seed.controller.show_populated_columns_modal', []).controller
       });
     };
 
-    $scope.start = function () {
+    $scope.start = () => {
       $scope.state = 'running';
       $scope.status = 'Fetching Inventory';
 
@@ -127,12 +127,12 @@ angular.module('BE.seed.controller.show_populated_columns_modal', []).controller
       }
     };
 
-    $scope.refresh = function () {
+    $scope.refresh = () => {
       spinner_utility.show();
       $window.location.reload();
     };
 
-    $scope.cancel = function () {
+    $scope.cancel = () => {
       $uibModalInstance.dismiss();
     };
   }

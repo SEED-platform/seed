@@ -1,6 +1,6 @@
 /**
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
- * See also https://github.com/seed-platform/seed/main/LICENSE.md
+ * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
 /**
     This service provides a simple, standardized way to show a basic modal dialog.
@@ -96,7 +96,6 @@ angular.module('BE.seed.service.simple_modal', []).factory('simple_modal_service
        */
     function showModal(customModalOptions, customModalDefaults) {
       if (customModalOptions && customModalOptions.type !== null) {
-
         if (!_.includes(validModalTypes, customModalOptions.type)) {
           throw new Error('Invalid modal type');
         }

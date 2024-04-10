@@ -1,6 +1,6 @@
 /**
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
- * See also https://github.com/seed-platform/seed/main/LICENSE.md
+ * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
 angular.module('BE.seed.controller.document_upload_modal', []).controller('document_upload_modal_controller', [
   '$scope',
@@ -71,7 +71,7 @@ angular.module('BE.seed.controller.document_upload_modal', []).controller('docum
       });
     };
 
-    const saveFailure = (error) => {
+    /* const saveFailure = (error) => {
       // present error message
 
       $scope.uploader.invalid_file_extension_alert = false;
@@ -79,16 +79,16 @@ angular.module('BE.seed.controller.document_upload_modal', []).controller('docum
 
       // Be sure user is back to step 1 where the error is shown and they can upload another file
       $scope.step.number = 1;
-    };
+    }; */
 
-    const saveSuccess = (progress_data) => {
+    /* const saveSuccess = (progress_data) => {
       // recheck progress in order to ensure message has been appended to progress_data
       uploader_service.check_progress(progress_data.progress_key).then((data) => {
         $scope.uploader.status_message = 'saving complete';
         $scope.uploader.progress = 100;
         $scope.step.number = 3;
       });
-    };
+    }; */
 
     $scope.refresh_page = () => {
       $state.reload();
