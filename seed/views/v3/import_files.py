@@ -15,6 +15,7 @@ from rest_framework.decorators import action
 
 from seed.data_importer.meters_parser import MetersParser
 from seed.data_importer.models import ROW_DELIMITER, ImportRecord
+from seed.data_importer.match import merge_unmatched_states
 from seed.data_importer.sensor_readings_parser import SensorsReadingsParser
 from seed.data_importer.tasks import (
     do_checks,
@@ -27,6 +28,7 @@ from seed.data_importer.tasks import \
 from seed.decorators import ajax_request_class
 from seed.lib.mappings import mapper as simple_mapper
 from seed.lib.mcm import mapper, reader
+from seed.lib.progress_data.progress_data import ProgressData
 from seed.lib.superperms.orgs.decorators import (
     has_hierarchy_access,
     has_perm_class
@@ -43,6 +45,7 @@ from seed.models import (
     MERGE_STATE_UNKNOWN,
     PORTFOLIO_METER_USAGE,
     SEED_DATA_SOURCES,
+    AccessLevelInstance,
     Column,
     Cycle,
     ImportFile,
@@ -63,6 +66,7 @@ from seed.utils.api_schema import (
     AutoSchemaHelper,
     swagger_auto_schema_org_query_param
 )
+from seed.utils.match import matching_criteria_column_names
 
 _log = logging.getLogger(__name__)
 
@@ -1184,3 +1188,49 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
         result["unlinkable_pm_ids"] = meters_parser.unlinkable_pm_ids
 
         return result
+
+
+    # @api_endpoint_class
+    # @ajax_request_class
+    @has_perm_class('requires_owner')
+    @action(detail=False, methods=["POST"])
+    def match_merge_inventory(self, request):
+        org_id = self.get_organization(request)
+
+        org = Organization.objects.get(pk=org_id)
+        # cycle = Cycle.objects.get(pk=request.data.get('cycle'))
+
+
+        access_level_instance = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
+        column_names = matching_criteria_column_names(org.id, 'PropertyState')
+        sub_progress_data = ProgressData(func_name='match_sub_progress', unique_id=org_id)
+        sub_progress_key = sub_progress_data.key
+
+        # properties
+        # yikes, this is going to take a long time
+        result = []
+        for cycle in Cycle.objects.filter(organization=org):
+            existing_cycle_views = PropertyView.objects.filter(cycle=cycle)
+            unmatched_states = PropertyState.objects.filter(propertyview__in=existing_cycle_views)
+            promote_states = PropertyState.objects.none()
+            logging.error(">>> matching cycle: %s", cycle.name)
+
+            merge_unmatched_states(
+                org, 
+                cycle, 
+                unmatched_states, 
+                promote_states, 
+                column_names, 
+                PropertyView, 
+                PropertyState, 
+                'PropertyState', 
+                existing_cycle_views, 
+                access_level_instance, 
+                sub_progress_key
+            )
+
+            result.append([cycle.name, cycle.id])
+        
+        # taxlots
+        logging.error('>>> Done')
+        return JsonResponse({'results': result})

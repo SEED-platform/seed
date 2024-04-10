@@ -9,6 +9,7 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
   'organization_payload',
   'auth_payload',
   'analyses_service',
+  'dataset_service',
   'organization_service',
   'salesforce_mapping_service',
   'salesforce_config_service',
@@ -28,6 +29,7 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
     organization_payload,
     auth_payload,
     analyses_service,
+    dataset_service,
     organization_service,
     salesforce_mapping_service,
     salesforce_config_service,
@@ -443,6 +445,10 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
 
     $scope.trigger_matching = () => {
       console.log('trigger matching')
+      dataset_service.match_merge_inventory()
+        .then((response) => {
+          console.log('org settings', response)
+        })
     }
 
     /**

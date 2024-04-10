@@ -710,7 +710,7 @@ def states_to_views(unmatched_state_ids, org, access_level_instance, cycle, Stat
         errored_merged_states, 
         new_views, 
         errored_new_states
-     ) = merge_unmatched_states(org, cycle, unmatched_states, column_names, ViewClass, StateClass, table_name, existing_cycle_views, access_level_instance, sub_progress_key)
+     ) = merge_unmatched_states(org, cycle, unmatched_states, promote_states, column_names, ViewClass, StateClass, table_name, existing_cycle_views, access_level_instance, sub_progress_key)
 
 
     # update merge_state while excluding any states that were a product of a previous, file-inclusive merge
@@ -731,9 +731,8 @@ def states_to_views(unmatched_state_ids, org, access_level_instance, cycle, Stat
         errored_new_states,
     )
 
-def merge_unmatched_states(org, cycle, unmatched_states, column_names, ViewClass, StateClass, table_name, existing_cycle_views, access_level_instance, sub_progress_key=False):
-    if sub_progress_key:
-        sub_progress_data = update_sub_progress_total(100, sub_progress_key)
+def merge_unmatched_states(org, cycle, unmatched_states, promote_states, column_names, ViewClass, StateClass, table_name, existing_cycle_views, access_level_instance, sub_progress_key):
+    sub_progress_data = update_sub_progress_total(100, sub_progress_key)
 
     merged_between_existing_count = 0
     merge_state_pairs = []
@@ -772,11 +771,10 @@ def merge_unmatched_states(org, cycle, unmatched_states, column_names, ViewClass
         else:
             promote_states = promote_states | StateClass.objects.filter(pk=state.id)
 
-        if batch_size > 0 and idx % batch_size == 0 and sub_progress_key:
+        if batch_size > 0 and idx % batch_size == 0:
             sub_progress_data.step('Matching Data (3/6): Merging Unmatched States')
 
-    if sub_progress_key:
-        sub_progress_data = update_sub_progress_total(100, sub_progress_key, finish=True)
+    sub_progress_data = update_sub_progress_total(100, sub_progress_key, finish=True)
 
     # Process -States into -Views either directly (promoted_ids) or post-merge (merge_state_pairs).
     _log.debug("There are %s merge_state_pairs and %s promote_states" % (len(merge_state_pairs), promote_states.count()))
@@ -840,6 +838,16 @@ def merge_unmatched_states(org, cycle, unmatched_states, column_names, ViewClass
 
     except IntegrityError as e:
         raise IntegrityError("Could not merge results with error: %s" % (e))
+    
+    return (
+        promoted_state_ids, 
+        merged_state_ids, 
+        merged_between_existing_count, 
+        merged_views, 
+        errored_merged_states, 
+        new_views, 
+        errored_new_states
+    )
 
 
 def link_states(states, ViewClass, cycle, highest_ali, sub_progress_key):

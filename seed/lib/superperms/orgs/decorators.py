@@ -170,7 +170,7 @@ PERMS = {
 }
 
 ERROR_MESSAGES = {
-    'org_dne': 'Organization does not exist',
+    'org_dne': 'Organization does not existxxx',
     'user_dne': 'No relationship to organization',
     'perm_denied': 'Permission denied',
 }
