@@ -201,30 +201,25 @@ def public_feed(org, request):
     params = request.query_params
     page = get_int(params.get('page'), 1)
     per_page = get_int(params.get('per_page'), 100)
-    property_key = params.get('property_key', 'pm_property_id')
-    taxlot_key = params.get('taxlot_key', 'jurisdiction_tax_lot_id')
 
     p_states = org.propertystate_set.filter(propertyview__isnull=False).order_by('-updated')
     t_states = org.taxlotstate_set.filter(taxlotview__isnull=False).order_by('-updated')
 
-    label_name = params.get('label_name', None)
-    if label_name is not None:
-        p_states = p_states.filter(propertyview__labels__name__in=[label_name])
-        t_states = t_states.filter(taxlotview__labels__name__in=[label_name])
+    label_filter = params.get('label_filter', None)
+    if label_filter is not None:
+        p_states = p_states.filter(propertyview__labels__name__in=[label_filter])
+        t_states = t_states.filter(taxlotview__labels__name__in=[label_filter])
 
     p_states_paginated = paginate_states(p_states, page, per_page)
     t_states_paginated = paginate_states(t_states, page, per_page)
 
     max_count = p_states.count() if p_states.count() > t_states.count() else t_states.count()
-    metadata = {
-        'organization': org.name,
-        'organization_id': org.id,
+    pagination = {
         'page': page,
         'per_page': per_page,
         'total_pages': int(max_count / per_page) + 1,
         'properties': p_states.count(),
         'taxlots': t_states.count(),
-        'label_name': label_name,
     }
 
     # gonna need public columns for properties and taxlots and extra data boolean
@@ -248,7 +243,12 @@ def public_feed(org, request):
     for t_state in t_states_paginated:
         add_state_to_data(base_url, data['taxlots'], t_state.taxlotview_set.first(), t_state, t_public_columns)
 
-    return {'metadata': metadata, 'data': data}
+    return {
+        'pagination': pagination, 
+        'organization': {'id': org.id, 'name':org.name},
+        'label_filter': label_filter,
+        'data': data
+    }
 
 
 def paginate_states(states, page, per_page):
@@ -259,7 +259,7 @@ def paginate_states(states, page, per_page):
         return paginator.page(paginator.num_pages)
 
 
-def add_state_to_data(base_url, data, view, state, key, public_columns):
+def add_state_to_data(base_url, data, view, state, public_columns):
     state_data = {
         'id': view.id,
         'cycle': view.cycle.name,
@@ -294,14 +294,7 @@ def get_int(value, default):
         return default
 
 
-def get_states(cls, query, key, page, per_page):
-    # determine if key is cannonical or extra_data
-    fields = [field.name for field in cls._meta.get_fields()]
-    extra_data = True if key not in fields else False
-    order_key = key if not extra_data else f'extra_data__{key}'
-    # Django's natural order is by cycle, we need to order by the matching key
-    states = query.order_by(order_key)
-
+def paginate_states(states, page, per_page):
     paginator = Paginator(states, per_page)
     try:
         return paginator.page(page)
@@ -319,17 +312,13 @@ def public_feed_rss(org, request):
     per_page = get_int(params.get('per_page'), 100)
     property_key = params.get('property_key', 'pm_property_id')
     taxlot_key = params.get('taxlot_key', 'jurisdiction_tax_lot_id')
-    pstates = get_states(
-        PropertyState,
-        org.propertystate_set.filter(propertyview__isnull=False),
-        property_key,
+    pstates = paginate_states(
+        org.propertystate_set.filter(propertyview__isnull=False).order_by('-updated'),
         page,
         per_page
     )
-    tstates = get_states(
-        TaxLotState,
-        org.taxlotstate_set.filter(taxlotview__isnull=False),
-        taxlot_key,
+    tstates = paginate_states(
+        org.taxlotstate_set.filter(taxlotview__isnull=False).order_by('-updated'),
         page,
         per_page
     )
