@@ -224,8 +224,6 @@ def public_feed(org, request):
         'total_pages': int(max_count / per_page) + 1,
         'properties': p_states.count(),
         'taxlots': t_states.count(),
-        'property_key': property_key,
-        'taxlot_key': taxlot_key,
         'label_name': label_name,
     }
 
@@ -245,10 +243,10 @@ def public_feed(org, request):
     data = {'properties': [], 'taxlots': []}
     for p_state in p_states_paginated:
         # what if matching criteria dne? a whole bunch of None's
-        add_state_to_data(base_url, data['properties'], p_state.propertyview_set.first(), p_state, property_key, p_public_columns)
+        add_state_to_data(base_url, data['properties'], p_state.propertyview_set.first(), p_state, p_public_columns)
 
     for t_state in t_states_paginated:
-        add_state_to_data(base_url, data['taxlots'], t_state.taxlotview_set.first(), t_state, taxlot_key, t_public_columns)
+        add_state_to_data(base_url, data['taxlots'], t_state.taxlotview_set.first(), t_state, t_public_columns)
 
     return {'metadata': metadata, 'data': data}
 
@@ -265,22 +263,21 @@ def add_state_to_data(base_url, data, view, state, key, public_columns):
     state_data = {
         'id': view.id,
         'cycle': view.cycle.name,
-        key: getattr(state, key, None),
         'updated': state.updated,
         'created': state.created,
         'labels': ', '.join(view.labels.all().values_list('name', flat=True))
     }
     for (name, extra_data) in public_columns:
-        if name in ['updated', 'created', key]:
+        if name in ['updated', 'created']:
             continue
         if not extra_data:
             value = getattr(state, name, None)
         else:
             value = state.extra_data.get(name, None)
-
         if isinstance(value, pint.Quantity):
             # convert pint to string with units (json cannot display exponents)
             value = f'{value.m} {value.u}'
+
         state_data[name] = value
 
     state_data['json_link'] = f'{base_url}api/v3/{"properties" if type(state) == PropertyState else "taxlots"}/{view.id}/?organization_id={view.cycle.organization.id}'
