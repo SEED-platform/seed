@@ -94,7 +94,7 @@ class GreenAssessmentTests(DeleteModelsTestCase):
         self.assertEqual(4.0, self.gap.score)
         with pytest.raises(ValidationError) as conm:
             self.gap.rating = '5 stars'
-        exception = conm.exception
+        exception = conm.value
         self.assertEqual("['Green Test Score uses a metric (numeric score)']", str(exception))
         self.gap.assessment.is_numeric_score = False
         self.gap.rating = '5 stars'
@@ -103,7 +103,7 @@ class GreenAssessmentTests(DeleteModelsTestCase):
         self.assertEqual('5 stars', self.gap.score)
         with pytest.raises(ValidationError) as conm:
             self.gap.metric = 5
-        exception = conm.exception
+        exception = conm.value
         self.assertEqual("['Green Test Score uses a rating (non numeric score)']", str(exception))
 
     def test_expiration(self):

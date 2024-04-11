@@ -320,7 +320,11 @@ class TestMisc(DeleteModelsTestCase):
         self.assertEqual(len(test_dict.keys()) - 3, len(result.keys()))
         self.assertEqual(len(expected.keys()), len(result.keys()))
         self.assertEqual(expected, result)
-        pytest.raises(AssertionError, unflatten_values, test_dict, ['a'])
-        pytest.raises(AssertionError, unflatten_values, test_dict, test_dict.keys())
-        pytest.raises(AssertionError, unflatten_values, test_dict, ['a', 'bus', 'sub'])
-        pytest.raises(AssertionError, unflatten_values, test_dict, ['a', 'sub', 'foo'])
+        with pytest.raises(ValueError, match=r'^unflatten_values: {.+} has fields named in \[.+\]$'):
+            unflatten_values(test_dict, ['a'])
+        with pytest.raises(ValueError, match=r'^unflatten_values: {.+} has fields named in \[.+\]$'):
+            unflatten_values(test_dict, list(test_dict.keys()))
+        with pytest.raises(ValueError, match=r'^unflatten_values: {.+} has fields named in \[.+\]$'):
+            unflatten_values(test_dict, ['a', 'bus', 'sub'])
+        with pytest.raises(ValueError, match=r'^unflatten_values: {.+} has fields named in \[.+\]$'):
+            unflatten_values(test_dict, ['a', 'sub', 'foo'])

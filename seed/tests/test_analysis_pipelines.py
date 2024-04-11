@@ -124,7 +124,7 @@ class TestAnalysisPipeline(TestCase):
         with pytest.raises(AnalysisPipelineError) as context:
             pipeline.prepare_analysis([1, 2, 3])
 
-        self.assertTrue('Analysis has already been prepared or is currently being prepared' in str(context.exception))
+        self.assertTrue('Analysis has already been prepared or is currently being prepared' in str(context.value))
 
         # the status should not have changed
         self.analysis.refresh_from_db()
@@ -168,7 +168,7 @@ class TestAnalysisPipeline(TestCase):
             pipeline.start_analysis()
 
         # Assert
-        self.assertTrue('Analysis cannot be started' in str(context.exception))
+        self.assertTrue('Analysis cannot be started' in str(context.value))
         # the status should not have changed
         self.analysis.refresh_from_db()
         self.assertEqual(Analysis.CREATING, self.analysis.status)
@@ -203,7 +203,7 @@ class TestAnalysisPipeline(TestCase):
             pipeline.fail('Double plus ungood', logger)
 
         # Assert
-        self.assertTrue('Analysis is already in a terminal state' in str(context.exception))
+        self.assertTrue('Analysis is already in a terminal state' in str(context.value))
         # the status should not have changed
         self.analysis.refresh_from_db()
         self.assertEqual(Analysis.COMPLETED, self.analysis.status)
@@ -309,7 +309,7 @@ class TestAnalysisPipeline(TestCase):
         with pytest.raises(AnalysisPipelineError) as context:
             my_func(MockCeleryTask(), self.analysis.id)
 
-        self.assertIn(f'expected analysis status to be {expected_status}', str(context.exception))
+        self.assertIn(f'expected analysis status to be {expected_status}', str(context.value))
 
     def test_analysis_pipeline_task_stops_task_chain_when_analysis_status_is_stopped(self):
         # Setup
@@ -411,7 +411,7 @@ class TestAnalysisPipeline(TestCase):
 
         # Assert
         # it should have re-raised the exception
-        self.assertIn(exception_message, str(context.exception))
+        self.assertIn(exception_message, str(context.value))
         self.analysis.refresh_from_db()
         # it should have failed the analysis and created a message
         self.assertEqual(Analysis.FAILED, self.analysis.status)

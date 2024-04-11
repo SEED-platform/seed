@@ -173,7 +173,7 @@ class TestGreenAssessmentPropertySerializer(DeleteModelsTestCase):
         data['rating'] = 'Gold Star'
         with pytest.raises(ValidationError) as conm:
             serializer.validate(data)
-        exception = conm.exception
+        exception = conm.value
         expected = "['Only one of metric or rating can be supplied.']"
         self.assertEqual(expected, str(exception))
 
@@ -182,7 +182,7 @@ class TestGreenAssessmentPropertySerializer(DeleteModelsTestCase):
         data['rating'] = '5'
         with pytest.raises(ValidationError) as conm:
             serializer.validate(data)
-        exception = conm.exception
+        exception = conm.value
         expected = f"['{self.assessment.name} uses a metric (numeric score).']"
         self.assertEqual(expected, str(exception))
 
@@ -191,7 +191,7 @@ class TestGreenAssessmentPropertySerializer(DeleteModelsTestCase):
         data['metric'] = '5 stars'
         with pytest.raises(ValidationError) as conm:
             serializer.validate(data)
-        exception = conm.exception
+        exception = conm.value
         expected = "['Metric must be a number.']"
         self.assertEqual(expected, str(exception))
 
@@ -200,7 +200,7 @@ class TestGreenAssessmentPropertySerializer(DeleteModelsTestCase):
         data['metric'] = 5
         with pytest.raises(ValidationError) as conm:
             serializer.validate(data)
-        exception = conm.exception
+        exception = conm.value
         expected = f"['{self.assessment.name} uses a rating (non-numeric score).']"
 
         # assert raises error if rating is of wrong type
@@ -208,7 +208,7 @@ class TestGreenAssessmentPropertySerializer(DeleteModelsTestCase):
         data['rating'] = 5
         with pytest.raises(ValidationError) as conm:
             serializer.validate(data)
-        exception = conm.exception
+        exception = conm.value
         expected = "['Rating must be a string.']"
         self.assertEqual(expected, str(exception))
 
@@ -223,7 +223,7 @@ class TestGreenAssessmentPropertySerializer(DeleteModelsTestCase):
         data['metric'] = 3.5
         with pytest.raises(ValidationError) as conm:
             serializer.validate(data)
-        exception = conm.exception
+        exception = conm.value
         expected = "['Metric must be an integer.']"
         self.assertEqual(expected, str(exception))
 
@@ -231,7 +231,7 @@ class TestGreenAssessmentPropertySerializer(DeleteModelsTestCase):
         del data['assessment']
         with pytest.raises(ValidationError) as conm:
             serializer.validate(data)
-        exception = conm.exception
+        exception = conm.value
         expected = "['Could not find assessment.']"
         self.assertEqual(expected, str(exception))
 
