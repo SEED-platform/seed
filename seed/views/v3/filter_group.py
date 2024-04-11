@@ -4,6 +4,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.db import IntegrityError
+from django.db.models import Prefetch
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
 from rest_framework import status
@@ -155,7 +156,11 @@ class FilterGroupViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
         per_page = request.query_params.get('per_page', 1000)
         org_id = self.get_organization(request)
 
-        filter_groups = FilterGroup.objects.filter(organization_id=org_id)
+        filter_groups = FilterGroup.objects.filter(organization_id=org_id).prefetch_related(
+            Prefetch("and_labels", queryset=StatusLabel.objects.only("id")),
+            Prefetch("or_labels", queryset=StatusLabel.objects.only("id")),
+            Prefetch("exclude_labels", queryset=StatusLabel.objects.only("id")),
+        )
 
         if "inventory_type" in request.query_params:
             inventory_type = request.query_params.get("inventory_type")
