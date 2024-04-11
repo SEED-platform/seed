@@ -56,7 +56,9 @@ templates_path = ['_templates']
 
 # Location of word list.
 # convert the spelling list to a text file and save
-with open('../../.cspell.txt', 'w', encoding=locale.getpreferredencoding(False)) as cspell_txt, open('../../.cspell.json', encoding=locale.getpreferredencoding(False)) as cspell_json:
+with open('../../.cspell.txt', 'w', encoding=locale.getpreferredencoding(False)) as cspell_txt, open(
+    '../../.cspell.json', encoding=locale.getpreferredencoding(False)
+) as cspell_json:
     cspell_txt.write('\n'.join(json.load(cspell_json)['words']))
 spelling_word_list_filename = '../../.cspell.txt'
 
@@ -81,7 +83,9 @@ author = 'Alliance for Sustainable Energy, LLC, and other contributors.'
 # built documents.
 #
 # Grab the version from the package.json file
-with open(os.path.join(os.path.dirname(os.path.realpath(__file__)), '../../package.json'), encoding=locale.getpreferredencoding(False)) as f:
+with open(
+    os.path.join(os.path.dirname(os.path.realpath(__file__)), '../../package.json'), encoding=locale.getpreferredencoding(False)
+) as f:
     data = json.load(f)
 
 version = data['version']

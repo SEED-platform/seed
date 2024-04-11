@@ -110,9 +110,12 @@ atomic_no_params_st = (
 # function for recursive strategy
 # avoiding the division operator b/c it can cause unexpected divide by zero issues
 def recursive_st_func(children):
-    return (arithmetic_st(operators=['+', '-', '*'], operand_st=children, max_operands=3, in_parens_st=st.booleans())
-            | func_st(st.sampled_from(['min', 'max']), children, min_args=2)
-            | func_st(st.just('abs'), st.one_of(children), min_args=1, max_args=1))
+    return (
+        arithmetic_st(operators=['+', '-', '*'], operand_st=children, max_operands=3, in_parens_st=st.booleans())
+        | func_st(st.sampled_from(['min', 'max']), children, min_args=2)
+        | func_st(st.just('abs'), st.one_of(children), min_args=1, max_args=1)
+    )
+
 
 # strategy for generating complex / nested expressions WITHOUT parameters
 

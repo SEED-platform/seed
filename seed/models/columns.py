@@ -1307,10 +1307,10 @@ class Column(models.Model):
         result = list(
             set(
                 Column.objects.filter(organization_id=org_id, is_extra_data=False)
-                    .order_by('column_name')
-                    .exclude(table_name='')
-                    .exclude(table_name=None)
-                    .values_list('column_name', flat=True)
+                .order_by('column_name')
+                .exclude(table_name='')
+                .exclude(table_name=None)
+                .values_list('column_name', flat=True)
             )
         )
 
@@ -1410,9 +1410,8 @@ class Column(models.Model):
                 related = inventory_type.lower() not in new_c['table_name'].lower()
                 if related:
                     continue
-                if (
-                    (inventory_type == 'property' and c.column_name in Column.UNMAPPABLE_PROPERTY_FIELDS)
-                    or (inventory_type == 'taxlot' and c.column_name in Column.UNMAPPABLE_TAXLOT_FIELDS)
+                if (inventory_type == 'property' and c.column_name in Column.UNMAPPABLE_PROPERTY_FIELDS) or (
+                    inventory_type == 'taxlot' and c.column_name in Column.UNMAPPABLE_TAXLOT_FIELDS
                 ):
                     continue
 
@@ -1610,7 +1609,11 @@ def validate_model(sender, **kwargs):
     if 'raw' in kwargs and not kwargs['raw']:
         instance.full_clean()
 
-    if instance.display_name is not None and instance.organization is not None and instance.display_name in instance.organization.access_level_names:
+    if (
+        instance.display_name is not None
+        and instance.organization is not None
+        and instance.display_name in instance.organization.access_level_names
+    ):
         raise IntegrityError('This display name is already an access level name and cannot be used.')
 
     if instance.organization_id:

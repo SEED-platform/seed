@@ -268,7 +268,9 @@ def interpolate_monthly_readings(meter_readings):
     while current_reading_index < len(meter_readings):
         current_reading = meter_readings[current_reading_index]
         if current_reading.start_time.day != 1:
-            raise ValueError(f'Meter readings should start on the first day of the month; found one starting on {current_reading.start_time.day}')
+            raise ValueError(
+                f'Meter readings should start on the first day of the month; found one starting on {current_reading.start_time.day}'
+            )
 
         if current_time == current_reading.start_time:
             interpolated_readings.append(current_reading)

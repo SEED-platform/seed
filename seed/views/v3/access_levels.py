@@ -105,7 +105,9 @@ class AccessLevelViewSet(viewsets.ViewSet):
         try:
             parent_id = request.data['parent_id']
             if not isinstance(parent_id, int):
-                return JsonResponse({'status': 'error', 'message': 'body param `parent_id` must be int'}, status=status.HTTP_400_BAD_REQUEST)
+                return JsonResponse(
+                    {'status': 'error', 'message': 'body param `parent_id` must be int'}, status=status.HTTP_400_BAD_REQUEST
+                )
             parent = AccessLevelInstance.objects.get(pk=parent_id)
         except KeyError:
             return JsonResponse({'status': 'error', 'message': 'body param `parent_id` is required'}, status=status.HTTP_400_BAD_REQUEST)

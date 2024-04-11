@@ -72,7 +72,10 @@ class MeterUtilTests(TestCase):
         self.tz_obj = timezone(TIME_ZONE)
 
     def test_parse_meter_preprocess_raw_pm_data_request(self):
-        with open(Path(__file__).resolve().parent / 'data' / 'example-pm-data-request-with-meters.xlsx', encoding=locale.getpreferredencoding(False)) as meters_file:
+        with open(
+            Path(__file__).resolve().parent / 'data' / 'example-pm-data-request-with-meters.xlsx',
+            encoding=locale.getpreferredencoding(False),
+        ) as meters_file:
             parser = reader.MCMParser(meters_file, sheet_name='Monthly Usage')
 
         raw_meter_data = MetersParser.preprocess_raw_pm_data_request(parser.data)
@@ -101,7 +104,10 @@ class MeterUtilTests(TestCase):
         )
 
     def test_parse_meter_preprocess_raw_pm_data_request_new(self):
-        with open(Path(__file__).resolve().parent / 'data' / 'example-pm-data-request-with-meters-new-format.xlsx', encoding=locale.getpreferredencoding(False)) as meters_file:
+        with open(
+            Path(__file__).resolve().parent / 'data' / 'example-pm-data-request-with-meters-new-format.xlsx',
+            encoding=locale.getpreferredencoding(False),
+        ) as meters_file:
             parser = reader.MCMParser(meters_file, sheet_name='Monthly Usage')
 
         raw_meter_data = MetersParser.preprocess_raw_pm_data_request(parser.data)

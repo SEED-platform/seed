@@ -3,6 +3,7 @@
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 from typing import Literal
 
 from celery import shared_task

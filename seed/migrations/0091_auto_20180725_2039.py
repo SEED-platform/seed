@@ -32,8 +32,12 @@ class Migration(migrations.Migration):
         ),
         migrations.AlterIndexTogether(
             name='propertystate',
-            index_together={('import_file', 'data_state'), ('hash_object',), ('analysis_state', 'organization'),
-                            ('import_file', 'data_state', 'merge_state')},
+            index_together={
+                ('import_file', 'data_state'),
+                ('hash_object',),
+                ('analysis_state', 'organization'),
+                ('import_file', 'data_state', 'merge_state'),
+            },
         ),
         migrations.RemoveField(
             model_name='taxlotstate',
@@ -41,7 +45,6 @@ class Migration(migrations.Migration):
         ),
         migrations.AlterIndexTogether(
             name='taxlotstate',
-            index_together={('import_file', 'data_state'), ('hash_object',),
-                            ('import_file', 'data_state', 'merge_state')},
+            index_together={('import_file', 'data_state'), ('hash_object',), ('import_file', 'data_state', 'merge_state')},
         ),
     ]

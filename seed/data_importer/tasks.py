@@ -395,9 +395,7 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, **kwargs):
                         # create a new extra_data column to store the raw, invalid data.
                         # Also create a new rule for this new column
                         if footprint_details.get('obj_field') and getattr(map_model_obj, footprint_details['obj_field']) is None:
-                            _store_raw_footprint_and_create_rule(
-                                footprint_details, table, org, import_file, original_row, map_model_obj
-                            )
+                            _store_raw_footprint_and_create_rule(footprint_details, table, org, import_file, original_row, map_model_obj)
 
                         # There was an error with a field being too long [> 255 chars].
                         map_model_obj.save()
@@ -1756,9 +1754,7 @@ def _map_additional_models(ids, file_pk, progress_key, cycle_id=None):
             # Note that we choose _not_ to promote the property state (i.e. create a canonical property)
             # b/c that will be handled in the match/merge/linking later on
             building_file = property_state.building_files.get()
-            success, _, _, messages = building_file.process(
-                org.id, Cycle.objects.get(id=cycle_id), promote_property_state=False
-            )
+            success, _, _, messages = building_file.process(org.id, Cycle.objects.get(id=cycle_id), promote_property_state=False)
 
             if not success or messages.get('errors') or messages.get('warnings'):
                 progress_data.add_file_info(os.path.basename(building_file.filename), messages)

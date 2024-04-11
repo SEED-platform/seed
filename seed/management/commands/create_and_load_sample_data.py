@@ -743,9 +743,7 @@ def create_additional_years(org, years, pairs_taxlots_and_properties, case, numb
             updated_taxlots = [update_taxlot_year(x, year) for x in taxlots]
             updated_properties = [update_property_year(x, year) for x in properties]
             print(f'Creating {idx}')
-            create_cases_with_multi_records_per_cycle(
-                org, cycle, updated_taxlots, updated_properties, number_records_per_cycle_per_state
-            )
+            create_cases_with_multi_records_per_cycle(org, cycle, updated_taxlots, updated_properties, number_records_per_cycle_per_state)
 
 
 def create_additional_years_d(org, years, tuples_taxlots_properties_campus, number_records_per_cycle_per_state=1):

@@ -467,7 +467,9 @@ class MetersParser:
             end_date = datetime(start_date.year, start_date.month, days_in_month, 23, 59, 59) + timedelta(seconds=1)
 
             for reading_type in provided_reading_types:
-                if isinstance(raw_reading[reading_type], str) and (not raw_reading[reading_type].strip() or 'not available' in raw_reading[reading_type].lower()):
+                if isinstance(raw_reading[reading_type], str) and (
+                    not raw_reading[reading_type].strip() or 'not available' in raw_reading[reading_type].lower()
+                ):
                     continue
 
                 type_and_units_match = TYPE_AND_UNITS_REGEX.match(reading_type)

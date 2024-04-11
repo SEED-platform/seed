@@ -14,11 +14,11 @@ class Migration(migrations.Migration):
         migrations.AlterIndexTogether(
             name='propertystate',
             index_together={
-                    ('import_file', 'data_state'),
-                    ('import_file', 'data_state', 'source_type'),
-                    ('hash_object',),
-                    ('analysis_state', 'organization'),
-                    ('import_file', 'data_state', 'merge_state'),
-                },
+                ('import_file', 'data_state'),
+                ('import_file', 'data_state', 'source_type'),
+                ('hash_object',),
+                ('analysis_state', 'organization'),
+                ('import_file', 'data_state', 'merge_state'),
+            },
         ),
     ]

@@ -80,8 +80,7 @@ class ImportRecord(NotDeletableModel):
         (STATUS_MATCHING, 'Matching'),
     ]
 
-    name = models.CharField(max_length=255, blank=True, null=True, verbose_name='Name Your Dataset',
-                            default='Unnamed Dataset')
+    name = models.CharField(max_length=255, blank=True, null=True, verbose_name='Name Your Dataset', default='Unnamed Dataset')
     app = models.CharField(
         max_length=64,
         blank=False,
@@ -91,8 +90,7 @@ class ImportRecord(NotDeletableModel):
         default='seed',
     )
     owner = models.ForeignKey('landing.SEEDUser', on_delete=models.CASCADE, blank=True, null=True)
-    access_level_instance = models.ForeignKey(AccessLevelInstance, on_delete=models.CASCADE, null=False,
-                                              related_name='import_record')
+    access_level_instance = models.ForeignKey(AccessLevelInstance, on_delete=models.CASCADE, null=False, related_name='import_record')
     start_time = models.DateTimeField(blank=True, null=True)
     finish_time = models.DateTimeField(blank=True, null=True)
     created_at = models.DateTimeField(blank=True, null=True)
@@ -366,8 +364,7 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
             if self.cached_second_to_fifth_row == '':
                 self._second_to_fifth_row = []
             else:
-                self._second_to_fifth_row = [r.split(ROW_DELIMITER) for r in
-                                             self.cached_second_to_fifth_row.splitlines()]
+                self._second_to_fifth_row = [r.split(ROW_DELIMITER) for r in self.cached_second_to_fifth_row.splitlines()]
 
         return self._second_to_fifth_row
 
@@ -386,8 +383,7 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
     def tablecolumnmappings_failed(self):
         return (
             self.tablecolumnmappings.filter(
-                Q(destination_field='') | Q(destination_field=None) | Q(destination_model='') | Q(
-                    destination_model=None)
+                Q(destination_field='') | Q(destination_field=None) | Q(destination_model='') | Q(destination_model=None)
             )
             .exclude(ignored=True)
             .filter(active=True)
@@ -431,12 +427,12 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
     @property
     def filename_only(self):
         name = unquote(self.file.name)
-        return name[name.rfind('/') + 1: name.rfind('.')]
+        return name[name.rfind('/') + 1 : name.rfind('.')]
 
     @property
     def filename(self):
         name = unquote(self.file.name)
-        return name[name.rfind('/') + 1: len(name)]
+        return name[name.rfind('/') + 1 : len(name)]
 
     @property
     def ready_to_import(self):
@@ -639,7 +635,7 @@ class TableColumnMapping(models.Model):
 
     @property
     def friendly_destination_field(self):
-        return self.destination_field.replace("_", " ").replace("-", "").capitalize()
+        return self.destination_field.replace('_', ' ').replace('-', '').capitalize()
 
     @property
     def friendly_destination_model_and_field(self):

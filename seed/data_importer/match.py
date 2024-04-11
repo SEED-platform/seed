@@ -793,17 +793,20 @@ def save_state_match(state1, state2, priorities):
     # Possible conditions:
     # state1.data_state = 2, state1.merge_state = 0 and state2.data_state = 2, state2.merge_state = 0
     # state1.data_state = 0, state1.merge_state = 2 and state2.data_state = 2, state2.merge_state = 0
-    if state1.import_file_id == state2.import_file_id and ((
-        state1.data_state == DATA_STATE_MAPPING
-        and state1.merge_state == MERGE_STATE_UNKNOWN
-        and state2.data_state == DATA_STATE_MAPPING
-        and state2.merge_state == MERGE_STATE_UNKNOWN
-    ) or (
-        state1.data_state == DATA_STATE_UNKNOWN
-        and state1.merge_state == MERGE_STATE_MERGED
-        and state2.data_state == DATA_STATE_MAPPING
-        and state2.merge_state == MERGE_STATE_UNKNOWN
-    )):
+    if state1.import_file_id == state2.import_file_id and (
+        (
+            state1.data_state == DATA_STATE_MAPPING
+            and state1.merge_state == MERGE_STATE_UNKNOWN
+            and state2.data_state == DATA_STATE_MAPPING
+            and state2.merge_state == MERGE_STATE_UNKNOWN
+        )
+        or (
+            state1.data_state == DATA_STATE_UNKNOWN
+            and state1.merge_state == MERGE_STATE_MERGED
+            and state2.data_state == DATA_STATE_MAPPING
+            and state2.merge_state == MERGE_STATE_UNKNOWN
+        )
+    ):
         merged_state.import_file_id = state1.import_file_id
 
         if isinstance(merged_state, PropertyState):

@@ -62,7 +62,9 @@ def check_file_permission(user, filepath):
             analysis_output_file = AnalysisOutputFile.objects.get(file__in=[absolute_filepath, filepath])
             analysis_property_view = analysis_output_file.analysis_property_views.first()
             if analysis_property_view is None:
-                raise ModelForFileNotFoundError(f'AnalysisOutputFile "{analysis_output_file.id}" has no property views to validate the org.')
+                raise ModelForFileNotFoundError(
+                    f'AnalysisOutputFile "{analysis_output_file.id}" has no property views to validate the org.'
+                )
         except AnalysisOutputFile.DoesNotExist:
             raise ModelForFileNotFoundError('AnalysisOutputFile not found')
         organization = analysis_property_view.cycle.organization

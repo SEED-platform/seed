@@ -546,7 +546,10 @@ class PortfolioManagerImport:
         # Generate the url to download this file
         try:
             response = requests.get(
-                self.download_url(matched_data_request['id'], report_format), headers=self.authenticated_headers, allow_redirects=True, timeout=300
+                self.download_url(matched_data_request['id'], report_format),
+                headers=self.authenticated_headers,
+                allow_redirects=True,
+                timeout=300,
             )
         except requests.exceptions.SSLError:
             raise PMError('SSL Error in Portfolio Manager Query; check VPN/Network/Proxy.')

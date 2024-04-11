@@ -5,6 +5,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 :author Dan Gunter <dkgunter@lbl.gov>
 """
+
 import contextlib
 import csv
 import json

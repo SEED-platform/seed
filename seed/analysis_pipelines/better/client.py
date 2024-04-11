@@ -241,7 +241,9 @@ class BETTERClient:
 
         # save the file from the response
         temporary_results_dir = TemporaryDirectory()
-        with NamedTemporaryFile(mode='w', suffix='.html', dir=temporary_results_dir.name, delete=False, encoding=locale.getpreferredencoding(False)) as file:
+        with NamedTemporaryFile(
+            mode='w', suffix='.html', dir=temporary_results_dir.name, delete=False, encoding=locale.getpreferredencoding(False)
+        ) as file:
             file.write(standalone_html)
 
         return temporary_results_dir, []
@@ -326,7 +328,9 @@ class BETTERClient:
 
         # save the file from the response
         temporary_results_dir = TemporaryDirectory()
-        with NamedTemporaryFile(mode='w', suffix='.html', dir=temporary_results_dir.name, delete=False, encoding=locale.getpreferredencoding(False)) as file:
+        with NamedTemporaryFile(
+            mode='w', suffix='.html', dir=temporary_results_dir.name, delete=False, encoding=locale.getpreferredencoding(False)
+        ) as file:
             file.write(standalone_html)
 
         return temporary_results_dir, []

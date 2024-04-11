@@ -837,7 +837,10 @@ class OrganizationViewSet(viewsets.ViewSet):
 
         cycles = Cycle.objects.filter(id__in=params['cycle_ids'])
         data = self.get_raw_report_data(pk, access_level_instance, cycles, params['x_var'], params['y_var'])
-        data = {'chart_data': functools.reduce(operator.iadd, [d['chart_data'] for d in data], []), 'property_counts': [d['property_counts'] for d in data]}
+        data = {
+            'chart_data': functools.reduce(operator.iadd, [d['chart_data'] for d in data], []),
+            'property_counts': [d['property_counts'] for d in data],
+        }
 
         return Response({'status': 'success', 'data': data}, status=status.HTTP_200_OK)
 
