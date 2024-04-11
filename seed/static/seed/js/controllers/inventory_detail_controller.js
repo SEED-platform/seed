@@ -475,7 +475,7 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
      * save_item: saves the user's changes to the Property/TaxLot State object.
      */
     const save_item_resolve = (data) => {
-      $scope.$emit('finished_saving');
+      $scope.edit_form_showing = false;
       notify_merges_and_links(data);
       if (data.view_id) {
         reload_with_view_id(data.view_id);
@@ -488,7 +488,7 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
     };
 
     const save_item_reject = () => {
-      $scope.$emit('finished_saving');
+      $scope.edit_form_showing = false;
     };
 
     const save_item_catch = (data) => {
