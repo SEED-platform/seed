@@ -973,7 +973,7 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
       if (gridApi) {
         const gridApi = $scope.gridApiByScenarioId[$scope.scenarioId];
         setTimeout(gridApi.core.handleWindowResize, 50);
-      };
+      }
     });
 
     $scope.formatMeasureStatuses = (scenario) => {
