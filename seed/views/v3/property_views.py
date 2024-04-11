@@ -17,11 +17,11 @@ from seed.utils.api import api_endpoint_class
 from seed.utils.viewsets import SEEDOrgModelViewSet
 
 
-@method_decorator(name='list', decorator=[has_perm_class('requires_viewer')])
-@method_decorator(name='retrieve', decorator=[has_perm_class('requires_viewer'), has_hierarchy_access(property_view_id_kwarg='pk')])
-@method_decorator(name='destroy', decorator=[has_perm_class('requires_viewer'), has_hierarchy_access(property_view_id_kwarg='pk')])
-@method_decorator(name='update', decorator=[has_perm_class('requires_viewer'), has_hierarchy_access(property_view_id_kwarg='pk')])
-@method_decorator(name='create', decorator=[has_perm_class('requires_viewer'), has_hierarchy_access(body_property_id='property_id')])
+@method_decorator(name="list", decorator=[has_perm_class("requires_viewer")])
+@method_decorator(name="retrieve", decorator=[has_perm_class("requires_viewer"), has_hierarchy_access(property_view_id_kwarg="pk")])
+@method_decorator(name="destroy", decorator=[has_perm_class("requires_viewer"), has_hierarchy_access(property_view_id_kwarg="pk")])
+@method_decorator(name="update", decorator=[has_perm_class("requires_viewer"), has_hierarchy_access(property_view_id_kwarg="pk")])
+@method_decorator(name="create", decorator=[has_perm_class("requires_viewer"), has_hierarchy_access(body_property_id="property_id")])
 class PropertyViewViewSet(SEEDOrgModelViewSet):
     """PropertyViews API Endpoint
 
@@ -60,7 +60,7 @@ class PropertyViewViewSet(SEEDOrgModelViewSet):
     """
 
     def get_queryset(self):
-        if hasattr(self.request, 'access_level_instance_id'):
+        if hasattr(self.request, "access_level_instance_id"):
             access_level_instance = AccessLevelInstance.objects.get(pk=self.request.access_level_instance_id)
 
             return PropertyView.objects.filter(
@@ -75,30 +75,30 @@ class PropertyViewViewSet(SEEDOrgModelViewSet):
     pagination_class = None
     model = PropertyView
     filter_class = PropertyViewFilterSet
-    orgfilter = 'property__organization_id'
-    data_name = 'property_views'
+    orgfilter = "property__organization_id"
+    data_name = "property_views"
     queryset = PropertyView.objects.all()
 
     # Overwrite method to make it work
     @api_endpoint_class
-    @has_perm_class('requires_viewer')
+    @has_perm_class("requires_viewer")
     def create(self, request, organization_pk=None):
         org_id = int(self.get_organization(request))
         try:
             Organization.objects.get(pk=org_id)
         except Organization.DoesNotExist:
-            return JsonResponse({'status': 'error', 'message': 'bad organization_id'}, status=status.HTTP_400_BAD_REQUEST)
+            return JsonResponse({"status": "error", "message": "bad organization_id"}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             new_view = PropertyView.objects.create(**self.request.data)
             new_view.save()
         except ValidationError as e:
-            return JsonResponse({'status': 'error', 'message': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            return JsonResponse({"status": "error", "message": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
         return JsonResponse(
             {
-                'status': 'success',
-                'property_view': BriefPropertyViewSerializer(new_view).data,
+                "status": "success",
+                "property_view": BriefPropertyViewSerializer(new_view).data,
             },
             status=status.HTTP_201_CREATED,
         )

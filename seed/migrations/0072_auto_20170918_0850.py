@@ -6,15 +6,15 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('seed', '0071_auto_20170721_1203'),
+        ("seed", "0071_auto_20170721_1203"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='noncanonicalprojectbuildings',
-            name='projectbuilding',
+            model_name="noncanonicalprojectbuildings",
+            name="projectbuilding",
             field=models.OneToOneField(
-                on_delete=django.db.models.deletion.CASCADE, primary_key=True, serialize=False, to='seed.ProjectBuilding'
+                on_delete=django.db.models.deletion.CASCADE, primary_key=True, serialize=False, to="seed.ProjectBuilding"
             ),
         ),
     ]

@@ -101,7 +101,7 @@ class ExpressionEvaluator:
             try:
                 return self.params[name]
             except KeyError:
-                raise KeyError('Parameter not found: %s' % name)
+                raise KeyError("Parameter not found: %s" % name)
 
         def set_params(self, params):
             """Set the parameters available when parsing
@@ -121,7 +121,7 @@ class ExpressionEvaluator:
             self.is_valid(expression)
 
         self._transformer = self.EvaluateTree()
-        self._parser = Lark(self.EXPRESSION_GRAMMAR, parser='lalr', transformer=self._transformer)
+        self._parser = Lark(self.EXPRESSION_GRAMMAR, parser="lalr", transformer=self._transformer)
 
     @classmethod
     def is_valid(cls, expression: str) -> bool:
@@ -131,7 +131,7 @@ class ExpressionEvaluator:
         :return: bool
         """
         try:
-            Lark(cls.EXPRESSION_GRAMMAR, parser='lalr').parse(expression)
+            Lark(cls.EXPRESSION_GRAMMAR, parser="lalr").parse(expression)
         except UnexpectedToken as e:
             raise InvalidExpressionError(expression, e.pos_in_stream)
 
@@ -162,10 +162,10 @@ class InvalidExpressionError(Exception):
         expression_message = self.expression
         if self.error_position is not None:
             error_pos_to_end = self.expression[self.error_position :]
-            truncated_error = (error_pos_to_end[:5] + '...') if len(error_pos_to_end) > 8 else error_pos_to_end
+            truncated_error = (error_pos_to_end[:5] + "...") if len(error_pos_to_end) > 8 else error_pos_to_end
             expression_message = f'starting at "{truncated_error}"'
 
-        return f'Expression is not valid: {expression_message}'
+        return f"Expression is not valid: {expression_message}"
 
 
 class DerivedColumn(models.Model):
@@ -181,8 +181,8 @@ class DerivedColumn(models.Model):
     PROPERTY_TYPE = 0
     TAXLOT_TYPE = 1
     INVENTORY_TYPES = (
-        (PROPERTY_TYPE, 'Property'),
-        (TAXLOT_TYPE, 'Tax Lot'),
+        (PROPERTY_TYPE, "Property"),
+        (TAXLOT_TYPE, "Tax Lot"),
     )
 
     INVENTORY_TYPE_TO_CLASS = {
@@ -200,29 +200,29 @@ class DerivedColumn(models.Model):
     # All parameters used in the expression must be linked to a Column through this
     # model's `source_columns` field
     expression = models.CharField(max_length=526, blank=False)
-    source_columns = models.ManyToManyField(Column, through='DerivedColumnParameter')
+    source_columns = models.ManyToManyField(Column, through="DerivedColumnParameter")
 
     class Meta:
-        constraints = [models.UniqueConstraint(fields=['organization', 'name', 'inventory_type'], name='unique_name_for_organization')]
+        constraints = [models.UniqueConstraint(fields=["organization", "name", "inventory_type"], name="unique_name_for_organization")]
 
     def clean(self):
         try:
             ExpressionEvaluator.is_valid(self.expression)
         except InvalidExpressionError as e:
-            raise ValidationError({'expression': str(e)})
+            raise ValidationError({"expression": str(e)})
 
     def save(self, *args, **kwargs):
         created = not self.pk
         self.full_clean()
         save_response = super().save(*args, **kwargs)
         if self.inventory_type == 0:
-            inventory_type = 'PropertyState'
+            inventory_type = "PropertyState"
         elif self.inventory_type == 1:
-            inventory_type = 'TaxLotState'
+            inventory_type = "TaxLotState"
         if created:
             # check if the column name already exists for the table_name
             if Column.objects.filter(organization=self.organization, table_name=inventory_type, column_name=self.name).exists():
-                raise ValidationError(f'Column name {inventory_type}.{self.name} already exists, must be unique')
+                raise ValidationError(f"Column name {inventory_type}.{self.name} already exists, must be unique")
 
             Column.objects.create(
                 derived_column=self,
@@ -251,8 +251,8 @@ class DerivedColumn(models.Model):
                 ...
             }
         """
-        if not hasattr(self, '_cached_column_parameters'):
-            self._cached_column_parameters = DerivedColumnParameter.objects.filter(derived_column=self.id).prefetch_related('source_column')
+        if not hasattr(self, "_cached_column_parameters"):
+            self._cached_column_parameters = DerivedColumnParameter.objects.filter(derived_column=self.id).prefetch_related("source_column")
 
         params = {}
         for parameter in self._cached_column_parameters:
@@ -284,7 +284,7 @@ class DerivedColumn(models.Model):
         :param parameters: dict, optional, defines mapping of expression parameter names to values
         :return: float | None
         """
-        if not hasattr(self, '_cached_evaluator'):
+        if not hasattr(self, "_cached_evaluator"):
             self._cached_evaluator = ExpressionEvaluator(self.expression)
 
         if parameters is None:
@@ -316,11 +316,11 @@ class DerivedColumn(models.Model):
         except Exception as e:
             # unknown error
             raise Exception(
-                f'Unhandled exception evaluating derived column:\n'
-                f'    derived column id: {self.id}\n'
-                f'    parameters: {merged_parameters}\n'
-                f'    expression: {self.expression}\n'
-                f'    exception: {e}'
+                f"Unhandled exception evaluating derived column:\n"
+                f"    derived column id: {self.id}\n"
+                f"    parameters: {merged_parameters}\n"
+                f"    expression: {self.expression}\n"
+                f"    exception: {e}"
             )
 
     def check_for_source_columns_derived(self, inventory_state=None, merged_parameters={}):
@@ -351,15 +351,15 @@ class DerivedColumnParameter(models.Model):
     class Meta:
         constraints = [
             # can't have two source columns with the same parameter_name
-            models.UniqueConstraint(fields=['derived_column', 'parameter_name'], name='unique_parameter_name'),
+            models.UniqueConstraint(fields=["derived_column", "parameter_name"], name="unique_parameter_name"),
             # can't reference the same source column more than once
-            models.UniqueConstraint(fields=['derived_column', 'source_column'], name='unique_reference_to_source_column'),
+            models.UniqueConstraint(fields=["derived_column", "source_column"], name="unique_reference_to_source_column"),
         ]
 
     def clean(self):
         if not self.parameter_name.isidentifier():
             raise ValidationError(
-                {'parameter_name': 'Not a valid identifier, see https://docs.python.org/3/reference/lexical_analysis.html#identifiers'}
+                {"parameter_name": "Not a valid identifier, see https://docs.python.org/3/reference/lexical_analysis.html#identifiers"}
             )
 
     def save(self, *args, **kwargs):

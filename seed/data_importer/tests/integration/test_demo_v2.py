@@ -37,13 +37,13 @@ class TestDemoV2(DataMappingBaseTestCase):
         """Override the base in DataMappingBaseTestCase."""
 
         # default_values
-        import_file_data_state = getattr(self, 'import_file_data_state', DATA_STATE_IMPORT)
+        import_file_data_state = getattr(self, "import_file_data_state", DATA_STATE_IMPORT)
 
-        user = User.objects.create(username='test')
-        org, _, _ = create_organization(user, 'test-organization-a')
+        user = User.objects.create(username="test")
+        org, _, _ = create_organization(user, "test-organization-a")
 
         cycle, _ = Cycle.objects.get_or_create(
-            name='Test Hack Cycle 2015',
+            name="Test Hack Cycle 2015",
             organization=org,
             start=date(2015, 1, 1),
             end=date(2015, 12, 31),
@@ -70,11 +70,11 @@ class TestDemoV2(DataMappingBaseTestCase):
         return user, org, import_file_1, import_record_1, import_file_2, import_record_2, cycle
 
     def setUp(self):
-        property_filename = getattr(self, 'filename', 'example-data-properties.xlsx')
-        tax_lot_filename = getattr(self, 'filename', 'example-data-taxlots.xlsx')
+        property_filename = getattr(self, "filename", "example-data-properties.xlsx")
+        tax_lot_filename = getattr(self, "filename", "example-data-taxlots.xlsx")
         import_file_source_type = ASSESSED_RAW
-        self.fake_portfolio_mappings = FAKE_MAPPINGS['portfolio']
-        self.fake_taxlot_mappings = FAKE_MAPPINGS['taxlot']
+        self.fake_portfolio_mappings = FAKE_MAPPINGS["portfolio"]
+        self.fake_taxlot_mappings = FAKE_MAPPINGS["taxlot"]
         self.fake_extra_data = FAKE_EXTRA_DATA
         self.fake_row = FAKE_ROW
         selfvars = self.set_up(import_file_source_type)
@@ -89,11 +89,11 @@ class TestDemoV2(DataMappingBaseTestCase):
             self.cycle,
         ) = selfvars
 
-        filepath = osp.join(osp.dirname(__file__), '..', 'data', tax_lot_filename)
+        filepath = osp.join(osp.dirname(__file__), "..", "data", tax_lot_filename)
         self.import_file_tax_lot.file = SimpleUploadedFile(name=tax_lot_filename, content=pathlib.Path(filepath).read_bytes())
         self.import_file_tax_lot.save()
 
-        filepath = osp.join(osp.dirname(__file__), '..', 'data', property_filename)
+        filepath = osp.join(osp.dirname(__file__), "..", "data", property_filename)
         self.import_file_property.file = SimpleUploadedFile(name=property_filename, content=pathlib.Path(filepath).read_bytes())
         self.import_file_property.save()
 
@@ -122,8 +122,8 @@ class TestDemoV2(DataMappingBaseTestCase):
         tasks.geocode_and_match_buildings_task(self.import_file_tax_lot.id)
 
         # Check a single case of the taxlotstate
-        self.assertEqual(TaxLotState.objects.filter(address_line_1='2655 Welstone Ave NE').count(), 1)
-        self.assertEqual(TaxLotView.objects.filter(state__address_line_1='2655 Welstone Ave NE').count(), 1)
+        self.assertEqual(TaxLotState.objects.filter(address_line_1="2655 Welstone Ave NE").count(), 1)
+        self.assertEqual(TaxLotView.objects.filter(state__address_line_1="2655 Welstone Ave NE").count(), 1)
 
         self.assertEqual(TaxLotView.objects.count(), 9)
 
@@ -163,11 +163,11 @@ class TestDemoV2(DataMappingBaseTestCase):
         # tlv = TaxLotView.objects.filter(state__organization=self.org)
         # self.assertEqual(len(tlv), 9)
 
-        self.assertEqual(PropertyView.objects.filter(state__organization=self.org, state__pm_property_id='2264').count(), 1)
-        pv = PropertyView.objects.filter(state__organization=self.org, state__pm_property_id='2264').first()
+        self.assertEqual(PropertyView.objects.filter(state__organization=self.org, state__pm_property_id="2264").count(), 1)
+        pv = PropertyView.objects.filter(state__organization=self.org, state__pm_property_id="2264").first()
 
-        self.assertEqual(pv.state.property_name, 'University Inn')
-        self.assertEqual(pv.state.address_line_1, '50 Willow Ave SE')
+        self.assertEqual(pv.state.property_name, "University Inn")
+        self.assertEqual(pv.state.address_line_1, "50 Willow Ave SE")
 
         # self.assertEqual(TaxLotView.objects.filter(
         #     state__organization=self.org,

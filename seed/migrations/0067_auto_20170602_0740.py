@@ -5,33 +5,33 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('seed', '0066_auto_20170522_1252'),
+        ("seed", "0066_auto_20170522_1252"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='propertystate',
-            name='extra_data',
+            model_name="propertystate",
+            name="extra_data",
             field=models.JSONField(blank=True, default=dict),
         ),
         migrations.AlterField(
-            model_name='taxlotstate',
-            name='extra_data',
+            model_name="taxlotstate",
+            name="extra_data",
             field=models.JSONField(blank=True, default=dict),
         ),
         migrations.AlterField(
-            model_name='buildingsnapshot',
-            name='extra_data',
+            model_name="buildingsnapshot",
+            name="extra_data",
             field=models.JSONField(default=dict),
         ),
         migrations.AlterField(
-            model_name='buildingsnapshot',
-            name='extra_data_sources',
+            model_name="buildingsnapshot",
+            name="extra_data_sources",
             field=models.JSONField(default=dict),
         ),
         migrations.AlterField(
-            model_name='custombuildingheaders',
-            name='building_headers',
+            model_name="custombuildingheaders",
+            name="building_headers",
             field=models.JSONField(default=dict),
         ),
     ]

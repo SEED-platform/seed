@@ -30,18 +30,18 @@ class PropertySensorReadingsExporter:
         self._cache_org_country = None
 
         self.sensors = (
-            Sensor.objects.select_related('data_logger').filter(data_logger__property_id=property_id).exclude(pk__in=excluded_sensor_ids)
+            Sensor.objects.select_related("data_logger").filter(data_logger__property_id=property_id).exclude(pk__in=excluded_sensor_ids)
         )
         self.org_id = org_id
         self.show_only_occupied_readings = show_only_occupied_readings
         self.tz = timezone(TIME_ZONE)
 
     def readings_and_column_defs(self, interval, page, per_page):
-        if interval == 'Exact':
+        if interval == "Exact":
             return self._usages_by_exact_times(page, per_page)
-        elif interval == 'Month':
+        elif interval == "Month":
             return self._usages_by_month()
-        elif interval == 'Year':
+        elif interval == "Year":
             return self._usages_by_year()
 
     def _usages_by_exact_times(self, page, per_page):
@@ -53,7 +53,7 @@ class PropertySensorReadingsExporter:
         if self.show_only_occupied_readings:
             sensor_readings = sensor_readings.filter(is_occupied=True)
 
-        timestamps = list(sensor_readings.distinct('timestamp').order_by('timestamp').values_list('timestamp', flat=True))
+        timestamps = list(sensor_readings.distinct("timestamp").order_by("timestamp").values_list("timestamp", flat=True))
         paginator = Paginator(timestamps, per_page)
         timestamps_in_page = paginator.page(page)
 
@@ -62,9 +62,9 @@ class PropertySensorReadingsExporter:
 
         # Construct column_defs using this dictionary's values for frontend to use
         column_defs = {
-            '_timestamp': {
-                'field': 'timestamp',
-                '_filter_type': 'datetime',
+            "_timestamp": {
+                "field": "timestamp",
+                "_filter_type": "datetime",
             },
         }
 
@@ -72,7 +72,7 @@ class PropertySensorReadingsExporter:
             earliest_time = timestamps_in_page[0]
             latest_time = timestamps_in_page[-1]
 
-            time_format = '%Y-%m-%d %H:%M:%S'
+            time_format = "%Y-%m-%d %H:%M:%S"
 
             field_name_by_sensor_id = {sensor.id: self._build_column_def(sensor, column_defs) for sensor in self.sensors}
 
@@ -82,21 +82,21 @@ class PropertySensorReadingsExporter:
                 timestamp = sensor_reading.timestamp.astimezone(tz=self.tz).strftime(time_format)
                 times_key = str(timestamp)
 
-                timestamps[times_key]['timestamp'] = timestamp
+                timestamps[times_key]["timestamp"] = timestamp
                 timestamps[times_key][field_name_by_sensor_id[sensor_reading.sensor_id]] = sensor_reading.reading
 
         return {
-            'pagination': {
-                'page': page,
-                'start': paginator.page(page).start_index(),
-                'end': paginator.page(page).end_index(),
-                'num_pages': paginator.num_pages,
-                'has_next': paginator.page(page).has_next(),
-                'has_previous': paginator.page(page).has_previous(),
-                'total': paginator.count,
+            "pagination": {
+                "page": page,
+                "start": paginator.page(page).start_index(),
+                "end": paginator.page(page).end_index(),
+                "num_pages": paginator.num_pages,
+                "has_next": paginator.page(page).has_next(),
+                "has_previous": paginator.page(page).has_previous(),
+                "total": paginator.count,
             },
-            'readings': list(timestamps.values()),
-            'column_defs': list(column_defs.values()),
+            "readings": list(timestamps.values()),
+            "column_defs": list(column_defs.values()),
         }
 
     def _usages_by_month(self):
@@ -109,9 +109,9 @@ class PropertySensorReadingsExporter:
 
         # Construct column_defs using this dictionary's values for frontend to use
         column_defs = {
-            '_month': {
-                'field': 'month',
-                '_filter_type': 'datetime',
+            "_month": {
+                "field": "month",
+                "_filter_type": "datetime",
             },
         }
 
@@ -124,22 +124,22 @@ class PropertySensorReadingsExporter:
 
             # group by month and avg readings
             readings_avg_by_month = (
-                sensor_readings.annotate(month=TruncMonth('timestamp'))
-                .values('month')
-                .order_by('month')
-                .annotate(avg=Avg('reading'))
-                .values('month', 'avg')
+                sensor_readings.annotate(month=TruncMonth("timestamp"))
+                .values("month")
+                .order_by("month")
+                .annotate(avg=Avg("reading"))
+                .values("month", "avg")
             )
 
             for reading in readings_avg_by_month:
-                month_year = '{} {}'.format(month_name[reading['month'].month], reading['month'].year)
+                month_year = "{} {}".format(month_name[reading["month"].month], reading["month"].year)
 
-                monthly_readings[month_year]['month'] = month_year
-                monthly_readings[month_year][field_name] = reading['avg']
+                monthly_readings[month_year]["month"] = month_year
+                monthly_readings[month_year][field_name] = reading["avg"]
 
         return {
-            'readings': list(monthly_readings.values()),
-            'column_defs': list(column_defs.values()),
+            "readings": list(monthly_readings.values()),
+            "column_defs": list(column_defs.values()),
         }
 
     def _usages_by_year(self):
@@ -152,9 +152,9 @@ class PropertySensorReadingsExporter:
 
         # Construct column_defs using this dictionary's values for frontend to use
         column_defs = {
-            '_year': {
-                'field': 'year',
-                '_filter_type': 'datetime',
+            "_year": {
+                "field": "year",
+                "_filter_type": "datetime",
             },
         }
 
@@ -166,29 +166,29 @@ class PropertySensorReadingsExporter:
                 sensor_readings = sensor_readings.filter(is_occupied=True)
 
             readings_avg_by_year = (
-                sensor_readings.annotate(year=TruncYear('timestamp'))
-                .values('year')
-                .order_by('year')
-                .annotate(avg=Avg('reading'))
-                .values('year', 'avg')
+                sensor_readings.annotate(year=TruncYear("timestamp"))
+                .values("year")
+                .order_by("year")
+                .annotate(avg=Avg("reading"))
+                .values("year", "avg")
             )
 
             for reading in readings_avg_by_year:
-                year = reading['year'].year
+                year = reading["year"].year
 
-                yearly_readings[year]['year'] = year
-                yearly_readings[year][field_name] = reading['avg']
+                yearly_readings[year]["year"] = year
+                yearly_readings[year][field_name] = reading["avg"]
 
-        return {'readings': list(yearly_readings.values()), 'column_defs': list(column_defs.values())}
+        return {"readings": list(yearly_readings.values()), "column_defs": list(column_defs.values())}
 
     def _build_column_def(self, sensor, column_defs):
         field_name = sensor.display_name
-        display_name = f'{field_name} ({sensor.data_logger.display_name})'
+        display_name = f"{field_name} ({sensor.data_logger.display_name})"
 
         column_defs[display_name] = {
-            'field': display_name,
-            'displayName': display_name,
-            '_filter_type': 'reading',
+            "field": display_name,
+            "displayName": display_name,
+            "_filter_type": "reading",
         }
 
         return display_name

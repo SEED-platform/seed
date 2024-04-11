@@ -19,24 +19,24 @@ logger = logging.getLogger(__name__)
 
 class BETTERClient:
     HOST = settings.BETTER_HOST
-    API_URL = f'{HOST}/api/v1'
+    API_URL = f"{HOST}/api/v1"
 
     def __init__(self, token):
-        self._token = f'Token {token}'
+        self._token = f"Token {token}"
 
     def token_is_valid(self):
         """Returns true if token is valid
 
         :return: bool
         """
-        url = f'{self.API_URL}/verify_token'
+        url = f"{self.API_URL}/verify_token"
         headers = {
-            'accept': 'application/json',
-            'Authorization': self._token,
+            "accept": "application/json",
+            "Authorization": self._token,
         }
 
         try:
-            response = requests.request('GET', url, headers=headers)
+            response = requests.request("GET", url, headers=headers)
             return response.status_code == 200
         except Exception:
             return False
@@ -46,18 +46,18 @@ class BETTERClient:
 
         :return: tuple(list[dict], list[str]), list of buildings followed by list of errors
         """
-        url = f'{self.API_URL}/buildings/'
+        url = f"{self.API_URL}/buildings/"
         headers = {
-            'accept': 'application/json',
-            'Authorization': self._token,
+            "accept": "application/json",
+            "Authorization": self._token,
         }
 
         try:
-            response = requests.request('GET', url, headers=headers)
+            response = requests.request("GET", url, headers=headers)
             if response.status_code != 200:
-                return None, [f'Expected 200 response from BETTER but got {response.status_code}: {response.content}']
+                return None, [f"Expected 200 response from BETTER but got {response.status_code}: {response.content}"]
         except Exception as e:
-            return None, [f'Unexpected error creating BETTER portfolio: {e}']
+            return None, [f"Unexpected error creating BETTER portfolio: {e}"]
 
         return response.json(), []
 
@@ -67,22 +67,22 @@ class BETTERClient:
         :param name: str, portfolio name
         :returns: tuple(int, list[str]), portfolio id followed by list of errors
         """
-        url = f'{self.API_URL}/portfolios/'
-        data = {'name': name, 'portfolio_currency': 'USD'}
+        url = f"{self.API_URL}/portfolios/"
+        data = {"name": name, "portfolio_currency": "USD"}
         headers = {
-            'accept': 'application/json',
-            'Authorization': self._token,
+            "accept": "application/json",
+            "Authorization": self._token,
         }
 
         try:
-            response = requests.request('POST', url, headers=headers, data=data)
+            response = requests.request("POST", url, headers=headers, data=data)
             if response.status_code == 201:
                 data = response.json()
-                portfolio_id = data['id']
+                portfolio_id = data["id"]
             else:
-                return None, [f'Expected 201 response from BETTER but got {response.status_code}: {response.content}']
+                return None, [f"Expected 201 response from BETTER but got {response.status_code}: {response.content}"]
         except Exception as e:
-            return None, [f'Unexpected error creating BETTER portfolio: {e}']
+            return None, [f"Unexpected error creating BETTER portfolio: {e}"]
 
         return portfolio_id, []
 
@@ -94,25 +94,25 @@ class BETTERClient:
             according to API requirements
         :return: tuple(int, list[str], list[str]), ID of analysis followed by list of error messages and warning messages
         """
-        url = f'{self.API_URL}/portfolios/{better_portfolio_id}/analytics/'
+        url = f"{self.API_URL}/portfolios/{better_portfolio_id}/analytics/"
         data = dict(analysis_config)
-        data.update({'building_ids': 'ALL'})
+        data.update({"building_ids": "ALL"})
         headers = {
-            'accept': 'application/json',
-            'Authorization': self._token,
+            "accept": "application/json",
+            "Authorization": self._token,
         }
 
         try:
-            response = requests.request('POST', url, headers=headers, data=data)
+            response = requests.request("POST", url, headers=headers, data=data)
             if response.status_code == 201:
                 data = response.json()
-                logger.info(f'CREATED Analysis: {data}')
-                analysis_id = data['id']
-                warnings = data.get('warning_message', None)
+                logger.info(f"CREATED Analysis: {data}")
+                analysis_id = data["id"]
+                warnings = data.get("warning_message", None)
             else:
-                return None, [f'Expected 201 response from BETTER but got {response.status_code}: {response.content}'], None
+                return None, [f"Expected 201 response from BETTER but got {response.status_code}: {response.content}"], None
         except Exception as e:
-            return None, [f'Unexpected error creating BETTER portfolio analysis: {e}'], None
+            return None, [f"Unexpected error creating BETTER portfolio analysis: {e}"], None
 
         return analysis_id, [], [warnings]
 
@@ -123,18 +123,18 @@ class BETTERClient:
         :param better_analysis_id: int, ID of analysis created for the portfolio
         :return: tuple(dict, list[str]), JSON response as dict followed by list of error messages
         """
-        url = f'{self.API_URL}/portfolios/{better_portfolio_id}/analytics/{better_analysis_id}/'
+        url = f"{self.API_URL}/portfolios/{better_portfolio_id}/analytics/{better_analysis_id}/"
         headers = {
-            'accept': 'application/json',
-            'Authorization': self._token,
+            "accept": "application/json",
+            "Authorization": self._token,
         }
 
         try:
-            response = requests.request('GET', url, headers=headers)
+            response = requests.request("GET", url, headers=headers)
             if response.status_code not in {200, 202}:
-                return None, [f'Expected 200 or 202 response from BETTER but got {response.status_code}: {response.content}']
+                return None, [f"Expected 200 or 202 response from BETTER but got {response.status_code}: {response.content}"]
         except Exception as e:
-            return None, [f'Unexpected error getting BETTER portfolio analysis: {e}']
+            return None, [f"Unexpected error getting BETTER portfolio analysis: {e}"]
 
         return response.json(), []
 
@@ -146,18 +146,18 @@ class BETTERClient:
         :param better_building_portfolio_analysis_id: int, ID of portfolio building analysis
         :return list[str], list of error messages
         """
-        url = f'{self.API_URL}/portfolios/{better_portfolio_id}/analytics/{better_analysis_id}/portfolio_building_analytics/{better_building_portfolio_analysis_id}'
+        url = f"{self.API_URL}/portfolios/{better_portfolio_id}/analytics/{better_analysis_id}/portfolio_building_analytics/{better_building_portfolio_analysis_id}"
         headers = {
-            'accept': 'application/json',
-            'Authorization': self._token,
+            "accept": "application/json",
+            "Authorization": self._token,
         }
 
         try:
-            response = requests.request('GET', url, headers=headers)
+            response = requests.request("GET", url, headers=headers)
             if response.status_code != 200:
-                return None, [f'Expected 200 response from BETTER but got {response.status_code}: {response.content}']
+                return None, [f"Expected 200 response from BETTER but got {response.status_code}: {response.content}"]
         except Exception as e:
-            return None, [f'Unexpected error getting BETTER portfolio analysis: {e}']
+            return None, [f"Unexpected error getting BETTER portfolio analysis: {e}"]
 
         return response.json(), []
 
@@ -168,18 +168,18 @@ class BETTERClient:
         :param better_analysis_id: int, ID of analysis created for the portfolio
         :return: list[str], list of error messages
         """
-        url = f'{self.API_URL}/portfolios/{better_portfolio_id}/analytics/{better_analysis_id}/generate/'
+        url = f"{self.API_URL}/portfolios/{better_portfolio_id}/analytics/{better_analysis_id}/generate/"
         headers = {
-            'accept': 'application/json',
-            'Authorization': self._token,
+            "accept": "application/json",
+            "Authorization": self._token,
         }
 
         try:
-            response = requests.request('GET', url, headers=headers)
+            response = requests.request("GET", url, headers=headers)
             if response.status_code != 200:
-                return [f'Expected 200 response from BETTER but got {response.status_code}: {response.content}']
+                return [f"Expected 200 response from BETTER but got {response.status_code}: {response.content}"]
         except Exception as e:
-            return [f'Unexpected error generating BETTER portfolio analysis: {e}']
+            return [f"Unexpected error generating BETTER portfolio analysis: {e}"]
 
         # Gotta make sure the analysis is done
         def is_ready(res):
@@ -189,9 +189,9 @@ class BETTERClient:
             """
             response, errors = res[0], res[1]
             if errors:
-                raise Exception('; '.join(errors))
+                raise Exception("; ".join(errors))
 
-            return response['generation_result'] == 'COMPLETE' or response['generation_result'] == 'FAILED'
+            return response["generation_result"] == "COMPLETE" or response["generation_result"] == "FAILED"
 
         POLLING_TIMEOUT_SECS = 300
         try:
@@ -202,16 +202,16 @@ class BETTERClient:
                 step=10,  # wait 10 seconds between polls
             )
 
-            if response[0].get('generation_result') == 'FAILED':
-                return [response[0].get('generation_message')]
+            if response[0].get("generation_result") == "FAILED":
+                return [response[0].get("generation_message")]
 
         except polling.TimeoutException as te:
-            return [f'BETTER analysis timed out after {POLLING_TIMEOUT_SECS} seconds: {te}']
+            return [f"BETTER analysis timed out after {POLLING_TIMEOUT_SECS} seconds: {te}"]
         except Exception as e:
             return [
-                f'Unexpected error checking status of BETTER portfolio analysis:'
+                f"Unexpected error checking status of BETTER portfolio analysis:"
                 f' better_portfolio_id: "{better_portfolio_id}"; better_analysis_id: "{better_analysis_id}"'
-                f': {e}'
+                f": {e}"
             ]
 
         return []
@@ -223,26 +223,26 @@ class BETTERClient:
         :return: tuple(tempfile.TemporaryDirectory, list[str]), temporary directory
             containing result files and list of error messages
         """
-        url = f'{self.API_URL}/standalone_html/portfolio_analytics/{better_analysis_id}/'
+        url = f"{self.API_URL}/standalone_html/portfolio_analytics/{better_analysis_id}/"
         headers = {
-            'accept': 'text/html',
-            'Authorization': self._token,
+            "accept": "text/html",
+            "Authorization": self._token,
         }
-        params = {'unit': 'IP'}
+        params = {"unit": "IP"}
 
         try:
-            response = requests.request('GET', url, headers=headers, params=params)
+            response = requests.request("GET", url, headers=headers, params=params)
             if response.status_code != 200:
-                return None, [f'Expected 200 response from BETTER but got {response.status_code}: {response.content}']
+                return None, [f"Expected 200 response from BETTER but got {response.status_code}: {response.content}"]
 
-            standalone_html = response.text.encode('utf8').decode()
+            standalone_html = response.text.encode("utf8").decode()
         except Exception as e:
-            return None, [f'Unexpected error creating BETTER portfolio: {e}']
+            return None, [f"Unexpected error creating BETTER portfolio: {e}"]
 
         # save the file from the response
         temporary_results_dir = TemporaryDirectory()
         with NamedTemporaryFile(
-            mode='w', suffix='.html', dir=temporary_results_dir.name, delete=False, encoding=locale.getpreferredencoding(False)
+            mode="w", suffix=".html", dir=temporary_results_dir.name, delete=False, encoding=locale.getpreferredencoding(False)
         ) as file:
             file.write(standalone_html)
 
@@ -257,28 +257,28 @@ class BETTERClient:
         :returns: tuple(int, list[str]), BETTER Building ID followed by list of errors
         """
         if better_portfolio_id is None:
-            url = f'{self.API_URL}/buildings/'
+            url = f"{self.API_URL}/buildings/"
         else:
-            url = f'{self.API_URL}/portfolios/{better_portfolio_id}/buildings/'
+            url = f"{self.API_URL}/portfolios/{better_portfolio_id}/buildings/"
 
         with open(bsync_xml, encoding=locale.getpreferredencoding(False)) as file:
             bsync_content = file.read()
 
         headers = {
-            'Authorization': self._token,
-            'Content-Type': 'buildingsync/xml',
+            "Authorization": self._token,
+            "Content-Type": "buildingsync/xml",
         }
         try:
-            response = requests.request('POST', url, headers=headers, data=bsync_content)
+            response = requests.request("POST", url, headers=headers, data=bsync_content)
             if response.status_code == 201:
                 data = response.json()
-                building_id = data['id']
+                building_id = data["id"]
             elif response.status_code == 500:
-                return None, ['Received status code 500 Internal Server Error from BETTER API']
+                return None, ["Received status code 500 Internal Server Error from BETTER API"]
             else:
-                return None, [f'Received non 2xx status from BETTER: {response.status_code}: {response.content}']
+                return None, [f"Received non 2xx status from BETTER: {response.status_code}: {response.content}"]
         except Exception as e:
-            return None, [f'BETTER service could not create building with the following message: {e}']
+            return None, [f"BETTER service could not create building with the following message: {e}"]
 
         return building_id, []
 
@@ -289,18 +289,18 @@ class BETTERClient:
         :param config: request body with building_id, savings_target, benchmark_data_type, min_model_r_squared
         :returns: requests.Response
         """
-        url = f'{self.API_URL}/buildings/{building_id}/analytics/'
+        url = f"{self.API_URL}/buildings/{building_id}/analytics/"
 
         headers = {
-            'accept': 'application/json',
-            'Content-Type': 'application/json',
-            'Authorization': self._token,
+            "accept": "application/json",
+            "Content-Type": "application/json",
+            "Authorization": self._token,
         }
 
         try:
-            response = requests.request('POST', url, headers=headers, data=json.dumps(config))
+            response = requests.request("POST", url, headers=headers, data=json.dumps(config))
         except ConnectionError:
-            message = 'BETTER service could not create analytics for this building'
+            message = "BETTER service could not create analytics for this building"
             raise AnalysisPipelineError(message)
 
         return response
@@ -311,25 +311,25 @@ class BETTERClient:
         :params: analysis id
         :returns: tuple(tempfile.TemporaryDirectory, list[str]), temporary directory containing result files and list of error messages
         """
-        url = f'{self.API_URL}/standalone_html/building_analytics/{analysis_id}/'
+        url = f"{self.API_URL}/standalone_html/building_analytics/{analysis_id}/"
         headers = {
-            'accept': '*/*',
-            'Authorization': self._token,
+            "accept": "*/*",
+            "Authorization": self._token,
         }
-        params = {'unit': 'IP'}
+        params = {"unit": "IP"}
 
         try:
-            response = requests.request('GET', url, headers=headers, params=params)
-            standalone_html = response.text.encode('utf8').decode()
+            response = requests.request("GET", url, headers=headers, params=params)
+            standalone_html = response.text.encode("utf8").decode()
 
         except ConnectionError:
-            message = 'BETTER service could not find the analysis'
+            message = "BETTER service could not find the analysis"
             raise AnalysisPipelineError(message)
 
         # save the file from the response
         temporary_results_dir = TemporaryDirectory()
         with NamedTemporaryFile(
-            mode='w', suffix='.html', dir=temporary_results_dir.name, delete=False, encoding=locale.getpreferredencoding(False)
+            mode="w", suffix=".html", dir=temporary_results_dir.name, delete=False, encoding=locale.getpreferredencoding(False)
         ) as file:
             file.write(standalone_html)
 
@@ -342,21 +342,21 @@ class BETTERClient:
         :params: better_analysis_id
         :returns: tuple(dict, list[str]), analysis response json and error messages
         """
-        url = f'{self.API_URL}/buildings/{better_building_id}/analytics/{better_analysis_id}/?format=json'
+        url = f"{self.API_URL}/buildings/{better_building_id}/analytics/{better_analysis_id}/?format=json"
 
         headers = {
-            'accept': '*/*',
-            'Authorization': self._token,
+            "accept": "*/*",
+            "Authorization": self._token,
         }
         try:
-            response = requests.request('GET', url, headers=headers)
+            response = requests.request("GET", url, headers=headers)
             if response.status_code == 404:
                 return None, [f'BETTER analysis could not be fetched: Status Code: 404 {response.json()["detail"]}']
             if response.status_code != 200:
-                return None, [f'BETTER analysis could not be fetched: Status Code: {response.status_code}']
+                return None, [f"BETTER analysis could not be fetched: Status Code: {response.status_code}"]
             response_json = response.json()
         except ConnectionError as e:
-            message = f'Failed to connect to BETTER service: {e}'
+            message = f"Failed to connect to BETTER service: {e}"
             raise AnalysisPipelineError(message)
 
         return response_json, []
@@ -372,17 +372,17 @@ class BETTERClient:
         try:
             response = self._create_building_analysis(building_id, config)
         except Exception as e:
-            return None, [f'Failed to create analysis for building: {e}']
+            return None, [f"Failed to create analysis for building: {e}"]
 
         if response.status_code != 201:
-            return None, [f'BETTER analysis could not be completed and got the following response: {response.text}']
+            return None, [f"BETTER analysis could not be completed and got the following response: {response.text}"]
 
         # Make sure the analysis is done. Poll response until key 'generation_result' is 'COMPLETE'
-        url = f'{self.API_URL}/buildings/{building_id}/analytics/'
+        url = f"{self.API_URL}/buildings/{building_id}/analytics/"
 
         headers = {
-            'accept': 'application/json',
-            'Authorization': self._token,
+            "accept": "application/json",
+            "Authorization": self._token,
         }
 
         def is_ready(res):
@@ -390,18 +390,18 @@ class BETTERClient:
             :param res: response tuple from get_portfolio_analysis
             :return: bool
             """
-            generation_result = res.json()[0]['generation_result']
-            return generation_result in {'COMPLETE', 'FAILED'}
+            generation_result = res.json()[0]["generation_result"]
+            return generation_result in {"COMPLETE", "FAILED"}
 
         try:
-            response = polling.poll(lambda: requests.request('GET', url, headers=headers), check_success=is_ready, timeout=300, step=5)
+            response = polling.poll(lambda: requests.request("GET", url, headers=headers), check_success=is_ready, timeout=300, step=5)
         except TimeoutError:
-            return None, ['BETTER analysis timed out']
+            return None, ["BETTER analysis timed out"]
 
-        if response.json()[0]['generation_result'] == 'FAILED':
-            generation_message = response.json()[0]['generation_message']
+        if response.json()[0]["generation_result"] == "FAILED":
+            generation_message = response.json()[0]["generation_message"]
             return None, [f'Building Analysis generation status returned "FAILED": {generation_message}']
 
         data = response.json()
-        better_analysis_id = data[0]['id']
+        better_analysis_id = data[0]["id"]
         return better_analysis_id, []

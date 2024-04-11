@@ -5,54 +5,54 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('seed', '0208_alter_scenario_event'),
+        ("seed", "0208_alter_scenario_event"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='eeejcejst',
-            name='id',
+            model_name="eeejcejst",
+            name="id",
         ),
         migrations.RemoveField(
-            model_name='eeejhud',
-            name='id',
+            model_name="eeejhud",
+            name="id",
         ),
         migrations.AlterField(
-            model_name='eeejcejst',
-            name='census_tract_geoid',
+            model_name="eeejcejst",
+            name="census_tract_geoid",
             field=models.CharField(max_length=11, primary_key=True, serialize=False),
         ),
         migrations.AlterField(
-            model_name='eeejcejst',
-            name='energy_burden_low_income',
+            model_name="eeejcejst",
+            name="energy_burden_low_income",
             field=models.BooleanField(),
         ),
         migrations.AlterField(
-            model_name='eeejcejst',
-            name='energy_burden_percent',
+            model_name="eeejcejst",
+            name="energy_burden_percent",
             field=models.IntegerField(null=True),
         ),
         migrations.AlterField(
-            model_name='eeejcejst',
-            name='low_income',
+            model_name="eeejcejst",
+            name="low_income",
             field=models.BooleanField(),
         ),
         migrations.AlterField(
-            model_name='eeejcejst',
-            name='share_neighbors_disadvantaged',
+            model_name="eeejcejst",
+            name="share_neighbors_disadvantaged",
             field=models.IntegerField(null=True),
         ),
         migrations.AlterField(
-            model_name='eeejhud',
-            name='hud_object_id',
+            model_name="eeejhud",
+            name="hud_object_id",
             field=models.CharField(max_length=20, primary_key=True, serialize=False),
         ),
         migrations.AddIndex(
-            model_name='eeejcejst',
-            index=models.Index(fields=['census_tract_geoid', 'dac'], name='seed_eeejce_census__bcc6d1_idx'),
+            model_name="eeejcejst",
+            index=models.Index(fields=["census_tract_geoid", "dac"], name="seed_eeejce_census__bcc6d1_idx"),
         ),
         migrations.AddIndex(
-            model_name='eeejhud',
-            index=models.Index(fields=['census_tract_geoid'], name='seed_eeejhu_census__d1faf7_idx'),
+            model_name="eeejhud",
+            index=models.Index(fields=["census_tract_geoid"], name="seed_eeejhu_census__d1faf7_idx"),
         ),
     ]

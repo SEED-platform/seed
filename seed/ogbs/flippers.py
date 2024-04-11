@@ -38,13 +38,13 @@ def make_flipper(owner, expires, label, kind, initial_value):
     Adds a flipper to the module's registry
     all values string, returns dict
     """
-    flipper = {'label': label, kind: initial_value, 'expires': expires, 'owner': owner}
+    flipper = {"label": label, kind: initial_value, "expires": expires, "owner": owner}
     REGISTRY[label] = flipper
     return flipper
 
 
 def _is_stale(flipper, date):
-    expires_str = flipper.get('expires', '')
+    expires_str = flipper.get("expires", "")
     expires = parse_datetime(expires_str)
     if expires:
         return date > expires
@@ -52,8 +52,8 @@ def _is_stale(flipper, date):
 
 
 def _log_stale_flipper(flipper):
-    owner = flipper.get('owner', 'unknown owner')
-    label = flipper.get('label', 'unknown label')
+    owner = flipper.get("owner", "unknown owner")
+    label = flipper.get("label", "unknown label")
     print(f"Flipper '{label}' is stale; tell {owner} to tidy up")
 
 
@@ -61,11 +61,11 @@ def is_active(s, now=datetime.datetime.now(pytz.UTC)):
     """
     Checks if the flipper is active, use for hiding feature eg:
     ```
-    if flipper.is_active('my_awesome_feature'):
+    if flipper.is_active("my_awesome_feature"):
         do_feature()
     ```
     """
-    flipper = REGISTRY.get(s, {'boolean': False})
+    flipper = REGISTRY.get(s, {"boolean": False})
     if _is_stale(flipper, now):
         _log_stale_flipper(flipper)
-    return flipper['boolean']
+    return flipper["boolean"]

@@ -5,13 +5,13 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('orgs', '0023_auto_20220721_1851'),
+        ("orgs", "0023_auto_20220721_1851"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='organization',
-            name='salesforce_enabled',
+            model_name="organization",
+            name="salesforce_enabled",
             field=models.BooleanField(default=False),
         ),
     ]

@@ -6,18 +6,18 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('seed', '0039_auto_20161013_1536'),
+        ("seed", "0039_auto_20161013_1536"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='propertystate',
-            name='history',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='seed.PropertyAuditLog'),
+            model_name="propertystate",
+            name="history",
+            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to="seed.PropertyAuditLog"),
         ),
         migrations.AddField(
-            model_name='taxlotstate',
-            name='history',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='seed.TaxLotAuditLog'),
+            model_name="taxlotstate",
+            name="history",
+            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to="seed.TaxLotAuditLog"),
         ),
     ]

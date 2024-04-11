@@ -5,17 +5,17 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('seed', '0118_match_merge_link_all_orgs'),
+        ("seed", "0118_match_merge_link_all_orgs"),
     ]
 
     operations = [
         migrations.RunSQL(
-            'ALTER TABLE seed_column' '    ADD COLUMN IF NOT EXISTS recognize_empty BOOLEAN NOT NULL DEFAULT FALSE;',
-            reverse_sql='ALTER TABLE seed_column DROP COLUMN recognize_empty',
+            "ALTER TABLE seed_column" "    ADD COLUMN IF NOT EXISTS recognize_empty BOOLEAN NOT NULL DEFAULT FALSE;",
+            reverse_sql="ALTER TABLE seed_column DROP COLUMN recognize_empty",
             state_operations=[
                 migrations.AddField(
-                    model_name='column',
-                    name='recognize_empty',
+                    model_name="column",
+                    name="recognize_empty",
                     field=models.BooleanField(default=False),
                 ),
             ],

@@ -22,8 +22,8 @@ class UbidModel(models.Model):
     class Meta:
         # Two partial indexes to handle uniqueness with null values
         constraints = [
-            models.UniqueConstraint(fields=['ubid', 'property_id'], name='unique_ubid_for_property', condition=Q(taxlot_id__isnull=True)),
-            models.UniqueConstraint(fields=['ubid', 'taxlot_id'], name='unique_ubid_for_taxlot', condition=Q(property_id__isnull=True)),
+            models.UniqueConstraint(fields=["ubid", "property_id"], name="unique_ubid_for_property", condition=Q(taxlot_id__isnull=True)),
+            models.UniqueConstraint(fields=["ubid", "taxlot_id"], name="unique_ubid_for_taxlot", condition=Q(property_id__isnull=True)),
         ]
 
 
@@ -32,7 +32,7 @@ def post_save_ubid_model(sender, **kwargs):
     """
     Update state.ubid for the preferred UBID
     """
-    ubid_model: UbidModel = kwargs.get('instance')
+    ubid_model: UbidModel = kwargs.get("instance")
     state = ubid_model.property or ubid_model.taxlot
     if ubid_model.preferred and state.ubid != ubid_model.ubid:
         state.ubid = ubid_model.ubid
@@ -48,7 +48,7 @@ def pre_delete_ubid_model(sender, **kwargs):
     """
     If a preferred ubid is deleted, remove the state.ubid
     """
-    ubid_model: UbidModel = kwargs.get('instance')
+    ubid_model: UbidModel = kwargs.get("instance")
     if ubid_model.preferred:
         state = ubid_model.property or ubid_model.taxlot
         state.ubid = None

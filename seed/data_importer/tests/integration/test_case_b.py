@@ -20,14 +20,14 @@ logger = logging.getLogger(__name__)
 
 class TestCaseB(DataMappingBaseTestCase):
     def setUp(self):
-        filename = getattr(self, 'filename', 'example-data-properties.xlsx')
+        filename = getattr(self, "filename", "example-data-properties.xlsx")
         import_file_source_type = ASSESSED_RAW
-        self.fake_mappings = FAKE_MAPPINGS['portfolio']
+        self.fake_mappings = FAKE_MAPPINGS["portfolio"]
         self.fake_extra_data = FAKE_EXTRA_DATA
         self.fake_row = FAKE_ROW
         selfvars = self.set_up(import_file_source_type)
         self.user, self.org, self.import_file, self.import_record, self.cycle = selfvars
-        filepath = osp.join(osp.dirname(__file__), '..', 'data', filename)
+        filepath = osp.join(osp.dirname(__file__), "..", "data", filename)
         self.import_file.file = SimpleUploadedFile(name=filename, content=pathlib.Path(filepath).read_bytes())
         self.import_file.save()
 
@@ -56,17 +56,17 @@ class TestCaseB(DataMappingBaseTestCase):
 
         # verify that the lot_number has the tax_lot information. For this case it is one-to-many
         p_test = PropertyState.objects.filter(
-            pm_property_id='5233255',
+            pm_property_id="5233255",
             organization=self.org,
             data_state=DATA_STATE_MAPPING,
             import_file=self.import_file,
         ).first()
-        self.assertEqual(p_test.lot_number, '333/66555;333/66125;333/66148')
+        self.assertEqual(p_test.lot_number, "333/66555;333/66125;333/66148")
 
         tasks.geocode_and_match_buildings_task(self.import_file.id)
 
         # make sure the property only has one tax lot and vice versa
-        tlv = TaxLotView.objects.filter(state__jurisdiction_tax_lot_id='11160509', cycle=self.cycle)
+        tlv = TaxLotView.objects.filter(state__jurisdiction_tax_lot_id="11160509", cycle=self.cycle)
         self.assertEqual(len(tlv), 1)
         tlv = tlv[0]
         properties = tlv.property_states()

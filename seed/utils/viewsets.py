@@ -66,7 +66,7 @@ class SEEDOrgModelViewSet(DRFEndpointMixin, OrgQuerySetMixin, ModelViewSet):  # 
     """
 
     renderer_classes = RENDERER_CLASSES
-    parser_classes: 'tuple[Any, ...]' = PARSER_CLASSES
+    parser_classes: "tuple[Any, ...]" = PARSER_CLASSES
     authentication_classes = AUTHENTICATION_CLASSES
     permission_classes = PERMISSIONS_CLASSES
 
@@ -86,7 +86,7 @@ class SEEDOrgReadOnlyModelViewSet(
     """
 
     renderer_classes = RENDERER_CLASSES
-    parser_classes: 'tuple[Any, ...]' = PARSER_CLASSES
+    parser_classes: "tuple[Any, ...]" = PARSER_CLASSES
     authentication_classes = AUTHENTICATION_CLASSES
     permission_classes = PERMISSIONS_CLASSES
 

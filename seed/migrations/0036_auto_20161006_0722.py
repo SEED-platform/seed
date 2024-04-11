@@ -5,39 +5,39 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('seed', '0035_auto_20161005_0238'),
+        ("seed", "0035_auto_20161005_0238"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='taxlotstate',
-            name='custom_id_1',
+            model_name="taxlotstate",
+            name="custom_id_1",
             field=models.CharField(blank=True, max_length=255, null=True),
         ),
         migrations.AlterField(
-            model_name='propertystate',
-            name='data_state',
+            model_name="propertystate",
+            name="data_state",
             field=models.IntegerField(
-                choices=[(0, b'Unknown'), (1, b'Post Import'), (2, b'Post Mapping'), (3, b'Post Matching'), (4, b'Flagged for Deletion')],
+                choices=[(0, b"Unknown"), (1, b"Post Import"), (2, b"Post Mapping"), (3, b"Post Matching"), (4, b"Flagged for Deletion")],
                 default=0,
             ),
         ),
         migrations.AlterField(
-            model_name='propertystate',
-            name='normalized_address',
+            model_name="propertystate",
+            name="normalized_address",
             field=models.CharField(blank=True, editable=False, max_length=255, null=True),
         ),
         migrations.AlterField(
-            model_name='taxlotstate',
-            name='data_state',
+            model_name="taxlotstate",
+            name="data_state",
             field=models.IntegerField(
-                choices=[(0, b'Unknown'), (1, b'Post Import'), (2, b'Post Mapping'), (3, b'Post Matching'), (4, b'Flagged for Deletion')],
+                choices=[(0, b"Unknown"), (1, b"Post Import"), (2, b"Post Mapping"), (3, b"Post Matching"), (4, b"Flagged for Deletion")],
                 default=0,
             ),
         ),
         migrations.AlterField(
-            model_name='taxlotstate',
-            name='normalized_address',
+            model_name="taxlotstate",
+            name="normalized_address",
             field=models.CharField(blank=True, editable=False, max_length=255, null=True),
         ),
     ]

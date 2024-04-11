@@ -23,19 +23,19 @@ _log = logging.getLogger(__name__)
 
 
 nested_org_id_path_field = AutoSchemaHelper.base_field(
-    'nested_organization_id',
-    'IN_PATH',
-    'Organization ID - identifier used to specify a DataQualityCheck and its Rules',
+    "nested_organization_id",
+    "IN_PATH",
+    "Organization ID - identifier used to specify a DataQualityCheck and its Rules",
     True,
-    'TYPE_INTEGER',
+    "TYPE_INTEGER",
 )
 
 
-@method_decorator(name='list', decorator=swagger_auto_schema(manual_parameters=[nested_org_id_path_field]))
-@method_decorator(name='retrieve', decorator=swagger_auto_schema(manual_parameters=[nested_org_id_path_field]))
-@method_decorator(name='update', decorator=swagger_auto_schema(manual_parameters=[nested_org_id_path_field]))
-@method_decorator(name='destroy', decorator=swagger_auto_schema(manual_parameters=[nested_org_id_path_field]))
-@method_decorator(name='create', decorator=swagger_auto_schema(manual_parameters=[nested_org_id_path_field]))
+@method_decorator(name="list", decorator=swagger_auto_schema(manual_parameters=[nested_org_id_path_field]))
+@method_decorator(name="retrieve", decorator=swagger_auto_schema(manual_parameters=[nested_org_id_path_field]))
+@method_decorator(name="update", decorator=swagger_auto_schema(manual_parameters=[nested_org_id_path_field]))
+@method_decorator(name="destroy", decorator=swagger_auto_schema(manual_parameters=[nested_org_id_path_field]))
+@method_decorator(name="create", decorator=swagger_auto_schema(manual_parameters=[nested_org_id_path_field]))
 class DataQualityCheckRuleViewSet(ModelViewSetWithoutPatch):
     serializer_class = RuleSerializer
     model = Rule
@@ -43,15 +43,15 @@ class DataQualityCheckRuleViewSet(ModelViewSetWithoutPatch):
     permission_classes = (SEEDOrgPermissions,)
 
     # allow nested_organization_id to be used for authorization (i.e., in has_perm_class)
-    authz_org_id_kwarg = 'nested_organization_id'
+    authz_org_id_kwarg = "nested_organization_id"
 
     def get_queryset(self):
         # Handle the anonymous case (e.g., Swagger page load)
         if not self.kwargs:
             return Rule.objects.none()
 
-        org_id = self.kwargs.get('nested_organization_id')
-        rule_id = self.kwargs.get('pk')
+        org_id = self.kwargs.get("nested_organization_id")
+        rule_id = self.kwargs.get("pk")
 
         if rule_id is None:
             return DataQualityCheck.retrieve(org_id).rules.all()
@@ -61,8 +61,8 @@ class DataQualityCheckRuleViewSet(ModelViewSetWithoutPatch):
     @swagger_auto_schema(manual_parameters=[nested_org_id_path_field], request_body=no_body, responses={200: RuleSerializer(many=True)})
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('requires_owner')
-    @action(detail=False, methods=['PUT'])
+    @has_perm_class("requires_owner")
+    @action(detail=False, methods=["PUT"])
     def reset(self, request, nested_organization_id=None):
         """
         Resets an organization's data_quality rules

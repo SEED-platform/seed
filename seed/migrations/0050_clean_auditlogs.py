@@ -4,8 +4,8 @@ from django.db import migrations
 
 
 def forwards(apps, schema_editor):
-    PropertyAuditLog = apps.get_model('seed', 'PropertyAuditLog')
-    TaxLotAuditLog = apps.get_model('seed', 'TaxLotAuditLog')
+    PropertyAuditLog = apps.get_model("seed", "PropertyAuditLog")
+    TaxLotAuditLog = apps.get_model("seed", "TaxLotAuditLog")
 
     # delete some very specific *AuditLogs that were causing issues because they were one offs
     try:
@@ -25,53 +25,53 @@ def forwards(apps, schema_editor):
     except TaxLotAuditLog.MultipleObjectsReturned:
         pass
 
-    pals = PropertyAuditLog.objects.filter(description='Initial audit log added on update.')
+    pals = PropertyAuditLog.objects.filter(description="Initial audit log added on update.")
     for p in pals:
         p.delete()
 
-    tals = TaxLotAuditLog.objects.filter(description='Initial audit log added on update.')
+    tals = TaxLotAuditLog.objects.filter(description="Initial audit log added on update.")
     for t in tals:
         t.delete()
 
     for p in PropertyAuditLog.objects.all():
-        print('\n----PropertyAuditLog----')
-        print(f'ID: {p.pk}   Description:  {p.description}')
+        print("\n----PropertyAuditLog----")
+        print(f"ID: {p.pk}   Description:  {p.description}")
 
-        if not p.name and p.description == 'Initial audit log added on creation/save.':
-            p.name = 'Import Creation'
+        if not p.name and p.description == "Initial audit log added on creation/save.":
+            p.name = "Import Creation"
 
         property_state_1 = None
         property_state_2 = None
         if p.parent1:
             property_state_1 = p.parent1.state
         else:
-            print('Parent 1 was None')
+            print("Parent 1 was None")
         if p.parent2:
             property_state_2 = p.parent2.state
         else:
-            print('Parent 2 was None')
+            print("Parent 2 was None")
 
         p.parent_state1 = property_state_1
         p.parent_state2 = property_state_2
         p.save()
 
     for t in TaxLotAuditLog.objects.all():
-        print('\n----TaxLotAuditLog----')
-        print(f'ID: {t.pk}   Description:  {t.description}')
+        print("\n----TaxLotAuditLog----")
+        print(f"ID: {t.pk}   Description:  {t.description}")
 
-        if not t.name and t.description == 'Initial audit log added on creation/save.':
-            t.name = 'Import Creation'
+        if not t.name and t.description == "Initial audit log added on creation/save.":
+            t.name = "Import Creation"
 
         tax_lot_state_1 = None
         tax_lot_state_2 = None
         if t.parent1:
             tax_lot_state_1 = t.parent1.state
         else:
-            print('Parent 1 was None')
+            print("Parent 1 was None")
         if t.parent2:
             tax_lot_state_2 = t.parent2.state
         else:
-            print('Parent 2 was None')
+            print("Parent 2 was None")
 
         t.parent_state1 = tax_lot_state_1
         t.parent_state2 = tax_lot_state_2
@@ -80,7 +80,7 @@ def forwards(apps, schema_editor):
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('seed', '0049_auto_20170222_1217'),
+        ("seed", "0049_auto_20170222_1217"),
     ]
 
     operations = [

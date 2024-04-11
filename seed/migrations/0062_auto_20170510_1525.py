@@ -6,13 +6,13 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('seed', '0061_dataqualitycheck_rule'),
+        ("seed", "0061_dataqualitycheck_rule"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='rule',
-            name='status_label',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.DO_NOTHING, to='seed.StatusLabel'),
+            model_name="rule",
+            name="status_label",
+            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.DO_NOTHING, to="seed.StatusLabel"),
         ),
     ]

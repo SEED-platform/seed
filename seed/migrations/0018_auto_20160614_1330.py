@@ -5,12 +5,12 @@ from django.db import migrations
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('seed', '0017_column_extra_data_source'),
+        ("seed", "0017_column_extra_data_source"),
     ]
 
     operations = [
         migrations.AlterUniqueTogether(
-            name='column',
-            unique_together={('organization', 'column_name', 'is_extra_data', 'extra_data_source')},
+            name="column",
+            unique_together={("organization", "column_name", "is_extra_data", "extra_data_source")},
         ),
     ]

@@ -7,23 +7,23 @@ from django.db import migrations
 
 def remove_old_ghg_columns(apps, schema_editor):
     """create a default BuildingSync column mapping preset for each organization"""
-    Organization = apps.get_model('orgs', 'Organization')
+    Organization = apps.get_model("orgs", "Organization")
 
     better_columns = [
-        'better_ghg_reductions_combined',
-        'better_ghg_reductions_electricity',
-        'better_ghg_reductions_fuel',
+        "better_ghg_reductions_combined",
+        "better_ghg_reductions_electricity",
+        "better_ghg_reductions_fuel",
     ]
     other_columns = [
-        'total_ghg_emissions',
-        'total_ghg_emissions_intensity',
+        "total_ghg_emissions",
+        "total_ghg_emissions_intensity",
     ]
     problematic_columns = better_columns + other_columns
     for org in Organization.objects.all():
         # print(f'processing organization: {org.id}:{org.name}')
         for prob_col in problematic_columns:
             # find the problematic columns
-            columns = org.column_set.filter(column_name=prob_col, table_name='PropertyState').order_by('-created')
+            columns = org.column_set.filter(column_name=prob_col, table_name="PropertyState").order_by("-created")
             # find the newest column, and delete that one.
             if len(columns) > 1:
                 # for column in columns:
@@ -34,7 +34,7 @@ def remove_old_ghg_columns(apps, schema_editor):
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('seed', '0173_update_bae_assets'),
+        ("seed", "0173_update_bae_assets"),
     ]
 
     operations = [

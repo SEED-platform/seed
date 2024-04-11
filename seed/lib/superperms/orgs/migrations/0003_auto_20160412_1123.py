@@ -5,18 +5,18 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('orgs', '0002_auto_20160321_1138'),
+        ("orgs", "0002_auto_20160321_1138"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='organization',
-            name='created',
+            model_name="organization",
+            name="created",
             field=models.DateTimeField(auto_now_add=True, null=True),
         ),
         migrations.AddField(
-            model_name='organization',
-            name='modified',
+            model_name="organization",
+            name="modified",
             field=models.DateTimeField(auto_now=True, null=True),
         ),
     ]

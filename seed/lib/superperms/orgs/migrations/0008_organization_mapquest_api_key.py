@@ -5,13 +5,13 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('orgs', '0007_auto_20181107_0904'),
+        ("orgs", "0007_auto_20181107_0904"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='organization',
-            name='mapquest_api_key',
-            field=models.CharField(blank=True, default='', max_length=128),
+            model_name="organization",
+            name="mapquest_api_key",
+            field=models.CharField(blank=True, default="", max_length=128),
         ),
     ]

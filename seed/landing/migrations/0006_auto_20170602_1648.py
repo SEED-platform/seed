@@ -5,18 +5,18 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('landing', '0005_merge'),
+        ("landing", "0005_merge"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='seeduser',
-            name='default_building_detail_custom_columns',
+            model_name="seeduser",
+            name="default_building_detail_custom_columns",
             field=models.JSONField(default=dict),
         ),
         migrations.AlterField(
-            model_name='seeduser',
-            name='default_custom_columns',
+            model_name="seeduser",
+            name="default_custom_columns",
             field=models.JSONField(default=dict),
         ),
     ]

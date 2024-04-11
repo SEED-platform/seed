@@ -6,18 +6,18 @@ from django.db import migrations
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('seed', '0081_merge_20180109_0747'),
+        ("seed", "0081_merge_20180109_0747"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='propertystate',
-            name='source_eui_modeled_pint',
-            field=quantityfield.fields.QuantityField(base_units='kBtu/ft**2/year', blank=True, null=True),
+            model_name="propertystate",
+            name="source_eui_modeled_pint",
+            field=quantityfield.fields.QuantityField(base_units="kBtu/ft**2/year", blank=True, null=True),
         ),
         migrations.AddField(
-            model_name='propertystate',
-            name='site_eui_modeled_pint',
-            field=quantityfield.fields.QuantityField(base_units='kBtu/ft**2/year', blank=True, null=True),
+            model_name="propertystate",
+            name="site_eui_modeled_pint",
+            field=quantityfield.fields.QuantityField(base_units="kBtu/ft**2/year", blank=True, null=True),
         ),
     ]

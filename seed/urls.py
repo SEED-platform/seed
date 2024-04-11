@@ -9,5 +9,5 @@ from django.urls import re_path
 from seed.views.main import home
 
 urlpatterns = [
-    re_path(r'^$', home, name='home'),
+    re_path(r"^$", home, name="home"),
 ]

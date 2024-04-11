@@ -21,10 +21,10 @@ def filter_labels_for_inv_type(request, inventory_type=None):
     params = request.query_params.dict()
     # Since this is being passed in as a query string, the object ends up
     # coming through as a string.
-    params['filter_params'] = json.loads(params.get('filter_params', '{}'))
+    params["filter_params"] = json.loads(params.get("filter_params", "{}"))
 
     # If cycle_id is passed with an inventory_type limit the inventory filter
-    cycle_id = params.get('cycle_id', None) if inventory_type is not None else None
+    cycle_id = params.get("cycle_id", None) if inventory_type is not None else None
 
     params = search.process_search_params(
         params=params,
@@ -38,9 +38,9 @@ def filter_labels_for_inv_type(request, inventory_type=None):
         cycle_id=cycle_id,
     )
     # Return labels limited to the 'selected' list.  Otherwise, if selected is empty, return all
-    if request.data.get('selected'):
+    if request.data.get("selected"):
         return queryset.filter(
-            id__in=request.data['selected'],
+            id__in=request.data["selected"],
         )
     return queryset
 
@@ -50,7 +50,7 @@ def get_labels(request, qs, super_organization, inv_type):
 
     # filter by AH
     ali = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
-    if inv_type == 'property_view':
+    if inv_type == "property_view":
         in_subtree = Q(property__access_level_instance__lft__gte=ali.lft, property__access_level_instance__rgt__lte=ali.rgt)
     else:
         in_subtree = Q(taxlot__access_level_instance__lft__gte=ali.lft, taxlot__access_level_instance__rgt__lte=ali.rgt)

@@ -5,18 +5,18 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('seed', '0040_auto_20161014_1839'),
+        ("seed", "0040_auto_20161014_1839"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='propertyauditlog',
-            name='record_type',
-            field=models.IntegerField(blank=True, choices=[(0, 'ImportFile'), (1, 'UserEdit'), (2, 'MergeState')], null=True),
+            model_name="propertyauditlog",
+            name="record_type",
+            field=models.IntegerField(blank=True, choices=[(0, "ImportFile"), (1, "UserEdit"), (2, "MergeState")], null=True),
         ),
         migrations.AlterField(
-            model_name='taxlotauditlog',
-            name='record_type',
-            field=models.IntegerField(blank=True, choices=[(0, 'ImportFile'), (1, 'UserEdit'), (2, 'MergeState')], null=True),
+            model_name="taxlotauditlog",
+            name="record_type",
+            field=models.IntegerField(blank=True, choices=[(0, "ImportFile"), (1, "UserEdit"), (2, "MergeState")], null=True),
         ),
     ]

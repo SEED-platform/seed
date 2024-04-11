@@ -22,38 +22,38 @@ _log = logging.getLogger(__name__)
 
 
 @method_decorator(
-    name='retrieve',
+    name="retrieve",
     decorator=[
-        has_perm_class('requires_viewer'),
-        has_hierarchy_access(taxlot_view_id_kwarg='taxlot_pk', property_view_id_kwarg='property_pk'),
+        has_perm_class("requires_viewer"),
+        has_hierarchy_access(taxlot_view_id_kwarg="taxlot_pk", property_view_id_kwarg="property_pk"),
     ],
 )
 @method_decorator(
-    name='list',
+    name="list",
     decorator=[
-        has_perm_class('requires_viewer'),
-        has_hierarchy_access(taxlot_view_id_kwarg='taxlot_pk', property_view_id_kwarg='property_pk'),
+        has_perm_class("requires_viewer"),
+        has_hierarchy_access(taxlot_view_id_kwarg="taxlot_pk", property_view_id_kwarg="property_pk"),
     ],
 )
 @method_decorator(
-    name='create',
+    name="create",
     decorator=[
-        has_perm_class('requires_member'),
-        has_hierarchy_access(taxlot_view_id_kwarg='taxlot_pk', property_view_id_kwarg='property_pk'),
+        has_perm_class("requires_member"),
+        has_hierarchy_access(taxlot_view_id_kwarg="taxlot_pk", property_view_id_kwarg="property_pk"),
     ],
 )
 @method_decorator(
-    name='update',
+    name="update",
     decorator=[
-        has_perm_class('requires_member'),
-        has_hierarchy_access(taxlot_view_id_kwarg='taxlot_pk', property_view_id_kwarg='property_pk'),
+        has_perm_class("requires_member"),
+        has_hierarchy_access(taxlot_view_id_kwarg="taxlot_pk", property_view_id_kwarg="property_pk"),
     ],
 )
 @method_decorator(
-    name='destroy',
+    name="destroy",
     decorator=[
-        has_perm_class('requires_member'),
-        has_hierarchy_access(taxlot_view_id_kwarg='taxlot_pk', property_view_id_kwarg='property_pk'),
+        has_perm_class("requires_member"),
+        has_hierarchy_access(taxlot_view_id_kwarg="taxlot_pk", property_view_id_kwarg="property_pk"),
     ],
 )
 class NoteViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
@@ -76,26 +76,26 @@ class NoteViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
     pagination_class = None
     model = Note
     parser_classes = (JSONParser, FormParser)
-    orgfilter = 'organization_id'
+    orgfilter = "organization_id"
 
     def get_queryset(self):
         # check if the request is properties or taxlots
         org_id = self.get_organization(self.request)
-        if self.kwargs.get('property_pk', None):
-            return Note.objects.filter(organization_id=org_id, property_view_id=self.kwargs.get('property_pk'))
-        elif self.kwargs.get('taxlot_pk', None):
-            return Note.objects.filter(organization_id=org_id, taxlot_view_id=self.kwargs.get('taxlot_pk'))
+        if self.kwargs.get("property_pk", None):
+            return Note.objects.filter(organization_id=org_id, property_view_id=self.kwargs.get("property_pk"))
+        elif self.kwargs.get("taxlot_pk", None):
+            return Note.objects.filter(organization_id=org_id, taxlot_view_id=self.kwargs.get("taxlot_pk"))
         else:
             return Note.objects.filter(organization_id=org_id)
 
     def perform_create(self, serializer):
         org_id = self.get_organization(self.request)
-        if self.kwargs.get('property_pk', None):
-            property_view = PropertyView.objects.get(pk=self.kwargs.get('property_pk', None))
+        if self.kwargs.get("property_pk", None):
+            property_view = PropertyView.objects.get(pk=self.kwargs.get("property_pk", None))
             note = serializer.save(organization_id=org_id, user=self.request.user, property_view=property_view)
             NoteEvent.objects.create(property=property_view.property, cycle=property_view.cycle, note=note)
 
-        elif self.kwargs.get('taxlot_pk', None):
-            serializer.save(organization_id=org_id, user=self.request.user, taxlot_view_id=self.kwargs.get('taxlot_pk', None))
+        elif self.kwargs.get("taxlot_pk", None):
+            serializer.save(organization_id=org_id, user=self.request.user, taxlot_view_id=self.kwargs.get("taxlot_pk", None))
         else:
-            _log.warn('Unable to create model without a property_pk or taxlot_pk')
+            _log.warn("Unable to create model without a property_pk or taxlot_pk")

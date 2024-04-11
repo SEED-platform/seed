@@ -5,8 +5,8 @@ from django.db import migrations
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('seed', '0143_auto_20210614_2058'),
-        ('seed', '0142_merge_20210611_0610'),
+        ("seed", "0143_auto_20210614_2058"),
+        ("seed", "0142_merge_20210611_0610"),
     ]
 
     operations = []

@@ -5,14 +5,14 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('seed', '0034_merge'),
-        ('data_importer', '0004_auto_20160411_1139'),
+        ("seed", "0034_merge"),
+        ("data_importer", "0004_auto_20160411_1139"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='importfile',
-            name='cycle',
-            field=models.ForeignKey(blank=True, null=True, on_delete=models.deletion.CASCADE, to='seed.Cycle'),
+            model_name="importfile",
+            name="cycle",
+            field=models.ForeignKey(blank=True, null=True, on_delete=models.deletion.CASCADE, to="seed.Cycle"),
         ),
     ]

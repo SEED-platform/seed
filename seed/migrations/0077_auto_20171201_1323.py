@@ -6,30 +6,30 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('seed', '0076_auto_20171018_1238'),
+        ("seed", "0076_auto_20171018_1238"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='property',
-            name='created',
+            model_name="property",
+            name="created",
             field=models.DateTimeField(auto_now_add=True, default=django.utils.timezone.now),
             preserve_default=False,
         ),
         migrations.AddField(
-            model_name='property',
-            name='updated',
+            model_name="property",
+            name="updated",
             field=models.DateTimeField(auto_now=True),
         ),
         migrations.AddField(
-            model_name='taxlot',
-            name='created',
+            model_name="taxlot",
+            name="created",
             field=models.DateTimeField(auto_now_add=True, default=django.utils.timezone.now),
             preserve_default=False,
         ),
         migrations.AddField(
-            model_name='taxlot',
-            name='updated',
+            model_name="taxlot",
+            name="updated",
             field=models.DateTimeField(auto_now=True),
         ),
     ]

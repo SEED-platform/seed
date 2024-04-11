@@ -41,10 +41,10 @@ class TestOrgMixin(TestCase):
     def setUp(self):
         self.maxDiff = None
         user_details = {
-            'username': 'test_user@demo.com',
-            'password': 'test_pass',
+            "username": "test_user@demo.com",
+            "password": "test_pass",
         }
-        self.user = User.objects.create_superuser(email='test_user@demo.com', **user_details)
+        self.user = User.objects.create_superuser(email="test_user@demo.com", **user_details)
         self.org, self.org_user, _ = create_organization(self.user)
 
         class OrgMixinClass(OrgMixin):
@@ -57,8 +57,8 @@ class TestOrgMixin(TestCase):
         self.org.delete()
         self.org_user.delete()
 
-    @mock.patch('seed.utils.api.get_user_org')
-    @mock.patch('seed.utils.api.get_org_id')
+    @mock.patch("seed.utils.api.get_user_org")
+    @mock.patch("seed.utils.api.get_org_id")
     def test_get_organization(self, mock_get_org_id, mock_get_user_org):
         """test get_organization method"""
         mock_request = mock.MagicMock()
@@ -95,10 +95,10 @@ class TestOrgCreateMixin(TestCase):
     def setUp(self):
         self.maxDiff = None
         user_details = {
-            'username': 'test_user@demo.com',
-            'password': 'test_pass',
+            "username": "test_user@demo.com",
+            "password": "test_pass",
         }
-        self.user = User.objects.create_superuser(email='test_user@demo.com', **user_details)
+        self.user = User.objects.create_superuser(email="test_user@demo.com", **user_details)
         self.org, self.org_user, _ = create_organization(self.user)
         mock_request = mock.MagicMock()
         mock_request.user = self.user
@@ -113,7 +113,7 @@ class TestOrgCreateMixin(TestCase):
         self.org.delete()
         self.org_user.delete()
 
-    @mock.patch('seed.utils.api.get_org_id')
+    @mock.patch("seed.utils.api.get_org_id")
     def test_get_perform_create(self, mock_get_org_id):
         """test perform_create method"""
         mock_serializer = mock.MagicMock()
@@ -129,10 +129,10 @@ class TestOrgUpdateMixin(TestCase):
     def setUp(self):
         self.maxDiff = None
         user_details = {
-            'username': 'test_user@demo.com',
-            'password': 'test_pass',
+            "username": "test_user@demo.com",
+            "password": "test_pass",
         }
-        self.user = User.objects.create_superuser(email='test_user@demo.com', **user_details)
+        self.user = User.objects.create_superuser(email="test_user@demo.com", **user_details)
         self.org, self.org_user, _ = create_organization(self.user)
         mock_request = mock.MagicMock()
         mock_request.user = self.user
@@ -147,7 +147,7 @@ class TestOrgUpdateMixin(TestCase):
         self.org.delete()
         self.org_user.delete()
 
-    @mock.patch('seed.utils.api.get_org_id')
+    @mock.patch("seed.utils.api.get_org_id")
     def test_get_perform_update(self, mock_get_org_id):
         """test perform_update method"""
         mock_serializer = mock.MagicMock()
@@ -163,17 +163,17 @@ class TestOrgValidateMixin(TestCase):
     def setUp(self):
         self.maxDiff = None
         user_details = {
-            'username': 'test_user@demo.com',
-            'password': 'test_pass',
+            "username": "test_user@demo.com",
+            "password": "test_pass",
         }
-        self.user = User.objects.create_superuser(email='test_user@demo.com', **user_details)
+        self.user = User.objects.create_superuser(email="test_user@demo.com", **user_details)
         self.org, self.org_user, _ = create_organization(self.user)
         mock_request = mock.MagicMock()
         mock_request.user = self.user
-        self.org_validator = OrgValidator(key='foreign_key', field='organization_id')
+        self.org_validator = OrgValidator(key="foreign_key", field="organization_id")
 
         class OrgValidateMixinClass(OrgValidateMixin):
-            context = {'request': mock_request}
+            context = {"request": mock_request}
             org_validators = [self.org_validator]
 
         self.mixin_class = OrgValidateMixinClass()
@@ -221,20 +221,20 @@ class TestOrgValidateMixin(TestCase):
         # assert raises exception if organization_id is None
         mock_instance = mock.MagicMock()
         mock_instance.organization_id = None
-        data = {'foreign_key': mock_instance}
+        data = {"foreign_key": mock_instance}
         pytest.raises(PermissionDenied, self.mixin_class.validate, data)
 
         # assert raises exception if organization_id does not match
         mock_instance = mock.MagicMock()
         mock_instance.organization_id = self.org.id * 100
-        data = {'foreign_key': mock_instance}
+        data = {"foreign_key": mock_instance}
         pytest.raises(PermissionDenied, self.mixin_class.validate, data)
 
         # assert does not raises exception if organization_id matches
         did_not_raise_exception = False
         mock_instance = mock.MagicMock()
         mock_instance.organization_id = self.org.id
-        data = {'foreign_key': mock_instance}
+        data = {"foreign_key": mock_instance}
         self.mixin_class.validate(data)
         # only reached if above does not raise exception
         did_not_raise_exception = True
@@ -247,10 +247,10 @@ class TestOrgQuerySetMixin(TestCase):
     def setUp(self):
         self.maxDiff = None
         user_details = {
-            'username': 'test_user@demo.com',
-            'password': 'test_pass',
+            "username": "test_user@demo.com",
+            "password": "test_pass",
         }
-        self.user = User.objects.create_superuser(email='test_user@demo.com', **user_details)
+        self.user = User.objects.create_superuser(email="test_user@demo.com", **user_details)
         self.org, self.org_user, _ = create_organization(self.user)
 
     def tearDown(self):
@@ -271,7 +271,7 @@ class TestOrgQuerySetMixin(TestCase):
         mixin_class = OrgQuerySetMixinClass()
         pytest.raises(AttributeError, mixin_class.get_queryset)
 
-    @mock.patch('seed.utils.api.get_org_id')
+    @mock.patch("seed.utils.api.get_org_id")
     def test_get_queryset(self, mock_get_org_id):
         """Test get_queryset method"""
         mock_model = mock.MagicMock()
@@ -295,10 +295,10 @@ class TestProfileIdMixin(TestCase):
     def setUp(self):
         self.maxDiff = None
         user_details = {
-            'username': 'test_user@demo.com',
-            'password': 'test_pass',
+            "username": "test_user@demo.com",
+            "password": "test_pass",
         }
-        self.user = User.objects.create_superuser(email='test_user@demo.com', **user_details)
+        self.user = User.objects.create_superuser(email="test_user@demo.com", **user_details)
         self.org, self.org_user, _ = create_organization(self.user)
         self.cycle_factory = FakeCycleFactory(organization=self.org, user=self.user)
         self.property_factory = FakePropertyFactory(organization=self.org)
@@ -319,7 +319,7 @@ class TestProfileIdMixin(TestCase):
 
     def test_get_profile_id(self):
         """test get_organization method"""
-        state = self.property_state_factory.get_property_state(extra_data={'field_1': 'value_1'})
+        state = self.property_state_factory.get_property_state(extra_data={"field_1": "value_1"})
         prprty = self.property_factory.get_property()
         PropertyView.objects.create(property=prprty, cycle=self.cycle, state=state)
 
@@ -327,28 +327,28 @@ class TestProfileIdMixin(TestCase):
         Column.save_column_names(state)
 
         columns = self.mixin_class.get_show_columns(self.org.id, None)
-        self.assertGreater(len(columns['fields']), 10)
-        self.assertListEqual(columns['extra_data'], ['field_1'])
+        self.assertGreater(len(columns["fields"]), 10)
+        self.assertListEqual(columns["extra_data"], ["field_1"])
 
         columns = self.mixin_class.get_show_columns(self.org.id, -1)
-        self.assertGreater(len(columns['fields']), 10)
-        self.assertListEqual(columns['extra_data'], ['field_1'])
+        self.assertGreater(len(columns["fields"]), 10)
+        self.assertListEqual(columns["extra_data"], ["field_1"])
 
         columns = self.mixin_class.get_show_columns(self.org.id, 1000000)
-        self.assertGreater(len(columns['fields']), 10)
-        self.assertListEqual(columns['extra_data'], ['field_1'])
+        self.assertGreater(len(columns["fields"]), 10)
+        self.assertListEqual(columns["extra_data"], ["field_1"])
 
         # no extra data
-        column_list_profile = self.column_list_factory.get_columnlistprofile(columns=['address_line_1', 'site_eui'])
+        column_list_profile = self.column_list_factory.get_columnlistprofile(columns=["address_line_1", "site_eui"])
         columns = self.mixin_class.get_show_columns(self.org.id, column_list_profile.id)
-        self.assertListEqual(columns['fields'], ['extra_data', 'id', 'address_line_1', 'site_eui'])
-        self.assertListEqual(columns['extra_data'], [])
+        self.assertListEqual(columns["fields"], ["extra_data", "id", "address_line_1", "site_eui"])
+        self.assertListEqual(columns["extra_data"], [])
 
         # with extra data
-        column_list_profile = self.column_list_factory.get_columnlistprofile(columns=['address_line_1', 'site_eui', 'field_1'])
+        column_list_profile = self.column_list_factory.get_columnlistprofile(columns=["address_line_1", "site_eui", "field_1"])
         columns = self.mixin_class.get_show_columns(self.org.id, column_list_profile.id)
-        self.assertListEqual(columns['fields'], ['extra_data', 'id', 'address_line_1', 'site_eui'])
-        self.assertListEqual(columns['extra_data'], ['field_1'])
+        self.assertListEqual(columns["fields"], ["extra_data", "id", "address_line_1", "site_eui"])
+        self.assertListEqual(columns["extra_data"], ["field_1"])
 
 
 class TestHelpers(TestCase):
@@ -357,28 +357,28 @@ class TestHelpers(TestCase):
     def test_rgetattr(self):
         """Test recursive getattr like thing"""
         # assert acts like get attr (minus being able to set a default)
-        obj = type('X', (object,), {'a': 1})
-        result = rgetattr(obj, ['a'])
+        obj = type("X", (object,), {"a": 1})
+        result = rgetattr(obj, ["a"])
         self.assertEqual(result, 1)
 
         # assert returns None if attr not set
-        result = rgetattr(obj, ['b'])
+        result = rgetattr(obj, ["b"])
 
         # test recursive get
-        child = type('X', (object,), {'a': 7, 'b': 2})
-        obj = type('X', (object,), {'a': child, 'b': 3})
-        result = rgetattr(obj, ['a', 'b'])
+        child = type("X", (object,), {"a": 7, "b": 2})
+        obj = type("X", (object,), {"a": child, "b": 3})
+        result = rgetattr(obj, ["a", "b"])
         self.assertEqual(result, 2)
 
-        result = rgetattr(obj, ['a', 'a'])
+        result = rgetattr(obj, ["a", "a"])
         self.assertEqual(result, 7)
 
-        result = rgetattr(obj, ['a', 'c'])
+        result = rgetattr(obj, ["a", "c"])
         self.assertEqual(result, None)
 
     def test_get_org_id_from_validator(self):
         """test get_org_id_from_validator"""
-        child = type('X', (object,), {'a': 7, 'b': 2})
-        obj = type('X', (object,), {'a': child, 'b': 3})
-        result = get_org_id_from_validator(obj, 'a__b')
+        child = type("X", (object,), {"a": 7, "b": 2})
+        obj = type("X", (object,), {"a": child, "b": 3})
+        result = get_org_id_from_validator(obj, "a__b")
         self.assertEqual(result, 2)

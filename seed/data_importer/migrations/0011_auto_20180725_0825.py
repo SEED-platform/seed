@@ -5,47 +5,47 @@ from django.db import migrations
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('data_importer', '0010_importfile_matching_results_data'),
+        ("data_importer", "0010_importfile_matching_results_data"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='buildingimportrecord',
-            name='building_model_content_type',
+            model_name="buildingimportrecord",
+            name="building_model_content_type",
         ),
         migrations.RemoveField(
-            model_name='buildingimportrecord',
-            name='import_record',
+            model_name="buildingimportrecord",
+            name="import_record",
         ),
         migrations.RemoveField(
-            model_name='datacoercionmapping',
-            name='table_column_mapping',
+            model_name="datacoercionmapping",
+            name="table_column_mapping",
         ),
         migrations.RemoveField(
-            model_name='rangevalidationrule',
-            name='validationrule_ptr',
+            model_name="rangevalidationrule",
+            name="validationrule_ptr",
         ),
         migrations.RemoveField(
-            model_name='validationoutlier',
-            name='rule',
+            model_name="validationoutlier",
+            name="rule",
         ),
         migrations.RemoveField(
-            model_name='validationrule',
-            name='table_column_mapping',
+            model_name="validationrule",
+            name="table_column_mapping",
         ),
         migrations.DeleteModel(
-            name='BuildingImportRecord',
+            name="BuildingImportRecord",
         ),
         migrations.DeleteModel(
-            name='DataCoercionMapping',
+            name="DataCoercionMapping",
         ),
         migrations.DeleteModel(
-            name='RangeValidationRule',
+            name="RangeValidationRule",
         ),
         migrations.DeleteModel(
-            name='ValidationOutlier',
+            name="ValidationOutlier",
         ),
         migrations.DeleteModel(
-            name='ValidationRule',
+            name="ValidationRule",
         ),
     ]

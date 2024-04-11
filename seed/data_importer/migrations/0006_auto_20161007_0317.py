@@ -8,27 +8,27 @@ from django.utils import timezone
 
 def forwards_func(apps, schema_editor):
     cycle = None
-    if apps.get_model('seed', 'Cycle').objects.count() == 0:
+    if apps.get_model("seed", "Cycle").objects.count() == 0:
         year = date.today().year - 1
-        cycle_name = 'Migration Created Cycle'
-        if apps.get_model('seed', 'Cycle').objects.filter(name=cycle_name).exists():
-            cycle = apps.get_model('seed', 'Cycle').objects.get(name=cycle_name)
+        cycle_name = "Migration Created Cycle"
+        if apps.get_model("seed", "Cycle").objects.filter(name=cycle_name).exists():
+            cycle = apps.get_model("seed", "Cycle").objects.get(name=cycle_name)
         else:
-            cycle = apps.get_model('seed', 'Cycle').objects.create(
+            cycle = apps.get_model("seed", "Cycle").objects.create(
                 name=cycle_name,
                 start=datetime(year, 1, 1, tzinfo=timezone.get_current_timezone()),
                 end=datetime(year + 1, 12, 31, tzinfo=timezone.get_current_timezone()),
             )
 
     # Go through the ImportFiles and add the default cycle
-    for c in apps.get_model('data_importer', 'ImportFile').objects.all():
+    for c in apps.get_model("data_importer", "ImportFile").objects.all():
         c.cycle = cycle
         c.save()
 
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('data_importer', '0005_importfile_cycle'),
+        ("data_importer", "0005_importfile_cycle"),
     ]
 
     operations = [

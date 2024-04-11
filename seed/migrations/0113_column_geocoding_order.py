@@ -4,34 +4,34 @@ from django.db import migrations, models, transaction
 
 
 def forwards(apps, schema_editor):
-    Column = apps.get_model('seed', 'Column')
+    Column = apps.get_model("seed", "Column")
 
     with transaction.atomic():
         # Default fields and order are those used before customization was enabled
         default_geocoding_fields = [
-            'address_line_1',
-            'address_line_2',
-            'city',
-            'state',
-            'postal_code',
+            "address_line_1",
+            "address_line_2",
+            "city",
+            "state",
+            "postal_code",
         ]
 
         # Start at 1 since 0 is considered deactivated.
         for i, field in enumerate(default_geocoding_fields, start=1):
-            Column.objects.filter(is_extra_data=False, table_name__in=['PropertyState', 'TaxLotState'], column_name=field).update(
+            Column.objects.filter(is_extra_data=False, table_name__in=["PropertyState", "TaxLotState"], column_name=field).update(
                 geocoding_order=i
             )
 
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('seed', '0112_refresh_matching_criteria'),
+        ("seed", "0112_refresh_matching_criteria"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='column',
-            name='geocoding_order',
+            model_name="column",
+            name="geocoding_order",
             field=models.IntegerField(default=0),
         ),
         migrations.RunPython(forwards),

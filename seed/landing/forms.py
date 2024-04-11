@@ -13,13 +13,13 @@ from seed.landing.models import SEEDUser
 
 class LoginForm(forms.Form):
     email = forms.EmailField(
-        label=_('Email'),
-        help_text=_('ex: joe@company.com'),
-        widget=forms.TextInput(attrs={'class': 'field', 'placeholder': _('Email Address')}),
+        label=_("Email"),
+        help_text=_("ex: joe@company.com"),
+        widget=forms.TextInput(attrs={"class": "field", "placeholder": _("Email Address")}),
     )
     password = forms.CharField(
-        label=_('Password'),
-        widget=forms.PasswordInput(attrs={'class': 'field', 'placeholder': _('Password'), 'autocomplete': 'off'}),
+        label=_("Password"),
+        widget=forms.PasswordInput(attrs={"class": "field", "placeholder": _("Password"), "autocomplete": "off"}),
         required=True,
     )
 
@@ -27,10 +27,10 @@ class LoginForm(forms.Form):
 class CustomCreateUserForm(UserCreationForm):
     class Meta:
         model = SEEDUser
-        fields = ['username']
-        widgets = {'username': forms.fields.EmailInput(attrs={'placeholder': 'Email Address'})}
+        fields = ["username"]
+        widgets = {"username": forms.fields.EmailInput(attrs={"placeholder": "Email Address"})}
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['password1'].widget = forms.PasswordInput(attrs={'class': 'field', 'placeholder': 'Password'})
-        self.fields['password2'].widget = forms.PasswordInput(attrs={'class': 'field', 'placeholder': 'Confirm Password'})
+        self.fields["password1"].widget = forms.PasswordInput(attrs={"class": "field", "placeholder": "Password"})
+        self.fields["password2"].widget = forms.PasswordInput(attrs={"class": "field", "placeholder": "Confirm Password"})

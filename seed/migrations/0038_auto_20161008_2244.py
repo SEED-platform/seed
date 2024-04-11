@@ -9,90 +9,90 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('seed', '0037_auto_20161006_1744'),
+        ("seed", "0037_auto_20161006_1744"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='ProjectPropertyView',
+            name="ProjectPropertyView",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created', django_extensions.db.fields.CreationDateTimeField(auto_now_add=True, verbose_name='created')),
-                ('modified', django_extensions.db.fields.ModificationDateTimeField(auto_now=True, verbose_name='modified')),
-                ('compliant', models.NullBooleanField()),
-                ('approved_date', models.DateField(blank=True, null=True, verbose_name='approved_date')),
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("created", django_extensions.db.fields.CreationDateTimeField(auto_now_add=True, verbose_name="created")),
+                ("modified", django_extensions.db.fields.ModificationDateTimeField(auto_now=True, verbose_name="modified")),
+                ("compliant", models.NullBooleanField()),
+                ("approved_date", models.DateField(blank=True, null=True, verbose_name="approved_date")),
                 (
-                    'approver',
+                    "approver",
                     models.ForeignKey(
-                        blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL, verbose_name='User'
+                        blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL, verbose_name="User"
                     ),
                 ),
                 (
-                    'project',
+                    "project",
                     models.ForeignKey(
-                        on_delete=django.db.models.deletion.CASCADE, related_name='project_property_views', to='seed.Project'
+                        on_delete=django.db.models.deletion.CASCADE, related_name="project_property_views", to="seed.Project"
                     ),
                 ),
                 (
-                    'property_view',
+                    "property_view",
                     models.ForeignKey(
-                        on_delete=django.db.models.deletion.CASCADE, related_name='project_property_views', to='seed.PropertyView'
+                        on_delete=django.db.models.deletion.CASCADE, related_name="project_property_views", to="seed.PropertyView"
                     ),
                 ),
             ],
             options={
-                'ordering': ['project', 'property_view'],
-                'verbose_name': 'project property view',
-                'verbose_name_plural': 'project property views',
+                "ordering": ["project", "property_view"],
+                "verbose_name": "project property view",
+                "verbose_name_plural": "project property views",
             },
         ),
         migrations.CreateModel(
-            name='ProjectTaxLotView',
+            name="ProjectTaxLotView",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created', django_extensions.db.fields.CreationDateTimeField(auto_now_add=True, verbose_name='created')),
-                ('modified', django_extensions.db.fields.ModificationDateTimeField(auto_now=True, verbose_name='modified')),
-                ('compliant', models.NullBooleanField()),
-                ('approved_date', models.DateField(blank=True, null=True, verbose_name='approved_date')),
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("created", django_extensions.db.fields.CreationDateTimeField(auto_now_add=True, verbose_name="created")),
+                ("modified", django_extensions.db.fields.ModificationDateTimeField(auto_now=True, verbose_name="modified")),
+                ("compliant", models.NullBooleanField()),
+                ("approved_date", models.DateField(blank=True, null=True, verbose_name="approved_date")),
                 (
-                    'approver',
+                    "approver",
                     models.ForeignKey(
-                        blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL, verbose_name='User'
+                        blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL, verbose_name="User"
                     ),
                 ),
                 (
-                    'project',
-                    models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='project_taxlot_views', to='seed.Project'),
+                    "project",
+                    models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name="project_taxlot_views", to="seed.Project"),
                 ),
                 (
-                    'taxlot_view',
+                    "taxlot_view",
                     models.ForeignKey(
-                        on_delete=django.db.models.deletion.CASCADE, related_name='project_taxlot_views', to='seed.TaxLotView'
+                        on_delete=django.db.models.deletion.CASCADE, related_name="project_taxlot_views", to="seed.TaxLotView"
                     ),
                 ),
             ],
             options={
-                'ordering': ['project', 'taxlot_view'],
-                'verbose_name': 'project taxlot view',
-                'verbose_name_plural': 'project taxlot views',
+                "ordering": ["project", "taxlot_view"],
+                "verbose_name": "project taxlot view",
+                "verbose_name_plural": "project taxlot views",
             },
         ),
         migrations.AddField(
-            model_name='project',
-            name='property_views',
-            field=models.ManyToManyField(blank=True, through='seed.ProjectPropertyView', to='seed.PropertyView'),
+            model_name="project",
+            name="property_views",
+            field=models.ManyToManyField(blank=True, through="seed.ProjectPropertyView", to="seed.PropertyView"),
         ),
         migrations.AddField(
-            model_name='project',
-            name='taxlot_views',
-            field=models.ManyToManyField(blank=True, through='seed.ProjectTaxLotView', to='seed.TaxLotView'),
+            model_name="project",
+            name="taxlot_views",
+            field=models.ManyToManyField(blank=True, through="seed.ProjectTaxLotView", to="seed.TaxLotView"),
         ),
         migrations.AlterUniqueTogether(
-            name='projecttaxlotview',
-            unique_together={('taxlot_view', 'project')},
+            name="projecttaxlotview",
+            unique_together={("taxlot_view", "project")},
         ),
         migrations.AlterUniqueTogether(
-            name='projectpropertyview',
-            unique_together={('property_view', 'project')},
+            name="projectpropertyview",
+            unique_together={("property_view", "project")},
         ),
     ]

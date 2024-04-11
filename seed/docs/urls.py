@@ -9,5 +9,5 @@ from django.urls import re_path
 from seed.docs.views import faq_page
 
 urlpatterns = [
-    re_path(r'^$', faq_page, name='documentation'),
+    re_path(r"^$", faq_page, name="documentation"),
 ]

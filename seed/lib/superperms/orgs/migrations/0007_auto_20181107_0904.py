@@ -5,40 +5,40 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('orgs', '0006_organization_display_significant_figures'),
+        ("orgs", "0006_organization_display_significant_figures"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='organization',
-            name='display_units_area',
-            field=models.CharField(choices=[('ft**2', 'square feet'), ('m**2', 'square metres')], default='ft**2', max_length=32),
+            model_name="organization",
+            name="display_units_area",
+            field=models.CharField(choices=[("ft**2", "square feet"), ("m**2", "square metres")], default="ft**2", max_length=32),
         ),
         migrations.AlterField(
-            model_name='organization',
-            name='display_units_eui',
+            model_name="organization",
+            name="display_units_eui",
             field=models.CharField(
                 choices=[
-                    ('kBtu/ft**2/year', 'kBtu/sq. ft./year'),
-                    ('kWh/m**2/year', 'kWh/m²/year'),
-                    ('GJ/m**2/year', 'GJ/m²/year'),
-                    ('MJ/m**2/year', 'MJ/m²/year'),
-                    ('kBtu/m**2/year', 'kBtu/m²/year'),
+                    ("kBtu/ft**2/year", "kBtu/sq. ft./year"),
+                    ("kWh/m**2/year", "kWh/m²/year"),
+                    ("GJ/m**2/year", "GJ/m²/year"),
+                    ("MJ/m**2/year", "MJ/m²/year"),
+                    ("kBtu/m**2/year", "kBtu/m²/year"),
                 ],
-                default='kBtu/ft**2/year',
+                default="kBtu/ft**2/year",
                 max_length=32,
             ),
         ),
         migrations.AlterField(
-            model_name='organizationuser',
-            name='role_level',
-            field=models.IntegerField(choices=[(0, 'Viewer'), (10, 'Member'), (20, 'Owner')], default=20),
+            model_name="organizationuser",
+            name="role_level",
+            field=models.IntegerField(choices=[(0, "Viewer"), (10, "Member"), (20, "Owner")], default=20),
         ),
         migrations.AlterField(
-            model_name='organizationuser',
-            name='status',
+            model_name="organizationuser",
+            name="status",
             field=models.CharField(
-                choices=[('pending', 'Pending'), ('accepted', 'Accepted'), ('rejected', 'Rejected')], default='pending', max_length=12
+                choices=[("pending", "Pending"), ("accepted", "Accepted"), ("rejected", "Rejected")], default="pending", max_length=12
             ),
         ),
     ]

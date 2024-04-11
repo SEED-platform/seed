@@ -8,7 +8,7 @@ from seed.models import User
 
 def deactivate_users_without_orgs(apps, schema_editor):
     with transaction.atomic():
-        users_with_roles = OrganizationUser.objects.order_by().values_list('user_id', flat=True).distinct()
+        users_with_roles = OrganizationUser.objects.order_by().values_list("user_id", flat=True).distinct()
         for user in User.objects.all():
             if user.id not in users_with_roles:
                 user.is_active = False
@@ -17,7 +17,7 @@ def deactivate_users_without_orgs(apps, schema_editor):
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('seed', '0115_rehash_postal_code'),
+        ("seed", "0115_rehash_postal_code"),
     ]
 
     operations = [migrations.RunPython(deactivate_users_without_orgs)]

@@ -22,7 +22,7 @@ from seed.models import PropertyView, TaxLotView
 from seed.models import StatusLabel as Label
 from seed.utils.api_schema import AutoSchemaHelper
 
-ErrorState = namedtuple('ErrorState', ['status_code', 'message'])
+ErrorState = namedtuple("ErrorState", ["status_code", "message"])
 
 
 class LabelInventoryViewSet(APIView):
@@ -44,13 +44,13 @@ class LabelInventoryViewSet(APIView):
 
     renderer_classes = (JSONRenderer,)
     parser_classes = (JSONParser,)
-    inventory_models = {'property': PropertyView, 'taxlot': TaxLotView}
+    inventory_models = {"property": PropertyView, "taxlot": TaxLotView}
     errors = {
-        'disjoint': ErrorState(
-            status.HTTP_422_UNPROCESSABLE_ENTITY, 'add_label_ids and remove_label_ids cannot contain elements in common'
+        "disjoint": ErrorState(
+            status.HTTP_422_UNPROCESSABLE_ENTITY, "add_label_ids and remove_label_ids cannot contain elements in common"
         ),
-        'missing_org': ErrorState(status.HTTP_422_UNPROCESSABLE_ENTITY, 'missing organization_id'),
-        'missing_inventory_ids': ErrorState(status.HTTP_422_UNPROCESSABLE_ENTITY, 'inventory_ids cannot be undefined or empty'),
+        "missing_org": ErrorState(status.HTTP_422_UNPROCESSABLE_ENTITY, "missing organization_id"),
+        "missing_inventory_ids": ErrorState(status.HTTP_422_UNPROCESSABLE_ENTITY, "inventory_ids cannot be undefined or empty"),
     }
 
     @property
@@ -60,17 +60,17 @@ class LabelInventoryViewSet(APIView):
 
         Used for bulk_create operations.
         """
-        return {'property': apps.get_model('seed', 'PropertyView_labels'), 'taxlot': apps.get_model('seed', 'TaxLotView_labels')}
+        return {"property": apps.get_model("seed", "PropertyView_labels"), "taxlot": apps.get_model("seed", "TaxLotView_labels")}
 
     def get_queryset(self, inventory_type, organization_id):
         Model = self.models[inventory_type]
         return Model.objects.filter(statuslabel__super_organization_id=organization_id)
 
     def get_label_desc(self, add_label_ids, remove_label_ids):
-        return Label.objects.filter(pk__in=add_label_ids + remove_label_ids).values('id', 'color', 'name')
+        return Label.objects.filter(pk__in=add_label_ids + remove_label_ids).values("id", "color", "name")
 
     def get_inventory_id(self, q, inventory_type):
-        return getattr(q, f'{inventory_type}view_id')
+        return getattr(q, f"{inventory_type}view_id")
 
     def exclude(self, qs, inventory_type, label_ids):
         """Returns a mapping of label IDs to inventories which already have that
@@ -90,7 +90,7 @@ class LabelInventoryViewSet(APIView):
 
     def filter_by_inventory(self, qs, inventory_type, inventory_ids):
         if inventory_ids:
-            filterdict = {f'{inventory_type}view__pk__in': inventory_ids}
+            filterdict = {f"{inventory_type}view__pk__in": inventory_ids}
             qs = qs.filter(**filterdict)
         return qs
 
@@ -98,17 +98,17 @@ class LabelInventoryViewSet(APIView):
         Model = self.models[inventory_type]
 
         # Ensure the label org and inventory org are the same
-        inventory_views = getattr(Model, f'{inventory_type}view').get_queryset()
+        inventory_views = getattr(Model, f"{inventory_type}view").get_queryset()
         inventory_parent_org_id = inventory_views.get(pk=inventory_id).cycle.organization.get_parent().id
         label_super_org_id = Model.statuslabel.get_queryset().get(pk=label_id).super_organization_id
         if inventory_parent_org_id == label_super_org_id:
-            create_dict = {'statuslabel_id': label_id, f'{inventory_type}view_id': inventory_id}
+            create_dict = {"statuslabel_id": label_id, f"{inventory_type}view_id": inventory_id}
 
             return Model(**create_dict)
         else:
             raise IntegrityError(
-                f'Label with super_organization_id={label_super_org_id} cannot be applied to a record with parent '
-                f'organization_id={inventory_parent_org_id}.'
+                f"Label with super_organization_id={label_super_org_id} cannot be applied to a record with parent "
+                f"organization_id={inventory_parent_org_id}."
             )
 
     def add_labels(self, qs, inventory_type, inventory_ids, add_label_ids):
@@ -145,18 +145,18 @@ class LabelInventoryViewSet(APIView):
         manual_parameters=[AutoSchemaHelper.query_org_id_field()],
         request_body=AutoSchemaHelper.schema_factory(
             {
-                'add_label_ids': ['integer'],
-                'remove_label_ids': ['integer'],
-                'inventory_ids': ['integer'],
+                "add_label_ids": ["integer"],
+                "remove_label_ids": ["integer"],
+                "inventory_ids": ["integer"],
             },
-            required=['inventory_ids'],
-            description='Properties:\n'
-            '- add_label_ids: label ids to add to the inventories\n'
-            '- remove_label_ids: label ids to remove from the inventories\n'
-            '- inventory_ids: List of inventory IDs',
+            required=["inventory_ids"],
+            description="Properties:\n"
+            "- add_label_ids: label ids to add to the inventories\n"
+            "- remove_label_ids: label ids to remove from the inventories\n"
+            "- inventory_ids: List of inventory IDs",
         ),
     )
-    @has_perm_class('can_modify_data')
+    @has_perm_class("can_modify_data")
     def put(self, request, inventory_type):
         """
         Updates label assignments to inventory items.
@@ -178,31 +178,31 @@ class LabelInventoryViewSet(APIView):
             }
 
         """
-        add_label_ids = request.data.get('add_label_ids', [])
-        remove_label_ids = request.data.get('remove_label_ids', [])
-        inventory_ids = request.data.get('inventory_ids', [])
-        organization_id = request.query_params['organization_id']
+        add_label_ids = request.data.get("add_label_ids", [])
+        remove_label_ids = request.data.get("remove_label_ids", [])
+        inventory_ids = request.data.get("inventory_ids", [])
+        organization_id = request.query_params["organization_id"]
         access_level_instance = AccessLevelInstance.objects.get(pk=self.request.access_level_instance_id)
         error = None
         # ensure add_label_ids and remove_label_ids are different
         if not set(add_label_ids).isdisjoint(remove_label_ids):
-            error = self.errors['disjoint']
+            error = self.errors["disjoint"]
         elif not organization_id:
-            error = self.errors['missing_org']
+            error = self.errors["missing_org"]
         elif len(inventory_ids) == 0:
-            error = self.errors['missing_inventory_ids']
+            error = self.errors["missing_inventory_ids"]
         if error:
-            result = {'status': 'error', 'message': str(error)}
+            result = {"status": "error", "message": str(error)}
             status_code = error.status_code
         else:
             Model = self.inventory_models[inventory_type]
             inventory_ids = Model.objects.filter(
                 **{
-                    'id__in': inventory_ids,
-                    f'{inventory_type}__access_level_instance__lft__gte': access_level_instance.lft,
-                    f'{inventory_type}__access_level_instance__rgt__lte': access_level_instance.rgt,
+                    "id__in": inventory_ids,
+                    f"{inventory_type}__access_level_instance__lft__gte": access_level_instance.lft,
+                    f"{inventory_type}__access_level_instance__rgt__lte": access_level_instance.rgt,
                 }
-            ).values_list('id', flat=True)
+            ).values_list("id", flat=True)
 
             qs = self.get_queryset(inventory_type, organization_id)
             qs = self.filter_by_inventory(qs, inventory_type, inventory_ids)
@@ -210,6 +210,6 @@ class LabelInventoryViewSet(APIView):
             added = self.add_labels(qs, inventory_type, inventory_ids, add_label_ids)
             num_updated = len(set(added).union(removed))
             labels = self.get_label_desc(add_label_ids, remove_label_ids)
-            result = {'status': 'success', 'num_updated': num_updated, 'labels': labels}
+            result = {"status": "success", "num_updated": num_updated, "labels": labels}
             status_code = status.HTTP_200_OK
         return response.Response(result, status=status_code)

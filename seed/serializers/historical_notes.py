@@ -11,4 +11,4 @@ from seed.models import HistoricalNote
 class HistoricalNoteSerializer(serializers.ModelSerializer):
     class Meta:
         model = HistoricalNote
-        fields = '__all__'
+        fields = "__all__"

@@ -9,9 +9,9 @@ import sys
 from django.core.management import CommandError, call_command
 
 try:
-    call_command('compress', force=True)
-    print('compression passed')
+    call_command("compress", force=True)
+    print("compression passed")
 except CommandError as e:
-    print('compression failed')
+    print("compression failed")
     print(str(e))
     sys.exit(1)

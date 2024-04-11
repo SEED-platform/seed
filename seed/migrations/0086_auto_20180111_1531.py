@@ -10,19 +10,19 @@ def convert_rule_units_to_pint(apps, schema_editor):
     that any custom rules can be maintained instead of just dumped and
     re-created.
     """
-    Rule = apps.get_model('seed', 'Rule')
+    Rule = apps.get_model("seed", "Rule")
     for rule in Rule.objects.all():
-        if rule.units == 'square feet':
-            rule.units = 'ft**2'
-        elif rule.units == 'kBtu/sq. ft./year':
-            rule.units = 'kBtu/ft**2/year'
+        if rule.units == "square feet":
+            rule.units = "ft**2"
+        elif rule.units == "kBtu/sq. ft./year":
+            rule.units = "kBtu/ft**2/year"
 
         rule.save()
 
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('seed', '0085_rename_propertystate_from_pint'),
+        ("seed", "0085_rename_propertystate_from_pint"),
     ]
 
     operations = [migrations.RunPython(convert_rule_units_to_pint)]

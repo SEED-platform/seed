@@ -3,7 +3,6 @@ line-length = 140
 
 [format]
 # preview = true
-quote-style = "single"
 docstring-code-format = true
 
 # https://docs.astral.sh/ruff/linter/#rule-selection
@@ -87,7 +86,6 @@ ignore = [
 ]
 
 [lint.pylint]
-# system_parameters.py has many file lookups that necessitate nested statements & branches
 # Raise the allowed limits the least possible amount https://docs.astral.sh/ruff/settings/#pylint-max-branches
 max-statements = 58
 max-branches = 24

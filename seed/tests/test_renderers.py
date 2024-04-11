@@ -32,37 +32,37 @@ class TestSEEDJSONRenderer(TestCase):
         self.fake_renderer = SEEDJSONRenderer()
         self.fake_response = mock.MagicMock()
         self.fake_view = View()
-        self.fake_context = {'view': self.fake_view, 'response': self.fake_response}
+        self.fake_context = {"view": self.fake_view, "response": self.fake_response}
 
     def test_render(self):
         """Test SEEDJSONRender render method"""
         # success
-        fake_data = {'fake': 'data'}
+        fake_data = {"fake": "data"}
         self.fake_response.status_code = 200
         result = json.loads(self.fake_renderer.render(fake_data, renderer_context=self.fake_context))
-        self.assertIn('status', result.keys())
-        self.assertIn('data', result.keys())
-        self.assertEqual(result['status'], 'success')
+        self.assertIn("status", result.keys())
+        self.assertIn("data", result.keys())
+        self.assertEqual(result["status"], "success")
 
         # success with data_name in view
-        data_name = 'cycles'
+        data_name = "cycles"
         self.fake_view.data_name = data_name
         result = json.loads(self.fake_renderer.render(fake_data, renderer_context=self.fake_context))
-        self.assertNotIn('data', result.keys())
+        self.assertNotIn("data", result.keys())
         self.assertIn(data_name, result.keys())
 
         # success with pagination
         fake_data_paginated = {
-            'next': None,
-            'previous': None,
-            'results': fake_data,
+            "next": None,
+            "previous": None,
+            "results": fake_data,
         }
         result = json.loads(self.fake_renderer.render(fake_data_paginated, renderer_context=self.fake_context))
-        self.assertIn('pagination', result.keys())
+        self.assertIn("pagination", result.keys())
 
         # error
         self.fake_response.status_code = 400
         result = json.loads(self.fake_renderer.render(fake_data, renderer_context=self.fake_context))
-        self.assertIn('status', result.keys())
-        self.assertIn('message', result.keys())
-        self.assertEqual(result['status'], 'error')
+        self.assertIn("status", result.keys())
+        self.assertIn("message", result.keys())
+        self.assertEqual(result["status"], "error")

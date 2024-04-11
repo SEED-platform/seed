@@ -11,7 +11,7 @@ DROP_ACCOUNT_TABLES = """\
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('seed', '0063_rule_text_match'),
+        ("seed", "0063_rule_text_match"),
     ]
 
     operations = [

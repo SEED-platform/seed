@@ -13,43 +13,43 @@ def handle_eeej_data(apps, schema_editor):
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('seed', '0203_column_unique_column_name'),
+        ("seed", "0203_column_unique_column_name"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='EeejCejst',
+            name="EeejCejst",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('census_tract_geoid', models.CharField(max_length=11, unique=True)),
-                ('dac', models.BooleanField()),
-                ('energy_burden_low_income', models.BooleanField(default=False)),
-                ('energy_burden_percent', models.FloatField(blank=True, null=True)),
-                ('low_income', models.BooleanField(default=False)),
-                ('share_neighbors_disadvantaged', models.FloatField(blank=True, null=True)),
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("census_tract_geoid", models.CharField(max_length=11, unique=True)),
+                ("dac", models.BooleanField()),
+                ("energy_burden_low_income", models.BooleanField(default=False)),
+                ("energy_burden_percent", models.FloatField(blank=True, null=True)),
+                ("low_income", models.BooleanField(default=False)),
+                ("share_neighbors_disadvantaged", models.FloatField(blank=True, null=True)),
             ],
         ),
         migrations.CreateModel(
-            name='EeejHud',
+            name="EeejHud",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('hud_object_id', models.CharField(max_length=20, unique=True)),
-                ('census_tract_geoid', models.CharField(max_length=11)),
-                ('long_lat', django.contrib.gis.db.models.fields.PointField(geography=True, srid=4326)),
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("hud_object_id", models.CharField(max_length=20, unique=True)),
+                ("census_tract_geoid", models.CharField(max_length=11)),
+                ("long_lat", django.contrib.gis.db.models.fields.PointField(geography=True, srid=4326)),
                 (
-                    'housing_type',
+                    "housing_type",
                     models.CharField(
-                        choices=[('public housing development', 'Public Housing'), ('multi-family assisted property', 'Multifamily')],
+                        choices=[("public housing development", "Public Housing"), ("multi-family assisted property", "Multifamily")],
                         max_length=100,
                     ),
                 ),
-                ('name', models.CharField(max_length=150)),
+                ("name", models.CharField(max_length=150)),
             ],
         ),
         migrations.AlterField(
-            model_name='analysis',
-            name='service',
-            field=models.IntegerField(choices=[(1, 'BSyncr'), (2, 'BETTER'), (3, 'EUI'), (4, 'CO2'), (5, 'EEEJ')]),
+            model_name="analysis",
+            name="service",
+            field=models.IntegerField(choices=[(1, "BSyncr"), (2, "BETTER"), (3, "EUI"), (4, "CO2"), (5, "EEEJ")]),
         ),
         migrations.RunPython(handle_eeej_data),
     ]

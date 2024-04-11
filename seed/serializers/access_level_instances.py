@@ -12,4 +12,4 @@ from seed.models import AccessLevelInstance
 class AccessLevelInstanceSerializer(serializers.ModelSerializer):
     class Meta:
         model = AccessLevelInstance
-        fields = '__all__'
+        fields = "__all__"

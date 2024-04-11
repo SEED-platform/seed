@@ -24,6 +24,7 @@ Ruff is used to statically verify code syntax. To run ruff locally call:
 .. code-block:: bash
 
     tox -e precommit -- ruff
+    tox -e precommit -- ruff-format
 
 Python Type Hints
 ^^^^^^^^^^^^^^^^^
@@ -379,6 +380,7 @@ Python compliance uses Ruff
 .. code-block:: bash
 
     tox -e precommit -- ruff
+    tox -e precommit -- ruff-format
 
 JavaScript compliance uses ESLint, SCSS compliance uses StyleLint, and HTML compliance uses Prettier
 

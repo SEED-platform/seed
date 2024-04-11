@@ -13,11 +13,11 @@ def get_js_role(role):
     :returns: (string) JS role name
     """
     roles = {
-        ROLE_OWNER: 'owner',
-        ROLE_VIEWER: 'viewer',
-        ROLE_MEMBER: 'member',
+        ROLE_OWNER: "owner",
+        ROLE_VIEWER: "viewer",
+        ROLE_MEMBER: "member",
     }
-    return roles.get(role, 'viewer')
+    return roles.get(role, "viewer")
 
 
 def get_role_from_js(role):
@@ -27,8 +27,8 @@ def get_role_from_js(role):
     :returns: int role as defined in superperms.models
     """
     roles = {
-        'owner': ROLE_OWNER,
-        'viewer': ROLE_VIEWER,
-        'member': ROLE_MEMBER,
+        "owner": ROLE_OWNER,
+        "viewer": ROLE_VIEWER,
+        "member": ROLE_MEMBER,
     }
     return roles[role]

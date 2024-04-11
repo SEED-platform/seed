@@ -26,15 +26,15 @@ class TestLabelIntegrityChecks(DataMappingBaseTestCase):
         self.api_view = LabelInventoryViewSet()
 
         # Models can't  be imported directly hence self
-        self.PropertyViewLabels = self.api_view.models['property']
-        self.TaxlotViewLabels = self.api_view.models['taxlot']
+        self.PropertyViewLabels = self.api_view.models["property"]
+        self.TaxlotViewLabels = self.api_view.models["taxlot"]
 
-        self.user_details = {'username': 'test_user@demo.com', 'password': 'test_pass', 'email': 'test_user@demo.com'}
+        self.user_details = {"username": "test_user@demo.com", "password": "test_pass", "email": "test_user@demo.com"}
 
         self.user, self.org, _import_file, _import_record, self.cycle = self.set_up(ASSESSED_RAW)
 
         org_2, _, _ = create_organization(self.user)
-        self.org_2_status_label = Label.objects.create(name='org_2_label', super_organization=org_2)
+        self.org_2_status_label = Label.objects.create(name="org_2_label", super_organization=org_2)
 
     def test_error_occurs_when_trying_to_apply_a_label_to_propertyview_from_a_different_org(self):
         org_1_property = Property.objects.create(organization=self.org)
@@ -45,7 +45,7 @@ class TestLabelIntegrityChecks(DataMappingBaseTestCase):
         # Via Label API View
         with transaction.atomic(), pytest.raises(IntegrityError):
             self.api_view.add_labels(
-                self.api_view.models['property'].objects.none(), 'property', [org_1_propertyview.id], [self.org_2_status_label.id]
+                self.api_view.models["property"].objects.none(), "property", [org_1_propertyview.id], [self.org_2_status_label.id]
             )
 
         # Via PropertyView Model
@@ -54,7 +54,7 @@ class TestLabelIntegrityChecks(DataMappingBaseTestCase):
 
         # Via PropertyState Rule with Label
         org_1_dq = DataQualityCheck.objects.get(organization=self.org)
-        org_1_ps_rule = org_1_dq.rules.filter(table_name='PropertyState').first()
+        org_1_ps_rule = org_1_dq.rules.filter(table_name="PropertyState").first()
         # Purposely give an Org 1 Rule an Org 2 Label
         org_1_ps_rule.status_label = self.org_2_status_label
         org_1_ps_rule.save()
@@ -74,8 +74,8 @@ class TestLabelIntegrityChecks(DataMappingBaseTestCase):
 
         with transaction.atomic(), pytest.raises(IntegrityError):
             self.api_view.add_labels(
-                qs=self.api_view.models['taxlot'].objects.none(),
-                inventory_type='taxlot',
+                qs=self.api_view.models["taxlot"].objects.none(),
+                inventory_type="taxlot",
                 inventory_ids=[org_1_taxlotview.id],
                 add_label_ids=[self.org_2_status_label.id],
             )
@@ -85,7 +85,7 @@ class TestLabelIntegrityChecks(DataMappingBaseTestCase):
 
         # Via TaxLotState Rule with Label
         org_1_dq = DataQualityCheck.objects.get(organization=self.org)
-        org_1_tls_rule = org_1_dq.rules.filter(table_name='TaxLotState').first()
+        org_1_tls_rule = org_1_dq.rules.filter(table_name="TaxLotState").first()
         # Purposely give an Org 1 Rule an Org 2 Label
         org_1_tls_rule.status_label = self.org_2_status_label
         org_1_tls_rule.save()

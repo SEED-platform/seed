@@ -37,7 +37,7 @@ class SignupTokenGenerator:
         """
         # Parse the token
         try:
-            ts_b36, _hash = token.split('-')
+            ts_b36, _hash = token.split("-")
         except ValueError:
             return False
 
@@ -68,14 +68,14 @@ class SignupTokenGenerator:
         # last_login will also change), we produce a hash that will be
         # invalid as soon as it is used.
         # We limit the hash to 20 chars to keep URL short
-        key_salt = 'django.contrib.auth.tokens.PasswordResetTokenGenerator'
+        key_salt = "django.contrib.auth.tokens.PasswordResetTokenGenerator"
 
         # Ensure results are consistent across DB backends
         login_timestamp = user.last_login.replace(microsecond=0, tzinfo=None)
 
         value = str(user.pk) + user.password + str(login_timestamp) + str(timestamp)
         hmac = salted_hmac(key_salt, value).hexdigest()[::2]
-        return f'{ts_b36}-{hmac}'
+        return f"{ts_b36}-{hmac}"
 
     def _num_days(self, dt):
         return (dt - date(2001, 1, 1)).days

@@ -11,7 +11,7 @@ from rest_framework.response import Response
 
 
 class ResultsListPagination(PageNumberPagination):
-    page_size_query_param = 'per_page'
+    page_size_query_param = "per_page"
 
     def get_paginated_response(self, data):
         page_num = self.page.number
@@ -19,14 +19,14 @@ class ResultsListPagination(PageNumberPagination):
         return Response(
             OrderedDict(
                 [
-                    ('page', page_num),
-                    ('start', self.page.start_index()),
-                    ('end', self.page.end_index()),
-                    ('num_pages', self.page.paginator.num_pages),
-                    ('has_next', self.page.has_next()),
-                    ('has_previous', self.page.has_previous()),
-                    ('total', self.page.paginator.count),
-                    ('results', data),
+                    ("page", page_num),
+                    ("start", self.page.start_index()),
+                    ("end", self.page.end_index()),
+                    ("num_pages", self.page.paginator.num_pages),
+                    ("has_next", self.page.has_next()),
+                    ("has_previous", self.page.has_previous()),
+                    ("total", self.page.paginator.count),
+                    ("results", data),
                 ]
             )
         )

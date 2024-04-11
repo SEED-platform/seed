@@ -19,20 +19,20 @@ from seed.utils.api_schema import swagger_auto_schema_org_query_param
 from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
 
 
-@method_decorator(name='list', decorator=swagger_auto_schema_org_query_param)
+@method_decorator(name="list", decorator=swagger_auto_schema_org_query_param)
 @method_decorator(
-    name='create',
+    name="create",
     decorator=[
         swagger_auto_schema_org_query_param,
-        has_perm_class('requires_root_member_access'),
+        has_perm_class("requires_root_member_access"),
     ],
 )
-@method_decorator(name='retrieve', decorator=swagger_auto_schema_org_query_param)
+@method_decorator(name="retrieve", decorator=swagger_auto_schema_org_query_param)
 @method_decorator(
-    name='update',
+    name="update",
     decorator=[
         swagger_auto_schema_org_query_param,
-        has_perm_class('requires_root_member_access'),
+        has_perm_class("requires_root_member_access"),
     ],
 )
 class CycleViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
@@ -78,12 +78,12 @@ class CycleViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
     serializer_class = CycleSerializer
     pagination_class = None
     model = Cycle
-    data_name = 'cycles'
+    data_name = "cycles"
 
     def get_queryset(self):
         org_id = self.get_organization(self.request)
         # Order cycles by name because if the user hasn't specified then the front end WILL default to the first
-        return Cycle.objects.filter(organization_id=org_id).order_by('name')
+        return Cycle.objects.filter(organization_id=org_id).order_by("name")
 
     def perform_create(self, serializer):
         org_id = self.get_organization(self.request)
@@ -91,18 +91,18 @@ class CycleViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
         serializer.save(organization_id=org_id, user=user)
 
     @swagger_auto_schema_org_query_param
-    @has_perm_class('requires_owner')
+    @has_perm_class("requires_owner")
     def destroy(self, request, pk):
         organization_id = self.get_organization(request)
         try:
             cycle = Cycle.objects.get(pk=pk, organization_id=organization_id)
         except Cycle.DoesNotExist:
-            return JsonResponse({'status': 'error', 'message': 'Cycle not found'}, status=HTTP_404_NOT_FOUND)
+            return JsonResponse({"status": "error", "message": "Cycle not found"}, status=HTTP_404_NOT_FOUND)
 
         has_inventory = PropertyView.objects.filter(cycle=cycle).exists() or TaxLotView.objects.filter(cycle=cycle).exists()
         if has_inventory:
             return JsonResponse(
-                {'status': 'error', 'message': 'Cycle has properties or taxlots that must must be removed before it can be deleted.'},
+                {"status": "error", "message": "Cycle has properties or taxlots that must must be removed before it can be deleted."},
                 status=HTTP_409_CONFLICT,
             )
 

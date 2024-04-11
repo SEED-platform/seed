@@ -6,26 +6,26 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('seed', '0158_sensorreading'),
+        ("seed", "0158_sensorreading"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='InventoryDocument',
+            name="InventoryDocument",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created', models.DateTimeField(auto_now_add=True)),
-                ('file', models.FileField(blank=True, max_length=500, null=True, upload_to='inventory_documents')),
-                ('file_type', models.IntegerField(choices=[(0, 'Unknown'), (1, 'PDF')], default=0)),
-                ('filename', models.CharField(blank=True, max_length=255)),
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("created", models.DateTimeField(auto_now_add=True)),
+                ("file", models.FileField(blank=True, max_length=500, null=True, upload_to="inventory_documents")),
+                ("file_type", models.IntegerField(choices=[(0, "Unknown"), (1, "PDF")], default=0)),
+                ("filename", models.CharField(blank=True, max_length=255)),
                 (
-                    'property',
+                    "property",
                     models.ForeignKey(
                         blank=True,
                         null=True,
                         on_delete=django.db.models.deletion.CASCADE,
-                        related_name='inventory_documents',
-                        to='seed.property',
+                        related_name="inventory_documents",
+                        to="seed.property",
                     ),
                 ),
             ],

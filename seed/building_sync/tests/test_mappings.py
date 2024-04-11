@@ -53,17 +53,17 @@ class TestXMLHelpers(TestCase):
     def test_find_last_in_xpath_finds_last_element(self):
         # -- Setup
         # auc:PremisesName does not exist in the tree, but everything up to auc:Building does
-        xpath = '/'.join(
+        xpath = "/".join(
             [
-                '',
-                'auc:BuildingSync',
-                'auc:Facilities',
-                'auc:Facility',
-                'auc:Sites',
-                'auc:Site',
-                'auc:Buildings',
-                'auc:Building',
-                'auc:PremisesName',
+                "",
+                "auc:BuildingSync",
+                "auc:Facilities",
+                "auc:Facility",
+                "auc:Sites",
+                "auc:Site",
+                "auc:Buildings",
+                "auc:Building",
+                "auc:PremisesName",
             ]
         )
 
@@ -71,23 +71,23 @@ class TestXMLHelpers(TestCase):
         last_element, xpath_remainder = find_last_in_xpath(self.tree, xpath, NAMESPACES)
 
         # -- Assert
-        self.assertEqual(f'{{{BUILDINGSYNC_URI}}}Building', last_element.tag)
-        self.assertEqual('auc:PremisesName', xpath_remainder)
+        self.assertEqual(f"{{{BUILDINGSYNC_URI}}}Building", last_element.tag)
+        self.assertEqual("auc:PremisesName", xpath_remainder)
 
     def test_find_last_in_xpath_no_path_remainder(self):
         # -- Setup
         # Full xpath should exist
-        xpath = '/'.join(
+        xpath = "/".join(
             [
-                '',
-                'auc:BuildingSync',
-                'auc:Facilities',
-                'auc:Facility',
-                'auc:Sites',
-                'auc:Site',
-                'auc:Buildings',
-                'auc:Building',
-                'auc:PremisesNotes',
+                "",
+                "auc:BuildingSync",
+                "auc:Facilities",
+                "auc:Facility",
+                "auc:Sites",
+                "auc:Site",
+                "auc:Buildings",
+                "auc:Building",
+                "auc:PremisesNotes",
             ]
         )
 
@@ -95,76 +95,76 @@ class TestXMLHelpers(TestCase):
         last_element, xpath_remainder = find_last_in_xpath(self.tree, xpath, NAMESPACES)
 
         # -- Assert
-        self.assertEqual(f'{{{BUILDINGSYNC_URI}}}PremisesNotes', last_element.tag)
-        self.assertEqual('', xpath_remainder)
+        self.assertEqual(f"{{{BUILDINGSYNC_URI}}}PremisesNotes", last_element.tag)
+        self.assertEqual("", xpath_remainder)
 
     def test_build_path_with_single_element_path(self):
         """should be able to build a single element with build_path"""
         # -- Setup
         # element we will build off of
-        base_element = self.tree.xpath('/auc:BuildingSync', namespaces=NAMESPACES)
+        base_element = self.tree.xpath("/auc:BuildingSync", namespaces=NAMESPACES)
         self.assertEqual(1, len(base_element))
         base_element = base_element[0]
 
         # path to build (single element)
-        path = 'auc:Foo'
-        match = base_element.xpath('/auc:BuildingSync/' + path, namespaces=NAMESPACES)
+        path = "auc:Foo"
+        match = base_element.xpath("/auc:BuildingSync/" + path, namespaces=NAMESPACES)
         self.assertEqual(0, len(match))
 
         # -- Act
         foo_element = build_path(base_element, path)
 
         # -- Assert
-        self.assertEqual(f'{{{BUILDINGSYNC_URI}}}Foo', foo_element.tag)
-        match = base_element.xpath('/auc:BuildingSync/auc:Foo', namespaces=NAMESPACES)
+        self.assertEqual(f"{{{BUILDINGSYNC_URI}}}Foo", foo_element.tag)
+        match = base_element.xpath("/auc:BuildingSync/auc:Foo", namespaces=NAMESPACES)
         self.assertEqual(1, len(match))
 
     def test_build_path_with_multielement_path(self):
         """should be able to build multiple elements in a path with build_path"""
         # -- Setup
         # element we will build off of
-        base_element = self.tree.xpath('/auc:BuildingSync', namespaces=NAMESPACES)
+        base_element = self.tree.xpath("/auc:BuildingSync", namespaces=NAMESPACES)
         self.assertEqual(1, len(base_element))
         base_element = base_element[0]
 
         # path to build - none of the elements should already exist
-        path = 'auc:Foo/auc:Bar/auc:Goo'
-        match = base_element.xpath('/auc:BuildingSync/' + path, namespaces=NAMESPACES)
+        path = "auc:Foo/auc:Bar/auc:Goo"
+        match = base_element.xpath("/auc:BuildingSync/" + path, namespaces=NAMESPACES)
         self.assertEqual(0, len(match))
 
         # -- Act
         foo_element = build_path(base_element, path)
 
         # -- Assert
-        self.assertEqual(f'{{{BUILDINGSYNC_URI}}}Goo', foo_element.tag)
-        match = base_element.xpath('/auc:BuildingSync/' + path, namespaces=NAMESPACES)
+        self.assertEqual(f"{{{BUILDINGSYNC_URI}}}Goo", foo_element.tag)
+        match = base_element.xpath("/auc:BuildingSync/" + path, namespaces=NAMESPACES)
         self.assertEqual(1, len(match))
 
     def test_build_path_with_conditional_elements(self):
         # -- Setup
         # element we will build off of
-        base_element = self.tree.xpath('/auc:BuildingSync', namespaces=NAMESPACES)
+        base_element = self.tree.xpath("/auc:BuildingSync", namespaces=NAMESPACES)
         self.assertEqual(1, len(base_element))
         base_element = base_element[0]
 
         # path to build - Foo, nor Bar with text "Hello", nor Goo exist
         # Note that Bar and Goo are siblings here, and both should be created
         path = 'auc:Foo[auc:Bar="Hello"]/auc:Goo'
-        match = base_element.xpath('/auc:BuildingSync/' + path, namespaces=NAMESPACES)
+        match = base_element.xpath("/auc:BuildingSync/" + path, namespaces=NAMESPACES)
         self.assertEqual(0, len(match))
 
         # -- Act
         foo_element = build_path(base_element, path)
 
         # -- Assert
-        self.assertEqual(f'{{{BUILDINGSYNC_URI}}}Goo', foo_element.tag)
-        match = base_element.xpath('/auc:BuildingSync/' + path, namespaces=NAMESPACES)
+        self.assertEqual(f"{{{BUILDINGSYNC_URI}}}Goo", foo_element.tag)
+        match = base_element.xpath("/auc:BuildingSync/" + path, namespaces=NAMESPACES)
         self.assertEqual(1, len(match))
 
     def test_children_sorter_factory_sorts_building_element_children(self):
         # -- Setup
-        xpath = '/'.join(
-            ['', 'auc:BuildingSync', 'auc:Facilities', 'auc:Facility', 'auc:Sites', 'auc:Site', 'auc:Buildings', 'auc:Building']
+        xpath = "/".join(
+            ["", "auc:BuildingSync", "auc:Facilities", "auc:Facility", "auc:Sites", "auc:Site", "auc:Buildings", "auc:Building"]
         )
         building_element = self.tree.xpath(xpath, namespaces=NAMESPACES)
         self.assertEqual(1, len(building_element))
@@ -172,15 +172,15 @@ class TestXMLHelpers(TestCase):
 
         # some of the first subelement tags of Building in sorted order
         sorted_tag_order = [
-            'PremisesName',
-            'PremisesNotes',
-            'Address',
-            'ClimateZoneType',
-            'eGRIDRegionCode',
-            'WeatherDataStationID',
+            "PremisesName",
+            "PremisesNotes",
+            "Address",
+            "ClimateZoneType",
+            "eGRIDRegionCode",
+            "WeatherDataStationID",
         ]
 
-        elements = [etree.Element(f'{{{BUILDINGSYNC_URI}}}{tag}') for tag in sorted_tag_order]
+        elements = [etree.Element(f"{{{BUILDINGSYNC_URI}}}{tag}") for tag in sorted_tag_order]
         # shuffle elements -- already verified seed doesn't result in same ordered list
         random.seed(4)
         random.shuffle(elements)
@@ -190,30 +190,30 @@ class TestXMLHelpers(TestCase):
         sorted_elements = sorted(elements, key=getkey)
 
         # -- Assert
-        actual_tag_order = [element.tag.replace(f'{{{BUILDINGSYNC_URI}}}', '') for element in sorted_elements]
+        actual_tag_order = [element.tag.replace(f"{{{BUILDINGSYNC_URI}}}", "") for element in sorted_elements]
         self.assertListEqual(sorted_tag_order, actual_tag_order)
 
     def test_update_tree_changes_text_on_existing_element(self):
         # -- Setup
         # Full xpath should exist
-        xpath = '/'.join(
+        xpath = "/".join(
             [
-                '',
-                'auc:BuildingSync',
-                'auc:Facilities',
-                'auc:Facility',
-                'auc:Sites',
-                'auc:Site',
-                'auc:Buildings',
-                'auc:Building',
-                'auc:PremisesNotes',
+                "",
+                "auc:BuildingSync",
+                "auc:Facilities",
+                "auc:Facility",
+                "auc:Sites",
+                "auc:Site",
+                "auc:Buildings",
+                "auc:Building",
+                "auc:PremisesNotes",
             ]
         )
         self.assertEqual(1, len(self.tree.xpath(xpath, namespaces=NAMESPACES)))
 
         # -- Act
-        value = 'FooBar123'
-        update_tree(self.xmlschema, self.tree, xpath, 'text', value, NAMESPACES)
+        value = "FooBar123"
+        update_tree(self.xmlschema, self.tree, xpath, "text", value, NAMESPACES)
 
         # -- Assert
         notes_element = self.tree.xpath(xpath, namespaces=NAMESPACES)
@@ -226,24 +226,24 @@ class TestXMLHelpers(TestCase):
     def test_update_tree_changes_text_on_nonexistent_element(self):
         # -- Setup
         # auc:PremisesName does not exist in the tree
-        xpath = '/'.join(
+        xpath = "/".join(
             [
-                '',
-                'auc:BuildingSync',
-                'auc:Facilities',
-                'auc:Facility',
-                'auc:Sites',
-                'auc:Site',
-                'auc:Buildings',
-                'auc:Building',
-                'auc:PremisesName',
+                "",
+                "auc:BuildingSync",
+                "auc:Facilities",
+                "auc:Facility",
+                "auc:Sites",
+                "auc:Site",
+                "auc:Buildings",
+                "auc:Building",
+                "auc:PremisesName",
             ]
         )
         self.assertEqual(0, len(self.tree.xpath(xpath, namespaces=NAMESPACES)))
 
         # -- Act
-        value = 'FooBar123'
-        update_tree(self.xmlschema, self.tree, xpath, 'text', value, NAMESPACES)
+        value = "FooBar123"
+        update_tree(self.xmlschema, self.tree, xpath, "text", value, NAMESPACES)
 
         # -- Assert
         name_element = self.tree.xpath(xpath, namespaces=NAMESPACES)
@@ -256,19 +256,19 @@ class TestXMLHelpers(TestCase):
     def test_update_tree_changes_attribute_on_existing_element(self):
         # -- Setup
         # Full xpath should exist
-        xpath = '/'.join(
-            ['', 'auc:BuildingSync', 'auc:Facilities', 'auc:Facility', 'auc:Sites', 'auc:Site', 'auc:Buildings', 'auc:Building']
+        xpath = "/".join(
+            ["", "auc:BuildingSync", "auc:Facilities", "auc:Facility", "auc:Sites", "auc:Site", "auc:Buildings", "auc:Building"]
         )
         self.assertEqual(1, len(self.tree.xpath(xpath, namespaces=NAMESPACES)))
 
         # -- Act
-        value = 'NewID'
-        update_tree(self.xmlschema, self.tree, xpath, '@ID', value, NAMESPACES)
+        value = "NewID"
+        update_tree(self.xmlschema, self.tree, xpath, "@ID", value, NAMESPACES)
 
         # -- Assert
         building_element = self.tree.xpath(xpath, namespaces=NAMESPACES)
         self.assertEqual(1, len(building_element))
         building_element = building_element[0]
-        self.assertEqual(value, building_element.get('ID'))
+        self.assertEqual(value, building_element.get("ID"))
         # tree should remain valid as well after inserting
         self.xmlschema.validate(etree.tostring(self.tree).decode())

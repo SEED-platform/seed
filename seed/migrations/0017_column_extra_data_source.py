@@ -5,13 +5,13 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('seed', '0016_auto_20160411_1139'),
+        ("seed", "0016_auto_20160411_1139"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='column',
-            name='extra_data_source',
-            field=models.CharField(blank=True, choices=[(b'P', b'Property'), (b'T', b'Taxlot')], db_index=True, max_length=1, null=True),
+            model_name="column",
+            name="extra_data_source",
+            field=models.CharField(blank=True, choices=[(b"P", b"Property"), (b"T", b"Taxlot")], db_index=True, max_length=1, null=True),
         ),
     ]

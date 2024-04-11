@@ -23,12 +23,12 @@ class EZState:
 
 class PropertyState(EZState):
     def __init__(self, **kwds):
-        super().__init__('ubid', 'pm_property_id', 'custom_id_1', 'normalized_address', **kwds)
+        super().__init__("ubid", "pm_property_id", "custom_id_1", "normalized_address", **kwds)
 
 
 class TaxLotState(EZState):
     def __init__(self, **kwds):
-        super().__init__('jurisdiction_tax_lot_id', 'custom_id_1', 'normalized_address', **kwds)
+        super().__init__("jurisdiction_tax_lot_id", "custom_id_1", "normalized_address", **kwds)
 
 
 class TestEquivalenceClassGenerator(DataMappingBaseTestCase):
@@ -39,9 +39,9 @@ class TestEquivalenceClassGenerator(DataMappingBaseTestCase):
         p2 = PropertyState(pm_property_id=100)
         p3 = PropertyState(pm_property_id=200)
         p4 = PropertyState(custom_id_1=100)
-        p5 = PropertyState(ubid='abc+123')
-        p6 = PropertyState(ubid='100')
-        p7 = PropertyState(ubid='abc+123')
+        p5 = PropertyState(ubid="abc+123")
+        p6 = PropertyState(ubid="100")
+        p7 = PropertyState(ubid="abc+123")
 
         equivalence_classes = partitioner.calculate_equivalence_classes([p1, p2])
         self.assertEqual(len(equivalence_classes), 1)
@@ -62,18 +62,18 @@ class TestEquivalenceClassGenerator(DataMappingBaseTestCase):
         self.assertEqual(len(equivalence_classes), 1)
 
     def test_a_dummy_class_basics(self):
-        tls1 = TaxLotState(jurisdiction_tax_lot_id='1')
-        tls2 = TaxLotState(jurisdiction_tax_lot_id='1', custom_id_1='100')
-        tls3 = TaxLotState(jurisdiction_tax_lot_id='1', custom_id_1='100', normalized_address='123 fake street')
+        tls1 = TaxLotState(jurisdiction_tax_lot_id="1")
+        tls2 = TaxLotState(jurisdiction_tax_lot_id="1", custom_id_1="100")
+        tls3 = TaxLotState(jurisdiction_tax_lot_id="1", custom_id_1="100", normalized_address="123 fake street")
 
-        self.assertEqual(tls1.jurisdiction_tax_lot_id, '1')
+        self.assertEqual(tls1.jurisdiction_tax_lot_id, "1")
         self.assertEqual(tls1.custom_id_1, None)
         self.assertEqual(tls1.normalized_address, None)
 
-        self.assertEqual(tls2.jurisdiction_tax_lot_id, '1')
-        self.assertEqual(tls2.custom_id_1, '100')
+        self.assertEqual(tls2.jurisdiction_tax_lot_id, "1")
+        self.assertEqual(tls2.custom_id_1, "100")
         self.assertEqual(tls2.normalized_address, None)
 
-        self.assertEqual(tls3.jurisdiction_tax_lot_id, '1')
-        self.assertEqual(tls3.custom_id_1, '100')
-        self.assertEqual(tls3.normalized_address, '123 fake street')
+        self.assertEqual(tls3.jurisdiction_tax_lot_id, "1")
+        self.assertEqual(tls3.custom_id_1, "100")
+        self.assertEqual(tls3.normalized_address, "123 fake street")

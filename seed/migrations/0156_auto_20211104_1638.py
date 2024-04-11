@@ -4,10 +4,10 @@ from django.db import migrations
 
 
 def forwards(apps, schema_editor):
-    Column = apps.get_model('seed', 'Column')
-    Organization = apps.get_model('orgs', 'Organization')
+    Column = apps.get_model("seed", "Column")
+    Organization = apps.get_model("orgs", "Organization")
 
-    columns_to_remove = ['analysis_state', 'analysis_state_message', 'analysis_end_time', 'analysis_start_time']
+    columns_to_remove = ["analysis_state", "analysis_state_message", "analysis_end_time", "analysis_start_time"]
 
     # Go through all the organizations and find all the oclumns to remove.
     # There is really no reason to use org.id, but it is there, so doing it that way.
@@ -15,7 +15,7 @@ def forwards(apps, schema_editor):
         for column_to_remove in columns_to_remove:
             columns = Column.objects.filter(
                 organization_id=org.id,
-                table_name='PropertyState',
+                table_name="PropertyState",
                 column_name=column_to_remove,
                 is_extra_data=False,
             )
@@ -27,58 +27,58 @@ def forwards(apps, schema_editor):
                 # If the column exists, then just update the display_name and data_type if empty
                 c = columns.first()
                 c.delete()
-                print(f'deleting column {column_to_remove} for org {org.id}')
+                print(f"deleting column {column_to_remove} for org {org.id}")
             else:
-                print('  More than one column returned!')
+                print("  More than one column returned!")
 
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('data_importer', '0015_auto_20210712_2134'),
-        ('seed', '0155_propertystate_egrid_subregion_code'),
+        ("data_importer", "0015_auto_20210712_2134"),
+        ("seed", "0155_propertystate_egrid_subregion_code"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='scenario',
-            name='analysis_end_time',
+            model_name="scenario",
+            name="analysis_end_time",
         ),
         migrations.RemoveField(
-            model_name='scenario',
-            name='analysis_start_time',
+            model_name="scenario",
+            name="analysis_start_time",
         ),
         migrations.RemoveField(
-            model_name='scenario',
-            name='analysis_state',
+            model_name="scenario",
+            name="analysis_state",
         ),
         migrations.RemoveField(
-            model_name='scenario',
-            name='analysis_state_message',
+            model_name="scenario",
+            name="analysis_state_message",
         ),
         migrations.AlterIndexTogether(
-            name='propertystate',
+            name="propertystate",
             index_together={
-                ('import_file', 'data_state', 'merge_state'),
-                ('import_file', 'data_state', 'source_type'),
-                ('hash_object',),
-                ('import_file', 'data_state'),
+                ("import_file", "data_state", "merge_state"),
+                ("import_file", "data_state", "source_type"),
+                ("hash_object",),
+                ("import_file", "data_state"),
             },
         ),
         migrations.RemoveField(
-            model_name='propertystate',
-            name='analysis_end_time',
+            model_name="propertystate",
+            name="analysis_end_time",
         ),
         migrations.RemoveField(
-            model_name='propertystate',
-            name='analysis_start_time',
+            model_name="propertystate",
+            name="analysis_start_time",
         ),
         migrations.RemoveField(
-            model_name='propertystate',
-            name='analysis_state',
+            model_name="propertystate",
+            name="analysis_state",
         ),
         migrations.RemoveField(
-            model_name='propertystate',
-            name='analysis_state_message',
+            model_name="propertystate",
+            name="analysis_state_message",
         ),
         migrations.RunPython(forwards),
     ]

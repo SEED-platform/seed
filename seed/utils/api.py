@@ -19,7 +19,7 @@ from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.permissions import get_org_id, get_user_org
 from seed.models import VIEW_LIST, VIEW_LIST_PROPERTY, Column, ColumnListProfile, ColumnListProfileColumn
 
-OrgValidator = namedtuple('OrgValidator', ['key', 'field'])
+OrgValidator = namedtuple("OrgValidator", ["key", "field"])
 
 
 def get_api_endpoints():
@@ -31,7 +31,7 @@ def get_api_endpoints():
     urllist = urlconf.urlpatterns
     api_endpoints = {}
     for url, callback in get_all_urls(urllist):
-        if getattr(callback, 'is_api_endpoint', False):
+        if getattr(callback, "is_api_endpoint", False):
             clean_url = clean_api_regex(url)
             api_endpoints[clean_url] = callback
     return api_endpoints
@@ -42,9 +42,9 @@ def format_api_docstring(docstring):
     Cleans up a python method docstring for human consumption.
     """
     if not isinstance(docstring, basestring):
-        return 'INVALID DOCSTRING'
-    whitespace_regex = r'\s+'
-    ret = re.sub(whitespace_regex, ' ', docstring)
+        return "INVALID DOCSTRING"
+    whitespace_regex = r"\s+"
+    ret = re.sub(whitespace_regex, " ", docstring)
     ret = ret.strip()
     return ret
 
@@ -56,21 +56,21 @@ def clean_api_regex(url):
 
     TODO: If pks ever appear in the url, this will need to account for that.
     """
-    url = url.replace('^', '')
-    url = url.replace('$', '')
-    if not url.startswith('/'):
-        url = '/' + url
+    url = url.replace("^", "")
+    url = url.replace("$", "")
+    if not url.startswith("/"):
+        url = "/" + url
     return url
 
 
-def get_all_urls(urllist, prefix=''):
+def get_all_urls(urllist, prefix=""):
     """
     Recursive generator that traverses entire tree of URLs, starting with
     urllist, yielding a tuple of (url_pattern, view_function) for each
     one.
     """
     for entry in urllist:
-        if hasattr(entry, 'url_patterns'):
+        if hasattr(entry, "url_patterns"):
             for url in get_all_urls(entry.url_patterns, prefix + entry.pattern.regex.pattern):
                 try:
                     yield url
@@ -151,7 +151,7 @@ def get_api_request_user(request):
     """
     Determines if this is an API request and returns the corresponding user if so.
     """
-    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+    if request.headers.get("x-requested-with") == "XMLHttpRequest":
         return False
 
     return User.process_header_request(request)
@@ -177,8 +177,8 @@ class APIBypassCSRFMiddleware:
         except exceptions.AuthenticationFailed as e:
             return JsonResponse(
                 {
-                    'status': 'error',
-                    'message': str(e),
+                    "status": "error",
+                    "message": str(e),
                 },
                 status=status.HTTP_401_UNAUTHORIZED,
             )
@@ -226,7 +226,7 @@ def get_org_id_from_validator(instance, field):
     This functions mimics getattr(obj, 'org__id') by
     splitting field on __ and calling rgetattr on the result.
     """
-    fields = field.split('__')
+    fields = field.split("__")
     return rgetattr(instance, fields)
 
 
@@ -249,21 +249,21 @@ class ProfileIdMixin:
         """
         show_columns = {
             # TODO: decide if we want to make these visible in the result
-            'fields': ['extra_data', 'id'],  # , 'bounding_box', 'long_lat', 'centroid',
-            'extra_data': [],
+            "fields": ["extra_data", "id"],  # , 'bounding_box', 'long_lat', 'centroid',
+            "extra_data": [],
         }
         profile_exists = ColumnListProfile.objects.filter(
             organization_id=org_id, id=profile_id, profile_location=VIEW_LIST, inventory_type=VIEW_LIST_PROPERTY
         ).exists()
         if profile_id is None or profile_id == -1 or not profile_exists:
-            show_columns['fields'] += list(
-                Column.objects.filter(organization_id=org_id, table_name='PropertyState', is_extra_data=False).values_list(
-                    'column_name', flat=True
+            show_columns["fields"] += list(
+                Column.objects.filter(organization_id=org_id, table_name="PropertyState", is_extra_data=False).values_list(
+                    "column_name", flat=True
                 )
             )
-            show_columns['extra_data'] += list(
-                Column.objects.filter(organization_id=org_id, table_name='PropertyState', is_extra_data=True).values_list(
-                    'column_name', flat=True
+            show_columns["extra_data"] += list(
+                Column.objects.filter(organization_id=org_id, table_name="PropertyState", is_extra_data=True).values_list(
+                    "column_name", flat=True
                 )
             )
         else:
@@ -272,13 +272,13 @@ class ProfileIdMixin:
             )
             for col in list(
                 ColumnListProfileColumn.objects.filter(column_list_profile_id=profile.id).values(
-                    'column__column_name', 'column__is_extra_data'
+                    "column__column_name", "column__is_extra_data"
                 )
             ):
-                if col['column__is_extra_data']:
-                    show_columns['extra_data'].append(col['column__column_name'])
+                if col["column__is_extra_data"]:
+                    show_columns["extra_data"].append(col["column__column_name"])
                 else:
-                    show_columns['fields'].append(col['column__column_name'])
+                    show_columns["fields"].append(col["column__column_name"])
 
         return show_columns
 
@@ -299,18 +299,18 @@ class OrgMixin:
         if not request.user:
             return None
 
-        if not getattr(self, '_organization', None):
+        if not getattr(self, "_organization", None):
             org_id = get_org_id(request)
             org = None
             if not org_id:
                 org = get_user_org(request.user)
-                org_id = int(getattr(org, 'pk'))
+                org_id = int(getattr(org, "pk"))
             if not org:
                 # ALWAYS check if user is member of org for the ID provided!
                 try:
                     org = request.user.orgs.get(pk=org_id)
                 except ObjectDoesNotExist:
-                    raise PermissionDenied('Incorrect org id.')
+                    raise PermissionDenied("Incorrect org id.")
             if return_obj:
                 # not sure why we are allowing _organization to be set as an id
                 # or model instance...
@@ -325,7 +325,7 @@ class OrgMixin:
         :return: organization object.
         """
         org = self.get_organization(request, return_obj=True)
-        return getattr(org.get_parent(), 'pk')
+        return getattr(org.get_parent(), "pk")
 
 
 class OrgCreateMixin(OrgMixin):
@@ -402,7 +402,7 @@ class OrgValidateMixin:
         try:
             user.orgs.get(pk=pk)
         except ObjectDoesNotExist:
-            msg = f'User is not a member of {validator.key} organization.'
+            msg = f"User is not a member of {validator.key} organization."
             raise PermissionDenied(msg)
 
     def validate(self, data):
@@ -412,14 +412,14 @@ class OrgValidateMixin:
         ensures users belongs to org corresponding to the foreign key
         being set.
         """
-        org_validators = getattr(self, 'org_validators', None)
+        org_validators = getattr(self, "org_validators", None)
         if not org_validators:
-            raise ValidationError('org_validators attribute not set on serializer')
+            raise ValidationError("org_validators attribute not set on serializer")
         else:
             for validator in org_validators:
                 instance = data.get(validator.key)
                 if instance:
-                    user = self.context['request'].user
+                    user = self.context["request"].user
                     self.validate_org(instance, user, validator)
         return data
 
@@ -444,9 +444,9 @@ class OrgQuerySetMixin(OrgMixin):
         # pylint:disable=invalid-name
         # raises Attribute Error if not set
         Model = self.model
-        qsfilter = getattr(self, 'orgfilter', 'organization_id')
-        qs = getattr(self, 'queryset', None)
-        force_parent = getattr(self, 'force_parent', False)
+        qsfilter = getattr(self, "orgfilter", "organization_id")
+        qs = getattr(self, "queryset", None)
+        force_parent = getattr(self, "force_parent", False)
         if force_parent:
             query_dict = {qsfilter: self.get_parent_org(self.request)}
         else:

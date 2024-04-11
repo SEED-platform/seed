@@ -62,7 +62,7 @@ def matching_criteria_column_names(organization_id, table_name):
     happen anyway.
     """
     return {
-        'normalized_address' if c.column_name == 'address_line_1' else c.column_name
+        "normalized_address" if c.column_name == "address_line_1" else c.column_name
         for c in Column.objects.filter(organization_id=organization_id, is_matching_criteria=True, table_name=table_name)
     }
 
@@ -85,17 +85,17 @@ def _merge_matches_across_cycles(matching_views, org_id, given_state_id, StateCl
     # Group matching -Views by Cycle and capture state_ids to be merged
     # For the purpose of merging, we only care if match_count is greater than 1.
     states_to_merge = (
-        matching_views.values('cycle_id')
-        .annotate(state_ids=ArrayAgg('state_id'), match_count=Count('id'))
+        matching_views.values("cycle_id")
+        .annotate(state_ids=ArrayAgg("state_id"), match_count=Count("id"))
         .filter(match_count__gt=1)
-        .values_list('state_ids', flat=True)
+        .values_list("state_ids", flat=True)
     )
 
     target_state_id = given_state_id
     count = 0
 
     for state_ids in states_to_merge:
-        ordered_ids = list(StateClass.objects.filter(id__in=state_ids).order_by('updated').values_list('id', flat=True))
+        ordered_ids = list(StateClass.objects.filter(id__in=state_ids).order_by("updated").values_list("id", flat=True))
 
         if given_state_id in ordered_ids:
             # If the given -State ID is included, give it precedence and
@@ -103,10 +103,10 @@ def _merge_matches_across_cycles(matching_views, org_id, given_state_id, StateCl
             # (disabled with https://github.com/SEED-platform/seed/issues/2624)
             # ordered_ids.remove(given_state_id)
             # ordered_ids.append(given_state_id)
-            merged_state = merge_states_with_views(ordered_ids, org_id, 'System Match', StateClass)
+            merged_state = merge_states_with_views(ordered_ids, org_id, "System Match", StateClass)
             target_state_id = merged_state.id
         else:
-            merge_states_with_views(ordered_ids, org_id, 'System Match', StateClass)
+            merge_states_with_views(ordered_ids, org_id, "System Match", StateClass)
 
         count += len(ordered_ids)
 
@@ -130,10 +130,10 @@ def _link_matches(matching_views, org_id, view, ViewClass):  # noqa: N803
     """
     if ViewClass == PropertyView:
         CanonicalClass = Property
-        canonical_id_col = 'property_id'
+        canonical_id_col = "property_id"
     elif ViewClass == TaxLotView:
         CanonicalClass = TaxLot
-        canonical_id_col = 'taxlot_id'
+        canonical_id_col = "taxlot_id"
 
     # Exclude target and capture unique canonical IDs
     unique_canonical_ids = (
@@ -197,14 +197,14 @@ def match(state_id, cycle_id, StateClass, StateClassName, ViewClass):  # noqa: N
     # Create matching criteria filter
     column_names = matching_criteria_column_names(org_id, StateClassName)
     matching_criteria = matching_filter_criteria(state, column_names)
-    state_appended_matching_criteria = {'state__' + col_name: v for col_name, v in matching_criteria.items()}
+    state_appended_matching_criteria = {"state__" + col_name: v for col_name, v in matching_criteria.items()}
 
     # If matching criteria for this state is None, return no matches (empty querysets)
     if all(v is None for v in matching_criteria.values()):
         return self_view, ViewClass.objects.none(), ViewClass.objects.none()
 
     # Get matching view in and outside of the cycle
-    all_matching_views = ViewClass.objects.prefetch_related('state').filter(
+    all_matching_views = ViewClass.objects.prefetch_related("state").filter(
         state__organization_id=org_id, **state_appended_matching_criteria
     )
     if self_view:
@@ -218,7 +218,7 @@ def match(state_id, cycle_id, StateClass, StateClassName, ViewClass):  # noqa: N
 
 def _get_ali(view, matching_views, highest_ali, class_name, ViewClass):  # noqa: N803
     # Get the ali of the matching views
-    matching_ali_ids = list(set(matching_views.values_list(f'{class_name}__access_level_instance', flat=True)))
+    matching_ali_ids = list(set(matching_views.values_list(f"{class_name}__access_level_instance", flat=True)))
     if len(matching_ali_ids) == 0:
         matching_ali_id = None
     elif len(matching_ali_ids) == 1:
@@ -228,7 +228,7 @@ def _get_ali(view, matching_views, highest_ali, class_name, ViewClass):  # noqa:
 
     # get the ali of the view
     if view:
-        view_ali_id = next(iter(ViewClass.objects.filter(id=view.id).values_list(f'{class_name}__access_level_instance', flat=True)))
+        view_ali_id = next(iter(ViewClass.objects.filter(id=view.id).values_list(f"{class_name}__access_level_instance", flat=True)))
     else:
         view_ali_id = None
 
@@ -258,15 +258,15 @@ def _get_ali(view, matching_views, highest_ali, class_name, ViewClass):  # noqa:
     return ali
 
 
-def match_merge_link(state_id, state_class_name: Literal['PropertyState', 'TaxLotState'], highest_ali, cycle):
-    if state_class_name == 'PropertyState':
+def match_merge_link(state_id, state_class_name: Literal["PropertyState", "TaxLotState"], highest_ali, cycle):
+    if state_class_name == "PropertyState":
         StateClass = PropertyState
         ViewClass = PropertyView
-        class_name = 'property'
-    elif state_class_name == 'TaxLotState':
+        class_name = "property"
+    elif state_class_name == "TaxLotState":
         StateClass = TaxLotState
         ViewClass = TaxLotView
-        class_name = 'taxlot'
+        class_name = "taxlot"
 
     state = StateClass.objects.get(pk=state_id)
     org_id = state.organization_id
@@ -287,7 +287,7 @@ def match_merge_link(state_id, state_class_name: Literal['PropertyState', 'TaxLo
     # the out of cycle views need to merge? Why would both the target state and view need to be
     # passed? We should take a look at this, But for now, I don't want to anger it.
     all_matching_views = (
-        ViewClass.objects.filter(pk=view.id).prefetch_related('state') | matching_views_in_cycle | matching_views_out_of_cycle
+        ViewClass.objects.filter(pk=view.id).prefetch_related("state") | matching_views_in_cycle | matching_views_out_of_cycle
     )
     merge_count, target_state_id = _merge_matches_across_cycles(all_matching_views, org_id, state_id, StateClass)
     view = ViewClass.objects.get(state_id=target_state_id)
@@ -298,7 +298,7 @@ def match_merge_link(state_id, state_class_name: Literal['PropertyState', 'TaxLo
     return merge_count, link_count, view.id
 
 
-@shared_task(serializer='pickle', ignore_result=True)
+@shared_task(serializer="pickle", ignore_result=True)
 def whole_org_match_merge_link(org_id, state_class_name, proposed_columns=[]):
     """
     For a given organization, run a match merge round for each cycle in
@@ -338,30 +338,30 @@ def whole_org_match_merge_link(org_id, state_class_name, proposed_columns=[]):
             - Delete any unused canonical records.
     """
     summary = {
-        'PropertyState': {
-            'merged_count': 0,
-            'linked_sets_count': 0,
+        "PropertyState": {
+            "merged_count": 0,
+            "linked_sets_count": 0,
         },
-        'TaxLotState': {
-            'merged_count': 0,
-            'linked_sets_count': 0,
+        "TaxLotState": {
+            "merged_count": 0,
+            "linked_sets_count": 0,
         },
     }
 
-    cycle_ids = Cycle.objects.filter(organization_id=org_id).values_list('id', flat=True)
+    cycle_ids = Cycle.objects.filter(organization_id=org_id).values_list("id", flat=True)
 
-    if state_class_name == 'PropertyState':
+    if state_class_name == "PropertyState":
         StateClass = PropertyState
         ViewClass = PropertyView
         CanonicalClass = Property
-    elif state_class_name == 'TaxLotState':
+    elif state_class_name == "TaxLotState":
         StateClass = TaxLotState
         ViewClass = TaxLotView
         CanonicalClass = TaxLot
 
     if proposed_columns:
         # Use column names as given (replacing address_line_1 with normalized_address)
-        column_names = [column_name if column_name != 'address_line_1' else 'normalized_address' for column_name in proposed_columns]
+        column_names = [column_name if column_name != "address_line_1" else "normalized_address" for column_name in proposed_columns]
         preview_run = True
     else:
         column_names = matching_criteria_column_names(org_id, state_class_name)
@@ -375,30 +375,30 @@ def whole_org_match_merge_link(org_id, state_class_name, proposed_columns=[]):
             view_in_cycle = ViewClass.objects.filter(cycle_id=cycle_id)
 
             matched_id_groups = (
-                StateClass.objects.filter(id__in=Subquery(view_in_cycle.values('state_id')))
+                StateClass.objects.filter(id__in=Subquery(view_in_cycle.values("state_id")))
                 .exclude(**empty_matching_criteria)
                 .values(*column_names)
-                .annotate(matched_ids=ArrayAgg('id'), matched_count=Count('id'))
-                .values_list('matched_ids', flat=True)
+                .annotate(matched_ids=ArrayAgg("id"), matched_count=Count("id"))
+                .values_list("matched_ids", flat=True)
                 .filter(matched_count__gt=1)
             )
 
             for state_ids in matched_id_groups:
-                ordered_ids = list(StateClass.objects.filter(id__in=state_ids).order_by('updated').values_list('id', flat=True))
+                ordered_ids = list(StateClass.objects.filter(id__in=state_ids).order_by("updated").values_list("id", flat=True))
 
-                merge_states_with_views(ordered_ids, org_id, 'System Match', StateClass)
+                merge_states_with_views(ordered_ids, org_id, "System Match", StateClass)
 
-                summary[StateClass.__name__]['merged_count'] += len(state_ids)
+                summary[StateClass.__name__]["merged_count"] += len(state_ids)
 
         # Match link across the whole Organization
         # Append 'state__' to dict keys used for filtering so that filtering can be done across associations
-        state_appended_col_names = {'state__' + col_name for col_name in column_names}
-        state_appended_empty_matching_criteria = {'state__' + col_name: v for col_name, v in empty_matching_criteria.items()}
+        state_appended_col_names = {"state__" + col_name for col_name in column_names}
+        state_appended_empty_matching_criteria = {"state__" + col_name: v for col_name, v in empty_matching_criteria.items()}
 
-        canonical_id_col = 'property_id' if StateClass == PropertyState else 'taxlot_id'
+        canonical_id_col = "property_id" if StateClass == PropertyState else "taxlot_id"
 
         # Looking at all -Views in Org across Cycles
-        org_views = ViewClass.objects.filter(cycle_id__in=cycle_ids).select_related('state')
+        org_views = ViewClass.objects.filter(cycle_id__in=cycle_ids).select_related("state")
 
         # Identify all canonical_ids that are currently used once and are potentially reusable
         reusable_canonical_ids = (
@@ -412,8 +412,8 @@ def whole_org_match_merge_link(org_id, state_class_name, proposed_columns=[]):
         link_groups = (
             org_views.exclude(**state_appended_empty_matching_criteria)
             .values(*state_appended_col_names)
-            .annotate(canonical_ids=ArrayAgg(canonical_id_col), view_ids=ArrayAgg('id'), link_count=Count('id'))
-            .values_list('canonical_ids', 'view_ids', 'link_count')
+            .annotate(canonical_ids=ArrayAgg(canonical_id_col), view_ids=ArrayAgg("id"), link_count=Count("id"))
+            .values_list("canonical_ids", "view_ids", "link_count")
         )
 
         unused_canonical_ids = []
@@ -432,15 +432,15 @@ def whole_org_match_merge_link(org_id, state_class_name, proposed_columns=[]):
 
             ViewClass.objects.filter(id__in=view_ids).update(**{canonical_id_col: new_record.id})
 
-            summary[StateClass.__name__]['linked_sets_count'] += 1
+            summary[StateClass.__name__]["linked_sets_count"] += 1
 
             unused_canonical_ids += canonical_ids
 
         # For records with empty criteria and without reusable canonical IDs, apply a new ID.
         empty_criteria_views = (
-            ViewClass.objects.select_related('state')
+            ViewClass.objects.select_related("state")
             .filter(cycle_id__in=cycle_ids, **state_appended_empty_matching_criteria)
-            .exclude(**{canonical_id_col + '__in': reusable_canonical_ids})
+            .exclude(**{canonical_id_col + "__in": reusable_canonical_ids})
         )
 
         for view in empty_criteria_views:
@@ -462,7 +462,7 @@ def whole_org_match_merge_link(org_id, state_class_name, proposed_columns=[]):
         # If this was a preview run, capture results here and rollback.
         if preview_run:
             root = AccessLevelInstance.objects.get(organization_id=org_id, depth=1)
-            if state_class_name == 'PropertyState':
+            if state_class_name == "PropertyState":
                 summary = properties_across_cycles(org_id, root, -1, cycle_ids)
             else:
                 summary = taxlots_across_cycles(org_id, root, -1, cycle_ids)

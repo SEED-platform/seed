@@ -5,13 +5,13 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('data_importer', '0009_importfile_uploaded_filename'),
+        ("data_importer", "0009_importfile_uploaded_filename"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='importfile',
-            name='matching_results_data',
+            model_name="importfile",
+            name="matching_results_data",
             field=models.JSONField(blank=True, default=dict),
         ),
     ]

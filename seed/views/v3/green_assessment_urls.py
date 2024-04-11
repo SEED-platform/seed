@@ -13,27 +13,27 @@ from seed.utils.viewsets import SEEDOrgModelViewSet
 
 
 @method_decorator(
-    name='update',
+    name="update",
     decorator=[
-        has_perm_class('requires_root_member_access'),
+        has_perm_class("requires_root_member_access"),
     ],
 )
 @method_decorator(
-    name='destroy',
+    name="destroy",
     decorator=[
-        has_perm_class('requires_root_member_access'),
+        has_perm_class("requires_root_member_access"),
     ],
 )
 @method_decorator(
-    name='retrieve',
+    name="retrieve",
     decorator=[
-        has_perm_class('requires_root_member_access'),
+        has_perm_class("requires_root_member_access"),
     ],
 )
 @method_decorator(
-    name='list',
+    name="list",
     decorator=[
-        has_perm_class('requires_root_member_access'),
+        has_perm_class("requires_root_member_access"),
     ],
 )
 class GreenAssessmentURLViewSet(SEEDOrgModelViewSet):
@@ -135,5 +135,5 @@ class GreenAssessmentURLViewSet(SEEDOrgModelViewSet):
 
     serializer_class = GreenAssessmentURLSerializer
     model = GreenAssessmentURL
-    orgfilter = 'property_assessment__assessment__organization_id'
-    filter_fields = ('property_assessment__id',)
+    orgfilter = "property_assessment__assessment__organization_id"
+    filter_fields = ("property_assessment__id",)

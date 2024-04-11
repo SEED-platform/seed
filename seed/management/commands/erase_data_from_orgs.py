@@ -16,30 +16,30 @@ logging.basicConfig(level=logging.DEBUG)
 
 class Command(BaseCommand):
     def add_arguments(self, parser):
-        parser.add_argument('--org', dest='organization', default=False)
-        parser.add_argument('--stats', dest='stats', default=False, action='store_true')
+        parser.add_argument("--org", dest="organization", default=False)
+        parser.add_argument("--stats", dest="stats", default=False, action="store_true")
 
     def handle(self, *args, **options):
-        logging_info(f'RUN create_m2m_relationships_organization with args={args},kwds={options}')
-        if options['organization']:
-            core_organization = list(map(int, options['organization'].split(',')))
+        logging_info(f"RUN create_m2m_relationships_organization with args={args},kwds={options}")
+        if options["organization"]:
+            core_organization = list(map(int, options["organization"].split(",")))
         else:
             core_organization = [20, 69]
 
-        logging_info(f'Processing organization list: {core_organization}')
+        logging_info(f"Processing organization list: {core_organization}")
 
         for org in core_organization:
             delete_data_from_org(org)
 
-        logging_info('END create_m2m_relationships_organization')
+        logging_info("END create_m2m_relationships_organization")
 
 
 def delete_data_from_org(org_pk):
     tax_attrs_to_clear = collections.defaultdict(list)
     property_attrs_to_clear = collections.defaultdict(list)
 
-    tax_attrs_to_clear[69] = ['address_line_1', 'city', 'state', 'postal_code']
-    property_attrs_to_clear[69] = ['address_line_1', 'city', 'state', 'postal_code']
+    tax_attrs_to_clear[69] = ["address_line_1", "city", "state", "postal_code"]
+    property_attrs_to_clear[69] = ["address_line_1", "city", "state", "postal_code"]
 
     for ndx, property_state in enumerate(PropertyState.objects.filter(organization_id=org_pk).all()):
         for pa in property_attrs_to_clear[org_pk]:

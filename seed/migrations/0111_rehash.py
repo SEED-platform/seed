@@ -11,17 +11,17 @@ from seed.data_importer.tasks import hash_state_object
 
 def forwards(apps, schema_editor):
     property_sql = (
-        'UPDATE seed_propertystate '
-        'SET created = seed_propertyauditlog.created, updated = seed_propertyauditlog.created '
-        'FROM seed_propertyauditlog '
-        'WHERE seed_propertystate.id = state_id;'
+        "UPDATE seed_propertystate "
+        "SET created = seed_propertyauditlog.created, updated = seed_propertyauditlog.created "
+        "FROM seed_propertyauditlog "
+        "WHERE seed_propertystate.id = state_id;"
     )
 
     taxlot_sql = (
-        'UPDATE seed_taxlotstate '
-        'SET created = seed_taxlotauditlog.created, updated = seed_taxlotauditlog.created '
-        'FROM seed_taxlotauditlog '
-        'WHERE seed_taxlotstate.id = state_id;'
+        "UPDATE seed_taxlotstate "
+        "SET created = seed_taxlotauditlog.created, updated = seed_taxlotauditlog.created "
+        "FROM seed_taxlotauditlog "
+        "WHERE seed_taxlotstate.id = state_id;"
     )
 
     with connection.cursor() as cursor:
@@ -31,8 +31,8 @@ def forwards(apps, schema_editor):
 
 # Go through every property and tax lot and simply save it to create the hash_object
 def recalculate_hash_objects(apps, schema_editor):
-    PropertyState = apps.get_model('seed', 'PropertyState')
-    TaxLotState = apps.get_model('seed', 'TaxLotState')
+    PropertyState = apps.get_model("seed", "PropertyState")
+    TaxLotState = apps.get_model("seed", "TaxLotState")
 
     # find which columns are not used in column mappings
     property_count = PropertyState.objects.count()
@@ -44,7 +44,7 @@ def recalculate_hash_objects(apps, schema_editor):
     with transaction.atomic():
         for idx, obj in enumerate(PropertyState.objects.all().iterator()):
             if idx % 1000 == 0:
-                print(f'... {idx} / {property_count} ...')
+                print(f"... {idx} / {property_count} ...")
             obj.hash_object = hash_state_object(obj)
             obj.save()
 
@@ -52,7 +52,7 @@ def recalculate_hash_objects(apps, schema_editor):
     with transaction.atomic():
         for idx, obj in enumerate(TaxLotState.objects.all().iterator()):
             if idx % 1000 == 0:
-                print(f'... {idx} / {taxlot_count} ...')
+                print(f"... {idx} / {taxlot_count} ...")
             obj.hash_object = hash_state_object(obj)
             obj.save()
     # execution_time = time.clock() - start
@@ -61,7 +61,7 @@ def recalculate_hash_objects(apps, schema_editor):
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('seed', '0110_matching_criteria'),
+        ("seed", "0110_matching_criteria"),
     ]
 
     operations = [

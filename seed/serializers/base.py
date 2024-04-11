@@ -24,4 +24,4 @@ class ChoiceField(serializers.Field):
         for i in self._choices:
             if self._choices[i] == data:
                 return i
-        raise serializers.ValidationError(f'Could not find value. Acceptable values are {list(self._choices.values())}.')
+        raise serializers.ValidationError(f"Could not find value. Acceptable values are {list(self._choices.values())}.")

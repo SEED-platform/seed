@@ -5,13 +5,13 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('data_importer', '0007_auto_20161008_2244'),
+        ("data_importer", "0007_auto_20161008_2244"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='importfile',
-            name='cached_mapped_columns',
+            model_name="importfile",
+            name="cached_mapped_columns",
             field=models.TextField(blank=True, null=True),
         ),
     ]

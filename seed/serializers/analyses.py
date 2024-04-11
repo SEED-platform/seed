@@ -12,8 +12,8 @@ from seed.serializers.utils import CustomChoicesField
 
 class AnalysisSerializer(serializers.ModelSerializer):
     service = CustomChoicesField(Analysis.SERVICE_TYPES)
-    status = serializers.CharField(source='get_status_display')
+    status = serializers.CharField(source="get_status_display")
 
     class Meta:
         model = Analysis
-        fields = '__all__'
+        fields = "__all__"

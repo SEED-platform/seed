@@ -29,7 +29,7 @@ def decrypt(password: str):
         enc = signer.unsign_object(password)
         return enc, None
     except signing.BadSignature as e:
-        print('Error: Cannot decrypt password.')
+        print("Error: Cannot decrypt password.")
         return None, e
 
 
@@ -37,6 +37,6 @@ def get_secret() -> str:
     if settings.SECRET_KEY:
         secret = settings.SECRET_KEY
     else:
-        secret = os.environ.get('SECRET_KEY', None)
+        secret = os.environ.get("SECRET_KEY", None)
 
     return secret

@@ -6,18 +6,18 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('seed', '0070_merge'),
+        ("seed", "0070_merge"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='propertyview',
-            name='cycle',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='seed.Cycle'),
+            model_name="propertyview",
+            name="cycle",
+            field=models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to="seed.Cycle"),
         ),
         migrations.AlterField(
-            model_name='taxlotview',
-            name='cycle',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='seed.Cycle'),
+            model_name="taxlotview",
+            name="cycle",
+            field=models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to="seed.Cycle"),
         ),
     ]

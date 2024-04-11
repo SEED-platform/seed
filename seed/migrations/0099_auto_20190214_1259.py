@@ -5,13 +5,13 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('seed', '0098_auto_20181121_1302'),
+        ("seed", "0098_auto_20181121_1302"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='buildingfile',
-            name='file_type',
-            field=models.IntegerField(choices=[(0, 'Unknown'), (1, 'BuildingSync'), (3, 'HPXML')], default=0),
+            model_name="buildingfile",
+            name="file_type",
+            field=models.IntegerField(choices=[(0, "Unknown"), (1, "BuildingSync"), (3, "HPXML")], default=0),
         ),
     ]

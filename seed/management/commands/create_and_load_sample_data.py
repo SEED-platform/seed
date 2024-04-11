@@ -17,72 +17,72 @@ from seed.test_helpers.fake import BaseFake, FakePropertyStateFactory, FakeTaxLo
 logging.basicConfig(level=logging.DEBUG)
 _log = logging.getLogger(__name__)
 
-BUILDING_USE = ('Hospital', 'Hotel', 'Office', 'University', 'Retail')
+BUILDING_USE = ("Hospital", "Hotel", "Office", "University", "Retail")
 
-USE_CLASS = ('A', 'B', 'C', 'D', 'E')
+USE_CLASS = ("A", "B", "C", "D", "E")
 
-COMPLIANCE = ('Y', 'N')
+COMPLIANCE = ("Y", "N")
 
 # Just a list of counties to pick from.
 COUNTIES = (
-    'Los Angeles County',
-    'Orange County',
-    'San Diego County',
-    'Riverside County',
-    'San Bernardino County',
-    'Santa Clara County',
-    'Alameda County',
-    'Sacramento County',
-    'Contra Costa County',
-    'Fresno County',
-    'Ventura County',
-    'San Francisco County',
-    'Kern County',
-    'San Mateo County',
-    'San Joaquin County',
-    'Stanislaus County',
-    'Sonoma County',
-    'Tulare County',
-    'Solano County',
-    'Monterey County',
-    'Santa Barbara County',
-    'Placer County',
-    'San Luis Obispo County',
-    'Santa Cruz County',
-    'Merced County',
-    'Marin County',
-    'Butte County',
-    'Yolo County',
-    'El Dorado County',
-    'Shasta County',
-    'Imperial County',
-    'Kings County',
-    'Madera County',
-    'Napa County',
-    'Humboldt County',
-    'Nevada County',
-    'Sutter County',
-    'Mendocino County',
-    'Yuba County',
-    'Lake County',
-    'Tehama County',
-    'Tuolumne County',
-    'San Benito County',
-    'laveras County',
-    'Siskiyou County',
-    'Amador County',
-    'Lassen County',
-    'Del Norte County',
-    'Glenn County',
-    'Plumas County',
-    'Colusa County',
-    'Mariposa County',
-    'Inyo County',
-    'Trinity County',
-    'Mono County',
-    'Modoc County',
-    'Sierra County',
-    'Alpine County',
+    "Los Angeles County",
+    "Orange County",
+    "San Diego County",
+    "Riverside County",
+    "San Bernardino County",
+    "Santa Clara County",
+    "Alameda County",
+    "Sacramento County",
+    "Contra Costa County",
+    "Fresno County",
+    "Ventura County",
+    "San Francisco County",
+    "Kern County",
+    "San Mateo County",
+    "San Joaquin County",
+    "Stanislaus County",
+    "Sonoma County",
+    "Tulare County",
+    "Solano County",
+    "Monterey County",
+    "Santa Barbara County",
+    "Placer County",
+    "San Luis Obispo County",
+    "Santa Cruz County",
+    "Merced County",
+    "Marin County",
+    "Butte County",
+    "Yolo County",
+    "El Dorado County",
+    "Shasta County",
+    "Imperial County",
+    "Kings County",
+    "Madera County",
+    "Napa County",
+    "Humboldt County",
+    "Nevada County",
+    "Sutter County",
+    "Mendocino County",
+    "Yuba County",
+    "Lake County",
+    "Tehama County",
+    "Tuolumne County",
+    "San Benito County",
+    "laveras County",
+    "Siskiyou County",
+    "Amador County",
+    "Lassen County",
+    "Del Norte County",
+    "Glenn County",
+    "Plumas County",
+    "Colusa County",
+    "Mariposa County",
+    "Inyo County",
+    "Trinity County",
+    "Mono County",
+    "Modoc County",
+    "Sierra County",
+    "Alpine County",
 )
 
 
@@ -119,13 +119,13 @@ class FakePropertyStateExtraDataFactory(BaseFake):
         """
 
         property_extra_data = {
-            'CoStar Property ID': self.fake.numerify(text='#######'),
-            'Organization': organization.name,
-            'Compliance Required': self.fake.random_element(elements=COMPLIANCE),
-            'County': self.fake.random_element(elements=COUNTIES),
-            'Date / Last Personal Correspondence': self.fake.date(pattern='%m/%d/%Y'),
-            'property_extra_data_field_1': f'property_extra_data_field_{field_id!s}',
-            'Does Not Need to Comply': self.fake.random_element(elements=COMPLIANCE),
+            "CoStar Property ID": self.fake.numerify(text="#######"),
+            "Organization": organization.name,
+            "Compliance Required": self.fake.random_element(elements=COMPLIANCE),
+            "County": self.fake.random_element(elements=COUNTIES),
+            "Date / Last Personal Correspondence": self.fake.date(pattern="%m/%d/%Y"),
+            "property_extra_data_field_1": f"property_extra_data_field_{field_id!s}",
+            "Does Not Need to Comply": self.fake.random_element(elements=COMPLIANCE),
         }
 
         property_extra_data = {k: str(v) for k, v in property_extra_data.items()}
@@ -179,7 +179,7 @@ class CreateSampleDataFakePropertyStateFactory(FakePropertyStateFactory):
         :return: a string of between 2 and 9 characters which follow some rules about
                  what these identifiers look like in some cases
         """
-        append_choices = ('a', 'b', 'c')
+        append_choices = ("a", "b", "c")
         first_number = str(randint(1, 999))
         second_number = str(randint(1, 999))
         res = None
@@ -189,7 +189,7 @@ class CreateSampleDataFakePropertyStateFactory(FakePropertyStateFactory):
         if randint(0, 1):
             second_number += self.fake.random_element(elements=append_choices)
         if randint(0, 1):
-            res = first_number + '-' + second_number
+            res = first_number + "-" + second_number
         else:
             res = first_number + second_number
 
@@ -202,27 +202,27 @@ class CreateSampleDataFakePropertyStateFactory(FakePropertyStateFactory):
         owner = self.owner()
         property = self.get_details()
 
-        pm_property_id = self.fake.numerify(text='#######')
+        pm_property_id = self.fake.numerify(text="#######")
         extra_data = self.extra_data_factory.property_state_extra_data(pm_property_id, self.organization)
 
         # This field was not in case A, B, or C for the original examples so removing it from the
         # dict.  Case D handles this itself.
-        fields_to_remove = ['pm_parent_property_id']
+        fields_to_remove = ["pm_parent_property_id"]
         for field in fields_to_remove:
             del property[field]
 
         # Add in fields that were in the original examples but are not in the base factory.
         data_not_in_base = {
-            'pm_property_id': pm_property_id,
-            'property_name': owner.name + "'s " + self.fake.random_element(elements=BUILDING_USE),
-            'use_description': self.fake.random_element(elements=BUILDING_USE),
-            'energy_score': self.fake.numerify(text='##'),
-            'site_eui': self.fake.numerify(text='###.#'),
-            'year_ending': self.year_ending,
-            'gross_floor_area': self.fake.numerify(text='#######'),
-            'property_notes': self.case_description,
-            'home_energy_score_id': randint(88888, 111111),
-            'jurisdiction_property_id': self._generate_jurisdiction_property_id(),
+            "pm_property_id": pm_property_id,
+            "property_name": owner.name + "'s " + self.fake.random_element(elements=BUILDING_USE),
+            "use_description": self.fake.random_element(elements=BUILDING_USE),
+            "energy_score": self.fake.numerify(text="##"),
+            "site_eui": self.fake.numerify(text="###.#"),
+            "year_ending": self.year_ending,
+            "gross_floor_area": self.fake.numerify(text="#######"),
+            "property_notes": self.case_description,
+            "home_energy_score_id": randint(88888, 111111),
+            "jurisdiction_property_id": self._generate_jurisdiction_property_id(),
         }
 
         property.update(data_not_in_base)
@@ -257,20 +257,20 @@ class FakeTaxLotExtraDataFactory(BaseFake):
         owner = self.owner()
 
         tl = {
-            'Owner City': self.fake.city(),
-            'Tax Year': year_ending,
-            'Parcel Gross Area': self.fake.numerify(text='####-###'),
-            'Use Class': self.fake.random_element(elements=USE_CLASS),
-            'Ward': self.fake.numerify(text='#'),
-            'X Coordinate': self.fake.latitude(),
-            'Y Coordinate': self.fake.longitude(),
-            'Owner Name': owner.name,
-            'Owner Address': self.address_line_1(),
-            'Owner State': self.fake.state_abbr(),
-            'Owner Zip': self.fake.zipcode(),
-            'Tax Class': self.fake.random_element(elements=USE_CLASS) + self.fake.numerify(text='#'),
-            'taxlot_extra_data_field_1': f'taxlot_extra_data_field_{field_id!s}',
-            'City Code': self.fake.numerify(text='####-###'),
+            "Owner City": self.fake.city(),
+            "Tax Year": year_ending,
+            "Parcel Gross Area": self.fake.numerify(text="####-###"),
+            "Use Class": self.fake.random_element(elements=USE_CLASS),
+            "Ward": self.fake.numerify(text="#"),
+            "X Coordinate": self.fake.latitude(),
+            "Y Coordinate": self.fake.longitude(),
+            "Owner Name": owner.name,
+            "Owner Address": self.address_line_1(),
+            "Owner State": self.fake.state_abbr(),
+            "Owner Zip": self.fake.zipcode(),
+            "Tax Class": self.fake.random_element(elements=USE_CLASS) + self.fake.numerify(text="#"),
+            "taxlot_extra_data_field_1": f"taxlot_extra_data_field_{field_id!s}",
+            "City Code": self.fake.numerify(text="####-###"),
         }
 
         tl = {k: str(v) for k, v in tl.items()}
@@ -307,13 +307,13 @@ class CreateSampleDataFakeTaxLotFactory(FakeTaxLotStateFactory):
         :return: A dict containing randomized taxlot data
         """
         tl = self.get_details()
-        jurisdiction_tax_lot_id = self.fake.numerify(text='########')
+        jurisdiction_tax_lot_id = self.fake.numerify(text="########")
 
         # Add in fields that were in the original examples but are not in the base factory.
         data_not_in_base = {
-            'jurisdiction_tax_lot_id': jurisdiction_tax_lot_id,
-            'address_line_1': self.address_line_1(),
-            'city': self.fake.city(),
+            "jurisdiction_tax_lot_id": jurisdiction_tax_lot_id,
+            "address_line_1": self.address_line_1(),
+            "city": self.fake.city(),
         }
 
         tl.update(data_not_in_base)
@@ -339,7 +339,7 @@ def get_cycle(org, year=2015):
     :return: cycle starting on date(year, 1, 1) and ending on date(year, 12, 31)
     """
     cycle, _ = seed.models.Cycle.objects.get_or_create(
-        name=f'{year} Annual', organization=org, start=date(year, 1, 1), end=date(year, 12, 31)
+        name=f"{year} Annual", organization=org, start=date(year, 1, 1), end=date(year, 12, 31)
     )
     return cycle
 
@@ -524,7 +524,7 @@ def create_case_a(org, cycle, taxlot_factory, property_factory, number_records_p
     """
     taxlot = taxlot_factory.tax_lot()
     taxlots = [taxlot]
-    properties = [property_factory.property_state(address_line_1=taxlot.data['address'], city=taxlot.data['city'])]
+    properties = [property_factory.property_state(address_line_1=taxlot.data["address"], city=taxlot.data["city"])]
 
     taxlots, properties = create_cases_with_multi_records_per_cycle(org, cycle, taxlots, properties, number_records_per_cycle)
 
@@ -544,7 +544,7 @@ def create_case_b(org, cycle, taxlot_factory, property_factory, number_propertie
 
     properties = []
     for i in range(number_properties):
-        properties.append(property_factory.property_state(city=taxlots[0].data['city']))
+        properties.append(property_factory.property_state(city=taxlots[0].data["city"]))
 
     taxlots, properties = create_cases_with_multi_records_per_cycle(org, cycle, taxlots, properties, number_records_per_cycle)
 
@@ -564,7 +564,7 @@ def create_case_c(org, cycle, taxlot_factory, property_factory, number_taxlots=3
 
     taxlots = []
     for i in range(number_taxlots):
-        taxlots.append(taxlot_factory.tax_lot(city=properties[0].data['city']))
+        taxlots.append(taxlot_factory.tax_lot(city=properties[0].data["city"]))
 
     taxlots, properties = create_cases_with_multi_records_per_cycle(org, cycle, taxlots, properties, number_records_per_cycle)
 
@@ -649,10 +649,10 @@ def create_case_d(org, cycle, taxlot_factory, property_factory, number_records_p
     """
 
     campus = property_factory.property_state()
-    city = campus.data['city']
-    campus.data['pm_parent_property_id'] = campus.data['pm_property_id']
+    city = campus.data["city"]
+    campus.data["pm_parent_property_id"] = campus.data["pm_property_id"]
 
-    campus_property_id = campus.data['pm_parent_property_id']
+    campus_property_id = campus.data["pm_parent_property_id"]
 
     taxlots = []
     for i in range(3):
@@ -676,10 +676,10 @@ def update_taxlot_year(taxlot, year):
     :return: SampleDataRecord with the applicable fields changed.
     """
 
-    taxlot.extra_data['Tax Year'] = str(year)
+    taxlot.extra_data["Tax Year"] = str(year)
 
     # change something else in extra_data aside from the year:
-    taxlot.extra_data['taxlot_extra_data_field_1'] = taxlot.extra_data['taxlot_extra_data_field_1'] + '_' + str(year)
+    taxlot.extra_data["taxlot_extra_data_field_1"] = taxlot.extra_data["taxlot_extra_data_field_1"] + "_" + str(year)
 
     # update the noise
     taxlot = update_taxlot_noise(taxlot)
@@ -695,7 +695,7 @@ def update_property_noise(property_obj):
     :return: The same property with the site_eui updated to a random number
     """
     # randomize "site_eui"
-    property_obj.data['site_eui'] = str(float(randint(0, 1000)) + float(randint(0, 9)) / 10)
+    property_obj.data["site_eui"] = str(float(randint(0, 1000)) + float(randint(0, 9)) / 10)
     return property_obj
 
 
@@ -708,10 +708,10 @@ def update_property_year(property_obj, year):
     :return: SampleDataRecord with the applicable fields changed.
     """
 
-    property_obj.data['year_ending'] = property_obj.data['year_ending'].replace(year=year)
+    property_obj.data["year_ending"] = property_obj.data["year_ending"].replace(year=year)
 
     # change something in extra_data so something there changes too
-    property_obj.extra_data['property_extra_data_field_1'] = property_obj.extra_data['property_extra_data_field_1'] + '_' + str(year)
+    property_obj.extra_data["property_extra_data_field_1"] = property_obj.extra_data["property_extra_data_field_1"] + "_" + str(year)
 
     property_obj = update_property_noise(property_obj)
 
@@ -736,13 +736,13 @@ def create_additional_years(org, years, pairs_taxlots_and_properties, case, numb
     # will look like [[taxlot_1], [property_1]].  An entry in one property to many taxlots
     # might look like [[property_1], [taxlot_1, taxlot_2, taxlot_3]], etc...
     for year in years:
-        print(f'Creating additional year for case {case}:\t{year}')
+        print(f"Creating additional year for case {case}:\t{year}")
         cycle = get_cycle(org, year)
 
         for idx, [taxlots, properties] in enumerate(pairs_taxlots_and_properties):
             updated_taxlots = [update_taxlot_year(x, year) for x in taxlots]
             updated_properties = [update_property_year(x, year) for x in properties]
-            print(f'Creating {idx}')
+            print(f"Creating {idx}")
             create_cases_with_multi_records_per_cycle(org, cycle, updated_taxlots, updated_properties, number_records_per_cycle_per_state)
 
 
@@ -759,7 +759,7 @@ def create_additional_years_d(org, years, tuples_taxlots_properties_campus, numb
         taxlots and 5 properties.  Will error with less and unknown behavior with more.
     """
     for year in years:
-        print(f'Creating additional year for case D:\t{year}')
+        print(f"Creating additional year for case D:\t{year}")
         cycle = get_cycle(org, year)
 
         for i in range(number_records_per_cycle_per_state):
@@ -767,7 +767,7 @@ def create_additional_years_d(org, years, tuples_taxlots_properties_campus, numb
                 updated_taxlots = [update_taxlot_year(x, year) for x in taxlots]
                 updated_properties = [update_property_year(x, year) for x in properties]
                 updated_campus = update_property_year(campus, year)
-                print(f'Creating {idx}')
+                print(f"Creating {idx}")
                 _create_case_d(org, cycle, updated_taxlots, updated_properties, updated_campus)
 
 
@@ -782,7 +782,7 @@ def create_sample_data(years, a_ct=0, b_ct=0, c_ct=0, d_ct=0, number_records_per
     """
     year = years[0]
     extra_years = years[1:] if len(years) > 1 else None
-    org, _ = Organization.objects.get_or_create(name='SampleDataDemo_caseALL')
+    org, _ = Organization.objects.get_or_create(name="SampleDataDemo_caseALL")
     cycle = get_cycle(org, year)
     year_ending = date(year, 1, 1)
 
@@ -790,7 +790,7 @@ def create_sample_data(years, a_ct=0, b_ct=0, c_ct=0, d_ct=0, number_records_per
     taxlot_factory = CreateSampleDataFakeTaxLotFactory(taxlot_extra_data_factory)
     property_extra_data_factory = FakePropertyStateExtraDataFactory()
     property_factory = CreateSampleDataFakePropertyStateFactory(
-        org, year_ending, 'Case A-1: 1 Property, 1 Tax Lot', property_extra_data_factory
+        org, year_ending, "Case A-1: 1 Property, 1 Tax Lot", property_extra_data_factory
     )
 
     pairs_taxlots_and_properties_a = []
@@ -799,34 +799,34 @@ def create_sample_data(years, a_ct=0, b_ct=0, c_ct=0, d_ct=0, number_records_per
     tuples_taxlots_properties_campus_d = []
 
     for i in range(a_ct):
-        print(f'Creating Case A {i}')
+        print(f"Creating Case A {i}")
         pairs_taxlots_and_properties_a.append(
             create_case_a(org, cycle, taxlot_factory, property_factory, number_records_per_cycle_per_state)
         )
 
-    create_additional_years(org, extra_years, pairs_taxlots_and_properties_a, 'A', number_records_per_cycle_per_state)
+    create_additional_years(org, extra_years, pairs_taxlots_and_properties_a, "A", number_records_per_cycle_per_state)
 
     for i in range(b_ct):
-        print(f'Creating Case B {i}')
-        property_factory.case_description = 'Case B-1: Multiple (3) Properties, 1 Tax Lot'
+        print(f"Creating Case B {i}")
+        property_factory.case_description = "Case B-1: Multiple (3) Properties, 1 Tax Lot"
         pairs_taxlots_and_properties_b.append(
             create_case_b(org, cycle, taxlot_factory, property_factory, number_records_per_cycle_per_state)
         )
 
-    create_additional_years(org, extra_years, pairs_taxlots_and_properties_b, 'B', number_records_per_cycle_per_state)
+    create_additional_years(org, extra_years, pairs_taxlots_and_properties_b, "B", number_records_per_cycle_per_state)
 
     for i in range(c_ct):
-        print(f'Creating Case C {i}')
-        property_factory.case_description = 'Case C: 1 Property, Multiple (3) Tax Lots'
+        print(f"Creating Case C {i}")
+        property_factory.case_description = "Case C: 1 Property, Multiple (3) Tax Lots"
         pairs_taxlots_and_properties_c.append(
             create_case_c(org, cycle, taxlot_factory, property_factory, number_records_per_cycle_per_state)
         )
 
-    create_additional_years(org, extra_years, pairs_taxlots_and_properties_c, 'C', number_records_per_cycle_per_state)
+    create_additional_years(org, extra_years, pairs_taxlots_and_properties_c, "C", number_records_per_cycle_per_state)
 
     for i in range(d_ct):
-        print(f'Creating Case D {i}')
-        property_factory.case_description = 'Case D: Campus with Multiple associated buildings'
+        print(f"Creating Case D {i}")
+        property_factory.case_description = "Case D: Campus with Multiple associated buildings"
         tuples_taxlots_properties_campus_d.append(
             create_case_d(org, cycle, taxlot_factory, property_factory, number_records_per_cycle_per_state)
         )
@@ -841,27 +841,27 @@ class Command(BaseCommand):
     """
 
     def add_arguments(self, parser):
-        parser.add_argument('--A', dest='case_A_count', default=10, help='Number of A (1 building, 1 taxlot) cases.')
-        parser.add_argument('--B', dest='case_B_count', default=1, help='Number of B (many buildings, 1 taxlot) cases.')
-        parser.add_argument('--C', dest='case_C_count', default=1, help='Number of C (1 building, many taxlots) cases.')
-        parser.add_argument('--D', dest='case_D_count', default=1, help='Number of D (1 campus, many buildings, many taxlots) cases.')
-        parser.add_argument('--Y', dest='years', default='2015,2016', help='comma separated list of years to create data for.')
+        parser.add_argument("--A", dest="case_A_count", default=10, help="Number of A (1 building, 1 taxlot) cases.")
+        parser.add_argument("--B", dest="case_B_count", default=1, help="Number of B (many buildings, 1 taxlot) cases.")
+        parser.add_argument("--C", dest="case_C_count", default=1, help="Number of C (1 building, many taxlots) cases.")
+        parser.add_argument("--D", dest="case_D_count", default=1, help="Number of D (1 campus, many buildings, many taxlots) cases.")
+        parser.add_argument("--Y", dest="years", default="2015,2016", help="comma separated list of years to create data for.")
         parser.add_argument(
-            '--audit-depth',
-            dest='number_records_per_cycle_per_state',
+            "--audit-depth",
+            dest="number_records_per_cycle_per_state",
             default=1,
-            help='number of records to create within each year for audit history.  Same as the number of records created per state per cycle.',
+            help="number of records to create within each year for audit history.  Same as the number of records created per state per cycle.",
         )
 
     def handle(self, *args, **options):
-        years = options.get('years', '2015')
-        years = years.split(',')
+        years = options.get("years", "2015")
+        years = years.split(",")
         years = [int(x) for x in years]
         create_sample_data(
             years,
-            int(options.get('case_A_count', 0)),
-            int(options.get('case_B_count', 0)),
-            int(options.get('case_C_count', 0)),
-            int(options.get('case_D_count', 0)),
-            int(options.get('number_records_per_cycle_per_state', 0)),
+            int(options.get("case_A_count", 0)),
+            int(options.get("case_B_count", 0)),
+            int(options.get("case_C_count", 0)),
+            int(options.get("case_D_count", 0)),
+            int(options.get("number_records_per_cycle_per_state", 0)),
         )

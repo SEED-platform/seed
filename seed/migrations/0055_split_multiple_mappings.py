@@ -4,7 +4,7 @@ from django.db import migrations
 
 
 def duplicate_column(apps, column):
-    Column = apps.get_model('seed', 'Column')
+    Column = apps.get_model("seed", "Column")
 
     new_c = Column.objects.get(pk=column.id)
     new_c.pk = None
@@ -14,7 +14,7 @@ def duplicate_column(apps, column):
 
 
 def duplicate_mapping(apps, mapping, column, raw_or_mapped):
-    ColumnMapping = apps.get_model('seed', 'ColumnMapping')
+    ColumnMapping = apps.get_model("seed", "ColumnMapping")
 
     new_m = ColumnMapping.objects.get(pk=mapping.id)
     new_m.pk = None
@@ -23,11 +23,11 @@ def duplicate_mapping(apps, mapping, column, raw_or_mapped):
     new_c = duplicate_column(apps, column)
 
     # duplicate any of the columns
-    if raw_or_mapped == 'mapped':
+    if raw_or_mapped == "mapped":
         new_m.column_mapped.clear()
         new_m.column_mapped.add(new_c)
         new_m.save()
-    elif raw_or_mapped == 'raw':
+    elif raw_or_mapped == "raw":
         new_m.column_raw.clear()
         new_m.column_raw.add(new_c)
         new_m.save()
@@ -36,8 +36,8 @@ def duplicate_mapping(apps, mapping, column, raw_or_mapped):
 
 
 def forwards(apps, schema_editor):
-    Column = apps.get_model('seed', 'Column')
-    ColumnMapping = apps.get_model('seed', 'ColumnMapping')
+    Column = apps.get_model("seed", "Column")
+    ColumnMapping = apps.get_model("seed", "ColumnMapping")
 
     # find which columns are not used in column mappings
     # for c in Column.objects.filter(column_name='Building Count'):
@@ -45,27 +45,27 @@ def forwards(apps, schema_editor):
         cm_raw = ColumnMapping.objects.filter(column_raw=c)
         cm_mapped = ColumnMapping.objects.filter(column_mapped=c)
 
-        print(f'Column {c.id}: {c.table_name}.{c.column_name}')
+        print(f"Column {c.id}: {c.table_name}.{c.column_name}")
 
         if cm_raw.count() > 1 or cm_mapped.count() > 1:
-            print(f'from_count: {cm_raw.count()}     to_count: {cm_mapped.count()}')
+            print(f"from_count: {cm_raw.count()}     to_count: {cm_mapped.count()}")
 
             # go through the ones that are zeroed and is not extra data in the.
             # Also, split the mappings only if the mapped column is extra data.
             if cm_raw.count() == 0 and cm_mapped.count() > 1 and c.is_extra_data:
                 for idx, mapping in enumerate(cm_mapped):
-                    print(f'        Duplicating columns for {idx}')
-                    new_m, _new_c = duplicate_mapping(apps, mapping, c, 'mapped')
-                    print(f'            new mapping created {new_m}')
+                    print(f"        Duplicating columns for {idx}")
+                    new_m, _new_c = duplicate_mapping(apps, mapping, c, "mapped")
+                    print(f"            new mapping created {new_m}")
 
                 for m in cm_mapped:
                     m.delete()
 
             if cm_raw.count() > 1 and cm_mapped.count() == 0:
                 for idx, mapping in enumerate(cm_raw):
-                    print(f'        Duplicating columns for {idx}')
-                    new_m, _new_c = duplicate_mapping(apps, mapping, c, 'raw')
-                    print(f'            new mapping created {new_m}')
+                    print(f"        Duplicating columns for {idx}")
+                    new_m, _new_c = duplicate_mapping(apps, mapping, c, "raw")
+                    print(f"            new mapping created {new_m}")
 
                 for m in cm_raw:
                     m.delete()
@@ -73,12 +73,12 @@ def forwards(apps, schema_editor):
         elif cm_raw.count() > 1 and cm_mapped.count() > 1:
             # if there are any of the many raw to many mapped, handle those
             # someday... if you see it now, then raise and exception
-            raise Exception('this is bad, very bad... talk to @nllong')
+            raise Exception("this is bad, very bad... talk to @nllong")
 
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('seed', '0054_remove_same_column_in_mappings'),
+        ("seed", "0054_remove_same_column_in_mappings"),
     ]
 
     operations = [

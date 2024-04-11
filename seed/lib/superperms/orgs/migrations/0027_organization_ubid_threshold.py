@@ -5,17 +5,17 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('orgs', '0026_organizationuser_unique_user_for_organization'),
+        ("orgs", "0026_organizationuser_unique_user_for_organization"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='organization',
-            name='ubid_threshold',
+            model_name="organization",
+            name="ubid_threshold",
             field=models.FloatField(default=1.0),
         ),
         migrations.AddConstraint(
-            model_name='organization',
-            constraint=models.CheckConstraint(check=models.Q(('ubid_threshold__range', (0, 1))), name='ubid_threshold_range'),
+            model_name="organization",
+            constraint=models.CheckConstraint(check=models.Q(("ubid_threshold__range", (0, 1))), name="ubid_threshold_range"),
         ),
     ]

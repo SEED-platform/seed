@@ -6,38 +6,38 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('seed', '0042_auto_20161015_0611'),
+        ("seed", "0042_auto_20161015_0611"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='propertystate',
-            name='history',
+            model_name="propertystate",
+            name="history",
         ),
         migrations.RemoveField(
-            model_name='taxlotstate',
-            name='history',
+            model_name="taxlotstate",
+            name="history",
         ),
         migrations.AlterField(
-            model_name='propertyauditlog',
-            name='record_type',
-            field=models.IntegerField(blank=True, choices=[(0, 'ImportFile'), ('AUDIT_USER_EDIT', 'UserEdit')], null=True),
+            model_name="propertyauditlog",
+            name="record_type",
+            field=models.IntegerField(blank=True, choices=[(0, "ImportFile"), ("AUDIT_USER_EDIT", "UserEdit")], null=True),
         ),
         migrations.AlterField(
-            model_name='propertyauditlog',
-            name='state',
+            model_name="propertyauditlog",
+            name="state",
             field=models.ForeignKey(
-                on_delete=django.db.models.deletion.CASCADE, related_name='propertyauditlog__state', to='seed.PropertyState'
+                on_delete=django.db.models.deletion.CASCADE, related_name="propertyauditlog__state", to="seed.PropertyState"
             ),
         ),
         migrations.AlterField(
-            model_name='taxlotauditlog',
-            name='record_type',
-            field=models.IntegerField(blank=True, choices=[(0, 'ImportFile'), ('AUDIT_USER_EDIT', 'UserEdit')], null=True),
+            model_name="taxlotauditlog",
+            name="record_type",
+            field=models.IntegerField(blank=True, choices=[(0, "ImportFile"), ("AUDIT_USER_EDIT", "UserEdit")], null=True),
         ),
         migrations.AlterField(
-            model_name='taxlotstate',
-            name='jurisdiction_tax_lot_id',
+            model_name="taxlotstate",
+            name="jurisdiction_tax_lot_id",
             field=models.CharField(blank=True, max_length=2047, null=True),
         ),
     ]

@@ -5,33 +5,33 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('seed', '0166_propertystate_property_timezone'),
+        ("seed", "0166_propertystate_property_timezone"),
     ]
 
     operations = [
         migrations.RenameField(
-            model_name='datalogger',
-            old_name='location_identifier',
-            new_name='location_description',
+            model_name="datalogger",
+            old_name="location_identifier",
+            new_name="location_description",
         ),
         migrations.RenameField(
-            model_name='sensor',
-            old_name='location_identifier',
-            new_name='location_description',
+            model_name="sensor",
+            old_name="location_identifier",
+            new_name="location_description",
         ),
         migrations.AddField(
-            model_name='datalogger',
-            name='manufacturer_name',
+            model_name="datalogger",
+            name="manufacturer_name",
             field=models.CharField(max_length=255, null=True),
         ),
         migrations.AddField(
-            model_name='datalogger',
-            name='model_name',
+            model_name="datalogger",
+            name="model_name",
             field=models.CharField(max_length=255, null=True),
         ),
         migrations.AddField(
-            model_name='datalogger',
-            name='serial_number',
+            model_name="datalogger",
+            name="serial_number",
             field=models.CharField(max_length=255, null=True),
         ),
     ]

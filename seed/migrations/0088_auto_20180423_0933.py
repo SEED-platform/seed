@@ -5,18 +5,18 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('seed', '0087_merge_20180123_1033'),
+        ("seed", "0087_merge_20180123_1033"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='propertystate',
-            name='latitude',
+            model_name="propertystate",
+            name="latitude",
             field=models.FloatField(blank=True, null=True),
         ),
         migrations.AddField(
-            model_name='propertystate',
-            name='longitude',
+            model_name="propertystate",
+            name="longitude",
             field=models.FloatField(blank=True, null=True),
         ),
     ]

@@ -5,13 +5,13 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('orgs', '0005_merge_20180110_1156'),
+        ("orgs", "0005_merge_20180110_1156"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='organization',
-            name='display_significant_figures',
+            model_name="organization",
+            name="display_significant_figures",
             field=models.PositiveSmallIntegerField(default=2),
         ),
     ]

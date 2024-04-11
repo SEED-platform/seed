@@ -5,21 +5,21 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('seed', '0186_salesforce_configs'),
+        ("seed", "0186_salesforce_configs"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='compliancemetric',
-            name='end',
+            model_name="compliancemetric",
+            name="end",
         ),
         migrations.RemoveField(
-            model_name='compliancemetric',
-            name='start',
+            model_name="compliancemetric",
+            name="start",
         ),
         migrations.AddField(
-            model_name='compliancemetric',
-            name='cycles',
-            field=models.ManyToManyField(blank=True, related_name='cycles', to='seed.Cycle'),
+            model_name="compliancemetric",
+            name="cycles",
+            field=models.ManyToManyField(blank=True, related_name="cycles", to="seed.Cycle"),
         ),
     ]

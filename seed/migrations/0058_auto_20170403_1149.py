@@ -6,7 +6,7 @@ from django.db.models import Q
 
 def forwards(apps, schema_editor):
     # find which columns are not used in column mappings
-    ColumnMapping = apps.get_model('seed', 'ColumnMapping')
+    ColumnMapping = apps.get_model("seed", "ColumnMapping")
 
     # delete any empty column mappings
     cms = ColumnMapping.objects.filter(Q(column_raw=None) | Q(column_mapped=None))
@@ -16,7 +16,7 @@ def forwards(apps, schema_editor):
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('seed', '0057_remove_column_extra_data_source'),
+        ("seed", "0057_remove_column_extra_data_source"),
     ]
 
     operations = [

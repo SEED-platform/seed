@@ -25,7 +25,7 @@ def get_attrs_with_mapping(data_set_buildings, mapping):
 
     .. code-block::python
 
-        {'property_name': {building_inst1: 'value', building_inst2: 'value2'}}
+        {"property_name": {building_inst1: "value", building_inst2: "value2"}}
 
     """
 
@@ -36,9 +36,9 @@ def get_attrs_with_mapping(data_set_buildings, mapping):
             # foreign object is returned. If the import_file has been deleted (or at least the
             # deleted flag is set), then this would crash because the query does not return an
             # object.
-            if can_attr == 'import_file':
+            if can_attr == "import_file":
                 data_set_value = data_set_building.import_file_id
-                can_attrs['import_file_id'][data_set_building] = data_set_value
+                can_attrs["import_file_id"][data_set_building] = data_set_value
             else:
                 data_set_value = getattr(data_set_building, data_set_attr)
                 can_attrs[can_attr][data_set_building] = data_set_value
@@ -52,23 +52,23 @@ def get_state_to_state_tuple(inventory):
 
     fields = []
     for c in columns:
-        if c['table_name'] == inventory:
-            fields.append(c['column_name'])
+        if c["table_name"] == inventory:
+            fields.append(c["column_name"])
 
     # Include geocoding results columns that are left out when generating duplicate hashes
-    fields.append('long_lat')
-    fields.append('geocoding_confidence')
+    fields.append("long_lat")
+    fields.append("geocoding_confidence")
 
     return tuple([(k, k) for k in sorted(fields)])
 
 
 def get_propertystate_attrs(data_set_buildings):
-    state_to_state = get_state_to_state_tuple('PropertyState')
+    state_to_state = get_state_to_state_tuple("PropertyState")
     return get_attrs_with_mapping(data_set_buildings, state_to_state)
 
 
 def get_taxlotstate_attrs(data_set_buildings):
-    state_to_state = get_state_to_state_tuple('TaxLotState')
+    state_to_state = get_state_to_state_tuple("TaxLotState")
     return get_attrs_with_mapping(data_set_buildings, state_to_state)
 
 
@@ -95,10 +95,10 @@ def _merge_geocoding_results(merged_state, state1, state2, priorities, can_attrs
     be left out of the logic involving recognize_empty.
     """
     geocoding_attr_cols = [
-        'geocoding_confidence',
-        'longitude',
-        'latitude',
-        'long_lat',  # note this col shouldn't have priority set
+        "geocoding_confidence",
+        "longitude",
+        "latitude",
+        "long_lat",  # note this col shouldn't have priority set
     ]
 
     existing_results_empty = True
@@ -109,7 +109,7 @@ def _merge_geocoding_results(merged_state, state1, state2, priorities, can_attrs
         existing_results_empty = existing_results_empty and can_attrs[geocoding_col][state1] is None
         new_results_empty = new_results_empty and can_attrs[geocoding_col][state2] is None
 
-        geocoding_favor_new = geocoding_favor_new and priorities.get(geocoding_col, 'Favor New') == 'Favor New'
+        geocoding_favor_new = geocoding_favor_new and priorities.get(geocoding_col, "Favor New") == "Favor New"
 
         # Since these are handled here, remove them from canonical attributes
         del can_attrs[geocoding_col]
@@ -142,7 +142,7 @@ def _merge_extra_data(ed1, ed2, priorities, recognize_empty_columns, ignore_merg
         val2 = ed2.get(key, None)
         not_present_in_new = state2_present_columns and key not in state2_present_columns
         have_two_values = (val1 and val2) or key in recognize_empty_columns
-        use_new_regardless = ignore_merge_protection or priorities.get(key, 'Favor New') == 'Favor New'
+        use_new_regardless = ignore_merge_protection or priorities.get(key, "Favor New") == "Favor New"
         if not_present_in_new:
             extra_data[key] = val1
         elif have_two_values:
@@ -174,12 +174,12 @@ def merge_state(merged_state, state1, state2, priorities, ignore_merge_protectio
 
     recognize_empty_columns = state2.organization.column_set.filter(
         table_name=state2.__class__.__name__, recognize_empty=True, is_extra_data=False
-    ).values_list('column_name', flat=True)
+    ).values_list("column_name", flat=True)
 
     default = state2
     state2_present_columns = None
     if state2.import_file is not None and state2.import_file.cached_mapped_columns is not None:
-        state2_present_columns = [column['to_field'] for column in json.loads(state2.import_file.cached_mapped_columns)]
+        state2_present_columns = [column["to_field"] for column in json.loads(state2.import_file.cached_mapped_columns)]
     for attr in can_attrs:
         recognize_empty = attr in recognize_empty_columns
         attr_values = []
@@ -194,8 +194,8 @@ def merge_state(merged_state, state1, state2, priorities, ignore_merge_protectio
         # Two, differing values are set.
         if len(attr_values) > 1:
             # If we have more than one value for this field, choose based on the column priority
-            col_prior = priorities.get(attr, 'Favor New')
-            if ignore_merge_protection or col_prior == 'Favor New':
+            col_prior = priorities.get(attr, "Favor New")
+            if ignore_merge_protection or col_prior == "Favor New":
                 attr_value = can_attrs[attr][state2]
             else:  # favor the existing field
                 attr_value = can_attrs[attr][state1]
@@ -216,12 +216,12 @@ def merge_state(merged_state, state1, state2, priorities, ignore_merge_protectio
 
     recognize_empty_ed_columns = state2.organization.column_set.filter(
         table_name=state2.__class__.__name__, recognize_empty=True, is_extra_data=True
-    ).values_list('column_name', flat=True)
+    ).values_list("column_name", flat=True)
 
     merged_state.extra_data = _merge_extra_data(
         state1.extra_data,
         state2.extra_data,
-        priorities['extra_data'],
+        priorities["extra_data"],
         recognize_empty_ed_columns,
         ignore_merge_protection,
         state2_present_columns,

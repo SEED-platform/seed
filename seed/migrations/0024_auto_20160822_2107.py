@@ -6,37 +6,37 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('seed', '0023_auto_20160822_2100'),
+        ("seed", "0023_auto_20160822_2100"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='taxlotauditlog',
-            name='child',
+            model_name="taxlotauditlog",
+            name="child",
             field=models.ForeignKey(
-                on_delete=django.db.models.deletion.CASCADE, related_name='taxlotauditlog__child', to='seed.TaxLotAuditLog'
+                on_delete=django.db.models.deletion.CASCADE, related_name="taxlotauditlog__child", to="seed.TaxLotAuditLog"
             ),
         ),
         migrations.AlterField(
-            model_name='taxlotauditlog',
-            name='parent1',
+            model_name="taxlotauditlog",
+            name="parent1",
             field=models.ForeignKey(
                 blank=True,
                 null=True,
                 on_delete=django.db.models.deletion.CASCADE,
-                related_name='taxlotauditlog__parent1',
-                to='seed.TaxLotAuditLog',
+                related_name="taxlotauditlog__parent1",
+                to="seed.TaxLotAuditLog",
             ),
         ),
         migrations.AlterField(
-            model_name='taxlotauditlog',
-            name='parent2',
+            model_name="taxlotauditlog",
+            name="parent2",
             field=models.ForeignKey(
                 blank=True,
                 null=True,
                 on_delete=django.db.models.deletion.CASCADE,
-                related_name='taxlotauditlog__parent2',
-                to='seed.TaxLotAuditLog',
+                related_name="taxlotauditlog__parent2",
+                to="seed.TaxLotAuditLog",
             ),
         ),
     ]

@@ -18,8 +18,8 @@ from past.builtins import basestring
 
 from seed.lib.mcm.cleaners import normalize_unicode_and_characters
 
-LINEAR_UNITS = {'ft', 'm', 'in'}
-MAPPING_DATA_DIR = join(dirname(realpath(__file__)), 'data')
+LINEAR_UNITS = {"ft", "m", "in"}
+MAPPING_DATA_DIR = join(dirname(realpath(__file__)), "data")
 
 
 _log = logging.getLogger(__name__)
@@ -44,7 +44,7 @@ def _sanitize_and_convert_keys_to_regex(key):
     for pfx in LINEAR_UNITS:
         if pfx not in key:
             continue
-        for sfx, repl in ('_', '2'), ('^2', '2'), ('^3', '3'):
+        for sfx, repl in ("_", "2"), ("^2", "2"), ("^3", "3"):
             s = pfx + sfx
             p = key.find(s)
             if p >= 0:  # yes, the unit has a dimension
@@ -55,16 +55,16 @@ def _sanitize_and_convert_keys_to_regex(key):
             break
 
     # escape special characters before regexing.
-    for special in ('\\', '(', ')', '?', '*', '+', '.', '{', '}', '^', '$'):
-        key = key.replace(special, '\\' + special)
+    for special in ("\\", "(", ")", "?", "*", "+", ".", "{", "}", "^", "$"):
+        key = key.replace(special, "\\" + special)
 
     # convert underscores to white space
-    key = key.replace('_', ' ').replace('  ', ' ')
+    key = key.replace("_", " ").replace("  ", " ")
     # collapse whitespace
-    key = re.sub(r'\s+', ' ', key).strip()
+    key = re.sub(r"\s+", " ", key).strip()
 
     # convert white space to regex for space or underscore (repeated)
-    key = key.replace(' ', '( |_)+')
+    key = key.replace(" ", "( |_)+")
 
     return re.compile(key, re.IGNORECASE)
 
@@ -88,15 +88,15 @@ def create_column_regexes(raw_columns):
         ]
     """
     if not raw_columns:
-        _log.debug('No raw_columns provided!')
+        _log.debug("No raw_columns provided!")
         return []
 
     # clean up the comparing columns
     new_list = []
     for c in raw_columns:
         new_data = {}
-        new_data['raw'] = c
-        new_data['regex'] = _sanitize_and_convert_keys_to_regex(c)
+        new_data["raw"] = c
+        new_data["regex"] = _sanitize_and_convert_keys_to_regex(c)
         new_list.append(new_data)
 
     return new_list
@@ -149,7 +149,7 @@ def get_pm_mapping(raw_columns, mapping_data=None, resolve_duplicates=True):
     from_columns = create_column_regexes(raw_columns)
 
     if not mapping_data:
-        file_path = os.path.join(MAPPING_DATA_DIR, 'pm-mapping.json')
+        file_path = os.path.join(MAPPING_DATA_DIR, "pm-mapping.json")
         with open(file_path, encoding=locale.getpreferredencoding(False)) as f:
             mapping_data = json.load(f)
 
@@ -158,16 +158,16 @@ def get_pm_mapping(raw_columns, mapping_data=None, resolve_duplicates=True):
     for c in from_columns:
         column_found = False
         for d in mapping_data:
-            if c['regex'].match(d['from_field']):
+            if c["regex"].match(d["from_field"]):
                 # Assume that the mappings are 100% accurate for now.
-                final_mappings[c['raw']] = (d['to_table_name'], d['to_field'], 100)
+                final_mappings[c["raw"]] = (d["to_table_name"], d["to_field"], 100)
                 column_found = True
                 continue
 
         if not column_found:
             # if we get here then the columns was never found
-            _log.debug('Could not find applicable mappings, resorting to raw field ({}) in PropertyState'.format(c['raw']))
-            final_mappings[c['raw']] = ('PropertyState', c['raw'], 100)
+            _log.debug("Could not find applicable mappings, resorting to raw field ({}) in PropertyState".format(c["raw"]))
+            final_mappings[c["raw"]] = ("PropertyState", c["raw"], 100)
 
     # verify that there are no duplicate mappings
     if resolve_duplicates:
@@ -178,10 +178,10 @@ def get_pm_mapping(raw_columns, mapping_data=None, resolve_duplicates=True):
                 unique_mappings.add(v)
             else:
                 i = 1
-                updated_value = (v[0], f'{v[1]}_duplicate_{i}', v[2])
+                updated_value = (v[0], f"{v[1]}_duplicate_{i}", v[2])
                 while updated_value in unique_mappings:
                     i += 1
-                    updated_value = (v[0], f'{v[1]}_duplicate_{i}', v[2])
+                    updated_value = (v[0], f"{v[1]}_duplicate_{i}", v[2])
 
                 unique_mappings.add(updated_value)
                 final_mappings[k] = updated_value

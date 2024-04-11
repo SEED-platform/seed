@@ -15,40 +15,40 @@ from seed.models.data_quality import DataQualityCheck
 
 
 def default_pm_mappings():
-    with open('./seed/lib/mappings/data/pm-mapping.json', encoding=locale.getpreferredencoding(False)) as read_file:
+    with open("./seed/lib/mappings/data/pm-mapping.json", encoding=locale.getpreferredencoding(False)) as read_file:
         raw_mappings = load(read_file)
 
     # Verify that from_field values are all uniq
-    from_fields = [rm['from_field'] for rm in raw_mappings]
+    from_fields = [rm["from_field"] for rm in raw_mappings]
     if len(from_fields) != len(set(from_fields)):
-        raise ValueError('from_field values are not unique')
+        raise ValueError("from_field values are not unique")
 
     # taken from mapping partial (./static/seed/partials/mapping.html)
     valid_units = [
         # area units
-        'ft**2',
-        'm**2',
+        "ft**2",
+        "m**2",
         # eui_units
-        'kBtu/ft**2/year',
-        'kWh/m**2/year',
-        'GJ/m**2/year',
-        'MJ/m**2/year',
-        'kBtu/m**2/year',
+        "kBtu/ft**2/year",
+        "kWh/m**2/year",
+        "GJ/m**2/year",
+        "MJ/m**2/year",
+        "kBtu/m**2/year",
     ]
 
     formatted_mappings = []
 
     # check unit value is one that SEED recognizes
     for rm in raw_mappings:
-        from_units = rm.get('units', None)
+        from_units = rm.get("units", None)
         if from_units not in valid_units:
             from_units = None
 
         mapping = {
-            'to_field': rm.get('to_field'),
-            'from_field': rm.get('from_field'),
-            'from_units': from_units,
-            'to_table_name': rm.get('to_table_name'),
+            "to_field": rm.get("to_field"),
+            "from_field": rm.get("from_field"),
+            "from_units": from_units,
+            "to_table_name": rm.get("to_table_name"),
         }
 
         formatted_mappings.append(mapping)
@@ -65,42 +65,42 @@ def _create_default_columns(organization_id):
     """
     for column in Column.DATABASE_COLUMNS:
         details = {
-            'organization_id': organization_id,
+            "organization_id": organization_id,
         }
         details.update(column)
 
         original_identity_fields = [
-            'custom_id_1',
-            'pm_property_id',
-            'jurisdiction_tax_lot_id',
-            'ubid',
+            "custom_id_1",
+            "pm_property_id",
+            "jurisdiction_tax_lot_id",
+            "ubid",
         ]
 
         # Default fields and order are those used before customization was enabled
         default_geocoding_fields = [
-            'address_line_1',
-            'address_line_2',
-            'city',
-            'state',
-            'postal_code',
+            "address_line_1",
+            "address_line_2",
+            "city",
+            "state",
+            "postal_code",
         ]
 
-        column_name = column.get('column_name')
+        column_name = column.get("column_name")
 
         if column_name in original_identity_fields:
-            details['is_matching_criteria'] = True
+            details["is_matching_criteria"] = True
 
         try:
             field_index = default_geocoding_fields.index(column_name)
             # Increment each index by 1 since 0 represents a geocoding deactivated field.
-            details['geocoding_order'] = field_index + 1
+            details["geocoding_order"] = field_index + 1
         except ValueError:
             pass
 
         Column.objects.create(**details)
 
 
-def create_organization(user=None, org_name='test_org', *args, **kwargs):
+def create_organization(user=None, org_name="test_org", *args, **kwargs):
     """
     Helper script to create a user/org relationship from scratch. This is heavily used and
     creates the default labels, columns, and data quality rules when a new organization is created
@@ -125,7 +125,7 @@ def create_organization(user=None, org_name='test_org', *args, **kwargs):
         Label.objects.get_or_create(
             name=label,
             super_organization=organization,
-            defaults={'color': 'blue'},
+            defaults={"color": "blue"},
         )
 
     # upon initializing a new organization (SuperOrganization), create
@@ -133,11 +133,11 @@ def create_organization(user=None, org_name='test_org', *args, **kwargs):
     _create_default_columns(organization.id)
 
     # ... and the default column mapping profile for Portfolio Manager
-    organization.columnmappingprofile_set.create(name='Portfolio Manager Defaults', mappings=default_pm_mappings())
+    organization.columnmappingprofile_set.create(name="Portfolio Manager Defaults", mappings=default_pm_mappings())
 
     # ... and the default column mapping profile for BuildingSync
     organization.columnmappingprofile_set.create(
-        name='BuildingSync v2.0 Defaults',
+        name="BuildingSync v2.0 Defaults",
         mappings=default_buildingsync_profile_mappings(),
         profile_type=ColumnMappingProfile.BUILDINGSYNC_DEFAULT,
     )
@@ -148,7 +148,7 @@ def create_organization(user=None, org_name='test_org', *args, **kwargs):
     return organization, organization_user, user_added
 
 
-def create_suborganization(user, current_org, suborg_name='', user_role=ROLE_MEMBER):
+def create_suborganization(user, current_org, suborg_name="", user_role=ROLE_MEMBER):
     # Create the suborg manually to prevent the generation of the default columns, labels, and data
     # quality checks
 
@@ -170,6 +170,6 @@ def create_suborganization(user, current_org, suborg_name='', user_role=ROLE_MEM
         sub_org.save()
     except TooManyNestedOrgsError:
         sub_org.delete()
-        return False, 'Tried to create child of a child organization.', None
+        return False, "Tried to create child of a child organization.", None
 
     return True, sub_org, ou

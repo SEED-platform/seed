@@ -5,13 +5,13 @@ from django.db import migrations
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('seed', '0106_meter_scenario_id'),
+        ("seed", "0106_meter_scenario_id"),
     ]
 
     operations = [
         migrations.RenameField(
-            model_name='meter',
-            old_name='scenario_id',
-            new_name='scenario',
+            model_name="meter",
+            old_name="scenario_id",
+            new_name="scenario",
         ),
     ]

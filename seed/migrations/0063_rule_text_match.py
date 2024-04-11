@@ -5,13 +5,13 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('seed', '0062_auto_20170510_1525'),
+        ("seed", "0062_auto_20170510_1525"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='rule',
-            name='text_match',
+            model_name="rule",
+            name="text_match",
             field=models.CharField(max_length=200, null=True),
         ),
     ]

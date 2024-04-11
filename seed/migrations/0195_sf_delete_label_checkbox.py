@@ -5,13 +5,13 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('seed', '0194_alter_taxlotview_taxlot'),
+        ("seed", "0194_alter_taxlotview_taxlot"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='salesforceconfig',
-            name='delete_label_after_sync',
+            model_name="salesforceconfig",
+            name="delete_label_after_sync",
             field=models.BooleanField(default=False),
         ),
     ]

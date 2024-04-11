@@ -6,43 +6,43 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('orgs', '0003_auto_20160412_1123'),
-        ('seed', '0060_column_import_file'),
+        ("orgs", "0003_auto_20160412_1123"),
+        ("seed", "0060_column_import_file"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='DataQualityCheck',
+            name="DataQualityCheck",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(blank=b'Default Data Quality Check', max_length=255)),
-                ('organization', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='orgs.Organization')),
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("name", models.CharField(blank=b"Default Data Quality Check", max_length=255)),
+                ("organization", models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="orgs.Organization")),
             ],
         ),
         migrations.CreateModel(
-            name='Rule',
+            name="Rule",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(blank=True, max_length=255)),
-                ('description', models.CharField(blank=True, max_length=1000)),
-                ('table_name', models.CharField(blank=True, default=b'PropertyState', max_length=200)),
-                ('field', models.CharField(max_length=200)),
-                ('enabled', models.BooleanField(default=True)),
-                ('data_type', models.IntegerField(choices=[(0, b'number'), (1, b'string'), (2, b'date'), (3, b'year')], null=True)),
-                ('rule_type', models.IntegerField(choices=[(0, b'default'), (1, b'custom')], null=True)),
-                ('required', models.BooleanField(default=False)),
-                ('not_null', models.BooleanField(default=False)),
-                ('min', models.FloatField(null=True)),
-                ('max', models.FloatField(null=True)),
-                ('severity', models.IntegerField(choices=[(0, b'error'), (1, b'warning')])),
-                ('units', models.CharField(blank=True, max_length=100)),
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("name", models.CharField(blank=True, max_length=255)),
+                ("description", models.CharField(blank=True, max_length=1000)),
+                ("table_name", models.CharField(blank=True, default=b"PropertyState", max_length=200)),
+                ("field", models.CharField(max_length=200)),
+                ("enabled", models.BooleanField(default=True)),
+                ("data_type", models.IntegerField(choices=[(0, b"number"), (1, b"string"), (2, b"date"), (3, b"year")], null=True)),
+                ("rule_type", models.IntegerField(choices=[(0, b"default"), (1, b"custom")], null=True)),
+                ("required", models.BooleanField(default=False)),
+                ("not_null", models.BooleanField(default=False)),
+                ("min", models.FloatField(null=True)),
+                ("max", models.FloatField(null=True)),
+                ("severity", models.IntegerField(choices=[(0, b"error"), (1, b"warning")])),
+                ("units", models.CharField(blank=True, max_length=100)),
                 (
-                    'data_quality_check',
+                    "data_quality_check",
                     models.ForeignKey(
-                        null=True, on_delete=django.db.models.deletion.CASCADE, related_name='rules', to='seed.DataQualityCheck'
+                        null=True, on_delete=django.db.models.deletion.CASCADE, related_name="rules", to="seed.DataQualityCheck"
                     ),
                 ),
-                ('status_label', models.OneToOneField(null=True, on_delete=django.db.models.deletion.SET_NULL, to='seed.StatusLabel')),
+                ("status_label", models.OneToOneField(null=True, on_delete=django.db.models.deletion.SET_NULL, to="seed.StatusLabel")),
             ],
         ),
     ]

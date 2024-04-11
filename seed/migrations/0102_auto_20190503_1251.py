@@ -6,28 +6,28 @@ from seed.utils.address import normalize_address_str
 
 
 def forwards(apps, schema_editor):
-    PropertyState = apps.get_model('seed', 'PropertyState')
-    TaxLotState = apps.get_model('seed', 'TaxLotState')
+    PropertyState = apps.get_model("seed", "PropertyState")
+    TaxLotState = apps.get_model("seed", "TaxLotState")
 
     with transaction.atomic():
         for index, p in enumerate(PropertyState.objects.filter(address_line_1__isnull=False)):
             if index % 1000 == 0:
-                print('iterating ... %s' % index)
+                print("iterating ... %s" % index)
 
             p.normalized_address = normalize_address_str(p.address_line_1)
-            p.save(update_fields=['normalized_address'])
+            p.save(update_fields=["normalized_address"])
 
         for index, t in enumerate(TaxLotState.objects.filter(address_line_1__isnull=False)):
             if index % 1000 == 0:
-                print('iterating ... %s' % index)
+                print("iterating ... %s" % index)
 
             t.normalized_address = normalize_address_str(t.address_line_1)
-            t.save(update_fields=['normalized_address'])
+            t.save(update_fields=["normalized_address"])
 
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('seed', '0101_auto_20190318_1835'),
+        ("seed", "0101_auto_20190318_1835"),
     ]
 
     operations = [

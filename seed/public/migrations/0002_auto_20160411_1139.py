@@ -6,18 +6,18 @@ from django.db import migrations
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('public', '0001_initial'),
+        ("public", "0001_initial"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='sharedbuildingfield',
-            name='created',
-            field=django_extensions.db.fields.CreationDateTimeField(auto_now_add=True, verbose_name='created'),
+            model_name="sharedbuildingfield",
+            name="created",
+            field=django_extensions.db.fields.CreationDateTimeField(auto_now_add=True, verbose_name="created"),
         ),
         migrations.AlterField(
-            model_name='sharedbuildingfield',
-            name='modified',
-            field=django_extensions.db.fields.ModificationDateTimeField(auto_now=True, verbose_name='modified'),
+            model_name="sharedbuildingfield",
+            name="modified",
+            field=django_extensions.db.fields.ModificationDateTimeField(auto_now=True, verbose_name="modified"),
         ),
     ]

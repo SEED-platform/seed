@@ -15,7 +15,7 @@ class ColumnMappingProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ColumnMappingProfile
-        fields = '__all__'
+        fields = "__all__"
 
     def validate_mappings(self, mappings):
         """if the profile is for BuildingSync, make sure it has valid mappings"""
@@ -24,12 +24,12 @@ class ColumnMappingProfileSerializer(serializers.ModelSerializer):
             profile_types_dict[ColumnMappingProfile.BUILDINGSYNC_DEFAULT],
             profile_types_dict[ColumnMappingProfile.BUILDINGSYNC_CUSTOM],
         ]
-        profile_type = self.initial_data.get('profile_type')
+        profile_type = self.initial_data.get("profile_type")
         if profile_type is None or profile_type not in bsync_profiles:
             return mappings
 
         for mapping in mappings:
-            if mapping.get('from_field_value') is None:
+            if mapping.get("from_field_value") is None:
                 raise serializers.ValidationError(
                     f'All BuildingSync mappings must include "from_field_value": for mapping {mapping["from_field"]}'
                 )

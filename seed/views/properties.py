@@ -95,7 +95,7 @@ class GBRPropertyViewSet(SEEDOrgCreateUpdateModelViewSet):
 
     serializer_class = PropertySerializer
     model = PropertyModel
-    data_name = 'properties'
+    data_name = "properties"
 
 
 class PropertyStateViewSet(SEEDOrgCreateUpdateModelViewSet):
@@ -133,7 +133,7 @@ class PropertyStateViewSet(SEEDOrgCreateUpdateModelViewSet):
     serializer_class = PropertyStateSerializer
     model = PropertyState
     filter_class = PropertyStateFilterSet
-    data_name = 'properties'
+    data_name = "properties"
 
 
 class PropertyViewViewSet(SEEDOrgModelViewSet):
@@ -176,8 +176,8 @@ class PropertyViewViewSet(SEEDOrgModelViewSet):
     serializer_class = PropertyViewAsStateSerializer
     model = PropertyView
     filter_class = PropertyViewFilterSet
-    orgfilter = 'property__organization_id'
-    data_name = 'property_views'
+    orgfilter = "property__organization_id"
+    data_name = "property_views"
     queryset = PropertyView.objects.all()
 
 
@@ -186,41 +186,41 @@ class PropertyViewSet(ViewSet, ProfileIdMixin):
     serializer_class = PropertySerializer
 
     def _get_filtered_results(self, request, profile_id):
-        page = request.query_params.get('page', 1)
-        per_page = request.query_params.get('per_page', 1)
-        org_id = request.query_params.get('organization_id', None)
-        cycle_id = request.query_params.get('cycle')
+        page = request.query_params.get("page", 1)
+        per_page = request.query_params.get("per_page", 1)
+        org_id = request.query_params.get("organization_id", None)
+        cycle_id = request.query_params.get("cycle")
         # check if there is a query parameter for the profile_id. If so, then use that one
-        profile_id = request.query_params.get('profile_id', profile_id)
+        profile_id = request.query_params.get("profile_id", profile_id)
 
         if not org_id:
             return JsonResponse(
-                {'status': 'error', 'message': 'Need to pass organization_id as query parameter'}, status=status.HTTP_400_BAD_REQUEST
+                {"status": "error", "message": "Need to pass organization_id as query parameter"}, status=status.HTTP_400_BAD_REQUEST
             )
 
         if cycle_id:
             cycle = Cycle.objects.get(organization_id=org_id, pk=cycle_id)
         else:
-            cycle = Cycle.objects.filter(organization_id=org_id).order_by('name')
+            cycle = Cycle.objects.filter(organization_id=org_id).order_by("name")
             if cycle:
                 cycle = cycle.first()
             else:
                 return JsonResponse(
-                    {'status': 'error', 'message': 'Could not locate cycle', 'pagination': {'total': 0}, 'cycle_id': None, 'results': []}
+                    {"status": "error", "message": "Could not locate cycle", "pagination": {"total": 0}, "cycle_id": None, "results": []}
                 )
 
         # Return property views limited to the 'inventory_ids' list.  Otherwise, if selected is empty, return all
-        if request.data.get('inventory_ids'):
+        if request.data.get("inventory_ids"):
             property_views_list = (
-                PropertyView.objects.select_related('property', 'state', 'cycle')
-                .filter(property_id__in=request.data['inventory_ids'], property__organization_id=org_id, cycle=cycle)
-                .order_by('id')
+                PropertyView.objects.select_related("property", "state", "cycle")
+                .filter(property_id__in=request.data["inventory_ids"], property__organization_id=org_id, cycle=cycle)
+                .order_by("id")
             )  # TODO: test adding .only(*fields['PropertyState'])
         else:
             property_views_list = (
-                PropertyView.objects.select_related('property', 'state', 'cycle')
+                PropertyView.objects.select_related("property", "state", "cycle")
                 .filter(property__organization_id=org_id, cycle=cycle)
-                .order_by('id')
+                .order_by("id")
             )  # TODO: test adding .only(*fields['PropertyState'])
 
         paginator = Paginator(property_views_list, per_page)
@@ -238,21 +238,21 @@ class PropertyViewSet(ViewSet, ProfileIdMixin):
         org = Organization.objects.get(pk=org_id)
 
         # Retrieve all the columns that are in the db for this organization
-        columns_from_database = Column.retrieve_all(org_id, 'property', False)
+        columns_from_database = Column.retrieve_all(org_id, "property", False)
 
         # This uses an old method of returning the show_columns. There is a new method that
         # is preferred in v2.1 API with the ProfileIdMixin.
         if profile_id is None:
             show_columns = None
         elif profile_id == -1:
-            show_columns = list(Column.objects.filter(organization_id=org_id).values_list('id', flat=True))
+            show_columns = list(Column.objects.filter(organization_id=org_id).values_list("id", flat=True))
         else:
             try:
                 profile = ColumnListProfile.objects.get(
                     organization=org, id=profile_id, profile_location=VIEW_LIST, inventory_type=VIEW_LIST_PROPERTY
                 )
                 show_columns = list(
-                    ColumnListProfileColumn.objects.filter(column_list_profile_id=profile.id).values_list('column_id', flat=True)
+                    ColumnListProfileColumn.objects.filter(column_list_profile_id=profile.id).values_list("column_id", flat=True)
                 )
             except ColumnListProfile.DoesNotExist:
                 show_columns = None
@@ -264,17 +264,17 @@ class PropertyViewSet(ViewSet, ProfileIdMixin):
         unit_collapsed_results = [apply_display_unit_preferences(org, x) for x in related_results]
 
         response = {
-            'pagination': {
-                'page': page,
-                'start': paginator.page(page).start_index(),
-                'end': paginator.page(page).end_index(),
-                'num_pages': paginator.num_pages,
-                'has_next': paginator.page(page).has_next(),
-                'has_previous': paginator.page(page).has_previous(),
-                'total': paginator.count,
+            "pagination": {
+                "page": page,
+                "start": paginator.page(page).start_index(),
+                "end": paginator.page(page).end_index(),
+                "num_pages": paginator.num_pages,
+                "has_next": paginator.page(page).has_next(),
+                "has_previous": paginator.page(page).has_previous(),
+                "total": paginator.count,
             },
-            'cycle_id': cycle.id,
-            'results': unit_collapsed_results,
+            "cycle_id": cycle.id,
+            "results": unit_collapsed_results,
         }
 
         return JsonResponse(response)
@@ -310,7 +310,7 @@ class PropertyViewSet(ViewSet, ProfileIdMixin):
 
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('requires_viewer')
+    @has_perm_class("requires_viewer")
     def list(self, request):
         """
         List all the properties	with all columns
@@ -337,8 +337,8 @@ class PropertyViewSet(ViewSet, ProfileIdMixin):
 
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('requires_viewer')
-    @action(detail=False, methods=['POST'])
+    @has_perm_class("requires_viewer")
+    @action(detail=False, methods=["POST"])
     def cycles(self, request):
         """
         List all the properties	with all columns
@@ -356,13 +356,13 @@ class PropertyViewSet(ViewSet, ProfileIdMixin):
               required: true
               paramType: query
         """
-        org_id = request.data.get('organization_id', None)
-        profile_id = request.data.get('profile_id', -1)
-        cycle_ids = request.data.get('cycle_ids', [])
+        org_id = request.data.get("organization_id", None)
+        profile_id = request.data.get("profile_id", -1)
+        cycle_ids = request.data.get("cycle_ids", [])
 
         if not org_id:
             return JsonResponse(
-                {'status': 'error', 'message': 'Need to pass organization_id as query parameter'}, status=status.HTTP_400_BAD_REQUEST
+                {"status": "error", "message": "Need to pass organization_id as query parameter"}, status=status.HTTP_400_BAD_REQUEST
             )
 
         root = AccessLevelInstance.objects.get(organization_id=org_id, depth=1)
@@ -372,8 +372,8 @@ class PropertyViewSet(ViewSet, ProfileIdMixin):
 
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('requires_viewer')
-    @action(detail=False, methods=['POST'])
+    @has_perm_class("requires_viewer")
+    @action(detail=False, methods=["POST"])
     def filter(self, request):
         """
         List all the properties
@@ -399,10 +399,10 @@ class PropertyViewSet(ViewSet, ProfileIdMixin):
               description: Either an id of a list settings profile, or undefined
               paramType: body
         """
-        if 'profile_id' not in request.data or request.data['profile_id'] == 'None':
+        if "profile_id" not in request.data or request.data["profile_id"] == "None":
             profile_id = None
         else:
-            profile_id = request.data['profile_id']
+            profile_id = request.data["profile_id"]
 
             # ensure that profile_id is an int
             with contextlib.suppress(TypeError):
@@ -412,7 +412,7 @@ class PropertyViewSet(ViewSet, ProfileIdMixin):
 
     @api_endpoint_class
     @ajax_request_class
-    @action(detail=False, methods=['POST'])
+    @action(detail=False, methods=["POST"])
     def meters_exist(self, request):
         """
         Check to see if the given Properties (given by ID) have Meters.
@@ -423,14 +423,14 @@ class PropertyViewSet(ViewSet, ProfileIdMixin):
               paramType: body
         """
         body = request.data
-        property_ids = body.get('inventory_ids', [])
+        property_ids = body.get("inventory_ids", [])
 
         return Meter.objects.filter(property_id__in=property_ids).exists()
 
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('can_modify_data')
-    @action(detail=False, methods=['POST'])
+    @has_perm_class("can_modify_data")
+    @action(detail=False, methods=["POST"])
     def merge(self, request):
         """
         Merge multiple property records into a single new record, and run this
@@ -447,25 +447,25 @@ class PropertyViewSet(ViewSet, ProfileIdMixin):
         """
         body = request.data
 
-        state_ids = body.get('state_ids', [])
-        organization_id = int(request.query_params.get('organization_id', None))
+        state_ids = body.get("state_ids", [])
+        organization_id = int(request.query_params.get("organization_id", None))
 
         # Check the number of state_ids to merge
         if len(state_ids) < 2:
             return JsonResponse(
-                {'status': 'error', 'message': 'At least two ids are necessary to merge'}, status=status.HTTP_400_BAD_REQUEST
+                {"status": "error", "message": "At least two ids are necessary to merge"}, status=status.HTTP_400_BAD_REQUEST
             )
 
-        merged_state = merge_properties(state_ids, organization_id, 'Manual Match')
+        merged_state = merge_properties(state_ids, organization_id, "Manual Match")
 
-        merge_count, link_count, _view_id = match_merge_link(merged_state.id, 'PropertyState')
+        merge_count, link_count, _view_id = match_merge_link(merged_state.id, "PropertyState")
 
-        result = {'status': 'success'}
+        result = {"status": "success"}
 
         result.update(
             {
-                'match_merged_count': merge_count,
-                'match_link_count': link_count,
+                "match_merged_count": merge_count,
+                "match_link_count": link_count,
             }
         )
 
@@ -473,8 +473,8 @@ class PropertyViewSet(ViewSet, ProfileIdMixin):
 
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('can_modify_data')
-    @action(detail=True, methods=['POST'])
+    @has_perm_class("can_modify_data")
+    @action(detail=True, methods=["POST"])
     def unmerge(self, request, pk=None):
         """
         Unmerge a property view into two property views
@@ -486,19 +486,19 @@ class PropertyViewSet(ViewSet, ProfileIdMixin):
               paramType: query
         """
         try:
-            old_view = PropertyView.objects.select_related('property', 'cycle', 'state').get(
-                id=pk, property__organization_id=self.request.GET['organization_id']
+            old_view = PropertyView.objects.select_related("property", "cycle", "state").get(
+                id=pk, property__organization_id=self.request.GET["organization_id"]
             )
         except PropertyView.DoesNotExist:
-            return {'status': 'error', 'message': f'property view with id {pk} does not exist'}
+            return {"status": "error", "message": f"property view with id {pk} does not exist"}
 
         # Duplicate pairing
         paired_view_ids = list(
-            TaxLotProperty.objects.filter(property_view_id=old_view.id).order_by('taxlot_view_id').values_list('taxlot_view_id', flat=True)
+            TaxLotProperty.objects.filter(property_view_id=old_view.id).order_by("taxlot_view_id").values_list("taxlot_view_id", flat=True)
         )
 
         # Capture previous associated labels
-        label_ids = list(old_view.labels.all().values_list('id', flat=True))
+        label_ids = list(old_view.labels.all().values_list("id", flat=True))
 
         notes = old_view.notes.all()
         for note in notes:
@@ -506,12 +506,12 @@ class PropertyViewSet(ViewSet, ProfileIdMixin):
 
         merged_state = old_view.state
         if merged_state.data_state != DATA_STATE_MATCHING or merged_state.merge_state != MERGE_STATE_MERGED:
-            return {'status': 'error', 'message': f'property view with id {pk} is not a merged property view'}
+            return {"status": "error", "message": f"property view with id {pk} is not a merged property view"}
 
-        log = PropertyAuditLog.objects.select_related('parent_state1', 'parent_state2').filter(state=merged_state).order_by('-id').first()
+        log = PropertyAuditLog.objects.select_related("parent_state1", "parent_state2").filter(state=merged_state).order_by("-id").first()
 
         if log.parent_state1 is None or log.parent_state2 is None:
-            return {'status': 'error', 'message': f'property view with id {pk} must have two parent states'}
+            return {"status": "error", "message": f"property view with id {pk} must have two parent states"}
 
         state1 = log.parent_state1
         state2 = log.parent_state2
@@ -543,12 +543,12 @@ class PropertyViewSet(ViewSet, ProfileIdMixin):
         merged_state.save()
 
         # Change the merge_state of the individual states
-        if log.parent1.name in {'Import Creation', 'Manual Edit'} and log.parent1.import_filename is not None:
+        if log.parent1.name in {"Import Creation", "Manual Edit"} and log.parent1.import_filename is not None:
             # State belongs to a new record
             state1.merge_state = MERGE_STATE_NEW
         else:
             state1.merge_state = MERGE_STATE_MERGED
-        if log.parent2.name in {'Import Creation', 'Manual Edit'} and log.parent2.import_filename is not None:
+        if log.parent2.name in {"Import Creation", "Manual Edit"} and log.parent2.import_filename is not None:
             # State belongs to a new record
             state2.merge_state = MERGE_STATE_NEW
         else:
@@ -591,12 +591,12 @@ class PropertyViewSet(ViewSet, ProfileIdMixin):
             TaxLotProperty(primary=True, cycle_id=cycle_id, property_view_id=new_view1.id, taxlot_view_id=paired_view_id).save()
             TaxLotProperty(primary=True, cycle_id=cycle_id, property_view_id=new_view2.id, taxlot_view_id=paired_view_id).save()
 
-        return {'status': 'success', 'view_id': new_view1.id}
+        return {"status": "success", "view_id": new_view1.id}
 
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('can_modify_data')
-    @action(detail=True, methods=['POST'])
+    @has_perm_class("can_modify_data")
+    @action(detail=True, methods=["POST"])
     def links(self, request, pk=None):
         """
         Get property details for each linked property across org cycles
@@ -611,38 +611,38 @@ class PropertyViewSet(ViewSet, ProfileIdMixin):
               required: true
               paramType: query
         """
-        organization_id = request.data.get('organization_id', None)
-        base_view = PropertyView.objects.select_related('cycle').filter(pk=pk, cycle__organization_id=organization_id)
+        organization_id = request.data.get("organization_id", None)
+        base_view = PropertyView.objects.select_related("cycle").filter(pk=pk, cycle__organization_id=organization_id)
 
         if base_view.exists():
-            result = {'data': []}
+            result = {"data": []}
 
             # Grab extra_data columns to be shown in the results
             all_extra_data_columns = Column.objects.filter(
-                organization_id=organization_id, is_extra_data=True, table_name='PropertyState'
-            ).values_list('column_name', flat=True)
+                organization_id=organization_id, is_extra_data=True, table_name="PropertyState"
+            ).values_list("column_name", flat=True)
 
             linked_views = (
-                PropertyView.objects.select_related('cycle')
+                PropertyView.objects.select_related("cycle")
                 .filter(property_id=base_view.get().property_id, cycle__organization_id=organization_id)
-                .order_by('-cycle__start')
+                .order_by("-cycle__start")
             )
             for linked_view in linked_views:
                 state_data = PropertyStateSerializer(linked_view.state, all_extra_data_columns=all_extra_data_columns).data
 
-                state_data['cycle_id'] = linked_view.cycle.id
-                state_data['view_id'] = linked_view.id
-                result['data'].append(state_data)
+                state_data["cycle_id"] = linked_view.cycle.id
+                state_data["view_id"] = linked_view.id
+                result["data"].append(state_data)
 
             return JsonResponse(result, encoder=PintJSONEncoder, status=status.HTTP_200_OK)
         else:
-            result = {'status': 'error', 'message': f'property view with id {pk} does not exist in given organization'}
+            result = {"status": "error", "message": f"property view with id {pk} does not exist in given organization"}
             return JsonResponse(result)
 
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('can_modify_data')
-    @action(detail=True, methods=['POST'])
+    @has_perm_class("can_modify_data")
+    @action(detail=True, methods=["POST"])
     def match_merge_link(self, request, pk=None):
         """
         Runs match merge link for an individual property.
@@ -650,20 +650,20 @@ class PropertyViewSet(ViewSet, ProfileIdMixin):
         Note that this method can return a view_id of None if the given -View
         was not involved in a merge.
         """
-        merge_count, link_count, view_id = match_merge_link(pk, 'PropertyState')
+        merge_count, link_count, view_id = match_merge_link(pk, "PropertyState")
 
         result = {
-            'view_id': view_id,
-            'match_merged_count': merge_count,
-            'match_link_count': link_count,
+            "view_id": view_id,
+            "match_merged_count": merge_count,
+            "match_link_count": link_count,
         }
 
         return JsonResponse(result)
 
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('can_modify_data')
-    @action(detail=True, methods=['PUT'])
+    @has_perm_class("can_modify_data")
+    @action(detail=True, methods=["PUT"])
     def pair(self, request, pk=None):
         """
         Pair a taxlot to this property
@@ -684,15 +684,15 @@ class PropertyViewSet(ViewSet, ProfileIdMixin):
               paramType: path
         """
         # TODO: Call with PUT /api/v2/properties/1/pair/?taxlot_id=1&organization_id=1
-        organization_id = int(request.query_params.get('organization_id'))
+        organization_id = int(request.query_params.get("organization_id"))
         property_id = int(pk)
-        taxlot_id = int(request.query_params.get('taxlot_id'))
+        taxlot_id = int(request.query_params.get("taxlot_id"))
         return pair_unpair_property_taxlot(property_id, taxlot_id, organization_id, True)
 
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('can_modify_data')
-    @action(detail=True, methods=['PUT'])
+    @has_perm_class("can_modify_data")
+    @action(detail=True, methods=["PUT"])
     def unpair(self, request, pk=None):
         """
         Unpair a taxlot from this property
@@ -713,15 +713,15 @@ class PropertyViewSet(ViewSet, ProfileIdMixin):
               paramType: path
         """
         # TODO: Call with PUT /api/v2/properties/1/unpair/?taxlot_id=1&organization_id=1
-        organization_id = int(request.query_params.get('organization_id'))
+        organization_id = int(request.query_params.get("organization_id"))
         property_id = int(pk)
-        taxlot_id = int(request.query_params.get('taxlot_id'))
+        taxlot_id = int(request.query_params.get("taxlot_id"))
         return pair_unpair_property_taxlot(property_id, taxlot_id, organization_id, False)
 
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('requires_viewer')
-    @action(detail=False, methods=['GET'])
+    @has_perm_class("requires_viewer")
+    @action(detail=False, methods=["GET"])
     def columns(self, request):
         """
         List all property columns
@@ -736,10 +736,10 @@ class PropertyViewSet(ViewSet, ProfileIdMixin):
               required: false
               paramType: query
         """
-        org_id = request.query_params.get('organization_id', None)
+        org_id = request.query_params.get("organization_id", None)
         if not org_id:
             return JsonResponse(
-                {'status': 'error', 'message': 'Need to pass organization_id as query parameter'}, status=status.HTTP_400_BAD_REQUEST
+                {"status": "error", "message": "Need to pass organization_id as query parameter"}, status=status.HTTP_400_BAD_REQUEST
             )
         org_id = int(org_id)
 
@@ -747,20 +747,20 @@ class PropertyViewSet(ViewSet, ProfileIdMixin):
             Organization.objects.get(pk=org_id)
         except Organization.DoesNotExist:
             return JsonResponse(
-                {'status': 'error', 'message': 'organization with id %s does not exist' % org_id}, status=status.HTTP_404_NOT_FOUND
+                {"status": "error", "message": "organization with id %s does not exist" % org_id}, status=status.HTTP_404_NOT_FOUND
             )
 
-        only_used = json.loads(request.query_params.get('only_used', 'false'))
-        columns = Column.retrieve_all(org_id, 'property', only_used)
+        only_used = json.loads(request.query_params.get("only_used", "false"))
+        columns = Column.retrieve_all(org_id, "property", only_used)
         organization = Organization.objects.get(pk=org_id)
         columns_with_units = [add_pint_unit_suffix(organization, x) for x in columns]
 
-        return JsonResponse({'status': 'success', 'columns': columns_with_units})
+        return JsonResponse({"status": "success", "columns": columns_with_units})
 
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('requires_viewer')
-    @action(detail=False, methods=['GET'])
+    @has_perm_class("requires_viewer")
+    @action(detail=False, methods=["GET"])
     def mappable_columns(self, request):
         """
         List only property columns that are mappable
@@ -770,15 +770,15 @@ class PropertyViewSet(ViewSet, ProfileIdMixin):
               required: true
               paramType: query
         """
-        organization_id = int(request.query_params.get('organization_id'))
-        columns = Column.retrieve_mapping_columns(organization_id, 'property')
+        organization_id = int(request.query_params.get("organization_id"))
+        columns = Column.retrieve_mapping_columns(organization_id, "property")
 
-        return JsonResponse({'status': 'success', 'columns': columns})
+        return JsonResponse({"status": "success", "columns": columns})
 
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('can_modify_data')
-    @action(detail=True, methods=['DELETE'])
+    @has_perm_class("can_modify_data")
+    @action(detail=True, methods=["DELETE"])
     def delete(self, request, pk=None):
         """
         Delete a single property state from a property_viewID. Not sure why we
@@ -792,14 +792,14 @@ class PropertyViewSet(ViewSet, ProfileIdMixin):
         """
         num_objs, del_items = PropertyView.objects.filter(state__id=int(pk)).delete()
         if num_objs > 0:
-            return JsonResponse({'status': 'success', 'message': del_items})
+            return JsonResponse({"status": "success", "message": del_items})
         else:
-            return JsonResponse({'status': 'error', 'message': 'No PropertyStates removed'}, status=status.HTTP_400_BAD_REQUEST)
+            return JsonResponse({"status": "error", "message": "No PropertyStates removed"}, status=status.HTTP_400_BAD_REQUEST)
 
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('can_modify_data')
-    @action(detail=False, methods=['DELETE'])
+    @has_perm_class("can_modify_data")
+    @action(detail=False, methods=["DELETE"])
     def batch_delete(self, request):
         """
         Batch delete several properties
@@ -810,13 +810,13 @@ class PropertyViewSet(ViewSet, ProfileIdMixin):
               many: true
               required: true
         """
-        property_states = request.data.get('selected', [])
+        property_states = request.data.get("selected", [])
         resp = PropertyState.objects.filter(pk__in=property_states).delete()
 
         if resp[0] == 0:
-            return JsonResponse({'status': 'warning', 'message': 'No action was taken'})
+            return JsonResponse({"status": "warning", "message": "No action was taken"})
 
-        return JsonResponse({'status': 'success', 'properties': resp[1]['seed.PropertyState']})
+        return JsonResponse({"status": "success", "properties": resp[1]["seed.PropertyState"]})
 
     def _get_property_view(self, pk):
         """
@@ -827,17 +827,17 @@ class PropertyViewSet(ViewSet, ProfileIdMixin):
         :return:
         """
         try:
-            property_view = PropertyView.objects.select_related('property', 'cycle', 'state').get(
-                id=pk, property__organization_id=self.request.GET['organization_id']
+            property_view = PropertyView.objects.select_related("property", "cycle", "state").get(
+                id=pk, property__organization_id=self.request.GET["organization_id"]
             )
-            result = {'status': 'success', 'property_view': property_view}
+            result = {"status": "success", "property_view": property_view}
         except PropertyView.DoesNotExist:
-            result = {'status': 'error', 'message': f'property view with id {pk} does not exist'}
+            result = {"status": "error", "message": f"property view with id {pk} does not exist"}
         return result
 
     def _get_taxlots(self, pk):
-        lot_view_pks = TaxLotProperty.objects.filter(property_view_id=pk).values_list('taxlot_view_id', flat=True)
-        lot_views = TaxLotView.objects.filter(pk__in=lot_view_pks).select_related('cycle', 'state').prefetch_related('labels')
+        lot_view_pks = TaxLotProperty.objects.filter(property_view_id=pk).values_list("taxlot_view_id", flat=True)
+        lot_views = TaxLotView.objects.filter(pk__in=lot_view_pks).select_related("cycle", "state").prefetch_related("labels")
         lots = []
         for lot in lot_views:
             lots.append(TaxLotViewSerializer(lot).data)
@@ -845,7 +845,7 @@ class PropertyViewSet(ViewSet, ProfileIdMixin):
 
     @api_endpoint_class
     @ajax_request_class
-    @action(detail=True, methods=['GET'])
+    @action(detail=True, methods=["GET"])
     def taxlots(self, pk):
         """
         Get related TaxLots for this property
@@ -859,14 +859,14 @@ class PropertyViewSet(ViewSet, ProfileIdMixin):
         history, master = property_view.state.history()
 
         # convert the history and master states to StateSerializers
-        master['state'] = PropertyStateSerializer(master['state_data']).data
-        del master['state_data']
-        del master['state_id']
+        master["state"] = PropertyStateSerializer(master["state_data"]).data
+        del master["state_data"]
+        del master["state_id"]
 
         for h in history:
-            h['state'] = PropertyStateSerializer(h['state_data']).data
-            del h['state_data']
-            del h['state_id']
+            h["state"] = PropertyStateSerializer(h["state_data"]).data
+            del h["state_data"]
+            del h["state_id"]
 
         return history, master
 
@@ -887,22 +887,22 @@ class PropertyViewSet(ViewSet, ProfileIdMixin):
               paramType: query
         """
         result = self._get_property_view(pk)
-        if result.get('status', None) != 'error':
-            property_view = result.pop('property_view')
-            result = {'status': 'success'}
+        if result.get("status", None) != "error":
+            property_view = result.pop("property_view")
+            result = {"status": "success"}
             result.update(PropertyViewSerializer(property_view).data)
             # remove PropertyView id from result
-            result.pop('id')
+            result.pop("id")
 
             # Grab extra_data columns to be shown in the result
-            organization_id = request.query_params['organization_id']
+            organization_id = request.query_params["organization_id"]
             all_extra_data_columns = Column.objects.filter(
-                organization_id=organization_id, is_extra_data=True, table_name='PropertyState'
-            ).values_list('column_name', flat=True)
+                organization_id=organization_id, is_extra_data=True, table_name="PropertyState"
+            ).values_list("column_name", flat=True)
 
-            result['state'] = PropertyStateSerializer(property_view.state, all_extra_data_columns=all_extra_data_columns).data
-            result['taxlots'] = self._get_taxlots(property_view.pk)
-            result['history'], master = self.get_history(property_view)
+            result["state"] = PropertyStateSerializer(property_view.state, all_extra_data_columns=all_extra_data_columns).data
+            result["taxlots"] = self._get_taxlots(property_view.pk)
+            result["history"], master = self.get_history(property_view)
             result = update_result_with_master(result, master)
             return JsonResponse(result, encoder=PintJSONEncoder, status=status.HTTP_200_OK)
         else:
@@ -940,34 +940,34 @@ class PropertyViewSet(ViewSet, ProfileIdMixin):
         data = request.data
 
         result = self._get_property_view(pk)
-        if result.get('status', None) != 'error':
-            property_view = result.pop('property_view')
+        if result.get("status", None) != "error":
+            property_view = result.pop("property_view")
             property_state_data = PropertyStateSerializer(property_view.state).data
 
             # get the property state information from the request
-            new_property_state_data = data['state']
+            new_property_state_data = data["state"]
 
             # set empty strings to None
             for key, val in new_property_state_data.items():
-                if val == '':
+                if val == "":
                     new_property_state_data[key] = None
 
             changed_fields, previous_data = get_changed_fields(property_state_data, new_property_state_data)
             if not changed_fields:
-                result.update({'status': 'success', 'message': 'Records are identical'})
+                result.update({"status": "success", "message": "Records are identical"})
                 return JsonResponse(result, status=status.HTTP_204_NO_CONTENT)
             else:
                 # Not sure why we are going through the pain of logging this all right now... need to
                 # reevaluate this.
-                log = PropertyAuditLog.objects.select_related().filter(state=property_view.state).order_by('-id').first()
+                log = PropertyAuditLog.objects.select_related().filter(state=property_view.state).order_by("-id").first()
 
                 # if checks above pass, create an exact copy of the current state for historical purposes
-                if log.name == 'Import Creation':
+                if log.name == "Import Creation":
                     # Add new state by removing the existing ID.
-                    property_state_data.pop('id')
+                    property_state_data.pop("id")
                     # Remove the import_file_id for the first edit of a new record
                     # If the import file has been deleted and this value remains the serializer won't be valid
-                    property_state_data.pop('import_file')
+                    property_state_data.pop("import_file")
                     new_property_state_serializer = PropertyStateSerializer(data=property_state_data)
                     if new_property_state_serializer.is_valid():
                         # create the new property state, and perform an initial save / moving relationships
@@ -989,33 +989,33 @@ class PropertyViewSet(ViewSet, ProfileIdMixin):
                             parent_state1=log.state,
                             parent_state2=None,
                             state=new_state,
-                            name='Manual Edit',
+                            name="Manual Edit",
                             description=None,
                             import_filename=log.import_filename,
                             record_type=AUDIT_USER_EDIT,
                         )
 
-                        result.update({'state': new_property_state_serializer.data})
+                        result.update({"state": new_property_state_serializer.data})
 
                         # save the property view so that the datetime gets updated on the property.
                         property_view.save()
                     else:
                         result.update(
-                            {'status': 'error', 'message': f'Invalid update data with errors: {new_property_state_serializer.errors}'}
+                            {"status": "error", "message": f"Invalid update data with errors: {new_property_state_serializer.errors}"}
                         )
                         return JsonResponse(result, encoder=PintJSONEncoder, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
 
                 # redo assignment of this variable in case this was an initial edit
                 property_state_data = PropertyStateSerializer(property_view.state).data
 
-                if 'extra_data' in new_property_state_data:
-                    property_state_data['extra_data'].update(new_property_state_data['extra_data'])
+                if "extra_data" in new_property_state_data:
+                    property_state_data["extra_data"].update(new_property_state_data["extra_data"])
 
-                property_state_data.update({k: v for k, v in new_property_state_data.items() if k != 'extra_data'})
+                property_state_data.update({k: v for k, v in new_property_state_data.items() if k != "extra_data"})
 
-                log = PropertyAuditLog.objects.select_related().filter(state=property_view.state).order_by('-id').first()
+                log = PropertyAuditLog.objects.select_related().filter(state=property_view.state).order_by("-id").first()
 
-                if log.name in {'Manual Edit', 'Manual Match', 'System Match', 'Merge current state in migration'}:
+                if log.name in {"Manual Edit", "Manual Match", "System Match", "Merge current state in migration"}:
                     # Convert this to using the serializer to save the data. This will override the previous values
                     # in the state object.
 
@@ -1027,38 +1027,38 @@ class PropertyViewSet(ViewSet, ProfileIdMixin):
                         # relationships
                         updated_property_state_serializer.save()
 
-                        result.update({'state': updated_property_state_serializer.data})
+                        result.update({"state": updated_property_state_serializer.data})
 
                         # save the property view so that the datetime gets updated on the property.
                         property_view.save()
 
                         Note.create_from_edit(request.user.id, property_view, new_property_state_data, previous_data)
 
-                        merge_count, link_count, view_id = match_merge_link(property_view.state_id, 'PropertyState')
+                        merge_count, link_count, view_id = match_merge_link(property_view.state_id, "PropertyState")
 
                         result.update(
                             {
-                                'view_id': view_id,
-                                'match_merged_count': merge_count,
-                                'match_link_count': link_count,
+                                "view_id": view_id,
+                                "match_merged_count": merge_count,
+                                "match_link_count": link_count,
                             }
                         )
 
                         return JsonResponse(result, encoder=PintJSONEncoder, status=status.HTTP_200_OK)
                     else:
                         result.update(
-                            {'status': 'error', 'message': f'Invalid update data with errors: {updated_property_state_serializer.errors}'}
+                            {"status": "error", "message": f"Invalid update data with errors: {updated_property_state_serializer.errors}"}
                         )
                         return JsonResponse(result, encoder=PintJSONEncoder, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
                 else:
-                    result = {'status': 'error', 'message': 'Unrecognized audit log name: ' + log.name}
+                    result = {"status": "error", "message": "Unrecognized audit log name: " + log.name}
                     return JsonResponse(result, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
         else:
             return JsonResponse(result, status=status.HTTP_404_NOT_FOUND)
 
     @ajax_request_class
-    @has_perm_class('can_modify_data')
-    @action(detail=True, methods=['PUT'], url_path='update_measures')
+    @has_perm_class("can_modify_data")
+    @action(detail=True, methods=["PUT"], url_path="update_measures")
     def add_measures(self, request, pk=None):
         """
         Update the measures applied to the building. There are two options, one for adding
@@ -1110,24 +1110,24 @@ class PropertyViewSet(ViewSet, ProfileIdMixin):
               type: string
               enum: ["Recommended", "Proposed", "Implemented"]
         """
-        cycle_pk = request.query_params.get('cycle_id', None)
+        cycle_pk = request.query_params.get("cycle_id", None)
         if not cycle_pk:
-            return JsonResponse({'status': 'error', 'message': 'Must pass cycle_id as query parameter'})
+            return JsonResponse({"status": "error", "message": "Must pass cycle_id as query parameter"})
 
-        implementation_status = PropertyMeasure.str_to_impl_status(request.data.get('implementation_status', None))
+        implementation_status = PropertyMeasure.str_to_impl_status(request.data.get("implementation_status", None))
         if not implementation_status:
-            return JsonResponse({'status': 'error', 'message': 'None or invalid implementation_status type'})
+            return JsonResponse({"status": "error", "message": "None or invalid implementation_status type"})
 
         result = self._get_property_view(pk)
         pv = None
-        if result.get('status', None) != 'error':
-            pv = result.pop('property_view')
+        if result.get("status", None) != "error":
+            pv = result.pop("property_view")
         else:
             return JsonResponse(result)
 
         # get the list of measures to add/remove and return the ids
-        add_measure_ids = Measure.validate_measures(request.data.get('add_measures', []).split(','))
-        remove_measure_ids = Measure.validate_measures(request.data.get('remove_measures', []).split(','))
+        add_measure_ids = Measure.validate_measures(request.data.get("add_measures", []).split(","))
+        remove_measure_ids = Measure.validate_measures(request.data.get("remove_measures", []).split(","))
 
         # add_measures = request.data
         message_add = []
@@ -1155,18 +1155,18 @@ class PropertyViewSet(ViewSet, ProfileIdMixin):
 
         return JsonResponse(
             {
-                'status': 'success',
-                'message': 'Updated measures for property state',
-                'added_measure_ids': message_add,
-                'removed_measure_ids': message_remove,
-                'existing_measure_ids': message_existed,
+                "status": "success",
+                "message": "Updated measures for property state",
+                "added_measure_ids": message_add,
+                "removed_measure_ids": message_remove,
+                "existing_measure_ids": message_existed,
             }
         )
 
     # TODO: fix the url_path to be nested. I want the url_path to be measures and have get,post,put
     @ajax_request_class
-    @has_perm_class('can_modify_data')
-    @action(detail=True, methods=['DELETE'], url_path='delete_measures')
+    @has_perm_class("can_modify_data")
+    @action(detail=True, methods=["DELETE"], url_path="delete_measures")
     def delete_measures(self, request, pk=None):
         """
         Delete measures. Allow the user to define which implementation type to delete
@@ -1194,11 +1194,11 @@ class PropertyViewSet(ViewSet, ProfileIdMixin):
               type: string
               enum: ["Recommended", "Proposed", "Implemented"]
         """
-        cycle_pk = request.query_params.get('cycle_id', None)
+        cycle_pk = request.query_params.get("cycle_id", None)
         if not cycle_pk:
-            return JsonResponse({'status': 'error', 'message': 'Must pass cycle_id as query parameter'})
+            return JsonResponse({"status": "error", "message": "Must pass cycle_id as query parameter"})
 
-        impl_status = request.data.get('implementation_status', None)
+        impl_status = request.data.get("implementation_status", None)
         if not impl_status:
             impl_status = [PropertyMeasure.RECOMMENDED, PropertyMeasure.IMPLEMENTED, PropertyMeasure.PROPOSED]
         else:
@@ -1206,8 +1206,8 @@ class PropertyViewSet(ViewSet, ProfileIdMixin):
 
         result = self._get_property_view(pk)
         pv = None
-        if result.get('status', None) != 'error':
-            pv = result.pop('property_view')
+        if result.get("status", None) != "error":
+            pv = result.pop("property_view")
         else:
             return JsonResponse(result)
 
@@ -1217,12 +1217,12 @@ class PropertyViewSet(ViewSet, ProfileIdMixin):
             implementation_status__in=impl_status,
         ).delete()
 
-        return JsonResponse({'status': 'status', 'message': f'Deleted {del_count} measures'})
+        return JsonResponse({"status": "status", "message": f"Deleted {del_count} measures"})
 
     # TODO: fix the url_path to be nested. I want the url_path to be measures and have get,post,put
     @ajax_request_class
-    @has_perm_class('can_modify_data')
-    @action(detail=True, methods=['GET'], url_path='measures')
+    @has_perm_class("can_modify_data")
+    @action(detail=True, methods=["GET"], url_path="measures")
     def get_measures(self, request, pk=None):
         """
         Get the list of measures for a property and the given cycle
@@ -1248,34 +1248,34 @@ class PropertyViewSet(ViewSet, ProfileIdMixin):
               required: true
               paramType: query
         """
-        cycle_pk = request.query_params.get('cycle_id', None)
+        cycle_pk = request.query_params.get("cycle_id", None)
         if not cycle_pk:
-            return JsonResponse({'status': 'error', 'message': 'Must pass cycle_id as query parameter'})
+            return JsonResponse({"status": "error", "message": "Must pass cycle_id as query parameter"})
 
         result = self._get_property_view(pk)
-        if result.get('status', None) != 'error':
-            pv = result.pop('property_view')
+        if result.get("status", None) != "error":
+            pv = result.pop("property_view")
             property_state_id = pv.state.pk
-            join = PropertyMeasure.objects.filter(property_state_id=property_state_id).select_related('measure')
+            join = PropertyMeasure.objects.filter(property_state_id=property_state_id).select_related("measure")
             result = []
             for j in join:
                 result.append(
                     {
-                        'implementation_type': j.get_implementation_status_display(),
-                        'category': j.measure.category,
-                        'category_display_name': j.measure.category_display_name,
-                        'name': j.measure.name,
-                        'display_name': j.measure.display_name,
-                        'unique_name': f'{j.measure.category}.{j.measure.name}',
-                        'pk': j.measure.id,
+                        "implementation_type": j.get_implementation_status_display(),
+                        "category": j.measure.category,
+                        "category_display_name": j.measure.category_display_name,
+                        "name": j.measure.name,
+                        "display_name": j.measure.display_name,
+                        "unique_name": f"{j.measure.category}.{j.measure.name}",
+                        "pk": j.measure.id,
                     }
                 )
 
             return JsonResponse(
                 {
-                    'status': 'success',
-                    'message': f'Found {len(result)} measures',
-                    'measures': result,
+                    "status": "success",
+                    "message": f"Found {len(result)} measures",
+                    "measures": result,
                 }
             )
         else:
@@ -1289,7 +1289,7 @@ def diffupdate(old, new):
     for k, v in new.items():
         if old.get(k, None) != v or k not in old:
             changed_fields.append(k)
-    if 'extra_data' in changed_fields:
-        changed_fields.remove('extra_data')
-        changed_extra_data, _ = diffupdate(old['extra_data'], new['extra_data'])
+    if "extra_data" in changed_fields:
+        changed_fields.remove("extra_data")
+        changed_extra_data, _ = diffupdate(old["extra_data"], new["extra_data"])
     return changed_fields, changed_extra_data

@@ -28,17 +28,17 @@ class BuildingSyncParser:
         _, file_extension = os.path.splitext(filename)
         # grab the data from the zip or xml file
         self.data = []
-        if file_extension == '.zip':
-            with zipfile.ZipFile(file_, 'r', zipfile.ZIP_STORED) as openzip:
+        if file_extension == ".zip":
+            with zipfile.ZipFile(file_, "r", zipfile.ZIP_STORED) as openzip:
                 filelist = openzip.infolist()
                 for f in filelist:
-                    if '.xml' in f.filename and '__MACOSX' not in f.filename:
+                    if ".xml" in f.filename and "__MACOSX" not in f.filename:
                         self._add_property_to_data(openzip.read(f), f.filename)
-        elif file_extension == '.xml':
+        elif file_extension == ".xml":
             self._add_property_to_data(file_.read(), filename)
 
         else:
-            raise Exception(f'Unsupported file type for BuildingSync {file_extension}')
+            raise Exception(f"Unsupported file type for BuildingSync {file_extension}")
 
         self.first_five_rows = [self._capture_row(row) for row in self.data[:5]]
 
@@ -47,7 +47,7 @@ class BuildingSyncParser:
             bs = BuildingSync()
             bs.import_file(BytesIO(bsync_file))
         except Exception as e:
-            raise Exception(f'Error importing BuildingSync file {file_name}: {e!s}')
+            raise Exception(f"Error importing BuildingSync file {file_name}: {e!s}")
 
         if not self._xpath_col_dict:
             # get the mapping for the first xml data
@@ -73,7 +73,7 @@ class BuildingSyncParser:
         # a certain PropertyState came from (because of the linked BuildingFile model).
         # For this reason, we add this extra information here for later use in
         # the import tasks
-        property_['_source_filename'] = file_name
+        property_["_source_filename"] = file_name
         self.data.append(property_)
 
     def _capture_row(self, row):
@@ -82,14 +82,14 @@ class BuildingSyncParser:
         # before adding the row (it doesn't have a corresponding 'header', ie it's
         # not used for mapping)
         row_copy = row.copy()
-        del row_copy['_source_filename']
+        del row_copy["_source_filename"]
 
         # add the values _in order_ of our defined headers
         values = []
         for column in self.headers:
             values.append(str(row_copy[column]))
 
-        return '|#*#|'.join(values)
+        return "|#*#|".join(values)
 
     def num_columns(self):
         return 0

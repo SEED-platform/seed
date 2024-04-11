@@ -4,7 +4,7 @@ from django.db import migrations
 
 
 def move_filter_groups(apps, schema_editor):
-    FilterGroup = apps.get_model('seed', 'FilterGroup')
+    FilterGroup = apps.get_model("seed", "FilterGroup")
     for filter_group in FilterGroup.objects.all():
         if filter_group.labels.exists() and filter_group.label_logic == 0:  # and
             filter_group.and_labels.set(filter_group.labels.all())
@@ -16,7 +16,7 @@ def move_filter_groups(apps, schema_editor):
 
 def move_filter_groups_back(apps, schema_editor):
     # if the filter group only has one set of labels, we can move those back
-    FilterGroup = apps.get_model('seed', 'FilterGroup')
+    FilterGroup = apps.get_model("seed", "FilterGroup")
     for filter_group in FilterGroup.objects.all():
         if filter_group.and_labels.exists() and not (filter_group.or_labels.exists() or filter_group.exclude_labels.exists()):
             filter_group.labels.set(filter_group.and_labels.all())
@@ -34,7 +34,7 @@ def move_filter_groups_back(apps, schema_editor):
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('seed', '0212_add_filtergroup_labels'),
+        ("seed", "0212_add_filtergroup_labels"),
     ]
 
     operations = [migrations.RunPython(move_filter_groups, move_filter_groups_back)]

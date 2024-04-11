@@ -5,12 +5,12 @@ from django.db import migrations
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('seed', '0052_auto_20170307_0955'),
+        ("seed", "0052_auto_20170307_0955"),
     ]
 
     operations = [
         migrations.AlterUniqueTogether(
-            name='column',
+            name="column",
             unique_together=set(),
         ),
     ]

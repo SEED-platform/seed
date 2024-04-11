@@ -20,7 +20,7 @@ from seed.lib.superperms.orgs.permissions import get_org_id
 from seed.models import Analysis, DataLogger, Goal, Property, PropertyView, TaxLotView, UbidModel
 
 # Allow Super Users to ignore permissions.
-ALLOW_SUPER_USER_PERMS = getattr(settings, 'ALLOW_SUPER_USER_PERMS', True)
+ALLOW_SUPER_USER_PERMS = getattr(settings, "ALLOW_SUPER_USER_PERMS", True)
 
 
 def requires_parent_org_owner(org_user):
@@ -126,59 +126,59 @@ def can_view_data(org_user):
 
 PERMS = {
     # requires_superuser is the only role that can be on organization-agnostic endpoints
-    'requires_superuser': requires_superuser,
-    'requires_parent_org_owner': requires_parent_org_owner,
-    'requires_owner_or_superuser_without_org': requires_owner_or_superuser_without_org,
-    'requires_owner': requires_owner,
-    'requires_member': requires_member,
-    'requires_viewer': requires_viewer,
-    'requires_root_member_access': requires_root_member_access,
-    'requires_non_leaf_access': requires_non_leaf_access,
-    'can_create_sub_org': can_create_sub_org,
-    'can_remove_org': can_remove_org,
-    'can_invite_member': can_invite_member,
-    'can_remove_member': can_remove_member,
-    'can_modify_member_roles': can_modify_member_roles,
-    'can_modify_org_settings': can_modify_org_settings,
-    'can_modify_query_thresh': can_modify_query_thresh,
-    'can_view_sub_org_settings': can_view_sub_org_settings,
-    'can_view_sub_org_fields': can_view_sub_org_fields,
-    'can_modify_data': can_modify_data,
-    'can_view_data': can_view_data,
+    "requires_superuser": requires_superuser,
+    "requires_parent_org_owner": requires_parent_org_owner,
+    "requires_owner_or_superuser_without_org": requires_owner_or_superuser_without_org,
+    "requires_owner": requires_owner,
+    "requires_member": requires_member,
+    "requires_viewer": requires_viewer,
+    "requires_root_member_access": requires_root_member_access,
+    "requires_non_leaf_access": requires_non_leaf_access,
+    "can_create_sub_org": can_create_sub_org,
+    "can_remove_org": can_remove_org,
+    "can_invite_member": can_invite_member,
+    "can_remove_member": can_remove_member,
+    "can_modify_member_roles": can_modify_member_roles,
+    "can_modify_org_settings": can_modify_org_settings,
+    "can_modify_query_thresh": can_modify_query_thresh,
+    "can_view_sub_org_settings": can_view_sub_org_settings,
+    "can_view_sub_org_fields": can_view_sub_org_fields,
+    "can_modify_data": can_modify_data,
+    "can_view_data": can_view_data,
 }
 
 ERROR_MESSAGES = {
-    'org_dne': 'Organization does not exist',
-    'user_dne': 'No relationship to organization',
-    'perm_denied': 'Permission denied',
+    "org_dne": "Organization does not exist",
+    "user_dne": "No relationship to organization",
+    "perm_denied": "Permission denied",
 }
-RESPONSE_TEMPLATE = {'status': 'error', 'message': ''}
+RESPONSE_TEMPLATE = {"status": "error", "message": ""}
 
 
 def _make_resp(message_name):
     """Return Http Error response with appropriate message."""
     resp_json = RESPONSE_TEMPLATE.copy()
-    resp_json['message'] = ERROR_MESSAGES.get(message_name, 'Permission denied')
-    return HttpResponseForbidden(json.dumps(resp_json), content_type='application/json')
+    resp_json["message"] = ERROR_MESSAGES.get(message_name, "Permission denied")
+    return HttpResponseForbidden(json.dumps(resp_json), content_type="application/json")
 
 
 # Return nothing if valid, otherwise return Forbidden response
 def _validate_permissions(perm_name, request, requires_org):
     if not requires_org:
-        if perm_name not in {'requires_superuser', 'requires_owner_or_superuser_without_org'}:
+        if perm_name not in {"requires_superuser", "requires_owner_or_superuser_without_org"}:
             raise AssertionError(
-                'requires_org=False can only be combined with requires_superuser or ' 'requires_owner_or_superuser_without_org'
+                "requires_org=False can only be combined with requires_superuser or " "requires_owner_or_superuser_without_org"
             )
         if request.user.is_superuser:
             return
-        elif perm_name != 'requires_owner_or_superuser_without_org':
-            return _make_resp('perm_denied')
+        elif perm_name != "requires_owner_or_superuser_without_org":
+            return _make_resp("perm_denied")
 
     org_id = get_org_id(request)
     try:
         org = Organization.objects.get(pk=org_id)
     except Organization.DoesNotExist:
-        return _make_resp('org_dne')
+        return _make_resp("org_dne")
     # Skip perms checks if settings allow super_users to bypass.
     if request.user.is_superuser and ALLOW_SUPER_USER_PERMS:
         request.access_level_instance_id = org.root.id
@@ -187,12 +187,12 @@ def _validate_permissions(perm_name, request, requires_org):
     try:
         org_user = OrganizationUser.objects.get(user=request.user, organization=org)
     except OrganizationUser.DoesNotExist:
-        return _make_resp('user_dne')
+        return _make_resp("user_dne")
     else:
         request.access_level_instance_id = org_user.access_level_instance.id
 
     if not PERMS.get(perm_name, lambda _: False)(org_user):
-        return _make_resp('perm_denied')
+        return _make_resp("perm_denied")
 
 
 def has_perm_class(perm_name: str, requires_org: bool = True):
@@ -200,7 +200,7 @@ def has_perm_class(perm_name: str, requires_org: bool = True):
 
     def decorator(fn):
         params = list(signature(fn).parameters)
-        if params and params[0] == 'self':
+        if params and params[0] == "self":
 
             @wraps(fn)
             def _wrapped(self, request, *args, **kwargs):
@@ -315,7 +315,7 @@ def assert_hierarchy_access(
 
         elif goal_id_kwarg and goal_id_kwarg in kwargs:
             goal = Goal.objects.get(pk=kwargs[goal_id_kwarg])
-            body_ali_id = body.get('access_level_instance')
+            body_ali_id = body.get("access_level_instance")
             if body_ali_id:
                 body_ali = AccessLevelInstance.objects.get(pk=body_ali_id)
                 requests_ali = body_ali if body_ali.depth < goal.access_level_instance.depth else goal.access_level_instance
@@ -327,15 +327,15 @@ def assert_hierarchy_access(
             requests_ali = data_logger.property.access_level_instance
 
         else:
-            property_view = PropertyView.objects.get(pk=request.GET['property_view_id'])
+            property_view = PropertyView.objects.get(pk=request.GET["property_view_id"])
             requests_ali = property_view.property.access_level_instance
 
     except (ObjectDoesNotExist, MultiValueDictKeyError):
-        return JsonResponse({'status': 'error', 'message': 'No such resource.'}, status=status.HTTP_404_NOT_FOUND)
+        return JsonResponse({"status": "error", "message": "No such resource."}, status=status.HTTP_404_NOT_FOUND)
 
     user_ali = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
     if not (user_ali == requests_ali or requests_ali.is_descendant_of(user_ali)):
-        return JsonResponse({'status': 'error', 'message': 'No such resource.'}, status=status.HTTP_404_NOT_FOUND)
+        return JsonResponse({"status": "error", "message": "No such resource."}, status=status.HTTP_404_NOT_FOUND)
 
 
 def has_hierarchy_access(
@@ -362,7 +362,7 @@ def has_hierarchy_access(
 
     def decorator(fn):
         params = list(signature(fn).parameters)
-        if params and params[0] == 'self':
+        if params and params[0] == "self":
 
             @wraps(fn)
             def _wrapped(self, request, *args, **kwargs):

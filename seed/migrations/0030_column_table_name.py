@@ -5,13 +5,13 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('seed', '0029_merge'),
+        ("seed", "0029_merge"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='column',
-            name='table_name',
+            model_name="column",
+            name="table_name",
             field=models.CharField(blank=True, db_index=True, max_length=512),
         ),
     ]

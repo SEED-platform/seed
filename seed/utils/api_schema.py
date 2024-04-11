@@ -12,11 +12,11 @@ from drf_yasg.utils import swagger_auto_schema
 class AutoSchemaHelper(SwaggerAutoSchema):
     # Used to easily build out example values displayed on Swagger page.
     openapi_types = {
-        'string': openapi.TYPE_STRING,
-        'boolean': openapi.TYPE_BOOLEAN,
-        'integer': openapi.TYPE_INTEGER,
-        'object': openapi.TYPE_OBJECT,
-        'number': openapi.TYPE_NUMBER,
+        "string": openapi.TYPE_STRING,
+        "boolean": openapi.TYPE_BOOLEAN,
+        "integer": openapi.TYPE_INTEGER,
+        "object": openapi.TYPE_OBJECT,
+        "number": openapi.TYPE_NUMBER,
     }
 
     @classmethod
@@ -41,8 +41,8 @@ class AutoSchemaHelper(SwaggerAutoSchema):
         )
 
     @staticmethod
-    def query_org_id_field(required=True, description='Organization ID'):
-        return openapi.Parameter('organization_id', openapi.IN_QUERY, description=description, required=required, type=openapi.TYPE_INTEGER)
+    def query_org_id_field(required=True, description="Organization ID"):
+        return openapi.Parameter("organization_id", openapi.IN_QUERY, description=description, required=required, type=openapi.TYPE_INTEGER)
 
     @staticmethod
     def query_integer_field(name, required, description):
@@ -70,10 +70,10 @@ class AutoSchemaHelper(SwaggerAutoSchema):
 
     @staticmethod
     def path_id_field(description):
-        return openapi.Parameter('id', openapi.IN_PATH, description=description, required=True, type=openapi.TYPE_INTEGER)
+        return openapi.Parameter("id", openapi.IN_PATH, description=description, required=True, type=openapi.TYPE_INTEGER)
 
     @classmethod
-    def body_field(cls, required, description, name='body', params_to_formats={}):
+    def body_field(cls, required, description, name="body", params_to_formats={}):
         return openapi.Parameter(
             name, openapi.IN_BODY, description=description, required=required, schema=cls.schema_factory(params_to_formats)
         )
@@ -105,7 +105,7 @@ class AutoSchemaHelper(SwaggerAutoSchema):
 
         if isinstance(obj, list):
             if len(obj) != 1:
-                raise Exception('List types must have exactly one element to specify the schema of `items`')
+                raise Exception("List types must have exactly one element to specify the schema of `items`")
             return openapi.Schema(type=openapi.TYPE_ARRAY, items=cls.schema_factory(obj[0]), **kwargs)
 
         if isinstance(obj, dict):

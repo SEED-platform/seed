@@ -5,13 +5,13 @@ from django.db import migrations
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('seed', '0025_auto_20160822_2108'),
+        ("seed", "0025_auto_20160822_2108"),
     ]
 
     operations = [
         migrations.RenameField(
-            model_name='taxlotauditlog',
-            old_name='child',
-            new_name='state',
+            model_name="taxlotauditlog",
+            old_name="child",
+            new_name="state",
         ),
     ]

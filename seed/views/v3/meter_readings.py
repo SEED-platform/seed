@@ -17,31 +17,31 @@ from seed.utils.viewsets import SEEDOrgModelViewSet
 
 
 @method_decorator(
-    name='create',
+    name="create",
     decorator=swagger_auto_schema(
         manual_parameters=[
             AutoSchemaHelper.base_field(
-                name='property_pk',
-                location_attr='IN_PATH',
-                type_attr='TYPE_INTEGER',
+                name="property_pk",
+                location_attr="IN_PATH",
+                type_attr="TYPE_INTEGER",
                 required=True,
-                description='ID of the property view where the meter is associated.',
+                description="ID of the property view where the meter is associated.",
             ),
             AutoSchemaHelper.base_field(
-                name='meter_pk',
-                location_attr='IN_PATH',
-                type_attr='TYPE_INTEGER',
+                name="meter_pk",
+                location_attr="IN_PATH",
+                type_attr="TYPE_INTEGER",
                 required=True,
-                description='ID of the meter to attached the meter readings.',
+                description="ID of the meter to attached the meter readings.",
             ),
         ],
         request_body=openapi.Schema(
             type=openapi.TYPE_ARRAY,
             items=AutoSchemaHelper.schema_factory(
-                {'start_time': 'string', 'end_time': 'string', 'reading': 'number', 'source_unit': 'string', 'conversion_factor': 'number'},
-                required=['start_time', 'end_time', 'reading', 'source_unit', 'conversion_factor'],
+                {"start_time": "string", "end_time": "string", "reading": "number", "source_unit": "string", "conversion_factor": "number"},
+                required=["start_time", "end_time", "reading", "source_unit", "conversion_factor"],
             ),
-            description='Dictionary or list of dictionaries of meter readings to add.',
+            description="Dictionary or list of dictionaries of meter readings to add.",
         ),
     ),
 )
@@ -53,7 +53,7 @@ class MeterReadingViewSet(SEEDOrgModelViewSet):
     pagination_class = None
     model = MeterReading
     parser_classes = (JSONParser, FormParser)
-    orgfilter = 'property__organization'
+    orgfilter = "property__organization"
 
     def get_queryset(self):
         # return the organization id from the request. This also check
@@ -62,7 +62,7 @@ class MeterReadingViewSet(SEEDOrgModelViewSet):
         # get the property id - since the meter is associated with the property (not the property view)
 
         # even though it is named 'property_pk' it is really the property view id
-        property_view_pk = self.kwargs.get('property_pk', None)
+        property_view_pk = self.kwargs.get("property_pk", None)
         if not property_view_pk:
             # Return None otherwise swagger will not be able to process the request
             return MeterReading.objects.none()
@@ -75,7 +75,7 @@ class MeterReadingViewSet(SEEDOrgModelViewSet):
         self.property_pk = property_view.property.pk
 
         # Grab the meter id
-        meter_pk = self.kwargs.get('meter_pk', None)
+        meter_pk = self.kwargs.get("meter_pk", None)
         if not meter_pk:
             # Return None otherwise swagger will not be able to process the request
             return MeterReading.objects.none()
@@ -83,11 +83,11 @@ class MeterReadingViewSet(SEEDOrgModelViewSet):
 
         return MeterReading.objects.filter(
             meter__property__organization_id=org_id, meter__property=self.property_pk, meter_id=meter_pk
-        ).order_by('start_time', 'end_time')
+        ).order_by("start_time", "end_time")
 
     def get_serializer(self, *args, **kwargs):
-        if isinstance(kwargs.get('data', {}), list):
-            kwargs['many'] = True
+        if isinstance(kwargs.get("data", {}), list):
+            kwargs["many"] = True
 
         return super().get_serializer(*args, **kwargs)
 
@@ -98,4 +98,4 @@ class MeterReadingViewSet(SEEDOrgModelViewSet):
         if self.meter_pk:
             serializer.save(meter_id=self.meter_pk)
         else:
-            raise Exception('No meter_pk provided in URL to create the meter reading')
+            raise Exception("No meter_pk provided in URL to create the meter reading")

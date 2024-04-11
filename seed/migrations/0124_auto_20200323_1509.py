@@ -5,24 +5,24 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('seed', '0123_auto_20200324_1424'),
+        ("seed", "0123_auto_20200324_1424"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='propertymeasure',
-            name='application_scale',
+            model_name="propertymeasure",
+            name="application_scale",
             field=models.IntegerField(
                 choices=[
-                    (1, 'Individual system'),
-                    (2, 'Multiple systems'),
-                    (3, 'Individual premise'),
-                    (4, 'Multiple premises'),
-                    (5, 'Entire facility'),
-                    (6, 'Entire site'),
-                    (7, 'Entire building'),
-                    (8, 'Common areas'),
-                    (9, 'Tenant areas'),
+                    (1, "Individual system"),
+                    (2, "Multiple systems"),
+                    (3, "Individual premise"),
+                    (4, "Multiple premises"),
+                    (5, "Entire facility"),
+                    (6, "Entire site"),
+                    (7, "Entire building"),
+                    (8, "Common areas"),
+                    (9, "Tenant areas"),
                 ],
                 default=5,
             ),

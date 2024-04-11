@@ -16,8 +16,8 @@ from django.shortcuts import render
 
 from seed.views.main import _get_default_org
 
-YAML_DOC_BOUNDARY = re.compile(r'^-{3,}\s*$', re.MULTILINE)
-FaqItem = namedtuple('FaqItem', ['question', 'answer', 'tags'])
+YAML_DOC_BOUNDARY = re.compile(r"^-{3,}\s*$", re.MULTILINE)
+FaqItem = namedtuple("FaqItem", ["question", "answer", "tags"])
 
 
 def parse_faq_file(faq_file):
@@ -42,7 +42,7 @@ def parse_faq_file(faq_file):
         _, frontmatter, body = YAML_DOC_BOUNDARY.split(f.read(), 2)
     parsed_frontmatter = yaml.safe_load(frontmatter)
     faq_item = FaqItem(
-        question=parsed_frontmatter.get('question', ''), answer=markdown.markdown(body), tags=parsed_frontmatter.get('tags', [])
+        question=parsed_frontmatter.get("question", ""), answer=markdown.markdown(body), tags=parsed_frontmatter.get("tags", [])
     )
     return faq_item
 
@@ -51,13 +51,13 @@ def faq_page(request):
     """Shows the FAQ Page"""
     # Each directory under faq is a question "category", and every markdown
     # file is a question/answer item.
-    faq_dir = os.path.join(os.path.dirname(__file__), 'faq')
+    faq_dir = os.path.join(os.path.dirname(__file__), "faq")
     faq_data = {}
     for category_dir in os.scandir(faq_dir):
         category_name = category_dir.name
         faq_data[category_name] = []
         for faq_file in os.scandir(category_dir):
-            if faq_file.path.endswith('.md'):
+            if faq_file.path.endswith(".md"):
                 parsed_faq = parse_faq_file(faq_file)
                 # convert to dict so json conversion works when templating
                 faq_data[category_name].append(parsed_faq._asdict())
@@ -74,4 +74,4 @@ def faq_page(request):
         ) = _get_default_org(request.user)
     debug = settings.DEBUG
 
-    return render(request, 'docs/faq.html', locals())
+    return render(request, "docs/faq.html", locals())

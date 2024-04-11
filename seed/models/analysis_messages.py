@@ -27,11 +27,11 @@ class AnalysisMessage(models.Model):
     ERROR = 40
 
     MESSAGE_TYPES = (
-        (DEFAULT, 'default'),
-        (DEBUG, 'debug'),
-        (INFO, 'info'),
-        (WARNING, 'warning'),
-        (ERROR, 'error'),
+        (DEFAULT, "default"),
+        (DEBUG, "debug"),
+        (INFO, "info"),
+        (WARNING, "warning"),
+        (ERROR, "error"),
     )
     analysis = models.ForeignKey(Analysis, on_delete=models.CASCADE)
     # if the message is relevant to a specific property then it should be linked
@@ -73,17 +73,17 @@ class AnalysisMessage(models.Model):
             logger_level = logging.ERROR
 
         log_message_dict = {
-            'analysis_id': analysis_id,
-            'analysis_property_view': analysis_property_view_id,
-            'user_message': user_message,
-            'debug_message': debug_message,
-            'exception': repr(exception),
+            "analysis_id": analysis_id,
+            "analysis_property_view": analysis_property_view_id,
+            "user_message": user_message,
+            "debug_message": debug_message,
+            "exception": repr(exception),
         }
         logger.log(logger_level, json.dumps(log_message_dict))
 
         # truncate the messages to make sure they meet our db constraints
         MAX_MESSAGE_LENGTH = 1024
-        ELLIPSIS = '...'
+        ELLIPSIS = "..."
         if len(user_message) > MAX_MESSAGE_LENGTH:
             user_message = user_message[: MAX_MESSAGE_LENGTH - len(ELLIPSIS)] + ELLIPSIS
         if len(debug_message) > MAX_MESSAGE_LENGTH:

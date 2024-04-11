@@ -6,8 +6,8 @@ from django.db import migrations
 
 
 def move_labels(app, schema_editor):
-    project_building_model = app.get_model('seed', 'ProjectBuilding')
-    canonical_building_model = app.get_model('seed', 'CanonicalBuilding')
+    project_building_model = app.get_model("seed", "ProjectBuilding")
+    canonical_building_model = app.get_model("seed", "CanonicalBuilding")
 
     for building_with_labels in project_building_model.objects.filter(status_label__isnull=False):
         for canonical_building in canonical_building_model.objects.filter(canonical_snapshot=building_with_labels.building_snapshot.id):
@@ -16,7 +16,7 @@ def move_labels(app, schema_editor):
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('seed', '0006_canonicalbuilding_labels'),
+        ("seed", "0006_canonicalbuilding_labels"),
     ]
 
     operations = [

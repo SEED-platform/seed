@@ -4,12 +4,12 @@ from seed.utils.match import whole_org_match_merge_link
 
 
 def forwards(apps, schema_editor):
-    Organization = apps.get_model('orgs', 'organization')
+    Organization = apps.get_model("orgs", "organization")
 
     try:
         for org in Organization.objects.all():
-            whole_org_match_merge_link(org.id, 'PropertyState')
-            whole_org_match_merge_link(org.id, 'TaxLotState')
+            whole_org_match_merge_link(org.id, "PropertyState")
+            whole_org_match_merge_link(org.id, "TaxLotState")
     except ProgrammingError as err:
         print("""
 
@@ -26,7 +26,7 @@ def forwards(apps, schema_editor):
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('seed', '0117_columnmappingpreset'),
+        ("seed", "0117_columnmappingpreset"),
     ]
 
     operations = [

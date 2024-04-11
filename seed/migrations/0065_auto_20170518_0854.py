@@ -5,13 +5,13 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('seed', '0064_auto_20170516_1155'),
+        ("seed", "0064_auto_20170516_1155"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='dataqualitycheck',
-            name='name',
-            field=models.CharField(default=b'Default Data Quality Check', max_length=255),
+            model_name="dataqualitycheck",
+            name="name",
+            field=models.CharField(default=b"Default Data Quality Check", max_length=255),
         ),
     ]

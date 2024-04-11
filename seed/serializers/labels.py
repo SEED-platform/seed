@@ -11,7 +11,7 @@ from seed.models import StatusLabel as Label
 
 class LabelSerializer(serializers.ModelSerializer):
     organization_id = serializers.PrimaryKeyRelatedField(
-        source='super_organization',
+        source="super_organization",
         read_only=True,
     )
     is_applied = serializers.SerializerMethodField()
@@ -25,26 +25,26 @@ class LabelSerializer(serializers.ModelSerializer):
         validated by the serializer.
 
         """
-        if 'super_organization' not in kwargs:
+        if "super_organization" not in kwargs:
             return
-        super_organization = kwargs.pop('super_organization')
-        self.inventory = kwargs.pop('inventory')
+        super_organization = kwargs.pop("super_organization")
+        self.inventory = kwargs.pop("inventory")
         super().__init__(*args, **kwargs)
-        if getattr(self, 'initial_data', None):
-            self.initial_data['super_organization'] = super_organization.pk
+        if getattr(self, "initial_data", None):
+            self.initial_data["super_organization"] = super_organization.pk
 
     class Meta:
         fields = (
-            'id',
-            'name',
-            'color',
-            'organization_id',
-            'super_organization',
-            'is_applied',
-            'show_in_list',
+            "id",
+            "name",
+            "color",
+            "organization_id",
+            "super_organization",
+            "is_applied",
+            "show_in_list",
         )
         extra_kwargs = {
-            'super_organization': {'write_only': True},
+            "super_organization": {"write_only": True},
         }
         model = Label
 
@@ -53,7 +53,7 @@ class LabelSerializer(serializers.ModelSerializer):
 
         # Avoid the impression that no records "is_applied" if inventory isn't provided and a search never occurred
         if not self.inventory:
-            del ret['is_applied']
+            del ret["is_applied"]
 
         return ret
 
@@ -61,6 +61,6 @@ class LabelSerializer(serializers.ModelSerializer):
         filtered_result = []
         if self.inventory:
             # TODO: This needs to be updated to support labels being moved to Views.
-            filtered_result = self.inventory.prefetch_related('labels').filter(labels__in=[obj]).values_list('id', flat=True)
+            filtered_result = self.inventory.prefetch_related("labels").filter(labels__in=[obj]).values_list("id", flat=True)
 
         return filtered_result

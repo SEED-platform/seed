@@ -6,27 +6,27 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('data_importer', '0004_auto_20160411_1139'),
-        ('orgs', '0003_auto_20160412_1123'),
-        ('seed', '0031_auto_20160912_1155'),
+        ("data_importer", "0004_auto_20160411_1139"),
+        ("orgs", "0003_auto_20160412_1123"),
+        ("seed", "0031_auto_20160912_1155"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='taxlotstate',
-            name='data_state',
+            model_name="taxlotstate",
+            name="data_state",
             field=models.IntegerField(
-                choices=[(0, b'Unknown'), (1, b'Post Import'), (2, b'Post Mapping'), (3, b'Post Matching')], default=0
+                choices=[(0, b"Unknown"), (1, b"Post Import"), (2, b"Post Mapping"), (3, b"Post Matching")], default=0
             ),
         ),
         migrations.AddField(
-            model_name='taxlotstate',
-            name='import_file',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='data_importer.ImportFile'),
+            model_name="taxlotstate",
+            name="import_file",
+            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to="data_importer.ImportFile"),
         ),
         migrations.AddField(
-            model_name='taxlotstate',
-            name='organization',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='orgs.Organization'),
+            model_name="taxlotstate",
+            name="organization",
+            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to="orgs.Organization"),
         ),
     ]

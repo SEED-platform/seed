@@ -15,18 +15,18 @@ from seed.serializers.postoffice import PostOfficeEmailSerializer, PostOfficeSer
 from seed.utils.viewsets import SEEDOrgModelViewSet
 
 
-@method_decorator(name='list', decorator=[has_perm_class('requires_owner')])
-@method_decorator(name='retrieve', decorator=[has_perm_class('requires_owner')])
-@method_decorator(name='update', decorator=[has_perm_class('requires_owner')])
-@method_decorator(name='destroy', decorator=[has_perm_class('requires_owner')])
-@method_decorator(name='create', decorator=[has_perm_class('requires_owner')])
+@method_decorator(name="list", decorator=[has_perm_class("requires_owner")])
+@method_decorator(name="retrieve", decorator=[has_perm_class("requires_owner")])
+@method_decorator(name="update", decorator=[has_perm_class("requires_owner")])
+@method_decorator(name="destroy", decorator=[has_perm_class("requires_owner")])
+@method_decorator(name="create", decorator=[has_perm_class("requires_owner")])
 class PostOfficeViewSet(SEEDOrgModelViewSet):
     model = PostOfficeEmailTemplate
     serializer_class = PostOfficeSerializer
     pagination_class = None
 
     def get_queryset(self):
-        return PostOfficeEmailTemplate.objects.filter(organization_id=self.get_organization(self.request)).order_by('name')
+        return PostOfficeEmailTemplate.objects.filter(organization_id=self.get_organization(self.request)).order_by("name")
 
     def perform_create(self, serializer):
         org_id = self.get_organization(self.request)
@@ -34,11 +34,11 @@ class PostOfficeViewSet(SEEDOrgModelViewSet):
         serializer.save(organization_id=org_id, user=user)
 
 
-@method_decorator(name='list', decorator=[has_perm_class('requires_owner')])
-@method_decorator(name='retrieve', decorator=[has_perm_class('requires_owner')])
-@method_decorator(name='update', decorator=[has_perm_class('requires_owner')])
-@method_decorator(name='destroy', decorator=[has_perm_class('requires_owner')])
-@method_decorator(name='create', decorator=[has_perm_class('requires_owner')])
+@method_decorator(name="list", decorator=[has_perm_class("requires_owner")])
+@method_decorator(name="retrieve", decorator=[has_perm_class("requires_owner")])
+@method_decorator(name="update", decorator=[has_perm_class("requires_owner")])
+@method_decorator(name="destroy", decorator=[has_perm_class("requires_owner")])
+@method_decorator(name="create", decorator=[has_perm_class("requires_owner")])
 class PostOfficeEmailViewSet(SEEDOrgModelViewSet):
     model = PostOfficeEmail
     serializer_class = PostOfficeEmailSerializer
@@ -48,14 +48,14 @@ class PostOfficeEmailViewSet(SEEDOrgModelViewSet):
         return PostOfficeEmail.objects.all()
 
     def perform_create(self, serializer):
-        template_id = self.request.data.get('template_id')
-        inventory_id = self.request.data.get('inventory_id', [])
-        if self.request.data.get('inventory_type') == 'properties':
+        template_id = self.request.data.get("template_id")
+        inventory_id = self.request.data.get("inventory_id", [])
+        if self.request.data.get("inventory_type") == "properties":
             state = PropertyState
-            org_filter = 'propertyview__property__organization_id'
+            org_filter = "propertyview__property__organization_id"
         else:
             state = TaxLotState
-            org_filter = 'taxlotview__taxlot__organization_id'
+            org_filter = "taxlotview__taxlot__organization_id"
 
         org_id = self.get_organization(self.request)
         properties = state.objects.filter(id__in=inventory_id, **{org_filter: org_id})
@@ -69,32 +69,32 @@ class PostOfficeEmailViewSet(SEEDOrgModelViewSet):
                 settings.SERVER_EMAIL,
                 template=PostOfficeEmailTemplate.objects.get(id=template_id, organization_id=org_id),
                 context=context,
-                backend='post_office_backend',
+                backend="post_office_backend",
             )
 
             user = self.request.user
 
             # Assigning all the fields inside of postoffice to seed_postoffice
             email_data = {
-                'email_ptr_id': ptr.id,
-                'from_email': settings.SERVER_EMAIL,
-                'to': ptr.to,
-                'cc': ptr.cc,
-                'bcc': ptr.bcc,
-                'subject': ptr.subject,
-                'message': ptr.message,
-                'html_message': ptr.message,
-                'status': ptr.status,
-                'priority': ptr.priority,
-                'created': ptr.created,
-                'last_updated': ptr.last_updated,
-                'scheduled_time': ptr.scheduled_time,
-                'headers': ptr.headers,
-                'context': ptr.context,
-                'template_id': ptr.template_id,
-                'backend_alias': ptr.backend_alias,
-                'number_of_retries': ptr.number_of_retries,
-                'expires_at': ptr.expires_at,
+                "email_ptr_id": ptr.id,
+                "from_email": settings.SERVER_EMAIL,
+                "to": ptr.to,
+                "cc": ptr.cc,
+                "bcc": ptr.bcc,
+                "subject": ptr.subject,
+                "message": ptr.message,
+                "html_message": ptr.message,
+                "status": ptr.status,
+                "priority": ptr.priority,
+                "created": ptr.created,
+                "last_updated": ptr.last_updated,
+                "scheduled_time": ptr.scheduled_time,
+                "headers": ptr.headers,
+                "context": ptr.context,
+                "template_id": ptr.template_id,
+                "backend_alias": ptr.backend_alias,
+                "number_of_retries": ptr.number_of_retries,
+                "expires_at": ptr.expires_at,
             }
 
             serializer.save(**email_data, organization_id=org_id, user=user)

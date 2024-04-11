@@ -51,22 +51,22 @@ class SEEDJSONRenderer(JSONRenderer):
         """
         pagination = None
         results = data
-        data_name = 'data'
-        view = renderer_context.get('view')
-        data_name = getattr(view, 'data_name', data_name)
-        response = renderer_context.get('response')
+        data_name = "data"
+        view = renderer_context.get("view")
+        data_name = getattr(view, "data_name", data_name)
+        response = renderer_context.get("response")
         if status.is_success(response.status_code):
-            status_type = 'success'
-            if hasattr(data, 'keys') and 'results' in data:
-                results = data.pop('results', None)
+            status_type = "success"
+            if hasattr(data, "keys") and "results" in data:
+                results = data.pop("results", None)
                 pagination = data
         else:
-            status_type = 'error'
-            data_name = 'message'
-            results = data.get('detail', data)
+            status_type = "error"
+            data_name = "message"
+            results = data.get("detail", data)
 
-        data = {'status': status_type, data_name: results}
+        data = {"status": status_type, data_name: results}
         if pagination:
-            data['pagination'] = pagination
+            data["pagination"] = pagination
 
         return super().render(data, accepted_media_type=accepted_media_type, renderer_context=renderer_context)

@@ -18,15 +18,15 @@ from seed.lib.superperms.orgs.permissions import SEEDOrgPermissions, SEEDPublicP
 from seed.utils.organizations import create_organization
 
 
-def mock_request_factory(view_authz_org_id_kwarg=None, parser_kwargs=None, path='/api/v3/no/org/here/', query_params=None, data=None):
+def mock_request_factory(view_authz_org_id_kwarg=None, parser_kwargs=None, path="/api/v3/no/org/here/", query_params=None, data=None):
     mock_request = mock.MagicMock()
     # parser context stores the parsed kwargs from the path
-    mock_view_dict = {} if view_authz_org_id_kwarg is None else {'authz_org_id_kwarg': view_authz_org_id_kwarg}
+    mock_view_dict = {} if view_authz_org_id_kwarg is None else {"authz_org_id_kwarg": view_authz_org_id_kwarg}
     mock_request.parser_context = {
-        'view': type('MockView', (object,), mock_view_dict),
-        'kwargs': parser_kwargs if parser_kwargs is not None else {},
+        "view": type("MockView", (object,), mock_view_dict),
+        "kwargs": parser_kwargs if parser_kwargs is not None else {},
     }
-    mock_request._request = type('MockRequest', (object,), {'path': path})
+    mock_request._request = type("MockRequest", (object,), {"path": path})
     mock_request.query_params = query_params if query_params is not None else {}
     mock_request.data = data if data is not None else {}
 
@@ -40,11 +40,11 @@ class PermissionsFunctionsTests(TestCase):
 
     def test_org_or_id(self):
         """Test getting org or org id"""
-        test_dict = {'organization': 1, 'organization_id': 2}
+        test_dict = {"organization": 1, "organization_id": 2}
         result = get_org_or_id(test_dict)
         self.assertEqual(1, result)
 
-        test_dict = {'organization_id': 2}
+        test_dict = {"organization_id": 2}
         result = get_org_or_id(test_dict)
         self.assertEqual(2, result)
 
@@ -59,23 +59,23 @@ class PermissionsFunctionsTests(TestCase):
         # Should return None if not found in any of these sources
         mock_request = mock_request_factory(
             view_authz_org_id_kwarg=None,
-            parser_kwargs={'not_org_id': 1},
-            path='/api/v3/nope/2/',
-            query_params={'not_org_id': 3},
-            data={'not_org_id': 4},
+            parser_kwargs={"not_org_id": 1},
+            path="/api/v3/nope/2/",
+            query_params={"not_org_id": 3},
+            data={"not_org_id": 4},
         )
         result = get_org_id(mock_request)
         self.assertEqual(None, result)
 
         # get from request parser_context
         mock_request = mock_request_factory(
-            view_authz_org_id_kwarg='custom_org_id_keyword',
-            parser_kwargs={'custom_org_id_keyword': 1},
+            view_authz_org_id_kwarg="custom_org_id_keyword",
+            parser_kwargs={"custom_org_id_keyword": 1},
             # technically not possible to have different id in path since parser_kwargs
             # comes from path but useful in demonstrating source priorities
-            path='/api/v3/organizations/2',
-            query_params={'organization_id': 3},
-            data={'organization_id': 4},
+            path="/api/v3/organizations/2",
+            query_params={"organization_id": 3},
+            data={"organization_id": 4},
         )
         result = get_org_id(mock_request)
         self.assertEqual(1, result)
@@ -83,10 +83,10 @@ class PermissionsFunctionsTests(TestCase):
         # get from path
         mock_request = mock_request_factory(
             view_authz_org_id_kwarg=None,
-            parser_kwargs={'not_org_id': 1},
-            path='/api/v3/organizations/2',
-            query_params={'organization_id': 3},
-            data={'organization_id': 4},
+            parser_kwargs={"not_org_id": 1},
+            path="/api/v3/organizations/2",
+            query_params={"organization_id": 3},
+            data={"organization_id": 4},
         )
         result = get_org_id(mock_request)
         self.assertEqual(2, result)
@@ -94,10 +94,10 @@ class PermissionsFunctionsTests(TestCase):
         # get from query params
         mock_request = mock_request_factory(
             view_authz_org_id_kwarg=None,
-            parser_kwargs={'not_org_id': 1},
-            path='/api/v3/nope/2/',
-            query_params={'organization_id': 3},
-            data={'organization_id': 4},
+            parser_kwargs={"not_org_id": 1},
+            path="/api/v3/nope/2/",
+            query_params={"organization_id": 3},
+            data={"organization_id": 4},
         )
         result = get_org_id(mock_request)
         self.assertEqual(3, result)
@@ -105,10 +105,10 @@ class PermissionsFunctionsTests(TestCase):
         # get from data
         mock_request = mock_request_factory(
             view_authz_org_id_kwarg=None,
-            parser_kwargs={'not_org_id': 1},
-            path='/api/v3/nope/2/',
-            query_params={'not_org_id': 3},
-            data={'organization_id': 4},
+            parser_kwargs={"not_org_id": 1},
+            path="/api/v3/nope/2/",
+            query_params={"not_org_id": 3},
+            data={"organization_id": 4},
         )
         result = get_org_id(mock_request)
         self.assertEqual(4, result)
@@ -117,7 +117,7 @@ class PermissionsFunctionsTests(TestCase):
         # not sure why request wouldn't have data, but this is an older test
         # so keeping it here.
         mock_request = mock_request_factory(
-            view_authz_org_id_kwarg=None, parser_kwargs={'not_org_id': 1}, path='/api/v3/nope/2/', query_params={'not_org_id': 3}, data={}
+            view_authz_org_id_kwarg=None, parser_kwargs={"not_org_id": 1}, path="/api/v3/nope/2/", query_params={"not_org_id": 3}, data={}
         )
         mock_value_error = mock.PropertyMock(side_effect=ValueError)
         type(mock_request).data = mock_value_error
@@ -127,27 +127,27 @@ class PermissionsFunctionsTests(TestCase):
         # invalid ids are returned as -1 (not found)
         mock_request = mock_request_factory(
             view_authz_org_id_kwarg=None,
-            parser_kwargs={'not_org_id': 1},
-            path='/api/v3/nope/2/',
-            query_params={'organization_id': 'invalid_id'},
-            data={'organization_id': 4},
+            parser_kwargs={"not_org_id": 1},
+            path="/api/v3/nope/2/",
+            query_params={"organization_id": "invalid_id"},
+            data={"organization_id": 4},
         )
         result = get_org_id(mock_request)
         self.assertEqual(-1, result)
 
         mock_request = mock_request_factory(
             view_authz_org_id_kwarg=None,
-            parser_kwargs={'not_org_id': 1},
-            path='/api/v3/nope/2/',
-            query_params={'not_org_id': 2},
-            data={'organization_id': 'invalid_id'},
+            parser_kwargs={"not_org_id": 1},
+            path="/api/v3/nope/2/",
+            query_params={"not_org_id": 2},
+            data={"organization_id": "invalid_id"},
         )
         result = get_org_id(mock_request)
         self.assertEqual(-1, result)
 
     def test_get_user_org(self):
         """Test getting org from user"""
-        fake_user = User.objects.create(username='test')
+        fake_user = User.objects.create(username="test")
         fake_org_1 = Organization.objects.create()
         fake_org_2 = Organization.objects.create()
         fake_org_3 = Organization.objects.create()
@@ -179,8 +179,8 @@ class SEEDOrgPermissionsTests(TestCase):
     # pylint: disable=too-many-instance-attributes
 
     def setUp(self):
-        self.user = User.objects.create_user('test_user@demo.com', 'test_user@demo.com', 'test_pass')
-        self.superuser = User.objects.create_superuser('test_superuser@demo.com', 'test_superuser@demo.com', 'test_pass')
+        self.user = User.objects.create_user("test_user@demo.com", "test_user@demo.com", "test_pass")
+        self.superuser = User.objects.create_superuser("test_superuser@demo.com", "test_superuser@demo.com", "test_pass")
         self.org, self.org_user, _ = create_organization(self.user)
 
     def tearDown(self):
@@ -188,7 +188,7 @@ class SEEDOrgPermissionsTests(TestCase):
         self.org.delete()
         self.org_user.delete()
 
-    @mock.patch('seed.lib.superperms.orgs.permissions.get_org_id')
+    @mock.patch("seed.lib.superperms.orgs.permissions.get_org_id")
     def test_has_perm(self, mock_get_org_id):
         """Test has_perm method"""
         permissions = SEEDOrgPermissions()
@@ -196,8 +196,8 @@ class SEEDOrgPermissionsTests(TestCase):
         mock_request.user = self.user
 
         # assert False if org/org user does not exist
-        mock_get_org_id.return_value = '1000000'
-        mock_request.method = 'GET'
+        mock_get_org_id.return_value = "1000000"
+        mock_request.method = "GET"
         self.assertFalse(permissions.has_perm(mock_request))
 
         # check self.org_user has right permissions
@@ -211,10 +211,10 @@ class SEEDOrgPermissionsTests(TestCase):
         self.org_user.role_level = ROLE_VIEWER
         self.org_user.save()
         assert self.org_user.role_level < ROLE_MEMBER
-        for view_type in ['GET', 'OPTIONS', 'HEAD']:
+        for view_type in ["GET", "OPTIONS", "HEAD"]:
             mock_request.method = view_type
             self.assertTrue(permissions.has_perm(mock_request))
-        for view_type in ['POST', 'PATCH', 'PUT', 'DELETE']:
+        for view_type in ["POST", "PATCH", "PUT", "DELETE"]:
             mock_request.method = view_type
             self.assertFalse(permissions.has_perm(mock_request))
 
@@ -222,8 +222,8 @@ class SEEDOrgPermissionsTests(TestCase):
         mock_request.user = self.superuser
         self.assertTrue(permissions.has_perm(mock_request))
 
-    @mock.patch.object(SEEDOrgPermissions, 'has_perm')
-    @mock.patch('seed.lib.superperms.orgs.permissions.is_authenticated')
+    @mock.patch.object(SEEDOrgPermissions, "has_perm")
+    @mock.patch("seed.lib.superperms.orgs.permissions.is_authenticated")
     def test_has_permission(self, mock_is_authenticated, mock_has_perm):
         """Test has_permission method"""
         permissions = SEEDOrgPermissions()
@@ -275,7 +275,7 @@ class SEEDPublicPermissionsTests(TestCase):
     # pylint: disable=too-many-instance-attributes
 
     def setUp(self):
-        self.user = User.objects.create_user('test_user@demo.com', 'test_user@demo.com', 'test_pass')
+        self.user = User.objects.create_user("test_user@demo.com", "test_user@demo.com", "test_pass")
         self.org, self.org_user, _ = create_organization(self.user)
 
     def tearDown(self):
@@ -283,8 +283,8 @@ class SEEDPublicPermissionsTests(TestCase):
         self.org.delete()
         self.org_user.delete()
 
-    @mock.patch('seed.lib.superperms.orgs.permissions.is_authenticated')
-    @mock.patch('seed.lib.superperms.orgs.permissions.get_org_id')
+    @mock.patch("seed.lib.superperms.orgs.permissions.is_authenticated")
+    @mock.patch("seed.lib.superperms.orgs.permissions.get_org_id")
     def test_has_perm(self, mock_get_org_id, mock_is_authenticated):
         """Test has_perm method"""
         permissions = SEEDPublicPermissions()
@@ -292,10 +292,10 @@ class SEEDPublicPermissionsTests(TestCase):
 
         # assert can use safe methods if not authenticated
         mock_is_authenticated.return_value = False
-        for view_type in ['GET', 'OPTIONS', 'HEAD']:
+        for view_type in ["GET", "OPTIONS", "HEAD"]:
             mock_request.method = view_type
             self.assertTrue(permissions.has_perm(mock_request))
-        for view_type in ['POST', 'PATCH', 'PUT', 'DELETE']:
+        for view_type in ["POST", "PATCH", "PUT", "DELETE"]:
             mock_request.method = view_type
             self.assertFalse(permissions.has_perm(mock_request))
 
@@ -314,10 +314,10 @@ class SEEDPublicPermissionsTests(TestCase):
         self.org_user.role_level = ROLE_VIEWER
         self.org_user.save()
         assert self.org_user.role_level < ROLE_MEMBER
-        for view_type in ['GET', 'OPTIONS', 'HEAD']:
+        for view_type in ["GET", "OPTIONS", "HEAD"]:
             mock_request.method = view_type
             self.assertTrue(permissions.has_perm(mock_request))
-        for view_type in ['POST', 'PATCH', 'PUT', 'DELETE']:
+        for view_type in ["POST", "PATCH", "PUT", "DELETE"]:
             mock_request.method = view_type
             self.assertFalse(permissions.has_perm(mock_request))
 

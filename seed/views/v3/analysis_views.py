@@ -25,15 +25,15 @@ class AnalysisPropertyViewViewSet(viewsets.ViewSet, OrgMixin):
     @require_organization_id_class
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('requires_member')
-    @has_hierarchy_access(analysis_id_kwarg='analysis_pk')
+    @has_perm_class("requires_member")
+    @has_hierarchy_access(analysis_id_kwarg="analysis_pk")
     def list(self, request, analysis_pk):
         organization_id = int(self.get_organization(request))
         try:
             views_queryset = AnalysisPropertyView.objects.filter(analysis=analysis_pk, analysis__organization_id=organization_id)
         except AnalysisPropertyView.DoesNotExist:
             return JsonResponse(
-                {'status': 'error', 'message': "Requested analysis doesn't exist in this organization."}, status=HTTP_409_CONFLICT
+                {"status": "error", "message": "Requested analysis doesn't exist in this organization."}, status=HTTP_409_CONFLICT
             )
 
         serialized_views = []
@@ -44,9 +44,9 @@ class AnalysisPropertyViewViewSet(viewsets.ViewSet, OrgMixin):
 
         return JsonResponse(
             {
-                'status': 'success',
-                'views': serialized_views,
-                'original_views': {
+                "status": "success",
+                "views": serialized_views,
+                "original_views": {
                     apv_id: property_view.id if property_view is not None else None
                     for apv_id, property_view in property_views_by_apv_id.items()
                 },
@@ -57,15 +57,15 @@ class AnalysisPropertyViewViewSet(viewsets.ViewSet, OrgMixin):
     @require_organization_id_class
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('requires_member')
-    @has_hierarchy_access(analysis_id_kwarg='analysis_pk')
+    @has_perm_class("requires_member")
+    @has_hierarchy_access(analysis_id_kwarg="analysis_pk")
     def retrieve(self, request, analysis_pk, pk):
         organization_id = int(self.get_organization(request))
         try:
             view = AnalysisPropertyView.objects.get(id=pk, analysis=analysis_pk, analysis__organization_id=organization_id)
         except AnalysisPropertyView.DoesNotExist:
             return JsonResponse(
-                {'status': 'error', 'message': "Requested analysis property view doesn't exist in this organization and/or analysis."},
+                {"status": "error", "message": "Requested analysis property view doesn't exist in this organization and/or analysis."},
                 status=HTTP_409_CONFLICT,
             )
 
@@ -73,8 +73,8 @@ class AnalysisPropertyViewViewSet(viewsets.ViewSet, OrgMixin):
 
         return JsonResponse(
             {
-                'status': 'success',
-                'view': AnalysisPropertyViewSerializer(view).data,
-                'original_view': original_view.id if original_view is not None else None,
+                "status": "success",
+                "view": AnalysisPropertyViewSerializer(view).data,
+                "original_view": original_view.id if original_view is not None else None,
             }
         )

@@ -6,152 +6,152 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('seed', '0075_auto_20171017_0837'),
+        ("seed", "0075_auto_20171017_0837"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='greenassessmentpropertyauditlog',
-            name='ancestor',
+            model_name="greenassessmentpropertyauditlog",
+            name="ancestor",
             field=models.ForeignKey(
                 blank=True,
                 null=True,
                 on_delete=django.db.models.deletion.CASCADE,
-                related_name='gapauditlog_ancestor',
-                to='seed.GreenAssessmentPropertyAuditLog',
+                related_name="gapauditlog_ancestor",
+                to="seed.GreenAssessmentPropertyAuditLog",
             ),
         ),
         migrations.AlterField(
-            model_name='greenassessmentpropertyauditlog',
-            name='greenassessmentproperty',
+            model_name="greenassessmentpropertyauditlog",
+            name="greenassessmentproperty",
             field=models.ForeignKey(
-                on_delete=django.db.models.deletion.CASCADE, related_name='gapauditlog_assessment', to='seed.GreenAssessmentProperty'
+                on_delete=django.db.models.deletion.CASCADE, related_name="gapauditlog_assessment", to="seed.GreenAssessmentProperty"
             ),
         ),
         migrations.AlterField(
-            model_name='greenassessmentpropertyauditlog',
-            name='parent',
-            field=models.ForeignKey(
-                blank=True,
-                null=True,
-                on_delete=django.db.models.deletion.CASCADE,
-                related_name='gapauditlog_parent',
-                to='seed.GreenAssessmentPropertyAuditLog',
-            ),
-        ),
-        migrations.AlterField(
-            model_name='greenassessmentpropertyauditlog',
-            name='property_view',
-            field=models.ForeignKey(
-                null=True, on_delete=django.db.models.deletion.CASCADE, related_name='gapauditlog_view', to='seed.PropertyView'
-            ),
-        ),
-        migrations.AlterField(
-            model_name='propertyauditlog',
-            name='parent1',
+            model_name="greenassessmentpropertyauditlog",
+            name="parent",
             field=models.ForeignKey(
                 blank=True,
                 null=True,
                 on_delete=django.db.models.deletion.CASCADE,
-                related_name='propertyauditlog_parent1',
-                to='seed.PropertyAuditLog',
+                related_name="gapauditlog_parent",
+                to="seed.GreenAssessmentPropertyAuditLog",
             ),
         ),
         migrations.AlterField(
-            model_name='propertyauditlog',
-            name='parent2',
+            model_name="greenassessmentpropertyauditlog",
+            name="property_view",
+            field=models.ForeignKey(
+                null=True, on_delete=django.db.models.deletion.CASCADE, related_name="gapauditlog_view", to="seed.PropertyView"
+            ),
+        ),
+        migrations.AlterField(
+            model_name="propertyauditlog",
+            name="parent1",
             field=models.ForeignKey(
                 blank=True,
                 null=True,
                 on_delete=django.db.models.deletion.CASCADE,
-                related_name='propertyauditlog_parent2',
-                to='seed.PropertyAuditLog',
+                related_name="propertyauditlog_parent1",
+                to="seed.PropertyAuditLog",
             ),
         ),
         migrations.AlterField(
-            model_name='propertyauditlog',
-            name='parent_state1',
-            field=models.ForeignKey(
-                blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='parent_state1', to='seed.PropertyState'
-            ),
-        ),
-        migrations.AlterField(
-            model_name='propertyauditlog',
-            name='parent_state2',
-            field=models.ForeignKey(
-                blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='parent_state2', to='seed.PropertyState'
-            ),
-        ),
-        migrations.AlterField(
-            model_name='propertyauditlog',
-            name='state',
-            field=models.ForeignKey(
-                on_delete=django.db.models.deletion.CASCADE, related_name='propertyauditlog_state', to='seed.PropertyState'
-            ),
-        ),
-        migrations.AlterField(
-            model_name='propertyauditlog',
-            name='view',
-            field=models.ForeignKey(
-                null=True, on_delete=django.db.models.deletion.CASCADE, related_name='propertyauditlog_view', to='seed.PropertyView'
-            ),
-        ),
-        migrations.AlterField(
-            model_name='taxlotauditlog',
-            name='parent1',
+            model_name="propertyauditlog",
+            name="parent2",
             field=models.ForeignKey(
                 blank=True,
                 null=True,
                 on_delete=django.db.models.deletion.CASCADE,
-                related_name='taxlotauditlog_parent1',
-                to='seed.TaxLotAuditLog',
+                related_name="propertyauditlog_parent2",
+                to="seed.PropertyAuditLog",
             ),
         ),
         migrations.AlterField(
-            model_name='taxlotauditlog',
-            name='parent2',
+            model_name="propertyauditlog",
+            name="parent_state1",
+            field=models.ForeignKey(
+                blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name="parent_state1", to="seed.PropertyState"
+            ),
+        ),
+        migrations.AlterField(
+            model_name="propertyauditlog",
+            name="parent_state2",
+            field=models.ForeignKey(
+                blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name="parent_state2", to="seed.PropertyState"
+            ),
+        ),
+        migrations.AlterField(
+            model_name="propertyauditlog",
+            name="state",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, related_name="propertyauditlog_state", to="seed.PropertyState"
+            ),
+        ),
+        migrations.AlterField(
+            model_name="propertyauditlog",
+            name="view",
+            field=models.ForeignKey(
+                null=True, on_delete=django.db.models.deletion.CASCADE, related_name="propertyauditlog_view", to="seed.PropertyView"
+            ),
+        ),
+        migrations.AlterField(
+            model_name="taxlotauditlog",
+            name="parent1",
             field=models.ForeignKey(
                 blank=True,
                 null=True,
                 on_delete=django.db.models.deletion.CASCADE,
-                related_name='taxlotauditlog_parent2',
-                to='seed.TaxLotAuditLog',
+                related_name="taxlotauditlog_parent1",
+                to="seed.TaxLotAuditLog",
             ),
         ),
         migrations.AlterField(
-            model_name='taxlotauditlog',
-            name='parent_state1',
+            model_name="taxlotauditlog",
+            name="parent2",
             field=models.ForeignKey(
                 blank=True,
                 null=True,
                 on_delete=django.db.models.deletion.CASCADE,
-                related_name='taxlotauditlog_parent_state1',
-                to='seed.TaxLotState',
+                related_name="taxlotauditlog_parent2",
+                to="seed.TaxLotAuditLog",
             ),
         ),
         migrations.AlterField(
-            model_name='taxlotauditlog',
-            name='parent_state2',
+            model_name="taxlotauditlog",
+            name="parent_state1",
             field=models.ForeignKey(
                 blank=True,
                 null=True,
                 on_delete=django.db.models.deletion.CASCADE,
-                related_name='taxlotauditlog_parent_state2',
-                to='seed.TaxLotState',
+                related_name="taxlotauditlog_parent_state1",
+                to="seed.TaxLotState",
             ),
         ),
         migrations.AlterField(
-            model_name='taxlotauditlog',
-            name='state',
+            model_name="taxlotauditlog",
+            name="parent_state2",
             field=models.ForeignKey(
-                on_delete=django.db.models.deletion.CASCADE, related_name='taxlotauditlog_state', to='seed.TaxLotState'
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="taxlotauditlog_parent_state2",
+                to="seed.TaxLotState",
             ),
         ),
         migrations.AlterField(
-            model_name='taxlotauditlog',
-            name='view',
+            model_name="taxlotauditlog",
+            name="state",
             field=models.ForeignKey(
-                null=True, on_delete=django.db.models.deletion.CASCADE, related_name='taxlotauditlog_view', to='seed.TaxLotView'
+                on_delete=django.db.models.deletion.CASCADE, related_name="taxlotauditlog_state", to="seed.TaxLotState"
+            ),
+        ),
+        migrations.AlterField(
+            model_name="taxlotauditlog",
+            name="view",
+            field=models.ForeignKey(
+                null=True, on_delete=django.db.models.deletion.CASCADE, related_name="taxlotauditlog_view", to="seed.TaxLotView"
             ),
         ),
     ]

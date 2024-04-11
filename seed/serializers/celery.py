@@ -13,14 +13,14 @@ import dateutil
 class CeleryDatetimeSerializer(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, datetime):
-            return {'__type__': '__datetime__', 'iso8601': obj.isoformat()}
+            return {"__type__": "__datetime__", "iso8601": obj.isoformat()}
         else:
             return json.JSONEncoder.default(self, obj)
 
     @staticmethod
     def seed_decoder(obj):
-        if '__type__' in obj and obj['__type__'] == '__datetime__':
-            return dateutil.parser.parse(obj['iso8601'])
+        if "__type__" in obj and obj["__type__"] == "__datetime__":
+            return dateutil.parser.parse(obj["iso8601"])
         return obj
 
     # Encoder function

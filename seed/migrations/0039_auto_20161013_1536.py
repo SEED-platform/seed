@@ -6,22 +6,22 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('seed', '0038_auto_20161008_2244'),
+        ("seed", "0038_auto_20161008_2244"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='propertyauditlog',
-            name='state',
+            model_name="propertyauditlog",
+            name="state",
             field=models.ForeignKey(
-                on_delete=django.db.models.deletion.CASCADE, related_name='propertyauditlog__state', to='seed.PropertyState', unique=True
+                on_delete=django.db.models.deletion.CASCADE, related_name="propertyauditlog__state", to="seed.PropertyState", unique=True
             ),
         ),
         migrations.AlterField(
-            model_name='taxlotauditlog',
-            name='state',
+            model_name="taxlotauditlog",
+            name="state",
             field=models.ForeignKey(
-                on_delete=django.db.models.deletion.CASCADE, related_name='taxlotauditlog__state', to='seed.TaxLotState', unique=True
+                on_delete=django.db.models.deletion.CASCADE, related_name="taxlotauditlog__state", to="seed.TaxLotState", unique=True
             ),
         ),
     ]

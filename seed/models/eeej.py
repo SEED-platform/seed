@@ -13,8 +13,8 @@ logger = logging.getLogger(__name__)
 
 
 class HousingType(models.TextChoices):
-    PUBLIC_HOUSING = 'public housing development'
-    MULTIFAMILY = 'multi-family assisted property'
+    PUBLIC_HOUSING = "public housing development"
+    MULTIFAMILY = "multi-family assisted property"
 
 
 class EeejCejst(models.Model):
@@ -33,7 +33,7 @@ class EeejCejst(models.Model):
 
     class Meta:
         indexes = [
-            models.Index(fields=['census_tract_geoid', 'dac']),
+            models.Index(fields=["census_tract_geoid", "dac"]),
         ]
 
 
@@ -47,5 +47,5 @@ class EeejHud(models.Model):
 
     class Meta:
         indexes = [
-            models.Index(fields=['census_tract_geoid']),
+            models.Index(fields=["census_tract_geoid"]),
         ]

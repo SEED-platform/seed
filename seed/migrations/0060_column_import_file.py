@@ -6,14 +6,14 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('data_importer', '0009_importfile_uploaded_filename'),
-        ('seed', '0059_auto_20170407_1516'),
+        ("data_importer", "0009_importfile_uploaded_filename"),
+        ("seed", "0059_auto_20170407_1516"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='column',
-            name='import_file',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='data_importer.ImportFile'),
+            model_name="column",
+            name="import_file",
+            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to="data_importer.ImportFile"),
         ),
     ]

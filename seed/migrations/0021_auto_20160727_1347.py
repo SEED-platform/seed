@@ -6,25 +6,25 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('data_importer', '0004_auto_20160411_1139'),
-        ('orgs', '0003_auto_20160412_1123'),
-        ('seed', '0020_auto_20160725_1033'),
+        ("data_importer", "0004_auto_20160411_1139"),
+        ("orgs", "0003_auto_20160412_1123"),
+        ("seed", "0020_auto_20160725_1033"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='propertystate',
-            name='import_file',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='data_importer.ImportFile'),
+            model_name="propertystate",
+            name="import_file",
+            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to="data_importer.ImportFile"),
         ),
         migrations.AddField(
-            model_name='propertystate',
-            name='source_type',
+            model_name="propertystate",
+            name="source_type",
             field=models.IntegerField(blank=True, db_index=True, null=True),
         ),
         migrations.AddField(
-            model_name='propertystate',
-            name='super_organization',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='orgs.Organization'),
+            model_name="propertystate",
+            name="super_organization",
+            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to="orgs.Organization"),
         ),
     ]

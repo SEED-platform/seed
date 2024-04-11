@@ -30,14 +30,14 @@ _log = logging.getLogger(__name__)
 
 class AccessLevelViewSet(viewsets.ViewSet):
     @api_endpoint_class
-    @has_perm_class('requires_viewer')
-    @action(detail=False, methods=['GET'])
+    @has_perm_class("requires_viewer")
+    @action(detail=False, methods=["GET"])
     def tree(self, request, organization_pk=None):
         try:
             org = Organization.objects.get(pk=organization_pk)
         except ObjectDoesNotExist:
             return JsonResponse(
-                {'status': 'error', 'message': 'Could not retrieve organization at pk = ' + str(organization_pk)},
+                {"status": "error", "message": "Could not retrieve organization at pk = " + str(organization_pk)},
                 status=status.HTTP_404_NOT_FOUND,
             )
 
@@ -51,39 +51,39 @@ class AccessLevelViewSet(viewsets.ViewSet):
         for a in user_ali.get_ancestors():
             curr.append(
                 {
-                    'id': a.pk,
-                    'data': {
-                        'name': a.name,
-                        'organization': org.id,
-                        'path': a.path,
+                    "id": a.pk,
+                    "data": {
+                        "name": a.name,
+                        "organization": org.id,
+                        "path": a.path,
                     },
-                    'children': [],
+                    "children": [],
                 }
             )
-            curr = curr[0]['children']
+            curr = curr[0]["children"]
 
         # once we get to ourselves, we can see the whole tree
         curr.extend(org.get_access_tree(from_ali=user_ali))
 
         return Response(
             {
-                'access_level_names': org.access_level_names,
-                'access_level_tree': access_level_tree,
+                "access_level_names": org.access_level_names,
+                "access_level_tree": access_level_tree,
             },
             status=status.HTTP_200_OK,
         )
 
     @api_endpoint_class
-    @has_perm_class('requires_owner')
-    @action(detail=False, methods=['POST'])
+    @has_perm_class("requires_owner")
+    @action(detail=False, methods=["POST"])
     @swagger_auto_schema(
         manual_parameters=[AutoSchemaHelper.query_org_id_field()],
         request_body=AutoSchemaHelper.schema_factory(
             {
-                'parent_id': ['integer'],
-                'name': ['string'],
+                "parent_id": ["integer"],
+                "name": ["string"],
             },
-            required=['parent_id', 'name'],
+            required=["parent_id", "name"],
             description="""
                 - parent_id: id of the parent AccessLevelInstance
                 - name: name of new level
@@ -97,45 +97,45 @@ class AccessLevelViewSet(viewsets.ViewSet):
             org = Organization.objects.get(pk=organization_pk)
         except ObjectDoesNotExist:
             return JsonResponse(
-                {'status': 'error', 'message': 'Could not retrieve organization at pk = ' + str(organization_pk)},
+                {"status": "error", "message": "Could not retrieve organization at pk = " + str(organization_pk)},
                 status=status.HTTP_404_NOT_FOUND,
             )
 
         # get and validate parent_id
         try:
-            parent_id = request.data['parent_id']
+            parent_id = request.data["parent_id"]
             if not isinstance(parent_id, int):
                 return JsonResponse(
-                    {'status': 'error', 'message': 'body param `parent_id` must be int'}, status=status.HTTP_400_BAD_REQUEST
+                    {"status": "error", "message": "body param `parent_id` must be int"}, status=status.HTTP_400_BAD_REQUEST
                 )
             parent = AccessLevelInstance.objects.get(pk=parent_id)
         except KeyError:
-            return JsonResponse({'status': 'error', 'message': 'body param `parent_id` is required'}, status=status.HTTP_400_BAD_REQUEST)
+            return JsonResponse({"status": "error", "message": "body param `parent_id` is required"}, status=status.HTTP_400_BAD_REQUEST)
         except ObjectDoesNotExist:
             return JsonResponse(
-                {'status': 'error', 'message': f'AccessLevelInstance with `parent_id` {parent_id} does not exist.'},
+                {"status": "error", "message": f"AccessLevelInstance with `parent_id` {parent_id} does not exist."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
         # get and validate name
         try:
-            name = request.data['name']
+            name = request.data["name"]
             if not isinstance(name, str):
-                return JsonResponse({'status': 'error', 'message': 'Query param `name` must be str'}, status=status.HTTP_400_BAD_REQUEST)
+                return JsonResponse({"status": "error", "message": "Query param `name` must be str"}, status=status.HTTP_400_BAD_REQUEST)
         except KeyError:
-            return JsonResponse({'status': 'error', 'message': 'Query param `name` is required'}, status=status.HTTP_400_BAD_REQUEST)
+            return JsonResponse({"status": "error", "message": "Query param `name` is required"}, status=status.HTTP_400_BAD_REQUEST)
 
         # assert access_level_names is long enough for the new node
         if parent.depth > len(org.access_level_names):
             return JsonResponse(
-                {'status': 'error', 'message': 'orgs `access_level_names` is not long enough'}, status=status.HTTP_400_BAD_REQUEST
+                {"status": "error", "message": "orgs `access_level_names` is not long enough"}, status=status.HTTP_400_BAD_REQUEST
             )
 
         # create
         org.add_new_access_level_instance(parent_id, name)
         result = {
-            'access_level_names': org.access_level_names,
-            'access_level_tree': org.get_access_tree(from_ali=org.root),  # root as requires owner.
+            "access_level_names": org.access_level_names,
+            "access_level_tree": org.get_access_tree(from_ali=org.root),  # root as requires owner.
         }
 
         status_code = status.HTTP_201_CREATED
@@ -143,12 +143,12 @@ class AccessLevelViewSet(viewsets.ViewSet):
 
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('requires_owner')
-    @action(detail=False, methods=['POST'])
+    @has_perm_class("requires_owner")
+    @action(detail=False, methods=["POST"])
     @swagger_auto_schema(
         manual_parameters=[AutoSchemaHelper.query_org_id_field()],
         request_body=AutoSchemaHelper.schema_factory(
-            {'access_level_names': ['string']}, required=['access_level_names'], description='A list of level names'
+            {"access_level_names": ["string"]}, required=["access_level_names"], description="A list of level names"
         ),
     )
     def access_level_names(self, request, organization_pk=None):
@@ -158,27 +158,27 @@ class AccessLevelViewSet(viewsets.ViewSet):
             org = Organization.objects.get(pk=organization_pk)
         except ObjectDoesNotExist:
             return JsonResponse(
-                {'status': 'error', 'message': 'Could not retrieve organization at pk = ' + str(organization_pk)},
+                {"status": "error", "message": "Could not retrieve organization at pk = " + str(organization_pk)},
                 status=status.HTTP_404_NOT_FOUND,
             )
 
         # assert access_level_names list of str
-        new_access_level_names = request.data.get('access_level_names')
+        new_access_level_names = request.data.get("access_level_names")
         if new_access_level_names is None:
             return JsonResponse(
-                {'status': 'error', 'message': 'body param `access_level_names` is required'}, status=status.HTTP_400_BAD_REQUEST
+                {"status": "error", "message": "body param `access_level_names` is required"}, status=status.HTTP_400_BAD_REQUEST
             )
         if not isinstance(new_access_level_names, list) or any(not isinstance(n, str) for n in new_access_level_names):
             return JsonResponse(
-                {'status': 'error', 'message': 'Query param `access_level_names` must be a list of strings'},
+                {"status": "error", "message": "Query param `access_level_names` must be a list of strings"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
         if len(new_access_level_names) < 1:
             return JsonResponse(
-                {'status': 'error', 'message': 'There must be at least one access level.'}, status=status.HTTP_400_BAD_REQUEST
+                {"status": "error", "message": "There must be at least one access level."}, status=status.HTTP_400_BAD_REQUEST
             )
-        if any(n == '' for n in new_access_level_names):
-            return JsonResponse({'status': 'error', 'message': 'Access Level Instance may not be ""'}, status=status.HTTP_400_BAD_REQUEST)
+        if any(n == "" for n in new_access_level_names):
+            return JsonResponse({"status": "error", "message": 'Access Level Instance may not be ""'}, status=status.HTTP_400_BAD_REQUEST)
 
         # delete alis at deleted depths
         depth = len(new_access_level_names)
@@ -191,8 +191,8 @@ class AccessLevelViewSet(viewsets.ViewSet):
         except ValueError as e:
             return JsonResponse(
                 {
-                    'status': 'error',
-                    'message': str(e),
+                    "status": "error",
+                    "message": str(e),
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
@@ -201,12 +201,12 @@ class AccessLevelViewSet(viewsets.ViewSet):
 
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('requires_owner')
-    @action(detail=False, methods=['PUT'], parser_classes=(MultiPartParser,))
+    @has_perm_class("requires_owner")
+    @action(detail=False, methods=["PUT"], parser_classes=(MultiPartParser,))
     @swagger_auto_schema(
         manual_parameters=[
             AutoSchemaHelper.query_org_id_field(),
-            AutoSchemaHelper.upload_file_field(name='file', required=True, description='File to Upload'),
+            AutoSchemaHelper.upload_file_field(name="file", required=True, description="File to Upload"),
         ]
     )
     def importer(self, request, organization_pk=None):
@@ -216,18 +216,18 @@ class AccessLevelViewSet(viewsets.ViewSet):
             org = Organization.objects.get(pk=organization_pk)
         except ObjectDoesNotExist:
             return JsonResponse(
-                {'status': 'error', 'message': 'Could not retrieve organization at pk = ' + str(organization_pk)},
+                {"status": "error", "message": "Could not retrieve organization at pk = " + str(organization_pk)},
                 status=status.HTTP_404_NOT_FOUND,
             )
 
         if len(request.FILES) == 0:
-            return JsonResponse({'success': False, 'message': 'Must pass file in as a Multipart/Form post'})
+            return JsonResponse({"success": False, "message": "Must pass file in as a Multipart/Form post"})
 
         # Fineuploader requires the field to be qqfile it appears.
-        if 'qqfile' in request.data:
-            the_file = request.data['qqfile']
+        if "qqfile" in request.data:
+            the_file = request.data["qqfile"]
         else:
-            the_file = request.data['file']
+            the_file = request.data["file"]
         filename = the_file.name
         path = get_upload_path(filename)
 
@@ -235,8 +235,8 @@ class AccessLevelViewSet(viewsets.ViewSet):
         if not os.path.exists(os.path.dirname(path)):
             os.makedirs(os.path.dirname(path))
 
-        extension = the_file.name.split('.')[-1]
-        if extension in {'xls', 'xlsx'}:
+        extension = the_file.name.split(".")[-1]
+        if extension in {"xls", "xlsx"}:
             workbook = xlrd.open_workbook(file_contents=the_file.read())
             all_sheets_empty = True
             headers = []
@@ -251,7 +251,7 @@ class AccessLevelViewSet(viewsets.ViewSet):
                     pass
 
             if all_sheets_empty:
-                return JsonResponse({'success': False, 'message': 'Import File %s was empty' % the_file.name})
+                return JsonResponse({"success": False, "message": "Import File %s was empty" % the_file.name})
 
             # compare headers with access levels
             # we can accept if headers are a subset of access levels
@@ -273,29 +273,29 @@ class AccessLevelViewSet(viewsets.ViewSet):
             if wrong_headers:
                 return JsonResponse(
                     {
-                        'success': False,
-                        'message': "Import File %s's headers did not match the Access Level names defined in SEED. Click the 'Edit/Add Access Levels' button to review your defined access levels before uploading the file. "
+                        "success": False,
+                        "message": "Import File %s's headers did not match the Access Level names defined in SEED. Click the 'Edit/Add Access Levels' button to review your defined access levels before uploading the file. "
                         % the_file.name,
                     }
                 )
 
         # save the file
-        with open(path, 'wb+') as temp_file:
+        with open(path, "wb+") as temp_file:
             for chunk in the_file.chunks():
                 temp_file.write(chunk)
 
-        return JsonResponse({'success': True, 'tempfile': temp_file.name})
+        return JsonResponse({"success": True, "tempfile": temp_file.name})
 
     @swagger_auto_schema(
         manual_parameters=[
             AutoSchemaHelper.query_org_id_field(),
         ],
-        request_body=AutoSchemaHelper.schema_factory({'filename': 'string'}),
+        request_body=AutoSchemaHelper.schema_factory({"filename": "string"}),
     )
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('requires_owner')
-    @action(detail=False, methods=['POST'])
+    @has_perm_class("requires_owner")
+    @action(detail=False, methods=["POST"])
     def start_save_data(self, request, organization_pk=None):
         """
         Starts a background task to import raw data from an ImportFile
@@ -308,26 +308,26 @@ class AccessLevelViewSet(viewsets.ViewSet):
             org = Organization.objects.get(pk=organization_pk)
         except ObjectDoesNotExist:
             return JsonResponse(
-                {'status': 'error', 'message': 'Could not retrieve organization at pk = ' + str(organization_pk)},
+                {"status": "error", "message": "Could not retrieve organization at pk = " + str(organization_pk)},
                 status=status.HTTP_404_NOT_FOUND,
             )
 
-        filename = request.data.get('filename')
+        filename = request.data.get("filename")
         if not filename:
-            return JsonResponse({'status': 'error', 'message': 'must pass filename to save the data'}, status=status.HTTP_400_BAD_REQUEST)
+            return JsonResponse({"status": "error", "message": "must pass filename to save the data"}, status=status.HTTP_400_BAD_REQUEST)
 
         return JsonResponse(task_save_raw(filename, org.id))
 
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('requires_owner')
-    @action(detail=True, methods=['PUT'])
+    @has_perm_class("requires_owner")
+    @action(detail=True, methods=["PUT"])
     @swagger_auto_schema(
         manual_parameters=[
             AutoSchemaHelper.query_org_id_field(),
         ],
         request_body=AutoSchemaHelper.schema_factory(
-            {'name': ['string']}, required=['name'], description='Edited access level instance name'
+            {"name": ["string"]}, required=["name"], description="Edited access level instance name"
         ),
     )
     def edit_instance(self, request, organization_pk=None, pk=None):
@@ -336,7 +336,7 @@ class AccessLevelViewSet(viewsets.ViewSet):
             org = Organization.objects.get(pk=organization_pk)
         except ObjectDoesNotExist:
             return JsonResponse(
-                {'status': 'error', 'message': 'Could not retrieve organization at pk = ' + str(organization_pk)},
+                {"status": "error", "message": "Could not retrieve organization at pk = " + str(organization_pk)},
                 status=status.HTTP_404_NOT_FOUND,
             )
 
@@ -345,31 +345,31 @@ class AccessLevelViewSet(viewsets.ViewSet):
             instance = AccessLevelInstance.objects.filter(organization=org.pk).get(pk=pk)
         except ObjectDoesNotExist:
             return JsonResponse(
-                {'status': 'error', 'message': 'Could not retrieve Access Level Instances at pk = ' + str(pk)},
+                {"status": "error", "message": "Could not retrieve Access Level Instances at pk = " + str(pk)},
                 status=status.HTTP_404_NOT_FOUND,
             )
 
-        name = request.data.get('name')
+        name = request.data.get("name")
         if not name:
             return JsonResponse(
-                {'status': 'error', 'message': 'must pass name to edit the access level instance name'}, status=status.HTTP_400_BAD_REQUEST
+                {"status": "error", "message": "must pass name to edit the access level instance name"}, status=status.HTTP_400_BAD_REQUEST
             )
 
         instance.name = name
         instance.save()
-        return JsonResponse({'status': 'success'})
+        return JsonResponse({"status": "success"})
 
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('requires_owner')
-    @action(detail=True, methods=['GET'])
+    @has_perm_class("requires_owner")
+    @action(detail=True, methods=["GET"])
     def can_delete_instance(self, request, organization_pk=None, pk=None):
         # get org
         try:
             org = Organization.objects.get(pk=organization_pk)
         except ObjectDoesNotExist:
             return JsonResponse(
-                {'status': 'error', 'message': 'Could not retrieve organization at pk = ' + str(organization_pk)},
+                {"status": "error", "message": "Could not retrieve organization at pk = " + str(organization_pk)},
                 status=status.HTTP_404_NOT_FOUND,
             )
 
@@ -378,7 +378,7 @@ class AccessLevelViewSet(viewsets.ViewSet):
             instance = AccessLevelInstance.objects.filter(organization=org.pk).get(pk=pk)
         except ObjectDoesNotExist:
             return JsonResponse(
-                {'status': 'error', 'message': 'Could not retrieve Access Level Instances at pk = ' + str(pk)},
+                {"status": "error", "message": "Could not retrieve Access Level Instances at pk = " + str(pk)},
                 status=status.HTTP_404_NOT_FOUND,
             )
 
@@ -391,7 +391,7 @@ class AccessLevelViewSet(viewsets.ViewSet):
             access_level_instance__rgt__lte=instance.rgt,
         ).count()
         if related_import_record_count > 0:
-            reasons_not_to_delete.append(f'Has {related_import_record_count} related ImportRecords')
+            reasons_not_to_delete.append(f"Has {related_import_record_count} related ImportRecords")
 
         # Related OrganizationUsers
         related_organization_user_count = OrganizationUser.objects.filter(
@@ -400,7 +400,7 @@ class AccessLevelViewSet(viewsets.ViewSet):
             access_level_instance__rgt__lte=instance.rgt,
         ).count()
         if related_organization_user_count > 0:
-            reasons_not_to_delete.append(f'Has {related_organization_user_count} related OrganizationUsers')
+            reasons_not_to_delete.append(f"Has {related_organization_user_count} related OrganizationUsers")
 
         # Related Analyses
         related_analysis_count = Analysis.objects.filter(
@@ -409,7 +409,7 @@ class AccessLevelViewSet(viewsets.ViewSet):
             access_level_instance__rgt__lte=instance.rgt,
         ).count()
         if related_analysis_count > 0:
-            reasons_not_to_delete.append(f'Has {related_analysis_count} related Analysis')
+            reasons_not_to_delete.append(f"Has {related_analysis_count} related Analysis")
 
         # Related Properties
         related_property_count = Property.objects.filter(
@@ -418,7 +418,7 @@ class AccessLevelViewSet(viewsets.ViewSet):
             access_level_instance__rgt__lte=instance.rgt,
         ).count()
         if related_property_count > 0:
-            reasons_not_to_delete.append(f'Has {related_property_count} related properties')
+            reasons_not_to_delete.append(f"Has {related_property_count} related properties")
 
         # Related PropertyStates
         related_property_state_count = PropertyState.objects.filter(
@@ -427,7 +427,7 @@ class AccessLevelViewSet(viewsets.ViewSet):
             raw_access_level_instance__rgt__lte=instance.rgt,
         ).count()
         if related_property_state_count > 0:
-            reasons_not_to_delete.append(f'Has {related_property_state_count} related Property States')
+            reasons_not_to_delete.append(f"Has {related_property_state_count} related Property States")
 
         # Related Taxlots
         related_taxlot_count = TaxLot.objects.filter(
@@ -436,7 +436,7 @@ class AccessLevelViewSet(viewsets.ViewSet):
             access_level_instance__rgt__lte=instance.rgt,
         ).count()
         if related_taxlot_count > 0:
-            reasons_not_to_delete.append(f'Has {related_taxlot_count} related Taxlot')
+            reasons_not_to_delete.append(f"Has {related_taxlot_count} related Taxlot")
 
         # Related TaxlotStates
         related_taxlot_state_count = TaxLotState.objects.filter(
@@ -445,12 +445,12 @@ class AccessLevelViewSet(viewsets.ViewSet):
             raw_access_level_instance__rgt__lte=instance.rgt,
         ).count()
         if related_taxlot_state_count > 0:
-            reasons_not_to_delete.append(f'Has {related_taxlot_state_count} related TaxlotState')
+            reasons_not_to_delete.append(f"Has {related_taxlot_state_count} related TaxlotState")
 
         if len(reasons_not_to_delete) == 0:
             return JsonResponse(
                 {
-                    'can_delete': True,
+                    "can_delete": True,
                 },
                 status=status.HTTP_200_OK,
             )
@@ -458,23 +458,23 @@ class AccessLevelViewSet(viewsets.ViewSet):
         else:
             return JsonResponse(
                 {
-                    'can_delete': False,
-                    'reasons': reasons_not_to_delete,
+                    "can_delete": False,
+                    "reasons": reasons_not_to_delete,
                 },
                 status=status.HTTP_200_OK,
             )
 
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('requires_owner')
-    @action(detail=True, methods=['DElETE'])
+    @has_perm_class("requires_owner")
+    @action(detail=True, methods=["DElETE"])
     def delete_instance(self, request, organization_pk=None, pk=None):
         # get org
         try:
             org = Organization.objects.get(pk=organization_pk)
         except ObjectDoesNotExist:
             return JsonResponse(
-                {'status': 'error', 'message': 'Could not retrieve organization at pk = ' + str(organization_pk)},
+                {"status": "error", "message": "Could not retrieve organization at pk = " + str(organization_pk)},
                 status=status.HTTP_404_NOT_FOUND,
             )
 
@@ -483,13 +483,13 @@ class AccessLevelViewSet(viewsets.ViewSet):
             instance = AccessLevelInstance.objects.filter(organization=org.pk).get(pk=pk)
         except ObjectDoesNotExist:
             return JsonResponse(
-                {'status': 'error', 'message': 'Could not retrieve Access Level Instances at pk = ' + str(pk)},
+                {"status": "error", "message": "Could not retrieve Access Level Instances at pk = " + str(pk)},
                 status=status.HTTP_404_NOT_FOUND,
             )
         # get instance
         if instance == org.root:
-            return JsonResponse({'status': 'error', 'message': 'Cannot delete root.'}, status=status.HTTP_400_BAD_REQUEST)
+            return JsonResponse({"status": "error", "message": "Cannot delete root."}, status=status.HTTP_400_BAD_REQUEST)
 
         instance.delete()
 
-        return JsonResponse({'status': 'success'}, status=status.HTTP_204_NO_CONTENT)
+        return JsonResponse({"status": "success"}, status=status.HTTP_204_NO_CONTENT)

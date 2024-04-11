@@ -14,4 +14,4 @@ class Uniformat(models.Model):
     imperial_units = models.CharField(max_length=10, null=True)
     metric_units = models.CharField(max_length=10, null=True)
     quantity_definition = models.CharField(max_length=100, null=True)
-    parent = models.ForeignKey('self', null=True, on_delete=models.CASCADE)
+    parent = models.ForeignKey("self", null=True, on_delete=models.CASCADE)

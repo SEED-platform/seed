@@ -64,7 +64,7 @@ def apply_initial_data(model, initial_data):
         value = initial_data[item]
         if hasattr(model, item):
             setattr(model, item, value)
-        elif hasattr(model, 'extra_data') and isinstance(model.extra_data, dict):
+        elif hasattr(model, "extra_data") and isinstance(model.extra_data, dict):
             model.extra_data[item] = value
 
     return model
@@ -95,18 +95,18 @@ def apply_column_value(raw_column_name, column_value, model, mapping, is_extra_d
         table_name, mapped_column_name, _display_name, is_extra_data = mapping.get(raw_column_name)
 
         # special postal case:
-        if mapped_column_name in {'postal_code', 'owner_postal_code'}:
-            if '-' in str(column_value):
-                postal = str(column_value).split('-')[0].zfill(5)
-                ext = str(column_value).split('-')[1].zfill(4)
-                column_value = postal + '-' + ext
+        if mapped_column_name in {"postal_code", "owner_postal_code"}:
+            if "-" in str(column_value):
+                postal = str(column_value).split("-")[0].zfill(5)
+                ext = str(column_value).split("-")[1].zfill(4)
+                column_value = postal + "-" + ext
             column_value = str(column_value).zfill(5)
 
         cleaned_value = None
         if cleaner:
             # Get the list of Quantity fields from the Column object in SEED. This is non-ideal, since the
             # rest of the mapping code does not use SEED models. Perhaps make this an argument.
-            if (model.__class__.__name__, mapped_column_name) in apps.get_model('seed', 'Column').QUANTITY_UNIT_COLUMNS:
+            if (model.__class__.__name__, mapped_column_name) in apps.get_model("seed", "Column").QUANTITY_UNIT_COLUMNS:
                 # clean against the database type first
                 cleaned_value = cleaner.clean_value(column_value, mapped_column_name, is_extra_data)
 
@@ -125,7 +125,7 @@ def apply_column_value(raw_column_name, column_value, model, mapping, is_extra_d
 
         if is_extra_data:
             # only save it if the model and the mapping are the same
-            if hasattr(model, 'extra_data') and model.__class__.__name__ == table_name:
+            if hasattr(model, "extra_data") and model.__class__.__name__ == table_name:
                 if isinstance(cleaned_value, (datetime, date)):
                     # TODO: create an encoder for datetime once we are in Django 1.11
                     model.extra_data[mapped_column_name] = cleaned_value.isoformat()
@@ -143,10 +143,10 @@ def _set_default_concat_config(concat):
     if not isinstance(concat, list):
         concat = [concat]
     for c in concat:
-        c['target'] = c.get('target', '__broken_target__')
-        c['concat_columns'] = c.get('concat_columns', [])
-        c['delimiter'] = c.get('delimiter', ' ')
-        c['concat_values'] = {}
+        c["target"] = c.get("target", "__broken_target__")
+        c["concat_columns"] = c.get("concat_columns", [])
+        c["delimiter"] = c.get("delimiter", " ")
+        c["concat_values"] = {}
 
     return concat
 
@@ -178,12 +178,12 @@ def _normalize_expanded_field(value):
     """
 
     value = value.strip()
-    value = re.sub(r'\s{2,}', ' ', value)
-    value = re.sub(r'/{2,}', '/', value)
-    value = re.sub(r'\\{2,}', '\\\\', value)
-    value = re.sub(r'-{2,}', '-', value)
-    value = re.sub(r'\*{2,}', '*', value)
-    value = re.sub(r'\.{2,}', '.', value)
+    value = re.sub(r"\s{2,}", " ", value)
+    value = re.sub(r"/{2,}", "/", value)
+    value = re.sub(r"\\{2,}", "\\\\", value)
+    value = re.sub(r"-{2,}", "-", value)
+    value = re.sub(r"\*{2,}", "*", value)
+    value = re.sub(r"\.{2,}", ".", value)
     value = value.upper()
 
     return value
@@ -201,12 +201,12 @@ def expand_and_normalize_field(field, return_list=False):
     """
 
     if isinstance(field, basestring):
-        field = field.rstrip(';:,')
-        data = [_normalize_expanded_field(r) for r in re.split(',|;|:', field)]
+        field = field.rstrip(";:,")
+        data = [_normalize_expanded_field(r) for r in re.split(",|;|:", field)]
         if return_list:
             return data
         else:
-            return ';'.join(data)
+            return ";".join(data)
     elif return_list:
         return [field]
     else:
@@ -271,7 +271,7 @@ def map_row(row, mapping, model_class, extra_data_fields=[], cleaner=None, **kwa
     :rtype: list of model instances that were created
 
     """
-    initial_data = kwargs.get('initial_data', None)
+    initial_data = kwargs.get("initial_data", None)
     model = model_class()
 
     # _log.debug("map_row's mappings {}".format(mapping))

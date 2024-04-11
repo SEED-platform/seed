@@ -16,7 +16,7 @@ from past.builtins import basestring
 
 class MarkdownPackageDebugFilter(logging.Filter):
     def filter(self, record):
-        return 'markdown.extensions.headerid' not in record.msg
+        return "markdown.extensions.headerid" not in record.msg
 
 
 def split_model_fields(obj, fields):
@@ -63,14 +63,14 @@ def obj_to_dict(obj, include_m2m=True):
     # http://www.django-rest-framework.org/api-guide/fields/#jsonfield
     if include_m2m:
         data = serializers.serialize(
-            'json',
+            "json",
             [
                 obj,
             ],
         )
     else:
         data = serializers.serialize(
-            'json',
+            "json",
             [
                 obj,
             ],
@@ -78,9 +78,9 @@ def obj_to_dict(obj, include_m2m=True):
         )
 
     struct = json.loads(data)[0]
-    response = struct['fields']
-    response['id'] = response['pk'] = struct['pk']
-    response['model'] = struct['model']
+    response = struct["fields"]
+    response["id"] = response["pk"] = struct["pk"]
+    response["model"] = struct["model"]
     # JSONField does not get serialized by `serialize`
     # TODO: I think django can now serialize JSONFields
     for f in obj._meta.fields:
@@ -99,7 +99,7 @@ def pp(model_obj):
     """
 
     data = serializers.serialize(
-        'json',
+        "json",
         [
             model_obj,
         ],
@@ -127,6 +127,6 @@ def compare_orgs_between_label_and_target(sender, pk_set, instance, model, actio
         label = model.objects.get(pk=id)
         if instance.cycle.organization.get_parent().id != label.super_organization_id:
             raise IntegrityError(
-                f'Label with super_organization_id={label.super_organization_id} cannot be applied to a record with parent '
-                f'organization_id={instance.cycle.organization.get_parent().id}.'
+                f"Label with super_organization_id={label.super_organization_id} cannot be applied to a record with parent "
+                f"organization_id={instance.cycle.organization.get_parent().id}."
             )

@@ -6,23 +6,23 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('seed', '0157_sensor'),
+        ("seed", "0157_sensor"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='SensorReading',
+            name="SensorReading",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('reading', models.FloatField(null=True)),
-                ('timestamp', models.DateTimeField()),
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("reading", models.FloatField(null=True)),
+                ("timestamp", models.DateTimeField()),
                 (
-                    'sensor',
-                    models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='sensor_readings', to='seed.sensor'),
+                    "sensor",
+                    models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name="sensor_readings", to="seed.sensor"),
                 ),
             ],
             options={
-                'unique_together': {('timestamp', 'sensor')},
+                "unique_together": {("timestamp", "sensor")},
             },
         ),
     ]

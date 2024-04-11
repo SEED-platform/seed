@@ -7,8 +7,8 @@ from seed.data_importer.tasks import hash_state_object
 
 # Go through every property and tax lot and simply save it to create the hash_object
 def forwards(apps, schema_editor):
-    PropertyState = apps.get_model('seed', 'PropertyState')
-    TaxLotState = apps.get_model('seed', 'TaxLotState')
+    PropertyState = apps.get_model("seed", "PropertyState")
+    TaxLotState = apps.get_model("seed", "TaxLotState")
 
     # find which columns are not used in column mappings
     property_count = PropertyState.objects.all().count()
@@ -18,21 +18,21 @@ def forwards(apps, schema_editor):
     # print("Iterating over PropertyStates. Count %s" % PropertyState.objects.all().count())
     for idx, obj in enumerate(PropertyState.objects.all().iterator()):
         if idx % 1000 == 0:
-            print(f'... {idx} / {property_count} ...')
+            print(f"... {idx} / {property_count} ...")
         obj.hash_object = hash_state_object(obj)
         obj.save()
 
     # print("Iterating over TaxLotStates. Count %s" % TaxLotState.objects.all().count())
     for idx, obj in enumerate(TaxLotState.objects.all().iterator()):
         if idx % 1000 == 0:
-            print(f'... {idx} / {taxlot_count} ...')
+            print(f"... {idx} / {taxlot_count} ...")
         obj.hash_object = hash_state_object(obj)
         obj.save()
 
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('seed', '0091_auto_20180725_2039'),
+        ("seed", "0091_auto_20180725_2039"),
     ]
 
     operations = [

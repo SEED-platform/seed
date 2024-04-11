@@ -5,13 +5,13 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('seed', '0127_auto_20200605_1125'),
+        ("seed", "0127_auto_20200605_1125"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='propertystate',
-            name='jurisdiction_property_id',
+            model_name="propertystate",
+            name="jurisdiction_property_id",
             field=models.TextField(blank=True, null=True),
         ),
     ]

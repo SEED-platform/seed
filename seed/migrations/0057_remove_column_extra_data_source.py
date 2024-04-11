@@ -5,12 +5,12 @@ from django.db import migrations
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('seed', '0056_cleanup_columns'),
+        ("seed", "0056_cleanup_columns"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='column',
-            name='extra_data_source',
+            model_name="column",
+            name="extra_data_source",
         ),
     ]

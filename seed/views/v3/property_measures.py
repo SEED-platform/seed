@@ -26,18 +26,18 @@ class PropertyMeasureViewSet(SEEDOrgNoPatchNoCreateModelViewSet):
     serializer_class = PropertyMeasureSerializer
     model = PropertyMeasure
     pagination_class = None
-    orgfilter = 'property_state__organization_id'
+    orgfilter = "property_state__organization_id"
 
     enum_validators = {
-        'application_scale': PropertyMeasure.str_to_application_scale,
-        'category_affected': PropertyMeasure.str_to_category_affected,
-        'implementation_status': PropertyMeasure.str_to_impl_status,
+        "application_scale": PropertyMeasure.str_to_application_scale,
+        "category_affected": PropertyMeasure.str_to_category_affected,
+        "implementation_status": PropertyMeasure.str_to_impl_status,
     }
 
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('can_view_data')
-    @has_hierarchy_access(property_view_id_kwarg='property_pk')
+    @has_perm_class("can_view_data")
+    @has_hierarchy_access(property_view_id_kwarg="property_pk")
     def list(self, request, property_pk=None, scenario_pk=None):
         """
         Where property_pk is the associated PropertyView.id
@@ -45,7 +45,7 @@ class PropertyMeasureViewSet(SEEDOrgNoPatchNoCreateModelViewSet):
         try:
             property_state = PropertyView.objects.get(pk=property_pk).state
         except PropertyView.DoesNotExist:
-            return JsonResponse({'status': 'error', 'message': 'No PropertyView found for given pks'}, status=status.HTTP_404_NOT_FOUND)
+            return JsonResponse({"status": "error", "message": "No PropertyView found for given pks"}, status=status.HTTP_404_NOT_FOUND)
 
         measure_set = PropertyMeasure.objects.filter(scenario=scenario_pk, property_state=property_state.id)
 
@@ -54,12 +54,12 @@ class PropertyMeasureViewSet(SEEDOrgNoPatchNoCreateModelViewSet):
             serialized_measure = PropertyMeasureSerializer(measure).data
             serialized_measures.append(serialized_measure)
 
-        return JsonResponse({'status': 'success', 'data': serialized_measures}, status=status.HTTP_200_OK)
+        return JsonResponse({"status": "success", "data": serialized_measures}, status=status.HTTP_200_OK)
 
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('can_view_data')
-    @has_hierarchy_access(property_view_id_kwarg='property_pk')
+    @has_perm_class("can_view_data")
+    @has_hierarchy_access(property_view_id_kwarg="property_pk")
     def retrieve(self, request, property_pk=None, scenario_pk=None, pk=None):
         """
         Where property_pk is the associated PropertyView.id
@@ -69,35 +69,35 @@ class PropertyMeasureViewSet(SEEDOrgNoPatchNoCreateModelViewSet):
             property_state = PropertyView.objects.get(pk=property_pk).state
             measure = PropertyMeasure.objects.get(pk=pk, scenario=scenario_pk, property_state=property_state.id)
         except (PropertyMeasure.DoesNotExist, PropertyView.DoesNotExist):
-            return JsonResponse({'status': 'error', 'message': 'No Measure found for given pks'}, status=status.HTTP_404_NOT_FOUND)
+            return JsonResponse({"status": "error", "message": "No Measure found for given pks"}, status=status.HTTP_404_NOT_FOUND)
 
         serialized_measure = PropertyMeasureSerializer(measure).data
 
-        return JsonResponse({'status': 'success', 'data': serialized_measure}, status=status.HTTP_200_OK)
+        return JsonResponse({"status": "success", "data": serialized_measure}, status=status.HTTP_200_OK)
 
     @swagger_auto_schema(
         request_body=AutoSchemaHelper.schema_factory(
             {
-                'application_scale': PropertyMeasure.APPLICATION_SCALE_TYPES,
-                'category_affected': PropertyMeasure.CATEGORY_AFFECTED_TYPE,
-                'cost_capital_replacement': 'integer',
-                'cost_installation': 'integer',
-                'cost_material': 'integer',
-                'cost_mv': 'integer',
-                'cost_residual_value': 'integer',
-                'cost_total_first': 'integer',
-                'description': 'string',
-                'implementation_status': PropertyMeasure.IMPLEMENTATION_TYPES,
-                'property_measure_name': 'string',
-                'recommended': 'boolean',
-                'useful_life': 'integer',
+                "application_scale": PropertyMeasure.APPLICATION_SCALE_TYPES,
+                "category_affected": PropertyMeasure.CATEGORY_AFFECTED_TYPE,
+                "cost_capital_replacement": "integer",
+                "cost_installation": "integer",
+                "cost_material": "integer",
+                "cost_mv": "integer",
+                "cost_residual_value": "integer",
+                "cost_total_first": "integer",
+                "description": "string",
+                "implementation_status": PropertyMeasure.IMPLEMENTATION_TYPES,
+                "property_measure_name": "string",
+                "recommended": "boolean",
+                "useful_life": "integer",
             }
         )
     )
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('can_view_data')
-    @has_hierarchy_access(property_view_id_kwarg='property_pk')
+    @has_perm_class("can_view_data")
+    @has_hierarchy_access(property_view_id_kwarg="property_pk")
     def update(self, request, property_pk=None, scenario_pk=None, pk=None):
         """
         Where property_pk is the associated PropertyView.id
@@ -107,7 +107,7 @@ class PropertyMeasureViewSet(SEEDOrgNoPatchNoCreateModelViewSet):
             property_measure = PropertyMeasure.objects.get(pk=pk, scenario=scenario_pk, property_state=property_state.id)
         except (PropertyMeasure.DoesNotExist, PropertyView.DoesNotExist):
             return JsonResponse(
-                {'status': 'error', 'message': 'No Property Measure found with given pks'}, status=status.HTTP_404_NOT_FOUND
+                {"status": "error", "message": "No Property Measure found with given pks"}, status=status.HTTP_404_NOT_FOUND
             )
 
         possible_fields = [f.name for f in property_measure._meta.get_fields()]
@@ -119,27 +119,27 @@ class PropertyMeasureViewSet(SEEDOrgNoPatchNoCreateModelViewSet):
                 if key in self.enum_validators:
                     updated_value = self.enum_validators[key](value)
                     if updated_value is None:
-                        return JsonResponse({'Success': False, 'Message': f'Invalid {key} value'}, status=status.HTTP_400_BAD_REQUEST)
+                        return JsonResponse({"Success": False, "Message": f"Invalid {key} value"}, status=status.HTTP_400_BAD_REQUEST)
 
                 setattr(property_measure, key, updated_value)
             else:
                 return JsonResponse(
-                    {'status': 'error', 'message': f'"{key}" is not a valid property measure field'}, status=status.HTTP_400_BAD_REQUEST
+                    {"status": "error", "message": f'"{key}" is not a valid property measure field'}, status=status.HTTP_400_BAD_REQUEST
                 )
 
         try:
             property_measure.save()
         except ValidationError as e:
-            return JsonResponse({'Success': False, 'Message': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            return JsonResponse({"Success": False, "Message": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
-        result = {'status': 'success', 'data': PropertyMeasureSerializer(property_measure).data}
+        result = {"status": "success", "data": PropertyMeasureSerializer(property_measure).data}
 
         return JsonResponse(result, status=status.HTTP_200_OK)
 
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('can_view_data')
-    @has_hierarchy_access(property_view_id_kwarg='property_pk')
+    @has_perm_class("can_view_data")
+    @has_hierarchy_access(property_view_id_kwarg="property_pk")
     def destroy(self, request, property_pk=None, scenario_pk=None, pk=None):
         try:
             # property_state = PropertyView.objects.get(pk=property_pk).state
@@ -149,8 +149,8 @@ class PropertyMeasureViewSet(SEEDOrgNoPatchNoCreateModelViewSet):
             property_measure = PropertyMeasure.objects.get(pk=pk, scenario=scenario_pk)
         except (PropertyMeasure.DoesNotExist, PropertyView.DoesNotExist):
             return JsonResponse(
-                {'status': 'error', 'message': 'No Property Measure found with given pks'}, status=status.HTTP_404_NOT_FOUND
+                {"status": "error", "message": "No Property Measure found with given pks"}, status=status.HTTP_404_NOT_FOUND
             )
 
         property_measure.delete()
-        return JsonResponse({'status': 'success', 'message': 'Successfully Deleted Property Measure'}, status=status.HTTP_200_OK)
+        return JsonResponse({"status": "success", "message": "Successfully Deleted Property Measure"}, status=status.HTTP_200_OK)

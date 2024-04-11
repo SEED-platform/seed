@@ -5,28 +5,28 @@ from django.db import migrations
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('seed', '0067_auto_20170602_0740'),
+        ("seed", "0067_auto_20170602_0740"),
     ]
 
     operations = [
         migrations.AlterIndexTogether(
-            name='propertystate',
-            index_together={('import_file', 'data_state')},
+            name="propertystate",
+            index_together={("import_file", "data_state")},
         ),
         migrations.AlterIndexTogether(
-            name='propertyview',
-            index_together={('state', 'cycle')},
+            name="propertyview",
+            index_together={("state", "cycle")},
         ),
         migrations.AlterIndexTogether(
-            name='taxlotproperty',
-            index_together={('cycle', 'property_view'), ('cycle', 'taxlot_view'), ('property_view', 'taxlot_view')},
+            name="taxlotproperty",
+            index_together={("cycle", "property_view"), ("cycle", "taxlot_view"), ("property_view", "taxlot_view")},
         ),
         migrations.AlterIndexTogether(
-            name='taxlotstate',
-            index_together={('import_file', 'data_state')},
+            name="taxlotstate",
+            index_together={("import_file", "data_state")},
         ),
         migrations.AlterIndexTogether(
-            name='taxlotview',
-            index_together={('state', 'cycle')},
+            name="taxlotview",
+            index_together={("state", "cycle")},
         ),
     ]

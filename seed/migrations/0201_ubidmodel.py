@@ -6,9 +6,9 @@ from django.db import migrations, models, transaction
 
 @transaction.atomic
 def backfill_ubids(apps, schema_editor):
-    PropertyState = apps.get_model('seed', 'PropertyState')
-    TaxLotState = apps.get_model('seed', 'TaxLotState')
-    UbidModel = apps.get_model('seed', 'UbidModel')
+    PropertyState = apps.get_model("seed", "PropertyState")
+    TaxLotState = apps.get_model("seed", "TaxLotState")
+    UbidModel = apps.get_model("seed", "UbidModel")
 
     property_states = PropertyState.objects.exclude(ubid__isnull=True)
     for state in property_states:
@@ -31,30 +31,30 @@ def backfill_ubids(apps, schema_editor):
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('seed', '0200_rehash'),
+        ("seed", "0200_rehash"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='UbidModel',
+            name="UbidModel",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('ubid', models.CharField(max_length=255)),
-                ('preferred', models.BooleanField(default=False)),
-                ('property', models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='seed.propertystate')),
-                ('taxlot', models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='seed.taxlotstate')),
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("ubid", models.CharField(max_length=255)),
+                ("preferred", models.BooleanField(default=False)),
+                ("property", models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to="seed.propertystate")),
+                ("taxlot", models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to="seed.taxlotstate")),
             ],
         ),
         migrations.AddConstraint(
-            model_name='ubidmodel',
+            model_name="ubidmodel",
             constraint=models.UniqueConstraint(
-                condition=models.Q(('taxlot_id__isnull', True)), fields=('ubid', 'property_id'), name='unique_ubid_for_property'
+                condition=models.Q(("taxlot_id__isnull", True)), fields=("ubid", "property_id"), name="unique_ubid_for_property"
             ),
         ),
         migrations.AddConstraint(
-            model_name='ubidmodel',
+            model_name="ubidmodel",
             constraint=models.UniqueConstraint(
-                condition=models.Q(('property_id__isnull', True)), fields=('ubid', 'taxlot_id'), name='unique_ubid_for_taxlot'
+                condition=models.Q(("property_id__isnull", True)), fields=("ubid", "taxlot_id"), name="unique_ubid_for_taxlot"
             ),
         ),
         migrations.RunPython(backfill_ubids),

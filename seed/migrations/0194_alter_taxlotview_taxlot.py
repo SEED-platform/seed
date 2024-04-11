@@ -6,13 +6,13 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('seed', '0193_remove_null_taxlot_views'),
+        ("seed", "0193_remove_null_taxlot_views"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='taxlotview',
-            name='taxlot',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='views', to='seed.taxlot'),
+            model_name="taxlotview",
+            name="taxlot",
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name="views", to="seed.taxlot"),
         ),
     ]

@@ -15,20 +15,20 @@ from seed.serializers.utils import CustomChoicesField
 class DerivedColumnParameterSerializer(serializers.ModelSerializer):
     class Meta:
         model = DerivedColumnParameter
-        fields = '__all__'
-        read_only_fields = ['derived_column']
+        fields = "__all__"
+        read_only_fields = ["derived_column"]
 
 
 class DerivedColumnSerializer(serializers.ModelSerializer):
-    parameters = DerivedColumnParameterSerializer(source='derivedcolumnparameter_set', many=True)
+    parameters = DerivedColumnParameterSerializer(source="derivedcolumnparameter_set", many=True)
     inventory_type = CustomChoicesField(DerivedColumn.INVENTORY_TYPES)
 
     class Meta:
         model = DerivedColumn
-        exclude = ['source_columns']
+        exclude = ["source_columns"]
 
     def create(self, validated_data):
-        parameters_data = validated_data.pop('derivedcolumnparameter_set')
+        parameters_data = validated_data.pop("derivedcolumnparameter_set")
         try:
             with transaction.atomic():
                 derived_column = DerivedColumn.objects.create(**validated_data)
@@ -38,15 +38,15 @@ class DerivedColumnSerializer(serializers.ModelSerializer):
                 return derived_column
         except ValidationError as e:
             # This validation error is raised when the column name is not unique
-            error = {'message': str(e)}
+            error = {"message": str(e)}
             raise serializers.ValidationError(error)
 
     def update(self, instance, validated_data):
-        parameters_data = validated_data.get('derivedcolumnparameter_set', [])
+        parameters_data = validated_data.get("derivedcolumnparameter_set", [])
 
         with transaction.atomic():
-            instance.name = validated_data.get('name', instance.name)
-            instance.expression = validated_data.get('expression', instance.expression)
+            instance.name = validated_data.get("name", instance.name)
+            instance.expression = validated_data.get("expression", instance.expression)
             instance.save()
 
             # if new parameters are provided, delete previous ones so we can create the new params
@@ -56,8 +56,8 @@ class DerivedColumnSerializer(serializers.ModelSerializer):
                 for param in parameters_data:
                     DerivedColumnParameter.objects.create(
                         derived_column=instance,
-                        source_column=param['source_column'],
-                        parameter_name=param['parameter_name'],
+                        source_column=param["source_column"],
+                        parameter_name=param["parameter_name"],
                     )
 
             return instance

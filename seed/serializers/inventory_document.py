@@ -17,4 +17,4 @@ class InventoryDocumentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = InventoryDocument
-        fields = '__all__'
+        fields = "__all__"

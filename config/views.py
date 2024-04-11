@@ -8,11 +8,11 @@ from django.http import HttpResponse
 
 
 def robots_txt(request, allow=False):
-    env = getattr(settings, 'ENV', 'development').lower()
+    env = getattr(settings, "ENV", "development").lower()
 
-    if env == 'production' or allow:
-        content = 'User-agent: *\nAllow: /'
+    if env == "production" or allow:
+        content = "User-agent: *\nAllow: /"
     else:
-        content = 'User-agent: *\nDisallow: /'
+        content = "User-agent: *\nDisallow: /"
 
-    return HttpResponse(content, content_type='text/plain')
+    return HttpResponse(content, content_type="text/plain")

@@ -30,13 +30,13 @@ class SalesforceMappingViewSet(viewsets.ViewSet, OrgMixin):
     @require_organization_id_class
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('requires_owner')
+    @has_perm_class("requires_owner")
     def list(self, request):
         organization_id = self.get_organization(request)
         salesforce_mappings = SalesforceMapping.objects.filter(organization=organization_id)
 
         return JsonResponse(
-            {'status': 'success', 'salesforce_mappings': SalesforceMappingSerializer(salesforce_mappings, many=True).data},
+            {"status": "success", "salesforce_mappings": SalesforceMappingSerializer(salesforce_mappings, many=True).data},
             status=status.HTTP_200_OK,
         )
 
@@ -44,15 +44,15 @@ class SalesforceMappingViewSet(viewsets.ViewSet, OrgMixin):
     @require_organization_id_class
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('requires_owner')
+    @has_perm_class("requires_owner")
     def retrieve(self, request, pk=0):
         organization = self.get_organization(request)
         if pk == 0:
             try:
                 return JsonResponse(
                     {
-                        'status': 'success',
-                        'salesforce_mapping': SalesforceMappingSerializer(
+                        "status": "success",
+                        "salesforce_mapping": SalesforceMappingSerializer(
                             SalesforceMapping.objects.filter(organization=organization).first()
                         ).data,
                     },
@@ -60,14 +60,14 @@ class SalesforceMappingViewSet(viewsets.ViewSet, OrgMixin):
                 )
             except Exception:
                 return JsonResponse(
-                    {'status': 'error', 'message': 'No mappings exist with this identifier'}, status=status.HTTP_404_NOT_FOUND
+                    {"status": "error", "message": "No mappings exist with this identifier"}, status=status.HTTP_404_NOT_FOUND
                 )
         else:
             try:
                 return JsonResponse(
                     {
-                        'status': 'success',
-                        'salesforce_mapping': SalesforceMappingSerializer(
+                        "status": "success",
+                        "salesforce_mapping": SalesforceMappingSerializer(
                             SalesforceMapping.objects.get(id=pk, organization=organization)
                         ).data,
                     },
@@ -75,14 +75,14 @@ class SalesforceMappingViewSet(viewsets.ViewSet, OrgMixin):
                 )
             except SalesforceMapping.DoesNotExist:
                 return JsonResponse(
-                    {'status': 'error', 'message': f'SalesforceMapping with id {pk} does not exist'}, status=status.HTTP_404_NOT_FOUND
+                    {"status": "error", "message": f"SalesforceMapping with id {pk} does not exist"}, status=status.HTTP_404_NOT_FOUND
                 )
 
     @swagger_auto_schema_org_query_param
     @require_organization_id_class
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('requires_owner')
+    @has_perm_class("requires_owner")
     def destroy(self, request, pk):
         organization_id = self.get_organization(request)
 
@@ -90,91 +90,91 @@ class SalesforceMappingViewSet(viewsets.ViewSet, OrgMixin):
             SalesforceMapping.objects.get(id=pk, organization=organization_id).delete()
         except SalesforceMapping.DoesNotExist:
             return JsonResponse(
-                {'status': 'error', 'message': f'SalesforceMapping with id {pk} does not exist'}, status=status.HTTP_404_NOT_FOUND
+                {"status": "error", "message": f"SalesforceMapping with id {pk} does not exist"}, status=status.HTTP_404_NOT_FOUND
             )
 
-        return JsonResponse({'status': 'success', 'message': f'Successfully deleted SalesforceMapping ID {pk}'}, status=status.HTTP_200_OK)
+        return JsonResponse({"status": "success", "message": f"Successfully deleted SalesforceMapping ID {pk}"}, status=status.HTTP_200_OK)
 
     @swagger_auto_schema(
         manual_parameters=[AutoSchemaHelper.query_org_id_field()],
         request_body=AutoSchemaHelper.schema_factory(
             {
-                'column': 'integer',
-                'salesforce_fieldname': 'string',
+                "column": "integer",
+                "salesforce_fieldname": "string",
             },
         ),
     )
     @require_organization_id_class
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('requires_owner')
+    @has_perm_class("requires_owner")
     def create(self, request):
         org_id = int(self.get_organization(request))
         try:
             Organization.objects.get(pk=org_id)
         except Organization.DoesNotExist:
-            return JsonResponse({'status': 'error', 'message': 'bad organization_id'}, status=status.HTTP_400_BAD_REQUEST)
+            return JsonResponse({"status": "error", "message": "bad organization_id"}, status=status.HTTP_400_BAD_REQUEST)
 
         data = deepcopy(request.data)
-        data.update({'organization_id': org_id})
+        data.update({"organization_id": org_id})
         serializer = SalesforceMappingSerializer(data=data)
 
         if not serializer.is_valid():
-            error_response = {'status': 'error', 'message': 'Data Validation Error', 'errors': serializer.errors}
+            error_response = {"status": "error", "message": "Data Validation Error", "errors": serializer.errors}
 
             return JsonResponse(error_response, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             serializer.save()
-            return JsonResponse({'status': 'success', 'salesforce_mapping': serializer.data}, status=status.HTTP_200_OK)
+            return JsonResponse({"status": "success", "salesforce_mapping": serializer.data}, status=status.HTTP_200_OK)
         except django.core.exceptions.ValidationError as e:
             message_dict = e.message_dict
-            return JsonResponse({'status': 'error', 'message': 'Bad Request', 'errors': message_dict}, status=status.HTTP_400_BAD_REQUEST)
+            return JsonResponse({"status": "error", "message": "Bad Request", "errors": message_dict}, status=status.HTTP_400_BAD_REQUEST)
 
     @swagger_auto_schema(
         manual_parameters=[AutoSchemaHelper.query_org_id_field()],
         request_body=AutoSchemaHelper.schema_factory(
             {
-                'column': 'integer',
-                'salesforce_fieldname': 'string',
+                "column": "integer",
+                "salesforce_fieldname": "string",
             },
         ),
     )
     @require_organization_id_class
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('requires_owner')
+    @has_perm_class("requires_owner")
     def update(self, request, pk):
         org_id = self.get_organization(request)
         try:
             salesforce_mapping = SalesforceMapping.objects.get(id=pk, organization=org_id)
         except SalesforceMapping.DoesNotExist:
             return JsonResponse(
-                {'status': 'error', 'message': f'SalesforceMapping with id {pk} does not exist'}, status=status.HTTP_404_NOT_FOUND
+                {"status": "error", "message": f"SalesforceMapping with id {pk} does not exist"}, status=status.HTTP_404_NOT_FOUND
             )
 
         data = deepcopy(request.data)
-        data.update({'organization': org_id})
+        data.update({"organization": org_id})
         serializer = SalesforceMappingSerializer(salesforce_mapping, data=data, partial=True)
         if not serializer.is_valid():
             return JsonResponse(
-                {'status': 'error', 'message': 'Bad Request', 'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST
+                {"status": "error", "message": "Bad Request", "errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST
             )
 
         try:
             serializer.save()
             return JsonResponse(
                 {
-                    'status': 'success',
-                    'salesforce_mapping': serializer.data,
+                    "status": "success",
+                    "salesforce_mapping": serializer.data,
                 },
                 status=status.HTTP_200_OK,
             )
         except IntegrityError:
             return JsonResponse(
                 {
-                    'status': 'error',
-                    'message': 'Duplicate records are not allowed',
+                    "status": "error",
+                    "message": "Duplicate records are not allowed",
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
@@ -182,14 +182,14 @@ class SalesforceMappingViewSet(viewsets.ViewSet, OrgMixin):
             message_dict = e.message_dict
 
             # rename key __all__ to general to make it more user friendly
-            if '__all__' in message_dict:
-                message_dict['general'] = message_dict.pop('__all__')
+            if "__all__" in message_dict:
+                message_dict["general"] = message_dict.pop("__all__")
 
             return JsonResponse(
                 {
-                    'status': 'error',
-                    'message': 'Bad request',
-                    'errors': message_dict,
+                    "status": "error",
+                    "message": "Bad request",
+                    "errors": message_dict,
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
@@ -198,8 +198,8 @@ class SalesforceMappingViewSet(viewsets.ViewSet, OrgMixin):
     @require_organization_id_class
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('requires_owner')
-    @action(detail=True, methods=['GET'])
+    @has_perm_class("requires_owner")
+    @action(detail=True, methods=["GET"])
     def evaluate(self, request, pk):
         organization = self.get_organization(request)
         deepcopy(request.data)
@@ -207,8 +207,8 @@ class SalesforceMappingViewSet(viewsets.ViewSet, OrgMixin):
         try:
             salesforce_mapping = SalesforceMapping.objects.get(id=pk, organization=organization)
         except Exception:
-            return JsonResponse({'status': 'error', 'message': 'SalesforceMapping does not exist'}, status=status.HTTP_404_NOT_FOUND)
+            return JsonResponse({"status": "error", "message": "SalesforceMapping does not exist"}, status=status.HTTP_404_NOT_FOUND)
 
         response = salesforce_mapping.evaluate()
 
-        return JsonResponse({'status': 'success', 'data': response})
+        return JsonResponse({"status": "success", "data": response})

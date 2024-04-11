@@ -5,45 +5,45 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('seed', '0074_merge'),
+        ("seed", "0074_merge"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='noncanonicalprojectbuildings',
-            name='projectbuilding',
+            model_name="noncanonicalprojectbuildings",
+            name="projectbuilding",
         ),
         migrations.AlterUniqueTogether(
-            name='projectbuilding',
+            name="projectbuilding",
             unique_together=set(),
         ),
         migrations.RemoveField(
-            model_name='projectbuilding',
-            name='approver',
+            model_name="projectbuilding",
+            name="approver",
         ),
         migrations.RemoveField(
-            model_name='projectbuilding',
-            name='building_snapshot',
+            model_name="projectbuilding",
+            name="building_snapshot",
         ),
         migrations.RemoveField(
-            model_name='projectbuilding',
-            name='project',
+            model_name="projectbuilding",
+            name="project",
         ),
         migrations.RemoveField(
-            model_name='project',
-            name='building_snapshots',
+            model_name="project",
+            name="building_snapshots",
         ),
         migrations.AlterField(
-            model_name='rule',
-            name='data_type',
+            model_name="rule",
+            name="data_type",
             field=models.IntegerField(
-                choices=[(0, b'number'), (1, b'string'), (2, b'date'), (3, b'year'), (4, b'area'), (5, b'eui')], null=True
+                choices=[(0, b"number"), (1, b"string"), (2, b"date"), (3, b"year"), (4, b"area"), (5, b"eui")], null=True
             ),
         ),
         migrations.DeleteModel(
-            name='NonCanonicalProjectBuildings',
+            name="NonCanonicalProjectBuildings",
         ),
         migrations.DeleteModel(
-            name='ProjectBuilding',
+            name="ProjectBuilding",
         ),
     ]

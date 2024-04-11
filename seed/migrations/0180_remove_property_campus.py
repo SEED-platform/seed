@@ -5,12 +5,12 @@ from django.db import migrations
 
 def remove_old_campus_column(apps, schema_editor):
     """Remove the existence of Property.campus"""
-    Organization = apps.get_model('orgs', 'Organization')
+    Organization = apps.get_model("orgs", "Organization")
 
     for org in Organization.objects.all():
-        print(f'processing organization: {org.id}:{org.name}')
+        print(f"processing organization: {org.id}:{org.name}")
         # find the problematic columns
-        columns = org.column_set.filter(column_name='campus', table_name='Property')
+        columns = org.column_set.filter(column_name="campus", table_name="Property")
         # find the newest column, and delete that one.
         if len(columns) >= 1:
             columns.delete()
@@ -18,13 +18,13 @@ def remove_old_campus_column(apps, schema_editor):
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('seed', '0179_auto_20220916_0927'),
+        ("seed", "0179_auto_20220916_0927"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='property',
-            name='campus',
+            model_name="property",
+            name="campus",
         ),
         migrations.RunPython(remove_old_campus_column),
     ]

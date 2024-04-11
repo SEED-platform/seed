@@ -24,16 +24,16 @@ from seed.utils.api_schema import AutoSchemaHelper
 from seed.utils.viewsets import SEEDOrgReadOnlyModelViewSet
 
 
-@method_decorator(name='list', decorator=[has_perm_class('requires_viewer')])
-@method_decorator(name='retrieve', decorator=[has_perm_class('requires_viewer')])
+@method_decorator(name="list", decorator=[has_perm_class("requires_viewer")])
+@method_decorator(name="retrieve", decorator=[has_perm_class("requires_viewer")])
 class BuildingFileViewSet(SEEDOrgReadOnlyModelViewSet):
     model = BuildingFile
-    orgfilter = 'property_state__organization'
+    orgfilter = "property_state__organization"
     parser_classes = (MultiPartParser,)
     pagination_class = None
 
     def get_queryset(self):
-        if hasattr(self.request, 'access_level_instance_id'):
+        if hasattr(self.request, "access_level_instance_id"):
             access_level_instance = AccessLevelInstance.objects.get(pk=self.request.access_level_instance_id)
             return BuildingFile.objects.filter(
                 property_state__propertyview__property__access_level_instance__lft__gte=access_level_instance.lft,
@@ -44,7 +44,7 @@ class BuildingFileViewSet(SEEDOrgReadOnlyModelViewSet):
             return BuildingFile.objects.filter(pk=-1)
 
     def get_serializer_class(self):
-        if self.action == 'create':
+        if self.action == "create":
             # pass "empty" serializer for Swagger page
             return serializers.Serializer
         return BuildingFileSerializer
@@ -52,20 +52,20 @@ class BuildingFileViewSet(SEEDOrgReadOnlyModelViewSet):
     @swagger_auto_schema(
         manual_parameters=[
             AutoSchemaHelper.query_org_id_field(),
-            AutoSchemaHelper.query_integer_field('cycle_id', required=True, description='Cycle to upload to'),
+            AutoSchemaHelper.query_integer_field("cycle_id", required=True, description="Cycle to upload to"),
             AutoSchemaHelper.upload_file_field(
-                'file',
+                "file",
                 required=True,
-                description='File to upload',
+                description="File to upload",
             ),
             AutoSchemaHelper.form_string_field(
-                'file_type',
+                "file_type",
                 required=True,
                 description='Either "Unknown", "BuildingSync" or "HPXML"',
             ),
         ],
     )
-    @has_perm_class('can_modify_data')
+    @has_perm_class("can_modify_data")
     def create(self, request):
         """
         Create a new property from a building file
@@ -73,16 +73,16 @@ class BuildingFileViewSet(SEEDOrgReadOnlyModelViewSet):
         access_level_instance = AccessLevelInstance.objects.get(pk=self.request.access_level_instance_id)
 
         if len(request.FILES) == 0:
-            return JsonResponse({'success': False, 'message': 'Must pass file in as a Multipart/Form post'})
+            return JsonResponse({"success": False, "message": "Must pass file in as a Multipart/Form post"})
 
-        the_file = request.data['file']
-        file_type = BuildingFile.str_to_file_type(request.data.get('file_type', 'Unknown'))
+        the_file = request.data["file"]
+        file_type = BuildingFile.str_to_file_type(request.data.get("file_type", "Unknown"))
 
         organization_id = self.get_organization(self.request)
-        cycle = request.query_params.get('cycle_id', None)
+        cycle = request.query_params.get("cycle_id", None)
 
         if not cycle:
-            return JsonResponse({'success': False, 'message': 'Cycle ID is not defined'})
+            return JsonResponse({"success": False, "message": "Cycle ID is not defined"})
         else:
             cycle = Cycle.objects.get(pk=cycle)
 
@@ -92,26 +92,26 @@ class BuildingFileViewSet(SEEDOrgReadOnlyModelViewSet):
         # initialize
         p_status = True
         property_state = True
-        messages = {'errors': [], 'warnings': []}
+        messages = {"errors": [], "warnings": []}
 
-        if file_extension == '.zip':
+        if file_extension == ".zip":
             # ZIP FILE, extract and process files one by one
             # print("This file is a ZIP")
 
-            with zipfile.ZipFile(the_file, 'r', zipfile.ZIP_STORED) as openzip:
+            with zipfile.ZipFile(the_file, "r", zipfile.ZIP_STORED) as openzip:
                 filelist = openzip.infolist()
                 for f in filelist:
                     # print("FILE: {}".format(f.filename))
                     # process xml files
-                    if '.xml' in f.filename and '__MACOSX' not in f.filename:
+                    if ".xml" in f.filename and "__MACOSX" not in f.filename:
                         # print("PROCESSING file: {}".format(f.filename))
                         with NamedTemporaryFile() as data_file:
                             data_file.write(openzip.read(f))
                             data_file.seek(0)
                             size = os.path.getsize(data_file.name)
-                            content_type = 'text/xml'
+                            content_type = "text/xml"
 
-                            a_file = InMemoryUploadedFile(data_file, 'data_file', f.filename, content_type, size, charset=None)
+                            a_file = InMemoryUploadedFile(data_file, "data_file", f.filename, content_type, size, charset=None)
 
                             building_file = BuildingFile.objects.create(
                                 file=a_file,
@@ -124,10 +124,10 @@ class BuildingFileViewSet(SEEDOrgReadOnlyModelViewSet):
                         )
 
                         # append errors to overall messages
-                        for i in messages_tmp['errors']:
-                            messages['errors'].append(f.filename + ': ' + i)
-                        for i in messages_tmp['warnings']:
-                            messages['warnings'].append(f.filename + ': ' + i)
+                        for i in messages_tmp["errors"]:
+                            messages["errors"].append(f.filename + ": " + i)
+                        for i in messages_tmp["warnings"]:
+                            messages["warnings"].append(f.filename + ": " + i)
 
                         if not p_status_tmp:
                             # capture error
@@ -149,14 +149,14 @@ class BuildingFileViewSet(SEEDOrgReadOnlyModelViewSet):
             )
 
         if p_status and property_state:
-            if len(messages['warnings']) > 0:
+            if len(messages["warnings"]) > 0:
                 return JsonResponse(
                     {
-                        'success': True,
-                        'status': 'success',
-                        'message': {'warnings': messages['warnings']},
-                        'data': {
-                            'property_view': PropertyViewAsStateSerializer(property_view).data,
+                        "success": True,
+                        "status": "success",
+                        "message": {"warnings": messages["warnings"]},
+                        "data": {
+                            "property_view": PropertyViewAsStateSerializer(property_view).data,
                             # 'property_state': PropertyStateWritableSerializer(property_state).data,
                         },
                     }
@@ -164,14 +164,14 @@ class BuildingFileViewSet(SEEDOrgReadOnlyModelViewSet):
             else:
                 return JsonResponse(
                     {
-                        'success': True,
-                        'status': 'success',
-                        'message': {'warnings': []},
-                        'data': {
-                            'property_view': PropertyViewAsStateSerializer(property_view).data,
+                        "success": True,
+                        "status": "success",
+                        "message": {"warnings": []},
+                        "data": {
+                            "property_view": PropertyViewAsStateSerializer(property_view).data,
                             # 'property_state': PropertyStateWritableSerializer(property_state).data,
                         },
                     }
                 )
         else:
-            return JsonResponse({'success': False, 'status': 'error', 'message': messages}, status=status.HTTP_400_BAD_REQUEST)
+            return JsonResponse({"success": False, "status": "error", "message": messages}, status=status.HTTP_400_BAD_REQUEST)

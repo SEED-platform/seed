@@ -37,7 +37,7 @@ _log = logging.getLogger(__name__)
 # Setup lxml parser
 parser = etree.XMLParser(remove_blank_text=True)
 etree.set_default_parser(parser)
-etree.register_namespace('auc', BUILDINGSYNC_URI)
+etree.register_namespace("auc", BUILDINGSYNC_URI)
 
 
 class ParsingError(Exception):
@@ -45,12 +45,12 @@ class ParsingError(Exception):
 
 
 class BuildingSync:
-    BUILDINGSYNC_V2_0 = '2.0'
-    BUILDINGSYNC_V2_0_0 = '2.0.0'
-    BUILDINGSYNC_V2_1_0 = '2.1.0'
-    BUILDINGSYNC_V2_2_0 = '2.2.0'
-    BUILDINGSYNC_V2_3_0 = '2.3.0'
-    BUILDINGSYNC_V2_4_0 = '2.4.0'
+    BUILDINGSYNC_V2_0 = "2.0"
+    BUILDINGSYNC_V2_0_0 = "2.0.0"
+    BUILDINGSYNC_V2_1_0 = "2.1.0"
+    BUILDINGSYNC_V2_2_0 = "2.2.0"
+    BUILDINGSYNC_V2_3_0 = "2.3.0"
+    BUILDINGSYNC_V2_4_0 = "2.4.0"
     VERSION_MAPPINGS_DICT = {
         BUILDINGSYNC_V2_0: BASE_MAPPING_V2,
         BUILDINGSYNC_V2_2_0: BASE_MAPPING_V2,
@@ -77,7 +77,7 @@ class BuildingSync:
         # save element tree
         if isinstance(source, str):
             if not os.path.isfile(source):
-                raise ParsingError(f'File not found: {source}')
+                raise ParsingError(f"File not found: {source}")
             with open(source, encoding=locale.getpreferredencoding(False)) as f:
                 self.element_tree = etree.parse(f)
         else:
@@ -87,13 +87,13 @@ class BuildingSync:
 
         # if the namespace map is missing the auc or xsi prefix, fix the tree to include it
         root_nsmap = self.element_tree.getroot().nsmap
-        if root_nsmap.get('auc') is None or root_nsmap.get('xsi') is None:
+        if root_nsmap.get("auc") is None or root_nsmap.get("xsi") is None:
             self.fix_namespaces()
 
         root = self.element_tree.getroot()
         root.set(
-            '{http://www.w3.org/2001/XMLSchema-instance}schemaLocation',
-            f'http://buildingsync.net/schemas/bedes-auc/2019 https://raw.githubusercontent.com/BuildingSync/schema/v{self.version}/BuildingSync.xsd',
+            "{http://www.w3.org/2001/XMLSchema-instance}schemaLocation",
+            f"http://buildingsync.net/schemas/bedes-auc/2019 https://raw.githubusercontent.com/BuildingSync/schema/v{self.version}/BuildingSync.xsd",
         )
 
         return True
@@ -104,11 +104,11 @@ class BuildingSync:
         """
         original_tree = self.element_tree
 
-        etree.register_namespace('auc', BUILDINGSYNC_URI)
+        etree.register_namespace("auc", BUILDINGSYNC_URI)
         # only necessary because we are temporarily allowing the import of files
         # without xsi:schemaLocation
         # TODO: consider removing once all files have explicit versions
-        etree.register_namespace('xsi', 'http://www.w3.org/2001/XMLSchema-instance')
+        etree.register_namespace("xsi", "http://www.w3.org/2001/XMLSchema-instance")
         self.init_tree(version=self.version)
         new_root = self.element_tree.getroot()
         original_root = original_tree.getroot()
@@ -169,17 +169,17 @@ class BuildingSync:
         # - if the property_state has the field, update the xml with that value
         # - else, ignore it
         for mapping in column_mapping_profile:
-            field = mapping['to_field']
-            xml_element_xpath = mapping['from_field']
-            xml_element_value = mapping['from_field_value']
+            field = mapping["to_field"]
+            xml_element_xpath = mapping["from_field"]
+            xml_element_value = mapping["from_field_value"]
             seed_value = None
-            if mapping['to_field'] != mapping['from_field']:
+            if mapping["to_field"] != mapping["from_field"]:
                 # only do this for non BAE assets
                 try:
                     property_state._meta.get_field(field)
                     seed_value = getattr(property_state, field)
                 except FieldDoesNotExist:
-                    _log.debug(f'Field {field} is not a db field, trying read from extra data')
+                    _log.debug(f"Field {field} is not a db field, trying read from extra data")
                     seed_value = property_state.extra_data.get(field, None)
                     continue
 
@@ -198,15 +198,15 @@ class BuildingSync:
 
     @classmethod
     def get_schema(cls, version):
-        schema_dir = os.path.join(BASE_DIR, 'seed', 'building_sync', 'schemas')
+        schema_dir = os.path.join(BASE_DIR, "seed", "building_sync", "schemas")
         # TODO: refactor so we don't have to explicitly write schema version for
         # ever new schema added.
         schema_files = {
-            cls.BUILDINGSYNC_V2_0: 'BuildingSync_v2_0.xsd',
-            cls.BUILDINGSYNC_V2_1_0: 'BuildingSync_v2_1_0.xsd',
-            cls.BUILDINGSYNC_V2_2_0: 'BuildingSync_v2_2_0.xsd',
-            cls.BUILDINGSYNC_V2_3_0: 'BuildingSync_v2_3_0.xsd',
-            cls.BUILDINGSYNC_V2_4_0: 'BuildingSync_v2_4_0.xsd',
+            cls.BUILDINGSYNC_V2_0: "BuildingSync_v2_0.xsd",
+            cls.BUILDINGSYNC_V2_1_0: "BuildingSync_v2_1_0.xsd",
+            cls.BUILDINGSYNC_V2_2_0: "BuildingSync_v2_2_0.xsd",
+            cls.BUILDINGSYNC_V2_3_0: "BuildingSync_v2_3_0.xsd",
+            cls.BUILDINGSYNC_V2_4_0: "BuildingSync_v2_4_0.xsd",
         }
         if version in schema_files:
             schema_path = os.path.join(schema_dir, schema_files[version])
@@ -224,45 +224,45 @@ class BuildingSync:
         :return: dict, restructured dictionary
         """
         measures = []
-        for measure in result['measures']:
-            if measure['category'] == '':
-                messages['warnings'].append(f'Skipping measure {measure["name"]} due to missing category')
+        for measure in result["measures"]:
+            if measure["category"] == "":
+                messages["warnings"].append(f'Skipping measure {measure["name"]} due to missing category')
                 continue
 
             measures.append(measure)
 
         scenarios = []
-        for scenario in result['scenarios']:
+        for scenario in result["scenarios"]:
             # process the scenario meters (aka resource uses)
             meters = {}
-            for resource_use in scenario['resource_uses']:
-                if resource_use['type'] is None or resource_use['units'] is None:
-                    messages['warnings'].append(f'Skipping resource use {resource_use.get("source_id")} due to missing type or units')
+            for resource_use in scenario["resource_uses"]:
+                if resource_use["type"] is None or resource_use["units"] is None:
+                    messages["warnings"].append(f'Skipping resource use {resource_use.get("source_id")} due to missing type or units')
                     continue
 
                 meter = {
-                    'source': Meter.BUILDINGSYNC,
-                    'source_id': resource_use['source_id'],
-                    'type': resource_use['type'],
-                    'units': resource_use['units'],
-                    'is_virtual': scenario['is_virtual'],
-                    'readings': [],
+                    "source": Meter.BUILDINGSYNC,
+                    "source_id": resource_use["source_id"],
+                    "type": resource_use["type"],
+                    "units": resource_use["units"],
+                    "is_virtual": scenario["is_virtual"],
+                    "readings": [],
                 }
 
-                meters[meter['source_id']] = meter
+                meters[meter["source_id"]] = meter
 
             # process the scenario meter readings
-            for series_data in scenario['time_series']:
+            for series_data in scenario["time_series"]:
                 meter_reading = {
-                    'start_time': series_data['start_time'],
-                    'end_time': series_data['end_time'],
-                    'reading': series_data['reading'],
-                    'source_id': series_data['source_id'],
+                    "start_time": series_data["start_time"],
+                    "end_time": series_data["end_time"],
+                    "reading": series_data["reading"],
+                    "source_id": series_data["source_id"],
                 }
-                meter_reading['source_unit'] = meters[meter_reading['source_id']].get('units')
+                meter_reading["source_unit"] = meters[meter_reading["source_id"]].get("units")
 
                 # add reading to the meter
-                meters[meter_reading['source_id']]['readings'].append(meter_reading)
+                meters[meter_reading["source_id"]]["readings"].append(meter_reading)
 
                 #
                 # Begin Audit Template weirdness
@@ -272,8 +272,8 @@ class BuildingSync:
                 # It uses a UserDefinedField "Linked Time Series ID" to associate the
                 # reading with an auc:TimeSeries (which stores the other relevant info
                 # including start time, end time, etc)
-                for all_resource_total in scenario['audit_template_all_resource_totals']:
-                    if all_resource_total['linked_time_series_id'] == series_data['id']:
+                for all_resource_total in scenario["audit_template_all_resource_totals"]:
+                    if all_resource_total["linked_time_series_id"] == series_data["id"]:
                         # store this data in a separate "meter" -- we can't have two
                         # readings for the same time period in SEED currently
                         # NOTE: to future reader, this problem seems to arise from the
@@ -281,13 +281,13 @@ class BuildingSync:
                         # e.g., see BuildingSync's ReadingType (point, median, average, peak, etc)
 
                         # if the meter doesn't exist yet, copy it
-                        original_meter = meters[meter_reading['source_id']]
+                        original_meter = meters[meter_reading["source_id"]]
                         other_meter_source_id = f'Site Energy Use {original_meter["source_id"]}'
                         if other_meter_source_id not in meters:
-                            meters[other_meter_source_id] = {**original_meter, 'source_id': other_meter_source_id, 'readings': []}
+                            meters[other_meter_source_id] = {**original_meter, "source_id": other_meter_source_id, "readings": []}
 
-                        meters[other_meter_source_id]['readings'].append(
-                            {**meter_reading, 'reading': all_resource_total['site_energy_use']}
+                        meters[other_meter_source_id]["readings"].append(
+                            {**meter_reading, "reading": all_resource_total["site_energy_use"]}
                         )
 
                 #
@@ -297,32 +297,32 @@ class BuildingSync:
             # clean up the meters so that we only include ones with readings
             meters_with_readings = []
             for meter_id, meter in meters.items():
-                if meter['readings']:
+                if meter["readings"]:
                     meters_with_readings.append(meter)
                 else:
-                    messages['warnings'].append(f'Skipping meter {meter_id} because it had no valid readings.')
+                    messages["warnings"].append(f"Skipping meter {meter_id} because it had no valid readings.")
 
             # create scenario
             seed_scenario = {
-                'id': scenario['id'],
-                'name': scenario['name'],
-                'temporal_status': scenario['temporal_status'],
-                'reference_case': scenario['reference_case'],
-                'annual_site_energy_savings': scenario['annual_site_energy_savings'],
-                'annual_source_energy_savings': scenario['annual_source_energy_savings'],
-                'annual_cost_savings': scenario['annual_cost_savings'],
-                'annual_electricity_savings': scenario['annual_electricity_savings'],
-                'annual_natural_gas_savings': scenario['annual_natural_gas_savings'],
-                'annual_site_energy': scenario['annual_site_energy'],
-                'annual_site_energy_use_intensity': scenario['annual_site_energy_use_intensity'],
-                'annual_source_energy': scenario['annual_source_energy'],
-                'annual_source_energy_use_intensity': scenario['annual_source_energy_use_intensity'],
-                'annual_electricity_energy': scenario['annual_electricity_energy'],
-                'annual_peak_demand': scenario['annual_peak_demand'],
-                'annual_peak_electricity_reduction': scenario['annual_peak_electricity_reduction'],
-                'annual_natural_gas_energy': scenario['annual_natural_gas_energy'],
-                'measures': [id['id'] for id in scenario['measure_ids']],
-                'meters': meters_with_readings,
+                "id": scenario["id"],
+                "name": scenario["name"],
+                "temporal_status": scenario["temporal_status"],
+                "reference_case": scenario["reference_case"],
+                "annual_site_energy_savings": scenario["annual_site_energy_savings"],
+                "annual_source_energy_savings": scenario["annual_source_energy_savings"],
+                "annual_cost_savings": scenario["annual_cost_savings"],
+                "annual_electricity_savings": scenario["annual_electricity_savings"],
+                "annual_natural_gas_savings": scenario["annual_natural_gas_savings"],
+                "annual_site_energy": scenario["annual_site_energy"],
+                "annual_site_energy_use_intensity": scenario["annual_site_energy_use_intensity"],
+                "annual_source_energy": scenario["annual_source_energy"],
+                "annual_source_energy_use_intensity": scenario["annual_source_energy_use_intensity"],
+                "annual_electricity_energy": scenario["annual_electricity_energy"],
+                "annual_peak_demand": scenario["annual_peak_demand"],
+                "annual_peak_electricity_reduction": scenario["annual_peak_electricity_reduction"],
+                "annual_natural_gas_energy": scenario["annual_natural_gas_energy"],
+                "measures": [id["id"] for id in scenario["measure_ids"]],
+                "meters": meters_with_readings,
             }
 
             #
@@ -336,9 +336,9 @@ class BuildingSync:
             # have measures.
             #
 
-            if self._is_from_audit_template_tool() and not seed_scenario['measures'] and not seed_scenario['meters']:
+            if self._is_from_audit_template_tool() and not seed_scenario["measures"] and not seed_scenario["meters"]:
                 # Skip this scenario!
-                messages['warnings'].append(f'Skipping Scenario {scenario["id"]} because it doesn\'t include ' 'measures or meter data.')
+                messages["warnings"].append(f'Skipping Scenario {scenario["id"]} because it doesn\'t include ' 'measures or meter data.')
                 continue
 
             #
@@ -348,33 +348,33 @@ class BuildingSync:
             scenarios.append(seed_scenario)
 
         # get most recent audit date
-        audit_dates = result['audit_dates']
-        audit_dates.sort(key=lambda x: datetime.strptime(x['date'], '%Y-%m-%d'))
+        audit_dates = result["audit_dates"]
+        audit_dates.sort(key=lambda x: datetime.strptime(x["date"], "%Y-%m-%d"))
         most_recent_audit_date = {} if len(audit_dates) == 0 else audit_dates[-1]
 
-        property_ = result['property']
+        property_ = result["property"]
         res = {
-            'measures': measures,
-            'scenarios': scenarios,
+            "measures": measures,
+            "scenarios": scenarios,
             # property fields are at the root of the object
-            'address_line_1': property_['address_line_1'],
-            'city': property_['city'],
-            'state': property_['state'],
-            'postal_code': property_['postal_code'],
-            'longitude': property_['longitude'],
-            'latitude': property_['latitude'],
-            'property_type': property_['property_type'],
-            'year_built': property_['year_built'],
-            'floors_above_grade': property_['floors_above_grade'],
-            'floors_below_grade': property_['floors_below_grade'],
-            'premise_identifier': property_['premise_identifier'],
-            'custom_id_1': property_['custom_id_1'],
-            'gross_floor_area': property_['gross_floor_area'],
-            'net_floor_area': property_['net_floor_area'],
-            'footprint_floor_area': property_['footprint_floor_area'],
-            'audit_template_building_id': property_['audit_template_building_id'],
-            'audit_date': most_recent_audit_date.get('date'),
-            'audit_date_type': most_recent_audit_date.get('custom_date_type'),
+            "address_line_1": property_["address_line_1"],
+            "city": property_["city"],
+            "state": property_["state"],
+            "postal_code": property_["postal_code"],
+            "longitude": property_["longitude"],
+            "latitude": property_["latitude"],
+            "property_type": property_["property_type"],
+            "year_built": property_["year_built"],
+            "floors_above_grade": property_["floors_above_grade"],
+            "floors_below_grade": property_["floors_below_grade"],
+            "premise_identifier": property_["premise_identifier"],
+            "custom_id_1": property_["custom_id_1"],
+            "gross_floor_area": property_["gross_floor_area"],
+            "net_floor_area": property_["net_floor_area"],
+            "footprint_floor_area": property_["footprint_floor_area"],
+            "audit_template_building_id": property_["audit_template_building_id"],
+            "audit_date": most_recent_audit_date.get("date"),
+            "audit_date_type": most_recent_audit_date.get("custom_date_type"),
         }
 
         return res
@@ -388,7 +388,7 @@ class BuildingSync:
         """
 
         merged_mappings = merge_mappings(base_mapping, custom_mapping)
-        messages = {'warnings': [], 'errors': []}
+        messages = {"warnings": [], "errors": []}
         result = apply_mapping(self.element_tree, merged_mappings, messages, NAMESPACES)
 
         # turn result into SEED structure
@@ -445,17 +445,17 @@ class BuildingSync:
 
         # remove all root keys except for property since we only want to process property
         for key, _ in merged_mapping.copy().items():
-            if key != 'property':
+            if key != "property":
                 del merged_mapping[key]
 
-        messages = {'warnings': [], 'errors': []}
+        messages = {"warnings": [], "errors": []}
         result = apply_mapping(self.element_tree, merged_mapping, messages, NAMESPACES, xpaths_as_keys=True)
 
         # flatten the dictionary and make all keys absolute xpaths
         base_xpath = next(iter(result.keys()))  # only one key in result, the property xpath
         flattened_result = {}
         for relative_xpath, value in result[base_xpath].items():
-            abs_xpath = base_xpath.rstrip('/') + '/' + relative_xpath.lstrip('./')
+            abs_xpath = base_xpath.rstrip("/") + "/" + relative_xpath.lstrip("./")
             flattened_result[abs_xpath] = value
 
         return flattened_result
@@ -467,15 +467,15 @@ class BuildingSync:
         :return: string, schema version (raises Exception when not found or invalid)
         """
         if self.element_tree is None:
-            raise ParsingError('A file must first be imported with import method')
+            raise ParsingError("A file must first be imported with import method")
 
         bsync_element = self.element_tree.getroot()
-        if not bsync_element.tag.endswith('BuildingSync'):
-            raise ParsingError('Expected BuildingSync element as root element in xml')
+        if not bsync_element.tag.endswith("BuildingSync"):
+            raise ParsingError("Expected BuildingSync element as root element in xml")
 
         # first check for a version attribute in the buildingsync tag
-        if 'version' in bsync_element.attrib:
-            return bsync_element.attrib['version']
+        if "version" in bsync_element.attrib:
+            return bsync_element.attrib["version"]
 
         # second check if it's a file form Audit Template Tool
         if self._is_from_audit_template_tool():
@@ -483,8 +483,8 @@ class BuildingSync:
             return self.BUILDINGSYNC_V2_0
 
         # attempt to parse the version from the xsi:schemaLocation
-        schemas = bsync_element.get('{http://www.w3.org/2001/XMLSchema-instance}schemaLocation', '').split()
-        schema_regex = r'^https\:\/\/raw\.githubusercontent\.com\/BuildingSync\/schema\/v((\d+\.\d+)(-pr\d+)?)\/BuildingSync\.xsd$'
+        schemas = bsync_element.get("{http://www.w3.org/2001/XMLSchema-instance}schemaLocation", "").split()
+        schema_regex = r"^https\:\/\/raw\.githubusercontent\.com\/BuildingSync\/schema\/v((\d+\.\d+)(-pr\d+)?)\/BuildingSync\.xsd$"
 
         for schema_def in schemas:
             schema_search = re.search(schema_regex, schema_def)
@@ -498,7 +498,7 @@ class BuildingSync:
                 )
 
         raise ParsingError(
-            'Invalid or missing schema specification. Expected a valid BuildingSync schemaLocation in the BuildingSync element. For example: https://raw.githubusercontent.com/BuildingSync/schema/v<schema version here>/BuildingSync.xsd'
+            "Invalid or missing schema specification. Expected a valid BuildingSync schemaLocation in the BuildingSync element. For example: https://raw.githubusercontent.com/BuildingSync/schema/v<schema version here>/BuildingSync.xsd"
         )
 
     def _is_from_audit_template_tool(self):
@@ -506,14 +506,14 @@ class BuildingSync:
 
         :return bool:
         """
-        report_type_xpath = '/' + '/'.join(
+        report_type_xpath = "/" + "/".join(
             [
-                'auc:BuildingSync',
-                'auc:Facilities',
-                'auc:Facility',
-                'auc:Reports',
-                'auc:Report',
-                'auc:UserDefinedFields',
+                "auc:BuildingSync",
+                "auc:Facilities",
+                "auc:Facility",
+                "auc:Reports",
+                "auc:Report",
+                "auc:UserDefinedFields",
                 'auc:UserDefinedField[auc:FieldName="Audit Template Report Type"]',
             ]
         )
@@ -523,5 +523,5 @@ class BuildingSync:
 
     def get_base_mapping(self):
         if not self.version:
-            raise ParsingError('You must call import_file to determine the version first')
+            raise ParsingError("You must call import_file to determine the version first")
         return copy.deepcopy(self.VERSION_MAPPINGS_DICT[self.version])

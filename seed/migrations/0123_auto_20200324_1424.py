@@ -5,22 +5,22 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('seed', '0122_auto_20200303_1428'),
+        ("seed", "0122_auto_20200303_1428"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='columnmapping',
-            name='source_type',
+            model_name="columnmapping",
+            name="source_type",
             field=models.IntegerField(
                 blank=True,
                 choices=[
-                    (0, 'Assessed Raw'),
-                    (2, 'Assessed'),
-                    (1, 'Portfolio Raw'),
-                    (3, 'Portfolio'),
-                    (4, 'BuildingSnapshot'),
-                    (5, 'BuildingSync Raw'),
+                    (0, "Assessed Raw"),
+                    (2, "Assessed"),
+                    (1, "Portfolio Raw"),
+                    (3, "Portfolio"),
+                    (4, "BuildingSnapshot"),
+                    (5, "BuildingSync Raw"),
                 ],
                 null=True,
             ),

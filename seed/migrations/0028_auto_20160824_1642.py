@@ -6,32 +6,32 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('seed', '0027_auto_20160822_2143'),
+        ("seed", "0027_auto_20160822_2143"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='propertyauditlog',
-            name='created',
+            model_name="propertyauditlog",
+            name="created",
             field=models.DateTimeField(auto_now_add=True, null=True),
         ),
         migrations.AddField(
-            model_name='propertyauditlog',
-            name='view',
+            model_name="propertyauditlog",
+            name="view",
             field=models.ForeignKey(
-                null=True, on_delete=django.db.models.deletion.CASCADE, related_name='propertyauditlog__view', to='seed.PropertyView'
+                null=True, on_delete=django.db.models.deletion.CASCADE, related_name="propertyauditlog__view", to="seed.PropertyView"
             ),
         ),
         migrations.AddField(
-            model_name='taxlotauditlog',
-            name='created',
+            model_name="taxlotauditlog",
+            name="created",
             field=models.DateTimeField(auto_now_add=True, null=True),
         ),
         migrations.AddField(
-            model_name='taxlotauditlog',
-            name='view',
+            model_name="taxlotauditlog",
+            name="view",
             field=models.ForeignKey(
-                null=True, on_delete=django.db.models.deletion.CASCADE, related_name='taxlotauditlog__view', to='seed.TaxLotView'
+                null=True, on_delete=django.db.models.deletion.CASCADE, related_name="taxlotauditlog__view", to="seed.TaxLotView"
             ),
         ),
     ]

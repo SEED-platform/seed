@@ -40,33 +40,33 @@ class Meter(models.Model):
 
     # Taken from EnergyStar Portfolio Manager
     ENERGY_TYPES = (
-        (COAL_ANTHRACITE, 'Coal (anthracite)'),
-        (COAL_BITUMINOUS, 'Coal (bituminous)'),
-        (COKE, 'Coke'),
-        (DIESEL, 'Diesel'),
-        (DISTRICT_CHILLED_WATER, 'District Chilled Water'),
-        (DISTRICT_CHILLED_WATER_ABSORPTION, 'District Chilled Water - Absorption'),
-        (DISTRICT_CHILLED_WATER_ELECTRIC, 'District Chilled Water - Electric'),
-        (DISTRICT_CHILLED_WATER_ENGINE, 'District Chilled Water - Engine'),
-        (DISTRICT_CHILLED_WATER_OTHER, 'District Chilled Water - Other'),
-        (DISTRICT_HOT_WATER, 'District Hot Water'),
-        (DISTRICT_STEAM, 'District Steam'),
-        (ELECTRICITY, 'Electric'),
-        (ELECTRICITY_GRID, 'Electric - Grid'),
-        (ELECTRICITY_SOLAR, 'Electric - Solar'),
-        (ELECTRICITY_WIND, 'Electric - Wind'),
-        (FUEL_OIL_NO_1, 'Fuel Oil (No. 1)'),
-        (FUEL_OIL_NO_2, 'Fuel Oil (No. 2)'),
-        (FUEL_OIL_NO_4, 'Fuel Oil (No. 4)'),
-        (FUEL_OIL_NO_5_AND_NO_6, 'Fuel Oil (No. 5 and No. 6)'),
-        (KEROSENE, 'Kerosene'),
-        (NATURAL_GAS, 'Natural Gas'),
-        (OTHER, 'Other:'),
-        (PROPANE, 'Propane'),
-        (WOOD, 'Wood'),
-        (COST, 'Cost'),
-        (ELECTRICITY_UNKNOWN, 'Electric - Unknown'),
-        (CUSTOM_METER, 'Custom Meter'),
+        (COAL_ANTHRACITE, "Coal (anthracite)"),
+        (COAL_BITUMINOUS, "Coal (bituminous)"),
+        (COKE, "Coke"),
+        (DIESEL, "Diesel"),
+        (DISTRICT_CHILLED_WATER, "District Chilled Water"),
+        (DISTRICT_CHILLED_WATER_ABSORPTION, "District Chilled Water - Absorption"),
+        (DISTRICT_CHILLED_WATER_ELECTRIC, "District Chilled Water - Electric"),
+        (DISTRICT_CHILLED_WATER_ENGINE, "District Chilled Water - Engine"),
+        (DISTRICT_CHILLED_WATER_OTHER, "District Chilled Water - Other"),
+        (DISTRICT_HOT_WATER, "District Hot Water"),
+        (DISTRICT_STEAM, "District Steam"),
+        (ELECTRICITY, "Electric"),
+        (ELECTRICITY_GRID, "Electric - Grid"),
+        (ELECTRICITY_SOLAR, "Electric - Solar"),
+        (ELECTRICITY_WIND, "Electric - Wind"),
+        (FUEL_OIL_NO_1, "Fuel Oil (No. 1)"),
+        (FUEL_OIL_NO_2, "Fuel Oil (No. 2)"),
+        (FUEL_OIL_NO_4, "Fuel Oil (No. 4)"),
+        (FUEL_OIL_NO_5_AND_NO_6, "Fuel Oil (No. 5 and No. 6)"),
+        (KEROSENE, "Kerosene"),
+        (NATURAL_GAS, "Natural Gas"),
+        (OTHER, "Other:"),
+        (PROPANE, "Propane"),
+        (WOOD, "Wood"),
+        (COST, "Cost"),
+        (ELECTRICITY_UNKNOWN, "Electric - Unknown"),
+        (CUSTOM_METER, "Custom Meter"),
     )
     ENERGY_TYPE_BY_METER_TYPE = dict(ENERGY_TYPES)
 
@@ -75,32 +75,32 @@ class Meter(models.Model):
     # types.
     ENERGY_TYPE_BY_HEADER_STRING = {
         # these mappings are assumed based on ESPM values [old format]
-        'Coal Use (Anthracite)': ENERGY_TYPE_BY_METER_TYPE[COAL_ANTHRACITE],
-        'Coal Use (Bituminous)': ENERGY_TYPE_BY_METER_TYPE[COAL_BITUMINOUS],
-        'Coke': ENERGY_TYPE_BY_METER_TYPE[COKE],
-        'Diesel': ENERGY_TYPE_BY_METER_TYPE[DIESEL],
-        'District Chilled Water Use (Absorption)': ENERGY_TYPE_BY_METER_TYPE[DISTRICT_CHILLED_WATER_ABSORPTION],
-        'District Chilled Water Use (Electric)': ENERGY_TYPE_BY_METER_TYPE[DISTRICT_CHILLED_WATER_ELECTRIC],
-        'District Chilled Water Use (Engine)': ENERGY_TYPE_BY_METER_TYPE[DISTRICT_CHILLED_WATER_ENGINE],
-        'District Chilled Water Use (Other)': ENERGY_TYPE_BY_METER_TYPE[DISTRICT_CHILLED_WATER_OTHER],
-        'District Hot Water Use': ENERGY_TYPE_BY_METER_TYPE[DISTRICT_HOT_WATER],
-        'District Steam Use': ENERGY_TYPE_BY_METER_TYPE[DISTRICT_STEAM],
-        'Electricity Use (Grid)': ENERGY_TYPE_BY_METER_TYPE[ELECTRICITY_GRID],
-        'Electricity Use (Solar)': ENERGY_TYPE_BY_METER_TYPE[ELECTRICITY_SOLAR],
-        'Electricity Use (Wind)': ENERGY_TYPE_BY_METER_TYPE[ELECTRICITY_WIND],
-        'Fuel Oil Use (No. 1)': ENERGY_TYPE_BY_METER_TYPE[FUEL_OIL_NO_1],
-        'Fuel Oil Use (No. 2)': ENERGY_TYPE_BY_METER_TYPE[FUEL_OIL_NO_2],
-        'Fuel Oil Use (No. 4)': ENERGY_TYPE_BY_METER_TYPE[FUEL_OIL_NO_4],
-        'Fuel Oil Use (No. 5 and No. 6)': ENERGY_TYPE_BY_METER_TYPE[FUEL_OIL_NO_5_AND_NO_6],
-        'Kerosene Use': ENERGY_TYPE_BY_METER_TYPE[KEROSENE],
-        'Natural Gas Use': ENERGY_TYPE_BY_METER_TYPE[NATURAL_GAS],
-        'Other Use': ENERGY_TYPE_BY_METER_TYPE[OTHER],
-        'Propane Use': ENERGY_TYPE_BY_METER_TYPE[PROPANE],
-        'Wood Use': ENERGY_TYPE_BY_METER_TYPE[WOOD],
-        'Electricity Use (Unknown)': ENERGY_TYPE_BY_METER_TYPE[ELECTRICITY_UNKNOWN],
+        "Coal Use (Anthracite)": ENERGY_TYPE_BY_METER_TYPE[COAL_ANTHRACITE],
+        "Coal Use (Bituminous)": ENERGY_TYPE_BY_METER_TYPE[COAL_BITUMINOUS],
+        "Coke": ENERGY_TYPE_BY_METER_TYPE[COKE],
+        "Diesel": ENERGY_TYPE_BY_METER_TYPE[DIESEL],
+        "District Chilled Water Use (Absorption)": ENERGY_TYPE_BY_METER_TYPE[DISTRICT_CHILLED_WATER_ABSORPTION],
+        "District Chilled Water Use (Electric)": ENERGY_TYPE_BY_METER_TYPE[DISTRICT_CHILLED_WATER_ELECTRIC],
+        "District Chilled Water Use (Engine)": ENERGY_TYPE_BY_METER_TYPE[DISTRICT_CHILLED_WATER_ENGINE],
+        "District Chilled Water Use (Other)": ENERGY_TYPE_BY_METER_TYPE[DISTRICT_CHILLED_WATER_OTHER],
+        "District Hot Water Use": ENERGY_TYPE_BY_METER_TYPE[DISTRICT_HOT_WATER],
+        "District Steam Use": ENERGY_TYPE_BY_METER_TYPE[DISTRICT_STEAM],
+        "Electricity Use (Grid)": ENERGY_TYPE_BY_METER_TYPE[ELECTRICITY_GRID],
+        "Electricity Use (Solar)": ENERGY_TYPE_BY_METER_TYPE[ELECTRICITY_SOLAR],
+        "Electricity Use (Wind)": ENERGY_TYPE_BY_METER_TYPE[ELECTRICITY_WIND],
+        "Fuel Oil Use (No. 1)": ENERGY_TYPE_BY_METER_TYPE[FUEL_OIL_NO_1],
+        "Fuel Oil Use (No. 2)": ENERGY_TYPE_BY_METER_TYPE[FUEL_OIL_NO_2],
+        "Fuel Oil Use (No. 4)": ENERGY_TYPE_BY_METER_TYPE[FUEL_OIL_NO_4],
+        "Fuel Oil Use (No. 5 and No. 6)": ENERGY_TYPE_BY_METER_TYPE[FUEL_OIL_NO_5_AND_NO_6],
+        "Kerosene Use": ENERGY_TYPE_BY_METER_TYPE[KEROSENE],
+        "Natural Gas Use": ENERGY_TYPE_BY_METER_TYPE[NATURAL_GAS],
+        "Other Use": ENERGY_TYPE_BY_METER_TYPE[OTHER],
+        "Propane Use": ENERGY_TYPE_BY_METER_TYPE[PROPANE],
+        "Wood Use": ENERGY_TYPE_BY_METER_TYPE[WOOD],
+        "Electricity Use (Unknown)": ENERGY_TYPE_BY_METER_TYPE[ELECTRICITY_UNKNOWN],
         # these values are added based on known usage
-        'Fuel Oil #2 Use': ENERGY_TYPE_BY_METER_TYPE[FUEL_OIL_NO_2],
-        'Diesel #2 Use': ENERGY_TYPE_BY_METER_TYPE[DIESEL],
+        "Fuel Oil #2 Use": ENERGY_TYPE_BY_METER_TYPE[FUEL_OIL_NO_2],
+        "Diesel #2 Use": ENERGY_TYPE_BY_METER_TYPE[DIESEL],
     }
 
     type_lookup = {name: id for id, name in ENERGY_TYPES}
@@ -112,11 +112,11 @@ class Meter(models.Model):
     MANUAL_ENTRY = 5
 
     SOURCES = (
-        (PORTFOLIO_MANAGER, 'Portfolio Manager'),
-        (GREENBUTTON, 'GreenButton'),
-        (BUILDINGSYNC, 'BuildingSync'),
-        (PORTFOLIO_MANAGER_DATA_REQUEST, 'Portfolio Manager'),
-        (MANUAL_ENTRY, 'Manual Entry'),
+        (PORTFOLIO_MANAGER, "Portfolio Manager"),
+        (GREENBUTTON, "GreenButton"),
+        (BUILDINGSYNC, "BuildingSync"),
+        (PORTFOLIO_MANAGER_DATA_REQUEST, "Portfolio Manager"),
+        (MANUAL_ENTRY, "Manual Entry"),
     )
 
     # The alias can be thought of as the "name" of the meter. Not
@@ -124,7 +124,7 @@ class Meter(models.Model):
     alias = models.CharField(max_length=255, null=True, blank=True)
     is_virtual = models.BooleanField(default=False)
 
-    property = models.ForeignKey(Property, on_delete=models.CASCADE, related_name='meters', null=True, blank=True)
+    property = models.ForeignKey(Property, on_delete=models.CASCADE, related_name="meters", null=True, blank=True)
 
     source = models.IntegerField(choices=SOURCES, default=None, null=True)
     source_id = models.CharField(max_length=255, null=True, blank=True)
@@ -142,11 +142,11 @@ class Meter(models.Model):
         """
         if overlaps_possible:
             sql = (
-                'INSERT INTO seed_meterreading(meter_id, start_time, end_time, reading, source_unit, conversion_factor) '
-                'VALUES %s '
-                'ON CONFLICT (meter_id, start_time, end_time) '
-                'DO UPDATE SET reading=excluded.reading, source_unit=excluded.source_unit, conversion_factor=excluded.conversion_factor '
-                'RETURNING reading'
+                "INSERT INTO seed_meterreading(meter_id, start_time, end_time, reading, source_unit, conversion_factor) "
+                "VALUES %s "
+                "ON CONFLICT (meter_id, start_time, end_time) "
+                "DO UPDATE SET reading=excluded.reading, source_unit=excluded.source_unit, conversion_factor=excluded.conversion_factor "
+                "RETURNING reading"
             )
 
             with connection.cursor() as cursor:
@@ -154,7 +154,7 @@ class Meter(models.Model):
                     cursor,
                     sql,
                     source_meter.meter_readings.values(),
-                    template=f'({self.id}, %(start_time)s, %(end_time)s, %(reading)s, %(source_unit)s, %(conversion_factor)s)',
+                    template=f"({self.id}, %(start_time)s, %(end_time)s, %(reading)s, %(source_unit)s, %(conversion_factor)s)",
                 )
         else:
             readings = {
@@ -184,7 +184,7 @@ class MeterReading(models.Model):
     will contain the original units and meter readings.
     """
 
-    meter = models.ForeignKey(Meter, on_delete=models.CASCADE, related_name='meter_readings', null=True, blank=True)
+    meter = models.ForeignKey(Meter, on_delete=models.CASCADE, related_name="meter_readings", null=True, blank=True)
 
     start_time = models.DateTimeField(db_index=True, primary_key=True)
     end_time = models.DateTimeField(db_index=True)
@@ -198,4 +198,4 @@ class MeterReading(models.Model):
     conversion_factor = models.FloatField()
 
     class Meta:
-        unique_together = ('meter', 'start_time', 'end_time')
+        unique_together = ("meter", "start_time", "end_time")

@@ -5,13 +5,13 @@ from django.db import migrations
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('orgs', '0019_organization_better_analysis_api_key'),
+        ("orgs", "0019_organization_better_analysis_api_key"),
     ]
 
     operations = [
         migrations.RenameField(
-            model_name='organization',
-            old_name='display_significant_figures',
-            new_name='display_decimal_places',
+            model_name="organization",
+            old_name="display_significant_figures",
+            new_name="display_decimal_places",
         ),
     ]

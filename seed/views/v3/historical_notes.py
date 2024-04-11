@@ -14,11 +14,11 @@ from seed.utils.viewsets import UpdateWithoutPatchModelMixin
 
 
 @method_decorator(
-    name='update',
+    name="update",
     decorator=[
         swagger_auto_schema_org_query_param,
-        has_perm_class('requires_member'),
-        has_hierarchy_access(property_id_kwarg='property_pk'),
+        has_perm_class("requires_member"),
+        has_hierarchy_access(property_id_kwarg="property_pk"),
     ],
 )
 class HistoricalNoteViewSet(UpdateWithoutPatchModelMixin, OrgMixin):

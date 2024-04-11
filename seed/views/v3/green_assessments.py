@@ -14,27 +14,27 @@ from seed.utils.viewsets import SEEDOrgCreateUpdateModelViewSet
 
 
 @method_decorator(
-    name='update',
+    name="update",
     decorator=[
-        has_perm_class('requires_root_member_access'),
+        has_perm_class("requires_root_member_access"),
     ],
 )
 @method_decorator(
-    name='destroy',
+    name="destroy",
     decorator=[
-        has_perm_class('requires_root_member_access'),
+        has_perm_class("requires_root_member_access"),
     ],
 )
 @method_decorator(
-    name='retrieve',
+    name="retrieve",
     decorator=[
-        has_perm_class('requires_root_member_access'),
+        has_perm_class("requires_root_member_access"),
     ],
 )
 @method_decorator(
-    name='list',
+    name="list",
     decorator=[
-        has_perm_class('requires_root_member_access'),
+        has_perm_class("requires_root_member_access"),
     ],
 )
 class GreenAssessmentViewSet(SEEDOrgCreateUpdateModelViewSet):

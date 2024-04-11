@@ -71,13 +71,13 @@ class EquivalencePartitioner:
         elif equivalence_type == TaxLotState:
             return cls.make_taxlotstate_equivalence()
         else:
-            err_msg = f"Type '{equivalence_type.__class__.__name__}' does not have a default " 'EquivalencePartitioner set.'
+            err_msg = f"Type '{equivalence_type.__class__.__name__}' does not have a default " "EquivalencePartitioner set."
             raise ValueError(err_msg)
 
     @classmethod
     def make_propertystate_equivalence(cls):
-        property_equivalence_fields = [('ubid',), ('pm_property_id', 'custom_id_1'), ('custom_id_1',), ('normalized_address',)]
-        property_noequivalence_fields = ['pm_property_id']
+        property_equivalence_fields = [("ubid",), ("pm_property_id", "custom_id_1"), ("custom_id_1",), ("normalized_address",)]
+        property_noequivalence_fields = ["pm_property_id"]
 
         return cls(property_equivalence_fields, property_noequivalence_fields)
 
@@ -96,8 +96,8 @@ class EquivalencePartitioner:
 
         - Their jurisdiction_tax_lot_ids do not match.
         """
-        tax_lot_equivalence_fields = [('jurisdiction_tax_lot_id', 'custom_id_1'), ('ubid',), ('custom_id_1',), ('normalized_address',)]
-        tax_lot_noequivalence_fields = ['jurisdiction_tax_lot_id']
+        tax_lot_equivalence_fields = [("jurisdiction_tax_lot_id", "custom_id_1"), ("ubid",), ("custom_id_1",), ("normalized_address",)]
+        tax_lot_noequivalence_fields = ["jurisdiction_tax_lot_id"]
         return cls(tax_lot_equivalence_fields, tax_lot_noequivalence_fields)
 
     @staticmethod

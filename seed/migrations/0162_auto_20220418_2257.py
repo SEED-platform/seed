@@ -5,18 +5,18 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('seed', '0161_alter_inventorydocument_file_type'),
+        ("seed", "0161_alter_inventorydocument_file_type"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='datalogger',
-            name='is_occupied_data',
+            model_name="datalogger",
+            name="is_occupied_data",
             field=models.JSONField(default=dict),
         ),
         migrations.AddField(
-            model_name='sensorreading',
-            name='is_occupied',
+            model_name="sensorreading",
+            name="is_occupied",
             field=models.BooleanField(default=False),
             preserve_default=False,
         ),

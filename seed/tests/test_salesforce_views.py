@@ -34,7 +34,7 @@ from seed.views.v3.label_inventories import LabelInventoryViewSet
 
 class SalesforceViewTests(DataMappingBaseTestCase):
     def setUp(self):
-        user_details = {'username': 'test_user@demo.com', 'password': 'test_pass', 'email': 'test_user@demo.com'}
+        user_details = {"username": "test_user@demo.com", "password": "test_pass", "email": "test_user@demo.com"}
         self.api_view = LabelInventoryViewSet()
         self.user = User.objects.create_superuser(**user_details)
         self.org, self.org_user, _ = create_organization(self.user)
@@ -48,31 +48,31 @@ class SalesforceViewTests(DataMappingBaseTestCase):
         self.client.login(**user_details)
 
         # setup labels
-        self.ind_label = Label.objects.create(name='Indication Label', super_organization=self.org)
-        self.violation_label = Label.objects.create(name='Violation Label', super_organization=self.org)
-        self.compliance_label = Label.objects.create(name='Compliance Label', super_organization=self.org)
+        self.ind_label = Label.objects.create(name="Indication Label", super_organization=self.org)
+        self.violation_label = Label.objects.create(name="Violation Label", super_organization=self.org)
+        self.compliance_label = Label.objects.create(name="Compliance Label", super_organization=self.org)
 
         # setup some columns
         self.benchmark_col, _ = Column.objects.get_or_create(
-            table_name='PropertyState',
-            column_name='Salesforce Benchmark ID',
+            table_name="PropertyState",
+            column_name="Salesforce Benchmark ID",
             organization=self.org,
             is_extra_data=True,
         )
         self.sqft_col, _ = Column.objects.get_or_create(
-            table_name='PropertyState',
-            column_name='Property GFA - Calculated (Buildings and Parking) (ft2)',
+            table_name="PropertyState",
+            column_name="Property GFA - Calculated (Buildings and Parking) (ft2)",
             organization=self.org,
             is_extra_data=True,
         )
         self.site_eui_col, _ = Column.objects.get_or_create(
-            table_name='PropertyState',
-            column_name='site_eui',
+            table_name="PropertyState",
+            column_name="site_eui",
             organization=self.org,
-            display_name='Site EUI',
-            column_description='Site EUI',
+            display_name="Site EUI",
+            column_description="Site EUI",
             is_extra_data=False,
-            data_type='eui',
+            data_type="eui",
         )
 
         self.sf_config = SalesforceConfig.objects.create(
@@ -81,31 +81,31 @@ class SalesforceViewTests(DataMappingBaseTestCase):
             indication_label=self.ind_label,
             violation_label=self.violation_label,
             seed_benchmark_id_column=self.benchmark_col,
-            unique_benchmark_id_fieldname='Salesforce_Benchmark_ID__c',
-            status_fieldname='Status__c',
+            unique_benchmark_id_fieldname="Salesforce_Benchmark_ID__c",
+            status_fieldname="Status__c",
         )
 
         # test saving salesforce mappings / CRUD
         self.mapping_sqft = SalesforceMapping.objects.create(
-            salesforce_fieldname='Benchmark_Square_Footage__c',
+            salesforce_fieldname="Benchmark_Square_Footage__c",
             column=self.sqft_col,
             organization=self.org,
         )
 
         self.mapping_site_eui = SalesforceMapping.objects.create(
-            salesforce_fieldname='Site_EUI_kBtu_ft2__c',
+            salesforce_fieldname="Site_EUI_kBtu_ft2__c",
             column=self.site_eui_col,
             organization=self.org,
         )
 
     def test_update_at_hour_constraint(self):
-        constraint_name = 'salesforce_update_at_hour_range'
+        constraint_name = "salesforce_update_at_hour_range"
         self.sf_config.update_at_hour = 25
         with transaction.atomic(), self.assertRaisesMessage(IntegrityError, constraint_name):
             self.sf_config.save()
 
     def test_update_at_minute_constraint(self):
-        constraint_name = 'salesforce_update_at_minute_range'
+        constraint_name = "salesforce_update_at_minute_range"
         self.sf_config.update_at_minute = 62
         with transaction.atomic(), self.assertRaisesMessage(IntegrityError, constraint_name):
             self.sf_config.save()
@@ -114,34 +114,34 @@ class SalesforceViewTests(DataMappingBaseTestCase):
         # use new org b/c can only have 1 config record on an org
         temp_org, _, _ = create_organization(self.user)
 
-        ind_label = Label.objects.create(name='Indication Label', super_organization=temp_org)
-        violation_label = Label.objects.create(name='Violation Label', super_organization=temp_org)
-        compliance_label = Label.objects.create(name='Compliance Label', super_organization=temp_org)
+        ind_label = Label.objects.create(name="Indication Label", super_organization=temp_org)
+        violation_label = Label.objects.create(name="Violation Label", super_organization=temp_org)
+        compliance_label = Label.objects.create(name="Compliance Label", super_organization=temp_org)
 
-        status_fieldname = 'Status__Yay__c'
+        status_fieldname = "Status__Yay__c"
 
         payload_data = {
-            'indication_label': ind_label.id,
-            'violation_label': violation_label.id,
-            'compliance_label': compliance_label.id,
-            'unique_benchmark_id_fieldname': 'Salesforce_Benchmark_ID__c',
-            'status_fieldname': status_fieldname,
+            "indication_label": ind_label.id,
+            "violation_label": violation_label.id,
+            "compliance_label": compliance_label.id,
+            "unique_benchmark_id_fieldname": "Salesforce_Benchmark_ID__c",
+            "status_fieldname": status_fieldname,
         }
 
         response = self.client.post(
-            reverse('api:v3:salesforce_configs-list') + '?organization_id=' + str(temp_org.id),
+            reverse("api:v3:salesforce_configs-list") + "?organization_id=" + str(temp_org.id),
             data=json.dumps(payload_data),
-            content_type='application/json',
+            content_type="application/json",
         )
         data = json.loads(response.content)
-        self.assertEqual(data['status'], 'success')
+        self.assertEqual(data["status"], "success")
 
-        tmp_sf_config = SalesforceConfig.objects.get(pk=data['salesforce_config']['id'])
+        tmp_sf_config = SalesforceConfig.objects.get(pk=data["salesforce_config"]["id"])
         self.assertTrue(isinstance(tmp_sf_config, SalesforceConfig))
         self.assertEqual(tmp_sf_config.status_fieldname, status_fieldname)
 
         # test editing salesforce configs
-        tmp_contact_rec_type = 'testing_editing'
+        tmp_contact_rec_type = "testing_editing"
         tmp_sf_config.contact_rec_type = tmp_contact_rec_type
         tmp_sf_config.save()
 
@@ -151,33 +151,33 @@ class SalesforceViewTests(DataMappingBaseTestCase):
         # test saving salesforce mappings
 
         self.energystar_col, _ = Column.objects.get_or_create(
-            table_name='PropertyState', column_name='ENERGY STAR Score', organization=self.org, is_extra_data=True
+            table_name="PropertyState", column_name="ENERGY STAR Score", organization=self.org, is_extra_data=True
         )
 
         # create new mapping
-        payload_data = {'salesforce_fieldname': 'ENERGY_STAR_Score__c', 'column': self.site_eui_col.id}
+        payload_data = {"salesforce_fieldname": "ENERGY_STAR_Score__c", "column": self.site_eui_col.id}
         response = self.client.post(
-            reverse('api:v3:salesforce_mappings-list') + '?organization_id=' + str(self.org.id),
+            reverse("api:v3:salesforce_mappings-list") + "?organization_id=" + str(self.org.id),
             data=json.dumps(payload_data),
-            content_type='application/json',
+            content_type="application/json",
         )
         data = json.loads(response.content)
-        self.assertEqual(data['status'], 'success')
+        self.assertEqual(data["status"], "success")
 
-        self.mapping_energystar = SalesforceMapping.objects.filter(salesforce_fieldname='ENERGY_STAR_Score__c').first()
+        self.mapping_energystar = SalesforceMapping.objects.filter(salesforce_fieldname="ENERGY_STAR_Score__c").first()
 
         # Edit salesforce mappings
-        new_data = {'salesforce_fieldname': 'the_new_field__c'}
-        url = reverse('api:v3:salesforce_mappings-detail', args=[self.mapping_energystar.pk]) + f'?organization_id={self.org.pk}'
-        response = self.client.put(url, json.dumps(new_data), content_type='application/json')
+        new_data = {"salesforce_fieldname": "the_new_field__c"}
+        url = reverse("api:v3:salesforce_mappings-detail", args=[self.mapping_energystar.pk]) + f"?organization_id={self.org.pk}"
+        response = self.client.put(url, json.dumps(new_data), content_type="application/json")
         data = json.loads(response.content)
-        self.assertEqual(data['status'], 'success')
+        self.assertEqual(data["status"], "success")
 
         mapping = SalesforceMapping.objects.get(pk=self.mapping_energystar.pk)
-        self.assertEqual(mapping.salesforce_fieldname, new_data['salesforce_fieldname'])
+        self.assertEqual(mapping.salesforce_fieldname, new_data["salesforce_fieldname"])
 
         # TODO: use view to delete
-        self.client.delete(url, content_type='application/json')
+        self.client.delete(url, content_type="application/json")
 
         # catch exception here
         with pytest.raises(SalesforceMapping.DoesNotExist):
@@ -190,19 +190,19 @@ class SalesforceViewTests(DataMappingBaseTestCase):
         self.org.salesforce_enabled = True
         self.org.save()
 
-        payload_data = {'salesforce_config': {'instance': None, 'username': None, 'password': None, 'security_token': None}}
-        if SF_DOMAIN == 'test':
-            payload_data['salesforce_config']['domain'] = SF_DOMAIN
+        payload_data = {"salesforce_config": {"instance": None, "username": None, "password": None, "security_token": None}}
+        if SF_DOMAIN == "test":
+            payload_data["salesforce_config"]["domain"] = SF_DOMAIN
 
         response = self.client.post(
-            reverse('api:v3:salesforce_configs-salesforce-connection') + '?organization_id=' + str(self.org.id),
+            reverse("api:v3:salesforce_configs-salesforce-connection") + "?organization_id=" + str(self.org.id),
             data=json.dumps(payload_data),
-            content_type='application/json',
+            content_type="application/json",
         )
         data = json.loads(response.content)
 
-        self.assertEqual(data['status'], 'error')
-        self.assertIn('Salesforce Authentication Failed:', data['message'])
+        self.assertEqual(data["status"], "error")
+        self.assertIn("Salesforce Authentication Failed:", data["message"])
 
     def test_salesforce_connection_success(self):
         # test salesforce connection
@@ -212,40 +212,40 @@ class SalesforceViewTests(DataMappingBaseTestCase):
         self.org.save()
 
         payload_data = {
-            'salesforce_config': {
-                'instance': SF_INSTANCE,
-                'username': SF_USERNAME,
-                'password': SF_PASSWORD,
-                'security_token': SF_SECURITY_TOKEN,
+            "salesforce_config": {
+                "instance": SF_INSTANCE,
+                "username": SF_USERNAME,
+                "password": SF_PASSWORD,
+                "security_token": SF_SECURITY_TOKEN,
             }
         }
 
-        if SF_DOMAIN == 'test':
-            payload_data['salesforce_config']['domain'] = SF_DOMAIN
+        if SF_DOMAIN == "test":
+            payload_data["salesforce_config"]["domain"] = SF_DOMAIN
 
         response = self.client.post(
-            reverse('api:v3:salesforce_configs-salesforce-connection') + '?organization_id=' + str(self.org.id),
+            reverse("api:v3:salesforce_configs-salesforce-connection") + "?organization_id=" + str(self.org.id),
             data=json.dumps(payload_data),
-            content_type='application/json',
+            content_type="application/json",
         )
         data = json.loads(response.content)
 
-        self.assertEqual(data['status'], 'success')
+        self.assertEqual(data["status"], "success")
 
     def test_pushing_salesforce_benchmark(self):
         state = self.property_state_factory.get_property_state()
 
         # this ID should be valid for the test salesforce sandbox
-        state.extra_data['Salesforce Benchmark ID'] = 'a0156000004sfsE'
+        state.extra_data["Salesforce Benchmark ID"] = "a0156000004sfsE"
         # add other Instance specific mappings for testing
-        state.extra_data['Property GFA - Calculated (Buildings and Parking) (ft2)'] = state.gross_floor_area
+        state.extra_data["Property GFA - Calculated (Buildings and Parking) (ft2)"] = state.gross_floor_area
         state.save()
 
         property = self.property_factory.get_property()
         view = PropertyView.objects.create(property=property, cycle=self.cycle, state=state)
 
-        self.api_view.add_labels(self.api_view.models['property'].objects.none(), 'property', [view.id], [self.ind_label.id])
-        self.api_view.add_labels(self.api_view.models['property'].objects.none(), 'property', [view.id], [self.compliance_label.id])
+        self.api_view.add_labels(self.api_view.models["property"].objects.none(), "property", [view.id], [self.ind_label.id])
+        self.api_view.add_labels(self.api_view.models["property"].objects.none(), "property", [view.id], [self.compliance_label.id])
 
         # pdata = PropertyViewSerializer(view).data
         # print(f" view data: {pdata}")
@@ -255,7 +255,7 @@ class SalesforceViewTests(DataMappingBaseTestCase):
         self.sf_config.username = SF_USERNAME
         self.sf_config.password = encrypt(SF_PASSWORD)
         self.sf_config.security_token = SF_SECURITY_TOKEN
-        if SF_DOMAIN == 'test':
+        if SF_DOMAIN == "test":
             self.sf_config.domain = SF_DOMAIN
         self.sf_config.save()
 
@@ -272,7 +272,7 @@ class SalesforceViewTests(DataMappingBaseTestCase):
         with transaction.atomic(), pytest.raises(IntegrityError):
             SalesforceConfig.objects.create(
                 organization=self.org,
-                status_fieldname='Status__c',
+                status_fieldname="Status__c",
             )
 
     def test_no_sync_when_disabled(self):
@@ -285,12 +285,12 @@ class SalesforceViewTests(DataMappingBaseTestCase):
         self.org.save()
 
         response = self.client.post(
-            reverse('api:v3:salesforce_configs-sync') + '?organization_id=' + str(self.org.id), data={}, content_type='application/json'
+            reverse("api:v3:salesforce_configs-sync") + "?organization_id=" + str(self.org.id), data={}, content_type="application/json"
         )
         data = json.loads(response.content)
 
-        self.assertEqual(data['status'], 'error')
-        self.assertIn('Salesforce Workflow is not enabled', data['message'][0])
+        self.assertEqual(data["status"], "error")
+        self.assertIn("Salesforce Workflow is not enabled", data["message"][0])
 
     # TODO: test auto sync works and sets date
 
@@ -305,21 +305,21 @@ class SalesforceViewTestPermissions(AccessLevelBaseTestCase):
         self.login_as_root_member()
 
         # setup labels
-        self.ind_label = Label.objects.create(name='Indication Label', super_organization=self.org)
-        self.violation_label = Label.objects.create(name='Violation Label', super_organization=self.org)
-        self.compliance_label = Label.objects.create(name='Compliance Label', super_organization=self.org)
+        self.ind_label = Label.objects.create(name="Indication Label", super_organization=self.org)
+        self.violation_label = Label.objects.create(name="Violation Label", super_organization=self.org)
+        self.compliance_label = Label.objects.create(name="Compliance Label", super_organization=self.org)
 
         # setup some columns
         self.benchmark_col = Column.objects.create(
-            table_name='PropertyState',
-            column_name='Salesforce Benchmark ID',
+            table_name="PropertyState",
+            column_name="Salesforce Benchmark ID",
             organization=self.org,
             is_extra_data=True,
         )
 
         self.another_col = Column.objects.create(
-            table_name='PropertyState',
-            column_name='Another Field',
+            table_name="PropertyState",
+            column_name="Another Field",
             organization=self.org,
             is_extra_data=True,
         )
@@ -330,159 +330,159 @@ class SalesforceViewTestPermissions(AccessLevelBaseTestCase):
             indication_label=self.ind_label,
             violation_label=self.violation_label,
             seed_benchmark_id_column=self.benchmark_col,
-            unique_benchmark_id_fieldname='Salesforce_Benchmark_ID__c',
-            status_fieldname='Status__c',
+            unique_benchmark_id_fieldname="Salesforce_Benchmark_ID__c",
+            status_fieldname="Status__c",
         )
 
     def test_save_salesforce_config_perms(self):
         # use new org b/c can only have 1 config record on an org
         temp_org, _, _ = create_organization(self.root_owner_user)
         # add child  member to this new org
-        temp_org.access_level_names = ['root', 'child']
-        temp_child_level_instance = temp_org.add_new_access_level_instance(temp_org.root.id, 'child')
+        temp_org.access_level_names = ["root", "child"]
+        temp_child_level_instance = temp_org.add_new_access_level_instance(temp_org.root.id, "child")
         temp_org.add_member(self.child_member_user, temp_child_level_instance.pk, ROLE_MEMBER)
         temp_org.save()
 
-        ind_label = Label.objects.create(name='Indication Label', super_organization=temp_org)
-        violation_label = Label.objects.create(name='Violation Label', super_organization=temp_org)
-        compliance_label = Label.objects.create(name='Compliance Label', super_organization=temp_org)
+        ind_label = Label.objects.create(name="Indication Label", super_organization=temp_org)
+        violation_label = Label.objects.create(name="Violation Label", super_organization=temp_org)
+        compliance_label = Label.objects.create(name="Compliance Label", super_organization=temp_org)
 
-        status_fieldname = 'Status__Yay__c'
+        status_fieldname = "Status__Yay__c"
 
         payload_data = {
-            'indication_label': ind_label.id,
-            'violation_label': violation_label.id,
-            'compliance_label': compliance_label.id,
-            'unique_benchmark_id_fieldname': 'Salesforce_Benchmark_ID__c',
-            'status_fieldname': status_fieldname,
+            "indication_label": ind_label.id,
+            "violation_label": violation_label.id,
+            "compliance_label": compliance_label.id,
+            "unique_benchmark_id_fieldname": "Salesforce_Benchmark_ID__c",
+            "status_fieldname": status_fieldname,
         }
 
         # create
-        url = reverse('api:v3:salesforce_configs-list') + '?organization_id=' + str(temp_org.id)
+        url = reverse("api:v3:salesforce_configs-list") + "?organization_id=" + str(temp_org.id)
         # (child) member cannot (permission denied vs. not found)
         self.login_as_child_member()
-        response = self.client.post(url, data=json.dumps(payload_data), content_type='application/json')
+        response = self.client.post(url, data=json.dumps(payload_data), content_type="application/json")
         assert response.status_code == 403
 
         self.login_as_root_owner()
-        response = self.client.post(url, data=json.dumps(payload_data), content_type='application/json')
+        response = self.client.post(url, data=json.dumps(payload_data), content_type="application/json")
         assert response.status_code == 200
         data = json.loads(response.content)
 
         # get detail
-        new_data = data['salesforce_config']
-        sf_id = data['salesforce_config']['id']
-        url = reverse('api:v3:salesforce_configs-detail', args=[sf_id]) + f'?organization_id={temp_org.pk}'
+        new_data = data["salesforce_config"]
+        sf_id = data["salesforce_config"]["id"]
+        url = reverse("api:v3:salesforce_configs-detail", args=[sf_id]) + f"?organization_id={temp_org.pk}"
 
         # child member cannot
         self.login_as_child_member()
-        response = self.client.get(url, content_type='application/json')
+        response = self.client.get(url, content_type="application/json")
         assert response.status_code == 403
 
         # root owner can
         self.login_as_root_owner()
-        response = self.client.get(url, content_type='application/json')
+        response = self.client.get(url, content_type="application/json")
         assert response.status_code == 200
 
         # edit
-        new_data['status_fieldname'] = 'A_new_fieldname__c'
+        new_data["status_fieldname"] = "A_new_fieldname__c"
         # child member cannot
         self.login_as_child_member()
-        response = self.client.put(url, json.dumps(new_data), content_type='application/json')
+        response = self.client.put(url, json.dumps(new_data), content_type="application/json")
         assert response.status_code == 403
 
         # root owner can
         self.login_as_root_owner()
-        response = self.client.put(url, json.dumps(new_data), content_type='application/json')
+        response = self.client.put(url, json.dumps(new_data), content_type="application/json")
         assert response.status_code == 200
 
     def test_save_salesforce_mapping_perms(self):
         # test saving salesforce mappings (root member only)
         self.energystar_col = Column.objects.create(
-            table_name='PropertyState', column_name='ENERGY STAR Score', organization=self.org, is_extra_data=True
+            table_name="PropertyState", column_name="ENERGY STAR Score", organization=self.org, is_extra_data=True
         )
 
         # create new mapping
-        payload_data = {'salesforce_fieldname': 'ENERGY_STAR_Score__c', 'column': self.another_col.id}
+        payload_data = {"salesforce_fieldname": "ENERGY_STAR_Score__c", "column": self.another_col.id}
 
         # child member cannot (permission denied)
         self.login_as_child_member()
         response = self.client.post(
-            reverse('api:v3:salesforce_mappings-list') + '?organization_id=' + str(self.org.id),
+            reverse("api:v3:salesforce_mappings-list") + "?organization_id=" + str(self.org.id),
             data=json.dumps(payload_data),
-            content_type='application/json',
+            content_type="application/json",
         )
         assert response.status_code == 403
 
         # root owner can
         self.login_as_root_owner()
         response = self.client.post(
-            reverse('api:v3:salesforce_mappings-list') + '?organization_id=' + str(self.org.id),
+            reverse("api:v3:salesforce_mappings-list") + "?organization_id=" + str(self.org.id),
             data=json.dumps(payload_data),
-            content_type='application/json',
+            content_type="application/json",
         )
         assert response.status_code == 200
 
-        self.mapping_energystar = SalesforceMapping.objects.filter(salesforce_fieldname='ENERGY_STAR_Score__c').first()
+        self.mapping_energystar = SalesforceMapping.objects.filter(salesforce_fieldname="ENERGY_STAR_Score__c").first()
 
         # Edit salesforce mappings
-        new_data = {'salesforce_fieldname': 'the_new_field__c'}
-        url = reverse('api:v3:salesforce_mappings-detail', args=[self.mapping_energystar.pk]) + f'?organization_id={self.org.pk}'
+        new_data = {"salesforce_fieldname": "the_new_field__c"}
+        url = reverse("api:v3:salesforce_mappings-detail", args=[self.mapping_energystar.pk]) + f"?organization_id={self.org.pk}"
 
         # child member cannot
         self.login_as_child_member()
-        response = self.client.put(url, json.dumps(new_data), content_type='application/json')
+        response = self.client.put(url, json.dumps(new_data), content_type="application/json")
         assert response.status_code == 403
 
         # root owner can
         self.login_as_root_owner()
-        response = self.client.put(url, json.dumps(new_data), content_type='application/json')
+        response = self.client.put(url, json.dumps(new_data), content_type="application/json")
         assert response.status_code == 200
 
         # Delete salesforce mapping
         # child member cannot
         self.login_as_child_member()
-        response = self.client.delete(url, content_type='application/json')
+        response = self.client.delete(url, content_type="application/json")
         assert response.status_code == 403
 
         # root owner can
         self.login_as_root_owner()
-        response = self.client.delete(url, content_type='application/json')
+        response = self.client.delete(url, content_type="application/json")
         assert response.status_code == 200
 
     def test_property_update_salesforce_perms(self):
         state = self.property_state_factory.get_property_state()
 
         # this ID should be valid for the test salesforce sandbox
-        state.extra_data['Salesforce Benchmark ID'] = 'a0156000004sfsE'
+        state.extra_data["Salesforce Benchmark ID"] = "a0156000004sfsE"
         # add other Instance specific mappings for testing
-        state.extra_data['Property GFA - Calculated (Buildings and Parking) (ft2)'] = state.gross_floor_area
+        state.extra_data["Property GFA - Calculated (Buildings and Parking) (ft2)"] = state.gross_floor_area
         state.save()
 
         prprty = self.property_factory.get_property()
         view = PropertyView.objects.create(property=prprty, cycle=self.cycle, state=state)
 
-        self.api_view.add_labels(self.api_view.models['property'].objects.none(), 'property', [view.id], [self.ind_label.id])
-        self.api_view.add_labels(self.api_view.models['property'].objects.none(), 'property', [view.id], [self.compliance_label.id])
+        self.api_view.add_labels(self.api_view.models["property"].objects.none(), "property", [view.id], [self.ind_label.id])
+        self.api_view.add_labels(self.api_view.models["property"].objects.none(), "property", [view.id], [self.compliance_label.id])
 
         # enable sf
         self.sf_config.url = SF_INSTANCE
         self.sf_config.username = SF_USERNAME
         self.sf_config.password = encrypt(SF_PASSWORD)
         self.sf_config.security_token = SF_SECURITY_TOKEN
-        if SF_DOMAIN == 'test':
+        if SF_DOMAIN == "test":
             self.sf_config.domain = SF_DOMAIN
         self.sf_config.save()
 
-        url = reverse('api:v3:properties-update-salesforce') + f'?organization_id={self.org.pk}'
-        params = json.dumps({'property_view_ids': [view.id]})
+        url = reverse("api:v3:properties-update-salesforce") + f"?organization_id={self.org.pk}"
+        params = json.dumps({"property_view_ids": [view.id]})
 
         # child member cannot update parent property
         self.login_as_child_member()
-        resp = self.client.post(url, params, content_type='application/json')
+        resp = self.client.post(url, params, content_type="application/json")
         assert resp.status_code == 404
 
         # root member can
         self.login_as_root_member()
-        resp = self.client.post(url, params, content_type='application/json')
+        resp = self.client.post(url, params, content_type="application/json")
         assert resp.status_code == 200

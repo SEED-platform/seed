@@ -20,11 +20,11 @@ from seed.utils.organizations import create_organization
 class TestAnalysisMessage(TestCase):
     def setUp(self):
         user_details = {
-            'username': 'test_user@demo.com',
-            'password': 'test_pass',
-            'email': 'test_user@demo.com',
-            'first_name': 'Test',
-            'last_name': 'User',
+            "username": "test_user@demo.com",
+            "password": "test_pass",
+            "email": "test_user@demo.com",
+            "first_name": "Test",
+            "last_name": "User",
         }
         self.user = User.objects.create_user(**user_details)
         self.org, _, _ = create_organization(self.user)
@@ -35,12 +35,12 @@ class TestAnalysisMessage(TestCase):
 
     def test_log_and_create_logs_messages_and_creates_analysis_message(self):
         # Setup
-        logger = logging.getLogger('test-logger')
-        user_message = 'Message to the user'
-        debug_message = 'This error was intentional'
+        logger = logging.getLogger("test-logger")
+        user_message = "Message to the user"
+        debug_message = "This error was intentional"
         analysis_id = self.analysis.id
         analysis_property_view_id = self.analysis_property_view.id
-        exception = Exception('My special exception')
+        exception = Exception("My special exception")
 
         # Act
         with self.assertLogs(logger) as cm:
@@ -57,17 +57,17 @@ class TestAnalysisMessage(TestCase):
         # Assert
         self.assertEqual(1, len(cm.output))
 
-        level, logger_name, message = cm.output[0].split(':', 2)
-        self.assertEqual('ERROR', level)
-        self.assertEqual('test-logger', logger_name)
+        level, logger_name, message = cm.output[0].split(":", 2)
+        self.assertEqual("ERROR", level)
+        self.assertEqual("test-logger", logger_name)
 
         parsed_message = json.loads(message)
         expected_message = {
-            'analysis_id': analysis_id,
-            'analysis_property_view': analysis_property_view_id,
-            'user_message': user_message,
-            'debug_message': debug_message,
-            'exception': repr(exception),
+            "analysis_id": analysis_id,
+            "analysis_property_view": analysis_property_view_id,
+            "user_message": user_message,
+            "debug_message": debug_message,
+            "exception": repr(exception),
         }
         self.assertDictEqual(expected_message, parsed_message)
 
@@ -76,47 +76,47 @@ class TestAnalysesViewPermissions(AccessLevelBaseTestCase):
     def setUp(self):
         super().setUp()
 
-        self.cycle = self.cycle_factory.get_cycle(name='Cycle A')
+        self.cycle = self.cycle_factory.get_cycle(name="Cycle A")
         self.root_analysis = Analysis.objects.create(
-            name='test',
+            name="test",
             service=Analysis.BSYNCR,
             status=Analysis.READY,
             user=self.root_owner_user,
             organization=self.org,
             access_level_instance=self.org.root,
-            configuration={'model_type': 'Simple Linear Regression'},
+            configuration={"model_type": "Simple Linear Regression"},
         )
 
         self.analysis_message = AnalysisMessage.objects.create(
             analysis_id=self.root_analysis.pk,
             type=AnalysisMessage.DEFAULT,
-            user_message='boo',
+            user_message="boo",
         )
 
     def test_analysis_message_list(self):
-        url = reverse_lazy('api:v3:analysis-messages-list', args=[self.root_analysis.pk])
-        url += '?organization_id=' + str(self.org.id)
+        url = reverse_lazy("api:v3:analysis-messages-list", args=[self.root_analysis.pk])
+        url += "?organization_id=" + str(self.org.id)
 
         # child user cannot
         self.login_as_child_member()
-        response = self.client.get(url, content_type='application/json')
+        response = self.client.get(url, content_type="application/json")
         assert response.status_code == 404
 
         # root users can create column in root
         self.login_as_root_member()
-        response = self.client.get(url, content_type='application/json')
+        response = self.client.get(url, content_type="application/json")
         assert response.status_code == 200
 
     def test_analysis_message_get(self):
-        url = reverse_lazy('api:v3:analysis-messages-detail', args=[self.root_analysis.pk, self.analysis_message.pk])
-        url += '?organization_id=' + str(self.org.id)
+        url = reverse_lazy("api:v3:analysis-messages-detail", args=[self.root_analysis.pk, self.analysis_message.pk])
+        url += "?organization_id=" + str(self.org.id)
 
         # child user cannot
         self.login_as_child_member()
-        response = self.client.get(url, content_type='application/json')
+        response = self.client.get(url, content_type="application/json")
         assert response.status_code == 404
 
         # root users can create column in root
         self.login_as_root_member()
-        response = self.client.get(url, content_type='application/json')
+        response = self.client.get(url, content_type="application/json")
         assert response.status_code == 200

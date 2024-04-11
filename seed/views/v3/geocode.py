@@ -25,16 +25,16 @@ class GeocodeViewSet(viewsets.ViewSet, OrgMixin):
         manual_parameters=[AutoSchemaHelper.query_org_id_field()],
         request_body=AutoSchemaHelper.schema_factory(
             {
-                'property_view_ids': ['integer'],
-                'taxlot_view_ids': ['integer'],
+                "property_view_ids": ["integer"],
+                "taxlot_view_ids": ["integer"],
             },
-            description='IDs by inventory type for records to be geocoded.',
+            description="IDs by inventory type for records to be geocoded.",
         ),
     )
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('can_modify_data')
-    @action(detail=False, methods=['POST'])
+    @has_perm_class("can_modify_data")
+    @action(detail=False, methods=["POST"])
     def geocode_by_ids(self, request):
         """
         Submit a request to geocode property and tax lot records.
@@ -42,8 +42,8 @@ class GeocodeViewSet(viewsets.ViewSet, OrgMixin):
         body = dict(request.data)
         org_id = self.get_organization(request)
         access_level_instance = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
-        property_view_ids = body.get('property_view_ids')
-        taxlot_view_ids = body.get('taxlot_view_ids')
+        property_view_ids = body.get("property_view_ids")
+        taxlot_view_ids = body.get("taxlot_view_ids")
 
         if property_view_ids:
             property_views = PropertyView.objects.filter(
@@ -52,7 +52,7 @@ class GeocodeViewSet(viewsets.ViewSet, OrgMixin):
                 property__access_level_instance__lft__gte=access_level_instance.lft,
                 property__access_level_instance__rgt__lte=access_level_instance.rgt,
             )
-            properties = PropertyState.objects.filter(id__in=Subquery(property_views.values('state_id')))
+            properties = PropertyState.objects.filter(id__in=Subquery(property_views.values("state_id")))
             geocode_buildings(properties)
 
         if taxlot_view_ids:
@@ -62,25 +62,25 @@ class GeocodeViewSet(viewsets.ViewSet, OrgMixin):
                 taxlot__access_level_instance__lft__gte=access_level_instance.lft,
                 taxlot__access_level_instance__rgt__lte=access_level_instance.rgt,
             )
-            taxlots = TaxLotState.objects.filter(id__in=Subquery(taxlot_views.values('state_id')))
+            taxlots = TaxLotState.objects.filter(id__in=Subquery(taxlot_views.values("state_id")))
             geocode_buildings(taxlots)
 
-        return JsonResponse({'status': 'success'})
+        return JsonResponse({"status": "success"})
 
     @swagger_auto_schema(
         manual_parameters=[AutoSchemaHelper.query_org_id_field()],
         request_body=AutoSchemaHelper.schema_factory(
             {
-                'property_view_ids': ['integer'],
-                'taxlot_view_ids': ['integer'],
+                "property_view_ids": ["integer"],
+                "taxlot_view_ids": ["integer"],
             },
-            description='IDs by inventory type for records to be used in building a geocoding summary.',
+            description="IDs by inventory type for records to be used in building a geocoding summary.",
         ),
     )
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('can_view_data')
-    @action(detail=False, methods=['POST'])
+    @has_perm_class("can_view_data")
+    @action(detail=False, methods=["POST"])
     def confidence_summary(self, request):
         """
         Generate a summary of geocoding confidence values for property and
@@ -89,8 +89,8 @@ class GeocodeViewSet(viewsets.ViewSet, OrgMixin):
         body = dict(request.data)
         org_id = self.get_organization(request)
         access_level_instance = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
-        property_view_ids = body.get('property_view_ids')
-        taxlot_view_ids = body.get('taxlot_view_ids')
+        property_view_ids = body.get("property_view_ids")
+        taxlot_view_ids = body.get("taxlot_view_ids")
 
         result = {}
 
@@ -101,24 +101,24 @@ class GeocodeViewSet(viewsets.ViewSet, OrgMixin):
                 property__access_level_instance__lft__gte=access_level_instance.lft,
                 property__access_level_instance__rgt__lte=access_level_instance.rgt,
             )
-            result['properties'] = {
-                'not_geocoded': PropertyState.objects.filter(
-                    id__in=Subquery(property_views.values('state_id')), geocoding_confidence__isnull=True
+            result["properties"] = {
+                "not_geocoded": PropertyState.objects.filter(
+                    id__in=Subquery(property_views.values("state_id")), geocoding_confidence__isnull=True
                 ).count(),
-                'high_confidence': PropertyState.objects.filter(
-                    id__in=Subquery(property_views.values('state_id')), geocoding_confidence__startswith='High'
+                "high_confidence": PropertyState.objects.filter(
+                    id__in=Subquery(property_views.values("state_id")), geocoding_confidence__startswith="High"
                 ).count(),
-                'low_confidence': PropertyState.objects.filter(
-                    id__in=Subquery(property_views.values('state_id')), geocoding_confidence__startswith='Low'
+                "low_confidence": PropertyState.objects.filter(
+                    id__in=Subquery(property_views.values("state_id")), geocoding_confidence__startswith="Low"
                 ).count(),
-                'census_geocoder': PropertyState.objects.filter(
-                    id__in=Subquery(property_views.values('state_id')), geocoding_confidence__startswith='Census'
+                "census_geocoder": PropertyState.objects.filter(
+                    id__in=Subquery(property_views.values("state_id")), geocoding_confidence__startswith="Census"
                 ).count(),
-                'manual': PropertyState.objects.filter(
-                    id__in=Subquery(property_views.values('state_id')), geocoding_confidence='Manually geocoded (N/A)'
+                "manual": PropertyState.objects.filter(
+                    id__in=Subquery(property_views.values("state_id")), geocoding_confidence="Manually geocoded (N/A)"
                 ).count(),
-                'missing_address_components': PropertyState.objects.filter(
-                    id__in=Subquery(property_views.values('state_id')), geocoding_confidence='Missing address components (N/A)'
+                "missing_address_components": PropertyState.objects.filter(
+                    id__in=Subquery(property_views.values("state_id")), geocoding_confidence="Missing address components (N/A)"
                 ).count(),
             }
 
@@ -129,24 +129,24 @@ class GeocodeViewSet(viewsets.ViewSet, OrgMixin):
                 taxlot__access_level_instance__lft__gte=access_level_instance.lft,
                 taxlot__access_level_instance__rgt__lte=access_level_instance.rgt,
             )
-            result['tax_lots'] = {
-                'not_geocoded': TaxLotState.objects.filter(
-                    id__in=Subquery(taxlot_views.values('state_id')), geocoding_confidence__isnull=True
+            result["tax_lots"] = {
+                "not_geocoded": TaxLotState.objects.filter(
+                    id__in=Subquery(taxlot_views.values("state_id")), geocoding_confidence__isnull=True
                 ).count(),
-                'high_confidence': TaxLotState.objects.filter(
-                    id__in=Subquery(taxlot_views.values('state_id')), geocoding_confidence__startswith='High'
+                "high_confidence": TaxLotState.objects.filter(
+                    id__in=Subquery(taxlot_views.values("state_id")), geocoding_confidence__startswith="High"
                 ).count(),
-                'low_confidence': TaxLotState.objects.filter(
-                    id__in=Subquery(taxlot_views.values('state_id')), geocoding_confidence__startswith='Low'
+                "low_confidence": TaxLotState.objects.filter(
+                    id__in=Subquery(taxlot_views.values("state_id")), geocoding_confidence__startswith="Low"
                 ).count(),
-                'census_geocoder': TaxLotState.objects.filter(
-                    id__in=Subquery(taxlot_views.values('state_id')), geocoding_confidence__startswith='Census'
+                "census_geocoder": TaxLotState.objects.filter(
+                    id__in=Subquery(taxlot_views.values("state_id")), geocoding_confidence__startswith="Census"
                 ).count(),
-                'manual': TaxLotState.objects.filter(
-                    id__in=Subquery(taxlot_views.values('state_id')), geocoding_confidence='Manually geocoded (N/A)'
+                "manual": TaxLotState.objects.filter(
+                    id__in=Subquery(taxlot_views.values("state_id")), geocoding_confidence="Manually geocoded (N/A)"
                 ).count(),
-                'missing_address_components': TaxLotState.objects.filter(
-                    id__in=Subquery(taxlot_views.values('state_id')), geocoding_confidence='Missing address components (N/A)'
+                "missing_address_components": TaxLotState.objects.filter(
+                    id__in=Subquery(taxlot_views.values("state_id")), geocoding_confidence="Missing address components (N/A)"
                 ).count(),
             }
 

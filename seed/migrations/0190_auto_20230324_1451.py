@@ -5,18 +5,18 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('seed', '0189_backfill_events'),
+        ("seed", "0189_backfill_events"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='analysismessage',
-            name='debug_message',
+            model_name="analysismessage",
+            name="debug_message",
             field=models.CharField(blank=True, max_length=1024),
         ),
         migrations.AlterField(
-            model_name='analysismessage',
-            name='user_message',
+            model_name="analysismessage",
+            name="user_message",
             field=models.CharField(default=None, max_length=1024),
         ),
     ]

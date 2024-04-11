@@ -16,29 +16,29 @@ from seed.utils.organizations import create_organization
 class TestAnalysisPropertyViews(TestCase):
     def setUp(self):
         user_details = {
-            'username': 'test_user@demo.com',
-            'password': 'test_pass',
-            'email': 'test_user@demo.com',
-            'first_name': 'Test',
-            'last_name': 'User',
+            "username": "test_user@demo.com",
+            "password": "test_pass",
+            "email": "test_user@demo.com",
+            "first_name": "Test",
+            "last_name": "User",
         }
         self.user = User.objects.create_user(**user_details)
         self.org_a, _, _ = create_organization(self.user)
         self.org_b, _, _ = create_organization(self.user)
 
-        cycle_a = FakeCycleFactory(organization=self.org_a, user=self.user).get_cycle(name='Cycle Org A')
-        cycle_b = FakeCycleFactory(organization=self.org_b, user=self.user).get_cycle(name='Cycle Org B')
+        cycle_a = FakeCycleFactory(organization=self.org_a, user=self.user).get_cycle(name="Cycle Org A")
+        cycle_b = FakeCycleFactory(organization=self.org_b, user=self.user).get_cycle(name="Cycle Org B")
 
         self.analysis_a = FakeAnalysisFactory(organization=self.org_a, user=self.user).get_analysis(
-            name='Quite neat', service=Analysis.BSYNCR, configuration={'model_type': 'Simple Linear Regression'}
+            name="Quite neat", service=Analysis.BSYNCR, configuration={"model_type": "Simple Linear Regression"}
         )
 
         view_factory_a = FakePropertyViewFactory(cycle=cycle_a, organization=self.org_a, user=self.user)
         self.property_views_a = [
             view_factory_a.get_property_view(
                 # override unitted fields so that hashes are correct
-                site_eui=ureg.Quantity(float(view_factory_a.fake.random_int(min=50, max=600)), 'kBtu / foot ** 2 / year'),
-                gross_floor_area=ureg.Quantity(float(view_factory_a.fake.random_number(digits=6)), 'foot ** 2'),
+                site_eui=ureg.Quantity(float(view_factory_a.fake.random_int(min=50, max=600)), "kBtu / foot ** 2 / year"),
+                gross_floor_area=ureg.Quantity(float(view_factory_a.fake.random_number(digits=6)), "foot ** 2"),
             )
             for i in range(2)
         ]
@@ -47,8 +47,8 @@ class TestAnalysisPropertyViews(TestCase):
         self.property_views_b = [
             view_factory_b.get_property_view(
                 # override unitted fields so that hashes are correct
-                site_eui=ureg.Quantity(float(view_factory_b.fake.random_int(min=50, max=600)), 'kBtu / foot ** 2 / year'),
-                gross_floor_area=ureg.Quantity(float(view_factory_b.fake.random_number(digits=6)), 'foot ** 2'),
+                site_eui=ureg.Quantity(float(view_factory_b.fake.random_int(min=50, max=600)), "kBtu / foot ** 2 / year"),
+                gross_floor_area=ureg.Quantity(float(view_factory_b.fake.random_number(digits=6)), "foot ** 2"),
             )
             for i in range(2)
         ]
@@ -109,7 +109,7 @@ class TestAnalysisPropertyViews(TestCase):
         self.assertEqual(0, len(analysis_view_ids))
         failure_ids = [failure.property_view_id for failure in failures]
         self.assertEqual(set(failure_ids), set(bad_property_view_ids))
-        self.assertEqual(failures[0].message, 'No such PropertyView')
+        self.assertEqual(failures[0].message, "No such PropertyView")
 
     def test_batch_create_returns_failures_for_property_views_outside_of_org(self):
         # Setup
@@ -129,4 +129,4 @@ class TestAnalysisPropertyViews(TestCase):
         failure_ids = [failure.property_view_id for failure in failures]
         # the failures should all be from other org
         self.assertEqual(set(failure_ids), {p.id for p in self.property_views_b})
-        self.assertEqual(failures[0].message, 'No such PropertyView')
+        self.assertEqual(failures[0].message, "No such PropertyView")

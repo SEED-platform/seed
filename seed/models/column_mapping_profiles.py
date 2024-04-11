@@ -19,9 +19,9 @@ class ColumnMappingProfile(models.Model):
     BUILDINGSYNC_CUSTOM = 2
 
     COLUMN_MAPPING_PROFILE_TYPES = (
-        (NORMAL, 'Normal'),
-        (BUILDINGSYNC_DEFAULT, 'BuildingSync Default'),
-        (BUILDINGSYNC_CUSTOM, 'BuildingSync Custom'),
+        (NORMAL, "Normal"),
+        (BUILDINGSYNC_DEFAULT, "BuildingSync Default"),
+        (BUILDINGSYNC_CUSTOM, "BuildingSync Custom"),
     )
 
     name = models.CharField(max_length=255, blank=False)
@@ -77,17 +77,17 @@ class ColumnMappingProfile(models.Model):
                 next(csvreader)  # skip header
                 for row in csvreader:
                     data = {
-                        'from_field': row[0],
-                        'from_units': row[1],
-                        'to_table_name': row[2],
-                        'to_field': row[3],
+                        "from_field": row[0],
+                        "from_units": row[1],
+                        "to_table_name": row[2],
+                        "to_field": row[3],
                     }
                     mappings.append(data)
         else:
-            raise Exception(f'Mapping file does not exist: {filename}')
+            raise Exception(f"Mapping file does not exist: {filename}")
 
         if len(mappings) == 0:
-            raise Exception(f'No mappings in file: {filename}')
+            raise Exception(f"No mappings in file: {filename}")
 
         # Because this object has a many to many on orgs (which I argue shouldn't), then
         # first, get all the org's mapping profiles
@@ -96,7 +96,7 @@ class ColumnMappingProfile(models.Model):
         # second, get or create the profile now that we are only seeing my 'orgs' profiles
         profile, created = profiles.get_or_create(name=profile_name, profile_type=profile_type)
         if not created and not overwrite_if_exists:
-            raise Exception(f'ColumnMappingProfile already exists, not overwriting: {profile_name}')
+            raise Exception(f"ColumnMappingProfile already exists, not overwriting: {profile_name}")
 
         # Do I need to confirm that the mappings are defined in the Columns world?
         profile.mappings = mappings

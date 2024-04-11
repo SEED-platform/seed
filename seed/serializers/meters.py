@@ -22,18 +22,18 @@ class MeterSerializer(serializers.ModelSerializer, OrgMixin):
     class Meta:
         model = Meter
         exclude = (
-            'property',
-            'scenario',
+            "property",
+            "scenario",
         )
 
     def validate_scenario_id(self, scenario_id):
         # validate that the user has access to the scenario
         if scenario_id is not None:
-            org = self.get_organization(self.context['request'])
+            org = self.get_organization(self.context["request"])
             try:
                 Scenario.objects.get(property_state__organization=org, pk=scenario_id)
             except Scenario.DoesNotExist:
-                raise serializers.ValidationError({'status': 'error', 'message': 'Permission error assigning scenario to meter'})
+                raise serializers.ValidationError({"status": "error", "message": "Permission error assigning scenario to meter"})
 
         return scenario_id
 
@@ -41,11 +41,11 @@ class MeterSerializer(serializers.ModelSerializer, OrgMixin):
         result = super().to_representation(obj)
 
         if obj.source == Meter.GREENBUTTON:
-            result['source_id'] = usage_point_id(obj.source_id)
+            result["source_id"] = usage_point_id(obj.source_id)
 
-        result['scenario_name'] = obj.scenario.name if obj.scenario else None
+        result["scenario_name"] = obj.scenario.name if obj.scenario else None
 
-        if obj.alias is None or obj.alias == '':
-            result['alias'] = f"{obj.get_type_display()} - {obj.get_source_display()} - {result['source_id']}"
+        if obj.alias is None or obj.alias == "":
+            result["alias"] = f"{obj.get_type_display()} - {obj.get_source_display()} - {result['source_id']}"
 
         return result

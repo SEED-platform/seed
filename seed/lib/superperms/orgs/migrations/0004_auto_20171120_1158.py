@@ -5,27 +5,27 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('orgs', '0003_auto_20160412_1123'),
+        ("orgs", "0003_auto_20160412_1123"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='organization',
-            name='display_units_area',
-            field=models.CharField(choices=[(b'ft**2', b'square feet'), (b'm**2', b'square metres')], default=b'ft**2', max_length=32),
+            model_name="organization",
+            name="display_units_area",
+            field=models.CharField(choices=[(b"ft**2", b"square feet"), (b"m**2", b"square metres")], default=b"ft**2", max_length=32),
         ),
         migrations.AddField(
-            model_name='organization',
-            name='display_units_eui',
+            model_name="organization",
+            name="display_units_eui",
             field=models.CharField(
                 choices=[
-                    (b'kBtu/ft**2/year', b'kBtu/sq. ft./year'),
-                    (b'kWh/m**2/year', b'kWh/m\xc2\xb2/year'),
-                    (b'GJ/m**2/year', b'GJ/m\xc2\xb2/year'),
-                    (b'MJ/m**2/year', b'MJ/m\xc2\xb2/year'),
-                    (b'kBtu/m**2/year', b'kBtu/m\xc2\xb2/year'),
+                    (b"kBtu/ft**2/year", b"kBtu/sq. ft./year"),
+                    (b"kWh/m**2/year", b"kWh/m\xc2\xb2/year"),
+                    (b"GJ/m**2/year", b"GJ/m\xc2\xb2/year"),
+                    (b"MJ/m**2/year", b"MJ/m\xc2\xb2/year"),
+                    (b"kBtu/m**2/year", b"kBtu/m\xc2\xb2/year"),
                 ],
-                default=b'kBtu/ft**2/year',
+                default=b"kBtu/ft**2/year",
                 max_length=32,
             ),
         ),

@@ -42,18 +42,18 @@ from seed.tests.util import AccessLevelBaseTestCase, DataMappingBaseTestCase
 from seed.utils.organizations import create_organization
 from seed.views.v3.import_files import ImportFileViewSet, convert_first_five_rows_to_list
 
-VALIDATION_API_URL = 'https://buildingsync.net/api/validate'
+VALIDATION_API_URL = "https://buildingsync.net/api/validate"
 DEFAULT_SCHEMA_VERSION = BuildingSync.BUILDINGSYNC_V2_0_0
-DEFAULT_USE_CASE = 'SEED'
+DEFAULT_USE_CASE = "SEED"
 
 
 class TestSensorViewSet(DataMappingBaseTestCase):
     def setUp(self):
         self.user_details = {
-            'username': 'test_user@demo.com',
-            'password': 'test_pass',
+            "username": "test_user@demo.com",
+            "password": "test_pass",
         }
-        self.user = User.objects.create_user(email='test_user@demo.com', **self.user_details)
+        self.user = User.objects.create_user(email="test_user@demo.com", **self.user_details)
         self.org, _, _ = create_organization(self.user)
 
         # For some reason, defaults weren't established consistently for each test.
@@ -63,18 +63,18 @@ class TestSensorViewSet(DataMappingBaseTestCase):
 
         self.property_state_factory = FakePropertyStateFactory(organization=self.org)
         property_details = self.property_state_factory.get_details()
-        property_details['organization_id'] = self.org.id
+        property_details["organization_id"] = self.org.id
 
         # pm_property_ids must match those within example-monthly-meter-usage.xlsx
-        self.pm_property_id_1 = '5766973'
-        self.pm_property_id_2 = '5766975'
+        self.pm_property_id_1 = "5766973"
+        self.pm_property_id_2 = "5766975"
 
-        property_details['pm_property_id'] = self.pm_property_id_1
+        property_details["pm_property_id"] = self.pm_property_id_1
         state_1 = PropertyState(**property_details)
         state_1.save()
         self.state_1 = PropertyState.objects.get(pk=state_1.id)
 
-        property_details['pm_property_id'] = self.pm_property_id_2
+        property_details["pm_property_id"] = self.pm_property_id_2
         state_2 = PropertyState(**property_details)
         state_2.save()
         self.state_2 = PropertyState.objects.get(pk=state_2.id)
@@ -94,8 +94,8 @@ class TestSensorViewSet(DataMappingBaseTestCase):
         )
 
         # This file has multiple tabs
-        filename = 'example-sensor-metadata.xlsx'
-        filepath = os.path.dirname(os.path.abspath(__file__)) + '/data/' + filename
+        filename = "example-sensor-metadata.xlsx"
+        filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + filename
 
         self.import_file = ImportFile.objects.create(
             import_record=self.import_record,
@@ -106,65 +106,65 @@ class TestSensorViewSet(DataMappingBaseTestCase):
         )
 
     def test_parsed_sensors_confirmation(self):
-        url = reverse('api:v3:import_files-sensors-preview', kwargs={'pk': self.import_file.id})
-        url += f'?organization_id={self.org.pk}'
-        url += f'&view_id={self.property_view_1.id}'
+        url = reverse("api:v3:import_files-sensors-preview", kwargs={"pk": self.import_file.id})
+        url += f"?organization_id={self.org.pk}"
+        url += f"&view_id={self.property_view_1.id}"
         result = self.client.get(url)
-        result_dict = literal_eval(result.content.decode('utf-8'))
+        result_dict = literal_eval(result.content.decode("utf-8"))
 
         expectation = [
             {
-                'display_name': 'my charisma sensor',
-                'type': 'charisma',
-                'location_description': 'level C',
-                'units': 'finger guns',
-                'column_name': 'charisma_sensor_1',
-                'description': '',
+                "display_name": "my charisma sensor",
+                "type": "charisma",
+                "location_description": "level C",
+                "units": "finger guns",
+                "column_name": "charisma_sensor_1",
+                "description": "",
             },
             {
-                'display_name': 'my dex sensor',
-                'type': 'dex',
-                'location_description': '???',
-                'units': 'cartwheels',
-                'column_name': 'dex_sensor_1',
-                'description': 'poof!',
+                "display_name": "my dex sensor",
+                "type": "dex",
+                "location_description": "???",
+                "units": "cartwheels",
+                "column_name": "dex_sensor_1",
+                "description": "poof!",
             },
             {
-                'display_name': 'my cuteness sensor',
-                'type': 'cute',
-                'location_description': 'the heart',
-                'units': 'kisses',
-                'column_name': 'my_cuteness_sensor',
-                'description': '',
+                "display_name": "my cuteness sensor",
+                "type": "cute",
+                "location_description": "the heart",
+                "units": "kisses",
+                "column_name": "my_cuteness_sensor",
+                "description": "",
             },
             {
-                'display_name': 'my coolness sensor',
-                'type': 'cool',
-                'location_description': '',
-                'units': 'cigarettes',
-                'column_name': 'my_coolness_sensor',
-                'description': '',
+                "display_name": "my coolness sensor",
+                "type": "cool",
+                "location_description": "",
+                "units": "cigarettes",
+                "column_name": "my_coolness_sensor",
+                "description": "",
             },
             {
-                'display_name': 'my intelligence',
-                'type': 'intl',
-                'location_description': 'brain',
-                'units': 'opinions',
-                'column_name': 'intelligence_sensor',
-                'description': '',
+                "display_name": "my intelligence",
+                "type": "intl",
+                "location_description": "brain",
+                "units": "opinions",
+                "column_name": "intelligence_sensor",
+                "description": "",
             },
         ]
 
-        self.assertCountEqual(result_dict.get('proposed_imports'), expectation)
+        self.assertCountEqual(result_dict.get("proposed_imports"), expectation)
 
 
 class TestMeterViewSet(DataMappingBaseTestCase):
     def setUp(self):
         self.user_details = {
-            'username': 'test_user@demo.com',
-            'password': 'test_pass',
+            "username": "test_user@demo.com",
+            "password": "test_pass",
         }
-        self.user = User.objects.create_user(email='test_user@demo.com', **self.user_details)
+        self.user = User.objects.create_user(email="test_user@demo.com", **self.user_details)
         self.org, _, _ = create_organization(self.user)
 
         # For some reason, defaults weren't established consistently for each test.
@@ -174,18 +174,18 @@ class TestMeterViewSet(DataMappingBaseTestCase):
 
         self.property_state_factory = FakePropertyStateFactory(organization=self.org)
         property_details = self.property_state_factory.get_details()
-        property_details['organization_id'] = self.org.id
+        property_details["organization_id"] = self.org.id
 
         # pm_property_ids must match those within example-monthly-meter-usage.xlsx
-        self.pm_property_id_1 = '5766973'
-        self.pm_property_id_2 = '5766975'
+        self.pm_property_id_1 = "5766973"
+        self.pm_property_id_2 = "5766975"
 
-        property_details['pm_property_id'] = self.pm_property_id_1
+        property_details["pm_property_id"] = self.pm_property_id_1
         state_1 = PropertyState(**property_details)
         state_1.save()
         self.state_1 = PropertyState.objects.get(pk=state_1.id)
 
-        property_details['pm_property_id'] = self.pm_property_id_2
+        property_details["pm_property_id"] = self.pm_property_id_2
         state_2 = PropertyState(**property_details)
         state_2.save()
         self.state_2 = PropertyState.objects.get(pk=state_2.id)
@@ -205,8 +205,8 @@ class TestMeterViewSet(DataMappingBaseTestCase):
         )
 
         # This file has multiple tabs
-        filename = 'example-pm-monthly-meter-usage.xlsx'
-        filepath = os.path.dirname(os.path.abspath(__file__)) + '/data/' + filename
+        filename = "example-pm-monthly-meter-usage.xlsx"
+        filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + filename
 
         self.import_file = ImportFile.objects.create(
             import_record=self.import_record,
@@ -217,27 +217,27 @@ class TestMeterViewSet(DataMappingBaseTestCase):
         )
 
     def test_parsed_meters_confirmation_verifies_energy_type_and_units(self):
-        url = reverse('api:v3:import_files-pm-meters-preview', kwargs={'pk': self.import_file.id})
-        url += f'?organization_id={self.org.pk}'
+        url = reverse("api:v3:import_files-pm-meters-preview", kwargs={"pk": self.import_file.id})
+        url += f"?organization_id={self.org.pk}"
         result = self.client.get(url)
-        result_dict = literal_eval(result.content.decode('utf-8'))
+        result_dict = literal_eval(result.content.decode("utf-8"))
 
         expectation = [
             {
-                'parsed_type': 'Electric - Grid',
-                'parsed_unit': 'kBtu (thousand Btu)',
+                "parsed_type": "Electric - Grid",
+                "parsed_unit": "kBtu (thousand Btu)",
             },
             {
-                'parsed_type': 'Natural Gas',
-                'parsed_unit': 'kBtu (thousand Btu)',
+                "parsed_type": "Natural Gas",
+                "parsed_unit": "kBtu (thousand Btu)",
             },
         ]
 
-        self.assertCountEqual(result_dict.get('validated_type_units'), expectation)
+        self.assertCountEqual(result_dict.get("validated_type_units"), expectation)
 
     def test_parsed_meters_confirmation_verifies_energy_type_and_units_and_ignores_invalid_types_and_units(self):
-        filename = 'example-pm-monthly-meter-usage-with-unknown-types-and-units.xlsx'
-        filepath = os.path.dirname(os.path.abspath(__file__)) + '/data/' + filename
+        filename = "example-pm-monthly-meter-usage-with-unknown-types-and-units.xlsx"
+        filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + filename
 
         import_file_with_invalids = ImportFile.objects.create(
             import_record=self.import_record,
@@ -247,70 +247,70 @@ class TestMeterViewSet(DataMappingBaseTestCase):
             cycle=self.cycle,
         )
 
-        url = reverse('api:v3:import_files-pm-meters-preview', kwargs={'pk': import_file_with_invalids.id})
-        url += f'?organization_id={self.org.pk}'
+        url = reverse("api:v3:import_files-pm-meters-preview", kwargs={"pk": import_file_with_invalids.id})
+        url += f"?organization_id={self.org.pk}"
         result = self.client.get(url)
-        result_dict = literal_eval(result.content.decode('utf-8'))
+        result_dict = literal_eval(result.content.decode("utf-8"))
 
         expectation = [
             {
-                'parsed_type': 'Electric - Grid',
-                'parsed_unit': 'kBtu (thousand Btu)',
+                "parsed_type": "Electric - Grid",
+                "parsed_unit": "kBtu (thousand Btu)",
             },
             {
-                'parsed_type': 'Natural Gas',
-                'parsed_unit': 'kBtu (thousand Btu)',
+                "parsed_type": "Natural Gas",
+                "parsed_unit": "kBtu (thousand Btu)",
             },
         ]
 
-        self.assertCountEqual(result_dict.get('validated_type_units'), expectation)
+        self.assertCountEqual(result_dict.get("validated_type_units"), expectation)
 
     def test_parsed_meters_confirmation_returns_pm_property_ids_and_corresponding_incoming_counts(self):
-        url = reverse('api:v3:import_files-pm-meters-preview', kwargs={'pk': self.import_file.id})
-        url += f'?organization_id={self.org.pk}'
+        url = reverse("api:v3:import_files-pm-meters-preview", kwargs={"pk": self.import_file.id})
+        url += f"?organization_id={self.org.pk}"
         result = self.client.get(url)
-        result_dict = literal_eval(result.content.decode('utf-8'))
+        result_dict = literal_eval(result.content.decode("utf-8"))
 
         expectation = [
             {
-                'property_id': self.property_1.id,
-                'cycles': self.cycle.name,
-                'pm_property_id': '5766973',
-                'source_id': '5766973-0',
-                'type': 'Electric - Grid',
-                'incoming': 2,
+                "property_id": self.property_1.id,
+                "cycles": self.cycle.name,
+                "pm_property_id": "5766973",
+                "source_id": "5766973-0",
+                "type": "Electric - Grid",
+                "incoming": 2,
             },
             {
-                'property_id': self.property_1.id,
-                'cycles': self.cycle.name,
-                'pm_property_id': '5766973',
-                'source_id': '5766973-1',
-                'type': 'Natural Gas',
-                'incoming': 2,
+                "property_id": self.property_1.id,
+                "cycles": self.cycle.name,
+                "pm_property_id": "5766973",
+                "source_id": "5766973-1",
+                "type": "Natural Gas",
+                "incoming": 2,
             },
             {
-                'property_id': self.property_2.id,
-                'cycles': self.cycle.name,
-                'pm_property_id': '5766975',
-                'source_id': '5766975-0',
-                'type': 'Electric - Grid',
-                'incoming': 2,
+                "property_id": self.property_2.id,
+                "cycles": self.cycle.name,
+                "pm_property_id": "5766975",
+                "source_id": "5766975-0",
+                "type": "Electric - Grid",
+                "incoming": 2,
             },
             {
-                'property_id': self.property_2.id,
-                'cycles': self.cycle.name,
-                'pm_property_id': '5766975',
-                'source_id': '5766975-1',
-                'type': 'Natural Gas',
-                'incoming': 2,
+                "property_id": self.property_2.id,
+                "cycles": self.cycle.name,
+                "pm_property_id": "5766975",
+                "source_id": "5766975-1",
+                "type": "Natural Gas",
+                "incoming": 2,
             },
         ]
 
-        self.assertCountEqual(result_dict.get('proposed_imports'), expectation)
+        self.assertCountEqual(result_dict.get("proposed_imports"), expectation)
 
     def test_parsed_meters_confirmation_also_verifies_cost_type_and_units_and_counts(self):
-        filename = 'example-pm-monthly-meter-usage-2-cost-meters.xlsx'
-        filepath = os.path.dirname(os.path.abspath(__file__)) + '/data/' + filename
+        filename = "example-pm-monthly-meter-usage-2-cost-meters.xlsx"
+        filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + filename
 
         cost_import_file = ImportFile.objects.create(
             import_record=self.import_record,
@@ -320,100 +320,100 @@ class TestMeterViewSet(DataMappingBaseTestCase):
             cycle=self.cycle,
         )
 
-        url = reverse('api:v3:import_files-pm-meters-preview', kwargs={'pk': cost_import_file.id})
-        url += f'?organization_id={self.org.pk}'
+        url = reverse("api:v3:import_files-pm-meters-preview", kwargs={"pk": cost_import_file.id})
+        url += f"?organization_id={self.org.pk}"
         result = self.client.get(url)
-        result_dict = literal_eval(result.content.decode('utf-8'))
+        result_dict = literal_eval(result.content.decode("utf-8"))
 
         validated_type_units = [
             {
-                'parsed_type': 'Electric - Grid',
-                'parsed_unit': 'kBtu (thousand Btu)',
+                "parsed_type": "Electric - Grid",
+                "parsed_unit": "kBtu (thousand Btu)",
             },
             {
-                'parsed_type': 'Natural Gas',
-                'parsed_unit': 'kBtu (thousand Btu)',
+                "parsed_type": "Natural Gas",
+                "parsed_unit": "kBtu (thousand Btu)",
             },
             {
-                'parsed_type': 'Cost',
-                'parsed_unit': 'US Dollars',
+                "parsed_type": "Cost",
+                "parsed_unit": "US Dollars",
             },
         ]
 
-        self.assertCountEqual(result_dict.get('validated_type_units'), validated_type_units)
+        self.assertCountEqual(result_dict.get("validated_type_units"), validated_type_units)
 
         proposed_imports = [
             {
-                'property_id': self.property_1.id,
-                'cycles': self.cycle.name,
-                'pm_property_id': '5766973',
-                'source_id': '5766973-0',
-                'type': 'Electric - Grid',
-                'incoming': 2,
+                "property_id": self.property_1.id,
+                "cycles": self.cycle.name,
+                "pm_property_id": "5766973",
+                "source_id": "5766973-0",
+                "type": "Electric - Grid",
+                "incoming": 2,
             },
             {
-                'property_id': self.property_1.id,
-                'cycles': self.cycle.name,
-                'pm_property_id': '5766973',
-                'source_id': '5766973-1',
-                'type': 'Natural Gas',
-                'incoming': 2,
+                "property_id": self.property_1.id,
+                "cycles": self.cycle.name,
+                "pm_property_id": "5766973",
+                "source_id": "5766973-1",
+                "type": "Natural Gas",
+                "incoming": 2,
             },
             {
-                'property_id': self.property_1.id,
-                'cycles': self.cycle.name,
-                'pm_property_id': '5766973',
-                'source_id': '5766973-0',
-                'type': 'Cost',
-                'incoming': 2,
+                "property_id": self.property_1.id,
+                "cycles": self.cycle.name,
+                "pm_property_id": "5766973",
+                "source_id": "5766973-0",
+                "type": "Cost",
+                "incoming": 2,
             },
             {
-                'property_id': self.property_1.id,
-                'cycles': self.cycle.name,
-                'pm_property_id': '5766973',
-                'source_id': '5766973-1',
-                'type': 'Cost',
-                'incoming': 2,
+                "property_id": self.property_1.id,
+                "cycles": self.cycle.name,
+                "pm_property_id": "5766973",
+                "source_id": "5766973-1",
+                "type": "Cost",
+                "incoming": 2,
             },
             {
-                'property_id': self.property_2.id,
-                'cycles': self.cycle.name,
-                'pm_property_id': '5766975',
-                'source_id': '5766975-0',
-                'type': 'Electric - Grid',
-                'incoming': 2,
+                "property_id": self.property_2.id,
+                "cycles": self.cycle.name,
+                "pm_property_id": "5766975",
+                "source_id": "5766975-0",
+                "type": "Electric - Grid",
+                "incoming": 2,
             },
             {
-                'property_id': self.property_2.id,
-                'cycles': self.cycle.name,
-                'pm_property_id': '5766975',
-                'source_id': '5766975-1',
-                'type': 'Natural Gas',
-                'incoming': 2,
+                "property_id": self.property_2.id,
+                "cycles": self.cycle.name,
+                "pm_property_id": "5766975",
+                "source_id": "5766975-1",
+                "type": "Natural Gas",
+                "incoming": 2,
             },
         ]
 
-        self.assertCountEqual(result_dict.get('proposed_imports'), proposed_imports)
+        self.assertCountEqual(result_dict.get("proposed_imports"), proposed_imports)
 
         # Verify this works for Org with CAN thermal conversions
         self.org.thermal_conversion_assumption = Organization.CAN
         self.org.save()
 
         can_result = self.client.get(url)
-        can_result_dict = literal_eval(can_result.content.decode('utf-8'))
+        can_result_dict = literal_eval(can_result.content.decode("utf-8"))
 
         validated_type_units[2] = {
-            'parsed_type': 'Cost',
-            'parsed_unit': 'CAN Dollars',
+            "parsed_type": "Cost",
+            "parsed_unit": "CAN Dollars",
         }
 
-        self.assertCountEqual(can_result_dict.get('validated_type_units'), validated_type_units)
+        self.assertCountEqual(can_result_dict.get("validated_type_units"), validated_type_units)
 
     def test_green_button_parsed_meters_confirmation_returns_a_green_button_id_incoming_counts_and_parsed_type_units_and_saves_property_id_to_file_cache(
         self,
     ):
-        filename = 'example-GreenButton-data.xml'
-        filepath = os.path.dirname(os.path.abspath(__file__)) + '/data/' + filename
+        filename = "example-GreenButton-data.xml"
+        filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + filename
 
         xml_import_file = ImportFile.objects.create(
             import_record=self.import_record,
@@ -423,55 +423,55 @@ class TestMeterViewSet(DataMappingBaseTestCase):
             cycle=self.cycle,
         )
 
-        url = reverse('api:v3:import_files-greenbutton-meters-preview', kwargs={'pk': xml_import_file.id})
-        url += f'?organization_id={self.org.pk}&view_id={self.property_view_1.id}'
+        url = reverse("api:v3:import_files-greenbutton-meters-preview", kwargs={"pk": xml_import_file.id})
+        url += f"?organization_id={self.org.pk}&view_id={self.property_view_1.id}"
         result = self.client.get(url)
-        result_dict = literal_eval(result.content.decode('utf-8'))
+        result_dict = literal_eval(result.content.decode("utf-8"))
 
         proposed_imports = [
             {
-                'source_id': '409483',
-                'property_id': self.property_1.id,
-                'type': 'Electric - Grid',
-                'incoming': 2,
+                "source_id": "409483",
+                "property_id": self.property_1.id,
+                "type": "Electric - Grid",
+                "incoming": 2,
             },
         ]
 
         validated_type_units = [
             {
-                'parsed_type': 'Electric - Grid',
-                'parsed_unit': 'Wh (Watt-hours)',
+                "parsed_type": "Electric - Grid",
+                "parsed_unit": "Wh (Watt-hours)",
             },
         ]
 
-        self.assertEqual(result_dict['proposed_imports'], proposed_imports)
-        self.assertEqual(result_dict['validated_type_units'], validated_type_units)
+        self.assertEqual(result_dict["proposed_imports"], proposed_imports)
+        self.assertEqual(result_dict["validated_type_units"], validated_type_units)
 
         refreshed_import_file = ImportFile.objects.get(pk=xml_import_file.id)
-        self.assertEqual(refreshed_import_file.matching_results_data, {'property_id': self.property_view_1.property_id})
+        self.assertEqual(refreshed_import_file.matching_results_data, {"property_id": self.property_view_1.property_id})
 
     def test_parsed_meters_confirmation_returns_unlinkable_pm_property_ids(self):
         PropertyState.objects.all().delete()
 
-        url = reverse('api:v3:import_files-pm-meters-preview', kwargs={'pk': self.import_file.id})
-        url += f'?organization_id={self.org.pk}'
+        url = reverse("api:v3:import_files-pm-meters-preview", kwargs={"pk": self.import_file.id})
+        url += f"?organization_id={self.org.pk}"
         result = self.client.get(url)
-        result_dict = literal_eval(result.content.decode('utf-8'))
+        result_dict = literal_eval(result.content.decode("utf-8"))
 
         expectation = [
             {
-                'portfolio_manager_id': '5766973',
+                "portfolio_manager_id": "5766973",
             },
             {
-                'portfolio_manager_id': '5766975',
+                "portfolio_manager_id": "5766975",
             },
         ]
 
-        self.assertCountEqual(result_dict.get('unlinkable_pm_ids'), expectation)
+        self.assertCountEqual(result_dict.get("unlinkable_pm_ids"), expectation)
 
 
 def first_five_rows_helper(headers, raw_data):
-    save_format = '\n'.join([ROW_DELIMITER.join(row) for row in raw_data])
+    save_format = "\n".join([ROW_DELIMITER.join(row) for row in raw_data])
     expected = [dict(zip(headers, row)) for row in raw_data]
     return save_format, expected
 
@@ -483,42 +483,42 @@ class DataImporterViewTests(DataMappingBaseTestCase):
 
     def setUp(self):
         user_details = {
-            'username': 'test_user@demo.com',
-            'password': 'test_pass',
+            "username": "test_user@demo.com",
+            "password": "test_pass",
         }
-        self.user = User.objects.create_user(email='test_user@demo.com', **user_details)
-        self.org, _, _ = create_organization(self.user, 'my org')
+        self.user = User.objects.create_user(email="test_user@demo.com", **user_details)
+        self.org, _, _ = create_organization(self.user, "my org")
         self.client.login(**user_details)
 
     def test_get_raw_column_names(self):
         """Make sure we get column names back in a format we expect."""
         import_record = ImportRecord.objects.create(super_organization=self.org, access_level_instance=self.org.root)
-        expected_raw_columns = ['tax id', 'name', 'etc.']
+        expected_raw_columns = ["tax id", "name", "etc."]
         expected_saved_format = ROW_DELIMITER.join(expected_raw_columns)
         import_file = ImportFile.objects.create(import_record=import_record, cached_first_row=expected_saved_format)
 
         # Just make sure we were saved correctly
         self.assertEqual(import_file.cached_first_row, expected_saved_format)
 
-        url = reverse_lazy('api:v3:import_files-raw-column-names', args=[import_file.pk])
-        resp = self.client.get(url, {'organization_id': self.org.id}, content_type='application/json')
+        url = reverse_lazy("api:v3:import_files-raw-column-names", args=[import_file.pk])
+        resp = self.client.get(url, {"organization_id": self.org.id}, content_type="application/json")
 
         body = json.loads(resp.content)
 
-        self.assertEqual(body.get('raw_columns', []), expected_raw_columns)
+        self.assertEqual(body.get("raw_columns", []), expected_raw_columns)
 
     def test_get_first_five_rows(self):
         """Make sure we get our first five rows back correctly."""
         import_record = ImportRecord.objects.create(super_organization=self.org, access_level_instance=self.org.root)
-        expected_raw_columns = ['tax id', 'name', 'etc.']
+        expected_raw_columns = ["tax id", "name", "etc."]
         expected_raw_rows = [
-            ['02023', '12 Jefferson St.', 'etc.'],
-            ['12433', '23 Washington St.', 'etc.'],
-            ['04422', '4 Adams St.', 'etc.'],
+            ["02023", "12 Jefferson St.", "etc."],
+            ["12433", "23 Washington St.", "etc."],
+            ["04422", "4 Adams St.", "etc."],
         ]
 
         expected = [dict(zip(expected_raw_columns, row)) for row in expected_raw_rows]
-        expected_saved_format = '\n'.join([ROW_DELIMITER.join(row) for row in expected_raw_rows])
+        expected_saved_format = "\n".join([ROW_DELIMITER.join(row) for row in expected_raw_rows])
         import_file = ImportFile.objects.create(
             import_record=import_record,
             cached_first_row=ROW_DELIMITER.join(expected_raw_columns),
@@ -528,48 +528,48 @@ class DataImporterViewTests(DataMappingBaseTestCase):
         # Just make sure we were saved correctly
         self.assertEqual(import_file.cached_second_to_fifth_row, expected_saved_format)
 
-        url = reverse_lazy('api:v3:import_files-first-five-rows', args=[import_file.pk])
-        resp = self.client.get(url, {'organization_id': self.org.id}, content_type='application/json')
+        url = reverse_lazy("api:v3:import_files-first-five-rows", args=[import_file.pk])
+        resp = self.client.get(url, {"organization_id": self.org.id}, content_type="application/json")
 
         body = json.loads(resp.content)
 
-        self.assertEqual(body.get('first_five_rows', []), expected)
+        self.assertEqual(body.get("first_five_rows", []), expected)
 
     def test_get_first_five_rows_simple(self):
-        header = ['id', 'name', 'etc']
+        header = ["id", "name", "etc"]
         raw_data = [
-            ['1', 'test_1', 'simple'],
-            ['2', 'test_2', 'example'],
+            ["1", "test_1", "simple"],
+            ["2", "test_2", "example"],
         ]
         save_format, expected = first_five_rows_helper(header, raw_data)
         converted = convert_first_five_rows_to_list(header, save_format)
         self.assertEqual(converted, expected)
 
     def test_get_first_five_rows_newline_middle(self):
-        header = ['id', 'name', 'etc']
+        header = ["id", "name", "etc"]
         raw_data = [
-            ['1', 'test\nmiddle', 'new'],
-            ['2', 'test_2', 'single'],
+            ["1", "test\nmiddle", "new"],
+            ["2", "test_2", "single"],
         ]
         save_format, expected = first_five_rows_helper(header, raw_data)
         converted = convert_first_five_rows_to_list(header, save_format)
         self.assertEqual(converted, expected)
 
     def test_get_first_five_rows_newline_end(self):
-        header = ['id', 'name', 'etc']
+        header = ["id", "name", "etc"]
         raw_data = [
-            ['1', 'test_1', 'new\nat_end'],
-            ['2', 'test_2', 'single'],
+            ["1", "test_1", "new\nat_end"],
+            ["2", "test_2", "single"],
         ]
         save_format, expected = first_five_rows_helper(header, raw_data)
         converted = convert_first_five_rows_to_list(header, save_format)
         self.assertEqual(converted, expected)
 
     def test_get_first_five_rows_newline_various(self):
-        header = ['id', 'name', 'etc']
+        header = ["id", "name", "etc"]
         raw_data = [
-            ['1', 'test_1', 'new\n\nat_end\n\n'],
-            ['2', 'test_2', 'single\nat_end_too\n'],
+            ["1", "test_1", "new\n\nat_end\n\n"],
+            ["2", "test_2", "single\nat_end_too\n"],
         ]
         save_format, expected = first_five_rows_helper(header, raw_data)
         converted = convert_first_five_rows_to_list(header, save_format)
@@ -582,10 +582,10 @@ class DataImporterViewTests(DataMappingBaseTestCase):
         syntax with quotes and escape characters
         :return:
         """
-        header = ['id', 'name', 'etc']
+        header = ["id", "name", "etc"]
         raw_data = [
-            ['1', 'test_1', 'new\n\nat_end\n\n'],
-            ['2\nThisBreaksMe', 'test_2', 'single\nat_end_too\n'],
+            ["1", "test_1", "new\n\nat_end\n\n"],
+            ["2\nThisBreaksMe", "test_2", "single\nat_end_too\n"],
         ]
         save_format, expected = first_five_rows_helper(header, raw_data)
         converted = convert_first_five_rows_to_list(header, save_format)
@@ -596,20 +596,20 @@ class DataImporterViewTests(DataMappingBaseTestCase):
         self.assertNotEqual(converted, expected)
 
     def test_get_first_five_rows_one_column(self):
-        header = ['id']
+        header = ["id"]
         raw_data = [
-            ['1'],
-            ['2'],
+            ["1"],
+            ["2"],
         ]
         save_format, expected = first_five_rows_helper(header, raw_data)
         converted = convert_first_five_rows_to_list(header, save_format)
         self.assertEqual(converted, expected)
 
     def test_get_first_five_rows_one_column_with_crlf(self):
-        header = ['id']
+        header = ["id"]
         raw_data = [
-            ['1'],
-            ['2\nshould_be_the_id'],
+            ["1"],
+            ["2\nshould_be_the_id"],
         ]
         save_format, expected = first_five_rows_helper(header, raw_data)
         converted = convert_first_five_rows_to_list(header, save_format)
@@ -623,8 +623,8 @@ class DataImporterViewTests(DataMappingBaseTestCase):
         import_record = ImportRecord.objects.create(
             owner=self.user, last_modified_by=self.user, super_organization=self.org, access_level_instance=self.org.root
         )
-        filename = 'example-pm-monthly-meter-usage.xlsx'
-        filepath = os.path.dirname(os.path.abspath(__file__)) + '/data/' + filename
+        filename = "example-pm-monthly-meter-usage.xlsx"
+        filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + filename
 
         import_file = ImportFile.objects.create(
             import_record=import_record,
@@ -633,20 +633,20 @@ class DataImporterViewTests(DataMappingBaseTestCase):
         )
 
         # hit endpoint with record ID
-        url = reverse_lazy('api:v3:import_files-check-meters-tab-exists', args=[import_file.id]) + '?organization_id=' + str(self.org.id)
+        url = reverse_lazy("api:v3:import_files-check-meters-tab-exists", args=[import_file.id]) + "?organization_id=" + str(self.org.id)
         response = self.client.get(url)
 
         # verify return true
         body = json.loads(response.content)
-        self.assertEqual(body.get('data'), True)
+        self.assertEqual(body.get("data"), True)
 
     def test_get_check_for_meters_tab_returns_true_when_monthly_usage_tab_present(self):
         # create import file record with Meter Entries tab
         import_record = ImportRecord.objects.create(
             owner=self.user, last_modified_by=self.user, super_organization=self.org, access_level_instance=self.org.root
         )
-        filename = 'example-data-request-response.xlsx'
-        filepath = os.path.dirname(os.path.abspath(__file__)) + '/data/' + filename
+        filename = "example-data-request-response.xlsx"
+        filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + filename
 
         import_file = ImportFile.objects.create(
             import_record=import_record,
@@ -655,20 +655,20 @@ class DataImporterViewTests(DataMappingBaseTestCase):
         )
 
         # hit endpoint with record ID
-        url = reverse_lazy('api:v3:import_files-check-meters-tab-exists', args=[import_file.id]) + '?organization_id=' + str(self.org.id)
+        url = reverse_lazy("api:v3:import_files-check-meters-tab-exists", args=[import_file.id]) + "?organization_id=" + str(self.org.id)
         response = self.client.get(url)
 
         # verify return true
         body = json.loads(response.content)
-        self.assertEqual(body.get('data'), True)
+        self.assertEqual(body.get("data"), True)
 
     def test_get_check_for_meters_tab_returns_true_when_monthly_usage_tab_present_new_format(self):
         # create import file record with Meter Entries tab
         import_record = ImportRecord.objects.create(
             owner=self.user, last_modified_by=self.user, super_organization=self.org, access_level_instance=self.org.root
         )
-        filename = 'example-data-request-response-new-format.xlsx'
-        filepath = os.path.dirname(os.path.abspath(__file__)) + '/data/' + filename
+        filename = "example-data-request-response-new-format.xlsx"
+        filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + filename
 
         import_file = ImportFile.objects.create(
             import_record=import_record,
@@ -677,20 +677,20 @@ class DataImporterViewTests(DataMappingBaseTestCase):
         )
 
         # hit endpoint with record ID
-        url = reverse_lazy('api:v3:import_files-check-meters-tab-exists', args=[import_file.id]) + '?organization_id=' + str(self.org.id)
+        url = reverse_lazy("api:v3:import_files-check-meters-tab-exists", args=[import_file.id]) + "?organization_id=" + str(self.org.id)
         response = self.client.get(url)
 
         # verify return true
         body = json.loads(response.content)
-        self.assertEqual(body.get('data'), True)
+        self.assertEqual(body.get("data"), True)
 
     def test_get_check_for_meters_tab_returns_false(self):
         # create import file record without either a Meter Entries or a Monthly Usage tab
         import_record = ImportRecord.objects.create(
             owner=self.user, last_modified_by=self.user, super_organization=self.org, access_level_instance=self.org.root
         )
-        filename = 'portfolio-manager-sample.xlsx'
-        filepath = os.path.dirname(os.path.abspath(__file__)) + '/data/' + filename
+        filename = "portfolio-manager-sample.xlsx"
+        filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + filename
 
         import_file = ImportFile.objects.create(
             import_record=import_record,
@@ -699,20 +699,20 @@ class DataImporterViewTests(DataMappingBaseTestCase):
         )
 
         # hit endpoint with record ID
-        url = reverse_lazy('api:v3:import_files-check-meters-tab-exists', args=[import_file.id]) + '?organization_id=' + str(self.org.id)
+        url = reverse_lazy("api:v3:import_files-check-meters-tab-exists", args=[import_file.id]) + "?organization_id=" + str(self.org.id)
         response = self.client.get(url)
 
         # verify return false
         body = json.loads(response.content)
-        self.assertEqual(body.get('data'), False)
+        self.assertEqual(body.get("data"), False)
 
     def test_get_check_for_meters_tab_returns_false_when_not_xlsx(self):
         # create import file record that's not an xlsx
         import_record = ImportRecord.objects.create(
             owner=self.user, last_modified_by=self.user, super_organization=self.org, access_level_instance=self.org.root
         )
-        filename = 'san-jose-test-taxlots.csv'
-        filepath = os.path.dirname(os.path.abspath(__file__)) + '/data/' + filename
+        filename = "san-jose-test-taxlots.csv"
+        filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + filename
 
         import_file = ImportFile.objects.create(
             import_record=import_record,
@@ -721,20 +721,20 @@ class DataImporterViewTests(DataMappingBaseTestCase):
         )
 
         # hit endpoint with record ID
-        url = reverse_lazy('api:v3:import_files-check-meters-tab-exists', args=[import_file.id]) + '?organization_id=' + str(self.org.id)
+        url = reverse_lazy("api:v3:import_files-check-meters-tab-exists", args=[import_file.id]) + "?organization_id=" + str(self.org.id)
         response = self.client.get(url)
 
         # verify return false
         body = json.loads(response.content)
-        self.assertEqual(body.get('data'), False)
+        self.assertEqual(body.get("data"), False)
 
     def test_post_reuse_inventory_file_for_meters_creates_new_import_file_based_on_the_same_file_and_returns_the_new_id(self):
         # create import file record with Meter Entries tab
         import_record = ImportRecord.objects.create(
             owner=self.user, last_modified_by=self.user, super_organization=self.org, access_level_instance=self.org.root
         )
-        filename = 'example-pm-monthly-meter-usage.xlsx'
-        filepath = os.path.dirname(os.path.abspath(__file__)) + '/data/' + filename
+        filename = "example-pm-monthly-meter-usage.xlsx"
+        filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + filename
 
         import_file = ImportFile.objects.create(
             import_record=import_record,
@@ -745,14 +745,14 @@ class DataImporterViewTests(DataMappingBaseTestCase):
         )
 
         # hit endpoint with record ID
-        url = reverse_lazy('api:v3:import_files-reuse-inventory-file-for-meters') + '?organization_id=' + str(self.org.id)
-        response = self.client.post(url, data=json.dumps({'import_file_id': import_file.id}), content_type='application/json')
+        url = reverse_lazy("api:v3:import_files-reuse-inventory-file-for-meters") + "?organization_id=" + str(self.org.id)
+        response = self.client.post(url, data=json.dumps({"import_file_id": import_file.id}), content_type="application/json")
 
         # check that the new and old file reference the same 'file'
-        newest_import_file = ImportFile.objects.order_by('-id').first()
+        newest_import_file = ImportFile.objects.order_by("-id").first()
         body = json.loads(response.content)
 
-        self.assertEqual(body.get('import_file_id'), newest_import_file.id)
+        self.assertEqual(body.get("import_file_id"), newest_import_file.id)
         self.assertEqual(import_file.file, newest_import_file.file)
 
 
@@ -760,14 +760,14 @@ class TestDataImportViewWithCRLF(DataMappingBaseTestCase):
     """Tests for dealing with SEED related tasks for mapping data."""
 
     def setUp(self):
-        filename = getattr(self, 'filename', 'portfolio-manager-sample-with-crlf.xlsx')
+        filename = getattr(self, "filename", "portfolio-manager-sample-with-crlf.xlsx")
         import_file_source_type = PORTFOLIO_RAW
-        self.fake_mappings = FAKE_MAPPINGS['portfolio']
+        self.fake_mappings = FAKE_MAPPINGS["portfolio"]
         self.fake_extra_data = FAKE_EXTRA_DATA
         self.fake_row = FAKE_ROW
         selfvars = self.set_up(import_file_source_type)
         self.user, self.org, self.import_file, self.import_record, self.cycle = selfvars
-        filepath = os.path.dirname(os.path.abspath(__file__)) + '/data/' + filename
+        filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + filename
         self.import_file.file = SimpleUploadedFile(name=filename, content=pathlib.Path(filepath).read_bytes())
         self.import_file.save()
 
@@ -780,24 +780,24 @@ class TestDataImportViewWithCRLF(DataMappingBaseTestCase):
         # reload the import file
         self.import_file = ImportFile.objects.get(pk=self.import_file.pk)
         first_row = self.import_file.cached_first_row
-        expected_first_row = 'Property Id|#*#|Property Name|#*#|Year Ending|#*#|Property Notes|#*#|Address 1|#*#|Address 2|#*#|City|#*#|State/Province|#*#|Postal Code|#*#|Year Built|#*#|ENERGY STAR Score|#*#|Site EUI (kBtu/ft2)|#*#|Total GHG Emissions (MtCO2e)|#*#|Weather Normalized Site EUI (kBtu/ft2)|#*#|National Median Site EUI (kBtu/ft2)|#*#|Source EUI (kBtu/ft2)|#*#|Weather Normalized Source EUI (kBtu/ft2)|#*#|Parking - Gross Floor Area (ft2)|#*#|Organization|#*#|Generation Date|#*#|Release Date'
+        expected_first_row = "Property Id|#*#|Property Name|#*#|Year Ending|#*#|Property Notes|#*#|Address 1|#*#|Address 2|#*#|City|#*#|State/Province|#*#|Postal Code|#*#|Year Built|#*#|ENERGY STAR Score|#*#|Site EUI (kBtu/ft2)|#*#|Total GHG Emissions (MtCO2e)|#*#|Weather Normalized Site EUI (kBtu/ft2)|#*#|National Median Site EUI (kBtu/ft2)|#*#|Source EUI (kBtu/ft2)|#*#|Weather Normalized Source EUI (kBtu/ft2)|#*#|Parking - Gross Floor Area (ft2)|#*#|Organization|#*#|Generation Date|#*#|Release Date"
         self.assertEqual(first_row, expected_first_row)
 
         # setup the API access
         user_details = {
-            'username': 'test_user@demo.com',
-            'password': 'test_pass',
+            "username": "test_user@demo.com",
+            "password": "test_pass",
         }
         self.client.login(**user_details)
 
-        url = reverse_lazy('api:v3:import_files-first-five-rows', args=[self.import_file.pk])
-        resp = self.client.get(url, {'organization_id': self.org.pk}, content_type='application/json')
+        url = reverse_lazy("api:v3:import_files-first-five-rows", args=[self.import_file.pk])
+        resp = self.client.get(url, {"organization_id": self.org.pk}, content_type="application/json")
         body = json.loads(resp.content)
-        self.assertEqual(body['status'], 'success', body)
-        self.assertEqual(len(body['first_five_rows']), 5)
+        self.assertEqual(body["status"], "success", body)
+        self.assertEqual(len(body["first_five_rows"]), 5)
 
-        expected_property_notes = 'These are property notes:\n- Nice building\n- Large atrium\n- Extra crlf here'
-        self.assertEqual(body['first_five_rows'][0]['Property Notes'], expected_property_notes)
+        expected_property_notes = "These are property notes:\n- Nice building\n- Large atrium\n- Extra crlf here"
+        self.assertEqual(body["first_five_rows"][0]["Property Notes"], expected_property_notes)
 
 
 class DeleteFileViewTests(DataMappingBaseTestCase):
@@ -806,9 +806,9 @@ class DeleteFileViewTests(DataMappingBaseTestCase):
     """
 
     def setUp(self):
-        user_details = {'username': 'test_user@demo.com', 'password': 'test_pass', 'email': 'test_user@demo.com'}
+        user_details = {"username": "test_user@demo.com", "password": "test_pass", "email": "test_user@demo.com"}
         self.user = User.objects.create_user(**user_details)
-        self.org, _, _ = create_organization(self.user, 'test-organization-a')
+        self.org, _, _ = create_organization(self.user, "test-organization-a")
         self.org_2, _, _ = create_organization()
 
         self.import_record = ImportRecord.objects.create(owner=self.user, super_organization=self.org, access_level_instance=self.org.root)
@@ -822,39 +822,39 @@ class DeleteFileViewTests(DataMappingBaseTestCase):
 
     def test_delete_file_no_perms(self):
         """tests the delete_file request invalid request"""
-        url = reverse('api:v3:import_files-detail', args=[self.import_file_2.pk])
+        url = reverse("api:v3:import_files-detail", args=[self.import_file_2.pk])
         response = self.client.delete(
-            url + '?organization_id=' + str(self.org.pk),
-            content_type='application/json',
+            url + "?organization_id=" + str(self.org.pk),
+            content_type="application/json",
         )
         json_string = response.content
         data = json.loads(json_string)
 
         # assert
-        self.assertEqual(data.get('status'), 'error')
+        self.assertEqual(data.get("status"), "error")
         self.assertEqual(response.status_code, 400)
         self.assertEqual(ImportFile.objects.all().count(), 2)
 
     def test_delete_file_wrong_org(self):
         """tests the delete_file request with wrong org"""
-        url = reverse('api:v3:import_files-detail', args=[self.import_file_2.pk])
+        url = reverse("api:v3:import_files-detail", args=[self.import_file_2.pk])
         response = self.client.delete(
-            url + '?organization_id=' + str(self.org_2.pk),
-            content_type='application/json',
+            url + "?organization_id=" + str(self.org_2.pk),
+            content_type="application/json",
         )
         json_string = response.content
         data = json.loads(json_string)
 
         # assert
-        self.assertEqual(data.get('status'), 'error')
+        self.assertEqual(data.get("status"), "error")
         self.assertEqual(ImportFile.objects.all().count(), 2)
 
 
 class TestViewsMatching(DataMappingBaseTestCase):
     def setUp(self):
-        data_importer_data_dir = os.path.join(os.path.dirname(__file__), '..', 'data_importer', 'tests', 'data')
-        filename = getattr(self, 'filename', 'example-data-properties.xlsx')
-        self.fake_mappings = copy.copy(FAKE_MAPPINGS['portfolio'])
+        data_importer_data_dir = os.path.join(os.path.dirname(__file__), "..", "data_importer", "tests", "data")
+        filename = getattr(self, "filename", "example-data-properties.xlsx")
+        self.fake_mappings = copy.copy(FAKE_MAPPINGS["portfolio"])
         selfvars = self.set_up(ASSESSED_RAW)
         self.user, self.org, self.import_file, self.import_record, self.cycle = selfvars
         filepath = os.path.join(data_importer_data_dir, filename)
@@ -866,7 +866,7 @@ class TestViewsMatching(DataMappingBaseTestCase):
         tasks.geocode_and_match_buildings_task(self.import_file.id)
 
         # import second file that is currently the same, but should be slightly different
-        filename_2 = getattr(self, 'filename', 'example-data-properties-small-changes.xlsx')
+        filename_2 = getattr(self, "filename", "example-data-properties-small-changes.xlsx")
         _, self.import_file_2 = self.create_import_file(self.user, self.org, self.cycle)
         filepath = os.path.join(data_importer_data_dir, filename_2)
         self.import_file_2.file = SimpleUploadedFile(name=filename_2, content=pathlib.Path(filepath).read_bytes())
@@ -879,19 +879,19 @@ class TestViewsMatching(DataMappingBaseTestCase):
 
         # for api tests
         user_details = {
-            'username': 'test_user@demo.com',
-            'password': 'test_pass',
+            "username": "test_user@demo.com",
+            "password": "test_pass",
         }
         self.client.login(**user_details)
 
     def test_get_mapping_results_returns_numbers_for_unitted_values(self):
-        url = reverse('api:v3:import_files-mapping-results', args=[self.import_file.pk])
-        url += f'?organization_id={self.org.pk}'
-        resp = self.client.post(url, content_type='application/json')
+        url = reverse("api:v3:import_files-mapping-results", args=[self.import_file.pk])
+        url += f"?organization_id={self.org.pk}"
+        resp = self.client.post(url, content_type="application/json")
 
         self.assertEqual(200, resp.status_code)
-        mapped_property = json.loads(resp.content)['properties'][0]
-        unitted_column_names = ['gross_floor_area', 'site_eui']
+        mapped_property = json.loads(resp.content)["properties"][0]
+        unitted_column_names = ["gross_floor_area", "site_eui"]
         for column_name, val in mapped_property.items():
             for unitted_column_name in unitted_column_names:
                 if column_name.startswith(unitted_column_name):
@@ -1014,7 +1014,7 @@ class TestViewsMatching(DataMappingBaseTestCase):
     def test_unmatch(self):
         # unmatch a specific entry
         property_state = PropertyState.objects.filter(
-            use_description='Club',
+            use_description="Club",
             import_file_id=self.import_file_2,
             data_state__in=[DATA_STATE_MAPPING, DATA_STATE_MATCHING],
             merge_state__in=[MERGE_STATE_UNKNOWN, MERGE_STATE_NEW],
@@ -1023,10 +1023,10 @@ class TestViewsMatching(DataMappingBaseTestCase):
         vs = ImportFileViewSet()
 
         # get the coparent of the 'Club' to get the ID
-        coparents = vs.has_coparent(property_state.id, 'properties')
+        coparents = vs.has_coparent(property_state.id, "properties")
 
         # verify that the coparent id is not part of the view
-        prop = PropertyView.objects.filter(cycle=self.cycle, state__id=coparents['id'])
+        prop = PropertyView.objects.filter(cycle=self.cycle, state__id=coparents["id"])
         self.assertFalse(prop.exists())
 
         # TODO: Alex, this seems to not work with the notes causing validation errors. I can't figure out why
@@ -1059,12 +1059,12 @@ class TestImportFileViewSetPermissions(AccessLevelBaseTestCase, DataMappingBaseT
         )
         self.import_file = ImportFile.objects.create(
             import_record=self.import_record,
-            source_type='Assessed Raw',
+            source_type="Assessed Raw",
             mapping_done=True,
-            cached_first_row=ROW_DELIMITER.join(['name', 'address', 'year built', 'building id']),
+            cached_first_row=ROW_DELIMITER.join(["name", "address", "year built", "building id"]),
         )
-        data_importer_data_dir = os.path.join(os.path.dirname(__file__), '..', 'data_importer', 'tests', 'data')
-        filename = getattr(self, 'filename', 'example-data-properties.xlsx')
+        data_importer_data_dir = os.path.join(os.path.dirname(__file__), "..", "data_importer", "tests", "data")
+        filename = getattr(self, "filename", "example-data-properties.xlsx")
         filepath = os.path.join(data_importer_data_dir, filename)
         self.import_file.file = SimpleUploadedFile(name=filename, content=pathlib.Path(filepath).read_bytes())
         self.import_file.save()
@@ -1073,9 +1073,9 @@ class TestImportFileViewSetPermissions(AccessLevelBaseTestCase, DataMappingBaseT
         self.cycle = self.cycle_factory.get_cycle(start=datetime(2010, 10, 10, tzinfo=get_current_timezone()))
 
         property_details = self.property_state_factory.get_details()
-        property_details['organization_id'] = self.org.id
-        self.pm_property_id = '5766973'
-        property_details['pm_property_id'] = self.pm_property_id
+        property_details["organization_id"] = self.org.id
+        self.pm_property_id = "5766973"
+        property_details["pm_property_id"] = self.pm_property_id
         self.state = PropertyState(**property_details)
         self.state.save()
 
@@ -1084,275 +1084,275 @@ class TestImportFileViewSetPermissions(AccessLevelBaseTestCase, DataMappingBaseT
         self.property_view = PropertyView.objects.create(property=self.property, cycle=self.cycle, state=self.state)
 
     def test_import_file_retrieve(self):
-        url = reverse('api:v3:import_files-detail', args=[self.import_file.pk]) + '?organization_id=' + str(self.org.pk)
+        url = reverse("api:v3:import_files-detail", args=[self.import_file.pk]) + "?organization_id=" + str(self.org.pk)
 
         # root users can get import file
         self.login_as_root_member()
-        response = self.client.get(url, content_type='application/json')
+        response = self.client.get(url, content_type="application/json")
         assert response.status_code == 200
 
         # child user cannot
         self.login_as_child_member()
-        response = self.client.get(url, content_type='application/json')
+        response = self.client.get(url, content_type="application/json")
         assert response.status_code == 404
 
     def test_import_file_check_meters_tab_exists(self):
-        url = reverse('api:v3:import_files-check-meters-tab-exists', args=[self.import_file.pk]) + '?organization_id=' + str(self.org.pk)
+        url = reverse("api:v3:import_files-check-meters-tab-exists", args=[self.import_file.pk]) + "?organization_id=" + str(self.org.pk)
 
         # root users can
         self.login_as_root_member()
-        response = self.client.get(url, content_type='application/json')
+        response = self.client.get(url, content_type="application/json")
         assert response.status_code == 200
 
         # child user cannot
         self.login_as_child_member()
-        response = self.client.get(url, content_type='application/json')
+        response = self.client.get(url, content_type="application/json")
         assert response.status_code == 404
 
     def test_import_file_reuse_inventory_file_for_meters(self):
         # hit endpoint with record ID
-        url = reverse_lazy('api:v3:import_files-reuse-inventory-file-for-meters') + '?organization_id=' + str(self.org.id)
-        data = json.dumps({'import_file_id': self.import_file.id})
+        url = reverse_lazy("api:v3:import_files-reuse-inventory-file-for-meters") + "?organization_id=" + str(self.org.id)
+        data = json.dumps({"import_file_id": self.import_file.id})
 
         # root users can
         self.login_as_root_member()
-        response = self.client.post(url, data=data, content_type='application/json')
+        response = self.client.post(url, data=data, content_type="application/json")
         assert response.status_code == 200
 
         # child user cannot
         self.login_as_child_member()
-        response = self.client.post(url, data=data, content_type='application/json')
+        response = self.client.post(url, data=data, content_type="application/json")
         assert response.status_code == 404
 
     def test_import_file_first_five_rows(self):
         tasks.save_raw_data(self.import_file.pk)
-        url = reverse_lazy('api:v3:import_files-first-five-rows', args=[self.import_file.pk])
+        url = reverse_lazy("api:v3:import_files-first-five-rows", args=[self.import_file.pk])
 
         # root users can
         self.login_as_root_member()
-        response = self.client.get(url, {'organization_id': self.org.id}, content_type='application/json')
+        response = self.client.get(url, {"organization_id": self.org.id}, content_type="application/json")
         assert response.status_code == 200
 
         # child user cannot
         self.login_as_child_member()
-        response = self.client.get(url, {'organization_id': self.org.id}, content_type='application/json')
+        response = self.client.get(url, {"organization_id": self.org.id}, content_type="application/json")
         assert response.status_code == 404
 
     def test_import_file_raw_column_names(self):
-        url = reverse_lazy('api:v3:import_files-raw-column-names', args=[self.import_file.pk])
+        url = reverse_lazy("api:v3:import_files-raw-column-names", args=[self.import_file.pk])
 
         # root users can
         self.login_as_root_member()
-        response = self.client.get(url, {'organization_id': self.org.id}, content_type='application/json')
+        response = self.client.get(url, {"organization_id": self.org.id}, content_type="application/json")
         assert response.status_code == 200
 
         # child user cannot
         self.login_as_child_member()
-        response = self.client.get(url, {'organization_id': self.org.id}, content_type='application/json')
+        response = self.client.get(url, {"organization_id": self.org.id}, content_type="application/json")
         assert response.status_code == 404
 
     def test_import_file_mapping_results(self):
-        url = reverse_lazy('api:v3:import_files-mapping-results', args=[self.import_file.pk])
+        url = reverse_lazy("api:v3:import_files-mapping-results", args=[self.import_file.pk])
 
         # root users can
         self.login_as_root_member()
-        response = self.client.post(url, {'organization_id': self.org.id}, content_type='application/json')
+        response = self.client.post(url, {"organization_id": self.org.id}, content_type="application/json")
         assert response.status_code == 200
 
         # child user cannot
         self.login_as_child_member()
-        response = self.client.post(url, {'organization_id': self.org.id}, content_type='application/json')
+        response = self.client.post(url, {"organization_id": self.org.id}, content_type="application/json")
         assert response.status_code == 404
 
     def test_import_file_pm_meters_preview(self):
-        filename = 'example-pm-monthly-meter-usage.xlsx'
-        filepath = os.path.dirname(os.path.abspath(__file__)) + '/data/' + filename
+        filename = "example-pm-monthly-meter-usage.xlsx"
+        filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + filename
         self.import_file.file = SimpleUploadedFile(name=filename, content=pathlib.Path(filepath).read_bytes())
         self.import_file.save()
-        url = reverse_lazy('api:v3:import_files-pm-meters-preview', args=[self.import_file.pk])
+        url = reverse_lazy("api:v3:import_files-pm-meters-preview", args=[self.import_file.pk])
 
         # root users can
         self.login_as_root_member()
-        response = self.client.get(url, {'organization_id': self.org.id}, content_type='application/json')
+        response = self.client.get(url, {"organization_id": self.org.id}, content_type="application/json")
         assert response.status_code == 200
 
         # child user cannot
         self.login_as_child_member()
-        response = self.client.get(url, {'organization_id': self.org.id}, content_type='application/json')
+        response = self.client.get(url, {"organization_id": self.org.id}, content_type="application/json")
         assert response.status_code == 404
 
     def test_import_file_sensor_readings_preview(self):
-        filename = 'example-sensor-readings.csv'
-        filepath = os.path.dirname(os.path.abspath(__file__)) + '/data/' + filename
+        filename = "example-sensor-readings.csv"
+        filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + filename
         self.import_file.file = SimpleUploadedFile(name=filename, content=pathlib.Path(filepath).read_bytes())
         self.import_file.save()
-        url = reverse_lazy('api:v3:import_files-sensor-readings-preview', args=[self.import_file.pk])
+        url = reverse_lazy("api:v3:import_files-sensor-readings-preview", args=[self.import_file.pk])
 
         # root users can
         self.login_as_root_member()
-        response = self.client.get(url, {'organization_id': self.org.id}, content_type='application/json')
+        response = self.client.get(url, {"organization_id": self.org.id}, content_type="application/json")
         assert response.status_code == 200
 
         # child user cannot
         self.login_as_child_member()
-        response = self.client.get(url, {'organization_id': self.org.id}, content_type='application/json')
+        response = self.client.get(url, {"organization_id": self.org.id}, content_type="application/json")
         assert response.status_code == 404
 
     def test_import_file_sensors_preview(self):
-        filename = 'example-sensor-metadata.xlsx'
-        filepath = os.path.dirname(os.path.abspath(__file__)) + '/data/' + filename
+        filename = "example-sensor-metadata.xlsx"
+        filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + filename
         self.import_file.file = SimpleUploadedFile(name=filename, content=pathlib.Path(filepath).read_bytes())
         self.import_file.save()
-        url = reverse('api:v3:import_files-sensors-preview', kwargs={'pk': self.import_file.id})
-        url += f'?organization_id={self.org.pk}'
-        url += f'&view_id={self.property_view.id}'
+        url = reverse("api:v3:import_files-sensors-preview", kwargs={"pk": self.import_file.id})
+        url += f"?organization_id={self.org.pk}"
+        url += f"&view_id={self.property_view.id}"
 
         # root users can
         self.login_as_root_member()
-        response = self.client.get(url, content_type='application/json')
+        response = self.client.get(url, content_type="application/json")
         assert response.status_code == 200
 
         # child user cannot
         self.login_as_child_member()
-        response = self.client.get(url, content_type='application/json')
+        response = self.client.get(url, content_type="application/json")
         assert response.status_code == 404
 
     def test_import_file_greenbutton_meters_preview(self):
-        filename = 'example-GreenButton-data.xml'
-        filepath = os.path.dirname(os.path.abspath(__file__)) + '/data/' + filename
+        filename = "example-GreenButton-data.xml"
+        filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + filename
         self.import_file.file = SimpleUploadedFile(name=filename, content=pathlib.Path(filepath).read_bytes())
         self.import_file.save()
-        url = reverse('api:v3:import_files-greenbutton-meters-preview', kwargs={'pk': self.import_file.id})
-        url += f'?organization_id={self.org.pk}'
-        url += f'&view_id={self.property_view.id}'
+        url = reverse("api:v3:import_files-greenbutton-meters-preview", kwargs={"pk": self.import_file.id})
+        url += f"?organization_id={self.org.pk}"
+        url += f"&view_id={self.property_view.id}"
 
         # root users can
         self.login_as_root_member()
-        response = self.client.get(url, content_type='application/json')
+        response = self.client.get(url, content_type="application/json")
         assert response.status_code == 200
 
         # child user cannot
         self.login_as_child_member()
-        response = self.client.get(url, content_type='application/json')
+        response = self.client.get(url, content_type="application/json")
         assert response.status_code == 404
 
     def test_import_file_destroy(self):
-        url = reverse('api:v3:import_files-detail', args=[self.import_file.pk]) + '?organization_id=' + str(self.org.pk)
+        url = reverse("api:v3:import_files-detail", args=[self.import_file.pk]) + "?organization_id=" + str(self.org.pk)
 
         # child user cannot
         self.login_as_child_member()
-        response = self.client.delete(url, content_type='application/json')
+        response = self.client.delete(url, content_type="application/json")
         assert response.status_code == 404
 
         # root users can get import file
         self.login_as_root_member()
-        response = self.client.delete(url, content_type='application/json')
+        response = self.client.delete(url, content_type="application/json")
         assert response.status_code == 200
 
     def test_import_file_mapping_done(self):
-        url = reverse('api:v3:import_files-mapping-done', args=[self.import_file.pk]) + '?organization_id=' + str(self.org.pk)
+        url = reverse("api:v3:import_files-mapping-done", args=[self.import_file.pk]) + "?organization_id=" + str(self.org.pk)
 
         # root users can
         self.login_as_root_member()
-        response = self.client.post(url, content_type='application/json')
+        response = self.client.post(url, content_type="application/json")
         assert response.status_code == 200
 
         # child user cannot
         self.login_as_child_member()
-        response = self.client.post(url, content_type='application/json')
+        response = self.client.post(url, content_type="application/json")
         assert response.status_code == 404
 
     def test_import_file_matching_and_geocoding_results(self):
-        url = reverse_lazy('api:v3:import_files-matching-and-geocoding-results', args=[self.import_file.pk])
+        url = reverse_lazy("api:v3:import_files-matching-and-geocoding-results", args=[self.import_file.pk])
 
         # root users can
         self.login_as_root_member()
-        response = self.client.get(url, {'organization_id': self.org.id}, content_type='application/json')
+        response = self.client.get(url, {"organization_id": self.org.id}, content_type="application/json")
         assert response.status_code == 200
 
         # child user cannot
         self.login_as_child_member()
-        response = self.client.get(url, {'organization_id': self.org.id}, content_type='application/json')
+        response = self.client.get(url, {"organization_id": self.org.id}, content_type="application/json")
         assert response.status_code == 404
 
     def test_import_file_mapping_suggestions(self):
-        url = reverse_lazy('api:v3:import_files-mapping-suggestions', args=[self.import_file.pk])
+        url = reverse_lazy("api:v3:import_files-mapping-suggestions", args=[self.import_file.pk])
 
         # root users can
         self.login_as_root_member()
-        response = self.client.get(url, {'organization_id': self.org.id}, content_type='application/json')
+        response = self.client.get(url, {"organization_id": self.org.id}, content_type="application/json")
         assert response.status_code == 200
 
         # child user cannot
         self.login_as_child_member()
-        response = self.client.get(url, {'organization_id': self.org.id}, content_type='application/json')
+        response = self.client.get(url, {"organization_id": self.org.id}, content_type="application/json")
         assert response.status_code == 404
 
     def test_import_file_start_save_data(self):
-        url = reverse_lazy('api:v3:import_files-start-save-data', args=[self.import_file.pk])
-        data = json.dumps({'cycle_id': self.cycle.id, 'organization_id': self.org.id})
+        url = reverse_lazy("api:v3:import_files-start-save-data", args=[self.import_file.pk])
+        data = json.dumps({"cycle_id": self.cycle.id, "organization_id": self.org.id})
 
         # root users can
         self.login_as_root_member()
-        response = self.client.post(url, data, content_type='application/json')
+        response = self.client.post(url, data, content_type="application/json")
         assert response.status_code == 200
 
         # child user cannot
         self.login_as_child_member()
-        response = self.client.post(url, data, content_type='application/json')
+        response = self.client.post(url, data, content_type="application/json")
         assert response.status_code == 404
 
     def test_import_file_start_data_quality_checks(self):
-        url = reverse_lazy('api:v3:import_files-start-data-quality-checks', args=[self.import_file.pk])
-        data = json.dumps({'cycle_id': self.cycle.id, 'organization_id': self.org.id})
+        url = reverse_lazy("api:v3:import_files-start-data-quality-checks", args=[self.import_file.pk])
+        data = json.dumps({"cycle_id": self.cycle.id, "organization_id": self.org.id})
 
         # root users can
         self.login_as_root_member()
-        response = self.client.post(url, data, content_type='application/json')
+        response = self.client.post(url, data, content_type="application/json")
         assert response.status_code == 200
 
         # child user cannot
         self.login_as_child_member()
-        response = self.client.post(url, data, content_type='application/json')
+        response = self.client.post(url, data, content_type="application/json")
         assert response.status_code == 404
 
     def test_import_file_start_system_matching_and_geocoding(self):
-        url = reverse_lazy('api:v3:import_files-start-system-matching-and-geocoding', args=[self.import_file.pk])
-        data = json.dumps({'cycle_id': self.cycle.id, 'organization_id': self.org.id})
+        url = reverse_lazy("api:v3:import_files-start-system-matching-and-geocoding", args=[self.import_file.pk])
+        data = json.dumps({"cycle_id": self.cycle.id, "organization_id": self.org.id})
 
         # root users can
         self.login_as_root_member()
-        response = self.client.post(url, data, content_type='application/json')
+        response = self.client.post(url, data, content_type="application/json")
         assert response.status_code == 200
 
         # child user cannot
         self.login_as_child_member()
-        response = self.client.post(url, data, content_type='application/json')
+        response = self.client.post(url, data, content_type="application/json")
         assert response.status_code == 404
 
     def test_import_file_map(self):
-        url = reverse('api:v3:import_files-map', args=[self.import_file.pk]) + '?organization_id=' + str(self.org.pk)
+        url = reverse("api:v3:import_files-map", args=[self.import_file.pk]) + "?organization_id=" + str(self.org.pk)
 
         # root users can
         self.login_as_root_member()
-        response = self.client.post(url, content_type='application/json')
+        response = self.client.post(url, content_type="application/json")
         assert response.status_code == 200
 
         # child user cannot
         self.login_as_child_member()
-        response = self.client.post(url, content_type='application/json')
+        response = self.client.post(url, content_type="application/json")
         assert response.status_code == 404
 
     def test_import_file_validate_use_cases(self):
-        url = reverse('api:v3:import_files-validate-use-cases', args=[self.import_file.pk]) + '?organization_id=' + str(self.org.pk)
+        url = reverse("api:v3:import_files-validate-use-cases", args=[self.import_file.pk]) + "?organization_id=" + str(self.org.pk)
 
-        with patch('seed.data_importer.tasks._validate_use_cases', return_value=None):
+        with patch("seed.data_importer.tasks._validate_use_cases", return_value=None):
             # root users can
             self.login_as_root_member()
-            response = self.client.post(url, content_type='application/json')
+            response = self.client.post(url, content_type="application/json")
             assert response.status_code == 200
 
             # child user cannot
             self.login_as_child_member()
-            response = self.client.post(url, content_type='application/json')
+            response = self.client.post(url, content_type="application/json")
             assert response.status_code == 404

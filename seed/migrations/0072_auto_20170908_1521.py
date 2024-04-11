@@ -6,43 +6,43 @@ from django.db import migrations
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('seed', '0071_auto_20170721_1203'),
+        ("seed", "0071_auto_20170721_1203"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='propertystate',
-            name='conditioned_floor_area_pint',
-            field=quantityfield.fields.QuantityField(base_units='ft**2', blank=True, null=True),
+            model_name="propertystate",
+            name="conditioned_floor_area_pint",
+            field=quantityfield.fields.QuantityField(base_units="ft**2", blank=True, null=True),
         ),
         migrations.AddField(
-            model_name='propertystate',
-            name='gross_floor_area_pint',
-            field=quantityfield.fields.QuantityField(base_units='ft**2', blank=True, null=True),
+            model_name="propertystate",
+            name="gross_floor_area_pint",
+            field=quantityfield.fields.QuantityField(base_units="ft**2", blank=True, null=True),
         ),
         migrations.AddField(
-            model_name='propertystate',
-            name='occupied_floor_area_pint',
-            field=quantityfield.fields.QuantityField(base_units='ft**2', blank=True, null=True),
+            model_name="propertystate",
+            name="occupied_floor_area_pint",
+            field=quantityfield.fields.QuantityField(base_units="ft**2", blank=True, null=True),
         ),
         migrations.AddField(
-            model_name='propertystate',
-            name='site_eui_pint',
-            field=quantityfield.fields.QuantityField(base_units='kBtu/ft**2/year', blank=True, null=True),
+            model_name="propertystate",
+            name="site_eui_pint",
+            field=quantityfield.fields.QuantityField(base_units="kBtu/ft**2/year", blank=True, null=True),
         ),
         migrations.AddField(
-            model_name='propertystate',
-            name='site_eui_weather_normalized_pint',
-            field=quantityfield.fields.QuantityField(base_units='kBtu/ft**2/year', blank=True, null=True),
+            model_name="propertystate",
+            name="site_eui_weather_normalized_pint",
+            field=quantityfield.fields.QuantityField(base_units="kBtu/ft**2/year", blank=True, null=True),
         ),
         migrations.AddField(
-            model_name='propertystate',
-            name='source_eui_pint',
-            field=quantityfield.fields.QuantityField(base_units='kBtu/ft**2/year', blank=True, null=True),
+            model_name="propertystate",
+            name="source_eui_pint",
+            field=quantityfield.fields.QuantityField(base_units="kBtu/ft**2/year", blank=True, null=True),
         ),
         migrations.AddField(
-            model_name='propertystate',
-            name='source_eui_weather_normalized_pint',
-            field=quantityfield.fields.QuantityField(base_units='kBtu/ft**2/year', blank=True, null=True),
+            model_name="propertystate",
+            name="source_eui_weather_normalized_pint",
+            field=quantityfield.fields.QuantityField(base_units="kBtu/ft**2/year", blank=True, null=True),
         ),
     ]

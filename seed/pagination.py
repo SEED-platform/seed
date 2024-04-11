@@ -16,10 +16,10 @@ class FakePagination(pagination.PageNumberPagination):
     def get_paginated_response(self, data):
         return response.Response(
             {
-                'next': None,
-                'previous': None,
-                'count': len(data),
-                'results': data,
+                "next": None,
+                "previous": None,
+                "count": len(data),
+                "results": data,
             }
         )
 

@@ -18,10 +18,10 @@ class TaxLotPropertySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Property
-        fields = '__all__'
-        extra_kwargs = {'organization': {'read_only': True}}
+        fields = "__all__"
+        extra_kwargs = {"organization": {"read_only": True}}
 
     @classmethod
     def many_init(cls, *args, **kwargs):
-        kwargs['child'] = PropertyMinimalSerializer()
+        kwargs["child"] = PropertyMinimalSerializer()
         return PropertyListSerializer(*args, **kwargs)

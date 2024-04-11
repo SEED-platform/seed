@@ -11,22 +11,22 @@ from seed.serializers.columns import ColumnSerializer
 
 
 class ColumnMappingSerializer(serializers.ModelSerializer):
-    organization_id = serializers.PrimaryKeyRelatedField(source='super_organization', read_only=True)
-    user_id = serializers.PrimaryKeyRelatedField(source='user', read_only=True)
+    organization_id = serializers.PrimaryKeyRelatedField(source="super_organization", read_only=True)
+    user_id = serializers.PrimaryKeyRelatedField(source="user", read_only=True)
 
     class Meta:
         model = ColumnMapping
-        exclude = ('column_raw', 'column_mapped')
+        exclude = ("column_raw", "column_mapped")
 
     def to_representation(self, obj):
         """Return only the first items in the column_raw and column_mapped"""
         result = super().to_representation(obj)
 
         if obj.column_raw and obj.column_raw.first():
-            result['column_raw'] = ColumnSerializer(obj.column_raw.first()).data
+            result["column_raw"] = ColumnSerializer(obj.column_raw.first()).data
 
         if obj.column_mapped and obj.column_mapped.first():
-            result['column_mapped'] = ColumnSerializer(obj.column_mapped.first()).data
+            result["column_mapped"] = ColumnSerializer(obj.column_mapped.first()).data
 
         return result
 

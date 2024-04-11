@@ -5,22 +5,22 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('seed', '0079_propertystate_ubid'),
+        ("seed", "0079_propertystate_ubid"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='propertystate',
-            name='analysis_state',
+            model_name="propertystate",
+            name="analysis_state",
             field=models.IntegerField(
-                choices=[(0, 'Not Started'), (4, 'Queued'), (1, 'Started'), (2, 'Completed'), (3, 'Failed')], default=0, null=True
+                choices=[(0, "Not Started"), (4, "Queued"), (1, "Started"), (2, "Completed"), (3, "Failed")], default=0, null=True
             ),
         ),
         migrations.AlterField(
-            model_name='scenario',
-            name='analysis_state',
+            model_name="scenario",
+            name="analysis_state",
             field=models.IntegerField(
-                choices=[(0, 'Not Started'), (4, 'Queued'), (1, 'Started'), (2, 'Completed'), (3, 'Failed')], default=0
+                choices=[(0, "Not Started"), (4, "Queued"), (1, "Started"), (2, "Completed"), (3, "Failed")], default=0
             ),
         ),
     ]

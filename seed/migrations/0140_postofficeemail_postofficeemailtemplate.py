@@ -7,61 +7,61 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('post_office', '0011_models_help_text'),
+        ("post_office", "0011_models_help_text"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('orgs', '0017_auto_20210218_1715'),
-        ('seed', '0139_auto_20210524_1016'),
+        ("orgs", "0017_auto_20210218_1715"),
+        ("seed", "0139_auto_20210524_1016"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='PostOfficeEmailTemplate',
+            name="PostOfficeEmailTemplate",
             fields=[
                 (
-                    'emailtemplate_ptr',
+                    "emailtemplate_ptr",
                     models.OneToOneField(
                         auto_created=True,
                         on_delete=django.db.models.deletion.CASCADE,
                         parent_link=True,
                         primary_key=True,
                         serialize=False,
-                        to='post_office.EmailTemplate',
+                        to="post_office.EmailTemplate",
                     ),
                 ),
                 (
-                    'organization',
-                    models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='orgs.Organization'),
+                    "organization",
+                    models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to="orgs.Organization"),
                 ),
                 (
-                    'user',
+                    "user",
                     models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL),
                 ),
             ],
-            bases=('post_office.emailtemplate',),
+            bases=("post_office.emailtemplate",),
         ),
         migrations.CreateModel(
-            name='PostOfficeEmail',
+            name="PostOfficeEmail",
             fields=[
                 (
-                    'email_ptr',
+                    "email_ptr",
                     models.OneToOneField(
                         auto_created=True,
                         on_delete=django.db.models.deletion.CASCADE,
                         parent_link=True,
                         primary_key=True,
                         serialize=False,
-                        to='post_office.Email',
+                        to="post_office.Email",
                     ),
                 ),
                 (
-                    'organization',
-                    models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='orgs.Organization'),
+                    "organization",
+                    models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to="orgs.Organization"),
                 ),
                 (
-                    'user',
+                    "user",
                     models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL),
                 ),
             ],
-            bases=('post_office.email',),
+            bases=("post_office.email",),
         ),
     ]

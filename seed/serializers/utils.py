@@ -13,15 +13,15 @@ class CustomChoicesField(serializers.ChoiceField):
     """
 
     def to_representation(self, obj):
-        if obj == '' and self.allow_blank:
+        if obj == "" and self.allow_blank:
             return obj
         return self._choices[obj]
 
     def to_internal_value(self, data):
-        if data == '' and self.allow_blank:
-            return ''
+        if data == "" and self.allow_blank:
+            return ""
 
         for key, val in self._choices.items():
             if val == data:
                 return key
-        self.fail('invalid_choice', input=data)
+        self.fail("invalid_choice", input=data)

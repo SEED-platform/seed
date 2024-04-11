@@ -5,20 +5,20 @@ from django.db import migrations
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('public', '0003_auto_20180106_2123'),
-        ('orgs', '0003_auto_20160412_1123'),
+        ("public", "0003_auto_20180106_2123"),
+        ("orgs", "0003_auto_20160412_1123"),
     ]
 
     operations = [
         migrations.AlterUniqueTogether(
-            name='exportablefield',
+            name="exportablefield",
             unique_together=set(),
         ),
         migrations.RemoveField(
-            model_name='exportablefield',
-            name='organization',
+            model_name="exportablefield",
+            name="organization",
         ),
         migrations.DeleteModel(
-            name='ExportableField',
+            name="ExportableField",
         ),
     ]

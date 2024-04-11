@@ -18,7 +18,7 @@ class PostOfficeEmail(Email):
     user = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True)
 
     def __str__(self):
-        return 'PostOfficeEmail - %s' % self.pk
+        return "PostOfficeEmail - %s" % self.pk
 
 
 class PostOfficeEmailTemplate(EmailTemplate):
@@ -26,4 +26,4 @@ class PostOfficeEmailTemplate(EmailTemplate):
     user = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True)
 
     def __str__(self):
-        return 'PostOfficeEmailTemplate - %s' % self.pk
+        return "PostOfficeEmailTemplate - %s" % self.pk

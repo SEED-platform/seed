@@ -18,8 +18,8 @@ class SalesforceMappingSerializer(serializers.ModelSerializer):
     class Meta:
         model = SalesforceMapping
         fields = (
-            'id',
-            'organization_id',
-            'column',
-            'salesforce_fieldname',
+            "id",
+            "organization_id",
+            "column",
+            "salesforce_fieldname",
         )

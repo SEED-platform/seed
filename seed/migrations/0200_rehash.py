@@ -6,8 +6,8 @@ from seed.data_importer.tasks import hash_state_object
 
 
 def rehash(apps, schema_editor):
-    PropertyState = apps.get_model('seed', 'PropertyState')
-    TaxLotState = apps.get_model('seed', 'TaxLotState')
+    PropertyState = apps.get_model("seed", "PropertyState")
+    TaxLotState = apps.get_model("seed", "TaxLotState")
 
     property_count = PropertyState.objects.count()
     taxlot_count = TaxLotState.objects.count()
@@ -17,35 +17,35 @@ def rehash(apps, schema_editor):
         taxlots_updated = 0
 
         if property_count > 0:
-            print(f'Re-hashing {property_count} Property States ')
+            print(f"Re-hashing {property_count} Property States ")
             for idx, state in enumerate(PropertyState.objects.all().iterator()):
                 old_hash = state.hash_object
                 state.hash_object = hash_state_object(state)
-                state.save(update_fields=['hash_object'])
+                state.save(update_fields=["hash_object"])
                 if state.hash_object != old_hash:
                     properties_updated += 1
                 if idx % 1000 == 0:
-                    print(f'... {idx + 1} / {properties_updated} / {property_count} - cursor / updated / total  ...')
+                    print(f"... {idx + 1} / {properties_updated} / {property_count} - cursor / updated / total  ...")
 
-            print(f'  {properties_updated} Property State hashes updated')
+            print(f"  {properties_updated} Property State hashes updated")
 
         if taxlot_count > 0:
-            print(f'Re-hashing {taxlot_count} TaxLot States ')
+            print(f"Re-hashing {taxlot_count} TaxLot States ")
             for idx, state in enumerate(TaxLotState.objects.all().iterator()):
                 old_hash = state.hash_object
                 state.hash_object = hash_state_object(state)
-                state.save(update_fields=['hash_object'])
+                state.save(update_fields=["hash_object"])
                 if state.hash_object != old_hash:
                     taxlots_updated += 1
                 if idx % 1000 == 0:
-                    print(f'... {idx + 1} / {taxlots_updated} / {taxlot_count} - cursor / updated / total  ...')
+                    print(f"... {idx + 1} / {taxlots_updated} / {taxlot_count} - cursor / updated / total  ...")
 
-            print(f'  {taxlots_updated} TaxLot State hashes updated')
+            print(f"  {taxlots_updated} TaxLot State hashes updated")
 
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('seed', '0199_rename_ulid_taxlotstate_ubid'),
+        ("seed", "0199_rename_ulid_taxlotstate_ubid"),
     ]
 
     operations = [

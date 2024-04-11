@@ -5,26 +5,26 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('seed', '0030_column_table_name'),
+        ("seed", "0030_column_table_name"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='propertyview',
-            name='labels',
+            model_name="propertyview",
+            name="labels",
         ),
         migrations.RemoveField(
-            model_name='taxlotview',
-            name='labels',
+            model_name="taxlotview",
+            name="labels",
         ),
         migrations.AddField(
-            model_name='property',
-            name='labels',
-            field=models.ManyToManyField(to='seed.StatusLabel'),
+            model_name="property",
+            name="labels",
+            field=models.ManyToManyField(to="seed.StatusLabel"),
         ),
         migrations.AddField(
-            model_name='taxlot',
-            name='labels',
-            field=models.ManyToManyField(to='seed.StatusLabel'),
+            model_name="taxlot",
+            name="labels",
+            field=models.ManyToManyField(to="seed.StatusLabel"),
         ),
     ]

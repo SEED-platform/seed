@@ -14,4 +14,4 @@ from string import capwords
 def titlecase(s):
     # Titlelize the display names correctly per python's documentation. Don't use .title()
     # https://docs.python.org/2/library/stdtypes.html#str.title
-    return capwords(s.replace('_', ' '))
+    return capwords(s.replace("_", " "))

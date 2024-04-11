@@ -18,4 +18,4 @@ class BuildingFileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = BuildingFile
-        fields = '__all__'
+        fields = "__all__"

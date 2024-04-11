@@ -12,7 +12,7 @@ def write_to_file(msg):
 
 
 def logging_info(msg):
-    s = f'INFO: {msg}'
+    s = f"INFO: {msg}"
     print(s)
     write_to_file(s)
 
@@ -24,5 +24,5 @@ def get_core_organizations():
     # [69,20,156,49,7,10,181,117,105,126, 124,6]
     GOOD_ORGS = [20, 7, 49, 69, 10, 181, 156, 117, 124, 105, 126, 6]
     if len(GOOD_ORGS) != 12:
-        raise ValueError('Invalid number of core organization ids')
+        raise ValueError("Invalid number of core organization ids")
     return GOOD_ORGS

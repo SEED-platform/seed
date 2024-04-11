@@ -10,37 +10,37 @@ def set_conversion_factor(apps, schema_editor):
     """
     db_alias = schema_editor.connection.alias
 
-    MeterReading = apps.get_model('seed', 'MeterReading')
+    MeterReading = apps.get_model("seed", "MeterReading")
     readings = MeterReading.objects.using(db_alias).filter(conversion_factor=None)
     bad_readings = []
     for reading in readings:
         reading_unit = reading.source_unit.lower().strip()
-        if reading_unit not in {'kbtu', 'kbtu (thousand btu)'}:
+        if reading_unit not in {"kbtu", "kbtu (thousand btu)"}:
             bad_readings.append(
                 {
-                    'meter': reading.meter.id,
-                    'source_unit': reading.source_unit,
-                    'start_time': reading.start_time,
-                    'end_time': reading.end_time,
+                    "meter": reading.meter.id,
+                    "source_unit": reading.source_unit,
+                    "start_time": reading.start_time,
+                    "end_time": reading.end_time,
                 }
             )
 
     if bad_readings:
-        raise Exception(f'Unexpected meter reading(s): conversion_factor is None and source_unit is not kbtu; {bad_readings}')
+        raise Exception(f"Unexpected meter reading(s): conversion_factor is None and source_unit is not kbtu; {bad_readings}")
 
     readings.update(conversion_factor=1.0)
 
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('seed', '0121_update_updated_timestamps'),
+        ("seed", "0121_update_updated_timestamps"),
     ]
 
     operations = [
         migrations.RunPython(set_conversion_factor),
         migrations.AlterField(
-            model_name='meterreading',
-            name='conversion_factor',
+            model_name="meterreading",
+            name="conversion_factor",
             field=models.FloatField(),
         ),
     ]

@@ -15,7 +15,7 @@ import sys
 from seed.lib.mappings import mapper
 
 # use this to recognize when to remove from mapping
-REMOVE_KEY = 'REMOVE'
+REMOVE_KEY = "REMOVE"
 
 
 def create_map(path_in, path_out):
@@ -33,7 +33,7 @@ def create_map(path_in, path_out):
         infile = csv.reader(f)
     header = infile.next()
     if len(header) < 5:
-        raise ValueError('At least 5 headers are required')
+        raise ValueError("At least 5 headers are required")
     map = {}
     for row in infile:
         if len(row) < 5:
@@ -53,11 +53,11 @@ def create_map(path_in, path_out):
         for key in row[2], row[3]:
             if len(key) > 0:
                 map[key] = [value, meta]
-    if path_out == '-':
-        json.dump(map, sys.stdout, encoding='latin_1')
+    if path_out == "-":
+        json.dump(map, sys.stdout, encoding="latin_1")
     else:
-        with open(path_out, 'w', encoding=locale.getpreferredencoding(False)) as outfile:
-            json.dump(map, outfile, encoding='latin_1')
+        with open(path_out, "w", encoding=locale.getpreferredencoding(False)) as outfile:
+            json.dump(map, outfile, encoding="latin_1")
 
 
 def apply_map(map_path, data_path, out_file):
@@ -71,7 +71,7 @@ def apply_map(map_path, data_path, out_file):
       None
     """
     with open(map_path, encoding=locale.getpreferredencoding(False)) as map_file:
-        mapping = mapper.Mapping(map_file, encoding='latin_1')
+        mapping = mapper.Mapping(map_file, encoding="latin_1")
     with open(data_path, newline=None, encoding=locale.getpreferredencoding(False)) as data_file:
         data_csv = csv.reader(data_file)
     # map each field
@@ -80,15 +80,15 @@ def apply_map(map_path, data_path, out_file):
     matched, nomatch = mapping.apply(input_fields)
     for field, m in matched.items():
         d[field] = m.as_json()
-        print(f'Mapped {field} => {m.field}')
+        print(f"Mapped {field} => {m.field}")
     for field in nomatch:
-        print(f'* No mapping found for input field: {field}')
+        print(f"* No mapping found for input field: {field}")
         d[field] = mapper.MapItem(field, None).as_json()
     # write mapping as a JSON
     with contextlib.suppress(BaseException):
         json.dump(d, out_file, ensure_ascii=True)
     # write stats
-    print(f'Mapped {len(input_fields)} fields: {len(matched)} OK and {len(nomatch)} did not match')
+    print(f"Mapped {len(input_fields)} fields: {len(matched)} OK and {len(nomatch)} did not match")
 
 
 def find_duplicates(map_path, data_path, out_file):
@@ -102,7 +102,7 @@ def find_duplicates(map_path, data_path, out_file):
       None
     """
     with open(map_path, encoding=locale.getpreferredencoding(False)) as map_file:
-        mapping = mapper.Mapping(map_file, encoding='latin-1')
+        mapping = mapper.Mapping(map_file, encoding="latin-1")
     with open(data_path, newline=None, encoding=locale.getpreferredencoding(False)) as data_file:
         data_csv = csv.reader(data_file)
     hdr = data_csv.next()
@@ -124,7 +124,7 @@ def find_duplicates(map_path, data_path, out_file):
             seen_values[dst] = src
 
     for value, keys in dup.items():
-        key_list = ' | '.join(keys)
+        key_list = " | ".join(keys)
         out_file.write(
-            f'({len(keys):d}) {value}: {key_list}\n',
+            f"({len(keys):d}) {value}: {key_list}\n",
         )

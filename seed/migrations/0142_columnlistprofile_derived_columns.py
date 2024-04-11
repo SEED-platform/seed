@@ -5,13 +5,13 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('seed', '0141_propertymeasure_useful_life'),
+        ("seed", "0141_propertymeasure_useful_life"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='columnlistprofile',
-            name='derived_columns',
-            field=models.ManyToManyField(related_name='column_list_profiles', to='seed.DerivedColumn'),
+            model_name="columnlistprofile",
+            name="derived_columns",
+            field=models.ManyToManyField(related_name="column_list_profiles", to="seed.DerivedColumn"),
         ),
     ]

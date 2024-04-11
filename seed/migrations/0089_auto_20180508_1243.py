@@ -7,67 +7,67 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('orgs', '0006_organization_display_significant_figures'),
-        ('seed', '0088_auto_20180423_0933'),
+        ("orgs", "0006_organization_display_significant_figures"),
+        ("seed", "0088_auto_20180423_0933"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='ColumnListSetting',
+            name="ColumnListSetting",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(db_index=True, max_length=512)),
-                ('settings_location', models.IntegerField(choices=[(0, b'List View Settings'), (1, b'Detail View Settings')], default=0)),
-                ('inventory_type', models.IntegerField(choices=[(0, b'Property'), (1, b'Tax Lot')], default=0)),
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("name", models.CharField(db_index=True, max_length=512)),
+                ("settings_location", models.IntegerField(choices=[(0, b"List View Settings"), (1, b"Detail View Settings")], default=0)),
+                ("inventory_type", models.IntegerField(choices=[(0, b"Property"), (1, b"Tax Lot")], default=0)),
             ],
         ),
         migrations.CreateModel(
-            name='ColumnListSettingColumn',
+            name="ColumnListSettingColumn",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('order', models.IntegerField(null=True)),
-                ('pinned', models.BooleanField(default=False)),
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("order", models.IntegerField(null=True)),
+                ("pinned", models.BooleanField(default=False)),
             ],
         ),
         migrations.AddField(
-            model_name='column',
-            name='created',
+            model_name="column",
+            name="created",
             field=models.DateTimeField(auto_now_add=True, default=django.utils.timezone.now),
             preserve_default=False,
         ),
         migrations.AddField(
-            model_name='column',
-            name='data_type',
-            field=models.CharField(default=b'None', max_length=64),
+            model_name="column",
+            name="data_type",
+            field=models.CharField(default=b"None", max_length=64),
         ),
         migrations.AddField(
-            model_name='column',
-            name='display_name',
+            model_name="column",
+            name="display_name",
             field=models.CharField(blank=True, max_length=512),
         ),
         migrations.AddField(
-            model_name='column',
-            name='modified',
+            model_name="column",
+            name="modified",
             field=models.DateTimeField(auto_now=True),
         ),
         migrations.AddField(
-            model_name='columnlistsettingcolumn',
-            name='column',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='seed.Column'),
+            model_name="columnlistsettingcolumn",
+            name="column",
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="seed.Column"),
         ),
         migrations.AddField(
-            model_name='columnlistsettingcolumn',
-            name='column_list_setting',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='seed.ColumnListSetting'),
+            model_name="columnlistsettingcolumn",
+            name="column_list_setting",
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="seed.ColumnListSetting"),
         ),
         migrations.AddField(
-            model_name='columnlistsetting',
-            name='columns',
-            field=models.ManyToManyField(related_name='column_list_settings', through='seed.ColumnListSettingColumn', to='seed.Column'),
+            model_name="columnlistsetting",
+            name="columns",
+            field=models.ManyToManyField(related_name="column_list_settings", through="seed.ColumnListSettingColumn", to="seed.Column"),
         ),
         migrations.AddField(
-            model_name='columnlistsetting',
-            name='organization',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='orgs.Organization'),
+            model_name="columnlistsetting",
+            name="organization",
+            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to="orgs.Organization"),
         ),
     ]

@@ -17,15 +17,15 @@ from seed.models.derived_columns import DerivedColumn
 VIEW_LIST = 0
 VIEW_DETAIL = 1
 VIEW_LOCATION_TYPES = [
-    (VIEW_LIST, 'List View Profile'),
-    (VIEW_DETAIL, 'Detail View Profile'),
+    (VIEW_LIST, "List View Profile"),
+    (VIEW_DETAIL, "Detail View Profile"),
 ]
 
 VIEW_LIST_PROPERTY = 0
 VIEW_LIST_TAXLOT = 1
 VIEW_LIST_INVENTORY_TYPE: List[Tuple[int, str]] = [
-    (VIEW_LIST_PROPERTY, 'Property'),
-    (VIEW_LIST_TAXLOT, 'Tax Lot'),
+    (VIEW_LIST_PROPERTY, "Property"),
+    (VIEW_LIST_TAXLOT, "Tax Lot"),
 ]
 
 
@@ -37,14 +37,14 @@ class ColumnListProfile(models.Model):
     name = models.CharField(max_length=512, db_index=True)
     profile_location = models.IntegerField(choices=VIEW_LOCATION_TYPES, default=VIEW_LIST)
     inventory_type = models.IntegerField(choices=VIEW_LIST_INVENTORY_TYPE, default=VIEW_LIST_PROPERTY)
-    columns = models.ManyToManyField(Column, related_name='column_list_profiles', through='seed.ColumnListProfileColumn')
-    derived_columns = models.ManyToManyField(DerivedColumn, related_name='column_list_profiles')
+    columns = models.ManyToManyField(Column, related_name="column_list_profiles", through="seed.ColumnListProfileColumn")
+    derived_columns = models.ManyToManyField(DerivedColumn, related_name="column_list_profiles")
 
-    PROFILE_TYPE = {'properties': VIEW_LIST_PROPERTY, 'taxlots': VIEW_LIST_TAXLOT}
-    COLUMN_TYPE = {'properties': 'property', 'taxlots': 'taxlot'}
+    PROFILE_TYPE = {"properties": VIEW_LIST_PROPERTY, "taxlots": VIEW_LIST_TAXLOT}
+    COLUMN_TYPE = {"properties": "property", "taxlots": "taxlot"}
 
     @classmethod
-    def return_columns(cls, organization_id, profile_id, inventory_type='properties'):
+    def return_columns(cls, organization_id, profile_id, inventory_type="properties"):
         """
         Return a list of columns based on the profile_id. If the profile ID doesn't exist, then it
         will return the list of raw database fields for the organization (i.e., all the fields).
@@ -69,19 +69,19 @@ class ColumnListProfile(models.Model):
         selected_columns_from_database = []
 
         if profile_id:
-            for c in apps.get_model('seed', 'ColumnListProfileColumn').objects.filter(column_list_profile_id=profile_id).order_by('order'):
+            for c in apps.get_model("seed", "ColumnListProfileColumn").objects.filter(column_list_profile_id=profile_id).order_by("order"):
                 # find the items from the columns_from_database object and return only the ones that are in the
                 # selected profile
                 for c_db in columns_from_database:
-                    if f'{c.column.column_name}_{c.column.id}' == c_db['name']:
+                    if f"{c.column.column_name}_{c.column.id}" == c_db["name"]:
                         selected_columns_from_database.append(c_db)
-                        column_ids.append(c_db['id'])
-                        column_name_mappings[c_db['name']] = c_db['display_name']
+                        column_ids.append(c_db["id"])
+                        column_name_mappings[c_db["name"]] = c_db["display_name"]
         else:
             # return all the columns for the organization
             for c in columns_from_database:
-                column_ids.append(c['id'])
-                column_name_mappings[c['name']] = c['display_name']
+                column_ids.append(c["id"])
+                column_name_mappings[c["name"]] = c["display_name"]
                 selected_columns_from_database.append(c)
 
         return column_ids, column_name_mappings, selected_columns_from_database

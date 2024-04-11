@@ -5,23 +5,23 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('seed', '0108_merge_20190716_1038'),
+        ("seed", "0108_merge_20190716_1038"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='scenario',
-            name='annual_site_energy_use_intensity',
+            model_name="scenario",
+            name="annual_site_energy_use_intensity",
             field=models.FloatField(null=True),
         ),
         migrations.AddField(
-            model_name='scenario',
-            name='annual_source_energy',
+            model_name="scenario",
+            name="annual_source_energy",
             field=models.FloatField(null=True),
         ),
         migrations.AddField(
-            model_name='scenario',
-            name='annual_source_energy_use_intensity',
+            model_name="scenario",
+            name="annual_source_energy_use_intensity",
             field=models.FloatField(null=True),
         ),
     ]

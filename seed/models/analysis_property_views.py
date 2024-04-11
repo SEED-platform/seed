@@ -12,7 +12,7 @@ from django.db.models import QuerySet
 
 from seed.models import Analysis, Cycle, Property, PropertyState, PropertyView
 
-BatchCreateError = namedtuple('BatchCreateError', ['property_view_id', 'message'])
+BatchCreateError = namedtuple("BatchCreateError", ["property_view_id", "message"])
 
 
 class AnalysisPropertyView(models.Model):
@@ -54,8 +54,8 @@ class AnalysisPropertyView(models.Model):
                 property__organization_id=analysis.organization_id,
             )
 
-            missing_property_views = property_view_ids - set(property_views.values_list('id', flat=True))
-            failures = [BatchCreateError(view_id, 'No such PropertyView') for view_id in missing_property_views]
+            missing_property_views = property_view_ids - set(property_views.values_list("id", flat=True))
+            failures = [BatchCreateError(view_id, "No such PropertyView") for view_id in missing_property_views]
 
             analysis_property_view_ids = {}
             for property_view in property_views:
@@ -72,7 +72,7 @@ class AnalysisPropertyView(models.Model):
                     analysis_property_view.save()
                     analysis_property_view_ids[property_view.id] = analysis_property_view.id
                 except ValidationError as e:
-                    failures.append(BatchCreateError(property_view.id, f'Validation of new AnalysisPropertyView failed:\n{e}'))
+                    failures.append(BatchCreateError(property_view.id, f"Validation of new AnalysisPropertyView failed:\n{e}"))
 
         return analysis_property_view_ids, failures
 
@@ -85,10 +85,10 @@ class AnalysisPropertyView(models.Model):
         :return: dict{int: PropertyView}, PropertyViews keyed by the related AnalysisPropertyView id
         """
         # Fast query to find all potentially-necessary propertyViews
-        views = analysis_property_views.values('property_id', 'cycle_id')
+        views = analysis_property_views.values("property_id", "cycle_id")
         property_views = PropertyView.objects.filter(
-            property_id__in={v['property_id'] for v in views},
-            cycle_id__in={v['cycle_id'] for v in views},
+            property_id__in={v["property_id"] for v in views},
+            cycle_id__in={v["cycle_id"] for v in views},
         )
 
         # get original property views keyed by canonical property id and cycle

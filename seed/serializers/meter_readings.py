@@ -20,14 +20,14 @@ from seed.models import MeterReading
 # import logging
 # _log = logging.getLogger(__name__)
 
-meter_fields = ['meter_id', 'start_time', 'end_time', 'reading', 'source_unit', 'conversion_factor']
+meter_fields = ["meter_id", "start_time", "end_time", "reading", "source_unit", "conversion_factor"]
 
 
 class MeterReadingBulkCreateUpdateSerializer(serializers.ListSerializer):
     def to_internal_value(self, data):
         for datum in data:
-            datum['start_time'] = make_aware(dateutil.parser.parse(datum['start_time']), timezone=timezone(TIME_ZONE))
-            datum['end_time'] = make_aware(dateutil.parser.parse(datum['end_time']), timezone=timezone(TIME_ZONE))
+            datum["start_time"] = make_aware(dateutil.parser.parse(datum["start_time"]), timezone=timezone(TIME_ZONE))
+            datum["end_time"] = make_aware(dateutil.parser.parse(datum["end_time"]), timezone=timezone(TIME_ZONE))
         return data
 
     def create(self, validated_data) -> list[MeterReading]:
@@ -44,7 +44,7 @@ class MeterReadingBulkCreateUpdateSerializer(serializers.ListSerializer):
                 cursor,
                 upsert_sql,
                 validated_data,
-                template='(%(meter_id)s, %(start_time)s, %(end_time)s, %(reading)s, %(source_unit)s, %(conversion_factor)s)',
+                template="(%(meter_id)s, %(start_time)s, %(end_time)s, %(reading)s, %(source_unit)s, %(conversion_factor)s)",
                 fetch=True,
             )
 
@@ -57,9 +57,9 @@ class MeterReadingBulkCreateUpdateSerializer(serializers.ListSerializer):
         # duplicate start and end date pairs will cause sql errors
         date_pairs = set()
         for datum in data:
-            date_pair = (datum.get('start_time'), datum.get('end_time'))
+            date_pair = (datum.get("start_time"), datum.get("end_time"))
             if date_pair in date_pairs:
-                raise ValidationError('Error: Each reading must have a unique combination of start_time end end_time.')
+                raise ValidationError("Error: Each reading must have a unique combination of start_time end end_time.")
             date_pairs.add(date_pair)
 
         return data
@@ -68,7 +68,7 @@ class MeterReadingBulkCreateUpdateSerializer(serializers.ListSerializer):
 class MeterReadingSerializer(serializers.ModelSerializer):
     class Meta:
         model = MeterReading
-        exclude = ('meter',)
+        exclude = ("meter",)
         list_serializer_class = MeterReadingBulkCreateUpdateSerializer
 
     def _tz_aware(self, dt):
@@ -77,16 +77,16 @@ class MeterReadingSerializer(serializers.ModelSerializer):
     def to_internal_value(self, data):
         # check if the value being passed is time zone aware, if so, then error
         # because we only support non-time zone aware values
-        start_time = dateutil.parser.parse(data['start_time'])
+        start_time = dateutil.parser.parse(data["start_time"])
         if self._tz_aware(start_time):
-            raise serializers.ValidationError({'status': 'error', 'message': 'start_time must be non-time zone aware'})
+            raise serializers.ValidationError({"status": "error", "message": "start_time must be non-time zone aware"})
 
-        end_time = dateutil.parser.parse(data['end_time'])
+        end_time = dateutil.parser.parse(data["end_time"])
         if self._tz_aware(end_time):
-            raise serializers.ValidationError({'status': 'error', 'message': 'end_time must be non-time zone aware'})
+            raise serializers.ValidationError({"status": "error", "message": "end_time must be non-time zone aware"})
 
-        data['start_time'] = make_aware(start_time, timezone=timezone(TIME_ZONE))
-        data['end_time'] = make_aware(end_time, timezone=timezone(TIME_ZONE))
+        data["start_time"] = make_aware(start_time, timezone=timezone(TIME_ZONE))
+        data["end_time"] = make_aware(end_time, timezone=timezone(TIME_ZONE))
         return data
 
     def create(self, validated_data) -> MeterReading:
@@ -112,14 +112,14 @@ class MeterReadingSerializer(serializers.ModelSerializer):
 
         # TODO: we need to actually read the units from the meter, then convert accordingly.
         # SEED stores all energy data in kBtus
-        result['units'] = 'kBtu'
-        result['id'] = obj.pk
+        result["units"] = "kBtu"
+        result["id"] = obj.pk
 
         # put the ID first
-        result.move_to_end('id', last=False)
+        result.move_to_end("id", last=False)
 
         # do we want to convert this to a user-friendly value here?
-        result['converted_value'] = obj.reading / 3.41
-        result['converted_units'] = 'kWh'
+        result["converted_value"] = obj.reading / 3.41
+        result["converted_units"] = "kWh"
 
         return result

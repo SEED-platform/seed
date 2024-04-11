@@ -43,28 +43,28 @@ def decode_unique_ids(qs):
 
     for state in filtered_qs.iterator():
         try:
-            bounding_box_obj = decode(getattr(state, 'ubid'))
+            bounding_box_obj = decode(getattr(state, "ubid"))
         except ValueError:
             _log.error(f"Could not decode UBID '{getattr(state, 'ubid')}'")
             continue  # state with an incorrectly formatted UBID is skipped
 
         # Starting with the SE point, list the points in counter-clockwise order
         bounding_box_polygon = (
-            f'POLYGON (({bounding_box_obj.longitudeHi} {bounding_box_obj.latitudeLo}, '
-            f'{bounding_box_obj.longitudeHi} {bounding_box_obj.latitudeHi}, '
-            f'{bounding_box_obj.longitudeLo} {bounding_box_obj.latitudeHi}, '
-            f'{bounding_box_obj.longitudeLo} {bounding_box_obj.latitudeLo}, '
-            f'{bounding_box_obj.longitudeHi} {bounding_box_obj.latitudeLo}))'
+            f"POLYGON (({bounding_box_obj.longitudeHi} {bounding_box_obj.latitudeLo}, "
+            f"{bounding_box_obj.longitudeHi} {bounding_box_obj.latitudeHi}, "
+            f"{bounding_box_obj.longitudeLo} {bounding_box_obj.latitudeHi}, "
+            f"{bounding_box_obj.longitudeLo} {bounding_box_obj.latitudeLo}, "
+            f"{bounding_box_obj.longitudeHi} {bounding_box_obj.latitudeLo}))"
         )
         state.bounding_box = bounding_box_polygon
 
         # Starting with the SE point, list the points in counter-clockwise order
         centroid_polygon = (
-            f'POLYGON (({bounding_box_obj.centroid.longitudeHi} {bounding_box_obj.centroid.latitudeLo}, '
-            f'{bounding_box_obj.centroid.longitudeHi} {bounding_box_obj.centroid.latitudeHi}, '
-            f'{bounding_box_obj.centroid.longitudeLo} {bounding_box_obj.centroid.latitudeHi}, '
-            f'{bounding_box_obj.centroid.longitudeLo} {bounding_box_obj.centroid.latitudeLo}, '
-            f'{bounding_box_obj.centroid.longitudeHi} {bounding_box_obj.centroid.latitudeLo}))'
+            f"POLYGON (({bounding_box_obj.centroid.longitudeHi} {bounding_box_obj.centroid.latitudeLo}, "
+            f"{bounding_box_obj.centroid.longitudeHi} {bounding_box_obj.centroid.latitudeHi}, "
+            f"{bounding_box_obj.centroid.longitudeLo} {bounding_box_obj.centroid.latitudeHi}, "
+            f"{bounding_box_obj.centroid.longitudeLo} {bounding_box_obj.centroid.latitudeLo}, "
+            f"{bounding_box_obj.centroid.longitudeHi} {bounding_box_obj.centroid.latitudeLo}))"
         )
         state.centroid = centroid_polygon
 
@@ -125,7 +125,7 @@ def validate_ubid(ubid):
     if not ubid:
         return False
 
-    parts = ubid.split('-')
+    parts = ubid.split("-")
     sql = """ SELECT pluscode_isvalid(%s) """
 
     with connection.cursor() as cursor:
@@ -140,19 +140,19 @@ def merge_ubid_models(old_state_ids, new_state_id, StateClass):  # noqa: N803
 
     If the new_state has an equivalent ubid, skip it.
     """
-    old_states = StateClass.objects.filter(id__in=old_state_ids).order_by('-id')
+    old_states = StateClass.objects.filter(id__in=old_state_ids).order_by("-id")
     new_state = StateClass.objects.get(id=new_state_id)
     new_ubids = new_state.ubidmodel_set.all()
-    state_field = 'property' if StateClass.__name__ == 'PropertyState' else 'taxlot'
+    state_field = "property" if StateClass.__name__ == "PropertyState" else "taxlot"
 
     preferred_ubid = find_preferred(old_states, new_state)
 
     for old_state in old_states:
         for old_ubid in old_state.ubidmodel_set.all():
-            if old_ubid.ubid in new_ubids.values_list('ubid', flat=True):
+            if old_ubid.ubid in new_ubids.values_list("ubid", flat=True):
                 continue
 
-            ubid_details = {'ubid': old_ubid.ubid, state_field: new_state, 'preferred': old_ubid.ubid == preferred_ubid}
+            ubid_details = {"ubid": old_ubid.ubid, state_field: new_state, "preferred": old_ubid.ubid == preferred_ubid}
 
             new_state.ubidmodel_set.create(**ubid_details)
 

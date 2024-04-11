@@ -5,18 +5,18 @@ from django.db import migrations
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('orgs', '0013_organization_comstock_enabled'),
-        ('seed', '0127_auto_20200605_1125'),
+        ("orgs", "0013_organization_comstock_enabled"),
+        ("seed", "0127_auto_20200605_1125"),
     ]
 
     operations = [
         migrations.RenameModel(
-            old_name='ColumnMappingPreset',
-            new_name='ColumnMappingProfile',
+            old_name="ColumnMappingPreset",
+            new_name="ColumnMappingProfile",
         ),
         migrations.RenameField(
-            model_name='columnmappingprofile',
-            old_name='preset_type',
-            new_name='profile_type',
+            model_name="columnmappingprofile",
+            old_name="preset_type",
+            new_name="profile_type",
         ),
     ]

@@ -11,4 +11,4 @@ from seed.models import GoalNote
 class GoalNoteSerializer(serializers.ModelSerializer):
     class Meta:
         model = GoalNote
-        fields = '__all__'
+        fields = "__all__"

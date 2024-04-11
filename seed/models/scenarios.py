@@ -33,22 +33,22 @@ class Scenario(models.Model):
     TEMPORAL_STATUS_DESIGN_TARGET = 6
 
     TEMPORAL_STATUS_TYPES = (
-        (TEMPORAL_STATUS_PRE_RETROFIT, 'Pre retrofit'),
-        (TEMPORAL_STATUS_POST_RETROFIT, 'Post retrofit'),
-        (TEMPORAL_STATUS_BASELINE, 'Baseline'),
-        (TEMPORAL_STATUS_CURRENT, 'Current'),
-        (TEMPORAL_STATUS_TARGET, 'Target'),
-        (TEMPORAL_STATUS_DESIGN_TARGET, 'Design Target'),
+        (TEMPORAL_STATUS_PRE_RETROFIT, "Pre retrofit"),
+        (TEMPORAL_STATUS_POST_RETROFIT, "Post retrofit"),
+        (TEMPORAL_STATUS_BASELINE, "Baseline"),
+        (TEMPORAL_STATUS_CURRENT, "Current"),
+        (TEMPORAL_STATUS_TARGET, "Target"),
+        (TEMPORAL_STATUS_DESIGN_TARGET, "Design Target"),
     )
 
     name = models.CharField(max_length=255)
     temporal_status = models.IntegerField(choices=TEMPORAL_STATUS_TYPES, default=TEMPORAL_STATUS_CURRENT)
     description = models.TextField(null=True)
 
-    property_state = models.ForeignKey('PropertyState', on_delete=models.CASCADE, related_name='scenarios')
+    property_state = models.ForeignKey("PropertyState", on_delete=models.CASCADE, related_name="scenarios")
 
     # a scenario can point to a reference case scenario
-    reference_case = models.ForeignKey('Scenario', on_delete=models.CASCADE, null=True)
+    reference_case = models.ForeignKey("Scenario", on_delete=models.CASCADE, null=True)
 
     # package of measures fields
     annual_site_energy_savings = models.FloatField(null=True)
@@ -72,7 +72,7 @@ class Scenario(models.Model):
     cdd_base_temperature = models.FloatField(null=True)
 
     measures = models.ManyToManyField(PropertyMeasure)
-    event = models.ForeignKey(ATEvent, related_name='scenarios', on_delete=models.SET_NULL, null=True)
+    event = models.ForeignKey(ATEvent, related_name="scenarios", on_delete=models.SET_NULL, null=True)
 
     def copy_initial_meters(self, source_scenario_id):
         """

@@ -27,7 +27,7 @@ def get_organizations_to_delete():
 
 def destroy_organization(org):
     """Delete an organization using the Celery information."""
-    logging.info(f'Deleting organization {org}')
+    logging.info(f"Deleting organization {org}")
     seed.tasks.delete_organization(org.pk)
 
 
@@ -35,10 +35,10 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         """Delete all organizations that are not in Robin's whitelist."""
 
-        logging.debug('**NOTE - Celery server must be running for this operation to work')
+        logging.debug("**NOTE - Celery server must be running for this operation to work")
 
         deprecated_organizations = get_organizations_to_delete()
 
-        logging.info(f'Deleting {deprecated_organizations} deprecated organizations.')
+        logging.info(f"Deleting {deprecated_organizations} deprecated organizations.")
         for org in deprecated_organizations:
             destroy_organization(org)

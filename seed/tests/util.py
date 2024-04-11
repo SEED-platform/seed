@@ -112,29 +112,29 @@ class AccessLevelBaseTestCase(TestCase):
     def setUp(self):
         """SUPERUSER"""
         self.superuser_details = {
-            'username': 'test_superuser@demo.com',
-            'password': 'test_pass',
-            'email': 'test_superuser@demo.com',
-            'first_name': 'Johnny',
-            'last_name': 'Energy',
+            "username": "test_superuser@demo.com",
+            "password": "test_pass",
+            "email": "test_superuser@demo.com",
+            "first_name": "Johnny",
+            "last_name": "Energy",
         }
         self.superuser = User.objects.create_superuser(**self.superuser_details)
-        self.org, _, _ = create_organization(self.superuser, 'test-organization-a')
+        self.org, _, _ = create_organization(self.superuser, "test-organization-a")
         # add ALI to org (2 levels)
-        self.org.access_level_names = ['root', 'child']
+        self.org.access_level_names = ["root", "child"]
         self.root_level_instance = self.org.root
-        self.child_level_instance = self.org.add_new_access_level_instance(self.org.root.id, 'child')
+        self.child_level_instance = self.org.add_new_access_level_instance(self.org.root.id, "child")
 
         # default login as superuser/org owner
         self.client.login(**self.superuser_details)
 
         """ ROOT-LEVEL OWNER USER """
         self.root_owner_user_details = {
-            'username': 'test_user@demo.com',
-            'password': 'test_pass',
-            'email': 'test_user@demo.com',
-            'first_name': 'Jane',
-            'last_name': 'Energy',
+            "username": "test_user@demo.com",
+            "password": "test_pass",
+            "email": "test_user@demo.com",
+            "first_name": "Jane",
+            "last_name": "Energy",
         }
         self.root_owner_user = User.objects.create_user(**self.root_owner_user_details)
         self.org.add_member(self.root_owner_user, self.org.root.id, ROLE_OWNER)
@@ -142,8 +142,8 @@ class AccessLevelBaseTestCase(TestCase):
 
         """ ROOT-LEVEL MEMBER USER """
         self.root_member_user_details = {
-            'username': 'root_member@demo.com',
-            'password': 'test_pass',
+            "username": "root_member@demo.com",
+            "password": "test_pass",
         }
         self.root_member_user = User.objects.create_user(**self.root_member_user_details)
         self.org.add_member(self.root_member_user, self.org.root.id, ROLE_MEMBER)
@@ -151,8 +151,8 @@ class AccessLevelBaseTestCase(TestCase):
 
         """ CHILD-LEVEL MEMBER USER """
         self.child_member_user_details = {
-            'username': 'child_member@demo.com',
-            'password': 'test_pass',
+            "username": "child_member@demo.com",
+            "password": "test_pass",
         }
         self.child_member_user = User.objects.create_user(**self.child_member_user_details)
         # add user to org
@@ -186,19 +186,19 @@ class AccessLevelBaseTestCase(TestCase):
 class DataMappingBaseTestCase(DeleteModelsTestCase):
     """Base Test Case Class to handle data import"""
 
-    def set_up(self, import_file_source_type, user_name='test_user@demo.com', user_password='test_pass'):  # noqa: S107
+    def set_up(self, import_file_source_type, user_name="test_user@demo.com", user_password="test_pass"):  # noqa: S107
         # default_values
-        import_file_data_state = getattr(self, 'import_file_data_state', DATA_STATE_IMPORT)
+        import_file_data_state = getattr(self, "import_file_data_state", DATA_STATE_IMPORT)
 
         if not User.objects.filter(username=user_name).exists():
             user = User.objects.create_user(user_name, password=user_password)
         else:
             user = User.objects.get(username=user_name)
 
-        org, _, _ = create_organization(user, 'test-organization-a')
+        org, _, _ = create_organization(user, "test-organization-a")
 
         cycle, _ = Cycle.objects.get_or_create(
-            name='Test Hack Cycle 2015',
+            name="Test Hack Cycle 2015",
             organization=org,
             start=date(2015, 1, 1),
             end=date(2015, 12, 31),
@@ -229,16 +229,16 @@ class DataMappingBaseTestCase(DeleteModelsTestCase):
 class FakeRequest:
     """A simple request stub."""
 
-    __name__ = 'FakeRequest'
-    META = {'REMOTE_ADDR': '127.0.0.1'}
-    path = 'fake_login_path'
+    __name__ = "FakeRequest"
+    META = {"REMOTE_ADDR": "127.0.0.1"}
+    path = "fake_login_path"
     body = None
     GET: Dict[str, Any] = {}
     POST: Dict[str, Any] = {}
 
-    def __init__(self, data=None, headers=None, user=None, method='POST', **kwargs):
-        if 'body' in kwargs:
-            self.body = kwargs['body']
+    def __init__(self, data=None, headers=None, user=None, method="POST", **kwargs):
+        if "body" in kwargs:
+            self.body = kwargs["body"]
         if data is None:
             data = {}
 
@@ -252,10 +252,10 @@ class FakeRequest:
 class FakeClient:
     """An extremely light-weight test client."""
 
-    def _gen_req(self, view_func, data, headers, method='POST', **kwargs):
+    def _gen_req(self, view_func, data, headers, method="POST", **kwargs):
         request = FakeRequest(headers)
-        if 'user' in kwargs:
-            request.user = kwargs.get('user')
+        if "user" in kwargs:
+            request.user = kwargs.get("user")
         if callable(view_func):
             setattr(request, method, data)
             request.body = json.dumps(data)
@@ -264,7 +264,7 @@ class FakeClient:
         return request
 
     def get(self, view_func, data, headers=None, **kwargs):
-        return self._gen_req(view_func, data, headers, method='GET', **kwargs)
+        return self._gen_req(view_func, data, headers, method="GET", **kwargs)
 
     def post(self, view_func, data, headers=None, **kwargs):
         return self._gen_req(view_func, data, headers, **kwargs)

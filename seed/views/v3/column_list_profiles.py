@@ -30,24 +30,24 @@ from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
 
 
 @method_decorator(
-    name='create',
+    name="create",
     decorator=[
         swagger_auto_schema_org_query_param,
-        has_perm_class('requires_root_member_access'),
+        has_perm_class("requires_root_member_access"),
     ],
 )
 @method_decorator(
-    name='update',
+    name="update",
     decorator=[
         swagger_auto_schema_org_query_param,
-        has_perm_class('requires_root_member_access'),
+        has_perm_class("requires_root_member_access"),
     ],
 )
 @method_decorator(
-    name='destroy',
+    name="destroy",
     decorator=[
         swagger_auto_schema_org_query_param,
-        has_perm_class('requires_root_member_access'),
+        has_perm_class("requires_root_member_access"),
     ],
 )
 class ColumnListProfileViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet):
@@ -88,20 +88,20 @@ class ColumnListProfileViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelV
             org = Organization.objects.get(pk=org_id)
         except Organization.DoesNotExist:
             return JsonResponse(
-                {'status': 'error', 'message': 'organization with id %s does not exist' % org_id}, status=status.HTTP_404_NOT_FOUND
+                {"status": "error", "message": "organization with id %s does not exist" % org_id}, status=status.HTTP_404_NOT_FOUND
             )
 
-        if not org.comstock_enabled or kwargs['pk'] != 'null':
+        if not org.comstock_enabled or kwargs["pk"] != "null":
             return super().retrieve(request, args, kwargs)
 
         result = {
-            'status': 'success',
-            'data': {
-                'id': None,
-                'name': 'ComStock',
-                'profile_location': VIEW_LOCATION_TYPES[VIEW_LIST][1],
-                'inventory_type': VIEW_LIST_INVENTORY_TYPE[VIEW_LIST_PROPERTY][1],
-                'columns': self.list_comstock_columns(org_id),
+            "status": "success",
+            "data": {
+                "id": None,
+                "name": "ComStock",
+                "profile_location": VIEW_LOCATION_TYPES[VIEW_LIST][1],
+                "inventory_type": VIEW_LIST_INVENTORY_TYPE[VIEW_LIST_PROPERTY][1],
+                "columns": self.list_comstock_columns(org_id),
             },
         }
 
@@ -111,44 +111,44 @@ class ColumnListProfileViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelV
     @swagger_auto_schema(
         manual_parameters=[
             AutoSchemaHelper.query_org_id_field(
-                required=False, description='Optional org id which overrides the users (default) current org id'
+                required=False, description="Optional org id which overrides the users (default) current org id"
             ),
-            AutoSchemaHelper.query_string_field(name='inventory_type', required=True, description="'Property' or 'Tax Lot' for filtering."),
+            AutoSchemaHelper.query_string_field(name="inventory_type", required=True, description="'Property' or 'Tax Lot' for filtering."),
             AutoSchemaHelper.query_string_field(
-                name='profile_location', required=True, description="'List View Profile' or 'Detail View Profile' for filtering."
+                name="profile_location", required=True, description="'List View Profile' or 'Detail View Profile' for filtering."
             ),
         ]
     )
     def list(self, request, *args, **kwargs):
         org_id = self.get_organization(self.request)
-        brief = json.loads(request.query_params.get('brief', 'false'))
+        brief = json.loads(request.query_params.get("brief", "false"))
 
         try:
             org = Organization.objects.get(pk=org_id)
         except Organization.DoesNotExist:
             return JsonResponse(
-                {'status': 'error', 'message': 'organization with id %s does not exist' % org_id}, status=status.HTTP_404_NOT_FOUND
+                {"status": "error", "message": "organization with id %s does not exist" % org_id}, status=status.HTTP_404_NOT_FOUND
             )
 
-        inventory_type = request.query_params.get('inventory_type')
-        profile_location = request.query_params.get('profile_location')
+        inventory_type = request.query_params.get("inventory_type")
+        profile_location = request.query_params.get("profile_location")
         queryset = self.filter_queryset(self.get_queryset())
 
         if brief:
-            results = list(queryset.values('id', 'name', 'profile_location', 'inventory_type'))
+            results = list(queryset.values("id", "name", "profile_location", "inventory_type"))
         else:
             results = list(queryset)
             results = self.get_serializer(results, many=True).data
 
-        if org.comstock_enabled and inventory_type != 'Tax Lot' and profile_location != 'Detail View Profile':
+        if org.comstock_enabled and inventory_type != "Tax Lot" and profile_location != "Detail View Profile":
             # Add ComStock columns
             results.append(
                 {
-                    'id': None,
-                    'name': 'ComStock',
-                    'profile_location': profile_location,
-                    'inventory_type': inventory_type,
-                    'columns': None if brief else self.list_comstock_columns(org_id),
+                    "id": None,
+                    "name": "ComStock",
+                    "profile_location": profile_location,
+                    "inventory_type": inventory_type,
+                    "columns": None if brief else self.list_comstock_columns(org_id),
                 }
             )
 
@@ -156,18 +156,18 @@ class ColumnListProfileViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelV
 
     @staticmethod
     def list_comstock_columns(org_id):
-        comstock_columns = Column.objects.filter(organization_id=org_id, comstock_mapping__isnull=False).order_by('comstock_mapping')
+        comstock_columns = Column.objects.filter(organization_id=org_id, comstock_mapping__isnull=False).order_by("comstock_mapping")
 
         results = []
         for index, column in enumerate(comstock_columns):
             results.append(
                 {
-                    'id': column.id,
-                    'pinned': False,
-                    'order': index + 1,
-                    'column_name': column.column_name,
-                    'table_name': column.table_name,
-                    'comstock_mapping': column.comstock_mapping,
+                    "id": column.id,
+                    "pinned": False,
+                    "order": index + 1,
+                    "column_name": column.column_name,
+                    "table_name": column.table_name,
+                    "comstock_mapping": column.comstock_mapping,
                 }
             )
 

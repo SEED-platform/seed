@@ -5,13 +5,13 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('seed', '0021_auto_20160727_1347'),
+        ("seed", "0021_auto_20160727_1347"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='propertystate',
-            name='data_state',
-            field=models.IntegerField(choices=[(0, 'Unknown'), (1, 'Post Import'), (2, 'Post Mapping'), (3, 'Post Matching')], default=0),
+            model_name="propertystate",
+            name="data_state",
+            field=models.IntegerField(choices=[(0, "Unknown"), (1, "Post Import"), (2, "Post Mapping"), (3, "Post Matching")], default=0),
         ),
     ]

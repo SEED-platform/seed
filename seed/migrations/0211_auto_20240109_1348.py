@@ -5,16 +5,16 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('seed', '0210_natural_sort'),
+        ("seed", "0210_natural_sort"),
     ]
 
     operations = [
         migrations.RemoveConstraint(
-            model_name='derivedcolumn',
-            name='unique_name_for_organization',
+            model_name="derivedcolumn",
+            name="unique_name_for_organization",
         ),
         migrations.AddConstraint(
-            model_name='derivedcolumn',
-            constraint=models.UniqueConstraint(fields=('organization', 'name', 'inventory_type'), name='unique_name_for_organization'),
+            model_name="derivedcolumn",
+            constraint=models.UniqueConstraint(fields=("organization", "name", "inventory_type"), name="unique_name_for_organization"),
         ),
     ]

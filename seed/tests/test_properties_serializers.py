@@ -49,10 +49,10 @@ class TestPropertySerializers(DeleteModelsTestCase):
     def setUp(self):
         self.maxDiff = None
         user_details = {
-            'username': 'test_user@demo.com',
-            'password': 'test_pass',
+            "username": "test_user@demo.com",
+            "password": "test_pass",
         }
-        self.user = User.objects.create_superuser(email='test_user@demo.com', **user_details)
+        self.user = User.objects.create_superuser(email="test_user@demo.com", **user_details)
         self.org, _, _ = create_organization(self.user)
         self.audit_log_factory = FakePropertyAuditLogFactory(organization=self.org, user=self.user)
         self.property_factory = FakePropertyFactory(organization=self.org)
@@ -64,17 +64,17 @@ class TestPropertySerializers(DeleteModelsTestCase):
         self.assessment = self.ga_factory.get_green_assessment()
         self.property_view = self.property_view_factory.get_property_view()
         self.gap_data = {
-            'source': 'test',
-            'status': 'complete',
-            'status_date': datetime.date(2017, 0o1, 0o1),
-            'metric': 5,
-            'version': '0.1',
-            'date': datetime.date(2016, 0o1, 0o1),
-            'eligibility': True,
-            'assessment': self.assessment,
-            'view': self.property_view,
+            "source": "test",
+            "status": "complete",
+            "status_date": datetime.date(2017, 0o1, 0o1),
+            "metric": 5,
+            "version": "0.1",
+            "date": datetime.date(2016, 0o1, 0o1),
+            "eligibility": True,
+            "assessment": self.assessment,
+            "view": self.property_view,
         }
-        self.urls = ['http://example.com', 'http://example.org']
+        self.urls = ["http://example.com", "http://example.org"]
 
     def test_audit_log_serializer(self):
         """Test to_representation method."""
@@ -82,19 +82,19 @@ class TestPropertySerializers(DeleteModelsTestCase):
         # test with AUDIT_USER_CREATE
         audit_log = self.audit_log_factory.get_property_audit_log()
         result = PropertyAuditLogReadOnlySerializer(audit_log).data
-        self.assertEqual(result['description'], 'test audit log')
-        self.assertEqual(result['date_edited'], audit_log.created.ctime())
-        self.assertEqual(result['source'], 'UserCreate')
-        self.assertIsNone(result['changed_fields'])
-        self.assertEqual(result['state']['city'], 'Boring')
+        self.assertEqual(result["description"], "test audit log")
+        self.assertEqual(result["date_edited"], audit_log.created.ctime())
+        self.assertEqual(result["source"], "UserCreate")
+        self.assertIsNone(result["changed_fields"])
+        self.assertEqual(result["state"]["city"], "Boring")
 
         # test with AUDIT_USER_EDIT
-        changed_fields = ['a', 'b', 'c']
+        changed_fields = ["a", "b", "c"]
         audit_log = self.audit_log_factory.get_property_audit_log(record_type=AUDIT_USER_EDIT, description=json.dumps(changed_fields))
         result = PropertyAuditLogReadOnlySerializer(audit_log).data
-        self.assertEqual(result['description'], 'User edit')
-        self.assertEqual(result['source'], 'UserEdit')
-        self.assertEqual(result['changed_fields'], changed_fields)
+        self.assertEqual(result["description"], "User edit")
+        self.assertEqual(result["source"], "UserEdit")
+        self.assertEqual(result["changed_fields"], changed_fields)
 
     def test_property_view_list_serializer(self):
         """Test to_representation method."""
@@ -102,34 +102,34 @@ class TestPropertySerializers(DeleteModelsTestCase):
         property_view_2 = self.property_view_factory.get_property_view()
         gap1_data = self.gap_data.copy()
         gap2_data = self.gap_data.copy()
-        gap1_data['view'] = property_view_1
-        gap2_data['view'] = property_view_2
-        gap2_data['metric'] = 4
+        gap1_data["view"] = property_view_1
+        gap2_data["view"] = property_view_2
+        gap2_data["metric"] = 4
         self.gap_factory.get_green_assessment_property(**gap1_data)
         self.gap_factory.get_green_assessment_property(**gap2_data)
         serializer = PropertyViewListSerializer(child=PropertyViewSerializer())
         result = serializer.to_representation([property_view_1, property_view_2])
-        self.assertEqual(result[0]['cycle']['id'], property_view_1.cycle_id)
-        self.assertEqual(result[1]['cycle']['id'], property_view_2.cycle_id)
-        self.assertEqual(result[0]['state']['id'], property_view_1.state_id)
-        self.assertEqual(result[1]['state']['id'], property_view_2.state_id)
-        self.assertEqual(result[0]['certifications'][0]['score'], 5)
-        self.assertEqual(result[1]['certifications'][0]['score'], 4)
-        self.assertEqual(result[0]['certifications'][0]['assessment']['name'], self.assessment.name)
-        self.assertEqual(result[1]['certifications'][0]['assessment']['name'], self.assessment.name)
+        self.assertEqual(result[0]["cycle"]["id"], property_view_1.cycle_id)
+        self.assertEqual(result[1]["cycle"]["id"], property_view_2.cycle_id)
+        self.assertEqual(result[0]["state"]["id"], property_view_1.state_id)
+        self.assertEqual(result[1]["state"]["id"], property_view_2.state_id)
+        self.assertEqual(result[0]["certifications"][0]["score"], 5)
+        self.assertEqual(result[1]["certifications"][0]["score"], 4)
+        self.assertEqual(result[0]["certifications"][0]["assessment"]["name"], self.assessment.name)
+        self.assertEqual(result[1]["certifications"][0]["assessment"]["name"], self.assessment.name)
 
         # with queryset
         serializer = PropertyViewListSerializer(child=PropertyViewSerializer())
-        queryset = PropertyView.objects.filter(id__in=[property_view_1.id, property_view_2.id]).order_by('id')
+        queryset = PropertyView.objects.filter(id__in=[property_view_1.id, property_view_2.id]).order_by("id")
         result = serializer.to_representation(queryset)
-        self.assertEqual(result[0]['cycle']['id'], property_view_1.cycle_id)
-        self.assertEqual(result[1]['cycle']['id'], property_view_2.cycle_id)
-        self.assertEqual(result[0]['state']['id'], property_view_1.state_id)
-        self.assertEqual(result[1]['state']['id'], property_view_2.state_id)
-        self.assertEqual(result[0]['certifications'][0]['score'], 5)
-        self.assertEqual(result[1]['certifications'][0]['score'], 4)
-        self.assertEqual(result[0]['certifications'][0]['assessment']['name'], self.assessment.name)
-        self.assertEqual(result[1]['certifications'][0]['assessment']['name'], self.assessment.name)
+        self.assertEqual(result[0]["cycle"]["id"], property_view_1.cycle_id)
+        self.assertEqual(result[1]["cycle"]["id"], property_view_2.cycle_id)
+        self.assertEqual(result[0]["state"]["id"], property_view_1.state_id)
+        self.assertEqual(result[1]["state"]["id"], property_view_2.state_id)
+        self.assertEqual(result[0]["certifications"][0]["score"], 5)
+        self.assertEqual(result[1]["certifications"][0]["score"], 4)
+        self.assertEqual(result[0]["certifications"][0]["assessment"]["name"], self.assessment.name)
+        self.assertEqual(result[1]["certifications"][0]["assessment"]["name"], self.assessment.name)
 
     def test_property_list_serializer(self):
         """Test PropertyListSerializer.to_representation"""
@@ -140,14 +140,14 @@ class TestPropertySerializers(DeleteModelsTestCase):
         expected = [
             OrderedDict(
                 [
-                    ('id', property1.id),
-                    ('parent_property', None),
+                    ("id", property1.id),
+                    ("parent_property", None),
                 ]
             ),
             OrderedDict(
                 [
-                    ('id', property2.id),
-                    ('parent_property', None),
+                    ("id", property2.id),
+                    ("parent_property", None),
                 ]
             ),
         ]
@@ -161,10 +161,10 @@ class TestPropertyViewAsStateSerializers(DeleteModelsTestCase):
     def setUp(self):
         self.maxDiff = None
         user_details = {
-            'username': 'test_user@demo.com',
-            'password': 'test_pass',
+            "username": "test_user@demo.com",
+            "password": "test_pass",
         }
-        self.user = User.objects.create_superuser(email='test_user@demo.com', **user_details)
+        self.user = User.objects.create_superuser(email="test_user@demo.com", **user_details)
         self.org, _, _ = create_organization(self.user)
         self.audit_log_factory = FakePropertyAuditLogFactory(organization=self.org, user=self.user)
         self.cycle_factory = FakeCycleFactory(organization=self.org, user=self.user)
@@ -182,21 +182,21 @@ class TestPropertyViewAsStateSerializers(DeleteModelsTestCase):
         self.taxlot_state = self.taxlot_state_factory.get_taxlot_state()
         self.taxlot_view = self.taxlot_view_factory.get_taxlot_view(state=self.taxlot_state, cycle=self.cycle)
         self.audit_log = self.audit_log_factory.get_property_audit_log(
-            state=self.property_state, view=self.property_view, record_type=AUDIT_USER_EDIT, description=json.dumps(['a', 'b'])
+            state=self.property_state, view=self.property_view, record_type=AUDIT_USER_EDIT, description=json.dumps(["a", "b"])
         )
         self.audit_log2 = self.audit_log_factory.get_property_audit_log(view=self.property_view)
         self.gap_data = {
-            'source': 'test',
-            'status': 'complete',
-            'status_date': datetime.date(2017, 0o1, 0o1),
-            'metric': 5,
-            'version': '0.1',
-            'date': datetime.date(2016, 0o1, 0o1),
-            'eligibility': True,
-            'assessment': self.assessment,
-            'view': self.property_view,
+            "source": "test",
+            "status": "complete",
+            "status_date": datetime.date(2017, 0o1, 0o1),
+            "metric": 5,
+            "version": "0.1",
+            "date": datetime.date(2016, 0o1, 0o1),
+            "eligibility": True,
+            "assessment": self.assessment,
+            "view": self.property_view,
         }
-        self.urls = ['http://example.com', 'http://example.org']
+        self.urls = ["http://example.com", "http://example.org"]
         self.gap = self.gap_factory.get_green_assessment_property(**self.gap_data)
         self.serializer = PropertyViewAsStateSerializer(instance=self.property_view)
 
@@ -217,7 +217,7 @@ class TestPropertyViewAsStateSerializers(DeleteModelsTestCase):
 
     def test_get_changed_fields(self):
         """Test get_changed_fields"""
-        expected = ['a', 'b']
+        expected = ["a", "b"]
         self.assertEqual(self.serializer.get_changed_fields(None), expected)
 
     def test_get_date_edited(self):
@@ -255,50 +255,50 @@ class TestPropertyViewAsStateSerializers(DeleteModelsTestCase):
         """Test get_taxlots"""
         self.taxlot_property_factory.get_taxlot_property(cycle=self.cycle, property_view=self.property_view, taxlot_view=self.taxlot_view)
         result = self.serializer.get_taxlots(self.property_view)
-        self.assertEqual(result[0]['state']['id'], self.taxlot_state.id)
+        self.assertEqual(result[0]["state"]["id"], self.taxlot_state.id)
 
-    @mock.patch('seed.serializers.properties.PropertyView')
-    @mock.patch('seed.serializers.properties.PropertyStateWritableSerializer')
+    @mock.patch("seed.serializers.properties.PropertyView")
+    @mock.patch("seed.serializers.properties.PropertyStateWritableSerializer")
     def test_create(self, mock_serializer, mock_pview):
         """Test create"""
         mock_serializer.return_value.is_valid.return_value = True
         mock_serializer.return_value.save.return_value = self.property_state
         mock_pview.objects.create.return_value = self.property_view
-        data = {'org_id': 1, 'cycle': 2, 'state': {'test': 3}, 'property': 4}
+        data = {"org_id": 1, "cycle": 2, "state": {"test": 3}, "property": 4}
 
         serializer = PropertyViewAsStateSerializer()
         serializer.create(data)
-        mock_serializer.assert_called_with(data={'test': 3})
+        mock_serializer.assert_called_with(data={"test": 3})
         self.assertTrue(mock_serializer.return_value.save.called)
         mock_pview.objects.create.assert_called_with(state=self.property_state, cycle_id=2, property_id=4, org_id=1)
 
-    @mock.patch('seed.serializers.properties.PropertyStateWritableSerializer')
+    @mock.patch("seed.serializers.properties.PropertyStateWritableSerializer")
     def test_update_put(self, mock_serializer):
         """Test update with PUT"""
         mock_serializer.return_value.is_valid.return_value = True
         mock_serializer.return_value.save.return_value = self.property_state
         mock_request = mock.MagicMock()
         property = FakePropertyFactory(organization=self.org).get_property()
-        data = {'org_id': 1, 'cycle': 2, 'state': {'test': 3}, 'property': property.id}
+        data = {"org_id": 1, "cycle": 2, "state": {"test": 3}, "property": property.id}
 
-        serializer = PropertyViewAsStateSerializer(context={'request': mock_request})
-        mock_request.METHOD = 'PUT'
+        serializer = PropertyViewAsStateSerializer(context={"request": mock_request})
+        mock_request.METHOD = "PUT"
         serializer.update(self.property_view, data)
-        mock_serializer.assert_called_with(data={'test': 3})
+        mock_serializer.assert_called_with(data={"test": 3})
         self.assertTrue(mock_serializer.return_value.save.called)
 
-    @mock.patch('seed.serializers.properties.PropertyStateWritableSerializer')
+    @mock.patch("seed.serializers.properties.PropertyStateWritableSerializer")
     def test_update_patch(self, mock_serializer):
         """Test update with PATCH"""
         mock_serializer.return_value.is_valid.return_value = True
         mock_serializer.return_value.save.return_value = self.property_state
         mock_request = mock.MagicMock()
-        mock_request.method = 'PATCH'
+        mock_request.method = "PATCH"
         property = FakePropertyFactory(organization=self.org).get_property()
-        data = {'org_id': 1, 'cycle': 2, 'state': {'test': 3}, 'property': property.id}
-        serializer = PropertyViewAsStateSerializer(context={'request': mock_request})
+        data = {"org_id": 1, "cycle": 2, "state": {"test": 3}, "property": property.id}
+        serializer = PropertyViewAsStateSerializer(context={"request": mock_request})
         serializer.update(self.property_view, data)
-        mock_serializer.assert_called_with(self.property_state, data={'test': 3})
+        mock_serializer.assert_called_with(self.property_state, data={"test": 3})
         self.assertTrue(mock_serializer.return_value.save.called)
 
 
@@ -307,24 +307,24 @@ class TestMisc(DeleteModelsTestCase):
 
     def test_unflatten_values(self):
         """Test unflatten_values function."""
-        test_dict = {'a': 1, 'b': 2, 'sub_a': 3, 'sub__a': 4, 'sub__b': 5, 'bus__a': 6, 'bus__b': 7, 'bus__c': 9}
+        test_dict = {"a": 1, "b": 2, "sub_a": 3, "sub__a": 4, "sub__b": 5, "bus__a": 6, "bus__b": 7, "bus__c": 9}
         expected = {
-            'a': 1,
-            'b': 2,
-            'sub_a': 3,
-            'sub': {'a': 4, 'b': 5},
-            'bus': {'a': 6, 'b': 7, 'c': 9},
+            "a": 1,
+            "b": 2,
+            "sub_a": 3,
+            "sub": {"a": 4, "b": 5},
+            "bus": {"a": 6, "b": 7, "c": 9},
         }
-        test_keys = ['bus', 'sub']
+        test_keys = ["bus", "sub"]
         result = unflatten_values(test_dict, test_keys)
         self.assertEqual(len(test_dict.keys()) - 3, len(result.keys()))
         self.assertEqual(len(expected.keys()), len(result.keys()))
         self.assertEqual(expected, result)
-        with pytest.raises(ValueError, match=r'^unflatten_values: {.+} has fields named in \[.+\]$'):
-            unflatten_values(test_dict, ['a'])
-        with pytest.raises(ValueError, match=r'^unflatten_values: {.+} has fields named in \[.+\]$'):
+        with pytest.raises(ValueError, match=r"^unflatten_values: {.+} has fields named in \[.+\]$"):
+            unflatten_values(test_dict, ["a"])
+        with pytest.raises(ValueError, match=r"^unflatten_values: {.+} has fields named in \[.+\]$"):
             unflatten_values(test_dict, list(test_dict.keys()))
-        with pytest.raises(ValueError, match=r'^unflatten_values: {.+} has fields named in \[.+\]$'):
-            unflatten_values(test_dict, ['a', 'bus', 'sub'])
-        with pytest.raises(ValueError, match=r'^unflatten_values: {.+} has fields named in \[.+\]$'):
-            unflatten_values(test_dict, ['a', 'sub', 'foo'])
+        with pytest.raises(ValueError, match=r"^unflatten_values: {.+} has fields named in \[.+\]$"):
+            unflatten_values(test_dict, ["a", "bus", "sub"])
+        with pytest.raises(ValueError, match=r"^unflatten_values: {.+} has fields named in \[.+\]$"):
+            unflatten_values(test_dict, ["a", "sub", "foo"])

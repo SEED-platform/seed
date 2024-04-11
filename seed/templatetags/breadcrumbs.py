@@ -112,7 +112,7 @@ def breadcrumb_url(parser, token):
 
     # Extract our extra title parameter
     title = bits.pop(1)
-    token.contents = ' '.join(bits)
+    token.contents = " ".join(bits)
 
     url_node = url(parser, token)
 
@@ -137,7 +137,7 @@ def breadcrumb_url_root(parser, token):
 
     # Extract our extra title parameter
     title = bits.pop(1)
-    token.contents = ' '.join(bits)
+    token.contents = " ".join(bits)
 
     url_node = url(parser, token)
 
@@ -160,7 +160,7 @@ class BreadcrumbNode(Node):
                 val = self.variables[0]
                 title = val.resolve(context)
             except BaseException:
-                title = ''
+                title = ""
 
         else:
             title = title.strip("'").strip('"')
@@ -172,7 +172,7 @@ class BreadcrumbNode(Node):
             try:
                 url = val.resolve(context)
             except VariableDoesNotExist:
-                _log.error(f'URL does not exist: {val}')
+                _log.error(f"URL does not exist: {val}")
                 url = None
 
         # add gettext function for title i18n translation
@@ -194,7 +194,7 @@ class UrlBreadcrumbNode(Node):
                 val = self.title
                 title = val.resolve(context)
             except BaseException:
-                title = ''
+                title = ""
         else:
             title = title.strip("'").strip('"')
 

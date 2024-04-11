@@ -16,42 +16,42 @@ from seed.utils.api_schema import AutoSchemaHelper
 from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
 
 
-@method_decorator(name='list', decorator=[has_perm_class('requires_viewer'), has_hierarchy_access(property_view_id_kwarg='property_pk')])
+@method_decorator(name="list", decorator=[has_perm_class("requires_viewer"), has_hierarchy_access(property_view_id_kwarg="property_pk")])
 @method_decorator(
-    name='retrieve', decorator=[has_perm_class('requires_viewer'), has_hierarchy_access(property_view_id_kwarg='property_pk')]
+    name="retrieve", decorator=[has_perm_class("requires_viewer"), has_hierarchy_access(property_view_id_kwarg="property_pk")]
 )
 @method_decorator(
-    name='create',
+    name="create",
     decorator=[
-        has_perm_class('requires_member'),
-        has_hierarchy_access(property_view_id_kwarg='property_pk'),
+        has_perm_class("requires_member"),
+        has_hierarchy_access(property_view_id_kwarg="property_pk"),
         swagger_auto_schema(
             manual_parameters=[
                 AutoSchemaHelper.base_field(
-                    name='property_pk',
-                    location_attr='IN_PATH',
-                    type_attr='TYPE_INTEGER',
+                    name="property_pk",
+                    location_attr="IN_PATH",
+                    type_attr="TYPE_INTEGER",
                     required=True,
-                    description='ID of the property view where the meter is associated.',
+                    description="ID of the property view where the meter is associated.",
                 ),
             ],
             request_body=AutoSchemaHelper.schema_factory(
                 {
-                    'type': Meter.ENERGY_TYPES,
-                    'alias': 'string',
-                    'source': Meter.SOURCES,
-                    'source_id': 'string',
-                    'scenario_id': 'integer',
-                    'is_virtual': 'boolean',
+                    "type": Meter.ENERGY_TYPES,
+                    "alias": "string",
+                    "source": Meter.SOURCES,
+                    "source_id": "string",
+                    "scenario_id": "integer",
+                    "is_virtual": "boolean",
                 },
-                required=['type', 'source'],
-                description='New meter to add. The type must be taken from a constrained list.',
+                required=["type", "source"],
+                description="New meter to add. The type must be taken from a constrained list.",
             ),
         ),
     ],
 )
-@method_decorator(name='destroy', decorator=[has_perm_class('requires_member'), has_hierarchy_access(property_view_id_kwarg='property_pk')])
-@method_decorator(name='update', decorator=[has_perm_class('requires_member'), has_hierarchy_access(property_view_id_kwarg='property_pk')])
+@method_decorator(name="destroy", decorator=[has_perm_class("requires_member"), has_hierarchy_access(property_view_id_kwarg="property_pk")])
+@method_decorator(name="update", decorator=[has_perm_class("requires_member"), has_hierarchy_access(property_view_id_kwarg="property_pk")])
 class MeterViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
     """API endpoint for managing meters."""
 
@@ -60,7 +60,7 @@ class MeterViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
     pagination_class = None
     model = Meter
     parser_classes = (JSONParser, FormParser)
-    orgfilter = 'property__organization'
+    orgfilter = "property__organization"
 
     def get_queryset(self):
         # get all the meters for the organization
@@ -68,7 +68,7 @@ class MeterViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
         # get the property id - since the meter is associated with the property (not the property view)
 
         # even though it is named 'property_pk' it is really the property view id
-        property_view_pk = self.kwargs.get('property_pk', None)
+        property_view_pk = self.kwargs.get("property_pk", None)
         if not property_view_pk:
             # Return None otherwise swagger will not be able to process the request
             return Meter.objects.none()
@@ -84,4 +84,4 @@ class MeterViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
         if self.property_pk:
             serializer.save(property_id=self.property_pk)
         else:
-            raise Exception('No property_pk (property view id) provided in URL to create the meter')
+            raise Exception("No property_pk (property view id) provided in URL to create the meter")

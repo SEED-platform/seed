@@ -19,12 +19,12 @@ class AnalysisOutputFile(models.Model):
     IMAGE_PNG = 100
 
     CONTENT_TYPES = (
-        (BUILDINGSYNC, 'BuildingSync'),
-        (HTML, 'html'),
-        (IMAGE_PNG, 'PNG'),
+        (BUILDINGSYNC, "BuildingSync"),
+        (HTML, "html"),
+        (IMAGE_PNG, "PNG"),
     )
 
-    file = models.FileField(upload_to='analysis_output_files', max_length=500)
+    file = models.FileField(upload_to="analysis_output_files", max_length=500)
     content_type = models.IntegerField(choices=CONTENT_TYPES)
 
     # An output file can be linked to one or more properties

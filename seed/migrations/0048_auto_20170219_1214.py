@@ -5,24 +5,24 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('seed', '0047_auto_20170119_1318'),
+        ("seed", "0047_auto_20170119_1318"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='propertystate',
-            name='merge_state',
+            model_name="propertystate",
+            name="merge_state",
             field=models.IntegerField(
-                choices=[(0, b'Unknown'), (1, b'New Record'), (2, b'Merged Record'), (3, b'Duplicate Record'), (4, b'Delete Record')],
+                choices=[(0, b"Unknown"), (1, b"New Record"), (2, b"Merged Record"), (3, b"Duplicate Record"), (4, b"Delete Record")],
                 default=0,
                 null=True,
             ),
         ),
         migrations.AlterField(
-            model_name='taxlotstate',
-            name='merge_state',
+            model_name="taxlotstate",
+            name="merge_state",
             field=models.IntegerField(
-                choices=[(0, b'Unknown'), (1, b'New Record'), (2, b'Merged Record'), (3, b'Duplicate Record'), (4, b'Delete Record')],
+                choices=[(0, b"Unknown"), (1, b"New Record"), (2, b"Merged Record"), (3, b"Duplicate Record"), (4, b"Delete Record")],
                 default=0,
                 null=True,
             ),

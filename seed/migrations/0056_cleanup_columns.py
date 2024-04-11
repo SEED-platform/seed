@@ -4,43 +4,43 @@ from django.db import migrations
 
 
 def forwards(apps, schema_editor):
-    Column = apps.get_model('seed', 'Column')
-    ColumnMapping = apps.get_model('seed', 'ColumnMapping')
+    Column = apps.get_model("seed", "Column")
+    ColumnMapping = apps.get_model("seed", "ColumnMapping")
 
     # find which columns are not used in column mappings
     for c in Column.objects.all():
         cm_raw = ColumnMapping.objects.filter(column_raw=c)
         cm_mapped = ColumnMapping.objects.filter(column_mapped=c)
 
-        print(f'Column {c.id}: {c.table_name}.{c.column_name}')
+        print(f"Column {c.id}: {c.table_name}.{c.column_name}")
 
         # check if the column isn't used and delete it if not
         if cm_raw.count() == 0 and cm_mapped.count() == 0:
-            print('    deleting column: not used in any mappings')
+            print("    deleting column: not used in any mappings")
             c.delete()
             continue
 
         # Any cm_raw columns should not have a table_name and not be extra data
         if cm_raw.count() == 1:
-            if c.table_name != '':
+            if c.table_name != "":
                 print("    raw column table name is not blank, making it ''")
-                c.table_name = ''
-                c.extra_data_source = ''
+                c.table_name = ""
+                c.extra_data_source = ""
             if c.is_extra_data:
-                print('    raw column is set to extra_data, bad!, unsetting')
+                print("    raw column is set to extra_data, bad!, unsetting")
                 c.is_extra_data = False
                 c.save()
 
-        if cm_mapped.count() == 1 and c.table_name == '':
+        if cm_mapped.count() == 1 and c.table_name == "":
             print("    mapped column has table_name set to '', setting to PropertyState")
-            c.table_name = 'PropertyState'
-            c.extra_data_source = 'P'
+            c.table_name = "PropertyState"
+            c.extra_data_source = "P"
             c.save()
 
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('seed', '0055_split_multiple_mappings'),
+        ("seed", "0055_split_multiple_mappings"),
     ]
 
     operations = [

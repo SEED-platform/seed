@@ -6,76 +6,76 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('seed', '0020_auto_20160725_1033'),
+        ("seed", "0020_auto_20160725_1033"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='PropertyAuditLog',
+            name="PropertyAuditLog",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('creation_dat', models.DateTimeField()),
-                ('name', models.CharField(blank=True, max_length=255, null=True)),
-                ('description', models.TextField(blank=True, null=True)),
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("creation_dat", models.DateTimeField()),
+                ("name", models.CharField(blank=True, max_length=255, null=True)),
+                ("description", models.TextField(blank=True, null=True)),
                 (
-                    'childstate_id',
+                    "childstate_id",
                     models.ForeignKey(
-                        on_delete=django.db.models.deletion.CASCADE, related_name='propertyauditlog__childstate_id', to='seed.PropertyState'
+                        on_delete=django.db.models.deletion.CASCADE, related_name="propertyauditlog__childstate_id", to="seed.PropertyState"
                     ),
                 ),
                 (
-                    'parentstate_id1',
+                    "parentstate_id1",
                     models.ForeignKey(
                         blank=True,
                         null=True,
                         on_delete=django.db.models.deletion.CASCADE,
-                        related_name='propertyauditlog__parentstate_id1',
-                        to='seed.PropertyState',
+                        related_name="propertyauditlog__parentstate_id1",
+                        to="seed.PropertyState",
                     ),
                 ),
                 (
-                    'parentstate_id2',
+                    "parentstate_id2",
                     models.ForeignKey(
                         blank=True,
                         null=True,
                         on_delete=django.db.models.deletion.CASCADE,
-                        related_name='propertyauditlog__parentstate_id2',
-                        to='seed.PropertyState',
+                        related_name="propertyauditlog__parentstate_id2",
+                        to="seed.PropertyState",
                     ),
                 ),
             ],
         ),
         migrations.CreateModel(
-            name='TaxLotAuditLog',
+            name="TaxLotAuditLog",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('creation_date', models.DateTimeField()),
-                ('name', models.CharField(blank=True, max_length=255, null=True)),
-                ('description', models.TextField(blank=True, null=True)),
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("creation_date", models.DateTimeField()),
+                ("name", models.CharField(blank=True, max_length=255, null=True)),
+                ("description", models.TextField(blank=True, null=True)),
                 (
-                    'childstate_id',
+                    "childstate_id",
                     models.ForeignKey(
-                        on_delete=django.db.models.deletion.CASCADE, related_name='taxlotauditlog__childstate_id', to='seed.TaxLotState'
+                        on_delete=django.db.models.deletion.CASCADE, related_name="taxlotauditlog__childstate_id", to="seed.TaxLotState"
                     ),
                 ),
                 (
-                    'parentstate_id1',
+                    "parentstate_id1",
                     models.ForeignKey(
                         blank=True,
                         null=True,
                         on_delete=django.db.models.deletion.CASCADE,
-                        related_name='taxlotauditlog__parentstate_id1',
-                        to='seed.TaxLotState',
+                        related_name="taxlotauditlog__parentstate_id1",
+                        to="seed.TaxLotState",
                     ),
                 ),
                 (
-                    'parentstate_id2',
+                    "parentstate_id2",
                     models.ForeignKey(
                         blank=True,
                         null=True,
                         on_delete=django.db.models.deletion.CASCADE,
-                        related_name='taxlotauditlog__parentstate_id2',
-                        to='seed.TaxLotState',
+                        related_name="taxlotauditlog__parentstate_id2",
+                        to="seed.TaxLotState",
                     ),
                 ),
             ],

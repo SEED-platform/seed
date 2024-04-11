@@ -5,13 +5,13 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('seed', '0167_auto_20220608_0759'),
+        ("seed", "0167_auto_20220608_0759"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='datalogger',
-            name='identifier',
-            field=models.CharField(default='', max_length=255),
+            model_name="datalogger",
+            name="identifier",
+            field=models.CharField(default="", max_length=255),
         ),
     ]

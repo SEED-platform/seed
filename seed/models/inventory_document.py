@@ -15,17 +15,17 @@ class InventoryDocument(models.Model):
     IDF = 3
     DXF = 4
 
-    FILE_TYPES = ((UNKNOWN, 'Unknown'), (PDF, 'PDF'), (OSM, 'OSM'), (IDF, 'IDF'), (DXF, 'DXF'))
+    FILE_TYPES = ((UNKNOWN, "Unknown"), (PDF, "PDF"), (OSM, "OSM"), (IDF, "IDF"), (DXF, "DXF"))
 
-    property = models.ForeignKey(Property, on_delete=models.CASCADE, related_name='inventory_documents', null=True, blank=True)
+    property = models.ForeignKey(Property, on_delete=models.CASCADE, related_name="inventory_documents", null=True, blank=True)
 
     created = models.DateTimeField(auto_now_add=True)
-    file = models.FileField(upload_to='inventory_documents', max_length=500, blank=True, null=True)
+    file = models.FileField(upload_to="inventory_documents", max_length=500, blank=True, null=True)
     file_type = models.IntegerField(choices=FILE_TYPES, default=UNKNOWN)
     filename = models.CharField(blank=True, max_length=255)
 
     def __str__(self):
-        return 'Inventory Document - %s' % (self.pk)
+        return "Inventory Document - %s" % (self.pk)
 
     @classmethod
     def str_to_file_type(cls, file_type):

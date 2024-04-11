@@ -22,41 +22,41 @@ from quantityfield.units import ureg
 from seed.lib.mcm.matchers import fuzzy_in_set
 
 NONE_SYNONYMS = (
-    ('_', 'not available'),
-    ('_', 'not applicable'),
-    ('_', 'n/a'),
+    ("_", "not available"),
+    ("_", "not applicable"),
+    ("_", "n/a"),
 )
 BOOL_SYNONYMS = (
-    ('_', 'true'),
-    ('_', 'yes'),
-    ('_', 'y'),
-    ('_', '1'),
+    ("_", "true"),
+    ("_", "yes"),
+    ("_", "y"),
+    ("_", "1"),
 )
 PUNCT_REGEX = re.compile(f'[{re.escape(string.punctuation.replace(".", "").replace("-", ""))}]')
 # Mapping of specific characters to their normalized versions (need to expand this list)
 CHAR_MAPPING = {
-    ord('“'): '"',
-    ord('”'): '"',
-    ord('‘'): "'",  # noqa: RUF001
-    ord('’'): "'",  # noqa: RUF001
-    ord('′'): "'",  # noqa: RUF001
-    ord('″'): '"',
-    ord('‴'): "'''",
-    ord('…'): '...',
-    ord('•'): '*',
-    ord('⁄'): '/',  # noqa: RUF001
-    ord('×'): 'x',  # noqa: RUF001
-    ord('⁓'): '~',  # noqa: RUF001
+    ord("“"): '"',
+    ord("”"): '"',
+    ord("‘"): "'",  # noqa: RUF001
+    ord("’"): "'",  # noqa: RUF001
+    ord("′"): "'",  # noqa: RUF001
+    ord("″"): '"',
+    ord("‴"): "'''",
+    ord("…"): "...",
+    ord("•"): "*",
+    ord("⁄"): "/",  # noqa: RUF001
+    ord("×"): "x",  # noqa: RUF001
+    ord("⁓"): "~",  # noqa: RUF001
     # mdash, ndash, horizontal bar
-    ord('–'): '-',  # noqa: RUF001
-    ord('—'): '--',
-    ord('―'): '-',
-    ord('¬'): '-',
+    ord("–"): "-",  # noqa: RUF001
+    ord("—"): "--",
+    ord("―"): "-",
+    ord("¬"): "-",
     # guillemets to single and double quotes
-    ord('‹'): """,  # noqa: RUF001
+    ord("‹"): """,  # noqa: RUF001
     ord('›'): """,  # noqa: RUF001
-    ord('«'): '"',
-    ord('»'): '"',
+    ord("«"): '"',
+    ord("»"): '"',
 }
 
 
@@ -67,7 +67,7 @@ def normalize_unicode_and_characters(text):
 
     # Unicode standardizes on a single code point for accented characters such as é, ü, and ñ.
     # More info can be seed here: https://docs.python.org/2/library/unicodedata.html#unicodedata.normalize
-    normalized_text = unicodedata.normalize('NFC', text)
+    normalized_text = unicodedata.normalize("NFC", text)
 
     # Apply CHAR_MAPPINGS to remove certain characters to be normalized.
     normalized_text = normalized_text.translate(CHAR_MAPPING)
@@ -81,7 +81,7 @@ def default_cleaner(value, *args):
         if fuzzy_in_set(value.lower(), NONE_SYNONYMS):
             return None
         # guard against `''` coming in from an Excel empty cell
-        if value == '':
+        if value == "":
             return None
     return value
 
@@ -106,14 +106,14 @@ def float_cleaner(value, *args):
         return None
 
     if isinstance(value, basestring):
-        value = PUNCT_REGEX.sub('', value)
+        value = PUNCT_REGEX.sub("", value)
 
     try:
         value = float(value)
     except ValueError:
         value = None
     except TypeError:
-        message = f'float_cleaner cannot convert {type(value)} to float'
+        message = f"float_cleaner cannot convert {type(value)} to float"
         raise TypeError(message)
 
     return value
@@ -133,7 +133,7 @@ def bool_cleaner(value, *args):
 
 def date_time_cleaner(value, *args):
     """Try to clean value, coerce it into a python datetime."""
-    if not value or value == '':
+    if not value or value == "":
         return None
     if isinstance(value, (datetime, date)):
         return value
@@ -167,14 +167,14 @@ def int_cleaner(value, *args):
         return None
 
     if isinstance(value, basestring):
-        value = PUNCT_REGEX.sub('', value)
+        value = PUNCT_REGEX.sub("", value)
 
     try:
         value = int(float(value))
     except ValueError:
         value = None
     except TypeError:
-        message = f'int_cleaner cannot convert {type(value)} to int'
+        message = f"int_cleaner cannot convert {type(value)} to int"
         raise TypeError(message)
 
     return value
@@ -197,7 +197,7 @@ def pint_cleaner(value, units, *args):
     except ValueError:
         value = None
     except TypeError:
-        message = f'pint_cleaner cannot convert {type(value)} to a valid Quantity'
+        message = f"pint_cleaner cannot convert {type(value)} to a valid Quantity"
         raise TypeError(message)
 
     return value
@@ -207,10 +207,10 @@ def geometry_cleaner(value):
     try:
         return GEOSGeometry(value, srid=4326)
     except ValueError as e:
-        if 'String or unicode input unrecognized as WKT EWKT, and HEXEWKB.' in str(e):
+        if "String or unicode input unrecognized as WKT EWKT, and HEXEWKB." in str(e):
             return None
     except TypeError as e:
-        if 'Improper geometry input type' in str(e):
+        if "Improper geometry input type" in str(e):
             return None
 
 
@@ -219,13 +219,13 @@ class Cleaner:
 
     def __init__(self, ontology):
         self.ontology = ontology
-        self.schema = self.ontology.get('types', {})
-        self.float_columns = list(filter(lambda x: self.schema[x] == 'float', self.schema))
-        self.date_columns = list(filter(lambda x: self.schema[x] == 'date', self.schema))
-        self.date_time_columns = list(filter(lambda x: self.schema[x] == 'datetime', self.schema))
-        self.string_columns = list(filter(lambda x: self.schema[x] == 'string', self.schema))
-        self.int_columns = list(filter(lambda x: self.schema[x] == 'integer', self.schema))
-        self.geometry_columns = list(filter(lambda x: self.schema[x] == 'geometry', self.schema))
+        self.schema = self.ontology.get("types", {})
+        self.float_columns = list(filter(lambda x: self.schema[x] == "float", self.schema))
+        self.date_columns = list(filter(lambda x: self.schema[x] == "date", self.schema))
+        self.date_time_columns = list(filter(lambda x: self.schema[x] == "datetime", self.schema))
+        self.string_columns = list(filter(lambda x: self.schema[x] == "string", self.schema))
+        self.int_columns = list(filter(lambda x: self.schema[x] == "integer", self.schema))
+        self.geometry_columns = list(filter(lambda x: self.schema[x] == "geometry", self.schema))
         self.pint_column_map = self._build_pint_column_map()
 
     def _build_pint_column_map(self):
@@ -248,7 +248,7 @@ class Cleaner:
         pint_column_map = {
             raw_col: pint_spec[1]
             for (raw_col, pint_spec) in self.schema.items()
-            if isinstance(pint_spec, tuple) and pint_spec[0] == 'quantity'
+            if isinstance(pint_spec, tuple) and pint_spec[0] == "quantity"
         }
 
         return pint_column_map

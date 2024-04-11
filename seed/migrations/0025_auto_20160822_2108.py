@@ -6,42 +6,42 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('seed', '0024_auto_20160822_2107'),
+        ("seed", "0024_auto_20160822_2107"),
     ]
 
     operations = [
         migrations.RenameField(
-            model_name='propertyauditlog',
-            old_name='child',
-            new_name='state',
+            model_name="propertyauditlog",
+            old_name="child",
+            new_name="state",
         ),
         migrations.AlterField(
-            model_name='propertyauditlog',
-            name='parent1',
+            model_name="propertyauditlog",
+            name="parent1",
             field=models.ForeignKey(
                 blank=True,
                 null=True,
                 on_delete=django.db.models.deletion.CASCADE,
-                related_name='propertyauditlog__parent1',
-                to='seed.PropertyAuditLog',
+                related_name="propertyauditlog__parent1",
+                to="seed.PropertyAuditLog",
             ),
         ),
         migrations.AlterField(
-            model_name='propertyauditlog',
-            name='parent2',
+            model_name="propertyauditlog",
+            name="parent2",
             field=models.ForeignKey(
                 blank=True,
                 null=True,
                 on_delete=django.db.models.deletion.CASCADE,
-                related_name='propertyauditlog__parent2',
-                to='seed.PropertyAuditLog',
+                related_name="propertyauditlog__parent2",
+                to="seed.PropertyAuditLog",
             ),
         ),
         migrations.AlterField(
-            model_name='taxlotauditlog',
-            name='child',
+            model_name="taxlotauditlog",
+            name="child",
             field=models.ForeignKey(
-                on_delete=django.db.models.deletion.CASCADE, related_name='taxlotauditlog__child', to='seed.TaxLotState'
+                on_delete=django.db.models.deletion.CASCADE, related_name="taxlotauditlog__child", to="seed.TaxLotState"
             ),
         ),
     ]

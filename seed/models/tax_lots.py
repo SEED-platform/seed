@@ -34,14 +34,14 @@ class TaxLot(models.Model):
     # NOTE: we have been calling this the organization. We
     # should stay consistent, although I prefer the name organization (!super_org)
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
-    access_level_instance = models.ForeignKey(AccessLevelInstance, on_delete=models.CASCADE, null=False, related_name='taxlots')
+    access_level_instance = models.ForeignKey(AccessLevelInstance, on_delete=models.CASCADE, null=False, related_name="taxlots")
 
     # Track when the entry was created and when it was updated
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return 'TaxLot - %s' % self.pk
+        return "TaxLot - %s" % self.pk
 
 
 @receiver(pre_save, sender=TaxLot)
@@ -75,18 +75,18 @@ class TaxLotState(models.Model):
     raw_access_level_instance = models.ForeignKey(AccessLevelInstance, null=True, on_delete=models.SET_NULL)
     raw_access_level_instance_error = models.TextField(null=True)
 
-    custom_id_1 = models.CharField(max_length=255, null=True, blank=True, db_collation='natural_sort')
+    custom_id_1 = models.CharField(max_length=255, null=True, blank=True, db_collation="natural_sort")
 
-    jurisdiction_tax_lot_id = models.CharField(max_length=2047, null=True, blank=True, db_collation='natural_sort')
-    block_number = models.CharField(max_length=255, null=True, blank=True, db_collation='natural_sort')
-    district = models.CharField(max_length=255, null=True, blank=True, db_collation='natural_sort')
-    address_line_1 = models.CharField(max_length=255, null=True, blank=True, db_collation='natural_sort')
-    address_line_2 = models.CharField(max_length=255, null=True, blank=True, db_collation='natural_sort')
+    jurisdiction_tax_lot_id = models.CharField(max_length=2047, null=True, blank=True, db_collation="natural_sort")
+    block_number = models.CharField(max_length=255, null=True, blank=True, db_collation="natural_sort")
+    district = models.CharField(max_length=255, null=True, blank=True, db_collation="natural_sort")
+    address_line_1 = models.CharField(max_length=255, null=True, blank=True, db_collation="natural_sort")
+    address_line_2 = models.CharField(max_length=255, null=True, blank=True, db_collation="natural_sort")
     normalized_address = models.CharField(max_length=255, null=True, blank=True, editable=False)
 
-    city = models.CharField(max_length=255, null=True, blank=True, db_collation='natural_sort')
-    state = models.CharField(max_length=255, null=True, blank=True, db_collation='natural_sort')
-    postal_code = models.CharField(max_length=255, null=True, blank=True, db_collation='natural_sort')
+    city = models.CharField(max_length=255, null=True, blank=True, db_collation="natural_sort")
+    state = models.CharField(max_length=255, null=True, blank=True, db_collation="natural_sort")
+    postal_code = models.CharField(max_length=255, null=True, blank=True, db_collation="natural_sort")
     number_properties = models.IntegerField(null=True, blank=True)
 
     extra_data = models.JSONField(default=dict, blank=True)
@@ -100,18 +100,18 @@ class TaxLotState(models.Model):
     bounding_box = geomodels.PolygonField(geography=True, null=True, blank=True)
     taxlot_footprint = geomodels.PolygonField(geography=True, null=True, blank=True)
     # A unique building identifier as defined by DOE's UBID project (https://buildingid.pnnl.gov/)
-    ubid = models.CharField(max_length=255, null=True, blank=True, db_collation='natural_sort')
+    ubid = models.CharField(max_length=255, null=True, blank=True, db_collation="natural_sort")
 
-    geocoding_confidence = models.CharField(max_length=32, null=True, blank=True, db_collation='natural_sort')
+    geocoding_confidence = models.CharField(max_length=32, null=True, blank=True, db_collation="natural_sort")
 
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
 
     class Meta:
-        index_together = [['hash_object'], ['import_file', 'data_state'], ['import_file', 'data_state', 'merge_state']]
+        index_together = [["hash_object"], ["import_file", "data_state"], ["import_file", "data_state", "merge_state"]]
 
     def __str__(self):
-        return 'TaxLot State - %s' % self.pk
+        return "TaxLot State - %s" % self.pk
 
     def promote(self, cycle):
         """
@@ -136,10 +136,10 @@ class TaxLotState(models.Model):
 
             # Need to create a property for this state
             if self.organization is None:
-                _log.error('organization is None')
+                _log.error("organization is None")
 
             if self.raw_access_level_instance is None:
-                _log.error('Could not promote this taxlot: no raw_access_level_instance')
+                _log.error("Could not promote this taxlot: no raw_access_level_instance")
                 return None
 
             taxlot = TaxLot.objects.create(organization=self.organization, access_level_instance=self.raw_access_level_instance)
@@ -160,8 +160,8 @@ class TaxLotState(models.Model):
 
             return tlvs[0]
         else:
-            _log.error('Found %s PropertyView' % len(tlvs))
-            _log.error('This should never occur, famous last words?')
+            _log.error("Found %s PropertyView" % len(tlvs))
+            _log.error("This should never occur, famous last words?")
 
             return None
 
@@ -178,10 +178,10 @@ class TaxLotState(models.Model):
             ed_fields = list(filter(lambda f: f in extra_data, ed_fields))
 
             result = {field: getattr(self, field) for field in model_fields}
-            result['extra_data'] = {field: extra_data[field] for field in ed_fields}
+            result["extra_data"] = {field: extra_data[field] for field in ed_fields}
 
             # always return id's
-            result['id'] = result['pk'] = self.pk
+            result["id"] = result["pk"] = self.pk
 
             return result
 
@@ -221,9 +221,9 @@ class TaxLotState(models.Model):
         """Return history in reverse order."""
         history = []
         main = {
-            'state_id': self.id,
-            'state_data': self,
-            'date_edited': None,
+            "state_id": self.id,
+            "state_data": self,
+            "date_edited": None,
         }
 
         def record_dict(log):
@@ -231,35 +231,35 @@ class TaxLotState(models.Model):
             if filename:
                 # Attempt to remove NamedTemporaryFile suffix
                 name, ext = path.splitext(filename)
-                pattern = re.compile('(.*?)(_[a-zA-Z0-9]{7})$')
+                pattern = re.compile("(.*?)(_[a-zA-Z0-9]{7})$")
                 match = pattern.match(name)
                 if match:
                     filename = match.groups()[0] + ext
             return {
-                'state_id': log.state.id,
-                'state_data': log.state,
-                'date_edited': convert_to_js_timestamp(log.created),
-                'source': log.get_record_type_display(),
-                'filename': filename,
+                "state_id": log.state.id,
+                "state_data": log.state,
+                "date_edited": convert_to_js_timestamp(log.created),
+                "source": log.get_record_type_display(),
+                "filename": filename,
                 # 'changed_fields': json.loads(log.description) if log.record_type == AUDIT_USER_EDIT else None
             }
 
-        log = TaxLotAuditLog.objects.select_related('state', 'parent1', 'parent2').filter(state_id=self.id).order_by('-id').first()
+        log = TaxLotAuditLog.objects.select_related("state", "parent1", "parent2").filter(state_id=self.id).order_by("-id").first()
 
         if log:
             main = {
-                'state_id': log.state.id,
-                'state_data': log.state,
-                'date_edited': convert_to_js_timestamp(log.created),
+                "state_id": log.state.id,
+                "state_data": log.state,
+                "date_edited": convert_to_js_timestamp(log.created),
             }
 
             # Traverse parents and add to history
-            if log.name in {'Manual Match', 'System Match', 'Merge current state in migration'}:
+            if log.name in {"Manual Match", "System Match", "Merge current state in migration"}:
                 done_searching = False
 
                 while not done_searching:
                     # if there is no parents, then break out immediately
-                    if (log.parent1_id is None and log.parent2_id is None) or log.name == 'Manual Edit':
+                    if (log.parent1_id is None and log.parent2_id is None) or log.name == "Manual Edit":
                         break
 
                     # initialize the tree to None everytime. If not new tree is found, then we will not iterate
@@ -268,13 +268,13 @@ class TaxLotState(models.Model):
                     # Check if parent2 has any other parents or is the original import creation. Start with parent2
                     # because parent2 will be the most recent import file.
                     if log.parent2:
-                        if log.parent2.name in {'Import Creation', 'Manual Edit'}:
+                        if log.parent2.name in {"Import Creation", "Manual Edit"}:
                             record = record_dict(log.parent2)
                             history.append(record)
                         elif (
-                            log.parent2.name == 'System Match'
-                            and log.parent2.parent1.name == 'Import Creation'
-                            and log.parent2.parent2.name == 'Import Creation'
+                            log.parent2.name == "System Match"
+                            and log.parent2.parent1.name == "Import Creation"
+                            and log.parent2.parent2.name == "Import Creation"
                         ):
                             # Handle case where an import file matches within itself, and proceeds to match with
                             # existing records
@@ -286,13 +286,13 @@ class TaxLotState(models.Model):
                             tree = log.parent2
 
                     if log.parent1:
-                        if log.parent1.name in {'Import Creation', 'Manual Edit'}:
+                        if log.parent1.name in {"Import Creation", "Manual Edit"}:
                             record = record_dict(log.parent1)
                             history.append(record)
                         elif (
-                            log.parent1.name == 'System Match'
-                            and log.parent1.parent1.name == 'Import Creation'
-                            and log.parent1.parent2.name == 'Import Creation'
+                            log.parent1.name == "System Match"
+                            and log.parent1.parent1.name == "Import Creation"
+                            and log.parent1.parent2.name == "Import Creation"
                         ):
                             # Handle case where an import file matches within itself, and proceeds to match with
                             # existing records
@@ -307,10 +307,10 @@ class TaxLotState(models.Model):
                         done_searching = True
                     else:
                         log = tree
-            elif log.name == 'Manual Edit':
+            elif log.name == "Manual Edit":
                 record = record_dict(log.parent1)
                 history.append(record)
-            elif log.name == 'Import Creation':
+            elif log.name == "Import Creation":
                 record = record_dict(log)
                 history.append(record)
 
@@ -378,18 +378,18 @@ class TaxLotState(models.Model):
         # important because the fields that were not queried will be deferred and require a new
         # query to retrieve.
         keep_fields = [
-            'id',
-            'custom_id_1',
-            'jurisdiction_tax_lot_id',
-            'block_number',
-            'district',
-            'address_line_1',
-            'address_line_2',
-            'city',
-            'state',
-            'postal_code',
-            'number_properties',
-            'extra_data',
+            "id",
+            "custom_id_1",
+            "jurisdiction_tax_lot_id",
+            "block_number",
+            "district",
+            "address_line_1",
+            "address_line_2",
+            "city",
+            "state",
+            "postal_code",
+            "number_properties",
+            "extra_data",
         ]
         coparents = [{key: getattr(c, key) for key in keep_fields} for c in coparents]
 
@@ -406,9 +406,9 @@ def post_save_taxlot_state(sender, **kwargs):
     """
     Generate UbidModels for a TaxLotState if the ubid field is present
     """
-    state: TaxLotState = kwargs.get('instance')
+    state: TaxLotState = kwargs.get("instance")
 
-    ubid = getattr(state, 'ubid')
+    ubid = getattr(state, "ubid")
     if not ubid:
         state.ubidmodel_set.filter(preferred=True).update(preferred=False)
         return
@@ -424,7 +424,7 @@ def post_save_taxlot_state(sender, **kwargs):
         )
         # Update lat/long/centroid
         decode_unique_ids(state)
-        logging.info(f'Created ubid_model id: {ubid_model.id}, ubid: {ubid_model.ubid}')
+        logging.info(f"Created ubid_model id: {ubid_model.id}, ubid: {ubid_model.ubid}")
     elif ubid_model.filter(preferred=False).exists():
         state.ubidmodel_set.update(
             preferred=Case(
@@ -435,28 +435,28 @@ def post_save_taxlot_state(sender, **kwargs):
 
 
 class TaxLotView(models.Model):
-    taxlot = models.ForeignKey(TaxLot, on_delete=models.CASCADE, related_name='views')
+    taxlot = models.ForeignKey(TaxLot, on_delete=models.CASCADE, related_name="views")
     state = models.ForeignKey(TaxLotState, on_delete=models.CASCADE)
     cycle = models.ForeignKey(Cycle, on_delete=models.PROTECT)
 
     labels = models.ManyToManyField(StatusLabel)
 
     def __str__(self):
-        return 'TaxLot View - %s' % self.pk
+        return "TaxLot View - %s" % self.pk
 
     class Meta:
         unique_together = (
-            'taxlot',
-            'cycle',
+            "taxlot",
+            "cycle",
         )
-        index_together = [['state', 'cycle']]
+        index_together = [["state", "cycle"]]
 
     def __init__(self, *args, **kwargs):
-        self._import_filename = kwargs.pop('import_filename', None)
+        self._import_filename = kwargs.pop("import_filename", None)
         super().__init__(*args, **kwargs)
 
     def initialize_audit_logs(self, **kwargs):
-        kwargs.update({'organization': self.taxlot.organization, 'state': self.state, 'view': self, 'record_type': AUDIT_IMPORT})
+        kwargs.update({"organization": self.taxlot.organization, "state": self.state, "view": self, "record_type": AUDIT_IMPORT})
         return TaxLotAuditLog.objects.create(**kwargs)
 
     def property_views(self):
@@ -470,7 +470,7 @@ class TaxLotView(models.Model):
         # get the related property_view__state as well to save time, if needed.
         result = []
         for tlp in TaxLotProperty.objects.filter(cycle=self.cycle, taxlot_view=self).select_related(
-            'property_view', 'property_view__state'
+            "property_view", "property_view__state"
         ):
             if tlp.taxlot_view:
                 result.append(tlp.property_view)
@@ -494,8 +494,8 @@ class TaxLotView(models.Model):
     @property
     def import_filename(self):
         """Get the import file name form the audit logs"""
-        if not getattr(self, '_import_filename', None):
-            audit_log = TaxLotAuditLog.objects.filter(view_id=self.pk).order_by('created').first()
+        if not getattr(self, "_import_filename", None):
+            audit_log = TaxLotAuditLog.objects.filter(view_id=self.pk).order_by("created").first()
             self._import_filename = audit_log.import_filename
         return self._import_filename
 
@@ -506,27 +506,27 @@ def post_save_taxlot_view(sender, **kwargs):
     When changing/saving the TaxLotView, go ahead and touch the TaxLot (if linked) so that the record
     receives an updated datetime
     """
-    if kwargs['instance'].taxlot:
-        kwargs['instance'].taxlot.save()
+    if kwargs["instance"].taxlot:
+        kwargs["instance"].taxlot.save()
 
 
 class TaxLotAuditLog(models.Model):
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
-    parent1 = models.ForeignKey('TaxLotAuditLog', on_delete=models.CASCADE, blank=True, null=True, related_name='taxlotauditlog_parent1')
-    parent2 = models.ForeignKey('TaxLotAuditLog', on_delete=models.CASCADE, blank=True, null=True, related_name='taxlotauditlog_parent2')
+    parent1 = models.ForeignKey("TaxLotAuditLog", on_delete=models.CASCADE, blank=True, null=True, related_name="taxlotauditlog_parent1")
+    parent2 = models.ForeignKey("TaxLotAuditLog", on_delete=models.CASCADE, blank=True, null=True, related_name="taxlotauditlog_parent2")
 
     # store the parent states as well so that we can quickly return which state is associated
     # with the parents of the audit log without having to query the parent audit log to grab
     # the state
     parent_state1 = models.ForeignKey(
-        TaxLotState, on_delete=models.CASCADE, blank=True, null=True, related_name='taxlotauditlog_parent_state1'
+        TaxLotState, on_delete=models.CASCADE, blank=True, null=True, related_name="taxlotauditlog_parent_state1"
     )
     parent_state2 = models.ForeignKey(
-        TaxLotState, on_delete=models.CASCADE, blank=True, null=True, related_name='taxlotauditlog_parent_state2'
+        TaxLotState, on_delete=models.CASCADE, blank=True, null=True, related_name="taxlotauditlog_parent_state2"
     )
 
-    state = models.ForeignKey('TaxLotState', on_delete=models.CASCADE, related_name='taxlotauditlog_state')
-    view = models.ForeignKey('TaxLotView', on_delete=models.CASCADE, related_name='taxlotauditlog_view', null=True)
+    state = models.ForeignKey("TaxLotState", on_delete=models.CASCADE, related_name="taxlotauditlog_state")
+    view = models.ForeignKey("TaxLotView", on_delete=models.CASCADE, related_name="taxlotauditlog_view", null=True)
     name = models.CharField(max_length=255, null=True, blank=True)
     description = models.TextField(null=True, blank=True)
 
@@ -535,7 +535,7 @@ class TaxLotAuditLog(models.Model):
     created = models.DateTimeField(auto_now_add=True, null=True)
 
     class Meta:
-        index_together = [['state', 'name'], ['parent_state1', 'parent_state2']]
+        index_together = [["state", "name"], ["parent_state1", "parent_state2"]]
 
 
 @receiver(pre_save, sender=TaxLotState)
@@ -555,8 +555,8 @@ def sync_latitude_longitude_and_long_lat(sender, instance, **kwargs):
         # needs to be updated to "manually" (or keep as Census Geocoder)
         if (latitude_change or longitude_change) and lat_and_long_both_populated and not long_lat_change:
             # manual change
-            instance.long_lat = f'POINT ({instance.longitude} {instance.latitude})'
-            instance.geocoding_confidence = 'Manually geocoded (N/A)'
+            instance.long_lat = f"POINT ({instance.longitude} {instance.latitude})"
+            instance.geocoding_confidence = "Manually geocoded (N/A)"
         elif (latitude_change or longitude_change) and not lat_and_long_both_populated:
             instance.long_lat = None
             instance.geocoding_confidence = None

@@ -5,13 +5,13 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('landing', '0006_auto_20170602_1648'),
+        ("landing", "0006_auto_20170602_1648"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='seeduser',
-            name='api_key',
-            field=models.CharField(blank=True, db_index=True, default='', max_length=128, verbose_name='api key'),
+            model_name="seeduser",
+            name="api_key",
+            field=models.CharField(blank=True, db_index=True, default="", max_length=128, verbose_name="api key"),
         ),
     ]

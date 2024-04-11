@@ -5,13 +5,13 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('data_importer', '0012_auto_20181107_0904'),
+        ("data_importer", "0012_auto_20181107_0904"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='importfile',
-            name='raw_property_state_to_filename',
+            model_name="importfile",
+            name="raw_property_state_to_filename",
             field=models.JSONField(blank=True, default=dict),
         ),
     ]

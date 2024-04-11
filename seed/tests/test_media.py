@@ -23,8 +23,8 @@ from seed.views.v3.uploads import get_upload_path
 
 class TestMeasures(TestCase):
     def setUp(self):
-        self.user_a = User.objects.create(username='user_a')
-        self.user_b = User.objects.create(username='user_b')
+        self.user_a = User.objects.create(username="user_a")
+        self.user_b = User.objects.create(username="user_b")
         self.org_a = Organization.objects.create()
         self.root_a = AccessLevelInstance.objects.get(organization_id=self.org_a, depth=1)
         self.org_a_sub = Organization.objects.create()
@@ -45,35 +45,35 @@ class TestMeasures(TestCase):
 
         # create the files we'll use for testing
         # uploads files (those created in uploads API)
-        cls.absolute_uploads_file = get_upload_path('test_uploads.txt')
+        cls.absolute_uploads_file = get_upload_path("test_uploads.txt")
         cls.uploads_file = os.path.relpath(cls.absolute_uploads_file, settings.MEDIA_ROOT)
         os.makedirs(os.path.dirname(cls.absolute_uploads_file), exist_ok=True)
-        with open(cls.absolute_uploads_file, 'w', encoding=locale.getpreferredencoding(False)) as f:
-            f.write('Hello world')
+        with open(cls.absolute_uploads_file, "w", encoding=locale.getpreferredencoding(False)) as f:
+            f.write("Hello world")
 
         # BuildingSync file
-        upload_to = BuildingFile._meta.get_field('file').upload_to
-        cls.absolute_bsync_file = os.path.join(settings.MEDIA_ROOT, upload_to, 'test_bsync.xml')
+        upload_to = BuildingFile._meta.get_field("file").upload_to
+        cls.absolute_bsync_file = os.path.join(settings.MEDIA_ROOT, upload_to, "test_bsync.xml")
         os.makedirs(os.path.dirname(cls.absolute_bsync_file), exist_ok=True)
         cls.bsync_file = os.path.relpath(cls.absolute_bsync_file, settings.MEDIA_ROOT)
-        with open(cls.absolute_bsync_file, 'w', encoding=locale.getpreferredencoding(False)) as f:
-            f.write('Hello world')
+        with open(cls.absolute_bsync_file, "w", encoding=locale.getpreferredencoding(False)) as f:
+            f.write("Hello world")
 
         # analysis output file
-        upload_to = AnalysisOutputFile._meta.get_field('file').upload_to
-        cls.absolute_analysis_output_file = os.path.join(settings.MEDIA_ROOT, upload_to, 'test_analysis_output.xml')
+        upload_to = AnalysisOutputFile._meta.get_field("file").upload_to
+        cls.absolute_analysis_output_file = os.path.join(settings.MEDIA_ROOT, upload_to, "test_analysis_output.xml")
         os.makedirs(os.path.dirname(cls.absolute_analysis_output_file), exist_ok=True)
         cls.analysis_output_file = os.path.relpath(cls.absolute_analysis_output_file, settings.MEDIA_ROOT)
-        with open(cls.absolute_analysis_output_file, 'w', encoding=locale.getpreferredencoding(False)) as f:
-            f.write('Hello world')
+        with open(cls.absolute_analysis_output_file, "w", encoding=locale.getpreferredencoding(False)) as f:
+            f.write("Hello world")
 
         # inventory document file
-        upload_to = InventoryDocument._meta.get_field('file').upload_to
-        cls.absolute_inv_doc_file = os.path.join(settings.MEDIA_ROOT, upload_to, 'test_inv_doc.osm')
+        upload_to = InventoryDocument._meta.get_field("file").upload_to
+        cls.absolute_inv_doc_file = os.path.join(settings.MEDIA_ROOT, upload_to, "test_inv_doc.osm")
         os.makedirs(os.path.dirname(cls.absolute_inv_doc_file), exist_ok=True)
         cls.inv_doc_file = os.path.relpath(cls.absolute_inv_doc_file, settings.MEDIA_ROOT)
-        with open(cls.absolute_inv_doc_file, 'w', encoding=locale.getpreferredencoding(False)) as f:
-            f.write('Hello world')
+        with open(cls.absolute_inv_doc_file, "w", encoding=locale.getpreferredencoding(False)) as f:
+            f.write("Hello world")
 
     @classmethod
     def tearDownClass(cls):
@@ -178,7 +178,7 @@ class TestMeasures(TestCase):
         # note we have to create the actual file here instead of in the setUp method
         # because the path is dependent on the analysis ID
         analysis_input_file = AnalysisInputFile.objects.create(analysis=analysis, content_type=AnalysisInputFile.BUILDINGSYNC)
-        analysis_input_file.file.save('test.xml', ContentFile(b'Hello World'))
+        analysis_input_file.file.save("test.xml", ContentFile(b"Hello World"))
         analysis_input_file.save()
 
         # Act
@@ -195,7 +195,7 @@ class TestMeasures(TestCase):
         # note we have to create the actual file here instead of in the setUp method
         # because the path is dependent on the analysis ID
         analysis_input_file = AnalysisInputFile.objects.create(analysis=analysis, content_type=AnalysisInputFile.BUILDINGSYNC)
-        analysis_input_file.file.save('test.xml', ContentFile(b'Hello World'))
+        analysis_input_file.file.save("test.xml", ContentFile(b"Hello World"))
         analysis_input_file.save()
 
         # Act
@@ -278,28 +278,28 @@ class TestMeasures(TestCase):
     def test_fails_when_path_does_not_match(self):
         # test import files
         with pytest.raises(ModelForFileNotFoundError):
-            check_file_permission(self.user_a, 'uploads/bogus.txt')
+            check_file_permission(self.user_a, "uploads/bogus.txt")
 
         # test buildingsync files
         with pytest.raises(ModelForFileNotFoundError):
-            check_file_permission(self.user_a, 'buildingsync_files/bogus.txt')
+            check_file_permission(self.user_a, "buildingsync_files/bogus.txt")
 
         # test analysis input files
         with pytest.raises(ModelForFileNotFoundError):
-            check_file_permission(self.user_a, 'analysis_input_files/bogus/bogus.txt')
+            check_file_permission(self.user_a, "analysis_input_files/bogus/bogus.txt")
 
         # test analysis output files
         with pytest.raises(ModelForFileNotFoundError):
-            check_file_permission(self.user_a, 'analysis_output_files/bogus.txt')
+            check_file_permission(self.user_a, "analysis_output_files/bogus.txt")
 
         # test bad path
         with pytest.raises(ModelForFileNotFoundError):
-            check_file_permission(self.user_a, '/inventory_documents/file.txt')
+            check_file_permission(self.user_a, "/inventory_documents/file.txt")
 
         # test bad path
         with pytest.raises(ModelForFileNotFoundError):
-            check_file_permission(self.user_a, '/super-secret/file.txt')
+            check_file_permission(self.user_a, "/super-secret/file.txt")
 
         # test bad path
         with pytest.raises(ModelForFileNotFoundError):
-            check_file_permission(self.user_a, '')
+            check_file_permission(self.user_a, "")

@@ -52,11 +52,11 @@ class PropertyMeterReadingsExporter:
         return self._cache_org_country
 
     def readings_and_column_defs(self, interval):
-        if interval == 'Exact':
+        if interval == "Exact":
             return self._usages_by_exact_times()
-        elif interval == 'Month':
+        elif interval == "Month":
             return self._usages_by_month()
-        elif interval == 'Year':
+        elif interval == "Year":
             return self._usages_by_year()
 
     def _usages_by_exact_times(self):
@@ -70,32 +70,32 @@ class PropertyMeterReadingsExporter:
 
         # Construct column_defs using this dictionary's values for frontend to use
         column_defs = {
-            '_start_time': {
-                'field': 'start_time',
-                '_filter_type': 'datetime',
+            "_start_time": {
+                "field": "start_time",
+                "_filter_type": "datetime",
             },
-            '_end_time': {
-                'field': 'end_time',
-                '_filter_type': 'datetime',
+            "_end_time": {
+                "field": "end_time",
+                "_filter_type": "datetime",
             },
         }
 
-        time_format = '%Y-%m-%d %H:%M:%S'
+        time_format = "%Y-%m-%d %H:%M:%S"
 
         for meter in self.meters:
             field_name, conversion_factor = self._build_column_def(meter, column_defs)
 
-            for meter_reading in meter.meter_readings.all().order_by('start_time', 'end_time'):
+            for meter_reading in meter.meter_readings.all().order_by("start_time", "end_time"):
                 start_time = meter_reading.start_time.astimezone(tz=self.tz).strftime(time_format)
                 end_time = meter_reading.end_time.astimezone(tz=self.tz).strftime(time_format)
 
-                times_key = '-'.join([start_time, end_time])
+                times_key = "-".join([start_time, end_time])
 
-                start_end_times[times_key]['start_time'] = start_time
-                start_end_times[times_key]['end_time'] = end_time
+                start_end_times[times_key]["start_time"] = start_time
+                start_end_times[times_key]["end_time"] = end_time
                 start_end_times[times_key][field_name] = meter_reading.reading / conversion_factor
 
-        return {'readings': list(start_end_times.values()), 'column_defs': list(column_defs.values())}
+        return {"readings": list(start_end_times.values()), "column_defs": list(column_defs.values())}
 
     def _usages_by_month(self):
         """
@@ -112,9 +112,9 @@ class PropertyMeterReadingsExporter:
 
         # Construct column_defs using this dictionary's values for frontend to use
         column_defs = {
-            '_month': {
-                'field': 'month',
-                '_filter_type': 'datetime',
+            "_month": {
+                "field": "month",
+                "_filter_type": "datetime",
             },
         }
 
@@ -123,7 +123,7 @@ class PropertyMeterReadingsExporter:
 
             # iterate through each usage and assign to accumulator
             for usage in meter.meter_readings.values():
-                st, et = usage['start_time'], usage['end_time']
+                st, et = usage["start_time"], usage["end_time"]
                 total_seconds = round((et - st).total_seconds())
                 ranges = self._get_month_ranges(st, et)
 
@@ -132,15 +132,15 @@ class PropertyMeterReadingsExporter:
                     range_seconds = round((range[1] - range[0]).total_seconds())
                     if range_seconds == 0:
                         continue
-                    month_key = range[1].strftime('%B %Y')
-                    reading = usage['reading'] / total_seconds * range_seconds / conversion_factor
+                    month_key = range[1].strftime("%B %Y")
+                    reading = usage["reading"] / total_seconds * range_seconds / conversion_factor
                     if reading is not None:
-                        monthly_readings[month_key] = monthly_readings.get(month_key, {'month': month_key})
+                        monthly_readings[month_key] = monthly_readings.get(month_key, {"month": month_key})
                         monthly_readings[month_key][field_name] = round(monthly_readings[month_key].get(field_name, 0) + reading, 2)
 
-        sorted_readings = sorted(monthly_readings.values(), key=lambda reading: datetime.strptime(reading['month'], '%B %Y'))
+        sorted_readings = sorted(monthly_readings.values(), key=lambda reading: datetime.strptime(reading["month"], "%B %Y"))
 
-        return {'readings': sorted_readings, 'column_defs': list(column_defs.values())}
+        return {"readings": sorted_readings, "column_defs": list(column_defs.values())}
 
     def _get_month_ranges(self, st, et):
         """
@@ -174,17 +174,17 @@ class PropertyMeterReadingsExporter:
 
         # Construct column_defs using this dictionary's values for frontend to use
         column_defs = {
-            '_year': {
-                'field': 'year',
-                '_filter_type': 'datetime',
+            "_year": {
+                "field": "year",
+                "_filter_type": "datetime",
             },
         }
 
         for meter in self.meters:
             field_name, conversion_factor = self._build_column_def(meter, column_defs)
 
-            min_time = meter.meter_readings.earliest('start_time').start_time.astimezone(tz=self.tz)
-            max_time = meter.meter_readings.latest('end_time').end_time.astimezone(tz=self.tz)
+            min_time = meter.meter_readings.earliest("start_time").start_time.astimezone(tz=self.tz)
+            max_time = meter.meter_readings.latest("end_time").end_time.astimezone(tz=self.tz)
 
             # Iterate through years
             current_year_time = min_time
@@ -197,17 +197,17 @@ class PropertyMeterReadingsExporter:
                     start_time__range=(current_year_time, end_of_year), end_time__range=(current_year_time, end_of_year)
                 )
                 if interval_readings.exists():
-                    readings_list = list(interval_readings.order_by('end_time'))
+                    readings_list = list(interval_readings.order_by("end_time"))
                     reading_year_total = self._max_reading_total(readings_list)
 
                     if reading_year_total > 0:
                         year = current_year_time.year
-                        yearly_readings[year]['year'] = year
+                        yearly_readings[year]["year"] = year
                         yearly_readings[year][field_name] = reading_year_total / conversion_factor
 
                 current_year_time = end_of_year
 
-        return {'readings': list(yearly_readings.values()), 'column_defs': list(column_defs.values())}
+        return {"readings": list(yearly_readings.values()), "column_defs": list(column_defs.values())}
 
     def _build_column_def(self, meter, column_defs):
         type_text = meter.get_type_display()
@@ -217,22 +217,22 @@ class PropertyMeterReadingsExporter:
         else:
             source_id = meter.source_id
 
-        field_name = f'{type_text} - {source} - {source_id}'
+        field_name = f"{type_text} - {source} - {source_id}"
 
         if meter.type == Meter.COST:
-            display_unit = f'{self._org_country} Dollars'
+            display_unit = f"{self._org_country} Dollars"
             conversion_factor = 1.00
         elif type_text in self.org_meter_display_settings:
             display_unit = self.org_meter_display_settings[type_text]
             conversion_factor = self.factors[type_text][display_unit]
         else:
-            display_unit = self.org_meter_display_settings['Default']
-            conversion_factor = self.factors['Default'][display_unit]
+            display_unit = self.org_meter_display_settings["Default"]
+            conversion_factor = self.factors["Default"][display_unit]
 
         column_defs[field_name] = {
-            'field': field_name,
-            'displayName': f'{field_name} ({display_unit})',
-            '_filter_type': 'reading',
+            "field": field_name,
+            "displayName": f"{field_name} ({display_unit})",
+            "_filter_type": "reading",
         }
 
         return field_name, conversion_factor

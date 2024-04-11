@@ -5,13 +5,13 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('seed', '0138_auto_20210512_0024'),
+        ("seed", "0138_auto_20210512_0024"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='propertymeasure',
-            name='recommended',
+            model_name="propertymeasure",
+            name="recommended",
             field=models.BooleanField(default=True),
         ),
     ]

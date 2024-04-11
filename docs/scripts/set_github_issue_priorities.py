@@ -13,26 +13,26 @@ import os
 import github3
 
 parser = argparse.ArgumentParser()
-parser.add_argument('-k', '--github-key', required=True, help='Github API Key')
-parser.add_argument('-i', '--infile', required=True, help='Input file to parse')
+parser.add_argument("-k", "--github-key", required=True, help="Github API Key")
+parser.add_argument("-i", "--infile", required=True, help="Input file to parse")
 args = parser.parse_args()
 
 # Connect to github
 gh = github3.login(token=args.github_key)
-repo = gh.repository('SEED-platform', 'seed')
+repo = gh.repository("SEED-platform", "seed")
 print(repo)
 
 # Read in the CSV
 if not os.path.exists(args.infile):
-    print(f'Could not find input file to parse {args.infile}')
+    print(f"Could not find input file to parse {args.infile}")
 
 # column 3 is priority
 # column 4 is user impact
 # column 5 is estimate
-priority_labels = ['P-1', 'P-2', 'P-3']
-impact_labels = ['Impact-1', 'Impact-2', 'Impact-3']
-estimate_impact = ['1 Point', '2 Points', '3 Points', '5 Points', '8 Points']
-points_map = {1: '1 Point', 2: '2 Points', 3: '3 Points', 5: '5 Points', 8: '8 Points'}
+priority_labels = ["P-1", "P-2", "P-3"]
+impact_labels = ["Impact-1", "Impact-2", "Impact-3"]
+estimate_impact = ["1 Point", "2 Points", "3 Points", "5 Points", "8 Points"]
+points_map = {1: "1 Point", 2: "2 Points", 3: "3 Points", 5: "5 Points", 8: "8 Points"}
 
 with open(args.infile, encoding=locale.getpreferredencoding(False)) as csvfile:
     reader = csv.reader(csvfile)

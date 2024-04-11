@@ -6,13 +6,13 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('seed', '0105_auto_20190702_1400'),
+        ("seed", "0105_auto_20190702_1400"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='meter',
-            name='scenario_id',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='seed.Scenario'),
+            model_name="meter",
+            name="scenario_id",
+            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to="seed.Scenario"),
         ),
     ]

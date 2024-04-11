@@ -10,11 +10,11 @@ import celery
 from django.conf import settings
 
 # set the default Django settings module for the 'celery' program.
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings.dev')
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings.dev")
 
-app = celery.Celery('seed')
-app.config_from_object('django.conf:settings', namespace='CELERY')
-app.autodiscover_tasks(lambda: (*settings.SEED_CORE_APPS, 'seed.analysis_pipelines'))
+app = celery.Celery("seed")
+app.config_from_object("django.conf:settings", namespace="CELERY")
+app.autodiscover_tasks(lambda: (*settings.SEED_CORE_APPS, "seed.analysis_pipelines"))
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app.start()

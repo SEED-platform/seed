@@ -5,13 +5,13 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('data_importer', '0006_auto_20161007_0317'),
+        ("data_importer", "0006_auto_20161007_0317"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='importfile',
-            name='cycle',
-            field=models.ForeignKey(blank=True, null=True, on_delete=models.deletion.CASCADE, to='seed.Cycle'),
+            model_name="importfile",
+            name="cycle",
+            field=models.ForeignKey(blank=True, null=True, on_delete=models.deletion.CASCADE, to="seed.Cycle"),
         ),
     ]

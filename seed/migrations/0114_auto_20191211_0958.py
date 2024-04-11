@@ -5,13 +5,13 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('seed', '0113_column_geocoding_order'),
+        ("seed", "0113_column_geocoding_order"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='rule',
-            name='severity',
-            field=models.IntegerField(choices=[(0, 'error'), (1, 'warning'), (2, 'valid')], default=0),
+            model_name="rule",
+            name="severity",
+            field=models.IntegerField(choices=[(0, "error"), (1, "warning"), (2, "valid")], default=0),
         ),
     ]

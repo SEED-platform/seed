@@ -5,13 +5,13 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('orgs', '0014_organization_geocoding_enabled'),
+        ("orgs", "0014_organization_geocoding_enabled"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='organization',
-            name='property_display_field',
-            field=models.CharField(default='address_line_1', max_length=32),
+            model_name="organization",
+            name="property_display_field",
+            field=models.CharField(default="address_line_1", max_length=32),
         ),
     ]

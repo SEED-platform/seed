@@ -17,4 +17,4 @@ class ScenarioSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Scenario
-        fields = '__all__'
+        fields = "__all__"

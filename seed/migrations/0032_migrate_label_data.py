@@ -39,7 +39,7 @@ def migrate_taxlot_view_labels(apps, schema_editor):
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('seed', '0031_auto_20160913_0001'),
+        ("seed", "0031_auto_20160913_0001"),
     ]
 
     operations = [

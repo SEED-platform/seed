@@ -6,47 +6,47 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('seed', '0158_sensorreading'),
+        ("seed", "0158_sensorreading"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='sensor',
-            name='column_name',
+            model_name="sensor",
+            name="column_name",
             field=models.CharField(max_length=255),
         ),
         migrations.AlterField(
-            model_name='sensor',
-            name='display_name',
+            model_name="sensor",
+            name="display_name",
             field=models.CharField(max_length=255),
         ),
         migrations.CreateModel(
-            name='DataLogger',
+            name="DataLogger",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('display_name', models.CharField(max_length=255)),
-                ('location_identifier', models.CharField(default='', max_length=2047)),
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("display_name", models.CharField(max_length=255)),
+                ("location_identifier", models.CharField(default="", max_length=2047)),
                 (
-                    'property',
-                    models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='data_loggers', to='seed.property'),
+                    "property",
+                    models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name="data_loggers", to="seed.property"),
                 ),
             ],
             options={
-                'unique_together': {('property', 'display_name')},
+                "unique_together": {("property", "display_name")},
             },
         ),
         migrations.AddField(
-            model_name='sensor',
-            name='data_logger',
-            field=models.ForeignKey(default=1, on_delete=django.db.models.deletion.CASCADE, related_name='sensors', to='seed.datalogger'),
+            model_name="sensor",
+            name="data_logger",
+            field=models.ForeignKey(default=1, on_delete=django.db.models.deletion.CASCADE, related_name="sensors", to="seed.datalogger"),
             preserve_default=False,
         ),
         migrations.AlterUniqueTogether(
-            name='sensor',
-            unique_together={('data_logger', 'column_name')},
+            name="sensor",
+            unique_together={("data_logger", "column_name")},
         ),
         migrations.RemoveField(
-            model_name='sensor',
-            name='sensor_property',
+            model_name="sensor",
+            name="sensor_property",
         ),
     ]

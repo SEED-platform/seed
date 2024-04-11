@@ -34,4 +34,4 @@ class ProgressViewSet(viewsets.ViewSet):
         if get_cache(progress_key):
             return JsonResponse(get_cache(progress_key))
         else:
-            return JsonResponse({'progress_key': progress_key, 'progress': 0, 'status': 'waiting'})
+            return JsonResponse({"progress_key": progress_key, "progress": 0, "status": "waiting"})

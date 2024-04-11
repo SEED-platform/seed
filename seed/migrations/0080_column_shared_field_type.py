@@ -5,13 +5,13 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('seed', '0079_propertystate_ubid'),
+        ("seed", "0079_propertystate_ubid"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='column',
-            name='shared_field_type',
-            field=models.IntegerField(choices=[(0, b'None'), (1, b'Public')], default=0),
+            model_name="column",
+            name="shared_field_type",
+            field=models.IntegerField(choices=[(0, b"None"), (1, b"Public")], default=0),
         ),
     ]

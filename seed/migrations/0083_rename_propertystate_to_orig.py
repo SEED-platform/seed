@@ -5,53 +5,53 @@ from django.db import migrations
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('seed', '0082_propertystate_source_eui_modeled_pint'),
+        ("seed", "0082_propertystate_source_eui_modeled_pint"),
     ]
 
     operations = [
         migrations.RenameField(
-            model_name='propertystate',
-            old_name='conditioned_floor_area',
-            new_name='conditioned_floor_area_orig',
+            model_name="propertystate",
+            old_name="conditioned_floor_area",
+            new_name="conditioned_floor_area_orig",
         ),
         migrations.RenameField(
-            model_name='propertystate',
-            old_name='gross_floor_area',
-            new_name='gross_floor_area_orig',
+            model_name="propertystate",
+            old_name="gross_floor_area",
+            new_name="gross_floor_area_orig",
         ),
         migrations.RenameField(
-            model_name='propertystate',
-            old_name='occupied_floor_area',
-            new_name='occupied_floor_area_orig',
+            model_name="propertystate",
+            old_name="occupied_floor_area",
+            new_name="occupied_floor_area_orig",
         ),
         migrations.RenameField(
-            model_name='propertystate',
-            old_name='site_eui_modeled',
-            new_name='site_eui_modeled_orig',
+            model_name="propertystate",
+            old_name="site_eui_modeled",
+            new_name="site_eui_modeled_orig",
         ),
         migrations.RenameField(
-            model_name='propertystate',
-            old_name='site_eui',
-            new_name='site_eui_orig',
+            model_name="propertystate",
+            old_name="site_eui",
+            new_name="site_eui_orig",
         ),
         migrations.RenameField(
-            model_name='propertystate',
-            old_name='site_eui_weather_normalized',
-            new_name='site_eui_weather_normalized_orig',
+            model_name="propertystate",
+            old_name="site_eui_weather_normalized",
+            new_name="site_eui_weather_normalized_orig",
         ),
         migrations.RenameField(
-            model_name='propertystate',
-            old_name='source_eui',
-            new_name='source_eui_orig',
+            model_name="propertystate",
+            old_name="source_eui",
+            new_name="source_eui_orig",
         ),
         migrations.RenameField(
-            model_name='propertystate',
-            old_name='source_eui_modeled',
-            new_name='source_eui_modeled_orig',
+            model_name="propertystate",
+            old_name="source_eui_modeled",
+            new_name="source_eui_modeled_orig",
         ),
         migrations.RenameField(
-            model_name='propertystate',
-            old_name='source_eui_weather_normalized',
-            new_name='source_eui_weather_normalized_orig',
+            model_name="propertystate",
+            old_name="source_eui_weather_normalized",
+            new_name="source_eui_weather_normalized_orig",
         ),
     ]

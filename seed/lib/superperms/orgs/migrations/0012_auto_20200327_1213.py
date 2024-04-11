@@ -7,13 +7,13 @@ import seed.lib.superperms.orgs.models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('orgs', '0011_auto_20190714_2159'),
+        ("orgs", "0011_auto_20190714_2159"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='organization',
-            name='display_meter_units',
+            model_name="organization",
+            name="display_meter_units",
             field=models.JSONField(default=seed.lib.superperms.orgs.models._get_default_meter_units),
         ),
     ]

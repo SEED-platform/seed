@@ -5,18 +5,18 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('seed', '0022_propertystate_data_state'),
+        ("seed", "0022_propertystate_data_state"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='propertystate',
-            name='custom_id_1',
+            model_name="propertystate",
+            name="custom_id_1",
             field=models.CharField(blank=True, max_length=255, null=True),
         ),
         migrations.AddField(
-            model_name='propertystate',
-            name='pm_property_id',
+            model_name="propertystate",
+            name="pm_property_id",
             field=models.CharField(blank=True, max_length=255, null=True),
         ),
     ]

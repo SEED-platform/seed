@@ -23,23 +23,23 @@ from django.db.models import F
 
 
 def copy_orig_fields_to_pint_fields(apps, schema_editor):
-    PropertyStateModel = apps.get_model('seed', 'PropertyState')
+    PropertyStateModel = apps.get_model("seed", "PropertyState")
     PropertyStateModel.objects.all().update(
-        occupied_floor_area_pint=F('occupied_floor_area_orig'),
-        conditioned_floor_area_pint=F('conditioned_floor_area_orig'),
-        gross_floor_area_pint=F('gross_floor_area_orig'),
-        site_eui_pint=F('site_eui_orig'),
-        site_eui_modeled_pint=F('site_eui_modeled_orig'),
-        site_eui_weather_normalized_pint=F('site_eui_weather_normalized_orig'),
-        source_eui_pint=F('source_eui_orig'),
-        source_eui_modeled_pint=F('source_eui_modeled_orig'),
-        source_eui_weather_normalized_pint=F('source_eui_weather_normalized_orig'),
+        occupied_floor_area_pint=F("occupied_floor_area_orig"),
+        conditioned_floor_area_pint=F("conditioned_floor_area_orig"),
+        gross_floor_area_pint=F("gross_floor_area_orig"),
+        site_eui_pint=F("site_eui_orig"),
+        site_eui_modeled_pint=F("site_eui_modeled_orig"),
+        site_eui_weather_normalized_pint=F("site_eui_weather_normalized_orig"),
+        source_eui_pint=F("source_eui_orig"),
+        source_eui_modeled_pint=F("source_eui_modeled_orig"),
+        source_eui_weather_normalized_pint=F("source_eui_weather_normalized_orig"),
     )
 
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('seed', '0083_rename_propertystate_to_orig'),
+        ("seed", "0083_rename_propertystate_to_orig"),
     ]
 
     operations = [migrations.RunPython(copy_orig_fields_to_pint_fields)]

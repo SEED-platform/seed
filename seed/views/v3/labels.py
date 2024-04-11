@@ -21,80 +21,80 @@ from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
 
 
 @method_decorator(
-    name='retrieve',
+    name="retrieve",
     decorator=swagger_auto_schema(
         manual_parameters=[
             AutoSchemaHelper.query_org_id_field(
-                required=False, description='Optional org id which overrides the users (default) current org id'
+                required=False, description="Optional org id which overrides the users (default) current org id"
             )
         ]
     ),
 )
 @method_decorator(
-    name='list',
+    name="list",
     decorator=swagger_auto_schema(
         manual_parameters=[
             AutoSchemaHelper.query_org_id_field(
-                required=False, description='Optional org id which overrides the users (default) current org id'
+                required=False, description="Optional org id which overrides the users (default) current org id"
             )
         ]
     ),
 )
 @method_decorator(
-    name='create',
+    name="create",
     decorator=[
         swagger_auto_schema(
             manual_parameters=[
                 AutoSchemaHelper.query_org_id_field(
-                    required=False, description='Optional org id which overrides the users (default) current org id'
+                    required=False, description="Optional org id which overrides the users (default) current org id"
                 )
             ],
             request_body=AutoSchemaHelper.schema_factory(
                 {
-                    'name': 'string',
-                    'color': 'string',
+                    "name": "string",
+                    "color": "string",
                 },
-                required=['name'],
-                description='An object containing meta data for a new label',
+                required=["name"],
+                description="An object containing meta data for a new label",
             ),
         ),
-        has_perm_class('requires_root_member_access'),
+        has_perm_class("requires_root_member_access"),
     ],
 )
 @method_decorator(
-    name='destroy',
+    name="destroy",
     decorator=[
         swagger_auto_schema(
             manual_parameters=[
                 AutoSchemaHelper.query_org_id_field(
-                    required=False, description='Optional org id which overrides the users (default) current org id'
+                    required=False, description="Optional org id which overrides the users (default) current org id"
                 )
             ]
         ),
-        has_perm_class('requires_root_member_access'),
+        has_perm_class("requires_root_member_access"),
     ],
 )
 @method_decorator(
-    name='update',
+    name="update",
     decorator=[
-        has_perm_class('requires_root_member_access'),
+        has_perm_class("requires_root_member_access"),
     ],
 )
 @method_decorator(
-    name='update',
+    name="update",
     decorator=swagger_auto_schema(
         manual_parameters=[
             AutoSchemaHelper.query_org_id_field(
-                required=False, description='Optional org id which overrides the users (default) current org id'
+                required=False, description="Optional org id which overrides the users (default) current org id"
             )
         ],
         request_body=AutoSchemaHelper.schema_factory(
             {
-                'name': 'string',
-                'color': 'string',
+                "name": "string",
+                "color": "string",
             },
-            required=['name'],
-            description='An object containing meta data for updating a label',
+            required=["name"],
+            description="An object containing meta data for updating a label",
         ),
     ),
 )
@@ -125,11 +125,11 @@ class LabelViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
     _organization = None
 
     def get_queryset(self):
-        labels = Label.objects.filter(super_organization=self.get_parent_org(self.request)).order_by('name').distinct()
+        labels = Label.objects.filter(super_organization=self.get_parent_org(self.request)).order_by("name").distinct()
         return labels
 
     def get_serializer(self, *args, **kwargs):
-        kwargs['super_organization'] = self.get_organization(self.request)
+        kwargs["super_organization"] = self.get_organization(self.request)
         inventory = filter_labels_for_inv_type(request=self.request)
-        kwargs['inventory'] = inventory
+        kwargs["inventory"] = inventory
         return super().get_serializer(*args, **kwargs)

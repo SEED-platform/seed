@@ -22,23 +22,23 @@ class AnalysisMessageViewSet(viewsets.ViewSet, OrgMixin):
     @require_organization_id_class
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('requires_member')
-    @has_hierarchy_access(analysis_id_kwarg='analysis_pk')
+    @has_perm_class("requires_member")
+    @has_hierarchy_access(analysis_id_kwarg="analysis_pk")
     def list(self, request, analysis_pk, view_pk=None):
         if int(analysis_pk) < 1:
-            messages_queryset = AnalysisMessage.objects.filter(analysis__organization=self.get_organization(request)).order_by('-id')
+            messages_queryset = AnalysisMessage.objects.filter(analysis__organization=self.get_organization(request)).order_by("-id")
         elif view_pk is None:
-            messages_queryset = AnalysisMessage.objects.filter(analysis=analysis_pk).order_by('-id')
+            messages_queryset = AnalysisMessage.objects.filter(analysis=analysis_pk).order_by("-id")
         else:
-            messages_queryset = AnalysisMessage.objects.filter(analysis=analysis_pk, analysis_property_view=view_pk).order_by('-id')
+            messages_queryset = AnalysisMessage.objects.filter(analysis=analysis_pk, analysis_property_view=view_pk).order_by("-id")
 
-        return JsonResponse({'status': 'success', 'messages': AnalysisMessageSerializer(messages_queryset, many=True).data})
+        return JsonResponse({"status": "success", "messages": AnalysisMessageSerializer(messages_queryset, many=True).data})
 
     @require_organization_id_class
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('requires_member')
-    @has_hierarchy_access(analysis_id_kwarg='analysis_pk')
+    @has_perm_class("requires_member")
+    @has_hierarchy_access(analysis_id_kwarg="analysis_pk")
     def retrieve(self, request, pk, analysis_pk, view_pk=None):
         try:
             if view_pk is None:
@@ -47,8 +47,8 @@ class AnalysisMessageViewSet(viewsets.ViewSet, OrgMixin):
                 message_queryset = AnalysisMessage.objects.get(id=pk, analysis=analysis_pk, analysis_property_view=view_pk)
         except AnalysisMessage.DoesNotExist:
             return JsonResponse(
-                {'status': 'error', 'message': "Requested analysis message doesn't exist in this organization and/or analysis."},
+                {"status": "error", "message": "Requested analysis message doesn't exist in this organization and/or analysis."},
                 status=HTTP_409_CONFLICT,
             )
 
-        return JsonResponse({'status': 'success', 'message': AnalysisMessageSerializer(message_queryset).data})
+        return JsonResponse({"status": "success", "message": AnalysisMessageSerializer(message_queryset).data})

@@ -5,13 +5,13 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('seed', '0152_seed_renameeuicol_20211004_1337'),
+        ("seed", "0152_seed_renameeuicol_20211004_1337"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='analysis',
-            name='service',
-            field=models.IntegerField(choices=[(1, 'BSyncr'), (2, 'BETTER'), (3, 'EUI'), (4, 'CO2')]),
+            model_name="analysis",
+            name="service",
+            field=models.IntegerField(choices=[(1, "BSyncr"), (2, "BETTER"), (3, "EUI"), (4, "CO2")]),
         ),
     ]

@@ -24,10 +24,10 @@ from seed.utils.organizations import create_organization
 
 class InventoryViewTests(DeleteModelsTestCase):
     def setUp(self):
-        user_details = {'username': 'test_user@demo.com', 'password': 'test_pass', 'email': 'test_user@demo.com'}
+        user_details = {"username": "test_user@demo.com", "password": "test_pass", "email": "test_user@demo.com"}
         self.user = User.objects.create_superuser(**user_details)
         self.org, _, _ = create_organization(self.user)
-        self.status_label = StatusLabel.objects.create(name='test', super_organization=self.org)
+        self.status_label = StatusLabel.objects.create(name="test", super_organization=self.org)
 
         self.column_factory = FakeColumnFactory(organization=self.org)
         self.cycle_factory = FakeCycleFactory(organization=self.org, user=self.user)
@@ -45,7 +45,7 @@ class InventoryViewTests(DeleteModelsTestCase):
         pv = PropertyView.objects.create(property=prprty, cycle=self.cycle, state=state)
 
         # go to hpxml endpoint
-        params = {'organization_id': self.org.pk}
-        url = reverse('api:v3:properties-hpxml', args=[pv.id])
+        params = {"organization_id": self.org.pk}
+        url = reverse("api:v3:properties-hpxml", args=[pv.id])
         response = self.client.get(url, params)
-        self.assertIn(f'<GrossFloorArea>{state.gross_floor_area}.0</GrossFloorArea>', response.content.decode('utf-8'))
+        self.assertIn(f"<GrossFloorArea>{state.gross_floor_area}.0</GrossFloorArea>", response.content.decode("utf-8"))

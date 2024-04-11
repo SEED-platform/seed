@@ -17,24 +17,24 @@ from seed.utils.organizations import create_organization
 
 class TestInventoryDocuments(TestCase):
     def setUp(self):
-        user_details = {'username': 'test_user@demo.com', 'password': 'test_pass', 'email': 'test_user@demo.com'}
+        user_details = {"username": "test_user@demo.com", "password": "test_pass", "email": "test_user@demo.com"}
         self.user = User.objects.create_superuser(**user_details)
         self.org, _, _ = create_organization(self.user)
 
     def test_file_type_lookup(self):
         self.assertEqual(InventoryDocument.str_to_file_type(None), None)
-        self.assertEqual(InventoryDocument.str_to_file_type(''), None)
+        self.assertEqual(InventoryDocument.str_to_file_type(""), None)
         self.assertEqual(InventoryDocument.str_to_file_type(1), 1)
-        self.assertEqual(InventoryDocument.str_to_file_type('1'), 1)
-        self.assertEqual(InventoryDocument.str_to_file_type('Unknown'), 0)
-        self.assertEqual(InventoryDocument.str_to_file_type('PDF'), 1)
-        self.assertEqual(InventoryDocument.str_to_file_type('OSM'), 2)
-        self.assertEqual(InventoryDocument.str_to_file_type('IDF'), 3)
-        self.assertEqual(InventoryDocument.str_to_file_type('DXF'), 4)
+        self.assertEqual(InventoryDocument.str_to_file_type("1"), 1)
+        self.assertEqual(InventoryDocument.str_to_file_type("Unknown"), 0)
+        self.assertEqual(InventoryDocument.str_to_file_type("PDF"), 1)
+        self.assertEqual(InventoryDocument.str_to_file_type("OSM"), 2)
+        self.assertEqual(InventoryDocument.str_to_file_type("IDF"), 3)
+        self.assertEqual(InventoryDocument.str_to_file_type("DXF"), 4)
 
     def test_inventorydocument_constructor(self):
-        filename = path.join(BASE_DIR, 'seed', 'tests', 'data', 'test-document.pdf')
-        with open(filename, 'rb') as f:
+        filename = path.join(BASE_DIR, "seed", "tests", "data", "test-document.pdf")
+        with open(filename, "rb") as f:
             simple_uploaded_file = SimpleUploadedFile(f.name, f.read())
 
         doc = InventoryDocument.objects.create(

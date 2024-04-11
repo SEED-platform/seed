@@ -10,7 +10,7 @@ from seed.models import PropertyState, TaxLotState
 
 
 class Command(BaseCommand):
-    help = 'Rehashes all Property and Tax Lot states, and reports how many were modified'
+    help = "Rehashes all Property and Tax Lot states, and reports how many were modified"
 
     def handle(self, *args, **options):
         properties_updated = 0
@@ -18,23 +18,23 @@ class Command(BaseCommand):
 
         with transaction.atomic():
             property_states = PropertyState.objects.all()
-            self.stdout.write('Re-hashing %s Property States' % len(property_states))
+            self.stdout.write("Re-hashing %s Property States" % len(property_states))
 
             for state in property_states:
                 old_hash = state.hash_object
-                state.save(update_fields=['hash_object'])
+                state.save(update_fields=["hash_object"])
                 if state.hash_object != old_hash:
                     properties_updated += 1
 
-            self.stdout.write('  %s Property States updated' % properties_updated)
+            self.stdout.write("  %s Property States updated" % properties_updated)
 
             taxlot_states = TaxLotState.objects.all()
-            self.stdout.write('Re-hashing %s Tax Lot States' % len(taxlot_states))
+            self.stdout.write("Re-hashing %s Tax Lot States" % len(taxlot_states))
 
             for state in taxlot_states:
                 old_hash = state.hash_object
-                state.save(update_fields=['hash_object'])
+                state.save(update_fields=["hash_object"])
                 if state.hash_object != old_hash:
                     taxlots_updated += 1
 
-            self.stdout.write('  %s Tax Lot States updated' % taxlots_updated)
+            self.stdout.write("  %s Tax Lot States updated" % taxlots_updated)

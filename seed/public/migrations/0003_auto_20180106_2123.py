@@ -5,19 +5,19 @@ from django.db import migrations
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('public', '0002_auto_20160411_1139'),
+        ("public", "0002_auto_20160411_1139"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='sharedbuildingfield',
-            name='field',
+            model_name="sharedbuildingfield",
+            name="field",
         ),
         migrations.RemoveField(
-            model_name='sharedbuildingfield',
-            name='org',
+            model_name="sharedbuildingfield",
+            name="org",
         ),
         migrations.DeleteModel(
-            name='SharedBuildingField',
+            name="SharedBuildingField",
         ),
     ]

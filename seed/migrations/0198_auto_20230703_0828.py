@@ -5,18 +5,18 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('seed', '0197_pm_source_type'),
+        ("seed", "0197_pm_source_type"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='cycle',
-            name='end',
+            model_name="cycle",
+            name="end",
             field=models.DateField(),
         ),
         migrations.AlterField(
-            model_name='cycle',
-            name='start',
+            model_name="cycle",
+            name="start",
             field=models.DateField(),
         ),
     ]

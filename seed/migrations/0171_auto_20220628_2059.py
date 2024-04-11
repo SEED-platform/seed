@@ -4,53 +4,53 @@ from django.db import migrations, models
 
 
 def forwards(apps, schema_editor):
-    Column = apps.get_model('seed', 'Column')
-    Organization = apps.get_model('orgs', 'Organization')
+    Column = apps.get_model("seed", "Column")
+    Organization = apps.get_model("orgs", "Organization")
 
     new_db_field = {
-        'column_name': 'audit_template_building_id',
-        'table_name': 'PropertyState',
-        'display_name': 'Audit Template Building ID',
-        'column_description': 'Audit Template Building ID',
-        'data_type': 'string',
+        "column_name": "audit_template_building_id",
+        "table_name": "PropertyState",
+        "display_name": "Audit Template Building ID",
+        "column_description": "Audit Template Building ID",
+        "data_type": "string",
     }
 
     for org in Organization.objects.all():
         columns = Column.objects.filter(
             organization_id=org.id,
-            table_name=new_db_field['table_name'],
-            column_name=new_db_field['column_name'],
+            table_name=new_db_field["table_name"],
+            column_name=new_db_field["column_name"],
         )
         if not columns.count():
-            new_db_field['organization_id'] = org.id
+            new_db_field["organization_id"] = org.id
             Column.objects.create(**new_db_field)
         elif columns.count() == 1:
             column = columns.first()
             if column.is_extra_data:
                 column.is_extra_data = False
             else:
-                if column.display_name is None or column.display_name == '':
-                    column.display_name = new_db_field['display_name']
-                if column.data_type is None or column.data_type == '' or column.data_type == 'None':
-                    column.data_type = new_db_field['data_type']
+                if column.display_name is None or column.display_name == "":
+                    column.display_name = new_db_field["display_name"]
+                if column.data_type is None or column.data_type == "" or column.data_type == "None":
+                    column.data_type = new_db_field["data_type"]
             column.save()
         else:
-            print('  More than one column returned')
+            print("  More than one column returned")
 
 
 def backwards(apps, schema_editor):
-    print('  Nothing to undo!')
+    print("  Nothing to undo!")
 
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('seed', '0170_column_derived_column'),
+        ("seed", "0170_column_derived_column"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='propertystate',
-            name='audit_template_building_id',
+            model_name="propertystate",
+            name="audit_template_building_id",
             field=models.CharField(blank=True, max_length=255, null=True),
         ),
         migrations.RunPython(forwards, backwards),

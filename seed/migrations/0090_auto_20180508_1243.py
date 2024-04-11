@@ -13,13 +13,13 @@ def exist_in_db_columns(column, db_columns):
     #     'display_name': 'UBID',
     #     'data_type': 'string',
     # }
-    return any(column.table_name == db_col['table_name'] and column.column_name == db_col['column_name'] for db_col in db_columns)
+    return any(column.table_name == db_col["table_name"] and column.column_name == db_col["column_name"] for db_col in db_columns)
 
 
 def forwards(apps, schema_editor):
-    Column = apps.get_model('seed', 'Column')
-    Organization = apps.get_model('orgs', 'Organization')
-    ColumnMapping = apps.get_model('seed', 'ColumnMapping')
+    Column = apps.get_model("seed", "Column")
+    Organization = apps.get_model("orgs", "Organization")
+    ColumnMapping = apps.get_model("seed", "ColumnMapping")
 
     # from seed.lib.superperms.orgs.models import (
     db_fields = ColumnModel.DATABASE_COLUMNS
@@ -27,18 +27,18 @@ def forwards(apps, schema_editor):
     # Go through all the organizatoins
     for org in Organization.objects.all():
         # for org in Organization.objects.filter(id=1):
-        print('Checking for missing columns for %s' % org.id)
+        print("Checking for missing columns for %s" % org.id)
         # if org.id != 20:
         #     continue
         details = {
-            'organization_id': org.id,
+            "organization_id": org.id,
         }
         for field in db_fields:
             # check if the db field exists in the database.
             columns = Column.objects.filter(
                 organization_id=org.id,
-                table_name=field['table_name'],
-                column_name=field['column_name'],
+                table_name=field["table_name"],
+                column_name=field["column_name"],
                 is_extra_data=False,
             )
 
@@ -48,13 +48,13 @@ def forwards(apps, schema_editor):
             elif columns.count() == 1:
                 c = columns.first()
                 # update the display name and data_type if it is not already defined
-                if c.display_name is None or c.display_name == '':
-                    c.display_name = field['display_name']
-                if c.data_type is None or c.data_type == '' or c.data_type == 'None':
-                    c.data_type = field['data_type']
+                if c.display_name is None or c.display_name == "":
+                    c.display_name = field["display_name"]
+                if c.data_type is None or c.data_type == "" or c.data_type == "None":
+                    c.data_type = field["data_type"]
                 c.save()
             else:
-                print('  More than one column returned')
+                print("  More than one column returned")
                 # raise Exception("More than one column returned in migration: %s" % field)
 
         # Find all the columns that are not raw database columns, and make sure they are tagged is_extra_data
@@ -64,20 +64,20 @@ def forwards(apps, schema_editor):
         # later in the iteration
         for column in (
             Column.objects.filter(organization=org)
-            .exclude(table_name='')
+            .exclude(table_name="")
             .exclude(table_name=None)
-            .order_by('column_name', '-is_extra_data')
+            .order_by("column_name", "-is_extra_data")
         ):
-            print(f'{column.id} {column.table_name} {column.column_name} {column.is_extra_data}')
+            print(f"{column.id} {column.table_name} {column.column_name} {column.is_extra_data}")
             if column in cols_to_delete:
-                print('  Column is tagged to be deleted, continuing...')
+                print("  Column is tagged to be deleted, continuing...")
                 continue
 
             if exist_in_db_columns(column, db_fields):
-                print('  This is a database column, ignoring')
+                print("  This is a database column, ignoring")
             else:
                 if not column.is_extra_data:
-                    print('  The column is not a database field, and is not tagged is_extra_data, fixing...')
+                    print("  The column is not a database field, and is not tagged is_extra_data, fixing...")
                     column.is_extra_data = True
                     column.save()
 
@@ -85,9 +85,9 @@ def forwards(apps, schema_editor):
                 duplicates = Column.objects.filter(organization=org, table_name=column.table_name, column_name=column.column_name)
                 for dup in duplicates:
                     if dup.id == column.id:
-                        print('  Same column, skipping')
+                        print("  Same column, skipping")
                     else:
-                        print('  There is a duplicate, updating mappings and removing')
+                        print("  There is a duplicate, updating mappings and removing")
 
                         cols_to_delete.append(dup)
 
@@ -97,24 +97,24 @@ def forwards(apps, schema_editor):
                         dup_cms = ColumnMapping.objects.filter(Q(column_raw=dup) | Q(column_mapped=dup))
                         if exist_cm:
                             # remove the other mappings if the mapping already exists
-                            print('    Column Mapping exists, removing duplicate column mapping: Count - %s' % dup_cms.count())
+                            print("    Column Mapping exists, removing duplicate column mapping: Count - %s" % dup_cms.count())
                             for dup_cm in dup_cms:
                                 print(dup_cm)
                             dup_cms.delete()
                         elif ColumnMapping.objects.filter(Q(column_raw=column) | Q(column_mapped=column)).count() == 0:
-                            print('    Column Mapping does not exist, marking column to be removed')
+                            print("    Column Mapping does not exist, marking column to be removed")
                             cols_to_delete.append(column)
                         else:
-                            raise Exception('    Column is mapped to a raw, but not a destination, not sure what to do')
+                            raise Exception("    Column is mapped to a raw, but not a destination, not sure what to do")
 
         for c in cols_to_delete:
-            print(f'  Deleting {c.table_name}:{c.column_name}')
+            print(f"  Deleting {c.table_name}:{c.column_name}")
             c.delete()
 
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('seed', '0089_auto_20180508_1243'),
+        ("seed", "0089_auto_20180508_1243"),
     ]
 
     operations = [

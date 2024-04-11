@@ -14,19 +14,19 @@ from seed.models import AccessLevelInstance, Column, Cycle, Organization, Proper
 
 class Goal(models.Model):
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
-    baseline_cycle = models.ForeignKey(Cycle, on_delete=models.CASCADE, related_name='goal_baseline_cycles')
-    current_cycle = models.ForeignKey(Cycle, on_delete=models.CASCADE, related_name='goal_current_cycles')
+    baseline_cycle = models.ForeignKey(Cycle, on_delete=models.CASCADE, related_name="goal_baseline_cycles")
+    current_cycle = models.ForeignKey(Cycle, on_delete=models.CASCADE, related_name="goal_current_cycles")
     access_level_instance = models.ForeignKey(AccessLevelInstance, on_delete=models.CASCADE)
-    eui_column1 = models.ForeignKey(Column, on_delete=models.CASCADE, related_name='goal_eui_column1s')
+    eui_column1 = models.ForeignKey(Column, on_delete=models.CASCADE, related_name="goal_eui_column1s")
     # eui column 2 and 3 optional
-    eui_column2 = models.ForeignKey(Column, on_delete=models.CASCADE, related_name='goal_eui_column2s', blank=True, null=True)
-    eui_column3 = models.ForeignKey(Column, on_delete=models.CASCADE, related_name='goal_eui_column3s', blank=True, null=True)
-    area_column = models.ForeignKey(Column, on_delete=models.CASCADE, related_name='goal_area_columns')
+    eui_column2 = models.ForeignKey(Column, on_delete=models.CASCADE, related_name="goal_eui_column2s", blank=True, null=True)
+    eui_column3 = models.ForeignKey(Column, on_delete=models.CASCADE, related_name="goal_eui_column3s", blank=True, null=True)
+    area_column = models.ForeignKey(Column, on_delete=models.CASCADE, related_name="goal_area_columns")
     target_percentage = models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(100)])
     name = models.CharField(max_length=255, unique=True)
 
     def __str__(self):
-        return f'Goal - {self.name}'
+        return f"Goal - {self.name}"
 
     def eui_columns(self):
         """Preferred column order"""
@@ -48,10 +48,10 @@ def post_save_goal(sender, instance, **kwargs):
     from seed.models import GoalNote
 
     # retrieve a flat set of all property ids associated with this goal
-    goal_property_ids = set(instance.properties().values_list('id', flat=True))
+    goal_property_ids = set(instance.properties().values_list("id", flat=True))
 
     # retrieve a flat set of all property ids from the previous goal (through goal note which has not been created/updated yet)
-    previous_property_ids = set(instance.goalnote_set.values_list('property_id', flat=True))
+    previous_property_ids = set(instance.goalnote_set.values_list("property_id", flat=True))
 
     # create, or update has added more properties to the goal
     new_property_ids = goal_property_ids - previous_property_ids
