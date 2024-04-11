@@ -107,7 +107,7 @@ class UbidUtilMethods(TestCase):
             self.assertAlmostEqual(coord[0], known_property_centroid[index][0])
             self.assertAlmostEqual(coord[1], known_property_centroid[index][1])
 
-        self.assertAlmostEqual(refreshed_property.latitude, 41.7451)
+        self.assertAlmostEqual(refreshed_property.latitude, 41.7451125)
         self.assertAlmostEqual(refreshed_property.longitude, -87.560328125)
 
     def test_decode_taxlot_ubids_is_successful_when_valid_taxlot_UBID_provided(self):
@@ -148,7 +148,7 @@ class UbidUtilMethods(TestCase):
             self.assertAlmostEqual(coord[0], known_taxlot_centroid[index][0])
             self.assertAlmostEqual(coord[1], known_taxlot_centroid[index][1])
 
-        self.assertAlmostEqual(refreshed_taxlot.latitude, 41.7451)
+        self.assertAlmostEqual(refreshed_taxlot.latitude, 41.7451125)
         self.assertAlmostEqual(refreshed_taxlot.longitude, -87.560328125)
 
     def test_decode_ubids_does_nothing_if_no_UBID_provided(self):
