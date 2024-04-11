@@ -66,7 +66,10 @@ def merge_properties(state_ids, org_id, log_name, ignore_merge_protection=False)
             raise MultipleALIError
 
         # Create new inventory record and associate it to a new view
-        new_property = Property(organization_id=org_id)
+        new_property = Property(
+            organization_id=org_id,
+            access_level_instance_id=alis.first()
+        )
         new_property.save()
 
         cycle_id = views.first().cycle_id

@@ -648,7 +648,7 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
             const data = new Array(selectedViewIds.length);
 
             if ($scope.inventory_type === 'properties') {
-              return inventory_service.get_properties(1, undefined, undefined, -1, selectedViewIds).then((inventory_data) => {
+              return inventory_service.get_properties(1, undefined, $scope.cycle.selected_cycle, -1, selectedViewIds).then((inventory_data) => {
                 _.forEach(selectedViewIds, (id, index) => {
                   const match = _.find(inventory_data.results, [viewIdProp, id]);
                   if (match) {
@@ -659,7 +659,7 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
               });
             }
             if ($scope.inventory_type === 'taxlots') {
-              return inventory_service.get_taxlots(1, undefined, undefined, -1, selectedViewIds).then((inventory_data) => {
+              return inventory_service.get_taxlots(1, undefined, $scope.cycle.selected_cycle, -1, selectedViewIds).then((inventory_data) => {
                 _.forEach(selectedViewIds, (id, index) => {
                   const match = _.find(inventory_data.results, [viewIdProp, id]);
                   if (match) {
@@ -801,10 +801,9 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
       // Modify misc
       if (col.data_type === 'datetime') {
         options.cellFilter = "date:'yyyy-MM-dd h:mm a'";
-      } else if (
-        ['area', 'eui', 'float', 'number'].includes(col.data_type) &&
-        !['longitude', 'latitude'].includes(col.column_name) // we need the whole number for these
-      ) {
+      } else if (['longitude', 'latitude'].includes(col.column_name)) {
+        options.cellFilter = 'floatingPoint';
+      } else if (['area', 'eui', 'float', 'number'].includes(col.data_type)) {
         options.cellFilter = `tolerantNumber: ${$scope.organization.display_decimal_places}`;
       } else if (col.is_derived_column) {
         options.cellFilter = `number: ${$scope.organization.display_decimal_places}`;

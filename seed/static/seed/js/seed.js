@@ -141,7 +141,7 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.unmerge_modal',
   'BE.seed.controller.update_item_labels_modal'
 ]);
-angular.module('BE.seed.filters', ['district', 'fromNow', 'getAnalysisRunAuthor', 'htmlToPlainText', 'ignoremap', 'startFrom', 'stripImportPrefix', 'titleCase', 'tolerantNumber', 'typedNumber']);
+angular.module('BE.seed.filters', ['district', 'floatingPoint', 'fromNow', 'getAnalysisRunAuthor', 'htmlToPlainText', 'ignoremap', 'startFrom', 'stripImportPrefix', 'titleCase', 'tolerantNumber', 'typedNumber']);
 angular.module('BE.seed.directives', [
   'sdBasicPropertyInfoChart',
   'sdCheckCycleExists',

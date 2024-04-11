@@ -131,6 +131,13 @@ def get_filtered_results(request: Request, inventory_type: Literal['property', '
         except FilterError as e:
             return JsonResponse({'status': 'error', 'message': f'Error filtering: {e!s}'}, status=status.HTTP_400_BAD_REQUEST)
 
+        # determine if filters are looking for blank values
+        filter_for_blank = False
+        for k, v in request.query_params.lists():
+            if k.endswith('__exact') and '' in v:
+                filter_for_blank = True
+                break
+
         # If the children have filters, filter views_list by their children.
         if len(filters) > 0 or len(annotations) > 0:
             other_inventory_type_class: Union[Type[TaxLotView], Type[PropertyView]] = (
@@ -142,7 +149,12 @@ def get_filtered_results(request: Request, inventory_type: Literal['property', '
 
             other_views_list = other_views_list.annotate(**annotations).filter(filters)
             taxlot_properties = TaxLotProperty.objects.filter(**{f'{other_inventory_type}_view__in': other_views_list})
-            views_list = views_list.filter(taxlotproperty__in=taxlot_properties)
+            if filter_for_blank:
+                # if filtering for blanks ('') in the other inventory type, return the union of 2 querysets
+                # views of the current type + views associated with the found taxlot_properties
+                views_list = views_list.filter(taxlotproperty__isnull=True).union(views_list.filter(taxlotproperty__in=taxlot_properties))
+            else:
+                views_list = views_list.filter(taxlotproperty__in=taxlot_properties)
 
     # return property views limited to the 'include_view_ids' list if not empty
     if request.data.get('include_view_ids'):

@@ -499,7 +499,7 @@ class DataViewEvaluationTests(AccessLevelBaseTestCase, TestCase):
 
     def test_evaluation_endpoint_canonical_col_permissions(self):
         self.login_as_child_member()
-        response = self.client.put(
+        response = self.client.post(
             reverse('api:v3:data_views-evaluate', args=[self.data_view1.id]) + '?organization_id=' + str(self.org.id),
             data=json.dumps(
                 {
@@ -627,7 +627,7 @@ class DataViewEvaluationTests(AccessLevelBaseTestCase, TestCase):
         self.assertEqual(4, len(self.cycle3.propertyview_set.all()))
         self.assertEqual(4, len(self.cycle4.propertyview_set.all()))
 
-        response = self.client.put(
+        response = self.client.post(
             reverse('api:v3:data_views-evaluate', args=[self.data_view1.id]) + '?organization_id=' + str(self.org.id),
             data=json.dumps(
                 {
@@ -767,7 +767,7 @@ class DataViewEvaluationTests(AccessLevelBaseTestCase, TestCase):
             self.assertEqual(3, len(dataset['data']))
 
     def test_evaluation_endpoint_extra_col(self):
-        response = self.client.put(
+        response = self.client.post(
             reverse('api:v3:data_views-evaluate', args=[self.data_view2.id]) + '?organization_id=' + str(self.org.id),
             data=json.dumps(
                 {
@@ -807,7 +807,7 @@ class DataViewEvaluationTests(AccessLevelBaseTestCase, TestCase):
         self.assertEqual(exp, fg4_cycle4['views_by_default_field'])
 
     def test_evaluation_endpoint_derived_col(self):
-        response = self.client.put(
+        response = self.client.post(
             reverse('api:v3:data_views-evaluate', args=[self.data_view3.id]) + '?organization_id=' + str(self.org.id),
             data=json.dumps(
                 {
@@ -858,7 +858,7 @@ class DataViewEvaluationTests(AccessLevelBaseTestCase, TestCase):
         self.assertEqual(exp, cycle2_data['views_by_default_field'])
 
     def test_empty_cycles(self):
-        response = self.client.put(
+        response = self.client.post(
             reverse('api:v3:data_views-evaluate', args=[self.data_view4.id]) + '?organization_id=' + str(self.org.id),
             data=json.dumps(
                 {
