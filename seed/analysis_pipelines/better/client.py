@@ -12,7 +12,7 @@ import polling
 import requests
 from django.conf import settings
 
-from seed.analysis_pipelines.pipeline import AnalysisPipelineException
+from seed.analysis_pipelines.pipeline import AnalysisPipelineError
 
 logger = logging.getLogger(__name__)
 
@@ -299,7 +299,7 @@ class BETTERClient:
             response = requests.request('POST', url, headers=headers, data=json.dumps(config))
         except ConnectionError:
             message = 'BETTER service could not create analytics for this building'
-            raise AnalysisPipelineException(message)
+            raise AnalysisPipelineError(message)
 
         return response
 
@@ -322,7 +322,7 @@ class BETTERClient:
 
         except ConnectionError:
             message = 'BETTER service could not find the analysis'
-            raise AnalysisPipelineException(message)
+            raise AnalysisPipelineError(message)
 
         # save the file from the response
         temporary_results_dir = TemporaryDirectory()
@@ -353,7 +353,7 @@ class BETTERClient:
             response_json = response.json()
         except ConnectionError as e:
             message = f'Failed to connect to BETTER service: {e}'
-            raise AnalysisPipelineException(message)
+            raise AnalysisPipelineError(message)
 
         return response_json, []
 

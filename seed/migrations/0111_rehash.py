@@ -12,16 +12,16 @@ from seed.data_importer.tasks import hash_state_object
 def forwards(apps, schema_editor):
     property_sql = (
         'UPDATE seed_propertystate '
-        + 'SET created = seed_propertyauditlog.created, updated = seed_propertyauditlog.created '
-        + 'FROM seed_propertyauditlog '
-        + 'WHERE seed_propertystate.id = state_id;'
+        'SET created = seed_propertyauditlog.created, updated = seed_propertyauditlog.created '
+        'FROM seed_propertyauditlog '
+        'WHERE seed_propertystate.id = state_id;'
     )
 
     taxlot_sql = (
         'UPDATE seed_taxlotstate '
-        + 'SET created = seed_taxlotauditlog.created, updated = seed_taxlotauditlog.created '
-        + 'FROM seed_taxlotauditlog '
-        + 'WHERE seed_taxlotstate.id = state_id;'
+        'SET created = seed_taxlotauditlog.created, updated = seed_taxlotauditlog.created '
+        'FROM seed_taxlotauditlog '
+        'WHERE seed_taxlotstate.id = state_id;'
     )
 
     with connection.cursor() as cursor:

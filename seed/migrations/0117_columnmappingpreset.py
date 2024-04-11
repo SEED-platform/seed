@@ -7,7 +7,7 @@ from django.db import migrations, models
 from seed.utils.organizations import default_pm_mappings
 
 
-def snapshot_mappings(ColumnMapping, org):
+def snapshot_mappings(ColumnMapping, org):  # noqa: N803
     # logic adapted from ColumnMapping static method, get_column_mappings
     column_mappings = ColumnMapping.objects.filter(super_organization=org)
     formatted_mappings = []

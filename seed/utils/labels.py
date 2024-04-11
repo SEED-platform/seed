@@ -37,12 +37,11 @@ def filter_labels_for_inv_type(request, inventory_type=None):
         user=request.user,
         cycle_id=cycle_id,
     )
-    if 'selected' in request.data:
-        # Return labels limited to the 'selected' list.  Otherwise, if selected is empty, return all
-        if request.data['selected']:
-            return queryset.filter(
-                id__in=request.data['selected'],
-            )
+    # Return labels limited to the 'selected' list.  Otherwise, if selected is empty, return all
+    if request.data.get('selected'):
+        return queryset.filter(
+            id__in=request.data['selected'],
+        )
     return queryset
 
 

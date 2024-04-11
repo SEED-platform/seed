@@ -14,11 +14,8 @@ from seed.lib.mcm.reader import GeoJSONParser
 class JSONParserTest(TestCase):
     def setUp(self):
         file_path = os.path.dirname(os.path.abspath(__file__)) + '/test_data/example_feature_collection_geojson.json'
-        self.file = open(file_path, encoding='utf-8')
-        self.parser = GeoJSONParser(self.file)
-
-    def tearDown(self) -> None:
-        self.file.close()
+        with open(file_path, encoding='utf-8') as file:
+            self.parser = GeoJSONParser(file)
 
     def test_it_has_a_data_property(self):
         expectation = [

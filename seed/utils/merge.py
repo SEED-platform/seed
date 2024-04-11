@@ -29,7 +29,7 @@ from seed.models import (
 from seed.utils.ubid import merge_ubid_models
 
 
-def merge_states_with_views(state_ids, org_id, log_name, StateClass):
+def merge_states_with_views(state_ids, org_id, log_name, StateClass):  # noqa: N803
     """
     This merge ultimately ignores merge protection settings. It's expected that
     the given state_ids have already been ordered from least to most priority.

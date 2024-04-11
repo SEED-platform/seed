@@ -3,7 +3,7 @@
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
-
+import contextlib
 import json
 from datetime import date
 
@@ -12,7 +12,7 @@ from django.test import TestCase
 from django.urls import NoReverseMatch, reverse_lazy
 
 from seed.landing.models import SEEDUser as User
-from seed.lib.superperms.orgs.exceptions import InsufficientPermission
+from seed.lib.superperms.orgs.exceptions import InsufficientPermissionError
 from seed.lib.superperms.orgs.models import ROLE_MEMBER, ROLE_OWNER, ROLE_VIEWER, Organization, OrganizationUser
 from seed.models.columns import Column
 from seed.models.cycles import Cycle
@@ -334,7 +334,7 @@ class AccountsViewTests(TestCase):
             json.loads(resp.content), {'status': 'error', 'message': 'an organization must have at least one owner level member'}
         )
 
-    def test_remove_user_from_org_user_DNE(self):
+    def test_remove_user_from_org_user_dne(self):
         """DNE = does not exist"""
         u = User.objects.create(username='b@b.com', email='b@be.com')
         self.org.add_member(u, access_level_instance_id=self.org.root.id)
@@ -344,7 +344,7 @@ class AccountsViewTests(TestCase):
         )
         self.assertDictEqual(json.loads(resp.content), {'status': 'error', 'message': 'user does not exist'})
 
-    def test_remove_user_from_org_org_DNE(self):
+    def test_remove_user_from_org_org_dne(self):
         """DNE = does not exist"""
         u = User.objects.create(username='b@b.com', email='b@be.com')
         self.org.add_member(u, access_level_instance_id=self.org.root.id)
@@ -441,12 +441,11 @@ class AccountsViewTests(TestCase):
 
         url = reverse_lazy('api:v3:user-role', args=[self.user.id])
         post_data = {'organization_id': self.org.id, 'role': 'owner'}
-        try:
+
+        # TODO: currently superperms just raises an exception, rather
+        #  than returning an HttpResponse. Update this when that changes.
+        with contextlib.suppress(InsufficientPermissionError):
             self.client.put(url, data=json.dumps(post_data), content_type='application/json')
-        except InsufficientPermission:
-            # Todo:  currently superperms just raises an exception, rather
-            # than returning an HttpResponse.  Update this when that changes.
-            pass
 
         # ensure we did not just become owner
         self.assertFalse(self.org.is_owner(self.user))
@@ -839,7 +838,7 @@ class AuthViewTests(TestCase):
         )
         self.assertDictEqual(json.loads(resp.content), {'status': 'error', 'message': 'user does not exist'})
 
-    def test_is_authorized_org_DNE(self):
+    def test_is_authorized_org_dne(self):
         """DNE == does not exist"""
         resp = self.client.post(
             reverse_lazy('api:v3:user-is-authorized', args=[self.user.pk]) + '?organization_id=' + '9999999',
@@ -848,7 +847,7 @@ class AuthViewTests(TestCase):
         )
         self.assertDictEqual(json.loads(resp.content), {'status': 'error', 'message': 'organization does not exist'})
 
-    def test_is_authorized_actions_DNE(self):
+    def test_is_authorized_actions_dne(self):
         """DNE == does not exist"""
         resp = self.client.post(
             reverse_lazy('api:v3:user-is-authorized', args=[self.user.pk]) + '?organization_id=' + str(self.org.id),

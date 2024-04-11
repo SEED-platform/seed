@@ -14,7 +14,7 @@ from seed.models import VIEW_LIST_INVENTORY_TYPE, VIEW_LOCATION_TYPES
 
 class ColumnListProfileFilterBackend(filters.BaseFilterBackend):
     @staticmethod
-    def filter_queryset(request, queryset, view):
+    def filter_queryset(request, queryset, _view, **_kwargs):
         if 'organization_id' in request.query_params:
             queryset = queryset.filter(
                 organization_id=request.query_params['organization_id'],
@@ -67,10 +67,9 @@ class InventoryFilterBackend(filters.BaseFilterBackend):
             params=params,
             user=request.user,
         )
-        if 'selected' in request.data:
-            # Return labels limited to the 'selected' list.  Otherwise, if selected is empty, return all
-            if request.data['selected']:
-                return queryset.filter(
-                    id__in=request.data['selected'],
-                )
+        # Return labels limited to the 'selected' list.  Otherwise, if selected is empty, return all
+        if request.data.get('selected'):
+            return queryset.filter(
+                id__in=request.data['selected'],
+            )
         return queryset

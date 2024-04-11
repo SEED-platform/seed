@@ -8,7 +8,7 @@ import os
 import zipfile
 from io import BytesIO
 
-from buildingsync_asset_extractor.processor import BSyncProcessor as BAE
+from buildingsync_asset_extractor.processor import BSyncProcessor
 
 from seed.building_sync.building_sync import BuildingSync
 from seed.building_sync.mappings import xpath_to_column_map
@@ -58,7 +58,7 @@ class BuildingSyncParser:
         property_ = bs.process_property_xpaths(self._xpath_col_dict)
 
         # BuildingSync Asset Extractor (BAE) - automatically extract assets from BuildingSync file
-        bae = BAE(data=bsync_file)
+        bae = BSyncProcessor(data=bsync_file)
         bae.extract()
         assets = bae.get_assets()
 

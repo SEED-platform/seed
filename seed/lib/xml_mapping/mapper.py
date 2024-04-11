@@ -6,7 +6,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 import logging
 
-from buildingsync_asset_extractor.processor import BSyncProcessor as BAE
+from buildingsync_asset_extractor.processor import BSyncProcessor
 
 from seed.building_sync.building_sync import BuildingSync
 from seed.building_sync.mappings import BASE_MAPPING_V2, merge_mappings, xpath_to_column_map
@@ -46,7 +46,7 @@ def get_bae_mappings():
     # export_units field indicates fields that have a separate units field.
     # units field name is the same with " Units" appended.
 
-    bsync_assets = BAE.get_default_asset_defs()
+    bsync_assets = BSyncProcessor.get_default_asset_defs()
     for asset in bsync_assets:
         if isinstance(asset, dict):
             asset_type, export_name, export_units = asset['type'], asset['export_name'], asset['export_units']

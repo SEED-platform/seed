@@ -11,7 +11,7 @@ from collections import namedtuple
 from django.core.files.base import File as BaseFile
 
 from seed.analysis_pipelines.better.buildingsync import _parse_analysis_property_view_id
-from seed.analysis_pipelines.pipeline import AnalysisPipelineException, StopAnalysisTaskChain
+from seed.analysis_pipelines.pipeline import AnalysisPipelineError, StopAnalysisTaskChainError
 from seed.models import AnalysisMessage, AnalysisOutputFile, AnalysisPropertyView
 
 logger = logging.getLogger(__name__)
@@ -95,7 +95,7 @@ def _check_errors(errors, what_failed_desc, context, analysis_property_view_id=N
         pipeline = BETTERPipeline(context.analysis.id)
         pipeline.fail(what_failed_desc, logger, progress_data_key=context.progress_data.key)
         # stop the task chain
-        raise StopAnalysisTaskChain(what_failed_desc)
+        raise StopAnalysisTaskChainError(what_failed_desc)
 
 
 def _check_warnings(warnings, context):
@@ -168,7 +168,7 @@ def _store_better_portfolio_analysis_results(better_portfolio_building_analyses,
     for result_file_path in pathlib.Path(results_dir.name).iterdir():
         with open(result_file_path, encoding=locale.getpreferredencoding(False)) as f:
             if result_file_path.suffix != '.html':
-                raise AnalysisPipelineException(f'Received unhandled file type from BETTER: {result_file_path.name}')
+                raise AnalysisPipelineError(f'Received unhandled file type from BETTER: {result_file_path.name}')
 
             content_type = AnalysisOutputFile.HTML
             file_ = BaseFile(f)
@@ -281,7 +281,7 @@ def _store_better_building_analysis_results(better_building_analyses, context):
                     content_type = AnalysisOutputFile.HTML
                     file_ = BaseFile(f)
                 else:
-                    raise AnalysisPipelineException(f'Received unhandled file type from better: {result_file_path.name}')
+                    raise AnalysisPipelineError(f'Received unhandled file type from better: {result_file_path.name}')
 
                 analysis_output_file = AnalysisOutputFile(
                     content_type=content_type,

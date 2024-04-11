@@ -16,7 +16,7 @@ from config.settings.common import BASE_DIR
 from seed.building_sync.validation_client import DEFAULT_SCHEMA_VERSION, DEFAULT_USE_CASE, validate_use_case
 
 
-def responseFactory(status_code, body_dict):
+def response_factory(status_code, body_dict):
     the_response = Response()
     the_response.status_code = status_code
     the_response._content = json.dumps(body_dict).encode()
@@ -27,8 +27,11 @@ class TestValidationClient(TestCase):
     def setUp(self):
         # NOTE: the contents of these files are not actually used, it's just convenient
         # to use these files so we don't have to create tmp ones and clean them up
-        self.single_file = open(os.path.join(BASE_DIR, 'seed', 'building_sync', 'tests', 'data', 'buildingsync_v2_0_bricr_workflow.xml'), encoding=locale.getpreferredencoding(False))
-        self.zip_file = open(os.path.join(BASE_DIR, 'seed', 'building_sync', 'tests', 'data', 'ex_1_and_buildingsync_ex01_measures.zip'), encoding=locale.getpreferredencoding(False))
+        single_file_path = os.path.join(BASE_DIR, 'seed', 'building_sync', 'tests', 'data', 'buildingsync_v2_0_bricr_workflow.xml')
+        zip_file_path = os.path.join(BASE_DIR, 'seed', 'building_sync', 'tests', 'data', 'ex_1_and_buildingsync_ex01_measures.zip')
+
+        self.single_file = open(single_file_path, encoding=locale.getpreferredencoding(False))  # noqa: SIM115
+        self.zip_file = open(zip_file_path, encoding=locale.getpreferredencoding(False))  # noqa: SIM115
 
     def tearDown(self) -> None:
         self.single_file.close()
@@ -49,7 +52,7 @@ class TestValidationClient(TestCase):
             },
         }
 
-        with patch('seed.building_sync.validation_client._validation_api_post', return_value=responseFactory(200, good_body)):
+        with patch('seed.building_sync.validation_client._validation_api_post', return_value=response_factory(200, good_body)):
             all_files_valid, file_summaries = validate_use_case(self.single_file)
 
         self.assertTrue(all_files_valid)
@@ -87,7 +90,7 @@ class TestValidationClient(TestCase):
             ],
         }
 
-        with patch('seed.building_sync.validation_client._validation_api_post', return_value=responseFactory(200, good_body)):
+        with patch('seed.building_sync.validation_client._validation_api_post', return_value=response_factory(200, good_body)):
             all_files_valid, file_summaries = validate_use_case(self.zip_file)
 
         self.assertTrue(all_files_valid)
@@ -131,7 +134,7 @@ class TestValidationClient(TestCase):
             ],
         }
 
-        with patch('seed.building_sync.validation_client._validation_api_post', return_value=responseFactory(200, body)):
+        with patch('seed.building_sync.validation_client._validation_api_post', return_value=response_factory(200, body)):
             all_files_valid, file_summaries = validate_use_case(self.zip_file)
 
         self.assertFalse(all_files_valid)
@@ -175,7 +178,7 @@ class TestValidationClient(TestCase):
             ],
         }
 
-        with patch('seed.building_sync.validation_client._validation_api_post', return_value=responseFactory(200, body)):
+        with patch('seed.building_sync.validation_client._validation_api_post', return_value=response_factory(200, body)):
             all_files_valid, file_summaries = validate_use_case(self.zip_file)
 
         self.assertFalse(all_files_valid)
@@ -216,7 +219,7 @@ class TestValidationClient(TestCase):
             ],
         }
 
-        with patch('seed.building_sync.validation_client._validation_api_post', return_value=responseFactory(200, good_body)):
+        with patch('seed.building_sync.validation_client._validation_api_post', return_value=response_factory(200, good_body)):
             all_files_valid, file_summaries = validate_use_case(self.zip_file)
 
         self.assertTrue(all_files_valid)

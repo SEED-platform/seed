@@ -11,12 +11,11 @@ from drf_yasg.utils import swagger_auto_schema
 from rest_framework.parsers import FormParser, JSONParser
 from rest_framework.renderers import JSONRenderer
 
-from seed.decorators import DecoratorMixin
+from seed.decorators import DRFEndpointMixin
 from seed.filters import LabelFilterBackend
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.models import StatusLabel as Label
 from seed.serializers.labels import LabelSerializer
-from seed.utils.api import drf_api_endpoint
 from seed.utils.api_schema import AutoSchemaHelper
 from seed.utils.labels import filter_labels_for_inv_type
 from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
@@ -100,7 +99,7 @@ from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
         ),
     ),
 )
-class LabelViewSet(DecoratorMixin(drf_api_endpoint), SEEDOrgNoPatchOrOrgCreateModelViewSet):  # type: ignore[misc]
+class LabelViewSet(DRFEndpointMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet):  # type: ignore[misc]
     """
     retrieve:
         Return a label instance by pk if it is within user`s specified org.

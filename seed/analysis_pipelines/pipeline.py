@@ -147,7 +147,7 @@ def analysis_pipeline_task(expected_status):
             else:
                 # something Bad has happened
                 # TODO: we should probably try to fail the analysis at this point, but putting it off for now
-                raise AnalysisPipelineException(
+                raise AnalysisPipelineError(
                     f'When preparing to run the task {func}, expected analysis status to be {expected_status} but it was {analysis.status}'
                 )
 
@@ -156,7 +156,7 @@ def analysis_pipeline_task(expected_status):
             #
             try:
                 return func(*args, **kwargs)
-            except StopAnalysisTaskChain as e:
+            except StopAnalysisTaskChainError as e:
                 # the task requested to stop the chain
                 log_message = {
                     'analysis_id': _analysis_id,
@@ -240,11 +240,11 @@ def analysis_pipeline_task(expected_status):
     return decorator_analysis_pipeline_task
 
 
-class AnalysisPipelineException(Exception):
+class AnalysisPipelineError(Exception):
     """An analysis pipeline specific exception"""
 
 
-class StopAnalysisTaskChain(Exception):
+class StopAnalysisTaskChainError(Exception):
     """Analysis pipeline tasks should raise this exception to stop the celery task
     chain.
     """
@@ -253,7 +253,7 @@ class StopAnalysisTaskChain(Exception):
 class AnalysisPipeline(abc.ABC):
     """
     AnalysisPipeline is an abstract class for defining workflows for preparing,
-    running, and post processing analyses.
+    running, and post-processing analyses.
     """
 
     def __init__(self, analysis_id):
@@ -284,7 +284,7 @@ class AnalysisPipeline(abc.ABC):
         elif analysis.service == Analysis.EEEJ:
             return EEEJPipeline(analysis.id)
         else:
-            raise AnalysisPipelineException(f'Analysis service type is unknown/unhandled. Service ID "{analysis.service}"')
+            raise AnalysisPipelineError(f'Analysis service type is unknown/unhandled. Service ID "{analysis.service}"')
 
     def prepare_analysis(self, property_view_ids, start_analysis=False):
         """Entrypoint for preparing an analysis.
@@ -303,7 +303,7 @@ class AnalysisPipeline(abc.ABC):
                     self._analysis_id,
                 )
             else:
-                raise AnalysisPipelineException('Analysis has already been prepared or is currently being prepared')
+                raise AnalysisPipelineError('Analysis has already been prepared or is currently being prepared')
 
         self._prepare_analysis(property_view_ids, start_analysis)
         return progress_data.result()
@@ -324,7 +324,7 @@ class AnalysisPipeline(abc.ABC):
                 )
             else:
                 statuses = dict(Analysis.STATUS_TYPES)
-                raise AnalysisPipelineException(
+                raise AnalysisPipelineError(
                     f'Analysis cannot be started. Its status should be "{statuses[Analysis.READY]}" but it is "{statuses[locked_analysis.status]}"'
                 )
 
@@ -350,7 +350,7 @@ class AnalysisPipeline(abc.ABC):
                     progress_data.finish_with_error(message)
 
             if locked_analysis.in_terminal_state():
-                raise AnalysisPipelineException(f'Analysis is already in a terminal state: status {locked_analysis.status}')
+                raise AnalysisPipelineError(f'Analysis is already in a terminal state: status {locked_analysis.status}')
 
             locked_analysis.status = Analysis.FAILED
             locked_analysis.end_time = tz.now()
@@ -415,7 +415,7 @@ class AnalysisPipeline(abc.ABC):
                 locked_analysis.save()
             else:
                 statuses = dict(Analysis.STATUS_TYPES)
-                raise AnalysisPipelineException(
+                raise AnalysisPipelineError(
                     f"Analysis status can't be set to READY. "
                     f'Its status should be "{statuses[Analysis.CREATING]}" but it is "{statuses[locked_analysis.status]}"'
                 )
@@ -448,7 +448,7 @@ class AnalysisPipeline(abc.ABC):
             else:
                 statuses = dict(Analysis.STATUS_TYPES)
                 valid_statuses_str = ' or '.join([statuses[s] for s in valid_statuses])
-                raise AnalysisPipelineException(
+                raise AnalysisPipelineError(
                     f"Analysis status can't be set to RUNNING. "
                     f'Its status should be {valid_statuses_str} but it is "{statuses[locked_analysis.status]}"'
                 )
@@ -475,7 +475,7 @@ class AnalysisPipeline(abc.ABC):
                 locked_analysis.save()
             else:
                 statuses = dict(Analysis.STATUS_TYPES)
-                raise AnalysisPipelineException(
+                raise AnalysisPipelineError(
                     f"Analysis status can't be set to COMPLETED. "
                     f'Its status should be "{statuses[Analysis.RUNNING]}" but it is "{statuses[locked_analysis.status]}"'
                 )

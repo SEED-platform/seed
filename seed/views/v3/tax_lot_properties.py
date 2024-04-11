@@ -391,9 +391,10 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
                     # grab headers
                     for key in scenario_keys:
                         # double check scenario_key_mappings in case a different header is desired
+                        updated_key = key
                         if key in scenario_key_mappings:
-                            key = scenario_key_mappings[key]
-                        ws3.write(row3, col3, key, bold)
+                            updated_key = scenario_key_mappings[key]
+                        ws3.write(row3, col3, updated_key, bold)
                         col3 += 1
                     add_s_headers = False
                 row3 += 1

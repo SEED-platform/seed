@@ -23,14 +23,14 @@ from seed.utils.viewsets import SEEDOrgModelViewSet
             AutoSchemaHelper.base_field(
                 name='property_pk',
                 location_attr='IN_PATH',
-                type='TYPE_INTEGER',
+                type_attr='TYPE_INTEGER',
                 required=True,
                 description='ID of the property view where the meter is associated.',
             ),
             AutoSchemaHelper.base_field(
                 name='meter_pk',
                 location_attr='IN_PATH',
-                type='TYPE_INTEGER',
+                type_attr='TYPE_INTEGER',
                 required=True,
                 description='ID of the meter to attached the meter readings.',
             ),

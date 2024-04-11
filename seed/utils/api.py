@@ -98,7 +98,6 @@ def api_endpoint(fn):
     """
     # mark this function as an api endpoint for get_api_endpoints to find
     fn.is_api_endpoint = True
-    global endpoints
     endpoints.append(fn)
 
     @wraps(fn)
@@ -122,7 +121,6 @@ def api_endpoint_class(fn):
     """
     # mark this function as an api endpoint for get_api_endpoints to find
     fn.is_api_endpoint = True
-    global endpoints
     endpoints.append(fn)
 
     @wraps(fn)
@@ -144,7 +142,6 @@ def drf_api_endpoint(fn):
     to the global `endpoints` list.
     """
     fn.is_api_endpoint = True
-    global endpoints
     endpoints.append(fn)
 
     return fn

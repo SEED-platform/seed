@@ -213,7 +213,6 @@ class DerivedColumnViewSet(viewsets.ViewSet, OrgMixin):
     def evaluate(self, request, pk):
         org = self.get_organization(request)
 
-        cycle_id, inventory_ids = None, None
         try:
             cycle_id = request.query_params['cycle_id']
             inventory_ids = [int(x) for x in request.query_params['inventory_ids'].split(',')]
@@ -226,7 +225,6 @@ class DerivedColumnViewSet(viewsets.ViewSet, OrgMixin):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        derived_column = None
         try:
             derived_column = DerivedColumn.objects.get(id=pk, organization=org)
         except DerivedColumn.DoesNotExist:

@@ -392,7 +392,6 @@ class Rule(models.Model):
                 value = value.astimezone(get_current_timezone()).replace(tzinfo=pytz.UTC)
                 rule_min = make_aware(datetime.strptime(str(int(rule_min)), '%Y%m%d'), pytz.UTC)
             elif isinstance(value, date):
-                value = value
                 rule_min = datetime.strptime(str(int(rule_min)), '%Y%m%d').date()
             elif isinstance(value, int):
                 rule_min = int(rule_min)
@@ -432,7 +431,6 @@ class Rule(models.Model):
                 value = value.astimezone(get_current_timezone()).replace(tzinfo=pytz.UTC)
                 rule_max = make_aware(datetime.strptime(str(int(rule_max)), '%Y%m%d'), pytz.UTC)
             elif isinstance(value, date):
-                value = value
                 rule_max = datetime.strptime(str(int(rule_max)), '%Y%m%d').date()
             elif isinstance(value, int):
                 rule_max = int(rule_max)

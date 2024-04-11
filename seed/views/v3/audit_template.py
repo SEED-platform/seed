@@ -23,7 +23,7 @@ class AuditTemplateViewSet(viewsets.ViewSet, OrgMixin):
         manual_parameters=[
             AutoSchemaHelper.query_org_id_field(),
             AutoSchemaHelper.base_field(
-                name='id', location_attr='IN_PATH', type='TYPE_INTEGER', required=True, description='Audit Template Submission ID.'
+                name='id', location_attr='IN_PATH', type_attr='TYPE_INTEGER', required=True, description='Audit Template Submission ID.'
             ),
             AutoSchemaHelper.query_string_field('report_format', False, 'Report format Valid values are: xml, pdf. Defaults to pdf.'),
         ]

@@ -14,11 +14,8 @@ from seed.lib.mcm.reader import MCMParser
 class CSVParserTest(TestCase):
     def setUp(self):
         file_path = os.path.dirname(os.path.abspath(__file__)) + '/test_data/test_csv.csv'
-        self.file = open(file_path, encoding='utf-8')
-        self.parser = MCMParser(self.file)
-
-    def tearDown(self) -> None:
-        self.file.close()
+        with open(file_path, encoding='utf-8') as file:
+            self.parser = MCMParser(file)
 
     def test_it_has_a_data_property(self):
         expectation = [
@@ -71,11 +68,8 @@ class CSVParserTest(TestCase):
 class CSVMissingHeadersParserTest(TestCase):
     def setUp(self):
         file_path = os.path.dirname(os.path.abspath(__file__)) + '/test_data/test_missing_headers.csv'
-        self.file = open(file_path, encoding='utf-8')
-        self.parser = MCMParser(self.file)
-
-    def tearDown(self) -> None:
-        self.file.close()
+        with open(file_path, encoding='utf-8') as file:
+            self.parser = MCMParser(file)
 
     def test_it_has_a_data_property(self):
         expectation = [

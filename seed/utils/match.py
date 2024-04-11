@@ -3,6 +3,7 @@
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+from typing import Literal
 
 from celery import shared_task
 from django.contrib.postgres.aggregates.general import ArrayAgg
@@ -34,7 +35,7 @@ class NoViewsError(MergeLinkPairError):
     pass
 
 
-def empty_criteria_filter(StateClass, column_names):
+def empty_criteria_filter(StateClass, column_names):  # noqa: N803
     """
     Using an empty -State, return a dict that can be used as a QS filter
     to search for -States where all matching criteria values are None.
@@ -65,7 +66,7 @@ def matching_criteria_column_names(organization_id, table_name):
     }
 
 
-def _merge_matches_across_cycles(matching_views, org_id, given_state_id, StateClass):
+def _merge_matches_across_cycles(matching_views, org_id, given_state_id, StateClass):  # noqa: N803
     """
     This is a helper method for match_merge_link().
 
@@ -111,7 +112,7 @@ def _merge_matches_across_cycles(matching_views, org_id, given_state_id, StateCl
     return count, target_state_id
 
 
-def _link_matches(matching_views, org_id, view, ViewClass):
+def _link_matches(matching_views, org_id, view, ViewClass):  # noqa: N803
     """
     This is a helper method for match_merge_link() and is intended to be called
     after match merges have occurred.
@@ -214,7 +215,7 @@ def match(state_id, cycle_id, StateClass, StateClassName, ViewClass):  # noqa: N
     return self_view, matching_views_in_cycle, matching_views_out_of_cycle
 
 
-def _get_ali(view, matching_views, highest_ali, class_name, ViewClass):
+def _get_ali(view, matching_views, highest_ali, class_name, ViewClass):  # noqa: N803
     # Get the ali of the matching views
     matching_ali_ids = list(set(matching_views.values_list(f'{class_name}__access_level_instance', flat=True)))
     if len(matching_ali_ids) == 0:
@@ -256,12 +257,12 @@ def _get_ali(view, matching_views, highest_ali, class_name, ViewClass):
     return ali
 
 
-def match_merge_link(state_id, StateClassName, highest_ali, cycle):
-    if StateClassName == 'PropertyState':
+def match_merge_link(state_id, state_class_name: Literal['PropertyState', 'TaxLotState'], highest_ali, cycle):
+    if state_class_name == 'PropertyState':
         StateClass = PropertyState
         ViewClass = PropertyView
         class_name = 'property'
-    elif StateClassName == 'TaxLotState':
+    elif state_class_name == 'TaxLotState':
         StateClass = TaxLotState
         ViewClass = TaxLotView
         class_name = 'taxlot'
@@ -270,7 +271,7 @@ def match_merge_link(state_id, StateClassName, highest_ali, cycle):
     org_id = state.organization_id
 
     # MATCH
-    view, matching_views_in_cycle, matching_views_out_of_cycle = match(state_id, cycle.id, StateClass, StateClassName, ViewClass)
+    view, matching_views_in_cycle, matching_views_out_of_cycle = match(state_id, cycle.id, StateClass, state_class_name, ViewClass)
 
     # Get ali and perform ali related checks
     ali = _get_ali(view, matching_views_in_cycle | matching_views_out_of_cycle, highest_ali, class_name, ViewClass)

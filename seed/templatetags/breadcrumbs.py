@@ -145,19 +145,19 @@ def breadcrumb_url_root(parser, token):
 
 
 class BreadcrumbNode(Node):
-    def __init__(self, vars, render_func=create_crumb):
+    def __init__(self, variables, render_func=create_crumb):
         """
         First var is title, second var is url context variable
         """
-        self.vars = map(Variable, vars)
+        self.variables = map(Variable, variables)
         self.render_func = render_func
 
     def render(self, context):
-        title = self.vars[0].var
+        title = self.variables[0].var
 
         if title.find("'") == -1 and title.find('"') == -1:
             try:
-                val = self.vars[0]
+                val = self.variables[0]
                 title = val.resolve(context)
             except BaseException:
                 title = ''
@@ -167,8 +167,8 @@ class BreadcrumbNode(Node):
 
         url = None
 
-        if len(self.vars) > 1:
-            val = self.vars[1]
+        if len(self.variables) > 1:
+            val = self.variables[1]
             try:
                 url = val.resolve(context)
             except VariableDoesNotExist:

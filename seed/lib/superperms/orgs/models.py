@@ -13,7 +13,7 @@ from django.db.models.signals import post_save, pre_delete, pre_save
 from django.dispatch import receiver
 from treebeard.ns_tree import NS_Node
 
-from seed.lib.superperms.orgs.exceptions import TooManyNestedOrgs
+from seed.lib.superperms.orgs.exceptions import TooManyNestedOrgsError
 
 _log = logging.getLogger(__name__)
 
@@ -280,7 +280,7 @@ class Organization(models.Model):
         """Perform checks before saving."""
         # There can only be one.
         if self.parent_org is not None and self.parent_org.parent_org is not None:
-            raise TooManyNestedOrgs
+            raise TooManyNestedOrgsError
 
         super().save(*args, **kwargs)
 

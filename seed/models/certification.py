@@ -308,7 +308,7 @@ class GreenAssessmentProperty(models.Model):
         if isinstance(sub_name, basestring):
             sub = sub_name
         elif sub_name:
-            sub = sub = ''.join([titlecase(word) for word in self.name.split()])
+            sub = ''.join([titlecase(word) for word in self.name.split()])
         else:
             sub = ''
         url_field = f'GreenVerification{sub}URL'

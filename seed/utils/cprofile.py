@@ -37,6 +37,5 @@ def _print_profile(profile, sort_by='cumulative', n=20):
 
 def _dump_profile(profile, filename, sort_by='time'):
     """Dump full profiling to file."""
-    f = open(filename, 'a', encoding=locale.getpreferredencoding(False))
-    pstats.Stats(profile, stream=f).sort_stats(sort_by).print_stats()
-    f.close()
+    with open(filename, 'a', encoding=locale.getpreferredencoding(False)) as f:
+        pstats.Stats(profile, stream=f).sort_stats(sort_by).print_stats()

@@ -6,11 +6,9 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 import contextlib
 import csv
-import hashlib
 import json
 import locale
 import logging
-import math
 import tempfile
 from urllib.parse import unquote
 
@@ -134,96 +132,6 @@ class ImportRecord(NotDeletableModel):
         return self.importfile_set.all().order_by('file')
 
     @property
-    def num_files(self):
-        if not hasattr(self, '_num_files'):
-            self._num_files = self.importfile_set.count()
-        return self._num_files
-
-    @property
-    def num_files_mapped(self):
-        return self.files.filter(num_mapping_errors=0, initial_mapping_done=True).count()
-
-    @property
-    def num_files_to_map(self):
-        return self.num_files - self.num_files_mapped
-
-    @property
-    def percent_files_mapped(self):
-        if self.num_files > 0:
-            return int(round(100.0 * self.num_files_mapped / self.num_files))
-        return 0
-
-    @property
-    def num_files_cleaned(self):
-        return self.files.filter(coercion_mapping_done=True, num_coercion_errors=0).count()
-
-    @property
-    def num_files_to_clean(self):
-        return self.num_files - self.num_files_cleaned
-
-    @property
-    def percent_files_cleaned(self):
-        if self.num_files > 0:
-            return int(round(100.0 * self.num_files_cleaned / self.num_files))
-        return 0
-
-    @property
-    def num_files_merged(self):
-        return self.num_ready_for_import
-
-    @property
-    def num_files_to_merge(self):
-        return self.num_not_ready_for_import
-
-    @property
-    def percent_files_ready_to_merge(self):
-        if self.num_files > 0:
-            return int(round(100.0 * self.num_files_merged / self.num_files))
-        return 0
-
-    @property
-    def num_ready_for_import(self):
-        if not hasattr(self, '_num_ready_for_import'):
-            completed = 0
-            for f in self.files:
-                if f.ready_to_import:
-                    completed += 1
-            self._num_ready_for_import = completed
-
-        return self._num_ready_for_import
-
-    @property
-    def num_not_ready_for_import(self):
-        return self.num_files - self.num_ready_for_import
-
-    @property
-    def ready_for_import(self):
-        return self.num_not_ready_for_import == 0
-
-    @property
-    def percent_ready_for_import_by_file_count(self):
-        try:
-            percent_ready = 100.00 * self.num_ready_for_import / self.num_files
-        except ZeroDivisionError:
-            percent_ready = 0
-        return percent_ready
-
-    @property
-    def percent_ready_for_import(self):
-        if not hasattr(self, '_percent_ready_for_import'):
-            total = 0
-            completed = 0
-            for f in self.files:
-                total += f.num_tasks_total or 0
-                completed += f.num_tasks_complete or 0
-            if total == 0:
-                self._percent_ready_for_import = 0
-            else:
-                self._percent_ready_for_import = math.floor(100.0 * completed / total)
-
-        return self._percent_ready_for_import
-
-    @property
     def num_failed_tablecolumnmappings(self):
         if not hasattr(self, '_num_failed_tablecolumnmappings'):
             total = 0
@@ -268,265 +176,6 @@ class ImportRecord(NotDeletableModel):
                 total += f.num_columns
             self._num_columns = total
         return self._num_columns
-
-    @property
-    def total_file_size(self):
-        if not hasattr(self, '_total_file_size'):
-            total = 0
-            for f in self.files:
-                total += f.file_size_in_bytes
-            self._total_file_size = total
-        return self._total_file_size
-
-    @property
-    def total_correct_mappings(self):
-        if self.percent_ready_for_import != 100:
-            return (100 / (100 - self.percent_ready_for_import)) * (
-                self.num_validation_errors + self.num_coercion_errors + self.num_failed_tablecolumnmappings
-            )
-        else:
-            return 100
-
-    # TODO #239: This code is definitely not used anymore... should delete!
-    @property
-    def merge_progress_key(self):
-        """
-        Cache key used to track percentage completion for merge task.
-        """
-        return 'merge_progress_pct_%s' % self.pk
-
-    @property
-    def match_progress_key(self):
-        """
-        Cache key used to track percentage completion for merge task.
-        """
-        return 'match_progress_pct_%s' % self.pk
-
-    @property
-    def merge_status_key(self):
-        """
-        Cache key used to set/get status messages for merge task.
-        """
-        return 'merge_import_record_status_%s' % self.pk
-
-    @property
-    def pct_merge_complete(self):
-        return get_cache(self.merge_progress_key)['progress']
-
-    @property
-    def merge_seconds_remaining_key(self):
-        return 'merge_seconds_remaining_%s' % self.pk
-
-    @property
-    def premerge_progress_key(self):
-        return 'premerge_progress_pct_%s' % self.pk
-
-    @property
-    def pct_premerge_complete(self):
-        return get_cache(self.premerge_progress_key)['progress']
-
-    @property
-    def premerge_seconds_remaining_key(self):
-        return 'premerge_seconds_remaining_%s' % self.pk
-
-    @property
-    def MAPPING_ACTIVE_KEY(self):
-        return 'IR_MAPPING_ACTIVE%s' % self.pk
-
-    @property
-    def MAPPING_QUEUED_KEY(self):
-        return 'IR_MAPPING_QUEUED%s' % self.pk
-
-    @property
-    def estimated_seconds_remaining(self):
-        return get_cache_raw(self.merge_seconds_remaining_key)
-
-    @property
-    def merge_status(self):
-        return get_cache(self.merge_status_key)['status']
-
-    @property
-    def premerge_estimated_seconds_remaining(self):
-        return get_cache_raw(self.premerge_seconds_remaining_key)
-
-    @property
-    def matched_buildings(self):
-        return self.buildingimportrecord_set.filter(was_in_database=True, is_missing_from_import=False)
-
-    @property
-    def num_matched_buildings(self):
-        return self.matched_buildings.count()
-
-    @property
-    def new_buildings(self):
-        return self.buildingimportrecord_set.filter(was_in_database=False, is_missing_from_import=False)
-
-    @property
-    def num_new_buildings(self):
-        return self.new_buildings.count()
-
-    @property
-    def missing_buildings(self):
-        return self.buildingimportrecord_set.filter(is_missing_from_import=True)
-
-    @property
-    def num_missing_buildings(self):
-        return self.missing_buildings.count()
-
-    @property
-    def num_buildings_imported_total(self):
-        return self.buildingimportrecord_set.all().count()
-
-    @property
-    def status_percent(self):
-        if self.status == STATUS_MACHINE_CLEANING:
-            total_percent = 0
-            num_mapping = 0
-            for f in self.files:
-                if f.cleaning_progress_pct and f.num_columns is not None and f.num_rows is not None:
-                    total_percent += f.cleaning_progress_pct * f.num_columns * f.num_rows
-                    num_mapping += 100.0 * f.num_columns * f.num_rows
-            if num_mapping > 0:
-                return 100.0 * total_percent / num_mapping
-            else:
-                return 0
-        elif self.status in {STATUS_CLEANING, STATUS_MAPPING}:
-            return 100.0 * self.status_numerator / self.status_denominator
-        elif self.premerge_analysis_active:
-            return self.pct_premerge_complete or 100.0
-        elif self.merge_analysis_active:
-            return self.pct_merge_complete or 100.0
-        elif self.is_imported_live:
-            return 100.0
-        else:
-            return self.percent_files_ready_to_merge
-
-    @property
-    def status_numerator(self):
-        if self.status == STATUS_CLEANING:
-            return self.num_files_cleaned
-        elif self.status == STATUS_MAPPING:
-            return self.num_files_mapped
-        return 0
-
-    @property
-    def status_denominator(self):
-        return self.num_files
-
-    # URLS
-    @property
-    def app_namespace(self):
-        if self.app == 'bpd':
-            return 'data_importer'
-        else:
-            return self.app
-
-    @property
-    def pre_merge_url(self):
-        return reverse('%s:start_pre_merge' % self.app_namespace, args=(self.pk,))
-
-    @property
-    def worksheet_url(self):
-        return reverse('%s:worksheet' % self.app_namespace, args=(self.pk,))
-
-    @property
-    def add_files_url(self):
-        return reverse('%s:new_import' % self.app_namespace, args=(self.pk,))
-
-    @property
-    def status_url(self):
-        if self.status <= STATUS_READY_TO_PRE_MERGE:
-            return self.worksheet_url
-        elif self.status < STATUS_READY_TO_MERGE:
-            return self.premerge_progress_url
-        elif self.status < STATUS_MERGING:
-            return self.start_merge_url
-        elif self.status < STATUS_LIVE:
-            return self.merge_progress_url
-        else:
-            return self.worksheet_url
-
-    @property
-    def is_not_in_progress(self):
-        return self.status < STATUS_LIVE
-
-    @property
-    def premerge_progress_url(self):
-        return reverse('data_importer:pre_merge', args=(self.pk,))
-
-    @property
-    def merge_progress_url(self):
-        return reverse('data_importer:merge_progress', args=(self.pk,))
-
-    @property
-    def start_merge_url(self):
-        return reverse('%s:merge' % self.app_namespace, args=(self.pk,))
-
-    @property
-    def merge_url(self):
-        return reverse('%s:merge' % self.app_namespace, args=(self.pk,))
-
-    @property
-    def dashboard_url(self):
-        return reverse('%s:dashboard' % self.app_namespace, args=(self.pk,))
-
-    @property
-    def search_url(self):
-        return reverse('data_importer:search', args=(self.pk,))
-
-    @property
-    def delete_url(self):
-        return reverse('%s:delete' % self.app_namespace, args=(self.pk,))
-
-    @property
-    def save_import_meta_url(self):
-        return reverse('data_importer:save_import_meta', args=(self.pk,))
-
-    @property
-    def display_as_in_progress(self):
-        return self.status in {STATUS_MACHINE_MAPPING, STATUS_MACHINE_CLEANING, STATUS_PRE_MERGING, STATUS_MERGING}
-
-    @property
-    def is_mapping_or_cleaning(self):
-        return self.status in {STATUS_MAPPING, STATUS_CLEANING}
-
-    @property
-    def status_is_live(self):
-        return self.status == STATUS_LIVE
-
-    def mark_merged(self):
-        """
-        Marks the ImportRecord as having been processed (via merge_import_record())
-        """
-        self.merge_analysis_done = True
-        self.merge_analysis_active = False
-        self.is_imported_live = True
-        self.save()
-
-    def mark_merge_started(self):
-        """
-        Marks the ImportRecord as having a merge in progress.
-        """
-        self.merge_analysis_done = False
-        self.merge_analysis_active = True
-        self.merge_analysis_queued = False
-        self.save()
-
-    @property
-    def summary_analysis_active(self):
-        return get_cache_state(self.__class__.SUMMARY_ANALYSIS_ACTIVE_KEY(self.pk), False)
-
-    @property
-    def summary_analysis_queued(self):
-        return get_cache_state(self.__class__.SUMMARY_ANALYSIS_QUEUED_KEY(self.pk), False)
-
-    @classmethod
-    def SUMMARY_ANALYSIS_ACTIVE_KEY(cls, pk):
-        return 'SUMMARY_ANALYSIS_ACTIVE%s' % pk
-
-    @classmethod
-    def SUMMARY_ANALYSIS_QUEUED_KEY(cls, pk):
-        return 'SUMMARY_ANALYSIS_QUEUED%s' % pk
 
 
 class ImportFile(NotDeletableModel, TimeStampedModel):
@@ -629,7 +278,7 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
             temp_file.flush()
             temp_file.close()
             self.file.close()
-            self._local_file = open(temp_file.name, newline=None, encoding=locale.getpreferredencoding(False))
+            self._local_file = open(temp_file.name, newline=None, encoding=locale.getpreferredencoding(False))  # noqa: SIM115
 
         self._local_file.seek(0)
         return self._local_file
@@ -749,12 +398,6 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
     def num_failed_tablecolumnmappings(self):
         return self.tablecolumnmappings_failed.count()
 
-    def tablecolumnmapping_formset(self, *args, **kwargs):
-        from seed.data_importer import TableColumnMappingFormSet
-
-        formset = TableColumnMappingFormSet(queryset=self.tablecolumnmappings)
-        return formset
-
     @property
     def num_mapping_total(self):
         return self.tablecolumnmappings.count()
@@ -808,9 +451,7 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
         # JSON used to render the mapping interface.
         tcms = []
         try:
-            row_number = 0
-            for tcm in self.tablecolumnmappings:
-                row_number += 1
+            for row_number, tcm in enumerate(self.tablecolumnmappings, start=1):
                 error_message_text = ''
                 if tcm.error_message_text:
                     error_message_text = tcm.error_message_text.replace('\n', '<br>')
@@ -837,23 +478,23 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
         return t.fields_to_save
 
     @property
-    def QUEUED_TCM_SAVE_COUNTER_KEY(self):
-        return 'QUEUED_TCM_SAVE_%s' % self.pk
+    def queued_tcm_save_counter_key(self):
+        return f'QUEUED_TCM_SAVE_{self.pk}'
 
     @property
-    def QUEUED_TCM_DATA_KEY(self):
-        return 'QUEUED_TCM_DATA_KEY%s' % self.pk
+    def queued_tcm_data_key(self):
+        return f'queued_tcm_data_key{self.pk}'
 
     @property
-    def UPDATING_TCMS_KEY(self):
-        return 'UPDATING_TCMS_KEY%s' % self.pk
+    def updating_tcms_key(self):
+        return f'updating_tcms_key{self.pk}'
 
     def update_tcms_from_save(self, json_data, save_counter):
         # Check save_counter vs queued_save_counters.
-        queued_save_counter = get_cache_raw(self.QUEUED_TCM_SAVE_COUNTER_KEY, None)
+        queued_save_counter = get_cache_raw(self.queued_tcm_save_counter_key, None)
         if not queued_save_counter or save_counter > queued_save_counter:
-            if not get_cache_state(self.UPDATING_TCMS_KEY, None):
-                set_cache_state(self.UPDATING_TCMS_KEY, True)
+            if not get_cache_state(self.updating_tcms_key, None):
+                set_cache_state(self.updating_tcms_key, True)
                 for d in json.loads(json_data):
                     tcm = TableColumnMapping.objects.get(pk=d['pk'])
                     for field_name in TableColumnMapping.fields_to_save:
@@ -862,74 +503,62 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
                     tcm.was_a_human_decision = True
                     tcm.save()
 
-                if get_cache_raw(self.QUEUED_TCM_SAVE_COUNTER_KEY, False) is not False:
-                    queued_data = get_cache_raw(self.QUEUED_TCM_DATA_KEY)
-                    queued_time = get_cache_raw(self.QUEUED_TCM_SAVE_COUNTER_KEY)
-                    delete_cache(self.QUEUED_TCM_DATA_KEY)
-                    delete_cache(self.QUEUED_TCM_SAVE_COUNTER_KEY)
-                    delete_cache(self.UPDATING_TCMS_KEY)
+                if get_cache_raw(self.queued_tcm_save_counter_key, False) is not False:
+                    queued_data = get_cache_raw(self.queued_tcm_data_key)
+                    queued_time = get_cache_raw(self.queued_tcm_save_counter_key)
+                    delete_cache(self.queued_tcm_data_key)
+                    delete_cache(self.queued_tcm_save_counter_key)
+                    delete_cache(self.updating_tcms_key)
                     self.update_tcms_from_save(queued_data, queued_time)
 
-                delete_cache(self.UPDATING_TCMS_KEY)
-                delete_cache(self.QUEUED_TCM_DATA_KEY)
-                delete_cache(self.QUEUED_TCM_SAVE_COUNTER_KEY)
+                delete_cache(self.updating_tcms_key)
+                delete_cache(self.queued_tcm_data_key)
+                delete_cache(self.queued_tcm_save_counter_key)
                 return True
 
             else:
-                set_cache_raw(self.QUEUED_TCM_SAVE_COUNTER_KEY, save_counter)
-                set_cache_raw(self.QUEUED_TCM_DATA_KEY, json_data)
+                set_cache_raw(self.queued_tcm_save_counter_key, save_counter)
+                set_cache_raw(self.queued_tcm_data_key, json_data)
         return False
 
     @property
-    def CLEANING_PROGRESS_KEY(self):
-        return 'CLEANING_PROGRESS_KEY%s' % self.pk
+    def cleaning_progress_key(self):
+        return f'cleaning_progress_key{self.pk}'
 
     @property
     def cleaning_progress_pct(self):
         if not self.coercion_mapping_active and not self.coercion_mapping_queued and self.num_coercions_total > 0:
             return 100.0
         if self.coercion_mapping_active:
-            return get_cache(self.CLEANING_PROGRESS_KEY)['progress']
+            return get_cache(self.cleaning_progress_key)['progress']
         elif self.coercion_mapping_queued or not self.coercion_mapping_done:
             return 0.0
         else:
             return 100.0
 
     @classmethod
-    def CLEANING_QUEUED_CACHE_KEY_GENERATOR(cls, pk):
-        return 'CLEANING_QUEUED_CACHE_KEY%s' % pk
+    def cleaning_queued_cache_key_generator(cls, pk):
+        return f'CLEANING_QUEUED_CACHE_KEY{pk}'
 
     @property
-    def CLEANING_QUEUED_CACHE_KEY(self):
-        return self.__class__.CLEANING_QUEUED_CACHE_KEY_GENERATOR(self.pk)
+    def cleaning_queued_cache_key(self):
+        return self.__class__.cleaning_queued_cache_key_generator(self.pk)
 
     @classmethod
-    def CLEANING_ACTIVE_CACHE_KEY_GENERATOR(cls, pk):
-        return 'CLEANING_ACTIVE_CACHE_KEY%s' % pk
+    def cleaning_active_cache_key_generator(cls, pk):
+        return f'CLEANING_ACTIVE_CACHE_KEY{pk}'
 
     @property
-    def CLEANING_ACTIVE_CACHE_KEY(self):
-        return self.__class__.CLEANING_ACTIVE_CACHE_KEY_GENERATOR(self.pk)
+    def cleaning_active_cache_key(self):
+        return self.__class__.cleaning_active_cache_key_generator(self.pk)
 
     @property
     def coercion_mapping_active(self):
-        return get_cache_state(self.CLEANING_ACTIVE_CACHE_KEY, False)
+        return get_cache_state(self.cleaning_active_cache_key, False)
 
     @property
     def coercion_mapping_queued(self):
-        return get_cache_state(self.CLEANING_QUEUED_CACHE_KEY, False)
-
-    @property
-    def SAVE_COUNTER_CACHE_KEY(self):
-        return 'SAVE_COUNTER_KEY%s' % self.pk
-
-    @property
-    def merge_progress_url(self):
-        return reverse('data_importer:merge_progress', args=(self.pk,))
-
-    @property
-    def premerge_progress_url(self):
-        return reverse('data_importer:pre_merge_progress', args=(self.pk,))
+        return get_cache_state(self.cleaning_queued_cache_key, False)
 
     @property
     def force_restart_cleaning_url(self):
@@ -943,7 +572,8 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
 
         from seed.models import DATA_STATE_MAPPING, PropertyState, TaxLotState
 
-        assert kls in {PropertyState, TaxLotState}, 'Must be one of our State objects [PropertyState, TaxLotState]!'
+        if kls not in {PropertyState, TaxLotState}:
+            raise ValueError('Must be one of our State objects [PropertyState, TaxLotState]!')
 
         return kls.objects.filter(
             data_state__in=[DATA_STATE_MAPPING],
@@ -998,14 +628,6 @@ class TableColumnMapping(models.Model):
         if self.ignored or not self.is_mapped:
             self.error_message_text = ''
         super().save(*args, **kwargs)
-
-    @property
-    def source_string_sha(self):
-        if not hasattr(self, '_source_string_sha'):
-            m = hashlib.md5()
-            m.update(self.source_string)
-            self._source_string_sha = m.hexdigest()
-        return self._source_string_sha
 
     @property
     def combined_model_and_field(self):

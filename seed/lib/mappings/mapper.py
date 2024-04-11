@@ -149,8 +149,9 @@ def get_pm_mapping(raw_columns, mapping_data=None, resolve_duplicates=True):
     from_columns = create_column_regexes(raw_columns)
 
     if not mapping_data:
-        f = open(os.path.join(MAPPING_DATA_DIR, 'pm-mapping.json'), encoding=locale.getpreferredencoding(False))
-        mapping_data = json.load(f)
+        file_path = os.path.join(MAPPING_DATA_DIR, 'pm-mapping.json')
+        with open(file_path, encoding=locale.getpreferredencoding(False)) as f:
+            mapping_data = json.load(f)
 
     # transform the data into the format expected by the mapper. (see mapping_columns.final_mappings)
     final_mappings = OrderedDict()
@@ -168,26 +169,21 @@ def get_pm_mapping(raw_columns, mapping_data=None, resolve_duplicates=True):
             _log.debug('Could not find applicable mappings, resorting to raw field ({}) in PropertyState'.format(c['raw']))
             final_mappings[c['raw']] = ('PropertyState', c['raw'], 100)
 
-    # verify that there are no duplicate matchings
+    # verify that there are no duplicate mappings
     if resolve_duplicates:
         # get the set of mappings
-        mappings = []
-        for v in final_mappings.values():
-            mappings.append(v)
-
         unique_mappings = set()
         for k, v in final_mappings.items():
             if v not in unique_mappings:
                 unique_mappings.add(v)
             else:
                 i = 1
-                base = v[1]
-                while v in unique_mappings:
-                    new_v = base + f'_duplicate_{i}'
-                    v = (v[0], new_v, v[2])
+                updated_value = (v[0], f'{v[1]}_duplicate_{i}', v[2])
+                while updated_value in unique_mappings:
                     i += 1
+                    updated_value = (v[0], f'{v[1]}_duplicate_{i}', v[2])
 
-                unique_mappings.add(v)
-                final_mappings[k] = v
+                unique_mappings.add(updated_value)
+                final_mappings[k] = updated_value
 
     return final_mappings

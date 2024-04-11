@@ -37,14 +37,11 @@ pm_skip_test_check = skipIf(
 try:
     pm_avail_check = requests.get('https://isthewallbuilt.inbelievable.com/api.json', timeout=5)
     string_response = pm_avail_check.json()['status']
-    if string_response != 'no':
-        skip_due_to_espm_down = False
-    else:
-        skip_due_to_espm_down = True
+    skip_due_to_espm_down = string_response == 'no'
 
     if skip_due_to_espm_down:
         pm_skip_test_check = skip('ESPM is likely down temporarily, ESPM tests will not run')
-except Exception:
+except Exception:  # noqa: S110
     pass
 
 

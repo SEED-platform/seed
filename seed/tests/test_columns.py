@@ -17,7 +17,7 @@ from seed import models as seed_models
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.models import Organization
 from seed.models import DATA_STATE_MATCHING, Column, ColumnMapping, PropertyState
-from seed.models.columns import ColumnCastException
+from seed.models.columns import ColumnCastError
 from seed.test_helpers.fake import FakePropertyStateFactory, FakeTaxLotStateFactory
 from seed.utils.organizations import create_organization
 
@@ -1215,11 +1215,11 @@ class TestColumnCasting(TestCase):
         self.assertEqual(None, r)
 
     def test_cast_values_with_errors(self):
-        with pytest.raises(ColumnCastException) as exc:
+        with pytest.raises(ColumnCastError) as exc:
             Column.cast_column_value('integer', 'abc')
         self.assertEqual(str(exc.value), 'Invalid data type for "integer". Expected a valid "integer" value.')
 
-        with pytest.raises(ColumnCastException) as exc:
+        with pytest.raises(ColumnCastError) as exc:
             Column.cast_column_value('eui', None, allow_none=False)
         self.assertEqual(str(exc.value), 'Datum is None and allow_none is False.')
 

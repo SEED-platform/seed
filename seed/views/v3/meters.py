@@ -30,7 +30,7 @@ from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
                 AutoSchemaHelper.base_field(
                     name='property_pk',
                     location_attr='IN_PATH',
-                    type='TYPE_INTEGER',
+                    type_attr='TYPE_INTEGER',
                     required=True,
                     description='ID of the property view where the meter is associated.',
                 ),

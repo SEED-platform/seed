@@ -359,7 +359,7 @@ class ColumnMappingProfilesViewsBuildingSync(DataMappingBaseTestCase):
         filtered_mappings = [m for m in updated_profile.mappings if m['from_field'] == removed_mapping['from_field']]
         self.assertFalse(filtered_mappings)
 
-    def test_update_custom_bsync_profile_does_NOT_change_from_fields(self):
+    def test_update_custom_bsync_profile_does_not_change_from_fields(self):
         # -- Setup
         # create the custom profile
         profile_mappings = default_buildingsync_profile_mappings()

@@ -39,9 +39,9 @@ class GreenButtonParserTest(TestCase):
         ]
         self.assertEqual(results, expectation)
 
-    def test_data_property_can_handle_gas_MBtu(self):
+    def test_data_property_can_handle_gas_mbtu(self):
         # Different case when powerOfTenMultiplier + base unit = exact match of known unit
-        filepath = os.path.dirname(os.path.abspath(__file__)) + '/test_data/greenbutton/example-GreenButton-data-gas-MBtu.xml'
+        filepath = f'{os.path.dirname(os.path.abspath(__file__))}/test_data/greenbutton/example-GreenButton-data-gas-MBtu.xml'
         with open(filepath, encoding='utf-8') as f:
             parser = GreenButtonParser(f)
             results = parser.data
@@ -67,9 +67,9 @@ class GreenButtonParserTest(TestCase):
 
         self.assertEqual(results, expectation)
 
-    def test_data_property_can_handle_gas_J_with_power_of_ten_of_negative_3(self):
+    def test_data_property_can_handle_gas_j_with_power_of_ten_of_negative_3(self):
         # Case when base unit approximated and powerOfTenMultiplier used as conversion
-        filepath = os.path.dirname(os.path.abspath(__file__)) + '/test_data/greenbutton/example-GreenButton-data-gas-J--3.xml'
+        filepath = f'{os.path.dirname(os.path.abspath(__file__))}/test_data/greenbutton/example-GreenButton-data-gas-J--3.xml'
         with open(filepath, encoding='utf-8') as f:
             parser = GreenButtonParser(f)
             results = parser.data

@@ -25,7 +25,7 @@ class PropertySensorReadingsExporter:
     settings are considered/used when returning actual reading magnitudes.
     """
 
-    def __init__(self, property_id, org_id, excluded_sensor_ids, showOnlyOccupiedReadings):
+    def __init__(self, property_id, org_id, excluded_sensor_ids, show_only_occupied_readings):
         self._cache_factors = None
         self._cache_org_country = None
 
@@ -33,7 +33,7 @@ class PropertySensorReadingsExporter:
             Sensor.objects.select_related('data_logger').filter(data_logger__property_id=property_id).exclude(pk__in=excluded_sensor_ids)
         )
         self.org_id = org_id
-        self.showOnlyOccupiedReadings = showOnlyOccupiedReadings
+        self.show_only_occupied_readings = show_only_occupied_readings
         self.tz = timezone(TIME_ZONE)
 
     def readings_and_column_defs(self, interval, page, per_page):
@@ -50,7 +50,7 @@ class PropertySensorReadingsExporter:
         start and end times.
         """
         sensor_readings = SensorReading.objects.filter(sensor__in=self.sensors)
-        if self.showOnlyOccupiedReadings:
+        if self.show_only_occupied_readings:
             sensor_readings = sensor_readings.filter(is_occupied=True)
 
         timestamps = list(sensor_readings.distinct('timestamp').order_by('timestamp').values_list('timestamp', flat=True))
@@ -119,7 +119,7 @@ class PropertySensorReadingsExporter:
             field_name = self._build_column_def(sensor, column_defs)
 
             sensor_readings = sensor.sensor_readings
-            if self.showOnlyOccupiedReadings:
+            if self.show_only_occupied_readings:
                 sensor_readings = sensor_readings.filter(is_occupied=True)
 
             # group by month and avg readings
@@ -162,7 +162,7 @@ class PropertySensorReadingsExporter:
             field_name = self._build_column_def(sensor, column_defs)
 
             sensor_readings = sensor.sensor_readings
-            if self.showOnlyOccupiedReadings:
+            if self.show_only_occupied_readings:
                 sensor_readings = sensor_readings.filter(is_occupied=True)
 
             readings_avg_by_year = (

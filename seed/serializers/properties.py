@@ -672,7 +672,8 @@ def unflatten_values(vdict, fkeys):
     :param fkeys: field names for foreign key (e.g., state for state__city)
     :type fkeys: list
     """
-    assert set(vdict.keys()).isdisjoint(set(fkeys)), f'unflatten_values: {vdict} has fields named in {fkeys}'
+    if not set(vdict.keys()).isdisjoint(set(fkeys)):
+        raise ValueError(f'unflatten_values: {vdict} has fields named in {fkeys}')
     idents = tuple([f'{fkey}__' for fkey in fkeys])
     new_dict = vdict.copy()
     for key, val in vdict.items():

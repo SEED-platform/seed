@@ -17,7 +17,7 @@ from rest_framework.decorators import action
 from rest_framework.status import HTTP_409_CONFLICT
 
 from seed.analysis_pipelines.better.client import BETTERClient
-from seed.analysis_pipelines.pipeline import AnalysisPipeline, AnalysisPipelineException
+from seed.analysis_pipelines.pipeline import AnalysisPipeline, AnalysisPipelineError
 from seed.decorators import ajax_request_class, require_organization_id_class
 from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm_class
 from seed.lib.superperms.orgs.models import AccessLevelInstance
@@ -94,7 +94,7 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
                     'progress': progress_data,
                 }
             )
-        except AnalysisPipelineException as e:
+        except AnalysisPipelineError as e:
             return JsonResponse({'status': 'error', 'message': str(e)}, status=HTTP_409_CONFLICT)
 
     @swagger_auto_schema(
@@ -206,7 +206,7 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
             return JsonResponse(
                 {'status': 'error', 'message': "Requested analysis doesn't exist in this organization."}, status=HTTP_409_CONFLICT
             )
-        except AnalysisPipelineException as e:
+        except AnalysisPipelineError as e:
             return JsonResponse({'status': 'error', 'message': str(e)}, status=HTTP_409_CONFLICT)
 
     @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_org_id_field()])

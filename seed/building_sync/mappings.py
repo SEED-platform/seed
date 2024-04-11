@@ -124,8 +124,9 @@ def apply_mapping(element, mapping, messages, namespaces, xpaths_as_keys=False):
     """
     result = {}
     for key, value_map in mapping.items():
+        updated_key = key
         if xpaths_as_keys:
-            key = value_map['xpath']
+            updated_key = value_map['xpath']
         try:
             selection = element.xpath(value_map['xpath'], namespaces=namespaces)
         except Exception as e:
@@ -133,29 +134,29 @@ def apply_mapping(element, mapping, messages, namespaces, xpaths_as_keys=False):
 
         if len(selection) == 0:
             if value_map['type'] == 'value':
-                result[key] = None
+                result[updated_key] = None
             elif value_map['type'] == 'list':
-                result[key] = []
+                result[updated_key] = []
             else:
-                result[key] = {}
+                result[updated_key] = {}
 
             continue
 
         if value_map['type'] == 'list':
-            result[key] = []
+            result[updated_key] = []
             for selected_element in selection:
-                result[key].append(apply_mapping(selected_element, value_map['items'], messages, namespaces, xpaths_as_keys))
+                result[updated_key].append(apply_mapping(selected_element, value_map['items'], messages, namespaces, xpaths_as_keys))
 
         elif value_map['type'] == 'object':
             selected_element = selection[0]
-            result[key] = apply_mapping(selected_element, value_map['properties'], messages, namespaces, xpaths_as_keys)
+            result[updated_key] = apply_mapping(selected_element, value_map['properties'], messages, namespaces, xpaths_as_keys)
 
         elif value_map['type'] == 'value':
             selected_element = selection[0]
             value = get_terminal_value(selected_element, value_map)
             # apply formatter if one was provided
             value = value_map['formatter'](value) if value_map.get('formatter') else value
-            result[key] = value
+            result[updated_key] = value
 
         else:
             raise Exception(f"Unknown node type {value_map['type']}")

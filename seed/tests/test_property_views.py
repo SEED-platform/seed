@@ -1536,7 +1536,7 @@ class PropertyMergeViewTests(DataMappingBaseTestCase):
         # Overlapping reading that wasn't prioritized should not exist
         self.assertFalse(MeterReading.objects.filter(reading=property_2_reading).exists())
 
-    def test_merge_assigns_new_canonical_records_to_each_resulting_record_and_old_canonical_records_are_deleted_when_NOT_associated_to_other_views(
+    def test_merge_assigns_new_canonical_records_to_each_resulting_record_and_old_canonical_records_are_deleted_when_not_associated_to_other_views(
         self,
     ):
         # Capture old property_ids
@@ -2299,7 +2299,7 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
         self.assertCountEqual(result_dict['readings'], expectation['readings'])
         self.assertCountEqual(result_dict['column_defs'], expectation['column_defs'])
 
-    def test_property_meter_usage_can_return_monthly_meter_readings_and_column_defs_for_submonthly_data_with_DST_transitions_and_specific_meters(
+    def test_property_meter_usage_can_return_monthly_meter_readings_and_column_defs_for_submonthly_data_with_dst_transitions_and_specific_meters(
         self,
     ):
         # add initial meters and readings

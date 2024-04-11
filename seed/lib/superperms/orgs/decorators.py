@@ -191,7 +191,7 @@ def _validate_permissions(perm_name, request, requires_org):
     else:
         request.access_level_instance_id = org_user.access_level_instance.id
 
-    if not PERMS.get(perm_name, lambda x: False)(org_user):
+    if not PERMS.get(perm_name, lambda _: False)(org_user):
         return _make_resp('perm_denied')
 
 

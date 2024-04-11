@@ -1001,7 +1001,7 @@ class TestViewsMatching(DataMappingBaseTestCase):
     #     vs = ImportFileViewSet()
     #     fields = ['id', 'extra_data', 'lot_number', 'use_description']
     #
-    #     coparents = vs.has_coparent(property_state.id, 'properties', fields)
+    #     coparents = vs.has_coparent(property_state.id, 'properties')
     #     expected = {
     #         'lot_number': '11160509',
     #         'gross_floor_area': 23543.0,
@@ -1021,10 +1021,9 @@ class TestViewsMatching(DataMappingBaseTestCase):
         ).first()
 
         vs = ImportFileViewSet()
-        fields = ['id', 'extra_data', 'lot_number', 'use_description']
 
         # get the coparent of the 'Club' to get the ID
-        coparents = vs.has_coparent(property_state.id, 'properties', fields)
+        coparents = vs.has_coparent(property_state.id, 'properties')
 
         # verify that the coparent id is not part of the view
         prop = PropertyView.objects.filter(cycle=self.cycle, state__id=coparents['id'])

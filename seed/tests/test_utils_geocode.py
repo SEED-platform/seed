@@ -56,7 +56,7 @@ class WktTests(TestCase):
         self.org, _, _ = create_organization(self.user)
         self.property_state_factory = FakePropertyStateFactory(organization=self.org)
 
-    def test_long_lat_wkt_takes_a_state_and_returns_the_WKT_string_or_None(self):
+    def test_long_lat_wkt_takes_a_state_and_returns_the_wkt_string_or_none(self):
         property_details = self.property_state_factory.get_details()
         property_details['organization_id'] = self.org.id
 
@@ -77,7 +77,7 @@ class WktTests(TestCase):
         self.assertIsInstance(geocoded_record.long_lat, Point)
         self.assertEqual('POINT (-104.985765 39.764984)', long_lat_wkt(geocoded_property))
 
-    def test_bounding_box_wkt_takes_a_state_and_returns_the_WKT_string_or_None(self):
+    def test_bounding_box_wkt_takes_a_state_and_returns_the_wkt_string_or_none(self):
         property_details = self.property_state_factory.get_details()
         property_details['organization_id'] = self.org.id
 
@@ -435,7 +435,7 @@ class GeocodeAddresses(TestCase):
             self.assertTrue(len(long_lats) > 0)
             self.assertTrue(len(geocode_confidence_results) == 101)
 
-    def test_geocode_buildings_is_unsuccessful_when_the_API_key_is_invalid_or_expired(self):
+    def test_geocode_buildings_is_unsuccessful_when_the_api_key_is_invalid_or_expired(self):
         with base_vcr.use_cassette('seed/tests/data/vcr_cassettes/geocode_invalid_or_expired_key.yaml'):
             self.org_fake_key, _, _ = create_organization(self.user)
             self.org_fake_key.mapquest_api_key = 'fakeapikey'

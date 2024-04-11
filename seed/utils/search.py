@@ -190,7 +190,7 @@ def parse_expression(k, parts):
     return reduce(operator.and_, query_filters, Q())
 
 
-class FilterException(Exception):
+class FilterError(Exception):
     pass
 
 
@@ -211,22 +211,22 @@ class QueryFilter:
     is_negated: bool
 
     @classmethod
-    def parse(cls, filter):
+    def parse(cls, field_filter):
         """Parse a filter string into a QueryFilter
 
-        :param filter: string in the format <field_name>, or <field_name>__<lookup_expression>
+        :param field_filter: string in the format <field_name>, or <field_name>__<lookup_expression>
         """
-        field_name, _, lookup = filter.partition('__')
+        field_name, _, lookup = field_filter.partition('__')
         is_negated = lookup == 'ne'
-        operator = None
+        filter_operator = None
         if lookup and not is_negated:
             try:
-                operator = QueryFilterOperator(lookup)
+                filter_operator = QueryFilterOperator(lookup)
             except ValueError:
                 valid_lookups = [op.value for op in list(QueryFilterOperator)]
-                raise FilterException(f'Invalid lookup expression "{lookup}"; expected one of {valid_lookups}')
+                raise FilterError(f'Invalid lookup expression "{lookup}"; expected one of {valid_lookups}')
 
-        return cls(field_name, operator, is_negated)
+        return cls(field_name, filter_operator, is_negated)
 
     def to_q(self, value: Any) -> Q:
         if self.operator:
@@ -367,7 +367,7 @@ def _parse_view_filter(
         try:
             new_filter_value = Column.cast_column_value(column['data_type'], filter_value)
         except Exception:
-            raise FilterException(f'Invalid data type for "{column_name}". Expected a valid {column["data_type"]} value.')
+            raise FilterError(f'Invalid data type for "{column_name}". Expected a valid {column["data_type"]} value.')
 
     return updated_filter.to_q(new_filter_value), annotations
 

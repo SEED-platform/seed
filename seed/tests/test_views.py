@@ -38,7 +38,8 @@ DEFAULT_CUSTOM_COLUMNS = [
 ]
 
 
-COLUMNS_TO_SEND = DEFAULT_CUSTOM_COLUMNS + [
+COLUMNS_TO_SEND = [
+    *DEFAULT_CUSTOM_COLUMNS,
     'postal_code',
     'pm_parent_property_id',
     # 'calculated_taxlot_ids', 'primary',

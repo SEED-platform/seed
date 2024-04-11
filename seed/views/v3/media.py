@@ -76,7 +76,8 @@ def check_file_permission(user, filepath):
     else:
         raise ModelForFileNotFoundError(f'Base directory for media file is not currently handled: "{base_dir}"')
 
-    assert organization is not None
+    if not organization:
+        raise ValueError('Organization could not be determined')
 
     try:
         user.orgs.get(pk=organization.id)

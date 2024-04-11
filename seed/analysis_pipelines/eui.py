@@ -11,7 +11,7 @@ from celery import chain, shared_task
 
 from seed.analysis_pipelines.pipeline import (
     AnalysisPipeline,
-    AnalysisPipelineException,
+    AnalysisPipelineError,
     analysis_pipeline_task,
     task_create_analysis_property_views,
 )
@@ -57,7 +57,7 @@ def _get_valid_meters(property_view_ids, config):
         end_time = cycle.end
         start_time = cycle.start
     else:
-        AnalysisPipelineException("configuration.select_meters must be either 'all', 'date_range', or 'select_cycle'.")
+        AnalysisPipelineError("configuration.select_meters must be either 'all', 'date_range', or 'select_cycle'.")
 
     property_views = PropertyView.objects.filter(id__in=property_view_ids)
     for property_view in property_views:
@@ -150,7 +150,7 @@ class EUIPipeline(AnalysisPipeline):
             analysis = Analysis.objects.get(id=self._analysis_id)
             analysis.status = Analysis.FAILED
             analysis.save()
-            raise AnalysisPipelineException(EUI_ANALYSIS_MESSAGES[ERROR_NO_VALID_PROPERTIES])
+            raise AnalysisPipelineError(EUI_ANALYSIS_MESSAGES[ERROR_NO_VALID_PROPERTIES])
 
         if errors_by_property_view_id:
             AnalysisMessage.log_and_create(

@@ -22,7 +22,7 @@ class CurrentOrganizationIdDefault(OrgMixin):
         return self.organization_id
 
     def __repr__(self):
-        return unicode_to_repr('%s()' % self.__class__.__name__)
+        return unicode_to_repr(f'{self.__class__.__name__}()')
 
 
 class CurrentParentOrgIdDefault(CurrentOrganizationIdDefault):

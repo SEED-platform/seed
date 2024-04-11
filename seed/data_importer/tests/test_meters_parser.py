@@ -661,7 +661,7 @@ class MeterUtilTests(TestCase):
 
         self.assertEqual(meters_parser.meter_and_reading_objs, expected)
 
-    def test_meters_parser_can_handle_delivered_PM_meters(self):
+    def test_meters_parser_can_handle_delivered_pm_meters(self):
         raw_meters = [
             {
                 'Portfolio Manager ID': self.pm_property_id,

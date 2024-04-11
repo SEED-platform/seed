@@ -15,7 +15,7 @@ from seed import decorators
 from seed.utils.cache import clear_cache, get_cache, get_lock, increment_cache, make_key
 
 
-class TestException(Exception):
+class TestError(Exception):
     pass
 
 
@@ -79,9 +79,9 @@ class TestDecorators(TestCase):
         @decorators.lock_and_track
         def fake_func(import_file_pk):
             self.assertEqual(int(get_lock(key)), self.locked)
-            raise TestException('Test exception!')
+            raise TestError('Test exception!')
 
-        pytest.raises(TestException, fake_func, self.pk)
+        pytest.raises(TestError, fake_func, self.pk)
         # Even though execution failed part way through a call, we unlock.
         self.assertEqual(int(get_lock(key)), self.unlocked)
 

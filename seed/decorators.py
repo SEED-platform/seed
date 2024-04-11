@@ -11,6 +11,7 @@ from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseForbid
 
 from seed.lib.superperms.orgs.models import OrganizationUser
 from seed.serializers.pint import PintJSONEncoder
+from seed.utils.api import drf_api_endpoint
 from seed.utils.cache import get_lock, lock_cache, make_key, unlock_cache
 
 SEED_CACHE_PREFIX = 'SEED:{0}'
@@ -218,20 +219,20 @@ def require_organization_membership(fn):
     return _wrapped
 
 
-def DecoratorMixin(decorator):
+def decorator_to_mixin(decorator):
     """
     Converts a decorator written for a function view into a mixin for a class-based view.
 
     Example::
 
-        LoginRequiredMixin = DecoratorMixin(login_required)
+        LoginRequiredMixin = decorator_to_mixin(login_required)
 
 
         class MyView(LoginRequiredMixin):
             pass
 
 
-        class SomeView(DecoratorMixin(some_decorator), DecoratorMixin(something_else)):
+        class SomeView(decorator_to_mixin(some_decorator), decorator_to_mixin(something_else)):
             pass
     """
 
@@ -243,5 +244,8 @@ def DecoratorMixin(decorator):
             view = super().as_view(*args, **kwargs)
             return decorator(view)
 
-    Mixin.__name__ = f'DecoratorMixin{decorator.__name__}'
+    Mixin.__name__ = f'decorator_to_mixin{decorator.__name__}'
     return Mixin
+
+
+DRFEndpointMixin = decorator_to_mixin(drf_api_endpoint)

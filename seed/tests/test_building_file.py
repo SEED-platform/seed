@@ -102,8 +102,8 @@ class TestBuildingFiles(TestCase):
 
     def test_buildingsync_bricr_import(self):
         filename = path.join(BASE_DIR, 'seed', 'building_sync', 'tests', 'data', 'buildingsync_v2_0_bricr_workflow.xml')
-        file = open(filename, 'rb')
-        simple_uploaded_file = SimpleUploadedFile(file.name, file.read())
+        with open(filename, 'rb') as file:
+            simple_uploaded_file = SimpleUploadedFile(file.name, file.read())
 
         bf = BuildingFile.objects.create(
             file=simple_uploaded_file,

@@ -186,7 +186,7 @@ class AccessLevelBaseTestCase(TestCase):
 class DataMappingBaseTestCase(DeleteModelsTestCase):
     """Base Test Case Class to handle data import"""
 
-    def set_up(self, import_file_source_type, user_name='test_user@demo.com', user_password='test_pass'):
+    def set_up(self, import_file_source_type, user_name='test_user@demo.com', user_password='test_pass'):  # noqa: S107
         # default_values
         import_file_data_state = getattr(self, 'import_file_data_state', DATA_STATE_IMPORT)
 

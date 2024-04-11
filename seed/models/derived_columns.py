@@ -33,12 +33,13 @@ def _cast_params_to_floats(params: dict[str, Any]) -> dict[str, float]:
         if isinstance(value, bool):
             continue
 
+        updated_value = value
         if isinstance(value, ureg.Quantity):
-            value = value.magnitude
+            updated_value = value.magnitude
 
         try:
-            tmp_params[key] = float(value)
-        except Exception:
+            tmp_params[key] = float(updated_value)
+        except (ValueError, TypeError):
             continue
     return tmp_params
 
@@ -132,7 +133,7 @@ class ExpressionEvaluator:
         try:
             Lark(cls.EXPRESSION_GRAMMAR, parser='lalr').parse(expression)
         except UnexpectedToken as e:
-            raise InvalidExpression(expression, e.pos_in_stream)
+            raise InvalidExpressionError(expression, e.pos_in_stream)
 
         return True
 
@@ -149,7 +150,7 @@ class ExpressionEvaluator:
         return self._parser.parse(self._expression)  # type: ignore[return-value]
 
 
-class InvalidExpression(Exception):
+class InvalidExpressionError(Exception):
     """Raised when parsing an expression"""
 
     def __init__(self, expression, error_position=None):
@@ -207,7 +208,7 @@ class DerivedColumn(models.Model):
     def clean(self):
         try:
             ExpressionEvaluator.is_valid(self.expression)
-        except InvalidExpression as e:
+        except InvalidExpressionError as e:
             raise ValidationError({'expression': str(e)})
 
     def save(self, *args, **kwargs):

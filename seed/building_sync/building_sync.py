@@ -15,7 +15,7 @@ from datetime import datetime
 from io import BytesIO, StringIO
 
 import xmlschema
-from buildingsync_asset_extractor.processor import BSyncProcessor as BAE
+from buildingsync_asset_extractor.processor import BSyncProcessor
 from django.core.exceptions import FieldDoesNotExist
 from lxml import etree
 from quantityfield.units import ureg
@@ -395,7 +395,7 @@ class BuildingSync:
         seed_result = self.restructure_mapped_result(result, messages)
 
         # BuildingSync Asset Extractor
-        bae = BAE(self.source_filename)
+        bae = BSyncProcessor(self.source_filename)
         bae.extract()
         assets = bae.get_assets()
 

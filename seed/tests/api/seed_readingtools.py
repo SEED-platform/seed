@@ -143,25 +143,27 @@ def check_progress(main_url, header, progress_key):
 def read_map_file(mapfile_path):
     """Read in the mapping file"""
 
-    assert os.path.isfile(mapfile_path), 'Cannot find file:\t' + mapfile_path
-
-    map_reader = csv.reader(open(mapfile_path, encoding=locale.getpreferredencoding(False)))
-    next(map_reader)  # Skip the header
+    if not os.path.isfile(mapfile_path):
+        raise FileNotFoundError(f'Cannot find file:\t{mapfile_path}')
 
     # Open the mapping file and fill list
-    maplist = []
+    map_list = []
 
-    for rowitem in map_reader:
-        maplist.append(
-            {
-                'from_field': rowitem[0],
-                'from_units': rowitem[1],
-                'to_table_name': rowitem[2],
-                'to_field': rowitem[3],
-            }
-        )
+    with open(mapfile_path, encoding=locale.getpreferredencoding(False)) as file:
+        map_reader = csv.reader(file)
+        next(map_reader)  # Skip the header
 
-    return maplist
+        for row_item in map_reader:
+            map_list.append(
+                {
+                    'from_field': row_item[0],
+                    'from_units': row_item[1],
+                    'to_table_name': row_item[2],
+                    'to_field': row_item[3],
+                }
+            )
+
+    return map_list
 
 
 def setup_logger(filename, write_file=True):

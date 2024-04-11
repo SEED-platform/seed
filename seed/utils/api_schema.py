@@ -31,13 +31,13 @@ class AutoSchemaHelper(SwaggerAutoSchema):
         return cls.openapi_types[type_name]
 
     @staticmethod
-    def base_field(name, location_attr, description, required, type):
+    def base_field(name, location_attr, description, required, type_attr):
         """
         Created to avoid needing to directly access openapi within ViewSets.
         Ideally, the cases below will be used instead of this one.
         """
         return openapi.Parameter(
-            name, getattr(openapi, location_attr), description=description, required=required, type=getattr(openapi, type)
+            name, getattr(openapi, location_attr), description=description, required=required, type=getattr(openapi, type_attr)
         )
 
     @staticmethod

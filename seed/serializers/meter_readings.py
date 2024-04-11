@@ -32,7 +32,7 @@ class MeterReadingBulkCreateUpdateSerializer(serializers.ListSerializer):
 
     def create(self, validated_data) -> list[MeterReading]:
         upsert_sql = (
-            f"INSERT INTO seed_meterreading({', '.join(meter_fields)}) "
+            f"INSERT INTO seed_meterreading({', '.join(meter_fields)}) "  # noqa: S608
             "VALUES %s "
             "ON CONFLICT (meter_id, start_time, end_time) "
             "DO UPDATE SET reading=excluded.reading, source_unit=excluded.source_unit, conversion_factor=excluded.conversion_factor "
@@ -92,10 +92,10 @@ class MeterReadingSerializer(serializers.ModelSerializer):
     def create(self, validated_data) -> MeterReading:
         # Can't use update_or_insert here due to manually setting the primary key for timescale
         upsert_sql = (
-            f"INSERT INTO seed_meterreading({', '.join(meter_fields)}) "
+            f"INSERT INTO seed_meterreading({', '.join(meter_fields)}) "  # noqa: S608
             "VALUES (%(meter_id)s, %(start_time)s, %(end_time)s, %(reading)s, %(source_unit)s, %(conversion_factor)s) "
-            "ON CONFLICT (meter_id, start_time, end_time) DO UPDATE "
-            "SET reading=excluded.reading, source_unit=excluded.source_unit, conversion_factor=excluded.conversion_factor "
+            "ON CONFLICT (meter_id, start_time, end_time) "
+            "DO UPDATE SET reading=excluded.reading, source_unit=excluded.source_unit, conversion_factor=excluded.conversion_factor "
             f"RETURNING {', '.join(meter_fields)}"
         )
 

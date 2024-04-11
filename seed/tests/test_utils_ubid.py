@@ -28,7 +28,7 @@ class UbidSpecificWktMethods(TestCase):
 
         self.property_state_factory = FakePropertyStateFactory(organization=self.org)
 
-    def test_centroid_wkt_takes_a_state_and_returns_the_WKT_string_or_None(self):
+    def test_centroid_wkt_takes_a_state_and_returns_the_wkt_string_or_none(self):
         property_details = self.property_state_factory.get_details()
         property_details['organization_id'] = self.org.id
 
@@ -63,7 +63,7 @@ class UbidUtilMethods(TestCase):
         self.property_state_factory = FakePropertyStateFactory(organization=self.org)
         self.taxlot_state_factory = FakeTaxLotStateFactory(organization=self.org)
 
-    def test_decode_ubids_is_successful_when_valid_UBID_provided(self):
+    def test_decode_ubids_is_successful_when_valid_ubid_provided(self):
         property_details = self.property_state_factory.get_details()
         property_details['organization_id'] = self.org.id
         property_details['ubid'] = '86HJPCWQ+2VV-1-3-2-3'
@@ -103,7 +103,7 @@ class UbidUtilMethods(TestCase):
         self.assertAlmostEqual(refreshed_property.latitude, 41.7451)
         self.assertAlmostEqual(refreshed_property.longitude, -87.560328125)
 
-    def test_decode_taxlot_ubids_is_successful_when_valid_taxlot_UBID_provided(self):
+    def test_decode_taxlot_ubids_is_successful_when_valid_taxlot_ubidprovided(self):
         taxlot_details = self.taxlot_state_factory.get_details()
         taxlot_details['organization_id'] = self.org.id
         taxlot_details['ubid'] = '86HJPCWQ+2VV-1-3-2-3'
@@ -144,7 +144,7 @@ class UbidUtilMethods(TestCase):
         self.assertAlmostEqual(refreshed_taxlot.latitude, 41.7451)
         self.assertAlmostEqual(refreshed_taxlot.longitude, -87.560328125)
 
-    def test_decode_ubids_does_nothing_if_no_UBID_provided(self):
+    def test_decode_ubids_does_nothing_if_no_ubid_provided(self):
         property_details = self.property_state_factory.get_details()
         property_details['organization_id'] = self.org.id
 
@@ -158,7 +158,7 @@ class UbidUtilMethods(TestCase):
         self.assertIsNone(bounding_box_wkt(refreshed_property))
         self.assertIsNone(centroid_wkt(refreshed_property))
 
-    def test_decode_taxlot_ubids_does_nothing_if_no_taxlot_UBID_provided(self):
+    def test_decode_taxlot_ubids_does_nothing_if_no_taxlot_ubid_provided(self):
         taxlot_details = self.taxlot_state_factory.get_details()
         taxlot_details['organization_id'] = self.org.id
 

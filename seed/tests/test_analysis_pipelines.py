@@ -35,7 +35,7 @@ from seed.analysis_pipelines.eui import (
 )
 from seed.analysis_pipelines.pipeline import (
     AnalysisPipeline,
-    AnalysisPipelineException,
+    AnalysisPipelineError,
     analysis_pipeline_task,
     task_create_analysis_property_views,
 )
@@ -121,7 +121,7 @@ class TestAnalysisPipeline(TestCase):
 
         # Act / Assert
         # shouldn't matter what values are passed for property_view_ids
-        with pytest.raises(AnalysisPipelineException) as context:
+        with pytest.raises(AnalysisPipelineError) as context:
             pipeline.prepare_analysis([1, 2, 3])
 
         self.assertTrue('Analysis has already been prepared or is currently being prepared' in str(context.exception))
@@ -164,7 +164,7 @@ class TestAnalysisPipeline(TestCase):
         pipeline = MockPipeline(self.analysis.id)
 
         # Act
-        with pytest.raises(AnalysisPipelineException) as context:
+        with pytest.raises(AnalysisPipelineError) as context:
             pipeline.start_analysis()
 
         # Assert
@@ -199,7 +199,7 @@ class TestAnalysisPipeline(TestCase):
         logger = logging.getLogger('test-logger')
 
         # Act
-        with pytest.raises(AnalysisPipelineException) as context:
+        with pytest.raises(AnalysisPipelineError) as context:
             pipeline.fail('Double plus ungood', logger)
 
         # Assert
@@ -306,7 +306,7 @@ class TestAnalysisPipeline(TestCase):
         self.analysis.save()
 
         # Act/Assert
-        with pytest.raises(AnalysisPipelineException) as context:
+        with pytest.raises(AnalysisPipelineError) as context:
             my_func(MockCeleryTask(), self.analysis.id)
 
         self.assertIn(f'expected analysis status to be {expected_status}', str(context.exception))

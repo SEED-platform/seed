@@ -109,10 +109,10 @@ class FakePropertyStateExtraDataFactory(BaseFake):
     def __init__(self):
         super().__init__()
 
-    def property_state_extra_data_details(self, id, organization):
+    def property_state_extra_data_details(self, field_id, organization):
         """
         Creates randomized extra data for properties.
-        :param id: just used to populate one of the fields so it is clear
+        :param field_id: just used to populate one of the fields so it is clear
                     which extra data fields are associated to which records
         :param organization: used to populate the "Organization" field.
         :return: a dict of pseudo random data for use with properties
@@ -124,7 +124,7 @@ class FakePropertyStateExtraDataFactory(BaseFake):
             'Compliance Required': self.fake.random_element(elements=COMPLIANCE),
             'County': self.fake.random_element(elements=COUNTIES),
             'Date / Last Personal Correspondence': self.fake.date(pattern='%m/%d/%Y'),
-            'property_extra_data_field_1': 'property_extra_data_field_' + str(id),
+            'property_extra_data_field_1': f'property_extra_data_field_{field_id!s}',
             'Does Not Need to Comply': self.fake.random_element(elements=COMPLIANCE),
         }
 
@@ -132,15 +132,15 @@ class FakePropertyStateExtraDataFactory(BaseFake):
 
         return property_extra_data
 
-    def property_state_extra_data(self, id, organization, **kw):
+    def property_state_extra_data(self, field_id, organization, **kw):
         """
         Creates randomized extra data for properties.
-        :param id: just used to populate one of the fields so it is clear
+        :param field_id: just used to populate one of the fields so it is clear
                     which extra data fields are associated to which records
         :param organization: used to populate the "Organization" field.
         :return: a dict of pseudo random data for use with properties updated with keyword args from the caller
         """
-        ps = self.property_state_extra_data_details(id, organization)
+        ps = self.property_state_extra_data_details(field_id, organization)
         ps.update(kw)
         return ps
 
@@ -247,9 +247,9 @@ class FakeTaxLotExtraDataFactory(BaseFake):
     def __init__(self):
         super().__init__()
 
-    def tax_lot_extra_data_details(self, id, year_ending):
+    def tax_lot_extra_data_details(self, field_id, year_ending):
         """
-        :param id: just used to populate one of the fields so it is clear
+        :param field_id: just used to populate one of the fields so it is clear
                     which extra data fields are associated to which records
         :param year_ending: int, used as the value for the "Tax Year"
         :return: a dict of pseudo random data for use with taxlots
@@ -269,7 +269,7 @@ class FakeTaxLotExtraDataFactory(BaseFake):
             'Owner State': self.fake.state_abbr(),
             'Owner Zip': self.fake.zipcode(),
             'Tax Class': self.fake.random_element(elements=USE_CLASS) + self.fake.numerify(text='#'),
-            'taxlot_extra_data_field_1': 'taxlot_extra_data_field_' + str(id),
+            'taxlot_extra_data_field_1': f'taxlot_extra_data_field_{field_id!s}',
             'City Code': self.fake.numerify(text='####-###'),
         }
 
@@ -277,13 +277,14 @@ class FakeTaxLotExtraDataFactory(BaseFake):
 
         return tl
 
-    def tax_lot_extra_data(self, id, year_ending, **kw):
+    def tax_lot_extra_data(self, field_id, year_ending, **kw):
         """
-        :param id: just used to populate one of the extra data fields so it is clear
+        :param field_id: just used to populate one of the extra data fields so it is clear
                     which extra data fields are associated to which records
+        :param year_ending: int, used as the value for the "Tax Year"
         :return: a tax state dict populated with pseudo random data updated with keyword arguments
         """
-        tl = self.tax_lot_extra_data_details(id, year_ending)
+        tl = self.tax_lot_extra_data_details(field_id, year_ending)
         tl.update(kw)
         return tl
 
@@ -511,7 +512,7 @@ def create_cases_with_multi_records_per_cycle(org, cycle, taxlots, properties, n
 
 # For all cases make it so the city is the same within a case.  Not strictly required but
 # it is more realistic
-def create_case_A(org, cycle, taxlot_factory, property_factory, number_records_per_cycle=1):
+def create_case_a(org, cycle, taxlot_factory, property_factory, number_records_per_cycle=1):
     """
     Creates one instance of Case A (one building, one taxlot) for the given org in the given cycle
     :param org: Organization, the organization that will own the created cases
@@ -530,7 +531,7 @@ def create_case_A(org, cycle, taxlot_factory, property_factory, number_records_p
     return taxlots, properties
 
 
-def create_case_B(org, cycle, taxlot_factory, property_factory, number_properties=3, number_records_per_cycle=1):
+def create_case_b(org, cycle, taxlot_factory, property_factory, number_properties=3, number_records_per_cycle=1):
     """
     Creates one instance of Case B (n buildings, one taxlot) for the given org in the given cycle
     :param org: Organization, the organization that will own the created cases
@@ -550,7 +551,7 @@ def create_case_B(org, cycle, taxlot_factory, property_factory, number_propertie
     return taxlots, properties
 
 
-def create_case_C(org, cycle, taxlot_factory, property_factory, number_taxlots=3, number_records_per_cycle=1):
+def create_case_c(org, cycle, taxlot_factory, property_factory, number_taxlots=3, number_records_per_cycle=1):
     """
     Creates one instance of Case C (one building, n taxlot) for the given org in the given cycle
     :param org: Organization, the organization that will own the created cases
@@ -570,7 +571,7 @@ def create_case_C(org, cycle, taxlot_factory, property_factory, number_taxlots=3
     return taxlots, properties
 
 
-def _create_case_D(org, cycle, taxlots, properties, campus, number_records_per_cycle_per_state=1):
+def _create_case_d(org, cycle, taxlots, properties, campus, number_records_per_cycle_per_state=1):
     """
     Creates one instance of Case D (n buildings, m taxlots, one campus) for the given org in the given cycle
     :param org: Organization, the organization that will own the created cases
@@ -637,7 +638,7 @@ def _create_case_D(org, cycle, taxlots, properties, campus, number_records_per_c
     return taxlots, properties, campus
 
 
-def create_case_D(org, cycle, taxlot_factory, property_factory, number_records_per_cycle_per_state=1):
+def create_case_d(org, cycle, taxlot_factory, property_factory, number_records_per_cycle_per_state=1):
     """
     Creates one instance of Case D (n buildings, m taxlots, one campus) for the given org in the given cycle
     :param org: Organization, the organization that will own the created cases
@@ -661,7 +662,7 @@ def create_case_D(org, cycle, taxlot_factory, property_factory, number_records_p
     for i in range(5):
         properties.append(property_factory.property_state(pm_parent_property_id=campus_property_id, city=city))
 
-    taxlots, properties, campus = _create_case_D(org, cycle, taxlots, properties, campus, number_records_per_cycle_per_state)
+    taxlots, properties, campus = _create_case_d(org, cycle, taxlots, properties, campus, number_records_per_cycle_per_state)
 
     return taxlots, properties, campus
 
@@ -686,35 +687,35 @@ def update_taxlot_year(taxlot, year):
     return taxlot
 
 
-def update_property_noise(property):
+def update_property_noise(property_obj):
     """
     Updates the "noise" in a property state.  The noise is just some value
     that changes with every new property regardless of anything else
-    :param property: SampleDataRecord with property data.
+    :param property_obj: SampleDataRecord with property data.
     :return: The same property with the site_eui updated to a random number
     """
     # randomize "site_eui"
-    property.data['site_eui'] = str(float(randint(0, 1000)) + float(randint(0, 9)) / 10)
-    return property
+    property_obj.data['site_eui'] = str(float(randint(0, 1000)) + float(randint(0, 9)) / 10)
+    return property_obj
 
 
-def update_property_year(property, year):
+def update_property_year(property_obj, year):
     """
     Updates existing property data with information for a new year.  Includes both changing the
     actual year and changing some other values.
-    :param taxlot: SampleDataRecord with property data.
+    :param property_obj: SampleDataRecord with property data.
     :param year: int, the year to change to
     :return: SampleDataRecord with the applicable fields changed.
     """
 
-    property.data['year_ending'] = property.data['year_ending'].replace(year=year)
+    property_obj.data['year_ending'] = property_obj.data['year_ending'].replace(year=year)
 
     # change something in extra_data so something there changes too
-    property.extra_data['property_extra_data_field_1'] = property.extra_data['property_extra_data_field_1'] + '_' + str(year)
+    property_obj.extra_data['property_extra_data_field_1'] = property_obj.extra_data['property_extra_data_field_1'] + '_' + str(year)
 
-    property = update_property_noise(property)
+    property_obj = update_property_noise(property_obj)
 
-    return property
+    return property_obj
 
 
 def create_additional_years(org, years, pairs_taxlots_and_properties, case, number_records_per_cycle_per_state=1):
@@ -769,7 +770,7 @@ def create_additional_years_d(org, years, tuples_taxlots_properties_campus, numb
                 updated_properties = [update_property_year(x, year) for x in properties]
                 updated_campus = update_property_year(campus, year)
                 print(f'Creating {idx}')
-                _create_case_D(org, cycle, updated_taxlots, updated_properties, updated_campus)
+                _create_case_d(org, cycle, updated_taxlots, updated_properties, updated_campus)
 
 
 def create_sample_data(years, a_ct=0, b_ct=0, c_ct=0, d_ct=0, number_records_per_cycle_per_state=1):
@@ -802,7 +803,7 @@ def create_sample_data(years, a_ct=0, b_ct=0, c_ct=0, d_ct=0, number_records_per
     for i in range(a_ct):
         print(f'Creating Case A {i}')
         pairs_taxlots_and_properties_a.append(
-            create_case_A(org, cycle, taxlot_factory, property_factory, number_records_per_cycle_per_state)
+            create_case_a(org, cycle, taxlot_factory, property_factory, number_records_per_cycle_per_state)
         )
 
     create_additional_years(org, extra_years, pairs_taxlots_and_properties_a, 'A', number_records_per_cycle_per_state)
@@ -811,7 +812,7 @@ def create_sample_data(years, a_ct=0, b_ct=0, c_ct=0, d_ct=0, number_records_per
         print(f'Creating Case B {i}')
         property_factory.case_description = 'Case B-1: Multiple (3) Properties, 1 Tax Lot'
         pairs_taxlots_and_properties_b.append(
-            create_case_B(org, cycle, taxlot_factory, property_factory, number_records_per_cycle_per_state)
+            create_case_b(org, cycle, taxlot_factory, property_factory, number_records_per_cycle_per_state)
         )
 
     create_additional_years(org, extra_years, pairs_taxlots_and_properties_b, 'B', number_records_per_cycle_per_state)
@@ -820,7 +821,7 @@ def create_sample_data(years, a_ct=0, b_ct=0, c_ct=0, d_ct=0, number_records_per
         print(f'Creating Case C {i}')
         property_factory.case_description = 'Case C: 1 Property, Multiple (3) Tax Lots'
         pairs_taxlots_and_properties_c.append(
-            create_case_C(org, cycle, taxlot_factory, property_factory, number_records_per_cycle_per_state)
+            create_case_c(org, cycle, taxlot_factory, property_factory, number_records_per_cycle_per_state)
         )
 
     create_additional_years(org, extra_years, pairs_taxlots_and_properties_c, 'C', number_records_per_cycle_per_state)
@@ -829,7 +830,7 @@ def create_sample_data(years, a_ct=0, b_ct=0, c_ct=0, d_ct=0, number_records_per
         print(f'Creating Case D {i}')
         property_factory.case_description = 'Case D: Campus with Multiple associated buildings'
         tuples_taxlots_properties_campus_d.append(
-            create_case_D(org, cycle, taxlot_factory, property_factory, number_records_per_cycle_per_state)
+            create_case_d(org, cycle, taxlot_factory, property_factory, number_records_per_cycle_per_state)
         )
 
     create_additional_years_d(org, extra_years, tuples_taxlots_properties_campus_d, number_records_per_cycle_per_state)

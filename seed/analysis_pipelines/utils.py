@@ -120,7 +120,8 @@ def _split_reading(meter_reading, snap_intervals=True):
             # there can be no overlap if we are given a reading which ends
             # on the first of a month and we're creating a reading for that month
             # it ends on.
-            assert idx == len(months_affected) - 1, 'This should not occur, our assumptions were invalid. Please revisit this.'
+            if idx != len(months_affected) - 1:
+                raise ValueError('This should not occur, our assumptions were invalid. Please revisit this.')
             continue
 
         fraction_of_reading_time = overlap_delta.total_seconds() / meter_reading_delta.total_seconds()
@@ -266,9 +267,8 @@ def interpolate_monthly_readings(meter_readings):
     current_time = meter_readings[current_reading_index].start_time
     while current_reading_index < len(meter_readings):
         current_reading = meter_readings[current_reading_index]
-        assert (
-            current_reading.start_time.day == 1
-        ), f'Meter readings should start on the first day of the month; found one starting on {current_reading.start_time.day}'
+        if current_reading.start_time.day != 1:
+            raise ValueError(f'Meter readings should start on the first day of the month; found one starting on {current_reading.start_time.day}')
 
         if current_time == current_reading.start_time:
             interpolated_readings.append(current_reading)

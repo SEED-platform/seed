@@ -63,6 +63,7 @@ ignore = [
     "RUF012",  # mutable-class-default
     "S106",    # hardcoded-password-func-arg
     "S311",    # suspicious-non-cryptographic-random-usage
+    "S320",    # suspicious-xmle-tree-usage
     "S603",    # subprocess-without-shell-equals-true
     "S607",    # start-process-with-partial-path
     "S701",    # jinja2-autoescape-false
@@ -72,6 +73,8 @@ ignore = [
 [lint.per-file-ignores]
 "**/tests/test_*" = [
     "S101", # assert
+    "S105", # hardcoded-password-string
+    "S307", # suspicious-eval-usage
 ]
 "seed/**/migrations/*" = [
     "ARG001", # unused-function-argument

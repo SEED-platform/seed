@@ -11,7 +11,7 @@ from celery import chain, shared_task
 
 from seed.analysis_pipelines.pipeline import (
     AnalysisPipeline,
-    AnalysisPipelineException,
+    AnalysisPipelineError,
     analysis_pipeline_task,
     task_create_analysis_property_views,
 )
@@ -712,7 +712,7 @@ class CO2Pipeline(AnalysisPipeline):
             analysis = Analysis.objects.get(id=self._analysis_id)
             analysis.status = Analysis.FAILED
             analysis.save()
-            raise AnalysisPipelineException(CO2_ANALYSIS_MESSAGES[ERROR_NO_VALID_PROPERTIES])
+            raise AnalysisPipelineError(CO2_ANALYSIS_MESSAGES[ERROR_NO_VALID_PROPERTIES])
 
         if errors_by_property_view_id:
             AnalysisMessage.log_and_create(
@@ -873,19 +873,18 @@ def _run_analysis(self, meter_readings_by_analysis_property_view, analysis_id):
             / property_view.state.gross_floor_area.magnitude,
         }
         analysis_property_view.save()
-        if save_co2_results:
-            # only save to property view if columns exist
-            if not missing_columns:
-                # store the extra_data columns from the analysis
-                property_view.state.extra_data.update(
-                    {'analysis_co2': co2['average_annual_kgco2e'], 'analysis_co2_coverage': co2['annual_coverage_percent']}
-                )
-                # Also Convert the analysis results which reports in kgCO2e to MtCO2e which is the canonical database field units
-                property_view.state.total_ghg_emissions = co2['average_annual_kgco2e'] / 1000
-                property_view.state.total_ghg_emissions_intensity = (
-                    co2['average_annual_kgco2e'] / property_view.state.gross_floor_area.magnitude
-                )
-                property_view.state.save()
+        # only save to property view if columns exist
+        if save_co2_results and not missing_columns:
+            # store the extra_data columns from the analysis
+            property_view.state.extra_data.update(
+                {'analysis_co2': co2['average_annual_kgco2e'], 'analysis_co2_coverage': co2['annual_coverage_percent']}
+            )
+            # Also convert the analysis results which reports in kgCO2e to MtCO2e which is the canonical database field units
+            property_view.state.total_ghg_emissions = co2['average_annual_kgco2e'] / 1000
+            property_view.state.total_ghg_emissions_intensity = (
+                co2['average_annual_kgco2e'] / property_view.state.gross_floor_area.magnitude
+            )
+            property_view.state.save()
 
     # all done!
     pipeline.set_analysis_status_to_completed()

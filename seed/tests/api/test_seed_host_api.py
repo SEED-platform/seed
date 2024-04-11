@@ -104,22 +104,28 @@ if '--nofile' not in sys.argv:
     log = setup_logger(fileout_name)
 
     # Set up output file
-    fileout = open(fileout_name, 'w', encoding=locale.getpreferredencoding(False))
-    fileout.write('Hostname: \t' + hostname)
-    fileout.write('\nURL: \t\t' + main_url)
-    fileout.write('\nTest Date:\t' + dt.datetime.strftime(dt.datetime.now(), '%Y-%m-%d %H:%M:%S'))
-    fileout.close()
+    with open(fileout_name, 'w', encoding=locale.getpreferredencoding(False)) as fileout:
+        fileout.write('Hostname: \t' + hostname)
+        fileout.write('\nURL: \t\t' + main_url)
+        fileout.write('\nTest Date:\t' + dt.datetime.strftime(dt.datetime.now(), '%Y-%m-%d %H:%M:%S'))
 else:
     log = setup_logger(fileout_name, write_file=False)
 
 raw_building_file = os.path.relpath(os.path.join(location, '..', 'data', 'covered-buildings-sample.csv'))
-assert os.path.isfile(raw_building_file), 'Missing file ' + raw_building_file
+if not os.path.isfile(raw_building_file):
+    raise FileNotFoundError(f'Missing file {raw_building_file}')
+
 raw_map_file = os.path.relpath(os.path.join(location, '..', 'data', 'mappings', 'covered-buildings-mapping.csv'))
-assert os.path.isfile(raw_map_file), 'Missing file ' + raw_map_file
+if not os.path.isfile(raw_map_file):
+    raise FileNotFoundError(f'Missing file {raw_map_file}')
+
 pm_building_file = os.path.relpath(os.path.join(location, '..', 'data', 'portfolio-manager-sample.csv'))
-assert os.path.isfile(pm_building_file), 'Missing file ' + pm_building_file
+if not os.path.isfile(pm_building_file):
+    raise FileNotFoundError(f'Missing file {pm_building_file}')
+
 pm_map_file = os.path.relpath(os.path.join(location, '..', 'data', 'mappings', 'portfolio-manager-mapping.csv'))
-assert os.path.isfile(pm_map_file), 'Missing file ' + pm_map_file
+if not os.path.isfile(pm_map_file):
+    raise FileNotFoundError(f'Missing file {pm_map_file}')
 
 # -- Accounts
 print('\n|-------Accounts-------|\n')

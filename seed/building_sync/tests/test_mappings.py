@@ -48,7 +48,7 @@ class TestXMLHelpers(TestCase):
         cls.xmlschema.validate(cls.raw_xml)
 
     def setUp(self):
-        self.tree = etree.parse(StringIO(self.raw_xml))  # noqa: S320
+        self.tree = etree.parse(StringIO(self.raw_xml))
 
     def test_find_last_in_xpath_finds_last_element(self):
         # -- Setup

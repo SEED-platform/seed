@@ -96,23 +96,23 @@ def convert_first_five_rows_to_list(header, first_five_rows):
         # Note that this does not support having a single column with carriage returns!
         rows = first_five_rows.splitlines()
     else:
-        for idx, l in enumerate(split_cells):
-            crlf_count = l.count('\n')
+        for idx, line in enumerate(split_cells):
+            crlf_count = line.count('\n')
 
             if crlf_count == 0:
-                row_data.append(l)
+                row_data.append(line)
             elif crlf_count >= 1:
                 # if add this element to row_data equals number_of_columns, then it is a new row
                 if len(row_data) == number_of_columns - 1:
                     # check if this is the last columns, if so, then just store the value and move on
                     if idx == number_cells - 1:
-                        row_data.append(l)
+                        row_data.append(line)
                         rows.append(row_data)
                         continue
                     else:
                         # split the cell_data. The last cell becomes the beginning of the new
                         # row, and the other cells stay joined with \n.
-                        cell_data = l.splitlines()
+                        cell_data = line.splitlines()
                         row_data.append('\n'.join(cell_data[:crlf_count]))
                         rows.append(row_data)
 
@@ -121,7 +121,7 @@ def convert_first_five_rows_to_list(header, first_five_rows):
                         continue
                 else:
                     # this is not the end, so it must be a carriage return in the cell, just save data
-                    row_data.append(l)
+                    row_data.append(line)
 
             if len(row_data) == number_of_columns:
                 rows.append(row_data)
@@ -407,7 +407,7 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
         return result
 
     @staticmethod
-    def has_coparent(state_id, inventory_type, fields=None):
+    def has_coparent(state_id, inventory_type):
         """
         Return the coparent of the current state id based on the inventory type. If fields
         are given (as a list), then it will only return the fields specified of the state model
@@ -415,7 +415,6 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
 
         :param state_id: int, ID of PropertyState or TaxLotState
         :param inventory_type: string, either properties | taxlots
-        :param fields: list, either None or list of fields to return
         :return: dict or state object, If fields is not None then will return state_object
         """
         state_model = PropertyState if inventory_type == 'properties' else TaxLotState

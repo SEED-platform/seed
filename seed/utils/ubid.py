@@ -128,7 +128,7 @@ def validate_ubid(ubid):
     return result
 
 
-def merge_ubid_models(old_state_ids, new_state_id, StateClass):
+def merge_ubid_models(old_state_ids, new_state_id, StateClass):  # noqa: N803
     """
     Given a list of old (existing) property states, merge the existing ubid_models onto the new state
 

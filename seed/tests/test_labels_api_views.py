@@ -136,7 +136,7 @@ class TestLabelsViewSet(DeleteModelsTestCase):
         for label in response_a.data:
             self.assertNotIn('is_applied', label)
 
-    def test_labels_inventory_specific_filter_endpoint_provides_IDs_for_records_where_label_is_applied(self):
+    def test_labels_inventory_specific_filter_endpoint_provides_ids_for_records_where_label_is_applied(self):
         user = User.objects.create_superuser(
             email='test_user@demo.com',
             username='test_user@demo.com',

@@ -28,8 +28,8 @@ from seed.analysis_pipelines.better.helpers import (
 )
 from seed.analysis_pipelines.pipeline import (
     AnalysisPipeline,
-    AnalysisPipelineException,
-    StopAnalysisTaskChain,
+    AnalysisPipelineError,
+    StopAnalysisTaskChainError,
     analysis_pipeline_task,
     task_create_analysis_property_views,
 )
@@ -84,19 +84,19 @@ class BETTERPipeline(AnalysisPipeline):
                 "Please update your organization's settings or contact your organization administrator."
             )
             self.fail(message, logger)
-            raise AnalysisPipelineException(message)
+            raise AnalysisPipelineError(message)
 
         # ping BETTER to verify the token is valid
         client = BETTERClient(organization.better_analysis_api_key)
         if not client.token_is_valid():
             message = 'Failed to communicate with BETTER. Please verify organization token is valid and try again.'
             self.fail(message, logger)
-            raise AnalysisPipelineException(message)
+            raise AnalysisPipelineError(message)
 
         # validate the configuration
         validation_errors = _validate_better_config(analysis)
         if validation_errors:
-            raise AnalysisPipelineException(f'Analysis configuration is invalid: {"; ".join(validation_errors)}')
+            raise AnalysisPipelineError(f'Analysis configuration is invalid: {"; ".join(validation_errors)}')
 
         progress_data = self.get_progress_data(analysis)
 
@@ -163,7 +163,7 @@ def get_meter_readings(property_id, preprocess_meters, config):
             value2 = dateutil.parser.parse(cycle.end.isoformat()) + timedelta(days=1)
 
     except Exception as err:
-        raise AnalysisPipelineException(f'Analysis configuration error: invalid dates selected for meter readings: {err}')
+        raise AnalysisPipelineError(f'Analysis configuration error: invalid dates selected for meter readings: {err}')
 
     if preprocess_meters:
         for meter in meters:
@@ -269,7 +269,7 @@ def _prepare_all_properties(self, analysis_view_ids_by_property_view_id, analysi
         message = 'No files were able to be prepared for the analysis'
         pipeline.fail(message, logger)
         # stop the task chain
-        raise StopAnalysisTaskChain(message)
+        raise StopAnalysisTaskChainError(message)
 
 
 @shared_task(bind=True)
@@ -559,13 +559,13 @@ def _process_results(self, analysis_id):
         #    that fuel type wasn't valid (e.g., if electricity model is invalid,
         #    set "potential electricity savings" to null)
         for col_name, value in simplified_results.items():
-            value = value if not isinstance(value, float) else round(value, 2)
+            updated_value = value if not isinstance(value, float) else round(value, 2)
             if col_name.endswith('_electricity') and col_name != BETTER_VALID_MODEL_E_COL:
-                cleaned_results[col_name] = value if electricity_model_is_valid else None
+                cleaned_results[col_name] = updated_value if electricity_model_is_valid else None
             elif col_name.endswith('_fuel') and col_name != BETTER_VALID_MODEL_F_COL:
-                cleaned_results[col_name] = value if fuel_model_is_valid else None
+                cleaned_results[col_name] = updated_value if fuel_model_is_valid else None
             else:
-                cleaned_results[col_name] = value
+                cleaned_results[col_name] = updated_value
 
         # if no columns are missing, save back to property
         if not missing_columns:

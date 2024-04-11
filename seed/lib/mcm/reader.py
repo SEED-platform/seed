@@ -142,15 +142,15 @@ class GreenButtonParser:
 
             readings = readings_entry['content']['IntervalBlock']['IntervalReading']
 
-            type, unit, multiplier = self._parse_type_and_unit(raw_data)
+            meter_type, unit, multiplier = self._parse_type_and_unit(raw_data)
 
-            if type and unit:
+            if meter_type and unit:
                 self._cache_data = [
                     {
                         'start_time': int(reading['timePeriod']['start']),
                         'source_id': source_id,
                         'duration': int(reading['timePeriod']['duration']),
-                        'Meter Type': type,
+                        'Meter Type': meter_type,
                         'Usage Units': unit,
                         'Usage/Quantity': float(reading['value']) * multiplier,
                     }
@@ -167,14 +167,14 @@ class GreenButtonParser:
         those, an attempt is made to validate the type and unit as a combination
         that the application accepts.
 
-        The if the type and unit are parsable and valid, they are returned,
+        Then, if the type and unit are parsable and valid, they are returned,
         otherwise, None is returned as applicable.
         """
         kind_entry = raw_data['feed']['entry'][0]
         kind = kind_entry['content']['UsagePoint']['ServiceCategory']['kind']
-        type = self.kind_codes.get(int(kind), None)
+        meter_type = self.kind_codes.get(int(kind), None)
 
-        if type is None:
+        if meter_type is None:
             return None, None, 1
 
         uom_entry = raw_data['feed']['entry'][2]['content']['ReadingType']
@@ -183,11 +183,11 @@ class GreenButtonParser:
 
         power_of_ten_multiplier = int(uom_entry['powerOfTenMultiplier'])
 
-        resulting_unit, multiplier = self._parse_valid_unit_and_multiplier(type, power_of_ten_multiplier, raw_base_unit)
+        resulting_unit, multiplier = self._parse_valid_unit_and_multiplier(meter_type, power_of_ten_multiplier, raw_base_unit)
 
-        return type, resulting_unit, multiplier
+        return meter_type, resulting_unit, multiplier
 
-    def _parse_valid_unit_and_multiplier(self, type, power_of_ten_multiplier, raw_base_unit):
+    def _parse_valid_unit_and_multiplier(self, meter_type, power_of_ten_multiplier, raw_base_unit):
         """
         Parses valid/accepted unit and multiplier using the given type and raw
         base unit. The powerOfTenMultiplier is used to find the raw unit prefix
@@ -210,7 +210,7 @@ class GreenButtonParser:
 
         If none of these scenarios return a validated unit, None, 1 is returned.
         """
-        valid_units_for_type = self._thermal_factors[type].keys()
+        valid_units_for_type = self._thermal_factors[meter_type].keys()
 
         raw_prefix_unit = self.power_of_ten_codes.get(power_of_ten_multiplier, None)
         raw_full_unit = f'{raw_prefix_unit}{raw_base_unit}'
@@ -297,7 +297,7 @@ class ExcelParser:
         self.excel_file = excel_file
         self.sheet = self._get_sheet(excel_file, sheet_name)
         self.header_row = self._get_header_row(self.sheet)
-        self.excelreader = self.XLSDictReader(self.sheet, self.header_row)
+        self.excelreader = self.excel_dict_reader(self.sheet, self.header_row)
 
     def _get_sheet(self, f, sheet_name=None, sheet_index=0):
         """returns a xlrd sheet
@@ -380,7 +380,7 @@ class ExcelParser:
         # only remaining items should be booleans
         return item.value
 
-    def XLSDictReader(self, sheet, header_row=0):
+    def excel_dict_reader(self, sheet, header_row=0):
         """returns a generator yielding a dict per row from the XLS/XLSX file
         https://gist.github.com/mdellavo/639082
 
@@ -389,7 +389,7 @@ class ExcelParser:
         :returns: Generator yielding a row as Dict
         """
 
-        # save off the headers into a member variable. Only do this once. If XLSDictReader is
+        # save off the headers into a member variable. Only do this once. If excel_dict_reader is
         # called later (which it is in `seek_to_beginning` then don't reparse the headers
         if not self.cache_headers:
             for j in range(sheet.ncols):
@@ -408,11 +408,11 @@ class ExcelParser:
     def seek_to_beginning(self):
         """seeks to the beginning of the file
 
-        Since ``XLSDictReader`` is in memory, a new one is created. Note: the headers will not be
-        parsed again when the XLSDictReader is loaded
+        Since ``excel_dict_reader`` is in memory, a new one is created. Note: the headers will not be
+        parsed again when the excel_dict_reader is loaded
         """
         self.excel_file.seek(0)
-        self.excelreader = self.XLSDictReader(self.sheet, self.header_row)
+        self.excelreader = self.excel_dict_reader(self.sheet, self.header_row)
 
     def num_columns(self):
         """gets the number of columns for the file"""

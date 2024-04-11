@@ -14,7 +14,7 @@ from django.contrib.gis.geos import Point
 
 from seed.analysis_pipelines.pipeline import (
     AnalysisPipeline,
-    AnalysisPipelineException,
+    AnalysisPipelineError,
     analysis_pipeline_task,
     task_create_analysis_property_views,
 )
@@ -363,7 +363,7 @@ class EEEJPipeline(AnalysisPipeline):
             analysis = Analysis.objects.get(id=self._analysis_id)
             analysis.status = Analysis.FAILED
             analysis.save()
-            raise AnalysisPipelineException(EEEJ_ANALYSIS_MESSAGES[ERROR_NO_VALID_PROPERTIES])
+            raise AnalysisPipelineError(EEEJ_ANALYSIS_MESSAGES[ERROR_NO_VALID_PROPERTIES])
 
         progress_data = self.get_progress_data()
         progress_data.total = 3

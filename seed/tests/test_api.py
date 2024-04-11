@@ -51,15 +51,15 @@ class TestApi(TestCase):
         self.auth_string = 'Basic {}'.format(auth_string.decode('utf-8'))
         self.headers = {'Authorization': self.auth_string}
 
-    def get_org_id(self, dict, username):
+    def get_org_id(self, response, username):
         """Return the org id from the passed dictionary and username"""
-        id = None
-        for ctr in range(len(dict['organizations'])):
-            if dict['organizations'][ctr]['owners'][0]['email'] == username:
-                id = dict['organizations'][ctr]['org_id']
+        org_id = None
+        for ctr in range(len(response['organizations'])):
+            if response['organizations'][ctr]['owners'][0]['email'] == username:
+                org_id = response['organizations'][ctr]['org_id']
                 break
 
-        return id
+        return org_id
 
     def test_user_profile(self):
         # test logging in with the password, the remaining versions will use the HTTP Authentication

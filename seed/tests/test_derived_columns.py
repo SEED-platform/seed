@@ -18,7 +18,7 @@ from hypothesis.extra.django import TestCase
 from seed.landing.models import SEEDUser as User
 from seed.models import PropertyView
 from seed.models.columns import Column
-from seed.models.derived_columns import DerivedColumn, DerivedColumnParameter, ExpressionEvaluator, InvalidExpression
+from seed.models.derived_columns import DerivedColumn, DerivedColumnParameter, ExpressionEvaluator, InvalidExpressionError
 from seed.test_helpers.fake import FakeColumnFactory, FakeDerivedColumnFactory, FakePropertyStateFactory
 from seed.tests.util import AccessLevelBaseTestCase
 from seed.utils.organizations import create_organization
@@ -257,7 +257,7 @@ class TestExpressionEvaluator(TestCase):
         expression = '1 + HELLO'
 
         # -- Act, Assert
-        with pytest.raises(InvalidExpression) as ctx:
+        with pytest.raises(InvalidExpressionError) as ctx:
             ExpressionEvaluator.is_valid(expression)
 
         exception = ctx.value

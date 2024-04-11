@@ -7,7 +7,7 @@ from lxml import etree
 from lxml.builder import ElementMaker
 from quantityfield.units import ureg
 
-from seed.analysis_pipelines.pipeline import AnalysisPipelineException
+from seed.analysis_pipelines.pipeline import AnalysisPipelineError
 from seed.building_sync.mappings import BUILDINGSYNC_URI, NAMESPACES
 from seed.models import Meter
 
@@ -198,5 +198,5 @@ def _parse_analysis_property_view_id(filepath):
     analysis_property_view_id_elem = input_file_tree.xpath(id_xpath, namespaces=NAMESPACES)
 
     if len(analysis_property_view_id_elem) != 1:
-        raise AnalysisPipelineException(f'Expected BuildingSync file to have exactly one "{PREMISES_ID_NAME}" PremisesIdentifier')
+        raise AnalysisPipelineError(f'Expected BuildingSync file to have exactly one "{PREMISES_ID_NAME}" PremisesIdentifier')
     return int(analysis_property_view_id_elem[0].text)

@@ -98,12 +98,13 @@ class PropertyScenarioViewSet(SEEDOrgNoPatchNoCreateModelViewSet):
         for key, value in request.data.items():
             if key in possible_fields:
                 # Handle enums
+                updated_value = value
                 if key in self.enum_validators:
-                    value = self.enum_validators[key](value)
-                    if value is None:
+                    updated_value = self.enum_validators[key](value)
+                    if updated_value is None:
                         return JsonResponse({'Success': False, 'Message': f'Invalid {key} value'}, status=status.HTTP_400_BAD_REQUEST)
 
-                setattr(scenario, key, value)
+                setattr(scenario, key, updated_value)
             else:
                 return JsonResponse(
                     {'Success': False, 'Message': f'"{key}" is not a valid scenario field'}, status=status.HTTP_400_BAD_REQUEST

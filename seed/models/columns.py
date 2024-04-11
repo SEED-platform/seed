@@ -35,7 +35,7 @@ INVENTORY_DISPLAY = {
 _log = logging.getLogger(__name__)
 
 
-class ColumnCastException(Exception):
+class ColumnCastError(Exception):
     pass
 
 
@@ -1242,13 +1242,13 @@ class Column(models.Model):
             if allow_none:
                 return None
             else:
-                raise ColumnCastException('Datum is None and allow_none is False.')
+                raise ColumnCastError('Datum is None and allow_none is False.')
 
         parser = Column.DATA_TYPE_PARSERS.get(column_data_type, str)
         try:
             return parser(value)
         except Exception:
-            raise ColumnCastException(f'Invalid data type for "{column_data_type}". Expected a valid "{column_data_type}" value.')
+            raise ColumnCastError(f'Invalid data type for "{column_data_type}". Expected a valid "{column_data_type}" value.')
 
     @staticmethod
     def retrieve_db_types():
@@ -1610,9 +1610,8 @@ def validate_model(sender, **kwargs):
     if 'raw' in kwargs and not kwargs['raw']:
         instance.full_clean()
 
-    if instance.display_name is not None and instance.organization is not None:
-        if instance.display_name in instance.organization.access_level_names:
-            raise IntegrityError('This display name is already an access level name and cannot be used.')
+    if instance.display_name is not None and instance.organization is not None and instance.display_name in instance.organization.access_level_names:
+        raise IntegrityError('This display name is already an access level name and cannot be used.')
 
     if instance.organization_id:
         org = SuperOrganization.objects.get(pk=instance.organization_id)

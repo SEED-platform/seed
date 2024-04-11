@@ -394,11 +394,10 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, **kwargs):
                         # If a footprint was provided but footprint was not populated/valid,
                         # create a new extra_data column to store the raw, invalid data.
                         # Also create a new rule for this new column
-                        if footprint_details.get('obj_field'):
-                            if getattr(map_model_obj, footprint_details['obj_field']) is None:
-                                _store_raw_footprint_and_create_rule(
-                                    footprint_details, table, org, import_file, original_row, map_model_obj
-                                )
+                        if footprint_details.get('obj_field') and getattr(map_model_obj, footprint_details['obj_field']) is None:
+                            _store_raw_footprint_and_create_rule(
+                                footprint_details, table, org, import_file, original_row, map_model_obj
+                            )
 
                         # There was an error with a field being too long [> 255 chars].
                         map_model_obj.save()
@@ -1083,16 +1082,16 @@ def _save_access_level_instances_task(rows, org_id, progress_key):
             children = org.root.get_children()
             current_level = org.root
         # lowercase keys just in case
-        row = {k.lower(): v for k, v in row.items()}
+        updated_row = {k.lower(): v for k, v in row.items()}
 
-        for key, val in row.items():
+        for key, val in updated_row.items():
             # check headers
             if key not in access_level_names:
-                message = f'Error reading CSV data row: {row}...no access level for column {key} found'
+                message = f'Error reading CSV data row: {updated_row}...no access level for column {key} found'
                 break
             # check for empty value (don't add blanks)
             if not val:
-                message = f'Blank value for column {key} in CSV data row: {row}...skipping'
+                message = f'Blank value for column {key} in CSV data row: {updated_row}...skipping'
                 break
 
             # does this level exist already?
@@ -1118,12 +1117,12 @@ def _save_access_level_instances_task(rows, org_id, progress_key):
                     # get its children (should be empty)
                     children = current_level.get_children()
                 except Exception as e:
-                    message = f"Error has occurred when adding element '{val}' for entry: {row}: {e}"
+                    message = f"Error has occurred when adding element '{val}' for entry: {updated_row}: {e}"
                     break
 
         # add a row but only for errors
         if message:
-            result[row[access_level_names[-1]]] = {'message': message}
+            result[updated_row[access_level_names[-1]]] = {'message': message}
 
         progress_data.step()
 
@@ -1135,8 +1134,9 @@ def _save_access_level_instances_data_create_tasks(filename, org_id, progress_ke
     progress_data = ProgressData.from_key(progress_key)
 
     # open and read in file
-    parser = AccessLevelInstancesParser.factory(open(filename, encoding=locale.getpreferredencoding(False)), org_id)
-    access_level_instances_data = parser.access_level_instances_details
+    with open(filename, encoding=locale.getpreferredencoding(False)) as file:
+        ali_parser = AccessLevelInstancesParser.factory(file, org_id)
+        access_level_instances_data = ali_parser.access_level_instances_details
 
     progress_data.total = len(access_level_instances_data)
     progress_data.save()
@@ -1685,7 +1685,8 @@ def finish_matching(result, import_file_id, progress_key):
 
 def hash_state_object(obj, include_extra_data=True):
     def add_dictionary_repr_to_hash(hash_obj, dict_obj):
-        assert isinstance(dict_obj, dict)
+        if not isinstance(dict_obj, dict):
+            raise ValueError('Only dictionaries can be hashed')
 
         for key, value in sorted(dict_obj.items(), key=lambda x_y: x_y[0]):
             if isinstance(value, dict):
@@ -1705,7 +1706,7 @@ def hash_state_object(obj, include_extra_data=True):
         else:
             return getattr(field_obj, field)
 
-    m = hashlib.md5()
+    m = hashlib.md5()  # noqa: S324
     for f in Column.retrieve_db_field_name_for_hash_comparison():
         obj_val = _get_field_from_obj(obj, f)
         m.update(f.encode('utf-8'))
@@ -1755,7 +1756,7 @@ def _map_additional_models(ids, file_pk, progress_key, cycle_id=None):
             # Note that we choose _not_ to promote the property state (i.e. create a canonical property)
             # b/c that will be handled in the match/merge/linking later on
             building_file = property_state.building_files.get()
-            success, property_state, _, messages = building_file.process(
+            success, _, _, messages = building_file.process(
                 org.id, Cycle.objects.get(id=cycle_id), promote_property_state=False
             )
 
@@ -1844,9 +1845,6 @@ def pair_new_states(merged_property_views, merged_taxlot_views, sub_progress_key
     view = next(chain(merged_property_views, merged_taxlot_views))
     cycle = view.cycle
     org = view.state.organization
-
-    global taxlot_m2m_keygen
-    global property_m2m_keygen
 
     sub_progress_data.step('Pairing Data')
     taxlot_m2m_keygen = EquivalencePartitioner(tax_cmp_fmt, ['jurisdiction_tax_lot_id'])
@@ -1984,7 +1982,7 @@ def _validate_use_cases(file_pk, progress_key):
                 }
             ),
         )
-    except validation_client.ValidationClientException as e:
+    except validation_client.ValidationClientError as e:
         _log.debug(f'ValidationClientException while validating import_file `{file_pk}`: {e}')
         progress_data.finish_with_error(message=str(e))
         progress_data.save()

@@ -19,7 +19,7 @@ from seed.landing.models import SEEDUser as User
 from seed.models import Column, PropertyView
 from seed.test_helpers.fake import FakePropertyViewFactory
 from seed.utils.organizations import create_organization
-from seed.utils.search import FilterException, build_view_filters_and_sorts
+from seed.utils.search import FilterError, build_view_filters_and_sorts
 
 
 class TestInventoryViewSearchParsers(TestCase):
@@ -209,7 +209,7 @@ class TestInventoryViewSearchParsers(TestCase):
 
         # -- Act, Assert
         columns = Column.retrieve_all(self.fake_org, 'property', only_used=False, include_related=False)
-        with pytest.raises(FilterException):
+        with pytest.raises(FilterError):
             build_view_filters_and_sorts(query_dict, columns, 'property')
 
     def test_parse_sorts_works(self):

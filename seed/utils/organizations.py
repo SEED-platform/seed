@@ -7,7 +7,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 import locale
 from json import load
 
-from seed.lib.superperms.orgs.exceptions import TooManyNestedOrgs
+from seed.lib.superperms.orgs.exceptions import TooManyNestedOrgsError
 from seed.lib.superperms.orgs.models import ROLE_MEMBER, Organization, OrganizationUser
 from seed.lib.xml_mapping.mapper import default_buildingsync_profile_mappings
 from seed.models import Column, ColumnMappingProfile
@@ -20,7 +20,8 @@ def default_pm_mappings():
 
     # Verify that from_field values are all uniq
     from_fields = [rm['from_field'] for rm in raw_mappings]
-    assert len(from_fields) == len(set(from_fields))
+    if len(from_fields) != len(set(from_fields)):
+        raise ValueError('from_field values are not unique')
 
     # taken from mapping partial (./static/seed/partials/mapping.html)
     valid_units = [
@@ -167,7 +168,7 @@ def create_suborganization(user, current_org, suborg_name='', user_role=ROLE_MEM
 
     try:
         sub_org.save()
-    except TooManyNestedOrgs:
+    except TooManyNestedOrgsError:
         sub_org.delete()
         return False, 'Tried to create child of a child organization.', None
 

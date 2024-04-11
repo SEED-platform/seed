@@ -48,4 +48,4 @@ class InventoryViewTests(DeleteModelsTestCase):
         params = {'organization_id': self.org.pk}
         url = reverse('api:v3:properties-hpxml', args=[pv.id])
         response = self.client.get(url, params)
-        self.assertIn('<GrossFloorArea>%s.0</GrossFloorArea>' % state.gross_floor_area, response.content.decode('utf-8'))
+        self.assertIn(f'<GrossFloorArea>{state.gross_floor_area}.0</GrossFloorArea>', response.content.decode('utf-8'))

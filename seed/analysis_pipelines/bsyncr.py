@@ -21,8 +21,8 @@ from lxml.builder import ElementMaker
 
 from seed.analysis_pipelines.pipeline import (
     AnalysisPipeline,
-    AnalysisPipelineException,
-    StopAnalysisTaskChain,
+    AnalysisPipelineError,
+    StopAnalysisTaskChainError,
     analysis_pipeline_task,
     task_create_analysis_property_views,
 )
@@ -77,11 +77,11 @@ class BsyncrPipeline(AnalysisPipeline):
         if not settings.BSYNCR_SERVER_HOST:
             message = 'SEED instance is not configured to run bsyncr analysis. Please contact the server administrator.'
             self.fail(message, logger)
-            raise AnalysisPipelineException(message)
+            raise AnalysisPipelineError(message)
 
         validation_errors = _validate_bsyncr_config(Analysis.objects.get(id=self._analysis_id))
         if validation_errors:
-            raise AnalysisPipelineException(f'Unexpected error(s) while validating analysis configuration: {"; ".join(validation_errors)}')
+            raise AnalysisPipelineError(f'Unexpected error(s) while validating analysis configuration: {"; ".join(validation_errors)}')
 
         progress_data = self.get_progress_data()
 
@@ -176,7 +176,7 @@ def _prepare_all_properties(self, analysis_view_ids_by_property_view_id, analysi
         message = 'No files were able to be prepared for the analysis'
         pipeline.fail(message, logger)
         # stop the task chain
-        raise StopAnalysisTaskChain(message)
+        raise StopAnalysisTaskChainError(message)
 
 
 @shared_task(bind=True)
@@ -302,7 +302,7 @@ def _parse_analysis_property_view_id(filepath):
     analysis_property_view_id_elem = input_file_tree.xpath(id_xpath, namespaces=NAMESPACES)
 
     if len(analysis_property_view_id_elem) != 1:
-        raise AnalysisPipelineException(f'Expected BuildingSync file to have exactly one "{PREMISES_ID_NAME}" PremisesIdentifier')
+        raise AnalysisPipelineError(f'Expected BuildingSync file to have exactly one "{PREMISES_ID_NAME}" PremisesIdentifier')
     return int(analysis_property_view_id_elem[0].text)
 
 
@@ -323,7 +323,7 @@ def _start_analysis(self, analysis_id):
         if idx % ANALYSIS_STATUS_CHECK_FREQUENCY == 0:
             analysis.refresh_from_db()
             if analysis.in_terminal_state():
-                raise StopAnalysisTaskChain('Analysis found to be in terminal state, stopping')
+                raise StopAnalysisTaskChainError('Analysis found to be in terminal state, stopping')
 
         analysis_property_view_id = _parse_analysis_property_view_id(input_file.file.path)
         results_dir, errors = _run_bsyncr_analysis(input_file.file, bsyncr_model_type)
@@ -349,7 +349,7 @@ def _start_analysis(self, analysis_id):
                     content_type = AnalysisOutputFile.IMAGE_PNG
                     file_ = ImageFile(f)
                 else:
-                    raise AnalysisPipelineException(f'Received unhandled file type from bsyncr: {result_file_path.name}')
+                    raise AnalysisPipelineError(f'Received unhandled file type from bsyncr: {result_file_path.name}')
 
                 analysis_output_file = AnalysisOutputFile(
                     content_type=content_type,
@@ -367,7 +367,7 @@ def _start_analysis(self, analysis_id):
         message = 'Failed to get results for all properties'
         pipeline.fail(message, logger)
         # stop the task chain
-        raise StopAnalysisTaskChain(message)
+        raise StopAnalysisTaskChainError(message)
 
     return output_xml_file_ids
 

@@ -104,12 +104,11 @@ class AccessLevelViewSet(viewsets.ViewSet):
         # get and validate parent_id
         try:
             parent_id = request.data['parent_id']
-            assert isinstance(parent_id, int)
+            if not isinstance(parent_id, int):
+                return JsonResponse({'status': 'error', 'message': 'body param `parent_id` must be int'}, status=status.HTTP_400_BAD_REQUEST)
             parent = AccessLevelInstance.objects.get(pk=parent_id)
         except KeyError:
             return JsonResponse({'status': 'error', 'message': 'body param `parent_id` is required'}, status=status.HTTP_400_BAD_REQUEST)
-        except AssertionError:
-            return JsonResponse({'status': 'error', 'message': 'body param `parent_id` must be int'}, status=status.HTTP_400_BAD_REQUEST)
         except ObjectDoesNotExist:
             return JsonResponse(
                 {'status': 'error', 'message': f'AccessLevelInstance with `parent_id` {parent_id} does not exist.'},
@@ -119,11 +118,10 @@ class AccessLevelViewSet(viewsets.ViewSet):
         # get and validate name
         try:
             name = request.data['name']
-            assert isinstance(name, str)
+            if not isinstance(name, str):
+                return JsonResponse({'status': 'error', 'message': 'Query param `name` must be str'}, status=status.HTTP_400_BAD_REQUEST)
         except KeyError:
             return JsonResponse({'status': 'error', 'message': 'Query param `name` is required'}, status=status.HTTP_400_BAD_REQUEST)
-        except AssertionError:
-            return JsonResponse({'status': 'error', 'message': 'Query param `name` must be str'}, status=status.HTTP_400_BAD_REQUEST)
 
         # assert access_level_names is long enough for the new node
         if parent.depth > len(org.access_level_names):

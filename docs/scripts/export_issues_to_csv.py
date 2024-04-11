@@ -1,6 +1,7 @@
 # pip install github3.py
 
 import argparse
+import contextlib
 import csv
 import locale
 from typing import List
@@ -109,11 +110,9 @@ if args.csv:
 
     print('Finding All Other Issues')
     for issue in repo.issues(state='open'):
-        try:
+        with contextlib.suppress(BaseException):
             if issue.number not in ids_added and not issue.pull_request():
                 add_issue_to_csv(issue)
-        except BaseException:
-            pass
 
     # sort the items by the first column
     lines = sorted(lines, key=lambda x: (x[0]))

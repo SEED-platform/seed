@@ -25,7 +25,7 @@ from seed.models import (
     TaxLotView,
 )
 from seed.serializers.pint import apply_display_unit_preferences
-from seed.utils.search import FilterException, build_view_filters_and_sorts
+from seed.utils.search import FilterError, build_view_filters_and_sorts
 
 
 def get_filtered_results(request: Request, inventory_type: Literal['property', 'taxlot'], profile_id: int) -> JsonResponse:
@@ -107,7 +107,7 @@ def get_filtered_results(request: Request, inventory_type: Literal['property', '
         filters, annotations, order_by = build_view_filters_and_sorts(
             request.query_params, columns_from_database, inventory_type, org.access_level_names
         )
-    except FilterException as e:
+    except FilterError as e:
         return JsonResponse({'status': 'error', 'message': f'Error filtering: {e!s}'}, status=status.HTTP_400_BAD_REQUEST)
 
     try:
@@ -128,7 +128,7 @@ def get_filtered_results(request: Request, inventory_type: Literal['property', '
         )
         try:
             filters, annotations, _ = build_view_filters_and_sorts(request.query_params, other_columns_from_database, other_inventory_type)
-        except FilterException as e:
+        except FilterError as e:
             return JsonResponse({'status': 'error', 'message': f'Error filtering: {e!s}'}, status=status.HTTP_400_BAD_REQUEST)
 
         # If the children have filters, filter views_list by their children.

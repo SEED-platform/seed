@@ -355,7 +355,7 @@ def match_and_link_incoming_properties_and_taxlots_by_cycle(
     }
 
 
-def link_views_and_states(merged_views, new_views, errored_new_states, ViewClass, cycle, ali, sub_progress_key):
+def link_views_and_states(merged_views, new_views, errored_new_states, ViewClass, cycle, ali, sub_progress_key):  # noqa: N803
     shared_args = [ViewClass, cycle, ali, sub_progress_key]
 
     # merged_property_views are attached to properties that existed in the db prior to import, so it
@@ -424,14 +424,14 @@ def filter_duplicate_states(unmatched_states, sub_progress_key):
     duplicate_state_ids = []
     errors_state_ids = []
     for states in states_grouped_by_hash:
-        states = [{'id': id, 'ali_id': ali_id} for id, ali_id in zip(states['duplicate_sets'], states['duplicate_sets_ali'])]
-        states.sort(key=lambda x: x['id'])
-        states_with_ali = [s for s in states if s['ali_id'] is not None]
-        present_ali_ids = {state['ali_id'] for state in states_with_ali}
+        state_ids = [{'id': id, 'ali_id': ali_id} for id, ali_id in zip(states['duplicate_sets'], states['duplicate_sets_ali'])]
+        state_ids.sort(key=lambda x: x['id'])
+        states_with_ali = [s for s in state_ids if s['ali_id'] is not None]
+        present_ali_ids = {s['ali_id'] for s in states_with_ali}
 
         # None have alis, just choose first
         if len(present_ali_ids) == 0:
-            canonical_state = states[0]
+            canonical_state = state_ids[0]
 
         # One ali! choose the first non-null
         elif len(present_ali_ids) == 1:
@@ -439,12 +439,12 @@ def filter_duplicate_states(unmatched_states, sub_progress_key):
 
         # More than one ali was specified! all are of these duplicates are invalid
         else:
-            errors_state_ids += [s['id'] for s in states]
+            errors_state_ids += [s['id'] for s in state_ids]
             continue
 
         canonical_state_ids.append(canonical_state['id'])
-        states.remove(canonical_state)
-        duplicate_state_ids += [s['id'] for s in states]
+        state_ids.remove(canonical_state)
+        duplicate_state_ids += [s['id'] for s in state_ids]
 
     sub_progress_data.step('Matching Data (1/6): Filtering Duplicate States')
     duplicate_count = unmatched_states.filter(pk__in=duplicate_state_ids).update(data_state=DATA_STATE_DELETE)
@@ -454,12 +454,12 @@ def filter_duplicate_states(unmatched_states, sub_progress_key):
     return canonical_state_ids, errors_state_ids, duplicate_count
 
 
-def inclusive_match_and_merge(unmatched_state_ids, org, StateClass, sub_progress_key):
+def inclusive_match_and_merge(unmatched_state_ids, org, StateClass, sub_progress_key):  # noqa: N803
     """
     Takes a list of unmatched_state_ids, combines matches of the corresponding
     -States, and returns a set of IDs of the remaining -States.
 
-    :param unmatched_states_ids: list
+    :param unmatched_state_ids: list
     :param org: Organization object
     :param StateClass: PropertyState or TaxLotState
     :return: promoted_ids: list
@@ -522,7 +522,7 @@ def inclusive_match_and_merge(unmatched_state_ids, org, StateClass, sub_progress
     return promoted_ids, merges_within_file, errored_states
 
 
-def states_to_views(unmatched_state_ids, org, access_level_instance, cycle, StateClass, sub_progress_key, merge_duplicates=False):
+def states_to_views(unmatched_state_ids, org, access_level_instance, cycle, StateClass, sub_progress_key, merge_duplicates=False):  # noqa: N803
     """
     The purpose of this method is to take incoming -States and, apply them to a
     -View. In the process of doing so, -States could be flagged for "deletion"
@@ -698,7 +698,7 @@ def states_to_views(unmatched_state_ids, org, access_level_instance, cycle, Stat
     )
 
 
-def link_states(states, ViewClass, cycle, highest_ali, sub_progress_key):
+def link_states(states, ViewClass, cycle, highest_ali, sub_progress_key):  # noqa: N803
     """
     Run each of the given -States through a linking round.
 

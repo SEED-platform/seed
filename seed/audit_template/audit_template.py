@@ -137,7 +137,7 @@ class AuditTemplate:
         try:
             response_body = response.json()
         except ValueError:
-            raise validation_client.ValidationClientException(f'Expected JSON response from Audit Template: {response.text}')
+            raise validation_client.ValidationClientError(f'Expected JSON response from Audit Template: {response.text}')
 
         return response_body['token'], ''
 

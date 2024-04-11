@@ -21,10 +21,10 @@ from rest_framework.viewsets import GenericViewSet, ModelViewSet, ReadOnlyModelV
 
 # Local Imports
 from seed.authentication import SEEDAuthentication
-from seed.decorators import DecoratorMixin
+from seed.decorators import DRFEndpointMixin
 from seed.lib.superperms.orgs.permissions import SEEDOrgPermissions
 from seed.renderers import SEEDJSONRenderer as JSONRenderer
-from seed.utils.api import OrgCreateUpdateMixin, OrgQuerySetMixin, drf_api_endpoint
+from seed.utils.api import OrgCreateUpdateMixin, OrgQuerySetMixin
 
 # Constants
 AUTHENTICATION_CLASSES = (
@@ -55,7 +55,7 @@ class ModelViewSetWithoutPatch(
     """
 
 
-class SEEDOrgModelViewSet(DecoratorMixin(drf_api_endpoint), OrgQuerySetMixin, ModelViewSet):  # type: ignore[misc]
+class SEEDOrgModelViewSet(DRFEndpointMixin, OrgQuerySetMixin, ModelViewSet):  # type: ignore[misc]
     """Viewset class customized with SEED standard attributes.
 
     Attributes:
@@ -72,7 +72,7 @@ class SEEDOrgModelViewSet(DecoratorMixin(drf_api_endpoint), OrgQuerySetMixin, Mo
 
 
 class SEEDOrgReadOnlyModelViewSet(
-    DecoratorMixin(drf_api_endpoint),  # type: ignore[misc]
+    DRFEndpointMixin,
     OrgQuerySetMixin,
     ReadOnlyModelViewSet,
 ):
