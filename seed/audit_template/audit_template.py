@@ -22,6 +22,7 @@ from seed.building_sync.mappings import BUILDINGSYNC_URI, NAMESPACES
 from seed.lib.progress_data.progress_data import ProgressData
 from seed.lib.superperms.orgs.models import Organization
 from seed.models import PropertyView
+from seed.utils.encrypt import decrypt
 from seed.views.v3.properties import PropertyViewSet
 
 _log = logging.getLogger(__name__)
@@ -123,7 +124,7 @@ class AuditTemplate:
         form_data = {
             'organization_token': (None, org.at_organization_token),
             'email': (None, org.audit_template_user),
-            'password': (None, org.audit_template_password),
+            'password': (None, decrypt(org.audit_template_password)[0]),
         }
         headers = {'Accept': 'application/xml'}
 
