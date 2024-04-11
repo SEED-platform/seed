@@ -94,7 +94,7 @@ def convert_first_five_rows_to_list(header, first_five_rows):
     # catch the case where there is only one column, therefore no ROW_DELIMITERs
     if number_of_columns == 1:
         # Note that this does not support having a single column with carriage returns!
-        rows = first_five_rows.splitlines()
+        rows = [[row] for row in first_five_rows.splitlines()]
     else:
         for idx, line in enumerate(split_cells):
             crlf_count = line.count("\n")
