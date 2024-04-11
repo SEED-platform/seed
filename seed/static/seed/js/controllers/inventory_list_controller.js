@@ -1101,7 +1101,7 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
         for (let j = 0; j < related.length; ++j) {
           // eslint-disable-next-line no-loop-func
           const updated = Object.entries(related[j]).reduce((result, [key, value]) => {
-            if (columnNamesToAggregate.includes(key)) aggregations[key] = (aggregations[key] ?? []).concat(value.split('; '));
+            if (columnNamesToAggregate.includes(key)) aggregations[key] = (aggregations[key] ?? []).concat(String(value ?? '').split('; '));
             result[key] = value;
             return result;
           }, {});
