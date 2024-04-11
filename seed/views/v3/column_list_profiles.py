@@ -94,21 +94,35 @@ class ColumnListProfileViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelV
                 'message': 'organization with id %s does not exist' % org_id
             }, status=status.HTTP_404_NOT_FOUND)
 
-        if not org.comstock_enabled or kwargs['pk'] != 'null':
-            return super(ColumnListProfileViewSet, self).retrieve(request, args, kwargs)
+        if org.comstock_enabled and kwargs['pk'] == 'null':
+            return JsonResponse(
+                {
+                    'status': 'success',
+                    'data': {
+                        'id': None,
+                        'name': 'ComStock',
+                        'profile_location': VIEW_LOCATION_TYPES[VIEW_LIST][1],
+                        'inventory_type': VIEW_LIST_INVENTORY_TYPE[VIEW_LIST_PROPERTY][1],
+                        'columns': self.list_comstock_columns(org_id)
+                    }
+                },
+                status=status.HTTP_200_OK
+            )
 
-        result = {
-            'status': 'success',
-            'data': {
-                'id': None,
-                'name': 'ComStock',
-                'profile_location': VIEW_LOCATION_TYPES[VIEW_LIST][1],
-                'inventory_type': VIEW_LIST_INVENTORY_TYPE[VIEW_LIST_PROPERTY][1],
-                'columns': self.list_comstock_columns(org_id)
-            }
-        }
+        clp = ColumnListProfile.objects.filter(pk=kwargs['pk']).prefetch_related("derived_columns__column", "columnlistprofilecolumn_set__column").first()
+        if clp is None:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'column list profile with id {} does not exist'.format(kwargs['pk'])
+            }, status=status.HTTP_404_NOT_FOUND)
 
-        return JsonResponse(result, status=status.HTTP_200_OK)
+        return JsonResponse(
+            {
+                'status': 'success',
+                'data': self.get_serializer(clp).data
+            },
+            status=status.HTTP_200_OK
+        )
 
     # Overridden to augment with protected ComStock list profile if enabled
     @swagger_auto_schema(
@@ -148,8 +162,8 @@ class ColumnListProfileViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelV
         if brief:
             results = list(queryset.values("id", "name", "profile_location", "inventory_type"))
         else:
-            results = list(queryset)
-            results = self.get_serializer(results, many=True).data
+            queryset = queryset.prefetch_related("derived_columns__column", "columnlistprofilecolumn_set__column")
+            results = self.get_serializer(queryset, many=True).data
 
         if org.comstock_enabled and not inventory_type == 'Tax Lot' and not profile_location == 'Detail View Profile':
             # Add ComStock columns
