@@ -90,6 +90,8 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
         if (save_last_cycle === true) {
           inventory_service.save_last_cycle(cycle.id);
         }
+      } else {
+        params.cycle = inventory_service.get_last_cycle();
       }
 
       const data = {

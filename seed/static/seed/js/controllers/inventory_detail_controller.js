@@ -475,7 +475,7 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
      * save_item: saves the user's changes to the Property/TaxLot State object.
      */
     const save_item_resolve = (data) => {
-      $scope.$emit('finished_saving');
+      $scope.edit_form_showing = false;
       notify_merges_and_links(data);
       if (data.view_id) {
         reload_with_view_id(data.view_id);
@@ -488,7 +488,7 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
     };
 
     const save_item_reject = () => {
-      $scope.$emit('finished_saving');
+      $scope.edit_form_showing = false;
     };
 
     const save_item_catch = (data) => {
@@ -819,11 +819,14 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
       $('.table-xscroll-fixed-header-container > .table-body-x-scroll').width(table_container.width() + table_container.scrollLeft());
     });
 
-    $scope.displayValue = (dataType, value) => {
-      if (dataType === 'datetime') {
+    $scope.displayValue = ({ column_name, data_type }, value) => {
+      if (data_type === 'datetime') {
         return $filter('date')(value, 'yyyy-MM-dd h:mm a');
       }
-      if (['area', 'eui', 'float', 'number'].includes(dataType)) {
+      if (['longitude', 'latitude'].includes(column_name)) {
+        return $filter('floatingPoint')(value);
+      }
+      if (['area', 'eui', 'float', 'number'].includes(data_type)) {
         return $filter('number')(value, $scope.organization.display_decimal_places);
       }
       return value;

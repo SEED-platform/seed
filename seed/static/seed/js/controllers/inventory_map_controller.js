@@ -45,7 +45,7 @@ angular.module('BE.seed.controller.inventory_map', []).controller('inventory_map
 
     const chunk = 250;
     const fetchRecords = async (fn) => {
-      const pagination = await fn(1, chunk, undefined, undefined).then((data) => data.pagination);
+      const pagination = await fn(1, chunk, $scope.cycle.selected_cycle, undefined).then((data) => data.pagination);
 
       $scope.progress = { current: 0, total: pagination.total, percent: 0 };
 
