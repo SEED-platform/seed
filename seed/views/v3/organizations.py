@@ -65,6 +65,7 @@ from seed.serializers.organizations import (
 from seed.serializers.pint import apply_display_unit_preferences
 from seed.utils.api import api_endpoint_class
 from seed.utils.api_schema import AutoSchemaHelper
+from seed.utils.encrypt import decrypt, encrypt
 from seed.utils.generic import median, round_down_hundred_thousand
 from seed.utils.geocode import geocode_buildings
 from seed.utils.match import match_merge_link
@@ -151,7 +152,7 @@ def _dict_org(request, organizations):
             'new_user_email_signature': o.new_user_email_signature,
             'at_organization_token': o.at_organization_token,
             'audit_template_user': o.audit_template_user,
-            'audit_template_password': o.audit_template_password,
+            'audit_template_password': decrypt(o.audit_template_password)[0] if o.audit_template_password else '',
             'at_host_url': settings.AUDIT_TEMPLATE_HOST,
             'audit_template_report_type': o.audit_template_report_type,
             'salesforce_enabled': o.salesforce_enabled,
@@ -612,7 +613,7 @@ class OrganizationViewSet(viewsets.ViewSet):
 
         audit_template_password = posted_org.get('audit_template_password', False)
         if audit_template_password != org.audit_template_password:
-            org.audit_template_password = audit_template_password
+            org.audit_template_password = encrypt(audit_template_password)
 
         audit_template_report_type = posted_org.get('audit_template_report_type', False)
         if audit_template_report_type != org.audit_template_report_type:
