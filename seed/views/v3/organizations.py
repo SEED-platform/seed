@@ -73,7 +73,6 @@ from seed.utils.organizations import (
     create_organization,
     create_suborganization,
     public_feed,
-    public_feed_rss
 )
 from seed.utils.properties import pair_unpair_property_taxlot
 from seed.utils.salesforce import toggle_salesforce_sync
@@ -1449,17 +1448,3 @@ class OrganizationViewSet(viewsets.ViewSet):
             json_dumps_params={'indent': 4},
             status=status.HTTP_200_OK
         )
-
-    @ajax_request_class
-    def public_feed_rss(self, request, pk):
-        """
-        Format all property and taxlot state data fir a given organization to be displayed on a public feed as a .rss feed
-        """
-        try:
-            org = Organization.objects.get(pk=pk)
-        except Organization.DoesNotExist:
-            return JsonResponse({'erorr': 'Organization does not exist'}, status=status.HTTP_404_NOT_FOUND)
-
-        rss_feed = public_feed_rss(org, request)
-
-        return HttpResponse(rss_feed, content_type='application/rss+xml; charset=utf-8')

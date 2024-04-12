@@ -201,11 +201,16 @@ def public_feed(org, request):
     params = request.query_params
     page = get_int(params.get('page'), 1)
     per_page = get_int(params.get('per_page'), 100)
-
-    p_states = org.propertystate_set.filter(propertyview__isnull=False).order_by('-updated')
-    t_states = org.taxlotstate_set.filter(taxlotview__isnull=False).order_by('-updated')
-
     label_filter = params.get('label_filter', None)
+    properties_param = params.get('properties', True)
+    taxlots_param = params.get('taxlots', False)
+    cycles = params.get('cycles', False)
+
+    if properties_param:
+        p_states = org.propertystate_set.filter(propertyview__isnull=False).order_by('-updated')
+    if taxlots_param:
+        t_states = org.taxlotstate_set.filter(taxlotview__isnull=False).order_by('-updated')
+
     if label_filter is not None:
         p_states = p_states.filter(propertyview__labels__name__in=[label_filter])
         t_states = t_states.filter(taxlotview__labels__name__in=[label_filter])
@@ -216,11 +221,14 @@ def public_feed(org, request):
     max_count = p_states.count() if p_states.count() > t_states.count() else t_states.count()
     pagination = {
         'page': page,
-        'per_page': per_page,
         'total_pages': int(max_count / per_page) + 1,
-        'properties': p_states.count(),
-        'taxlots': t_states.count(),
+        'per_page': per_page,
     }
+
+    if properties_param:
+        pagination['properties'] = p_states.count(),
+    if taxlots_param:
+        pagination['taxlots'] = t_states.count(),
 
     # gonna need public columns for properties and taxlots and extra data boolean
     p_public_columns = (
@@ -235,17 +243,31 @@ def public_feed(org, request):
         .order_by('column_name_lower')
         .values_list('column_name', 'is_extra_data')
     )
-    data = {'properties': [], 'taxlots': []}
-    for p_state in p_states_paginated:
-        # what if matching criteria dne? a whole bunch of None's
-        add_state_to_data(base_url, data['properties'], p_state.propertyview_set.first(), p_state, p_public_columns)
 
-    for t_state in t_states_paginated:
-        add_state_to_data(base_url, data['taxlots'], t_state.taxlotview_set.first(), t_state, t_public_columns)
+    data = {}
+    if properties_param:
+        data['properties'] = []
+        for p_state in p_states_paginated:
+            # what if matching criteria dne? a whole bunch of None's
+            add_state_to_data(base_url, data['properties'], p_state.propertyview_set.first(), p_state, p_public_columns)
 
+    if taxlots_param:
+        data['taxlots'] = []
+        for t_state in t_states_paginated:
+            add_state_to_data(base_url, data['taxlots'], t_state.taxlotview_set.first(), t_state, t_public_columns)
+
+    # RIGHT HERE. make sure properties and taxlots param works 
+    # then do cycles
+    # then do documentaiton
     return {
         'pagination': pagination, 
         'organization': {'id': org.id, 'name':org.name},
+        'query_params': {
+            'label_filter': label_filter,
+            'cycles': cycles if cycles else 'all',
+            'properties': properties_param,
+            'taxlots': taxlots_param
+        },
         'label_filter': label_filter,
         'data': data
     }
@@ -293,91 +315,3 @@ def get_int(value, default):
     except (ValueError, TypeError):
         return default
 
-
-def paginate_states(states, page, per_page):
-    paginator = Paginator(states, per_page)
-    try:
-        return paginator.page(page)
-    except EmptyPage:
-        return paginator.page(paginator.num_pages)
-
-
-def public_feed_rss(org, request):
-    """
-    Format all property and taxlot state data to be displayed on a public feed
-    """
-    base_url = request.build_absolute_uri('/')
-    params = request.query_params
-    page = get_int(params.get('page'), 1)
-    per_page = get_int(params.get('per_page'), 100)
-    property_key = params.get('property_key', 'pm_property_id')
-    taxlot_key = params.get('taxlot_key', 'jurisdiction_tax_lot_id')
-    pstates = paginate_states(
-        org.propertystate_set.filter(propertyview__isnull=False).order_by('-updated'),
-        page,
-        per_page
-    )
-    tstates = paginate_states(
-        org.taxlotstate_set.filter(taxlotview__isnull=False).order_by('-updated'),
-        page,
-        per_page
-    )
-
-    p_public_columns = Column.objects.filter(shared_field_type=1, table_name='PropertyState').values_list('column_name', 'is_extra_data')
-    t_public_columns = Column.objects.filter(shared_field_type=1, table_name='TaxLotState').values_list('column_name', 'is_extra_data')
-    data = []
-
-    for pstate in pstates:
-        # what if matching criteria dne? a whole bunch of None's
-        add_state_to_data_rss(data, 'property', pstate.propertyview_set.first(), pstate, p_public_columns)
-
-    for tstate in tstates:
-        add_state_to_data_rss(data, 'taxlot', tstate.taxlotview_set.first(), tstate, t_public_columns)
-
-    return convert_json_to_rss(org, data, base_url, property_key, taxlot_key)
-
-
-def add_state_to_data_rss(data, type, view, state, public_columns):
-    # add public_column state data to the response
-    datum = {
-        'type': type,
-        'cycle': view.cycle.name,
-        'id': view.id,
-        'updated': state.updated.isoformat(),
-        'created': state.created.isoformat(),
-        'labels': ', '.join(view.labels.all().values_list('name', flat=True))
-    }
-
-    for (name, extra_data) in public_columns:
-        if not extra_data:
-            value = getattr(state, name, None)
-        else:
-            value = state.extra_data.get(name, None)
-
-        if isinstance(value, pint.Quantity):
-            # convert pint to string with units
-            # json cant display exponents.
-            value = f'{value.m} {value.u}'
-
-        datum[name] = value
-    data.append(datum)
-
-
-def convert_json_to_rss(org, json_data, base_url, property_key, taxlot_key):
-    rss = E.rss(
-        E.channel(
-            E.title('SEED Property and TaxLot Updates'),
-            E.link(f'{base_url}'),
-            E.description(f'Recent updates to SEED organization {org}'),
-            *[E.item(
-                E.title(f'{entry["type"].capitalize()} {entry.get(property_key, None) if entry["type"] == "property" else entry.get(taxlot_key, None)}'),
-                E.link(f'{base_url}app/#/{"properties" if entry["type"] == "property" else "taxlots"}/{entry["id"]}'),
-                E.description(json.dumps(entry))
-
-            ) for entry in json_data]
-        ),
-        version="1.0"
-    )
-
-    rss_xml = etree.tostring(rss, pretty_print=True, xml_declaration=True, encoding='UTF-8')
-    return rss_xml

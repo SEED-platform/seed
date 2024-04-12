@@ -172,9 +172,4 @@ urlpatterns = [
         OrganizationViewSet.as_view({'get': 'public_feed_json'}),
         name='organizations-public-feed-json'
     ),
-    re_path(
-        r'^organizations/(?P<pk>\d+)/public_feed\.rss$',
-        OrganizationViewSet.as_view({'get': 'public_feed_rss'}),
-        name='organizations-public-feed-rss'
-    )
 ]
