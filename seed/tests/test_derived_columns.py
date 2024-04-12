@@ -1,13 +1,14 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 import json
 from json import dumps
 from string import Template, ascii_letters, digits
 
+import pytest
 from django.core.exceptions import ValidationError
 from django.urls import reverse
 from hypothesis import assume, example, given, settings
@@ -17,17 +18,8 @@ from hypothesis.extra.django import TestCase
 from seed.landing.models import SEEDUser as User
 from seed.models import PropertyView
 from seed.models.columns import Column
-from seed.models.derived_columns import (
-    DerivedColumn,
-    DerivedColumnParameter,
-    ExpressionEvaluator,
-    InvalidExpression
-)
-from seed.test_helpers.fake import (
-    FakeColumnFactory,
-    FakeDerivedColumnFactory,
-    FakePropertyStateFactory
-)
+from seed.models.derived_columns import DerivedColumn, DerivedColumnParameter, ExpressionEvaluator, InvalidExpressionError
+from seed.test_helpers.fake import FakeColumnFactory, FakeDerivedColumnFactory, FakePropertyStateFactory
 from seed.tests.util import AccessLevelBaseTestCase
 from seed.utils.organizations import create_organization
 
@@ -50,7 +42,7 @@ def pow_st(draw, base_st=good_floats, exponent_st=good_floats.filter(lambda x: a
     exponent = draw(exponent_st)
     # avoid divide by zero errors
     assume(not (base == 0 and exponent < 0))
-    return f'{base}**{exponent}'
+    return f"{base}**{exponent}"
 
 
 @st.composite
@@ -72,13 +64,7 @@ def func_st(draw, func_name_st, args_st=good_floats, min_args=1, max_args=None):
 
 
 @st.composite
-def arithmetic_st(
-    draw,
-    operators,
-    operand_st=good_floats,
-    max_operands=10,
-    in_parens_st=st.just(False)
-):
+def arithmetic_st(draw, operators, operand_st=good_floats, max_operands=10, in_parens_st=st.just(False)):
     """Strategy for generating a chain of binary operators and operands
     E.g. 1 + 2 + 3, 4.2 * 2.1 * 0 * ..., etc
 
@@ -87,31 +73,19 @@ def arithmetic_st(
     :max_operands: int, maximum number of operands
     :return: str
     """
-    operands = draw(
-        st.lists(
-            operand_st,
-            min_size=2,
-            max_size=max_operands
-        )
-    )
+    operands = draw(st.lists(operand_st, min_size=2, max_size=max_operands))
 
     n_operators = len(operands) - 1
-    operators = draw(
-        st.lists(
-            st.sampled_from(operators),
-            min_size=n_operators,
-            max_size=n_operators
-        )
-    )
+    operators = draw(st.lists(st.sampled_from(operators), min_size=n_operators, max_size=n_operators))
 
-    result = ''
+    result = ""
     # insert an operator between each operand
     for idx, operator in enumerate(operators):
-        result += f'{operands[idx]} {operators[idx]} '
+        result += f"{operands[idx]} {operator} "
     result += str(operands[-1])
 
     if draw(in_parens_st):
-        result = f'({result})'
+        result = f"({result})"
 
     return result
 
@@ -122,29 +96,30 @@ def parameter_name_st(draw):
 
     :return: str
     """
-    prefix = draw(
-        st.text(ascii_letters + '_', min_size=1, max_size=1)
-    )
-    body = draw(
-        st.text(digits + ascii_letters + '_')
-    )
-    return f'{prefix}{body}'
+    prefix = draw(st.text(ascii_letters + "_", min_size=1, max_size=1))
+    body = draw(st.text(digits + ascii_letters + "_"))
+    return f"{prefix}{body}"
 
 
 # atomic strategies (excluding parameter names)
-atomic_no_params_st = good_floats.map(str) \
-    | pow_st() \
-    | func_st(st.sampled_from(['min', 'max']), min_args=2) \
-    | func_st(st.just('abs'), min_args=1, max_args=1)
+atomic_no_params_st = (
+    good_floats.map(str) | pow_st() | func_st(st.sampled_from(["min", "max"]), min_args=2) | func_st(st.just("abs"), min_args=1, max_args=1)
+)
+
 
 # function for recursive strategy
 # avoiding the division operator b/c it can cause unexpected divide by zero issues
-recursive_st_func = lambda children: \
-    arithmetic_st(operators=['+', '-', '*'], operand_st=children, max_operands=3, in_parens_st=st.booleans()) \
-    | func_st(st.sampled_from(['min', 'max']), children, min_args=2) \
-    | func_st(st.just('abs'), st.one_of(children), min_args=1, max_args=1)
+def recursive_st_func(children):
+    return (
+        arithmetic_st(operators=["+", "-", "*"], operand_st=children, max_operands=3, in_parens_st=st.booleans())
+        | func_st(st.sampled_from(["min", "max"]), children, min_args=2)
+        | func_st(st.just("abs"), st.one_of(children), min_args=1, max_args=1)
+    )
+
 
 # strategy for generating complex / nested expressions WITHOUT parameters
+
+
 full_expression_no_params_st = st.recursive(atomic_no_params_st, recursive_st_func, max_leaves=50)
 
 
@@ -158,7 +133,7 @@ def full_expression_with_params_st(draw, parameters=st.dictionaries(parameter_na
     """
     params = draw(parameters)
 
-    template_params = [f'${param_name}' for param_name in params.keys()]
+    template_params = [f"${param_name}" for param_name in params]
     # NOTE: this won't ensure all (or even any) param names end up in the expression
     # however our evaluator should be fine with us passing extra parameters
     expression = draw(
@@ -189,40 +164,40 @@ class TestExpressionEvaluator(TestCase):
     """
 
     @no_deadline
-    @given(arithmetic_st(operators=['+']))
-    @example('1 + 2 + 3 + -100')
+    @given(arithmetic_st(operators=["+"]))
+    @example("1 + 2 + 3 + -100")
     def test_evaluator_can_add(self, s):
         expected = eval(s)
         actual = ExpressionEvaluator(s).evaluate()
         self.assertEqual(expected, actual)
 
     @no_deadline
-    @given(arithmetic_st(operators=['-']))
-    @example('1 - 2 - 3 - -100')
+    @given(arithmetic_st(operators=["-"]))
+    @example("1 - 2 - 3 - -100")
     def test_evaluator_can_subtract(self, s):
         expected = eval(s)
         actual = ExpressionEvaluator(s).evaluate()
         self.assertEqual(expected, actual)
 
     @no_deadline
-    @given(arithmetic_st(operators=['*']))
-    @example('1 * 2 * 3 * -100')
+    @given(arithmetic_st(operators=["*"]))
+    @example("1 * 2 * 3 * -100")
     def test_evaluator_can_multiply(self, s):
         expected = eval(s)
         actual = ExpressionEvaluator(s).evaluate()
         self.assertEqual(expected, actual)
 
     @no_deadline
-    @given(arithmetic_st(operators=['/'], operand_st=good_floats.filter(lambda x: x != 0)))
-    @example('1 / 2 / 3 / -100')
+    @given(arithmetic_st(operators=["/"], operand_st=good_floats.filter(lambda x: x != 0)))
+    @example("1 / 2 / 3 / -100")
     def test_evaluator_can_divide(self, s):
         expected = eval(s)
         actual = ExpressionEvaluator(s).evaluate()
         self.assertEqual(expected, actual)
 
     @no_deadline
-    @given(arithmetic_st(operators=['%'], operand_st=good_floats.filter(lambda x: x != 0), max_operands=2))
-    @example('10 % 15')
+    @given(arithmetic_st(operators=["%"], operand_st=good_floats.filter(lambda x: x != 0), max_operands=2))
+    @example("10 % 15")
     def test_evaluator_can_mod(self, s):
         expected = eval(s)
         actual = ExpressionEvaluator(s).evaluate()
@@ -230,31 +205,31 @@ class TestExpressionEvaluator(TestCase):
 
     @no_deadline
     @given(pow_st())
-    @example('2**5')
+    @example("2**5")
     def test_evaluator_can_pow(self, s):
         expected = eval(s)
         actual = ExpressionEvaluator(s).evaluate()
         self.assertEqual(expected, actual)
 
     @no_deadline
-    @given(func_st(st.just('min'), min_args=2))
-    @example('min(1, 2, 3, -100)')
+    @given(func_st(st.just("min"), min_args=2))
+    @example("min(1, 2, 3, -100)")
     def test_evaluator_can_min(self, s):
         expected = eval(s)
         actual = ExpressionEvaluator(s).evaluate()
         self.assertEqual(expected, actual)
 
     @no_deadline
-    @given(func_st(st.just('max'), min_args=2))
-    @example('max(1, 2, 3, -100)')
+    @given(func_st(st.just("max"), min_args=2))
+    @example("max(1, 2, 3, -100)")
     def test_evaluator_can_max(self, s):
         expected = eval(s)
         actual = ExpressionEvaluator(s).evaluate()
         self.assertEqual(expected, actual)
 
     @no_deadline
-    @given(func_st(st.just('abs'), min_args=1, max_args=1))
-    @example('abs(-100)')
+    @given(func_st(st.just("abs"), min_args=1, max_args=1))
+    @example("abs(-100)")
     def test_evaluator_can_abs(self, s):
         expected = eval(s)
         actual = ExpressionEvaluator(s).evaluate()
@@ -262,7 +237,7 @@ class TestExpressionEvaluator(TestCase):
 
     @no_deadline
     @given(full_expression_no_params_st)
-    @example('1 / (2 - 3) * min(abs(-100), 2) / 10 - max(1, 2)')
+    @example("1 / (2 - 3) * min(abs(-100), 2) / 10 - max(1, 2)")
     def test_evaluator_is_all_that_and_a_bag_of_chips(self, s):
         expected = eval(s)
         actual = ExpressionEvaluator(s).evaluate()
@@ -270,10 +245,7 @@ class TestExpressionEvaluator(TestCase):
 
     @no_deadline
     @given(full_expression_with_params_st())
-    @example((
-        '1 / (2 - 3) * min(abs(-100), $a) / 10 - max(1, $b)',
-        {'a': -2, 'b': 2}
-    ))
+    @example(("1 / (2 - 3) * min(abs(-100), $a) / 10 - max(1, $b)", {"a": -2, "b": 2}))
     def test_evaluator_gets_fancy_with_parameters(self, s):
         expression, params = s
         # substitute the parameters so `eval` can evaluate the string
@@ -285,25 +257,25 @@ class TestExpressionEvaluator(TestCase):
 
     def test_evaluator_raises_helpful_exception_when_expression_is_invalid(self):
         # -- Setup
-        expression = '1 + HELLO'
+        expression = "1 + HELLO"
 
         # -- Act, Assert
-        with self.assertRaises(InvalidExpression) as ctx:
+        with pytest.raises(InvalidExpressionError) as ctx:
             ExpressionEvaluator.is_valid(expression)
 
-        exception = ctx.exception
+        exception = ctx.value
         self.assertEqual(expression, exception.expression)
-        self.assertEqual(expression.index('H'), exception.error_position)
+        self.assertEqual(expression.index("H"), exception.error_position)
 
 
 class TestDerivedColumns(TestCase):
     def setUp(self):
         user_details = {
-            'username': 'test_user@demo.com',
-            'password': 'test_pass',
-            'email': 'test_user@demo.com',
-            'first_name': 'Test',
-            'last_name': 'User',
+            "username": "test_user@demo.com",
+            "password": "test_pass",
+            "email": "test_user@demo.com",
+            "first_name": "Test",
+            "last_name": "User",
         }
         self.user = User.objects.create_user(**user_details)
         self.org, _, _ = create_organization(self.user)
@@ -311,16 +283,10 @@ class TestDerivedColumns(TestCase):
         self.col_factory = FakeColumnFactory(organization=self.org).get_column
 
         self.numeric_core_columns = Column.objects.filter(
-            organization=self.org,
-            is_extra_data=False,
-            table_name='PropertyState',
-            data_type='integer'
+            organization=self.org, is_extra_data=False, table_name="PropertyState", data_type="integer"
         )
 
-        self.derived_col_factory = FakeDerivedColumnFactory(
-            organization=self.org,
-            inventory_type=DerivedColumn.PROPERTY_TYPE
-        )
+        self.derived_col_factory = FakeDerivedColumnFactory(organization=self.org, inventory_type=DerivedColumn.PROPERTY_TYPE)
 
         self.property_state_factory = FakePropertyStateFactory(organization=self.org)
 
@@ -353,24 +319,24 @@ class TestDerivedColumns(TestCase):
         # link the parameter columns to the derived column
         derived_column_parameters = []
         for param_name, param_config in column_parameters.items():
-            derived_column_parameters.append(DerivedColumnParameter.objects.create(
-                parameter_name=param_name,
-                derived_column=derived_column,
-                source_column=param_config['source_column'],
-            ))
+            derived_column_parameters.append(
+                DerivedColumnParameter.objects.create(
+                    parameter_name=param_name,
+                    derived_column=derived_column,
+                    source_column=param_config["source_column"],
+                )
+            )
 
         # make a property state which has all the values for the expression
-        property_state_config = {
-            'extra_data': {}
-        }
+        property_state_config = {"extra_data": {}}
         for param_name, param_config in column_parameters.items():
-            col = param_config['source_column']
-            param_value = param_config['value']
+            col = param_config["source_column"]
+            param_value = param_config["value"]
             if col.is_extra_data:
                 # don't add extra data with value of None
                 # this is to assist testing properties with missing extra data columns
                 if param_value is not None:
-                    property_state_config['extra_data'][col.column_name] = param_value
+                    property_state_config["extra_data"][col.column_name] = param_value
             else:
                 property_state_config[col.column_name] = param_value
 
@@ -378,22 +344,15 @@ class TestDerivedColumns(TestCase):
         if create_property_state:
             property_state = self.property_state_factory.get_property_state(**property_state_config)
 
-        return {
-            'property_state': property_state,
-            'derived_column': derived_column,
-            'derived_column_parameters': derived_column_parameters
-        }
+        return {"property_state": property_state, "derived_column": derived_column, "derived_column_parameters": derived_column_parameters}
 
     def test_derived_column_created_successfully_on_save_when_expression_is_valid(self):
         # -- Setup
-        expression = '$a + $b'
+        expression = "$a + $b"
 
         # -- Act
         derived_column = DerivedColumn.objects.create(
-            name='hello',
-            expression=expression,
-            organization=self.org,
-            inventory_type=DerivedColumn.PROPERTY_TYPE
+            name="hello", expression=expression, organization=self.org, inventory_type=DerivedColumn.PROPERTY_TYPE
         )
 
         # -- Assert
@@ -401,47 +360,42 @@ class TestDerivedColumns(TestCase):
 
     def test_derived_column_raises_exception_on_save_when_expression_is_invalid(self):
         # -- Setup
-        expression = '$a + BAD $b'
+        expression = "$a + BAD $b"
 
         # -- Act, Assert
-        with self.assertRaises(ValidationError):
+        with pytest.raises(ValidationError):
             DerivedColumn.objects.create(
-                name='hello',
-                expression=expression,
-                organization=self.org,
-                inventory_type=DerivedColumn.PROPERTY_TYPE
+                name="hello", expression=expression, organization=self.org, inventory_type=DerivedColumn.PROPERTY_TYPE
             )
 
     def test_derived_column_get_parameter_values_is_successful(self):
         # -- Setup
         # expression which sums all the parameters
-        expression = '$a + $b + $c + $c'
+        expression = "$a + $b + $c + $c"
         column_parameters = {
-            'a': {
-                'source_column': self.col_factory('foo', is_extra_data=True),
-                'value': 1,
+            "a": {
+                "source_column": self.col_factory("foo", is_extra_data=True),
+                "value": 1,
             },
-            'b': {
-                'source_column': self.col_factory('bar', is_extra_data=True),
-                'value': 1,
+            "b": {
+                "source_column": self.col_factory("bar", is_extra_data=True),
+                "value": 1,
             },
-            'c': {
-                'source_column': self.numeric_core_columns[0],
-                'value': 1,
+            "c": {
+                "source_column": self.numeric_core_columns[0],
+                "value": 1,
             },
-            'd': {
-                'source_column': self.numeric_core_columns[1],
-                'value': 1,
+            "d": {
+                "source_column": self.numeric_core_columns[1],
+                "value": 1,
             },
         }
 
         models = self._derived_column_for_property_factory(expression, column_parameters)
-        derived_column = models['derived_column']
-        property_state = models['property_state']
+        derived_column = models["derived_column"]
+        property_state = models["property_state"]
 
-        expected_parameter_values = {
-            param_name: param_config['value'] for param_name, param_config in column_parameters.items()
-        }
+        expected_parameter_values = {param_name: param_config["value"] for param_name, param_config in column_parameters.items()}
 
         # -- Act
         result = derived_column.get_parameter_values(property_state)
@@ -451,30 +405,27 @@ class TestDerivedColumns(TestCase):
 
     def test_derived_column_get_parameter_values_returns_none_for_missing_parameters(self):
         # -- Setup
-        expression = '$a + $b'
+        expression = "$a + $b"
         column_parameters = {
             # this parameter will be missing on the property state
-            'a': {
-                'source_column': self.col_factory('foo', is_extra_data=True),
-                'value': None,
+            "a": {
+                "source_column": self.col_factory("foo", is_extra_data=True),
+                "value": None,
             },
-            'b': {
-                'source_column': self.col_factory('bar', is_extra_data=True),
-                'value': 1,
-            }
+            "b": {
+                "source_column": self.col_factory("bar", is_extra_data=True),
+                "value": 1,
+            },
         }
 
         models = self._derived_column_for_property_factory(expression, column_parameters)
-        derived_column = models['derived_column']
-        property_state = models['property_state']
+        derived_column = models["derived_column"]
+        property_state = models["property_state"]
 
         # verify the property state is missing the expected column
-        self.assertTrue('a' not in property_state.extra_data)
+        self.assertTrue("a" not in property_state.extra_data)
 
-        expected_parameter_values = {
-            'a': None,
-            'b': 1
-        }
+        expected_parameter_values = {"a": None, "b": 1}
 
         # -- Act
         result = derived_column.get_parameter_values(property_state)
@@ -484,21 +435,21 @@ class TestDerivedColumns(TestCase):
 
     def test_derived_column_evaluate_is_successful_when_property_state_has_valid_values(self):
         # -- Setup
-        expression = '$a + $b'
+        expression = "$a + $b"
         column_parameters = {
-            'a': {
-                'source_column': self.col_factory('foo', is_extra_data=True),
-                'value': 1,
+            "a": {
+                "source_column": self.col_factory("foo", is_extra_data=True),
+                "value": 1,
             },
-            'b': {
-                'source_column': self.numeric_core_columns[0],
-                'value': 1,
-            }
+            "b": {
+                "source_column": self.numeric_core_columns[0],
+                "value": 1,
+            },
         }
 
         models = self._derived_column_for_property_factory(expression, column_parameters)
-        derived_column = models['derived_column']
-        property_state = models['property_state']
+        derived_column = models["derived_column"]
+        property_state = models["property_state"]
 
         # -- Act
         result = derived_column.evaluate(property_state)
@@ -509,21 +460,21 @@ class TestDerivedColumns(TestCase):
     def test_derived_column_evaluate_returns_none_when_missing_parameters(self):
         # -- Setup
         # put a parameter, x, which won't exist
-        expression = '$a + $x'
+        expression = "$a + $x"
         column_parameters = {
-            'a': {
-                'source_column': self.col_factory('foo', is_extra_data=True),
-                'value': 1,
+            "a": {
+                "source_column": self.col_factory("foo", is_extra_data=True),
+                "value": 1,
             },
-            'b': {
-                'source_column': self.numeric_core_columns[0],
-                'value': 1,
-            }
+            "b": {
+                "source_column": self.numeric_core_columns[0],
+                "value": 1,
+            },
         }
 
         models = self._derived_column_for_property_factory(expression, column_parameters)
-        derived_column = models['derived_column']
-        property_state = models['property_state']
+        derived_column = models["derived_column"]
+        property_state = models["property_state"]
 
         # -- Act
         result = derived_column.evaluate(property_state)
@@ -533,17 +484,17 @@ class TestDerivedColumns(TestCase):
 
     def test_derived_column_evaluate_returns_none_when_parameter_is_nonnumeric(self):
         # -- Setup
-        expression = '$a + 1'
+        expression = "$a + 1"
         column_parameters = {
-            'a': {
-                'source_column': self.col_factory('foo', is_extra_data=True),
-                'value': 'HELLO!!!!!',
+            "a": {
+                "source_column": self.col_factory("foo", is_extra_data=True),
+                "value": "HELLO!!!!!",
             }
         }
 
         models = self._derived_column_for_property_factory(expression, column_parameters)
-        derived_column = models['derived_column']
-        property_state = models['property_state']
+        derived_column = models["derived_column"]
+        property_state = models["property_state"]
 
         # -- Act
         result = derived_column.evaluate(property_state)
@@ -556,22 +507,20 @@ class TestDerivedColumns(TestCase):
         provided by the inventory state
         """
         # -- Setup
-        expression = '$a + $b'
+        expression = "$a + $b"
         column_parameters = {
-            'a': {
-                'source_column': self.col_factory('foo', is_extra_data=True),
-                'value': 1,
+            "a": {
+                "source_column": self.col_factory("foo", is_extra_data=True),
+                "value": 1,
             }
         }
 
         models = self._derived_column_for_property_factory(expression, column_parameters)
-        derived_column = models['derived_column']
-        property_state = models['property_state']
+        derived_column = models["derived_column"]
+        property_state = models["property_state"]
 
         # -- Act
-        fallback_params = {
-            'b': 1
-        }
+        fallback_params = {"b": 1}
         result = derived_column.evaluate(property_state, parameters=fallback_params)
 
         # -- Assert
@@ -582,27 +531,24 @@ class TestDerivedColumns(TestCase):
         the passed parameters dict
         """
         # -- Setup
-        expression = '$a + $b'
+        expression = "$a + $b"
         column_parameters = {
-            'a': {
-                'source_column': self.col_factory('foo', is_extra_data=True),
-                'value': 1,
+            "a": {
+                "source_column": self.col_factory("foo", is_extra_data=True),
+                "value": 1,
             },
-            'b': {
-                'source_column': self.col_factory('bar', is_extra_data=True),
-                'value': 1,
+            "b": {
+                "source_column": self.col_factory("bar", is_extra_data=True),
+                "value": 1,
             },
         }
 
         models = self._derived_column_for_property_factory(expression, column_parameters)
-        derived_column = models['derived_column']
-        property_state = models['property_state']
+        derived_column = models["derived_column"]
+        property_state = models["property_state"]
 
         # -- Act
-        fallback_params = {
-            'a': 100,
-            'b': 100
-        }
+        fallback_params = {"a": 100, "b": 100}
         result = derived_column.evaluate(property_state, parameters=fallback_params)
 
         # -- Assert
@@ -611,26 +557,23 @@ class TestDerivedColumns(TestCase):
     def test_derived_column_evaluate_is_successful_when_only_using_passed_parameters(self):
         """Test that `evaluate` can work without an inventory being passed in"""
         # -- Setup
-        expression = '$a + $b'
+        expression = "$a + $b"
         column_parameters = {
-            'a': {
-                'source_column': self.col_factory('foo', is_extra_data=True),
-                'value': 1,
+            "a": {
+                "source_column": self.col_factory("foo", is_extra_data=True),
+                "value": 1,
             },
-            'b': {
-                'source_column': self.col_factory('bar', is_extra_data=True),
-                'value': 1,
+            "b": {
+                "source_column": self.col_factory("bar", is_extra_data=True),
+                "value": 1,
             },
         }
 
         models = self._derived_column_for_property_factory(expression, column_parameters)
-        derived_column = models['derived_column']
+        derived_column = models["derived_column"]
 
         # -- Act
-        fallback_params = {
-            'a': 100,
-            'b': 100
-        }
+        fallback_params = {"a": 100, "b": 100}
         # look Ma no inventory
         result = derived_column.evaluate(parameters=fallback_params)
 
@@ -643,32 +586,34 @@ class TestDerivedColumns(TestCase):
         """
         # -- Setup
         # expression which sums all the parameters
-        expression = '$a + 2'
-        derived_column_name = 'dc1'
+        expression = "$a + 2"
+        derived_column_name = "dc1"
         column_parameters = {
-            'a': {
-                'source_column': self.col_factory('foo', is_extra_data=True),
-                'value': 1,
+            "a": {
+                "source_column": self.col_factory("foo", is_extra_data=True),
+                "value": 1,
             },
         }
 
         models = self._derived_column_for_property_factory(expression, column_parameters, name=derived_column_name)
-        derived_column = models['derived_column']
-        property_state = models['property_state']
+        derived_column = models["derived_column"]
+        property_state = models["property_state"]
 
         self.assertEqual(derived_column.evaluate(property_state), 3)
 
         column_with_derived_column = Column.objects.filter(derived_column=derived_column.id).first()
-        expression = '$b + 2'
-        derived_column_name_2 = 'dc2'
+        expression = "$b + 2"
+        derived_column_name_2 = "dc2"
         column_parameters = {
-            'b': {
-                'source_column': column_with_derived_column,
-                'value': None  # not necessary if property state is already created
+            "b": {
+                "source_column": column_with_derived_column,
+                "value": None,  # not necessary if property state is already created
             },
         }
-        models = self._derived_column_for_property_factory(expression, column_parameters, name=derived_column_name_2, create_property_state=False)
-        derived_column2 = models['derived_column']
+        models = self._derived_column_for_property_factory(
+            expression, column_parameters, name=derived_column_name_2, create_property_state=False
+        )
+        derived_column2 = models["derived_column"]
 
         # Derived Column 2 (defined by a different derived column) can be evaluated
         self.assertEqual(derived_column2.evaluate(property_state), 5)
@@ -676,101 +621,95 @@ class TestDerivedColumns(TestCase):
     def test_derived_column_duplicate_name(self):
         """Test that a derived column cannot be created with the same name as another column"""
 
-        expression = '$a + 2'
+        expression = "$a + 2"
         # gross_floor_area is already created and should fail
-        derived_column_name = 'gross_floor_area'
+        derived_column_name = "gross_floor_area"
         column_parameters = {
-            'a': {
-                'source_column': self.col_factory('foo', is_extra_data=True),
-                'value': 1,
+            "a": {
+                "source_column": self.col_factory("foo", is_extra_data=True),
+                "value": 1,
             },
         }
 
-        with self.assertRaises(Exception) as exc:
+        with pytest.raises(Exception) as exc:  # noqa: PT011
             self._derived_column_for_property_factory(expression, column_parameters, name=derived_column_name)
         # validation errors return as a list of errors, so check the string representation of the list
-        self.assertEqual(str(exc.exception), "['Column name PropertyState.gross_floor_area already exists, must be unique']")
+        self.assertEqual(str(exc.value), "['Column name PropertyState.gross_floor_area already exists, must be unique']")
 
 
 class TestDerivedColumnsPermissions(AccessLevelBaseTestCase):
     def setUp(self):
         super().setUp()
         self.column = Column.objects.filter(
-            organization=self.org,
-            is_extra_data=False,
-            table_name='PropertyState',
-            data_type='integer'
+            organization=self.org, is_extra_data=False, table_name="PropertyState", data_type="integer"
         ).first()
 
         self.derived_column = DerivedColumn.objects.create(
-            name='hello',
-            expression='$a',
-            organization=self.org,
-            inventory_type=DerivedColumn.PROPERTY_TYPE
+            name="hello", expression="$a", organization=self.org, inventory_type=DerivedColumn.PROPERTY_TYPE
         )
         self.cycle = self.cycle_factory.get_cycle()
 
     def test_derived_columns_create(self):
-        url = reverse('api:v3:derived_columns-list') + '?organization_id=' + str(self.org.id)
-        post_params = dumps({
-            "name": "new column",
-            "expression": "$param_a / 100",
-            "inventory_type": "Property",
-            "parameters": [
-                {"parameter_name": "param_a", "source_column": self.column.id}
-            ]
-        })
+        url = reverse("api:v3:derived_columns-list") + "?organization_id=" + str(self.org.id)
+        post_params = dumps(
+            {
+                "name": "new column",
+                "expression": "$param_a / 100",
+                "inventory_type": "Property",
+                "parameters": [{"parameter_name": "param_a", "source_column": self.column.id}],
+            }
+        )
 
         # root owner user can
         self.login_as_root_owner()
-        response = self.client.post(url, post_params, content_type='application/json')
+        response = self.client.post(url, post_params, content_type="application/json")
         assert response.status_code == 200
 
         # root member user cannot
         self.login_as_root_member()
-        response = self.client.post(url, post_params, content_type='application/json')
+        response = self.client.post(url, post_params, content_type="application/json")
         assert response.status_code == 403
 
         # child user cannot
         self.login_as_child_member()
-        response = self.client.post(url, post_params, content_type='application/json')
+        response = self.client.post(url, post_params, content_type="application/json")
         assert response.status_code == 403
 
     def test_derived_columns_update(self):
-        url = reverse('api:v3:derived_columns-detail', args=[self.derived_column.id]) + '?organization_id=' + str(self.org.id)
+        url = reverse("api:v3:derived_columns-detail", args=[self.derived_column.id]) + "?organization_id=" + str(self.org.id)
         post_params = dumps({"name": "new column"})
 
         # root owner user can
         self.login_as_root_owner()
-        response = self.client.put(url, post_params, content_type='application/json')
+        response = self.client.put(url, post_params, content_type="application/json")
         assert response.status_code == 200
 
         # root member user cannot
         self.login_as_root_member()
-        response = self.client.put(url, post_params, content_type='application/json')
+        response = self.client.put(url, post_params, content_type="application/json")
         assert response.status_code == 403
 
         # child user cannot
         self.login_as_child_member()
-        response = self.client.put(url, post_params, content_type='application/json')
+        response = self.client.put(url, post_params, content_type="application/json")
         assert response.status_code == 403
 
     def test_derived_columns_delete(self):
-        url = reverse('api:v3:derived_columns-detail', args=[self.derived_column.id]) + '?organization_id=' + str(self.org.id)
+        url = reverse("api:v3:derived_columns-detail", args=[self.derived_column.id]) + "?organization_id=" + str(self.org.id)
 
         # root member user cannot
         self.login_as_root_member()
-        response = self.client.delete(url, content_type='application/json')
+        response = self.client.delete(url, content_type="application/json")
         assert response.status_code == 403
 
         # child user cannot
         self.login_as_child_member()
-        response = self.client.delete(url, content_type='application/json')
+        response = self.client.delete(url, content_type="application/json")
         assert response.status_code == 403
 
         # root owner user can
         self.login_as_root_owner()
-        response = self.client.delete(url, content_type='application/json')
+        response = self.client.delete(url, content_type="application/json")
         assert response.status_code == 200
 
     def test_derived_column_evaluate_permissions(self):
@@ -781,18 +720,18 @@ class TestDerivedColumnsPermissions(AccessLevelBaseTestCase):
         property_state = self.property_state_factory.get_property_state()
         PropertyView.objects.create(property=property, cycle=self.cycle, state=property_state)
 
-        url = reverse('api:v3:derived_columns-evaluate', args=[self.derived_column.id])
+        url = reverse("api:v3:derived_columns-evaluate", args=[self.derived_column.id])
         params = {"cycle_id": self.cycle.id, "organization_id": self.org.pk, "inventory_ids": f"{property.pk}"}
 
         # root member user can
-        response = self.client.get(url, params, content_type='application/json')
+        response = self.client.get(url, params, content_type="application/json")
         data = json.loads(response.content)
         assert response.status_code == 200
-        assert data["results"] == [{'id': property.pk, 'value': None}]
+        assert data["results"] == [{"id": property.pk, "value": None}]
 
         # child user cannot
         self.login_as_child_member()
-        response = self.client.get(url, params, content_type='application/json')
+        response = self.client.get(url, params, content_type="application/json")
         data = json.loads(response.content)
         assert response.status_code == 200
         assert data["results"] == []
