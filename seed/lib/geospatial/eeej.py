@@ -79,7 +79,7 @@ def import_hud():
 
 
 def import_cejst():
-    """ " Import CEJST Data:
+    """Import CEJST Data:
     https://energyjustice-buildings.egs.anl.gov/resources/serve/Buildings/cejst.csv
     Headers of interest: Census tract 2010 ID, Identified as disadvantaged,
     Greater than or equal to the 90th percentile for energy burden and is low income?, Energy burden (percentile)
