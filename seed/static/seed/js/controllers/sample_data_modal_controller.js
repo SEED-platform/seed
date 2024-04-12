@@ -17,14 +17,64 @@ angular.module('BE.seed.controller.sample_data_modal', []).controller('sample_da
     $scope.inProgress = false;
     $scope.hasData = cycle.num_properties > 0 || cycle.num_taxlots > 0;
 
-    $scope.continue = function () {
+    const notEmpty = (value) => !_.isNil(value) && value !== '';
+
+    const findPopulatedColumns = (allColumns, inventory) => {
+      const cols = _.reject(allColumns, 'related');
+      const relatedCols = _.filter(allColumns, 'related');
+
+      _.forEach(inventory, (record) => {
+        _.forEachRight(cols, (col, colIndex) => {
+          if (notEmpty(record[col.name])) {
+            cols.splice(colIndex, 1);
+          }
+        });
+
+        _.forEach(record.related, (relatedRecord) => {
+          _.forEachRight(relatedCols, (col, colIndex) => {
+            if (notEmpty(relatedRecord[col.name])) {
+              relatedCols.splice(colIndex, 1);
+            }
+          });
+        });
+      });
+
+      // determine hidden columns
+      const visible = _.reject(allColumns, (col) => {
+        if (!col.related) {
+          return _.find(cols, { id: col.id });
+        }
+        return _.find(relatedCols, { id: col.id });
+      });
+
+      const hidden = _.reject(allColumns, (col) => _.find(visible, { id: col.id }));
+
+      _.forEach(hidden, (col) => {
+        col.visible = false;
+      });
+
+      const columns = [];
+      _.forEach(visible, (col) => {
+        columns.push({
+          column_name: col.column_name,
+          id: col.id,
+          order: columns.length + 1,
+          pinned: false,
+          table_name: col.table_name
+        });
+      });
+
+      return columns;
+    };
+
+    $scope.continue = () => {
       $scope.inProgress = true;
 
       // Create column list profile if it doesn't exist
       const foundProfile = profiles.find(({ name, profile_location }) => name === 'Auto-Populate' && profile_location === 'List View Profile');
       let profilePromise;
       if (foundProfile) {
-        profilePromise = new Promise((resolve) => resolve(foundProfile));
+        profilePromise = Promise.resolve(foundProfile);
       } else {
         profilePromise = inventory_service.new_column_list_profile({
           name: 'Auto-Populate',
@@ -71,58 +121,8 @@ angular.module('BE.seed.controller.sample_data_modal', []).controller('sample_da
         });
     };
 
-    $scope.cancel = function () {
+    $scope.cancel = () => {
       $uibModalInstance.dismiss();
     };
-
-    const notEmpty = (value) => !_.isNil(value) && value !== '';
-
-    function findPopulatedColumns(allColumns, inventory) {
-      const cols = _.reject(allColumns, 'related');
-      const relatedCols = _.filter(allColumns, 'related');
-
-      _.forEach(inventory, (record) => {
-        _.forEachRight(cols, (col, colIndex) => {
-          if (notEmpty(record[col.name])) {
-            cols.splice(colIndex, 1);
-          }
-        });
-
-        _.forEach(record.related, (relatedRecord) => {
-          _.forEachRight(relatedCols, (col, colIndex) => {
-            if (notEmpty(relatedRecord[col.name])) {
-              relatedCols.splice(colIndex, 1);
-            }
-          });
-        });
-      });
-
-      // determine hidden columns
-      const visible = _.reject(allColumns, (col) => {
-        if (!col.related) {
-          return _.find(cols, { id: col.id });
-        }
-        return _.find(relatedCols, { id: col.id });
-      });
-
-      const hidden = _.reject(allColumns, (col) => _.find(visible, { id: col.id }));
-
-      _.forEach(hidden, (col) => {
-        col.visible = false;
-      });
-
-      const columns = [];
-      _.forEach(visible, (col) => {
-        columns.push({
-          column_name: col.column_name,
-          id: col.id,
-          order: columns.length + 1,
-          pinned: false,
-          table_name: col.table_name
-        });
-      });
-
-      return columns;
-    }
   }
 ]);

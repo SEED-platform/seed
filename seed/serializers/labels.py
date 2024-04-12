@@ -1,9 +1,9 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 from rest_framework import serializers
 
 from seed.models import StatusLabel as Label
@@ -25,13 +25,13 @@ class LabelSerializer(serializers.ModelSerializer):
         validated by the serializer.
 
         """
-        if 'super_organization' not in kwargs:
+        if "super_organization" not in kwargs:
             return
-        super_organization = kwargs.pop('super_organization')
-        self.inventory = kwargs.pop('inventory')
+        super_organization = kwargs.pop("super_organization")
+        self.inventory = kwargs.pop("inventory")
         super().__init__(*args, **kwargs)
-        if getattr(self, 'initial_data', None):
-            self.initial_data['super_organization'] = super_organization.pk
+        if getattr(self, "initial_data", None):
+            self.initial_data["super_organization"] = super_organization.pk
 
     class Meta:
         fields = (
@@ -53,7 +53,7 @@ class LabelSerializer(serializers.ModelSerializer):
 
         # Avoid the impression that no records "is_applied" if inventory isn't provided and a search never occurred
         if not self.inventory:
-            del ret['is_applied']
+            del ret["is_applied"]
 
         return ret
 
@@ -61,6 +61,6 @@ class LabelSerializer(serializers.ModelSerializer):
         filtered_result = []
         if self.inventory:
             # TODO: This needs to be updated to support labels being moved to Views.
-            filtered_result = self.inventory.prefetch_related('labels').filter(labels__in=[obj]).values_list('id', flat=True)
+            filtered_result = self.inventory.prefetch_related("labels").filter(labels__in=[obj]).values_list("id", flat=True)
 
         return filtered_result

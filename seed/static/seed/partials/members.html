@@ -52,10 +52,22 @@
                 <input type="text" placeholder="{$:: 'member email' | translate $}" class="form-control input-sm" ng-model="filter_params.email" ng-class="{active: filter_params.email.length}" />
               </th>
               <th class="sub_head">
-                <input type="text" placeholder="{$:: 'access level' | translate $}" class="form-control input-sm" ng-model="filter_params.access_level" ng-class="{active: filter_params.access_level.length}">
+                <input
+                  type="text"
+                  placeholder="{$:: 'access level' | translate $}"
+                  class="form-control input-sm"
+                  ng-model="filter_params.access_level"
+                  ng-class="{active: filter_params.access_level.length}"
+                />
               </th>
               <th class="sub_head">
-                <input type="text" placeholder="{$:: 'access level instance name' | translate $}" class="form-control input-sm" ng-model="filter_params.access_level_instance_name" ng-class="{active: filter_params.access_level_instance_name.length}">
+                <input
+                  type="text"
+                  placeholder="{$:: 'access level instance name' | translate $}"
+                  class="form-control input-sm"
+                  ng-model="filter_params.access_level_instance_name"
+                  ng-class="{active: filter_params.access_level_instance_name.length}"
+                />
               </th>
               <th class="sub_head">
                 <input type="text" placeholder="{$:: 'member role' | translate $}" class="form-control input-sm" ng-model="filter_params.role" ng-class="{active: filter_params.role.length}" />
@@ -74,8 +86,8 @@
                   class="form-control"
                   ng-model="user_edits.access_level"
                   ng-options="potential_level_name for potential_level_name in access_level_names"
-                  ng-change="change_access_level_instance_options()">
-                </select>
+                  ng-change="change_access_level_instance_options()"
+                ></select>
               </td>
               <td>
                 <div ng-if="user_id_being_edited != u.user_id">{$:: u.access_level_instance_name $}</div>
@@ -83,8 +95,10 @@
                   ng-if="user_id_being_edited == u.user_id"
                   class="form-control"
                   ng-model="user_edits.access_level_instance"
-                  ng-options="potential_access_level_instance as potential_access_level_instance.name for potential_access_level_instance in access_level_instances track by potential_access_level_instance.id">
-                </select>
+                  ng-options="potential_access_level_instance as potential_access_level_instance.name for potential_access_level_instance in access_level_instances track by potential_access_level_instance.id"
+                ></select>
+              </td>
+
               <td>
                 <div ng-if="user_id_being_edited != u.user_id">{$:: u.role | translate $}</div>
                 <div class="row" ng-if="user_id_being_edited == u.user_id">
@@ -96,43 +110,18 @@
                         class="form-control input-sm hide_transition"
                         ng-model="user_edits.role"
                         ng-options="role for role in ::get_roles(u)"
-                        ng-change="update_role(u)">
-                      </select>
+                        ng-change="update_role(u)"
+                      ></select>
                       <span ng-switch-default style="padding-left: 15px">{$:: u.role | translate $}</span>
                     </div>
                   </div>
                 </div>
               </td>
               <td ng-if="auth.can_remove_member">
-                <button
-                  class="btn btn-default"
-                  ng-click="begin_user_edits(u)"
-                  ng-hide="user_id_being_edited == u.user_id"
-                  ng-disabled="user_id_being_edited !== null"
-                  translate>
-                  Edit
-                </button>
-                <button
-                  class="btn btn-primary"
-                  ng-click="save_user_edits()"
-                  ng-if="user_id_being_edited == u.user_id"
-                  translate>
-                  Save
-                </button>
-                <button
-                  class="btn btn-default"
-                  ng-click="cancel_user_edits()"
-                  ng-if="user_id_being_edited == u.user_id"
-                  translate>
-                  Cancel
-                </button>
-                <button
-                  class="btn btn-danger"
-                  ng-if="(!only_one_owner || u.email !== user_profile.email) && user_id_being_edited == null"
-                  ng-click="remove_member(u)"
-                  translate>
-                  Remove
-                </button>
+                <button class="btn btn-default" ng-click="begin_user_edits(u)" ng-hide="user_id_being_edited == u.user_id" ng-disabled="user_id_being_edited !== null" translate>Edit</button>
+                <button class="btn btn-primary" ng-click="save_user_edits()" ng-if="user_id_being_edited == u.user_id" translate>Save</button>
+                <button class="btn btn-default" ng-click="cancel_user_edits()" ng-if="user_id_being_edited == u.user_id" translate>Cancel</button>
+                <button class="btn btn-danger" ng-if="(!only_one_owner || u.email !== user_profile.email) && user_id_being_edited == null" ng-click="remove_member(u)" translate>Remove</button>
               </td>
             </tr>
           </tbody>

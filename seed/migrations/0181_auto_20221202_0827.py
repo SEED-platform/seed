@@ -5,34 +5,35 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('seed', '0180_remove_property_campus'),
+        ("seed", "0180_remove_property_campus"),
     ]
 
     operations = [
         migrations.RemoveConstraint(
-            model_name='compliancemetric',
-            name='at_least_one_compliance_metric_type',
+            model_name="compliancemetric",
+            name="at_least_one_compliance_metric_type",
         ),
         migrations.AddField(
-            model_name='compliancemetric',
-            name='filter_group',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, related_name='filter_group', to='seed.filtergroup'),
+            model_name="compliancemetric",
+            name="filter_group",
+            field=models.ForeignKey(
+                null=True, on_delete=django.db.models.deletion.CASCADE, related_name="filter_group", to="seed.filtergroup"
+            ),
         ),
         migrations.AlterField(
-            model_name='compliancemetric',
-            name='end',
+            model_name="compliancemetric",
+            name="end",
             field=models.DateTimeField(blank=True, null=True),
         ),
         migrations.AlterField(
-            model_name='compliancemetric',
-            name='start',
+            model_name="compliancemetric",
+            name="start",
             field=models.DateTimeField(blank=True, null=True),
         ),
         migrations.AlterField(
-            model_name='compliancemetric',
-            name='x_axis_columns',
-            field=models.ManyToManyField(blank=True, related_name='x_axis_columns', to='seed.Column'),
+            model_name="compliancemetric",
+            name="x_axis_columns",
+            field=models.ManyToManyField(blank=True, related_name="x_axis_columns", to="seed.Column"),
         ),
     ]

@@ -33,7 +33,13 @@
             <tr ng-repeat="analysis in analyses | filter:filter_params:strict">
               <td><a ui-sref="analysis(::{organization_id: org.id, analysis_id: analysis.id})" ui-sref-active="active">{$:: analysis.name $}</a></td>
               <td>
-                <i class="glyphicon glyphicon-play" title="Start Analysis" aria-hidden="true" ng-if="analysis.status === 'Ready' && menu.user.organization.user_role !== 'viewer'" ng-click="start_analysis(analysis.id)"></i>
+                <i
+                  class="glyphicon glyphicon-play"
+                  title="Start Analysis"
+                  aria-hidden="true"
+                  ng-if="analysis.status === 'Ready' && menu.user.organization.user_role !== 'viewer'"
+                  ng-click="start_analysis(analysis.id)"
+                ></i>
                 <i
                   class="glyphicon glyphicon-stop"
                   title="Stop Analysis"
