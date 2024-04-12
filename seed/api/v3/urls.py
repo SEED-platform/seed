@@ -168,6 +168,6 @@ urlpatterns = [
     re_path(
         r"^organizations/(?P<pk>\d+)/public_feed\.json$",
         OrganizationViewSet.as_view({"get": "public_feed_json"}),
-        name="organizations-public-feed-json"
+        name="organizations-public-feed-json",
     ),
 ]
