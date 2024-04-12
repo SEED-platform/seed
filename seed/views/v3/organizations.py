@@ -72,7 +72,7 @@ from seed.utils.merge import merge_properties
 from seed.utils.organizations import (
     create_organization,
     create_suborganization,
-    public_feed,
+    public_feed
 )
 from seed.utils.properties import pair_unpair_property_taxlot
 from seed.utils.salesforce import toggle_salesforce_sync

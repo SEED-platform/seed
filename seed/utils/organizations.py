@@ -4,14 +4,11 @@
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
-import json
 from json import load
 
 import pint
 from django.core.paginator import EmptyPage, Paginator
 from django.db.models.functions import Lower
-from lxml import etree
-from lxml.builder import E
 
 from seed.lib.superperms.orgs.exceptions import TooManyNestedOrgs
 from seed.lib.superperms.orgs.models import (
@@ -24,7 +21,7 @@ from seed.models import (
     Column,
     ColumnMappingProfile,
     PropertyState,
-    TaxLotState,
+    TaxLotState
 )
 from seed.models.data_quality import DataQualityCheck
 
@@ -204,12 +201,12 @@ def public_feed(org, request):
     properties_param = params.get('properties', 'true').lower() == 'true'
     taxlots_param = params.get('taxlots', 'true').lower() == 'true'
     labels = params.get('labels', None)
-    if labels is not None: 
+    if labels is not None:
         labels = labels.split(',')
     cycles = params.get('cycles', None)
     if cycles is not None:
         cycles = cycles.split(',')
-    else: 
+    else:
         cycles = list(org.cycles.values_list('id', flat=True))
 
     data = {}
@@ -218,10 +215,9 @@ def public_feed(org, request):
 
     if properties_param:
         data['properties'], p_count = _add_states_to_data(base_url, PropertyState, 'propertyview', page, per_page, labels, cycles)
-      
+
     if taxlots_param:
         data['taxlots'], t_count = _add_states_to_data(base_url, TaxLotState, 'taxlotview', page, per_page, labels, cycles)
-
 
     pagination = {
         'page': page,
@@ -235,14 +231,14 @@ def public_feed(org, request):
         pagination['taxlots'] = t_count
 
     return {
-        'pagination': pagination, 
+        'pagination': pagination,
         'query_params': {
             'labels': labels,
             'cycles': cycles if cycles else 'all',
             'properties': properties_param,
             'taxlots': taxlots_param
         },
-        'organization': {'id': org.id, 'name':org.name},
+        'organization': {'id': org.id, 'name': org.name},
         'data': data
     }
 
@@ -305,4 +301,3 @@ def _get_int(value, default):
         return result if result > 0 else default
     except (ValueError, TypeError):
         return default
-
