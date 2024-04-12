@@ -389,8 +389,8 @@ class OrgValidateMixin:
     """
 
     def validate_org(self, instance, user, validator):
-        """
-        Raise error if orgs do not match.
+        """Raise error if orgs do not match.
+
         :param instance: value in request.data.get(key) to check against
         :type instance: model instance
         :param: org_id of user, from get_org_id(request)
@@ -406,8 +406,8 @@ class OrgValidateMixin:
             raise PermissionDenied(msg)
 
     def validate(self, data):
-        """
-        Object level validation.
+        """Object level validation.
+
         Checks for self.org_validators on Serializers and
         ensures users belongs to org corresponding to the foreign key
         being set.
@@ -425,8 +425,7 @@ class OrgValidateMixin:
 
 
 class OrgQuerySetMixin(OrgMixin):
-    """
-    Mixin proving a get_queryset method that filters on organization.
+    """Mixin proving a get_queryset method that filters on organization.
 
     In order to use this mixin you must specify the model attributes on the
     View[Set] class. By default it assumes there is an organization field
@@ -440,7 +439,7 @@ class OrgQuerySetMixin(OrgMixin):
     """
 
     def get_queryset(self):
-        """ "get_queryset filtered on organization"""
+        """get_queryset filtered on organization"""
         # pylint:disable=invalid-name
         # raises Attribute Error if not set
         Model = self.model
