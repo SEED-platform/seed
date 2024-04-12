@@ -14,12 +14,7 @@ from seed.data_importer.models import ImportFile, ImportRecord
 from seed.landing.models import SEEDUser as User
 from seed.lib.mcm.reader import ROW_DELIMITER
 from seed.models import Column, Cycle
-from seed.test_helpers.fake import (
-    FakeCycleFactory,
-    FakePropertyFactory,
-    FakePropertyStateFactory,
-    FakePropertyViewFactory
-)
+from seed.test_helpers.fake import FakeCycleFactory, FakePropertyFactory, FakePropertyStateFactory, FakePropertyViewFactory
 from seed.tests.util import AccessLevelBaseTestCase, DataMappingBaseTestCase
 from seed.utils.organizations import create_organization
 
@@ -95,36 +90,40 @@ class TestOrganizationViews(DataMappingBaseTestCase):
         self.assertEqual(result["TaxLotState"], default_matching_criteria_display_names["TaxLotState"])
 
     def test_public_feed(self):
-        print('>>> TEST')
+        print(">>> TEST")
         # create public columns
         Column.objects.create(
-            table_name='PropertyState',
-            column_name='extra_col',
+            table_name="PropertyState",
+            column_name="extra_col",
             organization=self.org,
             is_extra_data=True,
         )
-        column_names = ['ubid', 'property_name', 'source_eui', 'gross_floor_area', 'energy_score', 'extra_col']
+        column_names = ["ubid", "property_name", "source_eui", "gross_floor_area", "energy_score", "extra_col"]
         for column_name in column_names:
             column = Column.objects.filter(column_name=column_name).first()
             column.shared_field_type = 1
             column.save()
 
         # create cycles
-        cycle1 = self.cycle_factory.get_cycle(name='2010 Calendar Year', start=datetime(2010, 1, 1), end=datetime(2011, 1, 1))
-        cycle2 = self.cycle_factory.get_cycle(name='2011 Calendar Year', start=datetime(2011, 1, 1), end=datetime(2012, 1, 1))
-        cycle3 = self.cycle_factory.get_cycle(name='2012 Calendar Year', start=datetime(2012, 1, 1), end=datetime(2013, 1, 1))
+        cycle1 = self.cycle_factory.get_cycle(name="2010 Calendar Year", start=datetime(2010, 1, 1), end=datetime(2011, 1, 1))
+        cycle2 = self.cycle_factory.get_cycle(name="2011 Calendar Year", start=datetime(2011, 1, 1), end=datetime(2012, 1, 1))
+        cycle3 = self.cycle_factory.get_cycle(name="2012 Calendar Year", start=datetime(2012, 1, 1), end=datetime(2013, 1, 1))
 
         # create properties
         property1 = self.property_factory.get_property()
         property2 = self.property_factory.get_property()
 
         # create states{property#}{cycle#}
-        state11 = self.property_state_factory.get_property_state(property_name='property 11', ubid='a+b+c-1')
-        state12 = self.property_state_factory.get_property_state(property_name='property 12', ubid='a+b+c-1')
-        state13 = self.property_state_factory.get_property_state(property_name='property 13', ubid='a+b+c-1', extra_data={'extra_col': 'aaa'})
-        state21 = self.property_state_factory.get_property_state(property_name='property 21', ubid='a+b+c-2', extra_data={'extra_col': 'bbb'})
-        state22 = self.property_state_factory.get_property_state(property_name='property 22', ubid='a+b+c-2')
-        state23 = self.property_state_factory.get_property_state(property_name='property 23', ubid='a+b+c-2')
+        state11 = self.property_state_factory.get_property_state(property_name="property 11", ubid="a+b+c-1")
+        state12 = self.property_state_factory.get_property_state(property_name="property 12", ubid="a+b+c-1")
+        state13 = self.property_state_factory.get_property_state(
+            property_name="property 13", ubid="a+b+c-1", extra_data={"extra_col": "aaa"}
+        )
+        state21 = self.property_state_factory.get_property_state(
+            property_name="property 21", ubid="a+b+c-2", extra_data={"extra_col": "bbb"}
+        )
+        state22 = self.property_state_factory.get_property_state(property_name="property 22", ubid="a+b+c-2")
+        state23 = self.property_state_factory.get_property_state(property_name="property 23", ubid="a+b+c-2")
 
         # create views
         self.property_view_factory.get_property_view(prpty=property1, state=state11, cycle=cycle1)
@@ -134,17 +133,17 @@ class TestOrganizationViews(DataMappingBaseTestCase):
         self.property_view_factory.get_property_view(prpty=property2, state=state22, cycle=cycle2)
         self.property_view_factory.get_property_view(prpty=property2, state=state23, cycle=cycle3)
 
-        url = reverse_lazy('api:v3:organizations-public-feed-json', args=[self.org.id])
-        response = self.client.get(url, content_type='application/json')
+        url = reverse_lazy("api:v3:organizations-public-feed-json", args=[self.org.id])
+        response = self.client.get(url, content_type="application/json")
         assert response.status_code == 200
-        metadata = response.json()['metadata']
-        assert metadata['properties'] == 6
-        assert metadata['organization'] == self.org.name
+        metadata = response.json()["metadata"]
+        assert metadata["properties"] == 6
+        assert metadata["organization"] == self.org.name
 
-        data = response.json()['data']
-        assert list(data.keys()) == ['properties', 'taxlots']
-        assert len(data['properties']) == 6
-        assert len(data['taxlots']) == 0
+        data = response.json()["data"]
+        assert list(data.keys()) == ["properties", "taxlots"]
+        assert len(data["properties"]) == 6
+        assert len(data["taxlots"]) == 0
 
 
 class TestOrganizationPermissions(AccessLevelBaseTestCase):
