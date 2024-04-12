@@ -90,8 +90,6 @@ class TestOrganizationViews(DataMappingBaseTestCase):
         self.assertEqual(result["TaxLotState"], default_matching_criteria_display_names["TaxLotState"])
 
     def test_public_feed(self):
-        print(">>> TEST")
-        # create public columns
         Column.objects.create(
             table_name="PropertyState",
             column_name="extra_col",
@@ -136,12 +134,12 @@ class TestOrganizationViews(DataMappingBaseTestCase):
         url = reverse_lazy("api:v3:organizations-public-feed-json", args=[self.org.id])
         response = self.client.get(url, content_type="application/json")
         assert response.status_code == 200
-        metadata = response.json()["metadata"]
-        assert metadata["properties"] == 6
-        assert metadata["organization"] == self.org.name
-
-        data = response.json()["data"]
-        assert list(data.keys()) == ["properties", "taxlots"]
+        res = response.json()
+        assert sorted(res.keys()) == ["data", "organization", "pagination", "query_params"]
+        assert sorted(res["pagination"].keys()) == ["page", "per_page", "properties", "taxlots", "total_pages"]
+        assert sorted(res["query_params"].keys()) == ["cycles", "labels", "properties", "taxlots"]
+        assert res["organization"]["id"] == self.org.id
+        data = res["data"]
         assert len(data["properties"]) == 6
         assert len(data["taxlots"]) == 0
 
