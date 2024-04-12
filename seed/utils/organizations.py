@@ -201,9 +201,11 @@ def public_feed(org, request):
     params = request.query_params
     page = _get_int(params.get('page'), 1)
     per_page = _get_int(params.get('per_page'), 100)
-    label_filter = params.get('label_filter', None)
     properties_param = params.get('properties', 'true').lower() == 'true'
     taxlots_param = params.get('taxlots', 'true').lower() == 'true'
+    labels = params.get('labels', None)
+    if labels is not None: 
+        labels = labels.split(',')
     cycles = params.get('cycles', None)
     if cycles is not None:
         cycles = cycles.split(',')
@@ -215,10 +217,10 @@ def public_feed(org, request):
     t_count = 0
 
     if properties_param:
-        data['properties'], p_count = _add_states_to_data(base_url, PropertyState, 'propertyview', page, per_page, label_filter, cycles)
+        data['properties'], p_count = _add_states_to_data(base_url, PropertyState, 'propertyview', page, per_page, labels, cycles)
       
     if taxlots_param:
-        data['taxlots'], t_count = _add_states_to_data(base_url, TaxLotState, 'taxlotview', page, per_page, label_filter, cycles)
+        data['taxlots'], t_count = _add_states_to_data(base_url, TaxLotState, 'taxlotview', page, per_page, labels, cycles)
 
 
     pagination = {
@@ -235,7 +237,7 @@ def public_feed(org, request):
     return {
         'pagination': pagination, 
         'query_params': {
-            'label_filter': label_filter,
+            'labels': labels,
             'cycles': cycles if cycles else 'all',
             'properties': properties_param,
             'taxlots': taxlots_param
@@ -245,11 +247,11 @@ def public_feed(org, request):
     }
 
 
-def _add_states_to_data(base_url, StateClass, view_string, page, per_page, label_filter, cycles):
+def _add_states_to_data(base_url, StateClass, view_string, page, per_page, labels, cycles):
     states = StateClass.objects.filter(**{f'{view_string}__cycle__in': cycles}).order_by('-updated')
 
-    if label_filter is not None:
-        states = states.filter(**{f'{view_string}__labels__name__in': [label_filter]})
+    if labels is not None:
+        states = states.filter(**{f'{view_string}__labels__name__in': labels})
 
     paginator = Paginator(states, per_page)
     try:
