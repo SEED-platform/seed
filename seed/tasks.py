@@ -383,23 +383,19 @@ def sync_salesforce(org_id):
         # send email with errors
         send_salesforce_error_log(org_id, messages)
 
+
 @shared_task
 def sync_audit_template(org_id):
-    import logging
-    logging.error('>>> TASK INITIATED for org %s', org_id)
     try:
         org = Organization.objects.get(id=org_id)
     except Organization.DoesNotExist:
-        logging.error('>>> org dne')
         return
-    
+
     if not org.audit_template_city_id:
-        logging.error('>>> atcityid dne')
         return
 
     at = AuditTemplate(org_id)
     at.batch_get_city_submission_xml()
-
 
 
 @shared_task

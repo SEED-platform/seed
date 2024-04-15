@@ -53,7 +53,7 @@ angular.module('BE.seed.service.audit_template', []).factory('audit_template_ser
 
     audit_template_factory.upsert_audit_template_config = (org_id, data, timezone) => {
       data['timezone'] = timezone;
-      return data.id 
+      return data.id
         ? audit_template_factory.update_audit_template_config(org_id, data)
         : audit_template_factory.create_audit_template_config(org_id, data)
     };

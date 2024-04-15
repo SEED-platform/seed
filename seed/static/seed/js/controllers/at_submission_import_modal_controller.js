@@ -10,7 +10,7 @@ angular.module('BE.seed.controller.at_submission_import_modal', []).controller('
   'org',
   // eslint-disable-next-line func-names
   function (
-    $scope, 
+    $scope,
     $uibModalInstance,
     audit_template_service,
     uploader_service,
@@ -35,20 +35,20 @@ angular.module('BE.seed.controller.at_submission_import_modal', []).controller('
           .then(response => {
             console.log('>>> part 1')
             data = response.data
-            uploader_service.check_progress_loop( 
-              data.progress_key, 
-              0, 
-              1, 
+            uploader_service.check_progress_loop(
+              data.progress_key,
+              0,
+              1,
               (data) => {
                 $scope.status.in_progress = false
                 $scope.status.complete = true
                 $scope.status.result = data.message
-              }, 
+              },
               () => {
                 $scope.status.in_progress = false
                 $scope.status.complete = true
                 console.log('fail')
-              }, 
+              },
               $scope.status)
         })
       }

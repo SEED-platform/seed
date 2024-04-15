@@ -193,35 +193,22 @@ class AuditTemplateViewSet(viewsets.ViewSet, OrgMixin):
         if progress_data is None:
             return JsonResponse({"success": False, "message": message or "Unexpected Error"}, status=400)
         return JsonResponse(progress_data)
-    
-    @swagger_auto_schema(
-        manual_parameters=[
-            AutoSchemaHelper.query_org_id_field()
-        ]
-    )
-    @has_perm_class('can_modify_data')
-    @action(detail=False, methods=['PUT'])
+
+    @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_org_id_field()])
+    @has_perm_class("can_modify_data")
+    @action(detail=False, methods=["PUT"])
     def batch_get_city_submission_xml(self, request):
         """
         Batch import from Audit Template using the submissions endpoint for a given city
         Properties are updated with xmls using custom_id_1 as matching criteria
         """
-        import logging
-        logging.error('>>> test response')
-
-        city_id = request.data.get('city_id')
+        city_id = request.data.get("city_id")
         if not city_id:
-            return JsonResponse({
-                'success': False,
-                'message': 'City ID argument required'
-            }, status=400)
+            return JsonResponse({"success": False, "message": "City ID argument required"}, status=400)
 
         at = AuditTemplate(self.get_organization(request))
         progress_data, message = at.batch_get_city_submission_xml()
 
         if progress_data is None:
-            return JsonResponse({
-                'success': False,
-                'message': message or 'Unexpected Error'
-            }, status=400)
+            return JsonResponse({"success": False, "message": message or "Unexpected Error"}, status=400)
         return JsonResponse(progress_data)

@@ -308,7 +308,7 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
       }
 
       if ($scope.org.audit_template_sync_enabled && validate_at_conf()) {
-        audit_template_service.upsert_audit_template_config($scope.org.id, $scope.at_conf, $scope.timezone) 
+        audit_template_service.upsert_audit_template_config($scope.org.id, $scope.at_conf, $scope.timezone)
       }
 
       // also save NEW/UPDATED salesforce mappings if any
@@ -490,8 +490,8 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
     };
 
     /*
-    * fetch Audit Template city submission data 
-    */ 
+    * fetch Audit Template city submission data
+    */
     $scope.get_city_submission_data = () => {
       $uibModal.open({
         templateUrl: `${urls.static_url}seed/partials/at_submission_import_modal.html`,
@@ -504,7 +504,7 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
     }
 
     $scope.days_of_week = [
-      {0: 'Sunday'}, 
+      {0: 'Sunday'},
       {1: 'Monday'},
       {2: 'Tuesday'},
       {3: 'Wednesday'},

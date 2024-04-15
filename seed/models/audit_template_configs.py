@@ -1,15 +1,14 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
-import logging
 
-from django.core.validators import MinValueValidator, MaxValueValidator
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
 from seed.lib.superperms.orgs.models import Organization
+
 
 class AuditTemplateConfig(models.Model):
     # Stores all the configuration needed to communicate with Audit Template

@@ -587,39 +587,34 @@ class ExportToAuditTemplate(TestCase):
         self.assertEqual(exp, details[0]["message"])
         self.assertIsNone(self.state3.audit_template_building_id)
 
-        details = info['details']
-        exp = f'{self.state4.pm_property_id}: Existing Audit Template Property'
-        self.assertEqual(self.view4.id, details[0]['view_id'])
-        self.assertEqual(exp, details[0]['message'])
-        self.assertEqual('4444', self.state4.audit_template_building_id)
+        details = info["details"]
+        exp = f"{self.state4.pm_property_id}: Existing Audit Template Property"
+        self.assertEqual(self.view4.id, details[0]["view_id"])
+        self.assertEqual(exp, details[0]["message"])
+        self.assertEqual("4444", self.state4.audit_template_building_id)
 
 
-
-# CAN ONLY BE RUN WITH LIVE DATA
+# For developer use only. Must be run with live submission data.
 class AuditTemplateSubmissionImport(TestCase):
-
-    @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
-        from django.conf import settings    
-        if settings.AUDIT_TEMPLATE_HOST != 'https://staging.labworks.org':
-            print(">>> Unable to run test, must be run against staging server.\n >>> Change local_untracked.py to AUDIT_TEMPLATE_HOST = 'https://staging.labworks.org'")
-            assert False
-
-    
     def setUp(self):
-        settings.AUDIT_TEMPLATE_HOST = 'https://staging.labworks.org'
+        settings.AUDIT_TEMPLATE_HOST = "https://staging.labworks.org"
         self.user_details = {
-            'username': 'test_user@demo.com',
-            'password': 'test_pass',
+            "username": "test_user@demo.com",
+            "password": "test_pass",
         }
-        self.user = User.objects.create_superuser(
-            email='test_user@demo.com', **self.user_details
-        )
+        self.user = User.objects.create_superuser(email="test_user@demo.com", **self.user_details)
         self.org, _, _ = create_organization(self.user)
-        self.org.at_organization_token = 'LQssSnjk6fhBzh3X72v6'
-        self.org.audit_template_user = '179d-stage@nrel.gov'
-        self.org.audit_template_password = 'thb4fva_krp7fam7JHK'
+        # To run test, enter valid audit template credentials
+        self.org.at_organization_token = False
+        self.org.audit_template_user = False
+        self.org.audit_template_password = False
+        self.skip_test = (
+            not self.org.at_organization_token
+            or not self.org.audit_template_user
+            or not self.org.audit_template_password
+            or settings.AUDIT_TEMPLATE_HOST != "https://staging.labworks.org"
+        )
+
         self.org.audit_template_city_id = 36
         self.org.save()
         self.at = AuditTemplate(self.org.id)
@@ -640,22 +635,24 @@ class AuditTemplateSubmissionImport(TestCase):
         self.view_factory = FakePropertyViewFactory(organization=self.org)
         self.state_factory = FakePropertyStateFactory(organization=self.org)
 
-        self.state1 = self.state_factory.get_property_state(address_line_1='old address 1', custom_id_1='ABC123')
-        self.state2 = self.state_factory.get_property_state(address_line_1='old address 2', custom_id_1='ABC123')
-        self.state3 = self.state_factory.get_property_state(address_line_1='old address 3', custom_id_1='not_a_match')
-        self.state4 = self.state_factory.get_property_state(address_line_1='old address 4')
+        self.state1 = self.state_factory.get_property_state(address_line_1="old address 1", custom_id_1="ABC123")
+        self.state2 = self.state_factory.get_property_state(address_line_1="old address 2", custom_id_1="ABC123")
+        self.state3 = self.state_factory.get_property_state(address_line_1="old address 3", custom_id_1="not_a_match")
+        self.state4 = self.state_factory.get_property_state(address_line_1="old address 4")
 
         self.view1 = self.view_factory.get_property_view(cycle=self.cycle2023, state=self.state1)
         self.view2 = self.view_factory.get_property_view(cycle=self.cycle2020, state=self.state2)
         self.view3 = self.view_factory.get_property_view(cycle=self.cycle2023, state=self.state3)
         self.view4 = self.view_factory.get_property_view(cycle=self.cycle2020, state=self.state4)
 
-    def test_atsubs(self):
+    def test_audit_template_submissions(self):
+        if self.skip_test:
+            self.skipTest("This test is skipped in non-development environments as it is only relevant for developer checks.")
 
-        assert self.view1.state.address_line_1 == 'old address 1'
-        assert self.view2.state.address_line_1 == 'old address 2'
-        assert self.view3.state.address_line_1 == 'old address 3'
-        assert self.view4.state.address_line_1 == 'old address 4'
+        assert self.view1.state.address_line_1 == "old address 1"
+        assert self.view2.state.address_line_1 == "old address 2"
+        assert self.view3.state.address_line_1 == "old address 3"
+        assert self.view4.state.address_line_1 == "old address 4"
 
         assert not self.view1.state.audit_template_building_id
         assert not self.view1.state.extra_data
@@ -664,40 +661,35 @@ class AuditTemplateSubmissionImport(TestCase):
 
         for view in [self.view1, self.view2, self.view3, self.view4]:
             view.refresh_from_db()
-        
+
         # view1's state is the only state that matches the AT response's tax_id (custom_id_1) and cycle dates
-        assert self.view1.state.address_line_1 == 'ABC Street'
-        assert self.view2.state.address_line_1 == 'old address 2'
-        assert self.view3.state.address_line_1 == 'old address 3'
-        assert self.view4.state.address_line_1 == 'old address 4'
+        assert self.view1.state.address_line_1 == "ABC Street"
+        assert self.view2.state.address_line_1 == "old address 2"
+        assert self.view3.state.address_line_1 == "old address 3"
+        assert self.view4.state.address_line_1 == "old address 4"
 
         assert self.view1.state.extra_data
-        assert self.view1.state.audit_template_building_id == '1182'
+        assert self.view1.state.audit_template_building_id == "1182"
 
-    def test_atsubs_view(self):
+    def test_audit_template_submissions_view(self):
+        if self.skip_test:
+            self.skipTest("This test is skipped in non-development environments as it is only relevant for developer checks.")
 
-        self.view1.state.address_line_1 = 'old address 1'
+        self.view1.state.address_line_1 = "old address 1"
         self.view1.state.save()
 
-        assert self.view1.state.address_line_1 == 'old address 1'
-        assert self.view2.state.address_line_1 == 'old address 2'
-        assert self.view3.state.address_line_1 == 'old address 3'
-        assert self.view4.state.address_line_1 == 'old address 4'
+        assert self.view1.state.address_line_1 == "old address 1"
+        assert self.view2.state.address_line_1 == "old address 2"
+        assert self.view3.state.address_line_1 == "old address 3"
+        assert self.view4.state.address_line_1 == "old address 4"
 
-        url = reverse('api:v3:audit_template-batch-get-city-submission-xml') + f'?organization_id={self.org.id}'
-        params = {'city_id': self.org.audit_template_city_id}
-        response = self.client.put(
-            url,
-            params,
-            content_type='application/json'
-            )
+        url = reverse("api:v3:audit_template-batch-get-city-submission-xml") + f"?organization_id={self.org.id}"
+        params = {"city_id": self.org.audit_template_city_id}
+        self.client.put(url, params, content_type="application/json")
 
-        # assert something for the response
         for view in [self.view1, self.view2, self.view3, self.view4]:
             view.refresh_from_db()
-        assert self.view1.state.address_line_1 == 'ABC Street'
-        assert self.view2.state.address_line_1 == 'old address 2'
-        assert self.view3.state.address_line_1 == 'old address 3'
-        assert self.view4.state.address_line_1 == 'old address 4'
-
-
+        assert self.view1.state.address_line_1 == "ABC Street"
+        assert self.view2.state.address_line_1 == "old address 2"
+        assert self.view3.state.address_line_1 == "old address 3"
+        assert self.view4.state.address_line_1 == "old address 4"
