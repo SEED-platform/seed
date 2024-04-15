@@ -303,7 +303,7 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
             property__access_level_instance__lft__gte=access_level_instance.lft,
             property__access_level_instance__rgt__lte=access_level_instance.rgt,
         )
-        states = PropertyState.objects.filter(id__in=list(views.values_list("state_id", flat=True)))
+        states = PropertyState.objects.filter(id__in=views.values_list("state_id", flat=True))
         columns = Column.objects.filter(organization_id=org_id, derived_column=None, table_name="PropertyState").only(
             "is_extra_data", "column_name"
         )
