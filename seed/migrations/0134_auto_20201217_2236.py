@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('seed', '0133_auto_20201216_2035'),
+        ("seed", "0133_auto_20201216_2035"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='analysismessage',
-            name='type',
-            field=models.IntegerField(choices=[(1, 'default'), (10, 'debug'), (20, 'info'), (30, 'warning'), (40, 'error')]),
+            model_name="analysismessage",
+            name="type",
+            field=models.IntegerField(choices=[(1, "default"), (10, "debug"), (20, "info"), (30, "warning"), (40, "error")]),
         ),
     ]

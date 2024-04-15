@@ -1,9 +1,9 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 from datetime import datetime
 
 import pytz
@@ -16,23 +16,23 @@ from seed.utils.strings import titlecase
 from seed.utils.time import convert_datestr
 
 
-class DummyClass(object):
+class DummyClass:
     "A simple class that has two fields"
+
     field_one = "field_one"
     field_two = "field_two"
 
 
 class TestGenericUtils(TestCase):
-
     def test_split_model_fields(self):
         """
         Tests splitting a list of field names based on what fields an
         object has.
         """
-        f1 = 'field_one'
-        f2 = 'field_two'
-        f3 = 'no_field_three'
-        f4 = 'no_field_four'
+        f1 = "field_one"
+        f2 = "field_two"
+        f3 = "no_field_three"
+        f4 = "no_field_four"
 
         obj = DummyClass()
 
@@ -53,7 +53,6 @@ class TestGenericUtils(TestCase):
 
 
 class TestTime(TestCase):
-
     def test_date_conversion(self):
         date = datetime(2016, 7, 15).date()
         self.assertEqual(date_cleaner(date.strftime("%Y-%m-%d")), date)

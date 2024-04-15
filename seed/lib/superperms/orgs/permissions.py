@@ -1,5 +1,4 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
@@ -9,6 +8,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 Provides permissions classes for use in DRF views and viewsets to control
 access based on Organization and OrganizationUser.role_level.
 """
+
 from typing import Union
 
 from django import VERSION as DJANGO_VERSION
@@ -16,16 +16,10 @@ from django.conf import settings
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import BasePermission
 
-from seed.lib.superperms.orgs.models import (
-    ROLE_MEMBER,
-    ROLE_OWNER,
-    ROLE_VIEWER,
-    Organization,
-    OrganizationUser
-)
+from seed.lib.superperms.orgs.models import ROLE_MEMBER, ROLE_OWNER, ROLE_VIEWER, Organization, OrganizationUser
 
 # Allow Super Users to ignore permissions.
-ALLOW_SUPER_USER_PERMS = getattr(settings, 'ALLOW_SUPER_USER_PERMS', True)
+ALLOW_SUPER_USER_PERMS = getattr(settings, "ALLOW_SUPER_USER_PERMS", True)
 
 
 # based on version present in newer version of rest_framework.compat
@@ -43,7 +37,7 @@ def get_org_or_id(dictlike: dict) -> Union[int, None]:
     # while documentation should encourage the use of one consistent key choice
     # for supplying an organization to query_params, we check all reasonable
     # permutations of organization id.
-    org_query_strings = ['organization', 'organization_id', 'org_id', 'org']
+    org_query_strings = ["organization", "organization_id", "org_id", "org"]
     if isinstance(dictlike, list):
         return None
 
@@ -54,7 +48,7 @@ def get_org_or_id(dictlike: dict) -> Union[int, None]:
             org_id = dictlike.get(org_str)
             if org_id:
                 # Type case the organization_id as a integer
-                if '_id' in org_str:
+                if "_id" in org_str:
                     org_id = int(org_id)
                 break
         except (ValueError, TypeError):
@@ -74,11 +68,11 @@ def get_org_id(request):
     :return: str | None
     """
     # first check if the view is configured to get the org id from a path parameter
-    request_view = request.parser_context.get('view', None)
-    if request_view is not None and hasattr(request_view, 'authz_org_id_kwarg'):
+    request_view = request.parser_context.get("view", None)
+    if request_view is not None and hasattr(request_view, "authz_org_id_kwarg"):
         kwarg_name = request_view.authz_org_id_kwarg
         if kwarg_name:
-            request_kwargs = request.parser_context.get('kwargs', {})
+            request_kwargs = request.parser_context.get("kwargs", {})
             # some views might not include the ID in the path so we have to check (e.g., data quality)
             kwarg_org_id = request_kwargs.get(kwarg_name, None)
             if kwarg_org_id is not None:
@@ -87,10 +81,10 @@ def get_org_id(request):
     # if the view doesn't explicitly provide a kwarg for organization id in the path,
     # check the path string.
     # this is required for backwards compatibility of older APIs
-    if hasattr(request, '_request') and 'organizations' in request._request.path:
-        request_path = request._request.path.split('/')
+    if hasattr(request, "_request") and "organizations" in request._request.path:
+        request_path = request._request.path.split("/")
         try:
-            if request_path[3] == 'organizations' and request_path[4].isdigit():
+            if request_path[3] == "organizations" and request_path[4].isdigit():
                 return int(request_path[4])
         except (IndexError, ValueError):
             # IndexError will occur if the split results in less than 4 tokens
@@ -104,7 +98,7 @@ def get_org_id(request):
 
     # try getting it from the request body itself
     try:
-        if hasattr(request, 'data'):
+        if hasattr(request, "data"):
             data_org_id = get_org_or_id(request.data)
             if data_org_id is not None:
                 return data_org_id
@@ -157,16 +151,17 @@ class SEEDOrgPermissions(BasePermission):
     view(set)to do this.
 
     """
+
     message = PermissionDenied.default_detail
     authenticated_users_only = True
     perm_map = {
-        'GET': ROLE_VIEWER,
-        'OPTIONS': ROLE_VIEWER,
-        'HEAD': ROLE_VIEWER,
-        'POST': ROLE_MEMBER,
-        'PUT': ROLE_MEMBER,
-        'PATCH': ROLE_MEMBER,
-        'DELETE': ROLE_MEMBER,
+        "GET": ROLE_VIEWER,
+        "OPTIONS": ROLE_VIEWER,
+        "HEAD": ROLE_VIEWER,
+        "POST": ROLE_MEMBER,
+        "PUT": ROLE_MEMBER,
+        "PATCH": ROLE_MEMBER,
+        "DELETE": ROLE_MEMBER,
     }
 
     def has_perm(self, request):
@@ -185,21 +180,19 @@ class SEEDOrgPermissions(BasePermission):
         org_id = get_org_id(request)
         if not org_id:
             org = get_user_org(request.user)
-            org_id = getattr(org, 'pk')
+            org_id = getattr(org, "pk")
         try:
-            org_user = OrganizationUser.objects.get(
-                user=request.user, organization__id=org_id
-            )
+            org_user = OrganizationUser.objects.get(user=request.user, organization__id=org_id)
             has_perm = org_user.role_level >= required_perm
         except OrganizationUser.DoesNotExist:
-            self.message = 'No relationship to organization'
+            self.message = "No relationship to organization"
             # return the right error message. we wait until here to check for
             # organization so the extra db call is not made if not needed.
             if not org:
                 try:
                     org = Organization.objects.get(id=org_id)
                 except Organization.DoesNotExist:
-                    self.message = 'Organization does not exist'
+                    self.message = "Organization does not exist"
         return has_perm
 
     def has_permission(self, request, view):
@@ -207,33 +200,29 @@ class SEEDOrgPermissions(BasePermission):
         # Workaround to ensure this is not applied to the root view when using DefaultRouter.
         value_error = False
         try:
-            if hasattr(view, 'get_queryset'):
+            if hasattr(view, "get_queryset"):
                 queryset = view.get_queryset()
             else:
-                queryset = getattr(view, 'queryset', None)
+                queryset = getattr(view, "queryset", None)
         except ValueError:
-            if not getattr(view, 'queryset', None):
+            if not getattr(view, "queryset", None):
                 value_error = True
             else:
                 value_error = False
 
         if value_error or queryset is None:
-            raise AssertionError('Cannot apply {} on a view that does not set `.queryset`'
-                                 ' or have a `.get_queryset()` method.'.format(view.__class__))
-
-        return (
-            request.user and
-            (
-                is_authenticated(request.user) or not self.authenticated_users_only
+            raise AssertionError(
+                f"Cannot apply {view.__class__} on a view that does not set `.queryset`" " or have a `.get_queryset()` method."
             )
-            and self.has_perm(request)
-        )
+
+        return request.user and (is_authenticated(request.user) or not self.authenticated_users_only) and self.has_perm(request)
 
 
 class SEEDPublicPermissions(SEEDOrgPermissions):
     """Allow anonymous users read-only access"""
+
     authenticated_users_only = False
-    safe_methods = ['GET', 'OPTIONS', 'HEAD']
+    safe_methods = ["GET", "OPTIONS", "HEAD"]
 
     def has_perm(self, request):
         """Always true for safe methods."""

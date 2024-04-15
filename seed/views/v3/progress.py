@@ -2,6 +2,7 @@
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 import logging
 
 from django.http import JsonResponse
@@ -33,8 +34,4 @@ class ProgressViewSet(viewsets.ViewSet):
         if get_cache(progress_key):
             return JsonResponse(get_cache(progress_key))
         else:
-            return JsonResponse({
-                'progress_key': progress_key,
-                'progress': 0,
-                'status': 'waiting'
-            })
+            return JsonResponse({"progress_key": progress_key, "progress": 0, "status": "waiting"})

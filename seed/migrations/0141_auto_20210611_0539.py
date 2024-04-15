@@ -4,20 +4,19 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('seed', '0140_scenario_annual_peak_electricity_reduction'),
+        ("seed", "0140_scenario_annual_peak_electricity_reduction"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='analysis',
-            name='service',
-            field=models.IntegerField(choices=[(1, 'BSyncr'), (2, 'BETTER')]),
+            model_name="analysis",
+            name="service",
+            field=models.IntegerField(choices=[(1, "BSyncr"), (2, "BETTER")]),
         ),
         migrations.AlterField(
-            model_name='analysisoutputfile',
-            name='content_type',
-            field=models.IntegerField(choices=[(1, 'BuildingSync'), (2, 'html'), (100, 'PNG')]),
+            model_name="analysisoutputfile",
+            name="content_type",
+            field=models.IntegerField(choices=[(1, "BuildingSync"), (2, "html"), (100, "PNG")]),
         ),
     ]
