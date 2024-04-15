@@ -252,7 +252,7 @@ def _add_states_to_data(base_url, state_class, view_string, page, per_page, labe
 
         state_data = {
             "id": view.id,
-            "cycle": view.cycle.name,
+            "cycle": {"id": view.cycle.id, "name": view.cycle.name},
             "updated": state.updated,
             "created": state.created,
             "labels": ", ".join(view.labels.all().values_list("name", flat=True)),
