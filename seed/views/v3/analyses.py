@@ -307,16 +307,20 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
         columns = Column.objects.filter(organization_id=org_id, derived_column=None, table_name="PropertyState").only(
             "is_extra_data", "column_name"
         )
+        num_of_nonnulls_by_column_name = {c.column_name: 0 for c in columns}
 
-        num_of_nonnulls_by_column_name = {}
-        for column in columns:
+        # fill num_of_nonnulls_by_column_name for extra_data columns
+        for data in states.values_list("extra_data", flat=True):
+            for key, value in data.items():
+                if value is not None:
+                    num_of_nonnulls_by_column_name[key] += 1
+
+        # fill num_of_nonnulls_by_column_name for canonical columns
+        for column in columns.filter(is_extra_data=False):
             name = column.column_name
-            if column.is_extra_data:
-                count = states.filter(extra_data__has_key=name).exclude(**{f"extra_data__{name}": None}).count()
-            else:
+            if not column.is_extra_data:
                 count = states.exclude(**{name: None}).count()
-
-            num_of_nonnulls_by_column_name[name] = count
+                num_of_nonnulls_by_column_name[name] = count
 
         return JsonResponse(
             {
