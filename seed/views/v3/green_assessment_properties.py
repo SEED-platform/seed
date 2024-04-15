@@ -1,9 +1,9 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 from django.utils.decorators import method_decorator
 from rest_framework import status
 from rest_framework.decorators import action
@@ -17,28 +17,28 @@ from seed.utils.viewsets import SEEDOrgModelViewSet
 
 
 @method_decorator(
-    name='update',
+    name="update",
     decorator=[
-        has_perm_class('requires_root_member_access'),
-    ]
+        has_perm_class("requires_root_member_access"),
+    ],
 )
 @method_decorator(
-    name='destroy',
+    name="destroy",
     decorator=[
-        has_perm_class('requires_root_member_access'),
-    ]
+        has_perm_class("requires_root_member_access"),
+    ],
 )
 @method_decorator(
-    name='retrieve',
+    name="retrieve",
     decorator=[
-        has_perm_class('requires_root_member_access'),
-    ]
+        has_perm_class("requires_root_member_access"),
+    ],
 )
 @method_decorator(
-    name='list',
+    name="list",
     decorator=[
-        has_perm_class('requires_root_member_access'),
-    ]
+        has_perm_class("requires_root_member_access"),
+    ],
 )
 class GreenAssessmentPropertyViewSet(SEEDOrgModelViewSet):
     """API endpoint to view and create green assessment property attachments.
@@ -89,21 +89,22 @@ class GreenAssessmentPropertyViewSet(SEEDOrgModelViewSet):
     partial_update:
         Update one or more fields on an existing green assessment...
     """
+
     serializer_class = GreenAssessmentPropertySerializer
     model = GreenAssessmentProperty
-    orgfilter = 'assessment__organization_id'
+    orgfilter = "assessment__organization_id"
     filter_class = GAPropertyFilterSet
 
-    @action(detail=True, methods=['get'])
-    @has_perm_class('requires_root_member_access')
+    @action(detail=True, methods=["get"])
+    @has_perm_class("requires_root_member_access")
     def reso_format(self, request, pk=None):
         """Return an assessment property instance by pk in reso format"""
         assessment = self.get_object()
         status_code = status.HTTP_200_OK
         return Response(assessment.to_reso_dict(), status=status_code)
 
-    @action(detail=True, methods=['get'])
-    @has_perm_class('requires_root_member_access')
+    @action(detail=True, methods=["get"])
+    @has_perm_class("requires_root_member_access")
     def bedes_format(self, request, pk=None):
         """Return an assessment property instance by pk in bedes format"""
         assessment = self.get_object()

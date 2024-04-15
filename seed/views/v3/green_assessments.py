@@ -1,9 +1,9 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 from django.utils.decorators import method_decorator
 
 from seed.filtersets import GreenAssessmentFilterSet
@@ -14,28 +14,28 @@ from seed.utils.viewsets import SEEDOrgCreateUpdateModelViewSet
 
 
 @method_decorator(
-    name='update',
+    name="update",
     decorator=[
-        has_perm_class('requires_root_member_access'),
-    ]
+        has_perm_class("requires_root_member_access"),
+    ],
 )
 @method_decorator(
-    name='destroy',
+    name="destroy",
     decorator=[
-        has_perm_class('requires_root_member_access'),
-    ]
+        has_perm_class("requires_root_member_access"),
+    ],
 )
 @method_decorator(
-    name='retrieve',
+    name="retrieve",
     decorator=[
-        has_perm_class('requires_root_member_access'),
-    ]
+        has_perm_class("requires_root_member_access"),
+    ],
 )
 @method_decorator(
-    name='list',
+    name="list",
     decorator=[
-        has_perm_class('requires_root_member_access'),
-    ]
+        has_perm_class("requires_root_member_access"),
+    ],
 )
 class GreenAssessmentViewSet(SEEDOrgCreateUpdateModelViewSet):
     """API endpoint for viewing and creating green assessment certifications.
@@ -179,6 +179,7 @@ class GreenAssessmentViewSet(SEEDOrgCreateUpdateModelViewSet):
             :Description: duration of assessment validity. ``[DD] [HH:[MM:]]``
             :required: false
     """
+
     serializer_class = GreenAssessmentSerializer
     model = GreenAssessment
     filter_class = GreenAssessmentFilterSet

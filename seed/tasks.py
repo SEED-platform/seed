@@ -1,10 +1,8 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
-from __future__ import absolute_import
 
 import itertools
 import math
@@ -39,7 +37,7 @@ from seed.models import (
     SalesforceConfig,
     TaxLot,
     TaxLotState,
-    TaxLotView
+    TaxLotView,
 )
 from seed.utils.salesforce import auto_sync_salesforce_properties
 
@@ -58,28 +56,16 @@ def invite_new_user_to_seed(domain, email_address, token, user_pk, first_name):
 
     Returns: nothing
     """
-    signup_url = reverse_lazy('landing:activate', kwargs={
-        'uidb64': urlsafe_base64_encode(force_bytes(user_pk)),
-        'token': token
-    })
+    signup_url = reverse_lazy("landing:activate", kwargs={"uidb64": urlsafe_base64_encode(force_bytes(user_pk)), "token": token})
 
-    context = {
-        'email': email_address,
-        'domain': domain,
-        'protocol': settings.PROTOCOL,
-        'first_name': first_name,
-        'signup_url': signup_url
-    }
+    context = {"email": email_address, "domain": domain, "protocol": settings.PROTOCOL, "first_name": first_name, "signup_url": signup_url}
 
-    subject = 'New SEED account'
-    email_body = loader.render_to_string(
-        'seed/account_create_email.html',
-        context
-    )
+    subject = "New SEED account"
+    email_body = loader.render_to_string("seed/account_create_email.html", context)
     send_mail(subject, email_body, settings.SERVER_EMAIL, [email_address])
     try:
         bcc_address = settings.SEED_ACCOUNT_CREATION_BCC
-        new_subject = "{} ({})".format(subject, email_address)
+        new_subject = f"{subject} ({email_address})"
         send_mail(new_subject, email_body, settings.SERVER_EMAIL, [bcc_address])
     except AttributeError:
         pass
@@ -98,29 +84,28 @@ def invite_to_seed(domain, email_address, token, organization, user_pk, first_na
 
     Returns: nothing
     """
-    sign_up_url = Template("{{protocol}}://{{domain}}{{sign_up_url}}").render(Context({
-        'protocol': settings.PROTOCOL,
-        'domain': domain,
-        'sign_up_url': reverse_lazy('landing:signup', kwargs={
-            'uidb64': urlsafe_base64_encode(force_bytes(user_pk)),
-            'token': token
-        })
-    }))
+    sign_up_url = Template("{{protocol}}://{{domain}}{{sign_up_url}}").render(
+        Context(
+            {
+                "protocol": settings.PROTOCOL,
+                "domain": domain,
+                "sign_up_url": reverse_lazy(
+                    "landing:signup", kwargs={"uidb64": urlsafe_base64_encode(force_bytes(user_pk)), "token": token}
+                ),
+            }
+        )
+    )
 
-    content = Template(organization.new_user_email_content).render(Context({
-        'first_name': first_name,
-        'sign_up_link': sign_up_url
-    }))
+    content = Template(organization.new_user_email_content).render(Context({"first_name": first_name, "sign_up_link": sign_up_url}))
 
-    body = Template("{{content}}\n\n{{signature}}").render(Context({
-        'content': content,
-        'signature': organization.new_user_email_signature
-    }))
+    body = Template("{{content}}\n\n{{signature}}").render(
+        Context({"content": content, "signature": organization.new_user_email_signature})
+    )
 
     send_mail(organization.new_user_email_subject, body, organization.new_user_email_from, [email_address])
     try:
         bcc_address = settings.SEED_ACCOUNT_CREATION_BCC
-        new_subject = "{} ({})".format(organization.new_user_email_subject, email_address)
+        new_subject = f"{organization.new_user_email_subject} ({email_address})"
         send_mail(new_subject, body, organization.new_user_email_from, [bcc_address])
     except AttributeError:
         pass
@@ -139,56 +124,46 @@ def invite_to_organization(domain, new_user, requested_by, new_org):
     Returns: nothing
     """
     context = {
-        'new_user': new_user,
-        'first_name': new_user.first_name,
-        'domain': domain,
-        'protocol': settings.PROTOCOL,
-        'new_org': new_org,
-        'requested_by': requested_by,
+        "new_user": new_user,
+        "first_name": new_user.first_name,
+        "domain": domain,
+        "protocol": settings.PROTOCOL,
+        "new_org": new_org,
+        "requested_by": requested_by,
     }
 
-    subject = 'Your SEED account has been added to an organization'
-    email_body = loader.render_to_string(
-        'seed/account_org_added.html',
-        context
-    )
+    subject = "Your SEED account has been added to an organization"
+    email_body = loader.render_to_string("seed/account_org_added.html", context)
     send_mail(subject, email_body, settings.SERVER_EMAIL, [new_user.email])
     try:
         bcc_address = settings.SEED_ACCOUNT_CREATION_BCC
-        new_subject = "{} ({})".format(subject, new_user.email)
+        new_subject = f"{subject} ({new_user.email})"
         send_mail(new_subject, email_body, settings.SERVER_EMAIL, [bcc_address])
     except AttributeError:
         pass
 
 
 def send_salesforce_error_log(org_pk, errors):
-    """ send salesforce error log to logging email when errors are encountered during scheduled sync """
+    """send salesforce error log to logging email when errors are encountered during scheduled sync"""
     sf_conf = SalesforceConfig.objects.get(organization_id=org_pk)
     org = Organization.objects.get(pk=org_pk)
 
     if sf_conf.logging_email:
+        context = {"organization_name": org.name, "errors": errors}
 
-        context = {
-            'organization_name': org.name,
-            'errors': errors
-        }
-
-        subject = 'Salesforce Automatic Update Errors'
-        email_body = loader.render_to_string(
-            'seed/salesforce_update_errors.html',
-            context
-        )
+        subject = "Salesforce Automatic Update Errors"
+        email_body = loader.render_to_string("seed/salesforce_update_errors.html", context)
         send_mail(subject, email_body, settings.SERVER_EMAIL, [sf_conf.logging_email])
 
 
 def delete_organization(org_pk):
     """delete_organization_buildings"""
-    progress_data = ProgressData(func_name='delete_organization', unique_id=org_pk)
+    progress_data = ProgressData(func_name="delete_organization", unique_id=org_pk)
 
     chain(
         delete_organization_inventory.si(org_pk, progress_data.key),
         _delete_organization_related_data.si(org_pk, progress_data.key),
-        _finish_delete.si(None, org_pk, progress_data.key)
+        _finish_delete.si(None, org_pk, progress_data.key),
     )()
 
     return progress_data.result()
@@ -222,8 +197,7 @@ def _finish_delete_column(column_id, prog_key):
     column.delete()
 
     progress_data = ProgressData.from_key(prog_key)
-    return progress_data.finish_with_success(
-        f'Removed {column.column_name} from {progress_data.data["total_records"]} records')
+    return progress_data.finish_with_success(f'Removed {column.column_name} from {progress_data.data["total_records"]} records')
 
 
 @shared_task
@@ -232,26 +206,19 @@ def delete_organization_inventory(org_pk, prog_key=None, chunk_size=100, *args, 
     """Deletes all properties & taxlots within an organization."""
     sys.setrecursionlimit(5000)  # default is 1000
 
-    progress_data = ProgressData.from_key(prog_key) if prog_key else ProgressData(
-        func_name='delete_organization_inventory', unique_id=org_pk)
+    progress_data = (
+        ProgressData.from_key(prog_key) if prog_key else ProgressData(func_name="delete_organization_inventory", unique_id=org_pk)
+    )
 
-    property_ids = list(
-        Property.objects.filter(organization_id=org_pk).values_list('id', flat=True)
-    )
-    property_state_ids = list(
-        PropertyState.objects.filter(organization_id=org_pk).values_list('id', flat=True)
-    )
-    taxlot_ids = list(
-        TaxLot.objects.filter(organization_id=org_pk).values_list('id', flat=True)
-    )
-    taxlot_state_ids = list(
-        TaxLotState.objects.filter(organization_id=org_pk).values_list('id', flat=True)
-    )
+    property_ids = list(Property.objects.filter(organization_id=org_pk).values_list("id", flat=True))
+    property_state_ids = list(PropertyState.objects.filter(organization_id=org_pk).values_list("id", flat=True))
+    taxlot_ids = list(TaxLot.objects.filter(organization_id=org_pk).values_list("id", flat=True))
+    taxlot_state_ids = list(TaxLotState.objects.filter(organization_id=org_pk).values_list("id", flat=True))
 
     total = len(property_ids) + len(property_state_ids) + len(taxlot_ids) + len(taxlot_state_ids)
 
     if total == 0:
-        return progress_data.finish_with_success('No inventory data to remove for organization')
+        return progress_data.finish_with_success("No inventory data to remove for organization")
 
     # total steps is the total number of properties divided by the chunk size
     progress_data.total = total / float(chunk_size)
@@ -260,29 +227,13 @@ def delete_organization_inventory(org_pk, prog_key=None, chunk_size=100, *args, 
     tasks = []
     # we could also use .s instead of .subtask and not wrap the *args
     for del_ids in batch(property_ids, chunk_size):
-        tasks.append(
-            _delete_organization_property_chunk.subtask(
-                (del_ids, progress_data.key, org_pk)
-            )
-        )
+        tasks.append(_delete_organization_property_chunk.subtask((del_ids, progress_data.key, org_pk)))
     for del_ids in batch(property_state_ids, chunk_size):
-        tasks.append(
-            _delete_organization_property_state_chunk.subtask(
-                (del_ids, progress_data.key, org_pk)
-            )
-        )
+        tasks.append(_delete_organization_property_state_chunk.subtask((del_ids, progress_data.key, org_pk)))
     for del_ids in batch(taxlot_ids, chunk_size):
-        tasks.append(
-            _delete_organization_taxlot_chunk.subtask(
-                (del_ids, progress_data.key, org_pk)
-            )
-        )
+        tasks.append(_delete_organization_taxlot_chunk.subtask((del_ids, progress_data.key, org_pk)))
     for del_ids in batch(taxlot_state_ids, chunk_size):
-        tasks.append(
-            _delete_organization_taxlot_state_chunk.subtask(
-                (del_ids, progress_data.key, org_pk)
-            )
-        )
+        tasks.append(_delete_organization_taxlot_state_chunk.subtask((del_ids, progress_data.key, org_pk)))
     chord(tasks, interval=15)(_finish_delete.subtask([org_pk, progress_data.key]))
 
     return progress_data.result()
@@ -301,35 +252,23 @@ def delete_organization_cycle(cycle_pk, organization_pk, prog_key=None, chunk_si
     :param chunk_size: int
     :return: dict, from ProgressData.result()
     """
-    progress_data = ProgressData.from_key(prog_key) if prog_key else ProgressData(
-        func_name='delete_organization_cycle', unique_id=cycle_pk)
+    progress_data = ProgressData.from_key(prog_key) if prog_key else ProgressData(func_name="delete_organization_cycle", unique_id=cycle_pk)
 
-    has_inventory = (
-        PropertyView.objects.filter(cycle_id=cycle_pk).exists()
-        or TaxLotView.objects.filter(cycle_id=cycle_pk).exists()
-    )
+    has_inventory = PropertyView.objects.filter(cycle_id=cycle_pk).exists() or TaxLotView.objects.filter(cycle_id=cycle_pk).exists()
     if has_inventory:
-        progress_data.finish_with_error('All PropertyView and TaxLotViews linked to the Cycle must be removed')
+        progress_data.finish_with_error("All PropertyView and TaxLotViews linked to the Cycle must be removed")
         return progress_data.result()
 
-    property_state_ids = PropertyState.objects.filter(import_file__cycle_id=cycle_pk).values_list('id', flat=True)
-    tax_lot_state_ids = TaxLotState.objects.filter(import_file__cycle_id=cycle_pk).values_list('id', flat=True)
+    property_state_ids = PropertyState.objects.filter(import_file__cycle_id=cycle_pk).values_list("id", flat=True)
+    tax_lot_state_ids = TaxLotState.objects.filter(import_file__cycle_id=cycle_pk).values_list("id", flat=True)
     progress_data.total = (len(property_state_ids) + len(tax_lot_state_ids)) / chunk_size
     progress_data.save()
 
     tasks = []
     for chunk_ids in batch(property_state_ids, chunk_size):
-        tasks.append(
-            _delete_organization_property_state_chunk.si(
-                chunk_ids, progress_data.key, organization_pk
-            )
-        )
+        tasks.append(_delete_organization_property_state_chunk.si(chunk_ids, progress_data.key, organization_pk))
     for chunk_ids in batch(tax_lot_state_ids, chunk_size):
-        tasks.append(
-            _delete_organization_taxlot_state_chunk.si(
-                chunk_ids, progress_data.key, organization_pk
-            )
-        )
+        tasks.append(_delete_organization_taxlot_state_chunk.si(chunk_ids, progress_data.key, organization_pk))
 
     chord(tasks, interval=15)(_finish_delete_cycle.si(cycle_pk, progress_data.key))
 
@@ -343,16 +282,16 @@ def _finish_delete_cycle(cycle_id, prog_key):
     cycle.delete()
 
     progress_data = ProgressData.from_key(prog_key)
-    return progress_data.finish_with_success(
-        f'Removed {cycle.name}')
+    return progress_data.finish_with_success(f"Removed {cycle.name}")
 
 
 @shared_task
 @lock_and_track
 def delete_organization_column(column_pk, org_pk, prog_key=None, chunk_size=100, *args, **kwargs):
     """Deletes an extra_data column from all merged property/taxlot states."""
-    progress_data = ProgressData.from_key(prog_key) if prog_key else ProgressData(
-        func_name='delete_organization_column', unique_id=column_pk)
+    progress_data = (
+        ProgressData.from_key(prog_key) if prog_key else ProgressData(func_name="delete_organization_column", unique_id=column_pk)
+    )
 
     _evaluate_delete_organization_column.subtask((column_pk, org_pk, progress_data.key, chunk_size)).apply_async()
 
@@ -361,29 +300,29 @@ def delete_organization_column(column_pk, org_pk, prog_key=None, chunk_size=100,
 
 @shared_task
 def _evaluate_delete_organization_column(column_pk, org_pk, prog_key, chunk_size, *args, **kwargs):
-    """ Find -States with column to be deleted """
+    """Find -States with column to be deleted"""
     column = Column.objects.get(id=column_pk, organization_id=org_pk)
 
     ids = []
 
-    if column.table_name == 'PropertyState':
-        ids = PropertyState.objects.filter(organization_id=org_pk, data_state=DATA_STATE_MATCHING,
-                                           extra_data__has_key=column.column_name).values_list('id', flat=True)
-    elif column.table_name == 'TaxLotState':
-        ids = TaxLotState.objects.filter(organization_id=org_pk, data_state=DATA_STATE_MATCHING,
-                                         extra_data__has_key=column.column_name).values_list('id', flat=True)
+    if column.table_name == "PropertyState":
+        ids = PropertyState.objects.filter(
+            organization_id=org_pk, data_state=DATA_STATE_MATCHING, extra_data__has_key=column.column_name
+        ).values_list("id", flat=True)
+    elif column.table_name == "TaxLotState":
+        ids = TaxLotState.objects.filter(
+            organization_id=org_pk, data_state=DATA_STATE_MATCHING, extra_data__has_key=column.column_name
+        ).values_list("id", flat=True)
 
     progress_data = ProgressData.from_key(prog_key)
     total = len(ids)
     progress_data.total = total / float(chunk_size) + 1
-    progress_data.data['completed_records'] = 0
-    progress_data.data['total_records'] = total
+    progress_data.data["completed_records"] = 0
+    progress_data.data["total_records"] = total
     progress_data.save()
 
     for chunk_ids in batch(ids, chunk_size):
-        _delete_organization_column_chunk(
-            chunk_ids, column.column_name, column.table_name, progress_data.key
-        )
+        _delete_organization_column_chunk(chunk_ids, column.column_name, column.table_name, progress_data.key)
 
     _finish_delete_column(column_pk, progress_data.key)
 
@@ -391,7 +330,7 @@ def _evaluate_delete_organization_column(column_pk, org_pk, prog_key, chunk_size
 def _delete_organization_column_chunk(chunk_ids, column_name, table_name, prog_key, *args, **kwargs):
     """updates a list of ``chunk_ids`` and increments the cache"""
 
-    if table_name == 'PropertyState':
+    if table_name == "PropertyState":
         states = PropertyState.objects.filter(id__in=chunk_ids)
     else:
         states = TaxLotState.objects.filter(id__in=chunk_ids)
@@ -399,7 +338,7 @@ def _delete_organization_column_chunk(chunk_ids, column_name, table_name, prog_k
     with transaction.atomic():
         for state in states:
             del state.extra_data[column_name]
-            state.save(update_fields=['extra_data', 'hash_object'])
+            state.save(update_fields=["extra_data", "hash_object"])
 
     progress_data = ProgressData.from_key(prog_key)
     progress_data.step_with_counter()
@@ -414,8 +353,7 @@ def _delete_organization_property_chunk(del_ids, prog_key, org_pk, *args, **kwar
 
 
 @shared_task
-def _delete_organization_property_state_chunk(del_ids, prog_key, org_pk, *args,
-                                              **kwargs):
+def _delete_organization_property_state_chunk(del_ids, prog_key, org_pk, *args, **kwargs):
     """deletes a list of ``del_ids`` and increments the cache"""
     PropertyState.objects.filter(pk__in=del_ids).delete()
     progress_data = ProgressData.from_key(prog_key)
@@ -488,7 +426,7 @@ def set_update_to_now(property_view_ids, taxlot_view_ids, progress_key):
                 view.taxlot.save()
 
             if batch_size > 0 and idx % batch_size == 0:
-                progress_data.step(f'Refreshing ({idx}/{id_count})')
+                progress_data.step(f"Refreshing ({idx}/{id_count})")
 
     progress_data.finish_with_success()
-    return progress_data.result()['progress']
+    return progress_data.result()["progress"]

@@ -22,11 +22,10 @@ def update_bae_fields(apps, schema_editor):
 
         for prof in profiles:
             for new_mapping in new_mappings:
-
                 # verify that the new mapping does not already exist, only check the to_table_name
                 # and to_field. We don't want to create two mappings to the same table/field.
-                map_exist_check = [{'f': m['to_field'], 't': m['to_table_name']} for m in prof.mappings]
-                if {'f': new_mapping['to_field'], 't': new_mapping['to_table_name']} in map_exist_check:
+                map_exist_check = [{"f": m["to_field"], "t": m["to_table_name"]} for m in prof.mappings]
+                if {"f": new_mapping["to_field"], "t": new_mapping["to_table_name"]} in map_exist_check:
                     print(f"BuildingSync mapping already exists for {new_mapping['to_field']}, skipping")
                     continue
                 else:
@@ -37,11 +36,8 @@ def update_bae_fields(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('seed', '0172_update_at_building_id_target'),
+        ("seed", "0172_update_at_building_id_target"),
     ]
 
-    operations = [
-        migrations.RunPython(update_bae_fields)
-    ]
+    operations = [migrations.RunPython(update_bae_fields)]
