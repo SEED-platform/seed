@@ -1267,20 +1267,18 @@ class OrganizationViewSet(viewsets.ViewSet):
     @ajax_request_class
     def public_feed_json(self, request, pk):
         """
-        Returns all property and taxlot state data for a given organization as a json object. The results are ordered by "state.update". 
+        Returns all property and taxlot state data for a given organization as a json object. The results are ordered by "state.update".
 
         Optional and configurable url query_params:
         :query_param labels: comma separated list of case sensitive label names. Results will include inventory that has any of the listed labels. Default is all inventory
         :query_param cycles: comma separated list of cycle ids. Results include inventory from the listed cycles. Default is all cycles
         :query_param properties: boolean to return properties. Default is True
         :query_param taxlots: boolan to return taxlots. Default is True
-        :query_param page: integer page number 
+        :query_param page: integer page number
         :query_param per_page: integer results per page
 
-        Endpoint format: 
-        {seed_url}/api/v3/organizations/public_feed.json?{query_param1}={value1}&{query_param2}={value2}
-
         Example requests:
+        {seed_url}/api/v3/organizations/public_feed.json?{query_param1}={value1}&{query_param2}={value2}
         dev1.seed-platform.org/api/v3/organizations/1/public_feed.json
         dev1.seed-platform.org/api/v3/organizations/1/public_feed.json?page=2&labels=Compliant&cycles=1,2,3&taxlots=False
         """
