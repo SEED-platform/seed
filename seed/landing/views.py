@@ -42,8 +42,10 @@ def landing_page(request):
         if form.is_valid():
             new_user = authenticate(username=form.cleaned_data["email"].lower(), password=form.cleaned_data["password"])
             if new_user is not None and new_user.is_active:
-                login(request, new_user)
-                return HttpResponseRedirect(redirect_to)
+                request.session['auth_user_id'] = new_user.pk
+                return redirect('two_factor:login')
+                # login(request, new_user)
+                # return HttpResponseRedirect(redirect_to)
             else:
                 errors = ErrorList()
                 errors = form._errors.setdefault(NON_FIELD_ERRORS, errors)

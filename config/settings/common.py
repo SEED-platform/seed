@@ -47,7 +47,7 @@ SESSION_ENGINE = "django.contrib.sessions.backends.signed_cookies"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [os.path.join(BASE_DIR, 'seed', "templates")],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
