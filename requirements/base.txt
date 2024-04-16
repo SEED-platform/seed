@@ -82,4 +82,4 @@ future==0.18.3
 
 django-treebeard==4.6.1
 
-django-two-factor-auth==1.16.0
+django-two-factor-auth[phonenumbers]==1.16.0

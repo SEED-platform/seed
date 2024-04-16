@@ -11,6 +11,7 @@ from django.urls import include, path, re_path
 from drf_yasg import openapi
 from drf_yasg.views import get_schema_view
 from rest_framework import permissions
+from two_factor.urls import urlpatterns as tf_urls
 
 from config.views import robots_txt
 from seed.api.base.urls import urlpatterns as api
@@ -57,6 +58,7 @@ urlpatterns = [
     re_path(r"^api/version/$", version, name="version"),
     re_path(r"^api/", include((api, "seed"), namespace="api")),
     re_path(r"^oauth/", include(("oauth2_jwt_provider.urls", "oauth2_jwt_provider"), namespace="oauth2_provider")),
+    re_path(r"^", include(tf_urls)),
     # test sentry error
     path("sentry-debug/", trigger_error),
 ]
