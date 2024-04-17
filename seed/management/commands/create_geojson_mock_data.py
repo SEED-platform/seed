@@ -1,10 +1,11 @@
-# -*- coding: utf-8 -*-
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 import csv
 import json
+import locale
 import os
 
 import geojson
@@ -12,14 +13,10 @@ from django.core.management.base import BaseCommand
 
 
 class Command(BaseCommand):
-    help = 'Parse example geojson data and extract to CSV for a test file'
+    help = "Parse example geojson data and extract to CSV for a test file"
 
     def add_arguments(self, parser):
-        parser.add_argument('--path',
-                            default='~',
-                            help='Path to local geojson files for parsing',
-                            action='store',
-                            dest='path')
+        parser.add_argument("--path", default="~", help="Path to local geojson files for parsing", action="store", dest="path")
 
     def convert_list_to_wkt(self, geom):
         """
@@ -29,14 +26,14 @@ class Command(BaseCommand):
         :param geom:
         :return:
         """
-        if geom['type'] == "Polygon":
-            coords = [f"{coord[0]} {coord[1]}" for coord in geom['coordinates'][0]]
+        if geom["type"] == "Polygon":
+            coords = [f"{coord[0]} {coord[1]}" for coord in geom["coordinates"][0]]
             return f"POLYGON (( {', '.join(coords)} ))"
         else:
             raise Exception(f"Unknown type of Geometry in GeoJSON of {geom['type']}")
 
     def handle(self, *args, **options):
-        self.stdout.write('Parsing geojson files in %s' % (options['path']), ending='\n')
+        self.stdout.write("Parsing geojson files in %s" % (options["path"]), ending="\n")
 
         # one-to-one
         # taxlot
@@ -77,145 +74,169 @@ class Command(BaseCommand):
 
         # list of taxlot properties to save out of the file
         taxlot_mapping = {
-            'PARCELID': 'Parcel ID',
-            'APN': 'Jurisdiction Tax Lot ID',
-            'LOTNUM': 'Lot Number',
-            'NOOFADDR': 'Number of Addresses',
-            'NOOFFLOORS': 'Number of Floors',
-            'ASSESSEE': 'Assessee',
-            'MAILINGADD': 'Owner Address',
-            'MAILINGCIT': 'Owner City and State',
-            'MAILINGZIP': 'Owner Postal Code',
-            'Concaten_1': 'Address Concatenated',
-            'CITY': 'City',
-            'STATE': 'State',
-            'ZIP': 'Postal Code',
-            'UBID': 'UBID',
+            "PARCELID": "Parcel ID",
+            "APN": "Jurisdiction Tax Lot ID",
+            "LOTNUM": "Lot Number",
+            "NOOFADDR": "Number of Addresses",
+            "NOOFFLOORS": "Number of Floors",
+            "ASSESSEE": "Assessee",
+            "MAILINGADD": "Owner Address",
+            "MAILINGCIT": "Owner City and State",
+            "MAILINGZIP": "Owner Postal Code",
+            "Concaten_1": "Address Concatenated",
+            "CITY": "City",
+            "STATE": "State",
+            "ZIP": "Postal Code",
+            "UBID": "UBID",
         }
 
         property_mapping = {
-            'APN': 'Jurisdiction Tax Lot ID',
-            'UBID': 'UBID',
+            "APN": "Jurisdiction Tax Lot ID",
+            "UBID": "UBID",
         }
 
         data = [
             {
-                'taxlots': [
-                    {'id': 2664, },
+                "taxlots": [
+                    {
+                        "id": 2664,
+                    },
                 ],
-                'footprints': [
-                    {'id': 9572, },
-                    {'id': 12480, },
-                    {'id': 13322, },
-                    {'id': 13332, },
-                ]
+                "footprints": [
+                    {
+                        "id": 9572,
+                    },
+                    {
+                        "id": 12480,
+                    },
+                    {
+                        "id": 13322,
+                    },
+                    {
+                        "id": 13332,
+                    },
+                ],
             },
             {
-                'taxlots': [
-                    {'id': 2632, },
+                "taxlots": [
+                    {
+                        "id": 2632,
+                    },
                 ],
-                'footprints': [
-                    {'id': 13159, },
-                ]
+                "footprints": [
+                    {
+                        "id": 13159,
+                    },
+                ],
             },
             {
-                'taxlots': [
-                    {'id': 241, },
-                    {'id': 242, }
+                "taxlots": [
+                    {
+                        "id": 241,
+                    },
+                    {
+                        "id": 242,
+                    },
                 ],
-                'footprints': [
-                    {'id': 12388, },
-                ]
+                "footprints": [
+                    {
+                        "id": 12388,
+                    },
+                ],
             },
             {
-                'taxlots': [
-                    {'id': 2299, },
-                    {'id': 2486, }
+                "taxlots": [
+                    {
+                        "id": 2299,
+                    },
+                    {
+                        "id": 2486,
+                    },
                 ],
-                'footprints': [
-                    {'id': 10072, },
-                ]
+                "footprints": [
+                    {
+                        "id": 10072,
+                    },
+                ],
             },
         ]
 
         # add in empty properties for later use
         for datum in data:
-            for taxlot in datum['taxlots']:
-                taxlot['properties'] = {}
-            for footprint in datum['footprints']:
-                footprint['properties'] = {}
+            for taxlot in datum["taxlots"]:
+                taxlot["properties"] = {}
+            for footprint in datum["footprints"]:
+                footprint["properties"] = {}
 
         parcels = None
         properties = None
-        parcel_filename = '%s/CoveredParcels_GeoJSON.json' % options['path']
-        property_filename = '%s/CoveredBuildings_GeoJSON.json' % options['path']
+        parcel_filename = "%s/CoveredParcels_GeoJSON.json" % options["path"]
+        property_filename = "%s/CoveredBuildings_GeoJSON.json" % options["path"]
         if os.path.exists(parcel_filename):
-            with open(parcel_filename, 'rb') as f:
+            with open(parcel_filename, "rb") as f:
                 parcels = geojson.loads(f.read())
 
         if os.path.exists(property_filename):
-            with open(property_filename, 'rb') as f:
+            with open(property_filename, "rb") as f:
                 properties = geojson.loads(f.read())
 
         for datum in data:
-            for taxlot in datum['taxlots']:
+            for taxlot in datum["taxlots"]:
                 for feature in parcels.features:
-                    if int(float(feature.properties['OBJECTID'])) == taxlot['id']:
-                        taxlot['properties']['Object ID'] = taxlot['id']
+                    if int(float(feature.properties["OBJECTID"])) == taxlot["id"]:
+                        taxlot["properties"]["Object ID"] = taxlot["id"]
                         for k, v in taxlot_mapping.items():
-                            taxlot['properties'][v] = feature.properties[k]
+                            taxlot["properties"][v] = feature.properties[k]
                         # add in the polygons
-                        taxlot['properties']['coordinates'] = self.convert_list_to_wkt(
-                            feature.geometry)
+                        taxlot["properties"]["coordinates"] = self.convert_list_to_wkt(feature.geometry)
 
-            for footprint in datum['footprints']:
+            for footprint in datum["footprints"]:
                 for feature in properties.features:
-                    if int(float(feature.properties['OBJECTID'])) == footprint['id']:
-                        footprint['properties']['Object ID'] = footprint['id']
+                    if int(float(feature.properties["OBJECTID"])) == footprint["id"]:
+                        footprint["properties"]["Object ID"] = footprint["id"]
                         for k, v in property_mapping.items():
-                            footprint['properties'][v] = feature.properties[k]
+                            footprint["properties"][v] = feature.properties[k]
                         # add in the polygons
-                        footprint['properties']['coordinates'] = self.convert_list_to_wkt(
-                            feature.geometry)
+                        footprint["properties"]["coordinates"] = self.convert_list_to_wkt(feature.geometry)
 
         print(json.dumps(data, indent=2))
 
         # save the data to CSV files
-        with open('seed/tests/data/san-jose-test-taxlots.csv', 'w') as f:
+        with open("seed/tests/data/san-jose-test-taxlots.csv", "w", encoding=locale.getpreferredencoding(False)) as f:
             writer = csv.writer(f)
             # write the header, which are all the mapping fields with taxlot / property appended
             row = []
-            row.append('Tax Lot Object ID')
+            row.append("Tax Lot Object ID")
             for value in taxlot_mapping.values():
                 row.append(value)
-            row.append('Tax Lot Coordinates')
+            row.append("Tax Lot Coordinates")
             writer.writerow(row)
 
             for datum in data:
-                for taxlot in datum['taxlots']:
+                for taxlot in datum["taxlots"]:
                     row = []
-                    row.append(taxlot['properties']['Object ID'])
+                    row.append(taxlot["properties"]["Object ID"])
                     for value in taxlot_mapping.values():
-                        row.append(taxlot['properties'][value])
-                    row.append(taxlot['properties']['coordinates'])
+                        row.append(taxlot["properties"][value])
+                    row.append(taxlot["properties"]["coordinates"])
                     writer.writerow(row)
 
         # save the data to CSV files
-        with open('seed/tests/data/san-jose-test-properties.csv', 'w') as f:
+        with open("seed/tests/data/san-jose-test-properties.csv", "w", encoding=locale.getpreferredencoding(False)) as f:
             writer = csv.writer(f)
             # write the header, which are all the mapping fields with taxlot / property appended
             row = []
-            row.append('Property Object ID')
+            row.append("Property Object ID")
             for value in property_mapping.values():
                 row.append(value)
-            row.append('Property Coordinates')
+            row.append("Property Coordinates")
             writer.writerow(row)
 
             for datum in data:
-                for footprint in datum['footprints']:
+                for footprint in datum["footprints"]:
                     row = []
-                    row.append(footprint['properties']['Object ID'])
+                    row.append(footprint["properties"]["Object ID"])
                     for value in property_mapping.values():
-                        row.append(footprint['properties'][value])
-                    row.append(footprint['properties']['coordinates'])
+                        row.append(footprint["properties"][value])
+                    row.append(footprint["properties"]["coordinates"])
                     writer.writerow(row)

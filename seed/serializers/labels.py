@@ -1,9 +1,9 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 from rest_framework import serializers
 
 from seed.models import StatusLabel as Label
@@ -25,12 +25,12 @@ class LabelSerializer(serializers.ModelSerializer):
         validated by the serializer.
 
         """
-        if 'super_organization' not in kwargs:
+        if "super_organization" not in kwargs:
             return
-        super_organization = kwargs.pop('super_organization')
+        super_organization = kwargs.pop("super_organization")
         super().__init__(*args, **kwargs)
-        if getattr(self, 'initial_data', None):
-            self.initial_data['super_organization'] = super_organization.pk
+        if getattr(self, "initial_data", None):
+            self.initial_data["super_organization"] = super_organization.pk
 
     class Meta:
         fields = (
@@ -51,7 +51,7 @@ class LabelSerializer(serializers.ModelSerializer):
         ret = super().to_representation(instance)
 
         if "is_applied" not in dir(instance):
-            del ret['is_applied']
+            del ret["is_applied"]
 
         return ret
 

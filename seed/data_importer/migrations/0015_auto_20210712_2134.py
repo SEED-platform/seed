@@ -4,14 +4,13 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('data_importer', '0014_importfile_has_generated_headers'),
+        ("data_importer", "0014_importfile_has_generated_headers"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='importfile',
-            options={'ordering': ('-modified', '-created')},
+            name="importfile",
+            options={"ordering": ("-modified", "-created")},
         ),
     ]

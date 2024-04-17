@@ -1,5 +1,4 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
@@ -11,6 +10,7 @@ token_generator.py - taken from django core master branch
 needed a token check that would not expire after three days for sending a
 signup email
 """
+
 from datetime import date
 
 from django.conf import settings
@@ -18,7 +18,7 @@ from django.utils.crypto import constant_time_compare, salted_hmac
 from django.utils.http import base36_to_int, int_to_base36
 
 
-class SignupTokenGenerator(object):
+class SignupTokenGenerator:
     """
     Strategy object used to generate and check tokens for the password
     reset mechanism.
@@ -29,9 +29,7 @@ class SignupTokenGenerator(object):
         Returns a token that can be used once to do a password reset
         for the given user.
         """
-        return self._make_token_with_timestamp(
-            user, self._num_days(self._today())
-        )
+        return self._make_token_with_timestamp(user, self._num_days(self._today()))
 
     def check_token(self, user, token, token_expires=True):
         """
@@ -39,7 +37,7 @@ class SignupTokenGenerator(object):
         """
         # Parse the token
         try:
-            ts_b36, hash = token.split("-")
+            ts_b36, _hash = token.split("-")
         except ValueError:
             return False
 
@@ -49,9 +47,7 @@ class SignupTokenGenerator(object):
             return False
 
         # Check that the timestamp/uid has not been tampered with
-        if not constant_time_compare(
-                self._make_token_with_timestamp(user, ts), token
-        ):
+        if not constant_time_compare(self._make_token_with_timestamp(user, ts), token):
             return False
 
         # Check the timestamp is within limit
@@ -59,10 +55,7 @@ class SignupTokenGenerator(object):
             token_expires,
             (self._num_days(self._today()) - ts) > settings.PASSWORD_RESET_TIMEOUT_DAYS,
         )
-        if token_is_expired:
-            return False
-
-        return True
+        return not token_is_expired
 
     def _make_token_with_timestamp(self, user, timestamp):
         # timestamp is number of days since 2001-1-1.  Converted to
@@ -80,11 +73,9 @@ class SignupTokenGenerator(object):
         # Ensure results are consistent across DB backends
         login_timestamp = user.last_login.replace(microsecond=0, tzinfo=None)
 
-        value = (
-            str(user.pk) + user.password + str(login_timestamp) + str(timestamp)
-        )
-        hash = salted_hmac(key_salt, value).hexdigest()[::2]
-        return "%s-%s" % (ts_b36, hash)
+        value = str(user.pk) + user.password + str(login_timestamp) + str(timestamp)
+        hmac = salted_hmac(key_salt, value).hexdigest()[::2]
+        return f"{ts_b36}-{hmac}"
 
     def _num_days(self, dt):
         return (dt - date(2001, 1, 1)).days
