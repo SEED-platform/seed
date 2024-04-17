@@ -154,7 +154,7 @@ def get_filtered_results(request: Request, inventory_type: Literal["property", "
                 # views of the current type + views associated with the found taxlot_properties
                 views_list = views_list.filter(taxlotproperty__isnull=True).union(views_list.filter(taxlotproperty__in=taxlot_properties))
             else:
-                views_list = views_list.filter(taxlotproperty__in=taxlot_properties)
+                views_list = views_list.filter(taxlotproperty__in=taxlot_properties).distinct()
 
     # return property views limited to the 'include_view_ids' list if not empty
     if request.data.get("include_view_ids"):
