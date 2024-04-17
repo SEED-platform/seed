@@ -5,20 +5,19 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('seed', '0204_eeej'),
+        ("seed", "0204_eeej"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='analysispropertyview',
-            name='property',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, to='seed.property'),
+            model_name="analysispropertyview",
+            name="property",
+            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, to="seed.property"),
         ),
         migrations.AlterField(
-            model_name='analysispropertyview',
-            name='property_state',
-            field=models.OneToOneField(null=True, on_delete=django.db.models.deletion.SET_NULL, to='seed.propertystate'),
+            model_name="analysispropertyview",
+            name="property_state",
+            field=models.OneToOneField(null=True, on_delete=django.db.models.deletion.SET_NULL, to="seed.propertystate"),
         ),
     ]

@@ -1,9 +1,9 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 import logging
 
 from django.db import models
@@ -27,24 +27,24 @@ from seed.lib.superperms.orgs.models import Organization as SuperOrganization
 # }
 
 INVENTORY_DISPLAY = {
-    'PropertyState': 'Property',
-    'TaxLotState': 'Tax Lot',
-    'Property': 'Property',
-    'TaxLot': 'Tax Lot',
+    "PropertyState": "Property",
+    "TaxLotState": "Tax Lot",
+    "Property": "Property",
+    "TaxLot": "Tax Lot",
 }
 _log = logging.getLogger(__name__)
 
 
-def get_table_and_column_names(column_mapping, attr_name='column_raw'):
+def get_table_and_column_names(column_mapping, attr_name="column_raw"):
     """Turns the Column.column_names into a serializable list of str."""
     attr = getattr(column_mapping, attr_name, None)
     if not attr:
         return attr
 
-    return [t for t in attr.all().values_list('table_name', 'column_name')]
+    return list(attr.all().values_list("table_name", "column_name"))
 
 
-def get_column_mapping(raw_column, organization, attr_name='column_mapped'):
+def get_column_mapping(raw_column, organization, attr_name="column_mapped"):
     """Find the ColumnMapping objects that exist in the database from a raw_column
 
     :param raw_column: str, the column name of the raw data.
@@ -67,9 +67,7 @@ def get_column_mapping(raw_column, organization, attr_name='column_mapped'):
 
     # Should return zero when importing a column name the first time
     # Should return one column if previously imported (table_name is blank to search only raw column names)
-    cols = Column.objects.filter(
-        organization=organization, column_name__in=column_raw, table_name=''
-    )
+    cols = Column.objects.filter(organization=organization, column_name__in=column_raw, table_name="")
 
     try:
         previous_mapping = ColumnMapping.objects.get(
@@ -111,11 +109,21 @@ class ColumnMapping(models.Model):
     same field in subsequent data loads.
 
     """
+
     user = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True)
-    super_organization = models.ForeignKey(SuperOrganization, on_delete=models.CASCADE, verbose_name=_('SeedOrg'),
-                                           blank=True, null=True, related_name='column_mappings')
-    column_raw = models.ManyToManyField('Column', related_name='raw_mappings', blank=True, )
-    column_mapped = models.ManyToManyField('Column', related_name='mapped_mappings', blank=True, )
+    super_organization = models.ForeignKey(
+        SuperOrganization, on_delete=models.CASCADE, verbose_name=_("SeedOrg"), blank=True, null=True, related_name="column_mappings"
+    )
+    column_raw = models.ManyToManyField(
+        "Column",
+        related_name="raw_mappings",
+        blank=True,
+    )
+    column_mapped = models.ManyToManyField(
+        "Column",
+        related_name="mapped_mappings",
+        blank=True,
+    )
 
     def is_direct(self):
         """
@@ -123,10 +131,7 @@ class ColumnMapping(models.Model):
         column name to either a BEDES column or a previously imported column.
         Returns False if the ColumnMapping represents a concatenation.
         """
-        return (
-            (self.column_raw.count() == 1) and
-            (self.column_mapped.count() == 1)
-        )
+        return (self.column_raw.count() == 1) and (self.column_mapped.count() == 1)
 
     def is_concatenated(self):
         """
@@ -135,7 +140,7 @@ class ColumnMapping(models.Model):
         """
         return not self.is_direct()
 
-    def remove_duplicates(self, qs, m2m_type='column_raw'):
+    def remove_duplicates(self, qs, m2m_type="column_raw"):
         """
         Remove any other Column Mappings that use these columns.
 
@@ -145,12 +150,7 @@ class ColumnMapping(models.Model):
             Defaults to 'column_raw'.
 
         """
-        ColumnMapping.objects.filter(
-            **{
-                '{0}__in'.format(m2m_type): qs,
-                'super_organization': self.super_organization
-            }
-        ).exclude(pk=self.pk).delete()
+        ColumnMapping.objects.filter(**{f"{m2m_type}__in": qs, "super_organization": self.super_organization}).exclude(pk=self.pk).delete()
 
     def save(self, *args, **kwargs):
         """
@@ -167,9 +167,7 @@ class ColumnMapping(models.Model):
         self.remove_duplicates(self.column_raw.all())
 
     def __str__(self):
-        return '{0}: {1} - {2}'.format(
-            self.pk, self.column_raw.all(), self.column_mapped.all()
-        )
+        return f"{self.pk}: {self.column_raw.all()} - {self.column_mapped.all()}"
 
     @staticmethod
     def get_column_mappings(organization):
@@ -201,10 +199,8 @@ class ColumnMapping(models.Model):
             if not cm.column_mapped.all().exists():
                 continue
 
-            key = cm.column_raw.all().values_list('table_name', 'column_name', 'display_name',
-                                                  'is_extra_data')
-            value = cm.column_mapped.all().values_list('table_name', 'column_name', 'display_name',
-                                                       'is_extra_data')
+            key = cm.column_raw.all().values_list("table_name", "column_name", "display_name", "is_extra_data")
+            value = cm.column_mapped.all().values_list("table_name", "column_name", "display_name", "is_extra_data")
 
             if len(key) != 1:
                 raise Exception("There is either none or more than one mapping raw column")

@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('data_importer', '0013_importfile_raw_property_state_to_filename'),
+        ("data_importer", "0013_importfile_raw_property_state_to_filename"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='importfile',
-            name='has_generated_headers',
+            model_name="importfile",
+            name="has_generated_headers",
             field=models.BooleanField(default=False),
         ),
     ]
