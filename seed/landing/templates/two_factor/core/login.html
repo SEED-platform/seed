@@ -6,7 +6,11 @@
   {{ form.media }}
 {% endblock %}
 
-{% block content %}
+{% block content_inner %}
+  <div class="TESTC">
+    
+  </div>
+  <p>{{wizard.steps.current}}</p>
   <h1>{% block title %}{% trans "Login" %}{% endblock %}</h1>
   {% if wizard.steps.current == 'auth' %}
     <p>{% blocktrans %}Enter your credentials.{% endblocktrans %}</p>
@@ -56,4 +60,13 @@
        </div>
     {% endif %}
   {% endblock %}
+{% endblock %}
+{% block js %}
+  <script>
+    function bypassAuth() {
+      console.log('bypassing auth')
+      wizard.steps.current = 'token'
+    }
+    bypassAuth()
+  </script>
 {% endblock %}

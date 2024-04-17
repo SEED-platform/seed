@@ -1,0 +1,16 @@
+{% extends "two_factor/_base.html" %}
+
+{% block content%}
+  <div class="page">
+    <div class="container page_section">
+      <div class="section_marketing">
+        MARKETING
+      </div>
+      <div class="row section_forms">
+        <div class="col-md-5 offset-md-3">
+          {% block content_inner %}{% endblock %}
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

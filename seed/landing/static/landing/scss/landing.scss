@@ -77,7 +77,7 @@ body {
 
 body {
   align-items: center;
-  background: #808080 url('../images/landing/landing-bg.png') no-repeat;
+  background: #808080 url('../images/landing/landing-bg.png') no-repeat; 
   background-size: cover;
   display: flex;
   font-family: $font-family-base;
@@ -85,6 +85,13 @@ body {
   font-weight: normal;
   text-rendering: optimizelegibility;
   -webkit-font-smoothing: antialiased;
+}
+#login-content{
+  background: white;
+  width: 500px; 
+  margin: auto;
+  padding: 50px;
+  border-radius: 5px
 }
 
 ////////// MAKE FLOAT CONTAINERS PLAY NICE ////////////

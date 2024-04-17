@@ -1,0 +1,31 @@
+{% extends "landing/home.html" %}{% load compress %}{% load i18n %} {% block css %}{{ block.super }} {% compress css %}
+{% comment %} {% extends "seed/base.html" %}{% load compress %}{% load i18n %} {% block css %}{{ block.super }} {% compress css %} {% endcomment %}
+  <style>
+    [ng\:cloak],
+    [ng-cloak],
+    [data-ng-cloak],
+    [x-ng-cloak],
+    .ng-cloak,
+    .x-ng-cloak {
+      display: none !important;
+    }
+  </style>
+  <link rel="stylesheet" type="text/x-scss" href="{{ STATIC_URL }}landing/scss/landing.scss">
+{% endcompress %}
+{% endblock %}
+
+<!DOCTYPE html>
+<html>
+<head>
+  <title>{% block title %}{% endblock %}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet" media="screen">
+  <script defer src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script defer src="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  {% block extra_media %}{% endblock %}
+</head>
+<body>
+  {% block content %}
+  {% endblock %}
+</body>
+</html>

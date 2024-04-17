@@ -1,0 +1,33 @@
+{% extends "seed/base.html" %}{% load compress %}{% load i18n %} {% block css %}{{ block.super }} {% compress css %}
+  <style>
+    [ng\:cloak],
+    [ng-cloak],
+    [data-ng-cloak],
+    [x-ng-cloak],
+    .ng-cloak,
+    .x-ng-cloak {
+      display: none !important;
+    }
+  </style>
+  <link rel="stylesheet" type="text/x-scss" href="{{ STATIC_URL }}landing/scss/landing.scss">
+{% endcompress %}
+{% endblock %}
+{% block title %}{% trans "SEED Platform™" %}{% endblock %}
+
+{% block js %}
+  {{ block.super }}
+  {% compress js %}
+    <script src="{{ STATIC_URL }}landing/js/landing.js"></script>
+  {% endcompress %}
+{% endblock %}
+
+{% block body %}
+<div class='a'>
+  
+  {% block content %}
+  <div class='b'>
+    
+  </div>
+  {% endblock %}
+</div>
+{% endblock %}
