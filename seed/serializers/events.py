@@ -1,9 +1,9 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 from rest_framework import serializers
 
 from seed.models import AnalysisEvent, ATEvent, Event, NoteEvent
@@ -18,18 +18,18 @@ class EventSerializer(serializers.ModelSerializer):
             data = ATEventSerializer(instance=instance).data
         elif isinstance(instance, AnalysisEvent):
             data = AnalysisEventSerializer(instance=instance).data
-            data['user_id'] = data['analysis']['user']
+            data["user_id"] = data["analysis"]["user"]
         elif isinstance(instance, NoteEvent):
             data = NoteEventSerializer(instance=instance).data
-            data['user_id'] = data['note']['user_id']
+            data["user_id"] = data["note"]["user_id"]
         else:
             raise ValueError
-        data['cycle_end_date'] = instance.cycle.end
+        data["cycle_end_date"] = instance.cycle.end
         return data
 
     class Meta:
         model = Event
-        fields = '__all__'
+        fields = "__all__"
 
 
 class ATEventSerializer(serializers.ModelSerializer):
@@ -38,9 +38,9 @@ class ATEventSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ATEvent
-        fields = '__all__'
+        fields = "__all__"
         extra_kwargs = {
-            'user': {'read_only': True},
+            "user": {"read_only": True},
         }
 
     def to_representation(self, obj):
@@ -56,7 +56,7 @@ class AnalysisEventSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = AnalysisEvent
-        fields = '__all__'
+        fields = "__all__"
 
     def to_representation(self, obj):
         result = super().to_representation(obj)
@@ -77,7 +77,7 @@ class NoteEventSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = NoteEvent
-        fields = '__all__'
+        fields = "__all__"
 
     def to_representation(self, obj):
         result = super().to_representation(obj)

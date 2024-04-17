@@ -91,3 +91,6 @@ docker-compose-dbs.yml
 
 # generated files
 /auto*.csv
+
+# ruff linting and formatting
+/.ruff_cache

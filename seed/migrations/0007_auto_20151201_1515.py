@@ -1,6 +1,3 @@
-# -*- coding: utf-8 -*-
-from __future__ import unicode_literals
-
 from django.db import migrations
 
 # assuming all building_snapshot_ids in seed_projectbuilding point at the canonical building
@@ -18,10 +15,10 @@ def move_labels(app, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('seed', '0006_canonicalbuilding_labels'),
+        ("seed", "0006_canonicalbuilding_labels"),
     ]
 
-    operations = [migrations.RunPython(move_labels),
-                  ]
+    operations = [
+        migrations.RunPython(move_labels),
+    ]

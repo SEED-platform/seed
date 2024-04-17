@@ -1,9 +1,9 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 import logging
 
 from django.db import models
@@ -17,9 +17,9 @@ logger = logging.getLogger(__name__)
 class SalesforceConfig(models.Model):
     # Stores all the configuration needed to communicate with a Salesforce instance
     organization = models.OneToOneField(Organization, on_delete=models.CASCADE)
-    indication_label = models.ForeignKey('seed.StatusLabel', on_delete=models.SET_NULL, null=True, related_name='indication_label')
-    violation_label = models.ForeignKey('seed.StatusLabel', on_delete=models.SET_NULL, null=True, related_name='violation_label')
-    compliance_label = models.ForeignKey('seed.StatusLabel', on_delete=models.SET_NULL, null=True, related_name='compliance_label')
+    indication_label = models.ForeignKey("seed.StatusLabel", on_delete=models.SET_NULL, null=True, related_name="indication_label")
+    violation_label = models.ForeignKey("seed.StatusLabel", on_delete=models.SET_NULL, null=True, related_name="violation_label")
+    compliance_label = models.ForeignKey("seed.StatusLabel", on_delete=models.SET_NULL, null=True, related_name="compliance_label")
     account_rec_type = models.CharField(blank=True, max_length=20, null=True)
     contact_rec_type = models.CharField(blank=True, max_length=20, null=True)
     last_update_date = models.DateTimeField(null=True, blank=True)
@@ -41,7 +41,9 @@ class SalesforceConfig(models.Model):
     data_admin_email_column = models.ForeignKey(Column, related_name="data_admin_email_column", null=True, on_delete=models.CASCADE)
     data_admin_name_column = models.ForeignKey(Column, related_name="data_admin_name_column", null=True, on_delete=models.CASCADE)
     data_admin_contact_fieldname = models.CharField(blank=True, max_length=128, null=True)
-    data_admin_account_name_column = models.ForeignKey(Column, related_name="data_admin_account_name_column", null=True, on_delete=models.CASCADE)
+    data_admin_account_name_column = models.ForeignKey(
+        Column, related_name="data_admin_account_name_column", null=True, on_delete=models.CASCADE
+    )
     default_data_admin_account_name = models.CharField(blank=True, max_length=200, null=True)
     logging_email = models.CharField(blank=True, max_length=128, null=True)
     update_at_hour = models.IntegerField(blank=True, null=True)

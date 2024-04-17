@@ -52,10 +52,9 @@
             <div class="accordian-body collapse measure-section scenario-collapse" id="scenario-{$ scenario.id $}">
               <div class="measures-header" ng-if="measureGridOptionsByScenarioId[scenario.id].data.length">MEASURES</div>
               <div
-                ng-show="measureGridOptionsByScenarioId[scenario.id].data.length"
+                ng-if="show_uigrid[scenario.id] && measureGridOptionsByScenarioId[scenario.id].data.length"
                 ui-grid="measureGridOptionsByScenarioId[scenario.id]"
                 ui-grid-move-columns
-                ui-grid-pinning
                 ui-grid-resize-columns
               ></div>
               <div ng-if="!measureGridOptionsByScenarioId[scenario.id].data.length" class="measures-header">No Measures in Scenario</div>

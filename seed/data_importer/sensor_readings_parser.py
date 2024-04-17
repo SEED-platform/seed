@@ -1,9 +1,9 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 from pytz import timezone
 
 from config.settings.common import TIME_ZONE
@@ -11,7 +11,7 @@ from seed.lib.mcm import reader
 from seed.models import Sensor
 
 
-class SensorsReadingsParser(object):
+class SensorsReadingsParser:
     """
     This class parses and validates different details about sensor readings
     Import File - including sensor types & units - to be created before execution.
@@ -66,13 +66,13 @@ class SensorsReadingsParser(object):
         return cls(org_id, sensor_readings_by_sensor_name, data_logger_id=data_logger_id)
 
     def get_validation_report(self):
-        sensor_names = Sensor.objects.filter(data_logger=self._data_logger_id).values_list('column_name', flat=True)
+        sensor_names = Sensor.objects.filter(data_logger=self._data_logger_id).values_list("column_name", flat=True)
 
         result = [
             {
                 "column_name": sensor_name,
                 "exists": sensor_name in sensor_names,
-                "num_readings": sum((v != "0" and v is not None) for v in readings.values())
+                "num_readings": sum((v != "0" and v is not None) for v in readings.values()),
             }
             for sensor_name, readings in self.sensor_readings_details.items()
         ]

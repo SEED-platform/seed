@@ -4,14 +4,13 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('seed', '0215_accountability_hierarchy'),
+        ("seed", "0215_accountability_hierarchy"),
     ]
 
     operations = [
         migrations.AlterUniqueTogether(
-            name='sensor',
-            unique_together={('data_logger', 'display_name'), ('data_logger', 'column_name')},
+            name="sensor",
+            unique_together={("data_logger", "display_name"), ("data_logger", "column_name")},
         ),
     ]

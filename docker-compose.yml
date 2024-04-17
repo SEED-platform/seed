@@ -1,5 +1,5 @@
 # Docker Compose creates multiple containers on a single machine.
-# run `docker-compose up` to create and run/link the containers
+# run `docker compose up` to create and run/link the containers
 version: "3.4"
 services:
   db-postgres:
