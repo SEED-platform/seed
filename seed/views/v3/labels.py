@@ -16,7 +16,6 @@ from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.models import StatusLabel as Label
 from seed.serializers.labels import LabelSerializer
 from seed.utils.api_schema import AutoSchemaHelper
-from seed.utils.labels import filter_labels_for_inv_type
 from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
 
 
@@ -130,6 +129,4 @@ class LabelViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
 
     def get_serializer(self, *args, **kwargs):
         kwargs["super_organization"] = self.get_organization(self.request)
-        inventory = filter_labels_for_inv_type(request=self.request)
-        kwargs["inventory"] = inventory
         return super().get_serializer(*args, **kwargs)
