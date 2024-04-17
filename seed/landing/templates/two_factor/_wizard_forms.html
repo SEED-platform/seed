@@ -2,3 +2,11 @@
   {{ wizard.management_form }}
   {{ wizard.form.as_table }}
 </table>
+{% block js %}
+  <script>
+    const username = document.getElementById('id_auth-username')
+    const password = document.getElementById('id_auth-password')
+    username.placeholder = "Email Address"
+    password.placeholder = "Password"
+  </script>
+{% endblock %}

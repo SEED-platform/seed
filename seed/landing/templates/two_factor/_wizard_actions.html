@@ -4,11 +4,14 @@
   <a href="{{ cancel_url }}"
      class="float-right btn btn-link">{% trans "Cancel" %}</a>
 {% endif %}
-{% if wizard.steps.prev %}
+<div class="login-wizard-actions">
+  
+  {% if wizard.steps.prev %}
   <button name="wizard_goto_step" type="submit"
-          value="{{ wizard.steps.prev }}"
-          class="btn btn-secondary">{% trans "Back" %}</button>
-{% else %}
-  <button disabled name="" type="button" class="btn">{% trans "Back" %}</button>
-{% endif %}
-<button type="submit" class="btn btn-primary">{% trans "Next" %}</button>
+  value="{{ wizard.steps.prev }}"
+  class="btn btn-default">{% trans "Back" %}</button>
+  {% else %}
+  <button class="btn btn-default" onclick="window.history.back();">{% trans "Back" %}</button>
+  {% endif %}
+  <button type="submit" class="btn btn-primary">{% trans "Next" %}</button>
+</div>

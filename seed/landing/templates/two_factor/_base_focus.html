@@ -1,15 +1,15 @@
-{% extends "two_factor/_base.html" %}
+{% extends "two_factor/_base.html" %}{% load i18n %}
 
 {% block content%}
   <div class="page">
     <div class="container page_section">
-      <div class="section_marketing">
-        MARKETING
-      </div>
+        {% include "landing/_marketing_bullets.html" %}
       <div class="row section_forms">
-        <div class="col-md-5 offset-md-3">
-          {% block content_inner %}{% endblock %}
+        <div class="form_title">
+          <h2>{% trans "Log in to SEED Platform™" %}</h2>
         </div>
+
+          {% block content_inner %}{% endblock %}
       </div>
     </div>
   </div>

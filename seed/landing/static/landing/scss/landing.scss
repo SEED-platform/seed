@@ -86,6 +86,7 @@ body {
   text-rendering: optimizelegibility;
   -webkit-font-smoothing: antialiased;
 }
+////// TWO FACTOR AUTH ///////
 #login-content{
   background: white;
   width: 500px; 
@@ -93,7 +94,28 @@ body {
   padding: 50px;
   border-radius: 5px
 }
+.login-or-create{
+  margin: auto;
+  padding: 10px;
+  .login-btn{
+    width:160px;
+    margin-bottom: 20px;
+  }
+}
 
+.login-wizard-actions{
+  margin: 10px;
+  button {
+    margin: 10px;
+  }
+}
+.twofa-profile {
+  background: white;
+  margin: auto;
+  padding: 50px;
+  border-radius: 8px;
+
+}
 ////////// MAKE FLOAT CONTAINERS PLAY NICE ////////////
 .header,
 .page_section,
@@ -288,7 +310,8 @@ body {
       }
 
       .signup_form {
-        table.signup_table {
+        table {
+        // table.signup_table {
           width: 96%;
           margin: 0 auto;
           background-color: transparent;

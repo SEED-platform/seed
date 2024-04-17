@@ -51,6 +51,10 @@ def landing_page(request):
                 errors = form._errors.setdefault(NON_FIELD_ERRORS, errors)
                 errors.append("Username and/or password were invalid.")
                 logger.error(f"User login failed: {form.cleaned_data['email']}")
+
+    elif request.path == '/accounts/login/':
+        return redirect('two_factor:login')
+
     else:
         form = LoginForm()
 

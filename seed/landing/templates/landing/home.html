@@ -9,56 +9,18 @@
         <div class="clearfix"></div>
         <div class="form_title">
           <h2>{% trans "Log in to SEED Platform™" %}</h2>
-          {% if 'setup_complete' in request.GET %}
-            <p>{% trans "Thank you for creating your account! Please sign in below." %}
-          {% endif %}
-          {% if 'logout' in request.GET %}
-            <p>{% trans "You have successfully logged out. You may log in again below." %}</p>
-          {% endif %}
-          <form action="{% url "landing:login" %}?next={% url "seed:home" %}" method="POST" class="signup_form" autocomplete="off">{% csrf_token %}
-            <table class="signup_table">
-              {{ login_form.as_table }}
-            </table>
-            <div class="terms-link">
-              <p>{% trans "By clicking the Log In button you accept the NREL Data Terms." %} <a onclick="toggleTerms()">{% trans "View/Hide Terms" %}</a></p>
+            <div class="login-or-create">
+              <div>
+                <p>Existing account?</p>
+                <a href="{% url "landing:login" %}" class="btn btn-primary login-btn">{% trans "Sign in" %}</a>
+              </div>
+              {% if context.self_registration %}  
+              <div>
+                <a class="create_account btn btn-default login-btn" href="{% url "landing:create_account" %}">{% trans "Create my Account" %}</a>
+              </div>
+              {% endif%}
             </div>
 
-            <div id="terms-and-conditions">
-              <h3>DOE Standard Energy Efficiency Data Platform | NREL Data Terms</h3>
-
-              <p>You, and your company or organization (the PROVIDER) have agreed to upload and provide PROPRIETARY DATA, including energy efficiency data, building data, and building energy
-                performance data to the Standard Energy Efficiency Data (SEED™) Platform database that the U.S. Department of Energy (the Government) and Alliance for Sustainable Energy, LLC
-                (“Alliance”) the manager and operator of the National Renewable Energy Laboratory (“NREL”) (the RECIPIENT) have created and provide for use for registered users.</p>
-
-              <p>PROPRIETARY DATA is defined as follows:</p>
-              <p>(a) information that embody trade secrets or commercial or financial information that is confidential and privileged; (b) information that is confidential and privileged and developed
-                at private expense (i.e., not with Federal funds); (c) information that is not customarily released to the public; and/or (d) information whose disclosure to the public could result in
-                financial harm to the PROVIDER, to owners of buildings whose information is contained in the PROPRIETARY DATA, or to other stakeholders.</p>
-              <p>In order to upload PROPRIETARY DATA, you will be required to create an account and provide the RECIPIENT with a username, password, and email address. You are solely responsible for
-                maintaining the confidentiality of the password and username you provided during the registration process and are fully responsible for all activities that occur under your password or
-                account.</p>
-              <p>The PROPRIETARY DATA shall remain protected until the PROVIDER provides notice of termination of their account on the SEED Platform and provides notice to remove PROPRIETARY DATA from
-                the SEED Platform database, at which time the RECIPIENT will promptly return and/or destroy the PROPRIETARY DATA uploaded in the SEED Platform database.</p>
-              <p>By providing the PROPRIETARY DATA, PROVIDER agrees to the following:</p>
-              <ol>
-                <li>PROVIDER has the authority to provide the PROPRIETARY DATA to the RECIPIENT, that the information provided constitutes PROPRIETARY DATA, and consents to the information provided
-                  being labeled and treated as PROPRIETARY DATA. If PROVIDER wishes to provide non-proprietary data, please contact <a href="mailto:BTODataTools@ee.doe.gov">BTODataTools@ee.doe.gov</a>.
-                </li>
-                <li>RECIPIENT may host, display, and manage such PROPRIETARY DATA for the PROVIDER and the Government to access, analyze, and manage through the SEED Platform.</li>
-                <li>RECIPIENT may use, view, or duplicate the PROPRIETARY DATA and may share the PROPRIETARY DATA with support services contractors within the scope of their contracts. RECIPIENT may
-                  share the PROPRIETARY DATA to other DOE National Laboratories participating in the SEED Platform project, under the restriction that (i) the PROPRIETARY DATA be retained in
-                  confidence and not be further disclosed, (ii) the PROPRIETARY DATA will be destroyed when the DOE National Laboratory’s participation in the SEED Platform has ended.
-                </li>
-              </ol>
-            </div>
-
-            <input type="submit" class="btn btn-primary" value="{% trans "Log In" %}"><br>
-            <div>
-              {% if context.self_registration %}
-                <a class="create_account" href="{% url "landing:create_account" %}">{% trans "Create my Account" %}</a>
-              {% endif %}
-              <a class="forgot_password" href="{% url "landing:password_reset" %}">{% trans "Forgot password?" %}</a>
-            </div>
           </form>
         </div>
       </div>

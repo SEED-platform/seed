@@ -3,6 +3,8 @@
 {% load two_factor_tags %}
 
 {% block content %}
+<div class="twofa-profile">
+  
   <h1>{% block title %}{% trans "Account Security" %}{% endblock %}</h1>
 
   {% if default_device %}
@@ -57,4 +59,7 @@
       {% trans "Enable Two-Factor Authentication" %}</a>
     </p>
   {% endif %}
+  <a href="/" class="btn btn-default">Close</a>
+</div>
+
 {% endblock %}

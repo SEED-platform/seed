@@ -208,8 +208,8 @@ LOGGING = {
 }
 
 # LOGIN_URL = "two_factor:login"
-# LOGIN_REDIRECT_URL = "two_factor:profile"
-LOGIN_REDIRECT_URL = "/app/"
+LOGIN_REDIRECT_URL = "two_factor:profile"
+# LOGIN_REDIRECT_URL = "/app/"
 
 APPEND_SLASH = True
 
