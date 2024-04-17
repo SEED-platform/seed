@@ -4,9 +4,13 @@
 </table>
 {% block js %}
   <script>
-    const username = document.getElementById('id_auth-username')
-    const password = document.getElementById('id_auth-password')
-    username.placeholder = "Email Address"
-    password.placeholder = "Password"
+    const username = document.getElementById('id_auth-username');
+    const password = document.getElementById('id_auth-password');
+    if(username) {
+      username.placeholder = "Email Address";
+    }
+    if (password) {
+      password.placeholder = "Password";
+    }
   </script>
 {% endblock %}

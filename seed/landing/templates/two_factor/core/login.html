@@ -8,6 +8,7 @@
 
 {% block content_inner %}
   WIZARD STEP: {{ wizard.steps.current }}
+  DEVICE: {{device}}
   {% if wizard.steps.current == 'auth' %}
     <p>{% blocktrans %}Enter your credentials.{% endblocktrans %}</p>
   {% elif wizard.steps.current == 'token' %}
@@ -18,7 +19,7 @@
       enter one of these backup tokens to login to your account.{% endblocktrans %}</p>
   {% endif %}
 
-  <form action="" method="post" class="signup_form" id="signup_form">
+  <form action="" method="post" class="signup_form">
     {% block main_form_content %}
     {% csrf_token %}
     {% include "two_factor/_wizard_forms.html" %}
