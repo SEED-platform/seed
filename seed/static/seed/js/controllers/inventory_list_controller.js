@@ -90,6 +90,9 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
     };
     $scope.organization = organization_payload.organization;
 
+    // $scope.menu.user.is_ali_root not always populated (on redirects); force it
+    $scope.menu.user.is_ali_root = window.BE.is_ali_root
+
     // set up i18n
     //
     // let angular-translate be in charge ... need
