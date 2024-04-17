@@ -1,12 +1,13 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 :author Dan Gunter <dkgunter@lbl.gov>
 """
+
 import json
+import locale
 import logging
 import os
 import re
@@ -17,8 +18,8 @@ from past.builtins import basestring
 
 from seed.lib.mcm.cleaners import normalize_unicode_and_characters
 
-LINEAR_UNITS = set(['ft', 'm', 'in'])
-MAPPING_DATA_DIR = join(dirname(realpath(__file__)), 'data')
+LINEAR_UNITS = {"ft", "m", "in"}
+MAPPING_DATA_DIR = join(dirname(realpath(__file__)), "data")
 
 
 _log = logging.getLogger(__name__)
@@ -43,27 +44,27 @@ def _sanitize_and_convert_keys_to_regex(key):
     for pfx in LINEAR_UNITS:
         if pfx not in key:
             continue
-        for (sfx, repl) in ('_', '2'), ('^2', '2'), ('^3', '3'):
+        for sfx, repl in ("_", "2"), ("^2", "2"), ("^3", "3"):
             s = pfx + sfx
             p = key.find(s)
             if p >= 0:  # yes, the unit has a dimension
-                key = key[:p + len(pfx)] + repl + key[p + len(s):]
+                key = key[: p + len(pfx)] + repl + key[p + len(s) :]
                 found = True
                 break
         if found:
             break
 
     # escape special characters before regexing.
-    for special in ('\\', '(', ')', '?', '*', '+', '.', '{', '}', '^', '$'):
-        key = key.replace(special, '\\' + special)
+    for special in ("\\", "(", ")", "?", "*", "+", ".", "{", "}", "^", "$"):
+        key = key.replace(special, "\\" + special)
 
     # convert underscores to white space
-    key = key.replace('_', ' ').replace('  ', ' ')
+    key = key.replace("_", " ").replace("  ", " ")
     # collapse whitespace
-    key = re.sub(r'\s+', ' ', key).strip()
+    key = re.sub(r"\s+", " ", key).strip()
 
     # convert white space to regex for space or underscore (repeated)
-    key = key.replace(' ', '( |_)+')
+    key = key.replace(" ", "( |_)+")
 
     return re.compile(key, re.IGNORECASE)
 
@@ -94,8 +95,8 @@ def create_column_regexes(raw_columns):
     new_list = []
     for c in raw_columns:
         new_data = {}
-        new_data['raw'] = c
-        new_data['regex'] = _sanitize_and_convert_keys_to_regex(c)
+        new_data["raw"] = c
+        new_data["regex"] = _sanitize_and_convert_keys_to_regex(c)
         new_list.append(new_data)
 
     return new_list
@@ -148,46 +149,41 @@ def get_pm_mapping(raw_columns, mapping_data=None, resolve_duplicates=True):
     from_columns = create_column_regexes(raw_columns)
 
     if not mapping_data:
-        f = open(os.path.join(MAPPING_DATA_DIR, "pm-mapping.json"))
-        mapping_data = json.load(f)
+        file_path = os.path.join(MAPPING_DATA_DIR, "pm-mapping.json")
+        with open(file_path, encoding=locale.getpreferredencoding(False)) as f:
+            mapping_data = json.load(f)
 
     # transform the data into the format expected by the mapper. (see mapping_columns.final_mappings)
     final_mappings = OrderedDict()
     for c in from_columns:
         column_found = False
         for d in mapping_data:
-            if c['regex'].match(d['from_field']):
+            if c["regex"].match(d["from_field"]):
                 # Assume that the mappings are 100% accurate for now.
-                final_mappings[c['raw']] = (d['to_table_name'], d['to_field'], 100)
+                final_mappings[c["raw"]] = (d["to_table_name"], d["to_field"], 100)
                 column_found = True
                 continue
 
         if not column_found:
             # if we get here then the columns was never found
-            _log.debug("Could not find applicable mappings, resorting to raw field ({}) in PropertyState".format(c['raw']))
-            final_mappings[c['raw']] = ('PropertyState', c['raw'], 100)
+            _log.debug("Could not find applicable mappings, resorting to raw field ({}) in PropertyState".format(c["raw"]))
+            final_mappings[c["raw"]] = ("PropertyState", c["raw"], 100)
 
-    # verify that there are no duplicate matchings
+    # verify that there are no duplicate mappings
     if resolve_duplicates:
-
         # get the set of mappings
-        mappings = []
-        for v in final_mappings.values():
-            mappings.append(v)
-
         unique_mappings = set()
         for k, v in final_mappings.items():
             if v not in unique_mappings:
                 unique_mappings.add(v)
             else:
                 i = 1
-                base = v[1]
-                while v in unique_mappings:
-                    new_v = base + "_duplicate_{}".format(i)
-                    v = (v[0], new_v, v[2])
+                updated_value = (v[0], f"{v[1]}_duplicate_{i}", v[2])
+                while updated_value in unique_mappings:
                     i += 1
+                    updated_value = (v[0], f"{v[1]}_duplicate_{i}", v[2])
 
-                unique_mappings.add(v)
-                final_mappings[k] = v
+                unique_mappings.add(updated_value)
+                final_mappings[k] = updated_value
 
     return final_mappings
