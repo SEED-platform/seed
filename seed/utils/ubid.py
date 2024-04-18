@@ -1,9 +1,9 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 import logging
 
 from buildingid.code import decode
@@ -43,7 +43,7 @@ def decode_unique_ids(qs):
 
     for state in filtered_qs.iterator():
         try:
-            bounding_box_obj = decode(getattr(state, 'ubid'))
+            bounding_box_obj = decode(getattr(state, "ubid"))
         except ValueError:
             _log.error(f"Could not decode UBID '{getattr(state, 'ubid')}'")
             continue  # state with an incorrectly formatted UBID is skipped
@@ -68,7 +68,9 @@ def decode_unique_ids(qs):
         )
         state.centroid = centroid_polygon
 
-        state.latitude, state.longitude = bounding_box_obj.latlng()
+        # Round to avoid floating point errors
+        state.latitude = round(bounding_box_obj.centroid.latitudeCenter, 12)
+        state.longitude = round(bounding_box_obj.centroid.longitudeCenter, 12)
 
         state.save()
 
@@ -99,10 +101,14 @@ def get_jaccard_index(ubid1, ubid2):
                 UBID_CodeArea_Jaccard(left_code_area, right_code_area)
             FROM
                 decoded """
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute(sql, [ubid1, ubid2])
+            result = cursor.fetchone()[0]
+    except Exception as e:
+        logging.error(e)
+        return 0.0
 
-    with connection.cursor() as cursor:
-        cursor.execute(sql, [ubid1, ubid2])
-        result = cursor.fetchone()[0]
     return result
 
 
@@ -119,7 +125,7 @@ def validate_ubid(ubid):
     if not ubid:
         return False
 
-    parts = ubid.split('-')
+    parts = ubid.split("-")
     sql = """ SELECT pluscode_isvalid(%s) """
 
     with connection.cursor() as cursor:
@@ -128,29 +134,25 @@ def validate_ubid(ubid):
     return result
 
 
-def merge_ubid_models(old_state_ids, new_state_id, StateClass):
+def merge_ubid_models(old_state_ids, new_state_id, StateClass):  # noqa: N803
     """
     Given a list of old (existing) property states, merge the existing ubid_models onto the new state
 
     If the new_state has an equivalent ubid, skip it.
     """
-    old_states = StateClass.objects.filter(id__in=old_state_ids).order_by('-id')
+    old_states = StateClass.objects.filter(id__in=old_state_ids).order_by("-id")
     new_state = StateClass.objects.get(id=new_state_id)
     new_ubids = new_state.ubidmodel_set.all()
-    state_field = 'property' if StateClass.__name__ == 'PropertyState' else 'taxlot'
+    state_field = "property" if StateClass.__name__ == "PropertyState" else "taxlot"
 
     preferred_ubid = find_preferred(old_states, new_state)
 
     for old_state in old_states:
         for old_ubid in old_state.ubidmodel_set.all():
-            if old_ubid.ubid in new_ubids.values_list('ubid', flat=True):
+            if old_ubid.ubid in new_ubids.values_list("ubid", flat=True):
                 continue
 
-            ubid_details = {
-                'ubid': old_ubid.ubid,
-                state_field: new_state,
-                'preferred': old_ubid.ubid == preferred_ubid
-            }
+            ubid_details = {"ubid": old_ubid.ubid, state_field: new_state, "preferred": old_ubid.ubid == preferred_ubid}
 
             new_state.ubidmodel_set.create(**ubid_details)
 

@@ -1,5 +1,4 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
@@ -14,9 +13,13 @@ class SalesforceMappingSerializer(serializers.ModelSerializer):
     organization_id = serializers.IntegerField(required=True)
 
     def to_representation(self, instance):
-
         return super().to_representation(instance)
 
     class Meta:
         model = SalesforceMapping
-        fields = ('id', 'organization_id', 'column', 'salesforce_fieldname',)
+        fields = (
+            "id",
+            "organization_id",
+            "column",
+            "salesforce_fieldname",
+        )

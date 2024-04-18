@@ -2,7 +2,7 @@ ARG NGINX_LISTEN_OPTS
 
 # AUTHOR:           Clay Teeter <teeterc@gmail.com>, Nicholas Long <nicholas.long@nrel.gov>
 # DESCRIPTION:      Image with seed platform and dependencies running in development mode
-# TO_BUILD_AND_RUN: docker-compose build && docker-compose up
+# TO_BUILD_AND_RUN: docker compose build && docker compose up
 
 FROM node:20-alpine AS node
 

@@ -31,7 +31,7 @@ Building and Running Containers for Non-Development
 
     .. code-block:: bash
 
-        docker-compose build
+        docker compose build
 
     `Be Patient`_ ... If the containers build successfully, then start the containers
 
@@ -39,7 +39,7 @@ Building and Running Containers for Non-Development
 
         docker volume create --name=seed_pgdata
         docker volume create --name=seed_media
-        docker-compose up
+        docker compose up
 
     **Note that you may need to build the containers a couple times for everything to converge**
 
@@ -76,7 +76,7 @@ Build
     docker volume create --name=seed_media
 
     # build the images
-    docker-compose -f docker-compose.yml -f docker-compose.dev.yml build
+    docker compose -f docker-compose.yml -f docker-compose.dev.yml build
 
 Running the Server
 ^^^^^^^^^^^^^^^^^^
@@ -87,9 +87,9 @@ overwrite the database or celery configuration!
 
 .. code-block:: bash
 
-    docker-compose -f docker-compose.yml -f docker-compose.dev.yml up
+    docker compose -f docker-compose.yml -f docker-compose.dev.yml up
 
-If the server doesn't start successfully, and :code:`docker-compose logs` doesn't help,
+If the server doesn't start successfully, and :code:`docker compose logs` doesn't help,
 the django development server probably failed to start due to an error in your config or code.
 Unfortunately docker/django logging doesn't appear to work when the container is first started.
 Just try running the server yourself with docker exec, and see what the output is.
@@ -107,15 +107,15 @@ For example, if you want to create a separate volume for storing a production ba
 .. code-block:: bash
 
     docker volume create --name=seed_pgdata_prod
-    SEED_DB_VOLUME=seed_pgdata_prod docker-compose -f docker-compose.yml -f docker-compose.dev.yml up
+    SEED_DB_VOLUME=seed_pgdata_prod docker compose -f docker-compose.yml -f docker-compose.dev.yml up
 
-NOTE: you'll need to run :code:`docker-compose down` to remove the containers before you
+NOTE: you'll need to run :code:`docker compose down` to remove the containers before you
 can restart the containers connecting to different volumes.
 
 Running Tests
 ^^^^^^^^^^^^^
 
-While the containers are running (i.e., after running the docker-compose up command), use docker exec to run tests in the web container:
+While the containers are running (i.e., after running the docker compose up command), use docker exec to run tests in the web container:
 
 .. code-block:: bash
 

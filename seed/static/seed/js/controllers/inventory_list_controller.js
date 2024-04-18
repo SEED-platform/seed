@@ -90,6 +90,9 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
     };
     $scope.organization = organization_payload.organization;
 
+    // $scope.menu.user.is_ali_root not always populated (on redirects); force it
+    $scope.menu.user.is_ali_root = window.BE.is_ali_root;
+
     // set up i18n
     //
     // let angular-translate be in charge ... need
@@ -647,7 +650,7 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
             const data = new Array(selectedViewIds.length);
 
             if ($scope.inventory_type === 'properties') {
-              return inventory_service.get_properties(1, undefined, undefined, -1, selectedViewIds).then((inventory_data) => {
+              return inventory_service.get_properties(1, undefined, $scope.cycle.selected_cycle, -1, selectedViewIds).then((inventory_data) => {
                 _.forEach(selectedViewIds, (id, index) => {
                   const match = _.find(inventory_data.results, [viewIdProp, id]);
                   if (match) {
@@ -658,7 +661,7 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
               });
             }
             if ($scope.inventory_type === 'taxlots') {
-              return inventory_service.get_taxlots(1, undefined, undefined, -1, selectedViewIds).then((inventory_data) => {
+              return inventory_service.get_taxlots(1, undefined, $scope.cycle.selected_cycle, -1, selectedViewIds).then((inventory_data) => {
                 _.forEach(selectedViewIds, (id, index) => {
                   const match = _.find(inventory_data.results, [viewIdProp, id]);
                   if (match) {
@@ -800,10 +803,9 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
       // Modify misc
       if (col.data_type === 'datetime') {
         options.cellFilter = "date:'yyyy-MM-dd h:mm a'";
-      } else if (
-        ['area', 'eui', 'float', 'number'].includes(col.data_type) &&
-        !['longitude', 'latitude'].includes(col.column_name) // we need the whole number for these
-      ) {
+      } else if (['longitude', 'latitude'].includes(col.column_name)) {
+        options.cellFilter = 'floatingPoint';
+      } else if (['area', 'eui', 'float', 'number'].includes(col.data_type)) {
         options.cellFilter = `tolerantNumber: ${$scope.organization.display_decimal_places}`;
       } else if (col.is_derived_column) {
         options.cellFilter = `number: ${$scope.organization.display_decimal_places}`;
@@ -1101,7 +1103,7 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
         for (let j = 0; j < related.length; ++j) {
           // eslint-disable-next-line no-loop-func
           const updated = Object.entries(related[j]).reduce((result, [key, value]) => {
-            if (columnNamesToAggregate.includes(key)) aggregations[key] = (aggregations[key] ?? []).concat(value.split('; '));
+            if (columnNamesToAggregate.includes(key)) aggregations[key] = (aggregations[key] ?? []).concat(String(value ?? '').split('; '));
             result[key] = value;
             return result;
           }, {});

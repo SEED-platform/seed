@@ -1,9 +1,9 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 import logging
 
 import xlrd
@@ -16,21 +16,13 @@ from rest_framework.decorators import action
 from seed.data_importer.meters_parser import MetersParser
 from seed.data_importer.models import ROW_DELIMITER, ImportRecord
 from seed.data_importer.sensor_readings_parser import SensorsReadingsParser
-from seed.data_importer.tasks import (
-    do_checks,
-    geocode_and_match_buildings_task,
-    map_data
-)
+from seed.data_importer.tasks import do_checks, geocode_and_match_buildings_task, map_data
 from seed.data_importer.tasks import save_raw_data as task_save_raw
-from seed.data_importer.tasks import \
-    validate_use_cases as task_validate_use_cases
+from seed.data_importer.tasks import validate_use_cases as task_validate_use_cases
 from seed.decorators import ajax_request_class
 from seed.lib.mappings import mapper as simple_mapper
 from seed.lib.mcm import mapper, reader
-from seed.lib.superperms.orgs.decorators import (
-    has_hierarchy_access,
-    has_perm_class
-)
+from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm_class
 from seed.lib.superperms.orgs.models import OrganizationUser
 from seed.lib.xml_mapping import mapper as xml_mapper
 from seed.models import (
@@ -55,14 +47,11 @@ from seed.models import (
     TaxLotProperty,
     TaxLotState,
     get_column_mapping,
-    obj_to_dict
+    obj_to_dict,
 )
 from seed.serializers.pint import DEFAULT_UNITS, apply_display_unit_preferences
 from seed.utils.api import OrgMixin, api_endpoint_class
-from seed.utils.api_schema import (
-    AutoSchemaHelper,
-    swagger_auto_schema_org_query_param
-)
+from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema_org_query_param
 
 _log = logging.getLogger(__name__)
 
@@ -105,26 +94,26 @@ def convert_first_five_rows_to_list(header, first_five_rows):
     # catch the case where there is only one column, therefore no ROW_DELIMITERs
     if number_of_columns == 1:
         # Note that this does not support having a single column with carriage returns!
-        rows = first_five_rows.splitlines()
+        rows = [[row] for row in first_five_rows.splitlines()]
     else:
-        for idx, l in enumerate(split_cells):
-            crlf_count = l.count('\n')
+        for idx, line in enumerate(split_cells):
+            crlf_count = line.count("\n")
 
             if crlf_count == 0:
-                row_data.append(l)
+                row_data.append(line)
             elif crlf_count >= 1:
                 # if add this element to row_data equals number_of_columns, then it is a new row
                 if len(row_data) == number_of_columns - 1:
                     # check if this is the last columns, if so, then just store the value and move on
                     if idx == number_cells - 1:
-                        row_data.append(l)
+                        row_data.append(line)
                         rows.append(row_data)
                         continue
                     else:
                         # split the cell_data. The last cell becomes the beginning of the new
                         # row, and the other cells stay joined with \n.
-                        cell_data = l.splitlines()
-                        row_data.append('\n'.join(cell_data[:crlf_count]))
+                        cell_data = line.splitlines()
+                        row_data.append("\n".join(cell_data[:crlf_count]))
                         rows.append(row_data)
 
                         # initialize the next row_data with the remainder
@@ -132,7 +121,7 @@ def convert_first_five_rows_to_list(header, first_five_rows):
                         continue
                 else:
                     # this is not the end, so it must be a carriage return in the cell, just save data
-                    row_data.append(l)
+                    row_data.append(line)
 
             if len(row_data) == number_of_columns:
                 rows.append(row_data)
@@ -146,7 +135,7 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
 
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('requires_viewer')
+    @has_perm_class("requires_viewer")
     @has_hierarchy_access(import_file_id_kwarg="pk")
     def retrieve(self, request, pk=None):
         """
@@ -155,102 +144,82 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
         import_file_id = pk
         orgs = request.user.orgs.all()
         try:
-            import_file = ImportFile.objects.get(
-                pk=import_file_id
-            )
-            d = ImportRecord.objects.filter(
-                super_organization__in=orgs, pk=import_file.import_record_id
-            )
+            import_file = ImportFile.objects.get(pk=import_file_id)
+            d = ImportRecord.objects.filter(super_organization__in=orgs, pk=import_file.import_record_id)
         except ObjectDoesNotExist:
-            return JsonResponse({
-                'status': 'error',
-                'message': 'Could not access an import file with this ID'
-            }, status=status.HTTP_403_FORBIDDEN)
+            return JsonResponse(
+                {"status": "error", "message": "Could not access an import file with this ID"}, status=status.HTTP_403_FORBIDDEN
+            )
         # check if user has access to the import file
         if not d.exists():
-            return JsonResponse({
-                'status': 'error',
-                'message': 'Could not locate import file with this ID',
-                'import_file': {},
-            }, status=status.HTTP_400_BAD_REQUEST)
+            return JsonResponse(
+                {
+                    "status": "error",
+                    "message": "Could not locate import file with this ID",
+                    "import_file": {},
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         f = obj_to_dict(import_file)
-        f['name'] = import_file.filename_only
+        f["name"] = import_file.filename_only
         if not import_file.uploaded_filename:
-            f['uploaded_filename'] = import_file.filename
-        f['dataset'] = obj_to_dict(import_file.import_record)
+            f["uploaded_filename"] = import_file.filename
+        f["dataset"] = obj_to_dict(import_file.import_record)
 
-        return JsonResponse({
-            'status': 'success',
-            'import_file': f,
-        })
+        return JsonResponse(
+            {
+                "status": "success",
+                "import_file": f,
+            }
+        )
 
     @swagger_auto_schema_org_query_param
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('requires_viewer')
+    @has_perm_class("requires_viewer")
     @has_hierarchy_access(import_file_id_kwarg="pk")
-    @action(detail=True, methods=['GET'])
+    @action(detail=True, methods=["GET"])
     def check_meters_tab_exists(self, request, pk=None):
         """
         Checks for the existence of meters tab "Meter Entries" for a file.
         """
         org_id = self.get_organization(request)
         try:
-            import_file = ImportFile.objects.get(
-                id=pk,
-                import_record__super_organization_id=org_id
-            )
+            import_file = ImportFile.objects.get(id=pk, import_record__super_organization_id=org_id)
         except ImportFile.DoesNotExist:
-            resp = {
-                'status': 'error',
-                'message': 'Could not find import file with pk=' + str(pk)
-            }
+            resp = {"status": "error", "message": "Could not find import file with pk=" + str(pk)}
             return JsonResponse(resp, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            has_meter_tab = bool(
-                {'Meter Entries', 'Monthly Usage'}
-                & set(xlrd.open_workbook(import_file.file.path).sheet_names())
-            )
-            return JsonResponse({
-                'status': 'success',
-                'data': has_meter_tab
-            })
+            has_meter_tab = bool({"Meter Entries", "Monthly Usage"} & set(xlrd.open_workbook(import_file.file.path).sheet_names()))
+            return JsonResponse({"status": "success", "data": has_meter_tab})
         except xlrd.XLRDError:
-            return JsonResponse({
-                'status': 'success',
-                'data': False
-            })
+            return JsonResponse({"status": "success", "data": False})
 
     @swagger_auto_schema(
         manual_parameters=[
             AutoSchemaHelper.query_org_id_field(),
         ],
-        request_body=AutoSchemaHelper.schema_factory({
-            'import_file_id': 'integer'
-        })
+        request_body=AutoSchemaHelper.schema_factory({"import_file_id": "integer"}),
     )
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('requires_member')
+    @has_perm_class("requires_member")
     @has_hierarchy_access(body_import_file_id="import_file_id")
-    @action(detail=False, methods=['POST'])
+    @action(detail=False, methods=["POST"])
     def reuse_inventory_file_for_meters(self, request):
         org_id = self.get_organization(request)
         try:
-            import_file_id = request.data.get('import_file_id', 0)
+            import_file_id = request.data.get("import_file_id", 0)
             original_file = ImportFile.objects.get(
                 id=import_file_id,
                 import_record__super_organization_id=org_id,
                 mapping_done=True,
-                source_type=SEED_DATA_SOURCES[ASSESSED_RAW][1]
+                source_type=SEED_DATA_SOURCES[ASSESSED_RAW][1],
             )
         except ImportFile.DoesNotExist:
-            resp = {
-                'status': 'error',
-                'message': 'Could not find previously imported inventory file with pk=' + str(import_file_id)
-            }
+            resp = {"status": "error", "message": "Could not find previously imported inventory file with pk=" + str(import_file_id)}
             return JsonResponse(resp, status=status.HTTP_400_BAD_REQUEST)
 
         new_file = ImportFile.objects.create(
@@ -260,55 +229,47 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
             source_type=SEED_DATA_SOURCES[PORTFOLIO_METER_USAGE][1],
         )
 
-        return JsonResponse({
-            'status': 'success',
-            'import_file_id': new_file.id
-        })
+        return JsonResponse({"status": "success", "import_file_id": new_file.id})
 
     @swagger_auto_schema_org_query_param
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('requires_viewer')
+    @has_perm_class("requires_viewer")
     @has_hierarchy_access(import_file_id_kwarg="pk")
-    @action(detail=True, methods=['GET'])
+    @action(detail=True, methods=["GET"])
     def first_five_rows(self, request, pk=None):
         """
         Retrieves the first five rows of an ImportFile.
         """
         org_id = self.get_organization(request)
         try:
-            import_file = ImportFile.objects.get(
-                pk=pk,
-                import_record__super_organization_id=org_id
-            )
+            import_file = ImportFile.objects.get(pk=pk, import_record__super_organization_id=org_id)
         except ImportFile.DoesNotExist:
             return JsonResponse(
-                {'status': 'error', 'message': 'Could not find import file with pk=' + str(
-                    pk)}, status=status.HTTP_400_BAD_REQUEST)
+                {"status": "error", "message": "Could not find import file with pk=" + str(pk)}, status=status.HTTP_400_BAD_REQUEST
+            )
         if import_file.cached_second_to_fifth_row is None:
-            return JsonResponse({'status': 'error',
-                                 'message': 'Internal problem occurred, import file first five rows not cached'},
-                                status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        '''
+            return JsonResponse(
+                {"status": "error", "message": "Internal problem occurred, import file first five rows not cached"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+        """
         import_file.cached_second_to_fifth_row is a field that contains the first
         5 lines of data from the file, split on newlines, delimited by
         ROW_DELIMITER. This becomes an issue when fields have newlines in them,
         so the following is to handle newlines in the fields.
         In the case of only one data column there will be no ROW_DELIMITER.
-        '''
+        """
         header = import_file.cached_first_row.split(ROW_DELIMITER)
         data = import_file.cached_second_to_fifth_row
-        return JsonResponse({
-            'status': 'success',
-            'first_five_rows': convert_first_five_rows_to_list(header, data)
-        })
+        return JsonResponse({"status": "success", "first_five_rows": convert_first_five_rows_to_list(header, data)})
 
     @swagger_auto_schema_org_query_param
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('requires_viewer')
+    @has_perm_class("requires_viewer")
     @has_hierarchy_access(import_file_id_kwarg="pk")
-    @action(detail=True, methods=['GET'])
+    @action(detail=True, methods=["GET"])
     def raw_column_names(self, request, pk=None):
         """
         Retrieves a list of all column names from an ImportFile.
@@ -316,33 +277,25 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
         org_id = self.get_organization(request)
 
         try:
-            import_file = ImportFile.objects.get(
-                pk=pk,
-                import_record__super_organization_id=org_id
-            )
+            import_file = ImportFile.objects.get(pk=pk, import_record__super_organization_id=org_id)
         except ImportFile.DoesNotExist:
             return JsonResponse(
-                {'status': 'error', 'message': 'Could not find import file with pk=' + str(
-                    pk)}, status=status.HTTP_400_BAD_REQUEST)
+                {"status": "error", "message": "Could not find import file with pk=" + str(pk)}, status=status.HTTP_400_BAD_REQUEST
+            )
 
-        return JsonResponse({
-            'status': 'success',
-            'raw_columns': import_file.first_row_columns
-        })
+        return JsonResponse({"status": "success", "raw_columns": import_file.first_row_columns})
 
     @swagger_auto_schema(
         manual_parameters=[
             AutoSchemaHelper.query_org_id_field(),
         ],
-        responses={
-            200: MappingResultsResponseSerializer
-        }
+        responses={200: MappingResultsResponseSerializer},
     )
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('can_modify_data')
+    @has_perm_class("can_modify_data")
     @has_hierarchy_access(import_file_id_kwarg="pk")
-    @action(detail=True, methods=['POST'], url_path='mapping_results')
+    @action(detail=True, methods=["POST"], url_path="mapping_results")
     def mapping_results(self, request, pk=None):
         """
         Retrieves a paginated list of Properties and Tax Lots for an import file after mapping.
@@ -353,23 +306,17 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
 
         try:
             # get the field names that were in the mapping
-            import_file = ImportFile.objects.get(
-                pk=import_file_id,
-                import_record__super_organization_id=org_id
-            )
+            import_file = ImportFile.objects.get(pk=import_file_id, import_record__super_organization_id=org_id)
         except ImportFile.DoesNotExist:
             return JsonResponse(
-                {'status': 'error', 'message': 'Could not find import file with pk=' + str(
-                    pk)}, status=status.HTTP_400_BAD_REQUEST)
+                {"status": "error", "message": "Could not find import file with pk=" + str(pk)}, status=status.HTTP_400_BAD_REQUEST
+            )
 
         # List of the only fields to show
         field_names = import_file.get_cached_mapped_columns
 
         # set of fields
-        fields = {
-            'PropertyState': ['id', 'extra_data', 'lot_number'],
-            'TaxLotState': ['id', 'extra_data']
-        }
+        fields = {"PropertyState": ["id", "extra_data", "lot_number"], "TaxLotState": ["id", "extra_data"]}
         columns_from_db = Column.retrieve_all(org_id)
         property_column_name_mapping = {}
         taxlot_column_name_mapping = {}
@@ -377,51 +324,43 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
         for field_name in field_names:
             # find the field from the columns in the database
             for column in columns_from_db:
-                if column['table_name'] == 'PropertyState' and \
-                        field_name[0] == 'PropertyState' and \
-                        field_name[1] == column['column_name']:
-                    property_column_name_mapping[column['column_name']] = column['name']
-                    if not column['is_extra_data']:
-                        fields['PropertyState'].append(field_name[1])  # save to the raw db fields
-                    elif DEFAULT_UNITS.get(column['data_type']):
-                        extra_data_units[column['column_name']] = DEFAULT_UNITS.get(column['data_type'])
-                elif column['table_name'] == 'TaxLotState' and \
-                        field_name[0] == 'TaxLotState' and \
-                        field_name[1] == column['column_name']:
-                    taxlot_column_name_mapping[column['column_name']] = column['name']
-                    if not column['is_extra_data']:
-                        fields['TaxLotState'].append(field_name[1])  # save to the raw db fields
-                    elif DEFAULT_UNITS.get(column['data_type']):
-                        extra_data_units[column['column_name']] = DEFAULT_UNITS.get(column['data_type'])
+                if column["table_name"] == "PropertyState" and field_name[0] == "PropertyState" and field_name[1] == column["column_name"]:
+                    property_column_name_mapping[column["column_name"]] = column["name"]
+                    if not column["is_extra_data"]:
+                        fields["PropertyState"].append(field_name[1])  # save to the raw db fields
+                    elif DEFAULT_UNITS.get(column["data_type"]):
+                        extra_data_units[column["column_name"]] = DEFAULT_UNITS.get(column["data_type"])
+                elif column["table_name"] == "TaxLotState" and field_name[0] == "TaxLotState" and field_name[1] == column["column_name"]:
+                    taxlot_column_name_mapping[column["column_name"]] = column["name"]
+                    if not column["is_extra_data"]:
+                        fields["TaxLotState"].append(field_name[1])  # save to the raw db fields
+                    elif DEFAULT_UNITS.get(column["data_type"]):
+                        extra_data_units[column["column_name"]] = DEFAULT_UNITS.get(column["data_type"])
 
-        inventory_type = request.data.get('inventory_type', 'all')
+        inventory_type = request.data.get("inventory_type", "all")
 
-        result = {
-            'status': 'success'
-        }
+        result = {"status": "success"}
 
-        if inventory_type == 'properties' or inventory_type == 'all':
-            properties = PropertyState.objects.filter(
-                import_file_id=import_file_id,
-                data_state__in=[DATA_STATE_MAPPING, DATA_STATE_MATCHING],
-                merge_state__in=[MERGE_STATE_UNKNOWN, MERGE_STATE_NEW]
-            ).only(*fields['PropertyState']).order_by('id')
+        if inventory_type in {"properties", "all"}:
+            properties = (
+                PropertyState.objects.filter(
+                    import_file_id=import_file_id,
+                    data_state__in=[DATA_STATE_MAPPING, DATA_STATE_MATCHING],
+                    merge_state__in=[MERGE_STATE_UNKNOWN, MERGE_STATE_NEW],
+                )
+                .only(*fields["PropertyState"])
+                .order_by("id")
+            )
 
             property_results = []
             for prop in properties:
                 prop_dict = TaxLotProperty.model_to_dict_with_mapping(
-                    prop,
-                    property_column_name_mapping,
-                    fields=fields['PropertyState'],
-                    exclude=['extra_data']
+                    prop, property_column_name_mapping, fields=fields["PropertyState"], exclude=["extra_data"]
                 )
 
                 prop_dict.update(
                     TaxLotProperty.extra_data_to_dict_with_mapping(
-                        prop.extra_data,
-                        property_column_name_mapping,
-                        fields=prop.extra_data.keys(),
-                        units=extra_data_units
+                        prop.extra_data, property_column_name_mapping, fields=prop.extra_data.keys(), units=extra_data_units
                     ).items()
                 )
                 if prop.raw_access_level_instance is not None:
@@ -431,22 +370,23 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
                 prop_dict = apply_display_unit_preferences(org, prop_dict)
                 property_results.append(prop_dict)
 
-            result['properties'] = property_results
+            result["properties"] = property_results
 
-        if inventory_type == 'taxlots' or inventory_type == 'all':
-            tax_lots = TaxLotState.objects.filter(
-                import_file_id=import_file_id,
-                data_state__in=[DATA_STATE_MAPPING, DATA_STATE_MATCHING],
-                merge_state__in=[MERGE_STATE_UNKNOWN, MERGE_STATE_NEW]
-            ).only(*fields['TaxLotState']).order_by('id')
+        if inventory_type in {"taxlots", "all"}:
+            tax_lots = (
+                TaxLotState.objects.filter(
+                    import_file_id=import_file_id,
+                    data_state__in=[DATA_STATE_MAPPING, DATA_STATE_MATCHING],
+                    merge_state__in=[MERGE_STATE_UNKNOWN, MERGE_STATE_NEW],
+                )
+                .only(*fields["TaxLotState"])
+                .order_by("id")
+            )
 
             tax_lot_results = []
             for tax_lot in tax_lots:
                 tax_lot_dict = TaxLotProperty.model_to_dict_with_mapping(
-                    tax_lot,
-                    taxlot_column_name_mapping,
-                    fields=fields['TaxLotState'],
-                    exclude=['extra_data']
+                    tax_lot, taxlot_column_name_mapping, fields=fields["TaxLotState"], exclude=["extra_data"]
                 )
                 tax_lot_dict.update(
                     TaxLotProperty.extra_data_to_dict_with_mapping(
@@ -462,12 +402,12 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
                 tax_lot_dict = apply_display_unit_preferences(org, tax_lot_dict)
                 tax_lot_results.append(tax_lot_dict)
 
-            result['tax_lots'] = tax_lot_results
+            result["tax_lots"] = tax_lot_results
 
         return result
 
     @staticmethod
-    def has_coparent(state_id, inventory_type, fields=None):
+    def has_coparent(state_id, inventory_type):
         """
         Return the coparent of the current state id based on the inventory type. If fields
         are given (as a list), then it will only return the fields specified of the state model
@@ -475,10 +415,9 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
 
         :param state_id: int, ID of PropertyState or TaxLotState
         :param inventory_type: string, either properties | taxlots
-        :param fields: list, either None or list of fields to return
         :return: dict or state object, If fields is not None then will return state_object
         """
-        state_model = PropertyState if inventory_type == 'properties' else TaxLotState
+        state_model = PropertyState if inventory_type == "properties" else TaxLotState
 
         # TODO: convert coparent to instance method, not class method
         audit_entry, audit_count = state_model.coparent(state_id)
@@ -488,11 +427,8 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
 
         if audit_count > 1:
             return JsonResponse(
-                {
-                    'status': 'error',
-                    'message': 'Internal problem occurred, more than one merge record found'
-                },
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                {"status": "error", "message": "Internal problem occurred, more than one merge record found"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
         return audit_entry[0]
@@ -501,16 +437,18 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
         manual_parameters=[
             AutoSchemaHelper.query_org_id_field(),
         ],
-        request_body=AutoSchemaHelper.schema_factory({
-            'remap': 'boolean',
-            'mark_as_done': 'boolean',
-        })
+        request_body=AutoSchemaHelper.schema_factory(
+            {
+                "remap": "boolean",
+                "mark_as_done": "boolean",
+            }
+        ),
     )
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('can_modify_data')
+    @has_perm_class("can_modify_data")
     @has_hierarchy_access(import_file_id_kwarg="pk")
-    @action(detail=True, methods=['POST'])
+    @action(detail=True, methods=["POST"])
     def map(self, request, pk=None):
         """
         Starts a background task to convert imported raw data into
@@ -519,19 +457,13 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
 
         body = request.data
 
-        remap = body.get('remap', False)
-        mark_as_done = body.get('mark_as_done', True)
+        remap = body.get("remap", False)
+        mark_as_done = body.get("mark_as_done", True)
 
         org_id = self.get_organization(request)
-        import_file = ImportFile.objects.filter(
-            pk=pk,
-            import_record__super_organization_id=org_id
-        )
+        import_file = ImportFile.objects.filter(pk=pk, import_record__super_organization_id=org_id)
         if not import_file.exists():
-            return {
-                'status': 'error',
-                'message': 'ImportFile {} does not exist'.format(pk)
-            }
+            return {"status": "error", "message": f"ImportFile {pk} does not exist"}
 
         # return remap_data(import_file_id)
         return JsonResponse(map_data(pk, remap, mark_as_done))
@@ -539,9 +471,9 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
     @swagger_auto_schema_org_query_param
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('can_modify_data')
+    @has_perm_class("can_modify_data")
     @has_hierarchy_access(import_file_id_kwarg="pk")
-    @action(detail=True, methods=['POST'])
+    @action(detail=True, methods=["POST"])
     def start_system_matching_and_geocoding(self, request, pk=None):
         """
         Starts a background task to attempt automatic matching between buildings
@@ -550,23 +482,20 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
         org_id = self.get_organization(request)
 
         try:
-            ImportFile.objects.get(
-                pk=pk,
-                import_record__super_organization_id=org_id
-            )
+            ImportFile.objects.get(pk=pk, import_record__super_organization_id=org_id)
         except ImportFile.DoesNotExist:
             return JsonResponse(
-                {'status': 'error', 'message': 'Could not find import file with pk=' + str(
-                    pk)}, status=status.HTTP_400_BAD_REQUEST)
+                {"status": "error", "message": "Could not find import file with pk=" + str(pk)}, status=status.HTTP_400_BAD_REQUEST
+            )
 
         return geocode_and_match_buildings_task(pk)
 
     @swagger_auto_schema_org_query_param
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('can_modify_data')
+    @has_perm_class("can_modify_data")
     @has_hierarchy_access(import_file_id_kwarg="pk")
-    @action(detail=True, methods=['POST'])
+    @action(detail=True, methods=["POST"])
     def start_data_quality_checks(self, request, pk=None):
         """
         Runs the data quality rules against an import file to get a preliminary
@@ -575,28 +504,27 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
         org_id = self.get_organization(request)
 
         try:
-            import_file = ImportFile.objects.get(
-                pk=pk,
-                import_record__super_organization_id=org_id
-            )
+            import_file = ImportFile.objects.get(pk=pk, import_record__super_organization_id=org_id)
         except ImportFile.DoesNotExist:
             return JsonResponse(
-                {'status': 'error', 'message': 'Could not find import file with pk=' + str(
-                    pk)}, status=status.HTTP_400_BAD_REQUEST)
+                {"status": "error", "message": "Could not find import file with pk=" + str(pk)}, status=status.HTTP_400_BAD_REQUEST
+            )
 
         return_value = do_checks(org_id, None, None, import_file.pk)
         # step 5: create a new model instance
-        return JsonResponse({
-            'progress_key': return_value['progress_key'],
-            'progress': return_value,
-        })
+        return JsonResponse(
+            {
+                "progress_key": return_value["progress_key"],
+                "progress": return_value,
+            }
+        )
 
     @swagger_auto_schema_org_query_param
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('can_modify_data')
+    @has_perm_class("can_modify_data")
     @has_hierarchy_access(import_file_id_kwarg="pk")
-    @action(detail=True, methods=['POST'])
+    @action(detail=True, methods=["POST"])
     def validate_use_cases(self, request, pk=None):
         """
         Starts a background task to call BuildingSync's use case validation
@@ -605,14 +533,11 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
         org_id = self.get_organization(request)
 
         try:
-            import_file = ImportFile.objects.get(
-                pk=pk,
-                import_record__super_organization_id=org_id
-            )
+            import_file = ImportFile.objects.get(pk=pk, import_record__super_organization_id=org_id)
         except ImportFile.DoesNotExist:
             return JsonResponse(
-                {'status': 'error', 'message': 'Could not find import file with pk=' + str(
-                    pk)}, status=status.HTTP_400_BAD_REQUEST)
+                {"status": "error", "message": "Could not find import file with pk=" + str(pk)}, status=status.HTTP_400_BAD_REQUEST
+            )
 
         return task_validate_use_cases(import_file.pk)
 
@@ -620,13 +545,13 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
         manual_parameters=[
             AutoSchemaHelper.query_org_id_field(),
         ],
-        request_body=AutoSchemaHelper.schema_factory({'cycle_id': 'string'})
+        request_body=AutoSchemaHelper.schema_factory({"cycle_id": "string"}),
     )
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('can_modify_data')
+    @has_perm_class("can_modify_data")
     @has_hierarchy_access(import_file_id_kwarg="pk")
-    @action(detail=True, methods=['POST'])
+    @action(detail=True, methods=["POST"])
     def start_save_data(self, request, pk=None):
         """
         Starts a background task to import raw data from an ImportFile
@@ -637,30 +562,23 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
         body = request.data
         import_file_id = pk
         if not import_file_id:
-            return JsonResponse({
-                'status': 'error',
-                'message': 'must pass file_id of file to save'
-            }, status=status.HTTP_400_BAD_REQUEST)
+            return JsonResponse({"status": "error", "message": "must pass file_id of file to save"}, status=status.HTTP_400_BAD_REQUEST)
 
         org_id = self.get_organization(request)
 
         try:
-            import_file = ImportFile.objects.get(
-                pk=import_file_id,
-                import_record__super_organization_id=org_id
-            )
+            import_file = ImportFile.objects.get(pk=import_file_id, import_record__super_organization_id=org_id)
         except ImportFile.DoesNotExist:
             return JsonResponse(
-                {'status': 'error', 'message': 'Could not find import file with pk=' + str(
-                    pk)}, status=status.HTTP_400_BAD_REQUEST)
+                {"status": "error", "message": "Could not find import file with pk=" + str(pk)}, status=status.HTTP_400_BAD_REQUEST
+            )
 
-        cycle_id = body.get('cycle_id')
-        multiple_cycle_upload = body.get('multiple_cycle_upload', False)
+        cycle_id = body.get("cycle_id")
+        multiple_cycle_upload = body.get("multiple_cycle_upload", False)
         if not cycle_id:
-            return JsonResponse({
-                'status': 'error',
-                'message': 'must pass cycle_id of the cycle to save the data'
-            }, status=status.HTTP_400_BAD_REQUEST)
+            return JsonResponse(
+                {"status": "error", "message": "must pass cycle_id of the cycle to save the data"}, status=status.HTTP_400_BAD_REQUEST
+            )
         else:
             # find the cycle
             cycle = Cycle.objects.get(id=cycle_id)
@@ -670,59 +588,42 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
                 import_file.multiple_cycle_upload = multiple_cycle_upload
                 import_file.save()
             else:
-                return JsonResponse({
-                    'status': 'error',
-                    'message': 'cycle_id was invalid'
-                }, status=status.HTTP_400_BAD_REQUEST)
+                return JsonResponse({"status": "error", "message": "cycle_id was invalid"}, status=status.HTTP_400_BAD_REQUEST)
 
         return JsonResponse(task_save_raw(import_file.id))
 
     @swagger_auto_schema_org_query_param
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('can_modify_data')
+    @has_perm_class("can_modify_data")
     @has_hierarchy_access(import_file_id_kwarg="pk")
-    @action(detail=True, methods=['POST'])
+    @action(detail=True, methods=["POST"])
     def mapping_done(self, request, pk=None):
         """
         Tell the backend that the mapping is complete.
         """
         import_file_id = pk
         if not import_file_id:
-            return JsonResponse({
-                'status': 'error',
-                'message': 'must pass import_file_id'
-            }, status=status.HTTP_400_BAD_REQUEST)
+            return JsonResponse({"status": "error", "message": "must pass import_file_id"}, status=status.HTTP_400_BAD_REQUEST)
 
         org_id = self.get_organization(request)
 
         try:
-            import_file = ImportFile.objects.get(
-                pk=import_file_id,
-                import_record__super_organization_id=org_id
-            )
+            import_file = ImportFile.objects.get(pk=import_file_id, import_record__super_organization_id=org_id)
         except ImportFile.DoesNotExist:
-            return JsonResponse({
-                'status': 'error',
-                'message': 'no import file with given id'
-            }, status=status.HTTP_404_NOT_FOUND)
+            return JsonResponse({"status": "error", "message": "no import file with given id"}, status=status.HTTP_404_NOT_FOUND)
 
         import_file.mapping_done = True
         import_file.save()
 
-        return JsonResponse(
-            {
-                'status': 'success',
-                'message': ''
-            }
-        )
+        return JsonResponse({"status": "success", "message": ""})
 
     @swagger_auto_schema_org_query_param
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('requires_member')
+    @has_perm_class("requires_member")
     @has_hierarchy_access(import_file_id_kwarg="pk")
-    @action(detail=True, methods=['GET'])
+    @action(detail=True, methods=["GET"])
     def matching_and_geocoding_results(self, request, pk=None):
         """
         Retrieves the number of matched and unmatched properties & tax lots for
@@ -731,175 +632,175 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
         org_id = self.get_organization(request)
 
         try:
-            import_file = ImportFile.objects.get(
-                pk=pk,
-                import_record__super_organization_id=org_id
-            )
+            import_file = ImportFile.objects.get(pk=pk, import_record__super_organization_id=org_id)
         except ImportFile.DoesNotExist:
             return JsonResponse(
-                {'status': 'error', 'message': 'Could not find import file with pk=' + str(
-                    pk)}, status=status.HTTP_400_BAD_REQUEST)
+                {"status": "error", "message": "Could not find import file with pk=" + str(pk)}, status=status.HTTP_400_BAD_REQUEST
+            )
 
         # property views associated with this imported file (including merges)
         properties_new = []
-        properties_matched = list(PropertyState.objects.filter(
-            import_file__pk=import_file.pk,
-            data_state=DATA_STATE_MATCHING,
-            merge_state=MERGE_STATE_MERGED,
-        ).values_list('id', flat=True))
+        properties_matched = list(
+            PropertyState.objects.filter(
+                import_file__pk=import_file.pk,
+                data_state=DATA_STATE_MATCHING,
+                merge_state=MERGE_STATE_MERGED,
+            ).values_list("id", flat=True)
+        )
 
         # Check audit log in case PropertyStates are listed as "new" but were merged into a different property
-        properties = list(PropertyState.objects.filter(
-            import_file__pk=import_file.pk,
-            data_state=DATA_STATE_MATCHING,
-            merge_state=MERGE_STATE_NEW,
-        ))
+        properties = list(
+            PropertyState.objects.filter(
+                import_file__pk=import_file.pk,
+                data_state=DATA_STATE_MATCHING,
+                merge_state=MERGE_STATE_NEW,
+            )
+        )
 
         for state in properties:
-            audit_creation_id = PropertyAuditLog.objects.only('id').exclude(
-                import_filename=None).get(
-                state_id=state.id,
-                name='Import Creation'
+            audit_creation_id = (
+                PropertyAuditLog.objects.only("id").exclude(import_filename=None).get(state_id=state.id, name="Import Creation")
             )
-            if PropertyAuditLog.objects.exclude(record_type=AUDIT_USER_EDIT).filter(
-                parent1_id=audit_creation_id
-            ).exists():
+            if PropertyAuditLog.objects.exclude(record_type=AUDIT_USER_EDIT).filter(parent1_id=audit_creation_id).exists():
                 properties_matched.append(state.id)
             else:
                 properties_new.append(state.id)
 
         tax_lots_new = []
-        tax_lots_matched = list(TaxLotState.objects.only('id').filter(
-            import_file__pk=import_file.pk,
-            data_state=DATA_STATE_MATCHING,
-            merge_state=MERGE_STATE_MERGED,
-        ).values_list('id', flat=True))
+        tax_lots_matched = list(
+            TaxLotState.objects.only("id")
+            .filter(
+                import_file__pk=import_file.pk,
+                data_state=DATA_STATE_MATCHING,
+                merge_state=MERGE_STATE_MERGED,
+            )
+            .values_list("id", flat=True)
+        )
 
         # Check audit log in case TaxLotStates are listed as "new" but were merged into a different tax lot
-        taxlots = list(TaxLotState.objects.filter(
-            import_file__pk=import_file.pk,
-            data_state=DATA_STATE_MATCHING,
-            merge_state=MERGE_STATE_NEW,
-        ))
+        taxlots = list(
+            TaxLotState.objects.filter(
+                import_file__pk=import_file.pk,
+                data_state=DATA_STATE_MATCHING,
+                merge_state=MERGE_STATE_NEW,
+            )
+        )
 
         for state in taxlots:
-            audit_creation_id = TaxLotAuditLog.objects.only('id').exclude(import_filename=None).get(
-                state_id=state.id,
-                name='Import Creation'
+            audit_creation_id = (
+                TaxLotAuditLog.objects.only("id").exclude(import_filename=None).get(state_id=state.id, name="Import Creation")
             )
-            if TaxLotAuditLog.objects.exclude(record_type=AUDIT_USER_EDIT).filter(
-                parent1_id=audit_creation_id
-            ).exists():
+            if TaxLotAuditLog.objects.exclude(record_type=AUDIT_USER_EDIT).filter(parent1_id=audit_creation_id).exists():
                 tax_lots_matched.append(state.id)
             else:
                 tax_lots_new.append(state.id)
 
         # Construct Geocode Results
         property_geocode_results = {
-            'high_confidence': len(PropertyState.objects.filter(
-                import_file__pk=import_file.pk,
-                data_state=DATA_STATE_MATCHING,
-                geocoding_confidence__startswith='High'
-            )),
-            'low_confidence': len(PropertyState.objects.filter(
-                import_file__pk=import_file.pk,
-                data_state=DATA_STATE_MATCHING,
-                geocoding_confidence__startswith='Low'
-            )),
-            'census_geocoder': len(PropertyState.objects.filter(
-                import_file__pk=import_file.pk,
-                data_state=DATA_STATE_MATCHING,
-                geocoding_confidence__startswith='Census'
-            )),
-            'manual': len(PropertyState.objects.filter(
-                import_file__pk=import_file.pk,
-                data_state=DATA_STATE_MATCHING,
-                geocoding_confidence='Manually geocoded (N/A)'
-            )),
-            'missing_address_components': len(PropertyState.objects.filter(
-                import_file__pk=import_file.pk,
-                data_state=DATA_STATE_MATCHING,
-                geocoding_confidence='Missing address components (N/A)'
-            )),
+            "high_confidence": len(
+                PropertyState.objects.filter(
+                    import_file__pk=import_file.pk, data_state=DATA_STATE_MATCHING, geocoding_confidence__startswith="High"
+                )
+            ),
+            "low_confidence": len(
+                PropertyState.objects.filter(
+                    import_file__pk=import_file.pk, data_state=DATA_STATE_MATCHING, geocoding_confidence__startswith="Low"
+                )
+            ),
+            "census_geocoder": len(
+                PropertyState.objects.filter(
+                    import_file__pk=import_file.pk, data_state=DATA_STATE_MATCHING, geocoding_confidence__startswith="Census"
+                )
+            ),
+            "manual": len(
+                PropertyState.objects.filter(
+                    import_file__pk=import_file.pk, data_state=DATA_STATE_MATCHING, geocoding_confidence="Manually geocoded (N/A)"
+                )
+            ),
+            "missing_address_components": len(
+                PropertyState.objects.filter(
+                    import_file__pk=import_file.pk, data_state=DATA_STATE_MATCHING, geocoding_confidence="Missing address components (N/A)"
+                )
+            ),
         }
 
         tax_lot_geocode_results = {
-            'high_confidence': len(TaxLotState.objects.filter(
-                import_file__pk=import_file.pk,
-                data_state=DATA_STATE_MATCHING,
-                geocoding_confidence__startswith='High'
-            )),
-            'low_confidence': len(TaxLotState.objects.filter(
-                import_file__pk=import_file.pk,
-                data_state=DATA_STATE_MATCHING,
-                geocoding_confidence__startswith='Low'
-            )),
-            'census_geocoder': len(TaxLotState.objects.filter(
-                import_file__pk=import_file.pk,
-                data_state=DATA_STATE_MATCHING,
-                geocoding_confidence__startswith='Census'
-            )),
-            'manual': len(TaxLotState.objects.filter(
-                import_file__pk=import_file.pk,
-                data_state=DATA_STATE_MATCHING,
-                geocoding_confidence='Manually geocoded (N/A)'
-            )),
-            'missing_address_components': len(TaxLotState.objects.filter(
-                import_file__pk=import_file.pk,
-                data_state=DATA_STATE_MATCHING,
-                geocoding_confidence='Missing address components (N/A)'
-            )),
+            "high_confidence": len(
+                TaxLotState.objects.filter(
+                    import_file__pk=import_file.pk, data_state=DATA_STATE_MATCHING, geocoding_confidence__startswith="High"
+                )
+            ),
+            "low_confidence": len(
+                TaxLotState.objects.filter(
+                    import_file__pk=import_file.pk, data_state=DATA_STATE_MATCHING, geocoding_confidence__startswith="Low"
+                )
+            ),
+            "census_geocoder": len(
+                TaxLotState.objects.filter(
+                    import_file__pk=import_file.pk, data_state=DATA_STATE_MATCHING, geocoding_confidence__startswith="Census"
+                )
+            ),
+            "manual": len(
+                TaxLotState.objects.filter(
+                    import_file__pk=import_file.pk, data_state=DATA_STATE_MATCHING, geocoding_confidence="Manually geocoded (N/A)"
+                )
+            ),
+            "missing_address_components": len(
+                TaxLotState.objects.filter(
+                    import_file__pk=import_file.pk, data_state=DATA_STATE_MATCHING, geocoding_confidence="Missing address components (N/A)"
+                )
+            ),
         }
 
         # merge in any of the matching results from the JSON field
         return {
-            'status': 'success',
-            'import_file_records': import_file.matching_results_data.get('import_file_records', None),
-            'multiple_cycle_upload': import_file.multiple_cycle_upload,
-            'properties': {
-                'initial_incoming': import_file.matching_results_data.get('property_initial_incoming', None),
-                'duplicates_against_existing': import_file.matching_results_data.get('property_duplicates_against_existing', None),
-                'duplicates_within_file': import_file.matching_results_data.get('property_duplicates_within_file', None),
-                'duplicates_within_file_errors': import_file.matching_results_data.get('property_duplicates_within_file_errors', None),
-                'merges_against_existing': import_file.matching_results_data.get('property_merges_against_existing', None),
-                'merges_against_existing_errors': import_file.matching_results_data.get('property_merges_against_existing_errors', None),
-                'merges_between_existing': import_file.matching_results_data.get('property_merges_between_existing', None),
-                'merges_within_file': import_file.matching_results_data.get('property_merges_within_file', None),
-                'merges_within_file_errors': import_file.matching_results_data.get('property_merges_within_file_errors', None),
-                'new': import_file.matching_results_data.get('property_new', None),
-                'new_errors': import_file.matching_results_data.get('property_new_errors', None),
-                'geocoded_high_confidence': property_geocode_results.get('high_confidence'),
-                'geocoded_low_confidence': property_geocode_results.get('low_confidence'),
-                'geocoded_census_geocoder': property_geocode_results.get('census_geocoder'),
-                'geocoded_manually': property_geocode_results.get('manual'),
-                'geocode_not_possible': property_geocode_results.get('missing_address_components'),
+            "status": "success",
+            "import_file_records": import_file.matching_results_data.get("import_file_records", None),
+            "multiple_cycle_upload": import_file.multiple_cycle_upload,
+            "properties": {
+                "initial_incoming": import_file.matching_results_data.get("property_initial_incoming", None),
+                "duplicates_against_existing": import_file.matching_results_data.get("property_duplicates_against_existing", None),
+                "duplicates_within_file": import_file.matching_results_data.get("property_duplicates_within_file", None),
+                "duplicates_within_file_errors": import_file.matching_results_data.get("property_duplicates_within_file_errors", None),
+                "merges_against_existing": import_file.matching_results_data.get("property_merges_against_existing", None),
+                "merges_against_existing_errors": import_file.matching_results_data.get("property_merges_against_existing_errors", None),
+                "merges_between_existing": import_file.matching_results_data.get("property_merges_between_existing", None),
+                "merges_within_file": import_file.matching_results_data.get("property_merges_within_file", None),
+                "merges_within_file_errors": import_file.matching_results_data.get("property_merges_within_file_errors", None),
+                "new": import_file.matching_results_data.get("property_new", None),
+                "new_errors": import_file.matching_results_data.get("property_new_errors", None),
+                "geocoded_high_confidence": property_geocode_results.get("high_confidence"),
+                "geocoded_low_confidence": property_geocode_results.get("low_confidence"),
+                "geocoded_census_geocoder": property_geocode_results.get("census_geocoder"),
+                "geocoded_manually": property_geocode_results.get("manual"),
+                "geocode_not_possible": property_geocode_results.get("missing_address_components"),
             },
-            'tax_lots': {
-                'initial_incoming': import_file.matching_results_data.get('tax_lot_initial_incoming', None),
-                'duplicates_against_existing': import_file.matching_results_data.get('tax_lot_duplicates_against_existing', None),
-                'duplicates_within_file': import_file.matching_results_data.get('tax_lot_duplicates_within_file', None),
-                'duplicates_within_file_errors': import_file.matching_results_data.get('tax_lot_duplicates_within_file_errors', None),
-                'merges_against_existing': import_file.matching_results_data.get('tax_lot_merges_against_existing', None),
-                'merges_against_existing_errors': import_file.matching_results_data.get('tax_lot_merges_against_existing_errors', None),
-                'merges_between_existing': import_file.matching_results_data.get('tax_lot_merges_between_existing', None),
-                'merges_within_file': import_file.matching_results_data.get('tax_lot_merges_within_file', None),
-                'merges_within_file_errors': import_file.matching_results_data.get('tax_lot_merges_within_file_errors', None),
-                'new': import_file.matching_results_data.get('tax_lot_new', None),
-                'new_errors': import_file.matching_results_data.get('tax_lot_new_errors', None),
-                'geocoded_high_confidence': tax_lot_geocode_results.get('high_confidence'),
-                'geocoded_low_confidence': tax_lot_geocode_results.get('low_confidence'),
-                'geocoded_census_geocoder': tax_lot_geocode_results.get('census_geocoder'),
-                'geocoded_manually': tax_lot_geocode_results.get('manual'),
-                'geocode_not_possible': tax_lot_geocode_results.get('missing_address_components'),
-            }
+            "tax_lots": {
+                "initial_incoming": import_file.matching_results_data.get("tax_lot_initial_incoming", None),
+                "duplicates_against_existing": import_file.matching_results_data.get("tax_lot_duplicates_against_existing", None),
+                "duplicates_within_file": import_file.matching_results_data.get("tax_lot_duplicates_within_file", None),
+                "duplicates_within_file_errors": import_file.matching_results_data.get("tax_lot_duplicates_within_file_errors", None),
+                "merges_against_existing": import_file.matching_results_data.get("tax_lot_merges_against_existing", None),
+                "merges_against_existing_errors": import_file.matching_results_data.get("tax_lot_merges_against_existing_errors", None),
+                "merges_between_existing": import_file.matching_results_data.get("tax_lot_merges_between_existing", None),
+                "merges_within_file": import_file.matching_results_data.get("tax_lot_merges_within_file", None),
+                "merges_within_file_errors": import_file.matching_results_data.get("tax_lot_merges_within_file_errors", None),
+                "new": import_file.matching_results_data.get("tax_lot_new", None),
+                "new_errors": import_file.matching_results_data.get("tax_lot_new_errors", None),
+                "geocoded_high_confidence": tax_lot_geocode_results.get("high_confidence"),
+                "geocoded_low_confidence": tax_lot_geocode_results.get("low_confidence"),
+                "geocoded_census_geocoder": tax_lot_geocode_results.get("census_geocoder"),
+                "geocoded_manually": tax_lot_geocode_results.get("manual"),
+                "geocode_not_possible": tax_lot_geocode_results.get("missing_address_components"),
+            },
         }
 
     @swagger_auto_schema_org_query_param
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('requires_member')
+    @has_perm_class("requires_member")
     @has_hierarchy_access(import_file_id_kwarg="pk")
-    @action(detail=True, methods=['GET'])
+    @action(detail=True, methods=["GET"])
     def mapping_suggestions(self, request, pk):
         """
         Returns suggested mappings from an uploaded file's headers to known
@@ -907,10 +808,9 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
         """
         organization_id = self.get_organization(request)
 
-        result = {'status': 'success'}
+        result = {"status": "success"}
 
-        membership = OrganizationUser.objects.select_related('organization') \
-            .get(organization_id=organization_id, user=request.user)
+        membership = OrganizationUser.objects.select_related("organization").get(organization_id=organization_id, user=request.user)
         organization = membership.organization
 
         # For now, each organization holds their own mappings. This is non-ideal, but it is the
@@ -919,31 +819,27 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
         # parent_org = organization.get_parent()
 
         try:
-            import_file = ImportFile.objects.get(
-                pk=pk,
-                import_record__super_organization_id=organization.pk
-            )
+            import_file = ImportFile.objects.get(pk=pk, import_record__super_organization_id=organization.pk)
         except ImportFile.DoesNotExist:
             return JsonResponse(
-                {'status': 'error', 'message': 'Could not find import file with pk=' + str(
-                    pk)}, status=status.HTTP_400_BAD_REQUEST)
+                {"status": "error", "message": "Could not find import file with pk=" + str(pk)}, status=status.HTTP_400_BAD_REQUEST
+            )
 
         # Get a list of the database fields in a list, these are the db columns and the extra_data columns
-        property_columns = Column.retrieve_mapping_columns(organization.pk, 'property')
-        taxlot_columns = Column.retrieve_mapping_columns(organization.pk, 'taxlot')
+        property_columns = Column.retrieve_mapping_columns(organization.pk, "property")
+        taxlot_columns = Column.retrieve_mapping_columns(organization.pk, "taxlot")
 
         # If this is a portfolio manager file, then load in the PM mappings and if the column_mappings
         # are not in the original mappings, default to PM
         if import_file.from_portfolio_manager:
-            pm_mappings = simple_mapper.get_pm_mapping(import_file.first_row_columns,
-                                                       resolve_duplicates=True)
+            pm_mappings = simple_mapper.get_pm_mapping(import_file.first_row_columns, resolve_duplicates=True)
             suggested_mappings = mapper.build_column_mapping(
                 import_file.first_row_columns,
                 Column.retrieve_all_by_tuple(organization_id),
                 previous_mapping=get_column_mapping,
                 map_args=[organization],
                 default_mappings=pm_mappings,
-                thresh=80
+                thresh=80,
             )
         elif import_file.from_buildingsync:
             bsync_mappings = xml_mapper.build_column_mapping()
@@ -953,7 +849,7 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
                 previous_mapping=get_column_mapping,
                 map_args=[organization],
                 default_mappings=bsync_mappings,
-                thresh=80
+                thresh=80,
             )
         else:
             # All other input types
@@ -962,35 +858,35 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
                 Column.retrieve_all_by_tuple(organization.pk),
                 previous_mapping=get_column_mapping,
                 map_args=[organization],
-                thresh=80  # percentage match that we require. 80% is random value for now.
+                thresh=80,  # percentage match that we require. 80% is random value for now.
             )
             # replace None with empty string for column names and PropertyState for tables
             # TODO #239: Move this fix to build_column_mapping
             for m in suggested_mappings:
                 table, destination_field, _confidence = suggested_mappings[m]
                 if destination_field is None:
-                    suggested_mappings[m][1] = ''
+                    suggested_mappings[m][1] = ""
 
         # Fix the table name, eventually move this to the build_column_mapping
         for m in suggested_mappings:
             table, _destination_field, _confidence = suggested_mappings[m]
             # Do not return the created or updated fields... that is force them
             # to be in the property state. Not sure how this happens in this code though.
-            if not table or table == 'Property':
-                suggested_mappings[m][0] = 'PropertyState'
-            elif table == 'TaxLot':
-                suggested_mappings[m][0] = 'TaxLotState'
+            if not table or table == "Property":
+                suggested_mappings[m][0] = "PropertyState"
+            elif table == "TaxLot":
+                suggested_mappings[m][0] = "TaxLotState"
 
-        result['suggested_column_mappings'] = suggested_mappings
-        result['property_columns'] = property_columns
-        result['taxlot_columns'] = taxlot_columns
+        result["suggested_column_mappings"] = suggested_mappings
+        result["property_columns"] = property_columns
+        result["taxlot_columns"] = taxlot_columns
 
         return JsonResponse(result)
 
     @swagger_auto_schema_org_query_param
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('can_modify_data')
+    @has_perm_class("can_modify_data")
     @has_hierarchy_access(import_file_id_kwarg="pk")
     def destroy(self, request, pk):
         """
@@ -998,166 +894,136 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
         """
         organization_id = int(self.get_organization(request))
         try:
-            import_file = ImportFile.objects.get(
-                pk=pk,
-                import_record__super_organization_id=organization_id
-            )
+            import_file = ImportFile.objects.get(pk=pk, import_record__super_organization_id=organization_id)
         except ImportFile.DoesNotExist:
             return JsonResponse(
-                {'status': 'error', 'message': 'Could not find import file with pk=' + str(
-                    pk)}, status=status.HTTP_400_BAD_REQUEST)
+                {"status": "error", "message": "Could not find import file with pk=" + str(pk)}, status=status.HTTP_400_BAD_REQUEST
+            )
 
         # check if the import record exists for the file and organization
-        d = ImportRecord.objects.filter(
-            super_organization_id=organization_id,
-            pk=import_file.import_record.pk
-        )
+        d = ImportRecord.objects.filter(super_organization_id=organization_id, pk=import_file.import_record.pk)
 
         if not d.exists():
-            return JsonResponse({
-                'status': 'error',
-                'message': 'user does not have permission to delete file',
-            }, status=status.HTTP_403_FORBIDDEN)
+            return JsonResponse(
+                {
+                    "status": "error",
+                    "message": "user does not have permission to delete file",
+                },
+                status=status.HTTP_403_FORBIDDEN,
+            )
 
         # This does not actually delete the object because it is a NonDeletableModel
         import_file.delete()
-        return JsonResponse({'status': 'success'})
+        return JsonResponse({"status": "success"})
 
     @swagger_auto_schema(
         manual_parameters=[
             AutoSchemaHelper.query_org_id_field(),
-            AutoSchemaHelper.query_integer_field(
-                'view_id',
-                required=True,
-                description='ID for property view'
-            )
+            AutoSchemaHelper.query_integer_field("view_id", required=True, description="ID for property view"),
         ]
     )
     @ajax_request_class
-    @has_perm_class('requires_member')
+    @has_perm_class("requires_member")
     @has_hierarchy_access(param_property_view_id="view_id")
-    @action(detail=True, methods=['GET'])
+    @action(detail=True, methods=["GET"])
     def greenbutton_meters_preview(self, request, pk):
         """
         Returns validated type units and proposed imports
         """
         org_id = self.get_organization(request)
-        view_id = request.query_params.get('view_id')
+        view_id = request.query_params.get("view_id")
 
         try:
-            import_file = ImportFile.objects.get(
-                pk=pk,
-                import_record__super_organization_id=org_id
-            )
+            import_file = ImportFile.objects.get(pk=pk, import_record__super_organization_id=org_id)
         except ImportFile.DoesNotExist:
             return JsonResponse(
-                {'status': 'error', 'message': 'Could not find import file with pk=' + str(
-                    pk)}, status=status.HTTP_400_BAD_REQUEST)
+                {"status": "error", "message": "Could not find import file with pk=" + str(pk)}, status=status.HTTP_400_BAD_REQUEST
+            )
 
         try:
             property_id = PropertyView.objects.get(pk=view_id, cycle__organization_id=org_id).property_id
         except PropertyView.DoesNotExist:
             return JsonResponse(
-                {'status': 'error', 'message': 'Could not find property with pk=' + str(
-                    view_id)}, status=status.HTTP_400_BAD_REQUEST)
+                {"status": "error", "message": "Could not find property with pk=" + str(view_id)}, status=status.HTTP_400_BAD_REQUEST
+            )
 
-        meters_parser = MetersParser.factory(
-            import_file.local_file,
-            org_id,
-            source_type=Meter.GREENBUTTON,
-            property_id=property_id
-        )
+        meters_parser = MetersParser.factory(import_file.local_file, org_id, source_type=Meter.GREENBUTTON, property_id=property_id)
 
         result = {}
         result["validated_type_units"] = meters_parser.validated_type_units()
         result["proposed_imports"] = meters_parser.proposed_imports
 
-        import_file.matching_results_data['property_id'] = property_id
+        import_file.matching_results_data["property_id"] = property_id
         import_file.save()
 
         return result
 
     @ajax_request_class
-    @has_perm_class('requires_member')
+    @has_perm_class("requires_member")
     @has_hierarchy_access(param_property_view_id="view_id")
-    @action(detail=True, methods=['GET'])
+    @action(detail=True, methods=["GET"])
     def sensors_preview(self, request, pk):
         """
         Returns validated type units and proposed imports
         """
         org_id = self.get_organization(request)
-        view_id = request.query_params.get('view_id')
-        data_logger_id = request.query_params.get('data_logger_id')
+        view_id = request.query_params.get("view_id")
+        data_logger_id = request.query_params.get("data_logger_id")
 
         try:
-            import_file = ImportFile.objects.get(
-                pk=pk,
-                import_record__super_organization_id=org_id
-            )
+            import_file = ImportFile.objects.get(pk=pk, import_record__super_organization_id=org_id)
         except ImportFile.DoesNotExist:
             return JsonResponse(
-                {'status': 'error', 'message': 'Could not find import file with pk=' + str(
-                    pk)}, status=status.HTTP_400_BAD_REQUEST)
+                {"status": "error", "message": "Could not find import file with pk=" + str(pk)}, status=status.HTTP_400_BAD_REQUEST
+            )
 
         try:
             PropertyView.objects.get(pk=view_id, cycle__organization_id=org_id).property_id
         except PropertyView.DoesNotExist:
             return JsonResponse(
-                {'status': 'error', 'message': 'Could not find property with pk=' + str(
-                    view_id)}, status=status.HTTP_400_BAD_REQUEST)
+                {"status": "error", "message": "Could not find property with pk=" + str(view_id)}, status=status.HTTP_400_BAD_REQUEST
+            )
 
         parser = reader.MCMParser(import_file.local_file)
-        result = {
-            "proposed_imports": list(parser.data)
-        }
+        result = {"proposed_imports": list(parser.data)}
 
-        import_file.matching_results_data['data_logger_id'] = data_logger_id
+        import_file.matching_results_data["data_logger_id"] = data_logger_id
         import_file.save()
 
         return result
 
     @ajax_request_class
-    @has_perm_class('requires_member')
+    @has_perm_class("requires_member")
     @has_hierarchy_access(import_file_id_kwarg="pk")
-    @action(detail=True, methods=['GET'])
+    @action(detail=True, methods=["GET"])
     def sensor_readings_preview(self, request, pk):
         org_id = self.get_organization(request)
-        data_logger_id = request.query_params.get('data_logger_id')
+        data_logger_id = request.query_params.get("data_logger_id")
 
         try:
-            import_file = ImportFile.objects.get(
-                pk=pk,
-                import_record__super_organization_id=org_id
-            )
+            import_file = ImportFile.objects.get(pk=pk, import_record__super_organization_id=org_id)
         except ImportFile.DoesNotExist:
             return JsonResponse(
-                {'status': 'error', 'message': 'Could not find import file with pk=' + str(
-                    pk)}, status=status.HTTP_400_BAD_REQUEST)
+                {"status": "error", "message": "Could not find import file with pk=" + str(pk)}, status=status.HTTP_400_BAD_REQUEST
+            )
 
         try:
-            sensor_readings_parser = SensorsReadingsParser.factory(
-                import_file.local_file,
-                org_id,
-                data_logger_id=data_logger_id
-            )
+            sensor_readings_parser = SensorsReadingsParser.factory(import_file.local_file, org_id, data_logger_id=data_logger_id)
         except ValueError as e:
-            return JsonResponse(
-                {'status': 'error', 'message': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            return JsonResponse({"status": "error", "message": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
         result = sensor_readings_parser.get_validation_report()
 
-        import_file.matching_results_data['data_logger_id'] = data_logger_id
+        import_file.matching_results_data["data_logger_id"] = data_logger_id
         import_file.save()
 
         return result
 
-    @swagger_auto_schema(
-        manual_parameters=[AutoSchemaHelper.query_org_id_field()]
-    )
+    @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_org_id_field()])
     @ajax_request_class
-    @has_perm_class('requires_member')
+    @has_perm_class("requires_member")
     @has_hierarchy_access(import_file_id_kwarg="pk")
-    @action(detail=True, methods=['GET'])
+    @action(detail=True, methods=["GET"])
     def pm_meters_preview(self, request, pk):
         """
         Returns validated type units, proposed imports and unlinkable PM ids
@@ -1165,18 +1031,15 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
         org_id = self.get_organization(request)
 
         try:
-            import_file = ImportFile.objects.get(
-                pk=pk,
-                import_record__super_organization_id=org_id
-            )
+            import_file = ImportFile.objects.get(pk=pk, import_record__super_organization_id=org_id)
             meters_parser = MetersParser.factory(import_file.local_file, org_id)
             import_file.num_rows = len(meters_parser.proposed_imports)
             import_file.save()
 
         except ImportFile.DoesNotExist:
             return JsonResponse(
-                {'status': 'error', 'message': 'Could not find import file with pk=' + str(
-                    pk)}, status=status.HTTP_400_BAD_REQUEST)
+                {"status": "error", "message": "Could not find import file with pk=" + str(pk)}, status=status.HTTP_400_BAD_REQUEST
+            )
 
         result = {}
         result["validated_type_units"] = meters_parser.validated_type_units()
