@@ -1,9 +1,9 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 from datetime import datetime as dt
 
 from django.test import TestCase
@@ -13,7 +13,7 @@ from seed.analysis_pipelines.utils import (
     _split_reading,
     calendarize_and_extrapolate_meter_readings,
     calendarize_meter_readings,
-    interpolate_monthly_readings
+    interpolate_monthly_readings,
 )
 
 
@@ -21,23 +21,13 @@ class TestAnalysisUtils(TestCase):
     def test_split_reading_works_when_reading_is_within_one_month(self):
         # -- Setup
         # this reading starts and ends in January
-        reading = SimpleMeterReading(
-            dt(2021, 1, 1),
-            dt(2021, 1, 15),
-            100
-        )
+        reading = SimpleMeterReading(dt(2021, 1, 1), dt(2021, 1, 15), 100)
 
         # -- Act
         readings = _split_reading(reading)
 
         # -- Assert
-        expected = [
-            SimpleMeterReading(
-                dt(2021, 1, 1),
-                dt(2021, 2, 1),
-                100
-            )
-        ]
+        expected = [SimpleMeterReading(dt(2021, 1, 1), dt(2021, 2, 1), 100)]
 
         self.assertListEqual(expected, readings)
 
@@ -48,27 +38,15 @@ class TestAnalysisUtils(TestCase):
         # January:  17 days (~55%)
         # February: 15 days (~45%)
         # Total:    32 days (100%)
-        reading = SimpleMeterReading(
-            dt(2021, 1, 15),
-            dt(2021, 2, 15),
-            100
-        )
+        reading = SimpleMeterReading(dt(2021, 1, 15), dt(2021, 2, 15), 100)
 
         # -- Act
         readings = _split_reading(reading)
 
         # -- Assert
         expected = [
-            SimpleMeterReading(
-                dt(2021, 1, 1),
-                dt(2021, 2, 1),
-                54.83870967741935
-            ),
-            SimpleMeterReading(
-                dt(2021, 2, 1),
-                dt(2021, 3, 1),
-                45.16129032258064
-            )
+            SimpleMeterReading(dt(2021, 1, 1), dt(2021, 2, 1), 54.83870967741935),
+            SimpleMeterReading(dt(2021, 2, 1), dt(2021, 3, 1), 45.16129032258064),
         ]
 
         self.assertListEqual(expected, readings)
@@ -81,32 +59,16 @@ class TestAnalysisUtils(TestCase):
         # February: 28 days (~47%)
         # March:    15 days (~24%)
         # Total:    60 days (100%)
-        reading = SimpleMeterReading(
-            dt(2021, 1, 15),
-            dt(2021, 3, 15),
-            100
-        )
+        reading = SimpleMeterReading(dt(2021, 1, 15), dt(2021, 3, 15), 100)
 
         # -- Act
         readings = _split_reading(reading)
 
         # -- Assert
         expected = [
-            SimpleMeterReading(
-                dt(2021, 1, 1),
-                dt(2021, 2, 1),
-                28.8135593220339
-            ),
-            SimpleMeterReading(
-                dt(2021, 2, 1),
-                dt(2021, 3, 1),
-                47.45762711864407
-            ),
-            SimpleMeterReading(
-                dt(2021, 3, 1),
-                dt(2021, 4, 1),
-                23.728813559322035
-            )
+            SimpleMeterReading(dt(2021, 1, 1), dt(2021, 2, 1), 28.8135593220339),
+            SimpleMeterReading(dt(2021, 2, 1), dt(2021, 3, 1), 47.45762711864407),
+            SimpleMeterReading(dt(2021, 3, 1), dt(2021, 4, 1), 23.728813559322035),
         ]
 
         self.assertListEqual(expected, readings)
@@ -119,7 +81,7 @@ class TestAnalysisUtils(TestCase):
         reading = SimpleMeterReading(
             dt(2021, 1, 1),
             dt(2021, 2, 1),  # This is February 1 at midnight
-            100
+            100,
         )
 
         # -- Act
@@ -138,11 +100,7 @@ class TestAnalysisUtils(TestCase):
         # Total:    60 days (100%)
         original_start = dt(2021, 1, 15)
         original_end = dt(2021, 3, 15)
-        reading = SimpleMeterReading(
-            original_start,
-            original_end,
-            100
-        )
+        reading = SimpleMeterReading(original_start, original_end, 100)
 
         # -- Act
         # NOTE: we set snap to false, we expect the first and last readings to
@@ -154,18 +112,14 @@ class TestAnalysisUtils(TestCase):
             SimpleMeterReading(
                 original_start,  # start_time should be the same!
                 dt(2021, 2, 1),
-                28.8135593220339
+                28.8135593220339,
             ),
-            SimpleMeterReading(
-                dt(2021, 2, 1),
-                dt(2021, 3, 1),
-                47.45762711864407
-            ),
+            SimpleMeterReading(dt(2021, 2, 1), dt(2021, 3, 1), 47.45762711864407),
             SimpleMeterReading(
                 dt(2021, 3, 1),
                 original_end,  # end_time should be the same!
-                23.728813559322035
-            )
+                23.728813559322035,
+            ),
         ]
 
         self.assertListEqual(expected, readings)
@@ -234,11 +188,7 @@ class TestAnalysisUtils(TestCase):
         # -- Setup
         # There are 28 days in February, so 14 days is 50% of the month
         original_readings = [
-            SimpleMeterReading(
-                dt(2021, 2, 1),
-                dt(2021, 2, 15),
-                1
-            ),
+            SimpleMeterReading(dt(2021, 2, 1), dt(2021, 2, 15), 1),
         ]
 
         # -- Act
@@ -258,16 +208,8 @@ class TestAnalysisUtils(TestCase):
         # -- Setup
         # These readings cover the full month of February
         original_readings = [
-            SimpleMeterReading(
-                dt(2021, 2, 1),
-                dt(2021, 2, 15),
-                1
-            ),
-            SimpleMeterReading(
-                dt(2021, 2, 15),
-                dt(2021, 3, 1),
-                1
-            ),
+            SimpleMeterReading(dt(2021, 2, 1), dt(2021, 2, 15), 1),
+            SimpleMeterReading(dt(2021, 2, 15), dt(2021, 3, 1), 1),
         ]
 
         # -- Act
@@ -288,45 +230,17 @@ class TestAnalysisUtils(TestCase):
         original_readings = [
             # January readings only cover the 1st through the 6th
             # This is ~19% of the month (6 / 31)
-            SimpleMeterReading(
-                dt(2021, 1, 1),
-                dt(2021, 1, 3),
-                1
-            ),
-            SimpleMeterReading(
-                dt(2021, 1, 3),
-                dt(2021, 1, 5),
-                1
-            ),
-            SimpleMeterReading(
-                dt(2021, 1, 5),
-                dt(2021, 1, 7),
-                1
-            ),
+            SimpleMeterReading(dt(2021, 1, 1), dt(2021, 1, 3), 1),
+            SimpleMeterReading(dt(2021, 1, 3), dt(2021, 1, 5), 1),
+            SimpleMeterReading(dt(2021, 1, 5), dt(2021, 1, 7), 1),
             # February Readings cover the 1st through the 14th
             # This is 50% of the month (14 / 28)
             # Note that the _number_ of readings shouldn't matter -- it's about
             # monthly _coverage_
-            SimpleMeterReading(
-                dt(2021, 2, 1),
-                dt(2021, 2, 3),
-                1
-            ),
-            SimpleMeterReading(
-                dt(2021, 2, 3),
-                dt(2021, 2, 8),
-                1
-            ),
-            SimpleMeterReading(
-                dt(2021, 2, 8),
-                dt(2021, 2, 12),
-                1
-            ),
-            SimpleMeterReading(
-                dt(2021, 2, 12),
-                dt(2021, 2, 15),
-                1
-            ),
+            SimpleMeterReading(dt(2021, 2, 1), dt(2021, 2, 3), 1),
+            SimpleMeterReading(dt(2021, 2, 3), dt(2021, 2, 8), 1),
+            SimpleMeterReading(dt(2021, 2, 8), dt(2021, 2, 12), 1),
+            SimpleMeterReading(dt(2021, 2, 12), dt(2021, 2, 15), 1),
         ]
 
         # -- Act
@@ -348,17 +262,9 @@ class TestAnalysisUtils(TestCase):
     def test_interpolate_works_when_one_month_missing(self):
         # -- Setup
         readings = [
-            SimpleMeterReading(
-                dt(2021, 1, 1),
-                dt(2021, 2, 1),
-                1
-            ),
+            SimpleMeterReading(dt(2021, 1, 1), dt(2021, 2, 1), 1),
             # NOTE: missing February!
-            SimpleMeterReading(
-                dt(2021, 3, 1),
-                dt(2021, 4, 1),
-                2
-            )
+            SimpleMeterReading(dt(2021, 3, 1), dt(2021, 4, 1), 2),
         ]
 
         # -- Act
@@ -366,21 +272,9 @@ class TestAnalysisUtils(TestCase):
 
         # -- Assert
         expected = [
-            SimpleMeterReading(
-                dt(2021, 1, 1),
-                dt(2021, 2, 1),
-                1
-            ),
-            SimpleMeterReading(
-                dt(2021, 2, 1),
-                dt(2021, 3, 1),
-                1
-            ),
-            SimpleMeterReading(
-                dt(2021, 3, 1),
-                dt(2021, 4, 1),
-                2
-            )
+            SimpleMeterReading(dt(2021, 1, 1), dt(2021, 2, 1), 1),
+            SimpleMeterReading(dt(2021, 2, 1), dt(2021, 3, 1), 1),
+            SimpleMeterReading(dt(2021, 3, 1), dt(2021, 4, 1), 2),
         ]
 
         self.assertListEqual(expected, results)
@@ -388,29 +282,13 @@ class TestAnalysisUtils(TestCase):
     def test_interpolate_works_when_multiple_months_missing(self):
         # -- Setup
         readings = [
-            SimpleMeterReading(
-                dt(2021, 1, 1),
-                dt(2021, 2, 1),
-                1
-            ),
+            SimpleMeterReading(dt(2021, 1, 1), dt(2021, 2, 1), 1),
             # NOTE: missing February!
-            SimpleMeterReading(
-                dt(2021, 3, 1),
-                dt(2021, 4, 1),
-                2
-            ),
-            SimpleMeterReading(
-                dt(2021, 4, 1),
-                dt(2021, 5, 1),
-                3
-            ),
+            SimpleMeterReading(dt(2021, 3, 1), dt(2021, 4, 1), 2),
+            SimpleMeterReading(dt(2021, 4, 1), dt(2021, 5, 1), 3),
             # NOTE: missing May!
             # NOTE: missing June!
-            SimpleMeterReading(
-                dt(2021, 7, 1),
-                dt(2021, 8, 1),
-                4
-            )
+            SimpleMeterReading(dt(2021, 7, 1), dt(2021, 8, 1), 4),
         ]
 
         # -- Act
@@ -418,41 +296,13 @@ class TestAnalysisUtils(TestCase):
 
         # -- Assert
         expected = [
-            SimpleMeterReading(
-                dt(2021, 1, 1),
-                dt(2021, 2, 1),
-                1
-            ),
-            SimpleMeterReading(
-                dt(2021, 2, 1),
-                dt(2021, 3, 1),
-                1
-            ),
-            SimpleMeterReading(
-                dt(2021, 3, 1),
-                dt(2021, 4, 1),
-                2
-            ),
-            SimpleMeterReading(
-                dt(2021, 4, 1),
-                dt(2021, 5, 1),
-                3
-            ),
-            SimpleMeterReading(
-                dt(2021, 5, 1),
-                dt(2021, 6, 1),
-                3
-            ),
-            SimpleMeterReading(
-                dt(2021, 6, 1),
-                dt(2021, 7, 1),
-                3
-            ),
-            SimpleMeterReading(
-                dt(2021, 7, 1),
-                dt(2021, 8, 1),
-                4
-            )
+            SimpleMeterReading(dt(2021, 1, 1), dt(2021, 2, 1), 1),
+            SimpleMeterReading(dt(2021, 2, 1), dt(2021, 3, 1), 1),
+            SimpleMeterReading(dt(2021, 3, 1), dt(2021, 4, 1), 2),
+            SimpleMeterReading(dt(2021, 4, 1), dt(2021, 5, 1), 3),
+            SimpleMeterReading(dt(2021, 5, 1), dt(2021, 6, 1), 3),
+            SimpleMeterReading(dt(2021, 6, 1), dt(2021, 7, 1), 3),
+            SimpleMeterReading(dt(2021, 7, 1), dt(2021, 8, 1), 4),
         ]
 
         self.assertListEqual(expected, results)

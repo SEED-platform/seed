@@ -1,13 +1,15 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 :author Dan Gunter <dkgunter@lbl.gov>
 """
+
+import contextlib
 import csv
 import json
+import locale
 import sys
 
 from seed.lib.mappings import mapper
@@ -27,9 +29,11 @@ def create_map(path_in, path_out):
     :return: None
     """
     bedes_flag = mapper.Mapping.META_BEDES
-    infile = csv.reader(open(path_in, 'r', newline=None))
+    with open(path_in, newline=None, encoding=locale.getpreferredencoding(False)) as f:
+        infile = csv.reader(f)
     header = infile.next()
-    assert len(header) >= 5
+    if len(header) < 5:
+        raise ValueError("At least 5 headers are required")
     map = {}
     for row in infile:
         if len(row) < 5:
@@ -49,11 +53,11 @@ def create_map(path_in, path_out):
         for key in row[2], row[3]:
             if len(key) > 0:
                 map[key] = [value, meta]
-    if path_out == '-':
-        outfile = sys.stdout
+    if path_out == "-":
+        json.dump(map, sys.stdout, encoding="latin_1")
     else:
-        outfile = open(path_out, 'w')
-    json.dump(map, outfile, encoding='latin_1')
+        with open(path_out, "w", encoding=locale.getpreferredencoding(False)) as outfile:
+            json.dump(map, outfile, encoding="latin_1")
 
 
 def apply_map(map_path, data_path, out_file):
@@ -66,28 +70,25 @@ def apply_map(map_path, data_path, out_file):
     Return:
       None
     """
-    map_file = open(map_path, 'r')
-    mapping = mapper.Mapping(map_file, encoding='latin_1')
-    data_file = open(data_path, 'r', newline=None)
-    data_csv = csv.reader(data_file)
+    with open(map_path, encoding=locale.getpreferredencoding(False)) as map_file:
+        mapping = mapper.Mapping(map_file, encoding="latin_1")
+    with open(data_path, newline=None, encoding=locale.getpreferredencoding(False)) as data_file:
+        data_csv = csv.reader(data_file)
     # map each field
     d = {}
     input_fields = data_csv.next()
     matched, nomatch = mapping.apply(input_fields)
     for field, m in matched.items():
         d[field] = m.as_json()
-        print('Mapped {} => {}'.format(field, m.field))
+        print(f"Mapped {field} => {m.field}")
     for field in nomatch:
-        print('* No mapping found for input field: {}'.format(field))
+        print(f"* No mapping found for input field: {field}")
         d[field] = mapper.MapItem(field, None).as_json()
     # write mapping as a JSON
-    try:
+    with contextlib.suppress(BaseException):
         json.dump(d, out_file, ensure_ascii=True)
-    except BaseException:
-        # print('** Error: While writing:\n{}'.format(d))
-        pass
     # write stats
-    print('Mapped {} fields: {} OK and {} did not match'.format(len(input_fields), len(matched), len(nomatch)))
+    print(f"Mapped {len(input_fields)} fields: {len(matched)} OK and {len(nomatch)} did not match")
 
 
 def find_duplicates(map_path, data_path, out_file):
@@ -100,10 +101,10 @@ def find_duplicates(map_path, data_path, out_file):
     Return:
       None
     """
-    map_file = open(map_path, 'r')
-    mapping = mapper.Mapping(map_file, encoding='latin-1')
-    data_file = open(data_path, 'r', newline=None)
-    data_csv = csv.reader(data_file)
+    with open(map_path, encoding=locale.getpreferredencoding(False)) as map_file:
+        mapping = mapper.Mapping(map_file, encoding="latin-1")
+    with open(data_path, newline=None, encoding=locale.getpreferredencoding(False)) as data_file:
+        data_csv = csv.reader(data_file)
     hdr = data_csv.next()
     seen_values, dup = {}, {}
     for src in hdr:
@@ -123,11 +124,7 @@ def find_duplicates(map_path, data_path, out_file):
             seen_values[dst] = src
 
     for value, keys in dup.items():
-        keylist = ' | '.join(keys)
+        key_list = " | ".join(keys)
         out_file.write(
-            '({n:d}) {v}: {kl}\n'.format(
-                n=len(keys),
-                v=value,
-                kl=keylist,
-            ),
+            f"({len(keys):d}) {value}: {key_list}\n",
         )

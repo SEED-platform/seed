@@ -1,9 +1,9 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 import json
 import re
 from numbers import Number
@@ -61,15 +61,11 @@ def create_geocoded_additional_columns(organization: Organization):
     # make sure the columns exist for the extra data
     for new_column in new_columns:
         column, created = Column.objects.get_or_create(
-            is_extra_data=True,
-            column_name=new_column['name'],
-            organization=organization,
-            table_name='PropertyState',
-            units_pint=None
+            is_extra_data=True, column_name=new_column["name"], organization=organization, table_name="PropertyState", units_pint=None
         )
         if created:
-            column.display_name = new_column['display_name']
-            column.column_description = new_column['description']
+            column.display_name = new_column["display_name"]
+            column.column_description = new_column["description"]
             column.save()
 
 
@@ -90,12 +86,20 @@ def geocode_buildings(buildings):
     populated with the details such as the confidence quality or lack thereof.
     """
     # -States with longitude and latitude prepopulated while excluding those previously geocoded by API or census geocoder
-    pregeocoded = buildings.filter(longitude__isnull=False, latitude__isnull=False).exclude(geocoding_confidence__startswith="High").exclude(geocoding_confidence__startswith="Census Geocoder")
+    pregeocoded = (
+        buildings.filter(longitude__isnull=False, latitude__isnull=False)
+        .exclude(geocoding_confidence__startswith="High")
+        .exclude(geocoding_confidence__startswith="Census Geocoder")
+    )
     _geocode_by_prepopulated_fields(pregeocoded)
 
     # Include ungeocoded -States as well as previously API geocoded -States.
     # Include for geocoding those coded by the EEEJ analysis
-    buildings_to_geocode = buildings.filter(Q(longitude__isnull=True, latitude__isnull=True) | Q(geocoding_confidence__startswith="High") | Q(geocoding_confidence__startswith="Census Geocoder"))
+    buildings_to_geocode = buildings.filter(
+        Q(longitude__isnull=True, latitude__isnull=True)
+        | Q(geocoding_confidence__startswith="High")
+        | Q(geocoding_confidence__startswith="Census Geocoder")
+    )
 
     # Don't continue if there are no buildings remaining
     if not buildings_to_geocode:
@@ -152,14 +156,14 @@ def _save_geocoding_results(id_geocoding_results, buildings_to_geocode, org):
             building.latitude = geocoding_result.get("latitude")
 
             # save files to extra data, if they have been configured
-            building.extra_data['geocoded_address'] = geocoding_result.get("address")
-            building.extra_data['geocoded_postal_code'] = geocoding_result.get("postal_code")
-            building.extra_data['geocoded_side_of_street'] = geocoding_result.get("side_of_street")
-            building.extra_data['geocoded_country'] = geocoding_result.get("Country")
-            building.extra_data['geocoded_state'] = geocoding_result.get("State")
-            building.extra_data['geocoded_county'] = geocoding_result.get("County")
-            building.extra_data['geocoded_city'] = geocoding_result.get("City")
-            building.extra_data['geocoded_neighborhood'] = geocoding_result.get("Neighborhood")
+            building.extra_data["geocoded_address"] = geocoding_result.get("address")
+            building.extra_data["geocoded_postal_code"] = geocoding_result.get("postal_code")
+            building.extra_data["geocoded_side_of_street"] = geocoding_result.get("side_of_street")
+            building.extra_data["geocoded_country"] = geocoding_result.get("Country")
+            building.extra_data["geocoded_state"] = geocoding_result.get("State")
+            building.extra_data["geocoded_county"] = geocoding_result.get("County")
+            building.extra_data["geocoded_city"] = geocoding_result.get("City")
+            building.extra_data["geocoded_neighborhood"] = geocoding_result.get("Neighborhood")
 
         else:
             building.geocoding_confidence = f"Low - check address ({geocoding_result.get('quality')})"
@@ -185,10 +189,11 @@ def _id_addresses(buildings, org):
     For any addresses that don't have enough components,
     specify this in `geocoding_confidence`.
     """
-    geocoding_columns = org.column_set.filter(
-        geocoding_order__gt=0,
-        table_name=buildings[0].__class__.__name__
-    ).order_by('geocoding_order').values('column_name', 'is_extra_data')
+    geocoding_columns = (
+        org.column_set.filter(geocoding_order__gt=0, table_name=buildings[0].__class__.__name__)
+        .order_by("geocoding_order")
+        .values("column_name", "is_extra_data")
+    )
 
     if geocoding_columns.count() == 0:
         return {}
@@ -220,10 +225,10 @@ def _full_address(building, geocoding_columns):
 
     address_components = []
     for col in geocoding_columns:
-        if col['is_extra_data']:
-            address_value = building.extra_data.get(col['column_name'], None)
+        if col["is_extra_data"]:
+            address_value = building.extra_data.get(col["column_name"], None)
         else:
-            address_value = getattr(building, col['column_name'])
+            address_value = getattr(building, col["column_name"])
 
         # Only accept non-empty strings or numbers
         if (isinstance(address_value, (str, Number))) and (address_value != ""):
@@ -231,7 +236,7 @@ def _full_address(building, geocoding_columns):
 
     if len(address_components) > 0:
         full_address = ", ".join(address_components)
-        return re.sub(r'[;/?:@=&"<>#%{}|["^~`\]\\]', '', full_address)
+        return re.sub(r'[;/?:@=&"<>#%{}|["^~`\]\\]', "", full_address)
     else:
         return None
 
@@ -247,24 +252,23 @@ def _address_geocoding_results(id_addresses, mapquest_api_key):
         locations["locations"] = [{"street": address} for address in batch]
         locations_json = json.dumps(locations)
 
-        request_url = (
-            'https://www.mapquestapi.com/geocoding/v1/batch?' +
-            '&inFormat=json&outFormat=json&thumbMaps=false&maxResults=2' +
-            '&json=' + locations_json +
-            '&key=' + mapquest_api_key
-        )
+        request_url = f"https://www.mapquestapi.com/geocoding/v1/batch?&inFormat=json&outFormat=json&thumbMaps=false&maxResults=2&json={locations_json}&key={mapquest_api_key}"
 
-        response = requests.get(request_url)
+        response = requests.get(request_url, timeout=300)
         try:
             # Catch the invalid API key error before parsing the response
             if response.status_code == 401:
-                raise MapQuestAPIKeyError(f'Failed geocoding property states due to MapQuest error. API Key is invalid with message: {response.content}.')
+                raise MapQuestAPIKeyError(
+                    f"Failed geocoding property states due to MapQuest error. API Key is invalid with message: {response.content}."
+                )
 
-            results += response.json().get('results')
+            results += response.json().get("results")
 
         except Exception as e:
             if response.status_code == 403:
-                raise MapQuestAPIKeyError('Failed geocoding property states due to MapQuest error. Your MapQuest API Key is either invalid or at its limit.')
+                raise MapQuestAPIKeyError(
+                    "Failed geocoding property states due to MapQuest error. Your MapQuest API Key is either invalid or at its limit."
+                )
             else:
                 raise e
 
@@ -272,7 +276,7 @@ def _address_geocoding_results(id_addresses, mapquest_api_key):
 
 
 def _response_address(result):
-    return result.get('providedLocation').get('street')
+    return result.get("providedLocation").get("street")
 
 
 def _analyze_location(result):
@@ -287,13 +291,13 @@ def _analyze_location(result):
     Accuracy to either a point or a street address is accepted, while confidence
     ratings must all be at least A's and B's without C's or X's (N/A).
     """
-    if len(result.get('locations')) != 1:
+    if len(result.get("locations")) != 1:
         return {"quality": "Ambiguous"}
 
-    quality = result.get('locations')[0].get('geocodeQualityCode')
+    quality = result.get("locations")[0].get("geocodeQualityCode")
     granularity_level = quality[0:2]
     confidence_level = quality[2:5]
-    is_acceptable_granularity = granularity_level in ["P1", "L1"]
+    is_acceptable_granularity = granularity_level in {"P1", "L1"}
     is_acceptable_confidence = not ("C" in confidence_level or "X" in confidence_level)
 
     # The Geocoded data will look something like this:
@@ -313,15 +317,15 @@ def _analyze_location(result):
     #   ]
     # }]
     if is_acceptable_confidence and is_acceptable_granularity:
-        long = result.get('locations')[0].get('displayLatLng').get('lng')
-        lat = result.get('locations')[0].get('displayLatLng').get('lat')
+        long = result.get("locations")[0].get("displayLatLng").get("lng")
+        lat = result.get("locations")[0].get("displayLatLng").get("lat")
 
         # flatten out the "adminArea" fields that exist in the result
         admin_areas = {}
         for i in range(1, 7):
-            if result.get('locations')[0].get(f'adminArea{i}Type') is None:
+            if result.get("locations")[0].get(f"adminArea{i}Type") is None:
                 continue
-            admin_areas[result.get('locations')[0].get(f'adminArea{i}Type')] = result.get('locations')[0].get(f'adminArea{i}')
+            admin_areas[result.get("locations")[0].get(f"adminArea{i}Type")] = result.get("locations")[0].get(f"adminArea{i}")
 
         return {
             "is_valid": True,
@@ -329,9 +333,9 @@ def _analyze_location(result):
             "quality": quality,
             "longitude": long,
             "latitude": lat,
-            "address": result.get('locations')[0].get('street'),
-            "postal_code": result.get('locations')[0].get('postalCode'),
-            "side_of_street": result.get('locations')[0].get('sideOfStreet'),
+            "address": result.get("locations")[0].get("street"),
+            "postal_code": result.get("locations")[0].get("postalCode"),
+            "side_of_street": result.get("locations")[0].get("sideOfStreet"),
         } | admin_areas
     else:
         return {"quality": quality}
@@ -340,8 +344,7 @@ def _analyze_location(result):
 def _id_geocodings(id_addresses, address_geocoding_results):
     return {
         id: address_geocoding_results.get(address)
-        for id, address
-        in id_addresses.items()
+        for id, address in id_addresses.items()
         if address_geocoding_results.get(address) is not None
     }
 
@@ -349,6 +352,6 @@ def _id_geocodings(id_addresses, address_geocoding_results):
 def _batch_addresses(addresses, n=50):
     for i in range(0, len(addresses), n):
         try:
-            yield addresses[i:i + n]
+            yield addresses[i : i + n]
         except StopIteration:
             return

@@ -4,20 +4,23 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('seed', '0181_auto_20221202_0827'),
+        ("seed", "0181_auto_20221202_0827"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='meter',
-            name='alias',
+            model_name="meter",
+            name="alias",
             field=models.CharField(blank=True, max_length=255, null=True),
         ),
         migrations.AlterField(
-            model_name='meter',
-            name='source',
-            field=models.IntegerField(choices=[(1, 'Portfolio Manager'), (2, 'GreenButton'), (3, 'BuildingSync'), (4, 'Portfolio Manager'), (5, 'Manual Entry')], default=None, null=True),
+            model_name="meter",
+            name="source",
+            field=models.IntegerField(
+                choices=[(1, "Portfolio Manager"), (2, "GreenButton"), (3, "BuildingSync"), (4, "Portfolio Manager"), (5, "Manual Entry")],
+                default=None,
+                null=True,
+            ),
         ),
     ]

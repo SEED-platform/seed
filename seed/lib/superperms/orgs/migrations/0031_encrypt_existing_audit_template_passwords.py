@@ -7,7 +7,7 @@ from seed.utils.encrypt import encrypt
 
 @transaction.atomic
 def encrypt_existing_audit_template_passwords(apps, schema_editor):
-    Organization = apps.get_model('orgs', 'Organization')
+    Organization = apps.get_model("orgs", "Organization")
 
     for org in Organization.objects.iterator():
         org.audit_template_password = encrypt(org.audit_template_password)
@@ -16,7 +16,7 @@ def encrypt_existing_audit_template_passwords(apps, schema_editor):
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('orgs', '0030_accountability_hierarchy'),
+        ("orgs", "0030_accountability_hierarchy"),
     ]
 
     operations = [

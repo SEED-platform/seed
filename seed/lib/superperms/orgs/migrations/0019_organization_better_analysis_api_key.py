@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('orgs', '0018_update_organization_display_meter_units'),
+        ("orgs", "0018_update_organization_display_meter_units"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='organization',
-            name='better_analysis_api_key',
-            field=models.CharField(blank=True, default='', max_length=128),
+            model_name="organization",
+            name="better_analysis_api_key",
+            field=models.CharField(blank=True, default="", max_length=128),
         ),
     ]

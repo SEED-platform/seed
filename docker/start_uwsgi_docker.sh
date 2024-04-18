@@ -27,7 +27,7 @@ else
 fi
 
 # collect static resources before starting and compress the assets
-./manage.py collectstatic --no-input -i package.json -i npm-shrinkwrap.json -i node_modules/openlayers-ext/index.html
+./manage.py collectstatic --no-input -i package.json -i package-lock.json -i node_modules/openlayers-ext/index.html
 ./manage.py compress --force
 
 # set the permissions in the /seed/collected_static folder
