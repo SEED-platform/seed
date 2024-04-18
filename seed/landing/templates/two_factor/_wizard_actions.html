@@ -9,8 +9,6 @@
   <button name="wizard_goto_step" type="submit"
   value="{{ wizard.steps.prev }}"
   class="btn btn-default">{% trans "Back" %}</button>
-  {% else %}
-  <button class="btn btn-default" onclick="window.history.back();">{% trans "Back" %}</button>
   {% endif %}
   <button type="submit" class="btn btn-primary">{% trans "Next" %}</button>
 </div>

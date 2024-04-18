@@ -1,9 +1,9 @@
-{% extends "two_factor/_base.html" %}
+{% extends "two_factor/_base_focus.html" %}
 {% load i18n %}
 {% load two_factor_tags %}
 
 {% block content %}
-<div class="twofa-profile">
+<div class="tfa-profile">
   
   <h1>{% block title %}{% trans "Account Security" %}{% endblock %}</h1>
 
@@ -59,7 +59,8 @@
       {% trans "Enable Two-Factor Authentication" %}</a>
     </p>
   {% endif %}
-  <a href="/" class="btn btn-default">Close</a>
-</div>
-
+  <div class="footer">
+    <a href="/" type="button" class="btn btn-default-tfa">SEED Home</a>
+  </div>
+</div>    
 {% endblock %}

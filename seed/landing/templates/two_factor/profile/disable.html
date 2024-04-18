@@ -2,13 +2,19 @@
 {% load i18n %}
 
 {% block content %}
-  <h1>{% block title %}{% trans "Disable Two-factor Authentication" %}{% endblock %}</h1>
-  <p>{% blocktrans trimmed %}You are about to disable two-factor authentication. This
-    weakens your account security, are you sure?{% endblocktrans %}</p>
-  <form method="post">
-    {% csrf_token %}
-    <table>{{ form.as_table }}</table>
-    <button class="btn btn-danger"
-            type="submit">{% trans "Disable" %}</button>
-  </form>
+  <div class="tfa-profile">
+
+    <h1>{% block title %}{% trans "Disable Two-factor Authentication" %}{% endblock %}</h1>
+    <p>{% blocktrans trimmed %}You are about to disable two-factor authentication. This
+      weakens your account security, are you sure?{% endblocktrans %}</p>
+    <form method="post" id="disable-form">
+      {% csrf_token %}
+      <table>{{ form.as_table }}</table>
+      <button class="btn btn-danger"
+              type="submit">{% trans "Disable" %}</button>
+    </form>
+    <div class="footer">
+        <button class="btn btn-default-tfa" onclick="window.history.back();">{% trans "Back" %}</button>
+        <a href="/" type="button" class="btn btn-default-tfa">SEED Home</a>
+    </div>
 {% endblock %}
