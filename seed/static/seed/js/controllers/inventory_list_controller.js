@@ -378,7 +378,7 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
       // this only happens ONCE (after the ui-grid's saveState.restore has completed)
       if ($scope.restore_status === RESTORE_SETTINGS_DONE) {
         updateColumnFilterSort();
-        get_labels();
+        get_and_filter_by_labels();
         $scope.restore_status = RESTORE_COMPLETE;
       }
     });
@@ -610,8 +610,7 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
       });
       modalInstance.result.then(() => {
         // dialog was closed with 'Done' button.
-        get_labels();
-        $scope.load_inventory(1);
+        get_and_filter_by_labels();
       });
     };
 
@@ -765,7 +764,7 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
               });
               modalInstance.result.then(() => {
                 // dialog was closed with 'Done' button.
-                get_labels();
+                get_and_filter_by_labels();
               });
             });
           })
@@ -1273,7 +1272,8 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
       $scope.gridApi.core.raise.sortChanged();
     };
 
-    const get_labels = () => {
+    const get_and_filter_by_labels = () => {
+      spinner_utility.show(); // closed by filterUsingLabels, which calls load_inventory.
       label_service.get_labels($scope.inventory_type, undefined, $scope.cycle.selected_cycle.id).then((current_labels) => {
         $scope.labels = _.filter(current_labels, (label) => !_.isEmpty(label.is_applied));
 
@@ -1293,8 +1293,7 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
     $scope.update_cycle = (cycle) => {
       inventory_service.save_last_cycle(cycle.id);
       $scope.cycle.selected_cycle = cycle;
-      get_labels();
-      $scope.load_inventory(1);
+      get_and_filter_by_labels();
     };
 
     $scope.open_ubid_decode_modal = (selectedViewIds) => {
