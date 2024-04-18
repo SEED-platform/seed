@@ -1,19 +1,3 @@
-{% extends "landing/home.html" %}{% load compress %}{% load i18n %} {% block css %}{{ block.super }} {% compress css %}
-{% comment %} {% extends "seed/base.html" %}{% load compress %}{% load i18n %} {% block css %}{{ block.super }} {% compress css %} {% endcomment %}
-  <style>
-    [ng\:cloak],
-    [ng-cloak],
-    [data-ng-cloak],
-    [x-ng-cloak],
-    .ng-cloak,
-    .x-ng-cloak {
-      display: none !important;
-    }
-  </style>
-  <link rel="stylesheet" type="text/x-scss" href="{{ STATIC_URL }}landing/scss/landing.scss">
-{% endcompress %}
-{% endblock %}
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -23,9 +7,285 @@
   <script defer src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
   <script defer src="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.2/js/bootstrap.min.js"></script>
   {% block extra_media %}{% endblock %}
+  {% load static %}
+  {% comment %} <link rel="stylesheet" href="{% static 'landing/static/landing/scss/landing.scss'%}" type="text/x-scss">
+  <link rel="stylesheet" href="{% static 'seed/static/seed/scss/style.scss'%}" type="text/x-scss"> {% endcomment %}
+  <style>
+    html,
+    body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      width: 100%;
+    }
+    body {
+      display: flex;
+      align-items: center;
+      background: #808080 url('{% static "landing/images/landing/landing-bg.png" %}') no-repeat;
+      background-size: cover;
+      font-family: 'PT Sans', 'Helvetica Neue', helvetica, arial, sans-serif;
+      font-size: 16px;
+      font-weight: normal;
+      text-rendering: optimizelegibility;
+      -webkit-font-smoothing: antialiased;
+    }
+    .header,
+    .page_section,
+    .marketing_text,
+    .section_marketing {
+      position: relative;
+      overflow: auto;
+    }
+    h1, h2{
+      margin-top: 20px;
+      margin-bottom: 10px;
+    }
+    .page {
+      margin: 0 auto;
+      width: 75%;
+      background: white;
+      border-radius: 8px;
+
+      box-shadow: 0 0 26px rgba(0, 0, 0, 0.7);
+
+      .page_section {
+        .section_marketing {
+          float: left;
+          width: 50%;
+          height: 430px;
+          color: black;
+
+          h1 {
+            padding: 42px 30px 11px;
+            font-size: 24px;
+            line-height: 30px;
+            font-weight: normal;
+            text-align: center;
+
+          }
+
+          .marketing_text {
+            padding: 0 30px 20px;
+            line-height: 21px;
+
+            .bullet {
+              float: left;
+              width: 8%;
+              padding-top: 2px;
+
+              div {
+                width: 20px;
+                height: 20px;
+                background-color: #428bca;
+                border: 2px solid white;
+                border-radius: 18px;
+
+                box-shadow: 1px 1px 4px #c6c8c9;
+              }
+            }
+
+            .bullet_text {
+              float: right;
+              width: 91%;
+            }
+          }
+           .asterisk {
+            .bullet_text {
+              font-size: 14px;
+              line-height: 16px;
+            }
+          }
+
+          span.asterisk_color {
+            font-size: 120%;
+            color: orange;
+          }
+
+          .powered_by_seed {
+            position: absolute;
+            width: 200px;
+            bottom: 26px;
+            left: 50%;
+            margin-left: -95px;
+            text-align: center;
+            font-size: 14px;
+            font-weight: bold;
+            color:  #606060;;
+
+            .logo_SEED {
+              width: 200px;
+            }
+          }
+        }
+        .section_forms {
+          float: right;
+          overflow: hidden;
+          width: 49%;
+          min-height: 430px;
+          text-align: center;
+          border-left: 1px solid #c6c8c9;
+
+          background: url("{% static 'landing/images/landing/bg-paper.png'%}");
+          border-top-right-radius: 8px;
+          border-bottom-right-radius: 8px;
+
+          .form_title {
+            padding-top: 42px;
+
+            h2 {
+              font-size: 24px;
+              font-weight: normal;
+              color: #606060;
+              text-shadow: 1px 1px 1px white;
+            }
+
+            p.password_note {
+              font-size: 14px;
+              color: $red;
+              text-align: center;
+            }
+          }
+
+          .disable_login {
+            opacity: 0.5;
+          }
+
+          .choose_your_path,
+          .current_account_link,
+          .enter_invite_code_form,
+          .signup_form,
+          .browser_unsupported {
+            margin-top: 10px;
+            min-height: 228px;
+          }
+          .signup_form {
+            table {
+              width: 96%;
+              margin: 0 auto;
+              background-color: transparent;
+              text-align: left;
+
+              th {
+                padding: 8px 8px 20px 0;
+                text-align: right;
+                display: none;
+              }
+
+              td {
+                text-align: center;
+
+                p {
+                  text-align: center;
+                }
+              }
+
+              input {
+                display: inline-block;
+                width: 88%;
+                padding: 10px;
+                margin-top: 8px;
+                margin-bottom: 2px;
+                font-family: 'PT Sans Narrow', sans-serif;
+                font-size: 16px;
+                line-height: 20px;
+                color: $bdp-landing-lt-gray;
+                background-color: $white;
+                border: 1px solid #ccc;
+                border-radius: 3px;
+
+                @include box-shadow(inset 0 1px 1px rgba(0, 0, 0, 0.075));
+                @include box-shadow(0 1px 1px $white);
+                @include transition(border box-shadow linear 0.2s);
+              }
+
+              input:focus {
+                border-color: rgb(82 168 236 / 80%);
+                outline: thin dotted 9;
+
+                @include box-shadow(inset 0 1px 1px rgba(0, 0, 0, 0.075) /* , 0 0 8px rgba(82,168,236,.6) */);
+              }
+
+              br {
+                display: none;
+              }
+
+              select {
+                width: 98%;
+                margin-top: 10px;
+                margin-bottom: 4px;
+              }
+
+              #id_first_name,
+              #id_last_name,
+              #id_password1,
+              #id_password2 {
+                width: 88%;
+              }
+
+              input[type='checkbox'] {
+                margin-top: 0;
+                width: 20px;
+              }
+
+              .opt-ins {
+                padding-top: 16px;
+              }
+            }
+
+            p {
+              line-height: 24px;
+            }
+
+            .btn {
+              margin: 10px 4px 0;
+              display: inline-block;
+              font-size: 16px;
+            }
+
+            .forgot_password,
+            .create_account {
+              display: inline-block;
+              margin-top: 5px;
+              margin-bottom: 20px;
+              padding: 20px;
+            }
+
+            .already_signed_up {
+              display: block;
+              margin-top: 20px;
+              font-size: 15px;
+            }
+
+            .already_signed_up_signup {
+              display: block;
+              margin-top: 20px;
+              font-size: 15px;
+            }
+
+            .thank_you {
+              padding-top: 20px;
+
+              .thank_you_text {
+                margin: 0 auto;
+                width: 75%;
+                line-height: 22px;
+              }
+            }
+
+            span.email_me {
+              font-size: 15px;
+            }
+          }
+
+        }
+      }
+    }
+
+
+  </style>
 </head>
 <body>
-  {% block content %}
-  {% endblock %}
+    {% block content %}
+    {% endblock %}
 </body>
 </html>

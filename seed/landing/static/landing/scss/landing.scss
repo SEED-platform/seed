@@ -12,7 +12,7 @@ $gray_dark: #2b2b32;
 $gray_lighter: #ccc;
 $gray_lightest: #eee;
 $blue: #428bca;
-$beige: #f5f4ec;
+$beige: #020202;
 $orange: #fc882a;
 $green: #66b132;
 $yellow: #ffc40d;
@@ -310,8 +310,7 @@ body {
       }
 
       .signup_form {
-        table {
-        // table.signup_table {
+        table.signup_table {
           width: 96%;
           margin: 0 auto;
           background-color: transparent;
