@@ -1484,7 +1484,7 @@ class Column(models.Model):
                 continue
 
             c["sharedFieldType"] = c["shared_field_type"]
-            del columns_db["shared_field_type"]
+            del c["shared_field_type"]
 
             if (c["table_name"], c["column_name"]) in Column.PINNED_COLUMNS:
                 c["pinnedLeft"] = True
