@@ -1513,7 +1513,7 @@ class Column(models.Model):
             include_column = True
             if only_used:
                 # only add the column if it is in a ColumnMapping object
-                include_column = include_column and ColumnMapping.objects.filter(column_mapped=c).exists()
+                include_column = include_column and ColumnMapping.objects.filter(column_mapped=c["id"]).exists()
             if not include_related:
                 # only add the column if it is not a related column
                 is_not_related = not c["related"]
