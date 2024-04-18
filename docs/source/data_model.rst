@@ -1,15 +1,15 @@
 Data Model
 ==========
 
-.. image:: images/case-a.png
+.. image:: images/case-a.webp
 
-.. image:: images/case-b.png
+.. image:: images/case-b.webp
 
-.. image:: images/case-c.png
+.. image:: images/case-c.webp
 
-.. image:: images/case-d.png
+.. image:: images/case-d.webp
 
-.. image:: images/data-model.png
+.. image:: images/data-model.webp
 
 
 .. todo:: Documentation below is out of state and needs updated.

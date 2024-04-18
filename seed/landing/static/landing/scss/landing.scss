@@ -77,7 +77,7 @@ body {
 
 body {
   align-items: center;
-  background: #808080 url('../images/landing/landing-bg.png') no-repeat;
+  background: #808080 url('../images/landing/landing-bg.webp') no-repeat;
   background-size: cover;
   display: flex;
   font-family: $font-family-base;
@@ -182,7 +182,7 @@ body {
       min-height: 430px;
       text-align: center;
       border-left: 1px solid $bdp-landing-md-gray;
-      background: url('../images/landing/bg-paper.png');
+      background: url('../images/landing/bg-paper.webp');
       border-top-right-radius: 8px;
       border-bottom-right-radius: 8px;
 
@@ -211,8 +211,7 @@ body {
       .choose_your_path,
       .current_account_link,
       .enter_invite_code_form,
-      .signup_form,
-      .browser_unsupported {
+      .signup_form {
         margin-top: 10px;
         min-height: 228px;
       }
@@ -222,61 +221,6 @@ body {
         .signup_form {
           margin: 0;
           min-height: 0;
-        }
-      }
-
-      .browser_unsupported {
-        display: none;
-
-        .browser_unsupported_message {
-          margin-top: 26px;
-
-          h2 {
-            font-weight: bold;
-          }
-
-          .message_text {
-            width: 80%;
-            margin: 6px auto;
-            font-size: 16px;
-          }
-        }
-
-        .browser_download_links {
-          margin-top: 20px;
-          width: 100%;
-          overflow: auto;
-
-          .browser_option {
-            display: block;
-            float: left;
-            text-align: center;
-            text-decoration: none;
-            width: 19%;
-            height: 94px;
-          }
-
-          .chrome {
-            background: url('../images/landing/logo-chrome-64.png') top center no-repeat;
-            margin-left: 63px;
-          }
-
-          .firefox {
-            background: url('../images/landing/logo-firefox-64.png') top center no-repeat;
-          }
-
-          .safari {
-            background: url('../images/landing/logo-safari-64.png') top center no-repeat;
-          }
-
-          .ie {
-            background: url('../images/landing/logo-ie-64.png') top center no-repeat;
-          }
-        }
-
-        .browser_name {
-          position: relative;
-          top: 70px;
         }
       }
 
