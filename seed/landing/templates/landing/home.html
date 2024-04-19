@@ -31,12 +31,3 @@
   </div>
   <!-- END .page -->
 {% endblock %}
-{% block js %}
-  <script>
-    function toggleTerms () {
-      const terms = document.getElementById('terms-and-conditions');
-      const hidden = ['', 'none'].includes(terms.style.display);
-      terms.style.display = hidden ? 'block' : 'none';
-    }
-  </script>
-{% endblock %}
