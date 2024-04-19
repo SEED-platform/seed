@@ -5,7 +5,7 @@
 angular.module('BE.seed.service.audit_template', []).factory('audit_template_service', [
   '$http',
   ($http) => {
-    const audit_template_factory = {}
+    const audit_template_factory = {};
 
     audit_template_factory.get_building_xml = (org_id, audit_template_building_id) => $http
       .get(['/api/v3/audit_template/', audit_template_building_id, '/get_building_xml/?organization_id=', org_id].join(''))
@@ -42,7 +42,7 @@ angular.module('BE.seed.service.audit_template', []).factory('audit_template_ser
       .catch((response) => response.data);
 
     audit_template_factory.batch_get_city_submission_xml_and_update = (org_id, city_id) => $http
-      .put(`/api/v3/audit_template/batch_get_city_submission_xml/?organization_id=${org_id}`, {city_id: city_id})
+      .put(`/api/v3/audit_template/batch_get_city_submission_xml/?organization_id=${org_id}`, { city_id })
       .then((response) => response)
       .catch((response) => response);
 
@@ -52,27 +52,27 @@ angular.module('BE.seed.service.audit_template', []).factory('audit_template_ser
       .catch((response) => response.data.data);
 
     audit_template_factory.upsert_audit_template_config = (org_id, data, timezone) => {
-      data['timezone'] = timezone;
-      return data.id
-        ? audit_template_factory.update_audit_template_config(org_id, data)
-        : audit_template_factory.create_audit_template_config(org_id, data)
+      data.timezone = timezone;
+      return data.id ?
+        audit_template_factory.update_audit_template_config(org_id, data) :
+        audit_template_factory.create_audit_template_config(org_id, data);
     };
 
     audit_template_factory.create_audit_template_config = (org_id, data) => $http
       .post(`/api/v3/audit_template_configs/?organization_id=${org_id}`, data)
       .then((response) => {
-        console.log('service', response)
-        return response.data.data
+        console.log('service', response);
+        return response.data.data;
       })
       .catch((response) => {
-        console.log('service fail', response)
-        return response.data.data
+        console.log('service fail', response);
+        return response.data.data;
       });
 
     audit_template_factory.update_audit_template_config = (org_id, data) => $http
-        .put(`/api/v3/audit_template_configs/${data.id}/?organization_id=${org_id}`, data)
-        .then((response) => response.data.data)
-        .catch((response) => response.data);
+      .put(`/api/v3/audit_template_configs/${data.id}/?organization_id=${org_id}`, data)
+      .then((response) => response.data.data)
+      .catch((response) => response.data);
 
     audit_template_factory.delete_audit_template_config = (org_id, config_id) => $http
       .delete(`/api/v3/audit_template_configs/${config_id}/?organization_id=${org_id}`)

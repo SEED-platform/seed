@@ -197,7 +197,7 @@
 
       <div class="section_header_container has_btm_margin">
         <div class="section_header">
-          <h2><i class="fa-solid fa-clock"></i> Schedule Weekly Update </h2>
+          <h2><i class="fa-solid fa-clock"></i> Schedule Weekly Update</h2>
         </div>
       </div>
 
@@ -207,37 +207,33 @@
           <form class="form-horizontal" role="form">
             <div class="form-group">
               <div class="col-sm-4">
-                <input type="checkbox" class="form-control" style="width: 34px" ng-model="org.audit_template_sync_enabled"
-                  ng-disabled="::!auth.requires_owner" />
+                <input type="checkbox" class="form-control" style="width: 34px" ng-model="org.audit_template_sync_enabled" ng-disabled="::!auth.requires_owner" />
               </div>
             </div>
           </form>
         </div>
       </div>
 
-
       <div class="section_content_container" ng-if="org.audit_template_sync_enabled">
         <div class="section_content with_padding">
           <form class="form-horizontal" role="form">
             <div class="form-group">
               <div class="col-sm-5">
-                <div>
-                  If you would like to automatically update inventory with Audit Template submission data for the selected Audit Template City ID, configure fields below.
-                </div>
-                <div style="margin: 10px; color: gray;"><i>timezone: {$ timezone $}</i></div>
+                <div>If you would like to automatically update inventory with Audit Template submission data for the selected Audit Template City ID, configure fields below.</div>
+                <div style="margin: 10px; color: gray"><i>timezone: {$ timezone $}</i></div>
                 <table class="time-table">
                   <thead>
                     <tr>
                       <th>Day</th>
-                      <th style="white-space: nowrap; padding: 10px;">Hour (24)</th>
+                      <th style="white-space: nowrap; padding: 10px">Hour (24)</th>
                       <th></th>
-                      <th style="padding: 10px;">Minute</th>
+                      <th style="padding: 10px">Minute</th>
                     </tr>
                   </thead>
                   <tbody>
                     <tr>
-                      <th style="padding-right: 10px;">
-                        <select ng-model="at_conf.update_at_day" ng-disabled="::!auth.requires_owner" class="settings-dropdown" style="width: 100px;">
+                      <th style="padding-right: 10px">
+                        <select ng-model="at_conf.update_at_day" ng-disabled="::!auth.requires_owner" class="settings-dropdown" style="width: 100px">
                           <option value="">Select a day</option>
                           <option ng-repeat="(idx, day) in days_of_week" ng-value="idx">{$ day[idx] $}</option>
                         </select>
@@ -245,9 +241,9 @@
                       <th>
                         <input type="number" class="form-control" id="ah_update_at_hour" ng-model="at_conf.update_at_hour" ng-disabled="::!auth.requires_owner" min="0" max="23" />
                       </th>
-                      <th> : </th>
+                      <th>:</th>
                       <th>
-                        <input type="number" class="form-control" id="ah_update_at_minute" ng-model="at_conf.update_at_minute"ng-disabled="::!auth.requires_owner" min="0" max="59" />
+                        <input type="number" class="form-control" id="ah_update_at_minute" ng-model="at_conf.update_at_minute" ng-disabled="::!auth.requires_owner" min="0" max="59" />
                       </th>
                     </tr>
                   </tbody>

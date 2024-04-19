@@ -53,7 +53,7 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
 
     $scope.at_conf = {};
     if (audit_template_configs_payload.length > 0) {
-      $scope.at_conf = audit_template_configs_payload[0]
+      $scope.at_conf = audit_template_configs_payload[0];
     }
 
     $scope.timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -308,7 +308,7 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
       }
 
       if ($scope.org.audit_template_sync_enabled && validate_at_conf()) {
-        audit_template_service.upsert_audit_template_config($scope.org.id, $scope.at_conf, $scope.timezone)
+        audit_template_service.upsert_audit_template_config($scope.org.id, $scope.at_conf, $scope.timezone);
       }
 
       // also save NEW/UPDATED salesforce mappings if any
@@ -498,32 +498,30 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
         controller: 'at_submission_import_modal_controller',
         backdrop: 'static',
         resolve: {
-        org: () => $scope.org
+          org: () => $scope.org
         }
       });
-    }
+    };
 
     $scope.days_of_week = [
-      {0: 'Sunday'},
-      {1: 'Monday'},
-      {2: 'Tuesday'},
-      {3: 'Wednesday'},
-      {4: 'Thursday'},
-      {5: 'Friday'},
-      {6: 'Saturday'}
-    ]
+      { 0: 'Sunday' },
+      { 1: 'Monday' },
+      { 2: 'Tuesday' },
+      { 3: 'Wednesday' },
+      { 4: 'Thursday' },
+      { 5: 'Friday' },
+      { 6: 'Saturday' }
+    ];
 
     $scope.reset_at_update = () => {
-      $scope.at_conf = $scope.at_conf.id ? {id: $scope.at_conf.id} : {}
-    }
+      $scope.at_conf = $scope.at_conf.id ? { id: $scope.at_conf.id } : {};
+    };
     const validate_at_conf = () => {
       const valid_day = $scope.at_conf.update_at_day >= 0 && $scope.at_conf.update_at_day <= 6;
       const valid_hr = $scope.at_conf.update_at_hour >= 0 && $scope.at_conf.update_at_hour <= 23;
       const valid_min = $scope.at_conf.update_at_minute >= 0 && $scope.at_conf.update_at_minute <= 59;
       return valid_day && valid_hr && valid_min;
-    }
-
-
+    };
 
     $scope.audit_template_report_types = [
       'ASHRAE Level 2 Report',

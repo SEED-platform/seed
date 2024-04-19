@@ -1182,7 +1182,7 @@ SEED_app.config([
             'audit_template_service',
             '$stateParams',
             (audit_template_service, $stateParams) => {
-              const {organization_id} = $stateParams;
+              const { organization_id } = $stateParams;
               return audit_template_service.get_audit_template_configs(organization_id);
             }
           ],
