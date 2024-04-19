@@ -1644,15 +1644,18 @@ a:not([href]) {
         padding: 0;
       }
     }
+
     .input-left-label {
       h3 {
         margin: auto;
       }
+      
       input {
         margin-left: 20px;
         border-radius: 2px;
       }
     }
+    
     .time-table {
       border-collapse: separate;
       border-spacing: 5px;
