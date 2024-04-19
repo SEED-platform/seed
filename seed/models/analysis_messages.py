@@ -1,9 +1,9 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 import json
 import logging
 
@@ -19,6 +19,7 @@ class AnalysisMessage(models.Model):
     The AnalysisMessage represents user-facing messages of events that occur
     during an analysis, like a breadcrumb trail.
     """
+
     DEFAULT = 1
     DEBUG = 10
     INFO = 20
@@ -26,11 +27,11 @@ class AnalysisMessage(models.Model):
     ERROR = 40
 
     MESSAGE_TYPES = (
-        (DEFAULT, 'default'),
-        (DEBUG, 'debug'),
-        (INFO, 'info'),
-        (WARNING, 'warning'),
-        (ERROR, 'error'),
+        (DEFAULT, "default"),
+        (DEBUG, "debug"),
+        (INFO, "info"),
+        (WARNING, "warning"),
+        (ERROR, "error"),
     )
     analysis = models.ForeignKey(Analysis, on_delete=models.CASCADE)
     # if the message is relevant to a specific property then it should be linked
@@ -47,8 +48,7 @@ class AnalysisMessage(models.Model):
     debug_message = models.CharField(max_length=1024, blank=True)
 
     @classmethod
-    def log_and_create(cls, logger, type_, user_message, debug_message, analysis_id,
-                       analysis_property_view_id=None, exception=None):
+    def log_and_create(cls, logger, type_, user_message, debug_message, analysis_id, analysis_property_view_id=None, exception=None):
         """Log the messages using the provided logger, then create an AnalysisMessage
 
         :param logger: logging.Logger
@@ -65,7 +65,7 @@ class AnalysisMessage(models.Model):
             cls.DEBUG: logging.DEBUG,
             cls.INFO: logging.INFO,
             cls.WARNING: logging.WARNING,
-            cls.ERROR: logging.ERROR
+            cls.ERROR: logging.ERROR,
         }
         logger_level = logger_levels.get(type_)
         if logger_level is None:
@@ -73,21 +73,21 @@ class AnalysisMessage(models.Model):
             logger_level = logging.ERROR
 
         log_message_dict = {
-            'analysis_id': analysis_id,
-            'analysis_property_view': analysis_property_view_id,
-            'user_message': user_message,
-            'debug_message': debug_message,
-            'exception': repr(exception),
+            "analysis_id": analysis_id,
+            "analysis_property_view": analysis_property_view_id,
+            "user_message": user_message,
+            "debug_message": debug_message,
+            "exception": repr(exception),
         }
         logger.log(logger_level, json.dumps(log_message_dict))
 
         # truncate the messages to make sure they meet our db constraints
         MAX_MESSAGE_LENGTH = 1024
-        ELLIPSIS = '...'
+        ELLIPSIS = "..."
         if len(user_message) > MAX_MESSAGE_LENGTH:
-            user_message = user_message[:MAX_MESSAGE_LENGTH - len(ELLIPSIS)] + ELLIPSIS
+            user_message = user_message[: MAX_MESSAGE_LENGTH - len(ELLIPSIS)] + ELLIPSIS
         if len(debug_message) > MAX_MESSAGE_LENGTH:
-            debug_message = debug_message[:MAX_MESSAGE_LENGTH - len(ELLIPSIS)] + ELLIPSIS
+            debug_message = debug_message[: MAX_MESSAGE_LENGTH - len(ELLIPSIS)] + ELLIPSIS
 
         return AnalysisMessage.objects.create(
             type=type_,

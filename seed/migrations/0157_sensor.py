@@ -5,23 +5,25 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('seed', '0156_auto_20211104_1638'),
+        ("seed", "0156_auto_20211104_1638"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Sensor',
+            name="Sensor",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('display_name', models.CharField(max_length=255, unique=True)),
-                ('location_identifier', models.CharField(default='', max_length=2047)),
-                ('description', models.CharField(default='', max_length=2047)),
-                ('sensor_type', models.CharField(max_length=63)),
-                ('units', models.CharField(max_length=63)),
-                ('column_name', models.CharField(max_length=255, unique=True)),
-                ('sensor_property', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='sensors', to='seed.property')),
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("display_name", models.CharField(max_length=255, unique=True)),
+                ("location_identifier", models.CharField(default="", max_length=2047)),
+                ("description", models.CharField(default="", max_length=2047)),
+                ("sensor_type", models.CharField(max_length=63)),
+                ("units", models.CharField(max_length=63)),
+                ("column_name", models.CharField(max_length=255, unique=True)),
+                (
+                    "sensor_property",
+                    models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name="sensors", to="seed.property"),
+                ),
             ],
         ),
     ]

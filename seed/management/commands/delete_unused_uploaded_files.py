@@ -1,11 +1,10 @@
-# -*- coding: utf-8 -*-
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
-from __future__ import unicode_literals
 
 import os
+import sys
 
 from django.core.management.base import BaseCommand
 
@@ -13,14 +12,10 @@ from seed.data_importer.models import ImportFile
 
 
 class Command(BaseCommand):
-    help = 'Creates a default super user for the system tied to an organization'
+    help = "Creates a default super user for the system tied to an organization"
 
     def add_arguments(self, parser):
-        parser.add_argument('--org_id',
-                            default=None,
-                            help='Name of a specific organization to operate',
-                            action='store',
-                            dest='org_id')
+        parser.add_argument("--org_id", default=None, help="Name of a specific organization to operate", action="store", dest="org_id")
 
     def handle(self, *args, **options):
         # In local dev and production the files are in the media/uploads folder.
@@ -34,7 +29,7 @@ class Command(BaseCommand):
         #      deletes the files from disk (if they exist), but it does not delete the
         #      ImportFile record itself
 
-        org_id = options['org_id']
+        org_id = options["org_id"]
         if org_id:
             files = ImportFile.objects.get_all().filter(import_record__super_organization=org_id)  # this actually returns a queryset
         else:
@@ -60,44 +55,45 @@ class Command(BaseCommand):
             elif filename == "":
                 # no file attached
                 continue
+            elif "pm_imports/" in filename:
+                # this is a special folder that needs to persist in the uploads directory
+                rename_files.append((f, filename, f"{new_base_path}/pm_imports/{os.path.basename(filename)}"))
             else:
-                if 'pm_imports/' in filename:
-                    # this is a special folder that needs to persist in the uploads directory
-                    rename_files.append((f, filename, f"{new_base_path}/pm_imports/{os.path.basename(filename)}"))
-                else:
-                    rename_files.append((f, filename, f"{new_base_path}/{os.path.basename(filename)}"))
+                rename_files.append((f, filename, f"{new_base_path}/{os.path.basename(filename)}"))
 
-        self.stdout.write('********    LIST OF IMPORT FILE PATHS TO RENAME  *********')
+        self.stdout.write("********    LIST OF IMPORT FILE PATHS TO RENAME  *********")
         for f in rename_files:
             print(f"Will rename {f[1]} to {f[2]}")
-        self.stdout.write('********    END OF LIST (list may be blank)    *********')
+        self.stdout.write("********    END OF LIST (list may be blank)    *********")
         f = input("Are you sure you want to rename all of the files above? Use with caution! [Y/y]? ")
-        if f.lower() == 'y':
+        if f.lower() == "y":
             for f in rename_files:
                 f_db = f[0]
                 print(f"Renaming {f[1]} to {f[2]}")
                 f_db.file.name = f[2]
                 f_db.save()
-            self.stdout.write('Done renaming', ending='\n')
+            self.stdout.write("Done renaming", ending="\n")
         else:
-            self.stdout.write('Not renaming, will not continue, exiting')
-            exit()
+            self.stdout.write("Not renaming, will not continue, exiting")
+            sys.exit()
 
         # now go through and find the deleted=True and remove the records
         if org_id:
-            files = ImportFile.objects.get_all().filter(deleted=True, import_record__super_organization=org_id).exclude(file__exact='')
+            files = ImportFile.objects.get_all().filter(deleted=True, import_record__super_organization=org_id).exclude(file__exact="")
         else:
-            files = ImportFile.objects.get_all().filter(deleted=True).exclude(file__exact='')
+            files = ImportFile.objects.get_all().filter(deleted=True).exclude(file__exact="")
 
-        f = input(f"Are you sure you want to delete {len(files)} InputFiles that have been marked with 'deleted'? Use with caution! [Y/y]? ")
-        if f.lower() == 'y':
+        f = input(
+            f"Are you sure you want to delete {len(files)} InputFiles that have been marked with 'deleted'? Use with caution! [Y/y]? "
+        )
+        if f.lower() == "y":
             for fil in files:
                 filename = fil.file.name
                 self.stdout.write(f"Deleting file {filename}")
                 # regardless if the file exists or not,
                 fil.file.delete(save=True)
 
-            self.stdout.write('Done deleting flagged record files, the records still exist', ending='\n')
+            self.stdout.write("Done deleting flagged record files, the records still exist", ending="\n")
         else:
-            self.stdout.write('Not deleting, exiting')
-            exit()
+            self.stdout.write("Not deleting, exiting")
+            sys.exit()
