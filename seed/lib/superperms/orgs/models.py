@@ -267,6 +267,7 @@ class Organization(models.Model):
     audit_template_user = models.EmailField(blank=True, max_length=128, default="")
     audit_template_password = models.CharField(blank=True, max_length=128, default="")
     audit_template_report_type = models.CharField(blank=True, max_length=128, default="Demo City Report")
+    audit_template_city_id = models.IntegerField(blank=True, null=True)
     audit_template_sync_enabled = models.BooleanField(default=False)
 
     # Salesforce Functionality
