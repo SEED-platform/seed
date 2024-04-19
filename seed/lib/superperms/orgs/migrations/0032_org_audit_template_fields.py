@@ -5,7 +5,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("orgs", "0030_accountability_hierarchy"),
+        ("orgs", "0031_encrypt_existing_audit_template_passwords"),
     ]
 
     operations = [
