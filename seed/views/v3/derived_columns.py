@@ -225,9 +225,12 @@ class DerivedColumnViewSet(viewsets.ViewSet, OrgMixin):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        try:
-            derived_column = DerivedColumn.objects.get(id=pk, organization=org)
-        except DerivedColumn.DoesNotExist:
+        derived_column = (
+            DerivedColumn.objects.filter(id=pk, organization=org)
+            .prefetch_related("derivedcolumnparameter_set", "derivedcolumnparameter_set__source_column")
+            .first()
+        )
+        if derived_column is None:
             return JsonResponse(
                 {"status": "error", "message": f"Derived column with id {pk} does not exist"}, status=status.HTTP_404_NOT_FOUND
             )
