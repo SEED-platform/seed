@@ -7,7 +7,8 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 import json
 import logging
 
-from django.db.models import F
+from django.db import connection
+from django.db.models import Count, F
 from django.http import JsonResponse
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import serializers, status, viewsets
@@ -297,36 +298,43 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
             return JsonResponse({"success": False, "message": "Cycle does not exist"}, status=status.HTTP_404_NOT_FOUND)
 
         access_level_instance = AccessLevelInstance.objects.get(pk=self.request.access_level_instance_id)
-        views = PropertyView.objects.filter(
+        state_ids = PropertyView.objects.filter(
             property__organization_id=org_id,
             cycle_id=cycle_id,
             property__access_level_instance__lft__gte=access_level_instance.lft,
             property__access_level_instance__rgt__lte=access_level_instance.rgt,
-        )
-        states = PropertyState.objects.filter(id__in=views.values_list("state_id", flat=True))
+        ).values_list("state_id", flat=True)
+        states = PropertyState.objects.filter(id__in=state_ids)
         columns = Column.objects.filter(organization_id=org_id, derived_column=None, table_name="PropertyState").only(
             "is_extra_data", "column_name"
         )
+
         num_of_nonnulls_by_column_name = {c.column_name: 0 for c in columns}
+        canonical_columns = [c.column_name for c in columns if not c.is_extra_data]
+        extra_data_columns = [c.column_name for c in columns if c.is_extra_data]
 
-        # fill num_of_nonnulls_by_column_name for extra_data columns
-        for data in states.values_list("extra_data", flat=True):
-            for key, value in data.items():
-                if value is not None:
-                    num_of_nonnulls_by_column_name[key] += 1
+        # add non-null counts for extra_data columns
+        with connection.cursor() as cursor:
+            non_null_extra_data_counts_query = (
+                f'SELECT key, COUNT(*)\n'
+                f'FROM seed_propertystate, LATERAL JSONB_EACH_TEXT(extra_data) AS each_entry(key, value)\n'
+                f'WHERE id IN ({", ".join(map(str, state_ids))})\n'
+                f'  AND value IS NOT NULL\n'
+                f'GROUP BY key;'
+            )
+            cursor.execute(non_null_extra_data_counts_query)
+            extra_data_counts = dict(cursor.fetchall())
+            num_of_nonnulls_by_column_name.update(extra_data_counts)
 
-        # fill num_of_nonnulls_by_column_name for canonical columns
-        for column in columns.filter(is_extra_data=False):
-            name = column.column_name
-            if not column.is_extra_data:
-                count = states.exclude(**{name: None}).count()
-                num_of_nonnulls_by_column_name[name] = count
+        # add non-null counts for canonical columns
+        canonical_counts = states.aggregate(**{col: Count(col) for col in canonical_columns})
+        num_of_nonnulls_by_column_name.update(canonical_counts)
 
         return JsonResponse(
             {
                 "status": "success",
-                "total_records": views.count(),
-                "number_extra_data_fields": columns.filter(is_extra_data=True).count(),
+                "total_records": len(state_ids),
+                "number_extra_data_fields": len(extra_data_columns),
                 "column_settings fields and counts": num_of_nonnulls_by_column_name,
             }
         )
