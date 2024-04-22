@@ -1479,51 +1479,49 @@ class Column(models.Model):
             column_query = column_query.exclude(derived_column__isnull=False)
         columns_db = column_query.order_by("is_extra_data", "column_name")
         columns = []
-        for c in columns_db:
-            if c.column_name in Column.EXCLUDED_COLUMN_RETURN_FIELDS:
+        # Eventually move all this over to Column serializer directly
+        for c in ColumnSerializer(columns_db, many=True).data:
+            if c["column_name"] in Column.EXCLUDED_COLUMN_RETURN_FIELDS:
                 continue
 
-            # Eventually move this over to Column serializer directly
-            new_c = ColumnSerializer(c).data
+            c["sharedFieldType"] = c["shared_field_type"]
+            del c["shared_field_type"]
 
-            new_c["sharedFieldType"] = new_c["shared_field_type"]
-            del new_c["shared_field_type"]
-
-            if (new_c["table_name"], new_c["column_name"]) in Column.PINNED_COLUMNS:
-                new_c["pinnedLeft"] = True
+            if (c["table_name"], c["column_name"]) in Column.PINNED_COLUMNS:
+                c["pinnedLeft"] = True
 
             # If no display name, use the column name (this is the display name as it was typed
             # during mapping)
-            if not new_c["display_name"]:
-                new_c["display_name"] = new_c["column_name"]
+            if not c["display_name"]:
+                c["display_name"] = c["column_name"]
 
             # If no column_description, use the column name (this is the display name as it was typed
             # during mapping) or display name
-            if not new_c["column_description"]:
-                if not new_c["display_name"]:
-                    new_c["column_description"] = new_c["column_name"]
+            if not c["column_description"]:
+                if not c["display_name"]:
+                    c["column_description"] = c["column_name"]
                 else:
-                    new_c["column_description"] = new_c["display_name"]
+                    c["column_description"] = c["display_name"]
 
             # Related fields
-            new_c["related"] = False
+            c["related"] = False
             if inventory_type:
-                new_c["related"] = inventory_type.lower() not in new_c["table_name"].lower()
-                if new_c["related"]:
+                c["related"] = inventory_type.lower() not in c["table_name"].lower()
+                if c["related"]:
                     # if it is related then have the display name show the other table
-                    new_c["display_name"] = new_c["display_name"] + " (%s)" % INVENTORY_DISPLAY[new_c["table_name"]]
+                    c["display_name"] = c["display_name"] + " (%s)" % INVENTORY_DISPLAY[c["table_name"]]
 
             include_column = True
             if only_used:
                 # only add the column if it is in a ColumnMapping object
-                include_column = include_column and ColumnMapping.objects.filter(column_mapped=c).exists()
+                include_column = include_column and ColumnMapping.objects.filter(column_mapped=c["id"]).exists()
             if not include_related:
                 # only add the column if it is not a related column
-                is_not_related = not new_c["related"]
+                is_not_related = not c["related"]
                 include_column = include_column and is_not_related
 
             if include_column:
-                columns.append(new_c)
+                columns.append(c)
 
         # validate that the field 'name' is unique.
         uniq = set()

@@ -293,9 +293,13 @@ class OrganizationViewSet(viewsets.ViewSet):
 
         if brief:
             if request.user.is_superuser:
-                qs = Organization.objects.only("id", "name", "parent_org_id", "display_decimal_places")
+                qs = Organization.objects.only(
+                    "id", "name", "parent_org_id", "display_decimal_places", "salesforce_enabled", "access_level_names"
+                )
             else:
-                qs = request.user.orgs.only("id", "name", "parent_org_id", "display_decimal_places")
+                qs = request.user.orgs.only(
+                    "id", "name", "parent_org_id", "display_decimal_places", "salesforce_enabled", "access_level_names"
+                )
 
             orgs = _dict_org_brief(request, qs)
             if len(orgs) == 0:

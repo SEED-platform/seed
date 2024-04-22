@@ -276,7 +276,7 @@ def inventory_search_filter_sort(inventory_type, params, user, cycle_id=None):
         cycle_id=cycle_id,
     )
 
-    if inventory:
+    if inventory != []:
         # full text search across a couple common fields
         inventory = search_inventory(inventory_type, params["q"], queryset=inventory)
 

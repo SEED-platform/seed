@@ -28,7 +28,6 @@ class LabelSerializer(serializers.ModelSerializer):
         if "super_organization" not in kwargs:
             return
         super_organization = kwargs.pop("super_organization")
-        self.inventory = kwargs.pop("inventory")
         super().__init__(*args, **kwargs)
         if getattr(self, "initial_data", None):
             self.initial_data["super_organization"] = super_organization.pk
@@ -51,16 +50,17 @@ class LabelSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         ret = super().to_representation(instance)
 
-        # Avoid the impression that no records "is_applied" if inventory isn't provided and a search never occurred
-        if not self.inventory:
+        if "is_applied" not in dir(instance):
             del ret["is_applied"]
 
         return ret
 
     def get_is_applied(self, obj):
-        filtered_result = []
-        if self.inventory:
-            # TODO: This needs to be updated to support labels being moved to Views.
-            filtered_result = self.inventory.prefetch_related("labels").filter(labels__in=[obj]).values_list("id", flat=True)
+        if "is_applied" not in dir(obj):
+            return None
 
-        return filtered_result
+        elif obj.is_applied == [None]:
+            return []
+
+        else:
+            return obj.is_applied
