@@ -16,10 +16,13 @@ from django.contrib.auth.tokens import default_token_generator
 from django.forms.forms import NON_FIELD_ERRORS
 from django.forms.utils import ErrorList
 from django.http import HttpResponseRedirect
+
+from django_otp import devices_for_user
 from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.utils.encoding import force_text
 from django.utils.http import urlsafe_base64_decode
+from two_factor.views.core import LoginView
 
 from seed.landing.models import SEEDUser
 from seed.tasks import invite_new_user_to_seed
@@ -178,3 +181,48 @@ def activate(request, uidb64, token):
         return HttpResponseRedirect(reverse("seed:home"))
     else:
         return render(request, "account_activation_invalid.html", {"debug": settings.DEBUG})
+
+class CustomLoginView(LoginView):
+
+    def get(self, request, *args, **kwargs):
+        import logging 
+        logging.error('>>> GET')
+        return super().get(request, *args, **kwargs)
+    
+    def post(self, request, *args, **kwargs):
+        response = super().post(request, *args, **kwargs)
+        if response.status_code == 200 or response.status_code == 302:
+            response = self.redirect_user(request, response)
+
+        return response
+
+    def redirect_user(self, request, response):
+        step = request._post["custom_login_view-current_step"]
+        logging.error('>>> post step %s', step)
+        if step == "auth":
+            user = SEEDUser.objects.get(username=request.POST['auth-username'])
+            # devices are selected 2fa options (token, email...) 
+            devices = list(devices_for_user(user))
+            logging.error('>>> devices %s', devices)
+            if devices:
+                # go to token page
+                return response 
+
+        elif step == "token":
+            user = request.user
+           
+        else:
+            return response
+        
+        
+
+        if not getattr(user, 'prompt_2fa'):
+            logging.error('home')
+            return HttpResponseRedirect(reverse("seed:home"))
+        else:
+            logging.error('Profile')
+            # goto 2fa profile on first login
+            user.prompt_2fa = False
+            user.save()
+
+        return response
