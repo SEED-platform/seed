@@ -183,46 +183,39 @@ def activate(request, uidb64, token):
         return render(request, "account_activation_invalid.html", {"debug": settings.DEBUG})
 
 class CustomLoginView(LoginView):
-
-    def get(self, request, *args, **kwargs):
-        import logging 
-        logging.error('>>> GET')
-        return super().get(request, *args, **kwargs)
     
     def post(self, request, *args, **kwargs):
         response = super().post(request, *args, **kwargs)
-        if response.status_code == 200 or response.status_code == 302:
-            response = self.redirect_user(request, response)
-
+        if response.status_code not in [200, 302]:
+            return response
+        current_step = request.POST.get("custom_login_view-current_step")
+        if current_step == 'auth':
+            return self.handle_auth(request, response)
+        elif current_step == 'token':
+            return self.handle_token(request, response)
         return response
 
-    def redirect_user(self, request, response):
-        step = request._post["custom_login_view-current_step"]
-        logging.error('>>> post step %s', step)
-        if step == "auth":
-            user = SEEDUser.objects.get(username=request.POST['auth-username'])
-            # devices are selected 2fa options (token, email...) 
-            devices = list(devices_for_user(user))
-            logging.error('>>> devices %s', devices)
-            if devices:
-                # go to token page
-                return response 
+    def handle_auth(self, request, response):
+        user = SEEDUser.objects.filter(username=request.POST['auth-username']).first()
+        if not user or list(devices_for_user(user)):
+            return response  # retry or proceed to token step
+        return self.handle_2fa_prompt(response, user)
 
-        elif step == "token":
-            user = request.user
-           
-        else:
-            return response
-        
-        
+    def handle_token(self, request, response):
+        token = request.POST.get('token-otp_token')
+        user = request.user
+        if not token or not user.is_authenticated:
+            return response  # retry form
+        return self.handle_2fa_prompt(response, user)
 
-        if not getattr(user, 'prompt_2fa'):
-            logging.error('home')
+    def handle_2fa_prompt(self, response, user):
+        # django-two-factor-auth will always try to redirect users to the 2 factor profile.
+        # override and send users home if they have already been prompted.
+        if not getattr(user, 'prompt_2fa', False) and isinstance(response, HttpResponseRedirect):
             return HttpResponseRedirect(reverse("seed:home"))
         else:
-            logging.error('Profile')
-            # goto 2fa profile on first login
             user.prompt_2fa = False
-            user.save()
-
+            user.save() 
         return response
+ 
+

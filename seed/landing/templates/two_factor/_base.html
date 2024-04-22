@@ -1,15 +1,21 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <title>{% block title %}{% endblock %}</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet" media="screen">
-  <script defer src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-  <script defer src="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.2/js/bootstrap.min.js"></script>
-  {% block extra_media %}{% endblock %}
+  <head>
+    <title>{% block title %}{% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet" media="screen">
+    <script defer src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script defer src="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    {% block extra_media %}{% endblock %}
+    {% comment %} WORKS BUT IS SLOW {% load compress %}{% load i18n %} {% block css %}{% compress css %}
+      <link rel="stylesheet" type="text/x-scss" href="{{ STATIC_URL }}landing/scss/landing.scss">
+      {% endcompress %}
+    {% endblock %} {% endcomment %}
   {% load static %}
-  {% comment %} <link rel="stylesheet" href="{% static 'landing/static/landing/scss/landing.scss'%}" type="text/x-scss">
-  <link rel="stylesheet" href="{% static 'seed/static/seed/scss/style.scss'%}" type="text/x-scss"> {% endcomment %}
+  {% comment %} DOES NOT WORK <link rel="stylesheet" href="{% static 'seed/css/landing.css'%}" type="text/css">
+  <link rel="stylesheet" href="{% static 'seed/css/style.css'%}" type="text/css">
+  <link href="/static/seed/scss/style.scss" rel="stylesheet" type="text/x-scss" /> {% endcomment %}
+
   <style>
     html,
     body {
@@ -125,7 +131,7 @@
           text-align: center;
           border-left: 1px solid #c6c8c9;
 
-          background: url("{% static 'landing/images/landing/bg-paper.png'%}");
+          background: url("{% static 'landing/images/landing/bg-paper.webp'%}");
           border-top-right-radius: 8px;
           border-bottom-right-radius: 8px;
 
