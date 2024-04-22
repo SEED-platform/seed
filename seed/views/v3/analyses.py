@@ -21,6 +21,7 @@ from seed.decorators import ajax_request_class, require_organization_id_class
 from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm_class
 from seed.lib.superperms.orgs.models import AccessLevelInstance
 from seed.models import Analysis, AnalysisEvent, AnalysisPropertyView, Column, Cycle, Organization, PropertyState, PropertyView
+from seed.models.columns import EXCLUDED_API_FIELDS
 from seed.serializers.analyses import AnalysisSerializer
 from seed.utils.api import OrgMixin, api_endpoint_class
 from seed.utils.api_schema import AutoSchemaHelper
@@ -305,8 +306,10 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
             property__access_level_instance__rgt__lte=access_level_instance.rgt,
         ).values_list("state_id", flat=True)
         states = PropertyState.objects.filter(id__in=state_ids)
-        columns = Column.objects.filter(organization_id=org_id, derived_column=None, table_name="PropertyState").only(
-            "is_extra_data", "column_name"
+        columns = (
+            Column.objects.filter(organization_id=org_id, derived_column=None, table_name="PropertyState")
+            .exclude(column_name__in=EXCLUDED_API_FIELDS)
+            .only("is_extra_data", "column_name")
         )
 
         num_of_nonnulls_by_column_name = {c.column_name: 0 for c in columns}

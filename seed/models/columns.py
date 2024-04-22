@@ -39,6 +39,13 @@ class ColumnCastError(Exception):
     pass
 
 
+# These fields are excluded from being returned to the front end via the API and the
+# Column.retrieve_all method. Note that not all the endpoints are respecting this at the moment.
+EXCLUDED_API_FIELDS = [
+    "normalized_address",
+]
+
+
 class Column(models.Model):
     """The name of a column for a given organization."""
 
@@ -85,12 +92,6 @@ class Column(models.Model):
     COLUMN_MERGE_FAVOR_NEW = 0
     COLUMN_MERGE_FAVOR_EXISTING = 1
     COLUMN_MERGE_PROTECTION = [(COLUMN_MERGE_FAVOR_NEW, "Favor New"), (COLUMN_MERGE_FAVOR_EXISTING, "Favor Existing")]
-
-    # These fields are excluded from being returned to the front end via the API and the
-    # Column.retrieve_all method. Note that not all the endpoints are respecting this at the moment.
-    EXCLUDED_API_FIELDS = [
-        "normalized_address",
-    ]
 
     # These are the columns that are removed when looking to see if the records are the same
     COLUMN_EXCLUDE_FIELDS = [
