@@ -62,7 +62,8 @@ from seed.utils.generic import median, round_down_hundred_thousand
 from seed.utils.geocode import geocode_buildings
 from seed.utils.match import match_merge_link
 from seed.utils.merge import merge_properties
-from seed.utils.organizations import create_organization, create_suborganization, public_feed
+from seed.utils.organizations import create_organization, create_suborganization
+from seed.utils.public import public_feed
 from seed.utils.properties import pair_unpair_property_taxlot
 from seed.utils.salesforce import toggle_salesforce_sync
 from seed.utils.users import get_js_role
@@ -1295,12 +1296,4 @@ class OrganizationViewSet(viewsets.ViewSet):
 
         feed = public_feed(org, request)
 
-<<<<<<< HEAD
-        return JsonResponse(
-            feed,
-            json_dumps_params={'indent': 4},
-            status=status.HTTP_200_OK
-        )
-=======
         return JsonResponse(feed, json_dumps_params={"indent": 4}, status=status.HTTP_200_OK)
->>>>>>> e596a672c (precommit)
