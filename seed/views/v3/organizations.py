@@ -506,7 +506,7 @@ class OrganizationViewSet(viewsets.ViewSet):
             org.geocoding_enabled = geocoding_enabled
 
         # Update public_feed_enabled option
-        public_feed_enabled = posted_org.get("public_feed_enabled", True)
+        public_feed_enabled = posted_org.get("public_feed_enabled", False)
         if public_feed_enabled != org.public_feed_enabled:
             org.public_feed_enabled = public_feed_enabled
 
