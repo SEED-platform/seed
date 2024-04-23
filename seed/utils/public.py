@@ -1,7 +1,9 @@
 import pint
 from django.core.paginator import EmptyPage, Paginator
 from django.db.models.functions import Lower
+
 from seed.models import Column, PropertyState, TaxLotState
+
 
 def public_feed(org, request):
     """

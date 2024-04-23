@@ -3,6 +3,7 @@
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 from datetime import datetime
 
 from django.urls import reverse_lazy
@@ -26,13 +27,13 @@ class TestOrganizationViews(DataMappingBaseTestCase):
         self.property_factory = FakePropertyFactory(organization=self.org)
         self.property_state_factory = FakePropertyStateFactory(organization=self.org)
         self.property_view_factory = FakePropertyViewFactory(organization=self.org)
-    
+
     def test_public_feed(self):
         # a non logged in user should be able to access public endpoints, but not others
         url = reverse_lazy("api:v3:organizations-list")
         response = self.client.get(url, content_type="application/json")
         assert response.status_code == 403
-        assert response.json() == {'detail': 'You do not have permission to perform this action.'}
+        assert response.json() == {"detail": "You do not have permission to perform this action."}
 
         Column.objects.create(
             table_name="PropertyState",
@@ -79,7 +80,9 @@ class TestOrganizationViews(DataMappingBaseTestCase):
         url = reverse_lazy("api:v3:public-organizations-feed-json", args=[self.org.id])
         response = self.client.get(url, content_type="application/json")
         assert response.status_code == 200
-        assert response.json() == {"detail": f"Public feed is not enabled for organization '{self.org.name}'. Public feed can be enabled in organization settings"}
+        assert response.json() == {
+            "detail": f"Public feed is not enabled for organization '{self.org.name}'. Public feed can be enabled in organization settings"
+        }
 
         # enable public feed
         self.org.public_feed_enabled = True

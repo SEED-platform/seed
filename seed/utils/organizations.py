@@ -173,4 +173,3 @@ def create_suborganization(user, current_org, suborg_name="", user_role=ROLE_MEM
         return False, "Tried to create child of a child organization.", None
 
     return True, sub_org, ou
-
