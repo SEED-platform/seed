@@ -34,7 +34,9 @@ class PublicOrganizationViewSet(viewsets.ViewSet):
             org = Organization.objects.get(pk=pk)
         except Organization.DoesNotExist:
             return JsonResponse({"erorr": "Organization does not exist"}, status=status.HTTP_404_NOT_FOUND)
+        
+        if not org.public_feed_enabled:
+            return JsonResponse({"detail": f"Public feed is not enabled for organization '{org.name}'. Public feed can be enabled in organization settings"})
 
         feed = public_feed(org, request)
-
         return JsonResponse(feed, json_dumps_params={"indent": 4}, status=status.HTTP_200_OK)
