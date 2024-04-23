@@ -143,7 +143,11 @@ taxlots_router = nested_routers.NestedSimpleRouter(api_v3_router, r"taxlots", lo
 taxlots_router.register(r"notes", NoteViewSet, basename="taxlot-notes")
 
 public_organizations_router = routers.DefaultRouter()
-public_organizations_router.register(r"public/organizations", PublicOrganizationViewSet, basename="public-organizations",)
+public_organizations_router.register(
+    r"public/organizations",
+    PublicOrganizationViewSet,
+    basename="public-organizations",
+)
 
 
 urlpatterns = [

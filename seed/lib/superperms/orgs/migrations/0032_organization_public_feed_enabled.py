@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('orgs', '0031_encrypt_existing_audit_template_passwords'),
+        ("orgs", "0031_encrypt_existing_audit_template_passwords"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='organization',
-            name='public_feed_enabled',
+            model_name="organization",
+            name="public_feed_enabled",
             field=models.BooleanField(default=False),
         ),
     ]
