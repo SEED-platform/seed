@@ -1132,6 +1132,12 @@ msgstr "Copie"
 msgid "Duplicates"
 msgstr "Copies"
 
+msgid "ENABLED"
+msgstr "ACTIVÉ"
+
+msgid "ENABLE_PUBLIC_FEED"
+msgstr "pour activer ou désactiver la fonctionnalité de flux public"
+
 msgid "ENERGY STAR Score"
 msgstr "Compte ENERGY STAR"
 
@@ -2358,6 +2364,9 @@ msgstr "Au moins un des champs de propriété suivants est requis"
 msgid "PUBLIC"
 msgstr "PUBLIC"
 
+msgid "PUBLIC_SHARE"
+msgstr "Si la fonctionnalité Flux public est activée, cette page peut être utilisée pour configurer les données partagées en externe avec le grand public."
+
 msgid "Pair Properties to Tax Lots"
 msgstr "Associer des propriétés à des lots d'impôt"
 
@@ -2604,6 +2613,9 @@ msgstr "Visibilité de la propriété"
 
 msgid "Property and Tax Lot Data"
 msgstr "Données foncières et fiscales"
+
+msgid "Public Disclosure - Sharing Your Data"
+msgstr "Divulgation publique – Partage de données"
 
 msgid "RECOGNIZE_EMPTY_EXPLANATION"
 msgstr "Cocher cette case pour un champ affectera la façon dont les valeurs vides ou vides sont traitées lors des fusions. Plus précisément, les valeurs vides pourront remplacer les valeurs non vides par le paramètre \"Protection contre la fusion\"."
@@ -3260,8 +3272,8 @@ msgstr "Téléchargement réussi!"
 msgid "Successfully Uploaded"
 msgstr "Téléversé avec succès"
 
-msgid "Summary (Beta)"
-msgstr "Résumé (Bêta)"
+msgid "Summary"
+msgstr "Résumé"
 
 msgid "Switch Profiles"
 msgstr "Changer de profil"
@@ -3764,6 +3776,9 @@ msgstr "Spectateur"
 
 msgid "Violation Label"
 msgstr "Étiquette de Violation"
+
+msgid "Visit"
+msgstr "Visitez"
 
 msgid "Visit the BETTER website to run a portfolio analysis"
 msgstr "Visitez le site Web de BETTER pour effectuer une analyse de portefeuille"

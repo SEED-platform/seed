@@ -3885,6 +3885,10 @@ $pairedCellWidth: 60px;
   padding-top: 10px;
 }
 
+.pad-top-20 {
+  padding-top: 20px;
+}
+
 .access-tree {
   margin-top: 20px;
 }
@@ -5465,4 +5469,15 @@ tags-input .tags .tag-item {
 .cell-fail {
   background-color: #fefbd1;
   border-top: 1px solid #d4d4d4;
+}
+
+.label-success {
+  background: #5cb85c;
+}
+
+.label-default {
+  background: #777;
+}
+.label-lg {
+  font-size: 1.2em;
 }

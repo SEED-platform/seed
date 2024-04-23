@@ -1123,6 +1123,12 @@ msgstr "Duplicate"
 msgid "Duplicates"
 msgstr "Duplicates"
 
+msgid "ENABLED"
+msgstr "ENABLED"
+
+msgid "ENABLE_PUBLIC_FEED"
+msgstr "to enable or disable Public Feed functionality"
+
 msgid "ENERGY STAR Score"
 msgstr "ENERGY STAR Score"
 
@@ -2342,6 +2348,9 @@ msgstr "At least one of the following Property fields is required"
 msgid "PUBLIC"
 msgstr "PUBLIC"
 
+msgid "PUBLIC_SHARE"
+msgstr "If the Public Feed functionality is enabled, this page can be used to configure what data is shared externally with the public-at-large."
+
 msgid "Pair Properties to Tax Lots"
 msgstr "Pair Properties to Tax Lots"
 
@@ -2586,6 +2595,9 @@ msgstr "Property Visibility"
 
 msgid "Property and Tax Lot Data"
 msgstr "Property and Tax Lot Data"
+
+msgid "Public Disclosure - Sharing Your Data"
+msgstr "Public Disclosure - Sharing Your Data"
 
 msgid "RECOGNIZE_EMPTY_EXPLANATION"
 msgstr "Checking this box for a field will affect how empty or blank values are treated during merges. Specifically, empty values will be able to replace non-empty values per the \"Merge Protection\" setting."
@@ -3235,8 +3247,8 @@ msgstr "Successful upload!"
 msgid "Successfully Uploaded"
 msgstr "Successfully Uploaded"
 
-msgid "Summary (Beta)"
-msgstr "Summary (Beta)"
+msgid "Summary"
+msgstr "Summary"
 
 msgid "Switch Profiles"
 msgstr "Switch Profiles"
@@ -3736,6 +3748,9 @@ msgstr "Viewer"
 
 msgid "Violation Label"
 msgstr "Violation Label"
+
+msgid "Visit"
+msgstr "Visit"
 
 msgid "Visit the BETTER website to run a portfolio analysis"
 msgstr "Visit the BETTER website to run a portfolio analysis"
