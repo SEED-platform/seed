@@ -11,8 +11,10 @@
   }
 }
 
-$font-family-sans-serif: 'PT Sans', 'Helvetica Neue', helvetica, arial, sans-serif;
-$font-family-sans-serif-narrow: 'PT Sans Narrow', 'Helvetica Neue', helvetica, arial, sans-serif;
+$font-family-sans-serif: 'PT Sans', 'Helvetica Neue', helvetica, arial,
+  sans-serif;
+$font-family-sans-serif-narrow: 'PT Sans Narrow', 'Helvetica Neue', helvetica,
+  arial, sans-serif;
 $font-family-base: $font-family-sans-serif;
 $font-family-base-narrow: $font-family-sans-serif-narrow;
 $font-size-base: 13px;
@@ -986,7 +988,7 @@ a:not([href]) {
       height: 400px;
       overflow-y: scroll;
       border-bottom: 1px solid $gray_lighter;
-      background: url('../../seed/images/bg_first_td.png') repeat-x top center;
+      background: url('../../seed/images/bg_first_td.webp') repeat-x top center;
     }
 
     .table_list_container {
@@ -3122,11 +3124,15 @@ tags-input .tags .tag-item .remove-button {
   background-color: #f3f3f3;
 }
 
-.ui-grid-row.ui-grid-row-selected:nth-child(odd) > [ui-grid-row] > .ui-grid-cell {
+.ui-grid-row.ui-grid-row-selected:nth-child(odd)
+  > [ui-grid-row]
+  > .ui-grid-cell {
   background-color: #fdfdfd;
 }
 
-.ui-grid-row.ui-grid-row-selected:nth-child(even) > [ui-grid-row] > .ui-grid-cell {
+.ui-grid-row.ui-grid-row-selected:nth-child(even)
+  > [ui-grid-row]
+  > .ui-grid-cell {
   background-color: #f3f3f3;
 }
 

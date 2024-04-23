@@ -22,6 +22,7 @@ from django.dispatch import receiver
 from django.utils.timezone import make_naive
 from quantityfield.units import ureg
 
+from seed.lib.superperms.orgs.models import AccessLevelInstance
 from seed.models.columns import Column
 from seed.serializers.pint import DEFAULT_UNITS
 from seed.utils.geocode import bounding_box_wkt, long_lat_wkt
@@ -195,6 +196,19 @@ class TaxLotProperty(models.Model):
 
         ids = [obj.pk for obj in object_list]
 
+        # getting these at the top keeps us querying for any ali more once, and allows us to query for them all at once.
+        if this_cls == "Property":
+            needed_ali_ids = [obj.property.access_level_instance_id for obj in object_list]
+        else:
+            needed_ali_ids = [obj.taxlot.access_level_instance_id for obj in object_list]
+        alis = AccessLevelInstance.objects.filter(id__in=needed_ali_ids)
+        ali_path_by_id = {ali.id: ali.path for ali in alis}
+
+        # gather meter counts
+        Meter = apps.get_model("seed", "Meter")
+        if this_cls == "Property":
+            obj_meter_counts = dict(Meter.objects.filter(property__in=ids).values_list("property_id").annotate(Count("property_id")))
+
         # gather note counts
         Note = apps.get_model("seed", "Note")
         obj_note_counts = {
@@ -270,10 +284,10 @@ class TaxLotProperty(models.Model):
             obj_dict["merged_indicator"] = obj.state_id in merged_state_ids
 
             if this_cls == "Property":
-                obj_dict.update(obj.property.access_level_instance.get_path())
-                obj_dict["meters_exist_indicator"] = len(obj.property.meters.all()) > 0
+                obj_dict.update(ali_path_by_id[obj.property.access_level_instance_id])
+                obj_dict["meters_exist_indicator"] = obj_meter_counts.get(obj.id, 0) > 0
             else:
-                obj_dict.update(obj.taxlot.access_level_instance.get_path())
+                obj_dict.update(ali_path_by_id[obj.taxlot.access_level_instance_id])
 
             # bring in GIS data
             obj_dict[lookups["bounding_box"]] = bounding_box_wkt(obj.state)
