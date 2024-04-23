@@ -7,22 +7,22 @@ from django.db import migrations
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('seed', '0201_ubidmodel'),
+        ("seed", "0201_ubidmodel"),
     ]
 
-    ubid_root = Path(__file__).parent.parent / 'ubid'
+    ubid_root = Path(__file__).parent.parent / "ubid"
 
     operations = [
         migrations.RunSQL(
-            (ubid_root / 'pluscode_functions.sql').read_text(),
+            (ubid_root / "pluscode_functions.sql").read_text(),
             reverse_sql=migrations.RunSQL.noop,
         ),
         migrations.RunSQL(
-            (ubid_root / 'buildingid_functions.sql').read_text(),
+            (ubid_root / "buildingid_functions.sql").read_text(),
             reverse_sql=migrations.RunSQL.noop,
         ),
         migrations.RunSQL(
-            (ubid_root / 'buildingid_postgis_functions.sql').read_text(),
+            (ubid_root / "buildingid_postgis_functions.sql").read_text(),
             reverse_sql=migrations.RunSQL.noop,
         ),
     ]

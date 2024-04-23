@@ -93,7 +93,6 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.inventory_detail_timeline',
   'BE.seed.controller.inventory_detail_ubid',
   'BE.seed.controller.inventory_list',
-  'BE.seed.controller.inventory_list_legacy',
   'BE.seed.controller.inventory_map',
   'BE.seed.controller.inventory_plots',
   'BE.seed.controller.inventory_reports',
@@ -142,7 +141,7 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.unmerge_modal',
   'BE.seed.controller.update_item_labels_modal'
 ]);
-angular.module('BE.seed.filters', ['district', 'fromNow', 'getAnalysisRunAuthor', 'htmlToPlainText', 'ignoremap', 'startFrom', 'stripImportPrefix', 'titleCase', 'tolerantNumber', 'typedNumber']);
+angular.module('BE.seed.filters', ['district', 'floatingPoint', 'fromNow', 'getAnalysisRunAuthor', 'htmlToPlainText', 'ignoremap', 'startFrom', 'stripImportPrefix', 'titleCase', 'tolerantNumber', 'typedNumber']);
 angular.module('BE.seed.directives', [
   'sdBasicPropertyInfoChart',
   'sdCheckCycleExists',
@@ -628,8 +627,7 @@ SEED_app.config([
             'user_service',
             (organization_service, user_service) => {
               const organization_id = user_service.get_organization().id;
-              const organization = organization_service.get_organization(organization_id);
-              return organization;
+              return organization_service.get_organization(organization_id);
             }
           ]
         }
@@ -641,7 +639,8 @@ SEED_app.config([
         controller: 'inventory_settings_controller',
         resolve: {
           $uibModalInstance: () => ({
-            close() {}
+            close() {
+            }
           }),
           all_columns: [
             '$stateParams',
@@ -649,9 +648,8 @@ SEED_app.config([
             ($stateParams, inventory_service) => {
               if ($stateParams.inventory_type === 'properties') {
                 return inventory_service.get_property_columns();
-              } if ($stateParams.inventory_type === 'taxlots') {
-                return inventory_service.get_taxlot_columns();
               }
+              return inventory_service.get_taxlot_columns();
             }
           ],
           profiles: [
@@ -699,12 +697,11 @@ SEED_app.config([
                   _.remove(columns, { column_name: 'lot_number', table_name: 'PropertyState' });
                   return _.map(columns, (col) => _.omit(col, ['pinnedLeft', 'related']));
                 });
-              } if ($stateParams.inventory_type === 'taxlots') {
-                return inventory_service.get_taxlot_columns().then((columns) => {
-                  _.remove(columns, 'related');
-                  return _.map(columns, (col) => _.omit(col, ['pinnedLeft', 'related']));
-                });
               }
+              return inventory_service.get_taxlot_columns().then((columns) => {
+                _.remove(columns, 'related');
+                return _.map(columns, (col) => _.omit(col, ['pinnedLeft', 'related']));
+              });
             }
           ],
           derived_columns_payload: [
@@ -1458,9 +1455,8 @@ SEED_app.config([
 
               if ($stateParams.inventory_type === 'properties') {
                 return inventory_service.get_property_columns_for_org(organization_id, false, false);
-              } if ($stateParams.inventory_type === 'taxlots') {
-                return inventory_service.get_taxlot_columns_for_org(organization_id, false, false);
               }
+              return inventory_service.get_taxlot_columns_for_org(organization_id, false, false);
             }
           ],
           columns: [
@@ -1568,14 +1564,13 @@ SEED_app.config([
                   columns.sort((a, b) => naturalSort(a.displayName, b.displayName));
                   return columns;
                 });
-              } if ($stateParams.inventory_type === 'taxlots') {
-                return inventory_service.get_taxlot_columns_for_org(organization_id).then((columns) => {
-                  columns = _.reject(columns, 'related');
-                  columns = _.map(columns, (col) => _.omit(col, ['pinnedLeft', 'related']));
-                  columns.sort((a, b) => naturalSort(a.displayName, b.displayName));
-                  return columns;
-                });
               }
+              return inventory_service.get_taxlot_columns_for_org(organization_id).then((columns) => {
+                columns = _.reject(columns, 'related');
+                columns = _.map(columns, (col) => _.omit(col, ['pinnedLeft', 'related']));
+                columns.sort((a, b) => naturalSort(a.displayName, b.displayName));
+                return columns;
+              });
             }
           ],
           used_columns: [
@@ -1589,13 +1584,12 @@ SEED_app.config([
                   columns = _.map(columns, (col) => _.omit(col, ['pinnedLeft', 'related']));
                   return columns;
                 });
-              } if ($stateParams.inventory_type === 'taxlots') {
-                return inventory_service.get_taxlot_columns_for_org(organization_id, true).then((columns) => {
-                  columns = _.reject(columns, 'related');
-                  columns = _.map(columns, (col) => _.omit(col, ['pinnedLeft', 'related']));
-                  return columns;
-                });
               }
+              return inventory_service.get_taxlot_columns_for_org(organization_id, true).then((columns) => {
+                columns = _.reject(columns, 'related');
+                columns = _.map(columns, (col) => _.omit(col, ['pinnedLeft', 'related']));
+                return columns;
+              });
             }
           ],
           derived_columns_payload: [
@@ -1977,71 +1971,6 @@ SEED_app.config([
         }
       })
       .state({
-        name: 'inventory_list_legacy',
-        url: '/legacy/{inventory_type:properties|taxlots}',
-        templateUrl: `${static_url}seed/partials/inventory_list_legacy.html`,
-        controller: 'inventory_list_legacy_controller',
-        resolve: {
-          cycles: [
-            'cycle_service',
-            (cycle_service) => cycle_service.get_cycles()
-          ],
-          profiles: [
-            '$stateParams',
-            'inventory_service',
-            ($stateParams, inventory_service) => {
-              const inventory_type = $stateParams.inventory_type === 'properties' ? 'Property' : 'Tax Lot';
-              return inventory_service.get_column_list_profiles('List View Profile', inventory_type);
-            }
-          ],
-          current_profile: [
-            '$stateParams',
-            'inventory_service',
-            'profiles',
-            ($stateParams, inventory_service, profiles) => {
-              const validProfileIds = _.map(profiles, 'id');
-              const lastProfileId = inventory_service.get_last_profile($stateParams.inventory_type);
-              if (_.includes(validProfileIds, lastProfileId)) {
-                return _.find(profiles, { id: lastProfileId });
-              }
-              const currentProfile = _.first(profiles);
-              if (currentProfile) inventory_service.save_last_profile(currentProfile.id, $stateParams.inventory_type);
-              return currentProfile;
-            }
-          ],
-          labels: [
-            '$stateParams',
-            'label_service',
-            ($stateParams, label_service) => label_service.get_labels($stateParams.inventory_type).then((labels) => _.filter(labels, (label) => !_.isEmpty(label.is_applied)))
-          ],
-          all_columns: [
-            '$stateParams',
-            'inventory_service',
-            ($stateParams, inventory_service) => {
-              if ($stateParams.inventory_type === 'properties') {
-                return inventory_service.get_property_columns();
-              } if ($stateParams.inventory_type === 'taxlots') {
-                return inventory_service.get_taxlot_columns();
-              }
-            }
-          ],
-          derived_columns_payload: [
-            '$stateParams',
-            'user_service',
-            'derived_columns_service',
-            ($stateParams, user_service, derived_columns_service) => {
-              const organization_id = user_service.get_organization().id;
-              return derived_columns_service.get_derived_columns(organization_id, $stateParams.inventory_type);
-            }
-          ],
-          organization_payload: [
-            'user_service',
-            'organization_service',
-            (user_service, organization_service) => organization_service.get_organization(user_service.get_organization().id)
-          ]
-        }
-      })
-      .state({
         name: 'inventory_list',
         url: '/{inventory_type:properties|taxlots}',
         templateUrl: `${static_url}seed/partials/inventory_list.html`,
@@ -2104,9 +2033,8 @@ SEED_app.config([
             ($stateParams, inventory_service) => {
               if ($stateParams.inventory_type === 'properties') {
                 return inventory_service.get_property_columns();
-              } if ($stateParams.inventory_type === 'taxlots') {
-                return inventory_service.get_taxlot_columns();
               }
+              return inventory_service.get_taxlot_columns();
             }
           ],
           organization_payload: [
@@ -2193,9 +2121,8 @@ SEED_app.config([
             ($stateParams, inventory_service) => {
               if ($stateParams.inventory_type === 'properties') {
                 return inventory_service.get_property_columns();
-              } if ($stateParams.inventory_type === 'taxlots') {
-                return inventory_service.get_taxlot_columns();
               }
+              return inventory_service.get_taxlot_columns();
             }
           ],
           organization_payload: [
@@ -2226,9 +2153,8 @@ SEED_app.config([
               const profile_id = _.has(current_profile, 'id') ? current_profile.id : undefined;
               if ($stateParams.inventory_type === 'properties') {
                 return inventory_service.properties_cycle(profile_id, last_selected_cycle_ids);
-              } if ($stateParams.inventory_type === 'taxlots') {
-                return inventory_service.taxlots_cycle(profile_id, last_selected_cycle_ids);
               }
+              return inventory_service.taxlots_cycle(profile_id, last_selected_cycle_ids);
             }
           ],
           matching_criteria_columns: [
@@ -2272,9 +2198,8 @@ SEED_app.config([
             ($stateParams, inventory_service) => {
               if ($stateParams.inventory_type === 'properties') {
                 return inventory_service.get_property_columns();
-              } if ($stateParams.inventory_type === 'taxlots') {
-                return inventory_service.get_taxlot_columns();
               }
+              return inventory_service.get_taxlot_columns();
             }
           ],
           organization_payload: [
@@ -2343,12 +2268,11 @@ SEED_app.config([
                   _.remove(columns, { column_name: 'lot_number', table_name: 'PropertyState' });
                   return _.map(columns, (col) => _.omit(col, ['pinnedLeft', 'related']));
                 });
-              } if ($stateParams.inventory_type === 'taxlots') {
-                return inventory_service.get_taxlot_columns().then((columns) => {
-                  _.remove(columns, 'related');
-                  return _.map(columns, (col) => _.omit(col, ['pinnedLeft', 'related']));
-                });
               }
+              return inventory_service.get_taxlot_columns().then((columns) => {
+                _.remove(columns, 'related');
+                return _.map(columns, (col) => _.omit(col, ['pinnedLeft', 'related']));
+              });
             }
           ],
           derived_columns_payload: [
@@ -2436,12 +2360,11 @@ SEED_app.config([
                   _.remove(columns, { column_name: 'lot_number', table_name: 'PropertyState' });
                   return _.map(columns, (col) => _.omit(col, ['pinnedLeft', 'related']));
                 });
-              } if ($stateParams.inventory_type === 'taxlots') {
-                return inventory_service.get_taxlot_columns().then((columns) => {
-                  _.remove(columns, 'related');
-                  return _.map(columns, (col) => _.omit(col, ['pinnedLeft', 'related']));
-                });
               }
+              return inventory_service.get_taxlot_columns().then((columns) => {
+                _.remove(columns, 'related');
+                return _.map(columns, (col) => _.omit(col, ['pinnedLeft', 'related']));
+              });
             }
           ],
           cycles: [
@@ -2983,50 +2906,32 @@ SEED_app.constant('urls', {
 });
 SEED_app.constant('generated_urls', window.BE.app_urls);
 
-SEED_app.constant('naturalSort', (a, b) => {
-  /**
-   * Natural Sort algorithm for Javascript - Version 0.8.1 - Released under MIT license
-   * Author: Jim Palmer (based on chunking idea from Dave Koelle)
-   */
-  const re = /(^([+-]?\d+(?:\.\d*)?(?:[eE][+-]?\d+)?(?=\D|\s|$))|^0x[\da-fA-F]+$|\d+)/g;
-  const sre = /^\s+|\s+$/g; // trim pre-post whitespace
-  const snre = /\s+/g; // normalize all whitespace to single ' ' character
-  const dre = /(^([\w ]+,?[\w ]+)?[\w ]+,?[\w ]+\d+:\d+(:\d+)?[\w ]?|^\d{1,4}[/-]\d{1,4}[/-]\d{1,4}|^\w+, \w+ \d+, \d{4})/;
-  const ore = /^0/;
-  const i = (s) => ((`${s}`).toLowerCase() || `${s}`).replace(sre, '');
-  // convert all to strings strip whitespace
-  const x = i(a);
-  const y = i(b);
-  // chunk/tokenize
-  const xN = x.replace(re, '\0$1\0').replace(/\0$/, '').replace(/^\0/, '').split('\0');
-  const yN = y.replace(re, '\0$1\0').replace(/\0$/, '').replace(/^\0/, '').split('\0');
-  // numeric or date detection
-  const xD = xN.length !== 1 && Date.parse(x);
-  const yD = (xD && y.match(dre) && Date.parse(y)) || null;
-  const normChunk = (s, l) => // normalize spaces; find floats not starting with '0', string or 0 if not defined (Clint Priest)
-    ((!s.match(ore) || l === 1) && parseFloat(s)) || s.replace(snre, ' ').replace(sre, '') || 0;
-  let oFxNcL;
-  let oFyNcL;
-  // first try and sort Dates
-  if (yD) {
-    if (xD < yD) return -1;
-    if (xD > yD) return 1;
-  }
-  // natural sorting through split numeric strings and default strings
-  for (let cLoc = 0, xNl = xN.length, yNl = yN.length, numS = Math.max(xNl, yNl); cLoc < numS; cLoc++) {
-    oFxNcL = normChunk(xN[cLoc] || '', xNl);
-    oFyNcL = normChunk(yN[cLoc] || '', yNl);
-    // handle numeric vs string comparison - number < string - (Kyle Adams)
-    if (Number.isNaN(oFxNcL) !== Number.isNaN(oFyNcL)) {
-      return Number.isNaN(oFxNcL) ? 1 : -1;
-    }
-    // if unicode use locale comparison
-    if (/[^\x00-\x80]/.test(oFxNcL + oFyNcL) && oFxNcL.localeCompare) {
-      // eslint-disable-line no-control-regex
-      const comp = oFxNcL.localeCompare(oFyNcL);
-      return comp / Math.abs(comp);
-    }
-    if (oFxNcL < oFyNcL) return -1;
-    if (oFxNcL > oFyNcL) return 1;
-  }
-});
+/**
+ * @param {string} a
+ * @param {string} b
+ */
+const numericComparison = (a, b) => {
+  const numA = Number(a);
+  if (Number.isNaN(numA)) return false;
+  const numB = Number(b);
+  if (Number.isNaN(numB)) return false;
+  if (numA === numB) return 0;
+  return numA < numB ? -1 : 1;
+};
+const { compare } = new Intl.Collator(undefined, { ignorePunctuation: true, numeric: true, sensitivity: 'base' });
+/**
+ * @param {string} [a] - The first string for comparison
+ * @param {string} [b] - The second string for comparison
+ * @returns {number} Sort result
+ */
+const naturalSort = (a, b) => {
+  if (a === b) return 0;
+  if (!a) return 1;
+  if (!b) return -1;
+
+  const numericResult = numericComparison(a, b);
+  if (numericResult !== false) return numericResult;
+
+  return compare(a, b);
+};
+SEED_app.constant('naturalSort', naturalSort);

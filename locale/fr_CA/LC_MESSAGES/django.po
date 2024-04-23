@@ -3260,8 +3260,8 @@ msgstr "Téléchargement réussi!"
 msgid "Successfully Uploaded"
 msgstr "Téléversé avec succès"
 
-msgid "Summary (Beta)"
-msgstr "Résumé (Bêta)"
+msgid "Summary"
+msgstr "Résumé"
 
 msgid "Switch Profiles"
 msgstr "Changer de profil"

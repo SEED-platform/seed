@@ -4,8 +4,8 @@ on:
   pull_request:
   push:
     branches:
-      - "develop"
-      - "main"
+      - 'develop'
+      - 'main'
 
 jobs:
   # Currently GH Actions provides no simple method for "sharing"
@@ -15,7 +15,7 @@ jobs:
   # As a result, the DRYest method for now is to use a testing matrix and
   # use conditional steps for actually running the tests.
   unittests:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     strategy:
       matrix:
         test_env: [django, functional, api]
@@ -40,7 +40,7 @@ jobs:
         run: |
           docker volume create --name=seed_pgdata
           docker volume create --name=seed_media
-          docker-compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+          docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
       - name: Migrate
         env:
           DJANGO_LOG_LEVEL: ERROR
@@ -87,7 +87,7 @@ jobs:
       - name: Test Frontend
         if: ${{ matrix.test_env == 'functional' }}
         env:
-          DISPLAY: ":99"
+          DISPLAY: ':99'
         run: |
           CHROME_VERSION=$(google-chrome --version | awk '{ print $NF }')
           echo "Getting webdriver for chrome version ${CHROME_VERSION}"
@@ -103,19 +103,22 @@ jobs:
         if: ${{ always() }}
         run: docker logs seed_web
   formatting:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     strategy:
       matrix:
-        tox_env: [docs, precommit, mypy]
+        tox_env: [docs, precommit, mypy, lint]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.9"
+          python-version: '3.9'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
       - name: Install deps
         run: |
           pip install --upgrade pip
-          pip install tox==2.7.0
+          pip install tox==3.14.3
           sudo apt update
           sudo apt install gdal-bin
       - name: Setup config

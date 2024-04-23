@@ -525,15 +525,15 @@ angular.module('BE.seed.controller.data_view', []).controller('data_view_control
       const xAxisLabelsSelectedMask = (_, i) => xAxisLabelsSelected[i];
 
       const datasets = [];
-      const axis1_aggregations = $scope.selected_data_view.first_axis_aggregations.map((agg1) => $scope.aggregations.find((agg2) => agg2.id == agg1).name);
-      const axis2_aggregations = $scope.selected_data_view.second_axis_aggregations.map((agg1) => $scope.aggregations.find((agg2) => agg2.id == agg1).name);
+      const axis1_aggregations = $scope.selected_data_view.first_axis_aggregations.map((agg1) => $scope.aggregations.find((agg2) => agg2.id === agg1).name);
+      const axis2_aggregations = $scope.selected_data_view.second_axis_aggregations.map((agg1) => $scope.aggregations.find((agg2) => agg2.id === agg1).name);
       $scope.dataViewChart.options.scales.y1.display = axis1_aggregations.length > 0;
 
       const axis1_column = $scope.source_column_by_location.first_axis.displayName;
       let i = 0;
       for (const aggregation of axis1_aggregations) {
         for (const dataset of $scope.data.graph_data.datasets) {
-          const columnWithUnits = new RegExp(`^${dataset.column}( \(.+?\))?$`);
+          const columnWithUnits = new RegExp(`^${dataset.column}( \\(.+?\\))?$`);
           if (aggregation === dataset.aggregation && columnWithUnits.test(axis1_column) && dataset.filter_group in $scope.selected_filter_groups) {
             dataset.label = `${dataset.filter_group} - ${dataset.aggregation} - ${dataset.column}`;
             const color = colorsByLabelPrefix[`${dataset.filter_group} - ${dataset.aggregation}`];
@@ -559,7 +559,7 @@ angular.module('BE.seed.controller.data_view', []).controller('data_view_control
 
         for (const aggregation of axis2_aggregations) {
           for (const dataset of $scope.data.graph_data.datasets) {
-            const columnWithUnits = new RegExp(`^${dataset.column}( \(.+?\))?$`);
+            const columnWithUnits = new RegExp(`^${dataset.column}( \\(.+?\\))?$`);
             if (aggregation === dataset.aggregation && columnWithUnits.test(axis2_column) && dataset.filter_group in $scope.selected_filter_groups) {
               dataset.label = `${dataset.filter_group} - ${dataset.aggregation} - ${dataset.column}`;
               const color = colorsByLabelPrefix[`${dataset.filter_group} - ${dataset.aggregation}`];

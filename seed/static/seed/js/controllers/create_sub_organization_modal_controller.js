@@ -13,7 +13,6 @@ angular.module('BE.seed.controller.create_sub_organization_modal', []).controlle
     $scope.sub_org = {};
     $scope.error_message = '';
 
-
     $scope.org_id = organization.id;
     /**
      * creates a sub organization with an owner

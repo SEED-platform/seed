@@ -5,7 +5,7 @@ tags: [features, inventory management]
 
 Different inventory management and analysis features in SEED are based on the relationships between records of different inventory types (properties and tax lots). Those terms help describe these relationships.
 
-![mapping diagram](/static/docs/images/mapping_diagram.png)
+![mapping diagram](/static/docs/images/mapping_diagram.webp)
 
 - **Mapping** refers to the process of mapping newly imported data fields to the known database column names in order to create a record.
 

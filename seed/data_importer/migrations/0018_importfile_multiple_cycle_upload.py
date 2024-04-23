@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('data_importer', '0017_pm_source_type'),
+        ("data_importer", "0017_pm_source_type"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='importfile',
-            name='multiple_cycle_upload',
+            model_name="importfile",
+            name="multiple_cycle_upload",
             field=models.BooleanField(default=False),
         ),
     ]

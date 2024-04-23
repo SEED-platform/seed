@@ -68,7 +68,7 @@ angular.module('BE.seed.service.organization', []).factory('organization_service
     ).then((response) => response.data);
 
     organization_factory.edit_organization_access_level_instance = (org_id, instance_id, name) => $http.put(
-      `/api/v3/organizations/${org_id}/` + `access_levels/${instance_id}/edit_instance/`,
+      `/api/v3/organizations/${org_id}/access_levels/${instance_id}/edit_instance/`,
       { name }
     ).then((response) => response.data);
 
@@ -91,11 +91,11 @@ angular.module('BE.seed.service.organization', []).factory('organization_service
       )
       .then((response) => response.data);
 
-      organization_factory.update_ali = (user_id, org_id, ali_id) => $http
+    organization_factory.update_ali = (user_id, org_id, ali_id) => $http
       .put(
         `/api/v3/users/${user_id}/access_level_instance/`,
         {
-          "access_level_instance_id": ali_id,
+          access_level_instance_id: ali_id
         },
         {
           params: { organization_id: org_id }

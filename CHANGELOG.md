@@ -1,3 +1,52 @@
+# SEED Version 3.0.0-beta.0
+
+<!-- Release notes generated using configuration in .github/release.yml at develop -->
+
+## What's Changed
+### New Features 🎉
+* Accountability Hierarchy by @haneslinger in https://github.com/SEED-platform/seed/pull/4186
+* Allow data logger deletion by @haneslinger in https://github.com/SEED-platform/seed/pull/4563
+* Allow sensor deletion by @haneslinger in https://github.com/SEED-platform/seed/pull/4561
+### Improvements 📈
+* Better CO₂ Analysis error message by @haneslinger in https://github.com/SEED-platform/seed/pull/4568
+* Limit member visibility to users within access level instance by @perryr16 in https://github.com/SEED-platform/seed/pull/4572
+* Allow data logger update by @haneslinger in https://github.com/SEED-platform/seed/pull/4583
+* Allow sensor update by @haneslinger in https://github.com/SEED-platform/seed/pull/4584
+* Don't shorten lat/long by @haneslinger in https://github.com/SEED-platform/seed/pull/4587
+* Empty label section remains same size when toggled by @haneslinger in https://github.com/SEED-platform/seed/pull/4588
+* Don't get cycles when getting inventory list by @haneslinger in https://github.com/SEED-platform/seed/pull/4589
+* Geocode UBIDs using centroid by @axelstudios in https://github.com/SEED-platform/seed/pull/4610
+* Fix floating point rounding by @axelstudios in https://github.com/SEED-platform/seed/pull/4609
+* Encrypt organization audit template password by @perryr16 in https://github.com/SEED-platform/seed/pull/4585
+* Render scenario ui-grid on expand by @perryr16 in https://github.com/SEED-platform/seed/pull/4599
+### Maintenance 🧹
+* Bump django from 3.2.23 to 3.2.25 in /requirements by @dependabot in https://github.com/SEED-platform/seed/pull/4573
+* Fix broken license URLs by @axelstudios in https://github.com/SEED-platform/seed/pull/4578
+* Feature/upgrade codebuild http2 by @dhaley in https://github.com/SEED-platform/seed/pull/4571
+* Update to latest version of UBID library by @nllong in https://github.com/SEED-platform/seed/pull/4598
+* Update Node in Docker images by @axelstudios in https://github.com/SEED-platform/seed/pull/4580
+* Ruff linting and formatting by @axelstudios in https://github.com/SEED-platform/seed/pull/4604
+### Bug Fixes 🐛
+* Fix meter delete bug by @perryr16 in https://github.com/SEED-platform/seed/pull/4574
+* Redirect on org change if necessary by @perryr16 in https://github.com/SEED-platform/seed/pull/4576
+* Fix property search endpoint in Swagger by @nllong in https://github.com/SEED-platform/seed/pull/4579
+* Allow jurisdiction_tax_lot_id display name change by @haneslinger in https://github.com/SEED-platform/seed/pull/4577
+* Allow superusers to list all org members by @axelstudios in https://github.com/SEED-platform/seed/pull/4593
+* Updated Swagger config to prevent requesting external schemas by @axelstudios in https://github.com/SEED-platform/seed/pull/4590
+* Clear invalid label tags by @perryr16 in https://github.com/SEED-platform/seed/pull/4591
+* Show error on custom reports if no filter groups exist by @perryr16 in https://github.com/SEED-platform/seed/pull/4594
+* Fix merge modal for all cycles by @axelstudios in https://github.com/SEED-platform/seed/pull/4612
+* Fix ubid bugs by @perryr16 in https://github.com/SEED-platform/seed/pull/4613
+* Call spinner on default report export by @perryr16 in https://github.com/SEED-platform/seed/pull/4586
+* Changes the dataview evaluate endpoint from put to post by @perryr16 in https://github.com/SEED-platform/seed/pull/4595
+* Enable blank filters for other inventory columns by @perryr16 in https://github.com/SEED-platform/seed/pull/4600
+* Fixes bug to hide edit form on save by @perryr16 in https://github.com/SEED-platform/seed/pull/4623
+* Handle null values in related columns by @axelstudios in https://github.com/SEED-platform/seed/pull/4626
+* Fix mapping previews for files with a single column by @axelstudios in https://github.com/SEED-platform/seed/pull/4611
+
+
+**Full Changelog**: https://github.com/SEED-platform/seed/compare/v2.22.0...v3.0.0-beta.0
+
 # SEED Version 2.22.0
 
 <!-- Release notes generated using configuration in .github/release.yml at develop -->
