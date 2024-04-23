@@ -62,7 +62,7 @@ from seed.utils.generic import median, round_down_hundred_thousand
 from seed.utils.geocode import geocode_buildings
 from seed.utils.match import match_merge_link
 from seed.utils.merge import merge_properties
-from seed.utils.organizations import create_organization, create_suborganization, public_feed
+from seed.utils.organizations import create_organization, create_suborganization
 from seed.utils.properties import pair_unpair_property_taxlot
 from seed.utils.salesforce import toggle_salesforce_sync
 from seed.utils.users import get_js_role
@@ -1263,30 +1263,3 @@ class OrganizationViewSet(viewsets.ViewSet):
         save_raw_data(import_greenbutton.id)
 
         return JsonResponse({"status": "success"})
-
-    @ajax_request_class
-    def public_feed_json(self, request, pk):
-        """
-        Returns all property and taxlot state data for a given organization as a json object. The results are ordered by "state.update".
-
-        Optional and configurable url query_params:
-        :query_param labels: comma separated list of case sensitive label names. Results will include inventory that has any of the listed labels. Default is all inventory
-        :query_param cycles: comma separated list of cycle ids. Results include inventory from the listed cycles. Default is all cycles
-        :query_param properties: boolean to return properties. Default is True
-        :query_param taxlots: boolan to return taxlots. Default is True
-        :query_param page: integer page number
-        :query_param per_page: integer results per page
-
-        Example requests:
-        {seed_url}/api/v3/organizations/public_feed.json?{query_param1}={value1}&{query_param2}={value2}
-        dev1.seed-platform.org/api/v3/organizations/1/public_feed.json
-        dev1.seed-platform.org/api/v3/organizations/1/public_feed.json?page=2&labels=Compliant&cycles=1,2,3&taxlots=False
-        """
-        try:
-            org = Organization.objects.get(pk=pk)
-        except Organization.DoesNotExist:
-            return JsonResponse({"erorr": "Organization does not exist"}, status=status.HTTP_404_NOT_FOUND)
-
-        feed = public_feed(org, request)
-
-        return JsonResponse(feed, json_dumps_params={"indent": 4}, status=status.HTTP_200_OK)
