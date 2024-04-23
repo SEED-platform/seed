@@ -31,9 +31,6 @@ BEHome.actions.show_login_form = () => {
   BEHome.actions.hide_all_forms();
   $('.current_account_link').show();
 };
-BEHome.actions.show_unsupported_browser_message = () => {
-  $('.browser_unsupported').show();
-};
 BEHome.actions.hide_login_form = () => {
   $('.form_title').hide();
 };
