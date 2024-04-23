@@ -13,7 +13,6 @@ from seed.data_importer.models import ImportFile, ImportRecord
 from seed.landing.models import SEEDUser as User
 from seed.lib.mcm.reader import ROW_DELIMITER
 from seed.models import Cycle
-from seed.test_helpers.fake import FakeCycleFactory, FakePropertyFactory, FakePropertyStateFactory, FakePropertyViewFactory
 from seed.tests.util import AccessLevelBaseTestCase, DataMappingBaseTestCase
 from seed.utils.organizations import create_organization
 
@@ -26,10 +25,6 @@ class TestOrganizationViews(DataMappingBaseTestCase):
         }
         user = User.objects.create_superuser(email="test_user@demo.com", **user_details)
         self.org, _, _ = create_organization(user)
-        self.cycle_factory = FakeCycleFactory(organization=self.org, user=user)
-        self.property_factory = FakePropertyFactory(organization=self.org)
-        self.property_state_factory = FakePropertyStateFactory(organization=self.org)
-        self.property_view_factory = FakePropertyViewFactory(organization=self.org)
 
         self.client.login(**user_details)
 

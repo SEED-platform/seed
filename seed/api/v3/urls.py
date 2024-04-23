@@ -171,7 +171,7 @@ urlpatterns = [
     re_path(r"^", include(meters_router.urls)),
     re_path(r"^", include(property_measures_router.urls)),
     re_path(r"^", include(taxlots_router.urls)),
+    re_path(r"^", include(public_organizations_router.urls)),
     re_path(r"^celery_queue/$", celery_queue, name="celery_queue"),
     re_path(r"media/(?P<filepath>.*)$", MediaViewSet.as_view()),
-    re_path(r"^", include(public_organizations_router.urls)),
 ]
