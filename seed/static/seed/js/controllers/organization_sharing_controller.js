@@ -29,6 +29,8 @@ angular.module('BE.seed.controller.organization_sharing', []).controller('organi
       }
     });
 
+    $scope.base_url = window.location.host;
+
     /**
      * updates all the fields checkboxes to match the ``select_all`` checkbox
      */
