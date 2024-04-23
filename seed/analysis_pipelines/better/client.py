@@ -57,7 +57,7 @@ class BETTERClient:
             if response.status_code != 200:
                 return None, [f"Expected 200 response from BETTER but got {response.status_code}: {response.content}"]
         except Exception as e:
-            return None, [f"Unexpected error creating BETTER portfolio: {e}"]
+            return None, [f"1Unexpected error creating BETTER portfolio: {e}"]
 
         return response.json(), []
 
@@ -82,7 +82,7 @@ class BETTERClient:
             else:
                 return None, [f"Expected 201 response from BETTER but got {response.status_code}: {response.content}"]
         except Exception as e:
-            return None, [f"Unexpected error creating BETTER portfolio: {e}"]
+            return None, [f"2Unexpected error creating BETTER portfolio: {e}"]
 
         return portfolio_id, []
 
@@ -112,7 +112,7 @@ class BETTERClient:
             else:
                 return None, [f"Expected 201 response from BETTER but got {response.status_code}: {response.content}"], None
         except Exception as e:
-            return None, [f"Unexpected error creating BETTER portfolio analysis: {e}"], None
+            return None, [f"3Unexpected error creating BETTER portfolio analysis: {e}"], None
 
         return analysis_id, [], [warnings]
 
@@ -134,7 +134,7 @@ class BETTERClient:
             if response.status_code not in {200, 202}:
                 return None, [f"Expected 200 or 202 response from BETTER but got {response.status_code}: {response.content}"]
         except Exception as e:
-            return None, [f"Unexpected error getting BETTER portfolio analysis: {e}"]
+            return None, [f"4Unexpected error getting BETTER portfolio analysis: {e}"]
 
         return response.json(), []
 
@@ -157,7 +157,7 @@ class BETTERClient:
             if response.status_code != 200:
                 return None, [f"Expected 200 response from BETTER but got {response.status_code}: {response.content}"]
         except Exception as e:
-            return None, [f"Unexpected error getting BETTER portfolio analysis: {e}"]
+            return None, [f"5Unexpected error getting BETTER portfolio analysis: {e}"]
 
         return response.json(), []
 
@@ -179,7 +179,7 @@ class BETTERClient:
             if response.status_code != 200:
                 return [f"Expected 200 response from BETTER but got {response.status_code}: {response.content}"]
         except Exception as e:
-            return [f"Unexpected error generating BETTER portfolio analysis: {e}"]
+            return [f"6Unexpected error generating BETTER portfolio analysis: {e}"]
 
         # Gotta make sure the analysis is done
         def is_ready(res):
@@ -206,10 +206,10 @@ class BETTERClient:
                 return [response[0].get("generation_message")]
 
         except polling.TimeoutException as te:
-            return [f"BETTER analysis timed out after {POLLING_TIMEOUT_SECS} seconds: {te}"]
+            return [f"7BETTER analysis timed out after {POLLING_TIMEOUT_SECS} seconds: {te}"]
         except Exception as e:
             return [
-                f"Unexpected error checking status of BETTER portfolio analysis:"
+                f"8Unexpected error checking status of BETTER portfolio analysis:"
                 f' better_portfolio_id: "{better_portfolio_id}"; better_analysis_id: "{better_analysis_id}"'
                 f": {e}"
             ]
@@ -233,11 +233,11 @@ class BETTERClient:
         try:
             response = requests.request("GET", url, headers=headers, params=params)
             if response.status_code != 200:
-                return None, [f"Expected 200 response from BETTER but got {response.status_code}: {response.content}"]
+                return None, [f"9Expected 200 response from BETTER but got {response.status_code}: {response.content}"]
 
             standalone_html = response.text.encode("utf8").decode()
         except Exception as e:
-            return None, [f"Unexpected error creating BETTER portfolio: {e}"]
+            return None, [f"10Unexpected error creating BETTER portfolio: {e}"]
 
         # save the file from the response
         temporary_results_dir = TemporaryDirectory()
@@ -274,11 +274,11 @@ class BETTERClient:
                 data = response.json()
                 building_id = data["id"]
             elif response.status_code == 500:
-                return None, ["Received status code 500 Internal Server Error from BETTER API"]
+                return None, ["11Received status code 500 Internal Server Error from BETTER API"]
             else:
-                return None, [f"Received non 2xx status from BETTER: {response.status_code}: {response.content}"]
+                return None, [f"12Received non 2xx status from BETTER: {response.status_code}: {response.content}"]
         except Exception as e:
-            return None, [f"BETTER service could not create building with the following message: {e}"]
+            return None, [f"13BETTER service could not create building with the following message: {e}"]
 
         return building_id, []
 
@@ -300,7 +300,7 @@ class BETTERClient:
         try:
             response = requests.request("POST", url, headers=headers, data=json.dumps(config))
         except ConnectionError:
-            message = "BETTER service could not create analytics for this building"
+            message = "14BETTER service could not create analytics for this building"
             raise AnalysisPipelineError(message)
 
         return response
@@ -323,7 +323,7 @@ class BETTERClient:
             standalone_html = response.text.encode("utf8").decode()
 
         except ConnectionError:
-            message = "BETTER service could not find the analysis"
+            message = "15BETTER service could not find the analysis"
             raise AnalysisPipelineError(message)
 
         # save the file from the response
@@ -351,12 +351,12 @@ class BETTERClient:
         try:
             response = requests.request("GET", url, headers=headers)
             if response.status_code == 404:
-                return None, [f'BETTER analysis could not be fetched: Status Code: 404 {response.json()["detail"]}']
+                return None, [f'16BETTER analysis could not be fetched: Status Code: 404 {response.json()["detail"]}']
             if response.status_code != 200:
-                return None, [f"BETTER analysis could not be fetched: Status Code: {response.status_code}"]
+                return None, [f"17BETTER analysis could not be fetched: Status Code: {response.status_code}"]
             response_json = response.json()
         except ConnectionError as e:
-            message = f"Failed to connect to BETTER service: {e}"
+            message = f"18Failed to connect to BETTER service: {e}"
             raise AnalysisPipelineError(message)
 
         return response_json, []
@@ -372,10 +372,10 @@ class BETTERClient:
         try:
             response = self._create_building_analysis(building_id, config)
         except Exception as e:
-            return None, [f"Failed to create analysis for building: {e}"]
+            return None, [f"19Failed to create analysis for building: {e}"]
 
         if response.status_code != 201:
-            return None, [f"BETTER analysis could not be completed and got the following response: {response.text}"]
+            return None, [f"20BETTER analysis could not be completed and got the following response: {response.text}"]
 
         # Make sure the analysis is done. Poll response until key 'generation_result' is 'COMPLETE'
         url = f"{self.API_URL}/buildings/{building_id}/analytics/"
@@ -396,11 +396,11 @@ class BETTERClient:
         try:
             response = polling.poll(lambda: requests.request("GET", url, headers=headers), check_success=is_ready, timeout=300, step=5)
         except TimeoutError:
-            return None, ["BETTER analysis timed out"]
+            return None, ["21BETTER analysis timed out"]
 
         if response.json()[0]["generation_result"] == "FAILED":
             generation_message = response.json()[0]["generation_message"]
-            return None, [f'Building Analysis generation status returned "FAILED": {generation_message}']
+            return None, [f'22Building Analysis generation status returned "FAILED": {generation_message}']
 
         data = response.json()
         better_analysis_id = data[0]["id"]
