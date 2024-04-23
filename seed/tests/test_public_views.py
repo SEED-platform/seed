@@ -75,7 +75,14 @@ class TestOrganizationViews(DataMappingBaseTestCase):
         self.property_view_factory.get_property_view(prpty=property2, state=state22, cycle=cycle2)
         self.property_view_factory.get_property_view(prpty=property2, state=state23, cycle=cycle3)
 
+        # public feed is not yet enabled
         url = reverse_lazy("api:v3:public-organizations-feed-json", args=[self.org.id])
+        response = self.client.get(url, content_type="application/json")
+        assert response.status_code == 200
+        assert response.json() == {"detail": f"Public feed is not enabled for organization '{self.org.name}'. Public feed can be enabled in organization settings"}
+
+        # enable public feed
+        self.org.public_feed_enabled = True
         response = self.client.get(url, content_type="application/json")
         assert response.status_code == 200
         res = response.json()

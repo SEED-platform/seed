@@ -147,6 +147,7 @@ def _dict_org(request, organizations):
             "ubid_threshold": o.ubid_threshold,
             "inventory_count": o.property_set.count() + o.taxlot_set.count(),
             "access_level_names": o.access_level_names,
+            "public_feed_enabled": o.public_feed_enabled,
         }
         orgs.append(org)
 
@@ -499,6 +500,11 @@ class OrganizationViewSet(viewsets.ViewSet):
         geocoding_enabled = posted_org.get("geocoding_enabled", True)
         if geocoding_enabled != org.geocoding_enabled:
             org.geocoding_enabled = geocoding_enabled
+
+        # Update public_feed_enabled option
+        public_feed_enabled = posted_org.get("public_feed_enabled", True)
+        if public_feed_enabled != org.public_feed_enabled:
+            org.public_feed_enabled = public_feed_enabled
 
         # Update BETTER Analysis API Key if it's been changed
         better_analysis_api_key = posted_org.get("better_analysis_api_key", "").strip()
