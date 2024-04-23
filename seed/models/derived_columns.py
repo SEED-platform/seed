@@ -326,7 +326,7 @@ class DerivedColumn(models.Model):
     def check_for_source_columns_derived(self, inventory_state=None, merged_parameters={}):
         dcps = self.derivedcolumnparameter_set.all()
         for dcp in dcps:
-            column = Column.objects.get(pk=dcp.source_column_id)
+            column = dcp.source_column
             if column.derived_column:
                 dc = column.derived_column
                 val = dc.evaluate(inventory_state)
