@@ -27,12 +27,12 @@ def public_feed(org, request):
     data = {}
     p_count = 0
     t_count = 0
-
+    print(f" properties_param: {properties_param}, taxlots_param: {taxlots_param}")
     if properties_param:
-        data["properties"], p_count = _add_states_to_data(base_url, PropertyState, "propertyview", page, per_page, labels, cycles)
+        data["properties"], p_count = _add_states_to_data(base_url, PropertyState, "propertyview", page, per_page, labels, cycles, org.id)
 
     if taxlots_param:
-        data["taxlots"], t_count = _add_states_to_data(base_url, TaxLotState, "taxlotview", page, per_page, labels, cycles)
+        data["taxlots"], t_count = _add_states_to_data(base_url, TaxLotState, "taxlotview", page, per_page, labels, cycles, org.id)
 
     pagination = {
         "page": page,
@@ -53,7 +53,7 @@ def public_feed(org, request):
     }
 
 
-def _add_states_to_data(base_url, state_class, view_string, page, per_page, labels, cycles):
+def _add_states_to_data(base_url, state_class, view_string, page, per_page, labels, cycles, org_id):
     states = state_class.objects.filter(**{f"{view_string}__cycle__in": cycles}).order_by("-updated")
 
     if labels is not None:
@@ -66,12 +66,12 @@ def _add_states_to_data(base_url, state_class, view_string, page, per_page, labe
         states_paginated = paginator.page(paginator.num_pages)
 
     public_columns = (
-        Column.objects.filter(shared_field_type=1, table_name=state_class._meta.object_name)
+        Column.objects.filter(organization_id=org_id, shared_field_type=1, table_name=state_class._meta.object_name)
         .annotate(column_name_lower=Lower("column_name"))
         .order_by("column_name_lower")
         .values_list("column_name", "is_extra_data")
     )
-
+    print(f"public columns for {state_class._meta.object_name}: {public_columns}")
     data = []
     for state in states_paginated:
         view = getattr(state, f"{view_string}_set").first()
