@@ -539,10 +539,10 @@ angular.module('BE.seed.controller.mapping', []).controller('mapping_controller'
      * for latitude and longitude if they do not already exist
      */
     const handle_lat_long_mappings = (mappings) => {
-      let fields = { ubid: null, latitude: null, longitude: null };
-      for (let mapping of mappings) {
-        field_name = mapping.from_field.toLowerCase()
-        if (fields.hasOwnProperty(field_name)) {
+      const fields = { ubid: null, latitude: null, longitude: null };
+      for (const mapping of mappings) {
+        const field_name = mapping.from_field.toLowerCase();
+        if (Object.prototype.hasOwnProperty.call(fields, field_name)) {
           fields[field_name] = mapping;
         }
       }
@@ -553,20 +553,20 @@ angular.module('BE.seed.controller.mapping', []).controller('mapping_controller'
           from_units: null,
           to_field: field_name.toLowerCase(),
           to_field_display_name: field_name.toLowerCase(),
-          to_table_name: to_table_name
+          to_table_name
         });
-      }
+      };
 
       if (!fields.ubid) {
-        return
+        return;
       }
       if (!fields.latitude) {
-        push_mapping('Latitude', fields.ubid.to_table_name)
+        push_mapping('Latitude', fields.ubid.to_table_name);
       }
       if (!fields.longitude) {
-        push_mapping('Longitude', fields.ubid.to_table_name)
+        push_mapping('Longitude', fields.ubid.to_table_name);
       }
-    }
+    };
 
     const get_geocoding_columns = () => {
       geocode_service.check_org_has_geocoding_enabled(org_id).then((result) => {

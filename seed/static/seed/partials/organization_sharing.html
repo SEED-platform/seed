@@ -25,17 +25,15 @@
   </div>
   <div class="section_content_container">
     <div class="section_content with_padding" ng-if="::org.is_parent && auth.requires_owner">
-
-      <p class="pad-top-20">{$:: 'The Public Feed functionality is currently' | translate $}:
+      <p class="pad-top-20">
+        {$:: 'The Public Feed functionality is currently' | translate $}:
         <span ng-if="org.public_feed_enabled" class="label label-success label-lg">ENABLED</span>
         <span ng-if="!org.public_feed_enabled" class="label label-default label-lg">DISABLED</span>
         <span translate>Visit</span>
         <a ui-sref="organization_settings(::{organization_id: org.id})">{$:: 'Organization Settings' | translate $}</a>
         <span translate>to enable or disable Public Feed functionality</span>
       </p>
-      <p ng-if="org.public_feed_enabled">
-        <span translate>You public feed URL is</span>: <strong> {$:: base_url $}/api/v3/public/organizations/{$:: org.id $}/feed.json</strong>
-      </p>
+      <p ng-if="org.public_feed_enabled"><span translate>You public feed URL is</span>: <strong> {$:: base_url $}/api/v3/public/organizations/{$:: org.id $}/feed.json</strong></p>
       <h3 translate>Selecting Fields to Share</h3>
       <p translate>PUBLIC_SHARE</p>
       <div class="table_list_container has_borders">
