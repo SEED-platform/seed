@@ -45,7 +45,6 @@ def decode_unique_ids(qs):
         try:
             bounding_box_obj = decode(getattr(state, "ubid"))
         except ValueError:
-            _log.error(f"Could not decode UBID '{getattr(state, 'ubid')}'")
             continue  # state with an incorrectly formatted UBID is skipped
 
         # Starting with the SE point, list the points in counter-clockwise order
