@@ -492,18 +492,14 @@ def _process_results(self, analysis_id):
             )
         except Exception:
             if analysis.can_create():
-                try:
-                    column = Column.objects.create(
-                        is_extra_data=True,
-                        column_name=column_data_path.column_name,
-                        organization=analysis.organization,
-                        table_name="PropertyState",
-                    )
-                    column.display_name = column_data_path.column_display_name
-                    column.column_description = column_data_path.column_display_name
-                    column.save()
-                except Exception as e:
-                    print(f" EXCEPTION encountered why trying to create a new column: {e}")
+                Column.objects.create(
+                    is_extra_data=True,
+                    column_name=column_data_path.column_name,
+                    organization=analysis.organization,
+                    table_name="PropertyState",
+                    display_name=column_data_path.column_display_name,
+                    column_description=column_data_path.column_display_name,
+                )
             else:
                 missing_columns = True
 
