@@ -534,7 +534,10 @@ angular.module('BE.seed.controller.mapping', []).controller('mapping_controller'
       return mappings;
     };
 
-  // checks for the presence of a UBID and creates column_mappings for latitude and longitude if they do not already exist
+    /*
+     * checks for the presence of a UBID and creates column_mappings
+     * for latitude and longitude if they do not already exist
+     */
     const handle_lat_long_mappings = (mappings) => {
       let fields = { ubid: null, latitude: null, longitude: null };
       for (let mapping of mappings) {
