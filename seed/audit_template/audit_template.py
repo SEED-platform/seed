@@ -119,11 +119,11 @@ class AuditTemplate:
 
     def batch_get_city_submission_xml(self):
         """
-        1. get_city_submissions
-        2. find views using custom_id_1 and cycle start/end bounds
+        1. get city_cubmissions
+        2. find views using xml fields custom_id_1 and updated for cycle start/end bounds
         3. get xmls corresponding to submissions matching a view
         4. group data by cycles
-        5. update views in cycle batches
+        5. update cycle grouped views in cycle batches
         """
         progress_data = ProgressData(func_name="batch_get_city_submission_xml", unique_id=self.org_id)
 
@@ -133,7 +133,6 @@ class AuditTemplate:
 
     @require_token
     def get_submission(self, audit_template_submission_id: int, report_format: str = "pdf"):
-        # def get_submission(self, audit_template_submission_id: int, report_format: str = 'pdf') -> Tuple[Any, str]:
         """Download an Audit Template submission report.
 
         Args:
@@ -434,10 +433,11 @@ def _batch_get_building_xml(org_id, cycle_id, token, properties, progress_key):
 @shared_task
 def _batch_get_city_submission_xml(org_id, city_id, progress_key):
     """
-    1. find views using custom_id_1 and cycle start/end bounds
-    2. get xmls corresponding to submissions matching a view
-    3. group data by cycles
-    4. update views in cycle batches
+    1. get city_cubmissions
+    2. find views using xml fields custom_id_1 and updated for cycle start/end bounds
+    3. get xmls corresponding to submissions matching a view
+    4. group data by cycles
+    5. update cycle grouped views in cycle batches
     """
     audit_template = AuditTemplate(org_id)
     progress_data = ProgressData.from_key(progress_key)
@@ -447,15 +447,15 @@ def _batch_get_city_submission_xml(org_id, city_id, progress_key):
         return None, messages
     submissions = response.json()
     # Progress data is difficult to calculate as not all submissions will need an xml
+    # Each xml has 2 steps (get and update)
     progress_data.total = len(submissions) * 2
     progress_data.save()
 
     # Need to specify Cycle. Current implementation uses xml field 'updated_at'
-    # ideally use 'audit_date'
-    # but 'audit_date' is not a field in the returned AT xml.
+    # ideally use 'audit_date' but 'audit_date' is not a field in the returned AT xml.
 
     # filering for cycles that contain 'updated_at' makes the query more difficult
-    # without placing dates it could be a simple .filter(state__custom_id_1__in=custom_ids)
+    # without placing dates it could be a simple view.filter(state__custom_id_1__in=custom_ids)
     # however that could return multiple views across many cycles
     # filtering by custom_id and 'updated_at' will require looping through results to query views
 
@@ -469,7 +469,7 @@ def _batch_get_city_submission_xml(org_id, city_id, progress_key):
             cycle__start__lte=updated_at,
             cycle__end__gte=updated_at,
             # QUESTION: do we only update old views? if so uncomment this line
-            # updated_at__lte=updated_at  
+            # updated_at__lte=updated_at
         ).first()
 
         progress_data.step("Getting XML for submissions...")

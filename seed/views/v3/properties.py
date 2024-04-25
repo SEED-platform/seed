@@ -1351,6 +1351,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
     def batch_update_with_building_sync(self, properties, org_id, cycle_id, progress_key, finish=True):
         """
         Update a list of PropertyViews with a building file. Currently only supports BuildingSync.
+        The optional :param finish: is set to False when updating in cycle batches through AuditTemplate._batch_get_city_submission_xml
         """
         progress_data = ProgressData.from_key(progress_key)
         if not Cycle.objects.filter(pk=cycle_id):
