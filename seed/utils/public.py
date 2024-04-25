@@ -5,7 +5,7 @@ from django.db.models.functions import Lower
 from seed.models import Column, PropertyState, TaxLotState
 
 
-def public_feed(org, request):
+def public_feed(org, request, flat_cycle=False):
     """
     Format all property and taxlot state data to be displayed on a public feed
     """
@@ -28,10 +28,10 @@ def public_feed(org, request):
     p_count = 0
     t_count = 0
     if properties_param:
-        data["properties"], p_count = _add_states_to_data(base_url, PropertyState, "propertyview", page, per_page, labels, cycles, org.id)
+        data["properties"], p_count = _add_states_to_data(base_url, PropertyState, "propertyview", page, per_page, labels, cycles, org.id, flat_cycle)
 
     if taxlots_param:
-        data["taxlots"], t_count = _add_states_to_data(base_url, TaxLotState, "taxlotview", page, per_page, labels, cycles, org.id)
+        data["taxlots"], t_count = _add_states_to_data(base_url, TaxLotState, "taxlotview", page, per_page, labels, cycles, org.id, flat_cycle)
 
     pagination = {
         "page": page,
@@ -52,7 +52,7 @@ def public_feed(org, request):
     }
 
 
-def _add_states_to_data(base_url, state_class, view_string, page, per_page, labels, cycles, org_id):
+def _add_states_to_data(base_url, state_class, view_string, page, per_page, labels, cycles, org_id, flat_cycle=False):
     states = state_class.objects.filter(**{f"{view_string}__cycle__in": cycles}).order_by("-updated")
 
     if labels is not None:
@@ -75,13 +75,17 @@ def _add_states_to_data(base_url, state_class, view_string, page, per_page, labe
     for state in states_paginated:
         view = getattr(state, f"{view_string}_set").first()
 
-        state_data = {
-            "id": view.id,
-            "cycle": {"id": view.cycle.id, "name": view.cycle.name},
+        state_data = {"id": view.id} 
+        if flat_cycle:
+            state_data["cycle_id"] = view.cycle.id
+            state_data["cycle_name"] = view.cycle.name 
+        else:
+            state_data["cycle"] = {"id": view.cycle.id, "name": view.cycle.name},
+        state_data.update({
             "updated": state.updated,
             "created": state.created,
             "labels": ", ".join(view.labels.all().values_list("name", flat=True)),
-        }
+        })
 
         for name, extra_data in public_columns:
             if name in ["updated", "created"]:
