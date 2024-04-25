@@ -763,7 +763,7 @@ class OrganizationViewSet(viewsets.ViewSet):
         # get data for each cycle
         results = []
         for cycle in cycles:
-            property_views = all_property_views.annotate(yr_e=Value(cycle.end.year)).filter(cycle_id=cycle)
+            property_views = all_property_views.annotate(yr_e=Value(str(cycle.end.year))).filter(cycle_id=cycle)
             data = [apply_display_unit_preferences(organization, d) for d in property_views.values("id", *fields.keys(), "yr_e")]
 
             # count before and after we prune the empty ones
