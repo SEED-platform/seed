@@ -733,7 +733,7 @@ class OrganizationViewSet(viewsets.ViewSet):
         return JsonResponse(geocoding_columns)
 
     def get_data(self, property_view, x_var, y_var, matching_columns):
-        result = {}
+        result = {"id": property_view.id}
         state = property_view.state
 
         # set matching columns

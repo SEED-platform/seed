@@ -9,6 +9,7 @@
 
 angular.module('BE.seed.controller.inventory_reports', []).controller('inventory_reports_controller', [
   '$scope',
+  '$state',
   '$log',
   '$stateParams',
   'spinner_utility',
@@ -22,7 +23,7 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
   '$translate',
   '$uibModal',
   // eslint-disable-next-line func-names
-  function ($scope, $log, $stateParams, spinner_utility, inventory_reports_service, simple_modal_service, columns, cycles, organization_payload, urls, $sce, $translate, $uibModal) {
+  function ($scope, $state, $log, $stateParams, spinner_utility, inventory_reports_service, simple_modal_service, columns, cycles, organization_payload, urls, $sce, $translate, $uibModal) {
     const org_id = organization_payload.organization.id;
     const base_storage_key = `report.${org_id}`;
 
@@ -174,6 +175,15 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
           ]
         },
         options: {
+          onClick: (event) => {
+            const activePoints = event.chart.getActiveElements(event);
+
+            if (activePoints[0]) {
+              const activePoint = activePoints[0];
+              const item = event.chart.data.datasets[activePoint.datasetIndex].data[activePoint.index];
+              $state.go('inventory_detail', { inventory_type: 'properties', view_id: item.id });
+            }
+          },
           responsive: true,
           maintainAspectRatio: false,
           layout: {
