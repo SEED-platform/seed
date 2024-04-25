@@ -91,7 +91,7 @@ angular.module('BE.seed.service.analyses', []).factory('analyses_service', [
       return $http({
         url: '/api/v3/analyses/used_columns',
         method: 'GET',
-        params: { organization_id}
+        params: { organization_id }
       })
         .then((response) => response.data)
         .catch((response) => response.data);
