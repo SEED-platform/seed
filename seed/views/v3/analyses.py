@@ -20,7 +20,18 @@ from seed.analysis_pipelines.pipeline import AnalysisPipeline, AnalysisPipelineE
 from seed.decorators import ajax_request_class, require_organization_id_class
 from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm_class
 from seed.lib.superperms.orgs.models import AccessLevelInstance
-from seed.models import Analysis, AnalysisEvent, AnalysisPropertyView, Column, Cycle, Organization, PropertyState, PropertyView
+from seed.models import (
+    Analysis,
+    AnalysisEvent,
+    AnalysisPropertyView,
+    Column,
+    Cycle,
+    Organization,
+    PropertyState,
+    PropertyView,
+    TaxLotState,
+    TaxLotView,
+)
 from seed.models.columns import EXCLUDED_API_FIELDS
 from seed.serializers.analyses import AnalysisSerializer
 from seed.utils.api import OrgMixin, api_endpoint_class
@@ -341,6 +352,108 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
                 "column_settings fields and counts": num_of_nonnulls_by_column_name,
             }
         )
+
+    """ Get all property and taxlot columns that have data in them for an org """
+
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class("requires_viewer")
+    @action(detail=False, methods=["get"])
+    def used_columns(self, request):
+        org_id = self.get_organization(request)
+        access_level_instance = AccessLevelInstance.objects.get(pk=self.request.access_level_instance_id)
+
+        num_of_nonnulls_by_column_name = {}
+        tnum_of_nonnulls_by_column_name = {}
+
+        columns = Column.objects.filter(organization_id=org_id, derived_column=None, table_name="PropertyState").exclude(
+            column_name__in=EXCLUDED_API_FIELDS
+        )
+        tcolumns = Column.objects.filter(organization_id=org_id, derived_column=None, table_name="TaxLotState").exclude(
+            column_name__in=EXCLUDED_API_FIELDS
+        )
+
+        # Properties
+        state_ids = PropertyView.objects.filter(
+            property__organization_id=org_id,
+            property__access_level_instance__lft__gte=access_level_instance.lft,
+            property__access_level_instance__rgt__lte=access_level_instance.rgt,
+        ).values_list("state_id", flat=True)
+
+        if state_ids:
+            states = PropertyState.objects.filter(id__in=state_ids)
+            num_of_nonnulls_by_column_name = {c.column_name: 0 for c in columns}
+            canonical_columns = [c.column_name for c in columns if not c.is_extra_data]
+
+            # add non-null counts for extra_data columns
+            with connection.cursor() as cursor:
+                non_null_extra_data_counts_query = (
+                    f'SELECT key, COUNT(*)\n'
+                    f'FROM seed_propertystate, LATERAL JSONB_EACH_TEXT(extra_data) AS each_entry(key, value)\n'
+                    f'WHERE id IN ({", ".join(map(str, state_ids))})\n'
+                    f'  AND value IS NOT NULL\n'
+                    f'GROUP BY key;'
+                )
+                cursor.execute(non_null_extra_data_counts_query)
+                extra_data_counts = dict(cursor.fetchall())
+                num_of_nonnulls_by_column_name.update(extra_data_counts)
+
+            # add non-null counts for canonical columns
+            canonical_counts = states.aggregate(**{col: Count(col) for col in canonical_columns})
+            num_of_nonnulls_by_column_name.update(canonical_counts)
+
+        # Taxlots
+        tstate_ids = TaxLotView.objects.filter(
+            taxlot__organization_id=org_id,
+            taxlot__access_level_instance__lft__gte=access_level_instance.lft,
+            taxlot__access_level_instance__rgt__lte=access_level_instance.rgt,
+        ).values_list("state_id", flat=True)
+
+        # add non-null counts for extra_data columns
+        if tstate_ids:
+            tstates = TaxLotState.objects.filter(id__in=tstate_ids)
+            tnum_of_nonnulls_by_column_name = {c.column_name: 0 for c in tcolumns}
+            tcanonical_columns = [c.column_name for c in tcolumns if not c.is_extra_data]
+
+            with connection.cursor() as cursor:
+                tnon_null_extra_data_counts_query = (
+                    f'SELECT key, COUNT(*)\n'
+                    f'FROM seed_taxlotstate, LATERAL JSONB_EACH_TEXT(extra_data) AS each_entry(key, value)\n'
+                    f'WHERE id IN ({", ".join(map(str, tstate_ids))})\n'
+                    f'  AND value IS NOT NULL\n'
+                    f'GROUP BY key;'
+                )
+                cursor.execute(tnon_null_extra_data_counts_query)
+                extra_data_counts = dict(cursor.fetchall())
+                tnum_of_nonnulls_by_column_name.update(extra_data_counts)
+
+            # add non-null counts for canonical columns
+            tcanonical_counts = tstates.aggregate(**{col: Count(col) for col in tcanonical_columns})
+            tnum_of_nonnulls_by_column_name.update(tcanonical_counts)
+
+        # properties and taxlots together
+        num_of_nonnulls_by_column_name.update(tnum_of_nonnulls_by_column_name)
+        columns = columns | tcolumns
+
+        # keep only non-zero columns (return full columns)
+        nonzero_cols = [k for k, v in num_of_nonnulls_by_column_name.items() if v != 0]
+
+        columns_to_return = [c for c in columns if c.column_name in nonzero_cols]
+        # remove "excluded columns that shouldn't be returned":
+        columns_to_return = [c for c in columns_to_return if c.column_name not in Column.COLUMN_EXCLUDE_FIELDS]
+
+        # serialize results
+        from seed.serializers.columns import ColumnSerializer
+
+        final_columns = ColumnSerializer(columns_to_return, many=True).data
+        # rename shared_field
+        for c in final_columns:
+            c["sharedFieldType"] = c["shared_field_type"]
+            del c["shared_field_type"]
+            if not c["display_name"]:
+                c["display_name"] = c["column_name"]
+
+        return JsonResponse({"status": "success", "columns": final_columns})
 
     @swagger_auto_schema(
         manual_parameters=[

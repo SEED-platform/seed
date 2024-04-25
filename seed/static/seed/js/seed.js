@@ -1204,10 +1204,10 @@ SEED_app.config([
         resolve: {
           all_columns: [
             '$stateParams',
-            'inventory_service',
-            ($stateParams, inventory_service) => {
+            'analyses_service',
+            ($stateParams, analyses_service) => {
               const { organization_id } = $stateParams;
-              return inventory_service.get_used_columns(organization_id);
+              return analyses_service.get_used_columns(organization_id);
             }
           ],
           organization_payload: [
