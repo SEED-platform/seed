@@ -529,7 +529,6 @@ angular.module('BE.seed.controller.mapping', []).controller('mapping_controller'
           });
         }
       );
-
       return mappings;
     };
 
