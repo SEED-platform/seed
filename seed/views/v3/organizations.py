@@ -19,6 +19,7 @@ from django.contrib.auth.forms import PasswordResetForm
 from django.contrib.postgres.aggregates.general import ArrayAgg
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.db.models import F, Value
 from django.http import HttpResponse, JsonResponse
 from django.utils.decorators import method_decorator
 from drf_yasg import openapi
@@ -732,46 +733,8 @@ class OrganizationViewSet(viewsets.ViewSet):
 
         return JsonResponse(geocoding_columns)
 
-    def get_data(self, property_view, x_var, y_var, matching_columns):
-        result = {}
-        state = property_view.state
-
-        # set matching columns
-        for matching_column in matching_columns:
-            name = matching_column.column_name
-            if matching_column.is_extra_data:
-                result[name] = state.extra_data.get(name)
-            else:
-                result[name] = getattr(state, name)
-
-        # set x
-        if x_var == "Count":
-            result["x"] = 1
-        else:
-            try:
-                result["x"] = getattr(state, x_var)
-            except AttributeError:
-                # check extra data
-                try:
-                    result["x"] = state.extra_data.get(x_var)
-                except AttributeError:
-                    return {}
-
-        # set y
-        try:
-            result["y"] = getattr(state, y_var)
-        except AttributeError:
-            # check extra data
-            try:
-                result["y"] = state.extra_data.get(y_var)
-            except AttributeError:
-                return {}
-
-        return result
-
-    def get_raw_report_data(self, organization_id, access_level_instance, cycles, x_var, y_var, additional_columns=None):
-        if additional_columns is None:
-            additional_columns = []
+    def get_raw_report_data(self, organization_id, access_level_instance, cycles, x_var, y_var, additional_columns=[]):
+        organization = Organization.objects.get(pk=organization_id)
         all_property_views = (
             PropertyView.objects.select_related("property", "state")
             .filter(
@@ -782,29 +745,39 @@ class OrganizationViewSet(viewsets.ViewSet):
             )
             .order_by("id")
         )
-        organization = Organization.objects.get(pk=organization_id)
+
+        # annotate properties with fields
+        fields = {
+            **{
+                column.column_name: column.column_name if not column.is_extra_data else f"extra_data__{column.column_name}"
+                for column in additional_columns
+            },
+            "x": x_var if x_var in dir(PropertyState) else f"extra_data__{x_var}",
+            "y": y_var if y_var in dir(PropertyState) else f"extra_data__{y_var}",
+        }
+        if x_var == "Count":
+            fields["x"] = Value(1)
+        for k, v in fields.items():
+            all_property_views = all_property_views.annotate(**{k: F("state__" + v)})
+
+        # get data for each cycle
         results = []
         for cycle in cycles:
-            property_views = all_property_views.filter(cycle_id=cycle)
-            count_total = []
-            count_with_data = []
-            data = []
-            for property_view in property_views:
-                property_pk = property_view.property_id
-                count_total.append(property_pk)
-                result = self.get_data(property_view, x_var, y_var, additional_columns)
-                if result:
-                    result["yr_e"] = cycle.end.strftime("%Y")
-                    de_unitted_result = apply_display_unit_preferences(organization, result)
-                    data.append(de_unitted_result)
-                    count_with_data.append(property_pk)
+            property_views = all_property_views.annotate(yr_e=Value(cycle.end.year)).filter(cycle_id=cycle)
+            data = [apply_display_unit_preferences(organization, d) for d in property_views.values("id", *fields.keys(), "yr_e")]
+
+            # count before and after we prune the empty ones
+            count_total = len(data)
+            data = [d for d in data if "x" in d and "y" in d]
+            count_with_data = len(data)
+
             result = {
                 "cycle_id": cycle.pk,
                 "chart_data": data,
                 "property_counts": {
                     "yr_e": cycle.end.strftime("%Y"),
-                    "num_properties": len(count_total),
-                    "num_properties_w-data": len(count_with_data),
+                    "num_properties": count_total,
+                    "num_properties_w-data": count_with_data,
                 },
             }
             results.append(result)
