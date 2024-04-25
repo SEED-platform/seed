@@ -366,12 +366,8 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
         num_of_nonnulls_by_column_name = {}
         tnum_of_nonnulls_by_column_name = {}
 
-        columns = Column.objects.filter(organization_id=org_id, derived_column=None, table_name="PropertyState").exclude(
-            column_name__in=EXCLUDED_API_FIELDS
-        )
-        tcolumns = Column.objects.filter(organization_id=org_id, derived_column=None, table_name="TaxLotState").exclude(
-            column_name__in=EXCLUDED_API_FIELDS
-        )
+        columns = Column.objects.none()
+        tcolumns = Column.objects.none()
 
         # Properties
         state_ids = PropertyView.objects.filter(
@@ -382,6 +378,10 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
 
         if state_ids:
             states = PropertyState.objects.filter(id__in=state_ids)
+
+            columns = Column.objects.filter(organization_id=org_id, derived_column=None, table_name="PropertyState").exclude(
+                column_name__in=EXCLUDED_API_FIELDS
+            )
             num_of_nonnulls_by_column_name = {c.column_name: 0 for c in columns}
             canonical_columns = [c.column_name for c in columns if not c.is_extra_data]
 
@@ -412,6 +412,10 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
         # add non-null counts for extra_data columns
         if tstate_ids:
             tstates = TaxLotState.objects.filter(id__in=tstate_ids)
+
+            tcolumns = Column.objects.filter(organization_id=org_id, derived_column=None, table_name="TaxLotState").exclude(
+                column_name__in=EXCLUDED_API_FIELDS
+            )
             tnum_of_nonnulls_by_column_name = {c.column_name: 0 for c in tcolumns}
             tcanonical_columns = [c.column_name for c in tcolumns if not c.is_extra_data]
 
