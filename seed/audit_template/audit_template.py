@@ -446,33 +446,30 @@ def _batch_get_city_submission_xml(org_id, city_id, progress_key):
     if not response:
         return None, messages
     submissions = response.json()
-    # breakpoint()
     # Progress data is difficult to calculate as not all submissions will need an xml
     progress_data.total = len(submissions) * 2
     progress_data.save()
 
-    # NEED TO SPECIFY CYCLE, based on updated_at?
-    # would be nice to have audit_date
-    # audit_date is not a relavent fields in the xml. what should we use?
-    # WHERE IS AUDIT_DATE
-    # Metering Year Start Dates?
+    # Need to specify Cycle. Current implementation uses xml field 'updated_at'
+    # ideally use 'audit_date'
+    # but 'audit_date' is not a field in the returned AT xml.
 
-    # filering for cycles that contain {updated_at} makes the query more difficult
+    # filering for cycles that contain 'updated_at' makes the query more difficult
     # without placing dates it could be a simple .filter(state__custom_id_1__in=custom_ids)
     # however that could return multiple views across many cycles
-    # filtering by custom_id and {updated_at} will require looping through results to query views
+    # filtering by custom_id and 'updated_at' will require looping through results to query views
 
     xml_data_by_cycle = {}
     for sub in submissions:
         custom_id = sub["tax_id"]
-        # What if updated_at is None? default cycle?
         updated_at = parser.parse(sub["updated_at"])
 
         view = PropertyView.objects.filter(
             state__custom_id_1=custom_id,
             cycle__start__lte=updated_at,
             cycle__end__gte=updated_at,
-            # updated_at__lte=updated_at  # only update old views?
+            # QUESTION: do we only update old views? if so uncomment this line
+            # updated_at__lte=updated_at  
         ).first()
 
         progress_data.step("Getting XML for submissions...")
