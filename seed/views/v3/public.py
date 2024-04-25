@@ -1,4 +1,4 @@
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny
@@ -45,3 +45,104 @@ class PublicOrganizationViewSet(viewsets.ViewSet):
 
         feed = public_feed(org, request)
         return JsonResponse(feed, json_dumps_params={"indent": 4}, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=["get"], url_path="feed.html")
+    def feed_html(self, request, pk):
+
+        try:
+            org = Organization.objects.get(pk=pk)
+        except Organization.DoesNotExist:
+            return JsonResponse({"erorr": "Organization does not exist"}, status=status.HTTP_404_NOT_FOUND)
+
+        
+        style= """
+            body {
+                font-family: 'PT Sans Narrow', 'Helvetica Neue', helvetica, arial, sans-serif;
+                font-weight: normal;
+            }
+            .logo_container {
+                display: flex;
+                height: 50px;
+
+                .logo {
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: center;
+                    color: black;
+
+                    .logo_text {
+                        padding: 0 20px;
+                        font-size: 24px;
+                        font-family: 'PT Sans Narrow', 'Helvetica Neue', helvetica, arial, sans-serif;
+                        font-weight: normal;
+                        text-transform: uppercase;
+
+                        .logo_text_seed {
+                        font-family: 'PT Sans', 'Helvetica Neue', helvetica, arial, sans-serif;
+                        font-weight: bold;
+                        }
+                    }
+                }
+            }
+            .content {
+                width: 100vw;
+                overflow: scroll;
+
+                table, th, td {
+                    border: 1px solid black;
+                    border-collapse: collapse;
+                    padding: 0 8px;
+                    widthL 100%;
+                }
+                table {
+                    margin: 20px;
+                }
+                th, td {
+                    white-space: nowrap;
+                }
+                
+            }
+        """
+        header = """
+            <div class="logo_container">
+                <a class="logo" href="/">
+                <div class="logo_text">
+                    <span class="logo_text_seed">Seed</span>
+                    <span class="logo_text_platform">Platform™</span>
+                </div>
+                </a>
+            </div>
+        """
+        def dict_to_table(data):
+            html = "<table>\n"
+
+            headers = data[0].keys()
+            header_row = '<tr>' + ''.join(f'<th>{header}</th>' for header in headers) + '</tr>\n'
+            html += header_row
+
+            for datum in data:
+
+                row = '<tr>' + ''.join(f'<td>{datum[header]}</td>' for header in headers) + '<tr/>\n'
+                html += row
+
+            html += '</table>'
+
+            return html
+        
+        data = public_feed(org, request, flat_cycle=True)
+        table = dict_to_table(data['data']['properties'])
+
+        content = f"""<div class='content'>{table}</div>"""
+        html = f"""
+            <html>
+                <head>
+                <style>
+                    {style}
+                </style>
+                </head>
+                <body>
+                    {header}
+                    {content}
+                </body>
+            </html"""
+        return HttpResponse(html)
