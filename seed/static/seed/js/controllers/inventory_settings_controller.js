@@ -297,7 +297,7 @@ angular.module('BE.seed.controller.inventory_settings', []).controller('inventor
           action: () => 'new',
           data: {
             columns: currentColumns(),
-            derived_columns: [],
+            derived_columns: []
           },
           profile_location: () => 'List View Profile',
           inventory_type: () => ($scope.inventory_type === 'properties' ? 'Property' : 'Tax Lot')
