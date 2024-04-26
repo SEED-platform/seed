@@ -91,6 +91,7 @@ class AccountsViewTests(TestCase):
             "inventory_count": 0,
             "access_level_names": [self.org.name],
             "public_feed_enabled": False,
+            "public_feed_labels": False,
         }
 
         org_payload = _dict_org(self.fake_request, [self.org])
