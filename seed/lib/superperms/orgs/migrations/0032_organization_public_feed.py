@@ -15,8 +15,8 @@ class Migration(migrations.Migration):
             field=models.BooleanField(default=False),
         ),
         migrations.AddField(
-            model_name='organization',
-            name='public_feed_labels',
+            model_name="organization",
+            name="public_feed_labels",
             field=models.BooleanField(default=False),
         ),
     ]

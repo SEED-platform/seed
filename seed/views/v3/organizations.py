@@ -512,7 +512,7 @@ class OrganizationViewSet(viewsets.ViewSet):
             org.public_feed_enabled = public_feed_enabled
             if not public_feed_enabled:
                 org.public_feed_labels = False
-        
+
         # Update public_feed_labels option
         public_feed_labels = posted_org.get("public_feed_labels", False)
         if public_feed_labels != org.public_feed_labels:
