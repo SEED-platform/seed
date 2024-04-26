@@ -71,7 +71,7 @@ class PublicOrganizationViewSet(viewsets.ViewSet):
             return JsonResponse({"erorr": "Organization does not exist"}, status=status.HTTP_404_NOT_FOUND)
 
         if not org.public_feed_enabled:
-            return HttpResponse(PUBLIC_HTML_DISABLED)
+            return HttpResponse(PUBLIC_HTML_DISABLED.format(org.name, org.id))
 
         query_params = request.GET.copy()
         base_url = f"/api/v3/public/organizations/{pk}/feed.html"
