@@ -1,12 +1,10 @@
-from django.http import JsonResponse, HttpResponse
-from django.urls import reverse_lazy
+from django.http import HttpResponse, JsonResponse
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny
-from urllib.parse import urlencode
 
 from seed.models import Organization
-from seed.utils.public import public_feed, dict_to_table, page_navigation_link, PUBLIC_HTML_STYLE, PUBLIC_HTML_HEADER, PUBLIC_HTML_DISABLED
+from seed.utils.public import PUBLIC_HTML_DISABLED, PUBLIC_HTML_HEADER, PUBLIC_HTML_STYLE, dict_to_table, page_navigation_link, public_feed
 
 
 class PublicOrganizationViewSet(viewsets.ViewSet):
@@ -74,20 +72,20 @@ class PublicOrganizationViewSet(viewsets.ViewSet):
 
         if not org.public_feed_enabled:
             return HttpResponse(PUBLIC_HTML_DISABLED)
-        
+
         query_params = request.GET.copy()
         base_url = f"/api/v3/public/organizations/{pk}/feed.html"
         data = public_feed(org, request, html_view=True)
 
         table_properties = ""
-        if data['query_params'].get('properties'):
-            table_properties = dict_to_table(data['data'].get('properties', []), 'Properties')
+        if data["query_params"].get("properties"):
+            table_properties = dict_to_table(data["data"].get("properties", []), "Properties")
 
         table_taxlots = ""
-        if data['query_params'].get('taxlots'):
-            table_taxlots = dict_to_table(data['data'].get('taxlots', []), 'Tax Lots')
+        if data["query_params"].get("taxlots"):
+            table_taxlots = dict_to_table(data["data"].get("taxlots", []), "Tax Lots")
 
-        params = [{**data.get('pagination'), **data.get('organization'), **data.get('query_params')}]
+        params = [{**data.get("pagination"), **data.get("organization"), **data.get("query_params")}]
         params_table = dict_to_table(params, "")
 
         page_controls = f"""

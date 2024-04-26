@@ -1,7 +1,8 @@
+from urllib.parse import urlencode
+
 import pint
 from django.core.paginator import EmptyPage, Paginator
 from django.db.models.functions import Lower
-from urllib.parse import urlencode
 
 from seed.models import Column, PropertyState, TaxLotState
 
@@ -17,7 +18,7 @@ def public_feed(org, request, html_view=False):
     properties_param = params.get("properties", "true").lower() == "true"
     taxlots_param = params.get("taxlots", "true").lower() == "true"
     if not org.public_feed_labels:
-        labels = 'Disabled'
+        labels = "Disabled"
     else:
         labels = params.get("labels", None)
         if labels is not None:
@@ -32,7 +33,9 @@ def public_feed(org, request, html_view=False):
     p_count = 0
     t_count = 0
     if properties_param:
-        data["properties"], p_count = _add_states_to_data(base_url, PropertyState, "propertyview", page, per_page, labels, cycles, org, html_view)
+        data["properties"], p_count = _add_states_to_data(
+            base_url, PropertyState, "propertyview", page, per_page, labels, cycles, org, html_view
+        )
 
     if taxlots_param:
         data["taxlots"], t_count = _add_states_to_data(base_url, TaxLotState, "taxlotview", page, per_page, labels, cycles, org, html_view)
@@ -43,20 +46,23 @@ def public_feed(org, request, html_view=False):
         "per_page": per_page,
     }
     if not html_view:
-        organization =  {"id": org.id, "name": org.name}
-    else: 
+        organization = {"id": org.id, "name": org.name}
+    else:
         organization = {"organization_id": org.id, "organization_name": org.name}
-
 
     if properties_param:
         pagination["property_count"] = p_count
     if taxlots_param:
         pagination["taxlot_count"] = t_count
 
-
     return {
         "pagination": pagination,
-        "query_params": {"labels": labels, "cycle_ids": cycles if cycles else "all", "properties": properties_param, "taxlots": taxlots_param},
+        "query_params": {
+            "labels": labels,
+            "cycle_ids": cycles if cycles else "all",
+            "properties": properties_param,
+            "taxlots": taxlots_param,
+        },
         "organization": organization,
         "data": data,
     }
@@ -85,18 +91,20 @@ def _add_states_to_data(base_url, state_class, view_string, page, per_page, labe
     for state in states_paginated:
         view = getattr(state, f"{view_string}_set").first()
 
-        state_data = {"id": view.id} 
+        state_data = {"id": view.id}
         if html_view:
             state_data["cycle_id"] = view.cycle.id
-            state_data["cycle_name"] = view.cycle.name 
+            state_data["cycle_name"] = view.cycle.name
         else:
-            state_data["cycle"] = {"id": view.cycle.id, "name": view.cycle.name},
+            state_data["cycle"] = {"id": view.cycle.id, "name": view.cycle.name}
         if org.public_feed_labels:
             state_data["labels"] = ", ".join(view.labels.all().values_list("name", flat=True))
-        state_data.update({
-            "updated": state.updated,
-            "created": state.created,
-        })
+        state_data.update(
+            {
+                "updated": state.updated,
+                "created": state.created,
+            }
+        )
 
         for name, extra_data in public_columns:
             if name in ["updated", "created"]:
@@ -130,33 +138,35 @@ def _get_int(value, default):
         return result if result > 0 else default
     except (ValueError, TypeError):
         return default
-    
+
+
 def dict_to_table(data, title):
     if not len(data):
         return f"<div class='title'>{title}: None</div>"
-    
+
     html = f"<div class='title'>{title}</div>\n<table>\n"
     headers = data[0].keys()
-    header_row = '<tr>' + ''.join(f'<th>{header}</th>' for header in headers) + '</tr>\n'
+    header_row = "<tr>" + "".join(f"<th>{header}</th>" for header in headers) + "</tr>\n"
     html += header_row
     for datum in data:
-        row = '<tr>' + ''.join(f'<td>{datum[header]}</td>' for header in headers) + '<tr/>\n'
+        row = "<tr>" + "".join(f"<td>{datum[header]}</td>" for header in headers) + "<tr/>\n"
         html += row
-    html += '</table>'
+    html += "</table>"
 
     return html
 
+
 def page_navigation_link(base_url, pagination, query_params, next_page):
-    page = pagination['page']
-    total_pages = pagination['total_pages']
+    page = pagination["page"]
+    total_pages = pagination["total_pages"]
 
     if next_page:
         action_text = "Next"
-        query_params['page'] = page + 1 if page < total_pages else total_pages
+        query_params["page"] = page + 1 if page < total_pages else total_pages
         condition = page < total_pages
     else:
         action_text = "Previous"
-        query_params['page'] = page -1 if page > 1 else 1
+        query_params["page"] = page - 1 if page > 1 else 1
         condition = page > 1
 
     if condition:
@@ -165,9 +175,9 @@ def page_navigation_link(base_url, pagination, query_params, next_page):
         return ""
 
 
-PUBLIC_HTML_DISABLED = """                
+PUBLIC_HTML_DISABLED = """
     <html>
-        <div style="'PT Sans Narrow', 'Helvetica Neue', helvetica, arial, sans-serif;"> 
+        <div style="'PT Sans Narrow', 'Helvetica Neue', helvetica, arial, sans-serif;">
             Public feed is not enabled for organization '{org.name}'. Public feed can be enabled in
             <a href="/app/#/accounts/{org.id}" target="_blank">organization settings</a>.
         </div>
@@ -247,6 +257,6 @@ PUBLIC_HTML_STYLE = """
                         color: gray;
                     }
                 }
-                
+
             }
         """
