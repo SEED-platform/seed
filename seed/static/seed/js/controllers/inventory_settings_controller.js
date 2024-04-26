@@ -286,23 +286,14 @@ angular.module('BE.seed.controller.inventory_settings', []).controller('inventor
     };
 
     $scope.newProfile = () => {
-      const columns = [];
-      const derived_columns = [];
-      for (const column in currentColumns) {
-        if (column.derived_column) {
-          derived_columns.push(column);
-        } else {
-          columns.push(column);
-        }
-      }
       const modalInstance = $uibModal.open({
         templateUrl: `${urls.static_url}seed/partials/settings_profile_modal.html`,
         controller: 'settings_profile_modal_controller',
         resolve: {
           action: () => 'new',
           data: {
-            columns,
-            derived_columns
+            columns: currentColumns(),
+            derived_columns: []
           },
           profile_location: () => 'List View Profile',
           inventory_type: () => ($scope.inventory_type === 'properties' ? 'Property' : 'Tax Lot')
