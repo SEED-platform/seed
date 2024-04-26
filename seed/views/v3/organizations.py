@@ -1058,6 +1058,7 @@ class OrganizationViewSet(viewsets.ViewSet):
             # Write Base/Raw Data
             data_rows = cycle_results["chart_data"]
             for datum in data_rows:
+                del datum["id"]
                 for i, k in enumerate(datum.keys()):
                     base_sheet.write(base_row, data_col_start + i, datum.get(k))
 
