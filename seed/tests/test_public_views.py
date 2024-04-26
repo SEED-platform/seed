@@ -99,8 +99,7 @@ class TestOrganizationViews(DataMappingBaseTestCase):
         assert len(data["properties"]) == 6
         assert len(data["taxlots"]) == 0
 
-
         url = reverse_lazy("api:v3:public-organizations-feed-html", args=[self.org.id])
         response = self.client.get(url, content_type="application/json")
         assert response.status_code == 200
-        assert response.headers['Content-Type'] == 'text/html; charset=utf-8'
+        assert response.headers["Content-Type"] == "text/html; charset=utf-8"
