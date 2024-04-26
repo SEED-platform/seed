@@ -275,7 +275,9 @@ class Organization(models.Model):
 
     # UBID Threshold
     ubid_threshold = models.FloatField(default=1.0)
+    # Public feed
     public_feed_enabled = models.BooleanField(default=False)
+    public_feed_labels = models.BooleanField(default=False)
 
     def save(self, *args, **kwargs):
         """Perform checks before saving."""

@@ -14,4 +14,9 @@ class Migration(migrations.Migration):
             name="public_feed_enabled",
             field=models.BooleanField(default=False),
         ),
+        migrations.AddField(
+            model_name='organization',
+            name='public_feed_labels',
+            field=models.BooleanField(default=False),
+        ),
     ]

@@ -86,6 +86,7 @@ class TestOrganizationViews(DataMappingBaseTestCase):
 
         # enable public feed
         self.org.public_feed_enabled = True
+        self.org.public_feed_labels = True
         self.org.save()
         response = self.client.get(url, content_type="application/json")
         assert response.status_code == 200
