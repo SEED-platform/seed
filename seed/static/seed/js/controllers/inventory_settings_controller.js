@@ -213,10 +213,6 @@ angular.module('BE.seed.controller.inventory_settings', []).controller('inventor
       $scope.gridApi.core.handleWindowResize();
     };
 
-    $scope.saveShowSharedBuildings = () => {
-      user_service.set_default_columns([], $scope.showSharedBuildings);
-    };
-
     const currentColumns = () => {
       const columns = [];
       _.forEach($scope.gridApi.grid.rows, (row) => {

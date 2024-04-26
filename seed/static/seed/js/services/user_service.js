@@ -96,13 +96,6 @@ angular.module('BE.seed.service.user', []).factory('user_service', [
      */
     user_factory.generate_api_key = () => user_factory.get_user_id().then((this_user_id) => $http.post(`/api/v3/users/${this_user_id}/generate_api_key/`).then((response) => response.data));
 
-    user_factory.set_default_columns = (columns, show_shared_buildings) => $http
-      .post(urls.seed.set_default_columns, {
-        columns,
-        show_shared_buildings
-      })
-      .then((response) => response.data);
-
     user_factory.set_default_building_detail_columns = (columns) => $http
       .post(urls.seed.set_default_building_detail_columns, {
         columns
