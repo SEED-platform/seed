@@ -719,7 +719,7 @@ a:not([href]) {
 
       &.left {
         float: left;
-        width: 30%;
+        width: 25%;
       }
 
       &.left_40 {
@@ -5487,4 +5487,8 @@ tags-input .tags .tag-item {
 
 .label-lg {
   font-size: 1.2em;
+}
+
+.wider-diff {
+  width: 30% !important;
 }
