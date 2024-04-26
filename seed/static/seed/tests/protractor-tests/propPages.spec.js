@@ -151,7 +151,6 @@ describe('When I go to the prop page', () => {
     $$('[ng-click="itemAction($event, title)"]').get(1).click();
     $('[ng-click="toggleMenu()"]').click();
     $$('[ng-click="itemAction($event, title)"]').first().click();
-    $('[ng-change="saveShowSharedBuildings()"]').click();
     $('#inventory-list').click();
     cols = $('.ui-grid-render-container.ui-grid-render-container-body').all(by.repeater('col in colContainer.renderedColumns'));
     expect(cols.count()).not.toBeLessThan(2);

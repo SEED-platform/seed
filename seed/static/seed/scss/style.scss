@@ -985,7 +985,7 @@ a:not([href]) {
     }
 
     .vert_table_scroll_container {
-      height: 400px;
+      height: 600px;
       overflow-y: scroll;
       border-bottom: 1px solid $gray_lighter;
       background: url('../../seed/images/bg_first_td.webp') repeat-x top center;
@@ -5487,4 +5487,8 @@ tags-input .tags .tag-item {
 
 .label-lg {
   font-size: 1.2em;
+}
+
+.wider-diff {
+  width: 30% !important;
 }
