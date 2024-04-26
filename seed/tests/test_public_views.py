@@ -92,9 +92,15 @@ class TestOrganizationViews(DataMappingBaseTestCase):
         assert response.status_code == 200
         res = response.json()
         assert sorted(res.keys()) == ["data", "organization", "pagination", "query_params"]
-        assert sorted(res["pagination"].keys()) == ["page", "per_page", "properties", "taxlots", "total_pages"]
-        assert sorted(res["query_params"].keys()) == ["cycles", "labels", "properties", "taxlots"]
+        assert sorted(res["pagination"].keys()) == ["page", "per_page", "property_count", "taxlot_count", "total_pages"]
+        assert sorted(res["query_params"].keys()) == ["cycle_ids", "labels", "properties", "taxlots"]
         assert res["organization"]["id"] == self.org.id
         data = res["data"]
         assert len(data["properties"]) == 6
         assert len(data["taxlots"]) == 0
+
+
+        url = reverse_lazy("api:v3:public-organizations-feed-html", args=[self.org.id])
+        response = self.client.get(url, content_type="application/json")
+        assert response.status_code == 200
+        assert response.headers['Content-Type'] == 'text/html; charset=utf-8'
