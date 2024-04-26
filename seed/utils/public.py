@@ -177,9 +177,9 @@ def page_navigation_link(base_url, pagination, query_params, next_page):
 
 PUBLIC_HTML_DISABLED = """
     <html>
-        <div style="'PT Sans Narrow', 'Helvetica Neue', helvetica, arial, sans-serif;">
-            Public feed is not enabled for organization '{org.name}'. Public feed can be enabled in
-            <a href="/app/#/accounts/{org.id}" target="_blank">organization settings</a>.
+        <div style="font-family: 'PT Sans Narrow', 'Helvetica Neue', helvetica, arial, sans-serif;">
+            Public feed is not enabled for organization '{}'. Public feed can be enabled in
+            <a href="/app/#/accounts/{}" target="_blank">organization settings</a>.
         </div>
     </html>
 """
