@@ -1,3 +1,4 @@
+import datetime
 from urllib.parse import urlencode
 
 import pint
@@ -69,7 +70,7 @@ def public_feed(org, request, html_view=False):
 
 
 def _add_states_to_data(base_url, state_class, view_string, page, per_page, labels, cycles, org, html_view=False):
-    states = state_class.objects.filter(**{f"{view_string}__cycle__in": cycles}).order_by("-updated")
+    states = state_class.objects.filter(**{f"{view_string}__cycle__in": cycles, "organization": org}).order_by("-updated")
 
     if labels is not None and org.public_feed_labels:
         states = states.filter(**{f"{view_string}__labels__name__in": labels})
@@ -92,19 +93,6 @@ def _add_states_to_data(base_url, state_class, view_string, page, per_page, labe
         view = getattr(state, f"{view_string}_set").first()
 
         state_data = {"id": view.id}
-        if html_view:
-            state_data["cycle_id"] = view.cycle.id
-            state_data["cycle_name"] = view.cycle.name
-        else:
-            state_data["cycle"] = {"id": view.cycle.id, "name": view.cycle.name}
-        if org.public_feed_labels:
-            state_data["labels"] = ", ".join(view.labels.all().values_list("name", flat=True))
-        state_data.update(
-            {
-                "updated": state.updated,
-                "created": state.created,
-            }
-        )
 
         for name, extra_data in public_columns:
             if name in ["updated", "created"]:
@@ -116,8 +104,22 @@ def _add_states_to_data(base_url, state_class, view_string, page, per_page, labe
             if isinstance(value, pint.Quantity):
                 # convert pint to string with units (json cannot display exponents)
                 value = f"{value.m} {value.u}"
+            if isinstance(value, datetime.datetime):
+                # convert datetime to readable format
+                value = value.strftime("%Y/%m/%d, %H:%M:%S")
 
             state_data[name] = value
+
+        # add the "automatically" added content to the end of the data
+        if html_view:
+            state_data["cycle"] = f"{view.cycle.name} ({view.cycle.id})"
+        else:
+            state_data["cycle"] = {"id": view.cycle.id, "name": view.cycle.name}
+        if org.public_feed_labels:
+            state_data["labels"] = ", ".join(view.labels.all().values_list("name", flat=True))
+        state_data.update(
+            {"updated": state.updated.strftime("%Y/%m/%d, %H:%M:%S"), "created": state.created.strftime("%Y/%m/%d, %H:%M:%S")}
+        )
 
         json_link = f'{base_url}api/v3/{"properties" if type(state) == PropertyState else "taxlots"}/{view.id}/?organization_id={view.cycle.organization.id}'
         html_link = f'{base_url}app/#/{"properties" if type(state) == PropertyState else "taxlots"}/{view.id}'
@@ -140,16 +142,20 @@ def _get_int(value, default):
         return default
 
 
-def dict_to_table(data, title):
+def dict_to_table(data, title, params):
     if not len(data):
-        return f"<div class='title'>{title}: None</div>"
-
-    html = f"<div class='title'>{title}</div>\n<table>\n"
+        return f"<h2>{title}: None</h2>"
+    cnt = 0
+    if title == "Properties":
+        cnt = params["property_count"]
+    else:
+        cnt = params["taxlot_count"]
+    html = f"<h2>{title}: {cnt}</h2>\n<table>\n"
     headers = data[0].keys()
-    header_row = "<tr>" + "".join(f"<th>{header}</th>" for header in headers) + "</tr>\n"
+    header_row = "<tr>" + "".join(f"<th>{header.replace('_', ' ').title()}</th>" for header in headers) + "</tr>\n"
     html += header_row
     for datum in data:
-        row = "<tr>" + "".join(f"<td>{datum[header]}</td>" for header in headers) + "<tr/>\n"
+        row = "<tr>" + "".join(f"<td>{datum[header]}</td>" for header in headers) + "</tr>"
         html += row
     html += "</table>"
 
@@ -186,7 +192,7 @@ PUBLIC_HTML_DISABLED = """
 
 PUBLIC_HTML_HEADER = """
     <div class="logo_container">
-        <a class="logo" href="/">
+        <a id="logo-link" class="logo" href="/">
         <div class="logo_text">
             <span class="logo_text_seed">Seed</span>
             <span class="logo_text_platform">Platform™</span>
@@ -197,14 +203,17 @@ PUBLIC_HTML_HEADER = """
 
 PUBLIC_HTML_STYLE = """
             body {
-                font-family: 'PT Sans Narrow', 'Helvetica Neue', helvetica, arial, sans-serif;
+                font-family: 'PT Sans', 'Helvetica Neue', helvetica, arial, sans-serif;
                 font-weight: normal;
                 margin: 0;
+            }
+            #logo-link {
+                text-decoration: none;
             }
             .logo_container {
                 display: flex;
                 height: 50px;
-                background: #dcdcdc;
+                border-bottom: 1px solid #dcdcdc;
 
                 .logo {
                     display: flex;
@@ -226,6 +235,34 @@ PUBLIC_HTML_STYLE = """
                     }
                 }
             }
+
+            .page_title {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                padding: 10px 0px;
+                border-bottom: 1px solid #dcdcdc;
+
+                h1 {
+                    font-size: 18px;
+                    font-weight: bold;
+                    margin: 0;
+                    white-space: nowrap;
+                }
+            }
+            h2 {
+                font-size: 18px;
+                font-weight: bold;
+                margin: 5px 20px 5px 20px;
+            }
+            .page-num {
+                margin: 5px 0px;
+            }
+            .nav-links {
+                margin: 5px; 0px; 5px; 5px;
+            }
             .content {
                 width: 100vw;
                 overflow: scroll;
@@ -234,17 +271,31 @@ PUBLIC_HTML_STYLE = """
                     margin-left: 20px;
                 }
                 table, th, td {
-                    border: 1px solid black;
+                    border: 1px solid #dcdcdc;
                     border-collapse: collapse;
-                    padding: 0 8px;
-                    widthL 100%;
+                    padding: 6px 10px 5px;
+                    width: 80%;
                 }
                 table {
+                    display: table;
+                    border-spacing: 0;
                     margin: 20px;
+
+                    tr:nth-child(odd) {
+                        background-color: #eee;
+                    }
+                }
+                tr {
+                    display: table-row;
+                    background-color: #fff;
+
                 }
                 th, td {
                     white-space: nowrap;
+                    color: #222;
+                    font-size: 13px;
                 }
+
                 .table-controls {
                     margin: 20px;
                     display: flex;

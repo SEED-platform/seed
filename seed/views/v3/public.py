@@ -77,29 +77,35 @@ class PublicOrganizationViewSet(viewsets.ViewSet):
         base_url = f"/api/v3/public/organizations/{pk}/feed.html"
         data = public_feed(org, request, html_view=True)
 
+        page_header = f"""
+            <div class="page_title">
+                <h1>Public Disclosure Data - {org.name}</h1>
+            </div>
+        """
+
+        params = {**data.get("pagination"), **data.get("organization"), **data.get("query_params")}
         table_properties = ""
         if data["query_params"].get("properties"):
-            table_properties = dict_to_table(data["data"].get("properties", []), "Properties")
+            table_properties = dict_to_table(data["data"].get("properties", []), "Properties", params)
 
         table_taxlots = ""
         if data["query_params"].get("taxlots"):
-            table_taxlots = dict_to_table(data["data"].get("taxlots", []), "Tax Lots")
-
-        params = [{**data.get("pagination"), **data.get("organization"), **data.get("query_params")}]
-        params_table = dict_to_table(params, "")
+            table_taxlots = dict_to_table(data["data"].get("taxlots", []), "Tax Lots", params)
 
         page_controls = f"""
             <div class='table-controls'>
-                {page_navigation_link(base_url, data['pagination'], query_params, False)}
-                {page_navigation_link(base_url, data['pagination'], query_params, True)}
+                <div class='page-num'>Page {data['pagination']['page']} of {data['pagination']['total_pages']}</div>
+                <div class='nav-links'> {page_navigation_link(base_url, data['pagination'], query_params, False)}
+                {page_navigation_link(base_url, data['pagination'], query_params, True)}</div>
             </div>
         """
         content = f"""
             <div class='content'>
-                {params_table}
+                {page_header}
                 {page_controls}
                 {table_properties}
                 {table_taxlots}
+                {page_controls}
             </div>
         """
         html = f"""
