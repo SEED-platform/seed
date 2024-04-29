@@ -26,6 +26,7 @@ from seed.lib.progress_data.progress_data import ProgressData
 from seed.lib.superperms.orgs.models import Organization
 from seed.models import PropertyView
 from seed.views.v3.properties import PropertyViewSet
+from seed.utils.encrypt import decrypt
 
 _log = logging.getLogger(__name__)
 
@@ -209,7 +210,7 @@ class AuditTemplate:
         form_data = {
             "organization_token": (None, self.org.at_organization_token),
             "email": (None, self.org.audit_template_user),
-            "password": (None, self.org.audit_template_password),
+            "password": (None, decrypt(self.org.audit_template_password)[0]),
         }
         headers = {"Accept": "application/xml"}
 
@@ -444,6 +445,7 @@ def _batch_get_city_submission_xml(org_id, city_id, progress_key):
 
     response, messages = audit_template.get_city_submissions(city_id)
     if not response:
+        progress_data.finish_with_error(messages)
         return None, messages
     submissions = response.json()
     # Progress data is difficult to calculate as not all submissions will need an xml
@@ -469,11 +471,11 @@ def _batch_get_city_submission_xml(org_id, city_id, progress_key):
             cycle__start__lte=updated_at,
             cycle__end__gte=updated_at,
             # QUESTION: do we only update old views? if so uncomment this line
-            # updated_at__lte=updated_at
+            # state__updated__lte=updated_at  # update if submission is newer than state
         ).first()
 
         progress_data.step("Getting XML for submissions...")
-
+        # logging.error('>>> custom_id %s', custom_id)
         if view:
             xml, _ = audit_template.get_submission(sub["id"], "xml")
 

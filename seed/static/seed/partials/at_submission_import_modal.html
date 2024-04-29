@@ -3,7 +3,8 @@
 </div>
 
 <div class="modal-body no_bottom_padding">
-  <div style="padding-bottom: 20px">Update inventory with Audit Template Submissions for City {$ org.audit_template_city_id $}</div>
+  <div style="padding-bottom: 20px" ng-if="!status.complete">Update inventory with Audit Template Submissions for City {$ org.audit_template_city_id $}</div>
+  <div style="padding-bottom: 20px" ng-if="status.complete">Results for City {$ org.audit_template_city_id $}</div>
 
   <div class="progress_bar_container" ng-show="status.in_progress">
     <div class="progress_bar_copy_top">Progress</div>
@@ -11,8 +12,11 @@
     <div class="progress_bar_copy_bottom">{$ status.progress | number:0 $}% {$:: 'Complete' | translate $} {$ status.status_message ? ': ' + status.status_message : '' $}</div>
   </div>
   <div ng-show="status.complete">
-    <div>Properties updates: {$ status.result.success $}</div>
-    <div>Properties failed to update: {$ status.result.failure $}</div>
+    <div ng-if="status.result.error">Error: {$ status.result.error $}</div>
+    <div ng-if="!status.result.error">
+      <div>Properties updated: {$ status.result.success $}</div>
+      <div>Properties failed to update: {$ status.result.failure $}</div>
+    </div>
   </div>
 </div>
 

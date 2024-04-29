@@ -19,6 +19,7 @@ from seed.audit_template.audit_template import AuditTemplate
 from seed.landing.models import SEEDUser as User
 from seed.test_helpers.fake import FakeCycleFactory, FakePropertyFactory, FakePropertyStateFactory, FakePropertyViewFactory
 from seed.utils.organizations import create_organization
+from seed.utils.encrypt import encrypt
 
 
 class AuditTemplateViewTests(TestCase):
@@ -608,6 +609,9 @@ class AuditTemplateSubmissionImport(TestCase):
         self.org.at_organization_token = False
         self.org.audit_template_user = False
         self.org.audit_template_password = False
+        self.org.at_organization_token = 'LQssSnjk6fhBzh3X72v6'
+        self.org.audit_template_user = '179d-stage@nrel.gov'
+        self.org.audit_template_password = encrypt('thb4fva_krp7fam7JHK')
         self.skip_test = (
             not self.org.at_organization_token
             or not self.org.audit_template_user

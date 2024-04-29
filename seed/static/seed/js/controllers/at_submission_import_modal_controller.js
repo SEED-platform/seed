@@ -17,13 +17,12 @@ angular.module('BE.seed.controller.at_submission_import_modal', []).controller('
     org
   ) {
     $scope.org = org;
-    $scope.test = 'dog';
     $scope.status = {
       progress: 0,
       status_message: '',
       in_progress: false,
       complete: false,
-      result: 'error' // default to error
+      result: {}, 
     };
 
     $scope.get_submissions = () => {
@@ -40,9 +39,10 @@ angular.module('BE.seed.controller.at_submission_import_modal', []).controller('
               $scope.status.complete = true;
               $scope.status.result = data.message;
             },
-            () => {
+            (data) => {
               $scope.status.in_progress = false;
               $scope.status.complete = true;
+              $scope.status.result = {error: data.data.message};
             },
             $scope.status
           );
