@@ -21,10 +21,33 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
   '$sce',
   '$translate',
   '$uibModal',
+  'ah_service',
+  'access_level_tree',
+  'user_service',
   // eslint-disable-next-line func-names
-  function ($scope, $log, $stateParams, spinner_utility, inventory_reports_service, simple_modal_service, columns, cycles, organization_payload, urls, $sce, $translate, $uibModal) {
+  function ($scope, $log, $stateParams, spinner_utility, inventory_reports_service, simple_modal_service, columns, cycles, organization_payload, urls, $sce, $translate, $uibModal, ah_service, access_level_tree, user_service) {
     const org_id = organization_payload.organization.id;
     const base_storage_key = `report.${org_id}`;
+    console.log(user_service.get_access_level_instance())
+
+    $scope.access_level_tree = access_level_tree.access_level_tree;
+    $scope.level_names = access_level_tree.access_level_names;
+    $scope.level_name_index = null;
+    $scope.potential_level_instances = [];
+    $scope.access_level_instance_id = null;
+    $scope.users_access_level_instance_id = user_service.get_access_level_instance().id;
+
+
+    const access_level_instances_by_depth = ah_service.calculate_access_level_instances_by_depth($scope.access_level_tree);
+    // cannot select parents alis
+    const [users_depth, ali] = Object.entries(access_level_instances_by_depth).find(([_, x]) => x.length === 1 && x[0].id == $scope.users_access_level_instance_id)
+    $scope.level_names = access_level_tree.access_level_names.slice(users_depth-1);
+
+    $scope.change_selected_level_index = () => {
+      const new_level_instance_depth = parseInt($scope.level_name_index, 10) + parseInt(users_depth, 10);
+      $scope.potential_level_instances = access_level_instances_by_depth[new_level_instance_depth];
+      $scope.access_level_instance_id = null;
+    };
 
     const pretty_unit = (pint_spec) => {
       const mappings = {
@@ -137,10 +160,17 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
 
     const localStorageXAxisKey = `${base_storage_key}.xaxis`;
     const localStorageYAxisKey = `${base_storage_key}.yaxis`;
+    const localStorageALIndex = `${base_storage_key}.ALIndex`;
+    const localStorageALIID = `${base_storage_key}.ALIID`;
 
     // Currently selected x and y variables - check local storage first, otherwise initialize to first choice
     $scope.xAxisSelectedItem = JSON.parse(localStorage.getItem(localStorageXAxisKey)) || $scope.xAxisVars[0];
     $scope.yAxisSelectedItem = JSON.parse(localStorage.getItem(localStorageYAxisKey)) || $scope.yAxisVars[0];
+
+    $scope.level_name_index = JSON.parse(localStorage.getItem(localStorageALIndex)) || "0";
+    const new_level_instance_depth = parseInt($scope.level_name_index, 10) + parseInt(users_depth, 10);
+    $scope.potential_level_instances = access_level_instances_by_depth[new_level_instance_depth]
+    $scope.access_level_instance_id = JSON.parse(localStorage.getItem(localStorageALIID)) || parseInt($scope.users_access_level_instance_id, 0);
 
     // Chart data
     $scope.chartData = [];
@@ -393,7 +423,7 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
       $scope.chartIsLoading = true;
 
       inventory_reports_service
-        .get_report_data(xVar, yVar, $scope.selected_cycles)
+        .get_report_data(xVar, yVar, $scope.selected_cycles, $scope.access_level_instance_id)
         .then(
           (data) => {
             data = data.data;
@@ -502,6 +532,8 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
       localStorage.setItem(localStorageXAxisKey, JSON.stringify($scope.xAxisSelectedItem));
       localStorage.setItem(localStorageYAxisKey, JSON.stringify($scope.yAxisSelectedItem));
       localStorage.setItem(localStorageSelectedCycles, JSON.stringify($scope.selected_cycles));
+      localStorage.setItem(localStorageALIndex, JSON.stringify($scope.level_name_index));
+      localStorage.setItem(localStorageALIID, JSON.stringify($scope.access_level_instance_id));
     }
 
     /*  Generate an array of color objects to be used as part of chart configuration

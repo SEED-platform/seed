@@ -826,12 +826,25 @@ class OrganizationViewSet(viewsets.ViewSet):
     @action(detail=True, methods=["GET"])
     def report(self, request, pk=None):
         """Retrieve a summary report for charting x vs y"""
-        access_level_instance = AccessLevelInstance.objects.get(pk=self.request.access_level_instance_id)
         params = {
             "x_var": request.query_params.get("x_var", None),
             "y_var": request.query_params.get("y_var", None),
+            "access_level_instance_id": request.query_params.get("access_level_instance_id", None),
             "cycle_ids": request.query_params.getlist("cycle_ids", None),
         }
+
+        user_ali = AccessLevelInstance.objects.get(pk=self.request.access_level_instance_id)
+        if params["access_level_instance_id"] is None:
+            ali = user_ali
+        else:
+            try:
+                selected_ali = AccessLevelInstance.objects.get(pk=params["access_level_instance_id"])
+                if not (selected_ali == user_ali or selected_ali.is_descendant_of(user_ali)):
+                    raise AccessLevelInstance.DoesNotExist
+            except (AccessLevelInstance.DoesNotExist, AssertionError):
+                return Response({"status": "error", "message": "No such ali"}, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                ali = selected_ali
 
         excepted_params = ["x_var", "y_var", "cycle_ids"]
         missing_params = [p for p in excepted_params if p not in params]
@@ -841,7 +854,7 @@ class OrganizationViewSet(viewsets.ViewSet):
             )
 
         cycles = Cycle.objects.filter(id__in=params["cycle_ids"])
-        data = self.get_raw_report_data(pk, access_level_instance, cycles, params["x_var"], params["y_var"])
+        data = self.get_raw_report_data(pk, ali, cycles, params["x_var"], params["y_var"])
         data = {
             "chart_data": functools.reduce(operator.iadd, [d["chart_data"] for d in data], []),
             "property_counts": [d["property_counts"] for d in data],
