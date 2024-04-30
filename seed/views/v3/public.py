@@ -136,10 +136,21 @@ class PublicCycleViewSet(viewsets.ViewSet):
             return JsonResponse({"erorr": "Organization does not exist"}, status=status.HTTP_404_NOT_FOUND)
         except Cycle.DoesNotExist:
             return JsonResponse({"erorr": "Cycle does not exist"}, status=status.HTTP_404_NOT_FOUND)
+        
+        # access_level_instance 
+        
         # gonna need query param for taxlots or properties
         view_ids = PropertyView.objects.filter(property__organization=org, cycle=cycle).values_list('id', flat=True)
 
-        # format_export_data()
+        format_export_data(
+            view_ids,
+            org.id,
+            None,
+            'properties'
+            'property',
+            'access_level_instance'
+
+        )
 
         feed = {'TEST': "ABC"}
         return JsonResponse(feed, json_dumps_params={"indent": 4}, status=status.HTTP_200_OK)
