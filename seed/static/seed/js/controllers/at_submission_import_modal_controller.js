@@ -22,7 +22,7 @@ angular.module('BE.seed.controller.at_submission_import_modal', []).controller('
       status_message: '',
       in_progress: false,
       complete: false,
-      result: {},
+      result: {}
     };
 
     $scope.get_submissions = () => {
@@ -42,7 +42,7 @@ angular.module('BE.seed.controller.at_submission_import_modal', []).controller('
             (data) => {
               $scope.status.in_progress = false;
               $scope.status.complete = true;
-              $scope.status.result = {error: data.data.message};
+              $scope.status.result = { error: data.data.message };
             },
             $scope.status
           );

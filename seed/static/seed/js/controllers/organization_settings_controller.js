@@ -311,7 +311,7 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
         audit_template_service.upsert_audit_template_config($scope.org.id, $scope.at_conf, $scope.timezone)
           .then(() => {
             audit_template_service.get_audit_template_configs($scope.org.id)
-              .then((response) => $scope.at_conf = response[0])
+              .then((response) => { $scope.at_conf = response[0]; });
           });
       }
 
@@ -521,17 +521,15 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
       $scope.at_conf = $scope.at_conf.id ? { id: $scope.at_conf.id } : {};
     };
     const validate_at_conf = () => {
-      const {update_at_day, update_at_hour, update_at_minute} = $scope.at_conf;
+      const { update_at_day, update_at_hour, update_at_minute } = $scope.at_conf;
 
-      const validate_input = (input, upper_limit) => {
-        return typeof input == 'number' && input >= 0 && input <= upper_limit;
-      }
+      const validate_input = (input, upper_limit) => typeof input === 'number' && input >= 0 && input <= upper_limit;
 
       return (
         validate_input(update_at_day, 6) &&
         validate_input(update_at_hour, 23) &&
         validate_input(update_at_minute, 59)
-      )
+      );
     };
 
     $scope.audit_template_report_types = [
