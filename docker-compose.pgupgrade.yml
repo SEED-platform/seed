@@ -1,8 +1,8 @@
 ---
 services:
-  seed-pg13:
+  pg13-2.14.2:
     image: timescale/timescaledb-ha:pg13.14-ts2.14.2-oss
-    container_name: seed-pg13
+    container_name: pg13-2.14.2
     environment:
       POSTGRES_DB: seed
       POSTGRES_USER: seed
@@ -10,9 +10,49 @@ services:
     volumes:
       - ./share:/share
     restart: "no"
-  seed-pg14:
+  pg13-2.11.0:
+    image: timescale/timescaledb-ha:pg13.11-ts2.11.0-all
+    container_name: pg13-2.11.0
+    environment:
+      POSTGRES_DB: seed
+      POSTGRES_USER: seed
+      POSTGRES_PASSWORD: password
+    volumes:
+      - ./share:/share
+    restart: "no"
+  pg13-2.11.2:
+    image: timescale/timescaledb-ha:pg13.12-ts2.11.2-all-oss
+    container_name: pg13-2.11.2
+    environment:
+      POSTGRES_DB: seed
+      POSTGRES_USER: seed
+      POSTGRES_PASSWORD: password
+    volumes:
+      - ./share:/share
+    restart: "no"
+  pg14-2.14.2:
     image: timescale/timescaledb-ha:pg14.11-ts2.14.2-all-oss
-    container_name: seed-pg14
+    container_name: pg14-2.14.2
+    environment:
+      POSTGRES_DB: seed
+      POSTGRES_USER: seed
+      POSTGRES_PASSWORD: password
+    volumes:
+      - ./share:/share
+    restart: "no"
+  pg14-2.11.0:
+    image: timescale/timescaledb-ha:pg14.8-ts2.11.0-oss
+    container_name: pg14-2.11.0
+    environment:
+      POSTGRES_DB: seed
+      POSTGRES_USER: seed
+      POSTGRES_PASSWORD: password
+    volumes:
+      - ./share:/share
+    restart: "no"
+  pg16-2.14.2:
+    image: timescale/timescaledb-ha:pg16.2-ts2.14.2-os
+    container_name: pg16-2.14.2
     environment:
       POSTGRES_DB: seed
       POSTGRES_USER: seed
