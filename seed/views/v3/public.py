@@ -3,8 +3,9 @@ from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny
 
-from seed.models import Organization
+from seed.models import Cycle, Organization, PropertyView
 from seed.utils.public import PUBLIC_HTML_DISABLED, PUBLIC_HTML_HEADER, PUBLIC_HTML_STYLE, dict_to_table, page_navigation_link, public_feed
+from seed.utils.tax_lot_properties import format_export_data
 
 
 class PublicOrganizationViewSet(viewsets.ViewSet):
@@ -123,3 +124,22 @@ class PublicOrganizationViewSet(viewsets.ViewSet):
         """
 
         return HttpResponse(html)
+    
+class PublicCycleViewSet(viewsets.ViewSet):
+    
+    @action(detail=True, methods=["get"], url_path="geo.json")
+    def public_geojson(self, request, organization_pk, pk):
+        try:
+            org = Organization.objects.get(pk=organization_pk)
+            cycle = Cycle.objects.get(organization_id=organization_pk, pk=pk)
+        except Organization.DoesNotExist:
+            return JsonResponse({"erorr": "Organization does not exist"}, status=status.HTTP_404_NOT_FOUND)
+        except Cycle.DoesNotExist:
+            return JsonResponse({"erorr": "Cycle does not exist"}, status=status.HTTP_404_NOT_FOUND)
+        # gonna need query param for taxlots or properties
+        view_ids = PropertyView.objects.filter(property__organization=org, cycle=cycle).values_list('id', flat=True)
+
+        # format_export_data()
+
+        feed = {'TEST': "ABC"}
+        return JsonResponse(feed, json_dumps_params={"indent": 4}, status=status.HTTP_200_OK)
