@@ -464,18 +464,19 @@ def _batch_get_city_submission_xml(org_id, city_id, progress_key):
     xml_data_by_cycle = {}
     for sub in submissions:
         custom_id = sub["tax_id"]
-        updated_at = parser.parse(sub["updated_at"])
+        updated_at = parser.parse(sub["updated_at"])  # should we use creaetd_at?
 
         view = PropertyView.objects.filter(
+            property__organization=org_id,
             state__custom_id_1=custom_id,
             cycle__start__lte=updated_at,
             cycle__end__gte=updated_at,
-            # QUESTION: do we only update old views? if so uncomment this line
-            # state__updated__lte=updated_at  # update if submission is newer than state
+            # Do we only update old views?
+            state__updated__lte=updated_at
         ).first()
 
         progress_data.step("Getting XML for submissions...")
-        # logging.error('>>> custom_id %s', custom_id)
+        # logging.error('>>> custom_id: %s - view: %s', custom_id, view)
         if view:
             xml, _ = audit_template.get_submission(sub["id"], "xml")
 
