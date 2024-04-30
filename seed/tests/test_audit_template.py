@@ -608,10 +608,7 @@ class AuditTemplateSubmissionImport(TestCase):
         # To run test, enter valid audit template credentials
         self.org.at_organization_token = False
         self.org.audit_template_user = False
-        self.org.audit_template_password = False
-        self.org.at_organization_token = 'LQssSnjk6fhBzh3X72v6'
-        self.org.audit_template_user = '179d-stage@nrel.gov'
-        self.org.audit_template_password = encrypt('thb4fva_krp7fam7JHK')
+        self.org.audit_template_password = False  # password must be encrypted: encrypt('password')
         self.skip_test = (
             not self.org.at_organization_token
             or not self.org.audit_template_user
@@ -667,7 +664,7 @@ class AuditTemplateSubmissionImport(TestCase):
             view.refresh_from_db()
 
         # view1's state is the only state that matches the AT response's tax_id (custom_id_1) and cycle dates
-        assert self.view1.state.address_line_1 == "ABC Street"
+        assert self.view1.state.address_line_1 == "ABC Street", "IMPORTANT: To run this test comment out 'state__updated__lte=updated_at' in view filter (line 475 -ish) in /audit_template/audit_template.py _batch_get_city_submission_xml"
         assert self.view2.state.address_line_1 == "old address 2"
         assert self.view3.state.address_line_1 == "old address 3"
         assert self.view4.state.address_line_1 == "old address 4"
@@ -693,7 +690,7 @@ class AuditTemplateSubmissionImport(TestCase):
 
         for view in [self.view1, self.view2, self.view3, self.view4]:
             view.refresh_from_db()
-        assert self.view1.state.address_line_1 == "ABC Street"
+        assert self.view1.state.address_line_1 == "ABC Street", "IMPORTANT: To run this test comment out 'state__updated__lte=updated_at' from view filter (line 475 -ish) in /audit_template/audit_template.py _batch_get_city_submission_xml"
         assert self.view2.state.address_line_1 == "old address 2"
         assert self.view3.state.address_line_1 == "old address 3"
         assert self.view4.state.address_line_1 == "old address 4"
