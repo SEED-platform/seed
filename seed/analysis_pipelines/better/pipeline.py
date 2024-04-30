@@ -12,6 +12,7 @@ import dateutil.parser
 from celery import chain, shared_task
 from django.core.files.base import ContentFile
 from django.db.models import Count
+from django.utils.timezone import make_aware
 
 from seed.analysis_pipelines.better.buildingsync import SEED_TO_BSYNC_RESOURCE_TYPE, _build_better_input
 from seed.analysis_pipelines.better.client import BETTERClient
@@ -159,8 +160,8 @@ def get_meter_readings(property_id, preprocess_meters, config):
             value2 = value2 + timedelta(days=1)
         elif config.get("select_meters") == "select_cycle":
             cycle = Cycle.objects.get(pk=config["cycle_id"])
-            value1 = dateutil.parser.parse(cycle.start.isoformat())
-            value2 = dateutil.parser.parse(cycle.end.isoformat()) + timedelta(days=1)
+            value1 = make_aware(dateutil.parser.parse(cycle.start.isoformat()))
+            value2 = make_aware(dateutil.parser.parse(cycle.end.isoformat())) + timedelta(days=1)
 
     except Exception as err:
         raise AnalysisPipelineError(f"Analysis configuration error: invalid dates selected for meter readings: {err}")
@@ -208,7 +209,6 @@ def get_meter_readings(property_id, preprocess_meters, config):
                         "readings": readings,
                     }
                 )
-
     return selected_meters_and_readings
 
 
@@ -295,8 +295,8 @@ def _start_analysis(self, analysis_id):
     pipeline = BETTERPipeline(analysis_id)
     progress_data = pipeline.set_analysis_status_to_running()
     progress_data.step("Sending requests to BETTER service")
-
     analysis = Analysis.objects.get(id=analysis_id)
+
     client = BETTERClient(analysis.organization.better_analysis_api_key)
     context = BETTERPipelineContext(analysis, progress_data, client)
 
@@ -492,15 +492,14 @@ def _process_results(self, analysis_id):
             )
         except Exception:
             if analysis.can_create():
-                column, _created = Column.objects.create(
+                Column.objects.create(
                     is_extra_data=True,
                     column_name=column_data_path.column_name,
                     organization=analysis.organization,
                     table_name="PropertyState",
+                    display_name=column_data_path.column_display_name,
+                    column_description=column_data_path.column_display_name,
                 )
-                column.display_name = column_data_path.column_display_name
-                column.column_description = column_data_path.column_display_name
-                column.save()
             else:
                 missing_columns = True
 
