@@ -22,7 +22,7 @@ angular.module('BE.seed.controller.at_submission_import_modal', []).controller('
       status_message: '',
       in_progress: false,
       complete: false,
-      result: {}, 
+      result: {},
     };
 
     $scope.get_submissions = () => {

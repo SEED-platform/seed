@@ -529,7 +529,7 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
 
       return (
         validate_input(update_at_day, 6) &&
-        validate_input(update_at_hour, 23) && 
+        validate_input(update_at_hour, 23) &&
         validate_input(update_at_minute, 59)
       )
     };

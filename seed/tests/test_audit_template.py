@@ -19,7 +19,6 @@ from seed.audit_template.audit_template import AuditTemplate
 from seed.landing.models import SEEDUser as User
 from seed.test_helpers.fake import FakeCycleFactory, FakePropertyFactory, FakePropertyStateFactory, FakePropertyViewFactory
 from seed.utils.organizations import create_organization
-from seed.utils.encrypt import encrypt
 
 
 class AuditTemplateViewTests(TestCase):
@@ -664,7 +663,9 @@ class AuditTemplateSubmissionImport(TestCase):
             view.refresh_from_db()
 
         # view1's state is the only state that matches the AT response's tax_id (custom_id_1) and cycle dates
-        assert self.view1.state.address_line_1 == "ABC Street", "IMPORTANT: To run this test comment out 'state__updated__lte=updated_at' in view filter (line 475 -ish) in /audit_template/audit_template.py _batch_get_city_submission_xml"
+        assert (
+            self.view1.state.address_line_1 == "ABC Street"
+        ), "IMPORTANT: To run this test comment out 'state__updated__lte=updated_at' in view filter (line 475 -ish) in /audit_template/audit_template.py _batch_get_city_submission_xml"
         assert self.view2.state.address_line_1 == "old address 2"
         assert self.view3.state.address_line_1 == "old address 3"
         assert self.view4.state.address_line_1 == "old address 4"
@@ -690,7 +691,9 @@ class AuditTemplateSubmissionImport(TestCase):
 
         for view in [self.view1, self.view2, self.view3, self.view4]:
             view.refresh_from_db()
-        assert self.view1.state.address_line_1 == "ABC Street", "IMPORTANT: To run this test comment out 'state__updated__lte=updated_at' from view filter (line 475 -ish) in /audit_template/audit_template.py _batch_get_city_submission_xml"
+        assert (
+            self.view1.state.address_line_1 == "ABC Street"
+        ), "IMPORTANT: To run this test comment out 'state__updated__lte=updated_at' from view filter (line 475 -ish) in /audit_template/audit_template.py _batch_get_city_submission_xml"
         assert self.view2.state.address_line_1 == "old address 2"
         assert self.view3.state.address_line_1 == "old address 3"
         assert self.view4.state.address_line_1 == "old address 4"

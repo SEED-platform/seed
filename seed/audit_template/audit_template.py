@@ -25,8 +25,8 @@ from seed.building_sync.mappings import BUILDINGSYNC_URI, NAMESPACES
 from seed.lib.progress_data.progress_data import ProgressData
 from seed.lib.superperms.orgs.models import Organization
 from seed.models import PropertyView
-from seed.views.v3.properties import PropertyViewSet
 from seed.utils.encrypt import decrypt
+from seed.views.v3.properties import PropertyViewSet
 
 _log = logging.getLogger(__name__)
 
@@ -472,7 +472,7 @@ def _batch_get_city_submission_xml(org_id, city_id, progress_key):
             cycle__start__lte=updated_at,
             cycle__end__gte=updated_at,
             # Do we only update old views?
-            state__updated__lte=updated_at
+            state__updated__lte=updated_at,
         ).first()
 
         progress_data.step("Getting XML for submissions...")
