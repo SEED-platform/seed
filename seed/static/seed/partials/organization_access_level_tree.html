@@ -72,15 +72,15 @@
           <div class="level1">{$:: 'Level' | translate $} 1: {$ access_level_names[0] $}</div>
           <div class="level0" style="width: 98%; float: right; margin-right: 10px">
             <p ng-if="auth.requires_owner" translate>ACCESS_LEVEL_ROOT_TEXT</p>
-            {$:: access_level_tree[0].data.name $}
+            {$:: access_level_tree[0].name $}
             <button
               class="btn btn-info"
               ng-if="auth.requires_owner"
               type="button"
-              ng-click="open_edit_al_instance_modal(access_level_tree[0].id, access_level_tree[0].data.name);
+              ng-click="open_edit_al_instance_modal(access_level_tree[0].id, access_level_tree[0].name);
                       $event.preventDefault(); $event.stopPropagation();"
               tooltip-placement="right"
-              uib-tooltip="Edit {$ access_level_tree[0].data.name $}"
+              uib-tooltip="Edit {$ access_level_tree[0].name $}"
             >
               <i class="fa-solid fa-pencil fa-fw"></i>
             </button>
@@ -119,15 +119,15 @@
                         >
                             <td class="level-child">
                                 <i ng-if="child.children.length" class="fa-solid fa-chevron-right" id="indicator-{$ child.id $}"></i>
-                                <span>{$ child.data.name $}</span>
+                                <span>{$ child.name $}</span>
                             </td>
                             <td>
-                                <button class="btn btn-info" type="button" ng-if="auth.requires_owner" ng-click="open_edit_al_instance_modal(child.id, child.data.name);
-                                $event.preventDefault(); $event.stopPropagation();" tooltip-placement="bottom" uib-tooltip="Edit {$ child.data.name $}">
+                                <button class="btn btn-info" type="button" ng-if="auth.requires_owner" ng-click="open_edit_al_instance_modal(child.id, child.name);
+                                $event.preventDefault(); $event.stopPropagation();" tooltip-placement="bottom" uib-tooltip="Edit {$ child.name $}">
                                     <i class="fa-solid fa-pencil fa-fw"></i>
                                 </button>
-                                <button class="btn btn-info" type="button" ng-if="auth.requires_owner" ng-click="open_delete_al_instance_modal(child.id, child.data.name);
-                                $event.preventDefault(); $event.stopPropagation();" tooltip-placement="bottom" uib-tooltip="Delete {$ child.data.name $}">
+                                <button class="btn btn-info" type="button" ng-if="auth.requires_owner" ng-click="open_delete_al_instance_modal(child.id, child.name);
+                                $event.preventDefault(); $event.stopPropagation();" tooltip-placement="bottom" uib-tooltip="Delete {$ child.name $}">
                                     <i class="fa-solid fa-trash fa-fw"></i>
                                 </button>
                             </td>
