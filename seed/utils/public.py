@@ -319,7 +319,11 @@ PUBLIC_HTML_STYLE = """
 def public_geojson(org, cycle, request):
     """Generates public geojson data"""
     params = request.query_params
-    # default to properties
+    page = params.get("page", 1)
+    per_page = params.get("per_page", 100)
+    # limit on per_page?
+    if per_page > 1000:
+        per_page = 1000
     view_klass_str = params.get("inventory", "properties").lower()
     if view_klass_str == "taxlots":
         view_klass = TaxLotView
@@ -328,19 +332,30 @@ def public_geojson(org, cycle, request):
         view_klass = PropertyView
         view_ids = view_klass.objects.filter(property__organization=org, cycle=cycle).values_list("id", flat=True)
 
+    paginator = Paginator(view_ids, per_page)
+    try:
+        view_ids_paginated = paginator.page(page)
+    except EmptyPage:
+        view_ids_paginated = paginator.page(paginator.num_pages) 
+
     metadata = {
         "organization": {"id": org.id, "name": org.name},
         "cycle": {"id": cycle.id, "name": cycle.name},
         "inventory": view_klass_str,
         "inventory count": len(view_ids),
+        "pagination": {
+            "page": page,
+            "total pages": paginator.num_pages,
+            "per page": per_page
+        }
     }
 
     if not view_ids:
-        return {"metadata": metadata, "data": []}
+        return {**metadata, "data": []}
 
     access_level_instance = org.root
     data, column_name_mappings = format_export_data(
-        view_ids,
+        view_ids_paginated,
         org.id,
         None,
         view_klass_str,
@@ -355,5 +370,6 @@ def public_geojson(org, cycle, request):
     # make data json readable
     data = viewset._json_response("", data, column_name_mappings)
     data = json.loads(data.content)
+    # remove type and name from data since its not a file?
 
-    return {"metadata": metadata, "data": data}
+    return {**metadata, "data": data}
