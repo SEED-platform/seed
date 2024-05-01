@@ -4,6 +4,7 @@ from urllib.parse import urlencode
 
 import pint
 from django.core.paginator import EmptyPage, Paginator
+from django.db.models import Q
 from django.db.models.functions import Lower
 
 from seed.models import Column, PropertyState, PropertyView, TaxLotState, TaxLotView
@@ -324,13 +325,19 @@ def public_geojson(org, cycle, request):
     # limit on per_page?
     if per_page > 1000:
         per_page = 1000
-    view_klass_str = params.get("inventory", "properties").lower()
-    if view_klass_str == "taxlots":
+    # default: only include properties
+    taxlots_only = params.get("taxlots", "false").lower() == "true"
+
+    if taxlots_only:
         view_klass = TaxLotView
-        view_ids = view_klass.objects.filter(taxlot__organization=org, cycle=cycle).values_list("id", flat=True)
+        view_klass_str = "taxlots"
+        org_query = Q(taxlot__organization=org)
     else:
         view_klass = PropertyView
-        view_ids = view_klass.objects.filter(property__organization=org, cycle=cycle).values_list("id", flat=True)
+        view_klass_str = "properties"
+        org_query = Q(property__organization=org)
+
+    view_ids = view_klass.objects.filter(org_query & Q(cycle=cycle)).order_by("id").values_list("id", flat=True)
 
     paginator = Paginator(view_ids, per_page)
     try:
@@ -338,16 +345,8 @@ def public_geojson(org, cycle, request):
     except EmptyPage:
         view_ids_paginated = paginator.page(paginator.num_pages)
 
-    metadata = {
-        "organization": {"id": org.id, "name": org.name},
-        "cycle": {"id": cycle.id, "name": cycle.name},
-        "inventory": view_klass_str,
-        "inventory count": len(view_ids),
-        "pagination": {"page": page, "total pages": paginator.num_pages, "per page": per_page},
-    }
-
     if not view_ids:
-        return {**metadata, "data": []}
+        return {"type": "FeatureCollection", "name": "SEED Export -", "data": []}
 
     access_level_instance = org.root
     data, column_name_mappings = format_export_data(
@@ -363,9 +362,8 @@ def public_geojson(org, cycle, request):
         "geojson",
     )
     viewset = TaxLotPropertyViewSet()
-    # make data json readable
+    # format data as json readable
     data = viewset._json_response("", data, column_name_mappings)
     data = json.loads(data.content)
-    # remove type and name from data since its not a file?
 
-    return {**metadata, "data": data}
+    return data

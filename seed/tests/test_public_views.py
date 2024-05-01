@@ -28,7 +28,6 @@ class TestPublicViews(DataMappingBaseTestCase):
         self.property_state_factory = FakePropertyStateFactory(organization=self.org)
         self.property_view_factory = FakePropertyViewFactory(organization=self.org)
 
-
         Column.objects.create(
             table_name="PropertyState",
             column_name="extra_col",
@@ -42,9 +41,9 @@ class TestPublicViews(DataMappingBaseTestCase):
             column.save()
 
         # create cycles
-        cycle1 = self.cycle_factory.get_cycle(name="2010 Calendar Year", start=datetime(2010, 1, 1), end=datetime(2011, 1, 1))
-        cycle2 = self.cycle_factory.get_cycle(name="2011 Calendar Year", start=datetime(2011, 1, 1), end=datetime(2012, 1, 1))
-        cycle3 = self.cycle_factory.get_cycle(name="2012 Calendar Year", start=datetime(2012, 1, 1), end=datetime(2013, 1, 1))
+        self.cycle1 = self.cycle_factory.get_cycle(name="2010 Calendar Year", start=datetime(2010, 1, 1), end=datetime(2011, 1, 1))
+        self.cycle2 = self.cycle_factory.get_cycle(name="2011 Calendar Year", start=datetime(2011, 1, 1), end=datetime(2012, 1, 1))
+        self.cycle3 = self.cycle_factory.get_cycle(name="2012 Calendar Year", start=datetime(2012, 1, 1), end=datetime(2013, 1, 1))
 
         # create properties
         property1 = self.property_factory.get_property()
@@ -63,12 +62,12 @@ class TestPublicViews(DataMappingBaseTestCase):
         state23 = self.property_state_factory.get_property_state(property_name="property 23", ubid="a+b+c-2")
 
         # create views
-        self.property_view_factory.get_property_view(prpty=property1, state=state11, cycle=cycle1)
-        self.property_view_factory.get_property_view(prpty=property1, state=state12, cycle=cycle2)
-        self.property_view_factory.get_property_view(prpty=property1, state=state13, cycle=cycle3)
-        self.property_view_factory.get_property_view(prpty=property2, state=state21, cycle=cycle1)
-        self.property_view_factory.get_property_view(prpty=property2, state=state22, cycle=cycle2)
-        self.property_view_factory.get_property_view(prpty=property2, state=state23, cycle=cycle3)
+        self.property_view_factory.get_property_view(prpty=property1, state=state11, cycle=self.cycle1)
+        self.property_view_factory.get_property_view(prpty=property1, state=state12, cycle=self.cycle2)
+        self.property_view_factory.get_property_view(prpty=property1, state=state13, cycle=self.cycle3)
+        self.property_view_factory.get_property_view(prpty=property2, state=state21, cycle=self.cycle1)
+        self.property_view_factory.get_property_view(prpty=property2, state=state22, cycle=self.cycle2)
+        self.property_view_factory.get_property_view(prpty=property2, state=state23, cycle=self.cycle3)
 
     def test_public_feed(self):
         # a non logged in user should be able to access public endpoints, but not others
@@ -104,3 +103,32 @@ class TestPublicViews(DataMappingBaseTestCase):
         response = self.client.get(url, content_type="application/json")
         assert response.status_code == 200
         assert response.headers["Content-Type"] == "text/html; charset=utf-8"
+
+    def test_public_geojson(self):
+        url = reverse_lazy("api:v3:public-organizations-cycles-geojson", args=[self.org.id, self.cycle2.id])
+        response = self.client.get(url, content_type="application/json")
+        assert response.status_code == 200
+        assert response.json() == {
+            "detail": f"Public GeoJSON is not enabled for organization '{self.org.name}'. Public endpoints can be enabled in organization settings"
+        }
+
+        self.org.public_feed_enabled = True
+        self.org.save()
+
+        # incorrect args
+        url = reverse_lazy("api:v3:public-organizations-cycles-geojson", args=[-1, self.cycle1.id])
+        response = self.client.get(url, content_type="application/json")
+        assert response.status_code == 404
+        assert response.json() == {"erorr": "Organization does not exist"}
+        url = reverse_lazy("api:v3:public-organizations-cycles-geojson", args=[self.org.id, -1])
+        response = self.client.get(url, content_type="application/json")
+        assert response.status_code == 404
+        assert response.json() == {"erorr": "Cycle does not exist"}
+
+        url = reverse_lazy("api:v3:public-organizations-cycles-geojson", args=[self.org.id, self.cycle2.id])
+        response = self.client.get(url, content_type="application/json")
+        assert response.status_code == 200
+        data = response.json()
+        assert sorted(data.keys()) == ["features", "name", "type"]
+        assert len(data["features"]) == 2
+        assert data["features"][0]["properties"]["Property Name"] == "property 12"
