@@ -406,6 +406,9 @@ class Organization(models.Model):
         return new_access_level_instance
 
     def get_access_tree(self, from_ali=None) -> list:
+        if from_ali is None:
+            from_ali = self.root
+
         alis_ordered_by_lft = list(
             AccessLevelInstance.objects.filter(organization=from_ali.organization, lft__gte=from_ali.lft, rgt__lte=from_ali.rgt)
             .order_by("-lft")
