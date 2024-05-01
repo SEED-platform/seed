@@ -1,13 +1,10 @@
-import json
 from django.http import HttpResponse, JsonResponse
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny
 
-from seed.models import Cycle, Organization, PropertyView
-from seed.utils.public import PUBLIC_HTML_DISABLED, PUBLIC_HTML_HEADER, PUBLIC_HTML_STYLE, dict_to_table, page_navigation_link, public_feed
-from seed.utils.tax_lot_properties import format_export_data
-from seed.views.v3.tax_lot_properties import TaxLotPropertyViewSet
+from seed.models import Cycle, Organization
+from seed.utils.public import PUBLIC_HTML_DISABLED, PUBLIC_HTML_HEADER, PUBLIC_HTML_STYLE, dict_to_table, page_navigation_link, public_feed, public_geojson
 
 
 
@@ -145,28 +142,7 @@ class PublicCycleViewSet(viewsets.ViewSet):
             return JsonResponse(
                 {"detail": f"Public GeoJson is not enabled for organization '{org.name}'. Public endpoints can be enabled in organization settings"}
             )
-        
-        access_level_instance = org.root 
 
-        
-        # gonna need query param for taxlots or properties
-        view_ids = PropertyView.objects.filter(property__organization=org, cycle=cycle).values_list('id', flat=True)
+        geojson_data = public_geojson(org, cycle, request)
 
-        data, column_name_mappings = format_export_data(
-            view_ids,
-            org.id,
-            None,
-            'properties',
-            PropertyView,
-            access_level_instance,
-            None,
-            False,
-            False,
-            'geojson',
-        )
-        viewset = TaxLotPropertyViewSet()
-        # make data json readable
-        data = viewset._json_response('', data, column_name_mappings)
-        data = json.loads(data.content)
-
-        return JsonResponse(data, json_dumps_params={"indent": 4}, status=status.HTTP_200_OK)
+        return JsonResponse(geojson_data, json_dumps_params={"indent": 4}, status=status.HTTP_200_OK)

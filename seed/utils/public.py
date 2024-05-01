@@ -1,11 +1,14 @@
+
 import datetime
+import json
 from urllib.parse import urlencode
 
 import pint
 from django.core.paginator import EmptyPage, Paginator
 from django.db.models.functions import Lower
-
-from seed.models import Column, PropertyState, TaxLotState
+from seed.models import Column, PropertyState, PropertyView, TaxLotState, TaxLotView
+from seed.utils.tax_lot_properties import format_export_data
+from seed.views.v3.tax_lot_properties import TaxLotPropertyViewSet
 
 
 def public_feed(org, request, html_view=False):
@@ -311,3 +314,50 @@ PUBLIC_HTML_STYLE = """
 
             }
         """
+
+def public_geojson(org, cycle, request):
+        params = request.query_params
+        # default to properties
+        view_klass_str = params.get('inventory', 'properties').lower()
+        if view_klass_str == 'taxlots':
+            view_klass = TaxLotView 
+            view_ids = view_klass.objects.filter(taxlot__organization=org, cycle=cycle).values_list('id', flat=True)
+        else: 
+            view_klass = PropertyView
+            view_ids = view_klass.objects.filter(property__organization=org, cycle=cycle).values_list('id', flat=True)
+        
+        metadata = {
+            "organization": {"id": org.id, "name": org.name},
+            "cycle": {"id": cycle.id, "name": cycle.name},
+            "inventory": view_klass_str,
+            "inventory count": len(view_ids)
+        }
+        
+        if not view_ids:
+            return {
+                "metadata": metadata,
+                "data": []
+            }
+
+        access_level_instance = org.root 
+        data, column_name_mappings = format_export_data(
+            view_ids,
+            org.id,
+            None,
+            view_klass_str,
+            view_klass,
+            access_level_instance,
+            None,
+            False,
+            False,
+            'geojson',
+        )
+        viewset = TaxLotPropertyViewSet()
+        # make data json readable
+        data = viewset._json_response('', data, column_name_mappings)
+        data = json.loads(data.content)
+
+        return {
+            "metadata": metadata,
+            "data": data
+        }
