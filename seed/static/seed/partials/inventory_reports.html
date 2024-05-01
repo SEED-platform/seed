@@ -13,34 +13,34 @@
 <div class="section building-reports">
   <div class="section_content_container">
     <div class="section_content container-fluid">
-      <div class="content_block row" style="padding: 20px 20px 10px 20px">
+      <div class="row">
         <div class="col-md-12">
           <div class="row">
             <div class="col-md-2">
-              <h2 style="font-size: 18px"><i class="fa-solid fa-bar-chart pull-left"></i> {$:: 'Property Reports' | translate $}</h2>
+              <h2 class="property-report-header"><i class="fa-solid fa-bar-chart pull-left"></i> {$:: 'Property Reports' | translate $}</h2>
             </div>
-            <div class="form-inline pull-right chart-inputs">
-              <form class="form-inline pull-right chart-inputs" role="form" style="display: flex">
-
-                <div style="display: flex; flex-direction: column" class="right-bar">
-                  <div class="form-group">
-                    <label class="control-label col-sm-3" translate>Access Level:</label>
-                    <div class="col-sm-8">
-                      <select class="form-control" ng-model="level_name_index" ng-change="change_selected_level_index()"
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-12 chart-controls-container">
+            <div class="form-inline chart-inputs">
+              <form class="form-inline chart-inputs" role="form" style="display: flex">
+                <div style="display: flex; flex-direction: column; flex: 1 1 0" class="right-bar">
+                  <div class="form-group pad-bottom-10">
+                    <label class="control-label col-sm-4" translate>Access Level:</label>
+                      <select class="form-control col-sm-8" ng-model="level_name_index" ng-change="change_selected_level_index()"
                         ng-options="i as name for (i, name) in level_names"></select>
-                    </div>
                   </div>
                   <div class="form-group">
-                    <label class="control-label col-sm-3" translate>Access Level Instance:</label>
-                    <div class="col-sm-8">
-                      <select class="form-control" ng-model="access_level_instance_id"
+                    <label class="control-label col-sm-4" translate>Access Level Instance:</label>
+                      <select class="form-control col-sm-8" ng-model="access_level_instance_id"
                         ng-options="potential_level_instance.id as potential_level_instance.name for potential_level_instance in potential_level_instances"></select>
-                    </div>
                   </div>
                 </div>
 
-                <div style="display: flex; flex-direction: column" class="right-bar">
-                  <div class="form-group">
+                <div style="display: flex; flex-direction: column;" class="right-bar">
+                  <div class="form-group pad-bottom-10">
                     <label for="select-cycle">{$:: 'Cycles to Include' | translate $}:</label>
                     <li ng-repeat="item in selected_cycles" class="r-row r-row-centered">
                       <span class="r-grow">{$:: get_cycle_display(item) $}</span>
@@ -52,9 +52,10 @@
                       </select>
                     </li>
                   </div>
+
                 </div>
 
-                <div style="display: flex; flex-direction: column">
+                <div style="display: flex; flex-direction: column; flex: 1 1 0;">
                   <div class="form-group pad-bottom-10">
                     <label for="xAxisSelector">{$:: 'X Axis' | translate $}:</label>
                     <select class="form-control" id="xAxisSelector" ng-model="xAxisSelectedItem" ng-options="x.name for x in xAxisVars track by x.varName"></select>
@@ -65,17 +66,20 @@
                     <select class="form-control" id="yAxisSelector" ng-model="yAxisSelectedItem" ng-options="y.name for y in yAxisVars track by y.varName"></select>
                   </div>
                 </div>
-                <div class="form-group">
-                  <button type="submit" class="btn btn-primary"  ng-disabled="access_level_instance_id == null" ng-click="updateChartData()" translate>Update Charts</button>
+                <div style="display: flex; flex-direction: column; align-self: flex-end;">
+                  <div class="form-group" style="padding-bottom:20px; text-align: right;">
+                    <button type="submit" class="btn btn-info" ng-click="open_export_modal()" ng-disabled="!chartData.chartData.length" translate>Export Data</button>
+                  </div>
+                  <div class="form-group" style="text-align: right;">
+                    <button type="submit" class="btn btn-primary"  ng-disabled="access_level_instance_id == null" ng-click="updateChartData()" translate>Update Charts</button>
+                  </div>
                 </div>
               </form>
             </div>
           </div>
           <!-- ./row -->
 
-          <div class="row" style="padding: 20px; text-align: right">
-            <button type="submit" class="btn btn-primary" ng-click="open_export_modal()" ng-disabled="!chartData.chartData.length" translate>Export Chart Data</button>
-          </div>
+
           <!-- ./row -->
         </div>
         <!-- ./container -->
