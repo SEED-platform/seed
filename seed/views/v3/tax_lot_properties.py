@@ -8,8 +8,6 @@ import csv
 import datetime
 import io
 import logging
-import math
-from collections import OrderedDict
 from random import randint
 
 import xlsxwriter
@@ -23,12 +21,10 @@ from rest_framework.viewsets import GenericViewSet
 from seed.decorators import ajax_request_class
 from seed.lib.progress_data.progress_data import ProgressData
 from seed.lib.superperms.orgs.decorators import has_perm_class
-from seed.models import AccessLevelInstance, ColumnListProfile, PropertyView, TaxLotProperty, TaxLotView
+from seed.models import AccessLevelInstance, ColumnListProfile, PropertyView, TaxLotView
 from seed.models.meters import Meter, MeterReading
 from seed.models.property_measures import PropertyMeasure
 from seed.models.scenarios import Scenario
-from seed.serializers.meter_readings import MeterReadingSerializer
-from seed.serializers.meters import MeterSerializer
 from seed.serializers.tax_lot_properties import TaxLotPropertySerializer
 from seed.tasks import set_update_to_now
 from seed.utils.api import OrgMixin, api_endpoint_class

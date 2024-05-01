@@ -4,8 +4,15 @@ from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny
 
 from seed.models import Cycle, Organization
-from seed.utils.public import PUBLIC_HTML_DISABLED, PUBLIC_HTML_HEADER, PUBLIC_HTML_STYLE, dict_to_table, page_navigation_link, public_feed, public_geojson
-
+from seed.utils.public import (
+    PUBLIC_HTML_DISABLED,
+    PUBLIC_HTML_HEADER,
+    PUBLIC_HTML_STYLE,
+    dict_to_table,
+    page_navigation_link,
+    public_feed,
+    public_geojson,
+)
 
 
 class PublicOrganizationViewSet(viewsets.ViewSet):
@@ -41,7 +48,9 @@ class PublicOrganizationViewSet(viewsets.ViewSet):
 
         if not org.public_feed_enabled:
             return JsonResponse(
-                {"detail": f"Public feed is not enabled for organization '{org.name}'. Public endpoints can be enabled in organization settings"}
+                {
+                    "detail": f"Public feed is not enabled for organization '{org.name}'. Public endpoints can be enabled in organization settings"
+                }
             )
 
         feed = public_feed(org, request)
@@ -124,16 +133,17 @@ class PublicOrganizationViewSet(viewsets.ViewSet):
         """
 
         return HttpResponse(html)
-    
+
+
 class PublicCycleViewSet(viewsets.ViewSet):
     permission_classes = [AllowAny]
-    
+
     @action(detail=True, methods=["get"], url_path="geo.json")
     def public_geojson(self, request, organization_pk, pk):
         """
         Returns geojson data for selected inventory type within a specific cycle
 
-        Optional and configuratble query_params
+        Optional and configurable query_params
         :query_param inventory: string, 'properties' or 'taxlots'. Default is 'properties'
 
         Example Requests:
@@ -148,10 +158,12 @@ class PublicCycleViewSet(viewsets.ViewSet):
             return JsonResponse({"erorr": "Organization does not exist"}, status=status.HTTP_404_NOT_FOUND)
         except Cycle.DoesNotExist:
             return JsonResponse({"erorr": "Cycle does not exist"}, status=status.HTTP_404_NOT_FOUND)
-        
+
         if not org.public_feed_enabled:
             return JsonResponse(
-                {"detail": f"Public GeoJson is not enabled for organization '{org.name}'. Public endpoints can be enabled in organization settings"}
+                {
+                    "detail": f"Public GeoJson is not enabled for organization '{org.name}'. Public endpoints can be enabled in organization settings"
+                }
             )
 
         geojson_data = public_geojson(org, cycle, request)

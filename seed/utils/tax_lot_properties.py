@@ -5,19 +5,20 @@ from seed.models import ColumnListProfile, TaxLotProperty
 from seed.serializers.meter_readings import MeterReadingSerializer
 from seed.serializers.meters import MeterSerializer
 
+
 def format_export_data(
-        ids,
-        org_id,
-        profile_id,
-        view_klass_str,
-        view_klass,
-        access_level_instance,
-        column_profile,
-        include_notes,
-        include_meter_data,
-        export_type,
-        progress_data=False,
-    ):
+    ids,
+    org_id,
+    profile_id,
+    view_klass_str,
+    view_klass,
+    access_level_instance,
+    column_profile,
+    include_notes,
+    include_meter_data,
+    export_type,
+    progress_data=False,
+):
     # Set the first column to be the ID
     column_name_mappings = OrderedDict([("id", "ID")])
     column_ids, add_column_name_mappings, columns_from_database = ColumnListProfile.return_columns(org_id, profile_id, view_klass_str)
@@ -46,9 +47,7 @@ def format_export_data(
         column_name_mappings["taxlot_notes"] = "Tax Lot Notes"
         column_name_mappings["taxlot_labels"] = "Tax Lot Labels"
 
-    model_views = (
-        view_klass.objects.select_related(*select_related).prefetch_related(*prefetch_related).filter(**filter_str).order_by("id")
-    )
+    model_views = view_klass.objects.select_related(*select_related).prefetch_related(*prefetch_related).filter(**filter_str).order_by("id")
     if progress_data:
         progress_data.step("Exporting Inventory...")
     data = TaxLotProperty.serialize(model_views, column_ids, columns_from_database)
@@ -105,5 +104,5 @@ def format_export_data(
         else:
             view_id_str = "taxlot_view_id"
         data.sort(key=lambda inventory_obj: order_dict[inventory_obj[view_id_str]])
-    
+
     return data, column_name_mappings
