@@ -336,18 +336,14 @@ def public_geojson(org, cycle, request):
     try:
         view_ids_paginated = paginator.page(page)
     except EmptyPage:
-        view_ids_paginated = paginator.page(paginator.num_pages) 
+        view_ids_paginated = paginator.page(paginator.num_pages)
 
     metadata = {
         "organization": {"id": org.id, "name": org.name},
         "cycle": {"id": cycle.id, "name": cycle.name},
         "inventory": view_klass_str,
         "inventory count": len(view_ids),
-        "pagination": {
-            "page": page,
-            "total pages": paginator.num_pages,
-            "per page": per_page
-        }
+        "pagination": {"page": page, "total pages": paginator.num_pages, "per page": per_page},
     }
 
     if not view_ids:
