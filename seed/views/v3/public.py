@@ -1,3 +1,4 @@
+import json
 from django.http import HttpResponse, JsonResponse
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
@@ -6,6 +7,8 @@ from rest_framework.permissions import AllowAny
 from seed.models import Cycle, Organization, PropertyView
 from seed.utils.public import PUBLIC_HTML_DISABLED, PUBLIC_HTML_HEADER, PUBLIC_HTML_STYLE, dict_to_table, page_navigation_link, public_feed
 from seed.utils.tax_lot_properties import format_export_data
+from seed.views.v3.tax_lot_properties import TaxLotPropertyViewSet
+
 
 
 class PublicOrganizationViewSet(viewsets.ViewSet):
@@ -41,7 +44,7 @@ class PublicOrganizationViewSet(viewsets.ViewSet):
 
         if not org.public_feed_enabled:
             return JsonResponse(
-                {"detail": f"Public feed is not enabled for organization '{org.name}'. Public feed can be enabled in organization settings"}
+                {"detail": f"Public feed is not enabled for organization '{org.name}'. Public endpoints can be enabled in organization settings"}
             )
 
         feed = public_feed(org, request)
@@ -126,6 +129,7 @@ class PublicOrganizationViewSet(viewsets.ViewSet):
         return HttpResponse(html)
     
 class PublicCycleViewSet(viewsets.ViewSet):
+    permission_classes = [AllowAny]
     
     @action(detail=True, methods=["get"], url_path="geo.json")
     def public_geojson(self, request, organization_pk, pk):
@@ -137,20 +141,32 @@ class PublicCycleViewSet(viewsets.ViewSet):
         except Cycle.DoesNotExist:
             return JsonResponse({"erorr": "Cycle does not exist"}, status=status.HTTP_404_NOT_FOUND)
         
-        # access_level_instance 
+        if not org.public_feed_enabled:
+            return JsonResponse(
+                {"detail": f"Public GeoJson is not enabled for organization '{org.name}'. Public endpoints can be enabled in organization settings"}
+            )
+        
+        access_level_instance = org.root 
+
         
         # gonna need query param for taxlots or properties
         view_ids = PropertyView.objects.filter(property__organization=org, cycle=cycle).values_list('id', flat=True)
 
-        format_export_data(
+        data, column_name_mappings = format_export_data(
             view_ids,
             org.id,
             None,
-            'properties'
-            'property',
-            'access_level_instance'
-
+            'properties',
+            PropertyView,
+            access_level_instance,
+            None,
+            False,
+            False,
+            'geojson',
         )
+        viewset = TaxLotPropertyViewSet()
+        # make data json readable
+        data = viewset._json_response('', data, column_name_mappings)
+        data = json.loads(data.content)
 
-        feed = {'TEST': "ABC"}
-        return JsonResponse(feed, json_dumps_params={"indent": 4}, status=status.HTTP_200_OK)
+        return JsonResponse(data, json_dumps_params={"indent": 4}, status=status.HTTP_200_OK)
