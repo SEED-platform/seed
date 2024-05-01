@@ -145,6 +145,8 @@ class PublicCycleViewSet(viewsets.ViewSet):
 
         Optional and configurable query_params
         :query_param inventory: string, 'properties' or 'taxlots'. Default is 'properties'
+        :query_param page: integer page number
+        :query_param per_page: integer results per page
 
         Example Requests:
         {seed_url}/api/v3/public/organizations/{organization_id}/cycles/{cycle_id}/geo.json?{query_param1}={value1}

@@ -15,7 +15,7 @@ from seed.tests.util import DataMappingBaseTestCase
 from seed.utils.organizations import create_organization
 
 
-class TestOrganizationViews(DataMappingBaseTestCase):
+class TestPublicViews(DataMappingBaseTestCase):
     def setUp(self):
         user_details = {
             "username": "test_user@demo.com",
@@ -28,12 +28,6 @@ class TestOrganizationViews(DataMappingBaseTestCase):
         self.property_state_factory = FakePropertyStateFactory(organization=self.org)
         self.property_view_factory = FakePropertyViewFactory(organization=self.org)
 
-    def test_public_feed(self):
-        # a non logged in user should be able to access public endpoints, but not others
-        url = reverse_lazy("api:v3:organizations-list")
-        response = self.client.get(url, content_type="application/json")
-        assert response.status_code == 403
-        assert response.json() == {"detail": "You do not have permission to perform this action."}
 
         Column.objects.create(
             table_name="PropertyState",
@@ -76,12 +70,19 @@ class TestOrganizationViews(DataMappingBaseTestCase):
         self.property_view_factory.get_property_view(prpty=property2, state=state22, cycle=cycle2)
         self.property_view_factory.get_property_view(prpty=property2, state=state23, cycle=cycle3)
 
+    def test_public_feed(self):
+        # a non logged in user should be able to access public endpoints, but not others
+        url = reverse_lazy("api:v3:organizations-list")
+        response = self.client.get(url, content_type="application/json")
+        assert response.status_code == 403
+        assert response.json() == {"detail": "You do not have permission to perform this action."}
+
         # public feed is not yet enabled
         url = reverse_lazy("api:v3:public-organizations-feed-json", args=[self.org.id])
         response = self.client.get(url, content_type="application/json")
         assert response.status_code == 200
         assert response.json() == {
-            "detail": f"Public feed is not enabled for organization '{self.org.name}'. Public feed can be enabled in organization settings"
+            "detail": f"Public feed is not enabled for organization '{self.org.name}'. Public endpoints can be enabled in organization settings"
         }
 
         # enable public feed

@@ -57,10 +57,7 @@ def format_export_data(
     if progress_data:
         progress_data.step("Exporting Inventory...")
 
-    # export_type = request.data.get("export_type", "csv")
-
     # add labels, notes, and derived columns
-    # include_notes = request.data.get("include_notes", True)
     batch_size = math.ceil(len(model_views) / 98)
     for i, record in enumerate(model_views):
         label_string = []
@@ -75,7 +72,6 @@ def format_export_data(
             data[i]["property_labels"] = ",".join(label_string)
             data[i]["property_notes"] = "\n----------\n".join(note_string) if include_notes else "(excluded during export)"
 
-            # include_meter_data = request.data.get("include_meter_readings", False)
             if include_meter_data and export_type == "geojson":
                 meters = []
                 for meter in record.property.meters.all():
