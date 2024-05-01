@@ -316,6 +316,7 @@ PUBLIC_HTML_STYLE = """
         """
 
 def public_geojson(org, cycle, request):
+        """ Generates public geojson data """
         params = request.query_params
         # default to properties
         view_klass_str = params.get('inventory', 'properties').lower()

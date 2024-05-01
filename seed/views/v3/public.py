@@ -29,7 +29,7 @@ class PublicOrganizationViewSet(viewsets.ViewSet):
         :query_param per_page: integer results per page
 
         Example requests:
-        {seed_url}/api/v3/public/organizations/feed.json?{query_param1}={value1}&{query_param2}={value2}
+        {seed_url}/api/v3/public/organizations/{organization_id}/feed.json?{query_param1}={value1}&{query_param2}={value2}
         dev1.seed-platform.org/api/v3/public/organizations/1/feed.json
         dev1.seed-platform.org/api/v3/public/organizations/1/feed.json?page=2&labels=Compliant&cycles=1,2,3&taxlots=False
         """
@@ -61,7 +61,7 @@ class PublicOrganizationViewSet(viewsets.ViewSet):
         :query_param per_page: integer results per page
 
         Example requests:
-        {seed_url}/api/v3/public/organizations/feed.html?{query_param1}={value1}&{query_param2}={value2}
+        {seed_url}/api/v3/public/organizations/{organization_id}/feed.html?{query_param1}={value1}&{query_param2}={value2}
         dev1.seed-platform.org/api/v3/public/organizations/1/feed.html
         dev1.seed-platform.org/api/v3/public/organizations/1/feed.html?page=2&labels=Compliant&cycles=1,2,3&taxlots=False
         """
@@ -130,6 +130,17 @@ class PublicCycleViewSet(viewsets.ViewSet):
     
     @action(detail=True, methods=["get"], url_path="geo.json")
     def public_geojson(self, request, organization_pk, pk):
+        """
+        Returns geojson data for selected inventory type within a specific cycle
+
+        Optional and configuratble query_params
+        :query_param inventory: string, 'properties' or 'taxlots'. Default is 'properties'
+
+        Example Requests:
+        {seed_url}/api/v3/public/organizations/{organization_id}/cycles/{cycle_id}/geo.json?{query_param1}={value1}
+        dev1.seed-platform.org/api/v3/public/organizations/1/cycles/2/geo.json
+        dev1.seed-platform.org/api/v3/public/organizations/1/cycles/2/geo.json?inventory='taxlots'
+        """
         try:
             org = Organization.objects.get(pk=organization_pk)
             cycle = Cycle.objects.get(organization_id=organization_pk, pk=pk)
