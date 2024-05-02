@@ -2348,6 +2348,12 @@ msgstr "At least one of the following Property fields is required"
 msgid "PUBLIC"
 msgstr "PUBLIC"
 
+msgid "PUBLIC_HTML"
+msgstr "Your public HTML URL is"
+
+msgid "PUBLIC_JSON"
+msgstr "Your public JSON feed URL is"
+
 msgid "PUBLIC_SHARE"
 msgstr "If the Public Feed functionality is enabled, this page can be used to configure what data is shared externally with the public-at-large."
 
@@ -2934,6 +2940,27 @@ msgstr "Label used to designate that a SEED property has a violation.  Example: 
 msgid "SHARE DATA WITH"
 msgstr "SHARE DATA WITH"
 
+msgid "SHARING_CYCLES"
+msgstr "Comma-separated list of cycle ids. Results include inventory from the listed cycles. Default is all cycles."
+
+msgid "SHARING_LABELS"
+msgstr "Comma-separated list of case-sensitive label names. Results will include inventory that has any of the listed labels. Default is all inventory."
+
+msgid "SHARING_PAGE"
+msgstr "Number of the page of results to return. Default is 1."
+
+msgid "SHARING_PER_PAGE"
+msgstr "Number of results per page. Default is 100."
+
+msgid "SHARING_PROPERTIES"
+msgstr "Boolean True/False to return inventory of type 'Property'. Default is True."
+
+msgid "SHARING_QUERY_PARAMS"
+msgstr "Query parameters can be added to the URL to filter the returned data"
+
+msgid "SHARING_TAXLOTS"
+msgstr "Boolean True/False to return inventory of type 'Tax Lot'. Default is True."
+
 msgid "SHOWING_AVAILABLE_MATCHES"
 msgstr "Showing {start} to {end} of {total} available matches"
 
@@ -3032,6 +3059,9 @@ msgstr "Security"
 
 msgid "Security Token"
 msgstr "Security Token"
+
+msgid "See API Documentation for more information about the /v3/public endpoints"
+msgstr "See API Documentation for more information about the /v3/public endpoints"
 
 #: seed/models/columns.py:688 seed/models/models.py:195
 #: seed/models/models.py:256 seed/models/projects.py:42
@@ -3585,6 +3615,9 @@ msgstr "Upload Sensor"
 
 msgid "UPLOAD_SENSOR_READINGS_BUTTON"
 msgstr "Upload Sensor Readings"
+
+msgid "URL_OPTIONS"
+msgstr "URL Options"
 
 msgid "USING_DEFAULT_UNITS_WARNING"
 msgstr "For columns with unit settings, default units will be used for conversions."
