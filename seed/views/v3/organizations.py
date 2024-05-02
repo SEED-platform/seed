@@ -509,9 +509,9 @@ class OrganizationViewSet(viewsets.ViewSet):
         # Update public_feed_enabled option
         public_feed_enabled = posted_org.get("public_feed_enabled", False)
         if public_feed_enabled:
-            org.public_feed_enabled = True 
-        else: 
-            org.public_feed_enabled = False 
+            org.public_feed_enabled = True
+        else:
+            org.public_feed_enabled = False
             org.public_feed_labels = False
 
         # Update public_feed_labels option
