@@ -3094,7 +3094,7 @@ msgid "Security Token"
 msgstr "Jeton d'authentification"
 
 msgid "See API Documentation for more information about the /v3/public endpoints"
-msgstr "Consultez la documentation de l'API pour plus d'informations sur les points de terminaison /v3/public."
+msgstr "pour plus d'informations sur les points de terminaison /v3/public"
 
 #: seed/models/columns.py:688 seed/models/models.py:195
 #: seed/models/models.py:256 seed/models/projects.py:42
