@@ -3067,7 +3067,7 @@ msgid "Security Token"
 msgstr "Security Token"
 
 msgid "See API Documentation for more information about the /v3/public endpoints"
-msgstr "See API Documentation for more information about the /v3/public endpoints"
+msgstr "for more information about the"
 
 #: seed/models/columns.py:688 seed/models/models.py:195
 #: seed/models/models.py:256 seed/models/projects.py:42
@@ -4091,6 +4091,9 @@ msgstr "email address"
 #: seed/models/models.py:237
 msgid "end_date"
 msgstr "end_date"
+
+msgid "endpoints see the"
+msgstr "endpoints see the"
 
 #: seed/landing/forms.py:14
 msgid "ex: joe@company.com"
