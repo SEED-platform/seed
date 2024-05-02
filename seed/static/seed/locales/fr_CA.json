@@ -388,6 +388,8 @@
     "Emission Metric": "Mesure des émissions",
     "Enable ComStock Functionality": "Activer la fonctionnalité ComStock",
     "Enable Geocoding": "Activer le géocodage",
+    "Enable Labels in Public Feed": "Activer les étiquettes dans le flux public",
+    "Enable Public Endpoints": "Activer les points de terminaison publics",
     "Enable Salesforce Integration": "Activer la fonctionnalité Salesforce",
     "Energy": "Énergie",
     "Energy Alerts": "Alertes énergétiques",

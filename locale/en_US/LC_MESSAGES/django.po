@@ -1200,6 +1200,12 @@ msgstr "Enable ComStock Functionality"
 msgid "Enable Geocoding"
 msgstr "Enable Geocoding"
 
+msgid "Enable Labels in Public Feed"
+msgstr "Enable Labels in Public Feed"
+
+msgid "Enable Public Endpoints"
+msgstr "Enable Public Endpoints"
+
 msgid "Enable Salesforce Integration"
 msgstr "Enable Salesforce Integration"
 
