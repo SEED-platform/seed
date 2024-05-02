@@ -467,8 +467,9 @@ def _batch_get_city_submission_xml(org_id, city_id, progress_key):
     logging.error('>>> Number of Submissions %s', len(submissions))
     for sub in submissions:
         custom_id = sub["tax_id"]
-        created_at = parser.parse(sub["created_at"])  # should we use creaetd_at?
-        updated_at = parser.parse(sub["updated_at"])  # should we use creaetd_at?
+        created_at = parser.parse(sub["created_at"])
+        updated_at = parser.parse(sub["updated_at"])
+        logging.error('>>> created at %s', created_at)
 
         view = PropertyView.objects.filter(
             property__organization=org_id,
@@ -480,8 +481,8 @@ def _batch_get_city_submission_xml(org_id, city_id, progress_key):
         ).first()
 
         progress_data.step("Getting XML for submissions...")
-        logging.error('>>> custom_id: %s - view: %s', custom_id, view)
         if view:
+            logging.error('>>> custom_id: %s - view: %s - cycle: %s', custom_id, view, view.cycle.name)
             xml, _ = audit_template.get_submission(sub["id"], "xml")
 
             if hasattr(xml, "text"):
