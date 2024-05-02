@@ -161,7 +161,7 @@ class PublicCycleViewSet(viewsets.ViewSet):
         except Cycle.DoesNotExist:
             return JsonResponse({"erorr": "Cycle does not exist"}, status=status.HTTP_404_NOT_FOUND)
 
-        if not org.public_feed_enabled:
+        if not org.public_feed_enabled or not org.public_geojson_enabled:
             return JsonResponse(
                 {
                     "detail": f"Public GeoJSON is not enabled for organization '{org.name}'. Public endpoints can be enabled in organization settings"

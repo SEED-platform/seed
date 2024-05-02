@@ -1206,6 +1206,9 @@ msgstr "Enable Labels in Public Feed"
 msgid "Enable Public Endpoints"
 msgstr "Enable Public Endpoints"
 
+msgid "Enable Public GeoJSON"
+msgstr "Enable Public GeoJSON"
+
 msgid "Enable Salesforce Integration"
 msgstr "Enable Salesforce Integration"
 
@@ -3398,6 +3401,9 @@ msgstr "The Building Energy Data Exchange Specification (BEDES, pronounced \"bea
 
 msgid "The DOE developed the Standard Energy Efficiency Data (SEED) Platform™ as a free software tool that provides a standardized format for collecting, storing and analyzing building energy performance information about large portfolios. Upload your buildings list to get started."
 msgstr "The DOE developed the Standard Energy Efficiency Data (SEED) Platform™ as a free software tool that provides a standardized format for collecting, storing and analyzing building energy performance information about large portfolios. Upload your buildings list to get started."
+
+msgid "The GeoJSON will expose all populated property and taxlot columns"
+msgstr "The GeoJSON will expose all populated property and taxlot columns"
 
 msgid "The Open Source code is available on the Github organization SEED-Platform:"
 msgstr "The Open Source code is available on the Github organization SEED-Platform:"

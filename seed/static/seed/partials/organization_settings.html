@@ -96,6 +96,20 @@
         </div>
       </div>
 
+      <div class="section_content_container" ng-if="org.public_feed_enabled">
+        <div class="section_content with_padding">
+          <h3 translate>Enable Public GeoJSON</h3>
+          <p translate>The GeoJSON will expose all populated property and taxlot columns</p>
+          <form class="form-horizontal" role="form">
+            <div class="form-group">
+              <div class="col-sm-4">
+                <input type="checkbox" class="form-control" style="width: 34px" ng-model="org.public_geojson_enabled" ng-disabled="::!auth.requires_owner" />
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+
     </uib-tab>
 
     <uib-tab index="1" heading="{$:: 'API Key' | translate $}">

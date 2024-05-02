@@ -1217,6 +1217,9 @@ msgstr "Activer les étiquettes dans le flux public"
 msgid "Enable Public Endpoints"
 msgstr "Activer les points de terminaison publics"
 
+msgid "Enable Public GeoJSON"
+msgstr "Activer GeoJSON public"
+
 msgid "Enable Salesforce Integration"
 msgstr "Activer la fonctionnalité Salesforce"
 
@@ -3426,6 +3429,9 @@ msgstr "La Spécification d'Échange de Données Energétiques du Bâtiment (BED
 
 msgid "The DOE developed the Standard Energy Efficiency Data (SEED) Platform™ as a free software tool that provides a standardized format for collecting, storing and analyzing building energy performance information about large portfolios. Upload your buildings list to get started."
 msgstr "Le DOE a développé la Plate-forme SEED™ (Standard Energy Efficiency Data) en tant qu'outil logiciel gratuit qui fournit un format standardisé pour la collecte, le stockage et l'analyse des informations sur la performance énergétique des bâtiments concernant les grands portefeuilles. Téléchargez votre liste de bâtiments pour commencer."
+
+msgid "The GeoJSON will expose all populated property and taxlot columns"
+msgstr "Le GeoJSON exposera toutes les colonnes de propriété et de lot fiscal renseignées"
 
 msgid "The Open Source code is available on the Github organization SEED-Platform:"
 msgstr "Le code Open Source est disponible sur l'organisation Github SEED-Platform:"
