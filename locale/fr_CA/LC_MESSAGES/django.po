@@ -2364,6 +2364,12 @@ msgstr "Au moins un des champs de propriété suivants est requis"
 msgid "PUBLIC"
 msgstr "PUBLIC"
 
+msgid "PUBLIC_HTML"
+msgstr "Votre URL HTML publique est"
+
+msgid "PUBLIC_JSON"
+msgstr "L'URL de votre flux JSON public est"
+
 msgid "PUBLIC_SHARE"
 msgstr "Si la fonctionnalité Flux public est activée, cette page peut être utilisée pour configurer les données partagées en externe avec le grand public."
 
@@ -2957,6 +2963,29 @@ msgstr "Étiquette qui signale qu'une propriété a une violation.  Example: 'Vi
 msgid "SHARE DATA WITH"
 msgstr "PARTAGE DE DONNÉES AVEC"
 
+#, fuzzy
+msgid "SHARING_CYCLES"
+msgstr "Liste d’identifiants de cycle séparés par des virgules. Les résultats incluent l’inventaire des cycles répertoriés. La valeur par défaut est tous les cycles."
+
+#, fuzzy
+msgid "SHARING_LABELS"
+msgstr "Liste de noms d'étiquettes sensibles à la casse, séparés par des virgules. Les résultats incluront l'inventaire portant l'une des étiquettes répertoriées. La valeur par défaut est tout l'inventaire."
+
+msgid "SHARING_PAGE"
+msgstr "Numéro de la page de résultats à retourner. La valeur par défaut est 1."
+
+msgid "SHARING_PER_PAGE"
+msgstr "Nombre de résultats par page. La valeur par défaut est 100."
+
+msgid "SHARING_PROPERTIES"
+msgstr "Booléen True/False pour renvoyer un inventaire de type « Propriété ». La valeur par défaut est True."
+
+msgid "SHARING_QUERY_PARAMS"
+msgstr "Des paramètres de requête peuvent être ajoutés à l'URL pour filtrer les données renvoyées"
+
+msgid "SHARING_TAXLOTS"
+msgstr "Booléen True/False pour renvoyer un inventaire de type « Lot fiscal ». La valeur par défaut est True."
+
 msgid "SHOWING_AVAILABLE_MATCHES"
 msgstr "Affichage des {start} à {end} de {total} correspondances disponibles "
 
@@ -3057,6 +3086,9 @@ msgstr "Sécurité"
 
 msgid "Security Token"
 msgstr "Jeton d'authentification"
+
+msgid "See API Documentation for more information about the /v3/public endpoints"
+msgstr "Consultez la documentation de l'API pour plus d'informations sur les points de terminaison /v3/public."
 
 #: seed/models/columns.py:688 seed/models/models.py:195
 #: seed/models/models.py:256 seed/models/projects.py:42
@@ -3611,6 +3643,9 @@ msgstr "Télécharger le capteur"
 
 msgid "UPLOAD_SENSOR_READINGS_BUTTON"
 msgstr "Télécharger les relevés de capteur"
+
+msgid "URL_OPTIONS"
+msgstr "Options d'URL"
 
 #, fuzzy
 msgid "USING_DEFAULT_UNITS_WARNING"
