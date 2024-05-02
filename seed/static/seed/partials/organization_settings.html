@@ -72,7 +72,7 @@
       <div class="section_content_container">
         <div class="section_content with_padding">
           <h3 translate>Enable Public Endpoints</h3>
-          <p translate>See <a href="/api/swagger">API Documentation</a> for more information about the <code>/v3/public</code> endpoints</p>
+          <p><a href="/api/swagger" translate>API Documentation</a> <span translate>for more information about the <code>/v3/public</code> endpoints</span></p>
           <form class="form-horizontal" role="form">
             <div class="form-group">
               <div class="col-sm-4">
@@ -90,6 +90,20 @@
             <div class="form-group">
               <div class="col-sm-4">
                 <input type="checkbox" class="form-control" style="width: 34px" ng-model="org.public_feed_labels" ng-disabled="::!auth.requires_owner" />
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div class="section_content_container" ng-if="org.public_feed_enabled">
+        <div class="section_content with_padding">
+          <h3 translate>Enable public GeoJSON</h3>
+          <p translate>The GeoJSON endpoint will expose all property and taxlot columns</p>
+          <form class="form-horizontal" role="form">
+            <div class="form-group">
+              <div class="col-sm-4">
+                <input type="checkbox" class="form-control" style="width: 34px" ng-model="org.public_geojson_enabled" ng-disabled="::!auth.requires_owner" />
               </div>
             </div>
           </form>
