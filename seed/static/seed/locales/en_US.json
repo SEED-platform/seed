@@ -388,6 +388,8 @@
     "Emission Metric": "Emission Metric",
     "Enable ComStock Functionality": "Enable ComStock Functionality",
     "Enable Geocoding": "Enable Geocoding",
+    "Enable Labels in Public Feed": "Enable Labels in Public Feed",
+    "Enable Public Endpoints": "Enable Public Endpoints",
     "Enable Salesforce Integration": "Enable Salesforce Integration",
     "Energy": "Energy",
     "Energy Alerts": "Energy Alerts",
