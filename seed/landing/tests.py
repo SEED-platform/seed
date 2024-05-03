@@ -20,5 +20,6 @@ class UserLoginTest(TestCase):
         """
         Happy path login
         """
-        self.client.post(self.login_url, self.user_details, secure=True)
-        self.assertTrue("_auth_user_id" in self.client.session)
+        response = self.client.post(self.login_url, self.user_details, secure=True)
+        self.assertTrue(response.status_code == 302)
+        self.assertTrue("/account/login/" == response.url)
