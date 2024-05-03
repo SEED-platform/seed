@@ -92,6 +92,7 @@ class AccountsViewTests(TestCase):
             "access_level_names": [self.org.name],
             "public_feed_enabled": False,
             "public_feed_labels": False,
+            "public_geojson_enabled": False,
         }
 
         org_payload = _dict_org(self.fake_request, [self.org])
@@ -185,6 +186,7 @@ class AccountsViewTests(TestCase):
                     "inventory_count": 0,
                     "public_feed_enabled": False,
                     "public_feed_labels": False,
+                    "public_geojson_enabled": False,
                 }
             ],
             "is_parent": True,
@@ -218,6 +220,7 @@ class AccountsViewTests(TestCase):
             "access_level_names": ["my org"],
             "public_feed_enabled": False,
             "public_feed_labels": False,
+            "public_geojson_enabled": False,
         }
 
         org_payload = _dict_org(self.fake_request, Organization.objects.all())
