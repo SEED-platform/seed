@@ -100,6 +100,7 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.inventory_summary',
   'BE.seed.controller.label_admin',
   'BE.seed.controller.mapping',
+  'BE.seed.controller.match_merge_modal',
   'BE.seed.controller.members',
   'BE.seed.controller.menu',
   'BE.seed.controller.merge_modal',
@@ -1137,21 +1138,37 @@ SEED_app.config([
               return organization_service.get_organization(organization_id);
             }
           ],
-          property_column_names: [
+          // property_column_names: [
+          //   '$stateParams',
+          //   'inventory_service',
+          //   ($stateParams, inventory_service) => {
+          //     const { organization_id } = $stateParams;
+          //     return inventory_service.get_property_column_names_and_ids_for_org(organization_id);
+          //   }
+          // ],
+          // taxlot_column_names: [
+          //   '$stateParams',
+          //   'inventory_service',
+          //   ($stateParams, inventory_service) => {
+          //     const { organization_id } = $stateParams;
+          //     return inventory_service.get_taxlot_column_names_for_org(organization_id);
+          //   }
+          // ],
+          property_columns: [
             '$stateParams',
             'inventory_service',
-            ($stateParams, inventory_service) => {
-              const { organization_id } = $stateParams;
-              return inventory_service.get_property_column_names_and_ids_for_org(organization_id);
-            }
+            ($stateParams, inventory_service) => inventory_service.get_property_columns().then((columns) => {
+              columns = _.reject(columns, 'related');
+              return _.map(columns, (col) => _.omit(col, ['pinnedLeft', 'related']));
+            })
           ],
-          taxlot_column_names: [
+          taxlot_columns: [
             '$stateParams',
             'inventory_service',
-            ($stateParams, inventory_service) => {
-              const { organization_id } = $stateParams;
-              return inventory_service.get_taxlot_column_names_for_org(organization_id);
-            }
+            ($stateParams, inventory_service) => inventory_service.get_taxlot_columns().then((columns) => {
+              columns = _.reject(columns, 'related');
+              return _.map(columns, (col) => _.omit(col, ['pinnedLeft', 'related']));
+            })
           ],
           labels_payload: [
             'label_service',

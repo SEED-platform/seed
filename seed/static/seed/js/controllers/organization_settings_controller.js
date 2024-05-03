@@ -13,8 +13,8 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
   'organization_service',
   'salesforce_mapping_service',
   'salesforce_config_service',
-  'property_column_names',
-  'taxlot_column_names',
+  'property_columns',
+  'taxlot_columns',
   'labels_payload',
   'salesforce_mappings_payload',
   'salesforce_configs_payload',
@@ -33,8 +33,8 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
     organization_service,
     salesforce_mapping_service,
     salesforce_config_service,
-    property_column_names,
-    taxlot_column_names,
+    property_columns,
+    taxlot_columns,
     labels_payload,
     salesforce_mappings_payload,
     salesforce_configs_payload,
@@ -52,8 +52,8 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
     $scope.timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
     $scope.auth = auth_payload.auth;
-    $scope.property_column_names = property_column_names;
-    $scope.taxlot_column_names = taxlot_column_names;
+    $scope.property_columns = property_columns;
+    $scope.taxlot_columns = taxlot_columns;
     $scope.salesforce_mappings = salesforce_mappings_payload;
     $scope.org_static = angular.copy($scope.org);
     $scope.token_validity = { message: 'Verify Token' };
@@ -126,6 +126,10 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
       type: null,
       unit: null
     };
+
+    $scope.property_ubid_matching = $scope.property_columns.find(c => c.column_name == 'ubid').is_matching_criteria;
+    $scope.taxlot_ubid_matching = $scope.taxlot_columns.find(c => c.column_name == 'ubid').is_matching_criteria;
+    $scope.ubid_matching = $scope.property_ubid_matching || $scope.taxlot_ubid_matching;
 
     // Energy type option executed within this method in order to repeat on organization update
     const get_energy_type_options = () => {
@@ -443,12 +447,17 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
       }
     };
 
-    $scope.trigger_matching = () => {
-      console.log('trigger matching')
-      dataset_service.match_merge_inventory()
-        .then((response) => {
-          console.log('org settings', response)
-        })
+    $scope.open_match_merge_modal = () => {
+      $uibModal.open({
+        templateUrl: `${urls.static_url}seed/partials/match_merge_modal.html`,
+        controller: 'match_merge_modal_controller',
+        backdrop: 'static',
+        resolve: {
+          org: $scope.org,
+          property_ubid_matching: $scope.property_ubid_matching,
+          taxlot_ubid_matching: $scope.taxlot_ubid_matching,
+        }
+      });
     }
 
     /**

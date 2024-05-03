@@ -5472,3 +5472,16 @@ tags-input .tags .tag-item {
   background-color: #fefbd1;
   border-top: 1px solid #d4d4d4;
 }
+
+.cycle-select-container{
+  display: flex;
+  margin: 30px 0;
+
+  label{
+    margin: auto 10px;
+  }
+
+  select{
+    width: 80%;
+  }
+}

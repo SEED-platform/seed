@@ -18,6 +18,7 @@ from seed.data_importer.models import ROW_DELIMITER, ImportRecord
 from seed.data_importer.match import merge_unmatched_states
 from seed.data_importer.sensor_readings_parser import SensorsReadingsParser
 from seed.data_importer.tasks import do_checks, geocode_and_match_buildings_task, map_data
+from seed.data_importer.tasks import match_merge_cycle_inventory
 from seed.data_importer.tasks import save_raw_data as task_save_raw
 from seed.data_importer.tasks import validate_use_cases as task_validate_use_cases
 from seed.decorators import ajax_request_class
@@ -54,15 +55,8 @@ from seed.models import (
 )
 from seed.serializers.pint import DEFAULT_UNITS, apply_display_unit_preferences
 from seed.utils.api import OrgMixin, api_endpoint_class
-<<<<<<< HEAD
-from seed.utils.api_schema import (
-    AutoSchemaHelper,
-    swagger_auto_schema_org_query_param
-)
-from seed.utils.match import matching_criteria_column_names
-=======
 from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema_org_query_param
->>>>>>> develop
+from seed.utils.match import matching_criteria_column_names
 
 _log = logging.getLogger(__name__)
 
@@ -1059,48 +1053,24 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
 
         return result
 
-
-    # @api_endpoint_class
-    # @ajax_request_class
     @has_perm_class('requires_owner')
     @action(detail=False, methods=["POST"])
     def match_merge_inventory(self, request):
         org_id = self.get_organization(request)
 
-        org = Organization.objects.get(pk=org_id)
-        # cycle = Cycle.objects.get(pk=request.data.get('cycle'))
-
-
         access_level_instance = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
-        column_names = matching_criteria_column_names(org.id, 'PropertyState')
-        sub_progress_data = ProgressData(func_name='match_sub_progress', unique_id=org_id)
-        sub_progress_key = sub_progress_data.key
 
-        # properties
-        # yikes, this is going to take a long time
-        result = []
-        for cycle in Cycle.objects.filter(organization=org):
-            existing_cycle_views = PropertyView.objects.filter(cycle=cycle)
-            unmatched_states = PropertyState.objects.filter(propertyview__in=existing_cycle_views)
-            promote_states = PropertyState.objects.none()
-            logging.error(">>> matching cycle: %s", cycle.name)
+        try:
+            org = Organization.objects.get(pk=org_id)
+            cycle = Cycle.objects.get(pk=request.data.get('cycle_id', -1))
+        except (Organization.DoesNotExist, Cycle.DoesNotExist):
+            return JsonResponse({"error": "No such resource.b"})
 
-            merge_unmatched_states(
-                org, 
-                cycle, 
-                unmatched_states, 
-                promote_states, 
-                column_names, 
-                PropertyView, 
-                PropertyState, 
-                'PropertyState', 
-                existing_cycle_views, 
-                access_level_instance, 
-                sub_progress_key
-            )
+        progress_data = ProgressData(func_name='match_progress', unique_id=org_id)
+        progress_key = progress_data.key
 
-            result.append([cycle.name, cycle.id])
-        
-        # taxlots
-        logging.error('>>> Done')
-        return JsonResponse({'results': result})
+        match_merge_cycle_inventory.delay(org.id, cycle.id, access_level_instance.id, 'PropertyState', progress_key)
+        match_merge_cycle_inventory.delay(org.id, cycle.id, access_level_instance.id, 'TaxLotState', progress_key)        
+
+        return JsonResponse(progress_data.result())
+    

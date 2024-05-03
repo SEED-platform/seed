@@ -1,0 +1,28 @@
+<div class="modal-header">
+    <h3 class="modal-title" translate>Match and Merge Inventory</h3>
+</div>
+<div class="modal-body">
+    <div>
+        Select a cycle to re-trigger matching and merging with <strong>ubid threshold: {$ org.ubid_threshold $}</strong>. This process will match and merge all records within the selected cycle based on the matching criteria. This process may take several minutes.
+    </div>
+    <ul style="margin-top: 20px;">
+        <li>Property UBID Mathcing Criteria: <strong>{$ property_ubid_matching $}</strong></li>
+        <li>TaxLot UBID Matching Criteria: <strong>{$ taxlot_ubid_matching $}</strong></li>
+    </ul>
+
+    <div class="form-group cycle-select-container">
+        <label for="cycle-select">Select Cycle</label>
+        <select id="cycle-select" class="form-control" ng-model="selected_cycle" ng-options="cycle.name for cycle in cycles" ng-change="cycle_change()" placeholder="{$:: 'Cycle Name' | translate $}"></select>
+    </div>
+
+    <div class="progress_bar_container" ng-if="uploader.in_progress">
+        <div class="progress_bar_copy_top">Progress:</div>
+        <uib-progressbar class="progress-striped active" value="uploader.progress" type="success"></uib-progressbar>
+        <div class="progress_bar_copy_bottom">{$ uploader.progress | number:0 $}% {$:: 'Complete' | translate $} {$
+            uploader.status_message ? ': ' + uploader.status_message : '' $}</div>
+    </div>
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-primary" ng-click="close()" autofocus ng-disabled="uploader.in_progress" translate>Close</button>
+    <button type="button" class="btn btn-warning" ng-click="trigger_match_merge()" ng-disabled="uploader.in_progress" translate>Match and Merge</button>
+</div>
