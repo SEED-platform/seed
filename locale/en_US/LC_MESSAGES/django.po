@@ -3235,8 +3235,8 @@ msgstr "Successful upload!"
 msgid "Successfully Uploaded"
 msgstr "Successfully Uploaded"
 
-msgid "Summary (Beta)"
-msgstr "Summary (Beta)"
+msgid "Summary"
+msgstr "Summary"
 
 msgid "Switch Profiles"
 msgstr "Switch Profiles"

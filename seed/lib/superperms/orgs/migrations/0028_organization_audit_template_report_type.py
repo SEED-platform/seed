@@ -5,23 +5,22 @@ from django.db import migrations, models, transaction
 
 @transaction.atomic
 def backfill_org_audit_template_report_type(apps, schema_editor):
-    Organization = apps.get_model('orgs', 'Organization')
+    Organization = apps.get_model("orgs", "Organization")
     for org in Organization.objects.all():
-        org.audit_template_report_type = 'Demo City Report'
+        org.audit_template_report_type = "Demo City Report"
         org.save()
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('orgs', '0027_organization_ubid_threshold'),
+        ("orgs", "0027_organization_ubid_threshold"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='organization',
-            name='audit_template_report_type',
-            field=models.CharField(blank=True, default='Demo City Report', max_length=128),
+            model_name="organization",
+            name="audit_template_report_type",
+            field=models.CharField(blank=True, default="Demo City Report", max_length=128),
         ),
         migrations.RunPython(backfill_org_audit_template_report_type),
     ]
