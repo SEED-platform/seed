@@ -22,4 +22,4 @@ class UserLoginTest(TestCase):
         """
         response = self.client.post(self.login_url, self.user_details, secure=True)
         self.assertTrue(response.status_code == 302)
-        self.assertTrue("/account/login/" == response.url)
+        self.assertTrue(response.url == "/account/login/")
