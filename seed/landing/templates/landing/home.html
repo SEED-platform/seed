@@ -14,7 +14,7 @@
                 <p>Existing account?</p>
                 <a href="{% url "landing:login" %}" class="btn btn-primary login-btn">{% trans "Sign in" %}</a>
               </div>
-              {% if context.self_registration %}  
+              {% if context.self_registration %}
               <div>
                 <a class="create_account btn btn-default login-btn" href="{% url "landing:create_account" %}">{% trans "Create my Account" %}</a>
               </div>

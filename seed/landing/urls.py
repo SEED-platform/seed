@@ -5,7 +5,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
 from django.conf import settings
-from django.contrib.auth.views import PasswordChangeDoneView, PasswordChangeView, logout_then_login, LogoutView
+from django.contrib.auth.views import LogoutView, PasswordChangeDoneView, PasswordChangeView
 from django.urls import re_path
 
 from seed.landing.views import (

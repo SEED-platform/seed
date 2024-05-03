@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('landing', '0007_auto_20181107_0904'),
+        ("landing", "0007_auto_20181107_0904"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='seeduser',
-            name='prompt_2fa',
+            model_name="seeduser",
+            name="prompt_2fa",
             field=models.BooleanField(default=True),
         ),
     ]

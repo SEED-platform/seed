@@ -86,29 +86,6 @@ body {
   text-rendering: optimizelegibility;
   -webkit-font-smoothing: antialiased;
 }
-////// TWO FACTOR AUTH ///////
-#login-content{
-  background: white;
-  width: 500px; 
-  margin: auto;
-  padding: 50px;
-  border-radius: 5px
-}
-.login-or-create{
-  margin: auto;
-  padding: 10px;
-  .login-btn{
-    width:160px;
-    margin-bottom: 20px;
-  }
-}
-
-.login-wizard-actions{
-  margin: 10px;
-  button {
-    margin: 10px;
-  }
-}
 
 ////////// MAKE FLOAT CONTAINERS PLAY NICE ////////////
 .header,

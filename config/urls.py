@@ -15,7 +15,7 @@ from two_factor.urls import urlpatterns as tf_urls
 
 from config.views import robots_txt
 from seed.api.base.urls import urlpatterns as api
-from seed.landing.views import password_reset_complete, password_reset_confirm, password_reset_done, CustomLoginView
+from seed.landing.views import CustomLoginView, password_reset_complete, password_reset_confirm, password_reset_done
 from seed.views.main import angular_js_tests, health_check, version
 
 schema_view = get_schema_view(

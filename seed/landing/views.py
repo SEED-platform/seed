@@ -16,12 +16,11 @@ from django.contrib.auth.tokens import default_token_generator
 from django.forms.forms import NON_FIELD_ERRORS
 from django.forms.utils import ErrorList
 from django.http import HttpResponseRedirect
-
-from django_otp import devices_for_user
 from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.utils.encoding import force_text
 from django.utils.http import urlsafe_base64_decode
+from django_otp import devices_for_user
 from two_factor.views.core import LoginView
 
 from seed.landing.models import SEEDUser
@@ -45,8 +44,8 @@ def landing_page(request):
         if form.is_valid():
             new_user = authenticate(username=form.cleaned_data["email"].lower(), password=form.cleaned_data["password"])
             if new_user is not None and new_user.is_active:
-                request.session['auth_user_id'] = new_user.pk
-                return redirect('two_factor:login')
+                request.session["auth_user_id"] = new_user.pk
+                return redirect("two_factor:login")
                 # login(request, new_user)
                 # return HttpResponseRedirect(redirect_to)
             else:
@@ -55,8 +54,8 @@ def landing_page(request):
                 errors.append("Username and/or password were invalid.")
                 logger.error(f"User login failed: {form.cleaned_data['email']}")
 
-    elif request.path == '/accounts/login/':
-        return redirect('two_factor:login')
+    elif request.path == "/accounts/login/":
+        return redirect("two_factor:login")
 
     else:
         form = LoginForm()
@@ -182,27 +181,27 @@ def activate(request, uidb64, token):
     else:
         return render(request, "account_activation_invalid.html", {"debug": settings.DEBUG})
 
+
 class CustomLoginView(LoginView):
-    
     def post(self, request, *args, **kwargs):
         response = super().post(request, *args, **kwargs)
         if response.status_code not in [200, 302]:
             return response
         current_step = request.POST.get("custom_login_view-current_step")
-        if current_step == 'auth':
+        if current_step == "auth":
             return self.handle_auth(request, response)
-        elif current_step == 'token':
+        elif current_step == "token":
             return self.handle_token(request, response)
         return response
 
     def handle_auth(self, request, response):
-        user = SEEDUser.objects.filter(username=request.POST['auth-username']).first()
+        user = SEEDUser.objects.filter(username=request.POST["auth-username"]).first()
         if not user or list(devices_for_user(user)):
             return response  # retry or proceed to token step
         return self.handle_2fa_prompt(response, user)
 
     def handle_token(self, request, response):
-        token = request.POST.get('token-otp_token')
+        token = request.POST.get("token-otp_token")
         user = request.user
         if not token or not user.is_authenticated:
             return response  # retry form
@@ -211,11 +210,9 @@ class CustomLoginView(LoginView):
     def handle_2fa_prompt(self, response, user):
         # django-two-factor-auth will always try to redirect users to the 2 factor profile.
         # override and send users home if they have already been prompted.
-        if not getattr(user, 'prompt_2fa', False) and isinstance(response, HttpResponseRedirect):
+        if not getattr(user, "prompt_2fa", False) and isinstance(response, HttpResponseRedirect):
             return HttpResponseRedirect(reverse("seed:home"))
         else:
             user.prompt_2fa = False
-            user.save() 
+            user.save()
         return response
- 
-
