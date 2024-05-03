@@ -113,6 +113,7 @@ class TestPublicViews(DataMappingBaseTestCase):
         }
 
         self.org.public_feed_enabled = True
+        self.org.public_geojson_enabled = True
         self.org.save()
 
         # incorrect args
@@ -129,6 +130,7 @@ class TestPublicViews(DataMappingBaseTestCase):
         response = self.client.get(url, content_type="application/json")
         assert response.status_code == 200
         data = response.json()
+
         assert sorted(data.keys()) == ["features", "name", "type"]
         assert len(data["features"]) == 2
         assert data["features"][0]["properties"]["Property Name"] == "property 12"

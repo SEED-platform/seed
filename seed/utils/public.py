@@ -363,7 +363,8 @@ def public_geojson(org, cycle, request):
     )
     viewset = TaxLotPropertyViewSet()
     # format data as json readable
-    data = viewset._json_response("", data, column_name_mappings)
+    title = f"Public GeoJSON - Organization: {org.id} - Cycle: {cycle.id}"
+    data = viewset._json_response(title, data, column_name_mappings)
     data = json.loads(data.content)
 
     return data
