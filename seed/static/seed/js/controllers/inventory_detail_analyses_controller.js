@@ -157,7 +157,8 @@ angular.module('BE.seed.controller.inventory_detail_analyses', []).controller('i
           resolve: {
             inventory_ids: () => [$scope.inventory.view_id],
             cycles: () => cycle_service.get_cycles().then((result) => result.cycles),
-            current_cycle: () => $scope.cycle
+            current_cycle: () => $scope.cycle,
+            user: () => $scope.menu.user
           }
         })
         .result.then((data) => {
