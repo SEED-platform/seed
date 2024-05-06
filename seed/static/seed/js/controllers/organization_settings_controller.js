@@ -127,8 +127,8 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
       unit: null
     };
 
-    $scope.property_ubid_matching = $scope.property_columns.find(c => c.column_name == 'ubid').is_matching_criteria;
-    $scope.taxlot_ubid_matching = $scope.taxlot_columns.find(c => c.column_name == 'ubid').is_matching_criteria;
+    $scope.property_ubid_matching = $scope.property_columns.find((c) => c.column_name === 'ubid').is_matching_criteria;
+    $scope.taxlot_ubid_matching = $scope.taxlot_columns.find((c) => c.column_name === 'ubid').is_matching_criteria;
     $scope.ubid_matching = $scope.property_ubid_matching || $scope.taxlot_ubid_matching;
 
     // Energy type option executed within this method in order to repeat on organization update
@@ -455,10 +455,10 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
         resolve: {
           org: $scope.org,
           property_ubid_matching: $scope.property_ubid_matching,
-          taxlot_ubid_matching: $scope.taxlot_ubid_matching,
+          taxlot_ubid_matching: $scope.taxlot_ubid_matching
         }
       });
-    }
+    };
 
     /**
      * reset the last update date (to null)

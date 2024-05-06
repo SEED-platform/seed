@@ -14,16 +14,16 @@ angular.module('BE.seed.controller.match_merge_modal', []).controller('match_mer
   'Notification',
   // eslint-disable-next-line func-names
   function (
-      $scope,
-      $uibModalInstance,
-      spinner_utility,
-      dataset_service,
-      uploader_service,
-      org,
-      property_ubid_matching,
-      taxlot_ubid_matching,
-      Notification
-    ) {
+    $scope,
+    $uibModalInstance,
+    spinner_utility,
+    dataset_service,
+    uploader_service,
+    org,
+    property_ubid_matching,
+    taxlot_ubid_matching,
+    Notification
+  ) {
     $scope.org = org;
     $scope.cycles = org.cycles;
     $scope.selected_cycle = {};
@@ -50,16 +50,16 @@ angular.module('BE.seed.controller.match_merge_modal', []).controller('match_mer
             $scope.close();
           },
           () => {
-            console.log('failure')
+            console.log('failure');
           },
           $scope.uploader
-        )
-      })
-    }
+        );
+      });
+    };
 
     $scope.cycle_change = () => {
       console.log($scope.selected_cycle);
-    }
+    };
     $scope.close = () => {
       $uibModalInstance.close();
     };
