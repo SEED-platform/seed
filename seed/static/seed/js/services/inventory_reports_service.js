@@ -83,7 +83,7 @@ angular.module('BE.seed.service.inventory_reports', []).factory('inventory_repor
        }
      }
      */
-    const get_aggregated_report_data = (xVar, yVar, cycle_ids) => {
+    const get_aggregated_report_data = (xVar, yVar, cycle_ids, access_level_instance_id) => {
       // Error checks
       if (_.some([xVar, yVar, cycle_ids], _.isNil)) {
         $log.error('#inventory_reports_service.get_aggregated_report_data(): null parameter');
@@ -96,7 +96,8 @@ angular.module('BE.seed.service.inventory_reports', []).factory('inventory_repor
           params: {
             x_var: xVar,
             y_var: yVar,
-            cycle_ids
+            cycle_ids,
+            access_level_instance_id,
           }
         })
         .then((response) => response.data)
