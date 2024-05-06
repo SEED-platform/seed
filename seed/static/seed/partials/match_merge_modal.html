@@ -11,7 +11,7 @@
     <li>TaxLot UBID Matching Criteria: <strong>{$ taxlot_ubid_matching $}</strong></li>
   </ul>
 
-  <div class="form-group cycle-select-container">
+  <div class="form-group cycle-select-container" ng-show="!uploader.in_progress">
     <label for="cycle-select">Select Cycle</label>
     <select
       id="cycle-select"
@@ -21,6 +21,9 @@
       ng-change="cycle_change()"
       placeholder="{$:: 'Cycle Name' | translate $}"
     ></select>
+  </div>
+  <div ng-show="uploader.in_progress" style="margin:20px 0;">
+    Selected Cycle: <strong>{$ selected_cycle.name $}</strong>
   </div>
 
   <div class="progress_bar_container" ng-if="uploader.in_progress">

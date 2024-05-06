@@ -127,8 +127,10 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
       unit: null
     };
 
-    $scope.property_ubid_matching = $scope.property_columns.find((c) => c.column_name === 'ubid').is_matching_criteria;
-    $scope.taxlot_ubid_matching = $scope.taxlot_columns.find((c) => c.column_name === 'ubid').is_matching_criteria;
+    const property_ubid = $scope.property_columns.find((c) => c.column_name === 'ubid');
+    const taxlot_ubid = $scope.taxlot_columns.find((c) => c.column_name === 'ubid');
+    $scope.property_ubid_matching = property_ubid ? property_ubid.is_matching_criteria : false;
+    $scope.taxlot_ubid_matching = taxlot_ubid ? taxlot_ubid.is_matching_criteria : false;
     $scope.ubid_matching = $scope.property_ubid_matching || $scope.taxlot_ubid_matching;
 
     // Energy type option executed within this method in order to repeat on organization update
