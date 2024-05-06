@@ -409,7 +409,34 @@ class Organization(models.Model):
         if from_ali is None:
             from_ali = self.root
 
-        return AccessLevelInstance.dump_bulk(from_ali)
+        alis_ordered_by_lft = list(
+            AccessLevelInstance.objects.filter(organization=from_ali.organization, lft__gte=from_ali.lft, rgt__lte=from_ali.rgt)
+            .order_by("-lft")
+            .values("id", "name", "organization", "path", "lft", "rgt")
+        )
+
+        def populate_children(curr):
+            curr["children"] = []
+            lft, rgt = curr["lft"], curr["rgt"]
+            del curr["lft"]
+            del curr["rgt"]
+
+            while len(alis_ordered_by_lft) > 0:
+                nxt = alis_ordered_by_lft[-1]
+                if lft < nxt["lft"] and rgt > nxt["rgt"]:  # is descendant
+                    child = alis_ordered_by_lft.pop()
+                    curr["children"].append(child)
+                    populate_children(nxt)
+                else:
+                    break
+
+            if curr["children"] == []:
+                del curr["children"]
+
+        root = alis_ordered_by_lft.pop()
+        populate_children(root)
+
+        return [root]
 
     def __str__(self):
         return f"Organization: {self.name}({self.pk})"
