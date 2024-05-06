@@ -690,24 +690,30 @@ def states_to_views(unmatched_state_ids, org, access_level_instance, cycle, Stat
     #     raise IntegrityError("Could not merge results with error: %s" % (e))
 
     (
-        promoted_state_ids, 
-        merged_state_ids, 
-        merged_between_existing_count, 
-        merged_views, 
-        errored_merged_states, 
-        new_views, 
-        errored_new_states
-     ) = merge_unmatched_states(org, cycle, unmatched_states, promote_states, column_names, ViewClass, StateClass, table_name, existing_cycle_views, access_level_instance, sub_progress_key)
-
+        promoted_state_ids,
+        merged_state_ids,
+        merged_between_existing_count,
+        merged_views,
+        errored_merged_states,
+        new_views,
+        errored_new_states,
+    ) = merge_unmatched_states(
+        org,
+        cycle,
+        unmatched_states,
+        promote_states,
+        column_names,
+        ViewClass,
+        StateClass,
+        table_name,
+        existing_cycle_views,
+        access_level_instance,
+        sub_progress_key,
+    )
 
     # update merge_state while excluding any states that were a product of a previous, file-inclusive merge
-    StateClass.objects.filter(pk__in=promoted_state_ids).exclude(merge_state=MERGE_STATE_MERGED).update(
-        merge_state=MERGE_STATE_NEW
-    )
-    StateClass.objects.filter(pk__in=merged_state_ids).update(
-        data_state=DATA_STATE_MATCHING,
-        merge_state=MERGE_STATE_MERGED
-    )
+    StateClass.objects.filter(pk__in=promoted_state_ids).exclude(merge_state=MERGE_STATE_MERGED).update(merge_state=MERGE_STATE_NEW)
+    StateClass.objects.filter(pk__in=merged_state_ids).update(data_state=DATA_STATE_MATCHING, merge_state=MERGE_STATE_MERGED)
 
     return (
         merged_between_existing_count,
@@ -718,7 +724,20 @@ def states_to_views(unmatched_state_ids, org, access_level_instance, cycle, Stat
         errored_new_states,
     )
 
-def merge_unmatched_states(org, cycle, unmatched_states, promote_states, column_names, ViewClass, StateClass, table_name, existing_cycle_views, access_level_instance, sub_progress_key):
+
+def merge_unmatched_states(
+    org,
+    cycle,
+    unmatched_states,
+    promote_states,
+    column_names,
+    ViewClass,
+    StateClass,
+    table_name,
+    existing_cycle_views,
+    access_level_instance,
+    sub_progress_key,
+):
     sub_progress_data = update_sub_progress_total(100, sub_progress_key)
 
     merged_between_existing_count = 0
@@ -828,13 +847,13 @@ def merge_unmatched_states(org, cycle, unmatched_states, promote_states, column_
     StateClass.objects.filter(pk__in=merged_state_ids).update(data_state=DATA_STATE_MATCHING, merge_state=MERGE_STATE_MERGED)
 
     return (
-        promoted_state_ids, 
-        merged_state_ids, 
-        merged_between_existing_count, 
-        merged_views, 
-        errored_merged_states, 
-        new_views, 
-        errored_new_states
+        promoted_state_ids,
+        merged_state_ids,
+        merged_between_existing_count,
+        merged_views,
+        errored_merged_states,
+        new_views,
+        errored_new_states,
     )
 
 
