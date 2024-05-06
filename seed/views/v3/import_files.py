@@ -15,10 +15,8 @@ from rest_framework.decorators import action
 
 from seed.data_importer.meters_parser import MetersParser
 from seed.data_importer.models import ROW_DELIMITER, ImportRecord
-from seed.data_importer.match import merge_unmatched_states
 from seed.data_importer.sensor_readings_parser import SensorsReadingsParser
-from seed.data_importer.tasks import do_checks, geocode_and_match_buildings_task, map_data
-from seed.data_importer.tasks import match_merge_cycle_inventory
+from seed.data_importer.tasks import do_checks, geocode_and_match_buildings_task, map_data, match_merge_cycle_inventory
 from seed.data_importer.tasks import save_raw_data as task_save_raw
 from seed.data_importer.tasks import validate_use_cases as task_validate_use_cases
 from seed.decorators import ajax_request_class
@@ -56,7 +54,6 @@ from seed.models import (
 from seed.serializers.pint import DEFAULT_UNITS, apply_display_unit_preferences
 from seed.utils.api import OrgMixin, api_endpoint_class
 from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema_org_query_param
-from seed.utils.match import matching_criteria_column_names
 
 _log = logging.getLogger(__name__)
 
@@ -1053,7 +1050,7 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
 
         return result
 
-    @has_perm_class('requires_owner')
+    @has_perm_class("requires_owner")
     @action(detail=False, methods=["POST"])
     def match_merge_inventory(self, request):
         org_id = self.get_organization(request)
@@ -1062,15 +1059,14 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
 
         try:
             org = Organization.objects.get(pk=org_id)
-            cycle = Cycle.objects.get(pk=request.data.get('cycle_id', -1))
+            cycle = Cycle.objects.get(pk=request.data.get("cycle_id", -1))
         except (Organization.DoesNotExist, Cycle.DoesNotExist):
             return JsonResponse({"error": "No such resource.b"})
 
-        progress_data = ProgressData(func_name='match_progress', unique_id=org_id)
+        progress_data = ProgressData(func_name="match_progress", unique_id=org_id)
         progress_key = progress_data.key
 
-        match_merge_cycle_inventory.delay(org.id, cycle.id, access_level_instance.id, 'PropertyState', progress_key)
-        match_merge_cycle_inventory.delay(org.id, cycle.id, access_level_instance.id, 'TaxLotState', progress_key)        
+        match_merge_cycle_inventory.delay(org.id, cycle.id, access_level_instance.id, "PropertyState", progress_key)
+        match_merge_cycle_inventory.delay(org.id, cycle.id, access_level_instance.id, "TaxLotState", progress_key)
 
         return JsonResponse(progress_data.result())
-    

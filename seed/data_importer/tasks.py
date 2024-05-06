@@ -86,7 +86,7 @@ from seed.models.auditlog import AUDIT_IMPORT
 from seed.models.data_quality import DataQualityCheck, Rule
 from seed.utils.buildings import get_source_type
 from seed.utils.geocode import MapQuestAPIKeyError, create_geocoded_additional_columns, geocode_buildings
-from seed.utils.match import update_sub_progress_total, matching_criteria_column_names
+from seed.utils.match import matching_criteria_column_names, update_sub_progress_total
 from seed.utils.ubid import decode_unique_ids
 
 _log = get_task_logger(__name__)
@@ -2008,39 +2008,41 @@ def validate_use_cases(file_pk):
     _log.debug(progress_data.result())
     return progress_data.result()
 
+
 @shared_task
 def match_merge_cycle_inventory(org_id, cycle_id, ali_id, state_name, sub_progress_key):
     import logging
-    logging.error('>>> doing it right')
+
+    logging.error(">>> doing it right")
     org = Organization.objects.filter(pk=org_id).first()
     cycle = Cycle.objects.filter(pk=cycle_id).first()
     access_level_instance = AccessLevelInstance.objects.filter(pk=ali_id).first()
 
-    if state_name == 'TaxLotState':
-        view_klass = TaxLotView 
+    if state_name == "TaxLotState":
+        view_klass = TaxLotView
         state_klass = TaxLotState
         existing_cycle_views = TaxLotView.objects.filter(cycle=cycle)
         unmatched_states = TaxLotState.objects.filter(taxlotview__in=existing_cycle_views)
         promote_states = TaxLotState.objects.none()
     else:
-        view_klass = PropertyView 
+        view_klass = PropertyView
         state_klass = PropertyState
         existing_cycle_views = PropertyView.objects.filter(cycle=cycle)
         unmatched_states = PropertyState.objects.filter(propertyview__in=existing_cycle_views)
         promote_states = PropertyState.objects.none()
 
-    column_names = matching_criteria_column_names(org.id, 'PropertyState')
+    column_names = matching_criteria_column_names(org.id, "PropertyState")
 
     merge_unmatched_states(
-        org, 
-        cycle, 
-        unmatched_states, 
-        promote_states, 
-        column_names, 
-        view_klass, 
-        state_klass, 
-        state_name, 
-        existing_cycle_views, 
-        access_level_instance, 
-        sub_progress_key
+        org,
+        cycle,
+        unmatched_states,
+        promote_states,
+        column_names,
+        view_klass,
+        state_klass,
+        state_name,
+        existing_cycle_views,
+        access_level_instance,
+        sub_progress_key,
     )
