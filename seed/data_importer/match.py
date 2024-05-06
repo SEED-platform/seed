@@ -355,8 +355,8 @@ def match_and_link_incoming_properties_and_taxlots_by_cycle(
     }
 
 
-def link_views_and_states(merged_views, new_views, errored_new_states, ViewClass, cycle, ali, sub_progress_key):  # noqa: N803
-    shared_args = [ViewClass, cycle, ali, sub_progress_key]
+def link_views_and_states(merged_views, new_views, errored_new_states, view_class, cycle, ali, sub_progress_key):
+    shared_args = [view_class, cycle, ali, sub_progress_key]
 
     # merged_property_views are attached to properties that existed in the db prior to import, so it
     # REALLY should not fail.
@@ -454,24 +454,24 @@ def filter_duplicate_states(unmatched_states, sub_progress_key):
     return canonical_state_ids, errors_state_ids, duplicate_count
 
 
-def inclusive_match_and_merge(unmatched_state_ids, org, StateClass, sub_progress_key):  # noqa: N803
+def inclusive_match_and_merge(unmatched_state_ids, org, state_class, sub_progress_key):
     """
     Takes a list of unmatched_state_ids, combines matches of the corresponding
     -States, and returns a set of IDs of the remaining -States.
 
     :param unmatched_state_ids: list
     :param org: Organization object
-    :param StateClass: PropertyState or TaxLotState
+    :param state_class: PropertyState or TaxLotState
     :return: promoted_ids: list
     """
-    column_names = matching_criteria_column_names(org.id, StateClass.__name__)
+    column_names = matching_criteria_column_names(org.id, state_class.__name__)
 
     sub_progress_data = update_sub_progress_total(100, sub_progress_key)
 
     # IDs of -States with all matching criteria equal to None are initially promoted
     # as they're not eligible for matching.
     promoted_ids = list(
-        StateClass.objects.filter(pk__in=unmatched_state_ids, **empty_criteria_filter(StateClass, column_names)).values_list(
+        state_class.objects.filter(pk__in=unmatched_state_ids, **empty_criteria_filter(state_class, column_names)).values_list(
             "id", flat=True
         )
     )
@@ -480,7 +480,7 @@ def inclusive_match_and_merge(unmatched_state_ids, org, StateClass, sub_progress
     unmatched_state_ids = list(set(unmatched_state_ids) - set(promoted_ids))
     # Group IDs by -States that match each other
     matched_id_groups = (
-        StateClass.objects.filter(id__in=unmatched_state_ids)
+        state_class.objects.filter(id__in=unmatched_state_ids)
         .values(*column_names)
         .annotate(matched_ids=ArrayAgg("id"))
         .values_list("matched_ids", flat=True)
@@ -496,7 +496,7 @@ def inclusive_match_and_merge(unmatched_state_ids, org, StateClass, sub_progress
             # If there's only 1, no merging is needed, so just promote the ID.
             promoted_ids += ids
         else:
-            states = list(StateClass.objects.filter(pk__in=ids).order_by("-id"))
+            states = list(state_class.objects.filter(pk__in=ids).order_by("-id"))
             raw_ali_ids = {s.raw_access_level_instance for s in states if s.raw_access_level_instance is not None}
             if len(raw_ali_ids) > 1:
                 errored_states += states
@@ -517,12 +517,12 @@ def inclusive_match_and_merge(unmatched_state_ids, org, StateClass, sub_progress
     sub_progress_data.finish_with_success()
 
     # Flag the soon-to-be promoted ID -States as having gone through matching
-    StateClass.objects.filter(pk__in=promoted_ids).update(data_state=DATA_STATE_MATCHING)
+    state_class.objects.filter(pk__in=promoted_ids).update(data_state=DATA_STATE_MATCHING)
 
     return promoted_ids, merges_within_file, errored_states
 
 
-def states_to_views(unmatched_state_ids, org, access_level_instance, cycle, StateClass, sub_progress_key, merge_duplicates=False):  # noqa: N803
+def states_to_views(unmatched_state_ids, org, access_level_instance, cycle, state_class, sub_progress_key, merge_duplicates=False):
     """
     The purpose of this method is to take incoming -States and, apply them to a
     -View. In the process of doing so, -States could be flagged for "deletion"
@@ -539,30 +539,30 @@ def states_to_views(unmatched_state_ids, org, access_level_instance, cycle, Stat
     :param unmatched_states: list
     :param org: Organization object
     :param cycle: Cycle object
-    :param StateClass: PropertyState or TaxLotState
+    :param state_class: PropertyState or TaxLotState
     :param merge_duplicates: bool, if True, we keep the duplicates and merge them
         instead of skipping them. This is used when importing BuildingSync files.
     :return: processed_views, duplicate_count, new + matched counts
     """
-    table_name = StateClass.__name__
+    table_name = state_class.__name__
 
     # sub_progress_data = update_sub_progress_total(100, sub_progress_key)
 
     if table_name == "PropertyState":
-        ViewClass = PropertyView
+        view_class = PropertyView
     elif table_name == "TaxLotState":
-        ViewClass = TaxLotView
+        view_class = TaxLotView
 
     # Identify existing used -States
-    existing_cycle_views = ViewClass.objects.filter(cycle_id=cycle)
-    existing_states = StateClass.objects.filter(pk__in=Subquery(existing_cycle_views.values("state_id")))
+    existing_cycle_views = view_class.objects.filter(cycle_id=cycle)
+    existing_states = state_class.objects.filter(pk__in=Subquery(existing_cycle_views.values("state_id")))
 
     if merge_duplicates:
-        duplicate_states = StateClass.objects.none()
+        duplicate_states = state_class.objects.none()
         duplicate_count = 0
     else:
         # Apply DATA_STATE_DELETE to incoming duplicate -States of existing -States in Cycle
-        duplicate_states = StateClass.objects.filter(
+        duplicate_states = state_class.objects.filter(
             pk__in=unmatched_state_ids, hash_object__in=Subquery(existing_states.values("hash_object"))
         )
         duplicate_count = duplicate_states.update(data_state=DATA_STATE_DELETE)
@@ -571,154 +571,64 @@ def states_to_views(unmatched_state_ids, org, access_level_instance, cycle, Stat
 
     # For the remaining incoming -States (filtering those duplicates), identify
     # -States with all matching criteria being None. These aren't eligible for matching.
-    empty_matching_criteria = empty_criteria_filter(StateClass, column_names)
-    promote_states = StateClass.objects.filter(pk__in=unmatched_state_ids, **empty_matching_criteria).exclude(
+    empty_matching_criteria = empty_criteria_filter(state_class, column_names)
+    promote_states = state_class.objects.filter(pk__in=unmatched_state_ids, **empty_matching_criteria).exclude(
         pk__in=Subquery(duplicate_states.values("id"))
     )
 
     # Identify and filter out -States that have been "handled".
     handled_states = promote_states | duplicate_states
-    unmatched_states = StateClass.objects.filter(pk__in=unmatched_state_ids).exclude(pk__in=Subquery(handled_states.values("id")))
-
-    # For the remaining -States, search for a match within the -States that are attached to -Views.
-    # If one match is found, pass that along.
-    # If multiple matches are found, merge them together, pass along the resulting record.
-    # Otherwise, add current -State to be promoted as is.
-    #########3
-    # merged_between_existing_count = 0
-    # merge_state_pairs = []
-    # batch_size = math.ceil(len(unmatched_states) / 100)
-
-    # find matching states for unmatched_staets
-    # for idx, state in enumerate(unmatched_states):
-    #     matching_criteria = matching_filter_criteria(state, column_names)
-    #     # compare ubids via jaccard index instead of a direct match, drop from matching criteria
-    #     check_jaccard = False
-    #     if 'ubid' in matching_criteria.keys():
-    #         check_jaccard = True if matching_criteria.get('ubid') else False
-    #         ubid = matching_criteria.pop('ubid')
-
-    #     existing_state_matches = StateClass.objects.filter(
-    #         pk__in=Subquery(existing_cycle_views.values('state_id')),
-    #         **matching_criteria,
-    #     )
-
-    #     if check_jaccard:
-    #         existing_state_matches = [
-    #             state
-    #             for state in existing_state_matches
-    #             if check_jaccard_match(ubid, state.ubid, org.ubid_threshold)
-    #         ]
-
-    #     count = len(existing_state_matches)
-
-    #     if count > 1:
-    #         merged_between_existing_count += count
-    #         existing_state_ids = [state.id for state in sorted(existing_state_matches, key=lambda state: state.updated)]
-    #         # The following merge action ignores merge protection and prioritizes -States by most recent AuditLog
-    #         merged_state = merge_states_with_views(existing_state_ids, org.id, 'System Match', StateClass)
-    #         merge_state_pairs.append((merged_state, state))
-    #     elif count == 1:
-    #         merge_state_pairs.append((existing_state_matches[0], state))
-    #     else:
-    #         promote_states = promote_states | StateClass.objects.filter(pk=state.id)
-
-    #     if batch_size > 0 and idx % batch_size == 0:
-    #         sub_progress_data.step('Matching Data (3/6): Merging Unmatched States')
-
-    # sub_progress_data = update_sub_progress_total(100, sub_progress_key, finish=True)
-
-    # # Process -States into -Views either directly (promoted_ids) or post-merge (merge_state_pairs).
-    # _log.debug("There are %s merge_state_pairs and %s promote_states" % (len(merge_state_pairs), promote_states.count()))
-    # priorities = Column.retrieve_priorities(org.pk)
-    # try:
-    #     with transaction.atomic():
-    #         # For each merge_state_pairs, try to merge the new state into the existing property views
-    #         merged_views = []
-    #         merged_state_ids = []
-    #         errored_merged_states = []
-    #         batch_size = math.ceil(len(merge_state_pairs) / 100)
-    #         for idx, state_pair in enumerate(merge_state_pairs):
-    #             existing_state, newer_state = state_pair
-    #             existing_view = ViewClass.objects.get(state_id=existing_state.id)
-    #             existing_obj = getattr(existing_view, "property" if table_name == 'PropertyState' else "taxlot")
-
-    #             # ensure that new ali and existing ali match and that we have access to existing ali.
-    #             new_ali = newer_state.raw_access_level_instance
-    #             if new_ali is None:
-    #                 if not (
-    #                     existing_obj.access_level_instance == access_level_instance or
-    #                     existing_obj.access_level_instance.is_descendant_of(access_level_instance)
-    #                 ):
-    #                     errored_merged_states.append(newer_state)
-    #                     continue
-    #             else:
-    #                 if existing_obj.access_level_instance != new_ali:
-    #                     errored_merged_states.append(newer_state)
-    #                     continue
-
-    #             # Merge -States and assign new/merged -State to existing -View
-    #             merged_state = save_state_match(existing_state, newer_state, priorities)
-    #             merge_ubid_models([existing_state.id], merged_state.id, StateClass)
-    #             existing_view.state = merged_state
-    #             existing_view.save()
-
-    #             merged_views.append(existing_view)
-    #             merged_state_ids.append(merged_state.id)
-    #             if batch_size > 0 and idx % batch_size == 0:
-    #                 sub_progress_data.step('Matching Data (4/6): Merging State Pairs')
-
-    #         sub_progress_data = update_sub_progress_total(100, sub_progress_key, finish=True)
-
-    #         # For each state that doesn't merge into an existing property, promote it, creating a new property
-    #         new_views = []
-    #         promoted_state_ids = []
-    #         errored_new_states = []
-    #         batch_size = math.ceil(len(promote_states) / 100)
-    #         for idx, state in enumerate(promote_states):
-    #             created_view = state.promote(cycle)
-    #             if created_view is None:
-    #                 errored_new_states.append(state)
-    #             else:
-    #                 promoted_state_ids.append(state.id)
-    #                 new_views.append(created_view)
-    #             if batch_size > 0 and idx % batch_size == 0:
-    #                 sub_progress_data.step('Matching Data (5/6): Promoting States')
-    #         sub_progress_data.finish_with_success()
-
-    # except IntegrityError as e:
-    #     raise IntegrityError("Could not merge results with error: %s" % (e))
+    unmatched_states = state_class.objects.filter(pk__in=unmatched_state_ids).exclude(pk__in=Subquery(handled_states.values("id")))
 
     (
-        promoted_state_ids, 
-        merged_state_ids, 
-        merged_between_existing_count, 
-        merged_views, 
-        errored_merged_states, 
-        new_views, 
-        errored_new_states
-     ) = merge_unmatched_states(org, cycle, unmatched_states, promote_states, column_names, ViewClass, StateClass, table_name, existing_cycle_views, access_level_instance, sub_progress_key)
-
+        promoted_state_ids,
+        merged_state_ids,
+        merged_between_existing_count,
+        merged_views,
+        errored_merged_states,
+        new_views,
+        errored_new_states,
+    ) = merge_unmatched_states(
+        org,
+        cycle,
+        unmatched_states,
+        promote_states,
+        column_names,
+        view_class,
+        state_class,
+        table_name,
+        existing_cycle_views,
+        access_level_instance,
+        sub_progress_key,
+    )
 
     # update merge_state while excluding any states that were a product of a previous, file-inclusive merge
-    StateClass.objects.filter(pk__in=promoted_state_ids).exclude(merge_state=MERGE_STATE_MERGED).update(
-        merge_state=MERGE_STATE_NEW
-    )
-    StateClass.objects.filter(pk__in=merged_state_ids).update(
-        data_state=DATA_STATE_MATCHING,
-        merge_state=MERGE_STATE_MERGED
-    )
+    state_class.objects.filter(pk__in=promoted_state_ids).exclude(merge_state=MERGE_STATE_MERGED).update(merge_state=MERGE_STATE_NEW)
+    state_class.objects.filter(pk__in=merged_state_ids).update(data_state=DATA_STATE_MATCHING, merge_state=MERGE_STATE_MERGED)
 
     return (
         merged_between_existing_count,
         duplicate_count,
-        list(set(merged_views)),  # so no dupes, I think?
+        list(set(merged_views)),
         errored_merged_states,
         new_views,
         errored_new_states,
     )
 
-def merge_unmatched_states(org, cycle, unmatched_states, promote_states, column_names, ViewClass, StateClass, table_name, existing_cycle_views, access_level_instance, sub_progress_key):
+
+def merge_unmatched_states(
+    org,
+    cycle,
+    unmatched_states,
+    promote_states,
+    column_names,
+    view_class,
+    state_class,
+    table_name,
+    existing_cycle_views,
+    access_level_instance,
+    sub_progress_key,
+):
     sub_progress_data = update_sub_progress_total(100, sub_progress_key)
 
     merged_between_existing_count = 0
@@ -733,7 +643,7 @@ def merge_unmatched_states(org, cycle, unmatched_states, promote_states, column_
             check_jaccard = bool(matching_criteria.get("ubid"))
             ubid = matching_criteria.pop("ubid")
 
-        existing_state_matches = StateClass.objects.filter(
+        existing_state_matches = state_class.objects.filter(
             pk__in=Subquery(existing_cycle_views.values("state_id")),
             **matching_criteria,
         )
@@ -749,12 +659,12 @@ def merge_unmatched_states(org, cycle, unmatched_states, promote_states, column_
             merged_between_existing_count += count
             existing_state_ids = [state.id for state in sorted(existing_state_matches, key=lambda state: state.updated)]
             # The following merge action ignores merge protection and prioritizes -States by most recent AuditLog
-            merged_state = merge_states_with_views(existing_state_ids, org.id, "System Match", StateClass)
+            merged_state = merge_states_with_views(existing_state_ids, org.id, "System Match", state_class)
             merge_state_pairs.append((merged_state, state))
         elif count == 1:
             merge_state_pairs.append((existing_state_matches[0], state))
         else:
-            promote_states = promote_states | StateClass.objects.filter(pk=state.id)
+            promote_states = promote_states | state_class.objects.filter(pk=state.id)
 
         if batch_size > 0 and idx % batch_size == 0:
             sub_progress_data.step("Matching Data (3/6): Merging Unmatched States")
@@ -773,7 +683,7 @@ def merge_unmatched_states(org, cycle, unmatched_states, promote_states, column_
             batch_size = math.ceil(len(merge_state_pairs) / 100)
             for idx, state_pair in enumerate(merge_state_pairs):
                 existing_state, newer_state = state_pair
-                existing_view = ViewClass.objects.filter(state_id=existing_state.id).first()
+                existing_view = view_class.objects.filter(state_id=existing_state.id).first()
                 if not existing_view:
                     continue
                 existing_obj = getattr(existing_view, "property" if table_name == "PropertyState" else "taxlot")
@@ -793,7 +703,7 @@ def merge_unmatched_states(org, cycle, unmatched_states, promote_states, column_
 
                 # Merge -States and assign new/merged -State to existing -View
                 merged_state = save_state_match(existing_state, newer_state, priorities)
-                merge_ubid_models([existing_state.id], merged_state.id, StateClass)
+                merge_ubid_models([existing_state.id], merged_state.id, state_class)
                 existing_view.state = merged_state
                 existing_view.save()
 
@@ -824,21 +734,21 @@ def merge_unmatched_states(org, cycle, unmatched_states, promote_states, column_
         raise IntegrityError("Could not merge results with error: %s" % (e))
 
     # update merge_state while excluding any states that were a product of a previous, file-inclusive merge
-    StateClass.objects.filter(pk__in=promoted_state_ids).exclude(merge_state=MERGE_STATE_MERGED).update(merge_state=MERGE_STATE_NEW)
-    StateClass.objects.filter(pk__in=merged_state_ids).update(data_state=DATA_STATE_MATCHING, merge_state=MERGE_STATE_MERGED)
+    state_class.objects.filter(pk__in=promoted_state_ids).exclude(merge_state=MERGE_STATE_MERGED).update(merge_state=MERGE_STATE_NEW)
+    state_class.objects.filter(pk__in=merged_state_ids).update(data_state=DATA_STATE_MATCHING, merge_state=MERGE_STATE_MERGED)
 
     return (
-        promoted_state_ids, 
-        merged_state_ids, 
-        merged_between_existing_count, 
-        merged_views, 
-        errored_merged_states, 
-        new_views, 
-        errored_new_states
+        promoted_state_ids,
+        merged_state_ids,
+        merged_between_existing_count,
+        merged_views,
+        errored_merged_states,
+        new_views,
+        errored_new_states,
     )
 
 
-def link_states(states, ViewClass, cycle, highest_ali, sub_progress_key):  # noqa: N803
+def link_states(states, view_class, cycle, highest_ali, sub_progress_key):
     """
     Run each of the given -States through a linking round.
 
@@ -848,7 +758,7 @@ def link_states(states, ViewClass, cycle, highest_ali, sub_progress_key):  # noq
 
     sub_progress_data = update_sub_progress_total(100, sub_progress_key)
 
-    if ViewClass == PropertyView:
+    if view_class == PropertyView:
         state_class_name = "PropertyState"
     else:
         state_class_name = "TaxLotState"
@@ -869,7 +779,7 @@ def link_states(states, ViewClass, cycle, highest_ali, sub_progress_key):  # noq
             unlinked_states.append(state.id)
             continue
 
-        view = ViewClass.objects.get(pk=view_id)
+        view = view_class.objects.get(pk=view_id)
         if _link_count == 0:
             unlinked_views.append(view)
         else:
