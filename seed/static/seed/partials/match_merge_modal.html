@@ -22,9 +22,7 @@
       placeholder="{$:: 'Cycle Name' | translate $}"
     ></select>
   </div>
-  <div ng-show="uploader.in_progress" style="margin:20px 0;">
-    Selected Cycle: <strong>{$ selected_cycle.name $}</strong>
-  </div>
+  <div ng-show="uploader.in_progress" style="margin: 20px 0">Selected Cycle: <strong>{$ selected_cycle.name $}</strong></div>
 
   <div class="progress_bar_container" ng-if="uploader.in_progress">
     <div class="progress_bar_copy_top">Progress:</div>
