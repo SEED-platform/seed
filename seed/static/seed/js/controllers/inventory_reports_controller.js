@@ -55,7 +55,7 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
 
     const access_level_instances_by_depth = ah_service.calculate_access_level_instances_by_depth($scope.access_level_tree);
     // cannot select parents alis
-    const [users_depth, ] = Object.entries(access_level_instances_by_depth).find(([, x]) => x.length === 1 && x[0].id === parseInt($scope.users_access_level_instance_id, 10));
+    const [users_depth] = Object.entries(access_level_instances_by_depth).find(([, x]) => x.length === 1 && x[0].id === parseInt($scope.users_access_level_instance_id, 10));
     $scope.level_names = access_level_tree.access_level_names.slice(users_depth - 1);
 
     $scope.change_selected_level_index = () => {

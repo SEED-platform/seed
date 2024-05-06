@@ -97,7 +97,7 @@ angular.module('BE.seed.service.inventory_reports', []).factory('inventory_repor
             x_var: xVar,
             y_var: yVar,
             cycle_ids,
-            access_level_instance_id,
+            access_level_instance_id
           }
         })
         .then((response) => response.data)

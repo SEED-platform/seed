@@ -637,7 +637,7 @@ SEED_app.config([
               const organization_id = user_service.get_organization().id;
               return organization_service.get_organization_access_level_tree(organization_id);
             }
-          ],
+          ]
         }
       })
       .state({
