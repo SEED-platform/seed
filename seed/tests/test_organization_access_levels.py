@@ -27,28 +27,22 @@ class TestOrganizationViews(AccessLevelBaseTestCase):
         sibling = self.org.add_new_access_level_instance(self.org.root.id, "sibling")
         child_dict = {
             "id": self.child_level_instance.pk,
-            "data": {
-                "name": "child",
-                "organization": self.org.id,
-                "path": {"root": "root", "child": "child"},
-            },
+            "name": "child",
+            "organization": self.org.id,
+            "path": {"root": "root", "child": "child"},
         }
         sibling_dict = {
             "id": sibling.pk,
-            "data": {
-                "name": "sibling",
-                "organization": self.org.id,
-                "path": {"root": "root", "child": "sibling"},
-            },
+            "name": "sibling",
+            "organization": self.org.id,
+            "path": {"root": "root", "child": "sibling"},
         }
 
         root_dict = {
             "id": self.org.root.pk,
-            "data": {
-                "name": self.root_level_instance.name,
-                "organization": self.org.id,
-                "path": {"root": "root"},
-            },
+            "name": self.root_level_instance.name,
+            "organization": self.org.id,
+            "path": {"root": "root"},
         }
 
         # get tree
@@ -157,27 +151,21 @@ class TestOrganizationViews(AccessLevelBaseTestCase):
             "access_level_tree": [
                 {
                     "id": self.org.root.pk,
-                    "data": {
-                        "name": self.root_level_instance.name,
-                        "organization": self.org.id,
-                        "path": {"root": "root"},
-                    },
+                    "name": self.root_level_instance.name,
+                    "organization": self.org.id,
+                    "path": {"root": "root"},
                     "children": [
                         {
                             "id": aunt.pk,
-                            "data": {
-                                "name": "aunt",
-                                "organization": self.org.id,
-                                "path": {"root": "root", "child": "aunt"},
-                            },
+                            "name": "aunt",
+                            "organization": self.org.id,
+                            "path": {"root": "root", "child": "aunt"},
                         },
                         {
                             "id": self.child_level_instance.pk,
-                            "data": {
-                                "name": "child",
-                                "organization": self.org.id,
-                                "path": {"root": "root", "child": "child"},
-                            },
+                            "name": "child",
+                            "organization": self.org.id,
+                            "path": {"root": "root", "child": "child"},
                         },
                     ],
                 }
