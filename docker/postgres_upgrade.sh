@@ -165,7 +165,13 @@ docker-compose exec -T ${SOURCE_PG_TIMESCALE_CONV_SERVICE} psql --user=seed -d s
 
 # Restore from backup
 echo "Restoring postgres 12 database ${PG12_DUMP} from backup..."
-docker-compose exec -T ${SOURCE_PG_TIMESCALE_CONV_SERVICE} pg_restore --exit-on-error --no-owner --no-acl --user=seed -d seed -v ${PG12_DUMP}
+# Execute pg_dump command with or without --verbose flag based on VERBOSE_MODE
+if $VERBOSE_MODE; then
+    docker-compose exec -T ${SOURCE_PG_TIMESCALE_CONV_SERVICE} pg_restore --exit-on-error --no-owner --no-acl --user=seed -d seed -v ${PG12_DUMP}
+else
+    docker-compose exec -T ${SOURCE_PG_TIMESCALE_CONV_SERVICE} pg_restore --exit-on-error --no-owner --no-acl --user=seed -d seed ${PG12_DUMP}
+fi
+
 
 echo "Performing post-restore operations for TimescaleDB..."
 # Post restore with TimescaleDB
@@ -238,7 +244,13 @@ docker-compose exec -T ${TARGET_PG_TIMESCALE_TEST_SERVICE} psql --user=seed -d s
 
 echo "Restoring ${PG_CONV_STRING} database ${CONV_DUMP} from backup..."
 # Restore from backup
-docker-compose exec -T ${TARGET_PG_TIMESCALE_TEST_SERVICE} pg_restore --exit-on-error --no-owner --no-acl --user=seed -d seed -v ${CONV_DUMP}
+# Execute pg_dump command with or without --verbose flag based on VERBOSE_MODE
+if $VERBOSE_MODE; then
+    docker-compose exec -T ${TARGET_PG_TIMESCALE_TEST_SERVICE} pg_restore --exit-on-error --no-owner --no-acl --user=seed -d seed -v ${CONV_DUMP}
+else
+    docker-compose exec -T ${TARGET_PG_TIMESCALE_TEST_SERVICE} pg_restore --exit-on-error --no-owner --no-acl --user=seed -d seed ${CONV_DUMP}
+fi
+
 
 # Prepare for restore with TimescaleDB
 docker-compose exec -T ${TARGET_PG_TIMESCALE_TEST_SERVICE} psql --user=seed -d seed -c 'SELECT timescaledb_post_restore();'
