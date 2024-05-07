@@ -1,3 +1,4 @@
+---
 # Docker-compose setup for local development
 #
 # Configurable Values:
@@ -6,12 +7,12 @@
 #
 # Usage:
 #   docker-compose -f docker-compose.yml -f docker-compose.dev.yml up
-version: "3.4"
 services:
   db-postgres:
     container_name: seed_postgres
     volumes:
       - ref_seed_pgdata:/var/lib/postgresql/data
+      - ./share:/share
   web:
     container_name: seed_web
     image: seedplatform/seed:develop
