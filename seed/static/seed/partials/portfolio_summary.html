@@ -16,33 +16,50 @@
     {$:: 'The portfolio summary page compares 2 cycles to calculate progress toward an Energy Use Intensity reduction goal.' | translate $}
     <span ng-if="write_permission">{$:: 'Cycle selection and goal details can be customized by clicking the Configure Goals button below.' | translate $}</span>
   </div>
-  <div class="goal-actions-wrapper">
-    <div class="goal-select-wrapper">
-      <label class="goal-select-label" for="goal-select" ng-show="goal" translate>GOAL</label>
-      <div class="goal-selection" ng-show="goal">
-        <select name="goal-select" id="goal-select" ng-options="goal as goal.name for goal in goals" ng-model="goal"></select>
+  <div class="goal-header-wrapper">
+    <div class="goal-header-column">
+      <div class="goal-actions-wrapper">
+        <div class="goal-select-wrapper">
+          <label class="goal-select-label" for="goal-select" ng-show="goal" translate>GOAL</label>
+          <div class="goal-selection" ng-show="goal">
+            <select name="goal-select" id="goal-select" ng-options="goal as goal.name for goal in goals" ng-model="goal"></select>
+          </div>
+          <button class="btn btn-primary portfolio-summary-btn" type="submit" ng-click="open_goal_editor_modal()" ng-if="write_permission">{$:: 'Configure Goals' | translate $}</button>
+        </div>
       </div>
-      <button class="btn btn-primary portfolio-summary-btn" type="submit" ng-click="open_goal_editor_modal()" ng-if="write_permission">{$:: 'Configure Goals' | translate $}</button>
+      <!-- GOAL DETAILS -->
+      <div class="goal-details-container" ng-if="valid">
+        <div class="goal-details-column" style="margin-left: 10px">
+          <div ng-repeat="(k, v) in goal_details[0]" class="goal-detail">
+            <div class="goal-detail-key" style="width: 120px">{$ k $}:</div>
+            <div class="goal-detail-value" uib-tooltip="{$ (v.length > 25) ? v : '' $}">{$ v $}</div>
+          </div>
+        </div>
+        <div class="goal-details-column">
+          <div ng-repeat="(k, v) in goal_details[1]" class="goal-detail">
+            <div class="goal-detail-key">{$ k $}:</div>
+            <div class="goal-detail-value" uib-tooltip="{$ (v.length > 25) ? v : '' $}">{$ v $}</div>
+          </div>
+        </div>
+      </div>
     </div>
-  </div>
-  <!-- GOAL DETAILS -->
-  <div class="goal-details-container" ng-if="valid">
-    <div class="goal-details-column" style="margin-left: 10px">
-      <div ng-repeat="detail in goal_details.slice(0, 3)" class="goal-detail">
-        <div class="goal-detail-key" style="width: 100px">{$ detail[0] $}:</div>
-        <div class="goal-detail-value" uib-tooltip="{$ (detail[1].length > 25) ? detail[1] : '' $}">{$ detail[1] $}</div>
-      </div>
-    </div>
-    <div class="goal-details-column">
-      <div ng-repeat="detail in goal_details.slice(3)" class="goal-detail">
-        <div class="goal-detail-key">{$ detail[0] $}:</div>
-        <div class="goal-detail-value" uib-tooltip="{$ (detail[1].length > 25) ? detail[1] : '' $}">{$ detail[1] $}</div>
-      </div>
+
+    <div class="goal-header-column">
+      <table class="table table-striped table-bordered">
+        <tbody>
+          <tr ng-repeat="stat in goal_stats">
+            <td>{$ stat.name $}</td>
+            <td>{$ stat.value $}</td>
+          </tr>
+          <tr>
+          </tr>
+        </tbody>
+      </table>
     </div>
   </div>
   <div id="portfolio-summary-selection-wrapper">
     <!-- Summary Table-->
-    <div id="portfolio-summary" ng-if="summary_loading || summary_valid">
+    <div id="portfolio-summary" class="wide-900" ng-if="summary_loading || summary_valid">
       <h3 translate>Portfolio Summary</h3>
       <div ng-if="summary_valid" ui-grid="summaryGridOptions" ui-grid-resize-columns></div>
       <div class="portfolio-summary-loading" ng-if="summary_loading">
@@ -55,7 +72,7 @@
   </div>
   <!-- Data Table container -->
   <!-- Pagination -->
-  <div class="portfolio-summary-item-count" ng-if="data_valid">
+  <div class="portfolio-summary-item-count wide-900" ng-if="data_valid">
     <div ng-if="data_valid">
       <button class="btn btn-primary portfolio-summary-btn" ng-click="toggle_access_level_instances()">{$ show_access_level_instances ? 'Hide' : 'Show' $} Access Levels</button>
     </div>
@@ -76,7 +93,7 @@
   </div>
   <!-- Data Table -->
   <div id="portfolio-summary-grid" ng-if="data_valid">
-    <div id="portfolioSummary-gridOptions-wrapper">
+    <div id="portfolioSummary-gridOptions-wrapper" class="wide-900">
       <div ui-grid="gridOptions" ui-grid-save-state ui-grid-resize-columns ui-grid-exporter ui-grid-edit style="display: flex; width: 100%"></div>
     </div>
   </div>
