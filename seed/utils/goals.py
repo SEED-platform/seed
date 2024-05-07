@@ -63,3 +63,8 @@ def extra_data_expression(column, default_value):
         default=Value(default_value),
         output_field=FloatField(),
     )
+
+def percentage(a, b):
+    if not a or not b:
+        return None
+    return int((a - b) / a * 100) or 0

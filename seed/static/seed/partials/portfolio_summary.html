@@ -61,7 +61,7 @@
     <!-- Summary Table-->
     <div id="portfolio-summary" class="wide-900" ng-if="summary_loading || summary_valid">
       <h3 translate>Portfolio Summary</h3>
-      <div ng-if="summary_valid" ui-grid="summaryGridOptions" ui-grid-resize-columns></div>
+      <div ng-if="summary_valid" ui-grid="summaryGridOptions" ui-grid-resize-columns style="margin-bottom: 30px;"></div>
       <div class="portfolio-summary-loading" ng-if="summary_loading">
         <h4>{$:: 'Loading Summary Data...' | translate $}</h4>
         <uib-progress class="progress-striped active">

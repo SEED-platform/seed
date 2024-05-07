@@ -213,13 +213,22 @@
                   </li>
                 </ul>
                 <!-- Target -->
-                <ul class="r-list" style="margin-bottom: 40px">
+                <ul class="r-list">
                   <li class="r-list-header" translate>Portfolio Target</li>
                   <li class="r-row r-row-centered">
                     <label for="input-target" class="r-pad-right-5 goal-label">Percentage (%)</label>
                     <input id="input-target" class="form-control goal-form-control" type="number" ng-model="goal.target_percentage" min="0" max="100" style="padding-left: 5px" required />
                   </li>
                   <li class="r-info"><i class="fa-solid fa-arrow-up r-pad-right-5"></i><span translate>Target to quantify Portfolio EUI improvement. Must be between 0 and 100.</span></li>
+                </ul>
+                <!-- Commitment Sq Ft -->
+                <ul class="r-list" style="margin-bottom: 50px">
+                  <li class="r-list-header" translate>Commitment</li>
+                  <li class="r-row r-row-centered">
+                    <label for="input-target" class="r-pad-right-5 goal-label">Commitment (Sq Ft.)</label>
+                    <input id="input-target" class="form-control goal-form-control" type="number" ng-model="goal.commitment_sqft" min="0" style="padding-left: 5px"/>
+                  </li>
+                  <li class="r-info"><i class="fa-solid fa-arrow-up r-pad-right-5"></i><span translate>Committed Area</span></li>
                 </ul>
               </div>
             </form>

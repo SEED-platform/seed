@@ -426,6 +426,22 @@ class GoalViewTests(AccessLevelBaseTestCase):
         url = reverse_lazy("api:v3:goals-portfolio-summary", args=[self.child_goal.id]) + "?organization_id=" + str(self.org.id)
         response = self.client.get(url, content_type="application/json")
         summary = response.json()
+        # only properties with passed_checks and not new_or_acquired are included in calc
+        exp_summary = {
+            "baseline": {"cycle_name": "2001 Annual", "total_sqft": None, "total_kbtu": None, "weighted_eui": None},
+            "current": {"cycle_name": "2003 Annual", "total_sqft": None, "total_kbtu": None, "weighted_eui": None},
+            "sqft_change": None,
+            "eui_change": None
+        }
+
+        assert summary == exp_summary
+
+        for goalnote in self.child_goal.goalnote_set.all():
+            goalnote.passed_checks = True
+            goalnote.save()
+
+        response = self.client.get(url, content_type="application/json")
+
         exp_summary = {
             "baseline": {"cycle_name": "2001 Annual", "total_kbtu": 44, "total_sqft": 9, "weighted_eui": 4},
             "current": {"cycle_name": "2003 Annual", "total_kbtu": 110, "total_sqft": 15, "weighted_eui": 7},

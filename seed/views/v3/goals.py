@@ -12,12 +12,12 @@ from rest_framework.decorators import action
 
 from seed.decorators import ajax_request_class
 from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm_class
-from seed.models import AccessLevelInstance, Goal, Organization, PropertyView
+from seed.models import AccessLevelInstance, Goal, GoalNote, Organization, PropertyView
 from seed.serializers.goals import GoalSerializer
 from seed.serializers.pint import collapse_unit
 from seed.utils.api import OrgMixin
 from seed.utils.api_schema import swagger_auto_schema_org_query_param
-from seed.utils.goals import get_area_expression, get_eui_expression
+from seed.utils.goals import get_area_expression, get_eui_expression, percentage
 from seed.utils.viewsets import ModelViewSetWithoutPatch
 
 
@@ -98,24 +98,43 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
         org_id = int(self.get_organization(request))
         org = Organization.objects.get(pk=org_id)
         goal = Goal.objects.get(pk=pk)
-        summary = {}
-        for cycle in [goal.baseline_cycle, goal.current_cycle]:
+        summary = {"total_properties": goal.current_cycle.propertyview_set.count()}
+
+        for current, cycle in enumerate([goal.baseline_cycle, goal.current_cycle]):
+            # Return all properties
             property_views = PropertyView.objects.select_related("property", "state").filter(
                 property__organization_id=org_id,
                 cycle_id=cycle.id,
                 property__access_level_instance__lft__gte=goal.access_level_instance.lft,
                 property__access_level_instance__rgt__lte=goal.access_level_instance.rgt,
+                property__goalnote__goal__id=goal.id,
             )
+            # Shared area is area of all properties regardless of passing status
+            property_views = property_views.annotate(area=get_area_expression(goal))
+            if current:
+                summary["shared_sqft"] = property_views.aggregate(shared_sqft=Sum("area"))["shared_sqft"]
+
+            # Remaining Calcs are restricted to passing checks and not new/acquired
+            # use goal notes relation to properties to get passing properties views
+            passing_property_ids = GoalNote.objects.filter(
+                goal=goal,
+                passed_checks=True,
+                new_or_acquired=False,
+            ).values_list('property__id', flat=True)
+            property_views = property_views.filter(property__id__in=passing_property_ids)
 
             # Create annotations for kbtu calcs. 'eui' is based on goal column priority
             property_views = property_views.annotate(
                 eui=get_eui_expression(goal),
-                area=get_area_expression(goal),
             ).annotate(kbtu=F("eui") * F("area"))
 
             aggregated_data = property_views.aggregate(total_kbtu=Sum("kbtu"), total_sqft=Sum("area"))
             total_kbtu = aggregated_data["total_kbtu"]
             total_sqft = aggregated_data["total_sqft"]
+
+            if current:
+                summary['passing_committed'] = percentage(goal.commitment_sqft, total_sqft)
+                summary["passing_shared"] = percentage(summary["shared_sqft"], total_sqft)
 
             if total_kbtu:
                 total_kbtu = int(total_kbtu)
@@ -131,7 +150,7 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
             if total_sqft is not None:
                 total_sqft = collapse_unit(org, total_sqft)
 
-            cycle_type = "current" if cycle == goal.current_cycle else "baseline"
+            cycle_type = "current" if current else "baseline"
 
             summary[cycle_type] = {
                 "cycle_name": cycle.name,
@@ -139,11 +158,6 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
                 "total_kbtu": total_kbtu,
                 "weighted_eui": weighted_eui,
             }
-
-        def percentage(a, b):
-            if not a or not b:
-                return None
-            return int((a - b) / a * 100) or 0
 
         summary["sqft_change"] = percentage(summary["current"]["total_sqft"], summary["baseline"]["total_sqft"])
         summary["eui_change"] = percentage(summary["baseline"]["weighted_eui"], summary["current"]["weighted_eui"])

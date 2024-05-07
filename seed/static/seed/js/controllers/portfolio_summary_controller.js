@@ -116,22 +116,40 @@ angular.module('BE.seed.controller.portfolio_summary', [])
         const get_cycle_name = (cycle_id) => $scope.cycles.find((col) => col.id === cycle_id).name;
         const level_name = $scope.level_names[$scope.goal.level_name_index];
         const access_level_instance = $scope.potential_level_instances.find((level) => level.id === $scope.goal.access_level_instance).name;
-
+        
+        const commitment_sqft = $scope.goal.commitment_sqft ? $scope.goal.commitment_sqft.toLocaleString() : 'n/a'
         $scope.goal_details = [
-          ['Baseline Cycle', get_cycle_name($scope.goal.baseline_cycle)],
-          ['Current Cycle', get_cycle_name($scope.goal.current_cycle)],
-          [level_name, access_level_instance],
-          ['Portfolio Target', `${$scope.goal.target_percentage} %`],
-          ['Area Column', get_column_name($scope.goal.area_column)],
-          ['Primary EUI', get_column_name($scope.goal.eui_column1)]
-        ];
+          {  // column 1
+            'Baseline Cycle': get_cycle_name($scope.goal.baseline_cycle),
+            'Current Cycle': get_cycle_name($scope.goal.current_cycle),
+            level_name: access_level_instance,
+            'Total Properties': null,
+            'Commitment Sq. Ft': commitment_sqft,
+          },
+          {  // column 2
+            'Portfolio Target': `${$scope.goal.target_percentage} %`,
+            'Area Column': get_column_name($scope.goal.area_column),
+            'Primary EUI': get_column_name($scope.goal.eui_column1),
+          }
+        ]
         if ($scope.goal.eui_column2) {
-          $scope.goal_details.push(['Secondary EUI', get_column_name($scope.goal.eui_column2)]);
+          $scope.goal_details[1]['Secondary EUI'] =  get_column_name($scope.goal.eui_column2);
         }
         if ($scope.goal.eui_column3) {
-          $scope.goal_details.push(['Tertiary EUI', get_column_name($scope.goal.eui_column3)]);
+          $scope.goal_details[1]['Tertiary EUI'] = get_column_name($scope.goal.eui_column3);
         }
       };
+
+      const get_goal_stats = (summary) => {
+        const passing_sqft = summary.current ? summary.current.total_sqft : null
+        $scope.goal_stats = [
+          { name: "Commitment (Sq. Ft)", value: $scope.goal.commitment_sqft},
+          { name: "Shared (Sq. Ft)", value: summary.shared_sqft},
+          { name: "Passing Checks (Sq. Ft)", value: passing_sqft},
+          { name: "Passing Checks (% of committed)", value: summary.passing_committed},
+          { name: "Passing Checks (% of shared)", value: summary.passing_shared},
+        ]
+      }
 
       // from inventory_list_controller
       $scope.columnDisplayByName = {};
@@ -172,12 +190,12 @@ angular.module('BE.seed.controller.portfolio_summary', [])
       };
 
       $scope.refresh_data = () => {
-        $scope.summary_loading = true;
         load_summary();
         $scope.load_inventory(1);
       };
 
       const load_summary = () => {
+        $scope.summary_loading = true;
         $scope.show_access_level_instances = true;
         $scope.summary_valid = false;
 
@@ -596,7 +614,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
             cellClass: () => $scope.write_permission && 'cell-edit',
             // if user has write permission show a dropdown indicator
             cellTemplate: `
-              <div class='ui-grid-cell-contents' ng-class="row.entity.goal_note.new_or_acquired && 'cell-pass'">
+              <div class='ui-grid-cell-contents' ng-class="row.entity.goal_note.new_or_acquired && 'cell-fail'">
                 <span ng-class="grid.appScope.write_permission && 'cell-dropdown-indicator'">{{row.entity.goal_note.new_or_acquired}}
                   <i ng-if='grid.appScope.write_permission' class='fa-solid fa-chevron-down' ></i>
                 </span>
@@ -921,6 +939,10 @@ angular.module('BE.seed.controller.portfolio_summary', [])
               } else if (model === 'goal_note') {
                 goal_service.update_goal_note(rowEntity.id, rowEntity.goal_note.id, { [field]: newValue });
               }
+              if (['passed_checks', 'new_or_acquired'].includes(field)) {
+                // load_stats
+                load_summary();
+              }
             });
           }
         };
@@ -977,6 +999,8 @@ angular.module('BE.seed.controller.portfolio_summary', [])
       };
 
       const format_summary = (summary) => {
+        $scope.goal_details[0]['Total Properties'] = summary.total_properties.toLocaleString()
+        get_goal_stats(summary)
         const baseline = summary.baseline;
         const current = summary.current;
         return [{
