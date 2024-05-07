@@ -23,6 +23,7 @@ class Goal(models.Model):
     eui_column3 = models.ForeignKey(Column, on_delete=models.CASCADE, related_name="goal_eui_column3s", blank=True, null=True)
     area_column = models.ForeignKey(Column, on_delete=models.CASCADE, related_name="goal_area_columns")
     target_percentage = models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(100)])
+    commitment_sqft = models.IntegerField(blank=True, null=True, validators=[MinValueValidator(0)])
     name = models.CharField(max_length=255, unique=True)
 
     def __str__(self):
