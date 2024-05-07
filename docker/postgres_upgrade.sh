@@ -61,7 +61,7 @@ echo "PG_CONV_STRING set to: $PG_CONV_STRING"
 echo "PG_TEST_STRING set to: $PG_TEST_STRING"
 
 echo "Starting standard docker-compose dev environment..."
-docker compose -f docker-compose.yml -f docker-compose.dev.yml up --remove-orphans -d
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
 
 # set intermediary source conversion postgres container from docker-compose.pgupgrade.yml
 
