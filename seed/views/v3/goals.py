@@ -17,7 +17,7 @@ from seed.serializers.goals import GoalSerializer
 from seed.serializers.pint import collapse_unit
 from seed.utils.api import OrgMixin
 from seed.utils.api_schema import swagger_auto_schema_org_query_param
-from seed.utils.goals import get_area_expression, get_eui_expression, percentage
+from seed.utils.goals import get_area_expression, get_eui_expression, get_or_create_goal_notes, percentage
 from seed.utils.viewsets import ModelViewSetWithoutPatch
 
 
@@ -100,6 +100,9 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
         goal = Goal.objects.get(pk=pk)
         summary = {"total_properties": goal.current_cycle.propertyview_set.count()}
 
+        # If new properties heave been uploaded, create goal_notes
+        get_or_create_goal_notes(goal)
+
         for current, cycle in enumerate([goal.baseline_cycle, goal.current_cycle]):
             # Return all properties
             property_views = PropertyView.objects.select_related("property", "state").filter(
@@ -109,19 +112,21 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
                 property__access_level_instance__rgt__lte=goal.access_level_instance.rgt,
                 property__goalnote__goal__id=goal.id,
             )
-            # Shared area is area of all properties regardless of passing status
+            # Shared area is area of all properties regardless of valid status
             property_views = property_views.annotate(area=get_area_expression(goal))
             if current:
                 summary["shared_sqft"] = property_views.aggregate(shared_sqft=Sum("area"))["shared_sqft"]
+                summary["total_passing"] = GoalNote.objects.filter(goal=goal, passed_checks=True).count()
+                summary["total_new_or_acquired"] = GoalNote.objects.filter(goal=goal, new_or_acquired=True).count()
 
             # Remaining Calcs are restricted to passing checks and not new/acquired
-            # use goal notes relation to properties to get passing properties views
-            passing_property_ids = GoalNote.objects.filter(
+            # use goal notes relation to properties to get valid properties views
+            valid_property_ids = GoalNote.objects.filter(
                 goal=goal,
                 passed_checks=True,
-                new_or_acquired=False,
+                new_or_acquired=False
             ).values_list('property__id', flat=True)
-            property_views = property_views.filter(property__id__in=passing_property_ids)
+            property_views = property_views.filter(property__id__in=valid_property_ids)
 
             # Create annotations for kbtu calcs. 'eui' is based on goal column priority
             property_views = property_views.annotate(
