@@ -59,6 +59,8 @@ angular.module('BE.seed.controller.portfolio_summary', [])
       $scope.eui_columns = [];
       const matching_column_names = [];
       const table_column_ids = [];
+      $scope.selected_count = 0;
+      $scope.selected_option = 'none';
 
       const initialize_columns = () => {
         $scope.columns.forEach((col) => {
@@ -142,13 +144,19 @@ angular.module('BE.seed.controller.portfolio_summary', [])
 
       const get_goal_stats = (summary) => {
         const passing_sqft = summary.current ? summary.current.total_sqft : null
-        $scope.goal_stats = [
-          { name: "Commitment (Sq. Ft)", value: $scope.goal.commitment_sqft},
-          { name: "Shared (Sq. Ft)", value: summary.shared_sqft},
-          { name: "Passing Checks (Sq. Ft)", value: passing_sqft},
-          { name: "Passing Checks (% of committed)", value: summary.passing_committed},
-          { name: "Passing Checks (% of shared)", value: summary.passing_shared},
-        ]
+        $scope.goal_stats = {
+          area: [
+            { name: "Commitment (Sq. Ft)", value: $scope.goal.commitment_sqft},
+            { name: "Shared (Sq. Ft)", value: summary.shared_sqft},
+            { name: "Passing Checks (Sq. Ft)", value: passing_sqft},
+            { name: "Passing Checks (% of committed)", value: summary.passing_committed},
+            { name: "Passing Checks (% of shared)", value: summary.passing_shared},
+          ],
+          totals: [
+            {name: "Passing Checks", value: summary.total_passing},
+            {name: "New of Acquired", value: summary.total_new_or_acquired}
+          ]
+        }
       }
 
       // from inventory_list_controller
@@ -455,6 +463,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
           if (current) {
             property.current_cycle = current_cycle_name;
             property.current_sqft = current[area.name];
+            property.current_view_id = current.property_view_id
           }
           // comparison stats
           property.sqft_change = percentage(property.current_sqft, property.baseline_sqft);
@@ -704,11 +713,11 @@ angular.module('BE.seed.controller.portfolio_summary', [])
         $scope.gridApi.grid.refresh();
       };
 
-      $scope.toggle_access_level_instances = () => {
-        $scope.show_access_level_instances = !$scope.show_access_level_instances;
+      $scope.handle_show_access_level_instances = (show) => {
+        $scope.show_access_level_instances = show;
         $scope.gridOptions.columnDefs.forEach((col) => {
           if (col.group === 'access_level_instance') {
-            col.visible = $scope.show_access_level_instances;
+            col.visible = show;
           }
         });
         $scope.gridApi.core.refresh();
@@ -889,6 +898,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
       };
 
       const set_grid_options = (result) => {
+        $scope.selected_ids = [];
         $scope.data = format_properties(result);
         spinner_utility.hide();
         $scope.gridOptions = {
@@ -931,6 +941,13 @@ angular.module('BE.seed.controller.portfolio_summary', [])
               $scope.load_inventory(1);
             }, 2000));
 
+            const selectionChanged = () => {
+              $scope.selected_ids = gridApi.selection.getSelectedRows().map(row => row.current_view_id);
+              $scope.selected_count = $scope.selected_ids.length;
+            }
+            gridApi.selection.on.rowSelectionChanged($scope, selectionChanged);
+            gridApi.selection.on.rowSelectionChangedBatch($scope, selectionChanged);
+
             gridApi.edit.on.afterCellEdit($scope, (rowEntity, colDef, newValue) => {
               const [model, field] = colDef.field.split('.');
 
@@ -959,6 +976,63 @@ angular.module('BE.seed.controller.portfolio_summary', [])
       $scope.reset_filters = () => {
         $scope.column_filters = [];
         $scope.gridApi.grid.clearAllFilters();
+      };
+
+      $scope.run_action = (action) => {
+        switch (action) {
+          case 'select_all':
+            $scope.select_all();
+            break;
+          case 'select_none':
+            $scope.select_none();
+            break;
+          case 'open_update_labels_modal':
+            $scope.open_update_labels_modal();
+            break;
+          case 'show_access_levels':
+            $scope.handle_show_access_level_instances(true);
+            break;
+          case 'hide_access_levels':
+            $scope.handle_show_access_level_instances(false);
+            break;
+        }
+
+        const select_element = document.getElementById('select-actions');
+        select_element.value = $scope.selected_option = 'none';
+      }
+
+      $scope.select_all = () => {
+        // select all rows to visibly support everything has been selected
+        $scope.gridApi.selection.selectAllRows();
+        $scope.selected_count = $scope.inventory_pagination.total;
+      };
+
+      $scope.select_none = () => {
+        $scope.gridApi.selection.clearSelectedRows();
+        $scope.selected_count = 0;
+      };
+
+      /**
+      Opens the update building labels modal.
+      All further actions for labels happen with that modal and its related controller,
+      including creating a new label or applying to/removing from a building.
+      When the modal is closed, and refresh labels.
+      */
+      $scope.open_update_labels_modal = () => {
+        const modalInstance = $uibModal.open({
+          templateUrl: `${urls.static_url}seed/partials/update_item_labels_modal.html`,
+          controller: 'update_item_labels_modal_controller',
+          resolve: {
+            inventory_ids: () => $scope.selected_ids,
+            inventory_type: () => 'properties',
+            is_ali_root: () => $scope.menu.user.is_ali_root
+          }
+        });
+        modalInstance.result.then(() => {
+          // dialog was closed with 'Done' button.
+          $scope.selected_count = 0;
+          $scope.load_inventory();
+        });
       };
 
       // -------- SUMMARY LOGIC ------------
