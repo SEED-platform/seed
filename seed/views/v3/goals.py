@@ -12,7 +12,7 @@ from rest_framework.decorators import action
 
 from seed.decorators import ajax_request_class
 from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm_class
-from seed.models import AccessLevelInstance, Goal, GoalNote, Organization, Property, PropertyView
+from seed.models import AccessLevelInstance, Goal, GoalNote, HistoricalNote, Organization, Property, PropertyView
 from seed.serializers.goals import GoalSerializer
 from seed.serializers.pint import collapse_unit
 from seed.utils.api import OrgMixin
@@ -198,11 +198,18 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
             return JsonResponse({"status": "error", "message": "No such resource."}, status=404)
         
         property_view_ids = request.data.get('property_view_ids', [])
-        property_ids = Property.objects.filter(views__in=property_view_ids).values_list('id', flat=True)
-        goal_notes = GoalNote.objects.filter(goal=goal, property__in=property_ids)
+        properties = Property.objects.filter(views__in=property_view_ids).select_related('historical_notes')
+        goal_notes = GoalNote.objects.filter(goal=goal, property__in=properties)
 
         data = request.data.get('data', {})
-        data = get_permission_data(data, request.access_level_instance_id)
-        result = goal_notes.update(**data)
 
-        return JsonResponse({"status": "success", "message": f"{result}"})
+        if "historical_note" in data:
+            historical_notes = HistoricalNote.objects.filter(property__in=properties)  
+            result = historical_notes.update(text=data["historical_note"])
+            del data['historical_note']
+
+        if data:
+            data = get_permission_data(data, request.access_level_instance_id)
+            result = goal_notes.update(**data)
+
+        return JsonResponse({"status": "success", "message": f"Updated {result} GoalNotes"})

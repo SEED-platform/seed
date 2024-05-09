@@ -38,9 +38,10 @@ angular.module('BE.seed.controller.batch_edit_goalnotes_modal', [])
         const selected_inputs = inputs.filter(input => input.selected)
         selected_inputs.forEach(input => data[input.name] = input.value)
         goal_service.bulk_update_goal_note(property_view_ids, goal, data).then((response) =>{
-          console.log(response)
-          Notification.success("Updated X Goal Notes")
+          Notification.success(response.data.message)
         })
+        .catch(() => Notification.error("Unexpected Error"))
+        .finally(() => $uibModalInstance.close())
       }
       $scope.close = () => {
         $uibModalInstance.dismiss();
