@@ -18,14 +18,12 @@
   </div>
   <div class="goal-header-wrapper">
     <div class="goal-header-column">
-      <div class="goal-actions-wrapper">
-        <div class="goal-select-wrapper">
-          <label class="goal-select-label" for="goal-select" ng-show="goal" translate>GOAL</label>
-          <div class="goal-selection" ng-show="goal">
-            <select name="goal-select" id="goal-select" ng-options="goal as goal.name for goal in goals" ng-model="goal"></select>
-          </div>
-          <button class="btn btn-primary portfolio-summary-btn" type="submit" ng-click="open_goal_editor_modal()" ng-if="write_permission">{$:: 'Configure Goals' | translate $}</button>
+      <div class="goal-select-wrapper">
+        <label class="goal-select-label" for="goal-select" ng-show="goal" translate>GOAL</label>
+        <div class="goal-selection" ng-show="goal">
+          <select name="goal-select" id="goal-select" ng-options="goal as goal.name for goal in goals" ng-model="goal"></select>
         </div>
+        <button class="btn btn-primary portfolio-summary-btn" type="submit" ng-click="open_goal_editor_modal()" ng-if="write_permission">{$:: 'Configure Goals' | translate $}</button>
       </div>
       <!-- GOAL DETAILS -->
       <div class="goal-details-container" ng-if="valid">
@@ -80,16 +78,35 @@
   <div class="portfolio-summary-item-count wide-900" ng-if="data_valid">
     <div ng-if="data_valid">
       <div style="display: flex; ">
-        <label style="margin: auto 10px;">{$:: 'Actions' | translate $}: </label>
-        <select id="select-actions" class="form-control input-sm grow" ng-model="selected_option" ng-change="run_action(selected_option)" style="width: 300px;">
-          <option value="none" selected="selected"></option>
-          <option value="select_all" ng-disabled="selected_count === inventory_pagination.total">{$:: 'Select All' | translate $}
-            ({$ inventory_pagination.total $})</option>
-          <option value="select_none" ng-disabled="selected_count < 1">{$:: 'Select None' | translate $}</option>
-          <option value="open_update_labels_modal" ng-disabled="selected_count < 1" translate>Add/Remove Labels</option>
-          <option value="show_access_levels" ng-if="!show_access_level_instances" ng-disabled="level_names.length < 2">Show Access Levels</option>
-          <option value="hide_access_levels" ng-if="show_access_level_instances" ng-disabled="level_names.length < 2">Hide Access Levels</option>
-        </select>
+        <div uib-dropdown class="goal-actions-dropdown">
+          <button id="btnCreateNew" type="button" class="btn actions-toggle" uib-dropdown-toggle>
+            <span>Actions</span>
+            <i class="fa-solid fa-chevron-down"></i>
+          </button>
+          <ul uib-dropdown-menu  class="dropdown-menu" role="menu">
+            <li class="drowndown-header goal-action">
+              <a ng-if="selected_count !== inventory_pagination.total" ng-click="select_all()">Select All</a>
+              <span ng-if="selected_count === inventory_pagination.total" class="disabled-action">Select All</span>
+            </li>
+            <li class="drowndown-header goal-action">
+              <a ng-if="!selected_count < 1" ng-click="select_none()">Select None</a>
+              <span ng-if="selected_count < 1" class="disabled-action">Select None</span>
+            </li>
+            <li class="drowndown-header goal-action">
+              <a ng-if="!selected_count < 1" ng-click="open_update_labels_modal()">Add/Remove Labels</a>
+              <span ng-if="selected_count < 1" class="disabled-action">Add/Remove Labels</span>
+            </li>
+            <li class="drowndown-header goal-action">
+              <a ng-if="!selected_count < 1" ng-click="open_batch_edit_goalnotes_modal()">Edit Selected Notes</a>
+              <span ng-if="selected_count < 1" class="disabled-action">Edit Selected Note</span>
+            </li>
+            <li class="drowndown-header goal-action">
+              <a ng-if="!level_names.count < 2" ng-click="toggle_show_access_level_instances()">{$ show_access_level_instances ? 'Hide': 'Show' $} Access Levels</a>
+              <span ng-if="level_names.count < 2" class="disabled-action">{$ show_access_level_instances ? 'Hide': 'Show' $} Access Levels</span>
+
+            </li>
+          </ul>
+        </div>
       </div>
     </div>
     <div>

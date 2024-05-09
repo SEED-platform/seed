@@ -713,11 +713,11 @@ angular.module('BE.seed.controller.portfolio_summary', [])
         $scope.gridApi.grid.refresh();
       };
 
-      $scope.handle_show_access_level_instances = (show) => {
-        $scope.show_access_level_instances = show;
+      $scope.toggle_show_access_level_instances = () => {
+        $scope.show_access_level_instances = !$scope.show_access_level_instances;
         $scope.gridOptions.columnDefs.forEach((col) => {
           if (col.group === 'access_level_instance') {
-            col.visible = show;
+            col.visible = $scope.show_access_level_instances;
           }
         });
         $scope.gridApi.core.refresh();
@@ -978,33 +978,18 @@ angular.module('BE.seed.controller.portfolio_summary', [])
         $scope.gridApi.grid.clearAllFilters();
       };
 
-      $scope.run_action = (action) => {
-        switch (action) {
-          case 'select_all':
-            $scope.select_all();
-            break;
-          case 'select_none':
-            $scope.select_none();
-            break;
-          case 'open_update_labels_modal':
-            $scope.open_update_labels_modal();
-            break;
-          case 'show_access_levels':
-            $scope.handle_show_access_level_instances(true);
-            break;
-          case 'hide_access_levels':
-            $scope.handle_show_access_level_instances(false);
-            break;
-        }
-
-        const select_element = document.getElementById('select-actions');
-        select_element.value = $scope.selected_option = 'none';
-      }
 
       $scope.select_all = () => {
         // select all rows to visibly support everything has been selected
         $scope.gridApi.selection.selectAllRows();
-        $scope.selected_count = $scope.inventory_pagination.total;
+        $scope.selected_count = $scope.inventory_pagination.total
+        goal_service.get_goal($scope.goal.id).then((response) => {
+          goal = response.data.goal;
+          if (goal) {
+            $scope.selected_ids = goal.current_cycle_property_view_ids
+          }
+        });
+        // $scope.selected_ids = $scope.selected_count.map().total;
       };
 
       $scope.select_none = () => {
@@ -1034,6 +1019,27 @@ angular.module('BE.seed.controller.portfolio_summary', [])
           $scope.load_inventory();
         });
       };
+
+      /**
+       Opens a modal to batch edit goal notes
+       */
+      $scope.open_batch_edit_goalnotes_modal = () => {
+        const modalInstance = $uibModal.open({
+          templateUrl: `${urls.static_url}seed/partials/batch_edit_goalnotes_modal.html`,
+          controller: 'batch_edit_goalnotes_modal_controller',
+          resolve: {
+            property_view_ids: () => $scope.selected_ids,
+            goal: () => $scope.goal,
+            organization: () => $scope.organization
+          }
+        })
+        modalInstance.result.then(() => {
+          // dialog was closed with 'Done' button.
+          $scope.selected_option = 'none';
+          $scope.selected_count = 0;
+          $scope.load_inventory();
+        });
+      }
 
       // -------- SUMMARY LOGIC ------------
 

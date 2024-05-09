@@ -1,0 +1,23 @@
+<div class="modal-header">
+    <h3>Batch Edit Goal Notes</h3>
+</div>
+<div class="modal-body">
+    <form name="goalnote_form" id="batch-edit-goalnotes-form">
+        <div style="display: flex">
+            <input type="checkbox" class="" style="width: 34px; cursor: pointer" ng-model="settings.question.selected"/>
+            <label for="question-value" class="">Question: </label>
+            <input id="question-value" class="form-control" ng-model="settings.question.value"/>
+        </div>
+        <div style="display: flex">
+            <input type="checkbox" class="" style="width: 34px; cursor: pointer" ng-model="settings.resolution.selected"/>
+            <label for="resolution-value" class="">Resolution: </label>
+            <input id="resolution-value" class="form-control" ng-model="settings.resolution.value"/>
+        </div>
+
+    </form>
+    
+</div>
+<div class="modal-footer">
+    <button class="btn btn-primary r-margin-right-5" ng-click="Save()" translate>Save</button>
+    <button class="btn btn-default r-margin-right-5" ng-click="close()" translate>Dismiss</button>
+</div>
