@@ -433,7 +433,7 @@ class GoalViewTests(AccessLevelBaseTestCase):
             "baseline": {"cycle_name": "2001 Annual", "total_sqft": None, "total_kbtu": None, "weighted_eui": None},
             "current": {"cycle_name": "2003 Annual", "total_sqft": None, "total_kbtu": None, "weighted_eui": None},
             "sqft_change": None,
-            "eui_change": None
+            "eui_change": None,
         }
 
         assert summary == exp_summary

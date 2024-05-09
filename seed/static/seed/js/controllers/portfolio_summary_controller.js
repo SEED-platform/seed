@@ -118,24 +118,24 @@ angular.module('BE.seed.controller.portfolio_summary', [])
         const get_cycle_name = (cycle_id) => $scope.cycles.find((col) => col.id === cycle_id).name;
         const level_name = $scope.level_names[$scope.goal.level_name_index];
         const access_level_instance = $scope.potential_level_instances.find((level) => level.id === $scope.goal.access_level_instance).name;
-        
-        const commitment_sqft = $scope.goal.commitment_sqft ? $scope.goal.commitment_sqft.toLocaleString() : 'n/a'
+
+        const commitment_sqft = $scope.goal.commitment_sqft ? $scope.goal.commitment_sqft.toLocaleString() : 'n/a';
         $scope.goal_details = [
-          {  // column 1
+          { // column 1
             'Baseline Cycle': get_cycle_name($scope.goal.baseline_cycle),
             'Current Cycle': get_cycle_name($scope.goal.current_cycle),
-            level_name: access_level_instance,
+            [level_name]: access_level_instance,
             'Total Properties': null,
-            'Commitment Sq. Ft': commitment_sqft,
+            'Commitment Sq. Ft': commitment_sqft
           },
-          {  // column 2
+          { // column 2
             'Portfolio Target': `${$scope.goal.target_percentage} %`,
             'Area Column': get_column_name($scope.goal.area_column),
-            'Primary EUI': get_column_name($scope.goal.eui_column1),
+            'Primary EUI': get_column_name($scope.goal.eui_column1)
           }
-        ]
+        ];
         if ($scope.goal.eui_column2) {
-          $scope.goal_details[1]['Secondary EUI'] =  get_column_name($scope.goal.eui_column2);
+          $scope.goal_details[1]['Secondary EUI'] = get_column_name($scope.goal.eui_column2);
         }
         if ($scope.goal.eui_column3) {
           $scope.goal_details[1]['Tertiary EUI'] = get_column_name($scope.goal.eui_column3);
@@ -143,21 +143,21 @@ angular.module('BE.seed.controller.portfolio_summary', [])
       };
 
       const get_goal_stats = (summary) => {
-        const passing_sqft = summary.current ? summary.current.total_sqft : null
+        const passing_sqft = summary.current ? summary.current.total_sqft : null;
         $scope.goal_stats = {
           area: [
-            { name: "Commitment (Sq. Ft)", value: $scope.goal.commitment_sqft},
-            { name: "Shared (Sq. Ft)", value: summary.shared_sqft},
-            { name: "Passing Checks (Sq. Ft)", value: passing_sqft},
-            { name: "Passing Checks (% of committed)", value: summary.passing_committed},
-            { name: "Passing Checks (% of shared)", value: summary.passing_shared},
+            { name: 'Commitment (Sq. Ft)', value: $scope.goal.commitment_sqft },
+            { name: 'Shared (Sq. Ft)', value: summary.shared_sqft },
+            { name: 'Passing Checks (Sq. Ft)', value: passing_sqft },
+            { name: 'Passing Checks (% of committed)', value: summary.passing_committed },
+            { name: 'Passing Checks (% of shared)', value: summary.passing_shared }
           ],
           totals: [
-            {name: "Passing Checks", value: summary.total_passing},
-            {name: "New of Acquired", value: summary.total_new_or_acquired}
+            { name: 'Passing Checks', value: summary.total_passing },
+            { name: 'New of Acquired', value: summary.total_new_or_acquired }
           ]
-        }
-      }
+        };
+      };
 
       // from inventory_list_controller
       $scope.columnDisplayByName = {};
@@ -463,7 +463,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
           if (current) {
             property.current_cycle = current_cycle_name;
             property.current_sqft = current[area.name];
-            property.current_view_id = current.property_view_id
+            property.current_view_id = current.property_view_id;
           }
           // comparison stats
           property.sqft_change = percentage(property.current_sqft, property.baseline_sqft);
@@ -942,9 +942,9 @@ angular.module('BE.seed.controller.portfolio_summary', [])
             }, 2000));
 
             const selectionChanged = () => {
-              $scope.selected_ids = gridApi.selection.getSelectedRows().map(row => row.current_view_id);
+              $scope.selected_ids = gridApi.selection.getSelectedRows().map((row) => row.current_view_id);
               $scope.selected_count = $scope.selected_ids.length;
-            }
+            };
             gridApi.selection.on.rowSelectionChanged($scope, selectionChanged);
             gridApi.selection.on.rowSelectionChangedBatch($scope, selectionChanged);
 
@@ -978,13 +978,12 @@ angular.module('BE.seed.controller.portfolio_summary', [])
         $scope.gridApi.grid.clearAllFilters();
       };
 
-
       $scope.select_all = () => {
         // select all rows to visibly support everything has been selected
         $scope.gridApi.selection.selectAllRows();
-        $scope.selected_count = $scope.inventory_pagination.total
+        $scope.selected_count = $scope.inventory_pagination.total;
         goal_service.get_goal($scope.goal.id).then((response) => {
-          goal = response.data.goal;
+          const goal = response.data.goal;
           if (goal) {
             $scope.selected_ids = goal.current_cycle_property_view_ids;
           }
@@ -1029,16 +1028,16 @@ angular.module('BE.seed.controller.portfolio_summary', [])
           resolve: {
             property_view_ids: () => $scope.selected_ids,
             goal: () => $scope.goal,
-            question_options: () => $scope.question_options,
+            question_options: () => $scope.question_options
           }
-        })
+        });
         modalInstance.result.then(() => {
           // dialog was closed with 'Done' button.
           $scope.selected_option = 'none';
           $scope.selected_count = 0;
           $scope.load_inventory();
         });
-      }
+      };
 
       // -------- SUMMARY LOGIC ------------
 
@@ -1078,8 +1077,8 @@ angular.module('BE.seed.controller.portfolio_summary', [])
       };
 
       const format_summary = (summary) => {
-        $scope.goal_details[0]['Total Properties'] = summary.total_properties.toLocaleString()
-        get_goal_stats(summary)
+        $scope.goal_details[0]['Total Properties'] = summary.total_properties.toLocaleString();
+        get_goal_stats(summary);
         const baseline = summary.baseline;
         const current = summary.current;
         return [{

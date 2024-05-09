@@ -5,15 +5,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('seed', '0216_alter_sensor_unique_together'),
+        ("seed", "0216_alter_sensor_unique_together"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='goal',
-            name='commitment_sqft',
+            model_name="goal",
+            name="commitment_sqft",
             field=models.IntegerField(blank=True, null=True, validators=[django.core.validators.MinValueValidator(0)]),
         ),
     ]

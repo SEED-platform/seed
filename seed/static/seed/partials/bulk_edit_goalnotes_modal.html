@@ -1,58 +1,57 @@
 <div class="modal-header">
-    <h3>Batch Edit Goal Notes</h3>
+  <h3>Batch Edit Goal Notes</h3>
 </div>
 <div class="modal-body">
-    <form name="goalnote_form" id="batch-edit-goalnotes-form">
-        <div>
-            <input type="checkbox" class="" ng-model="question.selected" />
-            <label for="question-value" ng-class="{'disabled': !question.selected}">Question</label>
-            <select 
-                id="question-value" 
-                class="form-control" 
-                style="margin: 0 10px"
-                ng-model="question.value" 
-                ng-click="question.selected = true"
-                ng-options="q.value as q.value for q in question_options"
-            ></select>
-        </div>
-        <div >
-            <input type="checkbox" class="" ng-model="resolution.selected"/>
-            <label for="resolution-value" ng-class="{'disabled': !resolution.selected}">Resolution: </label>
-            <input id="resolution-value" class="form-control" ng-model="resolution.value" ng-click="resolution.selected = true"/>
-        </div>
-        <div >
-            <input type="checkbox" class="" ng-model="historical_note.selected"/>
-            <label for="historical_note-value" ng-class="{'disabled': !historical_note.selected}">Historical Note: </label>
-            <input id="historical_note-value" class="form-control" ng-model="historical_note.value" ng-click="historical_note.selected = true"/>
-        </div>
-        <div >
-            <input type="checkbox" class="" ng-model="passed_checks.selected"/>
-            <label for="passed_checks-value" ng-class="{'disabled': !passed_checks.selected}">Passed Checks: </label>
-            <select 
-                id="passed_checks-value" 
-                class="form-control" 
-                style="margin: 0 10px"
-                ng-model="passed_checks.value" 
-                ng-click="passed_checks.selected = true"
-                ng-options="b as b for b in [true, false]"
-            ></select>
-        </div>
-        <div >
-            <input type="checkbox" class="" ng-model="new_or_acquired.selected"/>
-            <label for="new_or_acquired-value" ng-class="{'disabled': !new_or_acquired.selected}">New Build or Acquired: </label>
-            <select 
-                id="new_or_acquired-value" 
-                class="form-control" 
-                style="margin: 0 10px"
-                ng-model="new_or_acquired.value" 
-                ng-click="new_or_acquired.selected = true"
-                ng-options="b as b for b in [true, false]"
-            ></select>
-        </div>
-    </form>
-    
+  <form name="goalnote_form" id="batch-edit-goalnotes-form">
+    <div>
+      <input type="checkbox" class="" ng-model="question.selected" />
+      <label for="question-value" ng-class="{'disabled': !question.selected}">Question</label>
+      <select
+        id="question-value"
+        class="form-control"
+        style="margin: 0 10px"
+        ng-model="question.value"
+        ng-click="question.selected = true"
+        ng-options="q.value as q.value for q in question_options"
+      ></select>
+    </div>
+    <div>
+      <input type="checkbox" class="" ng-model="resolution.selected" />
+      <label for="resolution-value" ng-class="{'disabled': !resolution.selected}">Resolution: </label>
+      <input id="resolution-value" class="form-control" ng-model="resolution.value" ng-click="resolution.selected = true" />
+    </div>
+    <div>
+      <input type="checkbox" class="" ng-model="historical_note.selected" />
+      <label for="historical_note-value" ng-class="{'disabled': !historical_note.selected}">Historical Note: </label>
+      <input id="historical_note-value" class="form-control" ng-model="historical_note.value" ng-click="historical_note.selected = true" />
+    </div>
+    <div>
+      <input type="checkbox" class="" ng-model="passed_checks.selected" />
+      <label for="passed_checks-value" ng-class="{'disabled': !passed_checks.selected}">Passed Checks: </label>
+      <select
+        id="passed_checks-value"
+        class="form-control"
+        style="margin: 0 10px"
+        ng-model="passed_checks.value"
+        ng-click="passed_checks.selected = true"
+        ng-options="b as b for b in [true, false]"
+      ></select>
+    </div>
+    <div>
+      <input type="checkbox" class="" ng-model="new_or_acquired.selected" />
+      <label for="new_or_acquired-value" ng-class="{'disabled': !new_or_acquired.selected}">New Build or Acquired: </label>
+      <select
+        id="new_or_acquired-value"
+        class="form-control"
+        style="margin: 0 10px"
+        ng-model="new_or_acquired.value"
+        ng-click="new_or_acquired.selected = true"
+        ng-options="b as b for b in [true, false]"
+      ></select>
+    </div>
+  </form>
 </div>
 <div class="modal-footer">
-    <button class="btn btn-primary r-margin-right-5" ng-click="save()" ng-disabled="save_disabled()" translate>Save</button>
-    <button class="btn btn-default r-margin-right-5" ng-click="close()" translate>Dismiss</button>
+  <button class="btn btn-primary r-margin-right-5" ng-click="save()" ng-disabled="save_disabled()" translate>Save</button>
+  <button class="btn btn-default r-margin-right-5" ng-click="close()" translate>Dismiss</button>
 </div>

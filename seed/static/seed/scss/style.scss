@@ -5127,49 +5127,48 @@ ul.r-list {
     padding: 10px 10px 0;
   }
 
-  .goal-header-wrapper{
+  .goal-header-wrapper {
     display: flex;
     justify-content: space-between;
     margin-right: 24px;
 
     .goal-header-column {
-        div {
-          margin: 0 10px;
+      div {
+        margin: 0 10px;
+      }
+
+      .goal-select-wrapper {
+        display: flex;
+        min-height: 30px;
+        margin: 15px;
+
+        .goal-select-label {
+          margin: auto;
         }
-  
-        .goal-select-wrapper {
-          display: flex;
-          min-height: 30px;
-          margin: 15px;
-  
-          .goal-select-label {
-            margin: auto;
+
+        .goal-selection {
+          #goal-select {
+            width: 30vw;
+            max-width: 512px;
+            background: #f5f5f5;
+            border-radius: 5px;
+            padding: 5px;
           }
-  
-          .goal-selection {
-            #goal-select {
-              width: 30vw;
-              max-width: 512px;
-              background: #f5f5f5;
-              border-radius: 5px;
-              padding: 5px;
-            }
-          }
-  
-          button {
-            margin-left: 10px;
-            height: 31px;
+        }
+
+        button {
+          margin-left: 10px;
+          height: 31px;
         }
       }
 
-      table{
+      table {
         margin-top: 10px;
         margin-bottom: 0;
 
         td {
           padding: 2px 8px;
           white-space: nowrap;
-
         }
       }
     }
@@ -5294,25 +5293,23 @@ ul.r-list {
     justify-content: space-between;
     display: flex;
 
-    .goal-actions-dropdown{
-      
-      .actions-toggle{
+    .goal-actions-dropdown {
+      .actions-toggle {
         width: 200px;
         border: 1px solid rgb(118, 118, 118);
         border-radius: 4px;
         background: rgb(245, 245, 245);
         display: flex;
         justify-content: space-between;
-  
+
         i {
           font-size: 10px;
           margin-top: auto;
           margin-bottom: auto;
         }
       }
-  
-      .dropdown-menu{
 
+      .dropdown-menu {
         .goal-action {
           padding: 4px;
           width: 200px;
@@ -5321,7 +5318,6 @@ ul.r-list {
             color: rgb(165, 165, 165);
             padding-left: 20px;
           }
-
         }
       }
     }
@@ -5529,14 +5525,15 @@ tags-input .tags .tag-item {
     margin: 1px;
   }
 
-  label, input {
+  label,
+  input {
     margin: auto 10px;
   }
 
   label {
     width: 150px;
   }
-  
+
   .disabled {
     color: $gray_lighter;
     font-weight: normal;

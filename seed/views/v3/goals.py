@@ -17,8 +17,8 @@ from seed.serializers.goals import GoalSerializer
 from seed.serializers.pint import collapse_unit
 from seed.utils.api import OrgMixin
 from seed.utils.api_schema import swagger_auto_schema_org_query_param
-from seed.utils.goals import get_area_expression, get_eui_expression, get_or_create_goal_notes, percentage
 from seed.utils.goal_notes import get_permission_data
+from seed.utils.goals import get_area_expression, get_eui_expression, get_or_create_goal_notes, percentage
 from seed.utils.viewsets import ModelViewSetWithoutPatch
 
 
@@ -72,11 +72,11 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
             )
         except Goal.DoesNotExist:
             return JsonResponse({"status": "error", "message": "No such resource."}, status=404)
-        
-        goal_data = self.serializer_class(goal).data 
+
+        goal_data = self.serializer_class(goal).data
         property_view_ids = goal.current_cycle.propertyview_set.all().values_list("id", flat=True)
         goal_data["current_cycle_property_view_ids"] = list(property_view_ids)
-        
+
         return JsonResponse({"status": "success", "goal": goal_data})
 
     @swagger_auto_schema_org_query_param
@@ -139,11 +139,9 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
 
             # Remaining Calcs are restricted to passing checks and not new/acquired
             # use goal notes relation to properties to get valid properties views
-            valid_property_ids = GoalNote.objects.filter(
-                goal=goal,
-                passed_checks=True,
-                new_or_acquired=False
-            ).values_list("property__id", flat=True)
+            valid_property_ids = GoalNote.objects.filter(goal=goal, passed_checks=True, new_or_acquired=False).values_list(
+                "property__id", flat=True
+            )
             property_views = property_views.filter(property__id__in=valid_property_ids)
 
             # Create annotations for kbtu calcs. "eui" is based on goal column priority
@@ -186,7 +184,7 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
         summary["eui_change"] = percentage(summary["baseline"]["weighted_eui"], summary["current"]["weighted_eui"])
 
         return summary
-    
+
     @has_perm_class("requires_member")
     @action(detail=True, methods=["PUT"])
     def bulk_update_goal_notes(self, request, pk):
@@ -196,17 +194,17 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
             goal = Goal.objects.get(pk=pk, organization=org_id)
         except Goal.DoesNotExist:
             return JsonResponse({"status": "error", "message": "No such resource."}, status=404)
-        
-        property_view_ids = request.data.get('property_view_ids', [])
-        properties = Property.objects.filter(views__in=property_view_ids).select_related('historical_notes')
+
+        property_view_ids = request.data.get("property_view_ids", [])
+        properties = Property.objects.filter(views__in=property_view_ids).select_related("historical_notes")
         goal_notes = GoalNote.objects.filter(goal=goal, property__in=properties)
 
-        data = request.data.get('data', {})
+        data = request.data.get("data", {})
 
         if "historical_note" in data:
-            historical_notes = HistoricalNote.objects.filter(property__in=properties)  
+            historical_notes = HistoricalNote.objects.filter(property__in=properties)
             result = historical_notes.update(text=data["historical_note"])
-            del data['historical_note']
+            del data["historical_note"]
 
         if data:
             data = get_permission_data(data, request.access_level_instance_id)

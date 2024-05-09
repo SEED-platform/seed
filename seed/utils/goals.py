@@ -7,6 +7,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 from django.db.models import Case, F, FloatField, IntegerField, Value, When
 from django.db.models.fields.json import KeyTextTransform
 from django.db.models.functions import Cast, Coalesce
+
 from seed.models import GoalNote
 
 
@@ -65,10 +66,12 @@ def extra_data_expression(column, default_value):
         output_field=FloatField(),
     )
 
+
 def percentage(a, b):
     if not a or not b:
         return None
     return int((a - b) / a * 100) or 0
+
 
 def get_or_create_goal_notes(goal):
     """
@@ -76,6 +79,6 @@ def get_or_create_goal_notes(goal):
     """
 
     # Find properties without goal_notes
-    property_ids= goal.properties().exclude(goalnote__goal=goal).values_list('id', flat=True)
+    property_ids = goal.properties().exclude(goalnote__goal=goal).values_list("id", flat=True)
     new_goal_notes = [GoalNote(goal=goal, property_id=id) for id in property_ids]
     GoalNote.objects.bulk_create(new_goal_notes)

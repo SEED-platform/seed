@@ -48,4 +48,3 @@ class GoalNoteViewSet(UpdateWithoutPatchModelMixin, OrgMixin):
         serializer.save()
 
         return JsonResponse(serializer.data)
-

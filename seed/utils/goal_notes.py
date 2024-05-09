@@ -6,6 +6,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 from seed.models import AccessLevelInstance
 
+
 def get_permission_data(data, access_level_instance_id):
     # leaf users are only permitted to update 'resolution'
     access_level_instance = AccessLevelInstance.objects.get(pk=access_level_instance_id)

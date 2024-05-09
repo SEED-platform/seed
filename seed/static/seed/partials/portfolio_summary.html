@@ -50,7 +50,7 @@
             <td>{$ stat.value $}</td>
           </tr>
           <tr>
-            <td colspan="2" style="text-align: center;">Total</td>
+            <td colspan="2" style="text-align: center">Total</td>
           </tr>
           <tr ng-repeat="stat in goal_stats.totals">
             <td>{$ stat.name $}</td>
@@ -64,7 +64,7 @@
     <!-- Summary Table-->
     <div id="portfolio-summary" class="wide-900" ng-if="summary_loading || summary_valid">
       <h3 translate>Portfolio Summary</h3>
-      <div ng-if="summary_valid" ui-grid="summaryGridOptions" ui-grid-resize-columns style="margin-bottom: 30px;"></div>
+      <div ng-if="summary_valid" ui-grid="summaryGridOptions" ui-grid-resize-columns style="margin-bottom: 30px"></div>
       <div class="portfolio-summary-loading" ng-if="summary_loading">
         <h4>{$:: 'Loading Summary Data...' | translate $}</h4>
         <uib-progress class="progress-striped active">
@@ -77,13 +77,13 @@
   <!-- Pagination -->
   <div class="portfolio-summary-item-count wide-900" ng-if="data_valid">
     <div ng-if="data_valid">
-      <div style="display: flex; ">
+      <div style="display: flex">
         <div uib-dropdown class="goal-actions-dropdown">
           <button id="btnCreateNew" type="button" class="btn actions-toggle" uib-dropdown-toggle>
             <span>Actions</span>
             <i class="fa-solid fa-chevron-down"></i>
           </button>
-          <ul uib-dropdown-menu  class="dropdown-menu" role="menu">
+          <ul uib-dropdown-menu class="dropdown-menu" role="menu">
             <li class="drowndown-header goal-action">
               <a ng-if="selected_count !== inventory_pagination.total" ng-click="select_all()">Select All</a>
               <span ng-if="selected_count === inventory_pagination.total" class="disabled-action">Select All</span>
@@ -103,7 +103,6 @@
             <li class="drowndown-header goal-action">
               <a ng-if="!level_names.count < 2" ng-click="toggle_show_access_level_instances()">{$ show_access_level_instances ? 'Hide': 'Show' $} Access Levels</a>
               <span ng-if="level_names.count < 2" class="disabled-action">{$ show_access_level_instances ? 'Hide': 'Show' $} Access Levels</span>
-
             </li>
           </ul>
         </div>
@@ -127,15 +126,7 @@
   <!-- Data Table -->
   <div id="portfolio-summary-grid" ng-if="data_valid">
     <div id="portfolioSummary-gridOptions-wrapper" class="wide-900">
-      <div 
-        ui-grid="gridOptions"
-        ui-grid-save-state
-        ui-grid-resize-columns
-        ui-grid-exporter
-        ui-grid-edit
-        ui-grid-selection
-        style="display: flex; width: 100%"
-      ></div>
+      <div ui-grid="gridOptions" ui-grid-save-state ui-grid-resize-columns ui-grid-exporter ui-grid-edit ui-grid-selection style="display: flex; width: 100%"></div>
     </div>
   </div>
   <div class="portfolio-summary-loading" ng-if="data_loading && !data_valid" style="margin: 100px 20px">
