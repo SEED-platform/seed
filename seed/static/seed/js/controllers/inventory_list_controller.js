@@ -624,10 +624,10 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
         controller: 'postoffice_modal_controller',
         resolve: {
           property_states: () => ($scope.inventory_type === 'properties' ?
-            $scope.data.filter((d) => selectedViewIds.includes(d.id)).map((d) => d.property_state_id) :
+            $scope.data.filter((d) => selectedViewIds.includes(d.property_view_id)).map((d) => d.property_state_id) :
             []),
           taxlot_states: () => ($scope.inventory_type === 'taxlots' ?
-            $scope.data.filter((d) => selectedViewIds.includes(d.id)).map((d) => d.taxlot_state_id) :
+            $scope.data.filter((d) => selectedViewIds.includes(d.property_view_id)).map((d) => d.taxlot_state_id) :
             []),
           inventory_type: () => $scope.inventory_type
         }
