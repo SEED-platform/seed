@@ -986,10 +986,9 @@ angular.module('BE.seed.controller.portfolio_summary', [])
         goal_service.get_goal($scope.goal.id).then((response) => {
           goal = response.data.goal;
           if (goal) {
-            $scope.selected_ids = goal.current_cycle_property_view_ids
+            $scope.selected_ids = goal.current_cycle_property_view_ids;
           }
         });
-        // $scope.selected_ids = $scope.selected_count.map().total;
       };
 
       $scope.select_none = () => {
@@ -1030,7 +1029,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
           resolve: {
             property_view_ids: () => $scope.selected_ids,
             goal: () => $scope.goal,
-            organization: () => $scope.organization
+            question_options: () => $scope.question_options,
           }
         })
         modalInstance.result.then(() => {

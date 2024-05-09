@@ -70,6 +70,14 @@ angular.module('BE.seed.service.goal', []).factory('goal_service', [
       .then((response) => response)
       .catch((response) => response);
 
+    goal_service.bulk_update_goal_note = (property_view_ids, goal, data) => $http.put(
+      `/api/v3/goals/${goal.id}/bulk_update_goal_notes/`, 
+      { data, property_view_ids },
+      { params: { organization_id: user_service.get_organization().id} }
+    )
+      .then((response) => response)
+      .catch((response) => response);
+
     return goal_service;
   }
 ]);

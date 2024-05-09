@@ -5526,12 +5526,19 @@ tags-input .tags .tag-item {
 #batch-edit-goalnotes-form {
   div {
     display: flex;
-    margin: 5px;
+    margin: 1px;
   }
+
   label, input {
     margin: auto 10px;
   }
+
   label {
     width: 150px;
+  }
+  
+  .disabled {
+    color: $gray_lighter;
+    font-weight: normal;
   }
 }

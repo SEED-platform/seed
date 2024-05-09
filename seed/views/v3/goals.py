@@ -12,12 +12,13 @@ from rest_framework.decorators import action
 
 from seed.decorators import ajax_request_class
 from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm_class
-from seed.models import AccessLevelInstance, Goal, GoalNote, Organization, PropertyView
+from seed.models import AccessLevelInstance, Goal, GoalNote, Organization, Property, PropertyView
 from seed.serializers.goals import GoalSerializer
 from seed.serializers.pint import collapse_unit
 from seed.utils.api import OrgMixin
 from seed.utils.api_schema import swagger_auto_schema_org_query_param
 from seed.utils.goals import get_area_expression, get_eui_expression, get_or_create_goal_notes, percentage
+from seed.utils.goal_notes import get_permission_data
 from seed.utils.viewsets import ModelViewSetWithoutPatch
 
 
@@ -185,3 +186,23 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
         summary["eui_change"] = percentage(summary["baseline"]["weighted_eui"], summary["current"]["weighted_eui"])
 
         return summary
+    
+    @has_perm_class("requires_member")
+    @action(detail=True, methods=["PUT"])
+    def bulk_update_goal_notes(self, request, pk):
+        """Bulk updates GoalNotes for a given goal and property view ids"""
+        org_id = self.get_organization(request)
+        try:
+            goal = Goal.objects.get(pk=pk, organization=org_id)
+        except Goal.DoesNotExist:
+            return JsonResponse({"status": "error", "message": "No such resource."}, status=404)
+        
+        property_view_ids = request.data.get('property_view_ids', [])
+        property_ids = Property.objects.filter(views__in=property_view_ids).values_list('id', flat=True)
+        goal_notes = GoalNote.objects.filter(goal=goal, property__in=property_ids)
+
+        data = request.data.get('data', {})
+        data = get_permission_data(data, request.access_level_instance_id)
+        result = goal_notes.update(**data)
+
+        return JsonResponse({"status": "success", "message": f"{result}"})
