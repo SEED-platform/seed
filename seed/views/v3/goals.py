@@ -22,10 +22,6 @@ from seed.utils.viewsets import ModelViewSetWithoutPatch
 
 
 @method_decorator(
-    name="retrieve",
-    decorator=[swagger_auto_schema_org_query_param, has_perm_class("requires_viewer"), has_hierarchy_access(goal_id_kwarg="pk")],
-)
-@method_decorator(
     name="destroy",
     decorator=[
         swagger_auto_schema_org_query_param,
@@ -58,8 +54,29 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
             access_level_instance__lft__gte=access_level_instance.lft,
             access_level_instance__rgt__lte=access_level_instance.rgt,
         )
-
         return JsonResponse({"status": "success", "goals": self.serializer_class(goals, many=True).data})
+
+    @swagger_auto_schema_org_query_param
+    @has_perm_class("requires_viewer")
+    def retrieve(self, request, pk):
+        organization_id = self.get_organization(request)
+        access_level_instance = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
+
+        try:
+            goal = Goal.objects.select_related("current_cycle").get(
+                pk=pk,
+                organization=organization_id,
+                access_level_instance__lft__gte=access_level_instance.lft,
+                access_level_instance__rgt__lte=access_level_instance.rgt,
+            )
+        except Goal.DoesNotExist:
+            return JsonResponse({"status": "error", "message": "No such resource."}, status=404)
+        
+        goal_data = self.serializer_class(goal).data 
+        property_view_ids = goal.current_cycle.propertyview_set.all().values_list("id", flat=True)
+        goal_data["current_cycle_property_view_ids"] = list(property_view_ids)
+        
+        return JsonResponse({"status": "success", "goal": goal_data})
 
     @swagger_auto_schema_org_query_param
     @has_perm_class("requires_member")
@@ -125,10 +142,10 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
                 goal=goal,
                 passed_checks=True,
                 new_or_acquired=False
-            ).values_list('property__id', flat=True)
+            ).values_list("property__id", flat=True)
             property_views = property_views.filter(property__id__in=valid_property_ids)
 
-            # Create annotations for kbtu calcs. 'eui' is based on goal column priority
+            # Create annotations for kbtu calcs. "eui" is based on goal column priority
             property_views = property_views.annotate(
                 eui=get_eui_expression(goal),
             ).annotate(kbtu=F("eui") * F("area"))
@@ -138,7 +155,7 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
             total_sqft = aggregated_data["total_sqft"]
 
             if current:
-                summary['passing_committed'] = percentage(goal.commitment_sqft, total_sqft)
+                summary["passing_committed"] = percentage(goal.commitment_sqft, total_sqft)
                 summary["passing_shared"] = percentage(summary["shared_sqft"], total_sqft)
 
             if total_kbtu:
