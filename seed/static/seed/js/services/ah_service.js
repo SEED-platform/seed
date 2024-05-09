@@ -10,7 +10,7 @@ angular.module('BE.seed.service.ah', []).factory('ah_service', [
       if (!tree) return;
       if (!access_level_instances_by_depth[depth]) access_level_instances_by_depth[depth] = [];
       for (const ali of tree) {
-        access_level_instances_by_depth[depth].push({ id: ali.id, name: ali.data.name });
+        access_level_instances_by_depth[depth].push({ id: ali.id, name: ali.name });
         recurse_access_levels(ali.children, access_level_instances_by_depth, depth + 1);
       }
     };
