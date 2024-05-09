@@ -2,8 +2,8 @@
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
  * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
-angular.module('BE.seed.controller.batch_edit_goalnotes_modal', [])
-  .controller('batch_edit_goalnotes_modal_controller', [
+angular.module('BE.seed.controller.bulk_edit_goalnotes_modal', [])
+  .controller('bulk_edit_goalnotes_modal_controller', [
     '$scope',
     '$state',
     '$uibModalInstance',
@@ -32,6 +32,8 @@ angular.module('BE.seed.controller.batch_edit_goalnotes_modal', [])
       $scope.new_or_acquired = {name: "new_or_acquired", selected: false, value: false}
 
       const inputs = [$scope.question, $scope.resolution, $scope.historical_note, $scope.passed_checks, $scope.new_or_acquired]
+      $scope.save_disabled = () => !inputs.some(input => input.selected)        
+      
 
       $scope.save = () => {
         const data = {}

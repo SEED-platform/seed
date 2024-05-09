@@ -1022,10 +1022,10 @@ angular.module('BE.seed.controller.portfolio_summary', [])
       /**
        Opens a modal to batch edit goal notes
        */
-      $scope.open_batch_edit_goalnotes_modal = () => {
+      $scope.open_bulk_edit_goalnotes_modal = () => {
         const modalInstance = $uibModal.open({
-          templateUrl: `${urls.static_url}seed/partials/batch_edit_goalnotes_modal.html`,
-          controller: 'batch_edit_goalnotes_modal_controller',
+          templateUrl: `${urls.static_url}seed/partials/bulk_edit_goalnotes_modal.html`,
+          controller: 'bulk_edit_goalnotes_modal_controller',
           resolve: {
             property_view_ids: () => $scope.selected_ids,
             goal: () => $scope.goal,
