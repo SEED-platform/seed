@@ -13,6 +13,7 @@ angular.module('BE.seed.controller.bulk_edit_goalnotes_modal', [])
     'goal',
     'question_options',
     'write_permission',
+    'user_role',
     // eslint-disable-next-line func-names
     function (
       $scope,
@@ -23,9 +24,13 @@ angular.module('BE.seed.controller.bulk_edit_goalnotes_modal', [])
       property_view_ids,
       goal,
       question_options,
-      write_permission
+      write_permission,
+      user_role
     ) {
       $scope.write_permission = write_permission;
+      $scope.viewer = user_role === 'viewer';
+      $scope.owner = user_role !== 'viewer' && user_role !== 'member';
+
       $scope.question_options = question_options;
 
       $scope.question = { name: 'question', selected: false, value: '' };

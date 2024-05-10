@@ -45,7 +45,8 @@ angular.module('BE.seed.controller.portfolio_summary', [])
     ) {
       $scope.organization = organization_payload.organization;
       $scope.viewer = $scope.menu.user.organization.user_role === 'viewer';
-      $scope.write_permission = ($scope.menu.user.is_ali_root || !$scope.menu.user.is_ali_leaf) && !$scope.viewer;
+      $scope.write_permission = !$scope.viewer;
+      // $scope.write_permission = ($scope.menu.user.is_ali_root || !$scope.menu.user.is_ali_leaf) && !$scope.viewer;
       // Ii there a better way to convert string units to displayUnits?
       const area_units = $scope.organization.display_units_area.replace('**2', '²');
       const eui_units = $scope.organization.display_units_eui.replace('**2', '²');
@@ -1031,7 +1032,8 @@ angular.module('BE.seed.controller.portfolio_summary', [])
             property_view_ids: () => $scope.selected_ids,
             goal: () => $scope.goal,
             question_options: () => $scope.question_options,
-            write_permission: () => $scope.write_permission
+            write_permission: () => $scope.write_permission,
+            user_role: () => $scope.menu.user.organization.user_role
           }
         });
         modalInstance.result.then(() => {

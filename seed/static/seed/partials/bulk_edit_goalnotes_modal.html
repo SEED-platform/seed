@@ -3,7 +3,7 @@
 </div>
 <div class="modal-body">
   <form name="goalnote_form" id="batch-edit-goalnotes-form">
-    <div>
+    <div ng-if="owner">
       <input type="checkbox" class="" ng-model="question.selected" />
       <label for="question-value" ng-class="{'disabled': !question.selected}">Question</label>
       <select
@@ -25,7 +25,7 @@
       <label for="historical_note-value" ng-class="{'disabled': !historical_note.selected}">Historical Note: </label>
       <input id="historical_note-value" class="form-control" ng-model="historical_note.value" ng-click="historical_note.selected = true" />
     </div>
-    <div>
+    <div ng-if="owner">
       <input type="checkbox" class="" ng-model="passed_checks.selected" />
       <label for="passed_checks-value" ng-class="{'disabled': !passed_checks.selected}">Passed Checks: </label>
       <select
@@ -37,7 +37,7 @@
         ng-options="b as b for b in [true, false]"
       ></select>
     </div>
-    <div>
+    <div ng-if="owner">
       <input type="checkbox" class="" ng-model="new_or_acquired.selected" />
       <label for="new_or_acquired-value" ng-class="{'disabled': !new_or_acquired.selected}">New Build or Acquired: </label>
       <select
