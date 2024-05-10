@@ -45,8 +45,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
     ) {
       $scope.organization = organization_payload.organization;
       $scope.viewer = $scope.menu.user.organization.user_role === 'viewer';
-      $scope.write_permission = !$scope.viewer;
-      // $scope.write_permission = ($scope.menu.user.is_ali_root || !$scope.menu.user.is_ali_leaf) && !$scope.viewer;
+      $scope.write_permission = ($scope.menu.user.is_ali_root || !$scope.menu.user.is_ali_leaf) && !$scope.viewer;
       // Ii there a better way to convert string units to displayUnits?
       const area_units = $scope.organization.display_units_area.replace('**2', '²');
       const eui_units = $scope.organization.display_units_eui.replace('**2', '²');
@@ -145,19 +144,15 @@ angular.module('BE.seed.controller.portfolio_summary', [])
 
       const get_goal_stats = (summary) => {
         const passing_sqft = summary.current ? summary.current.total_sqft : null;
-        $scope.goal_stats = {
-          area: [
-            { name: 'Commitment (Sq. Ft)', value: $scope.goal.commitment_sqft },
-            { name: 'Shared (Sq. Ft)', value: summary.shared_sqft },
-            { name: 'Passing Checks (Sq. Ft)', value: passing_sqft },
-            { name: 'Passing Checks (% of committed)', value: summary.passing_committed },
-            { name: 'Passing Checks (% of shared)', value: summary.passing_shared }
-          ],
-          totals: [
-            { name: 'Passing Checks', value: summary.total_passing },
-            { name: 'New of Acquired', value: summary.total_new_or_acquired }
-          ]
-        };
+        $scope.goal_stats = [
+          { name: 'Commitment (Sq. Ft)', value: $scope.goal.commitment_sqft },
+          { name: 'Shared (Sq. Ft)', value: summary.shared_sqft },
+          { name: 'Passing Checks (Sq. Ft)', value: passing_sqft },
+          { name: 'Passing Checks (% of committed)', value: summary.passing_committed },
+          { name: 'Passing Checks (% of shared)', value: summary.passing_shared },
+          { name: 'Total Passing Checks', value: summary.total_passing },
+          { name: 'Total New or Acquired', value: summary.total_new_or_acquired }
+        ];
       };
 
       // from inventory_list_controller
@@ -1032,8 +1027,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
             property_view_ids: () => $scope.selected_ids,
             goal: () => $scope.goal,
             question_options: () => $scope.question_options,
-            write_permission: () => $scope.write_permission,
-            user_role: () => $scope.menu.user.organization.user_role
+            write_permission: () => $scope.write_permission
           }
         });
         modalInstance.result.then(() => {
