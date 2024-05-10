@@ -1031,7 +1031,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
             property_view_ids: () => $scope.selected_ids,
             goal: () => $scope.goal,
             question_options: () => $scope.question_options,
-            write_permission: () => $scope.write_permission,
+            write_permission: () => $scope.write_permission
           }
         });
         modalInstance.result.then(() => {

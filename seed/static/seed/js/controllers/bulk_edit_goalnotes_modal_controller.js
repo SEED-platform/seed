@@ -23,7 +23,7 @@ angular.module('BE.seed.controller.bulk_edit_goalnotes_modal', [])
       property_view_ids,
       goal,
       question_options,
-      write_permission,
+      write_permission
     ) {
       $scope.write_permission = write_permission;
       $scope.question_options = question_options;
@@ -44,7 +44,7 @@ angular.module('BE.seed.controller.bulk_edit_goalnotes_modal', [])
         goal_service.bulk_update_goal_note(property_view_ids, goal, data)
           .then((response) => {
             Notification.success(response.data.message);
-            $uibModalInstance.close()
+            $uibModalInstance.close();
           })
           .catch(() => Notification.error('Unexpected Error'))
           .finally(() => $uibModalInstance.close());

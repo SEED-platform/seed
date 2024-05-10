@@ -105,10 +105,10 @@ angular.module('BE.seed.controller.goal_editor_modal', [])
             }
           }
         })
-        .catch((response) => {
-          const message = response.data.message || "Unexpeted Error"
-          Notification.error(message)
-        });
+          .catch((response) => {
+            const message = response.data.message || 'Unexpeted Error';
+            Notification.error(message);
+          });
       };
 
       $scope.delete_goal = (goal_id) => {
