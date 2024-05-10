@@ -44,8 +44,8 @@ angular.module('BE.seed.controller.portfolio_summary', [])
       spinner_utility
     ) {
       $scope.organization = organization_payload.organization;
-      const viewer = $scope.menu.user.organization.user_role === 'viewer';
-      $scope.write_permission = ($scope.menu.user.is_ali_root || !$scope.menu.user.is_ali_leaf) && !viewer;
+      $scope.viewer = $scope.menu.user.organization.user_role === 'viewer';
+      $scope.write_permission = ($scope.menu.user.is_ali_root || !$scope.menu.user.is_ali_leaf) && !$scope.viewer;
       // Ii there a better way to convert string units to displayUnits?
       const area_units = $scope.organization.display_units_area.replace('**2', '²');
       const eui_units = $scope.organization.display_units_eui.replace('**2', '²');
@@ -96,7 +96,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
       const reset_data = () => {
         $scope.valid = true;
         format_goal_details();
-        $scope.refresh_data();
+        refresh_data();
       };
 
       // If goal changes, reset grid filters and repopulate ui-grids
@@ -197,9 +197,9 @@ angular.module('BE.seed.controller.portfolio_summary', [])
         });
       };
 
-      $scope.refresh_data = () => {
+      const refresh_data = () => {
         load_summary();
-        $scope.load_inventory(1);
+        load_inventory(1);
       };
 
       const load_summary = () => {
@@ -218,9 +218,9 @@ angular.module('BE.seed.controller.portfolio_summary', [])
 
       $scope.page_change = (page) => {
         spinner_utility.show();
-        $scope.load_inventory(page);
+        load_inventory(page);
       };
-      $scope.load_inventory = (page) => {
+      const load_inventory = (page) => {
         $scope.data_loading = true;
 
         const access_level_instance_id = $scope.goal.access_level_instance;
@@ -579,8 +579,8 @@ angular.module('BE.seed.controller.portfolio_summary', [])
             displayName: 'Resolution',
             enableFiltering: false,
             enableSorting: false,
-            enableCellEdit: !viewer,
-            cellClass: !viewer && 'cell-edit',
+            enableCellEdit: !$scope.viewer,
+            cellClass: !$scope.viewer && 'cell-edit',
             width: 300
           },
           {
@@ -588,8 +588,8 @@ angular.module('BE.seed.controller.portfolio_summary', [])
             displayName: 'Historical Notes',
             enableFiltering: false,
             enableSorting: false,
-            enableCellEdit: !viewer,
-            cellClass: !viewer && 'cell-edit',
+            enableCellEdit: !$scope.viewer,
+            cellClass: !$scope.viewer && 'cell-edit',
             width: 300
           },
           {
@@ -931,14 +931,14 @@ angular.module('BE.seed.controller.portfolio_summary', [])
               spinner_utility.show();
               _.debounce(() => {
                 updateColumnFilterSort();
-                $scope.load_inventory(1);
+                load_inventory(1);
               }, 500)();
             });
 
             gridApi.core.on.filterChanged($scope, _.debounce(() => {
               spinner_utility.show();
               updateColumnFilterSort();
-              $scope.load_inventory(1);
+              load_inventory(1);
             }, 2000));
 
             const selectionChanged = () => {
@@ -1013,8 +1013,10 @@ angular.module('BE.seed.controller.portfolio_summary', [])
         });
         modalInstance.result.then(() => {
           // dialog was closed with 'Done' button.
+          $scope.selected_option = 'none';
           $scope.selected_count = 0;
-          $scope.load_inventory();
+          $scope.gridApi.selection.clearSelectedRows();
+          load_inventory();
         });
       };
 
@@ -1028,14 +1030,17 @@ angular.module('BE.seed.controller.portfolio_summary', [])
           resolve: {
             property_view_ids: () => $scope.selected_ids,
             goal: () => $scope.goal,
-            question_options: () => $scope.question_options
+            question_options: () => $scope.question_options,
+            write_permission: () => $scope.write_permission,
           }
         });
         modalInstance.result.then(() => {
           // dialog was closed with 'Done' button.
           $scope.selected_option = 'none';
           $scope.selected_count = 0;
-          $scope.load_inventory();
+          $scope.gridApi.selection.clearSelectedRows();
+          load_summary();
+          load_inventory();
         });
       };
 

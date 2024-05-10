@@ -78,7 +78,7 @@
   <div class="portfolio-summary-item-count wide-900" ng-if="data_valid">
     <div ng-if="data_valid">
       <div style="display: flex">
-        <div uib-dropdown class="goal-actions-dropdown">
+        <div uib-dropdown class="goal-actions-dropdown" ng-if="!viewer">
           <button id="btnCreateNew" type="button" class="btn actions-toggle" uib-dropdown-toggle>
             <span>Actions</span>
             <i class="fa-solid fa-chevron-down"></i>

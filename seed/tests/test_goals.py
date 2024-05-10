@@ -432,10 +432,15 @@ class GoalViewTests(AccessLevelBaseTestCase):
         exp_summary = {
             "baseline": {"cycle_name": "2001 Annual", "total_sqft": None, "total_kbtu": None, "weighted_eui": None},
             "current": {"cycle_name": "2003 Annual", "total_sqft": None, "total_kbtu": None, "weighted_eui": None},
-            "sqft_change": None,
             "eui_change": None,
+            "passing_committed": None,
+            "passing_shared": None,
+            "shared_sqft": 15,
+            "sqft_change": None,
+            "total_new_or_acquired": 0,
+            "total_passing": 0,
+            "total_properties": 2,
         }
-
         assert summary == exp_summary
 
         for goalnote in self.child_goal.goalnote_set.all():
@@ -443,17 +448,28 @@ class GoalViewTests(AccessLevelBaseTestCase):
             goalnote.save()
 
         response = self.client.get(url, content_type="application/json")
+        summary = response.json()
 
         exp_summary = {
             "baseline": {"cycle_name": "2001 Annual", "total_kbtu": 44, "total_sqft": 9, "weighted_eui": 4},
             "current": {"cycle_name": "2003 Annual", "total_kbtu": 110, "total_sqft": 15, "weighted_eui": 7},
             "eui_change": -75,
+            "passing_committed": None,
+            "passing_shared": 100,
+            "shared_sqft": 15,
             "sqft_change": 40,
+            "total_new_or_acquired": 0,
+            "total_passing": 2,
+            "total_properties": 2,
         }
 
         assert summary == exp_summary
 
         # with extra data
+        for goalnote in self.child_goal_extra.goalnote_set.all():
+            goalnote.passed_checks = True
+            goalnote.save()
+
         url = reverse_lazy("api:v3:goals-portfolio-summary", args=[self.child_goal_extra.id]) + "?organization_id=" + str(self.org.id)
         response = self.client.get(url, content_type="application/json")
         summary = response.json()
@@ -461,7 +477,13 @@ class GoalViewTests(AccessLevelBaseTestCase):
             "baseline": {"cycle_name": "2001 Annual", "total_kbtu": 200, "total_sqft": 20, "weighted_eui": 10},
             "current": {"cycle_name": "2003 Annual", "total_kbtu": 5000, "total_sqft": 150, "weighted_eui": 33},
             "eui_change": -229,
+            "passing_committed": None,
+            "passing_shared": 100,
+            "shared_sqft": 150.0,
             "sqft_change": 86,
+            "total_new_or_acquired": 0,
+            "total_passing": 2,
+            "total_properties": 2,
         }
 
         assert summary == exp_summary

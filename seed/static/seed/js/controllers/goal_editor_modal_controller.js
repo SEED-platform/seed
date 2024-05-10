@@ -104,6 +104,10 @@ angular.module('BE.seed.controller.goal_editor_modal', [])
               $scope.errors = $scope.errors.push(result_errors);
             }
           }
+        })
+        .catch((response) => {
+          const message = response.data.message || "Unexpeted Error"
+          Notification.error(message)
         });
       };
 

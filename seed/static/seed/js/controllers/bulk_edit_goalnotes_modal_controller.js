@@ -12,6 +12,7 @@ angular.module('BE.seed.controller.bulk_edit_goalnotes_modal', [])
     'property_view_ids',
     'goal',
     'question_options',
+    'write_permission',
     // eslint-disable-next-line func-names
     function (
       $scope,
@@ -21,8 +22,10 @@ angular.module('BE.seed.controller.bulk_edit_goalnotes_modal', [])
       goal_service,
       property_view_ids,
       goal,
-      question_options
+      question_options,
+      write_permission,
     ) {
+      $scope.write_permission = write_permission;
       $scope.question_options = question_options;
 
       $scope.question = { name: 'question', selected: false, value: '' };
@@ -38,9 +41,11 @@ angular.module('BE.seed.controller.bulk_edit_goalnotes_modal', [])
         const data = {};
         const selected_inputs = inputs.filter((input) => input.selected);
         selected_inputs.forEach((input) => { data[input.name] = input.value; });
-        goal_service.bulk_update_goal_note(property_view_ids, goal, data).then((response) => {
-          Notification.success(response.data.message);
-        })
+        goal_service.bulk_update_goal_note(property_view_ids, goal, data)
+          .then((response) => {
+            Notification.success(response.data.message);
+            $uibModalInstance.close()
+          })
           .catch(() => Notification.error('Unexpected Error'))
           .finally(() => $uibModalInstance.close());
       };
