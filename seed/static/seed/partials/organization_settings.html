@@ -74,7 +74,8 @@
           <h3 translate>Enable Public Endpoints</h3>
           <p>
             <span translate>PUBLIC_FEED_HELP</span> <a ui-sref="organization_sharing(::{organization_id: org.id})">{$:: 'Organization Sharing' | translate $}</a>.
-            <span translate>For more information about the</span> <code>/v3/public</code> <span translate>endpoints see the</span> <a href="/api/swagger" translate>API Documentation</a></p>
+            <span translate>For more information about the</span> <code>/v3/public</code> <span translate>endpoints see the</span> <a href="/api/swagger" translate>API Documentation</a>
+          </p>
           <form class="form-horizontal" role="form">
             <div class="form-group">
               <div class="col-sm-4">
@@ -88,8 +89,7 @@
       <div class="section_content_container" ng-if="org.public_feed_enabled">
         <div class="section_content with_padding">
           <h3 translate>Enable Labels in Public Feed</h3>
-          <p><span translate>PUBLIC_FEED_LABELS</span></p> 
-          </p>
+          <p><span translate>PUBLIC_FEED_LABELS</span></p>
           <form class="form-horizontal" role="form">
             <div class="form-group">
               <div class="col-sm-4">
