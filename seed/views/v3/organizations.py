@@ -149,6 +149,7 @@ def _dict_org(request, organizations):
             "access_level_names": o.access_level_names,
             "public_feed_enabled": o.public_feed_enabled,
             "public_feed_labels": o.public_feed_labels,
+            "public_geojson_enabled": o.public_feed_labels,
         }
         orgs.append(org)
 
@@ -513,11 +514,17 @@ class OrganizationViewSet(viewsets.ViewSet):
         else:
             org.public_feed_enabled = False
             org.public_feed_labels = False
+            org.public_geojson_enabled = False
 
         # Update public_feed_labels option
         public_feed_labels = posted_org.get("public_feed_labels", False)
         if public_feed_enabled and public_feed_labels != org.public_feed_labels:
             org.public_feed_labels = public_feed_labels
+
+        # Update public_geojson_enabled option
+        public_geojson_enabled = posted_org.get("public_geojson_enabled", False)
+        if public_feed_enabled and public_geojson_enabled != org.public_geojson_enabled:
+            org.public_geojson_enabled = public_geojson_enabled
 
         # Update BETTER Analysis API Key if it's been changed
         better_analysis_api_key = posted_org.get("better_analysis_api_key", "").strip()

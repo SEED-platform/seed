@@ -1,14 +1,18 @@
 import datetime
 from urllib.parse import urlencode
-
+from django.db.models import Q
+from functools import reduce
+from operator import or_
 import pint
 from django.core.paginator import EmptyPage, Paginator
 from django.db.models.functions import Lower
 
 from seed.models import Column, PropertyState, TaxLotState
+from seed.utils.geocode import bounding_box_wkt, long_lat_wkt
+from seed.utils.ubid import centroid_wkt
 
 
-def public_feed(org, request, html_view=False):
+def public_feed(org, request, endpoint="feed"):
     """
     Format all property and taxlot state data to be displayed on a public feed
     """
@@ -35,18 +39,18 @@ def public_feed(org, request, html_view=False):
     t_count = 0
     if properties_param:
         data["properties"], p_count = _add_states_to_data(
-            base_url, PropertyState, "propertyview", page, per_page, labels, cycles, org, html_view
+            base_url, PropertyState, "propertyview", page, per_page, labels, cycles, org, endpoint
         )
 
     if taxlots_param:
-        data["taxlots"], t_count = _add_states_to_data(base_url, TaxLotState, "taxlotview", page, per_page, labels, cycles, org, html_view)
+        data["taxlots"], t_count = _add_states_to_data(base_url, TaxLotState, "taxlotview", page, per_page, labels, cycles, org, endpoint)
 
     pagination = {
         "page": page,
         "total_pages": int(max(p_count, t_count) / per_page) + 1,
         "per_page": per_page,
     }
-    if not html_view:
+    if not endpoint != "html":
         organization = {"id": org.id, "name": org.name}
     else:
         organization = {"organization_id": org.id, "organization_name": org.name}
@@ -69,7 +73,7 @@ def public_feed(org, request, html_view=False):
     }
 
 
-def _add_states_to_data(base_url, state_class, view_string, page, per_page, labels, cycles, org, html_view=False):
+def _add_states_to_data(base_url, state_class, view_string, page, per_page, labels, cycles, org, endpoint):
     states = state_class.objects.filter(**{f"{view_string}__cycle__in": cycles, "organization": org}).order_by("-updated")
 
     if labels is not None and org.public_feed_labels:
@@ -81,8 +85,18 @@ def _add_states_to_data(base_url, state_class, view_string, page, per_page, labe
     except EmptyPage:
         states_paginated = paginator.page(paginator.num_pages)
 
-    public_columns = (
-        Column.objects.filter(organization_id=org.id, shared_field_type=1, table_name=state_class._meta.object_name)
+    # Return public and or geojson fields
+    base_query = Column.objects.filter(organization_id=org.id, table_name=state_class._meta.object_name)
+    # selected public columns are tagged with shared_field_type = 1
+    queries = [Q(shared_field_type=1)]
+    # if geojson endpoint, include polygon fields
+    if endpoint == 'geojson':
+        polygon_fields = ["bounding_box", "centroid", "property_footprint", "taxlot_footprint", "long_lat"]
+        queries.append(Q(column_name__in=polygon_fields))
+    # combine queries with 'or'
+    queries = reduce(or_, queries)
+
+    public_columns = (base_query.filter(queries)
         .annotate(column_name_lower=Lower("column_name"))
         .order_by("column_name_lower")
         .values_list("column_name", "is_extra_data")
@@ -110,25 +124,37 @@ def _add_states_to_data(base_url, state_class, view_string, page, per_page, labe
 
             state_data[name] = value
 
-        # add the "automatically" added content to the end of the data
-        if html_view:
+        
+        json_link = f'{base_url}api/v3/{"properties" if type(state) == PropertyState else "taxlots"}/{view.id}/?organization_id={view.cycle.organization.id}'
+        html_link = f'{base_url}app/#/{"properties" if type(state) == PropertyState else "taxlots"}/{view.id}'
+
+        # /geo.json
+        if endpoint == "geojson":
+            state_data["cycle_id"] = view.cycle.id 
+            state_data["cycle_name"] = view.cycle.name 
+            state_data["bounding_box"] = bounding_box_wkt(state)
+            state_data["long_lat"] = long_lat_wkt(state)
+            state_data["centroid"] = centroid_wkt(state)
+
+        # /feed.html
+        elif endpoint == "html":
             state_data["cycle"] = f"{view.cycle.name} ({view.cycle.id})"
+            state_data["links"] = f"<p><a href={json_link} target='_blank'>JSON</a>, <a href={html_link} target='_blank'>HTML</a></p>"
+
+        # /feed.json
         else:
             state_data["cycle"] = {"id": view.cycle.id, "name": view.cycle.name}
+            state_data["json_link"] = json_link
+            state_data["html_link"] = html_link
+        # add labels if enabled
         if org.public_feed_labels:
             state_data["labels"] = ", ".join(view.labels.all().values_list("name", flat=True))
         state_data.update(
             {"updated": state.updated.strftime("%Y/%m/%d, %H:%M:%S"), "created": state.created.strftime("%Y/%m/%d, %H:%M:%S")}
         )
 
-        json_link = f'{base_url}api/v3/{"properties" if type(state) == PropertyState else "taxlots"}/{view.id}/?organization_id={view.cycle.organization.id}'
-        html_link = f'{base_url}app/#/{"properties" if type(state) == PropertyState else "taxlots"}/{view.id}'
-        if not html_view:
-            state_data["json_link"] = json_link
-            state_data["html_link"] = html_link
-        else:
-            state_data["links"] = f"<p><a href={json_link} target='_blank'>JSON</a>, <a href={html_link} target='_blank'>HTML</a></p>"
 
+    
         data.append(state_data)
 
     return data, len(states)
