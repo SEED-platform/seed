@@ -222,10 +222,10 @@
                   <td>{$:: org.created $}</td>
                   <td>{$ org.number_of_users | number:0 $}</td>
                   <td>
-                    <div ng-repeat="cycle in ::org.cycles" ng-if="::cycle.num_properties">{$:: cycle.name $}: {$:: cycle.num_properties $}</div>
+                    <div ng-repeat="cycle in ::org.cycles" ng-if="::cycle.num_properties">{$:: cycle.name $}: {$:: cycle.num_properties | number:0 $}</div>
                   </td>
                   <td>
-                    <div ng-repeat="cycle in ::org.cycles" ng-if="::cycle.num_taxlots">{$:: cycle.name $}: {$:: cycle.num_taxlots $}</div>
+                    <div ng-repeat="cycle in ::org.cycles" ng-if="::cycle.num_taxlots">{$:: cycle.name $}: {$:: cycle.num_taxlots | number:0 $}</div>
                   </td>
                   <td style="width: 470px">
                     <div>

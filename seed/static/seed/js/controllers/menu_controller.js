@@ -210,9 +210,10 @@ angular.module('BE.seed.controller.menu', []).controller('menu_controller', [
       $scope.show_org_id = false;
     };
     $scope.track_mouse = (e) => {
-      const xpos = `${e.view.window.innerWidth - e.clientX - 105}px`;
-      const ypos = `${e.clientY - 25}px`;
-      $scope.hover_style = `right: ${xpos}; top: ${ypos};`;
+      $scope.hover_style = {
+        right: `${e.view.window.innerWidth - e.clientX - 105}px`,
+        top: `${e.clientY - 25}px`
+      };
     };
 
     // DMcQ: Set up watch statements to keep nav updated with latest datasets_count, etc.

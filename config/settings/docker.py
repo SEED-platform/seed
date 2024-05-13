@@ -55,9 +55,8 @@ for loc in ENV_VARS:
 
 
 DEBUG = env_var("Debug", False)
-COMPRESS_ENABLED = False
-# COMPRESS_STORAGE = 'compressor.storage.GzipCompressorFileStorage'
-# COMPRESS_OFFLINE = True
+COMPRESS_ENABLED = True
+COMPRESS_OFFLINE = True
 
 # Make sure to disable secure cookies and csrf when using Cloudflare
 SESSION_COOKIE_SECURE = env_var("SESSION_COOKIE_SECURE", False)

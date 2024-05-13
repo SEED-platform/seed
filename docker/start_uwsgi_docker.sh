@@ -26,8 +26,11 @@ else
     /usr/local/wait-for-it.sh --strict $REDIS_ACTUAL_HOST:6379
 fi
 
-# collect static resources before starting and compress the assets
+# collect static resources before starting
 ./manage.py collectstatic --no-input -i package.json -i package-lock.json -i node_modules/openlayers-ext/index.html
+
+# clean up previously-generated assets and re-compress
+rm -rf /seed/collected_static/CACHE
 ./manage.py compress --force
 
 # set the permissions in the /seed/collected_static folder

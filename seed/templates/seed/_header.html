@@ -1,14 +1,16 @@
+<script type="text/ng-template" id="logo">
+  <div class="logo_text">
+    <span class="logo_text_seed">Seed</span>
+    <span class="logo_text_platform">Platform™</span>
+  </div>
+</script>
 <div class="header">
-  <div class="hover-org-container" ng-if="show_org_id" style="{$ hover_style $}">
+  <div class="hover-org-container" ng-if="show_org_id" ng-style="hover_style">
     <span class="hover-org-id"> ID: {$ hover_org_id $} </span>
   </div>
   <div class="logo_container">
-    <a class="logo" ui-sref="home">
-      <div class="logo_text">
-        <span class="logo_text_seed">Seed</span>
-        <span class="logo_text_platform">Platform™</span>
-      </div>
-    </a>
+    <a class="logo" ui-sref="home" ng-if="!is_active('/documentation/', true)" ng-include="'logo'"></a>
+    <a class="logo" href="/" ng-if="is_active('/documentation/', true)" ng-include="'logo'"></a>
   </div>
   <div class="add_menu_container">
     <div class="btn-group org-dropdown" uib-dropdown is-open="status.isopen">

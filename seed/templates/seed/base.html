@@ -11,7 +11,7 @@
   <link rel="shortcut icon" href="{{ STATIC_URL }}seed/images/favicon.ico"/>
 
   {% block css %}
-    {% compress css %}
+    {% compress css inline %}
       <style>
         [ng\:cloak],
         [ng-cloak],
@@ -22,8 +22,8 @@
           display: none !important;
         }
       </style>
-
-      <link href="{{ STATIC_URL }}landing/scss/fonts.scss" rel="stylesheet" type="text/x-scss"/>
+    {% endcompress %}
+    {% compress css file vendors %}
       <link href="{{ STATIC_URL }}node_modules/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" type="text/css"/>
       <link href="{{ STATIC_URL }}node_modules/jquery-ui-dist/jquery-ui.min.css" rel="stylesheet" type="text/css"/>
       <link href="{{ STATIC_URL }}node_modules/angular-ui-grid/ui-grid.min.css" rel="stylesheet" type="text/css"/>
@@ -37,37 +37,15 @@
             rel="stylesheet" type="text/css"/>
       <link href="{{ STATIC_URL }}node_modules/angular-dragula/dist/dragula.min.css" rel="stylesheet" type="text/css"/>
       <link href="{{ STATIC_URL }}node_modules/ol/ol.css" rel="stylesheet" type="text/css"/>
-
+    {% endcompress %}
+    {% compress css file seed %}
+      <link href="{{ STATIC_URL }}landing/scss/fonts.scss" rel="stylesheet" type="text/x-scss"/>
       <link href="{{ STATIC_URL }}seed/scss/style.scss" rel="stylesheet" type="text/x-scss"/>
     {% endcompress %}
   {% endblock %}
 
   {% block js %}
-    <script>
-      // username for sidebar
-      const username = "{{ username }}";
-      const firstName = "{{ request.user.first_name }}";
-      const lastName = "{{ request.user.last_name }}";
-      const email = "{{ request.user.email }}";
-
-      window.BE = {
-        username: username || `${firstName} ${lastName}`.trim() || email,
-        initial_org_id: '{{ initial_org_id }}',
-        initial_org_user_role: '{{ initial_org_user_role }}',
-        initial_org_name: '{{ initial_org_name }}',
-        access_level_instance_id: '{{ access_level_instance_id }}',
-        access_level_instance_name: '{{ access_level_instance_name }}',
-        is_ali_root: {{ is_ali_root|yesno:"true,false" }},
-        is_ali_leaf: {{ is_ali_leaf|yesno:"true,false" }},
-        csrf_token: '{{ csrf_token }}',
-        debug: {{ debug|yesno:"true,false" }}
-      };
-    </script>
-
-    {# js urls config #}
-    {% include "seed/_js_urls.html" %}
-
-    {% compress js %}
+    {% compress js file vendors %}
       <script src="{{ STATIC_URL }}node_modules/jquery/dist/jquery.min.js"></script>
       <script src="{{ STATIC_URL }}node_modules/jquery-ui-dist/jquery-ui.min.js"></script>
       <script src="{{ STATIC_URL }}node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
@@ -86,14 +64,6 @@
       <script src="{{ STATIC_URL }}node_modules/angular-cookies/angular-cookies.min.js"></script>
       <script src="{{ STATIC_URL }}node_modules/angular-ui-router/release/angular-ui-router.min.js"></script>
       <script src="{{ STATIC_URL }}node_modules/angular-ui-router.statehelper/statehelper.min.js"></script>
-
-      {% comment %} {% if not debug and SENTRY_JS_DSN %}
-    <script src="{{ STATIC_URL }}node_modules/raven-js/dist/raven.min.js"></script>
-    <script src="{{ STATIC_URL }}node_modules/raven-js/dist/plugins/angular.min.js"></script>
-    <script>
-      Raven.config('{{ SENTRY_JS_DSN }}').addPlugin(Raven.Plugins.Angular).install();
-    </script>
-    {% endif %} {% endcomment %}
 
       <script src="{{ STATIC_URL }}node_modules/angular-ui-bootstrap/dist/ui-bootstrap-tpls.js"></script>
       <script src="{{ STATIC_URL }}node_modules/angular-ui-grid/ui-grid.min.js"></script>
@@ -142,9 +112,30 @@
       <script src="{{ STATIC_URL }}node_modules/ng-wig/dist/ng-wig.min.js"></script>
     {% endcompress %}
 
-    {# all seed js files #}
-    {% include "seed/_scripts.html" %}
+    <script>
+      const username = "{{ username }}";
+      const firstName = "{{ request.user.first_name }}";
+      const lastName = "{{ request.user.last_name }}";
+      const email = "{{ request.user.email }}";
 
+      window.BE = {
+        username: username || `${firstName} ${lastName}`.trim() || email,
+        initial_org_id: '{{ initial_org_id }}',
+        initial_org_user_role: '{{ initial_org_user_role }}',
+        initial_org_name: '{{ initial_org_name }}',
+        access_level_instance_id: '{{ access_level_instance_id }}',
+        access_level_instance_name: '{{ access_level_instance_name }}',
+        is_ali_root: {{ is_ali_root|yesno:"true,false" }},
+        is_ali_leaf: {{ is_ali_leaf|yesno:"true,false" }},
+        csrf_token: '{{ csrf_token }}',
+        debug: {{ debug|yesno:"true,false" }}
+      };
+    </script>
+    {% include "seed/_js_urls.html" %}
+
+    {% compress js file seed %}
+      {% include "seed/_scripts.html" %}
+    {% endcompress %}
   {% endblock js %}
 </head>
 

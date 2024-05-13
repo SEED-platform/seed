@@ -3080,8 +3080,11 @@ tags-input .tags .tag-item .remove-button {
   }
 }
 
-.ui-grid-row:not(:last-child) .ui-grid-row-header-link {
-  border-bottom: solid 1px #d4d4d4;
+.ui-grid-row:not(:last-child) {
+  .ui-grid-row-header-link,
+  .ui-grid-row-label-bars {
+    border-bottom: solid 1px #d4d4d4;
+  }
 }
 
 // .ui-grid-row.ui-grid-row-selected > [ui-grid-row] > .ui-grid-cell > .ui-grid-row-header-link {

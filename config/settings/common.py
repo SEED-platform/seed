@@ -134,24 +134,27 @@ SEED_URL_APPS = ("seed",)
 MEDIA_URL = "/api/v3/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
-STATIC_URL = "/static/"
-STATIC_ROOT = os.path.join(BASE_DIR, "collected_static")
+COMPRESS_CACHEABLE_PRECOMPILERS = ("text/x-scss",)
 COMPRESS_FILTERS = {
     "css": [
         "compressor.filters.css_default.CssAbsoluteFilter",
-        "compressor.filters.cssmin.CSSMinFilter",
+        "compressor.filters.cssmin.rCSSMinFilter",
     ],
     "js": [
-        "compressor.filters.jsmin.JSMinFilter",
+        "compressor.filters.jsmin.rJSMinFilter",
     ],
 }
+COMPRESS_PRECOMPILERS = (("text/x-scss", "npx sass {infile} {outfile}"),)
+COMPRESS_STORAGE = "compressor.storage.BrotliCompressorFileStorage"
+
+STATIC_URL = "/static/"
+STATIC_ROOT = os.path.join(BASE_DIR, "collected_static")
 STATICFILES_DIRS = [os.path.join(BASE_DIR, "vendors")]
 STATICFILES_FINDERS = (
     "django.contrib.staticfiles.finders.FileSystemFinder",
     "django.contrib.staticfiles.finders.AppDirectoriesFinder",
     "compressor.finders.CompressorFinder",
 )
-COMPRESS_PRECOMPILERS = (("text/x-scss", "npx sass {infile} {outfile}"),)
 AWS_QUERYSTRING_AUTH = False
 
 # django-longer-username-and-email
