@@ -38,7 +38,7 @@ def parse_faq_file(faq_file):
     :param faq_file: str | DirEntry
     :return: FaqItem
     """
-    with open(faq_file, encoding=locale.getpreferredencoding(False)) as f:
+    with open(faq_file, encoding='utf-8') as f:
         _, frontmatter, body = YAML_DOC_BOUNDARY.split(f.read(), 2)
     parsed_frontmatter = yaml.safe_load(frontmatter)
     faq_item = FaqItem(
