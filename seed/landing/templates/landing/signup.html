@@ -2,15 +2,12 @@
 
 
 {% block js %}{{ block.super }}
-  <script type="text/javascript">
-
-    $(document).ready(function() {
+  <script>
+    $(() => {
       $('#id_new_password1').focus();
       $('#id_new_password1').attr('placeholder', '{% trans "Password" %}');
       $('#id_new_password2').attr('placeholder', '{% trans "Password again" %}');
-
     });
-
   </script>
 {% endblock %}
 

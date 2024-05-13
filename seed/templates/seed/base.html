@@ -7,28 +7,6 @@
   <title>{% block title %}{% trans "SEED Platform™" %}{% endblock title %}</title>
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <!--[if lt IE 8]>
-  <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/chrome-frame/1/CFInstall.min.js"></script>
-
-  <style>
-    .chromeFrameInstallDefaultStyle {
-      border: 2px solid blue;
-      padding: 5px;
-      z-index: 999999;
-    }
-  </style>
-
-  <script>
-    // The conditional ensures that this code will only execute in IE,
-    // Therefore we can use the IE-specific attachEvent without worry
-    window.attachEvent('onload', function() {
-      CFInstall.check({
-        mode: 'inline', // the default
-        node: 'prompt',
-      });
-    });
-  </script>
-  <![endif]-->
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
   <link rel="shortcut icon" href="{{ STATIC_URL }}seed/images/favicon.ico" />
   {% compress css %}
@@ -60,29 +38,25 @@
   {% endblock %}
 
   {% block js %}{{ block.super }}
-    <script type="text/javascript">
-      window.BE = window.BE || {};
+    <script>
       // username for sidebar
-      window.BE.username = "{{ username }}";
-      if (window.BE.username === '') {
-        window.BE.username = "{{ request.user.first_name }} {{ request.user.last_name }}";
-      }
-      if (window.BE.username === ' ') {
-        window.BE.username = "{{ request.user.email }}";
-      }
-      window.BE.initial_org_id = "{{ initial_org_id }}";
-      window.BE.initial_org_user_role = "{{ initial_org_user_role }}";
-      window.BE.initial_org_name = "{{ initial_org_name }}";
-      window.BE.access_level_instance_id = "{{ access_level_instance_id }}";
-      window.BE.access_level_instance_name = "{{ access_level_instance_name }}";
-      window.BE.is_ali_root = {{ is_ali_root|yesno:"true,false" }};
-      window.BE.is_ali_leaf = {{ is_ali_leaf|yesno:"true,false" }};
+      const username = "{{ username }}";
+      const firstName = "{{ request.user.first_name }}";
+      const lastName = "{{ request.user.last_name }}";
+      const email = "{{ request.user.email }}";
 
-      {# js CSRF config #}
-      window.BE.csrf_token = "{{ csrf_token }}";
-
-      {# Django debug mode flag #}
-      window.BE.debug = {{ debug|yesno:"true,false" }};
+      window.BE = {
+        username: username || `${firstName} ${lastName}`.trim() || email,
+        initial_org_id: '{{ initial_org_id }}',
+        initial_org_user_role: '{{ initial_org_user_role }}',
+        initial_org_name: '{{ initial_org_name }}',
+        access_level_instance_id: '{{ access_level_instance_id }}',
+        access_level_instance_name: '{{ access_level_instance_name }}',
+        is_ali_root: {{ is_ali_root|yesno:"true,false" }},
+        is_ali_leaf: {{ is_ali_leaf|yesno:"true,false" }},
+        csrf_token: '{{ csrf_token }}',
+        debug: {{ debug|yesno:"true,false" }}
+      };
     </script>
 
     {# js urls config #}

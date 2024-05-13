@@ -1,13 +1,11 @@
 {% extends "landing/base.html" %}{% load compress %}{% load i18n %}{% load settings_value %}
 {% block js %}{{ block.super }}
-  <script src='https://www.google.com/recaptcha/api.js'></script>
-  <script type="text/javascript">
-
-    $(document).ready(function() {
+  <script src="https://www.google.com/recaptcha/api.js"></script>
+  <script>
+    $(() => {
       $('#id_new_password1').focus();
       $('#id_new_password1').attr('placeholder', '{% trans "Password" %}');
       $('#id_new_password2').attr('placeholder', '{% trans "Password again" %}');
-
     });
   </script>
 {% endblock %}

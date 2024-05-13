@@ -26,8 +26,6 @@ describe('controller: mapping_controller', () => {
       mock_geocode_service = geocode_service;
       mock_organization_service = organization_service;
 
-      spyOn(mock_user_service, 'set_default_columns').andCallFake(() => undefined);
-
       spyOn(mock_geocode_service, 'check_org_has_api_key').andCallFake(() => $q.resolve({
         status: 'success'
       }));
@@ -328,7 +326,6 @@ describe('controller: mapping_controller', () => {
 
   //     // assertions
   //     expect(mapping_controller_scope.search.search_buildings).toHaveBeenCalled();
-  //     expect(mock_user_service.set_default_columns).toHaveBeenCalled();
   // });
 
   it('should enable the "show & review buildings" button if duplicates are not present', () => {
