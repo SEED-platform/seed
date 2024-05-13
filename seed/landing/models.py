@@ -41,12 +41,12 @@ class SEEDUser(AbstractBaseUser, PermissionsMixin):
     last_name = models.CharField(_("last name"), max_length=30, blank=True)
     email = models.EmailField(_("email address"), blank=True)
     is_staff = models.BooleanField(
-        _("staff status"), default=False, help_text=_("Designates whether the user can log into this admin " "site.")
+        _("staff status"), default=False, help_text=_("Designates whether the user can log into this admin site.")
     )
     is_active = models.BooleanField(
         _("active"),
         default=True,
-        help_text=_("Designates whether this user should be treated as " "active. Unselect this instead of deleting accounts."),
+        help_text=_("Designates whether this user should be treated as active. Unselect this instead of deleting accounts."),
     )
     date_joined = models.DateTimeField(_("date joined"), default=timezone.now)
 
@@ -144,8 +144,8 @@ class SEEDUser(AbstractBaseUser, PermissionsMixin):
         Ensure that email and username are synced.
         """
 
-        # NL: Why are we setting the email to the user name, don't we need the
-        # email? It seems that the username is then suppose to be the email,
+        # NL: Why are we setting the email to the username, don't we need the
+        # email? It seems that the username is then supposed to be the email,
         # correct? Regardless, this code seems problematic
         if self.email.lower() != self.username:
             self.email = self.username

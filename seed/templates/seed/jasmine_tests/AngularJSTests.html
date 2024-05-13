@@ -3,47 +3,47 @@
   <head>
     <title>SEED JS Spec Runner</title>
 
-    <link href="{{STATIC_URL}}node_modules/jasmine/lib/jasmine-core/jasmine.css" rel="stylesheet" type="text/css" />
-    <script src="{{STATIC_URL}}node_modules/jquery/dist/jquery.min.js"></script>
-    <script src="{{STATIC_URL}}node_modules/jquery-ui-dist/jquery-ui.min.js"></script>
-    <script src="{{STATIC_URL}}node_modules/jasmine/lib/jasmine-core/jasmine.js"></script>
-    <script src="{{STATIC_URL}}node_modules/jasmine/lib/jasmine-core/jasmine-html.js"></script>
+    <link href="{{ STATIC_URL }}node_modules/jasmine/lib/jasmine-core/jasmine.css" rel="stylesheet" type="text/css" />
+    <script src="{{ STATIC_URL }}node_modules/jquery/dist/jquery.min.js"></script>
+    <script src="{{ STATIC_URL }}node_modules/jquery-ui-dist/jquery-ui.min.js"></script>
+    <script src="{{ STATIC_URL }}node_modules/jasmine/lib/jasmine-core/jasmine.js"></script>
+    <script src="{{ STATIC_URL }}node_modules/jasmine/lib/jasmine-core/jasmine-html.js"></script>
 
-    <script src="{{STATIC_URL}}node_modules/angular/angular.js"></script>
-    <script src="{{STATIC_URL}}node_modules/angular-animate/angular-animate.min.js"></script>
-    <script src="{{STATIC_URL}}node_modules/angular-aria/angular-aria.min.js"></script>
-    <script src="{{STATIC_URL}}node_modules/angular-cookies/angular-cookies.min.js"></script>
-    <script src="{{STATIC_URL}}node_modules/angular-mocks/angular-mocks.js"></script>
+    <script src="{{ STATIC_URL }}node_modules/angular/angular.js"></script>
+    <script src="{{ STATIC_URL }}node_modules/angular-animate/angular-animate.min.js"></script>
+    <script src="{{ STATIC_URL }}node_modules/angular-aria/angular-aria.min.js"></script>
+    <script src="{{ STATIC_URL }}node_modules/angular-cookies/angular-cookies.min.js"></script>
+    <script src="{{ STATIC_URL }}node_modules/angular-mocks/angular-mocks.js"></script>
 
-    <script src="{{STATIC_URL}}node_modules/lodash/lodash.min.js"></script>
-    <script src="{{STATIC_URL}}node_modules/spin.js/spin.min.js"></script>
-    <script src="{{STATIC_URL}}node_modules/angular-translate/dist/angular-translate.min.js"></script>
-    <script src="{{STATIC_URL}}node_modules/angular-translate-loader-static-files/angular-translate-loader-static-files.min.js"></script>
-    <script src="{{STATIC_URL}}node_modules/messageformat/messageformat.min.js"></script>
-    <script src="{{STATIC_URL}}node_modules/angular-translate-interpolation-messageformat/angular-translate-interpolation-messageformat.min.js"></script>
-    <script src="{{STATIC_URL}}node_modules/angular-sanitize/angular-sanitize.min.js"></script>
+    <script src="{{ STATIC_URL }}node_modules/lodash/lodash.min.js"></script>
+    <script src="{{ STATIC_URL }}node_modules/spin.js/spin.min.js"></script>
+    <script src="{{ STATIC_URL }}node_modules/angular-translate/dist/angular-translate.min.js"></script>
+    <script src="{{ STATIC_URL }}node_modules/angular-translate-loader-static-files/angular-translate-loader-static-files.min.js"></script>
+    <script src="{{ STATIC_URL }}node_modules/messageformat/messageformat.min.js"></script>
+    <script src="{{ STATIC_URL }}node_modules/angular-translate-interpolation-messageformat/angular-translate-interpolation-messageformat.min.js"></script>
+    <script src="{{ STATIC_URL }}node_modules/angular-sanitize/angular-sanitize.min.js"></script>
 
-    <script src="{{STATIC_URL}}node_modules/angular-ui-bootstrap/dist/ui-bootstrap-tpls.js"></script>
-    <script src="{{STATIC_URL}}node_modules/angular-ui-router/release/angular-ui-router.min.js"></script>
-    <script src="{{STATIC_URL}}node_modules/angular-ui-router.statehelper/statehelper.min.js"></script>
-    <script src="{{STATIC_URL}}node_modules/angular-ui-sortable/dist/sortable.min.js"></script>
+    <script src="{{ STATIC_URL }}node_modules/angular-ui-bootstrap/dist/ui-bootstrap-tpls.js"></script>
+    <script src="{{ STATIC_URL }}node_modules/angular-ui-router/release/angular-ui-router.min.js"></script>
+    <script src="{{ STATIC_URL }}node_modules/angular-ui-router.statehelper/statehelper.min.js"></script>
+    <script src="{{ STATIC_URL }}node_modules/angular-ui-sortable/dist/sortable.min.js"></script>
 
-    <script src="{{STATIC_URL}}node_modules/angular-ui-grid/ui-grid.min.js"></script>
-    <script src="{{STATIC_URL}}node_modules/ui-grid-draggable-rows/js/draggable-rows.js"></script>
-    <script src="{{STATIC_URL}}node_modules/terraformer/terraformer.js"></script>
-    <script src="{{STATIC_URL}}node_modules/terraformer-wkt-parser/terraformer-wkt-parser.min.js"></script>
+    <script src="{{ STATIC_URL }}node_modules/angular-ui-grid/ui-grid.min.js"></script>
+    <script src="{{ STATIC_URL }}node_modules/ui-grid-draggable-rows/js/draggable-rows.js"></script>
+    <script src="{{ STATIC_URL }}node_modules/terraformer/terraformer.js"></script>
+    <script src="{{ STATIC_URL }}node_modules/terraformer-wkt-parser/terraformer-wkt-parser.min.js"></script>
 
-    <script src="{{STATIC_URL}}node_modules/fine-uploader/all.fine-uploader/all.fine-uploader.core.min.js"></script>
-    <script src="{{STATIC_URL}}node_modules/moment/min/moment.min.js"></script>
+    <script src="{{ STATIC_URL }}node_modules/fine-uploader/all.fine-uploader/all.fine-uploader.core.min.js"></script>
+    <script src="{{ STATIC_URL }}node_modules/moment/min/moment.min.js"></script>
 
-    <script src="{{STATIC_URL}}node_modules/angular-xeditable/dist/js/xeditable.min.js"></script>
-    <script src="{{STATIC_URL}}node_modules/ng-tags-input/build/ng-tags-input.min.js"></script>
-    <script src="{{STATIC_URL}}node_modules/angular-ui-notification/dist/angular-ui-notification.min.js"></script>
+    <script src="{{ STATIC_URL }}node_modules/angular-xeditable/dist/js/xeditable.min.js"></script>
+    <script src="{{ STATIC_URL }}node_modules/ng-tags-input/build/ng-tags-input.min.js"></script>
+    <script src="{{ STATIC_URL }}node_modules/angular-ui-notification/dist/angular-ui-notification.min.js"></script>
 
-    <script src="{{STATIC_URL}}node_modules/angular-dragula/dist/angular-dragula.min.js"></script>
-    <script src="{{STATIC_URL}}node_modules/ng-focus-if/focusIf.min.js"></script>
+    <script src="{{ STATIC_URL }}node_modules/angular-dragula/dist/angular-dragula.min.js"></script>
+    <script src="{{ STATIC_URL }}node_modules/ng-focus-if/focusIf.min.js"></script>
 
-    <script src="{{STATIC_URL}}node_modules/ng-wig/dist/ng-wig.min.js"></script>
+    <script src="{{ STATIC_URL }}node_modules/ng-wig/dist/ng-wig.min.js"></script>
 
     <!-- include source files here... -->
     {% include "seed/_js_urls.html" %}
@@ -51,32 +51,32 @@
     {# all SEED js files #}
     {% include "seed/_scripts.html" %}
 
-    <script src="{{STATIC_URL}}seed/tests/admin_controller.spec.js"></script>
-    <script src="{{STATIC_URL}}seed/tests/create_sub_organization_modal_controller.spec.js"></script>
-    <script src="{{STATIC_URL}}seed/tests/data_quality_admin_controller.spec.js"></script>
-    <script src="{{STATIC_URL}}seed/tests/data_upload_modal_controller.spec.js"></script>
-    <script src="{{STATIC_URL}}seed/tests/dataset_detail_controller.spec.js"></script>
-    <script src="{{STATIC_URL}}seed/tests/dataset_list_controller.spec.js"></script>
-    <script src="{{STATIC_URL}}seed/tests/district.spec.js"></script>
-    <script src="{{STATIC_URL}}seed/tests/fromNow.spec.js"></script>
-    <script src="{{STATIC_URL}}seed/tests/ignoremap.spec.js"></script>
-    <script src="{{STATIC_URL}}seed/tests/inventory_detail_controller.spec.js"></script>
-    <script src="{{STATIC_URL}}seed/tests/inventory_service.spec.js"></script>
-    <script src="{{STATIC_URL}}seed/tests/mapping_controller.spec.js"></script>
-    <script src="{{STATIC_URL}}seed/tests/members_controller.spec.js"></script>
-    <script src="{{STATIC_URL}}seed/tests/menu_controller.spec.js"></script>
-    <script src="{{STATIC_URL}}seed/tests/new_member_modal_controller.spec.js"></script>
-    <script src="{{STATIC_URL}}seed/tests/property_detail_controller.spec.js"></script>
-    <script src="{{STATIC_URL}}seed/tests/sdLabel.spec.js"></script>
-    <script src="{{STATIC_URL}}seed/tests/sdUploader.spec.js"></script>
-    <script src="{{STATIC_URL}}seed/tests/search_service.spec.js"></script>
-    <script src="{{STATIC_URL}}seed/tests/settings_controller.spec.js"></script>
-    <script src="{{STATIC_URL}}seed/tests/stripImportPrefix.spec.js"></script>
-    <script src="{{STATIC_URL}}seed/tests/taxlot_detail_controller.spec.js"></script>
-    <script src="{{STATIC_URL}}seed/tests/titleCase.spec.js"></script>
-    <script src="{{STATIC_URL}}seed/tests/update_item_labels_controller.spec.js"></script>
+    <script src="{{ STATIC_URL }}seed/tests/admin_controller.spec.js"></script>
+    <script src="{{ STATIC_URL }}seed/tests/create_sub_organization_modal_controller.spec.js"></script>
+    <script src="{{ STATIC_URL }}seed/tests/data_quality_admin_controller.spec.js"></script>
+    <script src="{{ STATIC_URL }}seed/tests/data_upload_modal_controller.spec.js"></script>
+    <script src="{{ STATIC_URL }}seed/tests/dataset_detail_controller.spec.js"></script>
+    <script src="{{ STATIC_URL }}seed/tests/dataset_list_controller.spec.js"></script>
+    <script src="{{ STATIC_URL }}seed/tests/district.spec.js"></script>
+    <script src="{{ STATIC_URL }}seed/tests/fromNow.spec.js"></script>
+    <script src="{{ STATIC_URL }}seed/tests/ignoremap.spec.js"></script>
+    <script src="{{ STATIC_URL }}seed/tests/inventory_detail_controller.spec.js"></script>
+    <script src="{{ STATIC_URL }}seed/tests/inventory_service.spec.js"></script>
+    <script src="{{ STATIC_URL }}seed/tests/mapping_controller.spec.js"></script>
+    <script src="{{ STATIC_URL }}seed/tests/members_controller.spec.js"></script>
+    <script src="{{ STATIC_URL }}seed/tests/menu_controller.spec.js"></script>
+    <script src="{{ STATIC_URL }}seed/tests/new_member_modal_controller.spec.js"></script>
+    <script src="{{ STATIC_URL }}seed/tests/property_detail_controller.spec.js"></script>
+    <script src="{{ STATIC_URL }}seed/tests/sdLabel.spec.js"></script>
+    <script src="{{ STATIC_URL }}seed/tests/sdUploader.spec.js"></script>
+    <script src="{{ STATIC_URL }}seed/tests/search_service.spec.js"></script>
+    <script src="{{ STATIC_URL }}seed/tests/settings_controller.spec.js"></script>
+    <script src="{{ STATIC_URL }}seed/tests/stripImportPrefix.spec.js"></script>
+    <script src="{{ STATIC_URL }}seed/tests/taxlot_detail_controller.spec.js"></script>
+    <script src="{{ STATIC_URL }}seed/tests/titleCase.spec.js"></script>
+    <script src="{{ STATIC_URL }}seed/tests/update_item_labels_controller.spec.js"></script>
 
-    <script src="{{STATIC_URL}}seed/tests/run_jasmine.js"></script>
+    <script src="{{ STATIC_URL }}seed/tests/run_jasmine.js"></script>
   </head>
 
   <body></body>

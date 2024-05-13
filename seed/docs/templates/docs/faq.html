@@ -1,8 +1,5 @@
 {% extends "seed/base.html" %}{% load compress %}
 
-{% block js %}{{ block.super }}
-{% endblock %}
-
 {% block content %}
 <div ng-controller="menu_controller" class="ng-cloak">
   {% include "seed/_sidebar.html" %}
