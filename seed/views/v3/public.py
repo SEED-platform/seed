@@ -1,14 +1,11 @@
-import json
 from django.http import HttpResponse, JsonResponse
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny
-from collections import OrderedDict
 
 
 from seed.models import Cycle, Organization
-from seed.utils.public import PUBLIC_HTML_DISABLED, PUBLIC_HTML_HEADER, PUBLIC_HTML_STYLE, dict_to_table, page_navigation_link, public_feed
-from seed.views.v3.tax_lot_properties import TaxLotPropertyViewSet
+from seed.utils.public import PUBLIC_HTML_DISABLED, PUBLIC_HTML_HEADER, PUBLIC_HTML_STYLE, dict_to_table, page_navigation_link, public_feed, public_geojson
 
 class PublicOrganizationViewSet(viewsets.ViewSet):
     """
@@ -159,15 +156,6 @@ class PublicCycleViewSet(viewsets.ViewSet):
                 }
             )
 
-        feed = public_feed(org, request, "geojson")
-        
-        title = f"Cycle {cycle.id} Public GeoJSON"
-        data = feed['data']['properties']
-        key_mappings = OrderedDict([])
-        for key in feed['data']['properties'][0].keys():
-            key_mappings.update({key: key})
-        
-        viewset = TaxLotPropertyViewSet()
-        geojson = viewset._json_response(title, data, key_mappings)
+        geojson = public_geojson(org, cycle, request)
 
         return JsonResponse(geojson, json_dumps_params={"indent": 4}, status=status.HTTP_200_OK)

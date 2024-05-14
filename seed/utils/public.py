@@ -4,12 +4,14 @@ from django.db.models import Q
 from functools import reduce
 from operator import or_
 import pint
+from collections import OrderedDict
 from django.core.paginator import EmptyPage, Paginator
 from django.db.models.functions import Lower
 
 from seed.models import Column, PropertyState, TaxLotState
 from seed.utils.geocode import bounding_box_wkt, long_lat_wkt
 from seed.utils.ubid import centroid_wkt
+from seed.views.v3.tax_lot_properties import TaxLotPropertyViewSet
 
 
 def public_feed(org, request, endpoint="feed"):
@@ -337,3 +339,25 @@ PUBLIC_HTML_STYLE = """
 
             }
         """
+
+def public_geojson(org, cycle, request):
+    params = request.query_params
+    taxlots_only = params.get("taxlots", "false").lower() == "true"
+
+    feed = public_feed(org, request, "geojson")
+    
+    title = f"Cycle {cycle.id} Public GeoJSON"
+
+    if taxlots_only:
+        data = feed['data']['taxlots']
+    else:
+        data = feed['data']['properties']
+
+    key_mappings = OrderedDict([])
+    for key in data[0].keys():
+        key_mappings.update({key: key})
+    
+    viewset = TaxLotPropertyViewSet()
+    geojson = viewset._json_response(title, data, key_mappings)
+
+    return geojson
