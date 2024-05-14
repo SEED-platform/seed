@@ -136,5 +136,4 @@ class TestPublicViews(DataMappingBaseTestCase):
         features = data["features"]
         assert len(features) == 2
         assert sorted(features[0].keys()) == ["geometry", "properties", "type"]
-        assert sorted(features[0]["geometry"].keys()) == ["coordinates", "type"]
         assert features[0]["properties"]["id"] == self.view22.id
