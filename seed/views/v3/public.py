@@ -49,7 +49,9 @@ class PublicOrganizationViewSet(viewsets.ViewSet):
 
         if not org.public_feed_enabled:
             return JsonResponse(
-                {"detail": f"Public feed is not enabled for organization '{org.name}'. Public endpoints can be enabled in organization settings"}
+                {
+                    "detail": f"Public feed is not enabled for organization '{org.name}'. Public endpoints can be enabled in organization settings"
+                }
             )
         cycles = get_request_cycles(org, request)
         feed = public_feed(org, request, cycles)

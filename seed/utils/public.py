@@ -53,7 +53,7 @@ def public_feed(org, request, cycles, endpoint="feed"):
         organization = {"organization_id": org.id, "organization_name": org.name}
     else:
         organization = {"id": org.id, "name": org.name}
-    
+
     if properties_param:
         pagination["property_count"] = p_count
     if taxlots_param:
@@ -163,7 +163,8 @@ def _get_int(value, default):
         return result if result > 0 else default
     except (ValueError, TypeError):
         return default
-    
+
+
 def get_request_cycles(org, request):
     params = request.query_params
     cycles = params.get("cycles", None)
@@ -172,6 +173,7 @@ def get_request_cycles(org, request):
     else:
         cycles = list(org.cycles.values_list("id", flat=True))
     return cycles
+
 
 def dict_to_table(data, title, params):
     if not len(data):
