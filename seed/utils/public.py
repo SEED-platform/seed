@@ -15,7 +15,7 @@ from seed.utils.ubid import centroid_wkt
 from seed.views.v3.tax_lot_properties import TaxLotPropertyViewSet
 
 
-def public_feed(org, request, endpoint="feed"):
+def public_feed(org, request, cycles, endpoint="feed"):
     """
     Format all property and taxlot state data to be displayed on a public feed
     """
@@ -31,11 +31,6 @@ def public_feed(org, request, endpoint="feed"):
         labels = params.get("labels", None)
         if labels is not None:
             labels = labels.split(",")
-    cycles = params.get("cycles", None)
-    if cycles is not None:
-        cycles = cycles.split(",")
-    else:
-        cycles = list(org.cycles.values_list("id", flat=True))
 
     data = {}
     p_count = 0
@@ -53,11 +48,12 @@ def public_feed(org, request, endpoint="feed"):
         "total_pages": int(max(p_count, t_count) / per_page) + 1,
         "per_page": per_page,
     }
-    if endpoint == "html":
-        organization = {"id": org.id, "name": org.name}
-    else:
-        organization = {"organization_id": org.id, "organization_name": org.name}
 
+    if endpoint == "html":
+        organization = {"organization_id": org.id, "organization_name": org.name}
+    else:
+        organization = {"id": org.id, "name": org.name}
+    
     if properties_param:
         pagination["property_count"] = p_count
     if taxlots_param:
@@ -167,7 +163,15 @@ def _get_int(value, default):
         return result if result > 0 else default
     except (ValueError, TypeError):
         return default
-
+    
+def get_request_cycles(org, request):
+    params = request.query_params
+    cycles = params.get("cycles", None)
+    if cycles is not None:
+        cycles = cycles.split(",")
+    else:
+        cycles = list(org.cycles.values_list("id", flat=True))
+    return cycles
 
 def dict_to_table(data, title, params):
     if not len(data):
@@ -344,7 +348,7 @@ def public_geojson(org, cycle, request):
     params = request.query_params
     taxlots_only = params.get("taxlots", "false").lower() == "true"
 
-    feed = public_feed(org, request, "geojson")
+    feed = public_feed(org, request, [cycle.id], "geojson")
 
     title = f"Cycle {cycle.id} Public GeoJSON"
 

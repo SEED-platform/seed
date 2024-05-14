@@ -9,6 +9,7 @@ from seed.utils.public import (
     PUBLIC_HTML_HEADER,
     PUBLIC_HTML_STYLE,
     dict_to_table,
+    get_request_cycles,
     page_navigation_link,
     public_feed,
     public_geojson,
@@ -48,10 +49,10 @@ class PublicOrganizationViewSet(viewsets.ViewSet):
 
         if not org.public_feed_enabled:
             return JsonResponse(
-                {"detail": f"Public feed is not enabled for organization '{org.name}'. Public feed can be enabled in organization settings"}
+                {"detail": f"Public feed is not enabled for organization '{org.name}'. Public endpoints can be enabled in organization settings"}
             )
-
-        feed = public_feed(org, request)
+        cycles = get_request_cycles(org, request)
+        feed = public_feed(org, request, cycles)
         return JsonResponse(feed, json_dumps_params={"indent": 4}, status=status.HTTP_200_OK)
 
     @action(detail=True, methods=["get"], url_path="feed.html")
@@ -83,7 +84,8 @@ class PublicOrganizationViewSet(viewsets.ViewSet):
 
         query_params = request.GET.copy()
         base_url = f"/api/v3/public/organizations/{pk}/feed.html"
-        data = public_feed(org, request, "html")
+        cycles = get_request_cycles(org, request)
+        data = public_feed(org, request, cycles, "html")
 
         page_header = f"""
             <div class="page_title">
