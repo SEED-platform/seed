@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('orgs', '0032_organization_public_feed'),
+        ("orgs", "0032_organization_public_feed"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='organization',
-            name='public_geojson_enabled',
+            model_name="organization",
+            name="public_geojson_enabled",
             field=models.BooleanField(default=False),
         ),
     ]

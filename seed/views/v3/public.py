@@ -3,9 +3,17 @@ from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny
 
-
 from seed.models import Cycle, Organization
-from seed.utils.public import PUBLIC_HTML_DISABLED, PUBLIC_HTML_HEADER, PUBLIC_HTML_STYLE, dict_to_table, page_navigation_link, public_feed, public_geojson
+from seed.utils.public import (
+    PUBLIC_HTML_DISABLED,
+    PUBLIC_HTML_HEADER,
+    PUBLIC_HTML_STYLE,
+    dict_to_table,
+    page_navigation_link,
+    public_feed,
+    public_geojson,
+)
+
 
 class PublicOrganizationViewSet(viewsets.ViewSet):
     """

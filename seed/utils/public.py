@@ -1,11 +1,12 @@
 import datetime
-from urllib.parse import urlencode
-from django.db.models import Q
+from collections import OrderedDict
 from functools import reduce
 from operator import or_
+from urllib.parse import urlencode
+
 import pint
-from collections import OrderedDict
 from django.core.paginator import EmptyPage, Paginator
+from django.db.models import Q
 from django.db.models.functions import Lower
 
 from seed.models import Column, PropertyState, TaxLotState
@@ -52,7 +53,7 @@ def public_feed(org, request, endpoint="feed"):
         "total_pages": int(max(p_count, t_count) / per_page) + 1,
         "per_page": per_page,
     }
-    if not endpoint != "html":
+    if endpoint == "html":
         organization = {"id": org.id, "name": org.name}
     else:
         organization = {"organization_id": org.id, "organization_name": org.name}
@@ -92,13 +93,14 @@ def _add_states_to_data(base_url, state_class, view_string, page, per_page, labe
     # selected public columns are tagged with shared_field_type = 1
     queries = [Q(shared_field_type=1)]
     # if geojson endpoint, include polygon fields
-    if endpoint == 'geojson':
+    if endpoint == "geojson":
         polygon_fields = ["bounding_box", "centroid", "property_footprint", "taxlot_footprint", "long_lat"]
         queries.append(Q(column_name__in=polygon_fields))
     # combine queries with 'or'
     queries = reduce(or_, queries)
 
-    public_columns = (base_query.filter(queries)
+    public_columns = (
+        base_query.filter(queries)
         .annotate(column_name_lower=Lower("column_name"))
         .order_by("column_name_lower")
         .values_list("column_name", "is_extra_data")
@@ -126,14 +128,13 @@ def _add_states_to_data(base_url, state_class, view_string, page, per_page, labe
 
             state_data[name] = value
 
-        
         json_link = f'{base_url}api/v3/{"properties" if type(state) == PropertyState else "taxlots"}/{view.id}/?organization_id={view.cycle.organization.id}'
         html_link = f'{base_url}app/#/{"properties" if type(state) == PropertyState else "taxlots"}/{view.id}'
 
         # /geo.json
         if endpoint == "geojson":
-            state_data["cycle_id"] = view.cycle.id 
-            state_data["cycle_name"] = view.cycle.name 
+            state_data["cycle_id"] = view.cycle.id
+            state_data["cycle_name"] = view.cycle.name
             state_data["bounding_box"] = bounding_box_wkt(state)
             state_data["long_lat"] = long_lat_wkt(state)
             state_data["centroid"] = centroid_wkt(state)
@@ -155,8 +156,6 @@ def _add_states_to_data(base_url, state_class, view_string, page, per_page, labe
             {"updated": state.updated.strftime("%Y/%m/%d, %H:%M:%S"), "created": state.created.strftime("%Y/%m/%d, %H:%M:%S")}
         )
 
-
-    
         data.append(state_data)
 
     return data, len(states)
@@ -340,23 +339,24 @@ PUBLIC_HTML_STYLE = """
             }
         """
 
+
 def public_geojson(org, cycle, request):
     params = request.query_params
     taxlots_only = params.get("taxlots", "false").lower() == "true"
 
     feed = public_feed(org, request, "geojson")
-    
+
     title = f"Cycle {cycle.id} Public GeoJSON"
 
     if taxlots_only:
-        data = feed['data']['taxlots']
+        data = feed["data"]["taxlots"]
     else:
-        data = feed['data']['properties']
+        data = feed["data"]["properties"]
 
     key_mappings = OrderedDict([])
-    for key in data[0].keys():
+    for key in data[0]:
         key_mappings.update({key: key})
-    
+
     viewset = TaxLotPropertyViewSet()
     geojson = viewset._json_response(title, data, key_mappings)
 
