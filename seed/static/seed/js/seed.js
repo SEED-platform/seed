@@ -38,6 +38,7 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.analysis',
   'BE.seed.controller.analysis_details',
   'BE.seed.controller.analysis_run',
+  'BE.seed.controller.at_submission_import_modal',
   'BE.seed.controller.column_mapping_profile_modal',
   'BE.seed.controller.column_mappings',
   'BE.seed.controller.column_settings',
@@ -1175,6 +1176,14 @@ SEED_app.config([
             (salesforce_config_service, $stateParams) => {
               const { organization_id } = $stateParams;
               return salesforce_config_service.get_salesforce_configs(organization_id);
+            }
+          ],
+          audit_template_configs_payload: [
+            'audit_template_service',
+            '$stateParams',
+            (audit_template_service, $stateParams) => {
+              const { organization_id } = $stateParams;
+              return audit_template_service.get_audit_template_configs(organization_id);
             }
           ],
           auth_payload: [

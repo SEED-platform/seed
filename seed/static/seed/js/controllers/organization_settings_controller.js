@@ -7,6 +7,7 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
   '$uibModal',
   'urls',
   'organization_payload',
+  'audit_template_service',
   'auth_payload',
   'analyses_service',
   'organization_service',
@@ -17,6 +18,7 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
   'labels_payload',
   'salesforce_mappings_payload',
   'salesforce_configs_payload',
+  'audit_template_configs_payload',
   'meters_service',
   'Notification',
   '$translate',
@@ -26,6 +28,7 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
     $uibModal,
     urls,
     organization_payload,
+    audit_template_service,
     auth_payload,
     analyses_service,
     organization_service,
@@ -36,6 +39,7 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
     labels_payload,
     salesforce_mappings_payload,
     salesforce_configs_payload,
+    audit_template_configs_payload,
     meters_service,
     Notification,
     $translate
@@ -45,6 +49,11 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
     $scope.conf = {};
     if (salesforce_configs_payload.length > 0) {
       $scope.conf = salesforce_configs_payload[0];
+    }
+
+    $scope.at_conf = {};
+    if (audit_template_configs_payload.length > 0) {
+      $scope.at_conf = audit_template_configs_payload[0];
     }
 
     $scope.timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -298,6 +307,14 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
         }
       }
 
+      if ($scope.org.audit_template_sync_enabled && validate_at_conf()) {
+        audit_template_service.upsert_audit_template_config($scope.org.id, $scope.at_conf, $scope.timezone)
+          .then(() => {
+            audit_template_service.get_audit_template_configs($scope.org.id)
+              .then((response) => { $scope.at_conf = response[0]; });
+          });
+      }
+
       // also save NEW/UPDATED salesforce mappings if any
       const promises = [];
       if ($scope.changes_possible) {
@@ -474,6 +491,45 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
             $scope.test_sf_msg = 'Unknown Error';
           }
         });
+    };
+
+    /*
+    * fetch Audit Template city submission data
+    */
+    $scope.get_city_submission_data = () => {
+      $uibModal.open({
+        templateUrl: `${urls.static_url}seed/partials/at_submission_import_modal.html`,
+        controller: 'at_submission_import_modal_controller',
+        backdrop: 'static',
+        resolve: {
+          org: () => $scope.org
+        }
+      });
+    };
+
+    $scope.days_of_week = [
+      { 0: 'Sunday' },
+      { 1: 'Monday' },
+      { 2: 'Tuesday' },
+      { 3: 'Wednesday' },
+      { 4: 'Thursday' },
+      { 5: 'Friday' },
+      { 6: 'Saturday' }
+    ];
+
+    $scope.reset_at_update = () => {
+      $scope.at_conf = $scope.at_conf.id ? { id: $scope.at_conf.id } : {};
+    };
+    const validate_at_conf = () => {
+      const { update_at_day, update_at_hour, update_at_minute } = $scope.at_conf;
+
+      const validate_input = (input, upper_limit) => typeof input === 'number' && input >= 0 && input <= upper_limit;
+
+      return (
+        validate_input(update_at_day, 6) &&
+        validate_input(update_at_hour, 23) &&
+        validate_input(update_at_minute, 59)
+      );
     };
 
     $scope.audit_template_report_types = [
