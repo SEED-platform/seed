@@ -173,7 +173,7 @@ class AuditTemplate:
         headers = {"accept": "application/xml"}
         url = f"{self.API_URL}/rp/cities/{city_id}?token={self.token}"
         # stauts options are: 'Received', 'Pending', 'Rejected', 'Complies'
-        params = {'status': 'Received'}
+        params = {"status": "Received"}
         try:
             response = requests.request("GET", url, headers=headers, params=params)
             if response.status_code != 200:
@@ -464,12 +464,10 @@ def _batch_get_city_submission_xml(org_id, city_id, progress_key):
     # filtering by custom_id and 'updated_at' will require looping through results to query views
 
     xml_data_by_cycle = {}
-    logging.error('>>> Number of Submissions %s', len(submissions))
     for sub in submissions:
         custom_id = sub["tax_id"]
         created_at = parser.parse(sub["created_at"])
         updated_at = parser.parse(sub["updated_at"])
-        logging.error('>>> created at %s', created_at)
 
         view = PropertyView.objects.filter(
             property__organization=org_id,
@@ -482,7 +480,6 @@ def _batch_get_city_submission_xml(org_id, city_id, progress_key):
 
         progress_data.step("Getting XML for submissions...")
         if view:
-            logging.error('>>> custom_id: %s - view: %s - cycle: %s', custom_id, view, view.cycle.name)
             xml, _ = audit_template.get_submission(sub["id"], "xml")
 
             if hasattr(xml, "text"):
