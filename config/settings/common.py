@@ -145,7 +145,6 @@ COMPRESS_FILTERS = {
     ],
 }
 COMPRESS_PRECOMPILERS = (("text/x-scss", "npx sass {infile} {outfile}"),)
-COMPRESS_STORAGE = "compressor.storage.BrotliCompressorFileStorage"
 
 STATIC_URL = "/static/"
 STATIC_ROOT = os.path.join(BASE_DIR, "collected_static")

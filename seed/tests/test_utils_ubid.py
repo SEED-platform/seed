@@ -13,7 +13,7 @@ from seed.models.tax_lots import TaxLotState
 from seed.test_helpers.fake import FakePropertyStateFactory, FakeTaxLotStateFactory
 from seed.utils.geocode import bounding_box_wkt, wkt_to_polygon
 from seed.utils.organizations import create_organization
-from seed.utils.ubid import centroid_wkt, decode_unique_ids
+from seed.utils.ubid import centroid_wkt, decode_unique_ids, ubid_jaccard, valid_pluscode
 
 
 class UbidSpecificWktMethods(TestCase):
@@ -203,3 +203,12 @@ class UbidUtilMethods(TestCase):
 
         self.assertIsNone(bounding_box_wkt(refreshed_taxlot))
         self.assertIsNone(centroid_wkt(refreshed_taxlot))
+
+    def test_valid_pluscode(self):
+        self.assertTrue(valid_pluscode("85FPPRRH+9HR-25-30-27-39"))
+        self.assertTrue(valid_pluscode("XX5JJC23+23"))
+        self.assertFalse(valid_pluscode("XX5JJC23+0025"))
+
+    def test_ubid_jaccard(self):
+        jaccard = ubid_jaccard("85FPPRRH+9G7-26-30-26-38", "85FPPRRH+9HR-25-30-27-39")
+        self.assertAlmostEqual(jaccard, 0.8650632911251763)
