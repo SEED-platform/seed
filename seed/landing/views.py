@@ -181,5 +181,5 @@ class CustomLoginView(LoginView):
 
     def get(self, request, *args, **kwargs):
         # add env var to session for conditional frontend display
-        request.session['include_acct_reg'] = settings.INCLUDE_ACCT_REG
+        request.session["include_acct_reg"] = settings.INCLUDE_ACCT_REG
         return super().get(request, *args, **kwargs)
