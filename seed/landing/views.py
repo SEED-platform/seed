@@ -26,7 +26,7 @@ from two_factor.views.core import LoginView
 from seed.landing.models import SEEDUser
 from seed.tasks import invite_new_user_to_seed
 
-from .forms import CustomCreateUserForm, LoginForm
+from .forms import CustomCreateUserForm
 
 logger = logging.getLogger(__name__)
 
@@ -34,46 +34,8 @@ logger = logging.getLogger(__name__)
 def landing_page(request):
     if request.user.is_authenticated:
         return HttpResponseRedirect(reverse("seed:home"))
-
-    if request.method == "POST":
-        redirect_to = request.POST.get("next", request.GET.get("next", False))
-        if not redirect_to:
-            redirect_to = reverse("seed:home")
-
-        form = LoginForm(request.POST)
-        if form.is_valid():
-            new_user = authenticate(username=form.cleaned_data["email"].lower(), password=form.cleaned_data["password"])
-            if new_user is not None and new_user.is_active:
-                request.session["auth_user_id"] = new_user.pk
-                return redirect("two_factor:login")
-                # login(request, new_user)
-                # return HttpResponseRedirect(redirect_to)
-            else:
-                errors = ErrorList()
-                errors = form._errors.setdefault(NON_FIELD_ERRORS, errors)
-                errors.append("Username and/or password were invalid.")
-                logger.error(f"User login failed: {form.cleaned_data['email']}")
-
-    elif request.path == "/accounts/login/":
-        return redirect("two_factor:login")
-
     else:
-        form = LoginForm()
-
-    request.user = {"first_name": "", "last_name": "", "email": ""}
-    return render(
-        request,
-        "landing/home.html",
-        {
-            "context": {"self_registration": settings.INCLUDE_ACCT_REG},
-            "debug": settings.DEBUG,
-            "initial_org_id": 0,
-            "initial_org_user_role": 0,
-            "initial_org_name": "",
-            "login_form": form,
-            "username": "",
-        },
-    )
+        return redirect("two_factor:login")
 
 
 def password_set(request, uidb64=None, token=None):
@@ -112,7 +74,7 @@ def signup(request, uidb64=None, token=None):
         uidb64=uidb64,
         token=token,
         set_password_form=SetPasswordForm,
-        post_reset_redirect=reverse("landing:landing_page") + "?setup_complete",
+        post_reset_redirect=reverse("landing:login") + "?setup_complete",
     )
 
 

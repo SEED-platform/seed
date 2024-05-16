@@ -23,7 +23,6 @@ urlpatterns = [
     re_path(r"^$", landing_page, name="landing_page"),
     re_path(r"^accounts/login/$", landing_page, name="login"),
     re_path(r"^accounts/logout/$", LogoutView.as_view(next_page="/"), name="logout"),
-    # re_path(r"^accounts/logout/$", logout_then_login, name="logout"),
     re_path(r"^accounts/password/reset/$", password_reset, name="password_reset"),
     re_path(r"^accounts/password/reset/done/$", password_reset_done, name="password_reset_done"),
     re_path(
