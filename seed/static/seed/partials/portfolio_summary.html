@@ -73,25 +73,25 @@
       <div style="display: flex">
         <div uib-dropdown class="goal-actions-dropdown" ng-if="!viewer">
           <button id="btnCreateNew" type="button" class="btn actions-toggle" uib-dropdown-toggle>
-            <span>Actions</span>
+            <span translate>Actions</span>
             <i class="fa-solid fa-chevron-down"></i>
           </button>
           <ul uib-dropdown-menu class="dropdown-menu" role="menu">
             <li class="drowndown-header goal-action">
-              <a ng-if="selected_count !== inventory_pagination.total" ng-click="select_all()">Select All</a>
-              <span ng-if="selected_count === inventory_pagination.total" class="disabled-action">Select All</span>
+              <a ng-if="selected_count !== inventory_pagination.total" ng-click="select_all()" translate>Select All</a>
+              <span ng-if="selected_count === inventory_pagination.total" class="disabled-action" translate>Select All</span>
             </li>
             <li class="drowndown-header goal-action">
-              <a ng-if="!selected_count < 1" ng-click="select_none()">Select None</a>
-              <span ng-if="selected_count < 1" class="disabled-action">Select None</span>
+              <a ng-if="!selected_count < 1" ng-click="select_none()" translate>Select None</a>
+              <span ng-if="selected_count < 1" class="disabled-action" translate>Select None</span>
             </li>
             <li class="drowndown-header goal-action">
-              <a ng-if="!selected_count < 1" ng-click="open_update_labels_modal()">Add/Remove Labels</a>
-              <span ng-if="selected_count < 1" class="disabled-action">Add/Remove Labels</span>
+              <a ng-if="!selected_count < 1" ng-click="open_update_labels_modal()" translate>Add/Remove Labels</a>
+              <span ng-if="selected_count < 1" class="disabled-action" translate>Add/Remove Labels</span>
             </li>
             <li class="drowndown-header goal-action">
-              <a ng-if="!selected_count < 1" ng-click="open_bulk_edit_goalnotes_modal()">Edit Selected Notes</a>
-              <span ng-if="selected_count < 1" class="disabled-action">Edit Selected Note</span>
+              <a ng-if="!selected_count < 1" ng-click="open_bulk_edit_goalnotes_modal()" translate>Edit Fields for Selected</a>
+              <span ng-if="selected_count < 1" class="disabled-action" translate>Edit Fields for Selected</span>
             </li>
             <li class="drowndown-header goal-action">
               <a ng-if="!level_names.count < 2" ng-click="toggle_show_access_level_instances()">{$ show_access_level_instances ? 'Hide': 'Show' $} Access Levels</a>
@@ -123,7 +123,7 @@
     </div>
   </div>
   <div class="portfolio-summary-loading" ng-if="data_loading && !data_valid" style="margin: 100px 20px">
-    <h4>Loading Data...</h4>
+    <h4 translate>Loading data...</h4>
     <uib-progress class="progress-striped active">
       <uib-bar value="100" type="info"></uib-bar>
     </uib-progress>

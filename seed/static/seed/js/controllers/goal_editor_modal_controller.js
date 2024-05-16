@@ -106,7 +106,7 @@ angular.module('BE.seed.controller.goal_editor_modal', [])
           }
         })
           .catch((response) => {
-            const message = response.data.message || 'Unexpeted Error';
+            const message = response.data.message || 'Unexpected Error';
             Notification.error(message);
           });
       };

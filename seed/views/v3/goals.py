@@ -126,7 +126,7 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
     @has_perm_class("requires_member")
     @action(detail=True, methods=["PUT"])
     def bulk_update_goal_notes(self, request, pk):
-        """Bulk updates GoalNotes for a given goal and property view ids"""
+        """Bulk updates Goal-related fields for a given goal and property view ids"""
         org_id = self.get_organization(request)
         try:
             goal = Goal.objects.get(pk=pk, organization=org_id)
@@ -148,4 +148,4 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
             data = get_permission_data(data, request.access_level_instance_id)
             result = goal_notes.update(**data)
 
-        return JsonResponse({"status": "success", "message": f"Updated {result} GoalNotes"})
+        return JsonResponse({"status": "success", "message": f"Updated {result} properties"})
