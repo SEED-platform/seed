@@ -31,7 +31,7 @@
             <div style="padding-bottom: 2em">
               <input class="btn btn-primary" type="submit"
                      value="{% block password_submit %}{% trans "Create my account" %}{% endblock %}">
-              <a href="{% url "landing:landing_page" %}" type="submit"
+              <a href="{% url "landing:login" %}" type="submit"
                  class="btn btn-cancel btn-default">{% trans "Cancel" %}</a>
             </div>
           </form>
