@@ -73,9 +73,8 @@
     {% include "two_factor/_wizard_actions.html" %}
     {% endblock %}
     {% if wizard.steps.current == 'auth' %}
-    
-    <a class="forgot_password" href="{% url "landing:password_reset" %}">{% trans "Forgot password?" %}</a>
 
+    <a class="forgot_password" href="{% url "landing:password_reset" %}">{% trans "Forgot password?" %}</a>
 
     {% endif %}
   </form>

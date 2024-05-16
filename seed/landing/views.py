@@ -10,7 +10,7 @@ import urllib
 
 from django.conf import settings
 from django.contrib import auth
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import login
 from django.contrib.auth.forms import SetPasswordForm
 from django.contrib.auth.tokens import default_token_generator
 from django.forms.forms import NON_FIELD_ERRORS

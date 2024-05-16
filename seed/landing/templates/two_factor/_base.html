@@ -347,10 +347,10 @@
         var baseUrl = "{% url 'seed:home' %}";
         var currentHash = window.location.hash; // Get the current URL fragment (e.g., "#/properties")
         var fullUrl = baseUrl + currentHash; // Append the fragment to the base URL
-        var element = document.getElementById("seed-home-link"); 
+        var element = document.getElementById("seed-home-link");
         if (element) {
           element.href = fullUrl; // Set the full URL to the link
-        } 
+        }
       });
   </script>
 </body>
