@@ -4,25 +4,41 @@
  *
  * run_jasmine.js: runs the jasmine JS test runner
  */
-(function () {
-  const jasmineEnv = jasmine.getEnv();
-  jasmineEnv.updateInterval = 1000;
+const puppeteer = require('puppeteer');
 
-  const htmlReporter = new jasmine.HtmlReporter();
+(async () => {
+  // Launch a headless browser
+  const browser = await puppeteer.launch();
+  const page = await browser.newPage();
 
-  jasmineEnv.addReporter(htmlReporter);
+  // Navigate to the Jasmine SpecRunner
+  await page.goto('http://localhost:8000/angular_js_tests/');
 
-  jasmineEnv.specFilter = (spec) => htmlReporter.specFilter(spec);
+  // Wait for Jasmine to finish running the tests
+  await page.waitForFunction('window.jasmine.getEnv().currentRunner().queue.running === false');
 
-  const currentWindowOnload = window.onload;
+  // Extract the test results
+  const result = await page.evaluate(() => {
+    const results = window.jasmine.getEnv().currentRunner().results();
+    return {
+      passed: results.failedCount === 0,
+      failedCount: results.failedCount,
+      passedCount: results.passedCount,
+      totalCount: results.totalCount
+    };
+  });
 
-  window.onload = function () {
-    if (currentWindowOnload) {
-      currentWindowOnload();
-    }
-    execJasmine();
-  };
-  function execJasmine() {
-    jasmineEnv.execute();
+  console.log(`Total tests: ${result.totalCount}`);
+  console.log(`Passed tests: ${result.passedCount}`);
+  console.log(`Failed tests: ${result.failedCount}`);
+
+  await browser.close();
+
+  if (result.passed) {
+    console.log('All tests passed!');
+    process.exit(0);
+  } else {
+    console.log('Some tests failed.');
+    process.exit(1);
   }
-}());
+})();

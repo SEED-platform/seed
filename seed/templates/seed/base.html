@@ -46,70 +46,7 @@
 
   {% block js %}
     {% compress js file vendors %}
-      <script src="{{ STATIC_URL }}node_modules/jquery/dist/jquery.min.js"></script>
-      <script src="{{ STATIC_URL }}node_modules/jquery-ui-dist/jquery-ui.min.js"></script>
-      <script src="{{ STATIC_URL }}node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
-
-      <script src="{{ STATIC_URL }}node_modules/lodash/lodash.min.js"></script>
-      <script src="{{ STATIC_URL }}node_modules/moment/min/moment.min.js"></script>
-      <script src="{{ STATIC_URL }}node_modules/moment/locale/fr.js"></script>
-
-      {% if not debug %}
-        <script src="{{ STATIC_URL }}node_modules/angular/angular.min.js"></script>
-      {% else %}
-        <script src="{{ STATIC_URL }}node_modules/angular/angular.js"></script>
-      {% endif %}
-      <script src="{{ STATIC_URL }}node_modules/angular-animate/angular-animate.min.js"></script>
-      <script src="{{ STATIC_URL }}node_modules/angular-aria/angular-aria.min.js"></script>
-      <script src="{{ STATIC_URL }}node_modules/angular-cookies/angular-cookies.min.js"></script>
-      <script src="{{ STATIC_URL }}node_modules/angular-ui-router/release/angular-ui-router.min.js"></script>
-      <script src="{{ STATIC_URL }}node_modules/angular-ui-router.statehelper/statehelper.min.js"></script>
-
-      <script src="{{ STATIC_URL }}node_modules/angular-ui-bootstrap/dist/ui-bootstrap-tpls.js"></script>
-      <script src="{{ STATIC_URL }}node_modules/angular-ui-grid/ui-grid.min.js"></script>
-      <script src="{{ STATIC_URL }}node_modules/ui-grid-draggable-rows/js/draggable-rows.js"></script>
-      <script src="{{ STATIC_URL }}node_modules/angular-ui-sortable/dist/sortable.min.js"></script>
-      <script src="{{ STATIC_URL }}node_modules/angular-dragula/dist/angular-dragula.min.js"></script>
-      <script src="{{ STATIC_URL }}node_modules/ng-focus-if/focusIf.min.js"></script>
-      <script src="{{ STATIC_URL }}node_modules/file-saver/dist/FileSaver.min.js"></script>
-      <script src="{{ STATIC_URL }}node_modules/terraformer/terraformer.js"></script>
-      <script src="{{ STATIC_URL }}node_modules/terraformer-wkt-parser/terraformer-wkt-parser.min.js"></script>
-      <script src="{{ STATIC_URL }}node_modules/pluralize/pluralize.js"></script>
-
-      <!-- reports -->
-      <script src="{{ STATIC_URL }}node_modules/d3/dist/d3.min.js"></script>
-      <script src="{{ STATIC_URL }}node_modules/dimple/dist/dimple.latest.min.js"></script>
-      <script src="{{ STATIC_URL }}node_modules/chart.js/dist/chart.min.js"></script>
-      <script
-        src="{{ STATIC_URL }}node_modules/chartjs-plugin-annotation/dist/chartjs-plugin-annotation.min.js"></script>
-      <script src="{{ STATIC_URL }}node_modules/hammerjs/hammer.min.js"></script>
-      <script src="{{ STATIC_URL }}node_modules/chartjs-plugin-zoom/dist/chartjs-plugin-zoom.min.js"></script>
-      <!-- / reports -->
-
-      <script src="{{ STATIC_URL }}node_modules/angular-xeditable/dist/js/xeditable.min.js"></script>
-      <script src="{{ STATIC_URL }}node_modules/ng-tags-input/build/ng-tags-input.min.js"></script>
-      <script src="{{ STATIC_URL }}node_modules/angular-ui-notification/dist/angular-ui-notification.min.js"></script>
-      <script src="{{ STATIC_URL }}node_modules/spin.js/spin.js"></script>
-      <script src="{{ STATIC_URL }}node_modules/ol/ol.js"></script>
-      <script src="{{ STATIC_URL }}node_modules/ol-ext/dist/ol-ext.js"></script>
-      <script src="{{ STATIC_URL }}node_modules/open-location-code/js/src/openlocationcode.min.js"></script>
-      <script src="{{ STATIC_URL }}node_modules/pnnl-buildingid/pnnl-buildingid.js"></script>
-
-      <!-- i18n -->
-      <script src="{{ STATIC_URL }}node_modules/angular-translate/dist/angular-translate.min.js"></script>
-      <script
-        src="{{ STATIC_URL }}node_modules/angular-translate-loader-static-files/angular-translate-loader-static-files.min.js"></script>
-      <script
-        src="{{ STATIC_URL }}node_modules/angular-translate-handler-log/angular-translate-handler-log.min.js"></script>
-      <script src="{{ STATIC_URL }}node_modules/messageformat/messageformat.min.js"></script>
-      <script
-        src="{{ STATIC_URL }}node_modules/angular-translate-interpolation-messageformat/angular-translate-interpolation-messageformat.min.js"></script>
-      <script src="{{ STATIC_URL }}node_modules/angular-sanitize/angular-sanitize.min.js"></script>
-
-      <script src="{{ STATIC_URL }}node_modules/fine-uploader/all.fine-uploader/all.fine-uploader.core.min.js"></script>
-
-      <!-- Text Editor -->
-      <script src="{{ STATIC_URL }}node_modules/ng-wig/dist/ng-wig.min.js"></script>
+      {% include "seed/_vendor_scripts.html" %}
     {% endcompress %}
 
     <script>

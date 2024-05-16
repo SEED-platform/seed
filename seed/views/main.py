@@ -30,7 +30,9 @@ _log = logging.getLogger(__name__)
 def angular_js_tests(request):
     """Jasmine JS unit test code covering AngularJS unit tests"""
     debug = settings.DEBUG
-    return render(request, "seed/jasmine_tests/AngularJSTests.html", locals())
+    spec_directory = os.path.join('seed', 'static', 'seed', 'tests')
+    spec_files = [f for f in os.listdir(spec_directory) if f.endswith('.spec.js')]
+    return render(request, "seed/jasmine_tests/AngularJSTests.html", {**locals(), "spec_files": spec_files})
 
 
 def _get_default_org(user):
