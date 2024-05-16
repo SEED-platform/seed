@@ -75,14 +75,18 @@
     {% if wizard.steps.current == 'auth' %}
 
     <a class="forgot_password" href="{% url "landing:password_reset" %}">{% trans "Forgot password?" %}</a>
-
+      {% if request.session.include_acct_reg%}
+      <div>
+        <a class="create_account btn btn-secondary" href="{% url "landing:create_account" %}">{% trans "Create my Account" %}</a>
+      </div>
+      {% endif %}
     {% endif %}
   </form>
 
   {% block 'backup_tokens' %}
     {% if backup_tokens %}
-       <hr>
-       <div class="backup_tokens_form">
+      <hr>
+      <div class="backup_tokens_form">
        <form action="" method="post">
            {% csrf_token %}
             <p>{% trans "As a last resort, you can use a backup token:" %}</p>
@@ -91,7 +95,7 @@
                     class="btn btn-sm btn-secondary btn-block">{% trans "Use Backup Token" %}</button>
             </p>
        </form>
-       </div>
+      </div>
     {% endif %}
   {% endblock %}
 {% endblock %}

@@ -178,3 +178,8 @@ class CustomLoginView(LoginView):
             user.prompt_2fa = False
             user.save()
         return response
+
+    def get(self, request, *args, **kwargs):
+        # add env var to session for conditional frontend display
+        request.session['include_acct_reg'] = settings.INCLUDE_ACCT_REG
+        return super().get(request, *args, **kwargs)
