@@ -11,6 +11,7 @@ from rest_framework import status
 
 from seed.landing.models import SEEDUser as User
 from seed.models import Column
+from seed.models.derived_columns import DerivedColumn
 from seed.test_helpers.fake import FakeColumnListProfileFactory
 from seed.tests.util import AccessLevelBaseTestCase, DeleteModelsTestCase
 from seed.utils.organizations import create_organization
@@ -71,6 +72,36 @@ class ColumnListProfilesView(DeleteModelsTestCase):
         data = json.loads(response.content)
         self.assertEqual(data["status"], "success")
         self.assertEqual(len(data["data"]["columns"]), 3)
+        self.assertEqual(data["data"]["inventory_type"], "Property")
+        self.assertEqual(data["data"]["profile_location"], "List View Profile")
+
+    def test_create_column_profile_with_derived_column(self):
+        self.derived_column = DerivedColumn.objects.create(
+            name="dc",
+            expression="$a + 10",
+            organization=self.org,
+            inventory_type=0,
+        )
+        self.payload_data["derived_columns"].append(
+            {
+                "column_name": "dc",
+                "derived_column": True,
+                "id": self.derived_column.id,
+                "order": 4,
+                "pinned": False,
+                "table_name": "PropertyState",
+            }
+        )
+
+        response = self.client.post(
+            reverse("api:v3:column_list_profiles-list") + "?organization_id=" + str(self.org.id),
+            data=json.dumps(self.payload_data),
+            content_type="application/json",
+        )
+        data = json.loads(response.content)
+        self.assertEqual(data["status"], "success")
+        self.assertEqual(len(data["data"]["columns"]), 3)
+        self.assertEqual(len(data["data"]["derived_columns"]), 1)
         self.assertEqual(data["data"]["inventory_type"], "Property")
         self.assertEqual(data["data"]["profile_location"], "List View Profile")
 

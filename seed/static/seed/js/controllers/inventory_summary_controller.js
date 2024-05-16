@@ -75,7 +75,6 @@ angular.module('BE.seed.controller.inventory_summary', []).controller('inventory
       });
 
       analyses_service.get_summary($scope.cycle.selected_cycle.id).then((data) => {
-        $scope.summary_data = data;
         $scope.table_data = [
           {
             Summary: 'Total Records',

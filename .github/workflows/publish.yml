@@ -5,11 +5,11 @@ on:
     branches:
       - develop
     tags:
-      - "*"
+      - '*'
   workflow_dispatch:
     inputs:
       docker_tag:
-        description: "Tag suffix; will be used as seedplatform/seed:{docker_tag}"
+        description: 'Tag suffix; will be used as seedplatform/seed:{docker_tag}'
         required: true
 
 jobs:

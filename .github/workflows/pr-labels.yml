@@ -13,5 +13,5 @@ jobs:
         with:
           mode: minimum
           count: 1
-          labels: "Feature, Bug, Enhancement, Maintenance, Documentation, Performance, Do not publish"
+          labels: 'Feature, Bug, Enhancement, Maintenance, Documentation, Performance, Do not publish'
           add_comment: true

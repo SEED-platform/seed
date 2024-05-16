@@ -7,11 +7,10 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 import json
 import logging
 
+from django.db import connection
 from django.db.models import Count, F
 from django.http import JsonResponse
 from drf_yasg.utils import swagger_auto_schema
-from pint import Quantity
-from quantityfield.units import ureg
 from rest_framework import serializers, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.status import HTTP_409_CONFLICT
@@ -22,6 +21,7 @@ from seed.decorators import ajax_request_class, require_organization_id_class
 from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm_class
 from seed.lib.superperms.orgs.models import AccessLevelInstance
 from seed.models import Analysis, AnalysisEvent, AnalysisPropertyView, Column, Cycle, Organization, PropertyState, PropertyView
+from seed.models.columns import EXCLUDED_API_FIELDS
 from seed.serializers.analyses import AnalysisSerializer
 from seed.utils.api import OrgMixin, api_endpoint_class
 from seed.utils.api_schema import AutoSchemaHelper
@@ -299,177 +299,46 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
             return JsonResponse({"success": False, "message": "Cycle does not exist"}, status=status.HTTP_404_NOT_FOUND)
 
         access_level_instance = AccessLevelInstance.objects.get(pk=self.request.access_level_instance_id)
-        views = PropertyView.objects.filter(
-            state__organization_id=org_id,
+        state_ids = PropertyView.objects.filter(
+            property__organization_id=org_id,
             cycle_id=cycle_id,
             property__access_level_instance__lft__gte=access_level_instance.lft,
             property__access_level_instance__rgt__lte=access_level_instance.rgt,
+        ).values_list("state_id", flat=True)
+        states = PropertyState.objects.filter(id__in=state_ids)
+        columns = (
+            Column.objects.filter(organization_id=org_id, derived_column=None, table_name="PropertyState")
+            .exclude(column_name__in=EXCLUDED_API_FIELDS)
+            .only("is_extra_data", "column_name")
         )
-        states = PropertyState.objects.filter(id__in=views.values_list("state_id", flat=True))
-        columns = Column.objects.filter(organization_id=org_id, derived_column=None)
-        column_names_extra_data = list(
-            Column.objects.filter(organization_id=org_id, is_extra_data=True).values_list("column_name", flat=True)
-        )
 
-        col_names = [x for x, y in list(columns.values_list("column_name", "table_name")) if (y == "PropertyState")]
+        num_of_nonnulls_by_column_name = {c.column_name: 0 for c in columns}
+        canonical_columns = [c.column_name for c in columns if not c.is_extra_data]
+        extra_data_columns = [c.column_name for c in columns if c.is_extra_data]
 
-        def get_counts(field_name):
-            """Get aggregated count of each unique value for the field
+        # add non-null counts for extra_data columns
+        with connection.cursor() as cursor:
+            non_null_extra_data_counts_query = (
+                f'SELECT key, COUNT(*)\n'
+                f'FROM seed_propertystate, LATERAL JSONB_EACH_TEXT(extra_data) AS each_entry(key, value)\n'
+                f'WHERE id IN ({", ".join(map(str, state_ids))})\n'
+                f'  AND value IS NOT NULL\n'
+                f'GROUP BY key;'
+            )
+            cursor.execute(non_null_extra_data_counts_query)
+            extra_data_counts = dict(cursor.fetchall())
+            num_of_nonnulls_by_column_name.update(extra_data_counts)
 
-            :param field_name: str, field on property state to aggregate
-            :returns: list[dict], each dict has the key "count" containing the count
-                of the value stored in the key "<field_name>"
-            """
-            agg = list(states.values(field_name).annotate(count=Count(field_name)).order_by("-count"))
-            return [count for count in agg if count[field_name] is not None]
-
-        property_types = get_counts("extra_data__Largest Property Use Type")
-        year_built = get_counts("year_built")
-        energy = get_counts("site_eui")
-        square_footage = get_counts("gross_floor_area")
-
-        from collections import defaultdict
-
-        extra_data_count = defaultdict(int)
-        for data in states.values_list("extra_data", flat=True):
-            for key, value in data.items():
-                if value is not None:
-                    extra_data_count[key] += 1
-
-        extra_data = dict(sorted(extra_data_count.items(), key=lambda item: item[1], reverse=True))
-
-        year_built_agg = []
-        for record in year_built:
-            updated_record = record.copy()
-            if isinstance(record["year_built"], int):
-                if 1800 < record["year_built"] < 1920:
-                    updated_record["year_built"] = "Pre 1920"
-                elif record["year_built"] <= 1945:
-                    updated_record["year_built"] = "1920-1945"
-                elif record["year_built"] < 1960:
-                    updated_record["year_built"] = "1946-1959"
-                elif record["year_built"] < 1970:
-                    updated_record["year_built"] = "1960-1969"
-                elif record["year_built"] < 1980:
-                    updated_record["year_built"] = "1970-1979"
-                elif record["year_built"] < 1990:
-                    updated_record["year_built"] = "1980-1989"
-                elif record["year_built"] < 2000:
-                    updated_record["year_built"] = "1990-1999"
-                elif record["year_built"] <= 2003:
-                    updated_record["year_built"] = "2000-2003"
-                elif record["year_built"] <= 2007:
-                    updated_record["year_built"] = "2004-2007"
-                elif record["year_built"] <= 2012:
-                    updated_record["year_built"] = "2008-2012"
-                else:
-                    updated_record["year_built"] = "> 2012"
-            year_built_agg.append(updated_record)
-
-        c = defaultdict(int)
-        for d in year_built_agg:
-            c[d["year_built"]] += d["count"]
-        year_built_list = [{"year_built": year_built, "percentage": count / views.count() * 100} for year_built, count in c.items()]
-
-        energy_list = []
-        for i in energy:
-            updated_record = i.copy()
-            for k, v in i.items():
-                if isinstance(v, Quantity):
-                    updated_record[k] = v.to(ureg.kBTU / ureg.sq_ft / ureg.year).magnitude
-            energy_list.append(updated_record)
-
-        energy_agg = []
-        for record in energy_list:
-            updated_record = record.copy()
-            if isinstance(record["site_eui"], float):
-                if 0 < record["site_eui"] <= 50:
-                    updated_record["site_eui"] = "<= 50"
-                elif record["site_eui"] <= 75:
-                    updated_record["site_eui"] = "50-75"
-                elif record["site_eui"] <= 100:
-                    updated_record["site_eui"] = "75-100"
-                elif record["site_eui"] <= 150:
-                    updated_record["site_eui"] = "100-150"
-                else:
-                    updated_record["site_eui"] = "> 150"
-            energy_agg.append(updated_record)
-
-        e = defaultdict(int)
-        for f in energy_agg:
-            e[f["site_eui"]] += f["count"]
-        energy_list2 = [{"site_eui": site_eui, "percentage": count / views.count() * 100} for site_eui, count in e.items()]
-
-        square_footage_list = []
-        for i in square_footage:
-            updated_record = i.copy()
-            for k, v in i.items():
-                if isinstance(v, Quantity):
-                    updated_record[k] = v.to(ureg.feet**2).magnitude
-            square_footage_list.append(updated_record)
-
-        square_footage_agg = []
-        for record in square_footage_list:
-            updated_record = record.copy()
-            if isinstance(record["gross_floor_area"], float):
-                if 0 < record["gross_floor_area"] <= 1000:
-                    updated_record["gross_floor_area"] = "<= 1,000"
-                elif record["gross_floor_area"] <= 5000:
-                    updated_record["gross_floor_area"] = "1,000-5,000"
-                elif record["gross_floor_area"] <= 10000:
-                    updated_record["gross_floor_area"] = "5,000-10,000"
-                elif record["gross_floor_area"] <= 25000:
-                    updated_record["gross_floor_area"] = "10,000-25,000"
-                elif record["gross_floor_area"] <= 50000:
-                    updated_record["gross_floor_area"] = "25,000-50,000"
-                elif record["gross_floor_area"] <= 100000:
-                    updated_record["gross_floor_area"] = "50,000-100,000"
-                elif record["gross_floor_area"] <= 200000:
-                    updated_record["gross_floor_area"] = "100,000-200,000"
-                elif record["gross_floor_area"] <= 500000:
-                    updated_record["gross_floor_area"] = "200,000-500,000"
-                elif record["gross_floor_area"] <= 1000000:
-                    updated_record["gross_floor_area"] = "500,000-1,000,000"
-                else:
-                    updated_record["gross_floor_area"] = "> 1,000,000"
-            square_footage_agg.append(updated_record)
-
-        g = defaultdict(int)
-        for h in square_footage_agg:
-            g[h["gross_floor_area"]] += h["count"]
-        square_footage_list2 = [
-            {"gross_floor_area": gross_floor_area, "percentage": count / views.count() * 100} for gross_floor_area, count in g.items()
-        ]
-
-        extra_data_list = []
-        for data in states.values_list("extra_data", flat=True):
-            for key, value in data.items():
-                extra_data_list.append(key)
-
-        count_agg = []
-        for i in col_names:
-            count_dict = {}
-            if i in column_names_extra_data:
-                count_dict[i] = len(list(filter(None, states.values_list("extra_data__" + i, flat=True))))
-            else:
-                count_dict[i] = len(list(filter(None, states.values_list(i, flat=True))))
-            count_agg.append(count_dict)
-
-        count_agg_dict = {}
-        for d in count_agg:
-            count_agg_dict.update(d)
+        # add non-null counts for canonical columns
+        canonical_counts = states.aggregate(**{col: Count(col) for col in canonical_columns})
+        num_of_nonnulls_by_column_name.update(canonical_counts)
 
         return JsonResponse(
             {
                 "status": "success",
-                "total_records": views.count(),
-                "number_extra_data_fields": len(extra_data_count),
-                "column_settings fields and counts": count_agg_dict,
-                "existing_extra_data fields and count": extra_data,
-                "property_types": property_types,
-                "year_built": year_built_list,
-                "energy": energy_list2,
-                "square_footage": square_footage_list2,
+                "total_records": len(state_ids),
+                "number_extra_data_fields": len(extra_data_columns),
+                "column_settings fields and counts": num_of_nonnulls_by_column_name,
             }
         )
 
