@@ -30,7 +30,7 @@ urlpatterns = [
         password_reset_complete,
         name="password_reset_complete",
     ),
-    re_path((r"^accounts/setup/(?P<uidb64>[0-9A-Za-z_\-]+)/" "(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,32})/$"), signup, name="signup"),
+    re_path(r"^accounts/setup/(?P<uidb64>[0-9A-Za-z_\-]+)/" "(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,32})/$", signup, name="signup"),
     re_path(
         r"^password_change/$", PasswordChangeView.as_view(), {"template_name": "landing/password_change_form.html"}, name="password_change"
     ),

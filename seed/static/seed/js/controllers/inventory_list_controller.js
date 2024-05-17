@@ -454,7 +454,7 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
     $scope.max_label_width = 750;
     $scope.get_label_column_width = () => {
       if (!$scope.show_full_labels) {
-        return 31;
+        return 30;
       }
       let maxWidth = 0;
       const renderContainer = document.body.getElementsByClassName('ui-grid-render-container-left')[0];
@@ -470,7 +470,7 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
           }
         });
       });
-      maxWidth = Math.max(31, maxWidth + 2);
+      maxWidth = Math.max(30, maxWidth + 2);
       return Math.min(maxWidth, $scope.max_label_width);
     };
 
@@ -868,8 +868,7 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
         {
           name: 'notes_count',
           displayName: '',
-          headerCellTemplate:
-            '<div role="columnheader" ng-class="{ \'sortable\': sortable }" ui-grid-one-bind-aria-labelledby-grid="col.uid + \'-header-text \' + col.uid + \'-sortdir-text\'" aria-sort="{{col.sort.direction == asc ? \'ascending\' : ( col.sort.direction == desc ? \'descending\' : \'none\')}}"><div role="button" tabindex="0" ng-keydown="handleKeyDown($event)" class="ui-grid-cell-contents ui-grid-header-cell-primary-focus" col-index="renderIndex"><span ui-grid-one-bind-id-grid="col.uid + \'-sortdir-text\'" aria-label="{{getSortDirectionAriaLabel()}}"><i ng-class="{ \'ui-grid-icon-up-dir\': col.sort.direction == asc, \'ui-grid-icon-down-dir\': col.sort.direction == desc, \'ui-grid-icon-up-dir translucent\': !col.sort.direction }" title="{{isSortPriorityVisible() ? i18n.headerCell.priority + \' \' + ( col.sort.priority + 1 ) : null}}" aria-hidden="true"></i><sub ui-grid-visible="isSortPriorityVisible()" class="ui-grid-sort-priority-number">{{col.sort.priority + 1}}</sub></span></div></div>',
+          headerCellTemplate: '<span></span>', // remove header
           cellTemplate:
             '<div class="ui-grid-row-header-link">' +
             `  <a title="${$translate.instant(
@@ -888,7 +887,7 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
           enableColumnResizing: false,
           enableFiltering: false,
           enableHiding: false,
-          enableSorting: true,
+          enableSorting: false,
           exporterSuppressExport: true,
           pinnedLeft: true,
           visible: true,
@@ -897,8 +896,7 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
         {
           name: 'meters_exist_indicator',
           displayName: '',
-          headerCellTemplate:
-            '<div role="columnheader" ng-class="{ \'sortable\': sortable }" ui-grid-one-bind-aria-labelledby-grid="col.uid + \'-header-text \' + col.uid + \'-sortdir-text\'" aria-sort="{{col.sort.direction == asc ? \'ascending\' : ( col.sort.direction == desc ? \'descending\' : \'none\')}}"><div role="button" tabindex="0" ng-keydown="handleKeyDown($event)" class="ui-grid-cell-contents ui-grid-header-cell-primary-focus" col-index="renderIndex"><span ui-grid-one-bind-id-grid="col.uid + \'-sortdir-text\'" aria-label="{{getSortDirectionAriaLabel()}}"><i ng-class="{ \'ui-grid-icon-up-dir\': col.sort.direction == asc, \'ui-grid-icon-down-dir\': col.sort.direction == desc, \'ui-grid-icon-up-dir translucent\': !col.sort.direction }" title="{{isSortPriorityVisible() ? i18n.headerCell.priority + \' \' + ( col.sort.priority + 1 ) : null}}" aria-hidden="true"></i><sub ui-grid-visible="isSortPriorityVisible()" class="ui-grid-sort-priority-number">{{col.sort.priority + 1}}</sub></span></div></div>',
+          headerCellTemplate: '<span></span>', // remove header
           cellTemplate:
             '<div class="ui-grid-row-header-link">' +
             `  <a title="${$translate.instant(
@@ -912,7 +910,7 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
           enableColumnResizing: false,
           enableFiltering: false,
           enableHiding: false,
-          enableSorting: true,
+          enableSorting: false,
           exporterSuppressExport: true,
           pinnedLeft: true,
           visible: true,
@@ -950,7 +948,7 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
           name: 'labels',
           displayName: '',
           headerCellTemplate: '<i ng-click="grid.appScope.toggle_labels()" class="ui-grid-cell-contents fas fa-chevron-circle-right" id="label-header-icon" style="margin:2px; float:right;"></i>',
-          cellTemplate: '<div ng-click="grid.appScope.toggle_labels()" class="ui-grid-cell-contents" ng-bind-html="grid.appScope.display_labels(row.entity)"></div>',
+          cellTemplate: '<div ng-click="grid.appScope.toggle_labels()" class="ui-grid-cell-contents ui-grid-row-label-bars" ng-bind-html="grid.appScope.display_labels(row.entity)"></div>',
           enableColumnMenu: false,
           enableColumnMoving: false,
           enableColumnResizing: false,
@@ -1048,7 +1046,7 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
           name: 'labels',
           displayName: '',
           headerCellTemplate: '<i ng-click="grid.appScope.toggle_labels()" class="ui-grid-cell-contents fas fa-chevron-circle-right" id="label-header-icon" style="margin:2px; float:right;"></i>',
-          cellTemplate: '<div ng-click="grid.appScope.toggle_labels()" class="ui-grid-cell-contents" ng-bind-html="grid.appScope.display_labels(row.entity)"></div>',
+          cellTemplate: '<div ng-click="grid.appScope.toggle_labels()" class="ui-grid-cell-contents ui-grid-row-label-bars" ng-bind-html="grid.appScope.display_labels(row.entity)"></div>',
           enableColumnMenu: false,
           enableColumnMoving: false,
           enableColumnResizing: false,
@@ -1736,7 +1734,7 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
           }
         ]);
       }
-      $scope.selected_display = [$scope.selectedCount, $translate.instant('selected')].join(' ');
+      $scope.selected_display = [$scope.selectedCount.toLocaleString(), $translate.instant('selected')].join(' ');
     };
     $scope.update_selected_display();
 

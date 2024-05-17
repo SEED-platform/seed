@@ -51,15 +51,6 @@
 
 <div class="section_content_container" ng-cloak style="clear: both; overflow: hidden">
   <div class="section_content with_padding" style="overflow: hidden">
-    <h3 ng-if="inventory_type === 'taxlots'" translate>Add Shared Tax Lots</h3>
-    <h3 ng-if="inventory_type === 'properties'" translate>Add Shared Properties</h3>
-    <div class="checkbox">
-      <label>
-        <input type="checkbox" ng-model="showSharedBuildings" ng-change="saveShowSharedBuildings()" ng-disabled="menu.user.organization.user_role === 'viewer'" />
-        <span ng-if="inventory_type === 'taxlots'" translate>INCLUDE_SHARED_TAXLOTS</span>
-        <span ng-if="inventory_type === 'properties'" translate>INCLUDE_SHARED_PROPERTIES</span>
-      </label>
-    </div>
     <h3 translate="NUMBER_COLUMNS_AVAILABLE" translate-values="{ count: (gridOptions.data.length | number) }"></h3>
     <p ng-if="inventory_type === 'taxlots'" translate>LIST_GUIDANCE_TAXLOTS</p>
     <p ng-if="inventory_type === 'properties'" translate>LIST_GUIDANCE_PROPERTIES</p>
