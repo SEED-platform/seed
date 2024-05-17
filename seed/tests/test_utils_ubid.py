@@ -13,7 +13,7 @@ from seed.models.tax_lots import TaxLotState
 from seed.test_helpers.fake import FakePropertyStateFactory, FakeTaxLotStateFactory
 from seed.utils.geocode import bounding_box_wkt, wkt_to_polygon
 from seed.utils.organizations import create_organization
-from seed.utils.ubid import centroid_wkt, decode_unique_ids, ubid_jaccard, valid_pluscode
+from seed.utils.ubid import centroid_wkt, decode_unique_ids, get_jaccard_index, ubid_jaccard, valid_pluscode, validate_ubid
 
 
 class UbidSpecificWktMethods(TestCase):
@@ -205,10 +205,53 @@ class UbidUtilMethods(TestCase):
         self.assertIsNone(centroid_wkt(refreshed_taxlot))
 
     def test_valid_pluscode(self):
-        self.assertTrue(valid_pluscode("85FPPRRH+9HR-25-30-27-39"))
+        self.assertTrue(valid_pluscode("85FPPRRH+9HR"))
         self.assertTrue(valid_pluscode("XX5JJC23+23"))
         self.assertFalse(valid_pluscode("XX5JJC23+0025"))
 
     def test_ubid_jaccard(self):
         jaccard = ubid_jaccard("85FPPRRH+9G7-26-30-26-38", "85FPPRRH+9HR-25-30-27-39")
         self.assertAlmostEqual(jaccard, 0.8650632911251763)
+
+        # nrel cafe
+        ubid_cafe = "85FPPRR9+3C-0-0-0-0"
+        ubid_cafe_larger = "85FPPRR9+3C-1-1-1-1"
+        ubid_cafe_north = "85FPPRR9+4C-0-0-1-0"
+
+        # nrel FTLB
+        ubid_ftlb = "85FPPRR9+38-0-0-0-0"
+        ubid_ftlb_west = "85FPPRR9+38-0-0-0-2"
+        ubid_ftlb_south = "85FPPRR9+28-1-0-0-1"
+
+        # exact
+        jaccard = get_jaccard_index(ubid_cafe, ubid_cafe)
+        self.assertEqual(1.0, jaccard)
+        jaccard = get_jaccard_index(ubid_ftlb, ubid_ftlb)
+        self.assertEqual(1.0, jaccard)
+
+        # partial
+        jaccard = get_jaccard_index(ubid_cafe_larger, ubid_cafe)
+        self.assertAlmostEqual((1 / 9), jaccard)
+        jaccard = get_jaccard_index(ubid_cafe, ubid_cafe_north)
+        self.assertAlmostEqual((1 / 2), jaccard)
+
+        jaccard = get_jaccard_index(ubid_ftlb, ubid_ftlb_west)
+        self.assertAlmostEqual((1 / 3), jaccard)
+        jaccard = get_jaccard_index(ubid_ftlb, ubid_ftlb_south)
+        self.assertAlmostEqual((1 / 4), jaccard)
+
+        # different
+        jaccard = get_jaccard_index(ubid_cafe, ubid_ftlb)
+        self.assertEqual(0.0, jaccard)
+
+        # invalid ubid
+        invalid = "invalid"
+        validity = validate_ubid(invalid)
+        self.assertFalse(validity)
+        validity = validate_ubid(ubid_cafe)
+        self.assertTrue(validity)
+
+        jaccard = get_jaccard_index(ubid_cafe, invalid)
+        self.assertEqual(0.0, jaccard)
+        jaccard = get_jaccard_index(invalid, invalid)
+        self.assertEqual(1.0, jaccard)

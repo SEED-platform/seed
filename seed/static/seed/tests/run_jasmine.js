@@ -12,7 +12,7 @@ const puppeteer = require('puppeteer');
   const page = await browser.newPage();
 
   // Navigate to the Jasmine SpecRunner
-  await page.goto('http://localhost:8000/angular_js_tests/');
+  await page.goto('http://localhost:80/angular_js_tests/');
 
   // Wait for Jasmine to finish running the tests
   await page.waitForFunction('window.jasmine.getEnv().currentRunner().queue.running === false');

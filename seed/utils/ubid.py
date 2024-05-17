@@ -119,7 +119,9 @@ def validate_ubid(ubid: str) -> bool:
         return False
 
     try:
-        pluscode, ubid_offsets = ubid.split("-")
+        index = ubid.find("-")
+        pluscode = ubid[:index]
+        ubid_offsets = ubid[index:]
         return valid_pluscode(pluscode) and bool(UBID_OFFSET_PATTERN.fullmatch(ubid_offsets))
     except ValueError:
         return False
@@ -217,7 +219,7 @@ def valid_pluscode(code: str) -> bool:
     return bool(PLUSCODE_ALPHABET_PATTERN.fullmatch(code.upper()))
 
 
-def ubid_jaccard(ubid1: str, ubid2: str):
+def ubid_jaccard(ubid1: str, ubid2: str) -> float:
     """
     Calculates the Jaccard index for two UBIDs.
 
@@ -227,4 +229,4 @@ def ubid_jaccard(ubid1: str, ubid2: str):
     ubid1_code_area = decode(Code(ubid1))
     ubid2_code_area = decode(Code(ubid2))
 
-    return ubid1_code_area.jaccard(ubid2_code_area)
+    return ubid1_code_area.jaccard(ubid2_code_area) or 0.0

@@ -4,37 +4,30 @@
  */
 describe('controller: mapping_controller', () => {
   // globals set up and used in each test scenario
-  let mock_inventory_service; let
-    controller;
+  let mock_inventory_service;
+  let controller;
   let mapping_controller_scope;
-  let timeout; let mock_geocode_service; let mock_user_service; let
-    mock_organization_service;
+  let mock_geocode_service;
+  let mock_organization_service;
 
   // make the seed app available for each test
   // 'config.seed' is created in TestFilters.html
   beforeEach(() => {
     module('BE.seed');
     inject((_$httpBackend_) => {
-      $httpBackend = _$httpBackend_;
-      $httpBackend.whenGET(/^\/static\/seed\/locales\/.*\.json/).respond(200, {});
+      _$httpBackend_.whenGET(/^\/static\/seed\/locales\/.*\.json/).respond(200, {});
     });
-    inject(($controller, $rootScope, $uibModal, urls, $q, inventory_service, $timeout, geocode_service, organization_service, user_service) => {
+    inject(($controller, $rootScope, $uibModal, urls, $q, inventory_service, geocode_service, organization_service) => {
       controller = $controller;
       mapping_controller_scope = $rootScope.$new();
-      timeout = $timeout;
-      mock_user_service = user_service;
       mock_geocode_service = geocode_service;
       mock_organization_service = organization_service;
 
-      spyOn(mock_geocode_service, 'check_org_has_api_key').andCallFake(() => $q.resolve({
-        status: 'success'
-      }));
+      spyOn(mock_geocode_service, 'check_org_has_api_key').andCallFake(() => $q.resolve({ status: 'success' }));
 
       spyOn(mock_geocode_service, 'check_org_has_geocoding_enabled').andCallFake(() => $q.resolve(true));
 
-      spyOn(mock_organization_service, 'geocoding_columns').andCallFake(() => $q.resolve({
-        status: 'success'
-      }));
+      spyOn(mock_organization_service, 'geocoding_columns').andCallFake(() => $q.resolve({ status: 'success' }));
     });
   });
 

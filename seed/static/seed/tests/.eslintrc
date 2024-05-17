@@ -1,8 +1,0 @@
-{
-  "env": {
-    "jasmine": true
-  },
-  "rules": {
-    "import/no-extraneous-dependencies": "off"
-  }
-}

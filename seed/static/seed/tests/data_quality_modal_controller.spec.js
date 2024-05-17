@@ -5,7 +5,6 @@
 describe('controller: data_quality_modal_controller', () => {
   // globals set up and used in each test scenario
   let controller;
-  let modal_state;
   let data_quality_controller_scope;
 
   const dataQualityResults = [{
@@ -87,13 +86,11 @@ describe('controller: data_quality_modal_controller', () => {
   beforeEach(() => {
     module('BE.seed');
     inject((_$httpBackend_) => {
-      $httpBackend = _$httpBackend_;
-      $httpBackend.whenGET(/^\/static\/seed\/locales\/.*\.json/).respond(200, {});
+      _$httpBackend_.whenGET(/^\/static\/seed\/locales\/.*\.json/).respond(200, {});
     });
-    inject(($controller, $rootScope /* , $q, search_service */) => {
+    inject(($controller, $rootScope) => {
       controller = $controller;
       data_quality_controller_scope = $rootScope.$new();
-      modal_state = '';
     });
   });
 
@@ -101,14 +98,7 @@ describe('controller: data_quality_modal_controller', () => {
   function create_data_quality_modal_controller() {
     controller('data_quality_modal_controller', {
       $scope: data_quality_controller_scope,
-      $uibModalInstance: {
-        close: () => {
-          modal_state = 'close';
-        },
-        dismiss: () => {
-          modal_state = 'dismiss';
-        }
-      },
+      $uibModalInstance: {},
       dataQualityResults,
       name: null,
       uploaded: null,
@@ -122,6 +112,7 @@ describe('controller: data_quality_modal_controller', () => {
    */
 
   /*  set this up but doesn't do anything currently */
+  // eslint-disable-next-line func-names
   it('should dq modal sort and search', function () {
     // arrange
     create_data_quality_modal_controller();
