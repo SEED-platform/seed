@@ -12,9 +12,8 @@ describe('controller: data_quality_admin_controller', () => {
   beforeEach(() => {
     module('BE.seed');
     inject((_$httpBackend_) => {
-      $httpBackend = _$httpBackend_;
-      $httpBackend.whenGET(/^\/static\/seed\/locales\/.*\.json/).respond(200, {});
-      $httpBackend.whenGET(/^\/static\/seed\/partials\/modified_modal\.html/).respond(200, {});
+      _$httpBackend_.whenGET(/^\/static\/seed\/locales\/.*\.json/).respond(200, {});
+      _$httpBackend_.whenGET(/^\/static\/seed\/partials\/modified_modal\.html/).respond(200, {});
     });
     inject(($controller, $rootScope /* , $q */) => {
       controller = $controller;
