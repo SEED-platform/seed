@@ -354,7 +354,7 @@ class Rule(models.Model):
             "rule_type": RULE_TYPE_DEFAULT,
             "severity": SEVERITY_ERROR,
             "condition": RULE_LT,
-            "target": 40,
+            "target": -40,
         },
         {
             "table_name": "cross-cycle",
@@ -372,7 +372,7 @@ class Rule(models.Model):
             "rule_type": RULE_TYPE_DEFAULT,
             "severity": SEVERITY_ERROR,
             "condition": RULE_LT,
-            "target": 5,
+            "target": -5,
         },
         {
             "table_name": "cross-cycle",
@@ -390,7 +390,7 @@ class Rule(models.Model):
             "rule_type": RULE_TYPE_DEFAULT,
             "severity": SEVERITY_ERROR,
             "condition": RULE_LT,
-            "target": 40,
+            "target": -40,
         },
 
     ]
