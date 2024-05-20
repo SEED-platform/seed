@@ -1,4 +1,15 @@
-{% extends "landing/base.html" %}{% load compress %}{% load i18n %}
+{% extends "landing/base.html" %}
+{% load i18n %}
+
+{% block js %}
+  <script>
+    const toggleTerms = () => {
+      const terms = document.getElementById('terms-and-conditions');
+      const hidden = ['', 'none'].includes(terms.style.display);
+      terms.style.display = hidden ? 'block' : 'none';
+    };
+  </script>
+{% endblock %}
 
 {% block content %}
   <div class="page">
@@ -68,13 +79,4 @@
 
   </div>
   <!-- END .page -->
-{% endblock %}
-{% block js %}
-  <script>
-    function toggleTerms () {
-      const terms = document.getElementById('terms-and-conditions');
-      const hidden = ['', 'none'].includes(terms.style.display);
-      terms.style.display = hidden ? 'block' : 'none';
-    }
-  </script>
 {% endblock %}

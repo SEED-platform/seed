@@ -868,7 +868,7 @@ def post_save_property_state(sender, **kwargs):
         )
         # Update lat/long/centroid
         decode_unique_ids(state)
-        logging.info(f"Created ubid_model id: {ubid_model.id}, ubid: {ubid_model.ubid}")
+        logging.debug(f"Created ubid_model id: {ubid_model.id}, ubid: {ubid_model.ubid}")
     elif ubid_model.filter(preferred=False).exists():
         state.ubidmodel_set.update(
             preferred=Case(

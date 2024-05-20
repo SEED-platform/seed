@@ -1,24 +1,20 @@
-{% extends "seed/base.html" %}{% load compress %}{% load i18n %} {% block css %}{{ block.super }} {% compress css %}
-  <style>
-    [ng\:cloak],
-    [ng-cloak],
-    [data-ng-cloak],
-    [x-ng-cloak],
-    .ng-cloak,
-    .x-ng-cloak {
-      display: none !important;
-    }
-  </style>
-  <link rel="stylesheet" type="text/x-scss" href="{{ STATIC_URL }}landing/scss/landing.scss">
-{% endcompress %}
+{% extends "seed/base.html" %}
+{% load compress %}
+{% load i18n %}
+
+{% block css %}
+  {% compress css file landing %}
+    <link href="{{ STATIC_URL }}landing/scss/fonts.scss" rel="stylesheet" type="text/x-scss">
+    <link href="{{ STATIC_URL }}node_modules/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" type="text/css">
+    <link href="{{ STATIC_URL }}landing/scss/landing.scss" rel="stylesheet" type="text/x-scss">
+  {% endcompress %}
 {% endblock %}
-{% block title %}{% trans "SEED Platform™" %}{% endblock %}
+{% block title %}
+  {% trans "SEED Platform™" %}
+{% endblock %}
 
 {% block js %}
   {{ block.super }}
-  {% compress js %}
-    <script src="{{ STATIC_URL }}landing/js/landing.js"></script>
-  {% endcompress %}
 {% endblock %}
 
 {% block body %}

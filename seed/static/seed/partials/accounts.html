@@ -97,14 +97,14 @@
                 <span ng-if="org.user_role === 'viewer'">{$ org.name $}</span>
               </td>
               <td class="align_to_top">
-                <div ng-repeat="cycle in org.cycles" ng-if="cycle.num_properties">{$ cycle.name $}: {$ cycle.num_properties $}</div>
+                <div ng-repeat="cycle in org.cycles" ng-if="cycle.num_properties">{$ cycle.name $}: {$ cycle.num_properties | number:0 $}</div>
               </td>
               <td class="align_to_top">
-                <div ng-repeat="cycle in org.cycles" ng-if="cycle.num_taxlots">{$ cycle.name $}: {$ cycle.num_taxlots $}</div>
+                <div ng-repeat="cycle in org.cycles" ng-if="cycle.num_taxlots">{$ cycle.name $}: {$ cycle.num_taxlots | number:0 $}</div>
               </td>
-              <td class="align_to_top">{$ org.user_role || "-" $}</td>
+              <td class="align_to_top">{$ org.user_role || "-" | titleCase $}</td>
               <td>
-                <span ng-repeat="owner in org.owners">{$ owner.first_name $} {$ owner.last_name $}<br /></span>
+                <span ng-repeat="owner in sortOwners(org.owners)">{$ owner $}<br /></span>
               </td>
             </tr>
           </tbody>
