@@ -113,6 +113,10 @@ class Rule(models.Model):
     RULE_RANGE = "range"
     RULE_INCLUDE = "include"
     RULE_EXCLUDE = "exclude"
+    RULE_GT = ">"
+    RULE_GTE = ">="
+    RULE_LT = "<"
+    RULE_LTE = "<="
 
     DEFAULT_RULES = [
         {
@@ -334,6 +338,61 @@ class Rule(models.Model):
             "severity": SEVERITY_ERROR,
             "condition": RULE_RANGE,
         },
+        {
+            "table_name": "cross-cycle",
+            "field": "site_eui",
+            "data_type": TYPE_EUI,
+            "rule_type": RULE_TYPE_DEFAULT,
+            "severity": SEVERITY_ERROR,
+            "condition": RULE_GT,
+            "target": 40,
+        },
+        {
+            "table_name": "cross-cycle",
+            "field": "site_eui",
+            "data_type": TYPE_EUI,
+            "rule_type": RULE_TYPE_DEFAULT,
+            "severity": SEVERITY_ERROR,
+            "condition": RULE_LT,
+            "target": 40,
+        },
+        {
+            "table_name": "cross-cycle",
+            "field": "gross_floor_area",
+            "data_type": TYPE_AREA,
+            "rule_type": RULE_TYPE_DEFAULT,
+            "severity": SEVERITY_ERROR,
+            "condition": RULE_GT,
+            "target": 5,
+        },
+        {
+            "table_name": "cross-cycle",
+            "field": "gross_floor_area",
+            "data_type": TYPE_AREA,
+            "rule_type": RULE_TYPE_DEFAULT,
+            "severity": SEVERITY_ERROR,
+            "condition": RULE_LT,
+            "target": 5,
+        },
+        {
+            "table_name": "cross-cycle",
+            "field": "site_wui",
+            "data_type": TYPE_WUI,
+            "rule_type": RULE_TYPE_DEFAULT,
+            "severity": SEVERITY_ERROR,
+            "condition": RULE_GT,
+            "target": 40,
+        },
+        {
+            "table_name": "cross-cycle",
+            "field": "site_wui",
+            "data_type": TYPE_WUI,
+            "rule_type": RULE_TYPE_DEFAULT,
+            "severity": SEVERITY_ERROR,
+            "condition": RULE_LT,
+            "target": 40,
+        },
+
     ]
 
     name = models.CharField(max_length=255, blank=True)
@@ -353,6 +412,7 @@ class Rule(models.Model):
     not_null = models.BooleanField(default=False)
     min = models.FloatField(null=True)
     max = models.FloatField(null=True)
+    target = models.FloatField(null=True)
     text_match = models.CharField(max_length=200, null=True)
     severity = models.IntegerField(choices=SEVERITY, default=SEVERITY_ERROR)
     units = models.CharField(max_length=100, blank=True)

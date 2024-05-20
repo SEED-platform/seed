@@ -40,6 +40,11 @@ class Migration(migrations.Migration):
                 choices=[(0, "number"), (1, "string"), (2, "date"), (3, "year"), (4, "area"), (5, "eui"), (6, "wui")], null=True
             ),
         ),
+        migrations.AddField(
+            model_name='rule',
+            name='target',
+            field=models.FloatField(null=True),
+        ),
         migrations.SeparateDatabaseAndState(
             database_operations=[
                 migrations.RunSQL(
@@ -75,5 +80,6 @@ class Migration(migrations.Migration):
                 null=True, on_delete=django.db.models.deletion.CASCADE, related_name="baseline", to="seed.propertyview"
             ),
         ),
+
         migrations.RunPython(forwards),
     ]

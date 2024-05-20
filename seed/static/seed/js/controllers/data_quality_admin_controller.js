@@ -184,6 +184,7 @@ angular.module('BE.seed.controller.data_quality_admin', []).controller('data_qua
       $scope.ruleGroups = ruleGroups;
       $scope.rule_count_property = 0;
       $scope.rule_count_taxlot = 0;
+      $scope.rule_count_cross_cycle = 0;
       _.map($scope.ruleGroups.properties, (rule) => {
         $scope.rule_count_property += rule.length;
       });
@@ -191,7 +192,7 @@ angular.module('BE.seed.controller.data_quality_admin', []).controller('data_qua
         $scope.rule_count_taxlot += rule.length;
       });
       _.map($scope.ruleGroups['cross-cycle'], (rule) => {
-        $scope.rule_count_taxlot += rule.length;
+        $scope.rule_count_cross_cycle += rule.length;
       });
     };
     loadRules(data_quality_rules_payload);
@@ -254,6 +255,7 @@ angular.module('BE.seed.controller.data_quality_admin', []).controller('data_qua
             if (rule.field === null) return;
 
             const column = _.find($scope.columns, { column_name: rule.field }) || {};
+            const rule_type_lookup = {'properties': 'PropertyState', 'taxlots': 'TaxLotState', 'cross-cycle': 'cross-cycle'}
             const r = {
               enabled: rule.enabled,
               condition: rule.condition,
@@ -265,7 +267,7 @@ angular.module('BE.seed.controller.data_quality_admin', []).controller('data_qua
               not_null: rule.not_null,
               min: rule.min,
               max: rule.max,
-              table_name: rule_type === 'properties' ? 'PropertyState' : 'TaxLotState',
+              table_name: rule_type_lookup[rule_type],
               text_match: rule.text_match,
               severity: rule.severity,
               units: rule.units,

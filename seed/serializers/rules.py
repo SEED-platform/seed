@@ -20,6 +20,7 @@ class RuleSerializer(serializers.ModelSerializer):
             "data_type",
             "enabled",
             "field",
+            "for_derived_column",
             "id",
             "max",
             "min",
@@ -29,9 +30,9 @@ class RuleSerializer(serializers.ModelSerializer):
             "severity",
             "status_label",
             "table_name",
+            "target",
             "text_match",
             "units",
-            "for_derived_column",
         ]
 
     def create(self, validated_data):
