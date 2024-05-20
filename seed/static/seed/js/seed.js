@@ -98,6 +98,7 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.inventory_reports',
   'BE.seed.controller.inventory_settings',
   'BE.seed.controller.inventory_summary',
+  'BE.seed.controller.inventory_3dmap',
   'BE.seed.controller.label_admin',
   'BE.seed.controller.mapping',
   'BE.seed.controller.members',
@@ -2072,6 +2073,18 @@ SEED_app.config([
         url: '/{inventory_type:properties|taxlots}/summary',
         templateUrl: `${static_url}seed/partials/inventory_summary.html`,
         controller: 'inventory_summary_controller',
+        resolve: {
+          cycles: [
+            'cycle_service',
+            (cycle_service) => cycle_service.get_cycles()
+          ]
+        }
+      })
+      .state({
+        name: 'inventory_3dmap',
+        url: '/{inventory_type:properties|taxlots}/3dmap',
+        templateUrl: `${static_url}seed/partials/inventory_3dmap.html`,
+        controller: 'inventory_3dmap_controller',
         resolve: {
           cycles: [
             'cycle_service',

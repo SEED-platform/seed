@@ -5,6 +5,7 @@
     "node": ">=16"
   },
   "dependencies": {
+    "@deck.gl/jupyter-widget": "^8.8.8",
     "@fontsource/pt-sans": "^5.0.8",
     "@fontsource/pt-sans-narrow": "^5.0.15",
     "@fortawesome/fontawesome-free": "^6.5.1",
@@ -37,6 +38,7 @@
     "jquery": "^3.7.1",
     "jquery-ui-dist": "^1.13.2",
     "lodash": "^4.17.21",
+    "mapbox-gl": "^1.13.3",
     "moment": "^2.29.4",
     "ng-focus-if": "^1.0.7",
     "ng-tags-input": "^3.2.0",
