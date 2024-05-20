@@ -743,7 +743,7 @@ class DataQualityCheck(models.Model):
         # check if the row has any rules applied to it
         model_labels = {"linked_id": None, "label_ids": []}
         if row.__class__.__name__ == "PropertyState":
-            label = apps.get_model("seed", "PropertyView_labels")
+            label = apps.get_model("seed", "PropertyViewLabel")
             if PropertyView.objects.filter(state=row).exists():
                 model_labels["linked_id"] = PropertyView.objects.get(state=row).id
                 model_labels["label_ids"] = list(
