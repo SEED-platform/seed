@@ -24,7 +24,7 @@ def forwards(apps, schema_editor):
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("seed", "0216_alter_sensor_unique_together"),
+        ("seed", "0217_goal_commitment_sqft"),
     ]
 
     operations = [
