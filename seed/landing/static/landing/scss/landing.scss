@@ -295,12 +295,9 @@ body {
 
           input:focus {
             border-color: rgb(82 168 236 / 80%);
-            outline: thin dotted 9;
+            outline: thin dotted;
 
-            @include box-shadow(
-              inset 0 1px 1px rgba(0, 0, 0, 0.075)
-                /* , 0 0 8px rgba(82,168,236,.6) */
-            );
+            @include box-shadow(inset 0 1px 1px rgba(0, 0, 0, 0.075));
           }
 
           br {

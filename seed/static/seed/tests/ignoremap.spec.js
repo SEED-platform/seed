@@ -2,14 +2,11 @@
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
  * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
-// create dummy angularJS app to attach filter(s)
-const myignoremapApp = angular.module('myignoremapApp', ['ignoremap']);
-
 describe('The ignoremap filter', () => {
   let ignoremapFilter;
 
   beforeEach(() => {
-    module('myignoremapApp');
+    module('BE.seed');
     inject((_ignoremapFilter_) => {
       ignoremapFilter = _ignoremapFilter_;
     });

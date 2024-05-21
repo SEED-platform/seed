@@ -30,7 +30,9 @@ _log = logging.getLogger(__name__)
 def angular_js_tests(request):
     """Jasmine JS unit test code covering AngularJS unit tests"""
     debug = settings.DEBUG
-    return render(request, "seed/jasmine_tests/AngularJSTests.html", locals())
+    spec_directory = os.path.join("seed", "static", "seed", "tests")
+    spec_files = [f for f in os.listdir(spec_directory) if f.endswith(".spec.js")]
+    return render(request, "seed/jasmine_tests/AngularJSTests.html", {**locals(), "spec_files": spec_files})
 
 
 def _get_default_org(user):
@@ -67,11 +69,8 @@ def _get_default_org(user):
 def home(request):
     """the main view for the app
     Sets in the context for the django template:
-
-    * **app_urls**: a json object of all the URLs that is loaded in the JS global namespace
-    * **username**: the request user's username (first and last name)
     """
-    username = request.user.first_name + " " + request.user.last_name
+    username = f"{request.user.first_name} {request.user.last_name}"
     (
         initial_org_id,
         initial_org_name,
