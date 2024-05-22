@@ -271,6 +271,7 @@ angular.module('BE.seed.controller.data_quality_admin', []).controller('data_qua
               text_match: rule.text_match,
               severity: rule.severity,
               units: rule.units,
+              target: rule.target,
               status_label: null,
               for_derived_column: !!column.is_derived
             };
