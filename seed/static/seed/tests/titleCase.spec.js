@@ -2,14 +2,11 @@
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
  * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
-// create dummy angularJS app to attach filter(s)
-const myTitleCaseApp = angular.module('myTitleCaseApp', ['titleCase']);
-
 describe('The TitleCase filter', () => {
   let titleCaseFilter;
 
   beforeEach(() => {
-    module('myTitleCaseApp');
+    module('BE.seed');
     inject((_titleCaseFilter_) => {
       titleCaseFilter = _titleCaseFilter_;
     });

@@ -11,8 +11,7 @@ describe('controller: members_controller', () => {
   beforeEach(() => {
     module('BE.seed');
     inject((_$httpBackend_) => {
-      $httpBackend = _$httpBackend_;
-      $httpBackend.whenGET(/^\/static\/seed\/locales\/.*\.json/).respond(200, {});
+      _$httpBackend_.whenGET(/^\/static\/seed\/locales\/.*\.json/).respond(200, {});
     });
     inject(($controller, $rootScope, $uibModal, $q, organization_service) => {
       controller = $controller;
@@ -20,16 +19,12 @@ describe('controller: members_controller', () => {
 
       mock_organization_service = organization_service;
 
-      spyOn(mock_organization_service, 'remove_user').andCallFake(() => $q.resolve({
-        status: 'success'
-      }));
+      spyOn(mock_organization_service, 'remove_user').andCallFake(() => $q.resolve({ status: 'success' }));
       spyOn(mock_organization_service, 'get_organization_users').andCallFake(() => $q.resolve({
         status: 'success',
         users: [{ id: 1, first_name: 'Bob', last_name: 'D' }]
       }));
-      spyOn(mock_organization_service, 'update_role').andCallFake(() => $q.resolve({
-        status: 'success'
-      }));
+      spyOn(mock_organization_service, 'update_role').andCallFake(() => $q.resolve({ status: 'success' }));
     });
   });
 
@@ -102,7 +97,7 @@ describe('controller: members_controller', () => {
     expect(mock_organization_service.get_organization_users).toHaveBeenCalledWith({ org_id: 4 });
   });
 
-  it("clicking a new role should update the user's role", () => {
+  it('clicking a new role should update the user\'s role', () => {
     // arrange
     create_members_controller();
 
