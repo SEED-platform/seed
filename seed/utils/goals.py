@@ -4,12 +4,12 @@ SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and othe
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
-from django.db.models import Case, F, FloatField, IntegerField, Sum, Value, When
+from django.db.models import Case, F, FloatField, IntegerField, Prefetch, Sum, Value, When
 from django.db.models.fields.json import KeyTextTransform
 from django.db.models.functions import Cast, Coalesce
 from quantityfield.units import ureg
 
-from seed.models import GoalNote, PropertyView
+from seed.models import GoalNote, PropertyView, Property
 from seed.serializers.pint import collapse_unit
 
 
@@ -168,3 +168,32 @@ def get_portfolio_summary(org, goal):
     summary["eui_change"] = percentage_difference(summary["baseline"]["weighted_eui"], summary["current"]["weighted_eui"])
 
     return summary
+
+def get_state_pairs(property_ids, goal):
+    """Given a list of property ids, return a dictionary containing baseline and current states"""
+    # Prefetch PropertyView objects
+    property_views = PropertyView.objects.filter(
+        cycle__in=[goal.baseline_cycle, goal.current_cycle],
+        property__in=property_ids
+    )
+    prefetch = Prefetch('views', queryset=property_views, to_attr='prefetched_views')
+
+    # Fetch properties and related PropertyView objects
+    qs = Property.objects.filter(id__in=property_ids).prefetch_related(prefetch)
+
+    state_pairs = []
+    for property in qs:
+        # find related view from prefetched views
+        baseline_view = next((pv for pv in property.prefetched_views if pv.cycle == goal.baseline_cycle), None)
+        current_view = next((pv for pv in property.prefetched_views if pv.cycle == goal.current_cycle), None)
+
+        baseline_state = baseline_view.state if baseline_view else None
+        current_state = current_view.state if baseline_view else None
+
+        state_pairs.append({
+            "property": property,
+            "baseline": baseline_state,
+            "current": current_state
+        })
+
+    return state_pairs

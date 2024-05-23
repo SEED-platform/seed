@@ -19,10 +19,11 @@ from pint.errors import DimensionalityError
 from quantityfield.units import ureg
 
 from seed.lib.superperms.orgs.models import Organization
-from seed.models import Column, DerivedColumn, PropertyView, StatusLabel, TaxLotView, obj_to_dict
+from seed.models import Column, DerivedColumn, GoalNote, PropertyView, StatusLabel, TaxLotView, obj_to_dict
 from seed.serializers.pint import pretty_units
 from seed.utils.cache import get_cache_raw, set_cache_raw
 from seed.utils.time import convert_datestr
+from seed.utils.goals import percentage_difference
 
 _log = logging.getLogger(__name__)
 
@@ -339,7 +340,7 @@ class Rule(models.Model):
             "condition": RULE_RANGE,
         },
         {
-            "table_name": "cross-cycle",
+            "table_name": "Goal",
             "field": "site_eui",
             "data_type": TYPE_EUI,
             "rule_type": RULE_TYPE_DEFAULT,
@@ -348,7 +349,7 @@ class Rule(models.Model):
             "target": 40,
         },
         {
-            "table_name": "cross-cycle",
+            "table_name": "Goal",
             "field": "site_eui",
             "data_type": TYPE_EUI,
             "rule_type": RULE_TYPE_DEFAULT,
@@ -357,7 +358,7 @@ class Rule(models.Model):
             "target": -40,
         },
         {
-            "table_name": "cross-cycle",
+            "table_name": "Goal",
             "field": "gross_floor_area",
             "data_type": TYPE_AREA,
             "rule_type": RULE_TYPE_DEFAULT,
@@ -366,7 +367,7 @@ class Rule(models.Model):
             "target": 5,
         },
         {
-            "table_name": "cross-cycle",
+            "table_name": "Goal",
             "field": "gross_floor_area",
             "data_type": TYPE_AREA,
             "rule_type": RULE_TYPE_DEFAULT,
@@ -375,7 +376,7 @@ class Rule(models.Model):
             "target": -5,
         },
         {
-            "table_name": "cross-cycle",
+            "table_name": "Goal",
             "field": "site_wui",
             "data_type": TYPE_WUI,
             "rule_type": RULE_TYPE_DEFAULT,
@@ -384,7 +385,7 @@ class Rule(models.Model):
             "target": 40,
         },
         {
-            "table_name": "cross-cycle",
+            "table_name": "Goal",
             "field": "site_wui",
             "data_type": TYPE_WUI,
             "rule_type": RULE_TYPE_DEFAULT,
@@ -722,6 +723,24 @@ class DataQualityCheck(models.Model):
             if not v["data_quality_results"]:
                 del self.results[k]
 
+    def check_data_cross_cycle(self, goal, state_pairs):
+        """
+        Send in data as properties and their goal state pairs. Update GoalNote.passed_checks with data quality check return
+        :param goal: 
+        :param state_pairs: [{property: Property, baseline: PropertyState, current: PropertyState}, {}, ...]
+        """
+        rules = self.rules.filter(enabled=True, table_name="Goal")
+        goal_notes = GoalNote.objects.filter(goal=goal)
+        goal_notes = {note.property.id: note for note in goal_notes}
+        goal_notes_to_update = []
+
+        for row in state_pairs:
+            goal_note = self._check_cross_cycle(rules, row, goal_notes)
+            if goal_note:
+                goal_notes_to_update.append(goal_note)
+
+        GoalNote.objects.bulk_update(goal_notes_to_update, ['passed_checks'])
+
     def get_fieldnames(self, record_type):
         """Get fieldnames to apply to results."""
         field_names = ["id"]
@@ -854,6 +873,38 @@ class DataQualityCheck(models.Model):
 
             if not label_applied and rule.status_label_id in model_labels["label_ids"]:
                 self.remove_status_label(label, rule, linked_id)
+
+
+    def _check_cross_cycle(self, rules, row, goal_notes):
+        """
+        Check if property percent changes are within tolerance. Update GoalNote.passed_checks with result
+        :param rules: list, rules to run from database objects
+        :param row: { property: Property, baseline: PropertyState, current PropertyState }
+        :goal_notes: dictionary of { property_id: GoalNote, ... }
+        """
+        passed_checks = []
+
+        for rule in rules:
+            baseline = getattr(row['baseline'], rule.field)
+            current = getattr(row['current'], rule.field)
+            percent_change = percentage_difference(current, baseline)
+
+            if percent_change is None:
+                continue
+            elif rule.condition == Rule.RULE_GT:
+               passed_checks.append(rule.target > percent_change)
+            elif rule.condition == Rule.RULE_GTE:
+               passed_checks.append(rule.target >= percent_change)
+            elif rule.condition == Rule.RULE_LT:
+               passed_checks.append(rule.target < percent_change)
+            elif rule.condition == Rule.RULE_LTE:
+               passed_checks.append(rule.target <= percent_change)
+
+        goal_note = goal_notes.get(row['property'].id)
+        if goal_note:
+            goal_note.passed_checks = all(passed_checks)
+            return goal_note
+
 
     def save_to_cache(self, identifier, organization_id):
         """
