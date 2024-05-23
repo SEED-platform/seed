@@ -154,7 +154,7 @@ angular.module('BE.seed.controller.data_quality_admin', []).controller('data_qua
       const ruleGroups = {
         properties: {},
         taxlots: {},
-        'cross-cycle': {}
+        goals: {}
       };
       let rule_type;
       _.forEach(rules_payload, (rule) => {
@@ -163,7 +163,7 @@ angular.module('BE.seed.controller.data_quality_admin', []).controller('data_qua
         } else if (rule.table_name === 'TaxLotState') {
           rule_type = 'taxlots';
         } else {
-          rule_type = 'cross-cycle';
+          rule_type = 'goals';
         }
 
         if (!_.has(ruleGroups[rule_type], rule.field)) ruleGroups[rule_type][rule.field] = [];
@@ -191,7 +191,7 @@ angular.module('BE.seed.controller.data_quality_admin', []).controller('data_qua
       _.map($scope.ruleGroups.taxlots, (rule) => {
         $scope.rule_count_taxlot += rule.length;
       });
-      _.map($scope.ruleGroups['cross-cycle'], (rule) => {
+      _.map($scope.ruleGroups.goals, (rule) => {
         $scope.rule_count_cross_cycle += rule.length;
       });
     };
@@ -255,7 +255,7 @@ angular.module('BE.seed.controller.data_quality_admin', []).controller('data_qua
             if (rule.field === null) return;
 
             const column = _.find($scope.columns, { column_name: rule.field }) || {};
-            const rule_type_lookup = {'properties': 'PropertyState', 'taxlots': 'TaxLotState', 'cross-cycle': 'cross-cycle'}
+            const rule_type_lookup = {'properties': 'PropertyState', 'taxlots': 'TaxLotState', 'goals': 'Goal'}
             const r = {
               enabled: rule.enabled,
               condition: rule.condition,

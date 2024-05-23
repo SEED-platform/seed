@@ -94,6 +94,9 @@
               <span ng-if="selected_count < 1" class="disabled-action" translate>Edit Fields for Selected</span>
             </li>
             <li class="drowndown-header goal-action">
+              <a ng-click="run_data_quality_check()">Data Quality Check</a>
+            </li>
+            <li class="drowndown-header goal-action">
               <a ng-if="!level_names.count < 2" ng-click="toggle_show_access_level_instances()">{$ show_access_level_instances ? 'Hide': 'Show' $} Access Levels</a>
               <span ng-if="level_names.count < 2" class="disabled-action">{$ show_access_level_instances ? 'Hide': 'Show' $} Access Levels</span>
             </li>

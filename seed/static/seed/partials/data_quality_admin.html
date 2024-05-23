@@ -55,12 +55,12 @@
           <li ui-sref-active="active" heading="{$:: 'View by Tax Lot' | translate $}">
             <a ui-sref="organization_data_quality(::{organization_id: org.id, rule_type: 'taxlots'})">View by Tax Lot <span class="badge badge_menu">{$ rule_count_taxlot | number:0 $}</span></a>
           </li>
-          <li ui-sref-active="active" heading="{$:: 'Cross-Cycle' | translate $}">
-            <a ui-sref="organization_data_quality(::{organization_id: org.id, rule_type: 'cross-cycle'})">Cross-Cycle <span class="badge badge_menu">{$ rule_count_cross_cycle | number:0 $}</span></a>
+          <li ui-sref-active="active" heading="{$:: 'Cross-Cycle by Goal' | translate $}">
+            <a ui-sref="organization_data_quality(::{organization_id: org.id, rule_type: 'goals'})">Cross-Cycle by Goal <span class="badge badge_menu">{$ rule_count_cross_cycle | number:0 $}</span></a>
           </li>
         </ul>
       </div>
-      <div ng-if="rule_type !== 'cross-cycle'" class="table_list_container has_borders">
+      <div ng-if="rule_type !== 'goals'" class="table_list_container has_borders">
         <table id="data-quality-admin-table" class="table has_no_btm_margin tbody-striped">
           <thead>
             <tr>
@@ -210,7 +210,7 @@
           </tbody>
         </table>
       </div>
-      <div ng-if="rule_type === 'cross-cycle'" class="table_list_container has_borders">
+      <div ng-if="rule_type === 'goals'" class="table_list_container has_borders">
         <table id="data-quality-admin-table" class="table has_no_btm_margin tbody-striped">
           <thead>
             <tr>

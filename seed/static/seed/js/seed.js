@@ -1560,7 +1560,7 @@ SEED_app.config([
       })
       .state({
         name: 'organization_data_quality',
-        url: '/accounts/{organization_id:int}/data_quality/{rule_type:properties|taxlots|cross-cycle}',
+        url: '/accounts/{organization_id:int}/data_quality/{rule_type:properties|taxlots|goals}',
         templateUrl: `${static_url}seed/partials/data_quality_admin.html`,
         controller: 'data_quality_admin_controller',
         resolve: {
@@ -1586,7 +1586,7 @@ SEED_app.config([
                   return columns;
                 });
               }
-              if ($stateParams.rule_type === 'cross-cycle') {
+              if ($stateParams.rule_type === 'goals') {
                 return inventory_service.get_property_columns_for_org(organization_id).then((columns) => {
                   columns = _.reject(columns, 'related');
                   columns = _.map(columns, (col) => _.omit(col, ['pinnedLeft', 'related']));

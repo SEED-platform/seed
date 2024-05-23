@@ -1110,4 +1110,8 @@ angular.module('BE.seed.controller.portfolio_summary', [])
           }
         };
       };
+
+      $scope.run_data_quality_check = () => {
+        console.log('run it')
+      }
     }]);
