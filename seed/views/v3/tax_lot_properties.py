@@ -9,10 +9,13 @@ import datetime
 import io
 import logging
 import math
+import tempfile
 from collections import OrderedDict
+from pathlib import Path
 from random import randint
 
 import xlsxwriter
+from buildingsync_asset_extractor.cts import building_sync_to_cts
 from django.http import HttpResponse, JsonResponse
 from drf_yasg.utils import swagger_auto_schema
 from quantityfield.units import ureg
@@ -23,7 +26,7 @@ from rest_framework.viewsets import GenericViewSet
 from seed.decorators import ajax_request_class
 from seed.lib.progress_data.progress_data import ProgressData
 from seed.lib.superperms.orgs.decorators import has_perm_class
-from seed.models import AccessLevelInstance, ColumnListProfile, PropertyView, TaxLotProperty, TaxLotView
+from seed.models import AccessLevelInstance, BuildingFile, ColumnListProfile, PropertyView, TaxLotProperty, TaxLotView
 from seed.models.meters import Meter, MeterReading
 from seed.models.property_measures import PropertyMeasure
 from seed.models.scenarios import Scenario
@@ -637,3 +640,64 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
         )
 
         set_update_to_now.subtask([property_view_ids, taxlot_view_ids, progress_key]).apply_async()
+
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class("requires_member")
+    @action(detail=False, methods=["GET"])
+    def start_export_to_cts(self, request):
+        """
+        Generate a ProgressData object that will be used to monitor property and tax lot exports
+        """
+        org_id = self.get_organization(request)
+
+        progress_data = ProgressData(func_name="export_to_cts", unique_id=f"{org_id}{randint(10000, 99999)}")
+        progress_key = progress_data.key
+        progress_data = update_sub_progress_total(100, progress_key)
+        return progress_data.result()
+
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class("requires_member")
+    @action(detail=False, methods=["POST"])
+    def export_to_cts(self, request):
+        """
+        Download a collection of the TaxLot and Properties in multiple formats.
+        """
+        org_id = self.get_organization(request)
+        access_level_instance = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
+        property_view_ids = request.data.get("property_view_ids", [])
+
+        if request.data.get("progress_key"):
+            progress_key = request.data["progress_key"]
+            progress_data = ProgressData.from_key(progress_key)
+        else:
+            progress_data = ProgressData(func_name="export_to_cts", unique_id=org_id)
+            progress_key = progress_data.key
+        progress_data = update_sub_progress_total(100, progress_key)
+
+        state_ids = PropertyView.objects.filter(
+            property__organization_id=org_id,
+            pk__in=property_view_ids,
+            property__access_level_instance__lft__gte=access_level_instance.lft,
+            property__access_level_instance__rgt__lte=access_level_instance.rgt,
+        ).values("state_id")
+        building_files = (
+            BuildingFile.objects.filter(property_state_id__in=state_ids)
+            .order_by("-property_state")
+            .distinct("property_state")
+            .values("filename")
+        )
+
+        filename = request.data.get("filename", "ExportedData.xlsx")
+        response = HttpResponse(content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+        response["Content-Disposition"] = f'attachment; filename="{filename}"'
+
+        with tempfile.NamedTemporaryFile() as f:
+            building_sync_to_cts(list(building_files), Path(f.name))
+
+            output = io.BytesIO(f.read())
+            xlsx_data = output.getvalue()
+            response.write(xlsx_data)
+
+        return response

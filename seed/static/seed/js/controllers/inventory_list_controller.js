@@ -1489,6 +1489,18 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
       });
     };
 
+    $scope.open_export_cts_modal = (selectedViewIds) => {
+      $uibModal.open({
+        templateUrl: `${urls.static_url}seed/partials/export_to_cts_modal.html`,
+        controller: 'export_to_cts_modal_controller',
+        resolve: {
+          ids: () => selectedViewIds,
+          org_id: () => $scope.organization.id
+        }
+      });
+
+    };
+
     $scope.model_actions = 'none';
     const elSelectActions = document.getElementById('select-actions');
     $scope.run_action = (viewIds = [], action = null) => {
@@ -1534,6 +1546,9 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
           break;
         case 'open_export_to_audit_template_modal':
           $scope.open_export_to_audit_template_modal(selectedViewIds);
+          break;
+        case 'open_export_cts_modal':
+          $scope.open_export_cts_modal(selectedViewIds);
           break;
         case 'open_update_labels_modal':
           $scope.open_update_labels_modal(selectedViewIds);
