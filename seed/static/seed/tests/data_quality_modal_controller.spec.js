@@ -5,38 +5,92 @@
 describe('controller: data_quality_modal_controller', () => {
   // globals set up and used in each test scenario
   let controller;
-  let modal_state;
   let data_quality_controller_scope;
 
-  const cycles = {
-    cycles: [
-      {
-        end: '2015-01-01',
-        id: 2017,
-        name: '2014 Calendar Year',
-        num_properties: 1496,
-        num_taxlots: 1519,
-        start: '2014-01-01'
-      }
-    ],
-    status: 'success'
-  };
+  const dataQualityResults = [{
+    id: 2311243,
+    address_line_1: '25374 S Melon Street',
+    custom_id_1: null,
+    pm_property_id: null,
+    data_quality_results: [{
+      field: 'custom_id_1',
+      formatted_field: 'Custom ID 1',
+      value: null,
+      table_name: 'PropertyState',
+      message: 'Custom ID 1 is null',
+      detailed_message: 'Custom ID 1 is null',
+      severity: 'error',
+      condition: 'not_null'
+    }, {
+      field: 'pm_property_id',
+      formatted_field: 'PM Property ID',
+      value: null,
+      table_name: 'PropertyState',
+      message: 'PM Property ID is null',
+      detailed_message: 'PM Property ID is null',
+      severity: 'error',
+      condition: 'not_null'
+    }]
+  }, {
+    id: 2311244,
+    address_line_1: '139173 N Mandarin Avenue',
+    custom_id_1: null,
+    pm_property_id: null,
+    data_quality_results: [{
+      field: 'custom_id_1',
+      formatted_field: 'Custom ID 1',
+      value: null,
+      table_name: 'PropertyState',
+      message: 'Custom ID 1 is null',
+      detailed_message: 'Custom ID 1 is null',
+      severity: 'error',
+      condition: 'not_null'
+    }, {
+      field: 'pm_property_id',
+      formatted_field: 'PM Property ID',
+      value: null,
+      table_name: 'PropertyState',
+      message: 'PM Property ID is null',
+      detailed_message: 'PM Property ID is null',
+      severity: 'error',
+      condition: 'not_null'
+    }]
+  }, {
+    id: 2311245,
+    address_line_1: '187329 SE Citron Lane',
+    custom_id_1: null,
+    pm_property_id: null,
+    data_quality_results: [{
+      field: 'custom_id_1',
+      formatted_field: 'Custom ID 1',
+      value: null,
+      table_name: 'PropertyState',
+      message: 'Custom ID 1 is null',
+      detailed_message: 'Custom ID 1 is null',
+      severity: 'error',
+      condition: 'not_null'
+    }, {
+      field: 'pm_property_id',
+      formatted_field: 'PM Property ID',
+      value: null,
+      table_name: 'PropertyState',
+      message: 'PM Property ID is null',
+      detailed_message: 'PM Property ID is null',
+      severity: 'error',
+      condition: 'not_null'
+    }]
+  }];
 
-  const organization = {
-    id: 1
-  };
   // make the seed app available for each test
   // 'config.seed' is created in TestFilters.html
   beforeEach(() => {
     module('BE.seed');
     inject((_$httpBackend_) => {
-      $httpBackend = _$httpBackend_;
-      $httpBackend.whenGET(/^\/static\/seed\/locales\/.*\.json/).respond(200, {});
+      _$httpBackend_.whenGET(/^\/static\/seed\/locales\/.*\.json/).respond(200, {});
     });
-    inject(($controller, $rootScope /* , $q, search_service */) => {
+    inject(($controller, $rootScope) => {
       controller = $controller;
       data_quality_controller_scope = $rootScope.$new();
-      modal_state = '';
     });
   });
 
@@ -44,16 +98,12 @@ describe('controller: data_quality_modal_controller', () => {
   function create_data_quality_modal_controller() {
     controller('data_quality_modal_controller', {
       $scope: data_quality_controller_scope,
-      $uibModalInstance: {
-        close: function () {
-          modal_state = 'close';
-        },
-        dismiss: function () {
-          modal_state = 'dismiss';
-        }
-      },
-      cycles,
-      organization
+      $uibModalInstance: {},
+      dataQualityResults,
+      name: null,
+      uploaded: null,
+      run_id: 1,
+      orgId: 1
     });
   }
 
@@ -61,7 +111,8 @@ describe('controller: data_quality_modal_controller', () => {
    * Test scenarios
    */
 
-  /*  set this up but doesn't do anything anyway, tested in e2e now. Kept file in case it's useful later */
+  /*  set this up but doesn't do anything currently */
+  // eslint-disable-next-line func-names
   it('should dq modal sort and search', function () {
     // arrange
     create_data_quality_modal_controller();
@@ -86,8 +137,5 @@ describe('controller: data_quality_modal_controller', () => {
     // assertions
     data_quality_controller_scope.search.column_prototype.toggle_sort();
     data_quality_controller_scope.search.column_prototype.sorted_class();
-
-    // what needs to be asserted here?
-    expect(true).toBe(true);
   });
 });

@@ -37,6 +37,34 @@ angular.module('BE.seed.controller.accounts', []).controller('accounts_controlle
       );
     };
 
+    /**
+     * Sorts the owners in ascending order by 'last_name', then 'first_name', or otherwise email
+     *
+     * @param {Array.<{first_name: string, last_name: string, email: string, id: number}>} owners - Array of owner objects to be sorted
+     * @returns {Array.<string>}
+     */
+    $scope.sortOwners = (owners) => owners.sort((a, b) => {
+      // Compare by last name
+      if (a.last_name && b.last_name) {
+        if (a.last_name.toLowerCase() === b.last_name.toLowerCase()) {
+          return a.first_name.toLowerCase().localeCompare(b.first_name.toLowerCase());
+        }
+        return a.last_name.toLowerCase().localeCompare(b.last_name.toLowerCase());
+      }
+      if (a.last_name) return -1; // a has last_name, b does not
+      if (b.last_name) return 1; // b has last_name, a does not
+
+      // If both are missing last names, check first names
+      if (a.first_name && b.first_name) {
+        return a.first_name.toLowerCase().localeCompare(b.first_name.toLowerCase());
+      }
+      if (a.first_name) return -1;
+      if (b.first_name) return 1;
+
+      // If both are missing first and last names, sort by email
+      return a.email.toLowerCase().localeCompare(b.email.toLowerCase());
+    }).map((user) => `${user.first_name} ${user.last_name}`.trim() || user.email);
+
     init();
   }
 ]);

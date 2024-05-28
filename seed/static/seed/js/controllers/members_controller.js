@@ -33,7 +33,7 @@ angular.module('BE.seed.controller.members', []).controller('members_controller'
       if (tree === undefined) return;
       if (access_level_instances_by_depth[depth] === undefined) access_level_instances_by_depth[depth] = [];
       for (const ali of tree) {
-        access_level_instances_by_depth[depth].push({ id: ali.id, name: ali.data.name });
+        access_level_instances_by_depth[depth].push({ id: ali.id, name: ali.name });
         calculate_access_level_instances_by_depth(ali.children, depth + 1);
       }
     };

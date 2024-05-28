@@ -38,6 +38,7 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.analysis',
   'BE.seed.controller.analysis_details',
   'BE.seed.controller.analysis_run',
+  'BE.seed.controller.bulk_edit_goalnotes_modal',
   'BE.seed.controller.column_mapping_profile_modal',
   'BE.seed.controller.column_mappings',
   'BE.seed.controller.column_settings',
@@ -80,23 +81,23 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.green_button_upload_modal',
   'BE.seed.controller.insights_program',
   'BE.seed.controller.insights_property',
+  'BE.seed.controller.inventory_column_list_profiles',
   'BE.seed.controller.inventory_cycles',
   'BE.seed.controller.inventory_detail',
   'BE.seed.controller.inventory_detail_analyses',
   'BE.seed.controller.inventory_detail_analyses_modal',
+  'BE.seed.controller.inventory_detail_column_list_profiles',
   'BE.seed.controller.inventory_detail_cycles',
   'BE.seed.controller.inventory_detail_map',
   'BE.seed.controller.inventory_detail_meters',
   'BE.seed.controller.inventory_detail_notes_modal',
   'BE.seed.controller.inventory_detail_sensors',
-  'BE.seed.controller.inventory_detail_settings',
   'BE.seed.controller.inventory_detail_timeline',
   'BE.seed.controller.inventory_detail_ubid',
   'BE.seed.controller.inventory_list',
   'BE.seed.controller.inventory_map',
   'BE.seed.controller.inventory_plots',
   'BE.seed.controller.inventory_reports',
-  'BE.seed.controller.inventory_settings',
   'BE.seed.controller.inventory_summary',
   'BE.seed.controller.label_admin',
   'BE.seed.controller.mapping',
@@ -141,7 +142,19 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.unmerge_modal',
   'BE.seed.controller.update_item_labels_modal'
 ]);
-angular.module('BE.seed.filters', ['district', 'floatingPoint', 'fromNow', 'getAnalysisRunAuthor', 'htmlToPlainText', 'ignoremap', 'startFrom', 'stripImportPrefix', 'titleCase', 'tolerantNumber', 'typedNumber']);
+angular.module('BE.seed.filters', [
+  'district',
+  'floatingPoint',
+  'fromNow',
+  'getAnalysisRunAuthor',
+  'htmlToPlainText',
+  'ignoremap',
+  'startFrom',
+  'stripImportPrefix',
+  'titleCase',
+  'tolerantNumber',
+  'typedNumber'
+]);
 angular.module('BE.seed.directives', [
   'sdBasicPropertyInfoChart',
   'sdCheckCycleExists',
@@ -635,8 +648,8 @@ SEED_app.config([
       .state({
         name: 'column_list_profiles',
         url: '/{inventory_type:properties|taxlots}/settings',
-        templateUrl: `${static_url}seed/partials/inventory_settings.html`,
-        controller: 'inventory_settings_controller',
+        templateUrl: `${static_url}seed/partials/inventory_column_list_profiles.html`,
+        controller: 'inventory_column_list_profiles_controller',
         resolve: {
           $uibModalInstance: () => ({
             close() {
@@ -684,8 +697,8 @@ SEED_app.config([
       .state({
         name: 'detail_column_list_profiles',
         url: '/{inventory_type:properties|taxlots}/{view_id:int}/settings',
-        templateUrl: `${static_url}seed/partials/inventory_detail_settings.html`,
-        controller: 'inventory_detail_settings_controller',
+        templateUrl: `${static_url}seed/partials/inventory_detail_column_list_profiles.html`,
+        controller: 'inventory_detail_column_list_profiles_controller',
         resolve: {
           columns: [
             '$stateParams',
@@ -2904,7 +2917,6 @@ SEED_app.constant('urls', {
   seed_home: BE.urls.seed_home,
   static_url: BE.urls.STATIC_URL
 });
-SEED_app.constant('generated_urls', window.BE.app_urls);
 
 /**
  * @param {string} a
