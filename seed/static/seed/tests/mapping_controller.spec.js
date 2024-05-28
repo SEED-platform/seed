@@ -23,7 +23,9 @@ describe('controller: mapping_controller', () => {
       mock_geocode_service = geocode_service;
       mock_organization_service = organization_service;
 
-      spyOn(mock_geocode_service, 'check_org_has_api_key').andCallFake(() => $q.resolve({ status: 'success' }));
+      spyOn(mock_geocode_service, 'check_org_has_api_key').andCallFake(() => $q.resolve({
+        status: 'success'
+      }));
 
       spyOn(mock_geocode_service, 'check_org_has_geocoding_enabled').andCallFake(() => $q.resolve(true));
 

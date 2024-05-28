@@ -1132,6 +1132,12 @@ msgstr "Copie"
 msgid "Duplicates"
 msgstr "Copies"
 
+msgid "ENABLED"
+msgstr "ACTIVÉ"
+
+msgid "ENABLE_PUBLIC_FEED"
+msgstr "pour activer ou désactiver la fonctionnalité de flux public"
+
 msgid "ENERGY STAR Score"
 msgstr "Compte ENERGY STAR"
 
@@ -1204,6 +1210,12 @@ msgstr "Activer la fonctionnalité ComStock"
 
 msgid "Enable Geocoding"
 msgstr "Activer le géocodage"
+
+msgid "Enable Labels in Public Feed"
+msgstr "Activer les étiquettes dans le flux public"
+
+msgid "Enable Public Endpoints"
+msgstr "Activer les points de terminaison publics"
 
 msgid "Enable Salesforce Integration"
 msgstr "Activer la fonctionnalité Salesforce"
@@ -2358,6 +2370,15 @@ msgstr "Au moins un des champs de propriété suivants est requis"
 msgid "PUBLIC"
 msgstr "PUBLIC"
 
+msgid "PUBLIC_HTML"
+msgstr "Votre URL HTML publique est"
+
+msgid "PUBLIC_JSON"
+msgstr "L'URL de votre flux JSON public est"
+
+msgid "PUBLIC_SHARE"
+msgstr "Si la fonctionnalité Flux public est activée, cette page peut être utilisée pour configurer les données partagées en externe avec le grand public."
+
 msgid "Pair Properties to Tax Lots"
 msgstr "Associer des propriétés à des lots d'impôt"
 
@@ -2604,6 +2625,9 @@ msgstr "Visibilité de la propriété"
 
 msgid "Property and Tax Lot Data"
 msgstr "Données foncières et fiscales"
+
+msgid "Public Disclosure - Sharing Your Data"
+msgstr "Divulgation publique – Partage de données"
 
 msgid "RECOGNIZE_EMPTY_EXPLANATION"
 msgstr "Cocher cette case pour un champ affectera la façon dont les valeurs vides ou vides sont traitées lors des fusions. Plus précisément, les valeurs vides pourront remplacer les valeurs non vides par le paramètre \"Protection contre la fusion\"."
@@ -2945,6 +2969,29 @@ msgstr "Étiquette qui signale qu'une propriété a une violation.  Example: 'Vi
 msgid "SHARE DATA WITH"
 msgstr "PARTAGE DE DONNÉES AVEC"
 
+#, fuzzy
+msgid "SHARING_CYCLES"
+msgstr "Liste d’identifiants de cycle séparés par des virgules. Les résultats incluent l’inventaire des cycles répertoriés. La valeur par défaut est tous les cycles."
+
+#, fuzzy
+msgid "SHARING_LABELS"
+msgstr "Liste de noms d'étiquettes sensibles à la casse, séparés par des virgules. Les résultats incluront l'inventaire portant l'une des étiquettes répertoriées. La valeur par défaut est tout l'inventaire."
+
+msgid "SHARING_PAGE"
+msgstr "Numéro de la page de résultats à retourner. La valeur par défaut est 1."
+
+msgid "SHARING_PER_PAGE"
+msgstr "Nombre de résultats par page. La valeur par défaut est 100."
+
+msgid "SHARING_PROPERTIES"
+msgstr "Booléen True/False pour renvoyer un inventaire de type « Propriété ». La valeur par défaut est True."
+
+msgid "SHARING_QUERY_PARAMS"
+msgstr "Des paramètres de requête peuvent être ajoutés à l'URL pour filtrer les données renvoyées"
+
+msgid "SHARING_TAXLOTS"
+msgstr "Booléen True/False pour renvoyer un inventaire de type « Lot fiscal ». La valeur par défaut est True."
+
 msgid "SHOWING_AVAILABLE_MATCHES"
 msgstr "Affichage des {start} à {end} de {total} correspondances disponibles "
 
@@ -3045,6 +3092,9 @@ msgstr "Sécurité"
 
 msgid "Security Token"
 msgstr "Jeton d'authentification"
+
+msgid "See API Documentation for more information about the /v3/public endpoints"
+msgstr "pour plus d'informations sur le"
 
 #: seed/models/columns.py:688 seed/models/models.py:195
 #: seed/models/models.py:256 seed/models/projects.py:42
@@ -3600,6 +3650,9 @@ msgstr "Télécharger le capteur"
 msgid "UPLOAD_SENSOR_READINGS_BUTTON"
 msgstr "Télécharger les relevés de capteur"
 
+msgid "URL_OPTIONS"
+msgstr "Options d'URL"
+
 #, fuzzy
 msgid "USING_DEFAULT_UNITS_WARNING"
 msgstr "Pour les colonnes avec des paramètres d'unité, les unités par défaut seront utilisées pour les conversions."
@@ -3764,6 +3817,9 @@ msgstr "Spectateur"
 
 msgid "Violation Label"
 msgstr "Étiquette de Violation"
+
+msgid "Visit"
+msgstr "Visitez"
 
 msgid "Visit the BETTER website to run a portfolio analysis"
 msgstr "Visitez le site Web de BETTER pour effectuer une analyse de portefeuille"
@@ -4065,6 +4121,9 @@ msgstr "adresse e-mail"
 #: seed/models/models.py:237
 msgid "end_date"
 msgstr "date de fin"
+
+msgid "endpoints see the"
+msgstr "points de terminaison voir le"
 
 #: seed/landing/forms.py:14
 msgid "ex: joe@company.com"

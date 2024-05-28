@@ -90,6 +90,8 @@ class AccountsViewTests(TestCase):
             "ubid_threshold": 1.0,
             "inventory_count": 0,
             "access_level_names": [self.org.name],
+            "public_feed_enabled": False,
+            "public_feed_labels": False,
         }
 
         org_payload = _dict_org(self.fake_request, [self.org])
@@ -181,6 +183,8 @@ class AccountsViewTests(TestCase):
                     "salesforce_enabled": False,
                     "ubid_threshold": 1.0,
                     "inventory_count": 0,
+                    "public_feed_enabled": False,
+                    "public_feed_labels": False,
                 }
             ],
             "is_parent": True,
@@ -212,6 +216,8 @@ class AccountsViewTests(TestCase):
             "ubid_threshold": 1.0,
             "inventory_count": 0,
             "access_level_names": ["my org"],
+            "public_feed_enabled": False,
+            "public_feed_labels": False,
         }
 
         org_payload = _dict_org(self.fake_request, Organization.objects.all())

@@ -984,7 +984,7 @@ a:not([href]) {
     }
 
     .vert_table_scroll_container {
-      height: 400px;
+      height: 600px;
       overflow-y: scroll;
       border-bottom: 1px solid $gray_lighter;
       background: url('../../seed/images/bg_first_td.webp') repeat-x top center;
@@ -3893,6 +3893,10 @@ $pairedCellWidth: 60px;
   padding-top: 10px;
 }
 
+.pad-top-20 {
+  padding-top: 20px;
+}
+
 .access-tree {
   margin-top: 20px;
 }
@@ -5520,23 +5524,18 @@ tags-input .tags .tag-item {
   border-top: 1px solid #d4d4d4;
 }
 
-#batch-edit-goalnotes-form {
-  div {
-    display: flex;
-    margin: 1px;
-  }
+.label-success {
+  background: #5cb85c;
+}
 
-  label,
-  input {
-    margin: auto 10px;
-  }
+.label-default {
+  background: #777;
+}
 
-  label {
-    width: 150px;
-  }
+.label-lg {
+  font-size: 1.2em;
+}
 
-  .disabled {
-    color: $gray_lighter;
-    font-weight: normal;
-  }
+.wider-diff {
+  width: 30% !important;
 }
