@@ -643,6 +643,15 @@ msgstr "ComStock Mapping"
 msgid "Commercial"
 msgstr "Commercial"
 
+msgid "Commitment"
+msgstr "Commitment"
+
+msgid "Commitment (Sq Ft)"
+msgstr "Commitment (Sq Ft)"
+
+msgid "Committed Area"
+msgstr "Committed Area"
+
 msgid "Compare UBIDs"
 msgstr "Compare UBIDs"
 
@@ -1123,6 +1132,9 @@ msgstr "Duplicate"
 msgid "Duplicates"
 msgstr "Duplicates"
 
+msgid "EDIT_GOAL_NOTES"
+msgstr "Edit Fields for the Selected Properties"
+
 msgid "ENABLED"
 msgstr "ENABLED"
 
@@ -1170,6 +1182,9 @@ msgstr "Edit"
 
 msgid "Edit Access Level Instance Name"
 msgstr "Edit Access Level Instance Name"
+
+msgid "Edit Fields for Selected"
+msgstr "Edit Fields for Selected"
 
 msgid "Edit Name"
 msgstr "Edit Name"
@@ -1486,6 +1501,21 @@ msgstr "GJ/m²/year"
 msgid "GOAL"
 msgstr "GOAL"
 
+msgid "GOAL_CONFIG_TEXT"
+msgstr "Configure one or more portfolio Energy Use Intensity (EUI) reduction goals below."
+
+msgid "GOAL_SELECT_ALI"
+msgstr "Indicate the level in your access level tree that this goal applies to"
+
+msgid "GOAL_SELECT_CYCLES"
+msgstr "Select a baseline cycle and a current cycle for comparison"
+
+msgid "GOAL_SELECT_EUI_FIELDS"
+msgstr "Indicate which fields in your data should be used for EUI and floor area information"
+
+msgid "GOAL_SELECT_PERCENTAGE"
+msgstr "Specify a percentage EUI improvement target"
+
 msgid "GOAL_SETUP_TEXT"
 msgstr "Configure one or more portfolio Energy Use Intensity (EUI) reduction goals below. Select a baseline cycle and a current cycle for comparison, indicate the level in your access level tree that this goal applies to, specify a percentage EUI improvement target, and indicate which fields in your data should be used for EUI and square footage information."
 
@@ -1571,6 +1601,9 @@ msgstr "Hexagonal Bins"
 
 msgid "Highlights of SEED Platform™"
 msgstr "Highlights of SEED Platform™"
+
+msgid "Historical Note"
+msgstr "Historical Note"
 
 msgid "Home Energy Score ID"
 msgstr "Home Energy Score ID"
@@ -2134,6 +2167,9 @@ msgstr "National Renewable Energy Laboratory"
 msgid "New Analysis"
 msgstr "New Analysis"
 
+msgid "New Build or Acquisition"
+msgstr "New Build or Acquisition"
+
 msgid "New Goal"
 msgstr "New Goal"
 
@@ -2363,6 +2399,9 @@ msgstr "Check the box below to enable the Public Feed functionality. Data fields
 msgid "PUBLIC_FEED_LABELS"
 msgstr "Check the box below to allow labels to be returned in the Public Feed and to be able to filter the Public Feed by a specific label."
 
+msgid "PUBLIC_GEOJSON"
+msgstr "Returns a GeoJSON with the fields defined in the Organization Sharing selections"
+
 msgid "PUBLIC_HTML"
 msgstr "Your public HTML URL is"
 
@@ -2393,6 +2432,9 @@ msgstr "Pairing Settings"
 msgid "Parent ID"
 msgstr "Parent ID"
 
+msgid "Passed Checks"
+msgstr "Passed Checks"
+
 #: seed/landing/forms.py:20
 msgid "Password"
 msgstr "Password"
@@ -2417,6 +2459,9 @@ msgstr "Password set"
 #: seed/landing/templates/landing/password_set.html:12
 msgid "Password set unsuccessful"
 msgstr "Password set unsuccessful"
+
+msgid "Percentage (%)"
+msgstr "Percentage (%)"
 
 msgid "Permanently delete extra_data columns and all associated data"
 msgstr "Permanently delete extra_data columns and all associated data"
@@ -2620,6 +2665,9 @@ msgstr "Property and Tax Lot Data"
 msgid "Public Disclosure - Sharing Your Data"
 msgstr "Public Disclosure - Sharing Your Data"
 
+msgid "Question"
+msgstr "Question"
+
 msgid "RECOGNIZE_EMPTY_EXPLANATION"
 msgstr "Checking this box for a field will affect how empty or blank values are treated during merges. Specifically, empty values will be able to replace non-empty values per the \"Merge Protection\" setting."
 
@@ -2737,6 +2785,9 @@ msgstr "Reset Defaults"
 
 msgid "Residential"
 msgstr "Residential"
+
+msgid "Resolution"
+msgstr "Resolution"
 
 msgid "Restore Default Rules"
 msgstr "Restore Default Rules"
