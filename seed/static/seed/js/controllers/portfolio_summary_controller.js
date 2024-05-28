@@ -509,6 +509,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
         const default_baseline = { headerCellClass: 'portfolio-summary-baseline-header', cellClass: 'portfolio-summary-baseline-cell' };
         const default_current = { headerCellClass: 'portfolio-summary-current-header', cellClass: 'portfolio-summary-current-cell' };
         const default_styles = { headerCellFilter: 'translate', minWidth: 75, width: 150 };
+        const default_no_edit = { enableCellEdit: false }
 
         const baseline_cols = [
           { field: 'baseline_cycle', displayName: 'Cycle' },
@@ -631,7 +632,9 @@ angular.module('BE.seed.controller.portfolio_summary', [])
 
         apply_defaults(baseline_cols, default_baseline);
         apply_defaults(current_cols, default_current);
-        cols = [...cols, ...baseline_cols, ...current_cols, ...summary_cols, ...goal_note_cols];
+        cols = [...cols, ...baseline_cols, ...current_cols, ...summary_cols];
+        apply_defaults(cols, default_no_edit)
+        cols = [...cols, ...goal_note_cols]
 
         // Apply filters
         // from inventory_list_controller
