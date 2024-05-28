@@ -5539,3 +5539,24 @@ tags-input .tags .tag-item {
 .wider-diff {
   width: 30% !important;
 }
+
+#batch-edit-goalnotes-form {
+  div {
+    display: flex;
+    margin: 1px;
+  }
+
+  label,
+  input {
+    margin: auto 10px;
+  }
+
+  label {
+    width: 150px;
+  }
+
+  .disabled {
+    color: $gray_lighter;
+    font-weight: normal;
+  }
+}
