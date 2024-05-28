@@ -11,6 +11,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
     '$window',
     'urls',
     'ah_service',
+    'data_quality_service',
     'inventory_service',
     'label_service',
     'goal_service',
@@ -31,6 +32,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
       $window,
       urls,
       ah_service,
+      data_quality_service,
       inventory_service,
       label_service,
       goal_service,
@@ -1113,5 +1115,19 @@ angular.module('BE.seed.controller.portfolio_summary', [])
 
       $scope.run_data_quality_check = () => {
         console.log('run it')
-      }
+        data_quality_service.start_data_quality_checks([], [], $scope.goal.id)
+          .then((response) => {
+            data_quality_service.data_quality_checks_status(response.progress_key)
+              .then(result => {
+                data_quality_service.get_data_quality_results($scope.organization.id, result.unique_id )
+                  .then(dq_result => {
+                    console.log('What should the results look like?', dq_result)
+                    load_summary();
+                    load_inventory();
+                  })
+                })
+              })
+            }
+            
+      
     }]);

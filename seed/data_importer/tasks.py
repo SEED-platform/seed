@@ -97,7 +97,7 @@ STR_TO_CLASS = {"TaxLotState": TaxLotState, "PropertyState": PropertyState}
 
 
 @shared_task(ignore_result=True)
-def check_data_chunk(org_id, model, ids, dq_id, goal=None):
+def check_data_chunk(org_id, model, ids, dq_id, goal_id=None):
     try:
         organization = Organization.objects.get(id=org_id)
         super_organization = organization.get_parent()
@@ -108,15 +108,15 @@ def check_data_chunk(org_id, model, ids, dq_id, goal=None):
         qs = PropertyState.objects.filter(id__in=ids)
     elif model == "TaxLotState":
         qs = TaxLotState.objects.filter(id__in=ids)
-    elif model == "Property" and goal:
+    elif model == "Property" and goal_id:
         # return a list of dicts with property, basseline_state, and current_state
-        state_pairs = get_state_pairs(ids, goal)
+        state_pairs = get_state_pairs(ids, goal_id)
 
     d = DataQualityCheck.retrieve(super_organization.id)
-    if not goal:
+    if not goal_id:
         d.check_data(model, qs.iterator())
     else:
-        d.check_data_cross_cycle(goal, state_pairs)
+        d.check_data_cross_cycle(goal_id, state_pairs)
     d.save_to_cache(dq_id, organization.id)
 
 
@@ -638,7 +638,7 @@ def _data_quality_check_create_tasks(org_id, property_state_ids, taxlot_state_id
             property_ids = goal.properties().values_list('id', flat=True)
             id_chunks = [list(chunk) for chunk in batch(property_ids, 100)]
             for ids in id_chunks:
-                tasks.append(check_data_chunk.s(org_id, "Property", ids, dq_id, goal))
+                tasks.append(check_data_chunk.s(org_id, "Property", ids, dq_id, goal.id))
         except Goal.DoesNotExist:
             pass
 

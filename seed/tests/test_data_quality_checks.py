@@ -563,4 +563,3 @@ class x(AccessLevelBaseTestCase):
         assert goalnote1.passed_checks == True
         assert goalnote2.passed_checks == False
         assert goalnote3.passed_checks == False
-        breakpoint()

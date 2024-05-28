@@ -9,7 +9,7 @@ from django.db.models.fields.json import KeyTextTransform
 from django.db.models.functions import Cast, Coalesce
 from quantityfield.units import ureg
 
-from seed.models import GoalNote, PropertyView, Property
+from seed.models import Goal, GoalNote, PropertyView, Property
 from seed.serializers.pint import collapse_unit
 
 
@@ -169,9 +169,14 @@ def get_portfolio_summary(org, goal):
 
     return summary
 
-def get_state_pairs(property_ids, goal):
+def get_state_pairs(property_ids, goal_id):
     """Given a list of property ids, return a dictionary containing baseline and current states"""
     # Prefetch PropertyView objects
+    try:
+        goal = Goal.objects.get(id=goal_id)
+    except Goal.DoesNotExist:
+        return []
+    
     property_views = PropertyView.objects.filter(
         cycle__in=[goal.baseline_cycle, goal.current_cycle],
         property__in=property_ids

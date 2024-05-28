@@ -723,14 +723,14 @@ class DataQualityCheck(models.Model):
             if not v["data_quality_results"]:
                 del self.results[k]
 
-    def check_data_cross_cycle(self, goal, state_pairs):
+    def check_data_cross_cycle(self, goal_id, state_pairs):
         """
         Send in data as properties and their goal state pairs. Update GoalNote.passed_checks with data quality check return
         :param goal: 
         :param state_pairs: [{property: Property, baseline: PropertyState, current: PropertyState}, {}, ...]
         """
         rules = self.rules.filter(enabled=True, table_name="Goal")
-        goal_notes = GoalNote.objects.filter(goal=goal)
+        goal_notes = GoalNote.objects.filter(goal=goal_id)
         goal_notes = {note.property.id: note for note in goal_notes}
         goal_notes_to_update = []
 
@@ -883,11 +883,10 @@ class DataQualityCheck(models.Model):
         :goal_notes: dictionary of { property_id: GoalNote, ... }
         """
         passed_checks = []
-
         for rule in rules:
             baseline = getattr(row['baseline'], rule.field)
             current = getattr(row['current'], rule.field)
-            percent_change = percentage_difference(current, baseline)
+            percent_change = percentage_difference(baseline, current)
 
             if percent_change is None:
                 continue
