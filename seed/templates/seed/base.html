@@ -24,6 +24,7 @@
       </style>
     {% endcompress %}
     {% compress css file vendors %}
+      {% include "seed/_fonts.html" %}
       <link href="{{ STATIC_URL }}node_modules/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" type="text/css"/>
       <link href="{{ STATIC_URL }}node_modules/jquery-ui-dist/jquery-ui.min.css" rel="stylesheet" type="text/css"/>
       <link href="{{ STATIC_URL }}node_modules/angular-ui-grid/ui-grid.min.css" rel="stylesheet" type="text/css"/>
@@ -39,7 +40,6 @@
       <link href="{{ STATIC_URL }}node_modules/ol/ol.css" rel="stylesheet" type="text/css"/>
     {% endcompress %}
     {% compress css file seed %}
-      <link href="{{ STATIC_URL }}landing/scss/fonts.scss" rel="stylesheet" type="text/x-scss"/>
       <link href="{{ STATIC_URL }}seed/scss/style.scss" rel="stylesheet" type="text/x-scss"/>
     {% endcompress %}
   {% endblock %}
