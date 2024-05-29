@@ -63,8 +63,8 @@ from seed.utils.geocode import geocode_buildings
 from seed.utils.match import match_merge_link
 from seed.utils.merge import merge_properties
 from seed.utils.organizations import create_organization, create_suborganization
-from seed.utils.public import public_feed
 from seed.utils.properties import pair_unpair_property_taxlot
+from seed.utils.public import public_feed
 from seed.utils.salesforce import toggle_salesforce_sync
 from seed.utils.users import get_js_role
 
@@ -1282,9 +1282,7 @@ class OrganizationViewSet(viewsets.ViewSet):
 
         save_raw_data(import_greenbutton.id)
 
-        return JsonResponse({
-            'status': 'success'
-        })
+        return JsonResponse({"status": "success"})
 
     @ajax_request_class
     def public_feed_json(self, request, pk):
@@ -1307,7 +1305,7 @@ class OrganizationViewSet(viewsets.ViewSet):
         try:
             org = Organization.objects.get(pk=pk)
         except Organization.DoesNotExist:
-            return JsonResponse({'erorr': 'Organization does not exist'}, status=status.HTTP_404_NOT_FOUND)
+            return JsonResponse({"erorr": "Organization does not exist"}, status=status.HTTP_404_NOT_FOUND)
 
         feed = public_feed(org, request)
 
