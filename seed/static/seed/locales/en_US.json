@@ -866,7 +866,6 @@
     "Property UBIDs": "Property UBIDs",
     "Property Visibility": "Property Visibility",
     "Property and Tax Lot Data": "Property and Tax Lot Data",
-    "Public Disclosure - Sharing Your Data": "Public Disclosure - Sharing Your Data",
     "Question": "Question",
     "Public Disclosure - Sharing Your Data": "Public Disclosure - Sharing Your Data",
     "RECOGNIZE_EMPTY_EXPLANATION": "Checking this box for a field will affect how empty or blank values are treated during merges. Specifically, empty values will be able to replace non-empty values per the \"Merge Protection\" setting.",
