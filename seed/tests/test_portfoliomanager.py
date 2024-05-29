@@ -391,7 +391,7 @@ class PortfolioManagerReportSinglePropertyUploadTest(TestCase):
         template = {
             "children": [],
             "display_name": "SEED_Test - Single Property",
-            "id": 2807325,
+            "id": 5440635,
             "name": "SEED_Test - Single Property",
             "newReport": 0,
             "z_seed_child_row": 0,
