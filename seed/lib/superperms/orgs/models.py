@@ -276,6 +276,9 @@ class Organization(models.Model):
     # UBID Threshold
     ubid_threshold = models.FloatField(default=1.0)
 
+    # 2 Factor Auth 
+    require_2fa = models.BooleanField(default=False)
+
     def save(self, *args, **kwargs):
         """Perform checks before saving."""
         # There can only be one.

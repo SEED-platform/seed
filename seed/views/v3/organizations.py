@@ -147,6 +147,7 @@ def _dict_org(request, organizations):
             "ubid_threshold": o.ubid_threshold,
             "inventory_count": o.property_set.count() + o.taxlot_set.count(),
             "access_level_names": o.access_level_names,
+            "require_2fa": o.require_2fa,
         }
         orgs.append(org)
 
@@ -574,6 +575,10 @@ class OrganizationViewSet(viewsets.ViewSet):
             org.salesforce_enabled = salesforce_enabled
             # if salesforce_enabled was toggled, must start/stop auto sync functionality
             toggle_salesforce_sync(salesforce_enabled, org.id)
+
+        require_2fa = posted_org.get("require_2fa", False)
+        if require_2fa != org.require_2fa:
+            org.require_2fa = require_2fa
 
         # update the ubid threshold option
         ubid_threshold = posted_org.get("ubid_threshold")
