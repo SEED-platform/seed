@@ -863,11 +863,8 @@
     "Property UBIDs": "Property UBIDs",
     "Property Visibility": "Property Visibility",
     "Property and Tax Lot Data": "Property and Tax Lot Data",
-<<<<<<< HEAD
     "Question": "Question",
-=======
     "Public Disclosure - Sharing Your Data": "Public Disclosure - Sharing Your Data",
->>>>>>> 332c14c89 (update org settings -> sharing page)
     "RECOGNIZE_EMPTY_EXPLANATION": "Checking this box for a field will affect how empty or blank values are treated during merges. Specifically, empty values will be able to replace non-empty values per the \"Merge Protection\" setting.",
     "RECOGNIZE_EMPTY_IMPORT_WARNING": "Warning: When this is checked for a field and that field is not mapped during import, the incoming records will be read as having an empty values for that field. Any resulting merges will have empty values for this field.",
     "RENAME_COLUMN_TITLE": "Rename Column",

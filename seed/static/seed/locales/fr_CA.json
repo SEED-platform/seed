@@ -863,11 +863,8 @@
     "Property UBIDs": "UBID de propriété",
     "Property Visibility": "Visibilité de la propriété",
     "Property and Tax Lot Data": "Données foncières et fiscales",
-<<<<<<< HEAD
     "Question": "Question",
-=======
     "Public Disclosure - Sharing Your Data": "Divulgation publique – Partage de données",
->>>>>>> 332c14c89 (update org settings -> sharing page)
     "RECOGNIZE_EMPTY_EXPLANATION": "Cocher cette case pour un champ affectera la façon dont les valeurs vides ou vides sont traitées lors des fusions. Plus précisément, les valeurs vides pourront remplacer les valeurs non vides par le paramètre \"Protection contre la fusion\".",
     "RECOGNIZE_EMPTY_IMPORT_WARNING": "Avertissement: Lorsque cette case est cochée pour un champ et que ce champ n'est pas mappé lors de l'importation, les enregistrements entrants seront lus comme ayant des valeurs vides pour ce champ. Toutes les fusions résultantes auront des valeurs vides pour ce champ.",
     "RENAME_COLUMN_TITLE": "Renommer la Colonne",
