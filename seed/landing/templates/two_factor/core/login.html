@@ -7,6 +7,7 @@
 {% endblock %}
 
 {% block content_inner %}
+  require_2fa: {{require_2fa}}
   {% if wizard.steps.current == 'auth' %}
     <p>{% blocktrans %}Enter your credentials.{% endblocktrans %}</p>
   {% elif wizard.steps.current == 'token' %}

@@ -60,6 +60,7 @@ TEMPLATES = [
                 "django.contrib.messages.context_processors.messages",
                 "config.template_context.session_key",
                 "config.template_context.sentry_js",
+                "seed.context_processors.global_vars",
             ],
         },
     },
