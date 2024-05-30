@@ -16,6 +16,7 @@ from random import randint
 
 import xlsxwriter
 from buildingsync_asset_extractor.cts import building_sync_to_cts
+from django.conf import settings
 from django.http import HttpResponse, JsonResponse
 from drf_yasg.utils import swagger_auto_schema
 from quantityfield.units import ureg
@@ -686,17 +687,24 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
             BuildingFile.objects.filter(property_state_id__in=state_ids)
             .order_by("-property_state")
             .distinct("property_state")
-            .values("filename")
+            .values_list("file", flat=True)
         )
 
         filename = request.data.get("filename", "ExportedData.xlsx")
         response = HttpResponse(content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
         response["Content-Disposition"] = f'attachment; filename="{filename}"'
 
-        with tempfile.NamedTemporaryFile() as f:
-            building_sync_to_cts(list(building_files), Path(f.name))
+        import shutil
 
-            output = io.BytesIO(f.read())
+        with tempfile.TemporaryDirectory() as tmpdir, tempfile.NamedTemporaryFile() as output_file:
+            bsync_files = []
+            for i, f in enumerate(building_files):
+                new_file = f"{tmpdir}/{i}.xml"
+                shutil.copyfile(settings.MEDIA_ROOT + "/" + f, new_file)
+                bsync_files.append(new_file)
+
+            building_sync_to_cts(list(bsync_files), Path(output_file.name))
+            output = io.BytesIO(output_file.read())
             xlsx_data = output.getvalue()
             response.write(xlsx_data)
 
