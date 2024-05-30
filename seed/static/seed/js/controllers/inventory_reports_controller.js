@@ -176,6 +176,7 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
         },
         options: {
           onClick: (event) => {
+            if (type == "bar") return;
             const activePoints = event.chart.getActiveElements(event);
 
             if (activePoints[0]) {
@@ -228,17 +229,15 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
               displayColors: false,
               mode: 'index',
               callbacks: {
-                title: (ctx) => ctx[0]?.raw.display_name,
+                title: (ctx) => {
+                  if (type == "bar") return;
+                  ctx[0]?.raw.display_name
+                },
                 label(ctx) {
-                  const label = [];
-                  const labeltmp = $scope.chartData.chartData.filter((entry) => entry.id === ctx.raw.id);
-                  if (labeltmp.length > 0) {
-                    label.push(`${$scope.yAxisSelectedItem.label}: ${ctx.formattedValue}`);
-                    // The x axis data is generated more programmatically than the y, so only
-                    // grab the `label` since the `axisLabel` has redundant unit information.
-                    label.push(`${$scope.xAxisSelectedItem.label}: ${ctx.parsed.x}`);
-                  }
-                  return label;
+                  return [
+                    `${$scope.xAxisSelectedItem.label}: ${type=="bar"? ctx.raw: ctx.parsed.x}`,
+                    `${$scope.yAxisSelectedItem.label}: ${type=="bar"? ctx.label: ctx.parsed.y}`
+                  ]
                 }
               }
             }
