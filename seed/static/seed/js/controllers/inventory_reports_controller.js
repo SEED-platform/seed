@@ -176,7 +176,7 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
         },
         options: {
           onClick: (event) => {
-            if (type == "bar") return;
+            if (type === 'bar') return;
             const activePoints = event.chart.getActiveElements(event);
 
             if (activePoints[0]) {
@@ -230,15 +230,13 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
               mode: 'index',
               callbacks: {
                 title: (ctx) => {
-                  if (type == "bar") return;
-                  ctx[0]?.raw.display_name
+                  if (type === 'bar') return;
+                  return ctx[0]?.raw.display_name;
                 },
-                label(ctx) {
-                  return [
-                    `${$scope.xAxisSelectedItem.label}: ${type=="bar"? ctx.raw: ctx.parsed.x}`,
-                    `${$scope.yAxisSelectedItem.label}: ${type=="bar"? ctx.label: ctx.parsed.y}`
-                  ]
-                }
+                label: (ctx) => [
+                  `${$scope.xAxisSelectedItem.label}: ${type === 'bar' ? ctx.raw : ctx.parsed.x}`,
+                  `${$scope.yAxisSelectedItem.label}: ${type === 'bar' ? ctx.label : ctx.parsed.y}`
+                ]
               }
             }
           }
