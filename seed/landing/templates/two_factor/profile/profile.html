@@ -10,7 +10,7 @@
 
   {% if default_device %}
     <p>{% blocktrans with primary=default_device|as_action %}Primary method: {{ primary }}{% endblocktrans %}</p>
-    <p><a class="btn btn-secondary" href="{% url 'two_factor:profile' %}?change=True">
+    <p><a class="btn btn-secondary" href="{% url 'two_factor:setup' %}">
       {% trans "Change primary method" %}</a></p>
 
     {% if available_phone_methods %}

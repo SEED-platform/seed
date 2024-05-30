@@ -21,7 +21,7 @@ from django.urls import reverse
 from django.utils.encoding import force_text
 from django.utils.http import urlsafe_base64_decode
 from django_otp import devices_for_user
-from two_factor.views.core import LoginView
+from two_factor.views.core import LoginView, SetupView
 
 from seed.landing.models import SEEDUser
 from seed.tasks import invite_new_user_to_seed
@@ -183,3 +183,14 @@ class CustomLoginView(LoginView):
         # add env var to session for conditional frontend display
         request.session["include_acct_reg"] = settings.INCLUDE_ACCT_REG
         return super().get(request, *args, **kwargs)
+
+# THIS DOESNT WORK.
+class CustomSetupView(SetupView):
+
+    def get(self, request, *args, **kwargs):
+        logging.error('get')
+        return super().get(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        logging.error('post')
+        return super().post(request, *args, **kwargs)
