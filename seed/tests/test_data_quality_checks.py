@@ -482,7 +482,12 @@ class x(AccessLevelBaseTestCase):
             organization=self.org,
             is_extra_data=True,
         )
-        # property_details_{property}{cycle}
+
+        # apply labels to goal rules
+        self.violation_label = StatusLabel.objects.get(name='Violation')
+        rules = Rule.objects.filter(table_name="Goal")
+        rules.update(status_label=self.violation_label)
+
         # NEED TO TEST WITH WUI
         def create_property_details(eui, gfa):
             details = self.property_state_factory.get_details()
@@ -500,17 +505,18 @@ class x(AccessLevelBaseTestCase):
         property_details_31 = create_property_details(100, 1000)
         property_details_32 = create_property_details(50, 1000)
 
+        #property{property}{cycle}
         self.property1 = self.property_factory.get_property(access_level_instance=self.root_ali)
         self.property2 = self.property_factory.get_property(access_level_instance=self.root_ali)
         self.property3 = self.property_factory.get_property(access_level_instance=self.root_ali)
-
+        # state{property}{cycle}
         self.state_11 = self.property_state_factory.get_property_state(**property_details_11)
         self.state_12 = self.property_state_factory.get_property_state(**property_details_12)
         self.state_21 = self.property_state_factory.get_property_state(**property_details_21)
         self.state_22 = self.property_state_factory.get_property_state(**property_details_22)
         self.state_31 = self.property_state_factory.get_property_state(**property_details_31)
         self.state_32 = self.property_state_factory.get_property_state(**property_details_32)
-
+        # view{property}{cycle}
         self.view11 = self.property_view_factory.get_property_view(prprty=self.property1, state=self.state_11, cycle=self.cycle1)
         self.view12 = self.property_view_factory.get_property_view(prprty=self.property1, state=self.state_12, cycle=self.cycle2)
         self.view21 = self.property_view_factory.get_property_view(prprty=self.property2, state=self.state_21, cycle=self.cycle1)
@@ -539,11 +545,14 @@ class x(AccessLevelBaseTestCase):
         self.login_as_root_member()
 
         goalnote1 = self.property1.goalnote_set.get(goal=self.goal)
-        goalnote2 = self.property3.goalnote_set.get(goal=self.goal)
+        goalnote2 = self.property2.goalnote_set.get(goal=self.goal)
         goalnote3 = self.property3.goalnote_set.get(goal=self.goal)
         assert goalnote1.passed_checks == False
         assert goalnote2.passed_checks == False
         assert goalnote3.passed_checks == False
+        assert self.view12.labels.count() == 0
+        assert self.view32.labels.count() == 0
+        assert self.view12.labels.count() == 0
 
         url = reverse_lazy("api:v3:data_quality_checks-start", args=[self.org.id])
         response = self.client.post(
@@ -563,3 +572,32 @@ class x(AccessLevelBaseTestCase):
         assert goalnote1.passed_checks == True
         assert goalnote2.passed_checks == False
         assert goalnote3.passed_checks == False
+
+        assert self.view12.labels.count() == 0
+        assert self.view22.labels.first() == self.violation_label
+        assert self.view32.labels.first() == self.violation_label
+
+        # change targets so all goals are passing. labels should be removed
+        goal_rules = Rule.objects.filter(table_name="Goal")
+        for rule in goal_rules:
+            if rule.condition == ">":
+                rule.target = 100
+            else:
+                rule.target = -100
+            rule.save() 
+        
+        response = self.client.post(
+            url,
+            {
+                "property_view_ids": [],
+                "taxlot_view_ids": [],
+                "goal_id": self.goal.id
+            },
+            content_type="application/json",
+        )
+        assert goalnote1.passed_checks == True
+        assert goalnote2.passed_checks == False
+        assert goalnote3.passed_checks == False
+        assert self.view12.labels.count() == 0
+        assert self.view22.labels.count() == 0
+        assert self.view32.labels.count() == 0

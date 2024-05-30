@@ -882,7 +882,13 @@ class DataQualityCheck(models.Model):
         :param row: { property: Property, baseline: PropertyState, current PropertyState }
         :goal_notes: dictionary of { property_id: GoalNote, ... }
         """
+        apply_labels = {}
         passed_checks = []
+        property_id = row['property'].id
+        goal_note = goal_notes.get(property_id)
+        # get current cycle property view 
+        view = row['current'].propertyview_set.first()
+
         for rule in rules:
             baseline = getattr(row['baseline'], rule.field)
             current = getattr(row['current'], rule.field)
@@ -891,17 +897,37 @@ class DataQualityCheck(models.Model):
             if percent_change is None:
                 continue
             elif rule.condition == Rule.RULE_GT:
-               passed_checks.append(rule.target > percent_change)
+                result = rule.target > percent_change
             elif rule.condition == Rule.RULE_GTE:
-               passed_checks.append(rule.target >= percent_change)
+                result = rule.target >= percent_change
             elif rule.condition == Rule.RULE_LT:
-               passed_checks.append(rule.target < percent_change)
+                result = rule.target < percent_change
             elif rule.condition == Rule.RULE_LTE:
-               passed_checks.append(rule.target <= percent_change)
+                result = rule.target <= percent_change
+            else:
+                continue
+            
+            # track if property has "passed_checks"
+            if result is not None:
+                passed_checks.append(result)
+            if not rule.status_label:
+                continue
 
-        goal_note = goal_notes.get(row['property'].id)
+            # track which labels should be applied/removed
+            if not apply_labels.get(rule.status_label.id):
+                apply_labels[rule.status_label.id] = []
+            apply_labels[rule.status_label.id].append(result)
+        
         if goal_note:
             goal_note.passed_checks = all(passed_checks)
+            # if there are multiple rules with the same label, determine if they are all passing to add or remove the label
+            for k,v in apply_labels.items():
+                label = StatusLabel.objects.get(id=k)
+                if all(v):
+                    view.labels.remove(label)
+                else:
+                    view.labels.add(label)
+            
             return goal_note
 
 

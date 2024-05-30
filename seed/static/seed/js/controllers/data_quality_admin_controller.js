@@ -255,7 +255,7 @@ angular.module('BE.seed.controller.data_quality_admin', []).controller('data_qua
             if (rule.field === null) return;
 
             const column = _.find($scope.columns, { column_name: rule.field }) || {};
-            const rule_type_lookup = {'properties': 'PropertyState', 'taxlots': 'TaxLotState', 'goals': 'Goal'}
+            const rule_type_lookup = { properties: 'PropertyState', taxlots: 'TaxLotState', goals: 'Goal' };
             const r = {
               enabled: rule.enabled,
               condition: rule.condition,
