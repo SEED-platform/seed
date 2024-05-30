@@ -732,8 +732,14 @@ class OrganizationViewSet(viewsets.ViewSet):
 
         return JsonResponse(geocoding_columns)
 
-    def get_data(self, property_view, x_var, y_var, matching_columns):
-        result = {"id": property_view.id}
+    def _format_property_display_field(self, view, org):
+        try:
+            return getattr(view.state, org.property_display_field)
+        except AttributeError:
+            return None
+
+    def get_data(self, property_view, x_var, y_var, matching_columns, org):
+        result = {"id": property_view.id, "display_name": self._format_property_display_field(property_view, org)}
         state = property_view.state
 
         # set matching columns
@@ -792,7 +798,7 @@ class OrganizationViewSet(viewsets.ViewSet):
             for property_view in property_views:
                 property_pk = property_view.property_id
                 count_total.append(property_pk)
-                result = self.get_data(property_view, x_var, y_var, additional_columns)
+                result = self.get_data(property_view, x_var, y_var, additional_columns, organization)
                 if result:
                     result["yr_e"] = cycle.end.strftime("%Y")
                     de_unitted_result = apply_display_unit_preferences(organization, result)
@@ -1086,6 +1092,7 @@ class OrganizationViewSet(viewsets.ViewSet):
             data_rows = cycle_results["chart_data"]
             for datum in data_rows:
                 del datum["id"]
+                del datum["display_name"]
                 for i, k in enumerate(datum.keys()):
                     base_sheet.write(base_row, data_col_start + i, datum.get(k))
 

@@ -228,6 +228,9 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
               displayColors: false,
               mode: 'index',
               callbacks: {
+                title(ctx) {
+                  return ctx[0]?.raw.display_name;
+                },
                 label(ctx) {
                   const label = [];
                   const labeltmp = $scope.chartData.chartData.filter((entry) => entry.id === ctx.raw.id);
