@@ -1,34 +1,31 @@
 <div class="modal-header">
-	<h4 class="modal-title" translate>Export properties to CTS</h4>
+  <h4 class="modal-title" translate>Export properties to CTS</h4>
 </div>
 
 <div class="modal-body">
-	<div class="progress_bar_container export_progress" ng-if="exporting">
-		<div class="progress_bar_copy_top">Progress:</div>
-		<uib-progressbar class="progress-striped active" value="exporter_progress.progress"
-			type="success"></uib-progressbar>
-		<div class="progress_bar_copy_bottom">
-			{$ exporter_progress.progress | number:0 $}% {$:: 'Complete' | translate $} {$
-			exporter_progress.status_message ? ': ' + exporter_progress.status_message : '' $}
-		</div>
-	</div>
+  <div class="progress_bar_container export_progress" ng-if="exporting">
+    <div class="progress_bar_copy_top">Progress:</div>
+    <uib-progressbar class="progress-striped active" value="exporter_progress.progress" type="success"></uib-progressbar>
+    <div class="progress_bar_copy_bottom">
+      {$ exporter_progress.progress | number:0 $}% {$:: 'Complete' | translate $} {$ exporter_progress.status_message ? ': ' + exporter_progress.status_message : '' $}
+    </div>
+  </div>
 
-	<div class="section_content_container" ng-show="!exporting">
-		<div class="section_content with_padding">
-			<label class="control-label col-sm-4" for="fileName" translate>Export Name</label>
-			<form class="form-horizontal" role="form">
-				<div class="form-group">
-					<div class="col-sm-6">
-						<input type="text" class="form-control" id="fileName" ng-model="export_name"
-							placeholder="{$:: 'File Name' | translate $}" required />
-					</div>
-				</div>
-			</form>
-		</div>
-	</div>
+  <div class="section_content_container" ng-show="!exporting">
+    <div class="section_content with_padding">
+      <label class="control-label col-sm-4" for="fileName" translate>Export Name</label>
+      <form class="form-horizontal" role="form">
+        <div class="form-group">
+          <div class="col-sm-6">
+            <input type="text" class="form-control" id="fileName" ng-model="export_name" placeholder="{$:: 'File Name' | translate $}" required />
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
 </div>
 
 <div class="modal-footer" ng-show="!exporting">
-	<button type="button" class="btn btn-primary" ng-click="export()" translate>Export</button>
-	<button type="button" class="btn btn-default" ng-click="cancel()" translate>Cancel</button>
+  <button type="button" class="btn btn-primary" ng-click="export()" translate>Export</button>
+  <button type="button" class="btn btn-default" ng-click="cancel()" translate>Cancel</button>
 </div>

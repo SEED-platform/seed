@@ -1498,7 +1498,6 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
           org_id: () => $scope.organization.id
         }
       });
-
     };
 
     $scope.model_actions = 'none';

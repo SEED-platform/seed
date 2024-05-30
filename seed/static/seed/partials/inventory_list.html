@@ -53,13 +53,7 @@
           >
             Export to Audit Template
           </option>
-          <option
-            ng-show="menu.user.organization.user_role !== 'viewer'"
-            value="open_export_cts_modal"
-            ng-if="::inventory_type === 'properties'"
-            ng-disabled="selectedCount === 0"
-            translate
-          >
+          <option ng-show="menu.user.organization.user_role !== 'viewer'" value="open_export_cts_modal" ng-if="::inventory_type === 'properties'" ng-disabled="selectedCount === 0" translate>
             Export to CTS
           </option>
           <option ng-show="menu.user.organization.user_role !== 'viewer'" value="open_update_labels_modal" ng-disabled="selectedCount === 0" translate>Add/Remove Labels</option>

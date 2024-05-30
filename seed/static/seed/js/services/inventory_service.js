@@ -1212,10 +1212,11 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       organization_id: user_service.get_organization().id
     });
 
-    inventory_service.export_to_cts = (property_view_ids, filename="test.xlsx") => $http.post(`/api/v3/tax_lot_properties/export_to_cts/?organization_id=${user_service.get_organization().id}`,
+    inventory_service.export_to_cts = (property_view_ids, filename = 'test.xlsx') => $http.post(
+      `/api/v3/tax_lot_properties/export_to_cts/?organization_id=${user_service.get_organization().id}`,
       {
         filename,
-        property_view_ids,
+        property_view_ids
       },
       {
         responseType: 'arraybuffer'
