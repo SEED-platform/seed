@@ -19,7 +19,7 @@ from pint.errors import DimensionalityError
 from quantityfield.units import ureg
 
 from seed.lib.superperms.orgs.models import Organization
-from seed.models import Column, DerivedColumn, GoalNote, PropertyView, StatusLabel, TaxLotView, obj_to_dict
+from seed.models import Column, DerivedColumn, GoalNote, PropertyView, StatusLabel, PropertyViewLabel, TaxLotView, obj_to_dict
 from seed.serializers.pint import pretty_units
 from seed.utils.cache import get_cache_raw, set_cache_raw
 from seed.utils.time import convert_datestr
@@ -887,7 +887,8 @@ class DataQualityCheck(models.Model):
         property_id = row['property'].id
         goal_note = goal_notes.get(property_id)
         # get current cycle property view 
-        view = row['current'].propertyview_set.first()
+        baseline_view = row['baseline'].propertyview_set.first()
+        current_view = row['current'].propertyview_set.first()
 
         for rule in rules:
             baseline = getattr(row['baseline'], rule.field)
@@ -923,10 +924,11 @@ class DataQualityCheck(models.Model):
             # if there are multiple rules with the same label, determine if they are all passing to add or remove the label
             for k,v in apply_labels.items():
                 label = StatusLabel.objects.get(id=k)
+
                 if all(v):
-                    view.labels.remove(label)
+                    PropertyViewLabel.objects.filter(propertyview=current_view, statuslabel=label, goal=goal_note.goal, baseline_propertyview=baseline_view).delete()
                 else:
-                    view.labels.add(label)
+                    PropertyViewLabel.objects.create(propertyview=current_view, statuslabel=label, goal=goal_note.goal, baseline_propertyview=baseline_view)
             
             return goal_note
 

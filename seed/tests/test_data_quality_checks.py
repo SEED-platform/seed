@@ -12,7 +12,7 @@ from quantityfield.units import ureg
 from django.urls import reverse_lazy
 
 
-from seed.models import Column, DerivedColumnParameter, Goal, PropertyView
+from seed.models import Column, DerivedColumnParameter, Goal, PropertyView, PropertyViewLabel
 from seed.models.data_quality import DataQualityCheck, DataQualityTypeCastError, Rule, StatusLabel, UnitMismatchError
 from seed.models.derived_columns import DerivedColumn
 from seed.models.models import ASSESSED_RAW
@@ -577,6 +577,9 @@ class x(AccessLevelBaseTestCase):
         assert self.view22.labels.first() == self.violation_label
         assert self.view32.labels.first() == self.violation_label
 
+        cross_cycle_labels = PropertyViewLabel.objects.filter(goal_id__isnull=False, baseline_propertyview_id__isnull=False)
+        assert cross_cycle_labels.count() == 2
+
         # change targets so all goals are passing. labels should be removed
         goal_rules = Rule.objects.filter(table_name="Goal")
         for rule in goal_rules:
@@ -601,3 +604,6 @@ class x(AccessLevelBaseTestCase):
         assert self.view12.labels.count() == 0
         assert self.view22.labels.count() == 0
         assert self.view32.labels.count() == 0
+
+        cross_cycle_labels = PropertyViewLabel.objects.filter(goal_id__isnull=False, baseline_propertyview_id__isnull=False)
+        assert cross_cycle_labels.count() == 0
