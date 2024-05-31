@@ -234,8 +234,8 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
                   return ctx[0]?.raw.display_name;
                 },
                 label: (ctx) => [
-                  `${$scope.xAxisSelectedItem.label}: ${type === 'bar' ? ctx.raw : ctx.parsed.x}`,
-                  `${$scope.yAxisSelectedItem.label}: ${type === 'bar' ? ctx.label : ctx.parsed.y}`
+                  `${$scope.xAxisSelectedItem.label}: ${type === 'bar' ? ctx.raw : ctx.parsed.y}`,
+                  `${$scope.yAxisSelectedItem.label}: ${type === 'bar' ? ctx.label : ctx.parsed.x}`
                 ]
               }
             }
@@ -246,12 +246,12 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
 
     $scope.scatterChart = createChart('chartNew', 'scatter', 'x', $scope.pointBackgroundColors);
 
-    $scope.barChart = createChart('aggChartNew', 'bar', 'y', $scope.aggPointBackgroundColors);
+    $scope.barChart = createChart('aggChartNew', 'bar', 'x', $scope.aggPointBackgroundColors);
 
     // specific styling for bar chart
-    $scope.barChart.options.scales.x.ticks = { precision: 0 };
-    $scope.barChart.options.scales.y.type = 'category';
-    $scope.barChart.options.scales.y.ticks = {};
+    $scope.barChart.options.scales.y.ticks = { precision: 0 };
+    $scope.barChart.options.scales.x.type = 'category';
+    $scope.barChart.options.scales.x.ticks = {};
 
     // specific styling for scatter chart
     $scope.scatterChart.options.scales.x.suggestedMin = 0;
@@ -396,8 +396,8 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
        The chart will update automatically as it's watching the chartData property on the scope.
        */
     function getChartData() {
-      const xVar = $scope.xAxisSelectedItem.varName;
-      const yVar = $scope.yAxisSelectedItem.varName;
+      const yVar = $scope.xAxisSelectedItem.varName;
+      const xVar = $scope.yAxisSelectedItem.varName;
       $scope.chartIsLoading = true;
 
       inventory_reports_service
