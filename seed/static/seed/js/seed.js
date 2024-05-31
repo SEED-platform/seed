@@ -75,6 +75,7 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.export_inventory_modal',
   'BE.seed.controller.export_report_modal',
   'BE.seed.controller.export_to_audit_template_modal',
+  'BE.seed.controller.export_to_cts_modal',
   'BE.seed.controller.filter_group_modal',
   'BE.seed.controller.geocode_modal',
   'BE.seed.controller.goal_editor_modal',
