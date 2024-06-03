@@ -1705,7 +1705,7 @@ def hash_state_object(obj, include_extra_data=True):
             return "FOO"  # Return a random value so we can distinguish between this and None.
 
     m = hashlib.md5()  # noqa: S324
-    for f in Column.retrieve_db_field_name_for_hash_comparison():
+    for f in Column.retrieve_db_field_name_for_hash_comparison(type(obj)):
         obj_val = _get_field_from_obj(obj, f)
         m.update(f.encode("utf-8"))
         if isinstance(obj_val, datetime):
