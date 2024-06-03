@@ -1682,11 +1682,16 @@ def finish_matching(result, import_file_id, progress_key):
 
 
 def hash_state_object(obj, include_extra_data=True):
-    def add_dictionary_repr_to_hash(hash_obj, dict_obj):
+    def add_dictionary_repr_to_hash(hash_obj, dict_obj, inventory_type):
         if not isinstance(dict_obj, dict):
             raise ValueError("Only dictionaries can be hashed")
 
+        excluded_keys = Column.objects.filter(is_excluded_from_hash=True, table_name=inventory_type.__name__).values_list(
+            "column_name", flat=True
+        )
         for key, value in sorted(dict_obj.items(), key=lambda x_y: x_y[0]):
+            if key in excluded_keys:
+                continue
             if isinstance(value, dict):
                 add_dictionary_repr_to_hash(hash_obj, value)
             else:
@@ -1719,7 +1724,7 @@ def hash_state_object(obj, include_extra_data=True):
             m.update(str(obj_val).encode("utf-8"))
 
     if include_extra_data:
-        add_dictionary_repr_to_hash(m, obj.extra_data)
+        add_dictionary_repr_to_hash(m, obj.extra_data, type(obj))
 
     return m.hexdigest()
 
