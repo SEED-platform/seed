@@ -758,6 +758,8 @@ class Column(models.Model):
     is_matching_criteria = models.BooleanField(default=False)
     is_option_for_reports_x_axis = models.BooleanField(default=False)
     is_option_for_reports_y_axis = models.BooleanField(default=False)
+    is_excluded_from_hash = models.BooleanField(default=False)
+
     import_file = models.ForeignKey("data_importer.ImportFile", on_delete=models.CASCADE, blank=True, null=True)
     # TODO: units_pint should be renamed to `from_units` as this is the unit of the incoming data in pint format
     units_pint = models.CharField(max_length=64, blank=True, null=True)
@@ -1357,7 +1359,16 @@ class Column(models.Model):
         :return: list, names of columns, independent of inventory type.
         """
         fields = inventory_type._meta.fields
-        filter_fields = [f for f in fields if (f.get_internal_type() != "ForeignKey") and (f.name not in Column.COLUMN_EXCLUDE_FIELDS)]
+
+        excluded_columns = list(
+            Column.objects.filter(is_excluded_from_hash=True, table_name=inventory_type.__name__).values_list("column_name", flat=True)
+        )
+        filter_fields = [
+            f
+            for f in fields
+            if (f.get_internal_type() != "ForeignKey") and (f.name not in Column.COLUMN_EXCLUDE_FIELDS) and (f.name not in excluded_columns)
+        ]
+
         field_names = [f.name for f in filter_fields]
 
         return sorted(set(field_names))
