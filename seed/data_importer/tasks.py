@@ -1739,7 +1739,7 @@ def hash_state_object(obj: Union[PropertyState, TaxLotState], include_extra_data
             m.update(str(obj_val).encode("utf-8"))
 
     if include_extra_data:
-        add_dictionary_repr_to_hash(m, obj.extra_data)
+        add_dictionary_repr_to_hash(m, obj.extra_data, type(obj))
 
     return m.hexdigest()
 
