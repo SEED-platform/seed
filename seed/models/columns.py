@@ -1391,7 +1391,7 @@ class Column(models.Model):
         return sorted(result)
 
     @staticmethod
-    def retrieve_db_field_name_for_hash_comparison():
+    def retrieve_db_field_name_for_hash_comparison(inventory_type):
         """
         Names only of the columns in the database (fields only, not extra data), independent of inventory type.
         These fields are used for generating an MD5 hash to quickly check if the data are the same across
@@ -1400,10 +1400,11 @@ class Column(models.Model):
 
         :return: list, names of columns, independent of inventory type.
         """
-        columns = Column.retrieve_db_fields_from_db_tables()
-        result = [c["column_name"] for c in columns]
+        fields = inventory_type._meta.fields
+        filter_fields = [f for f in fields if (f.get_internal_type() != "ForeignKey") and (f.name not in Column.COLUMN_EXCLUDE_FIELDS)]
+        field_names = [f.name for f in filter_fields]
 
-        return sorted(set(result))
+        return sorted(set(field_names))
 
     @staticmethod
     def retrieve_db_fields_from_db_tables():
