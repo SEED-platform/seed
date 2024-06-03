@@ -55,8 +55,8 @@
           <li ui-sref-active="active" heading="{$:: 'View by Tax Lot' | translate $}">
             <a ui-sref="organization_data_quality(::{organization_id: org.id, rule_type: 'taxlots'})">View by Tax Lot <span class="badge badge_menu">{$ rule_count_taxlot | number:0 $}</span></a>
           </li>
-          <li ui-sref-active="active" heading="{$:: 'Cross-Cycle by Goal' | translate $}">
-            <a ui-sref="organization_data_quality(::{organization_id: org.id, rule_type: 'goals'})">Cross-Cycle by Goal <span class="badge badge_menu">{$ rule_count_cross_cycle | number:0 $}</span></a>
+          <li ui-sref-active="active" heading="{$:: 'Goal' | translate $}">
+            <a ui-sref="organization_data_quality(::{organization_id: org.id, rule_type: 'goals'})">Goal <span class="badge badge_menu">{$ rule_count_cross_cycle | number:0 $}</span></a>
           </li>
         </ul>
       </div>
@@ -217,10 +217,9 @@
               <th class="condensed_head" style="min-width: 33px; width: 33px; padding-left: 0; padding-right: 0" ng-click="selectAll()">
                 <input type="checkbox" ng-checked="allEnabled()" class="no-click" />
               </th>
-              <th style="min-width: 140px" translate>Field</th>
+              <th style="min-width: 150px">Rule Type</th>
               <th style="min-width: 100px; width: 100px" translate>Data Type</th>
               <th style="min-width: 140px" translate>Condition Check</th>
-              <th translate>% Change</th>
               <th style="min-width: 110px; width: 110px" translate>Severity Level</th>
               <th translate>Label</th>
               <th style="min-width: 54px; width: 54px" translate>Delete</th>
@@ -234,11 +233,9 @@
               <td>
                 <select
                   class="form-control input-sm"
-                  ng-model="rule.field"
-                  ng-options="col.column_name as col.displayName group by col.group for col in ::columns | orderBy: 'group'"
-                  ng-change="rules_changed(rule); change_field(rule, '{$ rule.field $}', $index)"
-                  title="{$ rule.field $}"
-                  focus-if="{$ rule.autofocus || 'false' $}"
+                  ng-model="rule.data_type"
+                  ng-options="type.id as type.label for type in ::data_types[2]"
+                  ng-class="{'border-red red': invalid_data_types.includes(field)}"
                 ></select>
               </td>
               <td>
@@ -258,18 +255,6 @@
                   ng-change="rules_changed(rule); change_condition(rule, ruleGroups[rule_type][field], field)"
                   ng-class="{'border-red red': invalid_conditions.includes(field), 'error-bg': misconfigured_fields_ref.condition.includes(rule.$$hashKey)}"
                 ></select>
-              </td>
-              <td>
-                <input
-                  class="form-control input-sm"
-                  type="number"
-                  ng-model="rule.target"
-                  ng-change="rules_changed(rule)"
-                  ng-if="rule.data_type !== data_type_keys.date"
-                  placeholder="{$:: '(no minimum)' | translate $}"
-                  ng-disabled="filter_null(rule)"
-                />
-                <input class="form-control input-sm" type="date" ng-model="rule.min" ng-change="rules_changed(rule)" ng-if="rule.data_type === data_type_keys.date" ng-disabled="filter_null(rule)" />
               </td>
               <td ng-class="{'error-bg': misconfigured_fields_ref.severity.includes(rule.$$hashKey)}">
                 <select

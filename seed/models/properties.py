@@ -964,7 +964,6 @@ class PropertyViewLabel(models.Model):
     propertyview = models.ForeignKey(PropertyView, on_delete=models.CASCADE)
     statuslabel = models.ForeignKey(StatusLabel, on_delete=models.CASCADE)
     goal = models.ForeignKey("seed.Goal", on_delete=models.CASCADE, null=True)
-    baseline_propertyview = models.ForeignKey(PropertyView, on_delete=models.CASCADE, null=True, related_name="baseline")
 
 
 class PropertyAuditLog(models.Model):

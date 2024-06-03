@@ -8,6 +8,7 @@ from django.db import migrations, models
 def forwards(apps, schema_editor):
     Column = apps.get_model("seed", "Column")
     Organization = apps.get_model("orgs", "Organization")
+    Label = apps.get_model("seed", "StatusLabel")
 
     wui_column = {
         "column_name": "site_wui",
@@ -20,6 +21,28 @@ def forwards(apps, schema_editor):
     # Add to all organizations
     for org_id in list(Organization.objects.values_list("id", flat=True)):
         Column.objects.create(**{**wui_column, "organization_id": org_id})
+
+    # Populate the default labels for goal rules.
+    NEW_DEFAULT_LABELS = [
+        "High EUI % Change",
+        "Low EUI % Change",
+        "High WUI",
+        "Low WUI"
+        "High WUI % Change",
+        "Low WUI % Change",
+        "High Area",
+        "Low Area",
+        "High Area % Change",
+        "Low Area % Change",
+    ]
+
+    for org in Organization.objects.all():
+        for label in NEW_DEFAULT_LABELS:
+            Label.objects.get_or_create(
+                name=label,
+                super_organization=org,
+                defaults={"color": "blue"},
+            )
 
 
 class Migration(migrations.Migration):
@@ -73,12 +96,15 @@ class Migration(migrations.Migration):
             name="goal",
             field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to="seed.goal"),
         ),
+        migrations.AlterField(
+            model_name="rule",
+            name="field",
+            field=models.CharField(blank=True, max_length=200, null=True),
+        ),
         migrations.AddField(
-            model_name="propertyviewlabel",
-            name="baseline_propertyview",
-            field=models.ForeignKey(
-                null=True, on_delete=django.db.models.deletion.CASCADE, related_name="baseline", to="seed.propertyview"
-            ),
+            model_name='rule',
+            name='cross_cycle',
+            field=models.BooleanField(default=False),
         ),
 
         migrations.RunPython(forwards),

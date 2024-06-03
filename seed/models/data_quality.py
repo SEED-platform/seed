@@ -114,10 +114,6 @@ class Rule(models.Model):
     RULE_RANGE = "range"
     RULE_INCLUDE = "include"
     RULE_EXCLUDE = "exclude"
-    RULE_GT = ">"
-    RULE_GTE = ">="
-    RULE_LT = "<"
-    RULE_LTE = "<="
 
     DEFAULT_RULES = [
         {
@@ -341,67 +337,138 @@ class Rule(models.Model):
         },
         {
             "table_name": "Goal",
-            "field": "site_eui",
+            "name": "High EUI % Change",
+            "field": "eui",
             "data_type": TYPE_EUI,
             "rule_type": RULE_TYPE_DEFAULT,
             "severity": SEVERITY_ERROR,
-            "condition": RULE_GT,
-            "target": 40,
+            "condition": RULE_RANGE,
+            "max": 40,
+            "cross_cycle": True,
         },
         {
             "table_name": "Goal",
-            "field": "site_eui",
+            "name": "Low EUI % Change",
+            "field": "eui",
             "data_type": TYPE_EUI,
             "rule_type": RULE_TYPE_DEFAULT,
             "severity": SEVERITY_ERROR,
-            "condition": RULE_LT,
-            "target": -40,
+            "condition": RULE_RANGE,
+            "min": -40,
+            "cross_cycle": True,
         },
         {
             "table_name": "Goal",
-            "field": "gross_floor_area",
+            "name": "High Area % Change",
+            "field": "area",
             "data_type": TYPE_AREA,
             "rule_type": RULE_TYPE_DEFAULT,
             "severity": SEVERITY_ERROR,
-            "condition": RULE_GT,
-            "target": 5,
+            "condition": RULE_RANGE,
+            "max": 5,
+            "cross_cycle": True,
         },
         {
             "table_name": "Goal",
-            "field": "gross_floor_area",
+            "name": "Low Area % Change",
+            "field": "area",
             "data_type": TYPE_AREA,
             "rule_type": RULE_TYPE_DEFAULT,
             "severity": SEVERITY_ERROR,
-            "condition": RULE_LT,
-            "target": -5,
+            "condition": RULE_RANGE,
+            "min": -5,
+            "cross_cycle": True,
         },
         {
             "table_name": "Goal",
-            "field": "site_wui",
+            "name": "High WUI % Change",
+            "field": "wui",
             "data_type": TYPE_WUI,
             "rule_type": RULE_TYPE_DEFAULT,
             "severity": SEVERITY_ERROR,
-            "condition": RULE_GT,
-            "target": 40,
+            "condition": RULE_RANGE,
+            "max": 40,
+            "cross_cycle": True,
         },
         {
             "table_name": "Goal",
-            "field": "site_wui",
+            "name": "Low WUI % Change",
+            "field": "wui",
             "data_type": TYPE_WUI,
             "rule_type": RULE_TYPE_DEFAULT,
             "severity": SEVERITY_ERROR,
-            "condition": RULE_LT,
-            "target": -40,
+            "condition": RULE_RANGE,
+            "min": -40,
+            "cross_cycle": True,
+        },
+        {
+            "table_name": "Goal",
+            "name": "High EUI",
+            "field": "eui",
+            "data_type": TYPE_EUI,
+            "rule_type": RULE_TYPE_DEFAULT,
+            "severity": SEVERITY_ERROR,
+            "condition": RULE_RANGE,
+            "max": 1000,
+        },
+        {
+            "table_name": "Goal",
+            "name": "Low EUI",
+            "field": "eui",
+            "data_type": TYPE_EUI,
+            "rule_type": RULE_TYPE_DEFAULT,
+            "severity": SEVERITY_ERROR,
+            "condition": RULE_RANGE,
+            "min": 40,
+        },
+        {
+            "table_name": "Goal",
+            "name": "High Area",
+            "field": "area",
+            "data_type": TYPE_AREA,
+            "rule_type": RULE_TYPE_DEFAULT,
+            "severity": SEVERITY_ERROR,
+            "condition": RULE_RANGE,
+            "max": 1000000,
+        },
+        {
+            "table_name": "Goal",
+            "name": "Low Area",
+            "field": "area",
+            "data_type": TYPE_AREA,
+            "rule_type": RULE_TYPE_DEFAULT,
+            "severity": SEVERITY_ERROR,
+            "condition": RULE_RANGE,
+            "min": 1000,
+        },
+        {
+            "table_name": "Goal",
+            "name": "Missing EUI",
+            "field": "eui",
+            "data_type": TYPE_EUI,
+            "rule_type": RULE_TYPE_DEFAULT,
+            "severity": SEVERITY_ERROR,
+            "condition": RULE_NOT_NULL,
+        },
+        {
+            "table_name": "Goal",
+            "name": "Missing Area",
+            "field": "area",
+            "data_type": TYPE_AREA,
+            "rule_type": RULE_TYPE_DEFAULT,
+            "severity": SEVERITY_ERROR,
+            "condition": RULE_NOT_NULL,
         },
 
     ]
 
     name = models.CharField(max_length=255, blank=True)
+    cross_cycle = models.BooleanField(default=False)
     description = models.CharField(max_length=1000, blank=True)
     data_quality_check = models.ForeignKey("DataQualityCheck", on_delete=models.CASCADE, related_name="rules", null=True)
     status_label = models.ForeignKey(StatusLabel, on_delete=models.DO_NOTHING, null=True)
     table_name = models.CharField(max_length=200, default="PropertyState", blank=True)
-    field = models.CharField(max_length=200)
+    field = models.CharField(max_length=200, null=True, blank=True)
     # If for_derived_column is True, `Rule.field` is a derived column name
     # If False, `Rule.field` is a *State field or extra_data key
     for_derived_column = models.BooleanField(default=False)
@@ -413,7 +480,6 @@ class Rule(models.Model):
     not_null = models.BooleanField(default=False)
     min = models.FloatField(null=True)
     max = models.FloatField(null=True)
-    target = models.FloatField(null=True)
     text_match = models.CharField(max_length=200, null=True)
     severity = models.IntegerField(choices=SEVERITY, default=SEVERITY_ERROR)
     units = models.CharField(max_length=100, blank=True)
@@ -894,25 +960,26 @@ class DataQualityCheck(models.Model):
             baseline = getattr(row['baseline'], rule.field)
             current = getattr(row['current'], rule.field)
             percent_change = percentage_difference(baseline, current)
+            continue
 
-            if percent_change is None:
-                continue
-            elif rule.condition == Rule.RULE_GT:
-                result = rule.target > percent_change
-            elif rule.condition == Rule.RULE_GTE:
-                result = rule.target >= percent_change
-            elif rule.condition == Rule.RULE_LT:
-                result = rule.target < percent_change
-            elif rule.condition == Rule.RULE_LTE:
-                result = rule.target <= percent_change
-            else:
-                continue
+            # if percent_change is None:
+            #     continue
+            # elif rule.condition == Rule.RULE_GT:
+            #     result = rule.target > percent_change
+            # elif rule.condition == Rule.RULE_GTE:
+            #     result = rule.target >= percent_change
+            # elif rule.condition == Rule.RULE_LT:
+            #     result = rule.target < percent_change
+            # elif rule.condition == Rule.RULE_LTE:
+            #     result = rule.target <= percent_change
+            # else:
+            #     continue
             
-            # track if property has "passed_checks"
-            if result is not None:
-                passed_checks.append(result)
-            if not rule.status_label:
-                continue
+            # # track if property has "passed_checks"
+            # if result is not None:
+            #     passed_checks.append(result)
+            # if not rule.status_label:
+            #     continue
 
             # track which labels should be applied/removed
             if not apply_labels.get(rule.status_label.id):
@@ -963,7 +1030,23 @@ class DataQualityCheck(models.Model):
         :return: None
         """
         for rule in Rule.DEFAULT_RULES:
-            self.rules.add(Rule.objects.create(**rule))
+            rule_instance = Rule.objects.create(**rule)
+            self.rules.add(rule_instance)
+            self.add_goal_rule_labels(rule_instance)
+
+    def add_goal_rule_labels(self, rule):
+            # Add labels to default portfolio/goal rules
+            if rule:
+                try:
+                    if "Missing" in rule.name:
+                        rule.status_label = StatusLabel.objects.get(name="Missing Data")
+                    else:
+                        rule.status_label = StatusLabel.objects.get(name=rule.name)
+                    rule.save()
+                except StatusLabel.DoesNotExist:
+                    print('rule dne ', rule.name)
+                    pass
+
 
     def remove_all_rules(self):
         """

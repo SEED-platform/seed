@@ -30,7 +30,6 @@ class RuleSerializer(serializers.ModelSerializer):
             "severity",
             "status_label",
             "table_name",
-            "target",
             "text_match",
             "units",
         ]
