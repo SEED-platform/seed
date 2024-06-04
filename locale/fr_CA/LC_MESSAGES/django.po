@@ -651,6 +651,15 @@ msgstr "Cartographie ComStock"
 msgid "Commercial"
 msgstr "Commercial"
 
+msgid "Commitment"
+msgstr "Engagement"
+
+msgid "Commitment (Sq Ft)"
+msgstr "Engagement (pieds carrés)"
+
+msgid "Committed Area"
+msgstr "Zone d'engagement"
+
 msgid "Compare UBIDs"
 msgstr "Comparez les UBID"
 
@@ -1132,6 +1141,15 @@ msgstr "Copie"
 msgid "Duplicates"
 msgstr "Copies"
 
+msgid "EDIT_GOAL_NOTES"
+msgstr "Modifier les champs pour les propriétés sélectionnées"
+
+msgid "ENABLED"
+msgstr "ACTIVÉ"
+
+msgid "ENABLE_PUBLIC_FEED"
+msgstr "pour activer ou désactiver la fonctionnalité de flux public"
+
 msgid "ENERGY STAR Score"
 msgstr "Compte ENERGY STAR"
 
@@ -1161,7 +1179,7 @@ msgid "EUI"
 msgstr "IUE"
 
 msgid "EUI Target Columns"
-msgstr "Colonnes cibles EUI"
+msgstr "Colonnes cibles IUE"
 
 msgid "EXCLUDE"
 msgstr "EXCLURE"
@@ -1174,6 +1192,9 @@ msgstr "Modifier"
 
 msgid "Edit Access Level Instance Name"
 msgstr "Modifier le nom de l'instance du niveau d'accès"
+
+msgid "Edit Fields for Selected"
+msgstr "Modifier les champs pour les sélections"
 
 msgid "Edit Name"
 msgstr "Modifier le nom"
@@ -1204,6 +1225,15 @@ msgstr "Activer la fonctionnalité ComStock"
 
 msgid "Enable Geocoding"
 msgstr "Activer le géocodage"
+
+msgid "Enable Labels in Public Feed"
+msgstr "Activer les étiquettes dans le flux public"
+
+msgid "Enable Public Endpoints"
+msgstr "Activer les points de terminaison publics"
+
+msgid "Enable Public GeoJSON"
+msgstr "Activer GeoJSON public"
 
 msgid "Enable Salesforce Integration"
 msgstr "Activer la fonctionnalité Salesforce"
@@ -1484,6 +1514,21 @@ msgstr "GJ/m²/année"
 msgid "GOAL"
 msgstr "OBJECTIF"
 
+msgid "GOAL_CONFIG_TEXT"
+msgstr "Configurez ci-dessous un ou plusieurs objectifs de réduction de l’intensité de l'utilisation d’énergie (IUE) du portefeuille."
+
+msgid "GOAL_SELECT_ALI"
+msgstr "Indiquez le niveau dans votre arborescence de niveaux d'accès auquel cet objectif s'applique"
+
+msgid "GOAL_SELECT_CYCLES"
+msgstr "Sélectionnez un cycle de référence et un cycle actuel pour comparaison"
+
+msgid "GOAL_SELECT_EUI_FIELDS"
+msgstr "Indiquez quels champs de vos données doivent être utilisés pour les informations sur l'IUE et la surface de plancher"
+
+msgid "GOAL_SELECT_PERCENTAGE"
+msgstr "Spécifier un objectif d'amélioration de l'IUE en pourcentage"
+
 msgid "GOAL_SETUP_TEXT"
 msgstr "Configurez un ou plusieurs objectifs de réduction de l'intensité de l'utilisation d'énergie (IUE) du portefeuille ci-dessous. Sélectionnez un cycle de référence et un cycle actuel à des fins de comparaison, identifiez le niveau dans votre arborescence de niveaux d'accès auquel cet objectif s'applique, spécifiez un objectif d'amélioration de l'IUE en pourcentage et indiquez quels champs de vos données doivent être utilisés pour les informations sur l'IUE et la superficie en pieds carrés."
 
@@ -1569,6 +1614,9 @@ msgstr "Bacs Hexagonaux"
 
 msgid "Highlights of SEED Platform™"
 msgstr "Points forts de la Plate-Forme SEED™"
+
+msgid "Historical Note"
+msgstr "Note historique"
 
 msgid "Home Energy Score ID"
 msgstr "ID de score d'énergie domestique"
@@ -2135,6 +2183,9 @@ msgstr "Laboratoire National Des Énergies Renouvelables"
 msgid "New Analysis"
 msgstr "Nouvelle analyse"
 
+msgid "New Build or Acquisition"
+msgstr "Nouvelle construction ou acquisition"
+
 msgid "New Goal"
 msgstr "Nouvel Objectif"
 
@@ -2358,6 +2409,21 @@ msgstr "Au moins un des champs de propriété suivants est requis"
 msgid "PUBLIC"
 msgstr "PUBLIC"
 
+msgid "PUBLIC_FEED_HELP"
+msgstr "Cochez la case ci-dessous pour activer la fonctionnalité Flux Public. Les champs de données peuvent être activés individuellement pour le Flux Public à partir de la page"
+
+msgid "PUBLIC_FEED_LABELS"
+msgstr "Cochez la case ci-dessous pour autoriser le renvoi des étiquettes dans le flux public et pouvoir filtrer le Flux Public par une étiquette spécifique."
+
+msgid "PUBLIC_HTML"
+msgstr "Votre URL HTML publique est"
+
+msgid "PUBLIC_JSON"
+msgstr "L'URL de votre flux JSON public est"
+
+msgid "PUBLIC_SHARE"
+msgstr "Si la fonctionnalité Flux public est activée, cette page peut être utilisée pour configurer les données partagées en externe avec le grand public."
+
 msgid "Pair Properties to Tax Lots"
 msgstr "Associer des propriétés à des lots d'impôt"
 
@@ -2378,6 +2444,9 @@ msgstr "Paramètres de jumelage"
 
 msgid "Parent ID"
 msgstr "ID du Parent"
+
+msgid "Passed Checks"
+msgstr "Vérifications Réussies"
 
 #: seed/landing/forms.py:20
 msgid "Password"
@@ -2403,6 +2472,9 @@ msgstr "Mot de passe défini"
 #: seed/landing/templates/landing/password_set.html:12
 msgid "Password set unsuccessful"
 msgstr "Mot de passe pas défini"
+
+msgid "Percentage (%)"
+msgstr "Pourcentage (%)"
 
 msgid "Permanently delete extra_data columns and all associated data"
 msgstr "Supprimer définitivement les colonnes extra_data et toutes les données associées"
@@ -2605,6 +2677,12 @@ msgstr "Visibilité de la propriété"
 msgid "Property and Tax Lot Data"
 msgstr "Données foncières et fiscales"
 
+msgid "Public Disclosure - Sharing Your Data"
+msgstr "Divulgation publique – Partage de données"
+
+msgid "Question"
+msgstr "Question"
+
 msgid "RECOGNIZE_EMPTY_EXPLANATION"
 msgstr "Cocher cette case pour un champ affectera la façon dont les valeurs vides ou vides sont traitées lors des fusions. Plus précisément, les valeurs vides pourront remplacer les valeurs non vides par le paramètre \"Protection contre la fusion\"."
 
@@ -2725,6 +2803,9 @@ msgstr "Réinitialiser par défaut"
 
 msgid "Residential"
 msgstr "Résidentiel"
+
+msgid "Resolution"
+msgstr "Résolution"
 
 msgid "Restore Default Rules"
 msgstr "Restaurer les règles par défaut"
@@ -2945,6 +3026,29 @@ msgstr "Étiquette qui signale qu'une propriété a une violation.  Example: 'Vi
 msgid "SHARE DATA WITH"
 msgstr "PARTAGE DE DONNÉES AVEC"
 
+#, fuzzy
+msgid "SHARING_CYCLES"
+msgstr "Liste d’identifiants de cycle séparés par des virgules. Les résultats incluent l’inventaire des cycles répertoriés. La valeur par défaut est tous les cycles."
+
+#, fuzzy
+msgid "SHARING_LABELS"
+msgstr "Liste de noms d'étiquettes sensibles à la casse, séparés par des virgules. Les résultats incluront l'inventaire portant l'une des étiquettes répertoriées. La valeur par défaut est tout l'inventaire."
+
+msgid "SHARING_PAGE"
+msgstr "Numéro de la page de résultats à retourner. La valeur par défaut est 1."
+
+msgid "SHARING_PER_PAGE"
+msgstr "Nombre de résultats par page. La valeur par défaut est 100."
+
+msgid "SHARING_PROPERTIES"
+msgstr "Booléen True/False pour renvoyer un inventaire de type « Propriété ». La valeur par défaut est True."
+
+msgid "SHARING_QUERY_PARAMS"
+msgstr "Des paramètres de requête peuvent être ajoutés à l'URL pour filtrer les données renvoyées"
+
+msgid "SHARING_TAXLOTS"
+msgstr "Booléen True/False pour renvoyer un inventaire de type « Lot fiscal ». La valeur par défaut est True."
+
 msgid "SHOWING_AVAILABLE_MATCHES"
 msgstr "Affichage des {start} à {end} de {total} correspondances disponibles "
 
@@ -3045,6 +3149,9 @@ msgstr "Sécurité"
 
 msgid "Security Token"
 msgstr "Jeton d'authentification"
+
+msgid "See API Documentation for more information about the /v3/public endpoints"
+msgstr "pour plus d'informations sur le"
 
 #: seed/models/columns.py:688 seed/models/models.py:195
 #: seed/models/models.py:256 seed/models/projects.py:42
@@ -3377,6 +3484,9 @@ msgstr "La Spécification d'Échange de Données Energétiques du Bâtiment (BED
 msgid "The DOE developed the Standard Energy Efficiency Data (SEED) Platform™ as a free software tool that provides a standardized format for collecting, storing and analyzing building energy performance information about large portfolios. Upload your buildings list to get started."
 msgstr "Le DOE a développé la Plate-forme SEED™ (Standard Energy Efficiency Data) en tant qu'outil logiciel gratuit qui fournit un format standardisé pour la collecte, le stockage et l'analyse des informations sur la performance énergétique des bâtiments concernant les grands portefeuilles. Téléchargez votre liste de bâtiments pour commencer."
 
+msgid "The GeoJSON will expose all populated property and taxlot columns"
+msgstr "Le GeoJSON exposera toutes les colonnes de propriété et de lot fiscal renseignées"
+
 msgid "The Open Source code is available on the Github organization SEED-Platform:"
 msgstr "Le code Open Source est disponible sur l'organisation Github SEED-Platform:"
 
@@ -3600,6 +3710,9 @@ msgstr "Télécharger le capteur"
 msgid "UPLOAD_SENSOR_READINGS_BUTTON"
 msgstr "Télécharger les relevés de capteur"
 
+msgid "URL_OPTIONS"
+msgstr "Options d'URL"
+
 #, fuzzy
 msgid "USING_DEFAULT_UNITS_WARNING"
 msgstr "Pour les colonnes avec des paramètres d'unité, les unités par défaut seront utilisées pour les conversions."
@@ -3764,6 +3877,9 @@ msgstr "Spectateur"
 
 msgid "Violation Label"
 msgstr "Étiquette de Violation"
+
+msgid "Visit"
+msgstr "Visitez"
 
 msgid "Visit the BETTER website to run a portfolio analysis"
 msgstr "Visitez le site Web de BETTER pour effectuer une analyse de portefeuille"
@@ -4065,6 +4181,9 @@ msgstr "adresse e-mail"
 #: seed/models/models.py:237
 msgid "end_date"
 msgstr "date de fin"
+
+msgid "endpoints see the"
+msgstr "points de terminaison voir le"
 
 #: seed/landing/forms.py:14
 msgid "ex: joe@company.com"
