@@ -1052,13 +1052,11 @@ class TestColumnsByInventory(TestCase):
             "address_line_1",
             "address_line_2",
             "audit_template_building_id",
-            "block_number",
             "building_certification",
             "building_count",
             "city",
             "conditioned_floor_area",
             "custom_id_1",
-            "district",
             "egrid_subregion_code",
             "energy_alerts",
             "energy_score",
@@ -1066,11 +1064,9 @@ class TestColumnsByInventory(TestCase):
             "gross_floor_area",
             "home_energy_score_id",
             "jurisdiction_property_id",
-            "jurisdiction_tax_lot_id",
             "latitude",
             "longitude",
             "lot_number",
-            "number_properties",
             "occupied_floor_area",
             "owner",
             "owner_address",
@@ -1096,7 +1092,6 @@ class TestColumnsByInventory(TestCase):
             "source_eui_weather_normalized",
             "space_alerts",
             "state",
-            "taxlot_footprint",
             "total_ghg_emissions",
             "total_ghg_emissions_intensity",
             "total_marginal_ghg_emissions",
@@ -1107,7 +1102,8 @@ class TestColumnsByInventory(TestCase):
             "year_ending",
         ]
 
-        method_columns = Column.retrieve_db_field_name_for_hash_comparison()
+        self.maxDiff = None
+        method_columns = Column.retrieve_db_field_name_for_hash_comparison(PropertyState)
         self.assertListEqual(method_columns, expected)
 
     def test_retrieve_db_field_table_and_names_from_db_tables(self):
