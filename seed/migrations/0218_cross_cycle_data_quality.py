@@ -42,6 +42,7 @@ def forwards(apps, schema_editor):
                 name=label,
                 super_organization=org,
                 defaults={"color": "blue"},
+                show_in_list=True
             )
 
 

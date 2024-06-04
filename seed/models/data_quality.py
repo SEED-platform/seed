@@ -23,7 +23,7 @@ from seed.models import Column, DerivedColumn, GoalNote, PropertyView, StatusLab
 from seed.serializers.pint import pretty_units
 from seed.utils.cache import get_cache_raw, set_cache_raw
 from seed.utils.time import convert_datestr
-from seed.utils.goals import percentage_difference
+from seed.utils.goals import percentage_difference, get_eui_value, get_area_value
 
 _log = logging.getLogger(__name__)
 
@@ -949,55 +949,70 @@ class DataQualityCheck(models.Model):
         :goal_notes: dictionary of { property_id: GoalNote, ... }
         """
         apply_labels = {}
-        passed_checks = []
+        results = []
         property_id = row['property'].id
         goal_note = goal_notes.get(property_id)
-        # get current cycle property view 
-        baseline_view = row['baseline'].propertyview_set.first()
-        current_view = row['current'].propertyview_set.first()
+        if not goal_note or not row['current']:
+            # NEED TO MAKE SURE MISSING DATA IS APPLIED
+            return
+        goal = goal_note.goal
+        current_view = row["current"].propertyview_set.first()
 
         for rule in rules:
-            baseline = getattr(row['baseline'], rule.field)
-            current = getattr(row['current'], rule.field)
-            percent_change = percentage_difference(baseline, current)
-            continue
+            result = None
+            data_type = rule.DATA_TYPES[rule.data_type][1]
+            baseline, current = self.get_baseline_current_vals(row, data_type, goal)
 
-            # if percent_change is None:
-            #     continue
-            # elif rule.condition == Rule.RULE_GT:
-            #     result = rule.target > percent_change
-            # elif rule.condition == Rule.RULE_GTE:
-            #     result = rule.target >= percent_change
-            # elif rule.condition == Rule.RULE_LT:
-            #     result = rule.target < percent_change
-            # elif rule.condition == Rule.RULE_LTE:
-            #     result = rule.target <= percent_change
-            # else:
-            #     continue
+            if rule.cross_cycle:
+                value = percentage_difference(baseline, current)
+                if value is None:
+                    continue
+                if rule.condition == Rule.RULE_RANGE:
+                    result = (rule.min is None or value > rule.min) and (rule.max is None or value < rule.max)
+
+            # else: 
+                # single cycle rules.
+
+            # temporary - needs to handle more than just cross-cycle range
+            if result is None: #
+                continue #
             
-            # # track if property has "passed_checks"
-            # if result is not None:
-            #     passed_checks.append(result)
-            # if not rule.status_label:
-            #     continue
+            # track if property "passed_checks"
+            if result is not None:
+                results.append(result)
+            if not rule.status_label:
+                continue
 
             # track which labels should be applied/removed
             if not apply_labels.get(rule.status_label.id):
                 apply_labels[rule.status_label.id] = []
             apply_labels[rule.status_label.id].append(result)
         
-        if goal_note:
-            goal_note.passed_checks = all(passed_checks)
-            # if there are multiple rules with the same label, determine if they are all passing to add or remove the label
-            for k,v in apply_labels.items():
-                label = StatusLabel.objects.get(id=k)
+            goal_note.passed_checks = all(results)
+        
+        # if there are multiple rules with the same label, determine if they are all passing to add or remove the label
+        for id, results in apply_labels.items():
+            label = StatusLabel.objects.get(id=id)
+            property_view_label = PropertyViewLabel.objects.filter(propertyview=current_view, statuslabel=label, goal=goal)
+            if all(results):
+                property_view_label.delete()
+            elif not property_view_label:
+                PropertyViewLabel.objects.create(propertyview=current_view, statuslabel=label, goal=goal)
+        
+        return goal_note
+           
+        
+    def get_baseline_current_vals(self, property, data_type, goal):
+        if data_type == 'area':
+            baseline = get_area_value(property["baseline"], goal)
+            current = get_area_value(property["current"], goal)
+        elif data_type == 'eui':
+            baseline = get_eui_value(property["baseline"], goal)
+            current = get_eui_value(property["current"], goal)
+        else:
+            return None, None
 
-                if all(v):
-                    PropertyViewLabel.objects.filter(propertyview=current_view, statuslabel=label, goal=goal_note.goal, baseline_propertyview=baseline_view).delete()
-                else:
-                    PropertyViewLabel.objects.create(propertyview=current_view, statuslabel=label, goal=goal_note.goal, baseline_propertyview=baseline_view)
-            
-            return goal_note
+        return baseline, current
 
 
     def save_to_cache(self, identifier, organization_id):
@@ -1044,7 +1059,6 @@ class DataQualityCheck(models.Model):
                         rule.status_label = StatusLabel.objects.get(name=rule.name)
                     rule.save()
                 except StatusLabel.DoesNotExist:
-                    print('rule dne ', rule.name)
                     pass
 
 

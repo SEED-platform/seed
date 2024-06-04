@@ -217,9 +217,11 @@
               <th class="condensed_head" style="min-width: 33px; width: 33px; padding-left: 0; padding-right: 0" ng-click="selectAll()">
                 <input type="checkbox" ng-checked="allEnabled()" class="no-click" />
               </th>
-              <th style="min-width: 150px">Rule Type</th>
+              <th style="min-width: 150px">Cycle Type</th>
               <th style="min-width: 100px; width: 100px" translate>Data Type</th>
               <th style="min-width: 140px" translate>Condition Check</th>
+              <th translate>Minimum</th>
+              <th translate>Maximum</th>
               <th style="min-width: 110px; width: 110px" translate>Severity Level</th>
               <th translate>Label</th>
               <th style="min-width: 54px; width: 54px" translate>Delete</th>
@@ -233,28 +235,41 @@
               <td>
                 <select
                   class="form-control input-sm"
-                  ng-model="rule.data_type"
-                  ng-options="type.id as type.label for type in ::data_types[2]"
+                  ng-model="rule.cross_cycle"
+                  ng-options="type.bool as type.label for type in cross_cycle_options"
                   ng-class="{'border-red red': invalid_data_types.includes(field)}"
+                  ng-disabled="rule.rule_type == 0"
                 ></select>
               </td>
               <td>
                 <select
                   class="form-control input-sm"
                   ng-model="rule.data_type"
-                  ng-disabled="true"
                   ng-options="type.id as type.label for type in ::data_types[2]"
                   ng-class="{'border-red red': invalid_data_types.includes(field)}"
+                  ng-disabled="rule.rule_type == 0"
                 ></select>
               </td>
               <td>
-                <select
-                  class="form-control input-sm"
-                  ng-model="rule.condition"
-                  ng-options="condition for condition in ['>', '>=', '<', '<=']"
+                <select class="form-control input-sm" ng-model="rule.condition"
+                  ng-options="condition.id as condition.label for condition in ::conditions"
                   ng-change="rules_changed(rule); change_condition(rule, ruleGroups[rule_type][field], field)"
                   ng-class="{'border-red red': invalid_conditions.includes(field), 'error-bg': misconfigured_fields_ref.condition.includes(rule.$$hashKey)}"
-                ></select>
+                  ng-disabled="rule.rule_type == 0"></select>
+              </td>
+              <td ng-if="rule.data_type !== data_type_keys.string">
+                <input class="form-control input-sm" type="number" ng-model="rule.min" ng-change="rules_changed(rule)"
+                  ng-if="rule.data_type !== data_type_keys.date" placeholder="{$:: '(no minimum)' | translate $}"
+                  ng-disabled="filter_null(rule)" />
+                <input class="form-control input-sm" type="date" ng-model="rule.min" ng-change="rules_changed(rule)"
+                  ng-if="rule.data_type === data_type_keys.date" ng-disabled="filter_null(rule)" />
+              </td>
+              <td ng-if="rule.data_type !== data_type_keys.string">
+                <input class="form-control input-sm" type="number" ng-model="rule.max" ng-change="rules_changed(rule)"
+                  ng-if="rule.data_type !== data_type_keys.date" placeholder="{$:: '(no maximum)' | translate $}"
+                  ng-disabled="filter_null(rule)" />
+                <input class="form-control input-sm" type="date" ng-model="rule.max" ng-change="rules_changed(rule)"
+                  ng-if="rule.data_type === data_type_keys.date" ng-disabled="filter_null(rule)" />
               </td>
               <td ng-class="{'error-bg': misconfigured_fields_ref.severity.includes(rule.$$hashKey)}">
                 <select

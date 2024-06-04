@@ -129,6 +129,11 @@ angular.module('BE.seed.controller.data_quality_admin', []).controller('data_qua
       { id: 'kBtu/m**2/year', label: 'kBtu/m²/year' }
     ];
 
+    $scope.cross_cycle_options = [
+      {bool: true, label: 'Cross-Cycle'},
+      {bool: false, label: 'Within Cycle'},
+    ]
+
     $scope.columns = _.map(angular.copy(columns.filter((col) => !col.derived_column)), (col) => {
       if (!_.find(used_columns, ['id', col.id])) {
         col.group = 'Not Mapped';

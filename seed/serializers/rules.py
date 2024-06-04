@@ -17,6 +17,7 @@ class RuleSerializer(serializers.ModelSerializer):
         model = Rule
         fields = [
             "condition",
+            "cross_cycle",
             "data_type",
             "enabled",
             "field",

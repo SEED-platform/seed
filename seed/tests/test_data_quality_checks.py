@@ -485,10 +485,8 @@ class x(AccessLevelBaseTestCase):
 
         # apply labels to goal rules
         self.violation_label = StatusLabel.objects.get(name='Violation')
-        rules = Rule.objects.filter(table_name="Goal")
-        rules.update(status_label=self.violation_label)
-
         # NEED TO TEST WITH WUI
+
         def create_property_details(eui, gfa):
             details = self.property_state_factory.get_details()
             details["site_eui"] = eui
@@ -539,7 +537,7 @@ class x(AccessLevelBaseTestCase):
         
         # create default rules
         self.dq = DataQualityCheck.retrieve(self.org.id)
-        self.assertEqual(self.dq.rules.count(), 28)
+        self.assertEqual(self.dq.rules.count(), 34)
         
     def test_coss_cycle_dqc(self):
         self.login_as_root_member()
@@ -574,20 +572,19 @@ class x(AccessLevelBaseTestCase):
         assert goalnote3.passed_checks == False
 
         assert self.view12.labels.count() == 0
-        assert self.view22.labels.first() == self.violation_label
-        assert self.view32.labels.first() == self.violation_label
+        assert self.view22.labels.first().name == "High Area % Change"
+        assert self.view32.labels.first().name == "High EUI % Change"
 
-        cross_cycle_labels = PropertyViewLabel.objects.filter(goal_id__isnull=False, baseline_propertyview_id__isnull=False)
+        cross_cycle_labels = PropertyViewLabel.objects.filter(goal_id__isnull=False)
         assert cross_cycle_labels.count() == 2
 
         # change targets so all goals are passing. labels should be removed
         goal_rules = Rule.objects.filter(table_name="Goal")
         for rule in goal_rules:
-            if rule.condition == ">":
-                rule.target = 100
-            else:
-                rule.target = -100
-            rule.save() 
+            if rule.condition == "range":
+                rule.min = -100
+                rule.max = 100
+                rule.save() 
         
         response = self.client.post(
             url,
@@ -605,5 +602,5 @@ class x(AccessLevelBaseTestCase):
         assert self.view22.labels.count() == 0
         assert self.view32.labels.count() == 0
 
-        cross_cycle_labels = PropertyViewLabel.objects.filter(goal_id__isnull=False, baseline_propertyview_id__isnull=False)
+        cross_cycle_labels = PropertyViewLabel.objects.filter(goal_id__isnull=False)
         assert cross_cycle_labels.count() == 0
