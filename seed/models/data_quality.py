@@ -7,6 +7,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 import json
 import logging
 import re
+from collections import defaultdict
 from datetime import date, datetime
 from random import randint
 
@@ -948,15 +949,22 @@ class DataQualityCheck(models.Model):
         :param row: { property: Property, baseline: PropertyState, current PropertyState }
         :goal_notes: dictionary of { property_id: GoalNote, ... }
         """
-        apply_labels = {}
+        apply_labels = {"baseline": defaultdict(list), "current": defaultdict(list)}
         results = []
-        property_id = row['property'].id
+        property_id = row["property"].id
         goal_note = goal_notes.get(property_id)
-        if not goal_note or not row['current']:
+        if not goal_note or not row["current"]:
             # NEED TO MAKE SURE MISSING DATA IS APPLIED
             return
         goal = goal_note.goal
+        baseline_view = row["baseline"].propertyview_set.first()
         current_view = row["current"].propertyview_set.first()
+
+        def check_range():
+            return (rule.min is None or value > rule.min) and (rule.max is None or value < rule.max)
+        def append_to_apply_labels():
+            if rule.status_label:
+                apply_labels[cycle_key][rule.status_label.id].append(result)
 
         for rule in rules:
             result = None
@@ -964,41 +972,54 @@ class DataQualityCheck(models.Model):
             baseline, current = self.get_baseline_current_vals(row, data_type, goal)
 
             if rule.cross_cycle:
+                cycle_key = "current"
                 value = percentage_difference(baseline, current)
                 if value is None:
                     continue
                 if rule.condition == Rule.RULE_RANGE:
-                    result = (rule.min is None or value > rule.min) and (rule.max is None or value < rule.max)
+                    result = check_range()
+                    results.append(result)
+                    append_to_apply_labels()
+                # other rule condition types
+                else:
+                    logging.error('>>> OTHER')
+                    pass
 
-            # else: 
-                # single cycle rules.
+            else:
 
-            # temporary - needs to handle more than just cross-cycle range
-            if result is None: #
-                continue #
-            
-            # track if property "passed_checks"
-            if result is not None:
-                results.append(result)
-            if not rule.status_label:
-                continue
+                for cycle_key, value in {"baseline": baseline, "current": current}.items():
+                    if rule.condition == rule.RULE_RANGE:
+                        if value:
+                            result = check_range()
+                            results.append(result)
+                            append_to_apply_labels()
+                
+                    elif rule.condition == rule.RULE_NOT_NULL:
+                        result = value is not None
+                        results.append(result)
+                        append_to_apply_labels()
 
-            # track which labels should be applied/removed
-            if not apply_labels.get(rule.status_label.id):
-                apply_labels[rule.status_label.id] = []
-            apply_labels[rule.status_label.id].append(result)
+                    # other rule condition types.
+                    else:
+                        logging.error('>>> OTHER')
+                        pass
+
         
             goal_note.passed_checks = all(results)
-        
+
+
         # if there are multiple rules with the same label, determine if they are all passing to add or remove the label
-        for id, results in apply_labels.items():
-            label = StatusLabel.objects.get(id=id)
-            property_view_label = PropertyViewLabel.objects.filter(propertyview=current_view, statuslabel=label, goal=goal)
-            if all(results):
-                property_view_label.delete()
-            elif not property_view_label:
-                PropertyViewLabel.objects.create(propertyview=current_view, statuslabel=label, goal=goal)
-        
+        for cycle_key in ["baseline", "current"]:
+            view = baseline_view if cycle_key == "baseline" else current_view
+     
+            for id, results in apply_labels[cycle_key].items():
+                label = StatusLabel.objects.get(id=id)
+                property_view_label = PropertyViewLabel.objects.filter(propertyview=view, statuslabel=label, goal=goal)
+                if all(results):
+                    property_view_label.delete()
+                elif not property_view_label:
+                    PropertyViewLabel.objects.create(propertyview=view, statuslabel=label, goal=goal)
+            
         return goal_note
            
         

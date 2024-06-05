@@ -491,33 +491,41 @@ class x(AccessLevelBaseTestCase):
             return details
 
         # passing checks
-        property_details_11 = create_property_details(100, 1000)
-        property_details_12 = create_property_details(90, 1005)
+        property_details11 = create_property_details(100, 5000)
+        property_details12 = create_property_details(90, 5005)
         # failing gfa
-        property_details_21 = create_property_details(100, 1000)
-        property_details_22 = create_property_details(100, 100)
+        property_details21 = create_property_details(100, 5000)
+        property_details22 = create_property_details(100, 100)
         # failing eui
-        property_details_31 = create_property_details(100, 1000)
-        property_details_32 = create_property_details(50, 1000)
+        property_details31 = create_property_details(100, 5000)
+        property_details32 = create_property_details(5, 5000)
+        # missing data
+        property_details41 = create_property_details(None, 5000)
+        property_details42 = create_property_details(100, None)
 
         #property{property}{cycle}
         self.property1 = self.property_factory.get_property(access_level_instance=self.root_ali)
         self.property2 = self.property_factory.get_property(access_level_instance=self.root_ali)
         self.property3 = self.property_factory.get_property(access_level_instance=self.root_ali)
+        self.property4 = self.property_factory.get_property(access_level_instance=self.root_ali)
         # state{property}{cycle}
-        self.state_11 = self.property_state_factory.get_property_state(**property_details_11)
-        self.state_12 = self.property_state_factory.get_property_state(**property_details_12)
-        self.state_21 = self.property_state_factory.get_property_state(**property_details_21)
-        self.state_22 = self.property_state_factory.get_property_state(**property_details_22)
-        self.state_31 = self.property_state_factory.get_property_state(**property_details_31)
-        self.state_32 = self.property_state_factory.get_property_state(**property_details_32)
+        self.state11 = self.property_state_factory.get_property_state(**property_details11)
+        self.state12 = self.property_state_factory.get_property_state(**property_details12)
+        self.state21 = self.property_state_factory.get_property_state(**property_details21)
+        self.state22 = self.property_state_factory.get_property_state(**property_details22)
+        self.state31 = self.property_state_factory.get_property_state(**property_details31)
+        self.state32 = self.property_state_factory.get_property_state(**property_details32)
+        self.state41 = self.property_state_factory.get_property_state(**property_details41)
+        self.state42 = self.property_state_factory.get_property_state(**property_details42)
         # view{property}{cycle}
-        self.view11 = self.property_view_factory.get_property_view(prprty=self.property1, state=self.state_11, cycle=self.cycle1)
-        self.view12 = self.property_view_factory.get_property_view(prprty=self.property1, state=self.state_12, cycle=self.cycle2)
-        self.view21 = self.property_view_factory.get_property_view(prprty=self.property2, state=self.state_21, cycle=self.cycle1)
-        self.view22 = self.property_view_factory.get_property_view(prprty=self.property2, state=self.state_22, cycle=self.cycle2)
-        self.view31 = self.property_view_factory.get_property_view(prprty=self.property3, state=self.state_31, cycle=self.cycle1)
-        self.view32 = self.property_view_factory.get_property_view(prprty=self.property3, state=self.state_32, cycle=self.cycle2)
+        self.view11 = self.property_view_factory.get_property_view(prprty=self.property1, state=self.state11, cycle=self.cycle1)
+        self.view12 = self.property_view_factory.get_property_view(prprty=self.property1, state=self.state12, cycle=self.cycle2)
+        self.view21 = self.property_view_factory.get_property_view(prprty=self.property2, state=self.state21, cycle=self.cycle1)
+        self.view22 = self.property_view_factory.get_property_view(prprty=self.property2, state=self.state22, cycle=self.cycle2)
+        self.view31 = self.property_view_factory.get_property_view(prprty=self.property3, state=self.state31, cycle=self.cycle1)
+        self.view32 = self.property_view_factory.get_property_view(prprty=self.property3, state=self.state32, cycle=self.cycle2)
+        self.view41 = self.property_view_factory.get_property_view(prprty=self.property4, state=self.state41, cycle=self.cycle1)
+        self.view42 = self.property_view_factory.get_property_view(prprty=self.property4, state=self.state42, cycle=self.cycle2)
 
         self.goal = Goal.objects.create(
             organization=self.org,
@@ -535,7 +543,19 @@ class x(AccessLevelBaseTestCase):
         # create default rules
         self.dq = DataQualityCheck.retrieve(self.org.id)
         self.assertEqual(self.dq.rules.count(), 34)
-        
+
+        self.label_lookup = {
+            "Missing Data": StatusLabel.objects.get(name="Missing Data"),
+            "Low EUI % Change": StatusLabel.objects.get(name="Low EUI % Change"),
+            "Low EUI": StatusLabel.objects.get(name="Low EUI"),
+            "High EUI % Change": StatusLabel.objects.get(name="High EUI % Change"),
+            "High EUI": StatusLabel.objects.get(name="High EUI"),
+            "High Area % Change": StatusLabel.objects.get(name="High Area % Change"),
+            "High Area": StatusLabel.objects.get(name="High Area"),
+            "Low Area % Change": StatusLabel.objects.get(name="Low Area % Change"),
+            "Low Area": StatusLabel.objects.get(name="Low Area"),
+        }
+
     def test_cross_cycle_dqc(self):
         self.login_as_root_member()
 
@@ -568,32 +588,38 @@ class x(AccessLevelBaseTestCase):
         assert goalnote2.passed_checks == False
         assert goalnote3.passed_checks == False
 
+        assert self.view11.labels.count() == 0
         assert self.view12.labels.count() == 0
-        assert self.view22.labels.first().name == "High Area % Change"
-        assert self.view32.labels.first().name == "High EUI % Change"
+
+        assert self.view21.labels.count() == 0
+        assert self.view22.labels.count() == 2
+        assert self.label_lookup["High Area % Change"] in self.view22.labels.all()
+        assert self.label_lookup["Low Area"] in self.view22.labels.all()
+
+        assert self.view31.labels.count() == 0
+        assert self.view32.labels.count() == 2
+        assert self.label_lookup["High EUI % Change"] in self.view32.labels.all()
+        assert self.label_lookup["Low EUI"] in self.view32.labels.all()
+
+        assert self.view41.labels.count() == 1
+        assert self.view42.labels.count() == 1
+        assert self.label_lookup["Missing Data"] in self.view41.labels.all()
+        assert self.label_lookup["Missing Data"] in self.view42.labels.all()
 
         cross_cycle_labels = PropertyViewLabel.objects.filter(goal_id__isnull=False)
-        assert cross_cycle_labels.count() == 2
-
-        url = reverse_lazy("api:v3:labels-get-property-view-labels-by-goal") 
-        response = self.client.get(
-            url,
-            {
-                "goal_id": self.goal.id,
-                "organization_id": self.org.id
-            },
-            content_type="application/json"
-        )
-        breakpoint()
-
+        assert cross_cycle_labels.count() == 6
 
         # change targets so all goals are passing. labels should be removed
         goal_rules = Rule.objects.filter(table_name="Goal")
         for rule in goal_rules:
             if rule.condition == "range":
-                rule.min = -100
-                rule.max = 100
+                rule.min = -10000
+                rule.max = 10000
                 rule.save() 
+        self.state41.site_eui = 100
+        self.state42.gross_floor_area = 5000
+        self.state41.save()
+        self.state42.save()
         
         response = self.client.post(
             url,
