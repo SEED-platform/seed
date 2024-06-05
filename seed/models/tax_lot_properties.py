@@ -207,7 +207,11 @@ class TaxLotProperty(models.Model):
         # gather meter counts
         Meter = apps.get_model("seed", "Meter")
         if this_cls == "Property":
-            obj_meter_counts = dict(Meter.objects.filter(property__in=ids).values_list("property_id").annotate(Count("property_id")))
+            obj_meter_counts = dict(
+                Meter.objects.filter(property__in=[obj.property_id for obj in object_list])
+                .values_list("property_id")
+                .annotate(Count("property_id"))
+            )
 
         # gather note counts
         Note = apps.get_model("seed", "Note")
@@ -285,7 +289,7 @@ class TaxLotProperty(models.Model):
 
             if this_cls == "Property":
                 obj_dict.update(ali_path_by_id[obj.property.access_level_instance_id])
-                obj_dict["meters_exist_indicator"] = obj_meter_counts.get(obj.id, 0) > 0
+                obj_dict["meters_exist_indicator"] = obj_meter_counts.get(obj.property_id, 0) > 0
             else:
                 obj_dict.update(ali_path_by_id[obj.taxlot.access_level_instance_id])
 
