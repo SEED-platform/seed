@@ -776,19 +776,13 @@ class DataQualityCheck(models.Model):
         for row in rows:
             # Initialize the ID if it does not exist yet. Add in the other
             # fields that are of interest to the GUI
-            if row.id not in self.results:
-                self.results[row.id] = {}
-                for field in fields:
-                    self.results[row.id][field] = getattr(row, field)
-                self.results[row.id]["data_quality_results"] = []
+            self.init_result(row, fields)
 
             # Run the checks
             self._check(rules, row, derived_columns_by_name)
 
         # Prune the results will remove any entries that have zero data_quality_results
-        for k, v in self.results.copy().items():
-            if not v["data_quality_results"]:
-                del self.results[k]
+        self.prune_results()
 
     def check_data_cross_cycle(self, goal_id, state_pairs):
         """
@@ -800,13 +794,33 @@ class DataQualityCheck(models.Model):
         goal_notes = GoalNote.objects.filter(goal=goal_id)
         goal_notes = {note.property.id: note for note in goal_notes}
         goal_notes_to_update = []
-
+        fields = ["id"]
         for row in state_pairs:
+            for cycle_key in ["baseline", "current"]:
+                self.init_result(row[cycle_key], fields)
+
             goal_note = self._check_cross_cycle(rules, row, goal_notes)
             if goal_note:
                 goal_notes_to_update.append(goal_note)
 
+        self.prune_results()
+
         GoalNote.objects.bulk_update(goal_notes_to_update, ['passed_checks'])
+
+    def init_result(self, row, fields):
+        # Initialize the ID if it does not exist yet. Add in the other
+        # fields that are of interest to the GUI
+        if row and row.id not in self.results:
+            self.results[row.id] = {}
+            for field in fields:
+                self.results[row.id][field] = getattr(row, field)
+            self.results[row.id]["data_quality_results"] = []
+
+    def prune_results(self):
+        # prune_results will remove any entries that have zero data_quality_results
+        for k, v in self.results.copy().items():
+            if not v["data_quality_results"]:
+                del self.results[k]
 
     def get_fieldnames(self, record_type):
         """Get fieldnames to apply to results."""
@@ -957,8 +971,8 @@ class DataQualityCheck(models.Model):
             # NEED TO MAKE SURE MISSING DATA IS APPLIED
             return
         goal = goal_note.goal
-        baseline_view = row["baseline"].propertyview_set.first()
-        current_view = row["current"].propertyview_set.first()
+        baseline_view = row["baseline"].propertyview_set.first() if row["baseline"] else None
+        current_view = row["current"].propertyview_set.first() if row["current"] else None
 
         def check_range():
             return (rule.min is None or value > rule.min) and (rule.max is None or value < rule.max)
@@ -969,44 +983,57 @@ class DataQualityCheck(models.Model):
         for rule in rules:
             result = None
             data_type = rule.DATA_TYPES[rule.data_type][1]
-            baseline, current = self.get_baseline_current_vals(row, data_type, goal)
+            baseline = self.get_value(row, data_type, goal, "baseline")
+            current = self.get_value(row, data_type, goal, "current")
 
             if rule.cross_cycle:
                 cycle_key = "current"
-                value = percentage_difference(baseline, current)
+                value = percentage_difference(current, baseline)
                 if value is None:
                     continue
+                # EUI is inverese as a drop in EUI is an improvement
+                if value and data_type == "eui":
+                    value = value * -1
                 if rule.condition == Rule.RULE_RANGE:
                     result = check_range()
                     results.append(result)
                     append_to_apply_labels()
+                    if not result:
+                        self.add_result_range_error(row["current"].id, rule, data_type, value)
+                    
                 # other rule condition types
                 else:
                     logging.error('>>> OTHER')
                     pass
 
-            else:
-
-                for cycle_key, value in {"baseline": baseline, "current": current}.items():
+            else:  # Within Cycle
+                for cycle_key in ["baseline", "current"]:
+                    state = row["baseline"] if cycle_key == "baseline" else row["current"]
+                    if not state:
+                        return
+                    value = baseline if cycle_key == "baseline" else current
                     if rule.condition == rule.RULE_RANGE:
                         if value:
                             result = check_range()
                             results.append(result)
                             append_to_apply_labels()
+                            if not result:
+                                self.add_result_range_error(state.id, rule, data_type, value)
+
                 
                     elif rule.condition == rule.RULE_NOT_NULL:
                         result = value is not None
                         results.append(result)
                         append_to_apply_labels()
+                        if not result:
+                            self.add_result_is_null(state.id, rule, data_type, value)
 
                     # other rule condition types.
                     else:
                         logging.error('>>> OTHER')
                         pass
-
         
             goal_note.passed_checks = all(results)
-
 
         # if there are multiple rules with the same label, determine if they are all passing to add or remove the label
         for cycle_key in ["baseline", "current"]:
@@ -1019,22 +1046,15 @@ class DataQualityCheck(models.Model):
                     property_view_label.delete()
                 elif not property_view_label:
                     PropertyViewLabel.objects.create(propertyview=view, statuslabel=label, goal=goal)
-            
+
         return goal_note
            
-        
-    def get_baseline_current_vals(self, property, data_type, goal):
+
+    def get_value(self, property, data_type, goal, cycle_key):
         if data_type == 'area':
-            baseline = get_area_value(property["baseline"], goal)
-            current = get_area_value(property["current"], goal)
+            return get_area_value(property[cycle_key], goal)
         elif data_type == 'eui':
-            baseline = get_eui_value(property["baseline"], goal)
-            current = get_eui_value(property["current"], goal)
-        else:
-            return None, None
-
-        return baseline, current
-
+            return get_eui_value(property[cycle_key], goal)
 
     def save_to_cache(self, identifier, organization_id):
         """
@@ -1181,6 +1201,20 @@ class DataQualityCheck(models.Model):
                 "table_name": rule.table_name,
                 "message": display_name + " out of range",
                 "detailed_message": display_name + " [" + value + "] > " + rule_max,
+                "severity": rule.get_severity_display(),
+                "condition": rule.condition,
+            }
+        )
+
+    def add_result_range_error(self, row_id, rule, display_name, value):
+        self.results[row_id]["data_quality_results"].append(
+            {
+                "field": rule.field,
+                "formatted_field": display_name,
+                "value": value,
+                "table_name": rule.table_name,
+                "message": f"{display_name} out of range",
+                "detailed_message": f"{display_name}  [ {value} ] outside range {rule.min} to {rule.max}",
                 "severity": rule.get_severity_display(),
                 "condition": rule.condition,
             }

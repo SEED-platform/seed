@@ -206,7 +206,7 @@ def get_state_pairs(property_ids, goal_id):
         current_view = next((pv for pv in property.prefetched_views if pv.cycle == goal.current_cycle), None)
 
         baseline_state = baseline_view.state if baseline_view else None
-        current_state = current_view.state if baseline_view else None
+        current_state = current_view.state if current_view else None
 
         state_pairs.append({
             "property": property,

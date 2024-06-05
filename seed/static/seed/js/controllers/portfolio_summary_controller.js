@@ -1114,7 +1114,6 @@ angular.module('BE.seed.controller.portfolio_summary', [])
               .then((result) => {
                 data_quality_service.get_data_quality_results($scope.organization.id, result.unique_id)
                   .then((dq_result) => {
-                    console.log('What should the results look like?', dq_result);
                     spinner_utility.hide()
                     load_summary();
                     load_inventory();
