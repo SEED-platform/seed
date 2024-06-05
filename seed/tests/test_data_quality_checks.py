@@ -482,9 +482,6 @@ class x(AccessLevelBaseTestCase):
             organization=self.org,
             is_extra_data=True,
         )
-
-        # apply labels to goal rules
-        self.violation_label = StatusLabel.objects.get(name='Violation')
         # NEED TO TEST WITH WUI
 
         def create_property_details(eui, gfa):
@@ -539,7 +536,7 @@ class x(AccessLevelBaseTestCase):
         self.dq = DataQualityCheck.retrieve(self.org.id)
         self.assertEqual(self.dq.rules.count(), 34)
         
-    def test_coss_cycle_dqc(self):
+    def test_cross_cycle_dqc(self):
         self.login_as_root_member()
 
         goalnote1 = self.property1.goalnote_set.get(goal=self.goal)
@@ -578,6 +575,18 @@ class x(AccessLevelBaseTestCase):
         cross_cycle_labels = PropertyViewLabel.objects.filter(goal_id__isnull=False)
         assert cross_cycle_labels.count() == 2
 
+        url = reverse_lazy("api:v3:labels-get-property-view-labels-by-goal") 
+        response = self.client.get(
+            url,
+            {
+                "goal_id": self.goal.id,
+                "organization_id": self.org.id
+            },
+            content_type="application/json"
+        )
+        breakpoint()
+
+
         # change targets so all goals are passing. labels should be removed
         goal_rules = Rule.objects.filter(table_name="Goal")
         for rule in goal_rules:
@@ -604,3 +613,6 @@ class x(AccessLevelBaseTestCase):
 
         cross_cycle_labels = PropertyViewLabel.objects.filter(goal_id__isnull=False)
         assert cross_cycle_labels.count() == 0
+
+
+    

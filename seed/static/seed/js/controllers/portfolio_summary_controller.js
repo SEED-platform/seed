@@ -322,17 +322,9 @@ angular.module('BE.seed.controller.portfolio_summary', [])
         }, 0);
       };
 
-      // retrieve labels for cycle
+      // retrieve labels, key = 'baseline' or 'current'
       const get_labels = (key) => {
-        const cycle = key === 'baseline' ? $scope.goal.baseline_cycle : $scope.goal.current_cycle;
-
-        label_service.get_labels('properties', undefined, cycle).then((current_labels) => {
-          const labels = _.filter(current_labels, (label) => !_.isEmpty(label.is_applied));
-
-          // load saved label filter
-          // const ids = inventory_service.loadSelectedLabels('grid.properties.labels');
-          // $scope.selected_labels = _.filter(labels, (label) => _.includes(ids, label.id));
-
+        label_service.get_property_view_labels_by_goal($scope.organization.id, $scope.goal.id, key).then((labels) => {
           if (key === 'baseline') {
             $scope.baseline_labels = labels;
             $scope.build_labels(key, $scope.baseline_labels);
@@ -342,6 +334,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
           }
         });
       };
+
       const get_all_labels = () => {
         get_labels('baseline');
         get_labels('current');
@@ -354,14 +347,11 @@ angular.module('BE.seed.controller.portfolio_summary', [])
         for (const n in labels) {
           const label = labels[n];
           if (label.show_in_list) {
-            for (const m in label.is_applied) {
-              const id = label.is_applied[m];
-              const property_id = $scope.property_lookup[id];
-              if (!$scope.show_labels_by_inventory_id[key][property_id]) {
-                $scope.show_labels_by_inventory_id[key][property_id] = [];
-              }
-              $scope.show_labels_by_inventory_id[key][property_id].push(label);
+            const property_id = $scope.property_lookup[label.propertyview];
+            if (!$scope.show_labels_by_inventory_id[key][property_id]) {
+              $scope.show_labels_by_inventory_id[key][property_id] = [];
             }
+            $scope.show_labels_by_inventory_id[key][property_id].push(label);
           }
         }
       };
