@@ -13,7 +13,7 @@ from django.conf import settings
 from django.contrib.gis.db import models as geomodels
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError, models, transaction
-from django.db.models import Case, Value, When
+from django.db.models import Case, Value, When, UniqueConstraint
 from django.db.models.signals import m2m_changed, post_save, pre_delete, pre_save
 from django.dispatch import receiver
 from django.forms.models import model_to_dict
@@ -964,6 +964,10 @@ class PropertyViewLabel(models.Model):
     propertyview = models.ForeignKey(PropertyView, on_delete=models.CASCADE)
     statuslabel = models.ForeignKey(StatusLabel, on_delete=models.CASCADE)
     goal = models.ForeignKey("seed.Goal", on_delete=models.CASCADE, null=True)
+    class Meta:
+        constraints = [
+            UniqueConstraint(fields=['propertyview', 'statuslabel', 'goal'], name='unique_propertyview_statuslabel_goal')
+        ]
 
 
 class PropertyAuditLog(models.Model):

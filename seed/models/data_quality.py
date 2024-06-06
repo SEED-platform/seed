@@ -794,7 +794,7 @@ class DataQualityCheck(models.Model):
         goal_notes = GoalNote.objects.filter(goal=goal_id)
         goal_notes = {note.property.id: note for note in goal_notes}
         goal_notes_to_update = []
-        fields = ["id"]
+        fields = self.get_fieldnames('PropertyState')
         for row in state_pairs:
             for cycle_key in ["baseline", "current"]:
                 self.init_result(row[cycle_key], fields)
@@ -814,6 +814,9 @@ class DataQualityCheck(models.Model):
             self.results[row.id] = {}
             for field in fields:
                 self.results[row.id][field] = getattr(row, field)
+                view = row.propertyview_set.first()
+                if view:
+                    self.results[row.id]["cycle"] = view.cycle.name
             self.results[row.id]["data_quality_results"] = []
 
     def prune_results(self):
@@ -1000,6 +1003,8 @@ class DataQualityCheck(models.Model):
                     append_to_apply_labels()
                     if not result:
                         self.add_result_range_error(row["current"].id, rule, data_type, value)
+                        self.update_status_label(PropertyViewLabel, rule, current_view.id, row["current"].id)
+
                     
                 # other rule condition types
                 else:
@@ -1009,6 +1014,7 @@ class DataQualityCheck(models.Model):
             else:  # Within Cycle
                 for cycle_key in ["baseline", "current"]:
                     state = row["baseline"] if cycle_key == "baseline" else row["current"]
+                    view = baseline_view if cycle_key == "baseline" else current_view
                     if not state:
                         return
                     value = baseline if cycle_key == "baseline" else current
@@ -1019,6 +1025,7 @@ class DataQualityCheck(models.Model):
                             append_to_apply_labels()
                             if not result:
                                 self.add_result_range_error(state.id, rule, data_type, value)
+                                self.update_status_label(PropertyViewLabel, rule, view.id, state.id)
 
                 
                     elif rule.condition == rule.RULE_NOT_NULL:
@@ -1027,6 +1034,7 @@ class DataQualityCheck(models.Model):
                         append_to_apply_labels()
                         if not result:
                             self.add_result_is_null(state.id, rule, data_type, value)
+                            self.update_status_label(PropertyViewLabel, rule, view.id, state.id)
 
                     # other rule condition types.
                     else:
@@ -1051,6 +1059,8 @@ class DataQualityCheck(models.Model):
            
 
     def get_value(self, property, data_type, goal, cycle_key):
+        if not property[cycle_key]:
+            return None
         if data_type == 'area':
             return get_area_value(property[cycle_key], goal)
         elif data_type == 'eui':
@@ -1346,7 +1356,7 @@ class DataQualityCheck(models.Model):
                         f"Label with super_organization_id={label_org_id} cannot be applied to a record with parent "
                         f"organization_id={property_parent_org_id}."
                     )
-            else:
+            elif rule.table_name == "TaxLotState":
                 taxlot_parent_org_id = TaxLotView.objects.get(pk=linked_id).taxlot.organization.get_parent().id
                 if taxlot_parent_org_id == label_org_id:
                     label_class.objects.get_or_create(taxlotview_id=linked_id, statuslabel_id=rule.status_label_id)

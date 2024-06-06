@@ -754,6 +754,7 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
           .data_quality_checks_status(response.progress_key)
           .then((result) => {
             data_quality_service.get_data_quality_results($scope.organization.id, result.unique_id).then((dq_result) => {
+              console.log(dq_result)
               const modalInstance = $uibModal.open({
                 templateUrl: `${urls.static_url}seed/partials/data_quality_modal.html`,
                 controller: 'data_quality_modal_controller',

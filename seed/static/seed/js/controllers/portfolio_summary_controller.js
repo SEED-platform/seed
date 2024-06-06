@@ -1117,6 +1117,19 @@ angular.module('BE.seed.controller.portfolio_summary', [])
               .then((result) => {
                 data_quality_service.get_data_quality_results($scope.organization.id, result.unique_id)
                   .then((dq_result) => {
+                    console.log(dq_result)
+                    const modalInstance = $uibModal.open({
+                      templateUrl: `${urls.static_url}seed/partials/data_quality_modal.html`,
+                      controller: 'data_quality_modal_controller',
+                      size: 'lg',
+                      resolve: {
+                        dataQualityResults: () => dq_result,
+                        name: () => null,
+                        uploaded: () => null,
+                        run_id: () => result.unique_id,
+                        orgId: () => $scope.organization.id
+                      }
+                    });
                     spinner_utility.hide()
                     load_summary();
                     load_inventory();
