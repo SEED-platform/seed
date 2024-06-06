@@ -12,6 +12,11 @@ from seed.models import Element
 
 
 class ElementSerializer(serializers.ModelSerializer):
+    code = serializers.SerializerMethodField()
+
     class Meta:
         model = Element
         fields = "__all__"
+
+    def get_code(self, element):
+        return element.code.code
