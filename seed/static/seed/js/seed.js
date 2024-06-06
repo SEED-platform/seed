@@ -1206,7 +1206,12 @@ SEED_app.config([
                 (data) => $q.reject(data.message)
               );
             }
-          ]
+          ],
+          property_columns: [
+            'inventory_service',
+            'user_service',
+            (inventory_service) => inventory_service.get_property_columns()
+          ],
         }
       })
       .state({

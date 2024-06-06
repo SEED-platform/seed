@@ -9,10 +9,12 @@ import json
 from datetime import date
 
 from django.test import TestCase
+from django.urls import reverse_lazy
 
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.models import AccessLevelInstance
-from seed.models import Cycle
+from seed.models import Column, Cycle
+from seed.serializers.columns import ColumnSerializer
 from seed.utils.api import get_api_endpoints
 from seed.utils.organizations import create_organization
 
@@ -50,6 +52,16 @@ class TestApi(TestCase):
         auth_string = base64.urlsafe_b64encode(bytes(f"{self.user.username}:{self.user.api_key}", "utf-8"))
         self.auth_string = "Basic {}".format(auth_string.decode("utf-8"))
         self.headers = {"Authorization": self.auth_string}
+
+        self.default_reports_x_axis_options = Column.objects.filter(organization=self.org, table_name="PropertyState")[0:3]
+        for c in self.default_reports_x_axis_options:
+            c.is_option_for_reports_x_axis = True
+            c.save()
+
+        self.default_reports_y_axis_options = Column.objects.filter(organization=self.org, table_name="PropertyState")[3:6]
+        for c in self.default_reports_y_axis_options:
+            c.is_option_for_reports_y_axis = True
+            c.save()
 
     def get_org_id(self, response, username):
         """Return the org id from the passed dictionary and username"""
@@ -171,6 +183,66 @@ class TestApi(TestCase):
         self.assertEqual(r["organization"]["number_of_users"], 1)
         self.assertEqual(len(r["organization"]["owners"]), 1)
         self.assertEqual(r["organization"]["user_is_owner"], True)
+        self.assertEqual(
+            r["organization"]["default_reports_x_axis_options"], ColumnSerializer(self.default_reports_x_axis_options, many=True).data
+        )
+        self.assertEqual(
+            r["organization"]["default_reports_y_axis_options"], ColumnSerializer(self.default_reports_y_axis_options, many=True).data
+        )
+
+    def test_set_default_reports_axis_options(self):
+        # assert old axis set
+        self.assertTrue(all(c.is_option_for_reports_x_axis for c in self.default_reports_x_axis_options))
+        self.assertTrue(all(c.is_option_for_reports_y_axis for c in self.default_reports_y_axis_options))
+
+        r = self.client.get("/api/v3/organizations/" + str(self.org.id) + "/", follow=True, **self.headers)
+        r = json.loads(r.content)
+
+        self.assertEqual(
+            r["organization"]["default_reports_x_axis_options"], ColumnSerializer(self.default_reports_x_axis_options, many=True).data
+        )
+        self.assertEqual(
+            r["organization"]["default_reports_y_axis_options"], ColumnSerializer(self.default_reports_y_axis_options, many=True).data
+        )
+
+        # change axis
+        new_default_reports_x_axis_options = Column.objects.filter(organization=self.org, table_name="PropertyState")[10:13]
+        new_default_reports_y_axis_options = Column.objects.filter(organization=self.org, table_name="PropertyState")[13:16]
+
+        url = reverse_lazy("api:v3:organizations-save-settings", args=[self.org.id]) + f"?organization_id={self.org.id}"
+        res = self.client.put(
+            url,
+            data=json.dumps(
+                {
+                    "organization": {
+                        "default_reports_x_axis_options": list(new_default_reports_x_axis_options.values_list("id", flat=True)),
+                        "default_reports_y_axis_options": list(new_default_reports_y_axis_options.values_list("id", flat=True)),
+                    }
+                }
+            ),
+            content_type="application/json",
+            **self.headers,
+        )
+        self.assertEqual(res.status_code, 200)
+
+        # check the axis changed
+        r = self.client.get("/api/v3/organizations/" + str(self.org.id) + "/", follow=True, **self.headers)
+        r = json.loads(r.content)
+        self.assertEqual(
+            r["organization"]["default_reports_x_axis_options"], ColumnSerializer(new_default_reports_x_axis_options, many=True).data
+        )
+        self.assertEqual(
+            r["organization"]["default_reports_y_axis_options"], ColumnSerializer(new_default_reports_y_axis_options, many=True).data
+        )
+
+        self.assertFalse(
+            any(c.is_option_for_reports_x_axis for c in Column.objects.filter(id__in=[c.id for c in self.default_reports_x_axis_options]))
+        )
+        self.assertFalse(
+            any(c.is_option_for_reports_y_axis for c in Column.objects.filter(id__in=[c.id for c in self.default_reports_y_axis_options]))
+        )
+        self.assertTrue(all(c.is_option_for_reports_x_axis for c in new_default_reports_x_axis_options))
+        self.assertTrue(all(c.is_option_for_reports_y_axis for c in new_default_reports_y_axis_options))
 
     def test_update_user(self):
         user_payload = {"first_name": "Arya", "last_name": "Stark", "email": self.user.username}

@@ -68,6 +68,48 @@
           </form>
         </div>
       </div>
+
+      <div class="section_content_container">
+        <div class="section_content with_padding">
+          <h3 translate>Columns to Include in Reports x axis options</h3>
+          <form class="form-horizontal" role="form">
+            <div class="form-group">
+              <div class="col-sm-4">
+                <ul ng-if="selected_x_columns.length">
+                  <li ng-repeat="id in selected_x_columns" class="r-row r-row-centered">
+                    <span class="r-grow">{$:: get_column_display(id) $}</span>
+                    <i class="fa-solid fa-xmark r-margin-left-5" ng-click="remove_x_column(id)"></i>
+                  </li>
+                </ul>
+                <select class="form-control" ng-change="add_x_column(x_column_selection); x_column_selection = null" ng-model="x_column_selection" ng-disabled="::!auth.requires_owner">
+                  <option ng-repeat="x_columns in available_x_columns()" ng-value="x_columns.id">{$:: x_columns.displayName $}</option>
+                </select>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div class="section_content_container">
+        <div class="section_content with_padding">
+          <h3 translate>Columns to Include in Reports y axis options</h3>
+          <form class="form-horizontal" role="form">
+            <div class="form-group">
+              <div class="col-sm-4">
+                <ul ng-if="selected_y_columns.length">
+                  <li ng-repeat="id in selected_y_columns" class="r-row r-row-centered">
+                    <span class="r-grow">{$:: get_column_display(id) $}</span>
+                    <i class="fa-solid fa-xmark r-margin-left-5" ng-click="remove_y_column(id)"></i>
+                  </li>
+                </ul>
+                <select class="form-control" ng-change="add_y_column(x_column_selection); y_column_selection = null" ng-model="y_column_selection" ng-disabled="::!auth.requires_owner">
+                  <option ng-repeat="y_columns in available_y_columns()" ng-value="y_columns.id">{$:: y_columns.displayName $}</option>
+                </select>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
     </uib-tab>
 
     <uib-tab index="1" heading="{$:: 'API Key' | translate $}">
