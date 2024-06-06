@@ -22,8 +22,20 @@ def get_json_path(json_path, data):
     json_path = json_path.split(".")
     result = data
     for key in json_path:
-        result = result.get(key, {})
-
+        if isinstance(result, dict):
+            result = result.get(key, {})
+        elif isinstance(result, list):
+            # check if it's just a list of strings or a list of objects
+            if any(isinstance(val, dict) for val in result):
+                # it's a list of dicts, keep as before
+                result = result.get(key, {})
+            else:
+                # it's a list of values, modify (mostly for new ee_measures syntax)
+                # if key is found, return 1; else return 0
+                if key in result:
+                    result = 1
+                else:
+                    result = 0
     if isinstance(result, dict) and not result:
         # path was probably not valid in the data...
         return None
