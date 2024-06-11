@@ -4,6 +4,7 @@ SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and othe
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
+import math
 from typing import Literal
 
 from celery import shared_task
@@ -488,7 +489,8 @@ def chunk_inventory_pairs(properties, taxlots):
     Returns a list of chunk pairs
     return [[p_chunk0, t_chunk0], [p_chunk1, t_chunk1], ...]
     """
-    chunk_size = 5
+    chunk_size = math.ceil(max(len(properties), len(taxlots)) / 5)
+                           
     p_chunks = [properties[i:i + chunk_size] for i in range(0, len(properties), chunk_size)]
     t_chunks = [taxlots[i:i + chunk_size] for i in range(0, len(taxlots), chunk_size)]
     return zip_longest(p_chunks, t_chunks, fillvalue=[])

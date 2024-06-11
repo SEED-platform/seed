@@ -1607,11 +1607,14 @@ def geocode_and_match_buildings_task(file_pk):
         id_chunks = [[obj.id for obj in chunk] for chunk in batch(property_states, 100)]
         map_additional_models_group = group(_map_additional_models.si(id_chunk, file_pk, progress_data.key) for id_chunk in id_chunks)
 
+
+    # this should not be hard coded
+    num_celery_workers = 5
     progress_data.total = (
         1  # geocoding
         + len(map_additional_models_group)  # map additional models tasks
-        + 2  # match and link
-        + 1  # finish
+        + num_celery_workers  # match and link
+        # + 1  # finish
     )
     progress_data.save()
 
@@ -1632,6 +1635,12 @@ def geocode_and_match_buildings_task(file_pk):
 
     return {"progress_data": progress_data.result(), "sub_progress_data": sub_progress_data.result()}
 
+def get_num_celery_workers():
+    import celery
+
+    app = celery.Celery("seed")
+    app.config_from_object("django.conf:settings", namespace="CELERY")
+    import remote_pdb; remote_pdb.set_trace()
 
 @shared_task
 def _geocode_properties_or_tax_lots(file_pk, progress_key, sub_progress_key=None):

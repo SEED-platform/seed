@@ -67,6 +67,7 @@ def match_and_link_incoming_properties_and_taxlots(file_pk, progress_key, sub_pr
     and an array of associated property states as the values
     :return results: dict
     """
+    logging.error(">>> START")
 
     import_file = ImportFile.objects.get(pk=file_pk)
     org = import_file.import_record.super_organization
@@ -88,30 +89,6 @@ def match_and_link_incoming_properties_and_taxlots(file_pk, progress_key, sub_pr
         ]
         
         results = chord(tasks)(aggregate_results.s(file_pk, progress_key))
-
-    return results.id
-
-@shared_task
-def aggregate_results(result_list, import_file_id, progress_key):
-    results = {}
-    for result in result_list:
-        for key, value in result.items():
-            results[key] = results.get(key, 0) + value
-
-    # progress_data = ProgressData.from_key(progress_key)
-
-    # import_file = ImportFile.objects.get(pk=import_file_id)
-    # import_file.matching_done = True
-    # import_file.mapping_completion = 100
-    # import_file.matching_results_data = result
-    # result["import_file_records"] = import_file.num_rows
-    # import_file.save()
-    # logging.error(">>> Aggregate results")
-
-    # return progress_data.finish_with_success()
-
-
-    return results
 
     # THIS GOES IN match_and_link_incoming_properties_and_taxlots
     # else:
@@ -136,55 +113,27 @@ def aggregate_results(result_list, import_file_id, progress_key):
     #
     # results["import_file_records"] = import_file.num_rows
 
+    return results.id
 
-# @shared_task
-# @lock_and_track
-# def match_and_link_incoming_properties_and_taxlots(file_pk, progress_key, sub_progress_key, property_state_ids_by_cycle=None):
-#     """
-#     Utilizes the helper function match_and_link_incoming_properties_and_taxlots_by_cycle
+@shared_task
+def aggregate_results(result_list, import_file_id, progress_key):
+    results = {}
+    for result in result_list:
+        for key, value in result.items():
+            results[key] = results.get(key, 0) + value
 
-#     :param file_pk: ImportFile Primary Key
-#     :param property_state_ids_by_cycle: A dictionary that with cycle ids as the keys
-#     and an array of associated property states as the values
-#     :return results: dict
-#     """
+    progress_data = ProgressData.from_key(progress_key)
 
-#     import_file = ImportFile.objects.get(pk=file_pk)
-#     org = import_file.import_record.super_organization
+    import_file = ImportFile.objects.get(pk=import_file_id)
+    import_file.matching_done = True
+    import_file.mapping_completion = 100
+    import_file.matching_results_data = result
+    result["import_file_records"] = import_file.num_rows
+    import_file.save()
+    logging.error(">>> Aggregate results")
 
-#     if property_state_ids_by_cycle is None:
-#         # Get lists and counts of all the properties and tax lots based on the import file.
-#         incoming_properties = import_file.find_unmatched_property_states()
-#         incoming_tax_lots = import_file.find_unmatched_tax_lot_states()
-#         cycle = import_file.cycle
-
-#         results = match_and_link_incoming_properties_and_taxlots_by_cycle(
-#             file_pk, progress_key, sub_progress_key, incoming_properties, incoming_tax_lots, cycle
-#         )
-
-#     else:
-#         results_list = []
-#         for cycle_id, property_state_ids in property_state_ids_by_cycle.items():
-#             # Get lists and counts of all the properties and tax lots based on the import file.
-#             incoming_properties = PropertyState.objects.filter(pk__in=property_state_ids, organization=org)
-#             incoming_tax_lots = import_file.find_unmatched_tax_lot_states()
-
-#             cycle = Cycle.objects.get(id=cycle_id)
-#             results_list.append(
-#                 match_and_link_incoming_properties_and_taxlots_by_cycle(
-#                     file_pk, progress_key, sub_progress_key, incoming_properties, incoming_tax_lots, cycle
-#                 )
-#             )
-
-#         # combine array of dictionaries in results_list into results
-#         results = {}
-#         for dict in results_list:
-#             for key, value in dict.items():
-#                 results[key] = results.get(key, 0) + value
-
-#     results["import_file_records"] = import_file.num_rows
-
-#     return results
+    logging.error(">>> END")
+    return progress_data.finish_with_success()
 
 @shared_task
 def match_and_link_incoming_properties_and_taxlots_by_cycle(
@@ -217,6 +166,7 @@ def match_and_link_incoming_properties_and_taxlots_by_cycle(
 
     import_file = ImportFile.objects.get(pk=file_pk)
     progress_data = ProgressData.from_key(progress_key)
+    progress_data.step("Batching match and merge processes")
     update_sub_progress_total(100, sub_progress_key)
 
     # Don't query the org table here, just get the organization from the import_record
@@ -226,7 +176,7 @@ def match_and_link_incoming_properties_and_taxlots_by_cycle(
     incoming_tax_lots = PropertyState.objects.filter(id__in=incoming_tax_lots_ids)
 
     # Set the progress to started - 33%
-    progress_data.step("Matching data")
+    # progress_data.step("Matching data")
 
     # Set defaults
     # property - within file
@@ -399,7 +349,7 @@ def match_and_link_incoming_properties_and_taxlots_by_cycle(
         errored_linked_taxlot_views.delete()
 
     log_debug("Start pair_new_states")
-    progress_data.step("Pairing data")
+    # progress_data.step("Pairing data")
     pair_new_states(
         linked_property_views + new_property_views + merged_property_views,
         linked_taxlot_views + new_taxlot_views + merged_taxlot_views,
@@ -674,6 +624,10 @@ def states_to_views(unmatched_state_ids, org, access_level_instance, cycle, Stat
     merged_between_existing_count = 0
     merge_state_pairs = []
     batch_size = math.ceil(len(unmatched_states) / 100)
+    
+    # find exsiting states in one db query
+    existing_cycle_view_ids = existing_cycle_views.values_list("state_id", flat=True)
+    existing_states = StateClass.objects.filter(pk__in=existing_cycle_view_ids).select_related().prefetch_related()
 
     for idx, state in enumerate(unmatched_states):
         matching_criteria = matching_filter_criteria(state, column_names)
@@ -683,10 +637,11 @@ def states_to_views(unmatched_state_ids, org, access_level_instance, cycle, Stat
             check_jaccard = bool(matching_criteria.get("ubid"))
             ubid = matching_criteria.pop("ubid")
 
-        existing_state_matches = StateClass.objects.filter(
-            pk__in=Subquery(existing_cycle_views.values("state_id")),
-            **matching_criteria,
-        )
+        # find existing state matches using matching_criteria
+        existing_state_matches = [
+            state for state in existing_states 
+            if all(getattr(state, key) == value for key, value in matching_criteria.items())
+        ]
 
         if check_jaccard:
             existing_state_matches = [
