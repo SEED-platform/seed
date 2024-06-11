@@ -3,11 +3,11 @@
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
-
 import datetime as dt
+import logging
 import math
 
-from celery import shared_task
+from celery import shared_task, chain, chord
 from celery.utils.log import get_task_logger
 from django.contrib.postgres.aggregates.general import ArrayAgg
 from django.db import IntegrityError, transaction
@@ -36,6 +36,7 @@ from seed.models import (
 )
 from seed.models.auditlog import AUDIT_IMPORT
 from seed.utils.match import (
+    chunk_inventory_pairs,
     MultipleALIError,
     NoAccessError,
     NoViewsError,
@@ -74,39 +75,120 @@ def match_and_link_incoming_properties_and_taxlots(file_pk, progress_key, sub_pr
         # Get lists and counts of all the properties and tax lots based on the import file.
         incoming_properties = import_file.find_unmatched_property_states()
         incoming_tax_lots = import_file.find_unmatched_tax_lot_states()
+        property_ids = incoming_properties.values_list("id", flat=True)
+        tax_lot_ids = incoming_tax_lots.values_list("id", flat=True)
+
         cycle = import_file.cycle
+        inventory_chunk_pairs = chunk_inventory_pairs(property_ids, tax_lot_ids)
 
-        results = match_and_link_incoming_properties_and_taxlots_by_cycle(
-            file_pk, progress_key, sub_progress_key, incoming_properties, incoming_tax_lots, cycle
-        )
 
-    else:
-        results_list = []
-        for cycle_id, property_state_ids in property_state_ids_by_cycle.items():
-            # Get lists and counts of all the properties and tax lots based on the import file.
-            incoming_properties = PropertyState.objects.filter(pk__in=property_state_ids, organization=org)
-            incoming_tax_lots = import_file.find_unmatched_tax_lot_states()
+        tasks = [
+            match_and_link_incoming_properties_and_taxlots_by_cycle.s(file_pk, progress_key, sub_progress_key, p_chunk, t_chunk, cycle.id)
+            for p_chunk, t_chunk in inventory_chunk_pairs
+        ]
+        
+        results = chord(tasks)(aggregate_results.s(file_pk, progress_key))
 
-            cycle = Cycle.objects.get(id=cycle_id)
-            results_list.append(
-                match_and_link_incoming_properties_and_taxlots_by_cycle(
-                    file_pk, progress_key, sub_progress_key, incoming_properties, incoming_tax_lots, cycle
-                )
-            )
+    return results.id
 
-        # combine array of dictionaries in results_list into results
-        results = {}
-        for dict in results_list:
-            for key, value in dict.items():
-                results[key] = results.get(key, 0) + value
+@shared_task
+def aggregate_results(result_list, import_file_id, progress_key):
+    results = {}
+    for result in result_list:
+        for key, value in result.items():
+            results[key] = results.get(key, 0) + value
 
-    results["import_file_records"] = import_file.num_rows
+    # progress_data = ProgressData.from_key(progress_key)
+
+    # import_file = ImportFile.objects.get(pk=import_file_id)
+    # import_file.matching_done = True
+    # import_file.mapping_completion = 100
+    # import_file.matching_results_data = result
+    # result["import_file_records"] = import_file.num_rows
+    # import_file.save()
+    # logging.error(">>> Aggregate results")
+
+    # return progress_data.finish_with_success()
+
 
     return results
 
+    # THIS GOES IN match_and_link_incoming_properties_and_taxlots
+    # else:
+    #     results_list = []
+    #     for cycle_id, property_state_ids in property_state_ids_by_cycle.items():
+    #         # Get lists and counts of all the properties and tax lots based on the import file.
+    #         incoming_properties = PropertyState.objects.filter(pk__in=property_state_ids, organization=org)
+    #         incoming_tax_lots = import_file.find_unmatched_tax_lot_states()
 
+    #         cycle = Cycle.objects.get(id=cycle_id)
+    #         results_list.append(
+    #             match_and_link_incoming_properties_and_taxlots_by_cycle(
+    #                 file_pk, progress_key, sub_progress_key, incoming_properties, incoming_tax_lots, cycle
+    #             )
+    #         )
+
+    #     # combine array of dictionaries in results_list into results
+    #     results = {}
+    #     for dict in results_list:
+    #         for key, value in dict.items():
+    #             results[key] = results.get(key, 0) + value
+    #
+    # results["import_file_records"] = import_file.num_rows
+
+
+# @shared_task
+# @lock_and_track
+# def match_and_link_incoming_properties_and_taxlots(file_pk, progress_key, sub_progress_key, property_state_ids_by_cycle=None):
+#     """
+#     Utilizes the helper function match_and_link_incoming_properties_and_taxlots_by_cycle
+
+#     :param file_pk: ImportFile Primary Key
+#     :param property_state_ids_by_cycle: A dictionary that with cycle ids as the keys
+#     and an array of associated property states as the values
+#     :return results: dict
+#     """
+
+#     import_file = ImportFile.objects.get(pk=file_pk)
+#     org = import_file.import_record.super_organization
+
+#     if property_state_ids_by_cycle is None:
+#         # Get lists and counts of all the properties and tax lots based on the import file.
+#         incoming_properties = import_file.find_unmatched_property_states()
+#         incoming_tax_lots = import_file.find_unmatched_tax_lot_states()
+#         cycle = import_file.cycle
+
+#         results = match_and_link_incoming_properties_and_taxlots_by_cycle(
+#             file_pk, progress_key, sub_progress_key, incoming_properties, incoming_tax_lots, cycle
+#         )
+
+#     else:
+#         results_list = []
+#         for cycle_id, property_state_ids in property_state_ids_by_cycle.items():
+#             # Get lists and counts of all the properties and tax lots based on the import file.
+#             incoming_properties = PropertyState.objects.filter(pk__in=property_state_ids, organization=org)
+#             incoming_tax_lots = import_file.find_unmatched_tax_lot_states()
+
+#             cycle = Cycle.objects.get(id=cycle_id)
+#             results_list.append(
+#                 match_and_link_incoming_properties_and_taxlots_by_cycle(
+#                     file_pk, progress_key, sub_progress_key, incoming_properties, incoming_tax_lots, cycle
+#                 )
+#             )
+
+#         # combine array of dictionaries in results_list into results
+#         results = {}
+#         for dict in results_list:
+#             for key, value in dict.items():
+#                 results[key] = results.get(key, 0) + value
+
+#     results["import_file_records"] = import_file.num_rows
+
+#     return results
+
+@shared_task
 def match_and_link_incoming_properties_and_taxlots_by_cycle(
-    file_pk, progress_key, sub_progress_key, incoming_properties, incoming_tax_lots, cycle
+    file_pk, progress_key, sub_progress_key, incoming_properties_ids, incoming_tax_lots_ids, cycle_id
 ):
     """
     Match incoming the properties and taxlots. Then, search for links for them.
@@ -129,6 +211,8 @@ def match_and_link_incoming_properties_and_taxlots_by_cycle(
     :param cycle: cycle object
     :return results: dict
     """
+    
+    logging.error('>>> match_and_link_incoming_properties_and_taxlots_by_cycle')
     from seed.data_importer.tasks import pair_new_states
 
     import_file = ImportFile.objects.get(pk=file_pk)
@@ -137,6 +221,9 @@ def match_and_link_incoming_properties_and_taxlots_by_cycle(
 
     # Don't query the org table here, just get the organization from the import_record
     org = import_file.import_record.super_organization
+    cycle = Cycle.objects.get(id=cycle_id)
+    incoming_properties = PropertyState.objects.filter(id__in=incoming_properties_ids)
+    incoming_tax_lots = PropertyState.objects.filter(id__in=incoming_tax_lots_ids)
 
     # Set the progress to started - 33%
     progress_data.step("Matching data")

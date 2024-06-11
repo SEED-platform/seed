@@ -11,6 +11,7 @@ from django.contrib.postgres.aggregates.general import ArrayAgg
 from django.db import transaction
 from django.db.models import Subquery
 from django.db.models.aggregates import Count
+from itertools import zip_longest
 
 from seed.lib.progress_data.progress_data import ProgressData
 from seed.lib.superperms.orgs.models import AccessLevelInstance
@@ -481,3 +482,13 @@ def update_sub_progress_total(total, sub_progress_key=None, finish=False):
         sub_progress_data.total = total
         sub_progress_data.save()
         return sub_progress_data
+
+def chunk_inventory_pairs(properties, taxlots):
+    """
+    Returns a list of chunk pairs
+    return [[p_chunk0, t_chunk0], [p_chunk1, t_chunk1], ...]
+    """
+    chunk_size = 5
+    p_chunks = [properties[i:i + chunk_size] for i in range(0, len(properties), chunk_size)]
+    t_chunks = [taxlots[i:i + chunk_size] for i in range(0, len(taxlots), chunk_size)]
+    return zip_longest(p_chunks, t_chunks, fillvalue=[])

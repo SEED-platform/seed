@@ -1624,7 +1624,7 @@ def geocode_and_match_buildings_task(file_pk):
         _geocode_properties_or_tax_lots.si(file_pk, progress_data.key),
         map_additional_models_group,
         match_and_link_incoming_properties_and_taxlots.si(file_pk, progress_data.key, sub_progress_data.key, property_state_ids_by_cycle),
-        finish_matching.s(file_pk, progress_data.key),
+        # finish_matching.s(file_pk, progress_data.key),
     )()
 
     sub_progress_data.total = 100
@@ -1668,17 +1668,25 @@ def _geocode_properties_or_tax_lots(file_pk, progress_key, sub_progress_key=None
         sub_progress_data.finish_with_success()
 
 
-@shared_task(ignore_result=True)
-def finish_matching(result, import_file_id, progress_key):
-    progress_data = ProgressData.from_key(progress_key)
+# @shared_task(ignore_result=True)
+# def finish_matching(result, import_file_id, progress_key):
+#     from celery.result import AsyncResult
+#     async_result = AsyncResult(result)
+#     if async_result.ready():
+#         import remote_pdb; remote_pdb.set_trace()
+#         result = async_result.result 
+        
+#     else:
+#         logging.error(">>> task still running")
+#     progress_data = ProgressData.from_key(progress_key)
 
-    import_file = ImportFile.objects.get(pk=import_file_id)
-    import_file.matching_done = True
-    import_file.mapping_completion = 100
-    import_file.matching_results_data = result
-    import_file.save()
+#     import_file = ImportFile.objects.get(pk=import_file_id)
+#     import_file.matching_done = True
+#     import_file.mapping_completion = 100
+#     import_file.matching_results_data = result
+#     import_file.save()
 
-    return progress_data.finish_with_success()
+#     return progress_data.finish_with_success()
 
 
 def hash_state_object(obj, include_extra_data=True):
