@@ -28,7 +28,6 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
   'inventory_payload',
   'views_payload',
   'analyses_payload',
-  // 'users_payload',
   'columns',
   'derived_columns_payload',
   'profiles',
@@ -39,6 +38,8 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
   'simple_modal_service',
   'property_measure_service',
   'scenario_service',
+  'uniformat_payload',
+  'elements_payload',
   // eslint-disable-next-line func-names
   function (
     $http,
@@ -66,7 +67,6 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
     inventory_payload,
     views_payload,
     analyses_payload,
-    // users_payload,
     columns,
     derived_columns_payload,
     profiles,
@@ -76,7 +76,9 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
     cycle_service,
     simple_modal_service,
     property_measure_service,
-    scenario_service
+    scenario_service,
+    uniformat_payload,
+    elements_payload
   ) {
     $scope.inventory_type = $stateParams.inventory_type;
     $scope.organization = organization_payload.organization;
@@ -96,6 +98,15 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
     };
     $scope.cycle = inventory_payload.cycle;
     $scope.cycles = [$scope.cycle];
+
+    $scope.uniformat = uniformat_payload;
+    $scope.elements = elements_payload;
+    $scope.element_extra_data_columns = [...elements_payload.reduce((set, element) => {
+      for (const key of Object.keys(element.extra_data)) {
+        set.add(key);
+      }
+      return set;
+    }, new Set())];
 
     let ignoreNextChange = true;
 
@@ -162,7 +173,6 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
         return 0;
       })[0];
     }
-    // $scope.users = users_payload.users;
 
     // handle popovers cleared on scrolling
     [document.getElementsByClassName('ui-view-container')[0], document.getElementById('pin')].forEach((el) => {
@@ -1033,6 +1043,19 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
       modalInstance.result.finally(() => {
         init();
       });
+    };
+
+    /**
+     * @param {string} code - Code representing the Uniformat category.
+     * @return {string} Formatted category hierarchy or the original code if the category is not found.
+     */
+    $scope.uniformat_category = (code) => {
+      const element = uniformat_payload[code];
+      if (element) {
+        const { category, parent } = element;
+        return parent ? `${$scope.uniformat_category(parent)} → ${category}` : category;
+      }
+      return code;
     };
 
     init();

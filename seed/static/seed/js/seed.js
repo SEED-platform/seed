@@ -180,6 +180,7 @@ angular.module('BE.seed.services', [
   'BE.seed.service.data_view',
   'BE.seed.service.dataset',
   'BE.seed.service.derived_columns',
+  'BE.seed.service.element',
   'BE.seed.service.espm',
   'BE.seed.service.event',
   'BE.seed.service.filter_groups',
@@ -209,6 +210,7 @@ angular.module('BE.seed.services', [
   'BE.seed.service.sensor',
   'BE.seed.service.simple_modal',
   'BE.seed.service.ubid',
+  'BE.seed.service.uniformat',
   'BE.seed.service.uploader',
   'BE.seed.service.user'
 ]);
@@ -2335,6 +2337,16 @@ SEED_app.config([
             'user_service',
             'organization_service',
             (user_service, organization_service) => organization_service.get_organization(user_service.get_organization().id)
+          ],
+          uniformat_payload: [
+            'uniformat_service',
+            (uniformat_service) => uniformat_service.get_uniformat()
+          ],
+          elements_payload: [
+            'element_service',
+            'user_service',
+            'inventory_payload',
+            (element_service, user_service, inventory_payload) => element_service.get_elements(user_service.get_organization().id, inventory_payload.property.id)
           ]
         }
       })
