@@ -3,7 +3,8 @@ SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and othe
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
-import celery 
+import celery
+
 
 def get_celery_worker_count():
     app = celery.Celery("seed")
