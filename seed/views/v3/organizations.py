@@ -11,8 +11,10 @@ import logging
 import operator
 from collections import defaultdict
 from io import BytesIO
+from numbers import Number
 from pathlib import Path
 
+import numpy as np
 from django.conf import settings
 from django.contrib.auth.decorators import permission_required
 from django.contrib.auth.forms import PasswordResetForm
@@ -911,22 +913,25 @@ class OrganizationViewSet(viewsets.ViewSet):
                 {"status": "error", "message": "Missing params: {}".format(", ".join(missing_params))}, status=status.HTTP_400_BAD_REQUEST
             )
 
-        # error if y_var invalid
-        valid_y_values = ["gross_floor_area", "property_type", "year_built"]
-        if params["y_var"] not in valid_y_values:
-            return Response(
-                {"status": "error", "message": f"{params['y_var']} is not a valid value for y_var"}, status=status.HTTP_400_BAD_REQUEST
-            )
-
         # get data
         cycles = Cycle.objects.filter(id__in=params["cycle_ids"])
         data = self.get_raw_report_data(pk, access_level_instance, cycles, params["x_var"], params["y_var"])
         chart_data = []
         property_counts = []
+
+        # set bins and choose agg type
+        ys = [building["y"] for datum in data for building in datum["chart_data"]]
+        if ys and isinstance(ys[0], Number):
+            bins = np.histogram_bin_edges(ys, bins=5)
+            aggregate_data = self.continuous_aggregate_data
+        else:
+            bins = list(set(ys))
+            aggregate_data = self.discrete_aggregate_data
+
         for datum in data:
             buildings = datum["chart_data"]
             yr_e = datum["property_counts"]["yr_e"]
-            (chart_data.extend(self.aggregate_data(yr_e, params["x_var"], params["y_var"], buildings)),)
+            chart_data.extend(aggregate_data(yr_e, buildings, bins, count=params["x_var"] == "Count"))
             property_counts.append(datum["property_counts"])
 
         # Send back to client
@@ -937,47 +942,37 @@ class OrganizationViewSet(viewsets.ViewSet):
 
         return Response(result, status=status.HTTP_200_OK)
 
-    def aggregate_data(self, yr_e, x_var, y_var, buildings):
-        aggregation_method = {
-            "property_type": self.aggregate_property_type,
-            "year_built": self.aggregate_year_built,
-            "gross_floor_area": self.aggregate_gross_floor_area,
-        }
-        return aggregation_method[y_var](yr_e, x_var, buildings)
+    def continuous_aggregate_data(self, yr_e, buildings, bins, count=False):
+        binplace = np.digitize([b["y"] for b in buildings], bins)
+        xs = [b["x"] for b in buildings]
 
-    def aggregate_property_type(self, yr_e, x_var, buildings):
-        # Group buildings in this year_ending group into uses
-        chart_data = []
-        grouped_uses = defaultdict(list)
-        for b in buildings:
-            grouped_uses[str(b["y"]).lower()].append(b)
+        results = []
+        for i in range(len(bins) - 1):
+            bin = f"{bins[i]} - {bins[i+1]}"
+            values = np.array(xs)[np.where(binplace == i + 1)]
+            x = sum(values) if count else np.average(values).item()
+            results.append({"y": bin, "x": None if np.isnan(x) else x, "yr_e": yr_e})
 
-        # Now iterate over use groups to make each chart item
-        # Only include non-None values
-        for use, buildings_in_uses in grouped_uses.items():
-            x = [b["x"] for b in buildings_in_uses if b["x"] is not None]
-            if x:
-                chart_data.append({"x": sum(x) if x_var == "Count" else median(x), "y": use.capitalize(), "yr_e": yr_e})
-        return chart_data
+        return results
 
-    def aggregate_year_built(self, yr_e, x_var, buildings):
-        # Group buildings in this year_ending group into decades
-        chart_data = []
-        grouped_decades = defaultdict(list)
-        for b in buildings:
-            grouped_decades["%s0" % str(b["y"])[:-1]].append(b)
+    def discrete_aggregate_data(self, yr_e, buildings, bins, count=False):
+        xs_by_bin = {bin: [] for bin in bins}
 
-        # Now iterate over decade groups to make each chart item
-        for decade, buildings_in_decade in grouped_decades.items():
-            x = [b["x"] for b in buildings_in_decade if b["x"] is not None]
-            chart_data.append(
-                {
-                    "x": sum(x) if x_var == "Count" else median(x),
-                    "y": f'{decade}-{"%s9" % str(decade)[:-1]}',  # 1990-1999
-                    "yr_e": yr_e,
-                }
-            )
-        return chart_data
+        for building in buildings:
+            xs_by_bin[building["y"]].append(building["x"])
+
+        results = []
+        for bin, xs in xs_by_bin.items():
+            if count:
+                x = sum(xs)
+            elif len(xs) == 0:
+                x = None
+            else:
+                x = sum(xs) / len(xs)
+
+            results.append({"y": bin, "x": x, "yr_e": yr_e})
+
+        return results
 
     def aggregate_gross_floor_area(self, yr_e, x_var, buildings):
         chart_data = []

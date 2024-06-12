@@ -90,11 +90,6 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
        either of these arrays. (However, at first when adding new variables we might need to add
        new functionality to the directive to handle any idiosyncrasies of graphing that new variable.)
        */
-
-    const acceptable_column_types = ['area', 'eui', 'float', 'integer', 'number'];
-
-    const filtered_columns = _.filter(columns, (column) => _.includes(acceptable_column_types, column.data_type));
-
     $scope.xAxisVars = [
       {
         name: 'Count',
@@ -102,9 +97,9 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
         varName: 'Count',
         axisLabel: 'Count'
       },
-      ..._.map(filtered_columns, (column) => ({
-        name: $translate.instant(column.displayName), // short name for variable, used in pulldown
-        label: $translate.instant(column.displayName), // full name for variable
+      ..._.map(organization_payload.organization.default_reports_x_axis_options, (column) => ({
+        name: $translate.instant(column.display_name), // short name for variable, used in pulldown
+        label: $translate.instant(column.display_name), // full name for variable
         varName: column.column_name, // name of variable, to be sent to server
         axisLabel: parse_axis_label(column) // label to be used in charts, should include units
       // axisType: 'Measure', //DimpleJS property for axis type
@@ -112,12 +107,9 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
       }))
     ];
 
-    const acceptable_y_column_names = ['gross_floor_area', 'property_type', 'year_built'];
-    const filtered_y_columns = _.filter(columns, (column) => _.includes(acceptable_y_column_names, column.column_name));
-
-    $scope.yAxisVars = _.map(filtered_y_columns, (column) => ({
-      name: $translate.instant(column.displayName), // short name for variable, used in pulldown
-      label: $translate.instant(column.displayName), // full name for variable
+    $scope.yAxisVars = _.map(organization_payload.organization.default_reports_y_axis_options, (column) => ({
+      name: $translate.instant(column.display_name), // short name for variable, used in pulldown
+      label: $translate.instant(column.display_name), // full name for variable
       varName: column.column_name, // name of variable, to be sent to server
       axisLabel: parse_axis_label(column) // label to be used in charts, should include units
       // axisType: 'Measure', //DimpleJS property for axis type

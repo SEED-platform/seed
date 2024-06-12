@@ -233,8 +233,11 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
         });
     };
 
+    const acceptable_column_types = ['area', 'eui', 'float', 'integer', 'number'];
+    const filtered_columns = _.filter($scope.columns, (column) => _.includes(acceptable_column_types, column.data_type));
+
     $scope.selected_x_columns = $scope.org.default_reports_x_axis_options.map(c => c.id);
-    $scope.available_x_columns = () => $scope.columns.filter(({ id }) => !$scope.selected_x_columns.includes(id));
+    $scope.available_x_columns = () => filtered_columns.filter(({ id }) => !$scope.selected_x_columns.includes(id));
 
     $scope.add_x_column = (x_column_id) => {
       $scope.selected_x_columns.push(x_column_id);

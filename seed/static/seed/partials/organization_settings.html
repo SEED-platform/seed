@@ -102,7 +102,7 @@
                     <i class="fa-solid fa-xmark r-margin-left-5" ng-click="remove_y_column(id)"></i>
                   </li>
                 </ul>
-                <select class="form-control" ng-change="add_y_column(x_column_selection); y_column_selection = null" ng-model="y_column_selection" ng-disabled="::!auth.requires_owner">
+                <select class="form-control" ng-change="add_y_column(y_column_selection); y_column_selection = null" ng-model="y_column_selection" ng-disabled="::!auth.requires_owner">
                   <option ng-repeat="y_columns in available_y_columns()" ng-value="y_columns.id">{$:: y_columns.displayName $}</option>
                 </select>
               </div>
