@@ -82,38 +82,27 @@ def match_and_link_incoming_properties_and_taxlots(file_pk, progress_key, sub_pr
         cycle = import_file.cycle
         inventory_chunk_pairs = chunk_inventory_pairs(property_ids, tax_lot_ids)
 
-
         tasks = [
             match_and_link_incoming_properties_and_taxlots_by_cycle.s(file_pk, progress_key, sub_progress_key, p_chunk, t_chunk, cycle.id)
             for p_chunk, t_chunk in inventory_chunk_pairs
         ]
         
-        results = chord(tasks)(aggregate_results.s(file_pk, progress_key))
+        chord(tasks)(aggregate_results.s(file_pk, progress_key))
 
-    # THIS GOES IN match_and_link_incoming_properties_and_taxlots
-    # else:
-    #     results_list = []
-    #     for cycle_id, property_state_ids in property_state_ids_by_cycle.items():
-    #         # Get lists and counts of all the properties and tax lots based on the import file.
-    #         incoming_properties = PropertyState.objects.filter(pk__in=property_state_ids, organization=org)
-    #         incoming_tax_lots = import_file.find_unmatched_tax_lot_states()
+    else:
+        tasks = []
+        for cycle_id, property_state_ids in property_state_ids_by_cycle.items():
+            # Get lists and counts of all the properties and tax lots based on the import file.
+            incoming_properties = PropertyState.objects.filter(pk__in=property_state_ids, organization=org)
+            incoming_tax_lots = import_file.find_unmatched_tax_lot_states()
+            property_ids = incoming_properties.values_list("id", flat=True)
+            tax_lot_ids = incoming_tax_lots.values_list("id", flat=True)
 
-    #         cycle = Cycle.objects.get(id=cycle_id)
-    #         results_list.append(
-    #             match_and_link_incoming_properties_and_taxlots_by_cycle(
-    #                 file_pk, progress_key, sub_progress_key, incoming_properties, incoming_tax_lots, cycle
-    #             )
-    #         )
+            inventory_chunk_pairs = chunk_inventory_pairs(property_ids, tax_lot_ids)
 
-    #     # combine array of dictionaries in results_list into results
-    #     results = {}
-    #     for dict in results_list:
-    #         for key, value in dict.items():
-    #             results[key] = results.get(key, 0) + value
-    #
-    # results["import_file_records"] = import_file.num_rows
-
-    return results.id
+            for p_chunk, t_chunk in inventory_chunk_pairs:
+                tasks.append(match_and_link_incoming_properties_and_taxlots_by_cycle.s(file_pk, progress_key, sub_progress_key, p_chunk, t_chunk, cycle_id))
+        chord(tasks)(aggregate_results.s(file_pk, progress_key))
 
 @shared_task
 def aggregate_results(result_list, import_file_id, progress_key):
