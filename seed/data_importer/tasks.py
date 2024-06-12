@@ -4,6 +4,7 @@ SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and othe
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
+import celery
 import collections
 import copy
 import hashlib
@@ -1607,12 +1608,11 @@ def geocode_and_match_buildings_task(file_pk):
         id_chunks = [[obj.id for obj in chunk] for chunk in batch(property_states, 100)]
         map_additional_models_group = group(_map_additional_models.si(id_chunk, file_pk, progress_data.key) for id_chunk in id_chunks)
 
-    # this should not be hard coded
-    num_celery_workers = 5
+    celery_worker_count = get_celery_worker_count()
     progress_data.total = (
         1  # geocoding
         + len(map_additional_models_group)  # map additional models tasks
-        + num_celery_workers  # match and link
+        + celery_worker_count  # match and link
     )
     progress_data.save()
 
@@ -1631,6 +1631,22 @@ def geocode_and_match_buildings_task(file_pk):
     sub_progress_data.save()
 
     return {"progress_data": progress_data.result(), "sub_progress_data": sub_progress_data.result()}
+
+def get_celery_worker_count():
+    app = celery.Celery("seed")
+    app.config_from_object("django.conf:settings", namespace="CELERY")
+    inspector = app.control.inspect()
+    stats = inspector.stats()
+    if not stats:
+        return 1
+
+    total_workers = 0
+    for worker, info in stats.items():
+        total_workers += info["pool"]["max-concurrency"]
+
+    return total_workers
+
+
 
 
 @shared_task
