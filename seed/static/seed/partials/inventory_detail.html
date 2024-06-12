@@ -359,6 +359,47 @@
     <br />
 
     <div ng-if="::inventory_type==='properties'">
+      <!-- Elements Section -->
+      <div class="section">
+        <div class="section_header_container" style="margin-top: 20px; border-bottom: 0">
+          <div class="section_header fixed_height_short has_no_padding">
+            <div class="section_action_container left" style="width: 50%">
+              <h2><i class="fa-solid fa-atom"></i>{$:: 'Property Elements' | translate $}</h2>
+            </div>
+          </div>
+        </div>
+        <div class="section_content">
+          <div class="table_list_container table_item_detail">
+            <table class="table table-striped table_highlight_first fixed-layout" style="margin-bottom: -1px">
+              <thead>
+                <tr>
+                  <th width="78" translate>Uniformat</th>
+                  <th translate>Description</th>
+                  <th translate>Installation Date</th>
+                  <th translate>Manufacturing Date</th>
+                  <th translate>Condition Index</th>
+                  <th translate>Remaining Service Life</th>
+                  <th translate>Replacement Cost</th>
+                  <th ng-repeat="column in ::element_extra_data_columns">{$:: column $}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr ng-repeat="element in ::elements">
+                  <td><span ng-attr-title="{$:: uniformat_category(element.code) $}">{$:: element.code $}</span></td>
+                  <td>{$:: element.description $}</td>
+                  <td>{$:: element.installation_date $}</td>
+                  <td>{$:: element.manufacturing_date $}</td>
+                  <td>{$:: element.condition_index $}</td>
+                  <td>{$:: element.remaining_service_life $}</td>
+                  <td>{$:: element.replacement_cost | currency:'$':0 $}</td>
+                  <td ng-repeat="column in ::element_extra_data_columns">{$:: element.extra_data[column] $}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
       <!-- Inventory Document Section -->
       <div class="section">
         <div class="section_header_container" style="margin-top: 20px; border-bottom: 0">
