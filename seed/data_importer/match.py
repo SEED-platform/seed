@@ -164,7 +164,7 @@ def match_and_link_incoming_properties_and_taxlots_by_cycle(
     org = import_file.import_record.super_organization
     cycle = Cycle.objects.get(id=cycle_id)
     incoming_properties = PropertyState.objects.filter(id__in=incoming_properties_ids)
-    incoming_tax_lots = PropertyState.objects.filter(id__in=incoming_tax_lots_ids)
+    incoming_tax_lots = TaxLotState.objects.filter(id__in=incoming_tax_lots_ids)
 
     # Set defaults
     # property - within file
