@@ -99,7 +99,6 @@ class ProgressData:
     @classmethod
     def from_key(cls, key):
         data = get_cache(key)
-        # logging.error('>>> data progress_key %s', data)
         if "func_name" in data and "unique_id" in data:
             return cls(func_name=data["func_name"], unique_id=data["unique_id"], init_data=data)
         elif data.get("status") == "parsing":

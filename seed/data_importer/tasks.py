@@ -1607,14 +1607,12 @@ def geocode_and_match_buildings_task(file_pk):
         id_chunks = [[obj.id for obj in chunk] for chunk in batch(property_states, 100)]
         map_additional_models_group = group(_map_additional_models.si(id_chunk, file_pk, progress_data.key) for id_chunk in id_chunks)
 
-
     # this should not be hard coded
     num_celery_workers = 5
     progress_data.total = (
         1  # geocoding
         + len(map_additional_models_group)  # map additional models tasks
         + num_celery_workers  # match and link
-        # + 1  # finish
     )
     progress_data.save()
 
@@ -1627,7 +1625,6 @@ def geocode_and_match_buildings_task(file_pk):
         _geocode_properties_or_tax_lots.si(file_pk, progress_data.key),
         map_additional_models_group,
         match_and_link_incoming_properties_and_taxlots.si(file_pk, progress_data.key, sub_progress_data.key, property_state_ids_by_cycle),
-        # finish_matching.s(file_pk, progress_data.key),
     )()
 
     sub_progress_data.total = 100
@@ -1635,12 +1632,6 @@ def geocode_and_match_buildings_task(file_pk):
 
     return {"progress_data": progress_data.result(), "sub_progress_data": sub_progress_data.result()}
 
-def get_num_celery_workers():
-    import celery
-
-    app = celery.Celery("seed")
-    app.config_from_object("django.conf:settings", namespace="CELERY")
-    import remote_pdb; remote_pdb.set_trace()
 
 @shared_task
 def _geocode_properties_or_tax_lots(file_pk, progress_key, sub_progress_key=None):
@@ -1675,27 +1666,6 @@ def _geocode_properties_or_tax_lots(file_pk, progress_key, sub_progress_key=None
     if sub_progress_key:
         sub_progress_data.step("Geocoding")
         sub_progress_data.finish_with_success()
-
-
-# @shared_task(ignore_result=True)
-# def finish_matching(result, import_file_id, progress_key):
-#     from celery.result import AsyncResult
-#     async_result = AsyncResult(result)
-#     if async_result.ready():
-#         import remote_pdb; remote_pdb.set_trace()
-#         result = async_result.result 
-        
-#     else:
-#         logging.error(">>> task still running")
-#     progress_data = ProgressData.from_key(progress_key)
-
-#     import_file = ImportFile.objects.get(pk=import_file_id)
-#     import_file.matching_done = True
-#     import_file.mapping_completion = 100
-#     import_file.matching_results_data = result
-#     import_file.save()
-
-#     return progress_data.finish_with_success()
 
 
 def hash_state_object(obj, include_extra_data=True):

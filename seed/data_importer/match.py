@@ -3,11 +3,11 @@
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 import datetime as dt
-import logging
 import math
 
-from celery import shared_task, chain, chord
+from celery import chord, shared_task
 from celery.utils.log import get_task_logger
 from django.contrib.postgres.aggregates.general import ArrayAgg
 from django.db import IntegrityError, transaction
@@ -36,10 +36,10 @@ from seed.models import (
 )
 from seed.models.auditlog import AUDIT_IMPORT
 from seed.utils.match import (
-    chunk_inventory_pairs,
     MultipleALIError,
     NoAccessError,
     NoViewsError,
+    chunk_inventory_pairs,
     empty_criteria_filter,
     match_merge_link,
     matching_criteria_column_names,
@@ -67,7 +67,6 @@ def match_and_link_incoming_properties_and_taxlots(file_pk, progress_key, sub_pr
     and an array of associated property states as the values
     :return results: dict
     """
-    logging.error(">>> START")
 
     import_file = ImportFile.objects.get(pk=file_pk)
     org = import_file.import_record.super_organization
@@ -86,7 +85,7 @@ def match_and_link_incoming_properties_and_taxlots(file_pk, progress_key, sub_pr
             match_and_link_incoming_properties_and_taxlots_by_cycle.s(file_pk, progress_key, sub_progress_key, p_chunk, t_chunk, cycle.id)
             for p_chunk, t_chunk in inventory_chunk_pairs
         ]
-        
+
         chord(tasks)(aggregate_results.s(file_pk, progress_key))
 
     else:
@@ -101,8 +100,13 @@ def match_and_link_incoming_properties_and_taxlots(file_pk, progress_key, sub_pr
             inventory_chunk_pairs = chunk_inventory_pairs(property_ids, tax_lot_ids)
 
             for p_chunk, t_chunk in inventory_chunk_pairs:
-                tasks.append(match_and_link_incoming_properties_and_taxlots_by_cycle.s(file_pk, progress_key, sub_progress_key, p_chunk, t_chunk, cycle_id))
+                tasks.append(
+                    match_and_link_incoming_properties_and_taxlots_by_cycle.s(
+                        file_pk, progress_key, sub_progress_key, p_chunk, t_chunk, cycle_id
+                    )
+                )
         chord(tasks)(aggregate_results.s(file_pk, progress_key))
+
 
 @shared_task
 def aggregate_results(result_list, import_file_id, progress_key):
@@ -119,10 +123,9 @@ def aggregate_results(result_list, import_file_id, progress_key):
     import_file.matching_results_data = result
     result["import_file_records"] = import_file.num_rows
     import_file.save()
-    logging.error(">>> Aggregate results")
 
-    logging.error(">>> END")
     return progress_data.finish_with_success()
+
 
 @shared_task
 def match_and_link_incoming_properties_and_taxlots_by_cycle(
@@ -149,8 +152,7 @@ def match_and_link_incoming_properties_and_taxlots_by_cycle(
     :param cycle: cycle object
     :return results: dict
     """
-    
-    logging.error('>>> match_and_link_incoming_properties_and_taxlots_by_cycle')
+
     from seed.data_importer.tasks import pair_new_states
 
     import_file = ImportFile.objects.get(pk=file_pk)
@@ -613,7 +615,7 @@ def states_to_views(unmatched_state_ids, org, access_level_instance, cycle, Stat
     merged_between_existing_count = 0
     merge_state_pairs = []
     batch_size = math.ceil(len(unmatched_states) / 100)
-    
+
     # find exsiting states in one db query
     existing_cycle_view_ids = existing_cycle_views.values_list("state_id", flat=True)
     existing_states = StateClass.objects.filter(pk__in=existing_cycle_view_ids).select_related().prefetch_related()
@@ -628,8 +630,7 @@ def states_to_views(unmatched_state_ids, org, access_level_instance, cycle, Stat
 
         # find existing state matches using matching_criteria
         existing_state_matches = [
-            state for state in existing_states 
-            if all(getattr(state, key) == value for key, value in matching_criteria.items())
+            state for state in existing_states if all(getattr(state, key) == value for key, value in matching_criteria.items())
         ]
 
         if check_jaccard:
