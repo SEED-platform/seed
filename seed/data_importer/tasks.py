@@ -4,7 +4,6 @@ SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and othe
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
-import celery
 import collections
 import copy
 import hashlib
@@ -86,6 +85,7 @@ from seed.models import (
 from seed.models.auditlog import AUDIT_IMPORT
 from seed.models.data_quality import DataQualityCheck, Rule
 from seed.utils.buildings import get_source_type
+from seed.utils.celery import get_celery_worker_count
 from seed.utils.geocode import MapQuestAPIKeyError, create_geocoded_additional_columns, geocode_buildings
 from seed.utils.match import update_sub_progress_total
 from seed.utils.ubid import decode_unique_ids
@@ -1631,22 +1631,6 @@ def geocode_and_match_buildings_task(file_pk):
     sub_progress_data.save()
 
     return {"progress_data": progress_data.result(), "sub_progress_data": sub_progress_data.result()}
-
-def get_celery_worker_count():
-    app = celery.Celery("seed")
-    app.config_from_object("django.conf:settings", namespace="CELERY")
-    inspector = app.control.inspect()
-    stats = inspector.stats()
-    if not stats:
-        return 1
-
-    total_workers = 0
-    for worker, info in stats.items():
-        total_workers += info["pool"]["max-concurrency"]
-
-    return total_workers
-
-
 
 
 @shared_task

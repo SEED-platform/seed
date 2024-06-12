@@ -166,9 +166,6 @@ def match_and_link_incoming_properties_and_taxlots_by_cycle(
     incoming_properties = PropertyState.objects.filter(id__in=incoming_properties_ids)
     incoming_tax_lots = PropertyState.objects.filter(id__in=incoming_tax_lots_ids)
 
-    # Set the progress to started - 33%
-    # progress_data.step("Matching data")
-
     # Set defaults
     # property - within file
     property_initial_incoming_count = 0
@@ -340,7 +337,6 @@ def match_and_link_incoming_properties_and_taxlots_by_cycle(
         errored_linked_taxlot_views.delete()
 
     log_debug("Start pair_new_states")
-    # progress_data.step("Pairing data")
     pair_new_states(
         linked_property_views + new_property_views + merged_property_views,
         linked_taxlot_views + new_taxlot_views + merged_taxlot_views,
