@@ -61,6 +61,7 @@ def log_debug(message):
 def match_and_link_incoming_properties_and_taxlots(file_pk, progress_key, sub_progress_key, property_state_ids_by_cycle=None):
     """
     Utilizes the helper function match_and_link_incoming_properties_and_taxlots_by_cycle
+    Uses parallel celery tasks to run `match_and_link_incoming_properties_and_taxlots_by_cycle`
 
     :param file_pk: ImportFile Primary Key
     :param property_state_ids_by_cycle: A dictionary that with cycle ids as the keys
@@ -120,8 +121,8 @@ def aggregate_results(result_list, import_file_id, progress_key):
     import_file = ImportFile.objects.get(pk=import_file_id)
     import_file.matching_done = True
     import_file.mapping_completion = 100
-    import_file.matching_results_data = result
-    result["import_file_records"] = import_file.num_rows
+    import_file.matching_results_data = results
+    results["import_file_records"] = import_file.num_rows
     import_file.save()
 
     return progress_data.finish_with_success()
@@ -152,7 +153,6 @@ def match_and_link_incoming_properties_and_taxlots_by_cycle(
     :param cycle: cycle object
     :return results: dict
     """
-
     from seed.data_importer.tasks import pair_new_states
 
     import_file = ImportFile.objects.get(pk=file_pk)

@@ -66,6 +66,10 @@ class TestAHImportFile(DataMappingBaseTestCase):
             "tax_lot_new_errored": 0,
         }
 
+    def get_results(self):
+        self.import_file.refresh_from_db()
+        return self.import_file.matching_results_data
+
 
 class TestAHImport(TestAHImportFile):
     def test_hierarchy_set(self):
@@ -74,7 +78,8 @@ class TestAHImport(TestAHImportFile):
         self.property_state_factory.get_property_state(**self.base_details)
 
         # Action
-        results = match_and_link_incoming_properties_and_taxlots(*self.action_args)
+        match_and_link_incoming_properties_and_taxlots(*self.action_args)
+        results = self.get_results()
 
         # Assert - results
         self.blank_result["property_initial_incoming"] = 1
@@ -92,7 +97,8 @@ class TestAHImport(TestAHImportFile):
         self.property_state_factory.get_property_state(**self.base_details)
 
         # Action
-        results = match_and_link_incoming_properties_and_taxlots(*self.action_args)
+        match_and_link_incoming_properties_and_taxlots(*self.action_args)
+        results = self.get_results()
 
         # Assert - results
         self.blank_result["property_initial_incoming"] = 1
@@ -123,7 +129,8 @@ class TestAHImportDuplicateIncoming(TestAHImportFile):
         self.property_state_factory.get_property_state(**self.base_details)
 
         # Action
-        results = match_and_link_incoming_properties_and_taxlots(*self.action_args)
+        match_and_link_incoming_properties_and_taxlots(*self.action_args)
+        results = self.get_results()
 
         # Assert - results
         self.blank_result["property_initial_incoming"] = 2
@@ -146,7 +153,8 @@ class TestAHImportDuplicateIncoming(TestAHImportFile):
         self.property_state_factory.get_property_state(**self.base_details)
 
         # Action
-        results = match_and_link_incoming_properties_and_taxlots(*self.action_args)
+        match_and_link_incoming_properties_and_taxlots(*self.action_args)
+        results = self.get_results()
 
         # Assert - results
         self.blank_result["property_initial_incoming"] = 2
@@ -167,7 +175,8 @@ class TestAHImportDuplicateIncoming(TestAHImportFile):
         self.property_state_factory.get_property_state(**self.base_details)
 
         # Action
-        results = match_and_link_incoming_properties_and_taxlots(*self.action_args)
+        match_and_link_incoming_properties_and_taxlots(*self.action_args)
+        results = self.get_results()
 
         # Assert - results
         self.blank_result["property_initial_incoming"] = 2
@@ -189,7 +198,8 @@ class TestAHImportDuplicateIncoming(TestAHImportFile):
         self.property_state_factory.get_property_state(**self.base_details)
 
         # Action
-        results = match_and_link_incoming_properties_and_taxlots(*self.action_args)
+        match_and_link_incoming_properties_and_taxlots(*self.action_args)
+        results = self.get_results()
 
         # Assert - results
         self.blank_result["property_initial_incoming"] = 2
@@ -213,7 +223,8 @@ class TestAHImportDuplicateIncoming(TestAHImportFile):
         self.property_state_factory.get_property_state(**self.base_details)
 
         # Action
-        results = match_and_link_incoming_properties_and_taxlots(*self.action_args)
+        match_and_link_incoming_properties_and_taxlots(*self.action_args)
+        results = self.get_results()
 
         # Assert - results
         self.blank_result["property_initial_incoming"] = 2
@@ -235,7 +246,8 @@ class TestAHImportDuplicateIncoming(TestAHImportFile):
         self.property_state_factory.get_property_state(**self.base_details)
 
         # Action
-        results = match_and_link_incoming_properties_and_taxlots(*self.action_args)
+        match_and_link_incoming_properties_and_taxlots(*self.action_args)
+        results = self.get_results()
 
         # Assert - results
         self.blank_result["property_initial_incoming"] = 2
@@ -266,7 +278,8 @@ class TestAHImportMatchIncoming(TestAHImportFile):
         self.property_state_factory.get_property_state(**self.base_details)
 
         # Action
-        results = match_and_link_incoming_properties_and_taxlots(*self.action_args)
+        match_and_link_incoming_properties_and_taxlots(*self.action_args)
+        results = self.get_results()
 
         # Assert - results
         self.blank_result["property_initial_incoming"] = 2
@@ -290,7 +303,8 @@ class TestAHImportMatchIncoming(TestAHImportFile):
         self.property_state_factory.get_property_state(**self.base_details)
 
         # Action
-        results = match_and_link_incoming_properties_and_taxlots(*self.action_args)
+        match_and_link_incoming_properties_and_taxlots(*self.action_args)
+        results = self.get_results()
 
         # Assert - results
         self.blank_result["property_initial_incoming"] = 2
@@ -312,7 +326,8 @@ class TestAHImportMatchIncoming(TestAHImportFile):
         self.property_state_factory.get_property_state(**self.base_details)
 
         # Action
-        results = match_and_link_incoming_properties_and_taxlots(*self.action_args)
+        match_and_link_incoming_properties_and_taxlots(*self.action_args)
+        results = self.get_results()
 
         # Assert - results
         self.blank_result["property_initial_incoming"] = 2
@@ -335,7 +350,8 @@ class TestAHImportMatchIncoming(TestAHImportFile):
         self.property_state_factory.get_property_state(**self.base_details)
 
         # Action
-        results = match_and_link_incoming_properties_and_taxlots(*self.action_args)
+        match_and_link_incoming_properties_and_taxlots(*self.action_args)
+        results = self.get_results()
 
         # Assert - results
         self.blank_result["property_initial_incoming"] = 2
@@ -360,7 +376,8 @@ class TestAHImportMatchIncoming(TestAHImportFile):
         self.property_state_factory.get_property_state(**self.base_details)
 
         # Action
-        results = match_and_link_incoming_properties_and_taxlots(*self.action_args)
+        match_and_link_incoming_properties_and_taxlots(*self.action_args)
+        results = self.get_results()
 
         # Assert - results
         self.blank_result["property_initial_incoming"] = 2
@@ -383,7 +400,8 @@ class TestAHImportMatchIncoming(TestAHImportFile):
         self.property_state_factory.get_property_state(**self.base_details)
 
         # Action
-        results = match_and_link_incoming_properties_and_taxlots(*self.action_args)
+        match_and_link_incoming_properties_and_taxlots(*self.action_args)
+        results = self.get_results()
 
         # Assert - results
         self.blank_result["property_initial_incoming"] = 2
@@ -415,7 +433,8 @@ class TestAHImportDuplicateExisting(TestAHImportFile):
         self.property_state_factory.get_property_state(**self.base_details)
 
         # Action
-        results = match_and_link_incoming_properties_and_taxlots(*self.action_args)
+        match_and_link_incoming_properties_and_taxlots(*self.action_args)
+        results = self.get_results()
 
         # Assert - results
         self.blank_result["property_initial_incoming"] = 1
@@ -435,7 +454,8 @@ class TestAHImportDuplicateExisting(TestAHImportFile):
         self.property_state_factory.get_property_state(**self.base_details)
 
         # Action
-        results = match_and_link_incoming_properties_and_taxlots(*self.action_args)
+        match_and_link_incoming_properties_and_taxlots(*self.action_args)
+        results = self.get_results()
 
         # Assert - results
         self.blank_result["property_initial_incoming"] = 1
@@ -458,7 +478,8 @@ class TestAHImportDuplicateExisting(TestAHImportFile):
         self.property_state_factory.get_property_state(**self.base_details)
 
         # Action
-        results = match_and_link_incoming_properties_and_taxlots(*self.action_args)
+        match_and_link_incoming_properties_and_taxlots(*self.action_args)
+        results = self.get_results()
 
         # Assert - results
         self.blank_result["property_initial_incoming"] = 1
@@ -483,7 +504,8 @@ class TestAHImportDuplicateExisting(TestAHImportFile):
         self.property_state_factory.get_property_state(**self.base_details)
 
         # Action
-        results = match_and_link_incoming_properties_and_taxlots(*self.action_args)
+        match_and_link_incoming_properties_and_taxlots(*self.action_args)
+        results = self.get_results()
 
         # Assert - results
         self.blank_result["property_initial_incoming"] = 1
@@ -508,7 +530,8 @@ class TestAHImportDuplicateExisting(TestAHImportFile):
         self.property_state_factory.get_property_state(**self.base_details)
 
         # Action
-        results = match_and_link_incoming_properties_and_taxlots(*self.action_args)
+        match_and_link_incoming_properties_and_taxlots(*self.action_args)
+        results = self.get_results()
 
         # Assert - results
         self.blank_result["property_initial_incoming"] = 1
@@ -549,7 +572,8 @@ class TestAHImportMatchExisting(TestAHImportFile):
         self.property_state_factory.get_property_state(**self.base_details)
 
         # Action
-        results = match_and_link_incoming_properties_and_taxlots(*self.action_args)
+        match_and_link_incoming_properties_and_taxlots(*self.action_args)
+        results = self.get_results()
 
         # Assert - results
         self.blank_result["property_initial_incoming"] = 1
@@ -577,7 +601,8 @@ class TestAHImportMatchExisting(TestAHImportFile):
         self.property_state_factory.get_property_state(**self.base_details)
 
         # Action
-        results = match_and_link_incoming_properties_and_taxlots(*self.action_args)
+        match_and_link_incoming_properties_and_taxlots(*self.action_args)
+        results = self.get_results()
 
         # Assert - results
         self.blank_result["property_initial_incoming"] = 1
@@ -608,7 +633,8 @@ class TestAHImportMatchExisting(TestAHImportFile):
         self.property_state_factory.get_property_state(**self.base_details)
 
         # Action
-        results = match_and_link_incoming_properties_and_taxlots(*self.action_args)
+        match_and_link_incoming_properties_and_taxlots(*self.action_args)
+        results = self.get_results()
 
         # Assert - results
         self.blank_result["property_initial_incoming"] = 1
@@ -634,7 +660,8 @@ class TestAHImportMatchExisting(TestAHImportFile):
         self.property_state_factory.get_property_state(**self.base_details)
 
         # Action
-        results = match_and_link_incoming_properties_and_taxlots(*self.action_args)
+        match_and_link_incoming_properties_and_taxlots(*self.action_args)
+        results = self.get_results()
 
         # Assert - results
         self.blank_result["property_initial_incoming"] = 1
@@ -665,7 +692,8 @@ class TestAHImportMatchExisting(TestAHImportFile):
         self.property_state_factory.get_property_state(**self.base_details)
 
         # Action
-        results = match_and_link_incoming_properties_and_taxlots(*self.action_args)
+        match_and_link_incoming_properties_and_taxlots(*self.action_args)
+        results = self.get_results()
 
         # Assert - results
         self.blank_result["property_initial_incoming"] = 1
@@ -712,7 +740,8 @@ class TestAHImportMatchExistingDifferentCycle(TestAHImportFile):
         self.property_state_factory.get_property_state(**self.base_details)
 
         # Action
-        results = match_and_link_incoming_properties_and_taxlots(*self.action_args)
+        match_and_link_incoming_properties_and_taxlots(*self.action_args)
+        results = self.get_results()
 
         # Assert - results
         self.blank_result["property_initial_incoming"] = 1
@@ -755,7 +784,8 @@ class TestAHImportMatchExistingDifferentCycle(TestAHImportFile):
         self.property_state_factory.get_property_state(**self.base_details)
 
         # Action
-        results = match_and_link_incoming_properties_and_taxlots(*self.action_args)
+        match_and_link_incoming_properties_and_taxlots(*self.action_args)
+        results = self.get_results()
 
         # Assert - results
         self.blank_result["property_initial_incoming"] = 1
@@ -796,7 +826,8 @@ class TestAHImportMatchExistingDifferentCycle(TestAHImportFile):
         self.property_state_factory.get_property_state(**self.base_details)
 
         # Action
-        results = match_and_link_incoming_properties_and_taxlots(*self.action_args)
+        match_and_link_incoming_properties_and_taxlots(*self.action_args)
+        results = self.get_results()
 
         # Assert - results
         self.blank_result["property_initial_incoming"] = 1
@@ -836,7 +867,8 @@ class TestAHImportMatchExistingDifferentCycle(TestAHImportFile):
         self.property_state_factory.get_property_state(**self.base_details)
 
         # Action
-        results = match_and_link_incoming_properties_and_taxlots(*self.action_args)
+        match_and_link_incoming_properties_and_taxlots(*self.action_args)
+        results = self.get_results()
 
         # Assert - results
         self.blank_result["property_initial_incoming"] = 1
@@ -866,7 +898,8 @@ class TestAHImportMatchExistingDifferentCycle(TestAHImportFile):
         self.property_state_factory.get_property_state(**self.base_details)
 
         # Action
-        results = match_and_link_incoming_properties_and_taxlots(*self.action_args)
+        match_and_link_incoming_properties_and_taxlots(*self.action_args)
+        results = self.get_results()
 
         # Assert - results
         self.blank_result["property_initial_incoming"] = 1
@@ -909,7 +942,8 @@ class TestAHImportMatchExistingDifferentCycle(TestAHImportFile):
         self.property_state_factory.get_property_state(**self.base_details)
 
         # Action
-        results = match_and_link_incoming_properties_and_taxlots(*self.action_args)
+        match_and_link_incoming_properties_and_taxlots(*self.action_args)
+        results = self.get_results()
 
         # Assert - results
         self.blank_result["property_initial_incoming"] = 1

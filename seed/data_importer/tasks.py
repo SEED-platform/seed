@@ -1608,11 +1608,10 @@ def geocode_and_match_buildings_task(file_pk):
         id_chunks = [[obj.id for obj in chunk] for chunk in batch(property_states, 100)]
         map_additional_models_group = group(_map_additional_models.si(id_chunk, file_pk, progress_data.key) for id_chunk in id_chunks)
 
-    celery_worker_count = get_celery_worker_count()
     progress_data.total = (
         1  # geocoding
         + len(map_additional_models_group)  # map additional models tasks
-        + celery_worker_count  # match and link
+        + get_celery_worker_count()  # match and link
     )
     progress_data.save()
 
