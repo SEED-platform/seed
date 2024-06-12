@@ -839,7 +839,6 @@ class TestMatchingImportIntegration(DataMappingBaseTestCase):
 
         rimport_file_2 = ImportFile.objects.get(pk=self.import_file_2.id)
         results = rimport_file_2.matching_results_data
-        del results["progress_key"]
 
         expected = {
             "import_file_records": None,  # This is calculated in a separate process
@@ -986,7 +985,6 @@ class TestMatchingImportIntegration(DataMappingBaseTestCase):
 
         rimport_file_2 = ImportFile.objects.get(pk=self.import_file_2.id)
         results = rimport_file_2.matching_results_data
-        del results["progress_key"]
 
         expected = {
             "import_file_records": None,  # This is calculated in a separate process

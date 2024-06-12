@@ -9,16 +9,15 @@ import celery
 
 
 def get_celery_worker_count():
+    total_workers = 1
     try:
         app = celery.Celery("seed")
         app.config_from_object("django.conf:settings", namespace="CELERY")
         inspector = app.control.inspect()
         stats = inspector.stats()
-        if not stats:
-            return 1
-        total_workers = sum(info["pool"]["max-concurrency"] for worker, info in stats.items())
+        if stats:
+            total_workers = sum(info["pool"]["max-concurrency"] for worker, info in stats.items()) or 1
     except Exception as e:
         logging.warning(f"An error occured while fetching celery stats: {e}")
-        return 1
 
     return total_workers

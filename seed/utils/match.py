@@ -17,6 +17,7 @@ from django.db.models.aggregates import Count
 from seed.lib.progress_data.progress_data import ProgressData
 from seed.lib.superperms.orgs.models import AccessLevelInstance
 from seed.models import Column, Cycle, Property, PropertyState, PropertyView, TaxLot, TaxLotState, TaxLotView
+from seed.utils.celery import get_celery_worker_count
 from seed.utils.merge import merge_states_with_views
 from seed.utils.properties import properties_across_cycles
 from seed.utils.taxlots import taxlots_across_cycles
@@ -490,7 +491,8 @@ def chunk_inventory_pairs(properties, taxlots):
     Returns a list of chunk pairs
     return [[p_chunk0, t_chunk0], [p_chunk1, t_chunk1], ...]
     """
-    chunk_size = math.ceil(max(len(properties), len(taxlots)) / 5) or 1
+    celery_worker_count = get_celery_worker_count()
+    chunk_size = math.ceil(max(len(properties), len(taxlots)) / celery_worker_count) or 1
 
     p_chunks = [properties[i : i + chunk_size] for i in range(0, len(properties), chunk_size)]
     t_chunks = [taxlots[i : i + chunk_size] for i in range(0, len(taxlots), chunk_size)]
