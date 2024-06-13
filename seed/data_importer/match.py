@@ -3,7 +3,7 @@
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
-
+import logging
 import datetime as dt
 import math
 
@@ -554,8 +554,8 @@ def states_to_views(unmatched_state_ids, org, access_level_instance, cycle, Stat
         ViewClass = TaxLotView
 
     # Identify existing used -States
-    existing_cycle_views = ViewClass.objects.filter(cycle_id=cycle)
-    existing_states = StateClass.objects.filter(pk__in=Subquery(existing_cycle_views.values("state_id")))
+    existing_cycle_state_ids = ViewClass.objects.filter(cycle_id=cycle).values_list("state_id", flat=True)
+    existing_states = StateClass.objects.filter(pk__in=existing_cycle_state_ids)
 
     if merge_duplicates:
         duplicate_states = StateClass.objects.none()
@@ -596,8 +596,8 @@ def states_to_views(unmatched_state_ids, org, access_level_instance, cycle, Stat
             check_jaccard = bool(matching_criteria.get("ubid"))
             ubid = matching_criteria.pop("ubid")
 
-        existing_state_matches = StateClass.objects.filter(
-            pk__in=Subquery(existing_cycle_views.values("state_id")),
+        existing_state_matches = existing_states.filter(
+            pk__in=existing_cycle_state_ids,
             **matching_criteria,
         )
 
