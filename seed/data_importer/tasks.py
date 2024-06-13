@@ -1613,6 +1613,7 @@ def geocode_and_match_buildings_task(file_pk):
         1  # geocoding
         + len(map_additional_models_group)  # map additional models tasks
         + celery_worker_count  # match and link
+        + 1
     )
     progress_data.save()
 
