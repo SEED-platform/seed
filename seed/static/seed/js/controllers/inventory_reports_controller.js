@@ -96,7 +96,7 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
 
     const filtered_columns = _.filter(columns, (column) => _.includes(acceptable_column_types, column.data_type));
 
-    $scope.xAxisVars = [
+    $scope.yAxisVars = [
       {
         name: 'Count',
         label: 'Count',
@@ -116,7 +116,7 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
     const acceptable_y_column_names = ['gross_floor_area', 'property_type', 'year_built'];
     const filtered_y_columns = _.filter(columns, (column) => _.includes(acceptable_y_column_names, column.column_name));
 
-    $scope.yAxisVars = _.map(filtered_y_columns, (column) => ({
+    $scope.xAxisVars = _.map(filtered_y_columns, (column) => ({
       name: $translate.instant(column.displayName), // short name for variable, used in pulldown
       label: $translate.instant(column.displayName), // full name for variable
       varName: column.column_name, // name of variable, to be sent to server
@@ -140,8 +140,8 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
     const localStorageYAxisKey = `${base_storage_key}.yaxis`;
 
     // Currently selected x and y variables - check local storage first, otherwise initialize to first choice
-    $scope.xAxisSelectedItem = JSON.parse(localStorage.getItem(localStorageXAxisKey)) || $scope.xAxisVars[0];
-    $scope.yAxisSelectedItem = JSON.parse(localStorage.getItem(localStorageYAxisKey)) || $scope.yAxisVars[0];
+    $scope.yAxisSelectedItem = JSON.parse(localStorage.getItem(localStorageXAxisKey)) || $scope.yAxisVars[0];
+    $scope.xAxisSelectedItem = JSON.parse(localStorage.getItem(localStorageYAxisKey)) || $scope.xAxisVars[0];
 
     // Chart data
     $scope.chartData = [];
@@ -396,8 +396,8 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
        The chart will update automatically as it's watching the chartData property on the scope.
        */
     function getChartData() {
-      const yVar = $scope.xAxisSelectedItem.varName;
-      const xVar = $scope.yAxisSelectedItem.varName;
+      const yVar = $scope.yAxisSelectedItem.varName;
+      const xVar = $scope.xAxisSelectedItem.varName;
       $scope.chartIsLoading = true;
 
       inventory_reports_service
@@ -461,8 +461,8 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
 
        * */
     function getAggChartData() {
-      const xVar = $scope.xAxisSelectedItem.varName;
-      const yVar = $scope.yAxisSelectedItem.varName;
+      const xVar = $scope.yAxisSelectedItem.varName;
+      const yVar = $scope.xAxisSelectedItem.varName;
       $scope.aggChartIsLoading = true;
       inventory_reports_service
         .get_aggregated_report_data(xVar, yVar, $scope.selected_cycles)
