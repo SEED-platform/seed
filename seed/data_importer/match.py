@@ -603,7 +603,6 @@ def states_to_views(unmatched_state_ids, org, access_level_instance, cycle, Stat
             )
 
         else:
-            # existing_state_matches = StateClass.objects.filter(
             existing_state_matches = existing_states.filter(
                 pk__in=existing_cycle_state_ids,
                 **matching_criteria,
