@@ -25,7 +25,7 @@ angular.module('BE.seed.controller.inventory_summary', []).controller('inventory
       data: [],
       columnDefs: [
         { field: 'Summary' },
-        { field: 'Count' }
+        { field: 'Count', cellFilter: 'number' }
       ],
       onRegisterApi: (gridApi) => {
         $scope.summaryGridOptions = gridApi;
@@ -39,7 +39,7 @@ angular.module('BE.seed.controller.inventory_summary', []).controller('inventory
       enableFiltering: true,
       columnDefs: [
         { field: 'Field' },
-        { field: 'Count' }
+        { field: 'Count', cellFilter: 'number' }
       ],
 
       onRegisterApi: (gridApi) => {

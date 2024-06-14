@@ -134,24 +134,26 @@ SEED_URL_APPS = ("seed",)
 MEDIA_URL = "/api/v3/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
-STATIC_URL = "/static/"
-STATIC_ROOT = os.path.join(BASE_DIR, "collected_static")
+COMPRESS_CACHEABLE_PRECOMPILERS = ("text/x-scss",)
 COMPRESS_FILTERS = {
     "css": [
         "compressor.filters.css_default.CssAbsoluteFilter",
-        "compressor.filters.cssmin.CSSMinFilter",
+        "compressor.filters.cssmin.rCSSMinFilter",
     ],
     "js": [
-        "compressor.filters.jsmin.JSMinFilter",
+        "compressor.filters.jsmin.rJSMinFilter",
     ],
 }
+COMPRESS_PRECOMPILERS = (("text/x-scss", "npx sass --style=compressed {infile} {outfile}"),)
+
+STATIC_URL = "/static/"
+STATIC_ROOT = os.path.join(BASE_DIR, "collected_static")
 STATICFILES_DIRS = [os.path.join(BASE_DIR, "vendors")]
 STATICFILES_FINDERS = (
     "django.contrib.staticfiles.finders.FileSystemFinder",
     "django.contrib.staticfiles.finders.AppDirectoriesFinder",
     "compressor.finders.CompressorFinder",
 )
-COMPRESS_PRECOMPILERS = (("text/x-scss", "npx sass {infile} {outfile}"),)
 AWS_QUERYSTRING_AUTH = False
 
 # django-longer-username-and-email
@@ -320,7 +322,7 @@ GOOGLE_RECAPTCHA_SECRET_KEY = os.environ.get("GOOGLE_RECAPTCHA_SECRET_KEY")
 
 # Certification
 # set this for a default validity_duration
-# should be a integer representing a number of days
+# should be an integer representing a number of days
 # GREEN_ASSESSMENT_DEFAULT_VALIDITY_DURATION=5 * 365
 GREEN_ASSESSMENT_DEFAULT_VALIDITY_DURATION = None
 

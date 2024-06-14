@@ -9,6 +9,7 @@
 
 angular.module('BE.seed.controller.inventory_reports', []).controller('inventory_reports_controller', [
   '$scope',
+  '$state',
   '$log',
   '$stateParams',
   'spinner_utility',
@@ -22,7 +23,7 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
   '$translate',
   '$uibModal',
   // eslint-disable-next-line func-names
-  function ($scope, $log, $stateParams, spinner_utility, inventory_reports_service, simple_modal_service, columns, cycles, organization_payload, urls, $sce, $translate, $uibModal) {
+  function ($scope, $state, $log, $stateParams, spinner_utility, inventory_reports_service, simple_modal_service, columns, cycles, organization_payload, urls, $sce, $translate, $uibModal) {
     const org_id = organization_payload.organization.id;
     const base_storage_key = `report.${org_id}`;
 
@@ -174,6 +175,16 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
           ]
         },
         options: {
+          onClick: (event) => {
+            if (type === 'bar') return;
+            const activePoints = event.chart.getActiveElements(event);
+
+            if (activePoints[0]) {
+              const activePoint = activePoints[0];
+              const item = event.chart.data.datasets[activePoint.datasetIndex].data[activePoint.index];
+              $state.go('inventory_detail', { inventory_type: 'properties', view_id: item.id });
+            }
+          },
           responsive: true,
           maintainAspectRatio: false,
           layout: {
@@ -218,17 +229,14 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
               displayColors: false,
               mode: 'index',
               callbacks: {
-                label(ctx) {
-                  const label = [];
-                  const labeltmp = $scope.chartData.chartData.filter((entry) => entry.id === ctx.raw.id);
-                  if (labeltmp.length > 0) {
-                    label.push(`${$scope.yAxisSelectedItem.label}: ${ctx.formattedValue}`);
-                    // The x axis data is generated more programmatically than the y, so only
-                    // grab the `label` since the `axisLabel` has redundant unit information.
-                    label.push(`${$scope.xAxisSelectedItem.label}: ${ctx.parsed.x}`);
-                  }
-                  return label;
-                }
+                title: (ctx) => {
+                  if (type === 'bar') return;
+                  return ctx[0]?.raw.display_name;
+                },
+                label: (ctx) => [
+                  `${$scope.xAxisSelectedItem.label}: ${type === 'bar' ? ctx.raw : ctx.parsed.x}`,
+                  `${$scope.yAxisSelectedItem.label}: ${type === 'bar' ? ctx.label : ctx.parsed.y}`
+                ]
               }
             }
           }

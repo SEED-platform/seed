@@ -733,6 +733,12 @@ class OrganizationViewSet(viewsets.ViewSet):
 
         return JsonResponse(geocoding_columns)
 
+    def _format_property_display_field(self, view, org):
+        try:
+            return getattr(view.state, org.property_display_field)
+        except AttributeError:
+            return None
+
     def get_raw_report_data(self, organization_id, access_level_instance, cycles, x_var, y_var, additional_columns=[]):
         organization = Organization.objects.get(pk=organization_id)
         all_property_views = (

@@ -4,11 +4,8 @@
  */
 angular.module('BE.seed.service.user', []).factory('user_service', [
   '$http',
-  '$q',
-  'generated_urls',
-  ($http, $q, generated_urls) => {
+  ($http) => {
     const user_factory = {};
-    const urls = generated_urls;
 
     let organization;
     let access_level_instance;
@@ -77,11 +74,6 @@ angular.module('BE.seed.service.user', []).factory('user_service', [
       return $http.post('/api/v3/users/', new_user_details, { params }).then((response) => response.data);
     };
 
-    /* Is this still needed? */
-    user_factory.get_default_columns = () => $http.get(urls.seed.get_default_columns).then((response) => response.data);
-
-    user_factory.get_default_building_detail_columns = () => $http.get(urls.seed.get_default_building_detail_columns).then((response) => response.data);
-
     user_factory.get_shared_buildings = () => user_factory.get_user_id().then((this_user_id) => $http.get(`/api/v3/users/${this_user_id}/shared_buildings/`).then((response) => response.data));
 
     /**
@@ -95,19 +87,6 @@ angular.module('BE.seed.service.user', []).factory('user_service', [
      * @return {obj} object with api_key
      */
     user_factory.generate_api_key = () => user_factory.get_user_id().then((this_user_id) => $http.post(`/api/v3/users/${this_user_id}/generate_api_key/`).then((response) => response.data));
-
-    user_factory.set_default_columns = (columns, show_shared_buildings) => $http
-      .post(urls.seed.set_default_columns, {
-        columns,
-        show_shared_buildings
-      })
-      .then((response) => response.data);
-
-    user_factory.set_default_building_detail_columns = (columns) => $http
-      .post(urls.seed.set_default_building_detail_columns, {
-        columns
-      })
-      .then((response) => response.data);
 
     /**
      * updates the user's PR
