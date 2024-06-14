@@ -133,23 +133,27 @@ def merge_ubid_models(old_state_ids, new_state_id, StateClass):  # noqa: N803
 
     If the new_state has an equivalent ubid, skip it.
     """
-    old_states = StateClass.objects.filter(id__in=old_state_ids).order_by("-id")
+    from seed.models import UbidModel
+
+    old_states = StateClass.objects.filter(id__in=old_state_ids).order_by("-id").prefetch_related("ubidmodel_set")
     new_state = StateClass.objects.get(id=new_state_id)
-    new_ubids = new_state.ubidmodel_set.all()
-    state_field = "property" if StateClass.__name__ == "PropertyState" else "taxlot"
+    new_ubids_set = set(new_state.ubidmodel_set.values_list("ubid", flat=True))
 
+    if StateClass.__name__ == "PropertyState":
+        old_ubids_set = set(UbidModel.objects.filter(property__in=old_states).values_list("ubid", flat=True))
+        state_field = "property"
+    else:
+        old_ubids_set = set(UbidModel.objects.filter(taxlot__in=old_states).values_list("ubid", flat=True))
+        state_field = "taxlot"
+
+    old_ubids_to_promote = old_ubids_set - new_ubids_set
+    if not old_ubids_to_promote:
+        return
+    
     preferred_ubid = find_preferred(old_states, new_state)
+    promote_ubids = [UbidModel(**{"ubid": ubid.ubid, state_field: new_state, "preferred": ubid.ubid == preferred_ubid}) for ubid in old_ubids_to_promote]
+    new_state.ubidmodel_set.bulk_create(promote_ubids)
 
-    for old_state in old_states:
-        for old_ubid in old_state.ubidmodel_set.all():
-            if old_ubid.ubid in new_ubids.values_list("ubid", flat=True):
-                continue
-
-            ubid_details = {"ubid": old_ubid.ubid, state_field: new_state, "preferred": old_ubid.ubid == preferred_ubid}
-
-            new_state.ubidmodel_set.create(**ubid_details)
-
-    new_state.save()
 
     if preferred_ubid:
         state_qs = StateClass.objects.filter(id=new_state.id)
