@@ -4,16 +4,17 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
 from datetime import datetime
+
 from django.urls import reverse_lazy
 
 from seed.models import Column, PropertyViewLabel
 from seed.models.data_quality import StatusLabel
 from seed.test_helpers.fake import (
+    FakeColumnFactory,
+    FakeCycleFactory,
     FakeGoalFactory,
     FakePropertyFactory,
     FakePropertyStateFactory,
-    FakeColumnFactory,
-    FakeCycleFactory,
     FakePropertyViewFactory,
 )
 from seed.tests.util import AccessLevelBaseTestCase
@@ -57,8 +58,8 @@ class PropertyLabelViewTests(AccessLevelBaseTestCase):
         self.view6 = self.property_view_factory.get_property_view(prprty=self.property6, state=self.state6, cycle=self.cycle1)
 
         goal_details = {
-            "baseline_cycle": self.cycle1, 
-            "current_cycle": self.cycle2, 
+            "baseline_cycle": self.cycle1,
+            "current_cycle": self.cycle2,
             "access_level_instance": self.root_ali,
             "eui_column1": Column.objects.get(organization=self.org.id, column_name="source_eui"),
             "area_column": Column.objects.get(organization=self.org.id, column_name="gross_floor_area"),
@@ -88,10 +89,7 @@ class PropertyLabelViewTests(AccessLevelBaseTestCase):
         response = self.client.get(url, params, content_type="application/json")
         labels = response.json()
         assert len(labels) == 4
-        assert labels[0]["goal"] == None
-        assert labels[1]["goal"] == None
+        assert labels[0]["goal"] is None
+        assert labels[1]["goal"] is None
         assert labels[2]["goal"] == self.goal1.id
         assert labels[3]["goal"] == self.goal1.id
-
-
-        

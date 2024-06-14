@@ -829,9 +829,20 @@ class FakeDerivedColumnFactory(BaseFake):
         config = {"expression": expression, "name": name, "organization": organization, "inventory_type": inventory_type}
 
         return DerivedColumn.objects.create(**config)
-    
+
+
 class FakeGoalFactory(BaseFake):
-    def __init__(self, organization=None, baseline_cycle=None, current_cycle=None, access_level_instance=None, eui_column1=None, area_column=None, target_percentage=None, name=None):
+    def __init__(
+        self,
+        organization=None,
+        baseline_cycle=None,
+        current_cycle=None,
+        access_level_instance=None,
+        eui_column1=None,
+        area_column=None,
+        target_percentage=None,
+        name=None,
+    ):
         super().__init__()
         self.organization = organization
         self.baseline_cycle = baseline_cycle
@@ -842,7 +853,17 @@ class FakeGoalFactory(BaseFake):
         self.target_percentage = target_percentage
         self.name = name
 
-    def get_goal(self, organization=None, baseline_cycle=None, current_cycle=None, access_level_instance=None, eui_column1=None, area_column=None, target_percentage=None, name=None):
+    def get_goal(
+        self,
+        organization=None,
+        baseline_cycle=None,
+        current_cycle=None,
+        access_level_instance=None,
+        eui_column1=None,
+        area_column=None,
+        target_percentage=None,
+        name=None,
+    ):
         organization = organization if organization is not None else self.organization
         baseline_cycle = baseline_cycle if baseline_cycle is not None else self.baseline_cycle
         current_cycle = current_cycle if current_cycle is not None else self.current_cycle
@@ -862,7 +883,6 @@ class FakeGoalFactory(BaseFake):
             "name": name,
         }
         return Goal.objects.create(**config)
-
 
 
 def mock_queryset_factory(model, flatten=False, **kwargs):

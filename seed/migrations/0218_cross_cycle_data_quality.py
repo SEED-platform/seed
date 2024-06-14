@@ -27,8 +27,7 @@ def forwards(apps, schema_editor):
         "High EUI % Change",
         "Low EUI % Change",
         "High WUI",
-        "Low WUI"
-        "High WUI % Change",
+        "Low WUI" "High WUI % Change",
         "Low WUI % Change",
         "High Area",
         "Low Area",
@@ -38,12 +37,7 @@ def forwards(apps, schema_editor):
 
     for org in Organization.objects.all():
         for label in NEW_DEFAULT_LABELS:
-            Label.objects.get_or_create(
-                name=label,
-                super_organization=org,
-                defaults={"color": "blue"},
-                show_in_list=True
-            )
+            Label.objects.get_or_create(name=label, super_organization=org, defaults={"color": "blue"}, show_in_list=True)
 
 
 class Migration(migrations.Migration):
@@ -98,14 +92,13 @@ class Migration(migrations.Migration):
             field=models.CharField(blank=True, max_length=200, null=True),
         ),
         migrations.AddField(
-            model_name='rule',
-            name='cross_cycle',
+            model_name="rule",
+            name="cross_cycle",
             field=models.BooleanField(default=False),
         ),
         migrations.AddConstraint(
-            model_name='propertyviewlabel',
-            constraint=models.UniqueConstraint(fields=('propertyview', 'statuslabel', 'goal'), name='unique_propertyview_statuslabel_goal'),
+            model_name="propertyviewlabel",
+            constraint=models.UniqueConstraint(fields=("propertyview", "statuslabel", "goal"), name="unique_propertyview_statuslabel_goal"),
         ),
-
         migrations.RunPython(forwards),
     ]

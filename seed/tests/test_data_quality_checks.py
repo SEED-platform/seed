@@ -4,28 +4,27 @@ SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and othe
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
-import pytest
 from datetime import datetime
-from django.forms.models import model_to_dict
-from django.test import TestCase
-from quantityfield.units import ureg
-from django.urls import reverse_lazy
 
+import pytest
+from django.forms.models import model_to_dict
+from django.urls import reverse_lazy
+from quantityfield.units import ureg
 
 from seed.models import Column, DerivedColumnParameter, Goal, PropertyView, PropertyViewLabel
 from seed.models.data_quality import DataQualityCheck, DataQualityTypeCastError, Rule, StatusLabel, UnitMismatchError
 from seed.models.derived_columns import DerivedColumn
 from seed.models.models import ASSESSED_RAW
 from seed.test_helpers.fake import (
+    FakeColumnFactory,
+    FakeCycleFactory,
     FakeDerivedColumnFactory,
     FakePropertyFactory,
     FakePropertyStateFactory,
-    FakeTaxLotStateFactory,
-    FakeColumnFactory,
-    FakeCycleFactory,
     FakePropertyViewFactory,
+    FakeTaxLotStateFactory,
 )
-from seed.tests.util import AccessLevelBaseTestCase,AssertDictSubsetMixin, DataMappingBaseTestCase
+from seed.tests.util import AccessLevelBaseTestCase, AssertDictSubsetMixin, DataMappingBaseTestCase
 
 
 class DataQualityCheckTests(AssertDictSubsetMixin, DataMappingBaseTestCase):
@@ -41,7 +40,7 @@ class DataQualityCheckTests(AssertDictSubsetMixin, DataMappingBaseTestCase):
 
     def test_default_create(self):
         dq = DataQualityCheck.retrieve(self.org.id)
-        self.assertEqual(dq.rules.count(), 28)
+        self.assertEqual(dq.rules.count(), 34)
         # Example rule to check
         ex_rule = {
             "table_name": "PropertyState",
@@ -59,7 +58,7 @@ class DataQualityCheckTests(AssertDictSubsetMixin, DataMappingBaseTestCase):
 
     def test_remove_rules(self):
         dq = DataQualityCheck.retrieve(self.org.id)
-        self.assertEqual(dq.rules.count(), 28)
+        self.assertEqual(dq.rules.count(), 34)
         dq.remove_all_rules()
         self.assertEqual(dq.rules.count(), 0)
 
@@ -453,8 +452,8 @@ class DataQualityCheckTests(AssertDictSubsetMixin, DataMappingBaseTestCase):
         bad_results = dq.results[ps_bad.id]["data_quality_results"]
         self.assertDictContainsSubset({"field": derived_column_name, "message": f"{derived_column_name} out of range"}, bad_results[0])
 
-# class DataQualityCrossCycleTests(TestCase):
-class x(AccessLevelBaseTestCase):
+
+class DataQualityCrossCycleTests(AccessLevelBaseTestCase):
     def setUp(self):
         # create goal
         super().setUp()
@@ -468,21 +467,6 @@ class x(AccessLevelBaseTestCase):
         self.cycle1 = self.cycle_factory.get_cycle(start=datetime(2001, 1, 1), end=datetime(2002, 1, 1))
         self.cycle2 = self.cycle_factory.get_cycle(start=datetime(2002, 1, 1), end=datetime(2003, 1, 1))
         self.root_ali = self.org.root
-
-        # columns
-        extra_eui = Column.objects.create(
-            table_name="PropertyState",
-            column_name="extra_eui",
-            organization=self.org,
-            is_extra_data=True,
-        )
-        extra_area = Column.objects.create(
-            table_name="PropertyState",
-            column_name="extra_area",
-            organization=self.org,
-            is_extra_data=True,
-        )
-        # NEED TO TEST WITH WUI
 
         def create_property_details(eui, gfa):
             details = self.property_state_factory.get_details()
@@ -503,7 +487,7 @@ class x(AccessLevelBaseTestCase):
         property_details41 = create_property_details(None, 5000)
         property_details42 = create_property_details(100, None)
 
-        #property{property}{cycle}
+        # property{property}{cycle}
         self.property1 = self.property_factory.get_property(access_level_instance=self.root_ali)
         self.property2 = self.property_factory.get_property(access_level_instance=self.root_ali)
         self.property3 = self.property_factory.get_property(access_level_instance=self.root_ali)
@@ -539,7 +523,7 @@ class x(AccessLevelBaseTestCase):
             target_percentage=20,
             name="goal1",
         )
-        
+
         # create default rules
         self.dq = DataQualityCheck.retrieve(self.org.id)
         self.assertEqual(self.dq.rules.count(), 34)
@@ -562,38 +546,35 @@ class x(AccessLevelBaseTestCase):
         goalnote1 = self.property1.goalnote_set.get(goal=self.goal)
         goalnote2 = self.property2.goalnote_set.get(goal=self.goal)
         goalnote3 = self.property3.goalnote_set.get(goal=self.goal)
-        assert goalnote1.passed_checks == False
-        assert goalnote2.passed_checks == False
-        assert goalnote3.passed_checks == False
+        assert not goalnote1.passed_checks
+        assert not goalnote2.passed_checks
+        assert not goalnote3.passed_checks
         assert self.view12.labels.count() == 0
         assert self.view32.labels.count() == 0
         assert self.view12.labels.count() == 0
 
         url = reverse_lazy("api:v3:data_quality_checks-start", args=[self.org.id])
-        response = self.client.post(
+        self.client.post(
             url,
-            {
-                "property_view_ids": [],
-                "taxlot_view_ids": [],
-                "goal_id": self.goal.id
-            },
+            {"property_view_ids": [], "taxlot_view_ids": [], "goal_id": self.goal.id},
             content_type="application/json",
-        ) 
+        )
 
         goalnote1 = self.property1.goalnote_set.get(goal=self.goal)
         goalnote2 = self.property3.goalnote_set.get(goal=self.goal)
         goalnote3 = self.property3.goalnote_set.get(goal=self.goal)
 
-        assert goalnote1.passed_checks == True
-        assert goalnote2.passed_checks == False
-        assert goalnote3.passed_checks == False
+        assert goalnote1.passed_checks
+        assert not goalnote2.passed_checks
+        assert not goalnote3.passed_checks
 
         assert self.view11.labels.count() == 0
         assert self.view12.labels.count() == 0
 
         assert self.view21.labels.count() == 0
         assert self.view22.labels.count() == 2
-        assert self.label_lookup["High Area % Change"] in self.view22.labels.all()
+
+        assert self.label_lookup["Low Area % Change"] in self.view22.labels.all()
         assert self.label_lookup["Low Area"] in self.view22.labels.all()
 
         assert self.view31.labels.count() == 0
@@ -615,30 +596,23 @@ class x(AccessLevelBaseTestCase):
             if rule.condition == "range":
                 rule.min = -10000
                 rule.max = 10000
-                rule.save() 
+                rule.save()
         self.state41.site_eui = 100
         self.state42.gross_floor_area = 5000
         self.state41.save()
         self.state42.save()
-        
-        response = self.client.post(
+
+        self.client.post(
             url,
-            {
-                "property_view_ids": [],
-                "taxlot_view_ids": [],
-                "goal_id": self.goal.id
-            },
+            {"property_view_ids": [], "taxlot_view_ids": [], "goal_id": self.goal.id},
             content_type="application/json",
         )
-        assert goalnote1.passed_checks == True
-        assert goalnote2.passed_checks == False
-        assert goalnote3.passed_checks == False
+        assert goalnote1.passed_checks
+        assert not goalnote2.passed_checks
+        assert not goalnote3.passed_checks
         assert self.view12.labels.count() == 0
         assert self.view22.labels.count() == 0
         assert self.view32.labels.count() == 0
 
         cross_cycle_labels = PropertyViewLabel.objects.filter(goal_id__isnull=False)
         assert cross_cycle_labels.count() == 0
-
-
-    

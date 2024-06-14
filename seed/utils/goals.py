@@ -9,7 +9,7 @@ from django.db.models.fields.json import KeyTextTransform
 from django.db.models.functions import Cast, Coalesce
 from quantityfield.units import ureg
 
-from seed.models import Goal, GoalNote, PropertyView, Property, PropertyView
+from seed.models import Goal, GoalNote, Property, PropertyView
 from seed.serializers.pint import collapse_unit
 
 
@@ -53,6 +53,7 @@ def get_area_expression(goal):
     else:
         return Cast(F(f"state__{goal.area_column.column_name}"), output_field=IntegerField())
 
+
 def get_eui_value(property_state, goal):
     """
     Return the eui valuef or a given property and goal
@@ -60,12 +61,14 @@ def get_eui_value(property_state, goal):
     property_view = PropertyView.objects.filter(state__id=property_state.id).annotate(eui_value=get_eui_expression(goal)).first()
     return property_view.eui_value
 
+
 def get_area_value(property_state, goal):
     """
     Return the area valuef or a given property and goal
     """
     property_view = PropertyView.objects.filter(state__id=property_state.id).annotate(area_value=get_area_expression(goal)).first()
     return property_view.area_value
+
 
 def extra_data_expression(column, default_value):
     """
@@ -182,6 +185,7 @@ def get_portfolio_summary(org, goal):
 
     return summary
 
+
 def get_state_pairs(property_ids, goal_id):
     """Given a list of property ids, return a dictionary containing baseline and current states"""
     # Prefetch PropertyView objects
@@ -189,12 +193,9 @@ def get_state_pairs(property_ids, goal_id):
         goal = Goal.objects.get(id=goal_id)
     except Goal.DoesNotExist:
         return []
-    
-    property_views = PropertyView.objects.filter(
-        cycle__in=[goal.baseline_cycle, goal.current_cycle],
-        property__in=property_ids
-    )
-    prefetch = Prefetch('views', queryset=property_views, to_attr='prefetched_views')
+
+    property_views = PropertyView.objects.filter(cycle__in=[goal.baseline_cycle, goal.current_cycle], property__in=property_ids)
+    prefetch = Prefetch("views", queryset=property_views, to_attr="prefetched_views")
 
     # Fetch properties and related PropertyView objects
     qs = Property.objects.filter(id__in=property_ids).prefetch_related(prefetch)
@@ -208,10 +209,6 @@ def get_state_pairs(property_ids, goal_id):
         baseline_state = baseline_view.state if baseline_view else None
         current_state = current_view.state if current_view else None
 
-        state_pairs.append({
-            "property": property,
-            "baseline": baseline_state,
-            "current": current_state
-        })
+        state_pairs.append({"property": property, "baseline": baseline_state, "current": current_state})
 
     return state_pairs

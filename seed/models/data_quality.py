@@ -20,11 +20,11 @@ from pint.errors import DimensionalityError
 from quantityfield.units import ureg
 
 from seed.lib.superperms.orgs.models import Organization
-from seed.models import Column, DerivedColumn, GoalNote, PropertyView, StatusLabel, PropertyViewLabel, TaxLotView, obj_to_dict
+from seed.models import Column, DerivedColumn, GoalNote, PropertyView, PropertyViewLabel, StatusLabel, TaxLotView, obj_to_dict
 from seed.serializers.pint import pretty_units
 from seed.utils.cache import get_cache_raw, set_cache_raw
+from seed.utils.goals import get_area_value, get_eui_value, percentage_difference
 from seed.utils.time import convert_datestr
-from seed.utils.goals import percentage_difference, get_eui_value, get_area_value
 
 _log = logging.getLogger(__name__)
 
@@ -460,7 +460,6 @@ class Rule(models.Model):
             "severity": SEVERITY_ERROR,
             "condition": RULE_NOT_NULL,
         },
-
     ]
 
     name = models.CharField(max_length=255, blank=True)
@@ -787,14 +786,14 @@ class DataQualityCheck(models.Model):
     def check_data_cross_cycle(self, goal_id, state_pairs):
         """
         Send in data as properties and their goal state pairs. Update GoalNote.passed_checks with data quality check return
-        :param goal: 
+        :param goal:
         :param state_pairs: [{property: Property, baseline: PropertyState, current: PropertyState}, {}, ...]
         """
         rules = self.rules.filter(enabled=True, table_name="Goal")
         goal_notes = GoalNote.objects.filter(goal=goal_id)
         goal_notes = {note.property.id: note for note in goal_notes}
         goal_notes_to_update = []
-        fields = self.get_fieldnames('PropertyState')
+        fields = self.get_fieldnames("PropertyState")
         for row in state_pairs:
             for cycle_key in ["baseline", "current"]:
                 self.init_result(row[cycle_key], fields)
@@ -805,7 +804,7 @@ class DataQualityCheck(models.Model):
 
         self.prune_results()
 
-        GoalNote.objects.bulk_update(goal_notes_to_update, ['passed_checks'])
+        GoalNote.objects.bulk_update(goal_notes_to_update, ["passed_checks"])
 
     def init_result(self, row, fields):
         # Initialize the ID if it does not exist yet. Add in the other
@@ -958,7 +957,6 @@ class DataQualityCheck(models.Model):
             if not label_applied and rule.status_label_id in model_labels["label_ids"]:
                 self.remove_status_label(label, rule, linked_id)
 
-
     def _check_cross_cycle(self, rules, row, goal_notes):
         """
         Check if property percent changes are within tolerance. Update GoalNote.passed_checks with result
@@ -979,6 +977,7 @@ class DataQualityCheck(models.Model):
 
         def check_range():
             return (rule.min is None or value > rule.min) and (rule.max is None or value < rule.max)
+
         def append_to_apply_labels():
             if rule.status_label:
                 apply_labels[cycle_key][rule.status_label.id].append(result)
@@ -1005,11 +1004,9 @@ class DataQualityCheck(models.Model):
                         self.add_result_range_error(row["current"].id, rule, data_type, value)
                         self.update_status_label(PropertyViewLabel, rule, current_view.id, row["current"].id)
 
-                    
                 # other rule condition types
                 else:
-                    logging.error('>>> OTHER')
-                    pass
+                    logging.error(">>> OTHER")
 
             else:  # Within Cycle
                 for cycle_key in ["baseline", "current"]:
@@ -1027,7 +1024,6 @@ class DataQualityCheck(models.Model):
                                 self.add_result_range_error(state.id, rule, data_type, value)
                                 self.update_status_label(PropertyViewLabel, rule, view.id, state.id)
 
-                
                     elif rule.condition == rule.RULE_NOT_NULL:
                         result = value is not None
                         results.append(result)
@@ -1038,15 +1034,14 @@ class DataQualityCheck(models.Model):
 
                     # other rule condition types.
                     else:
-                        logging.error('>>> OTHER')
-                        pass
-        
+                        logging.error(">>> OTHER")
+
             goal_note.passed_checks = all(results)
 
         # if there are multiple rules with the same label, determine if they are all passing to add or remove the label
         for cycle_key in ["baseline", "current"]:
             view = baseline_view if cycle_key == "baseline" else current_view
-     
+
             for id, results in apply_labels[cycle_key].items():
                 label = StatusLabel.objects.get(id=id)
                 property_view_label = PropertyViewLabel.objects.filter(propertyview=view, statuslabel=label, goal=goal)
@@ -1056,15 +1051,14 @@ class DataQualityCheck(models.Model):
                     PropertyViewLabel.objects.create(propertyview=view, statuslabel=label, goal=goal)
 
         return goal_note
-           
 
-    def get_value(self, property, data_type, goal, cycle_key):
-        if not property[cycle_key]:
+    def get_value(self, property_obj, data_type, goal, cycle_key):
+        if not property_obj[cycle_key]:
             return None
-        if data_type == 'area':
-            return get_area_value(property[cycle_key], goal)
-        elif data_type == 'eui':
-            return get_eui_value(property[cycle_key], goal)
+        if data_type == "area":
+            return get_area_value(property_obj[cycle_key], goal)
+        elif data_type == "eui":
+            return get_eui_value(property_obj[cycle_key], goal)
 
     def save_to_cache(self, identifier, organization_id):
         """
@@ -1101,17 +1095,16 @@ class DataQualityCheck(models.Model):
             self.add_goal_rule_labels(rule_instance)
 
     def add_goal_rule_labels(self, rule):
-            # Add labels to default portfolio/goal rules
-            if rule:
-                try:
-                    if "Missing" in rule.name:
-                        rule.status_label = StatusLabel.objects.get(name="Missing Data")
-                    else:
-                        rule.status_label = StatusLabel.objects.get(name=rule.name)
-                    rule.save()
-                except StatusLabel.DoesNotExist:
-                    pass
-
+        # Add labels to default portfolio/goal rules
+        if rule:
+            try:
+                if "Missing" in rule.name:
+                    rule.status_label = StatusLabel.objects.get(name="Missing Data")
+                else:
+                    rule.status_label = StatusLabel.objects.get(name=rule.name)
+                rule.save()
+            except StatusLabel.DoesNotExist:
+                pass
 
     def remove_all_rules(self):
         """

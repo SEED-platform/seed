@@ -86,8 +86,8 @@ from seed.models import (
 from seed.models.auditlog import AUDIT_IMPORT
 from seed.models.data_quality import DataQualityCheck, Rule
 from seed.utils.buildings import get_source_type
-from seed.utils.goals import get_state_pairs
 from seed.utils.geocode import MapQuestAPIKeyError, create_geocoded_additional_columns, geocode_buildings
+from seed.utils.goals import get_state_pairs
 from seed.utils.match import update_sub_progress_total
 from seed.utils.ubid import decode_unique_ids
 
@@ -103,7 +103,7 @@ def check_data_chunk(org_id, model, ids, dq_id, goal_id=None):
         super_organization = organization.get_parent()
     except Organization.DoesNotExist:
         return
-    
+
     if model == "PropertyState":
         qs = PropertyState.objects.filter(id__in=ids)
     elif model == "TaxLotState":
@@ -635,7 +635,7 @@ def _data_quality_check_create_tasks(org_id, property_state_ids, taxlot_state_id
         # If goal_id is passed, treat as a cross cycle data quality check.
         try:
             goal = Goal.objects.get(id=goal_id)
-            property_ids = goal.properties().values_list('id', flat=True)
+            property_ids = goal.properties().values_list("id", flat=True)
             id_chunks = [list(chunk) for chunk in batch(property_ids, 100)]
             for ids in id_chunks:
                 tasks.append(check_data_chunk.s(org_id, "Property", ids, dq_id, goal.id))
