@@ -553,9 +553,11 @@ def states_to_views(unmatched_state_ids, org, access_level_instance, cycle, Stat
     elif table_name == "TaxLotState":
         ViewClass = TaxLotView
 
+    column_names = matching_criteria_column_names(org.id, table_name)
+
     # Identify existing used -States
     existing_cycle_state_ids = ViewClass.objects.filter(cycle_id=cycle).values_list("state_id", flat=True)
-    existing_states = StateClass.objects.filter(pk__in=existing_cycle_state_ids)
+    existing_states = StateClass.objects.filter(pk__in=existing_cycle_state_ids).only(*column_names)
 
     if merge_duplicates:
         duplicate_states = StateClass.objects.none()
@@ -566,8 +568,6 @@ def states_to_views(unmatched_state_ids, org, access_level_instance, cycle, Stat
             pk__in=unmatched_state_ids, hash_object__in=Subquery(existing_states.values("hash_object"))
         )
         duplicate_count = duplicate_states.update(data_state=DATA_STATE_DELETE)
-
-    column_names = matching_criteria_column_names(org.id, table_name)
 
     # For the remaining incoming -States (filtering those duplicates), identify
     # -States with all matching criteria being None. These aren't eligible for matching.
@@ -595,11 +595,19 @@ def states_to_views(unmatched_state_ids, org, access_level_instance, cycle, Stat
         if "ubid" in matching_criteria:
             check_jaccard = bool(matching_criteria.get("ubid"))
             ubid = matching_criteria.pop("ubid")
+            region = ubid.split("+")[0]
+            existing_state_matches = existing_states.filter(
+                pk__in=existing_cycle_state_ids,
+                **matching_criteria,
+                ubid__startswith=region,  # only helpful if ubid is the only matching criteria present
+            )
 
-        existing_state_matches = existing_states.filter(
-            pk__in=existing_cycle_state_ids,
-            **matching_criteria,
-        )
+        else:
+            # existing_state_matches = StateClass.objects.filter(
+            existing_state_matches = existing_states.filter(
+                pk__in=existing_cycle_state_ids,
+                **matching_criteria,
+            )
 
         if check_jaccard:
             existing_state_matches = [
@@ -607,7 +615,6 @@ def states_to_views(unmatched_state_ids, org, access_level_instance, cycle, Stat
             ]
 
         count = len(existing_state_matches)
-
         if count > 1:
             merged_between_existing_count += count
             existing_state_ids = [state.id for state in sorted(existing_state_matches, key=lambda state: state.updated)]

@@ -135,7 +135,7 @@ def merge_ubid_models(old_state_ids, new_state_id, StateClass):  # noqa: N803
     """
     from seed.models import UbidModel
 
-    old_states = StateClass.objects.filter(id__in=old_state_ids).order_by("-id").prefetch_related("ubidmodel_set")
+    old_states = StateClass.objects.filter(id__in=old_state_ids).order_by("-id")
     new_state = StateClass.objects.get(id=new_state_id)
     new_ubids_set = set(new_state.ubidmodel_set.values_list("ubid", flat=True))
 
@@ -149,11 +149,12 @@ def merge_ubid_models(old_state_ids, new_state_id, StateClass):  # noqa: N803
     old_ubids_to_promote = old_ubids_set - new_ubids_set
     if not old_ubids_to_promote:
         return
-    
-    preferred_ubid = find_preferred(old_states, new_state)
-    promote_ubids = [UbidModel(**{"ubid": ubid.ubid, state_field: new_state, "preferred": ubid.ubid == preferred_ubid}) for ubid in old_ubids_to_promote]
-    new_state.ubidmodel_set.bulk_create(promote_ubids)
 
+    preferred_ubid = find_preferred(old_states, new_state)
+    promote_ubids = [
+        UbidModel(**{"ubid": ubid.ubid, state_field: new_state, "preferred": ubid.ubid == preferred_ubid}) for ubid in old_ubids_to_promote
+    ]
+    new_state.ubidmodel_set.bulk_create(promote_ubids)
 
     if preferred_ubid:
         state_qs = StateClass.objects.filter(id=new_state.id)
