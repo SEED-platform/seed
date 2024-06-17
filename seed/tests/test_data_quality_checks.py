@@ -550,8 +550,8 @@ class DataQualityCrossCycleTests(AccessLevelBaseTestCase):
         assert not goalnote2.passed_checks
         assert not goalnote3.passed_checks
         assert self.view12.labels.count() == 0
+        assert self.view22.labels.count() == 0
         assert self.view32.labels.count() == 0
-        assert self.view12.labels.count() == 0
 
         url = reverse_lazy("api:v3:data_quality_checks-start", args=[self.org.id])
         self.client.post(
@@ -561,7 +561,7 @@ class DataQualityCrossCycleTests(AccessLevelBaseTestCase):
         )
 
         goalnote1 = self.property1.goalnote_set.get(goal=self.goal)
-        goalnote2 = self.property3.goalnote_set.get(goal=self.goal)
+        goalnote2 = self.property2.goalnote_set.get(goal=self.goal)
         goalnote3 = self.property3.goalnote_set.get(goal=self.goal)
 
         assert goalnote1.passed_checks

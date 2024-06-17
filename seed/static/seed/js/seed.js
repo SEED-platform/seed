@@ -1570,7 +1570,7 @@ SEED_app.config([
             'naturalSort',
             ($stateParams, inventory_service, naturalSort) => {
               const { organization_id } = $stateParams;
-              if ($stateParams.rule_type === 'properties') {
+              if ($stateParams.rule_type === 'properties' || $stateParams.rule_type === 'goals') {
                 return inventory_service.get_property_columns_for_org(organization_id).then((columns) => {
                   columns = _.reject(columns, 'related');
                   columns = _.map(columns, (col) => _.omit(col, ['pinnedLeft', 'related']));
@@ -1580,14 +1580,6 @@ SEED_app.config([
               }
               if ($stateParams.rule_type === 'taxlots') {
                 return inventory_service.get_taxlot_columns_for_org(organization_id).then((columns) => {
-                  columns = _.reject(columns, 'related');
-                  columns = _.map(columns, (col) => _.omit(col, ['pinnedLeft', 'related']));
-                  columns.sort((a, b) => naturalSort(a.displayName, b.displayName));
-                  return columns;
-                });
-              }
-              if ($stateParams.rule_type === 'goals') {
-                return inventory_service.get_property_columns_for_org(organization_id).then((columns) => {
                   columns = _.reject(columns, 'related');
                   columns = _.map(columns, (col) => _.omit(col, ['pinnedLeft', 'related']));
                   columns.sort((a, b) => naturalSort(a.displayName, b.displayName));

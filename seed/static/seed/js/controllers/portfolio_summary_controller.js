@@ -1111,14 +1111,14 @@ angular.module('BE.seed.controller.portfolio_summary', [])
       $scope.run_data_quality_check = () => {
         console.log('run it');
         data_quality_service.start_data_quality_checks([], [], $scope.goal.id)
-        .then((response) => {
+          .then((response) => {
             spinner_utility.show();
             data_quality_service.data_quality_checks_status(response.progress_key)
               .then((result) => {
                 data_quality_service.get_data_quality_results($scope.organization.id, result.unique_id)
                   .then((dq_result) => {
-                    console.log(dq_result)
-                    const modalInstance = $uibModal.open({
+                    console.log(dq_result);
+                    $uibModal.open({
                       templateUrl: `${urls.static_url}seed/partials/data_quality_modal.html`,
                       controller: 'data_quality_modal_controller',
                       size: 'lg',
@@ -1130,15 +1130,15 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                         orgId: () => $scope.organization.id
                       }
                     });
-                    spinner_utility.hide()
+                    spinner_utility.hide();
                     load_summary();
                     load_inventory();
                   });
               });
           })
-        .catch(() => {
-          spinner_utility.hide()
-          Notification.erorr("Unexpected Error")
-        })
+          .catch(() => {
+            spinner_utility.hide();
+            Notification.erorr('Unexpected Error');
+          });
       };
     }]);

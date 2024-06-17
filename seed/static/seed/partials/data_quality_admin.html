@@ -251,25 +251,38 @@
                 ></select>
               </td>
               <td>
-                <select class="form-control input-sm" ng-model="rule.condition"
+                <select
+                  class="form-control input-sm"
+                  ng-model="rule.condition"
                   ng-options="condition.id as condition.label for condition in ::conditions"
                   ng-change="rules_changed(rule); change_condition(rule, ruleGroups[rule_type][field], field)"
                   ng-class="{'border-red red': invalid_conditions.includes(field), 'error-bg': misconfigured_fields_ref.condition.includes(rule.$$hashKey)}"
-                  ng-disabled="rule.rule_type == 0"></select>
+                  ng-disabled="rule.rule_type == 0"
+                ></select>
               </td>
               <td ng-if="rule.data_type !== data_type_keys.string">
-                <input class="form-control input-sm" type="number" ng-model="rule.min" ng-change="rules_changed(rule)"
-                  ng-if="rule.data_type !== data_type_keys.date" placeholder="{$:: '(no minimum)' | translate $}"
-                  ng-disabled="filter_null(rule)" />
-                <input class="form-control input-sm" type="date" ng-model="rule.min" ng-change="rules_changed(rule)"
-                  ng-if="rule.data_type === data_type_keys.date" ng-disabled="filter_null(rule)" />
+                <input
+                  class="form-control input-sm"
+                  type="number"
+                  ng-model="rule.min"
+                  ng-change="rules_changed(rule)"
+                  ng-if="rule.data_type !== data_type_keys.date"
+                  placeholder="{$:: '(no minimum)' | translate $}"
+                  ng-disabled="filter_null(rule)"
+                />
+                <input class="form-control input-sm" type="date" ng-model="rule.min" ng-change="rules_changed(rule)" ng-if="rule.data_type === data_type_keys.date" ng-disabled="filter_null(rule)" />
               </td>
               <td ng-if="rule.data_type !== data_type_keys.string">
-                <input class="form-control input-sm" type="number" ng-model="rule.max" ng-change="rules_changed(rule)"
-                  ng-if="rule.data_type !== data_type_keys.date" placeholder="{$:: '(no maximum)' | translate $}"
-                  ng-disabled="filter_null(rule)" />
-                <input class="form-control input-sm" type="date" ng-model="rule.max" ng-change="rules_changed(rule)"
-                  ng-if="rule.data_type === data_type_keys.date" ng-disabled="filter_null(rule)" />
+                <input
+                  class="form-control input-sm"
+                  type="number"
+                  ng-model="rule.max"
+                  ng-change="rules_changed(rule)"
+                  ng-if="rule.data_type !== data_type_keys.date"
+                  placeholder="{$:: '(no maximum)' | translate $}"
+                  ng-disabled="filter_null(rule)"
+                />
+                <input class="form-control input-sm" type="date" ng-model="rule.max" ng-change="rules_changed(rule)" ng-if="rule.data_type === data_type_keys.date" ng-disabled="filter_null(rule)" />
               </td>
               <td ng-class="{'error-bg': misconfigured_fields_ref.severity.includes(rule.$$hashKey)}">
                 <select
