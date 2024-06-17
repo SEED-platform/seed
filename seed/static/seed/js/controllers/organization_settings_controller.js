@@ -236,7 +236,7 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
     const acceptable_column_types = ['area', 'eui', 'float', 'integer', 'number'];
     const filtered_columns = _.filter($scope.columns, (column) => _.includes(acceptable_column_types, column.data_type));
 
-    $scope.selected_x_columns = $scope.org.default_reports_x_axis_options.map(c => c.id);
+    $scope.selected_x_columns = $scope.org.default_reports_x_axis_options.map((c) => c.id);
     $scope.available_x_columns = () => filtered_columns.filter(({ id }) => !$scope.selected_x_columns.includes(id));
 
     $scope.add_x_column = (x_column_id) => {
@@ -248,7 +248,7 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
       if (index !== -1) $scope.selected_x_columns.splice(index, 1);
     };
 
-    $scope.selected_y_columns = $scope.org.default_reports_y_axis_options.map(c => c.id);
+    $scope.selected_y_columns = $scope.org.default_reports_y_axis_options.map((c) => c.id);
     $scope.available_y_columns = () => $scope.columns.filter(({ id }) => !$scope.selected_y_columns.includes(id));
 
     $scope.add_y_column = (y_column_id) => {

@@ -1211,7 +1211,7 @@ SEED_app.config([
             'inventory_service',
             'user_service',
             (inventory_service) => inventory_service.get_property_columns()
-          ],
+          ]
         }
       })
       .state({
