@@ -173,6 +173,16 @@ class TestOrganizationPermissions(AccessLevelBaseTestCase):
         resp = self.client.get(url, content_type="application/json")
         assert resp.json()["data"]["property_counts"][0]["num_properties"] == 1
 
+        # root users can choose
+        self.login_as_root_member()
+        resp = self.client.get(url + "&access_level_instance_id=" + str(self.child_level_instance.pk), content_type="application/json")
+        assert resp.json()["data"]["property_counts"][0]["num_properties"] == 0
+
+        # child user cannot choose
+        self.login_as_child_member()
+        resp = self.client.get(url + "&access_level_instance_id=" + str(self.root_level_instance.pk), content_type="application/json")
+        assert resp.status_code == 400
+
     def test_report_aggregated(self):
         url = reverse("api:v3:organizations-report-aggregated", args=[self.org.pk])
         url += f"?x_var=building_count&y_var=gross_floor_area&cycle_ids={Cycle.objects.first().id}"
