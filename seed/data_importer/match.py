@@ -704,7 +704,7 @@ def link_states(states, ViewClass, cycle, highest_ali, sub_progress_key):  # noq
     """
     Run each of the given -States through a linking round.
 
-    For details on the actual linking logic, please refer to the the
+    For details on the actual linking logic, please refer to the
     match_merge_link() method.
     """
 
@@ -715,15 +715,15 @@ def link_states(states, ViewClass, cycle, highest_ali, sub_progress_key):  # noq
     else:
         state_class_name = "TaxLotState"
 
-    linked_views = []
-    unlinked_views = []
+    linked_view_ids = []
+    unlinked_view_ids = []
     invalid_link_states = []
     unlinked_states = []
 
     batch_size = math.ceil(len(states) / 100)
     for idx, state in enumerate(states):
         try:
-            _merge_count, _link_count, view_id = match_merge_link(state.id, state_class_name, highest_ali=highest_ali, cycle=cycle)
+            _merge_count, link_count, view_id = match_merge_link(state.id, state_class_name, highest_ali=highest_ali, cycle=cycle)
         except (MultipleALIError, NoAccessError):
             invalid_link_states.append(state.id)
             continue
@@ -731,14 +731,16 @@ def link_states(states, ViewClass, cycle, highest_ali, sub_progress_key):  # noq
             unlinked_states.append(state.id)
             continue
 
-        view = ViewClass.objects.get(pk=view_id)
-        if _link_count == 0:
-            unlinked_views.append(view)
+        if link_count == 0:
+            unlinked_view_ids.append(view_id)
         else:
-            linked_views.append(view)
+            linked_view_ids.append(view_id)
 
         if batch_size > 0 and idx % batch_size == 0:
             sub_progress_data.step("Matching Data (6/6): Merging Views")
+
+    linked_views = list(ViewClass.objects.filter(id__in=linked_view_ids))
+    unlinked_views = list(ViewClass.objects.filter(id__in=unlinked_view_ids))
 
     sub_progress_data.finish_with_success()
 
