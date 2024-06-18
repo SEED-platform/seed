@@ -231,7 +231,7 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
                 merged_state = merge_taxlots(taxlot_state_ids, organization_id, "Manual Match")
                 view = merged_state.taxlotview_set.first()
                 merge_count, link_count, _view_id = match_merge_link(
-                    merged_state.id, "TaxLotState", view.taxlot.access_level_instance, view.cycle
+                    merged_state, "TaxLotState", view.taxlot.access_level_instance, view.cycle
                 )
 
         except MergeLinkPairError:
@@ -417,7 +417,7 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
         try:
             with transaction.atomic():
                 merge_count, link_count, view_id = match_merge_link(
-                    taxlot_view.state.pk, "TaxLotState", taxlot_view.taxlot.access_level_instance, taxlot_view.cycle
+                    taxlot_view.state, "TaxLotState", taxlot_view.taxlot.access_level_instance, taxlot_view.cycle
                 )
 
         except MergeLinkPairError:
@@ -680,7 +680,7 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
                         try:
                             with transaction.atomic():
                                 merge_count, link_count, view_id = match_merge_link(
-                                    taxlot_view.state_id, "TaxLotState", taxlot_view.taxlot.access_level_instance, taxlot_view.cycle
+                                    taxlot_view.state, "TaxLotState", taxlot_view.taxlot.access_level_instance, taxlot_view.cycle
                                 )
 
                         except MergeLinkPairError:

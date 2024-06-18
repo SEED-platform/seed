@@ -184,13 +184,12 @@ def _link_matches(matching_views, org_id, view, ViewClass):  # noqa: N803
     return matching_views.count() - 1
 
 
-def match(state_id, cycle_id, StateClass, StateClassName, ViewClass):  # noqa: N803
-    state = StateClass.objects.get(pk=state_id)
+def match(state, cycle_id, StateClass, StateClassName, ViewClass):  # noqa: N803
     org_id = state.organization_id
 
     # Get the View, if any, attached to this State
     try:
-        self_view = ViewClass.objects.get(state_id=state_id, cycle_id=cycle_id)
+        self_view = ViewClass.objects.get(state_id=state.id, cycle_id=cycle_id)
     except ViewClass.DoesNotExist:
         self_view = None
 
@@ -258,7 +257,7 @@ def _get_ali(view, matching_views, highest_ali, class_name, ViewClass):  # noqa:
     return ali
 
 
-def match_merge_link(state_id, state_class_name: Literal["PropertyState", "TaxLotState"], highest_ali, cycle):
+def match_merge_link(state, state_class_name: Literal["PropertyState", "TaxLotState"], highest_ali, cycle):
     if state_class_name == "PropertyState":
         StateClass = PropertyState
         ViewClass = PropertyView
@@ -268,11 +267,10 @@ def match_merge_link(state_id, state_class_name: Literal["PropertyState", "TaxLo
         ViewClass = TaxLotView
         class_name = "taxlot"
 
-    state = StateClass.objects.get(pk=state_id)
     org_id = state.organization_id
 
     # MATCH
-    view, matching_views_in_cycle, matching_views_out_of_cycle = match(state_id, cycle.id, StateClass, state_class_name, ViewClass)
+    view, matching_views_in_cycle, matching_views_out_of_cycle = match(state, cycle.id, StateClass, state_class_name, ViewClass)
 
     # Get ali and perform ali related checks
     ali = _get_ali(view, matching_views_in_cycle | matching_views_out_of_cycle, highest_ali, class_name, ViewClass)
@@ -289,7 +287,7 @@ def match_merge_link(state_id, state_class_name: Literal["PropertyState", "TaxLo
     all_matching_views = (
         ViewClass.objects.filter(pk=view.id).prefetch_related("state") | matching_views_in_cycle | matching_views_out_of_cycle
     )
-    merge_count, target_state_id = _merge_matches_across_cycles(all_matching_views, org_id, state_id, StateClass)
+    merge_count, target_state_id = _merge_matches_across_cycles(all_matching_views, org_id, state.id, StateClass)
     view = ViewClass.objects.get(state_id=target_state_id)
 
     # LINK

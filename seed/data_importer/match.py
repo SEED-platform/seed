@@ -723,7 +723,7 @@ def link_states(states, ViewClass, cycle, highest_ali, sub_progress_key):  # noq
     batch_size = math.ceil(len(states) / 100)
     for idx, state in enumerate(states):
         try:
-            _merge_count, link_count, view_id = match_merge_link(state.id, state_class_name, highest_ali=highest_ali, cycle=cycle)
+            _merge_count, link_count, view_id = match_merge_link(state, state_class_name, highest_ali=highest_ali, cycle=cycle)
         except (MultipleALIError, NoAccessError):
             invalid_link_states.append(state.id)
             continue

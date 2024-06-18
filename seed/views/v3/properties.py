@@ -509,7 +509,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
                 merged_state = merge_properties(property_state_ids, organization_id, "Manual Match")
                 view = merged_state.propertyview_set.first()
                 merge_count, link_count, _view_id = match_merge_link(
-                    merged_state.id, "PropertyState", view.property.access_level_instance, view.cycle
+                    merged_state, "PropertyState", view.property.access_level_instance, view.cycle
                 )
 
         except MergeLinkPairError:
@@ -704,7 +704,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         try:
             with transaction.atomic():
                 merge_count, link_count, view_id = match_merge_link(
-                    property_view.state.id, "PropertyState", property_view.property.access_level_instance, property_view.cycle
+                    property_view.state, "PropertyState", property_view.property.access_level_instance, property_view.cycle
                 )
 
         except MergeLinkPairError:
@@ -1186,7 +1186,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
                         try:
                             with transaction.atomic():
                                 merge_count, link_count, view_id = match_merge_link(
-                                    property_view.state.id,
+                                    property_view.state,
                                     "PropertyState",
                                     property_view.property.access_level_instance,
                                     property_view.cycle,
