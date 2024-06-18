@@ -39,7 +39,7 @@ describe('controller: organization_settings_controller', () => {
         ]
       },
       organization_payload: {
-        organization: { name: 'my org', id: 4 }
+        organization: { name: 'my org', id: 4, default_reports_x_axis_options: [], default_reports_y_axis_options: [] }
       },
       query_threshold_payload: {
         query_threshold: 10
@@ -100,7 +100,9 @@ describe('controller: organization_settings_controller', () => {
     // assertions
     expect(ctrl_scope.org).toEqual({
       name: 'my org',
-      id: 4
+      id: 4,
+      default_reports_x_axis_options: [],
+      default_reports_y_axis_options: []
       // query_threshold: 10
     });
     expect(mock_organization_service.save_org_settings).toHaveBeenCalledWith(ctrl_scope.org);
