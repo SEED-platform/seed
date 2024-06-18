@@ -8,6 +8,7 @@ import json
 import logging
 import urllib
 
+from django.core.cache import cache
 from django.conf import settings
 from django.contrib import auth
 from django.contrib.auth import login
@@ -21,10 +22,12 @@ from django.urls import reverse
 from django.utils.encoding import force_text
 from django.utils.http import urlsafe_base64_decode
 from django_otp import devices_for_user
+from django_otp.plugins.otp_email.models import EmailDevice
 from two_factor.views.core import LoginView, SetupView
 
 from seed.landing.models import SEEDUser
 from seed.tasks import invite_new_user_to_seed
+from seed.utils.two_factor import send_token_email
 
 from .forms import CustomCreateUserForm
 
@@ -145,8 +148,21 @@ def activate(request, uidb64, token):
 
 
 class CustomLoginView(LoginView):
+
     def post(self, request, *args, **kwargs):
         response = super().post(request, *args, **kwargs)
+        logging.error("POST")
+        if "resend_email" in request.POST:
+            username = cache.get("username")
+            try:
+                user = SEEDUser.objects.get(username=request.POST.get('username'))
+                devices = list(devices_for_user(user))
+                if type(devices[0]) == EmailDevice:
+                    send_token_email(devices[0])
+            except SEEDUser.DoesNotExist:
+                logging.error("user does not exist")
+                pass
+            logging.error(">>> SELF.USER %s", username)
         if response.status_code not in [200, 302]:
             return response
         current_step = request.POST.get("custom_login_view-current_step")
@@ -158,6 +174,8 @@ class CustomLoginView(LoginView):
 
     def handle_auth(self, request, response):
         user = SEEDUser.objects.filter(username=request.POST["auth-username"]).first()
+        cache.set("username", user.username, timeout=3000)
+
         if not user or list(devices_for_user(user)):
             return response  # retry or proceed to token step
         return self.handle_2fa_prompt(response, user)
@@ -165,6 +183,7 @@ class CustomLoginView(LoginView):
     def handle_token(self, request, response):
         token = request.POST.get("token-otp_token")
         user = request.user
+
         if not token or not user.is_authenticated:
             return response  # retry form
         return self.handle_2fa_prompt(response, user)
@@ -181,6 +200,7 @@ class CustomLoginView(LoginView):
 
     def get(self, request, *args, **kwargs):
         # add env var to session for conditional frontend display
+        logging.error(">>> GET")
         request.session["include_acct_reg"] = settings.INCLUDE_ACCT_REG
         return super().get(request, *args, **kwargs)
 

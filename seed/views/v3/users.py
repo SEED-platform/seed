@@ -15,6 +15,9 @@ from drf_yasg.utils import swagger_auto_schema
 from rest_framework import serializers, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.status import HTTP_400_BAD_REQUEST
+from django_otp import devices_for_user
+from django_otp.plugins.otp_email.models import EmailDevice
+
 
 from seed.decorators import ajax_request_class
 from seed.landing.models import SEEDUser as User
@@ -361,6 +364,13 @@ class UserViewSet(viewsets.ViewSet, OrgMixin):
             user = content
         else:
             return content
+        
+        two_factor_devices = list(devices_for_user(user))
+        if two_factor_devices and type(two_factor_devices[0]) == EmailDevice:
+            two_factor_method = "email"
+        else:
+            two_factor_method = False
+        
         return JsonResponse(
             {
                 "status": "success",
@@ -368,6 +378,7 @@ class UserViewSet(viewsets.ViewSet, OrgMixin):
                 "last_name": user.last_name,
                 "email": user.email,
                 "api_key": user.api_key,
+                "two_factor_method": two_factor_method
             }
         )
 

@@ -69,7 +69,7 @@ seed-salesforce==0.1.0
 shapely==2.0.1
 usaddress==0.5.10
 # -e git+https://github.com/SEED-platform/buildingid.git@603300c8a7212b339b7e8cb7a4365be6726195aa#egg=pnnl-buildingid
--e git+https://github.com/SEED-platform/buildingid.git@8d59ec016921d47e998a78339a8195913ee36bee#egg=pnnl-buildingid
+-e git+https://github.com/SEED-platform/buildingid.git@bdb0a6efc37754f1946095896fa507b5ce866d6a#egg=pnnl-buildingid
 
 
 oauthlib==2.0.3
