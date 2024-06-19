@@ -39,7 +39,9 @@ describe('controller: organization_settings_controller', () => {
         ]
       },
       organization_payload: {
-        organization: { name: 'my org', id: 4, default_reports_x_axis_options: [], default_reports_y_axis_options: [] }
+        organization: {
+          name: 'my org', id: 4, default_reports_x_axis_options: [], default_reports_y_axis_options: []
+        }
       },
       query_threshold_payload: {
         query_threshold: 10
@@ -83,46 +85,18 @@ describe('controller: organization_settings_controller', () => {
       taxlot_column_names: { column_name: 'test', display_name: 'test' },
       property_columns: [
         {
-          "id": 500,
-          "name": "test",
-          "organization_id": 4,
-          "table_name": "TaxLotState",
-          "merge_protection": "Favor New",
-          "column_name": "test",
-          "is_extra_data": false,
-          "unit_name": null,
-          "unit_type": null,
-          "display_name": "Test",
-          "data_type": "string",
-          "is_matching_criteria": false,
-          "geocoding_order": 1,
-          "recognize_empty": false,
-          "comstock_mapping": null,
-          "column_description": "Test",
-          "derived_column": null,
-          "sharedFieldType": "None",
-          "related": false
+          id: 500,
+          name: 'test',
+          organization_id: 4,
+          table_name: 'TaxLotState',
+          column_name: 'test'
         },
         {
-          "id": 501,
-          "name": "test",
-          "organization_id": 4,
-          "table_name": "PropertyState",
-          "merge_protection": "Favor New",
-          "column_name": "test",
-          "is_extra_data": false,
-          "unit_name": null,
-          "unit_type": null,
-          "display_name": "Test",
-          "data_type": "string",
-          "is_matching_criteria": false,
-          "geocoding_order": 1,
-          "recognize_empty": false,
-          "comstock_mapping": null,
-          "column_description": "Test",
-          "derived_column": null,
-          "sharedFieldType": "None",
-          "related": false
+          id: 501,
+          name: 'test',
+          organization_id: 4,
+          table_name: 'PropertyState',
+          column_name: 'test'
         }
       ]
     });
