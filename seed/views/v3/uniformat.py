@@ -6,12 +6,11 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 from django.utils.decorators import method_decorator
 from drf_yasg.utils import swagger_auto_schema
-from rest_framework.response import Response
 from rest_framework.viewsets import ReadOnlyModelViewSet
 
 from seed.decorators import DRFEndpointMixin
 from seed.models import Uniformat
-from seed.serializers.uniformat import UniformatSerializer
+from seed.serializers.uniformat import UniformatChildSerializer, UniformatSerializer
 from seed.utils.api_schema import AutoSchemaHelper
 
 
@@ -53,10 +52,8 @@ class UniformatViewSet(DRFEndpointMixin, ReadOnlyModelViewSet):
     model = Uniformat
     pagination_class = None
     queryset = model.objects.all()
-    serializer_class = UniformatSerializer
 
-    def retrieve(self, request, *args, **kwargs):
-        instance = self.get_object()
-        include_children = request.query_params.get("include_children", "false").lower() in ["", "true"]
-        serializer = self.get_serializer(instance, include_children=include_children)
-        return Response(serializer.data)
+    def get_serializer_class(self):
+        if self.action == "retrieve" and self.request.query_params.get("include_children", "false").lower() in ["", "true"]:
+            return UniformatChildSerializer
+        return UniformatSerializer

@@ -17,6 +17,7 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
   'uiGridConstants',
   'Notification',
   'urls',
+  'naturalSort',
   'spinner_utility',
   'label_service',
   'inventory_service',
@@ -56,6 +57,7 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
     uiGridConstants,
     Notification,
     urls,
+    naturalSort,
     spinner_utility,
     label_service,
     inventory_service,
@@ -101,12 +103,22 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
 
     $scope.uniformat = uniformat_payload;
     $scope.elements = elements_payload;
+
     $scope.element_extra_data_columns = [...elements_payload.reduce((set, element) => {
       for (const key of Object.keys(element.extra_data)) {
         set.add(key);
       }
       return set;
-    }, new Set())];
+    }, new Set())].sort(naturalSort);
+    {
+      // Custom ordering for `CAPACITY_UNITS`
+      const targetIndex = $scope.element_extra_data_columns.indexOf('CAPACITY');
+      const removeIndex = $scope.element_extra_data_columns.indexOf('CAPACITY_UNITS');
+      if (targetIndex !== -1 && removeIndex !== -1) {
+        $scope.element_extra_data_columns.splice(removeIndex, 1);
+        $scope.element_extra_data_columns.splice(targetIndex + 1, 0, 'CAPACITY_UNITS');
+      }
+    }
 
     let ignoreNextChange = true;
 
