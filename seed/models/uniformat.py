@@ -31,5 +31,8 @@ class Uniformat(models.Model):
         "self", null=True, on_delete=models.CASCADE, help_text="The higher-level Uniformat category that the current category is a child of"
     )
 
+    class Meta:
+        ordering = ["code"]
+
     def __str__(self):
         return self.code

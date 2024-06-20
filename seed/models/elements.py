@@ -9,13 +9,14 @@ import logging
 from django.contrib.postgres.indexes import GinIndex
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
+from django_extensions.db.models import TimeStampedModel
 
 from seed.models import Organization, Property, Uniformat
 
 logger = logging.getLogger(__name__)
 
 
-class Element(models.Model):
+class Element(TimeStampedModel):
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE, db_index=True)
     property = models.ForeignKey(Property, on_delete=models.CASCADE, related_name="elements", db_index=True)
     code = models.ForeignKey(Uniformat, on_delete=models.PROTECT, related_name="elements", db_index=True)
@@ -32,7 +33,6 @@ class Element(models.Model):
     # - installation cost
     # - operation & maintenance cost
     # - annualized_lifecycle
-    # - created/updated?
 
     class Meta:
         indexes = [

@@ -4,12 +4,15 @@ SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and othe
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
+from django.db import IntegrityError
+from django.http import JsonResponse
 from django.utils.decorators import method_decorator
+from rest_framework import status
 
 from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm_class
 from seed.lib.superperms.orgs.models import AccessLevelInstance
 from seed.models import Element
-from seed.serializers.elements import ElementSerializer
+from seed.serializers.elements import ElementPropertySerializer, ElementSerializer
 from seed.utils.api_schema import swagger_auto_schema_org_query_param
 from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet, SEEDOrgReadOnlyModelViewSet
 
@@ -39,7 +42,7 @@ class OrgElementViewSet(SEEDOrgReadOnlyModelViewSet):
 
     def get_queryset(self):
         if hasattr(self.request, "access_level_instance_id"):
-            access_level_instance = AccessLevelInstance.objects.only('lft', 'rgt').get(pk=self.request.access_level_instance_id)
+            access_level_instance = AccessLevelInstance.objects.only("lft", "rgt").get(pk=self.request.access_level_instance_id)
             return self.model.objects.filter(
                 organization_id=self.get_organization(self.request),
                 property__access_level_instance__lft__gte=access_level_instance.lft,
@@ -70,29 +73,6 @@ class OrgElementViewSet(SEEDOrgReadOnlyModelViewSet):
         swagger_auto_schema_org_query_param,
         has_perm_class("requires_member"),
         has_hierarchy_access(property_id_kwarg="property_pk"),
-        # swagger_auto_schema(
-        #     manual_parameters=[
-        #         AutoSchemaHelper.base_field(
-        #             name="property_pk",
-        #             location_attr="IN_PATH",
-        #             type_attr="TYPE_INTEGER",
-        #             required=True,
-        #             description="ID of the property view where the meter is associated.",
-        #         ),
-        #     ],
-        #     request_body=AutoSchemaHelper.schema_factory(
-        #         {
-        #             "type": Meter.ENERGY_TYPES,
-        #             "alias": "string",
-        #             "source": Meter.SOURCES,
-        #             "source_id": "string",
-        #             "scenario_id": "integer",
-        #             "is_virtual": "boolean",
-        #         },
-        #         required=["type", "source"],
-        #         description="New meter to add. The type must be taken from a constrained list.",
-        #     ),
-        # ),
     ],
 )
 @method_decorator(
@@ -118,9 +98,8 @@ class ElementViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
 
     lookup_field = "element_id"
     model = Element
-    orgfilter = "property__organization"
     pagination_class = None
-    serializer_class = ElementSerializer
+    serializer_class = ElementPropertySerializer
 
     def get_queryset(self):
         return self.model.objects.filter(
@@ -128,8 +107,8 @@ class ElementViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
             property_id=self.kwargs.get("property_pk"),
         )
 
-    # def perform_create(self, serializer):
-    #     org_id = self.get_organization(self.request)
-    #     if self.kwargs.get("property_pk", None):
-    #         property = Property.objects.get(pk=self.kwargs.get("property_pk"), organization_id=org_id)
-    #         Element.objects.create(property=property)
+    def create(self, request, *args, **kwargs):
+        try:
+            return super().create(request)
+        except IntegrityError as e:
+            return JsonResponse({"status": "error", "message": str(e)}, status=status.HTTP_400_BAD_REQUEST)

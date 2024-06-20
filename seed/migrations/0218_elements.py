@@ -3,6 +3,7 @@
 import django.contrib.postgres.indexes
 import django.core.validators
 import django.db.models.deletion
+import django_extensions.db.fields
 from django.db import migrations, models
 
 
@@ -13,10 +14,71 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        migrations.AlterModelOptions(
+            name="uniformat",
+            options={"ordering": ["code"]},
+        ),
+        migrations.AlterField(
+            model_name="uniformat",
+            name="category",
+            field=models.CharField(
+                help_text="Represents the broad classification of the building element, indicating its general type or function within the construction process",
+                max_length=100,
+            ),
+        ),
+        migrations.AlterField(
+            model_name="uniformat",
+            name="code",
+            field=models.CharField(help_text="The code representing the current Uniformat category", max_length=7, unique=True),
+        ),
+        migrations.AlterField(
+            model_name="uniformat",
+            name="definition",
+            field=models.CharField(
+                help_text="A detailed explanation of the category, outlining its components, functions, and scope",
+                max_length=1024,
+                null=True,
+            ),
+        ),
+        migrations.AlterField(
+            model_name="uniformat",
+            name="imperial_units",
+            field=models.CharField(
+                help_text="Specifies the unit of measurement used for quantifying the item in the Imperial system", max_length=10, null=True
+            ),
+        ),
+        migrations.AlterField(
+            model_name="uniformat",
+            name="metric_units",
+            field=models.CharField(
+                help_text="Specifies the unit of measurement used for quantifying the item in the Metric system", max_length=10, null=True
+            ),
+        ),
+        migrations.AlterField(
+            model_name="uniformat",
+            name="parent",
+            field=models.ForeignKey(
+                help_text="The higher-level Uniformat category that the current category is a child of",
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                to="seed.uniformat",
+            ),
+        ),
+        migrations.AlterField(
+            model_name="uniformat",
+            name="quantity_definition",
+            field=models.CharField(
+                help_text="Defines how the quantity of the item is measured and expressed, providing context for interpreting the units",
+                max_length=100,
+                null=True,
+            ),
+        ),
         migrations.CreateModel(
             name="Element",
             fields=[
                 ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("created", django_extensions.db.fields.CreationDateTimeField(auto_now_add=True, verbose_name="created")),
+                ("modified", django_extensions.db.fields.ModificationDateTimeField(auto_now=True, verbose_name="modified")),
                 ("element_id", models.CharField(db_index=True, max_length=36, null=True)),
                 ("description", models.TextField(db_collation="natural_sort", null=True)),
                 ("installation_date", models.DateField(db_index=True, null=True)),

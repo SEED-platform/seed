@@ -364,16 +364,16 @@
         <div class="section_header_container" style="margin-top: 20px; border-bottom: 0">
           <div class="section_header fixed_height_short has_no_padding">
             <div class="section_action_container left" style="width: 50%">
-              <h2><i class="fa-solid fa-atom"></i>{$:: 'Property Elements' | translate $}</h2>
+              <h2><i class="fa-solid fa-atom"></i>{$:: 'Property Elements' | translate $}<span ng-if="::elements.length > 0"> ({$:: elements.length | number $})</span></h2>
             </div>
           </div>
         </div>
         <div class="section_content">
-          <div class="table_list_container table_item_detail">
-            <table class="table table-striped table_highlight_first fixed-layout" style="margin-bottom: -1px">
+          <div class="table_list_container table_item_detail" style="overflow: auto hidden">
+            <table class="table table-striped" style="margin-bottom: -1px">
               <thead>
                 <tr>
-                  <th width="78" translate>Uniformat</th>
+                  <th translate>Uniformat</th>
                   <th translate>Description</th>
                   <th translate>Installation Date</th>
                   <th translate>Manufacturing Date</th>
@@ -389,9 +389,9 @@
                   <td>{$:: element.description $}</td>
                   <td>{$:: element.installation_date $}</td>
                   <td>{$:: element.manufacturing_date $}</td>
-                  <td>{$:: element.condition_index $}</td>
-                  <td>{$:: element.remaining_service_life $}</td>
-                  <td>{$:: element.replacement_cost | currency:'$':0 $}</td>
+                  <td ng-attr-title="{$:: element.condition_index $}">{$:: element.condition_index | number:2 $}</td>
+                  <td ng-attr-title="{$:: element.remaining_service_life $}">{$:: element.remaining_service_life | number:2 $}</td>
+                  <td ng-attr-title="{$:: element.replacement_cost $}">{$:: element.replacement_cost | currency:'$':0 $}</td>
                   <td ng-repeat="column in ::element_extra_data_columns">{$:: element.extra_data[column] $}</td>
                 </tr>
               </tbody>
