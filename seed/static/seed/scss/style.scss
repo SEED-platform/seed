@@ -5540,3 +5540,14 @@ tags-input .tags .tag-item {
     font-weight: normal;
   }
 }
+.two_factor_selection{
+  margin: 10px;
+  input{
+    transform: scale(2);
+    margin: 10px;
+  }
+  .help-text{
+    margin-left: 40px;
+  }
+  
+}
