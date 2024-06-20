@@ -293,7 +293,7 @@ def match_merge_link(state, state_class_name: Literal["PropertyState", "TaxLotSt
     # LINK
     link_count = _link_matches(all_matching_views, org_id, view, ViewClass)
 
-    return merge_count, link_count, view.id
+    return merge_count, link_count, view
 
 
 @shared_task(serializer="pickle", ignore_result=True)
