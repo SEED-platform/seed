@@ -184,14 +184,13 @@ def _link_matches(matching_views, org_id, view, ViewClass):  # noqa: N803
     return matching_views.count() - 1
 
 
-def match(state, cycle_id, StateClass, StateClassName, ViewClass):  # noqa: N803
+def match(state, cycle_id, StateClass, StateClassName, ViewClass, class_name):  # noqa: N803
     org_id = state.organization_id
 
     # Get the View, if any, attached to this State
-    try:
-        self_view = ViewClass.objects.get(state_id=state.id, cycle_id=cycle_id)
-    except ViewClass.DoesNotExist:
-        self_view = None
+    self_view = (
+        ViewClass.objects.filter(state_id=state.id, cycle_id=cycle_id).prefetch_related(f"{class_name}__access_level_instance").first()
+    )
 
     # Create matching criteria filter
     column_names = matching_criteria_column_names(org_id, StateClassName)
@@ -217,38 +216,36 @@ def match(state, cycle_id, StateClass, StateClassName, ViewClass):  # noqa: N803
 
 def _get_ali(view, matching_views, highest_ali, class_name, ViewClass):  # noqa: N803
     # Get the ali of the matching views
-    matching_ali_ids = list(set(matching_views.values_list(f"{class_name}__access_level_instance", flat=True)))
-    if len(matching_ali_ids) == 0:
-        matching_ali_id = None
-    elif len(matching_ali_ids) == 1:
-        matching_ali_id = matching_ali_ids[0]
-    elif len(matching_ali_ids) > 1:
+    matching_alis = {getattr(v, class_name).access_level_instance for v in matching_views}
+    if len(matching_alis) == 0:
+        matching_ali = None
+    elif len(matching_alis) == 1:
+        matching_ali = matching_alis.pop()
+    elif len(matching_alis) > 1:
         raise AssertionError  # if matches have different alis, BIG problem
 
     # get the ali of the view
     if view:
-        view_ali_id = next(iter(ViewClass.objects.filter(id=view.id).values_list(f"{class_name}__access_level_instance", flat=True)))
+        view_ali = getattr(view, class_name).access_level_instance
     else:
-        view_ali_id = None
+        view_ali = None
 
     # get the ali
-    if matching_ali_id is None and view_ali_id is None:
+    if matching_ali is None and view_ali is None:
         raise NoViewsError
 
-    elif matching_ali_id is None:
-        ali_id = view_ali_id
+    elif matching_ali is None:
+        ali = view_ali
 
-    elif view_ali_id is None:
-        ali_id = matching_ali_id
+    elif view_ali is None:
+        ali = matching_ali
 
     # if views ali is different, the views invalid
-    elif view_ali_id != matching_ali_id:
+    elif view_ali != matching_ali:
         raise MultipleALIError
 
     else:
-        ali_id = matching_ali_id
-
-    ali = AccessLevelInstance.objects.get(pk=ali_id)
+        ali = matching_ali
 
     # if we don't has access to matching_ali, raise an access error
     if highest_ali and not (ali == highest_ali or ali.is_descendant_of(highest_ali)):
@@ -270,10 +267,16 @@ def match_merge_link(state, state_class_name: Literal["PropertyState", "TaxLotSt
     org_id = state.organization_id
 
     # MATCH
-    view, matching_views_in_cycle, matching_views_out_of_cycle = match(state, cycle.id, StateClass, state_class_name, ViewClass)
+    view, matching_views_in_cycle, matching_views_out_of_cycle = match(state, cycle.id, StateClass, state_class_name, ViewClass, class_name)
 
     # Get ali and perform ali related checks
-    ali = _get_ali(view, matching_views_in_cycle | matching_views_out_of_cycle, highest_ali, class_name, ViewClass)
+    ali = _get_ali(
+        view,
+        (matching_views_in_cycle | matching_views_out_of_cycle).prefetch_related(f"{class_name}__access_level_instance"),
+        highest_ali,
+        class_name,
+        ViewClass,
+    )
 
     # if a view for this cycle doesn't already exist, create one
     if view is None:
