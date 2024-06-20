@@ -7,9 +7,6 @@
 {% endblock %}
 
 {% block content_inner %}
-  require_2fa: {{require_2fa}}
-  username: {{username}}
-  method_2fa: {{method_2fa}}
   {% if wizard.steps.current == 'auth' %}
     <p>{% blocktrans %}Enter your credentials.{% endblocktrans %}</p>
   {% elif wizard.steps.current == 'token' %}
@@ -61,7 +58,7 @@
     </div>
     {% endif %}
     {% if wizard.steps.current == 'token' and method_2fa == "email"%}
-      <button class="btn btn-light" name="resend_email" type="submit">Resend Email Token</button>
+      <button class="btn btn-light" name="resend_email" type="submit">Resend Email Token to "{{user_email}}"</button>
     {% endif %}
 
     {# hidden submit button to enable [enter] key #}

@@ -23,6 +23,7 @@ from django.utils.encoding import force_text
 from django.utils.http import urlsafe_base64_decode
 from django_otp import devices_for_user
 from django_otp.plugins.otp_email.models import EmailDevice
+from django_otp.plugins.otp_totp.models import TOTPDevice
 from two_factor.views.core import LoginView, SetupView
 
 from seed.landing.models import SEEDUser
@@ -154,7 +155,7 @@ class CustomLoginView(LoginView):
         logging.error("POST")
         if "resend_email" in request.POST:
             try:
-                user = SEEDUser.objects.get(username=cache.get('username'))
+                user = SEEDUser.objects.get(username=cache.get('user_email'))
                 device = list(devices_for_user(user))[0]
                 if type(device) == EmailDevice:
                     send_token_email(device)
@@ -171,10 +172,25 @@ class CustomLoginView(LoginView):
 
     def handle_auth(self, request, response):
         user = SEEDUser.objects.filter(username=request.POST["auth-username"]).first()
-        cache.set("username", user.username, timeout=3000)
 
-        if not user or list(devices_for_user(user)):
-            return response  # retry or proceed to token step
+        if not user:
+            cache.set('username', None, timeout=3600)
+            return response  # retry
+        cache.set("user_email", user.email, timeout=3600)
+        
+        devices = list(devices_for_user(user))
+
+        if devices:
+            method_2fa = "disabled"
+            if type(devices[0]) == EmailDevice:
+                method_2fa = "email"
+            if type(devices[0]) == TOTPDevice:
+                method_2fa = "token"
+
+            cache.set("method_2fa", method_2fa, timeout=3600)
+
+            return response  # go to token step
+
         return self.handle_2fa_prompt(response, user)
 
     def handle_token(self, request, response):
@@ -189,11 +205,12 @@ class CustomLoginView(LoginView):
         # django-two-factor-auth will always try to redirect users to the 2 factor profile.
         # override and send users home if they have already been prompted.
         if not getattr(user, "prompt_2fa", False) and isinstance(response, HttpResponseRedirect):
+            # user has already been prompted
             return HttpResponseRedirect(reverse("seed:home"))
         else:
             user.prompt_2fa = False
             user.save()
-        return response
+        return HttpResponseRedirect('/app/#/profile/two_factor_profile')
 
     def get(self, request, *args, **kwargs):
         # add env var to session for conditional frontend display
@@ -201,13 +218,13 @@ class CustomLoginView(LoginView):
         request.session["include_acct_reg"] = settings.INCLUDE_ACCT_REG
         return super().get(request, *args, **kwargs)
 
-# THIS DOESNT WORK.
-class CustomSetupView(SetupView):
+# # THIS DOESNT WORK.
+# class CustomSetupView(SetupView):
 
-    def get(self, request, *args, **kwargs):
-        logging.error('get')
-        return super().get(request, *args, **kwargs)
+#     def get(self, request, *args, **kwargs):
+#         logging.error('get')
+#         return super().get(request, *args, **kwargs)
 
-    def post(self, request, *args, **kwargs):
-        logging.error('post')
-        return super().post(request, *args, **kwargs)
+#     def post(self, request, *args, **kwargs):
+#         logging.error('post')
+#         return super().post(request, *args, **kwargs)

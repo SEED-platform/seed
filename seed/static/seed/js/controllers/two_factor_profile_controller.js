@@ -6,6 +6,7 @@ angular.module('BE.seed.controller.two_factor_profile', []).controller('two_fact
     '$scope',
     'two_factor_service',
     'user_service',
+    'auth_payload',
     'user_profile_payload',
 
     // eslint-disable-next-line func-names
@@ -13,8 +14,10 @@ angular.module('BE.seed.controller.two_factor_profile', []).controller('two_fact
         $scope,
         two_factor_service,
         user_service,
+        auth_payload,
         user_profile_payload,
     ) {
+        $scope.is_superuser = auth_payload.auth.requires_superuser;
         $scope.user = user_profile_payload;
         $scope.temp_user = {...$scope.user};
         const email = $scope.user.email;
