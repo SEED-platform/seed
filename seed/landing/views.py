@@ -153,16 +153,13 @@ class CustomLoginView(LoginView):
         response = super().post(request, *args, **kwargs)
         logging.error("POST")
         if "resend_email" in request.POST:
-            username = cache.get("username")
             try:
-                user = SEEDUser.objects.get(username=request.POST.get('username'))
-                devices = list(devices_for_user(user))
-                if type(devices[0]) == EmailDevice:
-                    send_token_email(devices[0])
+                user = SEEDUser.objects.get(username=cache.get('username'))
+                device = list(devices_for_user(user))[0]
+                if type(device) == EmailDevice:
+                    send_token_email(device)
             except SEEDUser.DoesNotExist:
-                logging.error("user does not exist")
                 pass
-            logging.error(">>> SELF.USER %s", username)
         if response.status_code not in [200, 302]:
             return response
         current_step = request.POST.get("custom_login_view-current_step")

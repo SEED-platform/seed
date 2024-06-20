@@ -9,6 +9,7 @@
 {% block content_inner %}
   require_2fa: {{require_2fa}}
   username: {{username}}
+  method_2fa: {{method_2fa}}
   {% if wizard.steps.current == 'auth' %}
     <p>{% blocktrans %}Enter your credentials.{% endblocktrans %}</p>
   {% elif wizard.steps.current == 'token' %}
@@ -21,7 +22,6 @@
 
   <form action="" method="post" class="signup_form">
     <input type="hidden" name="username" value="{{username}}">
-    <button name="resend_email" type="submit">RESEND EMAIL TOKEN</button>
 
     {% block main_form_content %}
     {% csrf_token %}
@@ -59,6 +59,9 @@
         </li>
       </ol>
     </div>
+    {% endif %}
+    {% if wizard.steps.current == 'token' and method_2fa == "email"%}
+      <button class="btn btn-light" name="resend_email" type="submit">Resend Email Token</button>
     {% endif %}
 
     {# hidden submit button to enable [enter] key #}
