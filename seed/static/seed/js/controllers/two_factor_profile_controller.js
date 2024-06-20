@@ -4,6 +4,8 @@
  */
 angular.module('BE.seed.controller.two_factor_profile', []).controller('two_factor_profile_controller', [
     '$scope',
+    "$uibModal",
+    'urls',
     'two_factor_service',
     'user_service',
     'auth_payload',
@@ -12,6 +14,8 @@ angular.module('BE.seed.controller.two_factor_profile', []).controller('two_fact
     // eslint-disable-next-line func-names
     function (
         $scope,
+        $uibModal,
+        urls,
         two_factor_service,
         user_service,
         auth_payload,
@@ -22,11 +26,10 @@ angular.module('BE.seed.controller.two_factor_profile', []).controller('two_fact
         $scope.temp_user = {...$scope.user};
         const email = $scope.user.email;
 
-        $scope.generate_qe_code = () => {
-            console.log('go')
+        $scope.generate_qr_code = () => {
             two_factor_service.generate_qr_code(email).then((response) => {
-                $scope.qr_code_image = 'data:image/png;base64,' + response.data.qr_code;
-                $scope.new_qr_code = true;
+                $scope.qr_code_img = 'data:image/png;base64,' + response.data.qr_code;
+                open_qr_code_scan_modal()
             })
         }
 
@@ -43,16 +46,36 @@ angular.module('BE.seed.controller.two_factor_profile', []).controller('two_fact
                 token: $scope.temp_user.two_factor_method == 'token',
             };
             two_factor_service.set_method($scope.user.email, methods).then((response) => {
-                if (response.qr_code) {
-                    $scope.new_qr_code = true;
-                    $scope.qr_code_image = 'data:image/png;base64,' + response.qr_code;
-                }
-                console.log(response)
-                
                 // refetch user payload
-                user_service.get_user_profile().then((response) => {
-                    $scope.user = response;
+                user_service.get_user_profile().then((user) => {
+                    $scope.user = user;
+                    if (response.qr_code) {
+                        $scope.qr_code_img = 'data:image/png;base64,' + response.qr_code;
+                        open_qr_code_scan_modal()
+                    }
                 })
+                console.log(response)
+            })
+        }
+
+        const open_qr_code_scan_modal = () => {
+            const modal_instance = $uibModal.open({
+                templateUrl: `${urls.static_url}seed/partials/qr_code_scan_modal.html`,
+                controller: 'qr_code_scan_modal_controller',
+                backdrop: 'static',
+                resolve: {
+                    qr_code_img: () => $scope.qr_code_img,
+                    user: () => $scope.user,
+                }
+            })
+            modal_instance.result.then(() => {
+                user_service.get_user_profile().then((user) => {
+                    $scope.user = user
+                    $scope.temp_user = {...user}
+                })
+            })
+            .catch((error) => {
+                console.log(error)
             })
         }
 

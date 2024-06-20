@@ -52,19 +52,14 @@
             <h3>Current Method: {$ user.two_factor_method.toUpperCase() $}</h3>
             <div ng-if="user.two_factor_method == 'email'">
                 <button class="btn btn-default" ng-click="resend_token_email()">
-                    Resend test email
+                    Resend Test Email Token
                 </button>
                 <div ng-if="email_sent">A sample token has been sent to {$ user.email $}</div>
             </div>
             <div ng-if="user.two_factor_method == 'token'">
-                <button class="btn btn-default" ng-click="generate_qe_code()">
+                <button class="btn btn-default" ng-click="generate_qr_code()">
                     Re-Generate Token
                 </button>
-                <div ng-if="new_qr_code" style="font-size: 14px; margin-top:10px;">
-                    <strong>IMPORTANT</strong> - Scan the QR code below using your authenticator app of choice (ex: Google Authenticator,
-                    Microsoft Authenticator, Authy, etc...)
-                    <div><img ng-src="{$ qr_code_image $}" alt="QR Code"></div>
-                </div>
             </div>
         </div>
     </div>

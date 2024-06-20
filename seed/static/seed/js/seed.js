@@ -122,6 +122,7 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.postoffice_modal',
   'BE.seed.controller.profile',
   'BE.seed.controller.program_setup',
+  'BE.seed.controller.qr_code_scan_modal',
   'BE.seed.controller.record_match_merge_link_modal',
   'BE.seed.controller.rename_column_modal',
   'BE.seed.controller.reset_modal',

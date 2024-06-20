@@ -1,0 +1,18 @@
+<div class="modal-header">
+    <h3 class="modal-title" translate>Authenticator QR Code</h3>
+</div>
+<div class="modal-body row">
+    <div>
+        <div ng-if="qr_code_img" style="font-size: 14px; margin:20px;">
+            <h4>
+                <strong>IMPORTANT</strong> - Scan the QR code below using your authenticator app of choice (ex: Google Authenticator, Microsoft Authenticator, Authy, etc...)
+            </h4>
+            <div><img ng-src="{$ qr_code_img $}" alt="QR Code"></div>
+            <p>If you are unable to scan the QR code, <a ng-click="other_method()">select a different method.</a></p>
+        </div>
+    </div>
+</div>
+<div class="modal-footer">
+    <button class="btn btn-default" ng-click="generate_qe_code()">Re-Generate Token</button>
+    <button type="button" class="btn btn-info" ng-click="close()" autofocus translate>OK</button>
+</div>
