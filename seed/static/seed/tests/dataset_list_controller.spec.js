@@ -4,8 +4,8 @@
  */
 describe('controller: dataset_list_controller', () => {
   // globals set up and used in each test scenario
-  let controller; let
-    $state;
+  let controller;
+  let $state;
   let dataset_list_controller_scope;
   let mock_uploader_service;
 

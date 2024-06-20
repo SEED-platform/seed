@@ -2307,11 +2307,6 @@ SEED_app.config([
               return inventory_service.get_column_list_profiles('Detail View Profile', inventory_type);
             }
           ],
-          // users_payload: [
-          //   'organization_service',
-          //   'user_service',
-          //   (organization_service, user_service) => organization_service.get_organization_users({ org_id: user_service.get_organization().id })
-          // ],
           current_profile: [
             '$stateParams',
             'inventory_service',

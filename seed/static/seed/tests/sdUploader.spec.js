@@ -6,14 +6,14 @@
 angular.module('mySDUploaderDirectiveApp', ['sdUploader']);
 
 describe('The sdUploader directive', () => {
-  let g_message; let g_file; let
-    g_progress;
+  let g_message;
+  let g_file;
+  let g_progress;
   let $compile;
   let $rootScope;
   let $scope;
   const sdUploaderFineUploader = window.sdUploaderFineUploader;
-  const uploader_html =
-    '<div sd-uploader sourcetype="assessor" importrecord="5" buttontext="Upload your building list .csv file" eventfunc="uploaderfunc(message, filename, progress)" ng-hide="uploader.in_progress"></div>';
+  const uploader_html = '<div sd-uploader sourcetype="assessor" importrecord="5" buttontext="Upload your building list .csv file" eventfunc="uploaderfunc(message, filename, progress)" ng-hide="uploader.in_progress"></div>';
   beforeEach(() => {
     module('mySDUploaderDirectiveApp');
     inject((_$compile_, _$rootScope_) => {
