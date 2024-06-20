@@ -8,12 +8,12 @@ import json
 import logging
 import urllib
 
-from django.core.cache import cache
 from django.conf import settings
 from django.contrib import auth
 from django.contrib.auth import login
 from django.contrib.auth.forms import SetPasswordForm
 from django.contrib.auth.tokens import default_token_generator
+from django.core.cache import cache
 from django.forms.forms import NON_FIELD_ERRORS
 from django.forms.utils import ErrorList
 from django.http import HttpResponseRedirect
@@ -24,7 +24,7 @@ from django.utils.http import urlsafe_base64_decode
 from django_otp import devices_for_user
 from django_otp.plugins.otp_email.models import EmailDevice
 from django_otp.plugins.otp_totp.models import TOTPDevice
-from two_factor.views.core import LoginView, SetupView
+from two_factor.views.core import LoginView
 
 from seed.landing.models import SEEDUser
 from seed.tasks import invite_new_user_to_seed
@@ -149,14 +149,13 @@ def activate(request, uidb64, token):
 
 
 class CustomLoginView(LoginView):
-
     def post(self, request, *args, **kwargs):
         response = super().post(request, *args, **kwargs)
         logging.error("POST")
         if "resend_email" in request.POST:
             try:
-                user = SEEDUser.objects.get(username=cache.get('user_email'))
-                device = list(devices_for_user(user))[0]
+                user = SEEDUser.objects.get(username=cache.get("user_email"))
+                device = next(iter(devices_for_user(user)))
                 if type(device) == EmailDevice:
                     send_token_email(device)
             except SEEDUser.DoesNotExist:
@@ -174,17 +173,17 @@ class CustomLoginView(LoginView):
         user = SEEDUser.objects.filter(username=request.POST["auth-username"]).first()
 
         if not user:
-            cache.set('username', None, timeout=3600)
+            cache.set("username", None, timeout=3600)
             return response  # retry
         cache.set("user_email", user.email, timeout=3600)
-        
-        devices = list(devices_for_user(user))
 
-        if devices:
+        device = next(iter(devices_for_user(user)))
+
+        if device:
             method_2fa = "disabled"
-            if type(devices[0]) == EmailDevice:
+            if type(device) == EmailDevice:
                 method_2fa = "email"
-            if type(devices[0]) == TOTPDevice:
+            if type(device) == TOTPDevice:
                 method_2fa = "token"
 
             cache.set("method_2fa", method_2fa, timeout=3600)
@@ -210,13 +209,14 @@ class CustomLoginView(LoginView):
         else:
             user.prompt_2fa = False
             user.save()
-        return HttpResponseRedirect('/app/#/profile/two_factor_profile')
+        return HttpResponseRedirect("/app/#/profile/two_factor_profile")
 
     def get(self, request, *args, **kwargs):
         # add env var to session for conditional frontend display
         logging.error(">>> GET")
         request.session["include_acct_reg"] = settings.INCLUDE_ACCT_REG
         return super().get(request, *args, **kwargs)
+
 
 # # THIS DOESNT WORK.
 # class CustomSetupView(SetupView):

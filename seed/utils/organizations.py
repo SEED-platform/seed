@@ -6,6 +6,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 import locale
 from json import load
+
 from django_otp import devices_for_user
 from django_otp.plugins.otp_email.models import EmailDevice
 
@@ -181,9 +182,5 @@ def set_default_2fa_method(org):
     for user in org.users.iterator():
         devices = list(devices_for_user(user))
         if not devices:
-            email_device = EmailDevice.objects.create(
-                user=user,
-                name='default',
-                email=user.username
-            )
+            email_device = EmailDevice.objects.create(user=user, name="default", email=user.username)
             email_device.save()
