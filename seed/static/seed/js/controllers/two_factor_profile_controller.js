@@ -9,6 +9,7 @@ angular.module('BE.seed.controller.two_factor_profile', []).controller('two_fact
     'two_factor_service',
     'user_service',
     'auth_payload',
+    'organization_payload',
     'user_profile_payload',
 
     // eslint-disable-next-line func-names
@@ -19,9 +20,12 @@ angular.module('BE.seed.controller.two_factor_profile', []).controller('two_fact
         two_factor_service,
         user_service,
         auth_payload,
+        organization_payload,
         user_profile_payload,
     ) {
         $scope.is_superuser = auth_payload.auth.requires_superuser;
+        $scope.organization = organization_payload.organization;
+        $scope.require_2fa = $scope.organization.require_2fa;
         $scope.user = user_profile_payload;
         $scope.temp_user = {...$scope.user};
         const email = $scope.user.email;
@@ -65,17 +69,30 @@ angular.module('BE.seed.controller.two_factor_profile', []).controller('two_fact
                 backdrop: 'static',
                 resolve: {
                     qr_code_img: () => $scope.qr_code_img,
+                    require_2fa: () => $scope.require_2fa,
                     user: () => $scope.user,
                 }
             })
-            modal_instance.result.then(() => {
-                user_service.get_user_profile().then((user) => {
-                    $scope.user = user
-                    $scope.temp_user = {...user}
-                })
+            modal_instance.result.then((verified) => {
+                if (!verified) {
+                    methods = {
+                        disabled: !$scope.require_2fa,
+                        email: $scope.require_2fa,
+                        token: false,
+                    };
+                    two_factor_service.set_method($scope.user.email, methods)
+                }
             })
+            .finally(() => refresh_user())
             .catch((error) => {
                 console.log(error)
+            })
+        }
+
+        const refresh_user = () => {
+            user_service.get_user_profile().then((user) => {
+                $scope.user = user
+                $scope.temp_user = { ...user }
             })
         }
 

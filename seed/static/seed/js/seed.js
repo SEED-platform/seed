@@ -413,6 +413,11 @@ SEED_app.config([
               return auth_service.is_authorized(organization_id, ['requires_superuser']);
             }
           ],
+          organization_payload: [
+            'user_service',
+            'organization_service',
+            (user_service, organization_service) => organization_service.get_organization(user_service.get_organization().id)
+          ],
           user_profile_payload: [
             'user_service',
             (user_service) => user_service.get_user_profile()

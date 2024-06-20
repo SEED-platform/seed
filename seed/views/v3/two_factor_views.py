@@ -1,4 +1,6 @@
-import logging
+import base64
+import pyotp
+import binascii
 from seed.landing.models import SEEDUser
 from rest_framework.decorators import action
 from django.http import JsonResponse
@@ -7,8 +9,8 @@ from django_otp.plugins.otp_email.models import EmailDevice
 from django_otp.plugins.otp_totp.models import TOTPDevice
 
 from seed.landing.models import SEEDUser as User
-from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm_class
-from seed.utils.api import OrgMixin, api_endpoint_class
+from seed.lib.superperms.orgs.decorators import has_perm_class
+from seed.utils.api import api_endpoint_class
 from seed.utils.viewsets import ModelViewSetWithoutPatch
 from seed.utils.two_factor import send_token_email, generate_qr_code
 
@@ -19,7 +21,12 @@ class TwoFactorViewSet(ModelViewSetWithoutPatch):
     @has_perm_class("can_modify_data")
     @action(detail=False, methods=["POST"])
     def set_method(self, request):
-        logging.error(">>> A")
+        """
+        Sets the 2 Factor Authentication method for a user. The options are 'disabled', 'email', or 'token'.
+        If any organization associated with the user requires 2 Factor Authentication the 'disabled' option will be disabled.
+        If 'email' is set a test email will be sent to the user
+        If 'token' is set a QR code will be presented to the user for verification before setting the method
+        """
         user_email = request.data.get("user_email")
         methods = request.data.get("methods")
         if all(method is False for method in methods.values()):
@@ -29,11 +36,14 @@ class TwoFactorViewSet(ModelViewSetWithoutPatch):
             })
 
         user = User.objects.get(email=user_email)
+        require_2fa = bool(user.orgs.filter(require_2fa__isnull=False).count)
+        if methods.get("disabled") and require_2fa:
+            return JsonResponse({"message": "2 Factor Authentication is required for your organization"})
 
         devices = list(devices_for_user(user))
         email_active = bool(devices and type(devices[0]) == EmailDevice)
         token_active = bool(devices and type(devices[0]) == TOTPDevice)
-        qr_code = None
+        qr_code_img = None
         # token_active = type(devices[0]) == Token?
         if methods.get("email") and not email_active:
             email_device = EmailDevice.objects.create(
@@ -47,16 +57,18 @@ class TwoFactorViewSet(ModelViewSetWithoutPatch):
                 send_token_email(email_device)
 
         elif methods.get("token") and not token_active:
-                qr_code = generate_qr_code(user, devices)
+            # generate qr code
+            secret_key = pyotp.random_base32()
+            request.session["otp_secret_key"] = secret_key
+
+            issuer_name = "SEED-Platform"
+            otp_url = f'otpauth://totp/{issuer_name}:{user_email}?secret={secret_key}&issuer={issuer_name}'
+            qr_code_img = generate_qr_code(otp_url)
 
         elif methods.get("disabled"):
-            logging.error('disabled')
             [device.delete() for device in devices]
 
-        # temporary return for debugging
         devices = list(devices_for_user(user))
-        logging.error('>>> devices %s', devices)
-
         response = {
             "methods": {
                 "disabled": bool(not devices),
@@ -64,33 +76,73 @@ class TwoFactorViewSet(ModelViewSetWithoutPatch):
                 "token": bool(devices and type(devices[0]) == TOTPDevice)
             }
         }
-        if qr_code:
-            response["qr_code"] = qr_code
-
-        logging.error(">>> B")
+        if qr_code_img:
+            response["qr_code"] = qr_code_img
 
         return JsonResponse(response)    
     
     @api_endpoint_class
     @action(detail=False, methods=["POST"])
     def resend_token_email(self, request):
+        """
+        Resends the token email to the user
+        """
         user_email = request.data.get("user_email")
         user = User.objects.get(email=user_email)
         devices = list(devices_for_user(user))
         if not devices or type(devices[0]) != EmailDevice:
-            return JsonResponse({"Message": "Email two factor authentication not configured"})
+            return JsonResponse({"message": "Email two factor authentication not configured"})
         
         send_token_email(devices[0])
-        return JsonResponse({"Message": "Token email sent"})
-        
+        return JsonResponse({"message": "Token email sent"})
+
+
     @api_endpoint_class
     @action(detail=False, methods=["POST"])
     def generate_qr_code(self, request):
+        """
+        Generates a QR code to be verified before setting the 2 factor method.
+        """
         user_email = request.data.get("user_email")
-        user = User.objects.get(email=user_email)
-        devices = list(devices_for_user(user))
-        if not devices or type(devices[0]) != TOTPDevice:
-            return JsonResponse({"Message": "Token Generator two factor authentication not configured"})
+
+        secret_key = pyotp.random_base32()
+        request.session["otp_secret_key"] = secret_key
+
+        issuer_name = "SEED-Platform"
+        otp_url = f'otpauth://totp/{issuer_name}:{user_email}?secret={secret_key}&issuer={issuer_name}'
+        qr_code_img = generate_qr_code(otp_url)
         
-        qr_code = generate_qr_code(user, devices)
-        return JsonResponse({"qr_code": qr_code})   
+        return JsonResponse({'qr_code': qr_code_img})
+    
+
+    @api_endpoint_class
+    @action(detail=False, methods=["POST"])
+    def verify_code(self, request):
+        """
+        Verifies an authenticator app code. A session secret key is required to validate the device
+        """
+        secret_key = request.session["otp_secret_key"]
+        if not secret_key:
+            return JsonResponse({"message": "Invalid request. Missing secret key"})
+        
+        # secret key needs to be converted to hex
+        key_bytes = base64.b32decode(secret_key, casefold=True)
+        hex_key = binascii.hexlify(key_bytes).decode('utf-8')
+
+        user_email = request.data.get("user_email")
+        code = request.data.get("code")
+        user = SEEDUser.objects.get(email=user_email)
+
+        totp = pyotp.TOTP(secret_key)
+        device = None
+        if totp.verify(code):
+            devices = list(devices_for_user(user))
+            device = TOTPDevice.objects.create(user=user, name='default', confirmed=True, key=hex_key)
+            if device:
+                [device.delete() for device in devices]
+
+                return JsonResponse({"success": True})
+            return JsonResponse({"error": "Unexpected Error"})
+        else:
+            return JsonResponse({"error": "Unexpected Error"})
+        

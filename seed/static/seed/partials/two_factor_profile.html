@@ -16,9 +16,10 @@
             <h2>Enable Two Factor Authentication for your account</h2>
             <p>Choose one of the following methods to apply two factor authentication to your SEED account</p>
             <div class="form-check two_factor_selection">
-                <input class="form-check-input" ng-model="temp_user.two_factor_method" value="disabled" type="radio" name="flexRadioDefault" id="flexRadioDisabled">
+                <input class="form-check-input" ng-model="temp_user.two_factor_method" value="disabled" type="radio" ng-disabled="require_2fa" name="flexRadioDefault" id="flexRadioDisabled">
                 <label class="form-check-label" for="flexRadioDisabled">Disabled</label>
                 <p class="help-text">Choosing this option will disable two-factor authentication for your account, making it less secure.</p>
+                <p class="help-text" ng-if="require_2fa"><em>* Two Factor Authentication has been required by an organization admin.</em></p>
             </div>
             <div class="form-check two_factor_selection">
                 <input class="form-check-input" ng-model="temp_user.two_factor_method" value="email" type="radio" name="flexRadioDefault" id="flexRadioEmail">

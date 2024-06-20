@@ -55,7 +55,23 @@ angular.module('BE.seed.service.two_factor', []).factory('two_factor_service', [
             )
             .then((response) => response)
             .catch((response) => response)
+        }
 
+        two_factor_factory.verify_code = (code, user_email) => {
+            return $http.post(
+                '/api/v3/two_factor/verify_code/',
+                {
+                    code: code,
+                    user_email: user_email,
+                },
+                {
+                    params: {
+                        organization_id: user_service.get_organization().id
+                    }
+                }
+            )
+            .then((response) => response)
+            .catch((response) => response)
         }
 
         return two_factor_factory
