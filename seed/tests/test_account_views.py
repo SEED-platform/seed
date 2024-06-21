@@ -550,7 +550,7 @@ class AccountsViewTests(TestCase):
         )
         self.assertEqual(
             json.loads(resp.content),
-            {"status": "success", "api_key": "", "email": "test_user@demo.com", "first_name": "Johnny", "last_name": "Energy"},
+            {"status": "success", "api_key": "", "email": "test_user@demo.com", "first_name": "Johnny", "last_name": "Energy", "two_factor_method": "disabled"},
         )
         resp = self.client.post(
             reverse_lazy("api:v3:user-generate-api-key", args=[self.user.pk]),
@@ -568,6 +568,7 @@ class AccountsViewTests(TestCase):
                 "email": "test_user@demo.com",
                 "first_name": "Johnny",
                 "last_name": "Energy",
+                "two_factor_method": "disabled"
             },
         )
 
