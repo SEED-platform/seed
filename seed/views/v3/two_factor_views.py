@@ -61,12 +61,13 @@ class TwoFactorViewSet(ModelViewSetWithoutPatch):
         elif methods.get("disabled"):
             [device.delete() for device in devices]
 
-        device = next(iter(devices_for_user(user)))
+        devices = list(devices_for_user(user))
+
         response = {
             "methods": {
-                "disabled": bool(not device),
-                "email": bool(device and type(device) == EmailDevice),
-                "token": bool(device and type(device) == TOTPDevice),
+                "disabled": bool(not devices),
+                "email": bool(devices and type(devices[0]) == EmailDevice),
+                "token": bool(devices and type(devices[0]) == TOTPDevice),
             }
         }
         if qr_code_img:
@@ -82,7 +83,8 @@ class TwoFactorViewSet(ModelViewSetWithoutPatch):
         """
         user_email = request.data.get("user_email")
         user = User.objects.get(email=user_email)
-        device = next(iter(devices_for_user(user)))
+        devices = list(devices_for_user(user))
+        device = devices[0]
         if not device or type(device) != EmailDevice:
             return JsonResponse({"message": "Email two factor authentication not configured"})
 
