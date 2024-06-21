@@ -33,7 +33,7 @@ class TwoFactorViewSet(ModelViewSetWithoutPatch):
             return JsonResponse({"status": "error", "message": "Unexpected Error"})
 
         user = User.objects.get(email=user_email)
-        require_2fa = bool(user.orgs.filter(require_2fa__isnull=False).count)
+        require_2fa = bool(user.orgs.filter(require_2fa=True))
         if methods.get("disabled") and require_2fa:
             return JsonResponse({"message": "2 Factor Authentication is required for your organization"})
 
