@@ -987,15 +987,14 @@ class DataQualityCheck(models.Model):
             data_type = rule.DATA_TYPES[rule.data_type][1]
             baseline = self.get_value(row, data_type, goal, "baseline")
             current = self.get_value(row, data_type, goal, "current")
+            # EUI is inverese as a drop in EUI is an improvement
+            cycle_values =  [baseline, current] if data_type == 'eui' else [current, baseline]
 
             if rule.cross_cycle:
                 cycle_key = "current"
-                value = percentage_difference(current, baseline)
+                value = percentage_difference(*cycle_values)
                 if value is None:
                     continue
-                # EUI is inverese as a drop in EUI is an improvement
-                if value and data_type == "eui":
-                    value = value * -1
                 if rule.condition == Rule.RULE_RANGE:
                     result = check_range()
                     results.append(result)

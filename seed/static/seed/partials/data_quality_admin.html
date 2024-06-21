@@ -238,7 +238,7 @@
                   ng-model="rule.cross_cycle"
                   ng-options="type.bool as type.label for type in cross_cycle_options"
                   ng-class="{'border-red red': invalid_data_types.includes(field)}"
-                  ng-disabled="rule.rule_type == 0"
+                  disabled
                 ></select>
               </td>
               <td>
@@ -247,7 +247,7 @@
                   ng-model="rule.data_type"
                   ng-options="type.id as type.label for type in ::data_types[2]"
                   ng-class="{'border-red red': invalid_data_types.includes(field)}"
-                  ng-disabled="rule.rule_type == 0"
+                  disabled
                 ></select>
               </td>
               <td>
@@ -257,7 +257,7 @@
                   ng-options="condition.id as condition.label for condition in ::conditions"
                   ng-change="rules_changed(rule); change_condition(rule, ruleGroups[rule_type][field], field)"
                   ng-class="{'border-red red': invalid_conditions.includes(field), 'error-bg': misconfigured_fields_ref.condition.includes(rule.$$hashKey)}"
-                  ng-disabled="rule.rule_type == 0"
+                  disabled
                 ></select>
               </td>
               <td ng-if="rule.data_type !== data_type_keys.string">
