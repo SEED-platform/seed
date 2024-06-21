@@ -1,68 +1,60 @@
 <div class="page_header_container">
-    <div class="page_header">
-        <div class="left page_action_container"></div>
-        <div class="page_title">
-            <h1>Two Factor Profile</h1>
-        </div>
-        <div class="right page_action_container"></div>
+  <div class="page_header">
+    <div class="left page_action_container"></div>
+    <div class="page_title">
+      <h1>Two Factor Profile</h1>
     </div>
+    <div class="right page_action_container"></div>
+  </div>
 </div>
 <div class="section_nav_container">
-    <div class="section_nav" ng-include="::urls.static_url + 'seed/partials/profile_nav.html'"></div>
+  <div class="section_nav" ng-include="::urls.static_url + 'seed/partials/profile_nav.html'"></div>
 </div>
 <div>
-    <div class="section_content_container">
-        <div class="section_content with_padding">
-            <h2>Enable Two Factor Authentication for your account</h2>
-            <p>Choose one of the following methods to apply two factor authentication to your SEED account</p>
-            <div class="form-check two_factor_selection">
-                <input class="form-check-input" ng-model="temp_user.two_factor_method" value="disabled" type="radio" ng-disabled="require_2fa" name="flexRadioDefault" id="flexRadioDisabled">
-                <label class="form-check-label" for="flexRadioDisabled">Disabled</label>
-                <p class="help-text">Choosing this option will disable two-factor authentication for your account, making it less secure.</p>
-                <p class="help-text" ng-if="require_2fa"><em>* Two Factor Authentication has been required by an organization admin.</em></p>
-            </div>
-            <div class="form-check two_factor_selection">
-                <input class="form-check-input" ng-model="temp_user.two_factor_method" value="email" type="radio" name="flexRadioDefault" id="flexRadioEmail">
-                <label class="form-check-label" for="flexRadioEmail">Email</label>
-                <p class="help-text">Selecting this option will enable two-factor authentication via email ("{$ user.email $}"). You will receive a verification code through your
-                registered email address each time you log in..</p>
-
-            </div>
-            <div class="form-check two_factor_selection">
-                <input class="form-check-input" ng-model="temp_user.two_factor_method" value="token" type="radio" name="flexRadioDefault" id="flexRadioToken">
-                <label class="form-check-label" for="flexRadioToken">Token Generator</label>
-                <p class="help-text">Selcting for this option will enable two-factor authentication using a token generator app, such as Google Authenticator,
-                Microsoft Authenticator or Authy. You will need to scan a QR code to set up the app.</p>
-
-            </div>
-        </div>
+  <div class="section_content_container">
+    <div class="section_content with_padding">
+      <h2>Enable Two Factor Authentication for your account</h2>
+      <p>Choose one of the following methods to apply two factor authentication to your SEED account</p>
+      <div class="form-check two_factor_selection">
+        <input class="form-check-input" ng-model="temp_user.two_factor_method" value="disabled" type="radio" ng-disabled="require_2fa" name="flexRadioDefault" id="flexRadioDisabled" />
+        <label class="form-check-label" for="flexRadioDisabled">Disabled</label>
+        <p class="help-text">Choosing this option will disable two-factor authentication for your account, making it less secure.</p>
+        <p class="help-text" ng-if="require_2fa"><em>* Two Factor Authentication has been required by an organization admin.</em></p>
+      </div>
+      <div class="form-check two_factor_selection">
+        <input class="form-check-input" ng-model="temp_user.two_factor_method" value="email" type="radio" name="flexRadioDefault" id="flexRadioEmail" />
+        <label class="form-check-label" for="flexRadioEmail">Email</label>
+        <p class="help-text">
+          Selecting this option will enable two-factor authentication via email ("{$ user.email $}"). You will receive a verification code through your registered email address each time you log in..
+        </p>
+      </div>
+      <div class="form-check two_factor_selection">
+        <input class="form-check-input" ng-model="temp_user.two_factor_method" value="token" type="radio" name="flexRadioDefault" id="flexRadioToken" />
+        <label class="form-check-label" for="flexRadioToken">Token Generator</label>
+        <p class="help-text">
+          Selcting for this option will enable two-factor authentication using a token generator app, such as Google Authenticator, Microsoft Authenticator or Authy. You will need to scan a QR code to
+          set up the app.
+        </p>
+      </div>
     </div>
+  </div>
 
-    <div class="section_content_container" style="margin: 30px 0" ng-if="::auth.requires_owner">
-        <div class="section_content with_padding">
-            <button type="button" class="btn btn-primary" ng-click="save_settings()">
-                {$:: 'Save Changes' | translate $} <i class="fa-solid fa-check" ng-show="settings_updated"></i>
-            </button>
-            <div ng-if="form_errors" class="r-error-msg r-margin-right-10">
-                <i class="fa-solid fa-circle-exclamation fa-lg"></i> Error saving: {$ form_errors $}
-            </div>
-        </div>
+  <div class="section_content_container" style="margin: 30px 0" ng-if="::auth.requires_owner">
+    <div class="section_content with_padding">
+      <button type="button" class="btn btn-primary" ng-click="save_settings()">{$:: 'Save Changes' | translate $} <i class="fa-solid fa-check" ng-show="settings_updated"></i></button>
+      <div ng-if="form_errors" class="r-error-msg r-margin-right-10"><i class="fa-solid fa-circle-exclamation fa-lg"></i> Error saving: {$ form_errors $}</div>
     </div>
-    <div class="section_content_container" >
-        <div class="section_content with_padding">
-            <h3>Current Method: {$ user.two_factor_method.toUpperCase() $}</h3>
-            <div ng-if="user.two_factor_method == 'email'">
-                <button class="btn btn-default" ng-click="resend_token_email()">
-                    Resend Test Email Token
-                </button>
-                <div ng-if="email_sent">A sample token has been sent to {$ user.email $}</div>
-            </div>
-            <div ng-if="user.two_factor_method == 'token'">
-                <button class="btn btn-default" ng-click="generate_qr_code()">
-                    Re-Generate Token
-                </button>
-            </div>
-        </div>
+  </div>
+  <div class="section_content_container">
+    <div class="section_content with_padding">
+      <h3>Current Method: {$ user.two_factor_method.toUpperCase() $}</h3>
+      <div ng-if="user.two_factor_method == 'email'">
+        <button class="btn btn-default" ng-click="resend_token_email()">Resend Test Email Token</button>
+        <div ng-if="email_sent">A sample token has been sent to {$ user.email $}</div>
+      </div>
+      <div ng-if="user.two_factor_method == 'token'">
+        <button class="btn btn-default" ng-click="generate_qr_code()">Re-Generate Token</button>
+      </div>
     </div>
-
+  </div>
 </div>
