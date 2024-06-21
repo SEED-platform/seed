@@ -215,8 +215,8 @@ class TestApi(TestCase):
             data=json.dumps(
                 {
                     "organization": {
-                        "default_reports_x_axis_options": list(new_default_reports_x_axis_options.values_list("id", flat=True)),
-                        "default_reports_y_axis_options": list(new_default_reports_y_axis_options.values_list("id", flat=True)),
+                        "default_reports_x_axis_options": [c.id for c in new_default_reports_x_axis_options],
+                        "default_reports_y_axis_options": [c.id for c in new_default_reports_y_axis_options],
                     }
                 }
             ),
@@ -229,10 +229,12 @@ class TestApi(TestCase):
         r = self.client.get("/api/v3/organizations/" + str(self.org.id) + "/", follow=True, **self.headers)
         r = json.loads(r.content)
         self.assertEqual(
-            r["organization"]["default_reports_x_axis_options"], ColumnSerializer(new_default_reports_x_axis_options, many=True).data
+            r["organization"]["default_reports_x_axis_options"],
+            [dict(d) for d in ColumnSerializer(new_default_reports_x_axis_options, many=True).data],
         )
         self.assertEqual(
-            r["organization"]["default_reports_y_axis_options"], ColumnSerializer(new_default_reports_y_axis_options, many=True).data
+            r["organization"]["default_reports_y_axis_options"],
+            [dict(d) for d in ColumnSerializer(new_default_reports_y_axis_options, many=True).data],
         )
 
         self.assertFalse(
@@ -241,8 +243,12 @@ class TestApi(TestCase):
         self.assertFalse(
             any(c.is_option_for_reports_y_axis for c in Column.objects.filter(id__in=[c.id for c in self.default_reports_y_axis_options]))
         )
-        self.assertTrue(all(c.is_option_for_reports_x_axis for c in new_default_reports_x_axis_options))
-        self.assertTrue(all(c.is_option_for_reports_y_axis for c in new_default_reports_y_axis_options))
+        self.assertTrue(
+            all(c.is_option_for_reports_x_axis for c in Column.objects.filter(id__in=[c.id for c in new_default_reports_x_axis_options]))
+        )
+        self.assertTrue(
+            all(c.is_option_for_reports_y_axis for c in Column.objects.filter(id__in=[c.id for c in new_default_reports_y_axis_options]))
+        )
 
     def test_update_user(self):
         user_payload = {"first_name": "Arya", "last_name": "Stark", "email": self.user.username}

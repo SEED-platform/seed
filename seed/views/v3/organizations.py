@@ -152,10 +152,10 @@ def _dict_org(request, organizations):
             "inventory_count": o.property_set.count() + o.taxlot_set.count(),
             "access_level_names": o.access_level_names,
             "default_reports_x_axis_options": ColumnSerializer(
-                Column.objects.filter(organization=o, is_option_for_reports_x_axis=True), many=True
+                Column.objects.filter(organization=o, table_name="PropertyState", is_option_for_reports_x_axis=True), many=True
             ).data,
             "default_reports_y_axis_options": ColumnSerializer(
-                Column.objects.filter(organization=o, is_option_for_reports_y_axis=True), many=True
+                Column.objects.filter(organization=o, table_name="PropertyState", is_option_for_reports_y_axis=True), many=True
             ).data,
         }
         orgs.append(org)
@@ -560,7 +560,7 @@ class OrganizationViewSet(viewsets.ViewSet):
             org.new_user_email_signature = Organization._meta.get_field("new_user_email_signature").get_default()
 
         # update default_reports_x_axis_options
-        default_reports_x_axis_options = sorted(posted_org.get("default_reports_x_axis_options"))
+        default_reports_x_axis_options = sorted(posted_org.get("default_reports_x_axis_options", []))
         current_default_reports_x_axis_options = Column.objects.filter(organization=org, is_option_for_reports_x_axis=True).order_by("id")
         if default_reports_x_axis_options != list(current_default_reports_x_axis_options.values_list("id", flat=True)):
             current_default_reports_x_axis_options.update(is_option_for_reports_x_axis=False)
@@ -569,7 +569,7 @@ class OrganizationViewSet(viewsets.ViewSet):
             )
 
         # update default_reports_y_axis_options
-        default_reports_y_axis_options = sorted(posted_org.get("default_reports_y_axis_options"))
+        default_reports_y_axis_options = sorted(posted_org.get("default_reports_y_axis_options", []))
         current_default_reports_y_axis_options = Column.objects.filter(organization=org, is_option_for_reports_y_axis=True).order_by("id")
         if default_reports_y_axis_options != list(current_default_reports_y_axis_options.values_list("id", flat=True)):
             current_default_reports_y_axis_options.update(is_option_for_reports_y_axis=False)
@@ -885,8 +885,7 @@ class OrganizationViewSet(viewsets.ViewSet):
         }
 
         # error if missing
-        excepted_params = ["x_var", "y_var", "cycle_ids"]
-        missing_params = [p for p in excepted_params if p not in params]
+        missing_params = [p for (p, v) in params.items() if v is None]
         if missing_params:
             return Response(
                 {"status": "error", "message": "Missing params: {}".format(", ".join(missing_params))}, status=status.HTTP_400_BAD_REQUEST
@@ -922,6 +921,7 @@ class OrganizationViewSet(viewsets.ViewSet):
         return Response(result, status=status.HTTP_200_OK)
 
     def continuous_aggregate_data(self, yr_e, buildings, bins, count=False):
+        buildings = [b for b in buildings if b["x"] is not None]
         binplace = np.digitize([b["y"] for b in buildings], bins)
         xs = [b["x"] for b in buildings]
 
@@ -1090,8 +1090,17 @@ class OrganizationViewSet(viewsets.ViewSet):
 
                 base_row += 1
 
+            # set bins and choose agg type
+            ys = [building["y"] for datum in data for building in datum["chart_data"]]
+            if ys and isinstance(ys[0], Number):
+                bins = np.histogram_bin_edges(ys, bins=5)
+                aggregate_data = self.continuous_aggregate_data
+            else:
+                bins = list(set(ys))
+                aggregate_data = self.discrete_aggregate_data
+
             # Gather and write Agg data
-            for agg_datum in self.aggregate_data(yr_e, params["x_var"], params["y_var"], data_rows):
+            for agg_datum in aggregate_data(yr_e, data_rows, bins, count=params["x_var"] == "Count"):
                 agg_sheet.write(agg_row, data_col_start, agg_datum.get("x"))
                 agg_sheet.write(agg_row, data_col_start + 1, agg_datum.get("y"))
                 agg_sheet.write(agg_row, data_col_start + 2, agg_datum.get("yr_e"))

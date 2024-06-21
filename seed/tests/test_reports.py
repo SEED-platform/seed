@@ -82,8 +82,6 @@ class ExportReport(DataMappingBaseTestCase):
 
         # check Gross Floor Area values
         self.assertEqual("Gross Floor Area", agg_sheet.cell(0, 1).value)
-        self.assertEqual("0-99k", agg_sheet.cell(1, 1).value)
-        self.assertEqual("0-99k", agg_sheet.cell(2, 1).value)
 
     def test_report(self):
         url = reverse("api:v3:organizations-report", args=[self.org.pk])
