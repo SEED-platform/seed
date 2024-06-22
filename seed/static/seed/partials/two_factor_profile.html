@@ -28,7 +28,6 @@
               <span ng-if="user.two_factor_method!='disabled'" class="
               label label-info">{$ user.two_factor_method.toUpperCase() $}</span>
             </h4>
-
           <p translate="TWO_FACTOR_SELECT"></p>
           <div class="row">
             <div class="col-sm-offset-1 col-sm-6">
@@ -52,7 +51,6 @@
           </div>
         </div>
       </div>
-
       <div class="section_content_container" style="margin: 30px 0" ng-if="::auth.requires_owner">
         <div class="section_content with_padding">
           <button type="button" class="btn btn-primary" ng-click="save_settings()">{$:: 'Save Changes' | translate $} <i class="fa-solid fa-check" ng-show="settings_updated"></i></button>
@@ -61,7 +59,6 @@
       </div>
       <div class="section_content_container">
         <div class="section_content with_padding">
-         
           <div ng-if="user.two_factor_method == 'email'">
             <button class="btn btn-default" ng-click="resend_token_email()">Resend Test Email Token</button>
             <div ng-if="email_sent">A sample token has been sent to {$ user.email $}</div>
