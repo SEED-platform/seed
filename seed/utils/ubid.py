@@ -148,7 +148,7 @@ def merge_ubid_models(old_state_ids, new_state_id, StateClass):  # noqa: N803
 
     old_ubids_to_promote = old_ubids_set - new_ubids_set
     if not old_ubids_to_promote:
-        return
+        return new_state
 
     preferred_ubid = find_preferred(old_states, new_state)
     promote_ubids = [
