@@ -22,12 +22,11 @@
       <div class="section_content_container">
         <div class="section_content with_padding">
           <h3 translate="TWO_FACTOR_ENABLE"></h3>
-            <h4 class="two_factor_current">{$:: 'Current Method' | translate $}
-              <span ng-if="user.two_factor_method=='disabled'" class="
-              label label-default">{$ user.two_factor_method.toUpperCase() $}</span>
-              <span ng-if="user.two_factor_method!='disabled'" class="
-              label label-info">{$ user.two_factor_method.toUpperCase() $}</span>
-            </h4>
+          <h4 class="two_factor_current">
+            {$:: 'Current Method' | translate $}
+            <span ng-if="user.two_factor_method=='disabled'" class="label label-default">{$ user.two_factor_method.toUpperCase() $}</span>
+            <span ng-if="user.two_factor_method!='disabled'" class="label label-info">{$ user.two_factor_method.toUpperCase() $}</span>
+          </h4>
           <p translate="TWO_FACTOR_SELECT"></p>
           <div class="row">
             <div class="col-sm-offset-1 col-sm-6">
