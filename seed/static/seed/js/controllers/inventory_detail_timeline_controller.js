@@ -105,6 +105,7 @@ angular.module('BE.seed.controller.inventory_detail_timeline', []).controller('i
         return;
       }
       const user = $scope.orgUsers.find((u) => u.user_id === user_id);
+      if (user == undefined) return;
       let userName = '';
       if (user.first_name && user.last_name) {
         userName = `${user.first_name} ${user.last_name}`;
