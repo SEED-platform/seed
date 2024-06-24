@@ -56,7 +56,16 @@
   <div id="portfolio-summary-selection-wrapper">
     <!-- Summary Table-->
     <div id="portfolio-summary" class="wide-900" ng-if="summary_loading || summary_valid">
-      <h3 translate>Portfolio Summary</h3>
+      <div style="display: flex">
+        <h3 translate>Portfolio Summary</h3>
+        <i class="ui-grid-icon-info-circled" ng-mouseenter="show_help = true" ng-mouseleave="show_help = false"></i>
+        <div class="alert alert-info portfolio-summary-info" ng-show="show_help">
+          <p>
+            Portfolio Summary calculations only include properties that have "passed checks" (see far right column below). 
+            Select "Data Quality Check" from the actions dropdown. Data Quality Checks can be configured in Data Quality settings.
+          </p>
+        </div>
+      </div>
       <div ng-if="summary_valid" ui-grid="summaryGridOptions" ui-grid-resize-columns style="margin-bottom: 30px"></div>
       <div class="portfolio-summary-loading" ng-if="summary_loading">
         <h4>{$:: 'Loading Summary Data...' | translate $}</h4>
