@@ -595,18 +595,11 @@ def states_to_views(unmatched_state_ids, org, access_level_instance, cycle, Stat
         if "ubid" in matching_criteria:
             check_jaccard = bool(matching_criteria.get("ubid"))
             ubid = matching_criteria.pop("ubid")
-            region = ubid.split("+")[0]
-            existing_state_matches = existing_states.filter(
-                pk__in=existing_cycle_state_ids,
-                **matching_criteria,
-                ubid__startswith=region,  # only helpful if ubid is the only matching criteria present
-            )
 
-        else:
-            existing_state_matches = existing_states.filter(
-                pk__in=existing_cycle_state_ids,
-                **matching_criteria,
-            )
+        existing_state_matches = existing_states.filter(
+            pk__in=existing_cycle_state_ids,
+            **matching_criteria,
+        )
 
         if check_jaccard:
             existing_state_matches = [
