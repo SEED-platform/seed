@@ -58,10 +58,10 @@
       </div>
       <div class="section_content_container">
         <div class="section_content with_padding">
-          <div ng-if="user.two_factor_method == 'email'">
+          <!-- <div ng-if="user.two_factor_method == 'email'">
             <button class="btn btn-default" ng-click="resend_token_email()">Resend Test Email Token</button>
             <div ng-if="email_sent">A sample token has been sent to {$ user.email $}</div>
-          </div>
+          </div> -->
           <div ng-if="user.two_factor_method == 'token'">
             <button class="btn btn-default" ng-click="generate_qr_code()">Re-Generate Token</button>
           </div>
