@@ -1,10 +1,10 @@
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 Simple templatetag to return a value from the settings file. e.g., {% settings_value "LOGIN_REDIRECT_URL" %}
 """
+
 import logging
 
 from django import template

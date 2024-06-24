@@ -1,9 +1,9 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 import json
 import logging
 from datetime import datetime
@@ -12,6 +12,7 @@ from os import path
 from unittest.mock import patch
 from zipfile import ZipFile
 
+import pytest
 from django.db.models import Q
 from django.test import TestCase, override_settings
 from django.utils.timezone import make_aware
@@ -22,51 +23,34 @@ from requests import Response
 
 from config.settings.common import BASE_DIR, TIME_ZONE
 from seed.analysis_pipelines.better.buildingsync import _build_better_input
-from seed.analysis_pipelines.bsyncr import (
-    PREMISES_ID_NAME,
-    BsyncrPipeline,
-    _build_bsyncr_input,
-    _parse_analysis_property_view_id
-)
-from seed.analysis_pipelines.eeej import (
-    _get_data_for_census_tract_fetch,
-    _get_eeej_indicators,
-    _get_location
-)
+from seed.analysis_pipelines.bsyncr import PREMISES_ID_NAME, BsyncrPipeline, _build_bsyncr_input, _parse_analysis_property_view_id
+from seed.analysis_pipelines.eeej import _get_data_for_census_tract_fetch, _get_eeej_indicators, _get_location
 from seed.analysis_pipelines.eui import (
     ERROR_INVALID_GROSS_FLOOR_AREA,
     ERROR_INVALID_METER_READINGS,
     EUI_ANALYSIS_MESSAGES,
     TIME_PERIOD,
     _calculate_eui,
-    _get_valid_meters
+    _get_valid_meters,
 )
 from seed.analysis_pipelines.pipeline import (
     AnalysisPipeline,
-    AnalysisPipelineException,
+    AnalysisPipelineError,
     analysis_pipeline_task,
-    task_create_analysis_property_views
+    task_create_analysis_property_views,
 )
 from seed.analysis_pipelines.utils import SimpleMeterReading
 from seed.building_sync.building_sync import BuildingSync
 from seed.building_sync.mappings import NAMESPACES
 from seed.landing.models import SEEDUser as User
-from seed.models import (
-    Analysis,
-    AnalysisInputFile,
-    AnalysisMessage,
-    AnalysisOutputFile,
-    AnalysisPropertyView,
-    Meter,
-    MeterReading
-)
+from seed.models import Analysis, AnalysisInputFile, AnalysisMessage, AnalysisOutputFile, AnalysisPropertyView, Meter, MeterReading
 from seed.test_helpers.fake import (
     FakeAnalysisFactory,
     FakeAnalysisPropertyViewFactory,
     FakeCycleFactory,
     FakePropertyFactory,
     FakePropertyStateFactory,
-    FakePropertyViewFactory
+    FakePropertyViewFactory,
 )
 from seed.utils.organizations import create_organization
 
@@ -74,7 +58,6 @@ logger = logging.getLogger(__name__)
 
 
 class MockPipeline(AnalysisPipeline):
-
     def _prepare_analysis(self, property_view_ids, start_analysis):
         analysis = Analysis.objects.get(id=self._analysis_id)
         analysis.status = Analysis.READY
@@ -99,18 +82,15 @@ class MockCeleryTask:
 class TestAnalysisPipeline(TestCase):
     def setUp(self):
         user_details = {
-            'username': 'test_user@demo.com',
-            'password': 'test_pass',
-            'email': 'test_user@demo.com',
-            'first_name': 'Test',
-            'last_name': 'User',
+            "username": "test_user@demo.com",
+            "password": "test_pass",
+            "email": "test_user@demo.com",
+            "first_name": "Test",
+            "last_name": "User",
         }
         self.user = User.objects.create_user(**user_details)
         self.org, _, _ = create_organization(self.user)
-        self.analysis = (
-            FakeAnalysisFactory(organization=self.org, user=self.user)
-            .get_analysis()
-        )
+        self.analysis = FakeAnalysisFactory(organization=self.org, user=self.user).get_analysis()
 
     def test_all_analysis_pipeline_tasks_are_wrapped_with_analysis_pipeline_task_decorator(self):
         from inspect import getmembers
@@ -127,8 +107,9 @@ class TestAnalysisPipeline(TestCase):
             try:
                 celery_task.__wrapped__._is_analysis_pipeline_task
             except AttributeError:
-                self.assertTrue(False,
-                                f'Function {celery_task.__wrapped__} must be wrapped by analysis_pipelines.pipeline.analysis_pipeline_task')
+                self.assertTrue(
+                    False, f"Function {celery_task.__wrapped__} must be wrapped by analysis_pipelines.pipeline.analysis_pipeline_task"
+                )
 
     def test_prepare_analysis_raises_exception_when_analysis_status_indicates_already_prepared(self):
         # Setup
@@ -140,10 +121,10 @@ class TestAnalysisPipeline(TestCase):
 
         # Act / Assert
         # shouldn't matter what values are passed for property_view_ids
-        with self.assertRaises(AnalysisPipelineException) as context:
+        with pytest.raises(AnalysisPipelineError) as context:
             pipeline.prepare_analysis([1, 2, 3])
 
-        self.assertTrue('Analysis has already been prepared or is currently being prepared' in str(context.exception))
+        self.assertTrue("Analysis has already been prepared or is currently being prepared" in str(context.value))
 
         # the status should not have changed
         self.analysis.refresh_from_db()
@@ -183,11 +164,11 @@ class TestAnalysisPipeline(TestCase):
         pipeline = MockPipeline(self.analysis.id)
 
         # Act
-        with self.assertRaises(AnalysisPipelineException) as context:
+        with pytest.raises(AnalysisPipelineError) as context:
             pipeline.start_analysis()
 
         # Assert
-        self.assertTrue('Analysis cannot be started' in str(context.exception))
+        self.assertTrue("Analysis cannot be started" in str(context.value))
         # the status should not have changed
         self.analysis.refresh_from_db()
         self.assertEqual(Analysis.CREATING, self.analysis.status)
@@ -195,9 +176,9 @@ class TestAnalysisPipeline(TestCase):
     def test_fail_sets_status_to_failed_when_not_already_in_terminal_state(self):
         # Setup
         pipeline = MockPipeline(self.analysis.id)
-        failure_message = 'Bad'
+        failure_message = "Bad"
 
-        logger = logging.getLogger('test-logger')
+        logger = logging.getLogger("test-logger")
 
         # Act
         pipeline.fail(failure_message, logger)
@@ -215,14 +196,14 @@ class TestAnalysisPipeline(TestCase):
         self.analysis.save()
         pipeline = MockPipeline(self.analysis.id)
 
-        logger = logging.getLogger('test-logger')
+        logger = logging.getLogger("test-logger")
 
         # Act
-        with self.assertRaises(AnalysisPipelineException) as context:
-            pipeline.fail('Double plus ungood', logger)
+        with pytest.raises(AnalysisPipelineError) as context:
+            pipeline.fail("Double plus ungood", logger)
 
         # Assert
-        self.assertTrue('Analysis is already in a terminal state' in str(context.exception))
+        self.assertTrue("Analysis is already in a terminal state" in str(context.value))
         # the status should not have changed
         self.analysis.refresh_from_db()
         self.assertEqual(Analysis.COMPLETED, self.analysis.status)
@@ -255,10 +236,7 @@ class TestAnalysisPipeline(TestCase):
 
     def test_task_create_analysis_property_views_creates_messages_for_failed_property_views(self):
         # Setup
-        property_view = (
-            FakePropertyViewFactory(organization=self.org, user=self.user)
-            .get_property_view()
-        )
+        property_view = FakePropertyViewFactory(organization=self.org, user=self.user).get_property_view()
         bogus_property_view_id = -1
         property_view_ids = [bogus_property_view_id, property_view.id]
 
@@ -268,14 +246,13 @@ class TestAnalysisPipeline(TestCase):
         # Assert
         # a message for the bad property view should have been created
         message = AnalysisMessage.objects.get(analysis=self.analysis)
-        self.assertTrue(
-            f'Failed to copy property data for PropertyView ID {bogus_property_view_id}' in message.user_message)
+        self.assertTrue(f"Failed to copy property data for PropertyView ID {bogus_property_view_id}" in message.user_message)
 
     def test_analysis_pipeline_task_calls_decorated_function_when_status_is_as_expected(self):
         # Setup
         @analysis_pipeline_task(Analysis.RUNNING)
         def my_func(self, analysis_id):
-            return 'I did work'
+            return "I did work"
 
         self.analysis.status = Analysis.RUNNING
         self.analysis.save()
@@ -284,13 +261,13 @@ class TestAnalysisPipeline(TestCase):
         res = my_func(MockCeleryTask(), self.analysis.id)
 
         # Assert
-        self.assertEqual('I did work', res)
+        self.assertEqual("I did work", res)
 
     def test_analysis_pipeline_task_works_when_decorated_func_called_with_kwargs(self):
         # Setup
         @analysis_pipeline_task(Analysis.RUNNING)
         def my_func(self, analysis_id):
-            return 'I did work'
+            return "I did work"
 
         self.analysis.status = Analysis.RUNNING
         self.analysis.save()
@@ -299,13 +276,13 @@ class TestAnalysisPipeline(TestCase):
         res = my_func(MockCeleryTask(), analysis_id=self.analysis.id)
 
         # Assert
-        self.assertEqual('I did work', res)
+        self.assertEqual("I did work", res)
 
     def test_analysis_pipeline_task_works_when_decorated_func_has_multiple_args(self):
         # Setup
         @analysis_pipeline_task(Analysis.RUNNING)
         def my_func(self, my_param_1, my_param_2, analysis_id, my_param_3):
-            return 'I did work'
+            return "I did work"
 
         self.analysis.status = Analysis.RUNNING
         self.analysis.save()
@@ -314,7 +291,7 @@ class TestAnalysisPipeline(TestCase):
         res = my_func(MockCeleryTask(), -1, -1, self.analysis.id, -1)
 
         # Assert
-        self.assertEqual('I did work', res)
+        self.assertEqual("I did work", res)
 
     def test_analysis_pipeline_task_raises_exception_when_analysis_status_is_not_as_expected_and_was_not_stopped(self):
         # Setup
@@ -322,17 +299,17 @@ class TestAnalysisPipeline(TestCase):
 
         @analysis_pipeline_task(expected_status)
         def my_func(self, analysis_id):
-            return 'I did work'
+            return "I did work"
 
         # set status to something unexpected
         self.analysis.status = Analysis.QUEUED
         self.analysis.save()
 
         # Act/Assert
-        with self.assertRaises(AnalysisPipelineException) as context:
+        with pytest.raises(AnalysisPipelineError) as context:
             my_func(MockCeleryTask(), self.analysis.id)
 
-        self.assertIn(f'expected analysis status to be {expected_status}', str(context.exception))
+        self.assertIn(f"expected analysis status to be {expected_status}", str(context.value))
 
     def test_analysis_pipeline_task_stops_task_chain_when_analysis_status_is_stopped(self):
         # Setup
@@ -340,7 +317,7 @@ class TestAnalysisPipeline(TestCase):
 
         @analysis_pipeline_task(expected_status)
         def my_func(self, analysis_id):
-            return 'I did work'
+            return "I did work"
 
         # set status to stopped
         self.analysis.status = Analysis.STOPPED
@@ -395,7 +372,7 @@ class TestAnalysisPipeline(TestCase):
 
         @analysis_pipeline_task(Analysis.RUNNING)
         def my_func(self, analysis_id):
-            return 'I did work'
+            return "I did work"
 
         my_task = MockCeleryTask()
 
@@ -416,7 +393,7 @@ class TestAnalysisPipeline(TestCase):
         This would be the case for unhandled/unexpected errors
         """
         # Setup
-        exception_message = 'Something Very Bad'
+        exception_message = "Something Very Bad"
         analysis_status = Analysis.RUNNING  # set status to a non-terminal state
         self.analysis.status = analysis_status
         self.analysis.save()
@@ -429,12 +406,12 @@ class TestAnalysisPipeline(TestCase):
         my_task = MockCeleryTask()
 
         # Act
-        with self.assertRaises(Exception) as context:
+        with pytest.raises(Exception) as context:  # noqa: PT011
             my_func(my_task, self.analysis.id)
 
         # Assert
         # it should have re-raised the exception
-        self.assertIn(exception_message, str(context.exception))
+        self.assertIn(exception_message, str(context.value))
         self.analysis.refresh_from_db()
         # it should have failed the analysis and created a message
         self.assertEqual(Analysis.FAILED, self.analysis.status)
@@ -442,10 +419,9 @@ class TestAnalysisPipeline(TestCase):
         self.assertTrue(messages.exists())
 
     def test_analysis_pipeline_task_does_not_raise_uncaught_exceptions_when_analysis_exists_and_in_terminal_state(self):
-        """tests that it does _not_ raise exceptions when the analysis still exists and it's already in a terminal state
-        """
+        """tests that it does _not_ raise exceptions when the analysis still exists and it's already in a terminal state"""
         # Setup
-        exception_message = 'Something Very Bad'
+        exception_message = "Something Very Bad"
         analysis_status = Analysis.STOPPED  # set status to a terminal state!
         self.analysis.status = analysis_status
         self.analysis.save()
@@ -470,33 +446,29 @@ class TestAnalysisPipeline(TestCase):
 
 
 # override the BSYNCR_SERVER_HOST b/c otherwise the pipeline will not run (doesn't have to be valid b/c we mock requests)
-@override_settings(BSYNCR_SERVER_HOST='bogus.host.com')
+@override_settings(BSYNCR_SERVER_HOST="bogus.host.com")
 class TestBsyncrPipeline(TestCase):
     def setUp(self):
         user_details = {
-            'username': 'test_user@demo.com',
-            'password': 'test_pass',
-            'email': 'test_user@demo.com',
-            'first_name': 'Test',
-            'last_name': 'User',
+            "username": "test_user@demo.com",
+            "password": "test_pass",
+            "email": "test_user@demo.com",
+            "first_name": "Test",
+            "last_name": "User",
         }
         self.user = User.objects.create_user(**user_details)
         self.org, _, _ = create_organization(self.user)
 
-        property_state = (
-            FakePropertyStateFactory(organization=self.org).get_property_state(
-                # fields required for analysis
-                latitude=39.76550841416409,
-                longitude=-104.97855661401148
-            )
+        property_state = FakePropertyStateFactory(organization=self.org).get_property_state(
+            # fields required for analysis
+            latitude=39.76550841416409,
+            longitude=-104.97855661401148,
         )
-        self.analysis_property_view = (
-            FakeAnalysisPropertyViewFactory(organization=self.org, user=self.user).get_analysis_property_view(
-                property_state=property_state,
-                # analysis args
-                name='Quite neat',
-                service=Analysis.BSYNCR,
-            )
+        self.analysis_property_view = FakeAnalysisPropertyViewFactory(organization=self.org, user=self.user).get_analysis_property_view(
+            property_state=property_state,
+            # analysis args
+            name="Quite neat",
+            service=Analysis.BSYNCR,
         )
 
         self.meter = Meter.objects.create(
@@ -511,8 +483,8 @@ class TestBsyncrPipeline(TestCase):
             start_time=make_aware(datetime(2018, 1, 1, 0, 0, 0), timezone=tz_obj),
             end_time=make_aware(datetime(2018, 1, 2, 0, 0, 0), timezone=tz_obj),
             reading=12345,
-            source_unit='kWh',
-            conversion_factor=1.00
+            source_unit="kWh",
+            conversion_factor=1.00,
         )
 
         #
@@ -528,24 +500,13 @@ class TestBsyncrPipeline(TestCase):
                 latitude=39.76550841416409,
                 longitude=-104.97855661401148,
                 # override unitted fields so that hashes are correct
-                site_eui=ureg.Quantity(
-                    float(property_view_factory.fake.random_int(min=50, max=600)),
-                    "kBtu / foot ** 2 / year"
-                ),
-                gross_floor_area=ureg.Quantity(
-                    float(property_view_factory.fake.random_number(digits=6)),
-                    "foot ** 2"
-                ),
+                site_eui=ureg.Quantity(float(property_view_factory.fake.random_int(min=50, max=600)), "kBtu / foot ** 2 / year"),
+                gross_floor_area=ureg.Quantity(float(property_view_factory.fake.random_number(digits=6)), "foot ** 2"),
             )
             self.good_property_views.append(pv)
 
-        self.analysis_b = (
-            FakeAnalysisFactory(organization=self.org, user=self.user)
-            .get_analysis(
-                name='Good Analysis',
-                service=Analysis.BSYNCR,
-                configuration={'model_type': 'Simple Linear Regression'}
-            )
+        self.analysis_b = FakeAnalysisFactory(organization=self.org, user=self.user).get_analysis(
+            name="Good Analysis", service=Analysis.BSYNCR, configuration={"model_type": "Simple Linear Regression"}
         )
 
         self.good_meters = []
@@ -565,8 +526,8 @@ class TestBsyncrPipeline(TestCase):
                     start_time=make_aware(datetime(2019, j, 1, 0, 0, 0), timezone=tz_obj),
                     end_time=make_aware(datetime(2019, j, 28, 0, 0, 0), timezone=tz_obj),
                     reading=12345,
-                    source_unit='kWh',
-                    conversion_factor=1.00
+                    source_unit="kWh",
+                    conversion_factor=1.00,
                 )
 
     def _mock_bsyncr_service_request_factory(self, error_messages=None):
@@ -579,24 +540,20 @@ class TestBsyncrPipeline(TestCase):
 
         def _build_bsyncr_output(file_):
             # copy the example bsyncr output file then update the ID within it
-            bsyncr_output_example_file = path.join(BASE_DIR, 'seed', 'tests', 'data', 'example-bsyncr-output.xml')
+            bsyncr_output_example_file = path.join(BASE_DIR, "seed", "tests", "data", "example-bsyncr-output.xml")
             bsyncr_output_tree = etree.parse(bsyncr_output_example_file)
             id_value_elem = bsyncr_output_tree.xpath(
-                f'//auc:PremisesIdentifier[auc:IdentifierCustomName = "{PREMISES_ID_NAME}"]/auc:IdentifierValue',
-                namespaces=NAMESPACES
+                f'//auc:PremisesIdentifier[auc:IdentifierCustomName = "{PREMISES_ID_NAME}"]/auc:IdentifierValue', namespaces=NAMESPACES
             )
             analysis_property_view_id = _parse_analysis_property_view_id(file_.path)
             id_value_elem[0].text = str(analysis_property_view_id)
 
             # zip up the xml and image
             result = BytesIO()
-            with ZipFile(result, 'w') as zf:
-                zf.writestr(
-                    zinfo_or_arcname='result.xml',
-                    data=etree.tostring(bsyncr_output_tree, pretty_print=True)
-                )
-                bsyncr_image_path = path.join(BASE_DIR, 'seed', 'tests', 'data', 'example-bsyncr-plot.png')
-                zf.write(bsyncr_image_path, arcname='plot.png')
+            with ZipFile(result, "w") as zf:
+                zf.writestr(zinfo_or_arcname="result.xml", data=etree.tostring(bsyncr_output_tree, pretty_print=True))
+                bsyncr_image_path = path.join(BASE_DIR, "seed", "tests", "data", "example-bsyncr-plot.png")
+                zf.write(bsyncr_image_path, arcname="plot.png")
 
             result.seek(0)
             return result
@@ -609,9 +566,7 @@ class TestBsyncrPipeline(TestCase):
             the_response = Response()
             if error_messages is not None:
                 the_response.status_code = 400
-                body_dict = {
-                    'errors': [{'detail': msg, 'code': '400'} for msg in error_messages]
-                }
+                body_dict = {"errors": [{"detail": msg, "code": "400"} for msg in error_messages]}
                 the_response._content = json.dumps(body_dict).encode()
             else:
                 the_response.status_code = 200
@@ -629,7 +584,7 @@ class TestBsyncrPipeline(TestCase):
         # Assert
         self.assertEqual(0, len(errors))
 
-        ts_elems = tree.xpath('//auc:TimeSeries', namespaces=NAMESPACES)
+        ts_elems = tree.xpath("//auc:TimeSeries", namespaces=NAMESPACES)
         self.assertEqual(self.meter.meter_readings.count(), len(ts_elems))
 
         # throws exception if document is not valid
@@ -650,8 +605,8 @@ class TestBsyncrPipeline(TestCase):
         # Assert
         self.assertIsNone(doc)
         self.assertEqual(2, len(errors))
-        self.assertTrue('Linked PropertyState is missing longitude' in errors)
-        self.assertTrue('Linked PropertyState is missing latitude' in errors)
+        self.assertTrue("Linked PropertyState is missing longitude" in errors)
+        self.assertTrue("Linked PropertyState is missing latitude" in errors)
 
     def test_build_bsyncr_input_returns_error_if_reading_missing_value(self):
         # Setup
@@ -665,7 +620,7 @@ class TestBsyncrPipeline(TestCase):
         # Assert
         self.assertIsNone(doc)
         self.assertEqual(1, len(errors))
-        self.assertTrue('has no reading value' in errors[0])
+        self.assertTrue("has no reading value" in errors[0])
 
     def test_prepare_analysis_is_successful_when_properly_setup(self):
         # Act
@@ -681,9 +636,7 @@ class TestBsyncrPipeline(TestCase):
         self.assertEqual(len(self.good_property_views), input_files.count())
 
         # verify there were no messages
-        messages = AnalysisMessage.objects.filter(
-            Q(analysis=self.analysis_b) | Q(analysis_property_view__analysis_id=self.analysis_b)
-        )
+        messages = AnalysisMessage.objects.filter(Q(analysis=self.analysis_b) | Q(analysis_property_view__analysis_id=self.analysis_b))
         self.assertEqual(0, messages.count())
 
     def test_prepare_analysis_creates_message_for_view_when_no_meter(self):
@@ -709,8 +662,7 @@ class TestBsyncrPipeline(TestCase):
         )
         messages = AnalysisMessage.objects.filter(analysis_property_view=analysis_property_view)
         self.assertEqual(1, messages.count())
-        self.assertTrue(
-            'Property has no linked electricity meters with 12 or more readings' in messages[0].user_message)
+        self.assertTrue("Property has no linked electricity meters with 12 or more readings" in messages[0].user_message)
 
     def test_prepare_analysis_fails_when_it_fails_to_make_at_least_one_input_file(self):
         # Setup
@@ -732,10 +684,8 @@ class TestBsyncrPipeline(TestCase):
         # there should be a message for every property, saying it's Bad
         analysis_property_view_ids = AnalysisPropertyView.objects.filter(
             analysis=self.analysis_b,
-        ).values_list('id', flat=True)
-        messages = AnalysisMessage.objects.filter(
-            analysis_property_view_id__in=analysis_property_view_ids
-        )
+        ).values_list("id", flat=True)
+        messages = AnalysisMessage.objects.filter(analysis_property_view_id__in=analysis_property_view_ids)
         self.assertEqual(len(self.good_property_views), messages.count())
 
         # there should also be a message at analysis level saying things are Bad
@@ -744,7 +694,7 @@ class TestBsyncrPipeline(TestCase):
             analysis=self.analysis_b,
             analysis_property_view=None,
         )
-        self.assertEqual('No files were able to be prepared for the analysis', analysis_message.user_message)
+        self.assertEqual("No files were able to be prepared for the analysis", analysis_message.user_message)
 
     def test_start_analysis_is_successful_when_inputs_are_valid(self):
         # Setup
@@ -758,7 +708,7 @@ class TestBsyncrPipeline(TestCase):
 
         # Act
         mock_bsyncr_service_request = self._mock_bsyncr_service_request_factory(error_messages=None)
-        with patch('seed.analysis_pipelines.bsyncr._bsyncr_service_request', side_effect=mock_bsyncr_service_request):
+        with patch("seed.analysis_pipelines.bsyncr._bsyncr_service_request", side_effect=mock_bsyncr_service_request):
             pipeline.start_analysis()
 
         # Assert
@@ -766,12 +716,8 @@ class TestBsyncrPipeline(TestCase):
         self.assertEqual(Analysis.COMPLETED, self.analysis_b.status)
 
         # there should be output files
-        analysis_property_view = AnalysisPropertyView.objects.filter(
-            analysis=self.analysis_b
-        ).first()
-        output_files = AnalysisOutputFile.objects.filter(
-            analysis_property_views__id=analysis_property_view.id
-        )
+        analysis_property_view = AnalysisPropertyView.objects.filter(analysis=self.analysis_b).first()
+        output_files = AnalysisOutputFile.objects.filter(analysis_property_views__id=analysis_property_view.id)
         self.assertEqual(1, output_files.filter(content_type=AnalysisOutputFile.BUILDINGSYNC).count())
         self.assertEqual(1, output_files.filter(content_type=AnalysisOutputFile.IMAGE_PNG).count())
 
@@ -782,7 +728,7 @@ class TestBsyncrPipeline(TestCase):
         # each property view should have parsed results stored
         # NOTE: these results won't change because they come from the example bsyncr output file
         expected_parsed_results = {
-            'models': [
+            "models": [
                 {
                     "EndTimestamp": "2013-02-13T00:00:00",
                     "StartTimestamp": "2012-03-13T00:00:00",
@@ -831,8 +777,8 @@ class TestBsyncrPipeline(TestCase):
         self.assertEqual(Analysis.READY, self.analysis_b.status)
 
         # Act
-        mock_bsyncr_service_request = self._mock_bsyncr_service_request_factory(error_messages=['Something is Bad'])
-        with patch('seed.analysis_pipelines.bsyncr._bsyncr_service_request', side_effect=mock_bsyncr_service_request):
+        mock_bsyncr_service_request = self._mock_bsyncr_service_request_factory(error_messages=["Something is Bad"])
+        with patch("seed.analysis_pipelines.bsyncr._bsyncr_service_request", side_effect=mock_bsyncr_service_request):
             pipeline.start_analysis()
 
         # Assert
@@ -840,52 +786,42 @@ class TestBsyncrPipeline(TestCase):
         self.assertEqual(Analysis.FAILED, self.analysis_b.status)
 
         # there should be a generic analysis message indicating all properties failed
-        analysis_generic_message = AnalysisMessage.objects.get(analysis=self.analysis_b,
-                                                               analysis_property_view__isnull=True)
-        self.assertEqual('Failed to get results for all properties', analysis_generic_message.user_message)
+        analysis_generic_message = AnalysisMessage.objects.get(analysis=self.analysis_b, analysis_property_view__isnull=True)
+        self.assertEqual("Failed to get results for all properties", analysis_generic_message.user_message)
 
         # every property should have a linked message with the bsyncr error
-        analysis_messages = AnalysisMessage.objects.filter(analysis=self.analysis_b,
-                                                           analysis_property_view__isnull=False)
+        analysis_messages = AnalysisMessage.objects.filter(analysis=self.analysis_b, analysis_property_view__isnull=False)
         self.assertEqual(len(property_view_ids), analysis_messages.count())
         for analysis_message in analysis_messages:
-            self.assertTrue('Unexpected error from bsyncr service' in analysis_message.user_message)
+            self.assertTrue("Unexpected error from bsyncr service" in analysis_message.user_message)
 
 
 class TestBETTERPipeline(TestCase):
     def setUp(self):
         user_details = {
-            'username': 'test_user@demo.com',
-            'password': 'test_pass',
-            'email': 'test_user@demo.com',
-            'first_name': 'Test',
-            'last_name': 'User',
+            "username": "test_user@demo.com",
+            "password": "test_pass",
+            "email": "test_user@demo.com",
+            "first_name": "Test",
+            "last_name": "User",
         }
         self.user = User.objects.create_user(**user_details)
         self.org, _, _ = create_organization(self.user)
 
-        property_state = (
-            FakePropertyStateFactory(organization=self.org).get_property_state(
-                # fields required for analysis
-                property_name="test",
-                postal_code="1234",
-                property_type="Office",
-                city="Golden",
-                gross_floor_area=ureg.Quantity(float(10000), "foot ** 2"),
-            )
+        property_state = FakePropertyStateFactory(organization=self.org).get_property_state(
+            # fields required for analysis
+            property_name="test",
+            postal_code="1234",
+            property_type="Office",
+            city="Golden",
+            gross_floor_area=ureg.Quantity(float(10000), "foot ** 2"),
         )
-        self.analysis_property_view = (
-            FakeAnalysisPropertyViewFactory(organization=self.org, user=self.user).get_analysis_property_view(
-                property_state=property_state,
-                # analysis args
-                name='Good Analysis',
-                service=Analysis.BETTER,
-                configuration={
-                    'benchmark_data': 'DEFAULT',
-                    'savings_target': 'NOMINAL',
-                    'min_model_r_squared': 0.1
-                }
-            )
+        self.analysis_property_view = FakeAnalysisPropertyViewFactory(organization=self.org, user=self.user).get_analysis_property_view(
+            property_state=property_state,
+            # analysis args
+            name="Good Analysis",
+            service=Analysis.BETTER,
+            configuration={"benchmark_data": "DEFAULT", "savings_target": "NOMINAL", "min_model_r_squared": 0.1},
         )
 
         self.meter_nat = Meter.objects.create(
@@ -908,8 +844,8 @@ class TestBETTERPipeline(TestCase):
                 start_time=make_aware(datetime(2020, j, 1, 0, 0, 0), timezone=tz_obj),
                 end_time=make_aware(datetime(2020, j, 28, 0, 0, 0), timezone=tz_obj),
                 reading=12345,
-                source_unit='MBtu',
-                conversion_factor=1.00
+                source_unit="MBtu",
+                conversion_factor=1.00,
             )
 
             MeterReading.objects.create(
@@ -917,21 +853,15 @@ class TestBETTERPipeline(TestCase):
                 start_time=make_aware(datetime(2020, j, 1, 0, 0, 0), timezone=tz_obj),
                 end_time=make_aware(datetime(2020, j, 28, 0, 0, 0), timezone=tz_obj),
                 reading=12345,
-                source_unit='kWh',
-                conversion_factor=1.00
+                source_unit="kWh",
+                conversion_factor=1.00,
             )
 
     def test_build_better_input_returns_valid_bsync_document(self):
         # Setup
         meters = [
-            {
-                'meter_type': self.meter_nat.type,
-                'readings': self.meter_nat.meter_readings.all()
-            },
-            {
-                'meter_type': self.meter_elec.type,
-                'readings': self.meter_elec.meter_readings.all()
-            },
+            {"meter_type": self.meter_nat.type, "readings": self.meter_nat.meter_readings.all()},
+            {"meter_type": self.meter_elec.type, "readings": self.meter_elec.meter_readings.all()},
         ]
 
         # Act
@@ -941,7 +871,7 @@ class TestBETTERPipeline(TestCase):
         # Assert
         self.assertEqual(0, len(errors))
 
-        ts_elems = tree.xpath('//auc:TimeSeries', namespaces=NAMESPACES)
+        ts_elems = tree.xpath("//auc:TimeSeries", namespaces=NAMESPACES)
 
         self.assertEqual(self.meter_elec.meter_readings.count() + self.meter_nat.meter_readings.count(), len(ts_elems))
 
@@ -966,29 +896,29 @@ class TestEuiPipeline(TestCase):
     def setUp(self):
         self.timezone_object = pytztimezone(TIME_ZONE)
         user_details = {
-            'username': 'test_user@demo.com',
-            'password': 'test_pass',
-            'email': 'test_user@demo.com',
-            'first_name': 'Test',
-            'last_name': 'User',
+            "username": "test_user@demo.com",
+            "password": "test_pass",
+            "email": "test_user@demo.com",
+            "first_name": "Test",
+            "last_name": "User",
         }
         self.user = User.objects.create_user(**user_details)
         self.org, _, _ = create_organization(self.user)
-        self.cycle = FakeCycleFactory(organization=self.org, user=self.user).get_cycle(start=datetime(2020, 1, 1, tzinfo=self.timezone_object))
+        self.cycle = FakeCycleFactory(organization=self.org, user=self.user).get_cycle(
+            start=datetime(2020, 1, 1, tzinfo=self.timezone_object)
+        )
         self.test_property = FakePropertyFactory(organization=self.org).get_property()
-        self.property_state = FakePropertyStateFactory(organization=self.org).get_property_state(gross_floor_area=ureg.Quantity(float(10000), "foot ** 2"))
-        self.property_view = FakePropertyViewFactory(organization=self.org, user=self.user).get_property_view(prprty=self.test_property, cycle=self.cycle, state=self.property_state)
+        self.property_state = FakePropertyStateFactory(organization=self.org).get_property_state(
+            gross_floor_area=ureg.Quantity(float(10000), "foot ** 2")
+        )
+        self.property_view = FakePropertyViewFactory(organization=self.org, user=self.user).get_property_view(
+            prprty=self.test_property, cycle=self.cycle, state=self.property_state
+        )
         self.meter = Meter.objects.create(
-            property=self.test_property,
-            source=Meter.PORTFOLIO_MANAGER,
-            source_id="Source ID",
-            type=Meter.ELECTRICITY_GRID
+            property=self.test_property, source=Meter.PORTFOLIO_MANAGER, source_id="Source ID", type=Meter.ELECTRICITY_GRID
         )
         self.invalid_meter = Meter.objects.create(
-            property=self.test_property,
-            source=Meter.PORTFOLIO_MANAGER,
-            source_id="Source ID",
-            type=Meter.NATURAL_GAS
+            property=self.test_property, source=Meter.PORTFOLIO_MANAGER, source_id="Source ID", type=Meter.NATURAL_GAS
         )
 
     def test_invalid_property_state(self):
@@ -996,9 +926,7 @@ class TestEuiPipeline(TestCase):
         self.property_state.save()
         meter_readings_by_property_view, errors_by_property_view_id = _get_valid_meters([self.property_view.id], {"select_meters": "all"})
         self.assertDictEqual(meter_readings_by_property_view, {})
-        self.assertDictEqual(errors_by_property_view_id, {
-            self.property_view.id: [EUI_ANALYSIS_MESSAGES[ERROR_INVALID_GROSS_FLOOR_AREA]]
-        })
+        self.assertDictEqual(errors_by_property_view_id, {self.property_view.id: [EUI_ANALYSIS_MESSAGES[ERROR_INVALID_GROSS_FLOOR_AREA]]})
         self.property_state.gross_floor_area = ureg.Quantity(float(10000), "foot ** 2")
         self.property_state.save()
 
@@ -1009,14 +937,12 @@ class TestEuiPipeline(TestCase):
             start_time=make_aware(datetime(2020, 1, 1, 0, 0, 0), timezone=self.timezone_object),
             end_time=make_aware(datetime(2020, 1, 28, 0, 0, 0), timezone=self.timezone_object),
             reading=12345,
-            source_unit='kWh',
-            conversion_factor=1.00
+            source_unit="kWh",
+            conversion_factor=1.00,
         )
         meter_readings_by_property_view, errors_by_property_view_id = _get_valid_meters([self.property_view.id], {"select_meters": "all"})
         self.assertDictEqual(meter_readings_by_property_view, {})
-        self.assertDictEqual(errors_by_property_view_id, {
-            self.property_view.id: [EUI_ANALYSIS_MESSAGES[ERROR_INVALID_METER_READINGS]]
-        })
+        self.assertDictEqual(errors_by_property_view_id, {self.property_view.id: [EUI_ANALYSIS_MESSAGES[ERROR_INVALID_METER_READINGS]]})
 
     def test_valid_meters_use_most_recent_year(self):
         MeterReading.objects.filter(meter=self.meter).delete()
@@ -1027,8 +953,8 @@ class TestEuiPipeline(TestCase):
                 start_time=make_aware(datetime(2020, j, 1, 0, 0, 0), timezone=self.timezone_object),
                 end_time=make_aware(datetime(2020, j, 28, 0, 0, 0), timezone=self.timezone_object),
                 reading=12345,
-                source_unit='kWh',
-                conversion_factor=1.00
+                source_unit="kWh",
+                conversion_factor=1.00,
             )
             meter_readings.append(SimpleMeterReading(meter_reading.start_time, meter_reading.end_time, meter_reading.reading))
 
@@ -1038,8 +964,8 @@ class TestEuiPipeline(TestCase):
             start_time=make_aware(datetime(2019, 1, 1, 0, 0, 0), timezone=self.timezone_object),
             end_time=make_aware(datetime(2019, 1, 28, 0, 0, 0), timezone=self.timezone_object),
             reading=12345,
-            source_unit='kWh',
-            conversion_factor=1.00
+            source_unit="kWh",
+            conversion_factor=1.00,
         )
 
         self.maxDiff = None
@@ -1056,8 +982,8 @@ class TestEuiPipeline(TestCase):
                 start_time=make_aware(datetime(2020, j, 1, 0, 0, 0), timezone=self.timezone_object),
                 end_time=make_aware(datetime(2020, j, 28, 0, 0, 0), timezone=self.timezone_object),
                 reading=12345,
-                source_unit='kWh',
-                conversion_factor=1.00
+                source_unit="kWh",
+                conversion_factor=1.00,
             )
             meter_readings.append(SimpleMeterReading(meter_reading.start_time, meter_reading.end_time, meter_reading.reading))
 
@@ -1067,17 +993,14 @@ class TestEuiPipeline(TestCase):
             start_time=make_aware(datetime(2020, 12, 1, 0, 0, 0), timezone=self.timezone_object),
             end_time=make_aware(datetime(2020, 12, 28, 0, 0, 0), timezone=self.timezone_object),
             reading=12345,
-            source_unit='kWh',
-            conversion_factor=1.00
+            source_unit="kWh",
+            conversion_factor=1.00,
         )
 
         self.maxDiff = None
         config = {
             "select_meters": "date_range",
-            "meter": {
-                "start_date": datetime(2020, 1, 1, 0, 0, 0),
-                "end_date": datetime(2020, 11, 30, 0, 0, 0)
-            }
+            "meter": {"start_date": datetime(2020, 1, 1, 0, 0, 0), "end_date": datetime(2020, 11, 30, 0, 0, 0)},
         }
         meter_readings_by_property_view, errors_by_property_view_id = _get_valid_meters([self.property_view.id], config)
         self.assertDictEqual(errors_by_property_view_id, {})
@@ -1092,8 +1015,8 @@ class TestEuiPipeline(TestCase):
                 start_time=make_aware(datetime(2020, j, 1, 0, 0, 0), timezone=self.timezone_object),
                 end_time=make_aware(datetime(2020, j, 28, 0, 0, 0), timezone=self.timezone_object),
                 reading=12345,
-                source_unit='kWh',
-                conversion_factor=1.00
+                source_unit="kWh",
+                conversion_factor=1.00,
             )
             meter_readings.append(SimpleMeterReading(meter_reading.start_time, meter_reading.end_time, meter_reading.reading))
 
@@ -1103,8 +1026,8 @@ class TestEuiPipeline(TestCase):
             start_time=make_aware(datetime(2022, 1, 1, 0, 0, 0), timezone=self.timezone_object),
             end_time=make_aware(datetime(2022, 1, 28, 0, 0, 0), timezone=self.timezone_object),
             reading=12345,
-            source_unit='kWh',
-            conversion_factor=1.00
+            source_unit="kWh",
+            conversion_factor=1.00,
         )
 
         self.maxDiff = None
@@ -1122,67 +1045,92 @@ class TestEuiPipeline(TestCase):
         reading_amount = 78
         reading = SimpleMeterReading(reading_start_time, reading_end_time, reading_amount)
         results = _calculate_eui([reading], 123)
-        self.assertEqual(results['eui'], 0.63)
-        self.assertEqual(results['reading'], reading_amount)
-        self.assertEqual(results['coverage'], 100)
+        self.assertEqual(results["eui"], 0.63)
+        self.assertEqual(results["reading"], reading_amount)
+        self.assertEqual(results["coverage"], 100)
 
 
 class TestEeejPipeline(TestCase):
     def setUp(self):
         self.timezone_object = pytztimezone(TIME_ZONE)
         user_details = {
-            'username': 'test_user@demo.com',
-            'password': 'test_pass',
-            'email': 'test_user@demo.com',
-            'first_name': 'Test',
-            'last_name': 'User',
+            "username": "test_user@demo.com",
+            "password": "test_pass",
+            "email": "test_user@demo.com",
+            "first_name": "Test",
+            "last_name": "User",
         }
         self.user = User.objects.create_user(**user_details)
         self.org, _, _ = create_organization(self.user)
-        self.cycle = FakeCycleFactory(organization=self.org, user=self.user).get_cycle(start=datetime(2020, 1, 1, tzinfo=self.timezone_object))
+        self.cycle = FakeCycleFactory(organization=self.org, user=self.user).get_cycle(
+            start=datetime(2020, 1, 1, tzinfo=self.timezone_object)
+        )
         self.test_property = FakePropertyFactory(organization=self.org).get_property()
-        self.property_state = FakePropertyStateFactory(organization=self.org).get_property_state(gross_floor_area=ureg.Quantity(float(10000), "foot ** 2"))
-        self.property_view = FakePropertyViewFactory(organization=self.org, user=self.user).get_property_view(prprty=self.test_property, cycle=self.cycle, state=self.property_state)
+        self.property_state = FakePropertyStateFactory(organization=self.org).get_property_state(
+            gross_floor_area=ureg.Quantity(float(10000), "foot ** 2")
+        )
+        self.property_view = FakePropertyViewFactory(organization=self.org, user=self.user).get_property_view(
+            prprty=self.test_property, cycle=self.cycle, state=self.property_state
+        )
 
     def test_get_location(self):
-
         location, status = _get_location(self.property_view)
-        self.assertEqual(status, 'success')
+        self.assertEqual(status, "success")
         self.assertTrue(location is not None)
-        self.assertEqual(location, '730 Garcia Street, Boring, Oregon, 97080')
+        self.assertEqual(location, "730 Garcia Street, Boring, Oregon, 97080")
 
     def test_get_data_for_census_tract_fetch(self):
         pvids = [self.property_view.id]
         loc_data_by_property_view, errors_by_property_view_id = _get_data_for_census_tract_fetch(pvids, self.org, True)
         self.assertEqual(errors_by_property_view_id, {})
-        self.assertEqual(loc_data_by_property_view, {self.property_view.id: {'latitude': None, 'longitude': None, 'geocoding_confidence': None, 'tract': None, 'valid_coords': False, 'location': '730 Garcia Street, Boring, Oregon, 97080'}})
+        self.assertEqual(
+            loc_data_by_property_view,
+            {
+                self.property_view.id: {
+                    "latitude": None,
+                    "longitude": None,
+                    "geocoding_confidence": None,
+                    "tract": None,
+                    "valid_coords": False,
+                    "location": "730 Garcia Street, Boring, Oregon, 97080",
+                }
+            },
+        )
 
     def test_get_eeej_indicators(self):
         # create one disadvantaged and one not
         # make sure addresses are real so we can get a real census tract fetched from the service
         self.test_property_dac = FakePropertyFactory(organization=self.org).get_property()
-        self.property_state_dac = FakePropertyStateFactory(organization=self.org).get_property_state(address_line_1='6715 W Colfax Ave', city='Lakewood', state='CO', postal_code='80214')
-        self.property_view_dac = FakePropertyViewFactory(organization=self.org, user=self.user).get_property_view(prprty=self.test_property_dac, cycle=self.cycle, state=self.property_state_dac)
+        self.property_state_dac = FakePropertyStateFactory(organization=self.org).get_property_state(
+            address_line_1="6715 W Colfax Ave", city="Lakewood", state="CO", postal_code="80214"
+        )
+        self.property_view_dac = FakePropertyViewFactory(organization=self.org, user=self.user).get_property_view(
+            prprty=self.test_property_dac, cycle=self.cycle, state=self.property_state_dac
+        )
 
         self.test_property_not_dac = FakePropertyFactory(organization=self.org).get_property()
-        self.property_state_not_dac = FakePropertyStateFactory(organization=self.org).get_property_state(address_line_1='605 Whittier Drive', city='Beverly Hills', state='CA', postal_code='90210')
-        self.property_view_not_dac = FakePropertyViewFactory(organization=self.org, user=self.user).get_property_view(prprty=self.test_property_not_dac, cycle=self.cycle, state=self.property_state_not_dac)
+        self.property_state_not_dac = FakePropertyStateFactory(organization=self.org).get_property_state(
+            address_line_1="605 Whittier Drive", city="Beverly Hills", state="CA", postal_code="90210"
+        )
+        self.property_view_not_dac = FakePropertyViewFactory(organization=self.org, user=self.user).get_property_view(
+            prprty=self.test_property_not_dac, cycle=self.cycle, state=self.property_state_not_dac
+        )
 
         apv_ids = [self.property_view_dac.id, self.property_view_not_dac.id]
         apvs = [self.property_view_dac, self.property_view_not_dac]
-        loc_data_by_property_view, errors_by_property_view_id = _get_data_for_census_tract_fetch(apv_ids, self.org, True)
-        results, errors_by_apv_id = _get_eeej_indicators(apvs, loc_data_by_property_view)
+        loc_data_by_property_view, _errors_by_property_view_id = _get_data_for_census_tract_fetch(apv_ids, self.org, True)
+        results, _errors_by_apv_id = _get_eeej_indicators(apvs, loc_data_by_property_view)
         self.assertEqual(len(results), 2)
         # DAC
-        self.assertEqual(results[self.property_view_dac.id]['census_tract'], '08059011402')
-        self.assertEqual(results[self.property_view_dac.id]['dac'], True)
-        self.assertEqual(results[self.property_view_dac.id]['energy_burden_low_income'], False)
-        self.assertEqual(results[self.property_view_dac.id]['energy_burden_percentile'], 12.0)
-        self.assertEqual(results[self.property_view_dac.id]['number_affordable_housing'], 1)
+        self.assertEqual(results[self.property_view_dac.id]["census_tract"], "08059011402")
+        self.assertEqual(results[self.property_view_dac.id]["dac"], True)
+        self.assertEqual(results[self.property_view_dac.id]["energy_burden_low_income"], False)
+        self.assertEqual(results[self.property_view_dac.id]["energy_burden_percentile"], 12.0)
+        self.assertEqual(results[self.property_view_dac.id]["number_affordable_housing"], 1)
 
         # non DAC
-        self.assertEqual(results[self.property_view_not_dac.id]['census_tract'], '06037700700')
-        self.assertEqual(results[self.property_view_not_dac.id]['dac'], False)
-        self.assertEqual(results[self.property_view_not_dac.id]['energy_burden_low_income'], False)
-        self.assertEqual(results[self.property_view_not_dac.id]['energy_burden_percentile'], 8.0)
-        self.assertEqual(results[self.property_view_not_dac.id]['number_affordable_housing'], 0)
+        self.assertEqual(results[self.property_view_not_dac.id]["census_tract"], "06037700700")
+        self.assertEqual(results[self.property_view_not_dac.id]["dac"], False)
+        self.assertEqual(results[self.property_view_not_dac.id]["energy_burden_low_income"], False)
+        self.assertEqual(results[self.property_view_not_dac.id]["energy_burden_percentile"], 8.0)
+        self.assertEqual(results[self.property_view_not_dac.id]["number_affordable_housing"], 0)

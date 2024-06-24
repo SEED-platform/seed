@@ -1,9 +1,9 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 import logging
 
 from seed.data_importer.equivalence_partitioner import EquivalencePartitioner
@@ -12,30 +12,26 @@ from seed.tests.util import DataMappingBaseTestCase
 logger = logging.getLogger(__name__)
 
 
-class EZState(object):
-
+class EZState:
     def __init__(self, *args, **kwds):
         for arg in args:
             setattr(self, arg, None)
 
-        for (k, v) in kwds.items():
+        for k, v in kwds.items():
             setattr(self, k, v)
 
 
 class PropertyState(EZState):
-
     def __init__(self, **kwds):
         super().__init__("ubid", "pm_property_id", "custom_id_1", "normalized_address", **kwds)
 
 
 class TaxLotState(EZState):
-
     def __init__(self, **kwds):
         super().__init__("jurisdiction_tax_lot_id", "custom_id_1", "normalized_address", **kwds)
 
 
 class TestEquivalenceClassGenerator(DataMappingBaseTestCase):
-
     def test_equivalence(self):
         partitioner = EquivalencePartitioner.make_propertystate_equivalence()
 
@@ -43,9 +39,9 @@ class TestEquivalenceClassGenerator(DataMappingBaseTestCase):
         p2 = PropertyState(pm_property_id=100)
         p3 = PropertyState(pm_property_id=200)
         p4 = PropertyState(custom_id_1=100)
-        p5 = PropertyState(ubid='abc+123')
-        p6 = PropertyState(ubid='100')
-        p7 = PropertyState(ubid='abc+123')
+        p5 = PropertyState(ubid="abc+123")
+        p6 = PropertyState(ubid="100")
+        p7 = PropertyState(ubid="abc+123")
 
         equivalence_classes = partitioner.calculate_equivalence_classes([p1, p2])
         self.assertEqual(len(equivalence_classes), 1)
@@ -68,8 +64,7 @@ class TestEquivalenceClassGenerator(DataMappingBaseTestCase):
     def test_a_dummy_class_basics(self):
         tls1 = TaxLotState(jurisdiction_tax_lot_id="1")
         tls2 = TaxLotState(jurisdiction_tax_lot_id="1", custom_id_1="100")
-        tls3 = TaxLotState(jurisdiction_tax_lot_id="1", custom_id_1="100",
-                           normalized_address="123 fake street")
+        tls3 = TaxLotState(jurisdiction_tax_lot_id="1", custom_id_1="100", normalized_address="123 fake street")
 
         self.assertEqual(tls1.jurisdiction_tax_lot_id, "1")
         self.assertEqual(tls1.custom_id_1, None)

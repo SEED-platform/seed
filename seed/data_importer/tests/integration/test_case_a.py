@@ -1,9 +1,9 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 import logging
 import os.path as osp
 import pathlib
@@ -12,15 +12,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 
 from seed.data_importer import tasks
 from seed.data_importer.tests.util import FAKE_MAPPINGS
-from seed.models import (
-    ASSESSED_RAW,
-    DATA_STATE_MAPPING,
-    Column,
-    PropertyState,
-    PropertyView,
-    TaxLot,
-    TaxLotState
-)
+from seed.models import ASSESSED_RAW, DATA_STATE_MAPPING, Column, PropertyState, PropertyView, TaxLot, TaxLotState
 from seed.tests.util import DataMappingBaseTestCase
 
 logger = logging.getLogger(__name__)
@@ -28,16 +20,13 @@ logger = logging.getLogger(__name__)
 
 class TestCaseA(DataMappingBaseTestCase):
     def setUp(self):
-        filename = getattr(self, 'filename', 'example-data-properties.xlsx')
+        filename = getattr(self, "filename", "example-data-properties.xlsx")
         import_file_source_type = ASSESSED_RAW
-        self.fake_mappings = FAKE_MAPPINGS['portfolio']
+        self.fake_mappings = FAKE_MAPPINGS["portfolio"]
         selfvars = self.set_up(import_file_source_type)
         self.user, self.org, self.import_file, self.import_record, self.cycle = selfvars
-        filepath = osp.join(osp.dirname(__file__), '..', 'data', filename)
-        self.import_file.file = SimpleUploadedFile(
-            name=filename,
-            content=pathlib.Path(filepath).read_bytes()
-        )
+        filepath = osp.join(osp.dirname(__file__), "..", "data", filename)
+        self.import_file.file = SimpleUploadedFile(name=filename, content=pathlib.Path(filepath).read_bytes())
         self.import_file.save()
 
     def test_import_file(self):
@@ -45,7 +34,7 @@ class TestCaseA(DataMappingBaseTestCase):
         Column.create_mappings(self.fake_mappings, self.org, self.user, self.import_file.pk)
         tasks.map_data(self.import_file.pk)
 
-        ps = PropertyState.objects.filter(pm_property_id='2264').first()
+        ps = PropertyState.objects.filter(pm_property_id="2264").first()
         ps.promote(self.cycle)
 
         # should only be 11 unmatched_properties because one was promoted.
@@ -53,7 +42,7 @@ class TestCaseA(DataMappingBaseTestCase):
         self.assertEqual(len(ps), 13)
 
     def test_match_buildings(self):
-        """ case A (one property <-> one tax lot) """
+        """case A (one property <-> one tax lot)"""
         tasks.save_raw_data(self.import_file.pk)
         Column.create_mappings(self.fake_mappings, self.org, self.user, self.import_file.pk)
         tasks.map_data(self.import_file.pk)
@@ -75,20 +64,20 @@ class TestCaseA(DataMappingBaseTestCase):
         self.assertEqual(len(ts), 18)
 
         # Check a single case of the taxlotstate
-        ts = TaxLotState.objects.filter(jurisdiction_tax_lot_id='1552813').first()
-        self.assertEqual(ts.jurisdiction_tax_lot_id, '1552813')
+        ts = TaxLotState.objects.filter(jurisdiction_tax_lot_id="1552813").first()
+        self.assertEqual(ts.jurisdiction_tax_lot_id, "1552813")
         self.assertEqual(ts.address_line_1, None)
         self.assertEqual(ts.extra_data["data_008"], 1)
 
         # Check a single case of the propertystate
-        ps = PropertyState.objects.filter(pm_property_id='2264')
+        ps = PropertyState.objects.filter(pm_property_id="2264")
         self.assertEqual(len(ps), 1)
         ps = ps.first()
-        self.assertEqual(ps.pm_property_id, '2264')
-        self.assertEqual(ps.address_line_1, '50 Willow Ave SE')
-        self.assertEqual('data_007' in ps.extra_data, True)
-        self.assertEqual('data_008' in ps.extra_data, False)
-        self.assertEqual(ps.extra_data["data_007"], 'a')
+        self.assertEqual(ps.pm_property_id, "2264")
+        self.assertEqual(ps.address_line_1, "50 Willow Ave SE")
+        self.assertEqual("data_007" in ps.extra_data, True)
+        self.assertEqual("data_008" in ps.extra_data, False)
+        self.assertEqual(ps.extra_data["data_007"], "a")
 
         # verify that the lot_number has the tax_lot information. For this case it is one-to-one
         self.assertEqual(ps.lot_number, ts.jurisdiction_tax_lot_id)
@@ -97,7 +86,7 @@ class TestCaseA(DataMappingBaseTestCase):
 
         self.assertEqual(TaxLot.objects.count(), 10)
 
-        qry = PropertyView.objects.filter(state__custom_id_1='7')
+        qry = PropertyView.objects.filter(state__custom_id_1="7")
         self.assertEqual(qry.count(), 1)
         state = qry.first().state
 

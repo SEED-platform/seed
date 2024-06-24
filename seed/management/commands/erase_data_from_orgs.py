@@ -1,9 +1,7 @@
-# -*- coding: utf-8 -*-
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
-from __future__ import unicode_literals
 
 import collections
 import logging
@@ -18,24 +16,22 @@ logging.basicConfig(level=logging.DEBUG)
 
 class Command(BaseCommand):
     def add_arguments(self, parser):
-        parser.add_argument('--org', dest='organization', default=False)
-        parser.add_argument('--stats', dest='stats', default=False, action="store_true")
-        return
+        parser.add_argument("--org", dest="organization", default=False)
+        parser.add_argument("--stats", dest="stats", default=False, action="store_true")
 
     def handle(self, *args, **options):
-        logging_info("RUN create_m2m_relationships_organization with args={},kwds={}".format(args, options))
-        if options['organization']:
-            core_organization = list(map(int, options['organization'].split(",")))
+        logging_info(f"RUN create_m2m_relationships_organization with args={args},kwds={options}")
+        if options["organization"]:
+            core_organization = list(map(int, options["organization"].split(",")))
         else:
             core_organization = [20, 69]
 
-        logging_info("Processing organization list: {}".format(core_organization))
+        logging_info(f"Processing organization list: {core_organization}")
 
         for org in core_organization:
             delete_data_from_org(org)
 
         logging_info("END create_m2m_relationships_organization")
-        return
 
 
 def delete_data_from_org(org_pk):
@@ -54,5 +50,3 @@ def delete_data_from_org(org_pk):
         for ta in tax_attrs_to_clear[org_pk]:
             setattr(taxlot_state, ta, None)
             taxlot_state.save()
-
-    return

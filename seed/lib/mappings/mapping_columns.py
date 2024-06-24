@@ -1,11 +1,11 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 :author Nicholas Long <nicholas.long@nrel.gov>
 """
+
 import logging
 from functools import cmp_to_key
 
@@ -19,10 +19,10 @@ def sort_duplicates(a, b):
     Custom sort for the duplicate hash to decide which raw column will get the mapping suggestion
     based on the confidence.
     """
-    if a['confidence'] > b['confidence']:
+    if a["confidence"] > b["confidence"]:
         return -1
-    elif a['confidence'] == b['confidence']:
-        if a['raw_column'] > b['raw_column']:  # Sort by the strings--yay determinism
+    elif a["confidence"] == b["confidence"]:
+        if a["raw_column"] > b["raw_column"]:  # Sort by the strings--yay determinism
             return 1
         else:
             return -1
@@ -30,16 +30,14 @@ def sort_duplicates(a, b):
         return 1
 
 
-class MappingColumns(object):
+class MappingColumns:
     """
     This class handles the probabilistic mapping of unknown columns to defined fields. This
     is mainly used in the build_column_mapping API endpoint.
     """
 
     # TODO: convert dest_columns to mapping_data class instance
-    def __init__(self, raw_columns, dest_columns, previous_mapping=None, map_args=None,
-                 default_mappings=None,
-                 threshold=0):
+    def __init__(self, raw_columns, dest_columns, previous_mapping=None, map_args=None, default_mappings=None, threshold=0):
         """
         :param raw_columns: list of str. The column names we're trying to map.
         :param dest_columns: list of str. The columns we're mapping to.
@@ -78,19 +76,19 @@ class MappingColumns(object):
             # with conf of 100 since a conf of 100 signifies the user has saved that mapping.
             if attempt_best_match:
                 # convert raw fields spaces into underscores because that is what is in the database
-                raw_test = raw.replace(' ', '_')
+                raw_test = raw.replace(" ", "_")
 
                 # try some alternatives to the raw column in specific cases
                 # (e.g., zip => postal code). Hack for now, but should make this some global
                 # config or organization specific config
-                if raw_test.lower() == 'zip' or raw_test.lower() == 'zip_code':
-                    raw_test = 'postal_code'
-                if raw_test.lower() == 'gba':
-                    raw_test = 'gross_floor_area'
-                if raw_test.lower() == 'building_address':
-                    raw_test = 'address_line_1'
-                if raw_test.lower() == 'ubi':
-                    raw_test = 'jurisdiction_tax_lot_id'
+                if raw_test.lower() == "zip" or raw_test.lower() == "zip_code":
+                    raw_test = "postal_code"
+                if raw_test.lower() == "gba":
+                    raw_test = "gross_floor_area"
+                if raw_test.lower() == "building_address":
+                    raw_test = "address_line_1"
+                if raw_test.lower() == "ubi":
+                    raw_test = "jurisdiction_tax_lot_id"
 
                 matches = matchers.best_match(raw_test, dest_columns, top_n=5)
 
@@ -101,7 +99,7 @@ class MappingColumns(object):
         index = 0
         while self.duplicates and index < 10:
             index += 1
-            _log.debug("Index: %s with duplicates: %s" % (index, self.duplicates))
+            _log.debug(f"Index: {index} with duplicates: {self.duplicates}")
             for k, v in self.duplicates.items():
                 self.resolve_duplicate(k, v)
 
@@ -114,8 +112,8 @@ class MappingColumns(object):
 
         :param raw_column: list of strings
         :param mappings: list of tuples of potential mappings and confidences
-        :param previous_mapping: boolean, if true these these mappings will take precedence
-        :return: Bool, whether or not the mapping was added
+        :param previous_mapping: boolean, if true these mappings will take precedence
+        :return: Bool, whether the mapping was added
         """
 
         # verify that the raw_column_name does not yet exist, if it does, then return false
@@ -129,8 +127,8 @@ class MappingColumns(object):
             return False
 
         self.data[raw_column] = {
-            'previous_mapping': previous_mapping,
-            'mappings': mappings,
+            "previous_mapping": previous_mapping,
+            "mappings": mappings,
         }
         self.set_initial_mapping_cmp(raw_column)
 
@@ -144,13 +142,12 @@ class MappingColumns(object):
         :return: tuple of the mapping ('table', 'field', confidence), or ()
         """
 
-        mappings = self.data[raw_column]['mappings']
+        mappings = self.data[raw_column]["mappings"]
         if mappings and len(mappings) > 0:
-            return self.data[raw_column]['mappings'][0]
+            return self.data[raw_column]["mappings"][0]
         else:
-            _log.debug(
-                "There are no suggested mappings for the column %s, setting to field name" % raw_column)
-            return ('PropertyState', raw_column, 100)
+            _log.debug("There are no suggested mappings for the column %s, setting to field name" % raw_column)
+            return "PropertyState", raw_column, 100
 
     @property
     def duplicates(self):
@@ -178,22 +175,17 @@ class MappingColumns(object):
         result = {}
 
         for raw_column, v in self.data.items():
-            if v['initial_mapping_cmp'] in uniques:
-                duplicates.add(v['initial_mapping_cmp'])
-            uniques.add(v['initial_mapping_cmp'])
+            if v["initial_mapping_cmp"] in uniques:
+                duplicates.add(v["initial_mapping_cmp"])
+            uniques.add(v["initial_mapping_cmp"])
 
         # now go through and populate the dict with the duplicate keys
         for item in duplicates:
             for raw_column, v in self.data.items():
-                if v['initial_mapping_cmp'] == item:
+                if v["initial_mapping_cmp"] == item:
                     if item not in result:
                         result[item] = []
-                    result[item].append(
-                        {
-                            'raw_column': raw_column,
-                            'confidence': self.first_suggested_mapping(raw_column)[2]
-                        }
-                    )
+                    result[item].append({"raw_column": raw_column, "confidence": self.first_suggested_mapping(raw_column)[2]})
 
         return result
 
@@ -216,9 +208,9 @@ class MappingColumns(object):
         # go through all but the first result and remove the first mapping suggestion. There
         # should always be two because it was found as a duplicate.
         for raw in raw_columns[1:]:
-            if len(self.data[raw['raw_column']]['mappings']) > 0:
-                self.data[raw['raw_column']]['mappings'].pop(0)
-            self.set_initial_mapping_cmp(raw['raw_column'])
+            if len(self.data[raw["raw_column"]]["mappings"]) > 0:
+                self.data[raw["raw_column"]]["mappings"].pop(0)
+            self.set_initial_mapping_cmp(raw["raw_column"])
 
     def set_initial_mapping_cmp(self, raw_column):
         """
@@ -231,20 +223,19 @@ class MappingColumns(object):
         """
 
         # check if there are any other items left in the mapping suggestions
-        if len(self.data[raw_column]['mappings']) > 0:
+        if len(self.data[raw_column]["mappings"]) > 0:
             # update the compare string for detecting duplicates -- make method?
-            new_map = self.data[raw_column]['mappings'][0]
+            new_map = self.data[raw_column]["mappings"][0]
             # If anyone can figure out why new_map[1] could be a list then I will buy you a burrito
-            if new_map[0] is not None and new_map[1] is not None and not isinstance(new_map[1],
-                                                                                    list):
-                self.data[raw_column]['initial_mapping_cmp'] = '.'.join([new_map[0], new_map[1]])
+            if new_map[0] is not None and new_map[1] is not None and not isinstance(new_map[1], list):
+                self.data[raw_column]["initial_mapping_cmp"] = ".".join([new_map[0], new_map[1]])
             else:
                 _log.info("The mappings have a None table or column name")
-                self.data[raw_column]['initial_mapping_cmp'] = None
+                self.data[raw_column]["initial_mapping_cmp"] = None
         else:
             # if there are no mappings left, then the mapping suggestion will look like extra data
             # print("Setting set_initial_mapping to None for {}".format(raw_column))
-            self.data[raw_column]['initial_mapping_cmp'] = None
+            self.data[raw_column]["initial_mapping_cmp"] = None
 
     def apply_threshold(self, threshold):
         """
@@ -259,10 +250,10 @@ class MappingColumns(object):
         for k in self.data:
             # anyone want to convert this to a list comprehension?
             new_mappings = []
-            for m in self.data[k]['mappings']:
+            for m in self.data[k]["mappings"]:
                 if m[2] >= threshold:
                     new_mappings.append(m)
-            self.data[k]['mappings'] = new_mappings
+            self.data[k]["mappings"] = new_mappings
             self.set_initial_mapping_cmp(k)
 
     @property

@@ -1,5 +1,4 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
@@ -7,7 +6,6 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 :author Paul Munday <paul@paulmunday.net>
 """
 # pylint:disable=too-few-public-methods
-from __future__ import unicode_literals
 
 import datetime
 
@@ -19,20 +17,12 @@ from past.builtins import basestring
 from seed.landing.models import SEEDUser
 from seed.lib.superperms.orgs.models import Organization
 from seed.models import PropertyView
-from seed.models.auditlog import (
-    AUDIT_USER_CREATE,
-    AUDIT_USER_EDIT,
-    DATA_UPDATE_TYPE
-)
+from seed.models.auditlog import AUDIT_USER_CREATE, AUDIT_USER_EDIT, DATA_UPDATE_TYPE
 from seed.utils.strings import titlecase
 
-DEFAULT_GREEN_ASSESSMENT_VALIDITY_DURATION = getattr(
-    settings, 'GREEN_ASSESSMENT_DEFAULT_VALIDITY_DURATION', None
-)
+DEFAULT_GREEN_ASSESSMENT_VALIDITY_DURATION = getattr(settings, "GREEN_ASSESSMENT_DEFAULT_VALIDITY_DURATION", None)
 if DEFAULT_GREEN_ASSESSMENT_VALIDITY_DURATION:
-    DEFAULT_GREEN_ASSESSMENT_VALIDITY_DURATION = datetime.timedelta(
-        DEFAULT_GREEN_ASSESSMENT_VALIDITY_DURATION
-    )
+    DEFAULT_GREEN_ASSESSMENT_VALIDITY_DURATION = datetime.timedelta(DEFAULT_GREEN_ASSESSMENT_VALIDITY_DURATION)
 
 # logger = logging.getLogger(__name__)
 
@@ -47,21 +37,22 @@ class GreenAssessment(models.Model):
     recognition_type    n/a                     Assessment Recognition Type
     description n/a                             n/a
     """
-    AWARD = 'AWD'
-    CERTIFICATION = 'CRT'
-    LABEL = 'LBL'
-    PARTICIPANT = 'PRT'
-    RATING = 'RAT'
-    SCORE = 'SCR'
-    ZERO = 'ZER'
+
+    AWARD = "AWD"
+    CERTIFICATION = "CRT"
+    LABEL = "LBL"
+    PARTICIPANT = "PRT"
+    RATING = "RAT"
+    SCORE = "SCR"
+    ZERO = "ZER"
     RECOGNITION_TYPE_CHOICES = (
-        (AWARD, 'Award'),
-        (CERTIFICATION, 'Certification'),
-        (LABEL, 'Label'),
-        (PARTICIPANT, 'Participant'),
-        (RATING, 'Rating'),
-        (SCORE, 'Score'),
-        (ZERO, 'Zero Energy Ready Home')
+        (AWARD, "Award"),
+        (CERTIFICATION, "Certification"),
+        (LABEL, "Label"),
+        (PARTICIPANT, "Participant"),
+        (RATING, "Rating"),
+        (SCORE, "Score"),
+        (ZERO, "Zero Energy Ready Home"),
     )
     # A DOE Zero Energy Ready Home is a high performance home which is so energy
     # efficient, that a renewable energy system can offset all or most of its
@@ -69,10 +60,7 @@ class GreenAssessment(models.Model):
 
     def __str__(self):
         # pylint:disable=no-member
-        return '{}, {}, {}'.format(
-            self.award_body, self.name,
-            self.get_recognition_type_display()
-        )
+        return f"{self.award_body}, {self.name}, {self.get_recognition_type_display()}"
 
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
     # assessment name (General - use PropertyGreenVerification.rating for
@@ -82,20 +70,15 @@ class GreenAssessment(models.Model):
     # called award_body because older versions of swagger overwrite the body
     # of a POST etc with the contents of a field called 'body' in POST data
     award_body = models.CharField(max_length=100, null=True, blank=True)
-    recognition_type = models.CharField(
-        max_length=3, choices=RECOGNITION_TYPE_CHOICES, default=CERTIFICATION
-    )
+    recognition_type = models.CharField(max_length=3, choices=RECOGNITION_TYPE_CHOICES, default=CERTIFICATION)
     # not in BEDES/RESO
     description = models.TextField(null=True, blank=True)
     is_numeric_score = models.BooleanField()
     is_integer_score = models.BooleanField(default=True)
-    validity_duration = models.DurationField(
-        null=True, blank=True,
-        default=DEFAULT_GREEN_ASSESSMENT_VALIDITY_DURATION
-    )
+    validity_duration = models.DurationField(null=True, blank=True, default=DEFAULT_GREEN_ASSESSMENT_VALIDITY_DURATION)
 
     class Meta:
-        unique_together = ('organization', 'name', 'award_body')
+        unique_together = ("organization", "name", "award_body")
 
 
 class GreenAssessmentProperty(models.Model):
@@ -119,35 +102,28 @@ class GreenAssessmentProperty(models.Model):
     name        GreenBuildingVerificationType   Assessment Program
     body        GreenVerification[Type]Body     Assessment Program Organization
     """
+
     # pylint:disable=no-member
 
     MAPPING = {
         # attribute: RESO field, BEDES field
-        'name': ('GreenBuildingVerificationType', 'Assessment Program'),
-        'body': (
-            'GreenVerification{}Body', 'Assessment Program Organization'
-        ),
-        'recognition_description': (None, 'Assessment Recognition Type'),
-        'source': ('GreenVerification{}Source', None),
-        'status': (
-            'GreenVerification{}Status', 'Assessment Recognition Status'
-        ),
-        'status_date': (None, 'Assessment Recognition Status Date'),
-        'metric': ('GreenVerification{}Metric', 'Assessment Value'),
-        'rating': ('GreenVerification{}Rating', 'Assessment Level'),
-        'version': (
-            'GreenVerification{}Version', 'Assessment Version'
-        ),
-        'year': ('GreenVerification{}Year', 'Assessment Year'),
-        'target_date': (None, 'Assessment Recognition Target Date'),
-        'eligibility': (None, 'Assessment Eligibility'),
-        'date': ('GreenVerification{}Date', None)
+        "name": ("GreenBuildingVerificationType", "Assessment Program"),
+        "body": ("GreenVerification{}Body", "Assessment Program Organization"),
+        "recognition_description": (None, "Assessment Recognition Type"),
+        "source": ("GreenVerification{}Source", None),
+        "status": ("GreenVerification{}Status", "Assessment Recognition Status"),
+        "status_date": (None, "Assessment Recognition Status Date"),
+        "metric": ("GreenVerification{}Metric", "Assessment Value"),
+        "rating": ("GreenVerification{}Rating", "Assessment Level"),
+        "version": ("GreenVerification{}Version", "Assessment Version"),
+        "year": ("GreenVerification{}Year", "Assessment Year"),
+        "target_date": (None, "Assessment Recognition Target Date"),
+        "eligibility": (None, "Assessment Eligibility"),
+        "date": ("GreenVerification{}Date", None),
     }
 
     def __str__(self):
-        return '{}, {}: {}'.format(
-            self.body, self.name, self.metric if self.metric else self.rating
-        )
+        return f"{self.body}, {self.name}: {self.metric if self.metric else self.rating}"
 
     view = models.ForeignKey(PropertyView, on_delete=models.CASCADE)
     # Describes certification
@@ -180,8 +156,7 @@ class GreenAssessmentProperty(models.Model):
     def expiration_date(self):
         """Return expiration date"""
         expiration_date = self._expiration_date
-        if (not expiration_date
-                and self.assessment.validity_duration and self.date):
+        if not expiration_date and self.assessment.validity_duration and self.date:
             expiration_date = self.date + self.assessment.validity_duration
         return expiration_date
 
@@ -215,17 +190,15 @@ class GreenAssessmentProperty(models.Model):
 
     @property
     def metric(self):
-        """"Numeric assessment score"""
-        return int(self._metric) if (
-            self.assessment.is_integer_score and self._metric
-        ) else self._metric
+        """ "Numeric assessment score"""
+        return int(self._metric) if (self.assessment.is_integer_score and self._metric) else self._metric
 
     @metric.setter
     def metric(self, value):
-        """"Set numeric assessment score/metric"""
+        """ "Set numeric assessment score/metric"""
         if value:
             if self.assessment and not self.assessment.is_numeric_score:
-                msg = "{} uses a rating (non numeric score)".format(self.name)
+                msg = f"{self.name} uses a rating (non numeric score)"
                 raise ValidationError(msg)
             self._metric = float(value)
 
@@ -236,15 +209,15 @@ class GreenAssessmentProperty(models.Model):
 
     @property
     def rating(self):
-        """"Non numeric assessment score"""
+        """ "Non numeric assessment score"""
         return self._rating
 
     @rating.setter
     def rating(self, value):
-        """"Set non numeric assessment score/rating"""
+        """ "Set non numeric assessment score/rating"""
         if value:
             if self.assessment.is_numeric_score:
-                msg = "{} uses a metric (numeric score)".format(self.name)
+                msg = f"{self.name} uses a metric (numeric score)"
                 raise ValidationError(msg)
             self._rating = value
 
@@ -279,33 +252,35 @@ class GreenAssessmentProperty(models.Model):
 
     def initialize_audit_logs(self, **kwargs):
         """Set up initial log."""
-        kwargs.update({
-            'organization': self.assessment.organization,
-            'property_view': self.view,
-            'greenassessmentproperty': self,
-            'record_type': AUDIT_USER_CREATE
-        })
-        kwargs.setdefault('name', 'New record')
-        kwargs.setdefault('description', 'New audit log added on creation.')
+        kwargs.update(
+            {
+                "organization": self.assessment.organization,
+                "property_view": self.view,
+                "greenassessmentproperty": self,
+                "record_type": AUDIT_USER_CREATE,
+            }
+        )
+        kwargs.setdefault("name", "New record")
+        kwargs.setdefault("description", "New audit log added on creation.")
         return GreenAssessmentPropertyAuditLog.objects.create(**kwargs)
 
     def log(self, **kwargs):
         """Add a log to record changes."""
-        kwargs.update({
-            'organization': self.assessment.organization,
-            'property_view': self.view,
-            'greenassessmentproperty': self,
-        })
-        kwargs.setdefault('record_type', AUDIT_USER_EDIT)
-        kwargs.setdefault('name', 'Update log')
-        kwargs.setdefault('description', 'New audit log added.')
-        if 'parent' not in kwargs or 'ancestor' not in kwargs:
-            previous_log = GreenAssessmentPropertyAuditLog.objects.filter(
-                greenassessmentproperty=self
-            ).order_by('created').last()
+        kwargs.update(
+            {
+                "organization": self.assessment.organization,
+                "property_view": self.view,
+                "greenassessmentproperty": self,
+            }
+        )
+        kwargs.setdefault("record_type", AUDIT_USER_EDIT)
+        kwargs.setdefault("name", "Update log")
+        kwargs.setdefault("description", "New audit log added.")
+        if "parent" not in kwargs or "ancestor" not in kwargs:
+            previous_log = GreenAssessmentPropertyAuditLog.objects.filter(greenassessmentproperty=self).order_by("created").last()
             if previous_log:
-                kwargs.setdefault('ancestor', previous_log.ancestor)
-                kwargs.setdefault('parent', previous_log)
+                kwargs.setdefault("ancestor", previous_log.ancestor)
+                kwargs.setdefault("parent", previous_log)
         return GreenAssessmentPropertyAuditLog.objects.create(**kwargs)
 
     def to_bedes_dict(self):
@@ -319,7 +294,7 @@ class GreenAssessmentProperty(models.Model):
                 bedes_dict[field] = getattr(self, key)
 
         urls = [url.url for url in self.urls.all()]
-        bedes_dict['Assessment Program URL'] = urls
+        bedes_dict["Assessment Program URL"] = urls
         return bedes_dict
 
     def to_reso_dict(self, sub_name=False):
@@ -333,14 +308,14 @@ class GreenAssessmentProperty(models.Model):
         if isinstance(sub_name, basestring):
             sub = sub_name
         elif sub_name:
-            sub = sub = "".join([titlecase(word) for word in self.name.split()])
+            sub = "".join([titlecase(word) for word in self.name.split()])
         else:
-            sub = ''
-        url_field = 'GreenVerification{}URL'.format(sub)
+            sub = ""
+        url_field = f"GreenVerification{sub}URL"
         reso_dict = {}
         for key, val in self.MAPPING.items():
             field = val[0]
-            if field == 'GreenBuildingVerificationType':
+            if field == "GreenBuildingVerificationType":
                 reso_dict[field] = self.name
             elif field:
                 field = field.format(sub)
@@ -354,12 +329,10 @@ class GreenAssessmentURL(models.Model):
     A link to the specific rating or scoring details for the premises
     directly from and hosted by the sponsoring body of the program.
     """
+
     # pylint:disable=no-member
     url = models.URLField()
-    property_assessment = models.ForeignKey(
-        GreenAssessmentProperty, on_delete=models.CASCADE,
-        related_name='urls'
-    )
+    property_assessment = models.ForeignKey(GreenAssessmentProperty, on_delete=models.CASCADE, related_name="urls")
     # field for link text etc
     description = models.CharField(max_length=255, null=True, blank=True)
 
@@ -371,27 +344,19 @@ class GreenAssessmentURL(models.Model):
 
 class GreenAssessmentPropertyAuditLog(models.Model):
     """Log changes to GreenAssessmentProperty"""
+
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
     user = models.ForeignKey(SEEDUser, on_delete=models.CASCADE, blank=True, null=True)
     name = models.CharField(max_length=255, null=True, blank=True)
     changed_fields = models.TextField(null=True, blank=True)
     description = models.TextField(null=True, blank=True)
-    record_type = models.IntegerField(choices=DATA_UPDATE_TYPE, null=True,
-                                      blank=True)
+    record_type = models.IntegerField(choices=DATA_UPDATE_TYPE, null=True, blank=True)
     created = models.DateTimeField(auto_now_add=True, null=True)
-    greenassessmentproperty = models.ForeignKey(
-        GreenAssessmentProperty,
-        on_delete=models.CASCADE,
-        related_name="gapauditlog_assessment"
-    )
-    property_view = models.ForeignKey(
-        PropertyView, on_delete=models.CASCADE, related_name='gapauditlog_view', null=True
-    )
+    greenassessmentproperty = models.ForeignKey(GreenAssessmentProperty, on_delete=models.CASCADE, related_name="gapauditlog_assessment")
+    property_view = models.ForeignKey(PropertyView, on_delete=models.CASCADE, related_name="gapauditlog_view", null=True)
     ancestor = models.ForeignKey(
-        'GreenAssessmentPropertyAuditLog', on_delete=models.CASCADE, blank=True, null=True,
-        related_name='gapauditlog_ancestor'
+        "GreenAssessmentPropertyAuditLog", on_delete=models.CASCADE, blank=True, null=True, related_name="gapauditlog_ancestor"
     )
     parent = models.ForeignKey(
-        'GreenAssessmentPropertyAuditLog', on_delete=models.CASCADE, blank=True, null=True,
-        related_name='gapauditlog_parent'
+        "GreenAssessmentPropertyAuditLog", on_delete=models.CASCADE, blank=True, null=True, related_name="gapauditlog_parent"
     )

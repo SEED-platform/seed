@@ -5,25 +5,28 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('seed', '0190_auto_20230324_1451'),
+        ("seed", "0190_auto_20230324_1451"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='salesforceconfig',
-            name='data_admin_contact_fieldname',
+            model_name="salesforceconfig",
+            name="data_admin_contact_fieldname",
             field=models.CharField(blank=True, max_length=128, null=True),
         ),
         migrations.AddField(
-            model_name='salesforceconfig',
-            name='data_admin_email_column',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, related_name='data_admin_email_column', to='seed.column'),
+            model_name="salesforceconfig",
+            name="data_admin_email_column",
+            field=models.ForeignKey(
+                null=True, on_delete=django.db.models.deletion.CASCADE, related_name="data_admin_email_column", to="seed.column"
+            ),
         ),
         migrations.AddField(
-            model_name='salesforceconfig',
-            name='data_admin_name_column',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, related_name='data_admin_name_column', to='seed.column'),
+            model_name="salesforceconfig",
+            name="data_admin_name_column",
+            field=models.ForeignKey(
+                null=True, on_delete=django.db.models.deletion.CASCADE, related_name="data_admin_name_column", to="seed.column"
+            ),
         ),
     ]

@@ -1,16 +1,21 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
-import logging
 
-from buildingid.code import decode
+import logging
+import re
+
+from buildingid.code import Code, decode
 from django.contrib.gis.geos import GEOSGeometry
-from django.db import connection
 
 _log = logging.getLogger(__name__)
+
+PLUSCODE_SEPARATOR = "+"
+PLUSCODE_PADDING_CHAR = "0"
+PLUSCODE_ALPHABET_PATTERN = re.compile(f"^[23456789CFGHJMPQRVWX{PLUSCODE_SEPARATOR}{PLUSCODE_PADDING_CHAR}]+$")
+UBID_OFFSET_PATTERN = re.compile(r"^(?:-(?:0|[1-9][0-9]*)){4}$")
 
 
 def centroid_wkt(state):
@@ -43,7 +48,7 @@ def decode_unique_ids(qs):
 
     for state in filtered_qs.iterator():
         try:
-            bounding_box_obj = decode(getattr(state, 'ubid'))
+            bounding_box_obj = decode(getattr(state, "ubid"))
         except ValueError:
             _log.error(f"Could not decode UBID '{getattr(state, 'ubid')}'")
             continue  # state with an incorrectly formatted UBID is skipped
@@ -68,21 +73,23 @@ def decode_unique_ids(qs):
         )
         state.centroid = centroid_polygon
 
-        state.latitude, state.longitude = bounding_box_obj.latlng()
+        # Round to avoid floating point errors
+        state.latitude = round(bounding_box_obj.centroid.latitudeCenter, 12)
+        state.longitude = round(bounding_box_obj.centroid.longitudeCenter, 12)
 
         state.save()
 
 
-def get_jaccard_index(ubid1, ubid2):
+def get_jaccard_index(ubid1: str, ubid2: str) -> float:
     """
     Calculates the Jaccard index given two UBIDs
 
     The Jaccard index is a value between zero and one, representing the area of the intersection divided by the area of the union.
     Not a Match (0.0) <-----> (1.0) Perfect Match
 
-    @param ubid1 [text] A Property State Ubid
-    @param ubid2 [text] A Property State Ubid
-    @return [numeric] The Jaccard index.
+    :param ubid1: A Property State Ubid
+    :param ubid2: A Property State Ubid
+    :return: The Jaccard index
     """
     if (not ubid1 or not ubid2) or (ubid1 == ubid2):
         return 1.0
@@ -90,67 +97,55 @@ def get_jaccard_index(ubid1, ubid2):
     if not validate_ubid(ubid1) or not validate_ubid(ubid2):
         return 0.0
 
-    sql = """ WITH decoded AS (
-                SELECT
-                    UBID_Decode(%s) AS left_code_area,
-                    UBID_Decode(%s) AS right_code_area
-            )
-            SELECT
-                UBID_CodeArea_Jaccard(left_code_area, right_code_area)
-            FROM
-                decoded """
-
-    with connection.cursor() as cursor:
-        cursor.execute(sql, [ubid1, ubid2])
-        result = cursor.fetchone()[0]
-    return result
+    return ubid_jaccard(ubid1, ubid2)
 
 
-def validate_ubid(ubid):
-    """
-    Check if the code is valid
+def validate_ubid(ubid: str) -> bool:
+    """Validate a UBID
 
-    EXAMPLE
-    SELECT pluscode_isvalid('XX5JJC23+00')
+    :param ubid: The UBID string to be validated.
+    :return: True if the UBID is valid, False otherwise.
 
-    @param ubid [text] A Property or TaxLot State Ubid
-    @return [bool] Ubid validity.
+    This function is 26% - 462% faster than calling buildingid.code.isValid
+
+    Example usage:
+    ```
+    ubid = "849VQJH6+95J-51-58-42-50"
+    is_valid = validate_ubid(ubid)
+    print(is_valid)  # Output: True
+    ```
     """
     if not ubid:
         return False
 
-    parts = ubid.split('-')
-    sql = """ SELECT pluscode_isvalid(%s) """
+    try:
+        index = ubid.find("-")
+        pluscode = ubid[:index]
+        ubid_offsets = ubid[index:]
+        return valid_pluscode(pluscode) and bool(UBID_OFFSET_PATTERN.fullmatch(ubid_offsets))
+    except ValueError:
+        return False
 
-    with connection.cursor() as cursor:
-        cursor.execute(sql, [parts[0]])
-        result = cursor.fetchone()[0]
-    return result
 
-
-def merge_ubid_models(old_state_ids, new_state_id, StateClass):
+def merge_ubid_models(old_state_ids, new_state_id, StateClass):  # noqa: N803
     """
     Given a list of old (existing) property states, merge the existing ubid_models onto the new state
 
     If the new_state has an equivalent ubid, skip it.
     """
-    old_states = StateClass.objects.filter(id__in=old_state_ids).order_by('-id')
+    old_states = StateClass.objects.filter(id__in=old_state_ids).order_by("-id")
     new_state = StateClass.objects.get(id=new_state_id)
     new_ubids = new_state.ubidmodel_set.all()
-    state_field = 'property' if StateClass.__name__ == 'PropertyState' else 'taxlot'
+    state_field = "property" if StateClass.__name__ == "PropertyState" else "taxlot"
 
     preferred_ubid = find_preferred(old_states, new_state)
 
     for old_state in old_states:
         for old_ubid in old_state.ubidmodel_set.all():
-            if old_ubid.ubid in new_ubids.values_list('ubid', flat=True):
+            if old_ubid.ubid in new_ubids.values_list("ubid", flat=True):
                 continue
 
-            ubid_details = {
-                'ubid': old_ubid.ubid,
-                state_field: new_state,
-                'preferred': old_ubid.ubid == preferred_ubid
-            }
+            ubid_details = {"ubid": old_ubid.ubid, state_field: new_state, "preferred": old_ubid.ubid == preferred_ubid}
 
             new_state.ubidmodel_set.create(**ubid_details)
 
@@ -178,3 +173,60 @@ def find_preferred(old_states, new_state):
             break
 
     return preferred_ubid
+
+
+def valid_pluscode(code: str) -> bool:
+    """
+    This code is ported from the openlocationcode `pluscode_isvalid` PL/pgSQL function,
+    because it's faster than making sql queries for individual UBIDs
+    https://github.com/benno-p/openlocationcode/blob/main/pluscode_functions.sql#L70
+    :param code: str, pluscode (not UBID)
+    :return: bool
+    """
+    # Code Without "+" char
+    if PLUSCODE_SEPARATOR not in code:
+        return False
+
+    separator_index = code.index(PLUSCODE_SEPARATOR)
+    # Code beginning with "+" char
+    if separator_index == 0:
+        return False
+    # Code with illegal position separator
+    if separator_index > 8 or separator_index % 2 == 1:
+        return False
+
+    # Code contains padding characters "0"
+    if PLUSCODE_PADDING_CHAR in code:
+        if separator_index < 8:
+            return False
+        # Last char is a separator
+        if code[-1] != PLUSCODE_SEPARATOR:
+            return False
+
+        # Check if there are many "00" groups (only one is legal)
+        padding_matches = re.findall(f"{PLUSCODE_PADDING_CHAR}+", code)
+        if len(padding_matches) > 1:
+            return False
+        # Check if the first group is % 2 == 0
+        if len(padding_matches[0]) % 2 == 1:
+            return False
+
+    # If there is just one char after '+'
+    if len(code) - separator_index == 2:
+        return False
+
+    # Check if each char is in code_alphabet
+    return bool(PLUSCODE_ALPHABET_PATTERN.fullmatch(code.upper()))
+
+
+def ubid_jaccard(ubid1: str, ubid2: str) -> float:
+    """
+    Calculates the Jaccard index for two UBIDs.
+
+    The Jaccard index is a value between zero and one, representing the area of the intersection
+    divided by the area of the union.
+    """
+    ubid1_code_area = decode(Code(ubid1))
+    ubid2_code_area = decode(Code(ubid2))
+
+    return ubid1_code_area.jaccard(ubid2_code_area) or 0.0

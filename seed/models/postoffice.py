@@ -2,6 +2,7 @@
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 from django.db import models
 from post_office.models import Email, EmailTemplate
 
@@ -17,7 +18,7 @@ class PostOfficeEmail(Email):
     user = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True)
 
     def __str__(self):
-        return 'PostOfficeEmail - %s' % self.pk
+        return "PostOfficeEmail - %s" % self.pk
 
 
 class PostOfficeEmailTemplate(EmailTemplate):
@@ -25,4 +26,4 @@ class PostOfficeEmailTemplate(EmailTemplate):
     user = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True)
 
     def __str__(self):
-        return 'PostOfficeEmailTemplate - %s' % self.pk
+        return "PostOfficeEmailTemplate - %s" % self.pk

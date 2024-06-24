@@ -114,8 +114,8 @@ fi
 echo "Building latest version of SEED "
 # explicitly pull images from docker-compose's build yml file. Note that you will need to keep the
 # versions consistent between the compose file and what is below.
-docker-compose -f docker-compose.build.yml pull
-docker-compose -f docker-compose.build.yml build --pull
+docker compose -f docker-compose.build.yml pull
+docker compose -f docker-compose.build.yml build --pull
 
 # Get the versions out of the docker-compose.build file
 DOCKER_PG_VERSION=$( sed -n 's/.*image\: timescale\/timescaledb-postgis\:latest-pg\(.*\)/\1/p' docker-compose.build.yml )
@@ -133,7 +133,7 @@ docker push 127.0.0.1:5000/postgres-seed
 docker push 127.0.0.1:5000/redis
 
 echo "Deploying (or updating)"
-docker-compose -f ${DOCKER_COMPOSE_FILE} -p seed up -d
+docker compose -f ${DOCKER_COMPOSE_FILE} -p seed up -d
 wait $!
 while ( nc -zv 127.0.0.1 80 3>&1 1>&2- 2>&3- ) | awk -F ":" '$3 != " Connection refused" {exit 1}'; do echo -n "."; sleep 5; done
 echo "SEED stack redeployed"

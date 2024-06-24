@@ -11,23 +11,22 @@ def _import_uniformat(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('seed', '0206_auto_20230908_1319'),
+        ("seed", "0206_auto_20230908_1319"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Uniformat',
+            name="Uniformat",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('code', models.CharField(max_length=7, unique=True)),
-                ('category', models.CharField(max_length=100)),
-                ('definition', models.CharField(max_length=1024, null=True)),
-                ('imperial_units', models.CharField(max_length=10, null=True)),
-                ('metric_units', models.CharField(max_length=10, null=True)),
-                ('quantity_definition', models.CharField(max_length=100, null=True)),
-                ('parent', models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='seed.uniformat')),
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("code", models.CharField(max_length=7, unique=True)),
+                ("category", models.CharField(max_length=100)),
+                ("definition", models.CharField(max_length=1024, null=True)),
+                ("imperial_units", models.CharField(max_length=10, null=True)),
+                ("metric_units", models.CharField(max_length=10, null=True)),
+                ("quantity_definition", models.CharField(max_length=100, null=True)),
+                ("parent", models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to="seed.uniformat")),
             ],
         ),
         migrations.RunPython(_import_uniformat),

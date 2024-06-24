@@ -1,10 +1,9 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
-from builtins import str
+
 from functools import cmp_to_key
 
 import jellyfish
@@ -19,9 +18,8 @@ def sort_scores(a, b):
     if a[2] > b[2]:
         return -1
     elif a[2] == b[2]:  # Sort by the strings if they match up
-        com_a = '.'.join(
-            a[0:2])  # so, 0:2 returns the first 2 elements, okay python, you win this time.
-        com_b = '.'.join(b[0:2])
+        com_a = ".".join(a[0:2])  # so, 0:2 returns the first 2 elements, okay python, you win this time.
+        com_b = ".".join(b[0:2])
         if com_a > com_b:
             return 1
         else:
@@ -60,7 +58,7 @@ def best_match(s, categories, top_n=5):
         # verify that the category has two elements, if not, then just
         # return _ for the first category. Need this because fuzzy_in_set uses the
         # same method
-        table_name = '_'
+        table_name = "_"
         category = None
         if isinstance(cat, tuple):
             table_name = cat[0]
@@ -73,9 +71,8 @@ def best_match(s, categories, top_n=5):
                 table_name,
                 category,
                 jellyfish.jaro_winkler_similarity(
-                    str(s.encode('ascii', 'replace').lower()),
-                    str(category.encode('ascii', 'replace').lower())
-                )
+                    str(s.encode("ascii", "replace").lower()), str(category.encode("ascii", "replace").lower())
+                ),
             )
         )
 
@@ -95,6 +92,6 @@ def best_match(s, categories, top_n=5):
 
 def fuzzy_in_set(column_name, ontology, percent_confidence=95):
     """Return True if column_name is in the ontology."""
-    table, match, percent = best_match(column_name, ontology, top_n=1)[0]
+    _table, _match, percent = best_match(column_name, ontology, top_n=1)[0]
 
     return percent > percent_confidence

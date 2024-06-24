@@ -7,8 +7,8 @@ Pint-aware values/columns to raw floats before sending them out over the API.
 Generally this collapsing relies on having access to the organization, since
 that's where the display preference lives.
 """
+
 import re
-from builtins import str
 
 from django.core.serializers.json import DjangoJSONEncoder
 from quantityfield.units import ureg
@@ -22,28 +22,28 @@ from rest_framework import serializers
 # Thus we go back to 'year' by copying the current year definition from
 # https://github.com/hgrecco/pint/blob/636961a8ac988f5af25799ffdd041da725554bfb/pint/default_en.txt#L174
 # but use `_` for the symbol name in the definition below
-ureg.define('year = 365.25 * day = _ = yr = julian_year')
+ureg.define("year = 365.25 * day = _ = yr = julian_year")
 
-AREA_DIMENSIONALITY = '[length] ** 2'
-EUI_DIMENSIONALITY = '[mass] / [time] ** 3'
-GHG_DIMENSIONALITY = '[mass] / [time]'
-GHG_INTENSITY_DIMENSIONALITY = '[mass] / [length] ** 2 / [time]'
+AREA_DIMENSIONALITY = "[length] ** 2"
+EUI_DIMENSIONALITY = "[mass] / [time] ** 3"
+GHG_DIMENSIONALITY = "[mass] / [time]"
+GHG_INTENSITY_DIMENSIONALITY = "[mass] / [length] ** 2 / [time]"
 
-AREA_DEFAULT_UNITS = 'ft**2'
-EUI_DEFAULT_UNITS = 'kBtu/ft**2/year'
-GHG_DEFAULT_UNITS = 'MtCO2e/year'
-GHG_INTENSITY_DEFAULT_UNITS = 'kgCO2e/ft**2/year'
+AREA_DEFAULT_UNITS = "ft**2"
+EUI_DEFAULT_UNITS = "kBtu/ft**2/year"
+GHG_DEFAULT_UNITS = "MtCO2e/year"
+GHG_INTENSITY_DEFAULT_UNITS = "kgCO2e/ft**2/year"
 
 DEFAULT_UNITS = {
-    'area': AREA_DEFAULT_UNITS,
-    'eui': EUI_DEFAULT_UNITS,
-    'ghg': GHG_DEFAULT_UNITS,
-    'ghg_intensity': GHG_INTENSITY_DEFAULT_UNITS,
+    "area": AREA_DEFAULT_UNITS,
+    "eui": EUI_DEFAULT_UNITS,
+    "ghg": GHG_DEFAULT_UNITS,
+    "ghg_intensity": GHG_INTENSITY_DEFAULT_UNITS,
 }
 
 
 def to_raw_magnitude(obj):
-    return "{:.2f}".format(obj.magnitude)
+    return f"{obj.magnitude:.2f}"
 
 
 def get_dimensionality(quantity_object):
@@ -63,7 +63,7 @@ def collapse_unit(org, x):
         EUI_DIMENSIONALITY: org.display_units_eui or EUI_DEFAULT_UNITS,
         AREA_DIMENSIONALITY: org.display_units_area or AREA_DEFAULT_UNITS,
         GHG_DIMENSIONALITY: org.display_units_ghg or GHG_DEFAULT_UNITS,
-        GHG_INTENSITY_DIMENSIONALITY: org.display_units_ghg_intensity or GHG_INTENSITY_DEFAULT_UNITS
+        GHG_INTENSITY_DIMENSIONALITY: org.display_units_ghg_intensity or GHG_INTENSITY_DEFAULT_UNITS,
     }
 
     if isinstance(x, ureg.Quantity):
@@ -95,7 +95,7 @@ def pretty_units(quantity):
     hack; can lose it when Pint gets something like a "{:~U}" format code
     see https://github.com/hgrecco/pint/pull/231
     """
-    return '{:~P}'.format(quantity).split(' ')[1]
+    return f"{quantity:~P}".split(" ")[1]
 
 
 def pretty_units_from_spec(unit_spec):
@@ -115,8 +115,8 @@ def add_pint_unit_suffix(organization, column, data_key="data_type", display_key
         # strip the suffix; shouldn't have to do this when we've swapped over
         # the columns. The mere presence of a unit suffix will tell us in the UI
         # that this is a Pint-aware column
-        stripped_name = re.sub(r' \(pint\)$', '', column_name, flags=re.IGNORECASE)
-        return stripped_name + ' ({})'.format(display_units)
+        stripped_name = re.sub(r" \(pint\)$", "", column_name, flags=re.IGNORECASE)
+        return stripped_name + f" ({display_units})"
 
     if data_key not in column:
         data_key = "dataType"
@@ -124,18 +124,14 @@ def add_pint_unit_suffix(organization, column, data_key="data_type", display_key
         display_key = "displayName"
 
     try:
-        if column[data_key] == 'area':
-            column[display_key] = format_column_name(
-                column[display_key], organization.display_units_area)
-        elif column[data_key] == 'eui':
-            column[display_key] = format_column_name(
-                column[display_key], organization.display_units_eui)
-        elif column[data_key] == 'ghg':
-            column[display_key] = format_column_name(
-                column[display_key], organization.display_units_ghg)
-        elif column[data_key] == 'ghg_intensity':
-            column[display_key] = format_column_name(
-                column[display_key], organization.display_units_ghg_intensity)
+        if column[data_key] == "area":
+            column[display_key] = format_column_name(column[display_key], organization.display_units_area)
+        elif column[data_key] == "eui":
+            column[display_key] = format_column_name(column[display_key], organization.display_units_eui)
+        elif column[data_key] == "ghg":
+            column[display_key] = format_column_name(column[display_key], organization.display_units_ghg)
+        elif column[data_key] == "ghg_intensity":
+            column[display_key] = format_column_name(column[display_key], organization.display_units_ghg_intensity)
     except KeyError:
         pass  # no transform needed if we can't detect dataType, nbd
 
@@ -186,14 +182,14 @@ class PintQuantitySerializerField(serializers.Field):
         try:
             org = self.root.instance.organization
 
-            if field.base_units == 'kBtu/ft**2/year':
+            if field.base_units == "kBtu/ft**2/year":
                 data = float(data) * ureg(org.display_units_eui)
-            elif field.base_units == 'ft**2':
+            elif field.base_units == "ft**2":
                 data = float(data) * ureg(org.display_units_area)
-            elif field.base_units == 'kgCO2/ft**2/year':
+            elif field.base_units == "kgCO2/ft**2/year":
                 # not sure that this is used anywhere, but it's here just in case
                 data = float(data) * ureg(org.display_units_ghg_intensity)
-            elif field.base_units == 'MtCO2e/year':
+            elif field.base_units == "MtCO2e/year":
                 # not sure that this is used anywhere, but it's here just in case
                 data = float(data) * ureg(org.dispaly_units_ghg)
             else:

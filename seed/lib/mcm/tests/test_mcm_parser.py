@@ -1,9 +1,9 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 import os
 
 from django.test import TestCase
@@ -13,8 +13,8 @@ from seed.lib.mcm.reader import MCMParser
 
 class CSVParserTest(TestCase):
     def setUp(self):
-        file_path = os.path.dirname(os.path.abspath(__file__)) + "/test_data/test_csv.csv"
-        self.file = open(file_path, "r", encoding="utf-8")
+        file_path = f"{os.path.dirname(os.path.abspath(__file__))}/test_data/test_csv.csv"
+        self.file = open(file_path, encoding="utf-8")  # noqa: SIM115
         self.parser = MCMParser(self.file)
 
     def tearDown(self) -> None:
@@ -70,8 +70,8 @@ class CSVParserTest(TestCase):
 
 class CSVMissingHeadersParserTest(TestCase):
     def setUp(self):
-        file_path = os.path.dirname(os.path.abspath(__file__)) + "/test_data/test_missing_headers.csv"
-        self.file = open(file_path, "r", encoding="utf-8")
+        file_path = f"{os.path.dirname(os.path.abspath(__file__))}/test_data/test_missing_headers.csv"
+        self.file = open(file_path, encoding="utf-8")  # noqa: SIM115
         self.parser = MCMParser(self.file)
 
     def tearDown(self) -> None:
@@ -97,7 +97,7 @@ class CSVMissingHeadersParserTest(TestCase):
             },
         ]
 
-        # have to convert the CSV's DictReader into a list of regular dicts to compare
+        # have to convert the csvs DictReader into a list of regular dicts to compare
         data = [dict(row) for row in self.parser.data]
         self.assertEqual(data, expectation)
 

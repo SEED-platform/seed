@@ -1,9 +1,9 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 import os
 
 from django.test import TestCase
@@ -14,11 +14,8 @@ from seed.lib.mcm.reader import GeoJSONParser
 class JSONParserTest(TestCase):
     def setUp(self):
         file_path = os.path.dirname(os.path.abspath(__file__)) + "/test_data/example_feature_collection_geojson.json"
-        self.file = open(file_path, "r", encoding="utf-8")
-        self.parser = GeoJSONParser(self.file)
-
-    def tearDown(self) -> None:
-        self.file.close()
+        with open(file_path, encoding="utf-8") as file:
+            self.parser = GeoJSONParser(file)
 
     def test_it_has_a_data_property(self):
         expectation = [
@@ -34,7 +31,7 @@ class JSONParserTest(TestCase):
                 "Building Type": "Office",
                 "Created At": "2017-09-01T21:16:27.788Z",
                 "Floor Area": 2634.7594734229788,
-                "Type": "Building"
+                "Type": "Building",
             },
             {
                 "Address Line 1": "12 Fake Street",
@@ -48,21 +45,14 @@ class JSONParserTest(TestCase):
                 "Building Type": "Office",
                 "Created At": "2017-09-01T21:16:27.649Z",
                 "Floor Area": 3745.419332770663,
-                "Type": "Building"
-            }
+                "Type": "Building",
+            },
         ]
 
         self.assertEqual(self.parser.data, expectation)
 
     def test_it_has_a_headers_property(self):
-        expectation = [
-            "Address Line 1",
-            "Building Type",
-            "Created At",
-            "Floor Area",
-            "Type",
-            "property_footprint"
-        ]
+        expectation = ["Address Line 1", "Building Type", "Created At", "Floor Area", "Type", "property_footprint"]
 
         self.assertEqual(self.parser.headers, expectation)
 
@@ -72,7 +62,7 @@ class JSONParserTest(TestCase):
     def test_it_has_a_first_five_rows_property(self):
         expectation = [
             "1 Fake Street|#*#|Office|#*#|2017-09-01T21:16:27.788Z|#*#|2634.7594734229788|#*#|Building|#*#|Property Footprint - Not Displayed",
-            "12 Fake Street|#*#|Office|#*#|2017-09-01T21:16:27.649Z|#*#|3745.419332770663|#*#|Building|#*#|Property Footprint - Not Displayed"
+            "12 Fake Street|#*#|Office|#*#|2017-09-01T21:16:27.649Z|#*#|3745.419332770663|#*#|Building|#*#|Property Footprint - Not Displayed",
         ]
 
         self.assertEqual(self.parser.first_five_rows, expectation)

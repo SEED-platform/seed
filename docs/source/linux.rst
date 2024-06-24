@@ -32,9 +32,6 @@ Install the following base packages to run SEED:
     sudo apt install redis-server
     sudo apt install timescaledb-postgresql-10 postgresql-contrib
 
-    # For running selenium/protractor
-    sudo apt install default-jre
-
 .. note:: postgresql ``>=9.3`` is required to support `JSON Type`_
 
 .. _JSON Type: http://www.postgresql.org/docs/9.3/static/datatype-json.html
@@ -222,7 +219,7 @@ Generate static files:
 
 .. code-block:: console
 
-    $ python3 manage.py collectstatic --settings=config.settings.prod -i package.json -i npm-shrinkwrap.json -i node_modules/openlayers-ext/index.html
+    $ python3 manage.py collectstatic --settings=config.settings.prod -i package.json -i package-lock.json -i node_modules/openlayers-ext/index.html
 
 Update ``config/settings/local_untracked.py``:
 

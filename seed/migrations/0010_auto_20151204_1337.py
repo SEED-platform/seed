@@ -1,6 +1,3 @@
-# -*- coding: utf-8 -*-
-from __future__ import unicode_literals
-
 from django.db import migrations
 
 DEFAULT_LABELS = [
@@ -33,7 +30,7 @@ def populate_default_labels(app, schema_editor, **kwargs):
             Label.objects.get_or_create(
                 name=label,
                 super_organization=org,
-                defaults={'color': 'blue'},
+                defaults={"color": "blue"},
             )
 
 
@@ -43,8 +40,8 @@ def stub(*args, **kwargs):
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('seed', '0009_merge'),
-        ('orgs', '__first__'),
+        ("seed", "0009_merge"),
+        ("orgs", "__first__"),
     ]
 
     operations = [

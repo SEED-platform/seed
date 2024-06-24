@@ -475,7 +475,7 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
      * save_item: saves the user's changes to the Property/TaxLot State object.
      */
     const save_item_resolve = (data) => {
-      $scope.$emit('finished_saving');
+      $scope.edit_form_showing = false;
       notify_merges_and_links(data);
       if (data.view_id) {
         reload_with_view_id(data.view_id);
@@ -488,7 +488,7 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
     };
 
     const save_item_reject = () => {
-      $scope.$emit('finished_saving');
+      $scope.edit_form_showing = false;
     };
 
     const save_item_catch = (data) => {
@@ -819,11 +819,14 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
       $('.table-xscroll-fixed-header-container > .table-body-x-scroll').width(table_container.width() + table_container.scrollLeft());
     });
 
-    $scope.displayValue = (dataType, value) => {
-      if (dataType === 'datetime') {
+    $scope.displayValue = ({ column_name, data_type }, value) => {
+      if (data_type === 'datetime') {
         return $filter('date')(value, 'yyyy-MM-dd h:mm a');
       }
-      if (['area', 'eui', 'float', 'number'].includes(dataType)) {
+      if (['longitude', 'latitude'].includes(column_name)) {
+        return $filter('floatingPoint')(value);
+      }
+      if (['area', 'eui', 'float', 'number'].includes(data_type)) {
         return $filter('number')(value, $scope.organization.display_decimal_places);
       }
       return value;
@@ -906,10 +909,12 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
 
       $scope.measureGridOptionsByScenarioId = {};
       $scope.gridApiByScenarioId = {};
+      $scope.show_uigrid = {};
 
       const at_scenarios = $scope.historical_items.filter((item) => !_.isEmpty(item.state.scenarios)).map((item) => item.state.scenarios);
       const scenarios = [].concat(...at_scenarios);
       scenarios.forEach((scenario) => {
+        $scope.show_uigrid[scenario.id] = false;
         const scenario_id = scenario.id;
         const measureGridOptions = {
           data: scenario.measures.map((measure) => ({
@@ -949,6 +954,8 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
           enableVerticalScrollbar: scenario.measures.length <= 10 ? uiGridConstants.scrollbars.NEVER : uiGridConstants.scrollbars.WHEN_NEEDED,
           minRowsToShow: Math.min(scenario.measures.length, 10),
           rowHeight: 40,
+          flatEntityAccess: true,
+          fastWatch: true,
           onRegisterApi(gridApi) {
             $scope.gridApiByScenarioId[scenario.id] = gridApi;
           }
@@ -957,9 +964,17 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
       });
     };
     $scope.resizeGridByScenarioId = (scenarioId) => {
-      const gridApi = $scope.gridApiByScenarioId[scenarioId];
-      setTimeout(gridApi.core.handleWindowResize, 50);
+      $scope.scenarioId = scenarioId;
+      $scope.show_uigrid[scenarioId] = !$scope.show_uigrid[scenarioId];
     };
+
+    // Only render scenario uigrids when user expands a scenario.
+    $scope.$watch('gridApiByScenarioId[scenarioId]', (gridApi) => {
+      if (gridApi) {
+        const gridApi = $scope.gridApiByScenarioId[$scope.scenarioId];
+        setTimeout(gridApi.core.handleWindowResize, 50);
+      }
+    });
 
     $scope.formatMeasureStatuses = (scenario) => {
       const statuses = scenario.measures.reduce((acc, measure) => {

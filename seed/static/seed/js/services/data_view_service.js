@@ -83,7 +83,7 @@ angular.module('BE.seed.service.data_view', []).factory('data_view_service', [
     };
 
     const evaluate_data_view = (data_view_id, columns) => $http
-      .put(
+      .post(
         `/api/v3/data_views/${data_view_id}/evaluate/`,
         {
           columns

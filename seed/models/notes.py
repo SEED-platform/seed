@@ -1,9 +1,9 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
@@ -19,19 +19,19 @@ class Note(models.Model):
     LOG = 1
 
     NOTE_TYPES = (
-        (NOTE, 'Note'),
-        (LOG, 'Log'),
+        (NOTE, "Note"),
+        (LOG, "Log"),
     )
 
-    name = models.CharField(_('name'), max_length=MAX_NAME_LENGTH)
+    name = models.CharField(_("name"), max_length=MAX_NAME_LENGTH)
     note_type = models.IntegerField(choices=NOTE_TYPES, default=NOTE, null=True)
 
     text = models.TextField()
 
-    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, null=True, related_name='notes')
-    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, related_name='notes')  # who added the note
-    property_view = models.ForeignKey(PropertyView, on_delete=models.CASCADE, null=True, related_name='notes')
-    taxlot_view = models.ForeignKey(TaxLotView, on_delete=models.CASCADE, null=True, related_name='notes')
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, null=True, related_name="notes")
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, related_name="notes")  # who added the note
+    property_view = models.ForeignKey(PropertyView, on_delete=models.CASCADE, null=True, related_name="notes")
+    taxlot_view = models.ForeignKey(TaxLotView, on_delete=models.CASCADE, null=True, related_name="notes")
 
     # in the near future track the changes to the Property View records by storing the changes in JSON. Proposed format:
     # {
@@ -52,11 +52,11 @@ class Note(models.Model):
     updated = models.DateTimeField(auto_now=True)
 
     class Meta:
-        ordering = ['-created']
-        index_together = [['organization', 'note_type']]
+        ordering = ["-created"]
+        index_together = [["organization", "note_type"]]
 
     @classmethod
-    def create_from_edit(self, user_id, view, new_values, previous_values):
+    def create_from_edit(cls, user_id, view, new_values, previous_values):
         """
         Create a Log Note given before and after edit values for a -View's
         -State at the time.
@@ -74,29 +74,33 @@ class Note(models.Model):
         log_data = []
         # Build out 2 dimensional log data
         for column_name, value in new_values.items():
-            if column_name == 'extra_data':
+            if column_name == "extra_data":
                 for ed_column_name, ed_value in value.items():
-                    log_data.append({
-                        "field": ed_column_name,
-                        "previous_value": previous_values.get('extra_data', {}).get(ed_column_name, None),
-                        "new_value": ed_value,
-                        "state_id": view.state_id
-                    })
+                    log_data.append(
+                        {
+                            "field": ed_column_name,
+                            "previous_value": previous_values.get("extra_data", {}).get(ed_column_name, None),
+                            "new_value": ed_value,
+                            "state_id": view.state_id,
+                        }
+                    )
             else:
-                log_data.append({
-                    "field": column_name,
-                    "previous_value": previous_values.get(column_name, None),
-                    "new_value": value,
-                    "state_id": view.state_id
-                })
+                log_data.append(
+                    {
+                        "field": column_name,
+                        "previous_value": previous_values.get(column_name, None),
+                        "new_value": value,
+                        "state_id": view.state_id,
+                    }
+                )
 
         # Create note attributes to be then updated with appropriate -View "type".
         note_attrs = {
             "name": "Automatically Created",
-            "note_type": self.LOG,
+            "note_type": cls.LOG,
             "organization_id": view.cycle.organization_id,
             "user_id": user_id,
-            "log_data": log_data
+            "log_data": log_data,
         }
 
         if view.__class__ == PropertyView:
@@ -104,7 +108,7 @@ class Note(models.Model):
         elif view.__class__ == TaxLotView:
             note_attrs["taxlot_view_id"] = view.id
 
-        return self.objects.create(**note_attrs)
+        return cls.objects.create(**note_attrs)
 
     def to_dict(self):
         return obj_to_dict(self)
@@ -112,9 +116,10 @@ class Note(models.Model):
 
 class HistoricalNote(models.Model):
     text = models.TextField(blank=True)
-    property = models.OneToOneField(Property, on_delete=models.CASCADE, related_name='historical_note')
+    property = models.OneToOneField(Property, on_delete=models.CASCADE, related_name="historical_note")
 
     def serialize(self):
         from seed.serializers.historical_notes import HistoricalNoteSerializer
+
         serializer = HistoricalNoteSerializer(self)
         return serializer.data

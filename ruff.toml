@@ -1,0 +1,91 @@
+fix = true
+line-length = 140
+
+[format]
+# preview = true
+docstring-code-format = true
+
+# https://docs.astral.sh/ruff/linter/#rule-selection
+[lint]
+# preview = true
+# Enable these rules
+extend-select = [
+    "A",   # flake8-builtins
+    "ARG", # flake8-unused-arguments
+    "BLE", # flake8-blind-except
+    "C4",  # flake8-comprehensions
+    "COM", # flake8-commas
+    # "DTZ", # flake8-datetimez
+    "E",   # Error
+    "F",   # Pyflakes
+    "I",   # isort
+    "ICN", # flake8-import-conventions
+    "ISC", # flake8-implicit-str-concat
+    "N",   # pep8-naming
+    "PD",  # pandas-vet
+    "PGH", # pygrep-hooks
+    "PIE", # flake8-pie
+    "PLC", # Pylint Convention
+    "PLE", # Pylint Error
+    "PLR", # Pylint Refactor
+    "PLW", # Pylint Warning
+    "PT",  # flake8-pytest-style
+    "Q",   # flake8-quotes
+    "RUF", # Ruff-specific rules
+    "S",   # flake8-bandit
+    "SIM", # flake8-simplify
+    "T10", # flake8-debugger
+    "TID", # flake8-tidy-imports
+    "UP",  # pyupgrade
+]
+# except for these specific errors
+ignore = [
+    "A001",    # builtin-variable-shadowing
+    "ARG001",  # unused-function-argument
+    "ARG002",  # unused-method-argument
+    "ARG003",  # unused-class-method-argument
+    "BLE001",  # blind-except
+    "COM812",  # missing-trailing-comma
+    "COM819",  # prohibited-trailing-comma
+    "E501",    # line-too-long
+    "ISC001",  # single-line-implicit-string-concatenation
+    "N806",    # non-lowercase-variable-in-function
+    "PLC1901", # compare-to-empty-string (preview)
+    "PLR0402", # manual-from-import
+    "PLR0911", # too-many-return-statements
+    "PLR0912", # too-many-branches
+    "PLR0913", # too-many-arguments
+    "PLR0915", # too-many-statements
+    "PLR2004", # magic-value-comparison
+    "PT009",   # pytest-unittest-assertion
+    "Q000",    # bad-quotes-inline-string
+    "RUF012",  # mutable-class-default
+    "S106",    # hardcoded-password-func-arg
+    "S311",    # suspicious-non-cryptographic-random-usage
+    "S320",    # suspicious-xmle-tree-usage
+    "S603",    # subprocess-without-shell-equals-true
+    "S607",    # start-process-with-partial-path
+    "S701",    # jinja2-autoescape-false
+    "SIM108",  # if-else-block-instead-of-if-exp
+]
+
+[lint.per-file-ignores]
+"**/tests/test_*" = [
+    "S101", # assert
+    "S105", # hardcoded-password-string
+    "S307", # suspicious-eval-usage
+]
+"seed/**/migrations/*" = [
+    "ARG001", # unused-function-argument
+    "RUF012", # mutable-class-default
+]
+"seed/models/__init__.py" = [
+    "F401", # unused-import
+    "F403", # undefined-local-with-import-star
+    "I001", # unsorted-imports
+]
+
+[lint.pylint]
+# Raise the allowed limits the least possible amount https://docs.astral.sh/ruff/settings/#pylint-max-branches
+max-statements = 58
+max-branches = 24

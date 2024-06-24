@@ -1,8 +1,8 @@
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 from django.db import models
 
 from seed.models import Property
@@ -12,7 +12,7 @@ class DataLogger(models.Model):
     property = models.ForeignKey(
         Property,
         on_delete=models.CASCADE,
-        related_name='data_loggers',
+        related_name="data_loggers",
     )
 
     display_name = models.CharField(max_length=255)
@@ -24,14 +24,14 @@ class DataLogger(models.Model):
     serial_number = models.CharField(max_length=255, null=True)
 
     class Meta:
-        unique_together = ('property', 'display_name')
+        unique_together = ("property", "display_name")
 
 
 class Sensor(models.Model):
     data_logger = models.ForeignKey(
         DataLogger,
         on_delete=models.CASCADE,
-        related_name='sensors',
+        related_name="sensors",
     )
 
     display_name = models.CharField(max_length=255)
@@ -44,10 +44,7 @@ class Sensor(models.Model):
     column_name = models.CharField(max_length=255)
 
     class Meta:
-        unique_together = (
-            ('data_logger', 'display_name'),
-            ('data_logger', 'column_name')
-        )
+        unique_together = (("data_logger", "display_name"), ("data_logger", "column_name"))
 
 
 class SensorReading(models.Model):
@@ -56,9 +53,9 @@ class SensorReading(models.Model):
     sensor = models.ForeignKey(
         Sensor,
         on_delete=models.CASCADE,
-        related_name='sensor_readings',
+        related_name="sensor_readings",
     )
     is_occupied = models.BooleanField(null=False)
 
     class Meta:
-        unique_together = ('timestamp', 'sensor')
+        unique_together = ("timestamp", "sensor")

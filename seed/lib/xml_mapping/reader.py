@@ -1,20 +1,20 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 import os
 import zipfile
 from io import BytesIO
 
-from buildingsync_asset_extractor.processor import BSyncProcessor as BAE
+from buildingsync_asset_extractor.processor import BSyncProcessor
 
 from seed.building_sync.building_sync import BuildingSync
 from seed.building_sync.mappings import xpath_to_column_map
 
 
-class BuildingSyncParser(object):
+class BuildingSyncParser:
     def __init__(self, file_):
         """
         :param file_: FieldFile, an ImportFile's file
@@ -28,17 +28,17 @@ class BuildingSyncParser(object):
         _, file_extension = os.path.splitext(filename)
         # grab the data from the zip or xml file
         self.data = []
-        if file_extension == '.zip':
-            with zipfile.ZipFile(file_, 'r', zipfile.ZIP_STORED) as openzip:
+        if file_extension == ".zip":
+            with zipfile.ZipFile(file_, "r", zipfile.ZIP_STORED) as openzip:
                 filelist = openzip.infolist()
                 for f in filelist:
-                    if '.xml' in f.filename and '__MACOSX' not in f.filename:
+                    if ".xml" in f.filename and "__MACOSX" not in f.filename:
                         self._add_property_to_data(openzip.read(f), f.filename)
-        elif file_extension == '.xml':
+        elif file_extension == ".xml":
             self._add_property_to_data(file_.read(), filename)
 
         else:
-            raise Exception(f'Unsupported file type for BuildingSync {file_extension}')
+            raise Exception(f"Unsupported file type for BuildingSync {file_extension}")
 
         self.first_five_rows = [self._capture_row(row) for row in self.data[:5]]
 
@@ -47,7 +47,7 @@ class BuildingSyncParser(object):
             bs = BuildingSync()
             bs.import_file(BytesIO(bsync_file))
         except Exception as e:
-            raise Exception(f'Error importing BuildingSync file {file_name}: {str(e)}')
+            raise Exception(f"Error importing BuildingSync file {file_name}: {e!s}")
 
         if not self._xpath_col_dict:
             # get the mapping for the first xml data
@@ -58,7 +58,7 @@ class BuildingSyncParser(object):
         property_ = bs.process_property_xpaths(self._xpath_col_dict)
 
         # BuildingSync Asset Extractor (BAE) - automatically extract assets from BuildingSync file
-        bae = BAE(data=bsync_file)
+        bae = BSyncProcessor(data=bsync_file)
         bae.extract()
         assets = bae.get_assets()
 
@@ -73,7 +73,7 @@ class BuildingSyncParser(object):
         # a certain PropertyState came from (because of the linked BuildingFile model).
         # For this reason, we add this extra information here for later use in
         # the import tasks
-        property_['_source_filename'] = file_name
+        property_["_source_filename"] = file_name
         self.data.append(property_)
 
     def _capture_row(self, row):
@@ -82,7 +82,7 @@ class BuildingSyncParser(object):
         # before adding the row (it doesn't have a corresponding 'header', ie it's
         # not used for mapping)
         row_copy = row.copy()
-        del row_copy['_source_filename']
+        del row_copy["_source_filename"]
 
         # add the values _in order_ of our defined headers
         values = []

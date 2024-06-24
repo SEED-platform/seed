@@ -1,12 +1,10 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 :author nicholas.long@nrel.gov
 """
-from __future__ import unicode_literals
 
 import logging
 
@@ -14,7 +12,7 @@ from django.db import models
 
 from seed.building_sync.building_sync import BuildingSync, ParsingError
 from seed.data_importer.utils import kbtu_thermal_conversion_factors
-from seed.hpxml.hpxml import HPXML as HPXMLParser
+from seed.hpxml.hpxml import HPXML as HPXMLParser  # noqa: N811
 from seed.lib.merging.merging import merge_state
 from seed.models import (
     AUDIT_IMPORT,
@@ -27,7 +25,7 @@ from seed.models import (
     PropertyAuditLog,
     PropertyMeasure,
     PropertyState,
-    Scenario
+    Scenario,
 )
 
 _log = logging.getLogger(__name__)
@@ -36,27 +34,21 @@ _log = logging.getLogger(__name__)
 class BuildingFile(models.Model):
     """
     BuildingFile contains any building related file, such as a BuildingSync file, that
-    are attached to a PropertyState. Typically the file is used to create/update the
+    are attached to a PropertyState. Typically, the file is used to create/update the
     PropertyState record.
     """
+
     UNKNOWN = 0
     BUILDINGSYNC = 1
     HPXML = 3
 
-    BUILDING_FILE_TYPES = (
-        (UNKNOWN, 'Unknown'),
-        (BUILDINGSYNC, 'BuildingSync'),
-        (HPXML, 'HPXML')
-    )
+    BUILDING_FILE_TYPES = ((UNKNOWN, "Unknown"), (BUILDINGSYNC, "BuildingSync"), (HPXML, "HPXML"))
 
-    BUILDING_FILE_PARSERS = {
-        HPXML: HPXMLParser,
-        BUILDINGSYNC: BuildingSync
-    }
+    BUILDING_FILE_PARSERS = {HPXML: HPXMLParser, BUILDINGSYNC: BuildingSync}
 
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
-    property_state = models.ForeignKey('PropertyState', on_delete=models.CASCADE, related_name='building_files', null=True)
+    property_state = models.ForeignKey("PropertyState", on_delete=models.CASCADE, related_name="building_files", null=True)
     file = models.FileField(upload_to="buildingsync_files", max_length=500, blank=True, null=True)
     file_type = models.IntegerField(choices=BUILDING_FILE_TYPES, default=UNKNOWN)
     filename = models.CharField(blank=True, max_length=255)
@@ -81,8 +73,7 @@ class BuildingFile(models.Model):
         except ValueError:
             pass
 
-        value = [y[0] for x, y in enumerate(cls.BUILDING_FILE_TYPES) if
-                 y[1].lower() == file_type.lower()]
+        value = [y[0] for x, y in enumerate(cls.BUILDING_FILE_TYPES) if y[1].lower() == file_type.lower()]
         if len(value) == 1:
             return value[0]
         else:
@@ -102,11 +93,11 @@ class BuildingFile(models.Model):
         extra_data = {}
         for k, v in data.items():
             # Skip the keys that are for measures and reports and process later
-            if k in ['measures', 'reports', 'scenarios']:
+            if k in {"measures", "reports", "scenarios"}:
                 continue
 
             # Check if the column exists, if not, then create one.
-            if ('PropertyState', k) in db_columns:
+            if ("PropertyState", k) in db_columns:
                 create_data[k] = v
             else:
                 extra_data[k] = v
@@ -117,10 +108,10 @@ class BuildingFile(models.Model):
         PropertyAuditLog.objects.create(
             organization_id=organization_id,
             state_id=property_state.id,
-            name='Import Creation',
-            description='Creation from Import file.',
+            name="Import Creation",
+            description="Creation from Import file.",
             import_filename=self.file.path,
-            record_type=AUDIT_IMPORT
+            record_type=AUDIT_IMPORT,
         )
         # set the property_state_id so that we can list the building files by properties
         self.property_state_id = property_state.id
@@ -151,10 +142,8 @@ class BuildingFile(models.Model):
 
         Parser = self.BUILDING_FILE_PARSERS.get(self.file_type, None)
         if not Parser:
-            acceptable_file_types = ', '.join(
-                map(dict(self.BUILDING_FILE_TYPES).get, list(self.BUILDING_FILE_PARSERS.keys()))
-            )
-            return False, None, None, "File format was not one of: {}".format(acceptable_file_types)
+            acceptable_file_types = ", ".join(map(dict(self.BUILDING_FILE_TYPES).get, list(self.BUILDING_FILE_PARSERS.keys())))
+            return False, None, None, f"File format was not one of: {acceptable_file_types}"
 
         parser = Parser()
         try:
@@ -167,7 +156,7 @@ class BuildingFile(models.Model):
         except ParsingError as e:
             return False, None, None, [str(e)]
 
-        if len(messages['errors']) > 0 or not data:
+        if len(messages["errors"]) > 0 or not data:
             return False, None, None, messages
 
         # Create the property state if none already exists for this file
@@ -181,94 +170,94 @@ class BuildingFile(models.Model):
         self.save()
 
         # add in the measures
-        for m in data.get('measures', []):
+        for m in data.get("measures", []):
             # Find the measure in the database
             try:
                 measure = Measure.objects.get(
-                    category=m['category'], name=m['name'], organization_id=organization_id,
+                    category=m["category"],
+                    name=m["name"],
+                    organization_id=organization_id,
                 )
             except Measure.DoesNotExist:
-                messages['warnings'].append('Measure category and name is not valid %s:%s' % (m['category'], m['name']))
+                messages["warnings"].append(f'Measure category and name is not valid {m["category"]}:{m["name"]}')
                 continue
 
             # Add the measure to the join table.
             # Need to determine what constitutes the unique measure for a property
-            implementation_status = m['implementation_status'] if m.get('implementation_status') else 'Proposed'
-            application_scale = m['application_scale_of_application'] if m.get('application_scale_of_application') else PropertyMeasure.SCALE_ENTIRE_FACILITY
-            category_affected = m['system_category_affected'] if m.get('system_category_affected') else PropertyMeasure.CATEGORY_OTHER
+            implementation_status = m["implementation_status"] if m.get("implementation_status") else "Proposed"
+            application_scale = (
+                m["application_scale_of_application"]
+                if m.get("application_scale_of_application")
+                else PropertyMeasure.SCALE_ENTIRE_FACILITY
+            )
+            category_affected = m["system_category_affected"] if m.get("system_category_affected") else PropertyMeasure.CATEGORY_OTHER
             # for some reason this is returning none if the field is empty. So none and true should both be true.
-            recommended = str(m.get('recommended', 'true')).lower() in ['true', 'none']
+            recommended = str(m.get("recommended", "true")).lower() in {"true", "none"}
             join, _ = PropertyMeasure.objects.get_or_create(
                 property_state_id=self.property_state_id,
                 measure_id=measure.pk,
-                property_measure_name=m.get('property_measure_name'),
+                property_measure_name=m.get("property_measure_name"),
                 implementation_status=PropertyMeasure.str_to_impl_status(implementation_status),
                 application_scale=PropertyMeasure.str_to_application_scale(application_scale),
                 category_affected=PropertyMeasure.str_to_category_affected(category_affected),
                 recommended=recommended,
             )
-            join.description = m.get('description')
-            join.cost_mv = m.get('mv_cost')
-            join.cost_total_first = m.get('measure_total_first_cost')
-            join.cost_installation = m.get('measure_installation_cost')
-            join.cost_material = m.get('measure_material_cost')
-            join.cost_capital_replacement = m.get('measure_capital_replacement_cost')
-            join.cost_residual_value = m.get('measure_residual_value')
-            join.useful_life = m.get('useful_life')
+            join.description = m.get("description")
+            join.cost_mv = m.get("mv_cost")
+            join.cost_total_first = m.get("measure_total_first_cost")
+            join.cost_installation = m.get("measure_installation_cost")
+            join.cost_material = m.get("measure_material_cost")
+            join.cost_capital_replacement = m.get("measure_capital_replacement_cost")
+            join.cost_residual_value = m.get("measure_residual_value")
+            join.useful_life = m.get("useful_life")
             join.save()
 
-        scenario_temporal_status_map = {
-            status_name: status_enum
-            for status_enum, status_name in Scenario.TEMPORAL_STATUS_TYPES
-        }
+        scenario_temporal_status_map = {status_name: status_enum for status_enum, status_name in Scenario.TEMPORAL_STATUS_TYPES}
         # add in scenarios
         linked_meters = []
         scenarios = []
-        for s in data.get('scenarios', []):
+        for s in data.get("scenarios", []):
             # If the scenario does not have a name then log a warning and continue
-            if not s.get('name'):
-                messages['warnings'].append('Skipping scenario because it does not have a name. ID = %s' % s.get('id'))
+            if not s.get("name"):
+                messages["warnings"].append("Skipping scenario because it does not have a name. ID = %s" % s.get("id"))
                 continue
 
             scenario, _ = Scenario.objects.get_or_create(
-                name=s.get('name'),
+                name=s.get("name"),
                 property_state_id=self.property_state_id,
             )
-            scenario.description = s.get('description')
-            scenario.annual_site_energy_savings = s.get('annual_site_energy_savings')
-            scenario.annual_source_energy_savings = s.get('annual_source_energy_savings')
-            scenario.annual_cost_savings = s.get('annual_cost_savings')
-            scenario.summer_peak_load_reduction = s.get('summer_peak_load_reduction')
-            scenario.winter_peak_load_reduction = s.get('winter_peak_load_reduction')
-            scenario.hdd = s.get('hdd')
-            scenario.hdd_base_temperature = s.get('hdd_base_temperature')
-            scenario.cdd = s.get('cdd')
-            scenario.cdd_base_temperature = s.get('cdd_base_temperature')
-            scenario.annual_electricity_savings = s.get('annual_electricity_savings')
-            scenario.annual_natural_gas_savings = s.get('annual_natural_gas_savings')
-            scenario.annual_site_energy = s.get('annual_site_energy')
-            scenario.annual_source_energy = s.get('annual_source_energy')
-            scenario.annual_site_energy_use_intensity = s.get('annual_site_energy_use_intensity')
-            scenario.annual_source_energy_use_intensity = s.get('annual_source_energy_use_intensity')
-            scenario.annual_natural_gas_energy = s.get('annual_natural_gas_energy')
-            scenario.annual_electricity_energy = s.get('annual_electricity_energy')
-            scenario.annual_peak_demand = s.get('annual_peak_demand')
-            scenario.annual_peak_electricity_reduction = s.get('annual_peak_electricity_reduction')
-            scenario.temporal_status = scenario_temporal_status_map.get(
-                s.get('temporal_status'),
-                Scenario.TEMPORAL_STATUS_CURRENT
-            )
+            scenario.description = s.get("description")
+            scenario.annual_site_energy_savings = s.get("annual_site_energy_savings")
+            scenario.annual_source_energy_savings = s.get("annual_source_energy_savings")
+            scenario.annual_cost_savings = s.get("annual_cost_savings")
+            scenario.summer_peak_load_reduction = s.get("summer_peak_load_reduction")
+            scenario.winter_peak_load_reduction = s.get("winter_peak_load_reduction")
+            scenario.hdd = s.get("hdd")
+            scenario.hdd_base_temperature = s.get("hdd_base_temperature")
+            scenario.cdd = s.get("cdd")
+            scenario.cdd_base_temperature = s.get("cdd_base_temperature")
+            scenario.annual_electricity_savings = s.get("annual_electricity_savings")
+            scenario.annual_natural_gas_savings = s.get("annual_natural_gas_savings")
+            scenario.annual_site_energy = s.get("annual_site_energy")
+            scenario.annual_source_energy = s.get("annual_source_energy")
+            scenario.annual_site_energy_use_intensity = s.get("annual_site_energy_use_intensity")
+            scenario.annual_source_energy_use_intensity = s.get("annual_source_energy_use_intensity")
+            scenario.annual_natural_gas_energy = s.get("annual_natural_gas_energy")
+            scenario.annual_electricity_energy = s.get("annual_electricity_energy")
+            scenario.annual_peak_demand = s.get("annual_peak_demand")
+            scenario.annual_peak_electricity_reduction = s.get("annual_peak_electricity_reduction")
+            scenario.temporal_status = scenario_temporal_status_map.get(s.get("temporal_status"), Scenario.TEMPORAL_STATUS_CURRENT)
 
-            if s.get('reference_case'):
+            if s.get("reference_case"):
                 ref_case = Scenario.objects.filter(
-                    name=s.get('reference_case'),
+                    name=s.get("reference_case"),
                     property_state_id=self.property_state_id,
                 )
                 if len(ref_case) == 1:
                     scenario.reference_case = ref_case.first()
 
             # set the list of measures. Note that this can be empty (e.g., baseline has no measures)
-            for measure_name in s.get('measures', []):
+            for measure_name in s.get("measures", []):
                 # find the join measure in the database
                 measure = None
                 try:
@@ -278,7 +267,9 @@ class BuildingFile(models.Model):
                     )
                 except PropertyMeasure.DoesNotExist:
                     # PropertyMeasure is not in database, skipping silently
-                    messages['warnings'].append('Measure associated with scenario not found. Scenario: %s, Measure name: %s' % (s.get('name'), measure_name))
+                    messages["warnings"].append(
+                        f'Measure associated with scenario not found. Scenario: {s.get("name")}, Measure name: {measure_name}'
+                    )
                     continue
 
                 scenario.measures.add(measure)
@@ -288,15 +279,11 @@ class BuildingFile(models.Model):
 
             # meters
             energy_types = dict(Meter.ENERGY_TYPES)
-            for m in s.get('meters', []):
+            for m in s.get("meters", []):
                 num_skipped_readings = 0
                 valid_readings = []
-                for mr in m.get('readings', []):
-                    is_usable = (
-                        mr.get('start_time') is not None
-                        and mr.get('end_time') is not None
-                        and mr.get('reading') is not None
-                    )
+                for mr in m.get("readings", []):
+                    is_usable = mr.get("start_time") is not None and mr.get("end_time") is not None and mr.get("reading") is not None
                     if is_usable:
                         valid_readings.append(mr)
                     else:
@@ -304,11 +291,11 @@ class BuildingFile(models.Model):
 
                 if len(valid_readings) == 0:
                     # skip this meter
-                    messages['warnings'].append(f'Skipped meter {m.get("source_id")} because it had no valid readings')
+                    messages["warnings"].append(f'Skipped meter {m.get("source_id")} because it had no valid readings')
                     continue
 
                 if num_skipped_readings > 0:
-                    messages['warnings'].append(
+                    messages["warnings"].append(
                         f'Skipped {num_skipped_readings} readings due to missing start time,'
                         f' end time, or reading value for meter {m.get("source_id")}'
                     )
@@ -317,33 +304,30 @@ class BuildingFile(models.Model):
                 # check by scenario_id and source_id
                 meter, _ = Meter.objects.get_or_create(
                     scenario_id=scenario.id,
-                    source_id=m.get('source_id'),
+                    source_id=m.get("source_id"),
                 )
-                meter.source = m.get('source')
-                meter.type = m.get('type')
+                meter.source = m.get("source")
+                meter.type = m.get("type")
                 if meter.type is None:
                     meter.type = Meter.OTHER
-                meter.is_virtual = m.get('is_virtual')
+                meter.is_virtual = m.get("is_virtual")
                 if meter.is_virtual is None:
                     meter.is_virtual = False
                 meter.save()
                 linked_meters.append(meter)
 
                 # meterreadings
-                if meter.type in energy_types:
-                    meter_type = energy_types[meter.type]
-                else:
-                    meter_type = None
+                meter_type = energy_types.get(meter.type, None)
                 meter_conversions = self._kbtu_thermal_conversion_factors().get(meter_type, {})
 
                 valid_reading_models = {
                     MeterReading(
-                        start_time=mr.get('start_time'),
-                        end_time=mr.get('end_time'),
-                        reading=float(mr.get('reading', 0)) * meter_conversions.get(mr.get('source_unit'), 1.00),
-                        source_unit=mr.get('source_unit'),
+                        start_time=mr.get("start_time"),
+                        end_time=mr.get("end_time"),
+                        reading=float(mr.get("reading", 0)) * meter_conversions.get(mr.get("source_unit"), 1.00),
+                        source_unit=mr.get("source_unit"),
                         meter_id=meter.id,
-                        conversion_factor=meter_conversions.get(mr.get('source_unit'), 1.00)
+                        conversion_factor=meter_conversions.get(mr.get("source_unit"), 1.00),
                     )
                     for mr in valid_readings
                 }
@@ -357,9 +341,7 @@ class BuildingFile(models.Model):
             # assume the same cycle id as the former state.
             # should merge_state also copy/move over the relationships?
             priorities = Column.retrieve_priorities(organization_id)
-            merged_state = merge_state(
-                merged_state, property_view.state, property_state, priorities['PropertyState']
-            )
+            merged_state = merge_state(merged_state, property_view.state, property_state, priorities["PropertyState"])
 
             # log the merge
             # Not a fan of the parent1/parent2 logic here, seems error prone, what this
@@ -371,10 +353,10 @@ class BuildingFile(models.Model):
                 parent_state1=property_view.state,
                 parent_state2=property_state,
                 state=merged_state,
-                name='System Match',
-                description='Automatic Merge',
+                name="System Match",
+                description="Automatic Merge",
                 import_filename=None,
-                record_type=AUDIT_IMPORT
+                record_type=AUDIT_IMPORT,
             )
 
             property_view.state = merged_state
@@ -395,7 +377,7 @@ class BuildingFile(models.Model):
             property=property_view.property,
             cycle=property_view.cycle,
             building_file=self,
-            audit_date=property_state.extra_data.get('audit_date', ''),
+            audit_date=property_state.extra_data.get("audit_date", ""),
         )
         event.scenarios.set(scenarios)
         event.save()

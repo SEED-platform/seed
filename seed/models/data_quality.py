@@ -1,13 +1,12 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 import json
 import logging
 import re
-from builtins import str
 from datetime import date, datetime
 from random import randint
 
@@ -20,14 +19,7 @@ from pint.errors import DimensionalityError
 from quantityfield.units import ureg
 
 from seed.lib.superperms.orgs.models import Organization
-from seed.models import (
-    Column,
-    DerivedColumn,
-    PropertyView,
-    StatusLabel,
-    TaxLotView,
-    obj_to_dict
-)
+from seed.models import Column, DerivedColumn, PropertyView, StatusLabel, TaxLotView, obj_to_dict
 from seed.serializers.pint import pretty_units
 from seed.utils.cache import get_cache_raw, set_cache_raw
 from seed.utils.time import convert_datestr
@@ -68,16 +60,13 @@ def format_pint_violation(rule, source_value):
     pretty_rule_units = pretty_units(rule_value)
 
     if incoming_data_units != rule_units:
-        formatted_value = '{:.1f} {} → {:.1f} {}'.format(
-            source_value.magnitude, pretty_source_units,
-            rule_value.magnitude, pretty_rule_units,
-        )
+        formatted_value = f"{source_value.magnitude:.1f} {pretty_source_units} → {rule_value.magnitude:.1f} {pretty_rule_units}"
     else:
-        formatted_value = '{:.1f} {}'.format(source_value.magnitude, pretty_rule_units)
+        formatted_value = f"{source_value.magnitude:.1f} {pretty_rule_units}"
     if rule.min is not None:
-        formatted_min = '{:.1f} {}'.format(rule.min, pretty_rule_units)
+        formatted_min = f"{rule.min:.1f} {pretty_rule_units}"
     if rule.max is not None:
-        formatted_max = '{:.1f} {}'.format(rule.max, pretty_rule_units)
+        formatted_max = f"{rule.max:.1f} {pretty_rule_units}"
     return formatted_value, formatted_min, formatted_max
 
 
@@ -85,6 +74,7 @@ class Rule(models.Model):
     """
     Rules for DataQualityCheck
     """
+
     TYPE_NUMBER = 0
     TYPE_STRING = 1
     TYPE_DATE = 2
@@ -92,249 +82,269 @@ class Rule(models.Model):
     TYPE_AREA = 4
     TYPE_EUI = 5
     DATA_TYPES = [
-        (TYPE_NUMBER, 'number'),
-        (TYPE_STRING, 'string'),
-        (TYPE_DATE, 'date'),
-        (TYPE_YEAR, 'year'),
-        (TYPE_AREA, 'area'),
-        (TYPE_EUI, 'eui')
+        (TYPE_NUMBER, "number"),
+        (TYPE_STRING, "string"),
+        (TYPE_DATE, "date"),
+        (TYPE_YEAR, "year"),
+        (TYPE_AREA, "area"),
+        (TYPE_EUI, "eui"),
     ]
 
     RULE_TYPE_DEFAULT = 0
     RULE_TYPE_CUSTOM = 1
     RULE_TYPE = [
-        (RULE_TYPE_DEFAULT, 'default'),
-        (RULE_TYPE_CUSTOM, 'custom'),
+        (RULE_TYPE_DEFAULT, "default"),
+        (RULE_TYPE_CUSTOM, "custom"),
     ]
 
     SEVERITY_ERROR = 0
     SEVERITY_WARNING = 1
     SEVERITY_VALID = 2
     SEVERITY = [
-        (SEVERITY_ERROR, 'error'),
-        (SEVERITY_WARNING, 'warning'),
-        (SEVERITY_VALID, 'valid'),
+        (SEVERITY_ERROR, "error"),
+        (SEVERITY_WARNING, "warning"),
+        (SEVERITY_VALID, "valid"),
     ]
 
-    RULE_REQUIRED = 'required'
-    RULE_NOT_NULL = 'not_null'
-    RULE_RANGE = 'range'
-    RULE_INCLUDE = 'include'
-    RULE_EXCLUDE = 'exclude'
+    RULE_REQUIRED = "required"
+    RULE_NOT_NULL = "not_null"
+    RULE_RANGE = "range"
+    RULE_INCLUDE = "include"
+    RULE_EXCLUDE = "exclude"
 
     DEFAULT_RULES = [
         {
-            'table_name': 'PropertyState',
-            'field': 'address_line_1',
-            'data_type': TYPE_STRING,
-            'not_null': True,
-            'rule_type': RULE_TYPE_DEFAULT,
-            'severity': SEVERITY_ERROR,
-            'condition': RULE_NOT_NULL,
-        }, {
-            'table_name': 'PropertyState',
-            'field': 'pm_property_id',
-            'data_type': TYPE_STRING,
-            'not_null': True,
-            'rule_type': RULE_TYPE_DEFAULT,
-            'severity': SEVERITY_ERROR,
-            'condition': RULE_NOT_NULL,
-        }, {
-            'table_name': 'PropertyState',
-            'field': 'custom_id_1',
-            'not_null': True,
-            'rule_type': RULE_TYPE_DEFAULT,
-            'severity': SEVERITY_ERROR,
-            'condition': RULE_NOT_NULL,
-        }, {
-            'table_name': 'TaxLotState',
-            'field': 'jurisdiction_tax_lot_id',
-            'not_null': True,
-            'rule_type': RULE_TYPE_DEFAULT,
-            'severity': SEVERITY_ERROR,
-            'condition': RULE_NOT_NULL,
-        }, {
-            'table_name': 'TaxLotState',
-            'field': 'address_line_1',
-            'data_type': TYPE_STRING,
-            'not_null': True,
-            'rule_type': RULE_TYPE_DEFAULT,
-            'severity': SEVERITY_ERROR,
-            'condition': RULE_NOT_NULL,
-        }, {
-            'table_name': 'PropertyState',
-            'field': 'conditioned_floor_area',
-            'data_type': TYPE_AREA,
-            'rule_type': RULE_TYPE_DEFAULT,
-            'min': 0,
-            'max': 7000000,
-            'severity': SEVERITY_ERROR,
-            'units': 'ft**2',
-            'condition': RULE_RANGE,
-        }, {
-            'table_name': 'PropertyState',
-            'field': 'conditioned_floor_area',
-            'data_type': TYPE_AREA,
-            'rule_type': RULE_TYPE_DEFAULT,
-            'min': 100,
-            'severity': SEVERITY_WARNING,
-            'units': 'ft**2',
-            'condition': RULE_RANGE,
-        }, {
-            'table_name': 'PropertyState',
-            'field': 'energy_score',
-            'data_type': TYPE_NUMBER,
-            'rule_type': RULE_TYPE_DEFAULT,
-            'min': 0,
-            'max': 100,
-            'severity': SEVERITY_ERROR,
-            'condition': RULE_RANGE,
-        }, {
-            'table_name': 'PropertyState',
-            'field': 'energy_score',
-            'data_type': TYPE_NUMBER,
-            'rule_type': RULE_TYPE_DEFAULT,
-            'min': 10,
-            'severity': SEVERITY_WARNING,
-            'condition': RULE_RANGE,
-        }, {
-            'table_name': 'PropertyState',
-            'field': 'generation_date',
-            'data_type': TYPE_DATE,
-            'rule_type': RULE_TYPE_DEFAULT,
-            'min': 18890101,
-            'max': datetime.now().strftime("%Y1231"),
-            'severity': SEVERITY_ERROR,
-            'condition': RULE_RANGE,
-        }, {
-            'table_name': 'PropertyState',
-            'field': 'gross_floor_area',
-            'data_type': TYPE_NUMBER,
-            'rule_type': RULE_TYPE_DEFAULT,
-            'min': 100,
-            'max': 7000000,
-            'severity': SEVERITY_ERROR,
-            'units': 'ft**2',
-            'condition': RULE_RANGE,
-        }, {
-            'table_name': 'PropertyState',
-            'field': 'occupied_floor_area',
-            'data_type': TYPE_NUMBER,
-            'rule_type': RULE_TYPE_DEFAULT,
-            'min': 100,
-            'max': 7000000,
-            'severity': SEVERITY_ERROR,
-            'units': 'ft**2',
-            'condition': RULE_RANGE,
-        }, {
-            'table_name': 'PropertyState',
-            'field': 'recent_sale_date',
-            'data_type': TYPE_DATE,
-            'rule_type': RULE_TYPE_DEFAULT,
-            'min': 18890101,
-            'max': datetime.now().strftime("%Y1231"),
-            'severity': SEVERITY_ERROR,
-            'condition': RULE_RANGE,
-        }, {
-            'table_name': 'PropertyState',
-            'field': 'release_date',
-            'data_type': TYPE_DATE,
-            'rule_type': RULE_TYPE_DEFAULT,
-            'min': 18890101,
-            'max': datetime.now().strftime("%Y1231"),
-            'severity': SEVERITY_ERROR,
-            'condition': RULE_RANGE,
-        }, {
-            'table_name': 'PropertyState',
-            'field': 'site_eui',
-            'data_type': TYPE_EUI,
-            'rule_type': RULE_TYPE_DEFAULT,
-            'min': 0,
-            'max': 1000,
-            'severity': SEVERITY_ERROR,
-            'units': 'kBtu/ft**2/year',
-            'condition': RULE_RANGE,
-        }, {
-            'table_name': 'PropertyState',
-            'field': 'site_eui',
-            'data_type': TYPE_EUI,
-            'rule_type': RULE_TYPE_DEFAULT,
-            'min': 10,
-            'severity': SEVERITY_WARNING,
-            'units': 'kBtu/ft**2/year',
-            'condition': RULE_RANGE,
-        }, {
-            'table_name': 'PropertyState',
-            'field': 'site_eui_weather_normalized',
-            'data_type': TYPE_EUI,
-            'rule_type': RULE_TYPE_DEFAULT,
-            'min': 0,
-            'max': 1000,
-            'severity': SEVERITY_ERROR,
-            'units': 'kBtu/ft**2/year',
-            'condition': RULE_RANGE,
-        }, {
-            'table_name': 'PropertyState',
-            'field': 'source_eui',
-            'data_type': TYPE_EUI,
-            'rule_type': RULE_TYPE_DEFAULT,
-            'min': 0,
-            'max': 1000,
-            'severity': SEVERITY_ERROR,
-            'units': 'kBtu/ft**2/year',
-            'condition': RULE_RANGE,
-        }, {
-            'table_name': 'PropertyState',
-            'field': 'source_eui',
-            'data_type': TYPE_EUI,
-            'rule_type': RULE_TYPE_DEFAULT,
-            'min': 10,
-            'severity': SEVERITY_WARNING,
-            'units': 'kBtu/ft**2/year',
-            'condition': RULE_RANGE,
-        }, {
-            'table_name': 'PropertyState',
-            'field': 'source_eui_weather_normalized',
-            'data_type': TYPE_EUI,
-            'rule_type': RULE_TYPE_DEFAULT,
-            'min': 10,
-            'max': 1000,
-            'severity': SEVERITY_ERROR,
-            'units': 'kBtu/ft**2/year',
-            'condition': RULE_RANGE,
-        }, {
-            'table_name': 'PropertyState',
-            'field': 'year_built',
-            'data_type': TYPE_YEAR,
-            'rule_type': RULE_TYPE_DEFAULT,
-            'min': 1700,
-            'max': str(datetime.now().year),
-            'severity': SEVERITY_ERROR,
-            'condition': RULE_RANGE,
-        }, {
-            'table_name': 'PropertyState',
-            'field': 'year_ending',
-            'data_type': TYPE_DATE,
-            'rule_type': RULE_TYPE_DEFAULT,
-            'min': 18890101,
-            'max': datetime.now().strftime("%Y1231"),
-            'severity': SEVERITY_ERROR,
-            'condition': RULE_RANGE,
-        }
+            "table_name": "PropertyState",
+            "field": "address_line_1",
+            "data_type": TYPE_STRING,
+            "not_null": True,
+            "rule_type": RULE_TYPE_DEFAULT,
+            "severity": SEVERITY_ERROR,
+            "condition": RULE_NOT_NULL,
+        },
+        {
+            "table_name": "PropertyState",
+            "field": "pm_property_id",
+            "data_type": TYPE_STRING,
+            "not_null": True,
+            "rule_type": RULE_TYPE_DEFAULT,
+            "severity": SEVERITY_ERROR,
+            "condition": RULE_NOT_NULL,
+        },
+        {
+            "table_name": "PropertyState",
+            "field": "custom_id_1",
+            "not_null": True,
+            "rule_type": RULE_TYPE_DEFAULT,
+            "severity": SEVERITY_ERROR,
+            "condition": RULE_NOT_NULL,
+        },
+        {
+            "table_name": "TaxLotState",
+            "field": "jurisdiction_tax_lot_id",
+            "not_null": True,
+            "rule_type": RULE_TYPE_DEFAULT,
+            "severity": SEVERITY_ERROR,
+            "condition": RULE_NOT_NULL,
+        },
+        {
+            "table_name": "TaxLotState",
+            "field": "address_line_1",
+            "data_type": TYPE_STRING,
+            "not_null": True,
+            "rule_type": RULE_TYPE_DEFAULT,
+            "severity": SEVERITY_ERROR,
+            "condition": RULE_NOT_NULL,
+        },
+        {
+            "table_name": "PropertyState",
+            "field": "conditioned_floor_area",
+            "data_type": TYPE_AREA,
+            "rule_type": RULE_TYPE_DEFAULT,
+            "min": 0,
+            "max": 7000000,
+            "severity": SEVERITY_ERROR,
+            "units": "ft**2",
+            "condition": RULE_RANGE,
+        },
+        {
+            "table_name": "PropertyState",
+            "field": "conditioned_floor_area",
+            "data_type": TYPE_AREA,
+            "rule_type": RULE_TYPE_DEFAULT,
+            "min": 100,
+            "severity": SEVERITY_WARNING,
+            "units": "ft**2",
+            "condition": RULE_RANGE,
+        },
+        {
+            "table_name": "PropertyState",
+            "field": "energy_score",
+            "data_type": TYPE_NUMBER,
+            "rule_type": RULE_TYPE_DEFAULT,
+            "min": 0,
+            "max": 100,
+            "severity": SEVERITY_ERROR,
+            "condition": RULE_RANGE,
+        },
+        {
+            "table_name": "PropertyState",
+            "field": "energy_score",
+            "data_type": TYPE_NUMBER,
+            "rule_type": RULE_TYPE_DEFAULT,
+            "min": 10,
+            "severity": SEVERITY_WARNING,
+            "condition": RULE_RANGE,
+        },
+        {
+            "table_name": "PropertyState",
+            "field": "generation_date",
+            "data_type": TYPE_DATE,
+            "rule_type": RULE_TYPE_DEFAULT,
+            "min": 18890101,
+            "max": datetime.now().strftime("%Y1231"),
+            "severity": SEVERITY_ERROR,
+            "condition": RULE_RANGE,
+        },
+        {
+            "table_name": "PropertyState",
+            "field": "gross_floor_area",
+            "data_type": TYPE_NUMBER,
+            "rule_type": RULE_TYPE_DEFAULT,
+            "min": 100,
+            "max": 7000000,
+            "severity": SEVERITY_ERROR,
+            "units": "ft**2",
+            "condition": RULE_RANGE,
+        },
+        {
+            "table_name": "PropertyState",
+            "field": "occupied_floor_area",
+            "data_type": TYPE_NUMBER,
+            "rule_type": RULE_TYPE_DEFAULT,
+            "min": 100,
+            "max": 7000000,
+            "severity": SEVERITY_ERROR,
+            "units": "ft**2",
+            "condition": RULE_RANGE,
+        },
+        {
+            "table_name": "PropertyState",
+            "field": "recent_sale_date",
+            "data_type": TYPE_DATE,
+            "rule_type": RULE_TYPE_DEFAULT,
+            "min": 18890101,
+            "max": datetime.now().strftime("%Y1231"),
+            "severity": SEVERITY_ERROR,
+            "condition": RULE_RANGE,
+        },
+        {
+            "table_name": "PropertyState",
+            "field": "release_date",
+            "data_type": TYPE_DATE,
+            "rule_type": RULE_TYPE_DEFAULT,
+            "min": 18890101,
+            "max": datetime.now().strftime("%Y1231"),
+            "severity": SEVERITY_ERROR,
+            "condition": RULE_RANGE,
+        },
+        {
+            "table_name": "PropertyState",
+            "field": "site_eui",
+            "data_type": TYPE_EUI,
+            "rule_type": RULE_TYPE_DEFAULT,
+            "min": 0,
+            "max": 1000,
+            "severity": SEVERITY_ERROR,
+            "units": "kBtu/ft**2/year",
+            "condition": RULE_RANGE,
+        },
+        {
+            "table_name": "PropertyState",
+            "field": "site_eui",
+            "data_type": TYPE_EUI,
+            "rule_type": RULE_TYPE_DEFAULT,
+            "min": 10,
+            "severity": SEVERITY_WARNING,
+            "units": "kBtu/ft**2/year",
+            "condition": RULE_RANGE,
+        },
+        {
+            "table_name": "PropertyState",
+            "field": "site_eui_weather_normalized",
+            "data_type": TYPE_EUI,
+            "rule_type": RULE_TYPE_DEFAULT,
+            "min": 0,
+            "max": 1000,
+            "severity": SEVERITY_ERROR,
+            "units": "kBtu/ft**2/year",
+            "condition": RULE_RANGE,
+        },
+        {
+            "table_name": "PropertyState",
+            "field": "source_eui",
+            "data_type": TYPE_EUI,
+            "rule_type": RULE_TYPE_DEFAULT,
+            "min": 0,
+            "max": 1000,
+            "severity": SEVERITY_ERROR,
+            "units": "kBtu/ft**2/year",
+            "condition": RULE_RANGE,
+        },
+        {
+            "table_name": "PropertyState",
+            "field": "source_eui",
+            "data_type": TYPE_EUI,
+            "rule_type": RULE_TYPE_DEFAULT,
+            "min": 10,
+            "severity": SEVERITY_WARNING,
+            "units": "kBtu/ft**2/year",
+            "condition": RULE_RANGE,
+        },
+        {
+            "table_name": "PropertyState",
+            "field": "source_eui_weather_normalized",
+            "data_type": TYPE_EUI,
+            "rule_type": RULE_TYPE_DEFAULT,
+            "min": 10,
+            "max": 1000,
+            "severity": SEVERITY_ERROR,
+            "units": "kBtu/ft**2/year",
+            "condition": RULE_RANGE,
+        },
+        {
+            "table_name": "PropertyState",
+            "field": "year_built",
+            "data_type": TYPE_YEAR,
+            "rule_type": RULE_TYPE_DEFAULT,
+            "min": 1700,
+            "max": str(datetime.now().year),
+            "severity": SEVERITY_ERROR,
+            "condition": RULE_RANGE,
+        },
+        {
+            "table_name": "PropertyState",
+            "field": "year_ending",
+            "data_type": TYPE_DATE,
+            "rule_type": RULE_TYPE_DEFAULT,
+            "min": 18890101,
+            "max": datetime.now().strftime("%Y1231"),
+            "severity": SEVERITY_ERROR,
+            "condition": RULE_RANGE,
+        },
     ]
 
     name = models.CharField(max_length=255, blank=True)
     description = models.CharField(max_length=1000, blank=True)
-    data_quality_check = models.ForeignKey('DataQualityCheck', on_delete=models.CASCADE,
-                                           related_name='rules', null=True)
+    data_quality_check = models.ForeignKey("DataQualityCheck", on_delete=models.CASCADE, related_name="rules", null=True)
     status_label = models.ForeignKey(StatusLabel, on_delete=models.DO_NOTHING, null=True)
-    table_name = models.CharField(max_length=200, default='PropertyState', blank=True)
+    table_name = models.CharField(max_length=200, default="PropertyState", blank=True)
     field = models.CharField(max_length=200)
     # If for_derived_column is True, `Rule.field` is a derived column name
     # If False, `Rule.field` is a *State field or extra_data key
     for_derived_column = models.BooleanField(default=False)
     enabled = models.BooleanField(default=True)
-    condition = models.CharField(max_length=200, default='', blank=True)
+    condition = models.CharField(max_length=200, default="", blank=True)
     data_type = models.IntegerField(choices=DATA_TYPES, null=True)
     rule_type = models.IntegerField(choices=RULE_TYPE, null=True)
     required = models.BooleanField(default=False)
@@ -356,14 +366,13 @@ class Rule(models.Model):
         :return: bool, True is valid, False if the value does not match
         """
         if self.data_type == self.TYPE_STRING and isinstance(value, basestring):
-            if self.text_match is None or self.text_match == '':
+            if self.text_match is None or self.text_match == "":
                 return True
             elif self.condition == Rule.RULE_INCLUDE:
                 if not re.search(self.text_match, value, re.IGNORECASE):
                     return False
-            elif self.condition == Rule.RULE_EXCLUDE:
-                if re.search(self.text_match, value, re.IGNORECASE):
-                    return False
+            elif self.condition == Rule.RULE_EXCLUDE and re.search(self.text_match, value, re.IGNORECASE):
+                return False
 
         return True
 
@@ -381,10 +390,9 @@ class Rule(models.Model):
         else:
             if isinstance(value, datetime):
                 value = value.astimezone(get_current_timezone()).replace(tzinfo=pytz.UTC)
-                rule_min = make_aware(datetime.strptime(str(int(rule_min)), '%Y%m%d'), pytz.UTC)
+                rule_min = make_aware(datetime.strptime(str(int(rule_min)), "%Y%m%d"), pytz.UTC)
             elif isinstance(value, date):
-                value = value
-                rule_min = datetime.strptime(str(int(rule_min)), '%Y%m%d').date()
+                rule_min = datetime.strptime(str(int(rule_min)), "%Y%m%d").date()
             elif isinstance(value, int):
                 rule_min = int(rule_min)
             elif isinstance(value, ureg.Quantity):
@@ -400,11 +408,8 @@ class Rule(models.Model):
                 value = float(value)
 
             try:
-                if value < rule_min:
-                    return False
-                else:
-                    # If rule_min is undefined/None or value is okay, then it is valid.
-                    return True
+                # If rule_min is undefined/None or value is okay, then it is valid.
+                return not value < rule_min
             except DimensionalityError:
                 raise UnitMismatchError("Dimensions do not match for minimum compare. (Check units.)")
             except ValueError:
@@ -424,10 +429,9 @@ class Rule(models.Model):
         else:
             if isinstance(value, datetime):
                 value = value.astimezone(get_current_timezone()).replace(tzinfo=pytz.UTC)
-                rule_max = make_aware(datetime.strptime(str(int(rule_max)), '%Y%m%d'), pytz.UTC)
+                rule_max = make_aware(datetime.strptime(str(int(rule_max)), "%Y%m%d"), pytz.UTC)
             elif isinstance(value, date):
-                value = value
-                rule_max = datetime.strptime(str(int(rule_max)), '%Y%m%d').date()
+                rule_max = datetime.strptime(str(int(rule_max)), "%Y%m%d").date()
             elif isinstance(value, int):
                 rule_max = int(rule_max)
             elif isinstance(value, ureg.Quantity):
@@ -443,10 +447,7 @@ class Rule(models.Model):
                 value = float(value)
 
             try:
-                if value > rule_max:
-                    return False
-                else:
-                    return True
+                return not value > rule_max
             except DimensionalityError:
                 raise UnitMismatchError("Dimensions do not match for maximum compare. (Check units.)")
             except ValueError:
@@ -468,26 +469,26 @@ class Rule(models.Model):
                 # strip the string of any leading/trailing spaces
                 value = value.strip()
                 if self.data_type == self.TYPE_NUMBER:
-                    if value == '':
+                    if value == "":
                         return None
                     else:
                         return float(value)
                 elif self.data_type == self.TYPE_STRING:
                     return str(value)
                 elif self.data_type == self.TYPE_DATE:
-                    if value == '':
+                    if value == "":
                         return None
                     else:
                         return convert_datestr(value, True)
                 elif self.data_type == self.TYPE_YEAR:
-                    if value == '':
+                    if value == "":
                         return None
                     else:
                         dt = convert_datestr(value, True)
                         if dt is not None:
                             return dt.date()
             except ValueError as e:
-                raise DataQualityTypeCastError("Error converting {} with {}".format(value, e))
+                raise DataQualityTypeCastError(f"Error converting {value} with {e}")
         else:
             return value
 
@@ -500,15 +501,15 @@ class Rule(models.Model):
         if isinstance(value, datetime):
             f_value = str(make_naive(value, pytz.UTC))
             if f_min is not None:
-                f_min = str(datetime.strptime(str(int(self.min)), '%Y%m%d'))
+                f_min = str(datetime.strptime(str(int(self.min)), "%Y%m%d"))
             if f_max is not None:
-                f_max = str(datetime.strptime(str(int(self.max)), '%Y%m%d'))
+                f_max = str(datetime.strptime(str(int(self.max)), "%Y%m%d"))
         elif isinstance(value, date):
             f_value = str(value)
             if f_min is not None:
-                f_min = str(datetime.strptime(str(int(self.min)), '%Y%m%d').date())
+                f_min = str(datetime.strptime(str(int(self.min)), "%Y%m%d").date())
             if f_max is not None:
-                f_max = str(datetime.strptime(str(int(self.max)), '%Y%m%d').date())
+                f_max = str(datetime.strptime(str(int(self.max)), "%Y%m%d").date())
         elif isinstance(value, int):
             f_value = str(value)
             if self.min is not None:
@@ -528,7 +529,7 @@ class Rule(models.Model):
             f_min = str(self.min)
             f_max = str(self.max)
         else:
-            raise Exception("Unknown data type ({}:{})".format(value, value.__class__))
+            raise Exception(f"Unknown data type ({value}:{value.__class__})")
 
         return [f_min, f_max, f_value]
 
@@ -537,13 +538,14 @@ class DataQualityCheck(models.Model):
     """
     Object that stores the high level configuration per organization of the DataQualityCheck
     """
+
     REQUIRED_FIELDS = {
-        'PropertyState': ['address_line_1', 'custom_id_1', 'pm_property_id'],
-        'TaxLotState': ['address_line_1', 'custom_id_1', 'jurisdiction_tax_lot_id'],
+        "PropertyState": ["address_line_1", "custom_id_1", "pm_property_id"],
+        "TaxLotState": ["address_line_1", "custom_id_1", "jurisdiction_tax_lot_id"],
     }
 
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
-    name = models.CharField(max_length=255, default='Default Data Quality Check')
+    name = models.CharField(max_length=255, default="Default Data Quality Check")
 
     @classmethod
     def retrieve(cls, organization_id):
@@ -562,11 +564,9 @@ class DataQualityCheck(models.Model):
             # database has multiple DataQualityCheck objects for an organization, but there are no
             # calls to create a DataQualityCheck other than the .retrieve method.
             first = DataQualityCheck.objects.filter(organization_id=organization_id).first()
-            dqcs = DataQualityCheck.objects.filter(organization_id=organization_id).exclude(
-                id__in=[first.pk])
+            dqcs = DataQualityCheck.objects.filter(organization_id=organization_id).exclude(id__in=[first.pk])
             for dqc in dqcs:
-                _log.info(
-                    "More than one DataQualityCheck for organization. Deleting {}".format(dqc.name))
+                _log.info(f"More than one DataQualityCheck for organization. Deleting {dqc.name}")
                 dqc.delete()
 
         dq, _ = DataQualityCheck.objects.get_or_create(organization_id=organization_id)
@@ -628,25 +628,18 @@ class DataQualityCheck(models.Model):
 
         # grab the columns so we can grab the display names, create lookup tuple for display name
         for c in Column.retrieve_all(self.organization, record_type, False):
-            self.column_lookup[(c['table_name'], c['column_name'])] = c['display_name']
+            self.column_lookup[(c["table_name"], c["column_name"])] = c["display_name"]
 
-        STATE_NAME_TO_INVENTORY_TYPE = {
-            'PropertyState': DerivedColumn.PROPERTY_TYPE,
-            'TaxLotState': DerivedColumn.TAXLOT_TYPE
-        }
+        STATE_NAME_TO_INVENTORY_TYPE = {"PropertyState": DerivedColumn.PROPERTY_TYPE, "TaxLotState": DerivedColumn.TAXLOT_TYPE}
         derived_columns_by_name = {
             dc.name: dc
-            for dc in DerivedColumn.objects.filter(
-                organization=self.organization,
-                inventory_type=STATE_NAME_TO_INVENTORY_TYPE[record_type]
-            )
+            for dc in DerivedColumn.objects.filter(organization=self.organization, inventory_type=STATE_NAME_TO_INVENTORY_TYPE[record_type])
         }
-        for derived_column_name in derived_columns_by_name.keys():
+        for derived_column_name in derived_columns_by_name:
             self.column_lookup[(record_type, derived_column_name)] = derived_column_name
 
         # grab all the rules once, save query time
-        rules = self.rules.filter(enabled=True, table_name=record_type).order_by('field',
-                                                                                 'severity')
+        rules = self.rules.filter(enabled=True, table_name=record_type).order_by("field", "severity")
 
         # Get the list of the field names that will show in every result
         fields = self.get_fieldnames(record_type)
@@ -657,19 +650,19 @@ class DataQualityCheck(models.Model):
                 self.results[row.id] = {}
                 for field in fields:
                     self.results[row.id][field] = getattr(row, field)
-                self.results[row.id]['data_quality_results'] = []
+                self.results[row.id]["data_quality_results"] = []
 
             # Run the checks
             self._check(rules, row, derived_columns_by_name)
 
         # Prune the results will remove any entries that have zero data_quality_results
         for k, v in self.results.copy().items():
-            if not v['data_quality_results']:
+            if not v["data_quality_results"]:
                 del self.results[k]
 
     def get_fieldnames(self, record_type):
         """Get fieldnames to apply to results."""
-        field_names = ['id']
+        field_names = ["id"]
         field_names.extend(DataQualityCheck.REQUIRED_FIELDS[record_type])
         return field_names
 
@@ -686,24 +679,22 @@ class DataQualityCheck(models.Model):
         :return: None
         """
         # check if the row has any rules applied to it
-        model_labels = {'linked_id': None, 'label_ids': []}
-        if row.__class__.__name__ == 'PropertyState':
-            label = apps.get_model('seed', 'PropertyView_labels')
+        model_labels = {"linked_id": None, "label_ids": []}
+        if row.__class__.__name__ == "PropertyState":
+            label = apps.get_model("seed", "PropertyView_labels")
             if PropertyView.objects.filter(state=row).exists():
-                model_labels['linked_id'] = PropertyView.objects.get(state=row).id
-                model_labels['label_ids'] = list(
-                    label.objects.filter(propertyview_id=model_labels['linked_id']).values_list(
-                        'statuslabel_id', flat=True)
+                model_labels["linked_id"] = PropertyView.objects.get(state=row).id
+                model_labels["label_ids"] = list(
+                    label.objects.filter(propertyview_id=model_labels["linked_id"]).values_list("statuslabel_id", flat=True)
                 )
                 # _log.debug("Property {} has {} labels".format(model_labels['linked_id'],
                 #                                               len(model_labels['label_ids'])))
-        elif row.__class__.__name__ == 'TaxLotState':
-            label = apps.get_model('seed', 'TaxLotView_labels')
+        elif row.__class__.__name__ == "TaxLotState":
+            label = apps.get_model("seed", "TaxLotView_labels")
             if TaxLotView.objects.filter(state=row).exists():
-                model_labels['linked_id'] = TaxLotView.objects.get(state=row).id
-                model_labels['label_ids'] = list(
-                    label.objects.filter(taxlotview_id=model_labels['linked_id']).values_list(
-                        'statuslabel_id', flat=True)
+                model_labels["linked_id"] = TaxLotView.objects.get(state=row).id
+                model_labels["label_ids"] = list(
+                    label.objects.filter(taxlotview_id=model_labels["linked_id"]).values_list("statuslabel_id", flat=True)
                 )
                 # _log.debug("TaxLot {} has {} labels".format(model_labels['linked_id'],
                 #                                             len(model_labels['label_ids'])))
@@ -717,32 +708,31 @@ class DataQualityCheck(models.Model):
             if rule.for_derived_column:
                 derived_column = derived_columns_by_name[rule.field]
                 value = derived_column.evaluate(inventory_state=row)
-            else:
-                if hasattr(row, rule.field):
-                    value = getattr(row, rule.field)
-                    # TODO cleanup after the cleaner is better able to handle fields with units on import
-                    # If the rule doesn't specify units only consider the value for the purposes of numerical comparison
-                    if isinstance(value, ureg.Quantity) and rule.units == '':
-                        value = value.magnitude
-                else:  # rule is for extra_data
-                    value = row.extra_data.get(rule.field, None)
+            elif hasattr(row, rule.field):
+                value = getattr(row, rule.field)
+                # TODO cleanup after the cleaner is better able to handle fields with units on import
+                # If the rule doesn't specify units only consider the value for the purposes of numerical comparison
+                if isinstance(value, ureg.Quantity) and rule.units == "":
+                    value = value.magnitude
+            else:  # rule is for extra_data
+                value = row.extra_data.get(rule.field, None)
 
-                    if ' (Invalid Footprint)' in rule.field and value is not None:
-                        self.add_invalid_geometry_entry_provided(row.id, rule, display_name, value)
-                        continue
+                if " (Invalid Footprint)" in rule.field and value is not None:
+                    self.add_invalid_geometry_entry_provided(row.id, rule, display_name, value)
+                    continue
 
-                    try:
-                        value = rule.str_to_data_type(value)
-                    except DataQualityTypeCastError:
-                        self.add_result_type_error(row.id, rule, display_name, value)
-                        continue
+                try:
+                    value = rule.str_to_data_type(value)
+                except DataQualityTypeCastError:
+                    self.add_result_type_error(row.id, rule, display_name, value)
+                    continue
 
             # get the display name of the rule
             if (rule.table_name, rule.field) in self.column_lookup:
                 display_name = self.column_lookup[(rule.table_name, rule.field)]
 
             # get the status_labels for the linked properties and tax lots
-            linked_id = model_labels['linked_id']
+            linked_id = model_labels["linked_id"]
 
             if (rule.table_name, rule.field) not in self.column_lookup:
                 # If the rule is not in the column lookup, then it may have been a required
@@ -750,24 +740,23 @@ class DataQualityCheck(models.Model):
                 if rule.condition == Rule.RULE_REQUIRED:
                     self.add_result_missing_req(row.id, rule, display_name, value)
                     label_applied = self.update_status_label(label, rule, linked_id, row.id)
-            elif value is None or value == '':
+            elif value is None or value == "":
                 if rule.condition == Rule.RULE_REQUIRED:
                     self.add_result_missing_and_none(row.id, rule, display_name, value)
                     label_applied = self.update_status_label(label, rule, linked_id, row.id)
                 elif rule.condition == Rule.RULE_NOT_NULL:
                     self.add_result_is_null(row.id, rule, display_name, value)
                     label_applied = self.update_status_label(label, rule, linked_id, row.id)
-            elif rule.condition == Rule.RULE_INCLUDE or rule.condition == Rule.RULE_EXCLUDE:
+            elif rule.condition in {Rule.RULE_INCLUDE, Rule.RULE_EXCLUDE}:
                 if not rule.valid_text(value):
                     self.add_result_string_error(row.id, rule, display_name, value)
                     label_applied = self.update_status_label(label, rule, linked_id, row.id)
             elif rule.condition == Rule.RULE_RANGE:
                 try:
-                    if not rule.minimum_valid(value):
-                        if rule.severity == Rule.SEVERITY_ERROR or rule.severity == Rule.SEVERITY_WARNING:
-                            s_min, s_max, s_value = rule.format_strings(value)
-                            self.add_result_min_error(row.id, rule, display_name, s_value, s_min)
-                            label_applied = self.update_status_label(label, rule, linked_id, row.id)
+                    if not rule.minimum_valid(value) and rule.severity in {Rule.SEVERITY_ERROR, Rule.SEVERITY_WARNING}:
+                        s_min, s_max, s_value = rule.format_strings(value)
+                        self.add_result_min_error(row.id, rule, display_name, s_value, s_min)
+                        label_applied = self.update_status_label(label, rule, linked_id, row.id)
                 except ComparisonError:
                     s_min, s_max, s_value = rule.format_strings(value)
                     self.add_result_comparison_error(row.id, rule, display_name, s_value, s_min)
@@ -781,11 +770,10 @@ class DataQualityCheck(models.Model):
                     continue
 
                 try:
-                    if not rule.maximum_valid(value):
-                        if rule.severity == Rule.SEVERITY_ERROR or rule.severity == Rule.SEVERITY_WARNING:
-                            s_min, s_max, s_value = rule.format_strings(value)
-                            self.add_result_max_error(row.id, rule, display_name, s_value, s_max)
-                            label_applied = self.update_status_label(label, rule, linked_id, row.id)
+                    if not rule.maximum_valid(value) and rule.severity in {Rule.SEVERITY_ERROR, Rule.SEVERITY_WARNING}:
+                        s_min, s_max, s_value = rule.format_strings(value)
+                        self.add_result_max_error(row.id, rule, display_name, s_value, s_max)
+                        label_applied = self.update_status_label(label, rule, linked_id, row.id)
                 except ComparisonError:
                     s_min, s_max, s_value = rule.format_strings(value)
                     self.add_result_comparison_error(row.id, rule, display_name, s_value, s_max)
@@ -799,11 +787,10 @@ class DataQualityCheck(models.Model):
                     continue
 
                 # Check min and max values for valid data:
-                if rule.minimum_valid(value) and rule.maximum_valid(value):
-                    if rule.severity == Rule.SEVERITY_VALID:
-                        label_applied = self.update_status_label(label, rule, linked_id, row.id, False)
+                if rule.minimum_valid(value) and rule.maximum_valid(value) and rule.severity == Rule.SEVERITY_VALID:
+                    label_applied = self.update_status_label(label, rule, linked_id, row.id, False)
 
-            if not label_applied and rule.status_label_id in model_labels['label_ids']:
+            if not label_applied and rule.status_label_id in model_labels["label_ids"]:
                 self.remove_status_label(label, rule, linked_id)
 
     def save_to_cache(self, identifier, organization_id):
@@ -826,7 +813,7 @@ class DataQualityCheck(models.Model):
 
         existing_results += results
 
-        z = sorted(existing_results, key=lambda k: k['id'])
+        z = sorted(existing_results, key=lambda k: k["id"])
         set_cache_raw(DataQualityCheck.cache_key(identifier, organization_id), z, 86400)  # 24 hours
 
     def initialize_rules(self):
@@ -856,7 +843,7 @@ class DataQualityCheck(models.Model):
         :return:
         """
         for rule in Rule.DEFAULT_RULES:
-            self.rules.filter(field=rule['field'], table_name=rule['table_name']).delete()
+            self.rules.filter(field=rule["field"], table_name=rule["table_name"]).delete()
         self.initialize_rules()
 
     def reset_all_rules(self):
@@ -878,7 +865,7 @@ class DataQualityCheck(models.Model):
         try:
             r = Rule.objects.create(**rule)
         except TypeError as e:
-            raise TypeError("Rule data is not defined correctly: {}".format(e))
+            raise TypeError(f"Rule data is not defined correctly: {e}")
 
         self.rules.add(r)
 
@@ -895,148 +882,155 @@ class DataQualityCheck(models.Model):
 
     # TODO: missing status label for all dq reports
     def add_result_string_error(self, row_id, rule, display_name, value):
-        text = ''
+        text = ""
         if rule.condition == Rule.RULE_INCLUDE:
             text = '] does not contain "'
         elif rule.condition == Rule.RULE_EXCLUDE:
             text = '] contains "'
-        self.results[row_id]['data_quality_results'].append(
+        self.results[row_id]["data_quality_results"].append(
             {
-                'field': rule.field,
-                'formatted_field': display_name,
-                'value': value,
-                'table_name': rule.table_name,
-                'message': display_name + ' does not match expected value',
-                'detailed_message': display_name + ' [' + str(
-                    value) + text + rule.text_match + '"',
-                'severity': rule.get_severity_display(),
-                'condition': rule.condition,
+                "field": rule.field,
+                "formatted_field": display_name,
+                "value": value,
+                "table_name": rule.table_name,
+                "message": display_name + " does not match expected value",
+                "detailed_message": display_name + " [" + str(value) + text + rule.text_match + '"',
+                "severity": rule.get_severity_display(),
+                "condition": rule.condition,
             }
         )
 
     def add_result_min_error(self, row_id, rule, display_name, value, rule_min):
-        self.results[row_id]['data_quality_results'].append(
+        self.results[row_id]["data_quality_results"].append(
             {
-                'field': rule.field,
-                'formatted_field': display_name,
-                'value': value,
-                'table_name': rule.table_name,
-                'message': display_name + ' out of range',
-                'detailed_message': display_name + ' [' + value + '] < ' + rule_min,
-                'severity': rule.get_severity_display(),
-                'condition': rule.condition,
+                "field": rule.field,
+                "formatted_field": display_name,
+                "value": value,
+                "table_name": rule.table_name,
+                "message": display_name + " out of range",
+                "detailed_message": display_name + " [" + value + "] < " + rule_min,
+                "severity": rule.get_severity_display(),
+                "condition": rule.condition,
             }
         )
 
     def add_result_max_error(self, row_id, rule, display_name, value, rule_max):
-        self.results[row_id]['data_quality_results'].append(
+        self.results[row_id]["data_quality_results"].append(
             {
-                'field': rule.field,
-                'formatted_field': display_name,
-                'value': value,
-                'table_name': rule.table_name,
-                'message': display_name + ' out of range',
-                'detailed_message': display_name + ' [' + value + '] > ' + rule_max,
-                'severity': rule.get_severity_display(),
-                'condition': rule.condition,
+                "field": rule.field,
+                "formatted_field": display_name,
+                "value": value,
+                "table_name": rule.table_name,
+                "message": display_name + " out of range",
+                "detailed_message": display_name + " [" + value + "] > " + rule_max,
+                "severity": rule.get_severity_display(),
+                "condition": rule.condition,
             }
         )
 
     def add_result_comparison_error(self, row_id, rule, display_name, value, rule_check):
-        self.results[row_id]['data_quality_results'].append(
+        self.results[row_id]["data_quality_results"].append(
             {
-                'field': rule.field,
-                'formatted_field': display_name,
-                'value': value,
-                'table_name': rule.table_name,
-                'message': display_name + ' could not be compared numerically',
-                'detailed_message': display_name + ' [' + value + '] <> ' + rule_check,
-                'severity': rule.get_severity_display(),
-                'condition': rule.condition,
+                "field": rule.field,
+                "formatted_field": display_name,
+                "value": value,
+                "table_name": rule.table_name,
+                "message": display_name + " could not be compared numerically",
+                "detailed_message": display_name + " [" + value + "] <> " + rule_check,
+                "severity": rule.get_severity_display(),
+                "condition": rule.condition,
             }
         )
 
     def add_result_dimension_error(self, row_id, rule, display_name, value):
-        self.results[row_id]['data_quality_results'].append(
+        self.results[row_id]["data_quality_results"].append(
             {
-                'field': rule.field,
-                'formatted_field': display_name,
-                'value': value.magnitude,
-                'table_name': rule.table_name,
-                'message': display_name + ' units mismatch with rule units',
-                'detailed_message': f'Units mismatched between ["{value.units}" vs "{rule.units}"]',
-                'severity': rule.get_severity_display(),
-                'condition': rule.condition,
+                "field": rule.field,
+                "formatted_field": display_name,
+                "value": value.magnitude,
+                "table_name": rule.table_name,
+                "message": display_name + " units mismatch with rule units",
+                "detailed_message": f'Units mismatched between ["{value.units}" vs "{rule.units}"]',
+                "severity": rule.get_severity_display(),
+                "condition": rule.condition,
             }
         )
 
     def add_result_type_error(self, row_id, rule, display_name, value):
-        self.results[row_id]['data_quality_results'].append(
+        self.results[row_id]["data_quality_results"].append(
             {
-                'field': rule.field,
-                'formatted_field': display_name,
-                'value': value,
-                'table_name': rule.table_name,
-                'message': display_name + ' could not be converted to numerical value',
-                'detailed_message': 'Value [' + value + '] could not be converted to number',
-                'severity': rule.get_severity_display(),
-                'condition': rule.condition,
+                "field": rule.field,
+                "formatted_field": display_name,
+                "value": value,
+                "table_name": rule.table_name,
+                "message": display_name + " could not be converted to numerical value",
+                "detailed_message": "Value [" + value + "] could not be converted to number",
+                "severity": rule.get_severity_display(),
+                "condition": rule.condition,
             }
         )
 
     def add_result_missing_req(self, row_id, rule, display_name, value):
-        self.results[row_id]['data_quality_results'].append({
-            'field': rule.field,
-            'formatted_field': rule.field,
-            'value': value,
-            'table_name': rule.table_name,
-            'message': rule.field + ' is missing',
-            'detailed_message': rule.field + ' is required and missing',
-            'severity': rule.get_severity_display(),
-            'condition': rule.condition,
-        })
+        self.results[row_id]["data_quality_results"].append(
+            {
+                "field": rule.field,
+                "formatted_field": rule.field,
+                "value": value,
+                "table_name": rule.table_name,
+                "message": rule.field + " is missing",
+                "detailed_message": rule.field + " is required and missing",
+                "severity": rule.get_severity_display(),
+                "condition": rule.condition,
+            }
+        )
 
     def add_result_missing_and_none(self, row_id, rule, display_name, value):
-        self.results[row_id]['data_quality_results'].append({
-            'field': rule.field,
-            'formatted_field': display_name,
-            'value': value,
-            'table_name': rule.table_name,
-            'message': display_name + ' is missing',
-            'detailed_message': display_name + ' is required but is None',
-            'severity': rule.get_severity_display(),
-            'condition': rule.condition,
-        })
+        self.results[row_id]["data_quality_results"].append(
+            {
+                "field": rule.field,
+                "formatted_field": display_name,
+                "value": value,
+                "table_name": rule.table_name,
+                "message": display_name + " is missing",
+                "detailed_message": display_name + " is required but is None",
+                "severity": rule.get_severity_display(),
+                "condition": rule.condition,
+            }
+        )
 
     def add_result_is_null(self, row_id, rule, display_name, value):
-        self.results[row_id]['data_quality_results'].append({
-            'field': rule.field,
-            'formatted_field': display_name,
-            'value': value,
-            'table_name': rule.table_name,
-            'message': display_name + ' is null',
-            'detailed_message': display_name + ' is null',
-            'severity': rule.get_severity_display(),
-            'condition': rule.condition,
-        })
+        self.results[row_id]["data_quality_results"].append(
+            {
+                "field": rule.field,
+                "formatted_field": display_name,
+                "value": value,
+                "table_name": rule.table_name,
+                "message": display_name + " is null",
+                "detailed_message": display_name + " is null",
+                "severity": rule.get_severity_display(),
+                "condition": rule.condition,
+            }
+        )
 
     def add_invalid_geometry_entry_provided(self, row_id, rule, display_name, value):
         detailed_message = " is not a valid geometry"
         if len(str(value)) <= 25:
-            detailed_message = "'{}'".format(str(value)) + detailed_message
+            detailed_message = f"'{value!s}'" + detailed_message
         else:
-            detailed_message = "'{}...'".format(str(value)[0:25]) + detailed_message
+            detailed_message = f"'{str(value)[0:25]}...'" + detailed_message
 
-        self.results[row_id]['data_quality_results'].append({
-            'field': rule.field,
-            'formatted_field': display_name,
-            'value': value,
-            'table_name': rule.table_name,
-            'message': display_name + ' should be in WKT format',
-            'detailed_message': detailed_message,
-            'severity': rule.get_severity_display(),
-            'condition': rule.condition,
-        })
+        self.results[row_id]["data_quality_results"].append(
+            {
+                "field": rule.field,
+                "formatted_field": display_name,
+                "value": value,
+                "table_name": rule.table_name,
+                "message": display_name + " should be in WKT format",
+                "detailed_message": detailed_message,
+                "severity": rule.get_severity_display(),
+                "condition": rule.condition,
+            }
+        )
 
     def update_status_label(self, label_class, rule, linked_id, row_id, add_to_results=True):
         """
@@ -1051,35 +1045,27 @@ class DataQualityCheck(models.Model):
         if rule.status_label_id is not None and linked_id is not None:
             label_org_id = rule.status_label.super_organization_id
 
-            if rule.table_name == 'PropertyState':
+            if rule.table_name == "PropertyState":
                 property_parent_org_id = PropertyView.objects.get(pk=linked_id).property.organization.get_parent().id
                 if property_parent_org_id == label_org_id:
-                    label_class.objects.get_or_create(propertyview_id=linked_id,
-                                                      statuslabel_id=rule.status_label_id)
+                    label_class.objects.get_or_create(propertyview_id=linked_id, statuslabel_id=rule.status_label_id)
                 else:
                     raise IntegrityError(
-                        'Label with super_organization_id={} cannot be applied to a record with parent '
-                        'organization_id={}.'.format(
-                            label_org_id,
-                            property_parent_org_id
-                        )
+                        f"Label with super_organization_id={label_org_id} cannot be applied to a record with parent "
+                        f"organization_id={property_parent_org_id}."
                     )
             else:
                 taxlot_parent_org_id = TaxLotView.objects.get(pk=linked_id).taxlot.organization.get_parent().id
                 if taxlot_parent_org_id == label_org_id:
-                    label_class.objects.get_or_create(taxlotview_id=linked_id,
-                                                      statuslabel_id=rule.status_label_id)
+                    label_class.objects.get_or_create(taxlotview_id=linked_id, statuslabel_id=rule.status_label_id)
                 else:
                     raise IntegrityError(
-                        'Label with super_organization_id={} cannot be applied to a record with parent '
-                        'organization_id={}.'.format(
-                            label_org_id,
-                            taxlot_parent_org_id
-                        )
+                        f"Label with super_organization_id={label_org_id} cannot be applied to a record with parent "
+                        f"organization_id={taxlot_parent_org_id}."
                     )
 
             if add_to_results:
-                self.results[row_id]['data_quality_results'][-1]['label'] = rule.status_label.name
+                self.results[row_id]["data_quality_results"][-1]["label"] = rule.status_label.name
 
             return True
 
@@ -1093,12 +1079,10 @@ class DataQualityCheck(models.Model):
         :return: boolean, if labeled was applied
         """
 
-        if rule.table_name == 'PropertyState':
-            label_class.objects.filter(propertyview_id=linked_id,
-                                       statuslabel_id=rule.status_label_id).delete()
+        if rule.table_name == "PropertyState":
+            label_class.objects.filter(propertyview_id=linked_id, statuslabel_id=rule.status_label_id).delete()
         else:
-            label_class.objects.filter(taxlotview_id=linked_id,
-                                       statuslabel_id=rule.status_label_id).delete()
+            label_class.objects.filter(taxlotview_id=linked_id, statuslabel_id=rule.status_label_id).delete()
 
     def retrieve_result_by_address(self, address):
         """
@@ -1108,13 +1092,13 @@ class DataQualityCheck(models.Model):
         :return: dict, results of data quality check for specific building
         """
 
-        result = [v for v in self.results.values() if v['address_line_1'] == address]
+        result = [v for v in self.results.values() if v["address_line_1"] == address]
         if len(result) == 0:
             return None
         elif len(result) == 1:
             return result[0]
         else:
-            raise RuntimeError("More than 1 data quality results for address '{}'".format(address))
+            raise RuntimeError(f"More than 1 data quality results for address '{address}'")
 
     def retrieve_result_by_tax_lot_id(self, tax_lot_id):
         """
@@ -1124,15 +1108,13 @@ class DataQualityCheck(models.Model):
         :return: dict, results of data quality check for specific building
         """
 
-        result = [v for v in self.results.values() if v['jurisdiction_tax_lot_id'] == tax_lot_id]
+        result = [v for v in self.results.values() if v["jurisdiction_tax_lot_id"] == tax_lot_id]
         if len(result) == 0:
             return None
         elif len(result) == 1:
             return result[0]
         else:
-            raise RuntimeError(
-                "More than 1 data quality results for tax lot id '{}'".format(tax_lot_id))
+            raise RuntimeError(f"More than 1 data quality results for tax lot id '{tax_lot_id}'")
 
     def __str__(self):
-        return 'DataQuality ({}:{}) - Rule Count: {}'.format(self.pk, self.name,
-                                                             self.rules.count())
+        return f"DataQuality ({self.pk}:{self.name}) - Rule Count: {self.rules.count()}"

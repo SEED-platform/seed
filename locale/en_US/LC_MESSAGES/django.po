@@ -643,6 +643,15 @@ msgstr "ComStock Mapping"
 msgid "Commercial"
 msgstr "Commercial"
 
+msgid "Commitment"
+msgstr "Commitment"
+
+msgid "Commitment (Sq Ft)"
+msgstr "Commitment (Sq Ft)"
+
+msgid "Committed Area"
+msgstr "Committed Area"
+
 msgid "Compare UBIDs"
 msgstr "Compare UBIDs"
 
@@ -1123,6 +1132,15 @@ msgstr "Duplicate"
 msgid "Duplicates"
 msgstr "Duplicates"
 
+msgid "EDIT_GOAL_NOTES"
+msgstr "Edit Fields for the Selected Properties"
+
+msgid "ENABLED"
+msgstr "ENABLED"
+
+msgid "ENABLE_PUBLIC_FEED"
+msgstr "to enable or disable Public Feed functionality"
+
 msgid "ENERGY STAR Score"
 msgstr "ENERGY STAR Score"
 
@@ -1165,6 +1183,9 @@ msgstr "Edit"
 msgid "Edit Access Level Instance Name"
 msgstr "Edit Access Level Instance Name"
 
+msgid "Edit Fields for Selected"
+msgstr "Edit Fields for Selected"
+
 msgid "Edit Name"
 msgstr "Edit Name"
 
@@ -1193,6 +1214,15 @@ msgstr "Enable ComStock Functionality"
 
 msgid "Enable Geocoding"
 msgstr "Enable Geocoding"
+
+msgid "Enable Labels in Public Feed"
+msgstr "Enable Labels in Public Feed"
+
+msgid "Enable Public Endpoints"
+msgstr "Enable Public Endpoints"
+
+msgid "Enable Public GeoJSON"
+msgstr "Enable Public GeoJSON"
 
 msgid "Enable Salesforce Integration"
 msgstr "Enable Salesforce Integration"
@@ -1471,6 +1501,21 @@ msgstr "GJ/m²/year"
 msgid "GOAL"
 msgstr "GOAL"
 
+msgid "GOAL_CONFIG_TEXT"
+msgstr "Configure one or more portfolio Energy Use Intensity (EUI) reduction goals below."
+
+msgid "GOAL_SELECT_ALI"
+msgstr "Indicate the level in your access level tree that this goal applies to"
+
+msgid "GOAL_SELECT_CYCLES"
+msgstr "Select a baseline cycle and a current cycle for comparison"
+
+msgid "GOAL_SELECT_EUI_FIELDS"
+msgstr "Indicate which fields in your data should be used for EUI and floor area information"
+
+msgid "GOAL_SELECT_PERCENTAGE"
+msgstr "Specify a percentage EUI improvement target"
+
 msgid "GOAL_SETUP_TEXT"
 msgstr "Configure one or more portfolio Energy Use Intensity (EUI) reduction goals below. Select a baseline cycle and a current cycle for comparison, indicate the level in your access level tree that this goal applies to, specify a percentage EUI improvement target, and indicate which fields in your data should be used for EUI and square footage information."
 
@@ -1556,6 +1601,9 @@ msgstr "Hexagonal Bins"
 
 msgid "Highlights of SEED Platform™"
 msgstr "Highlights of SEED Platform™"
+
+msgid "Historical Note"
+msgstr "Historical Note"
 
 msgid "Home Energy Score ID"
 msgstr "Home Energy Score ID"
@@ -2119,6 +2167,9 @@ msgstr "National Renewable Energy Laboratory"
 msgid "New Analysis"
 msgstr "New Analysis"
 
+msgid "New Build or Acquisition"
+msgstr "New Build or Acquisition"
+
 msgid "New Goal"
 msgstr "New Goal"
 
@@ -2342,6 +2393,21 @@ msgstr "At least one of the following Property fields is required"
 msgid "PUBLIC"
 msgstr "PUBLIC"
 
+msgid "PUBLIC_FEED_HELP"
+msgstr "Check the box below to enable the Public Feed functionality. Data fields can be individually enabled for the Public Feed from"
+
+msgid "PUBLIC_FEED_LABELS"
+msgstr "Check the box below to allow labels to be returned in the Public Feed and to be able to filter the Public Feed by a specific label."
+
+msgid "PUBLIC_HTML"
+msgstr "Your public HTML URL is"
+
+msgid "PUBLIC_JSON"
+msgstr "Your public JSON feed URL is"
+
+msgid "PUBLIC_SHARE"
+msgstr "If the Public Feed functionality is enabled, this page can be used to configure what data is shared externally with the public-at-large."
+
 msgid "Pair Properties to Tax Lots"
 msgstr "Pair Properties to Tax Lots"
 
@@ -2362,6 +2428,9 @@ msgstr "Pairing Settings"
 
 msgid "Parent ID"
 msgstr "Parent ID"
+
+msgid "Passed Checks"
+msgstr "Passed Checks"
 
 #: seed/landing/forms.py:20
 msgid "Password"
@@ -2387,6 +2456,9 @@ msgstr "Password set"
 #: seed/landing/templates/landing/password_set.html:12
 msgid "Password set unsuccessful"
 msgstr "Password set unsuccessful"
+
+msgid "Percentage (%)"
+msgstr "Percentage (%)"
 
 msgid "Permanently delete extra_data columns and all associated data"
 msgstr "Permanently delete extra_data columns and all associated data"
@@ -2587,6 +2659,12 @@ msgstr "Property Visibility"
 msgid "Property and Tax Lot Data"
 msgstr "Property and Tax Lot Data"
 
+msgid "Public Disclosure - Sharing Your Data"
+msgstr "Public Disclosure - Sharing Your Data"
+
+msgid "Question"
+msgstr "Question"
+
 msgid "RECOGNIZE_EMPTY_EXPLANATION"
 msgstr "Checking this box for a field will affect how empty or blank values are treated during merges. Specifically, empty values will be able to replace non-empty values per the \"Merge Protection\" setting."
 
@@ -2704,6 +2782,9 @@ msgstr "Reset Defaults"
 
 msgid "Residential"
 msgstr "Residential"
+
+msgid "Resolution"
+msgstr "Resolution"
 
 msgid "Restore Default Rules"
 msgstr "Restore Default Rules"
@@ -2922,6 +3003,27 @@ msgstr "Label used to designate that a SEED property has a violation.  Example: 
 msgid "SHARE DATA WITH"
 msgstr "SHARE DATA WITH"
 
+msgid "SHARING_CYCLES"
+msgstr "Comma-separated list of cycle ids. Results include inventory from the listed cycles. Default is all cycles."
+
+msgid "SHARING_LABELS"
+msgstr "Comma-separated list of case-sensitive label names. Results will include inventory that has any of the listed labels. Default is all inventory."
+
+msgid "SHARING_PAGE"
+msgstr "Number of the page of results to return. Default is 1."
+
+msgid "SHARING_PER_PAGE"
+msgstr "Number of results per page. Default is 100."
+
+msgid "SHARING_PROPERTIES"
+msgstr "Boolean True/False to return inventory of type 'Property'. Default is True."
+
+msgid "SHARING_QUERY_PARAMS"
+msgstr "Query parameters can be added to the URL to filter the returned data"
+
+msgid "SHARING_TAXLOTS"
+msgstr "Boolean True/False to return inventory of type 'Tax Lot'. Default is True."
+
 msgid "SHOWING_AVAILABLE_MATCHES"
 msgstr "Showing {start} to {end} of {total} available matches"
 
@@ -3020,6 +3122,9 @@ msgstr "Security"
 
 msgid "Security Token"
 msgstr "Security Token"
+
+msgid "See API Documentation for more information about the /v3/public endpoints"
+msgstr "for more information about the"
 
 #: seed/models/columns.py:688 seed/models/models.py:195
 #: seed/models/models.py:256 seed/models/projects.py:42
@@ -3235,8 +3340,8 @@ msgstr "Successful upload!"
 msgid "Successfully Uploaded"
 msgstr "Successfully Uploaded"
 
-msgid "Summary (Beta)"
-msgstr "Summary (Beta)"
+msgid "Summary"
+msgstr "Summary"
 
 msgid "Switch Profiles"
 msgstr "Switch Profiles"
@@ -3350,6 +3455,9 @@ msgstr "The Building Energy Data Exchange Specification (BEDES, pronounced \"bea
 
 msgid "The DOE developed the Standard Energy Efficiency Data (SEED) Platform™ as a free software tool that provides a standardized format for collecting, storing and analyzing building energy performance information about large portfolios. Upload your buildings list to get started."
 msgstr "The DOE developed the Standard Energy Efficiency Data (SEED) Platform™ as a free software tool that provides a standardized format for collecting, storing and analyzing building energy performance information about large portfolios. Upload your buildings list to get started."
+
+msgid "The GeoJSON will expose all populated property and taxlot columns"
+msgstr "The GeoJSON will expose all populated property and taxlot columns"
 
 msgid "The Open Source code is available on the Github organization SEED-Platform:"
 msgstr "The Open Source code is available on the Github organization SEED-Platform:"
@@ -3574,6 +3682,9 @@ msgstr "Upload Sensor"
 msgid "UPLOAD_SENSOR_READINGS_BUTTON"
 msgstr "Upload Sensor Readings"
 
+msgid "URL_OPTIONS"
+msgstr "URL Options"
+
 msgid "USING_DEFAULT_UNITS_WARNING"
 msgstr "For columns with unit settings, default units will be used for conversions."
 
@@ -3736,6 +3847,9 @@ msgstr "Viewer"
 
 msgid "Violation Label"
 msgstr "Violation Label"
+
+msgid "Visit"
+msgstr "Visit"
 
 msgid "Visit the BETTER website to run a portfolio analysis"
 msgstr "Visit the BETTER website to run a portfolio analysis"
@@ -4037,6 +4151,9 @@ msgstr "email address"
 #: seed/models/models.py:237
 msgid "end_date"
 msgstr "end_date"
+
+msgid "endpoints see the"
+msgstr "endpoints see the"
 
 #: seed/landing/forms.py:14
 msgid "ex: joe@company.com"

@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('orgs', '0012_auto_20200327_1213'),
+        ("orgs", "0012_auto_20200327_1213"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='organization',
-            name='comstock_enabled',
+            model_name="organization",
+            name="comstock_enabled",
             field=models.BooleanField(default=False),
         ),
     ]

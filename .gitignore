@@ -9,7 +9,6 @@
 .pydevproject
 .python-version
 .vscode
-coverage.protractor.json
 *~
 *~$*
 *.ipynb
@@ -66,12 +65,6 @@ seed/building_sync/tests/data/test_file.xml
 seed/tests/output
 test.sqlite
 
-# Ignore all protractor coverage
-protractorReports/
-protractorInstrumented/
-protractorSaved/
-protractorCoverage/
-
 docs/build/
 docs/scripts/Gemfile.lock
 docs/scripts/.python-version
@@ -91,3 +84,6 @@ docker-compose-dbs.yml
 
 # generated files
 /auto*.csv
+
+# ruff linting and formatting
+/.ruff_cache

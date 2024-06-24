@@ -16,32 +16,15 @@ We use precommit commits for formatting. Set it up locally with
 
     pre-commit install
 
-Flake Settings
+Ruff Settings
 ^^^^^^^^^^^^^^
 
-Flake is used to statically verify code syntax. If the developer is running
-flake from the command line, they should ignore the following checks in order
-to emulate the same checks as the CI machine.
-
-+------+--------------------------------------------------+
-| Code | Description                                      |
-+======+==================================================+
-| E402 | module level import not at top of file           |
-+------+--------------------------------------------------+
-| E501 | line too long (82 characters) or max-line = 100  |
-+------+--------------------------------------------------+
-| E731 | do not assign a lambda expression, use a def     |
-+------+--------------------------------------------------+
-| W503 | line break occurred before a binary operator     |
-+------+--------------------------------------------------+
-| W504 | line break occurred after a binary operator      |
-+------+--------------------------------------------------+
-
-To run flake locally call:
+Ruff is used to statically verify code syntax. To run ruff locally call:
 
 .. code-block:: bash
 
-    tox -e flake8
+    tox -e precommit -- ruff
+    tox -e precommit -- ruff-format
 
 Python Type Hints
 ^^^^^^^^^^^^^^^^^
@@ -392,15 +375,14 @@ Run coverage using
     coverage run manage.py test --settings=config.settings.test
     coverage report --fail-under=83
 
-Python compliance uses PEP8 with flake8
+Python compliance uses Ruff
 
 .. code-block:: bash
 
-    flake8
-    # or
-    tox -e flake8
+    tox -e precommit -- ruff
+    tox -e precommit -- ruff-format
 
-JS Compliance uses ESLint
+JavaScript compliance uses ESLint, SCSS compliance uses StyleLint, and HTML compliance uses Prettier
 
 .. code-block:: bash
 

@@ -1,9 +1,9 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 import logging
 import operator
 import os.path as osp
@@ -15,18 +15,8 @@ from django.db.models import Q
 
 from seed.data_importer import tasks
 from seed.data_importer.models import ImportFile
-from seed.data_importer.tests.util import (
-    FAKE_EXTRA_DATA,
-    FAKE_MAPPINGS,
-    FAKE_ROW
-)
-from seed.models import (
-    ASSESSED_BS,
-    ASSESSED_RAW,
-    DATA_STATE_MAPPING,
-    Column,
-    PropertyState
-)
+from seed.data_importer.tests.util import FAKE_EXTRA_DATA, FAKE_MAPPINGS, FAKE_ROW
+from seed.models import ASSESSED_BS, ASSESSED_RAW, DATA_STATE_MAPPING, Column, PropertyState
 from seed.tests.util import DataMappingBaseTestCase
 
 logger = logging.getLogger(__name__)
@@ -34,18 +24,15 @@ logger = logging.getLogger(__name__)
 
 class TestMatching(DataMappingBaseTestCase):
     def setUp(self):
-        filename = getattr(self, 'filename', 'example-data-properties.xlsx')
+        filename = getattr(self, "filename", "example-data-properties.xlsx")
         import_file_source_type = ASSESSED_RAW
-        self.fake_mappings = FAKE_MAPPINGS['portfolio']
+        self.fake_mappings = FAKE_MAPPINGS["portfolio"]
         self.fake_extra_data = FAKE_EXTRA_DATA
         self.fake_row = FAKE_ROW
         selfvars = self.set_up(import_file_source_type)
         self.user, self.org, self.import_file, self.import_record, self.cycle = selfvars
-        filepath = osp.join(osp.dirname(__file__), '..', 'data', filename)
-        self.import_file.file = SimpleUploadedFile(
-            name=filename,
-            content=pathlib.Path(filepath).read_bytes()
-        )
+        filepath = osp.join(osp.dirname(__file__), "..", "data", filename)
+        self.import_file.file = SimpleUploadedFile(name=filename, content=pathlib.Path(filepath).read_bytes())
         self.import_file.save()
 
     def query_property_matches(self, properties, pm_id, custom_id, ubid):
@@ -82,7 +69,7 @@ class TestMatching(DataMappingBaseTestCase):
             # Return an empty QuerySet if we don't have any params.
             return properties.none()
 
-        return properties.filter(reduce(operator.or_, params)).order_by('id')
+        return properties.filter(reduce(operator.or_, params)).order_by("id")
 
     def test_single_id_matches(self):
         tasks.save_raw_data(self.import_file.pk)
@@ -94,7 +81,7 @@ class TestMatching(DataMappingBaseTestCase):
         self.assertEqual(len(property_states), 0)
 
         # promote a properties
-        ps = PropertyState.objects.filter(pm_property_id='2264').first()
+        ps = PropertyState.objects.filter(pm_property_id="2264").first()
         ps.promote(self.cycle)
 
         property_states = tasks.list_canonical_property_states(self.org)
@@ -102,7 +89,7 @@ class TestMatching(DataMappingBaseTestCase):
 
         matches = self.query_property_matches(property_states, None, None, None)
         self.assertEqual(len(matches), 0)
-        matches = self.query_property_matches(property_states, '2264', None, None)
+        matches = self.query_property_matches(property_states, "2264", None, None)
         self.assertEqual(len(matches), 1)
         self.assertEqual(matches[0], ps)
 
@@ -116,7 +103,7 @@ class TestMatching(DataMappingBaseTestCase):
         self.assertEqual(len(property_states), 0)
 
         # promote two properties
-        ps = PropertyState.objects.filter(custom_id_1='13').order_by('id')
+        ps = PropertyState.objects.filter(custom_id_1="13").order_by("id")
         ps_test = ps.first()
         ps_test_2 = ps.last()
         for p in ps:
@@ -131,29 +118,29 @@ class TestMatching(DataMappingBaseTestCase):
         matches = self.query_property_matches(property_states, None, None, None)
         self.assertEqual(len(matches), 0)
         # should return 2 properties
-        matches = self.query_property_matches(property_states, None, '13', None)
+        matches = self.query_property_matches(property_states, None, "13", None)
         self.assertEqual(len(matches), 2)
         self.assertEqual(matches[0], ps_test)
         self.assertEqual(matches[1], ps_test_2)
         # should return only the second property
-        matches = self.query_property_matches(property_states, '2342', None, None)
+        matches = self.query_property_matches(property_states, "2342", None, None)
         self.assertEqual(len(matches), 1)
         self.assertEqual(matches[0], ps_test_2)
         # should return both properties, the first one should be the pm match, i.e., the first prop
-        matches = self.query_property_matches(property_states, '481516', '13', None)
+        matches = self.query_property_matches(property_states, "481516", "13", None)
         self.assertEqual(len(matches), 2)
         self.assertEqual(matches[0], ps_test)
         self.assertEqual(matches[1], ps_test_2)
         # if passing in the second pm then it will not be the first
-        matches = self.query_property_matches(property_states, '2342', '13', None)
+        matches = self.query_property_matches(property_states, "2342", "13", None)
         self.assertEqual(len(matches), 2)
         self.assertEqual(matches[1], ps_test_2)
         # pass the pm id into the custom id. it should still return the correct buildings.
         # not sure that this is the right behavior, but this is what it does, so just testing.
-        matches = self.query_property_matches(property_states, None, '2342', None)
+        matches = self.query_property_matches(property_states, None, "2342", None)
         self.assertEqual(len(matches), 1)
         self.assertEqual(matches[0], ps_test_2)
-        matches = self.query_property_matches(property_states, '13', None, None)
+        matches = self.query_property_matches(property_states, "13", None, None)
         self.assertEqual(len(matches), 2)
         self.assertEqual(matches[0], ps_test)
         self.assertEqual(matches[1], ps_test_2)
@@ -164,43 +151,31 @@ class TestMatching(DataMappingBaseTestCase):
         """
         # TODO: Fix the PM, tax lot id, and custom ID fields in PropertyState
         bs_data = {
-            'pm_property_id': "2360",
+            "pm_property_id": "2360",
             # 'tax_lot_id': '476/460',
-            'property_name': 'Garfield Complex',
-            'custom_id_1': "89",
-            'address_line_1': '12975 Database LN.',
-            'address_line_2': '',
-            'city': 'Cartoon City',
-            'postal_code': "54321",
-            'data_state': DATA_STATE_MAPPING,
-            'source_type': ASSESSED_BS,
+            "property_name": "Garfield Complex",
+            "custom_id_1": "89",
+            "address_line_1": "12975 Database LN.",
+            "address_line_2": "",
+            "city": "Cartoon City",
+            "postal_code": "54321",
+            "data_state": DATA_STATE_MAPPING,
+            "source_type": ASSESSED_BS,
         }
 
         # Setup mapped AS snapshot.
-        PropertyState.objects.create(
-            organization=self.org,
-            import_file=self.import_file,
-            **bs_data
-        )
+        PropertyState.objects.create(organization=self.org, import_file=self.import_file, **bs_data)
 
         # Different file, but same ImportRecord.
         # Setup mapped PM snapshot.
         # Should be an identical match.
-        new_import_file = ImportFile.objects.create(import_record=self.import_record,
-                                                    mapping_done=True)
+        new_import_file = ImportFile.objects.create(import_record=self.import_record, mapping_done=True)
 
         tasks.geocode_and_match_buildings_task(new_import_file.pk)
 
-        duplicate_import_file = ImportFile.objects.create(
-            import_record=self.import_record,
-            mapping_done=True
-        )
+        duplicate_import_file = ImportFile.objects.create(import_record=self.import_record, mapping_done=True)
 
-        PropertyState.objects.create(
-            organization=self.org,
-            import_file=duplicate_import_file,
-            **bs_data
-        )
+        PropertyState.objects.create(organization=self.org, import_file=duplicate_import_file, **bs_data)
 
         # get a list of unhandled
         # unmatched_properties = self.import_file.find_unmatched_property_states()

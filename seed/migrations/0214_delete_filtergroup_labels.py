@@ -4,18 +4,17 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('seed', '0213_move_filtergroup_labels'),
+        ("seed", "0213_move_filtergroup_labels"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='filtergroup',
-            name='label_logic',
+            model_name="filtergroup",
+            name="label_logic",
         ),
         migrations.RemoveField(
-            model_name='filtergroup',
-            name='labels',
+            model_name="filtergroup",
+            name="labels",
         ),
     ]

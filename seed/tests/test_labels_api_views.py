@@ -1,9 +1,9 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 import json
 from collections import defaultdict
 from datetime import datetime
@@ -21,7 +21,7 @@ from seed.test_helpers.fake import (
     FakePropertyStateFactory,
     FakePropertyViewFactory,
     FakeTaxLotViewFactory,
-    mock_queryset_factory
+    mock_queryset_factory,
 )
 from seed.tests.util import AccessLevelBaseTestCase, DeleteModelsTestCase
 from seed.utils.organizations import create_organization
@@ -36,9 +36,9 @@ class TestLabelsViewSet(DeleteModelsTestCase):
         Ensure that labels are not actually paginated.
         """
         user = User.objects.create_superuser(
-            email='test_user@demo.com',
-            username='test_user@demo.com',
-            password='secret',
+            email="test_user@demo.com",
+            username="test_user@demo.com",
+            password="secret",
         )
         organization, _, _ = create_organization(user, "test-organization")
 
@@ -48,16 +48,16 @@ class TestLabelsViewSet(DeleteModelsTestCase):
         for i in range(101):
             Label.objects.create(
                 color="red",
-                name="test_label-{0}".format(i),
+                name=f"test_label-{i}",
                 super_organization=organization,
             )
 
         client = APIClient()
-        client.login(username=user.username, password='secret')
+        client.login(username=user.username, password="secret")
 
-        url = reverse('api:v3:labels-list')
+        url = reverse("api:v3:labels-list")
 
-        response = client.get(url, {'organization_id': organization.pk, 'inventory_type': 'property'})
+        response = client.get(url, {"organization_id": organization.pk, "inventory_type": "property"})
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), organization.labels.count())
@@ -72,9 +72,9 @@ class TestLabelsViewSet(DeleteModelsTestCase):
         the endpoint returns the appropriate labels for that organization.
         """
         user = User.objects.create_superuser(
-            email='test_user@demo.com',
-            username='test_user@demo.com',
-            password='secret',
+            email="test_user@demo.com",
+            username="test_user@demo.com",
+            password="secret",
         )
         organization_a, _, _ = create_organization(user, "test-organization-a")
         organization_b, _, _ = create_organization(user, "test-organization-b")
@@ -94,27 +94,27 @@ class TestLabelsViewSet(DeleteModelsTestCase):
         )
 
         client = APIClient()
-        client.login(username=user.username, password='secret')
+        client.login(username=user.username, password="secret")
 
-        url = reverse('api:v3:labels-list')
+        url = reverse("api:v3:labels-list")
 
-        response_a = client.get(url, {'organization_id': organization_a.pk, 'inventory_type': 'property'})
-        response_b = client.get(url, {'organization_id': organization_b.pk, 'inventory_type': 'property'})
+        response_a = client.get(url, {"organization_id": organization_a.pk, "inventory_type": "property"})
+        response_b = client.get(url, {"organization_id": organization_b.pk, "inventory_type": "property"})
 
         self.assertEqual(response_a.status_code, status.HTTP_200_OK)
         self.assertEqual(response_b.status_code, status.HTTP_200_OK)
 
-        results_a = set(result['organization_id'] for result in response_a.data)
-        results_b = set(result['organization_id'] for result in response_b.data)
+        results_a = {result["organization_id"] for result in response_a.data}
+        results_b = {result["organization_id"] for result in response_b.data}
 
         assert results_a == {organization_a.pk}
         assert results_b == {organization_b.pk}
 
     def test_labels_list_endpoint_doesnt_include_is_applied(self):
         user = User.objects.create_superuser(
-            email='test_user@demo.com',
-            username='test_user@demo.com',
-            password='secret',
+            email="test_user@demo.com",
+            username="test_user@demo.com",
+            password="secret",
         )
         organization_a, _, _ = create_organization(user, "test-organization-a")
 
@@ -127,20 +127,20 @@ class TestLabelsViewSet(DeleteModelsTestCase):
         )
 
         client = APIClient()
-        client.login(username=user.username, password='secret')
+        client.login(username=user.username, password="secret")
 
-        url = reverse('api:v3:labels-list')
+        url = reverse("api:v3:labels-list")
 
         response_a = client.get(url)
 
         for label in response_a.data:
-            self.assertNotIn('is_applied', label)
+            self.assertNotIn("is_applied", label)
 
-    def test_labels_inventory_specific_filter_endpoint_provides_IDs_for_records_where_label_is_applied(self):
+    def test_labels_inventory_specific_filter_endpoint_provides_ids_for_records_where_label_is_applied(self):
         user = User.objects.create_superuser(
-            email='test_user@demo.com',
-            username='test_user@demo.com',
-            password='secret',
+            email="test_user@demo.com",
+            username="test_user@demo.com",
+            password="secret",
         )
         organization_a, _, _ = create_organization(user, "test-organization-a")
 
@@ -176,49 +176,42 @@ class TestLabelsViewSet(DeleteModelsTestCase):
         taxlot_view_factory.get_taxlot_view()
 
         client = APIClient()
-        client.login(username=user.username, password='secret')
+        client.login(username=user.username, password="secret")
 
-        url = reverse('api:v3:properties-labels')
-        response_a = client.post(url + f'?organization_id={organization_a.pk}')
+        url = reverse("api:v3:properties-labels")
+        response_a = client.post(url + f"?organization_id={organization_a.pk}")
         data = response_a.json()
         for label in data:
-            if label.get('name') == 'test_label-a':
-                self.assertListEqual(label.get('is_applied'), [p_view_1.id, p_view_2.id])
-            elif label.get('name') == 'test_label-b':
-                self.assertCountEqual(label.get('is_applied'), [p_view_2.id])
+            if label.get("name") == "test_label-a":
+                self.assertListEqual(label.get("is_applied"), [p_view_1.id, p_view_2.id])
+            elif label.get("name") == "test_label-b":
+                self.assertCountEqual(label.get("is_applied"), [p_view_2.id])
             else:
-                self.assertCountEqual(label.get('is_applied'), [])
+                self.assertCountEqual(label.get("is_applied"), [])
 
         # check if we can filter to only label_2 and on p_view 2
-        response_b = client.post(url + f'?organization_id={organization_a.pk}', data={'selected': [p_view_2.id], 'label_names': [new_label_1.name]})
+        response_b = client.post(
+            url + f"?organization_id={organization_a.pk}", data={"selected": [p_view_2.id], "label_names": [new_label_1.name]}
+        )
         data = response_b.json()
         self.assertEqual(len(data), 1)
-        self.assertEqual(data[0].get('name'), new_label_1.name)
-        self.assertListEqual(data[0].get('is_applied'), [p_view_2.id])
+        self.assertEqual(data[0].get("name"), new_label_1.name)
+        self.assertListEqual(data[0].get("is_applied"), [p_view_2.id])
 
 
 class TestUpdateInventoryLabelsAPIView(DeleteModelsTestCase):
-
     def setUp(self):
         self.api_view = LabelInventoryViewSet()
 
         # Models can't  be imported directly hence self
-        self.PropertyViewLabels = self.api_view.models['property']
-        self.TaxlotViewLabels = self.api_view.models['taxlot']
+        self.PropertyViewLabels = self.api_view.models["property"]
+        self.TaxlotViewLabels = self.api_view.models["taxlot"]
 
-        self.user_details = {
-            'username': 'test_user@demo.com',
-            'password': 'test_pass',
-            'email': 'test_user@demo.com'
-        }
+        self.user_details = {"username": "test_user@demo.com", "password": "test_pass", "email": "test_user@demo.com"}
         self.user = User.objects.create_superuser(**self.user_details)
         self.org, _, _ = create_organization(self.user)
-        self.status_label = Label.objects.create(
-            name='test', super_organization=self.org
-        )
-        self.status_label_2 = Label.objects.create(
-            name='test_2', super_organization=self.org
-        )
+        self.status_label = Label.objects.create(name="test", super_organization=self.org)
+        self.status_label_2 = Label.objects.create(name="test_2", super_organization=self.org)
         self.client.login(**self.user_details)
 
         self.label_1 = Label.objects.all()[0]
@@ -233,44 +226,30 @@ class TestUpdateInventoryLabelsAPIView(DeleteModelsTestCase):
         for i in range(1, 11):
             ps = property_state_factory.get_property_state()
             p = Property.objects.create(organization=self.org)
-            PropertyView.objects.create(
-                cycle=cycle,
-                state=ps,
-                property=p
-            )
+            PropertyView.objects.create(cycle=cycle, state=ps, property=p)
 
-        self.propertyview_ids = PropertyView.objects.all().order_by('id').values_list('id', flat=True)
+        self.propertyview_ids = PropertyView.objects.all().order_by("id").values_list("id", flat=True)
 
         self.mock_propertyview_label_qs = mock_queryset_factory(
             self.PropertyViewLabels,
             flatten=True,
             propertyview_id=self.propertyview_ids,
-            statuslabel_id=[self.label_1.id] * 3 + [self.label_2.id] * 3 + [self.label_3.id] * 2 + [self.label_4.id] * 2
+            statuslabel_id=[self.label_1.id] * 3 + [self.label_2.id] * 3 + [self.label_3.id] * 2 + [self.label_4.id] * 2,
         )
 
     def test_get_label_desc(self):
         add_label_ids = [self.status_label.id]
         remove_label_ids = []
-        result = self.api_view.get_label_desc(
-            add_label_ids, remove_label_ids
-        )[0]
-        expected = {
-            'id': self.status_label.id,
-            'name': 'test',
-            'color': 'green'
-        }
+        result = self.api_view.get_label_desc(add_label_ids, remove_label_ids)[0]
+        expected = {"id": self.status_label.id, "name": "test", "color": "green"}
         self.assertEqual(result, expected)
 
     def test_get_inventory_id(self):
-        result = self.api_view.get_inventory_id(
-            self.mock_propertyview_label_qs[0], 'property'
-        )
+        result = self.api_view.get_inventory_id(self.mock_propertyview_label_qs[0], "property")
         self.assertEqual(result, self.propertyview_ids[0])
 
     def test_exclude(self):
-        result = self.api_view.exclude(
-            self.mock_propertyview_label_qs, 'property', [self.label_3.id, self.label_4.id]
-        )
+        result = self.api_view.exclude(self.mock_propertyview_label_qs, "property", [self.label_3.id, self.label_4.id])
 
         pvid_7 = self.propertyview_ids[6]
         pvid_8 = self.propertyview_ids[7]
@@ -281,10 +260,8 @@ class TestUpdateInventoryLabelsAPIView(DeleteModelsTestCase):
         self.assertEqual(result, expected)
 
     def test_label_factory(self):
-        result = self.api_view.label_factory('property', self.label_1.id, self.propertyview_ids[0])
-        self.assertEqual(
-            result.__class__.__name__, self.PropertyViewLabels.__name__
-        )
+        result = self.api_view.label_factory("property", self.label_1.id, self.propertyview_ids[0])
+        self.assertEqual(result.__class__.__name__, self.PropertyViewLabels.__name__)
         self.assertEqual(result.propertyview_id, self.propertyview_ids[0])
         self.assertEqual(result.statuslabel_id, self.label_1.id)
 
@@ -294,8 +271,7 @@ class TestUpdateInventoryLabelsAPIView(DeleteModelsTestCase):
         pvid_3 = self.propertyview_ids[2]
 
         result = self.api_view.add_labels(
-            self.mock_propertyview_label_qs, 'property',
-            [pvid_1, pvid_2, pvid_3], [self.label_2.id, self.label_3.id]
+            self.mock_propertyview_label_qs, "property", [pvid_1, pvid_2, pvid_3], [self.label_2.id, self.label_3.id]
         )
         self.assertEqual(result, [pvid_1, pvid_2, pvid_3] * 2)
         qs = self.PropertyViewLabels.objects.all()
@@ -303,38 +279,31 @@ class TestUpdateInventoryLabelsAPIView(DeleteModelsTestCase):
         self.assertEqual(qs[0].propertyview_id, pvid_1)
         self.assertEqual(qs[0].statuslabel_id, self.label_2.id)
 
-        result = self.api_view.remove_labels(qs, 'property', [self.label_2.id, self.label_3.id])
+        result = self.api_view.remove_labels(qs, "property", [self.label_2.id, self.label_3.id])
         qs = self.PropertyViewLabels.objects.all()
         self.assertEqual(len(qs), 0)
 
     def test_put(self):
         client = APIClient()
-        client.login(
-            username=self.user_details['username'],
-            password=self.user_details['password']
-        )
-        r = '/api/v3/labels_property/'
-        url = "{}?organization_id={}".format(
-            r, self.org.id
-        )
+        client.login(username=self.user_details["username"], password=self.user_details["password"])
+        r = "/api/v3/labels_property/"
+        url = f"{r}?organization_id={self.org.id}"
 
         pvid_1 = self.propertyview_ids[0]
         pvid_2 = self.propertyview_ids[1]
         pvid_3 = self.propertyview_ids[2]
 
         post_params = {
-            'add_label_ids': [self.status_label.id, self.status_label_2.id],
-            'remove_label_ids': [],
-            'inventory_ids': [pvid_1, pvid_2, pvid_3],
+            "add_label_ids": [self.status_label.id, self.status_label_2.id],
+            "remove_label_ids": [],
+            "inventory_ids": [pvid_1, pvid_2, pvid_3],
         }
-        response = client.put(
-            url, post_params, format='json'
-        )
+        response = client.put(url, post_params, format="json")
         result = response.data
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(result['status'], 'success')
-        self.assertEqual(result['num_updated'], 3)
+        self.assertEqual(result["status"], "success")
+        self.assertEqual(result["num_updated"], 3)
 
         self.assertEqual(self.PropertyViewLabels.objects.count(), 6)
         label_assignments = defaultdict(list)
@@ -347,18 +316,16 @@ class TestUpdateInventoryLabelsAPIView(DeleteModelsTestCase):
         self.assertEqual(label_assignments, expected_label_assignments)
 
         post_params = {
-            'add_label_ids': [],
-            'remove_label_ids': [self.status_label.id],
-            'inventory_ids': [pvid_1, pvid_2],
+            "add_label_ids": [],
+            "remove_label_ids": [self.status_label.id],
+            "inventory_ids": [pvid_1, pvid_2],
         }
-        response = client.put(
-            url, post_params, format='json'
-        )
+        response = client.put(url, post_params, format="json")
         result = response.data
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(result['status'], 'success')
-        self.assertEqual(result['num_updated'], 2)
+        self.assertEqual(result["status"], "success")
+        self.assertEqual(result["num_updated"], 2)
 
         self.assertEqual(self.PropertyViewLabels.objects.count(), 4)
         label_assignments = defaultdict(list)
@@ -375,47 +342,51 @@ class LabelTestPermissions(AccessLevelBaseTestCase):
     def setUp(self):
         super().setUp()
 
-        self.label = Label.objects.create(color="red", name="test_label", super_organization=self.org,)
+        self.label = Label.objects.create(
+            color="red",
+            name="test_label",
+            super_organization=self.org,
+        )
 
     def test_label_create(self):
-        url = reverse('api:v3:labels-list') + f'?organization_id={self.org.pk}'
+        url = reverse("api:v3:labels-list") + f"?organization_id={self.org.pk}"
         params = json.dumps({"name": "boo"})
 
         # child member cannot
         self.login_as_child_member()
-        resp = self.client.post(url, params, content_type='application/json')
+        resp = self.client.post(url, params, content_type="application/json")
         assert resp.status_code == 403
 
         # root member can
         self.login_as_root_member()
-        resp = self.client.post(url, params, content_type='application/json')
+        resp = self.client.post(url, params, content_type="application/json")
         assert resp.status_code == 201
 
     def test_label_update(self):
-        url = reverse('api:v3:labels-detail', args=[self.label.id]) + f'?organization_id={self.org.pk}'
+        url = reverse("api:v3:labels-detail", args=[self.label.id]) + f"?organization_id={self.org.pk}"
         params = json.dumps({"name": "boo"})
 
         # child member cannot
         self.login_as_child_member()
-        resp = self.client.put(url, params, content_type='application/json')
+        resp = self.client.put(url, params, content_type="application/json")
         assert resp.status_code == 403
 
         # root member can
         self.login_as_root_member()
-        resp = self.client.put(url, params, content_type='application/json')
+        resp = self.client.put(url, params, content_type="application/json")
         assert resp.status_code == 200
 
     def test_label_destroy(self):
-        url = reverse('api:v3:labels-detail', args=[self.label.id]) + f'?organization_id={self.org.pk}'
+        url = reverse("api:v3:labels-detail", args=[self.label.id]) + f"?organization_id={self.org.pk}"
 
         # child member cannot
         self.login_as_child_member()
-        resp = self.client.delete(url, content_type='application/json')
+        resp = self.client.delete(url, content_type="application/json")
         assert resp.status_code == 403
 
         # root member can
         self.login_as_root_member()
-        resp = self.client.delete(url, content_type='application/json')
+        resp = self.client.delete(url, content_type="application/json")
         assert resp.status_code == 204
 
 
@@ -428,23 +399,23 @@ class TestPropertyLabelPermissions(AccessLevelBaseTestCase):
         self.child_property = self.property_factory.get_property(access_level_instance=self.child_level_instance)
         self.child_property_view = self.property_view_factory.get_property_view(prprty=self.child_property)
 
-        self.status_label = Label.objects.create(name='test', super_organization=self.org)
+        self.status_label = Label.objects.create(name="test", super_organization=self.org)
 
     def test_add(self):
-        url = f'/api/v3/labels_property/?organization_id={self.org.id}'
+        url = f"/api/v3/labels_property/?organization_id={self.org.id}"
         post_params = {
-            'add_label_ids': [self.status_label.pk],
-            'remove_label_ids': [],
-            'inventory_ids': [self.root_property_view.pk, self.child_property_view.pk],
+            "add_label_ids": [self.status_label.pk],
+            "remove_label_ids": [],
+            "inventory_ids": [self.root_property_view.pk, self.child_property_view.pk],
         }
 
         self.login_as_child_member()
-        self.client.put(url, post_params, content_type='application/json')
+        self.client.put(url, post_params, content_type="application/json")
         assert list(self.root_property_view.labels.all()) == []
         assert list(self.child_property_view.labels.all()) == [self.status_label]
 
         self.login_as_root_member()
-        self.client.put(url, post_params, content_type='application/json')
+        self.client.put(url, post_params, content_type="application/json")
         assert list(self.root_property_view.labels.all()) == [self.status_label]
         assert list(self.child_property_view.labels.all()) == [self.status_label]
 
@@ -452,20 +423,20 @@ class TestPropertyLabelPermissions(AccessLevelBaseTestCase):
         self.root_property_view.labels.add(self.status_label)
         self.child_property_view.labels.add(self.status_label)
 
-        url = f'/api/v3/labels_property/?organization_id={self.org.id}'
+        url = f"/api/v3/labels_property/?organization_id={self.org.id}"
         post_params = {
-            'add_label_ids': [],
-            'remove_label_ids': [self.status_label.pk],
-            'inventory_ids': [self.root_property_view.pk, self.child_property_view.pk],
+            "add_label_ids": [],
+            "remove_label_ids": [self.status_label.pk],
+            "inventory_ids": [self.root_property_view.pk, self.child_property_view.pk],
         }
 
         self.login_as_child_member()
-        self.client.put(url, post_params, content_type='application/json')
+        self.client.put(url, post_params, content_type="application/json")
         assert list(self.root_property_view.labels.all()) == [self.status_label]
         assert list(self.child_property_view.labels.all()) == []
 
         self.login_as_root_member()
-        self.client.put(url, post_params, content_type='application/json')
+        self.client.put(url, post_params, content_type="application/json")
         assert list(self.root_property_view.labels.all()) == []
         assert list(self.child_property_view.labels.all()) == []
 
@@ -479,23 +450,23 @@ class TestTaxlotLabelPermissions(AccessLevelBaseTestCase):
         self.child_taxlot = self.taxlot_factory.get_taxlot(access_level_instance=self.child_level_instance)
         self.child_taxlot_view = self.taxlot_view_factory.get_taxlot_view(taxlot=self.child_taxlot)
 
-        self.status_label = Label.objects.create(name='test', super_organization=self.org)
+        self.status_label = Label.objects.create(name="test", super_organization=self.org)
 
     def test_add(self):
-        url = f'/api/v3/labels_taxlot/?organization_id={self.org.id}'
+        url = f"/api/v3/labels_taxlot/?organization_id={self.org.id}"
         post_params = {
-            'add_label_ids': [self.status_label.pk],
-            'remove_label_ids': [],
-            'inventory_ids': [self.root_taxlot_view.pk, self.child_taxlot_view.pk],
+            "add_label_ids": [self.status_label.pk],
+            "remove_label_ids": [],
+            "inventory_ids": [self.root_taxlot_view.pk, self.child_taxlot_view.pk],
         }
 
         self.login_as_child_member()
-        self.client.put(url, post_params, content_type='application/json')
+        self.client.put(url, post_params, content_type="application/json")
         assert list(self.root_taxlot_view.labels.all()) == []
         assert list(self.child_taxlot_view.labels.all()) == [self.status_label]
 
         self.login_as_root_member()
-        self.client.put(url, post_params, content_type='application/json')
+        self.client.put(url, post_params, content_type="application/json")
         assert list(self.root_taxlot_view.labels.all()) == [self.status_label]
         assert list(self.child_taxlot_view.labels.all()) == [self.status_label]
 
@@ -503,19 +474,19 @@ class TestTaxlotLabelPermissions(AccessLevelBaseTestCase):
         self.root_taxlot_view.labels.add(self.status_label)
         self.child_taxlot_view.labels.add(self.status_label)
 
-        url = f'/api/v3/labels_taxlot/?organization_id={self.org.id}'
+        url = f"/api/v3/labels_taxlot/?organization_id={self.org.id}"
         post_params = {
-            'add_label_ids': [],
-            'remove_label_ids': [self.status_label.pk],
-            'inventory_ids': [self.root_taxlot_view.pk, self.child_taxlot_view.pk],
+            "add_label_ids": [],
+            "remove_label_ids": [self.status_label.pk],
+            "inventory_ids": [self.root_taxlot_view.pk, self.child_taxlot_view.pk],
         }
 
         self.login_as_child_member()
-        self.client.put(url, post_params, content_type='application/json')
+        self.client.put(url, post_params, content_type="application/json")
         assert list(self.root_taxlot_view.labels.all()) == [self.status_label]
         assert list(self.child_taxlot_view.labels.all()) == []
 
         self.login_as_root_member()
-        self.client.put(url, post_params, content_type='application/json')
+        self.client.put(url, post_params, content_type="application/json")
         assert list(self.root_taxlot_view.labels.all()) == []
         assert list(self.child_taxlot_view.labels.all()) == []

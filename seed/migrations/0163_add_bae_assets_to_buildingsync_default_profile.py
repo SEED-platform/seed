@@ -13,7 +13,7 @@ def recreate_default_bsync_presets(apps, schema_editor):
     prof_type = 1
 
     for org in Organization.objects.all():
-        bsync_mapping_name = 'BuildingSync v2.0 Defaults'
+        bsync_mapping_name = "BuildingSync v2.0 Defaults"
         # first find current BuildingSync mapping and delete
         profiles = org.columnmappingprofile_set.filter(profile_type=prof_type)
 
@@ -22,18 +22,13 @@ def recreate_default_bsync_presets(apps, schema_editor):
 
         # then recreate including BAE fields with updated "default_buildingsync_profile_mappings" method
         org.columnmappingprofile_set.create(
-            name=bsync_mapping_name,
-            mappings=default_buildingsync_profile_mappings(),
-            profile_type=prof_type
+            name=bsync_mapping_name, mappings=default_buildingsync_profile_mappings(), profile_type=prof_type
         )
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('seed', '0162_auto_20220418_2257'),
+        ("seed", "0162_auto_20220418_2257"),
     ]
 
-    operations = [
-        migrations.RunPython(recreate_default_bsync_presets)
-    ]
+    operations = [migrations.RunPython(recreate_default_bsync_presets)]

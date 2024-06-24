@@ -25,7 +25,7 @@ def backfill_at_events(apps, schema_editor):
             building_file=building_file,
             created=building_file.created,
             modified=building_file.created,
-            audit_date=propertyview.state.extra_data.get('audit_date', '')
+            audit_date=propertyview.state.extra_data.get("audit_date", ""),
         )
         scenarios = Scenario.objects.filter(property_state=propertyview.state_id)
         for scenario in scenarios:
@@ -69,9 +69,8 @@ def backfill_note_events(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('seed', '0188_auto_20230217_1652'),
+        ("seed", "0188_auto_20230217_1652"),
     ]
 
     operations = [

@@ -4,26 +4,25 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('data_importer', '0015_auto_20210712_2134'),
+        ("data_importer", "0015_auto_20210712_2134"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='importfile',
-            name='export_file',
+            model_name="importfile",
+            name="export_file",
         ),
         migrations.RemoveField(
-            model_name='importrecord',
-            name='import_completed_at',
+            model_name="importrecord",
+            name="import_completed_at",
         ),
         migrations.RemoveField(
-            model_name='importrecord',
-            name='mcm_version',
+            model_name="importrecord",
+            name="mcm_version",
         ),
         migrations.RemoveField(
-            model_name='importrecord',
-            name='merge_completed_at',
+            model_name="importrecord",
+            name="merge_completed_at",
         ),
     ]

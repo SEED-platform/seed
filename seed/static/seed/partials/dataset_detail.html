@@ -39,7 +39,7 @@
                   <a class="delete_link" ng-click="confirm_delete(f)"><i class="fa-solid fa-trash-can"></i></a>
                 </td>
                 <td>{$:: f.created | date: 'MM/dd/yyyy hh:mm:ss a' $}</td>
-                <td class="is_aligned_right">{$:: f.num_rows || 0 $}</td>
+                <td class="is_aligned_right">{$:: f.num_rows || 0 | number:0 $}</td>
                 <td>{$:: getCycleName(f.cycle) $}</td>
                 <td>
                   <a

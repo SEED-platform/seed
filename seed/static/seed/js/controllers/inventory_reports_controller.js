@@ -11,6 +11,7 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
   '$scope',
   '$log',
   '$stateParams',
+  'spinner_utility',
   'inventory_reports_service',
   'simple_modal_service',
   'columns',
@@ -21,7 +22,7 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
   '$translate',
   '$uibModal',
   // eslint-disable-next-line func-names
-  function ($scope, $log, $stateParams, inventory_reports_service, simple_modal_service, columns, cycles, organization_payload, urls, $sce, $translate, $uibModal) {
+  function ($scope, $log, $stateParams, spinner_utility, inventory_reports_service, simple_modal_service, columns, cycles, organization_payload, urls, $sce, $translate, $uibModal) {
     const org_id = organization_payload.organization.id;
     const base_storage_key = `report.${org_id}`;
 
@@ -358,7 +359,7 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
     }
 
     $scope.open_export_modal = () => {
-      $uibModal.open({
+      const modalInstance = $uibModal.open({
         templateUrl: `${urls.static_url}seed/partials/export_report_modal.html`,
         controller: 'export_report_modal_controller',
         resolve: {
@@ -371,6 +372,7 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
           cycles: () => $scope.selected_cycles
         }
       });
+      modalInstance.result.finally(spinner_utility.hide);
     };
 
     /** Get the 'raw' (disaggregated) chart data from the server for the scatter plot chart.

@@ -1,9 +1,10 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
+import contextlib
 import logging
 
 from django.db import models
@@ -90,41 +91,38 @@ class DataView(models.Model):
         # }
 
         response = {
-            'meta': {
-                'organization': self.organization.id,
-                'data_view': self.id,
+            "meta": {
+                "organization": self.organization.id,
+                "data_view": self.id,
             },
-            'views_by_filter_group_id': {},
-            'columns_by_id': {},
-            'graph_data': {
-                'labels': [cycle.name for cycle in sorted(list(self.cycles.all()), key=lambda x: x.name)],
-                'datasets': []
-            }
+            "views_by_filter_group_id": {},
+            "columns_by_id": {},
+            "graph_data": {"labels": [cycle.name for cycle in sorted(self.cycles.all(), key=lambda x: x.name)], "datasets": []},
         }
 
-        response['views_by_filter_group_id'], views_by_filter = self.views_by_filter(user_ali)
+        response["views_by_filter_group_id"], views_by_filter = self.views_by_filter(user_ali)
 
         # assign data based on source column id
         for column in columns:
-            data = response['columns_by_id']
+            data = response["columns_by_id"]
             column_id = column.id
-            data[column_id] = {'filter_groups_by_id': {}, 'unit': None}
+            data[column_id] = {"filter_groups_by_id": {}, "unit": None}
 
             for filter_group in self.filter_groups.all():
                 filter_id = filter_group.id
-                data[column_id]['filter_groups_by_id'][filter_id] = {'cycles_by_id': {}}
+                data[column_id]["filter_groups_by_id"][filter_id] = {"cycles_by_id": {}}
 
                 for cycle in self.cycles.all():
-                    data_cycles = data[column_id]['filter_groups_by_id'][filter_id]['cycles_by_id']
+                    data_cycles = data[column_id]["filter_groups_by_id"][filter_id]["cycles_by_id"]
                     data_cycles[cycle.id] = {}
                     views = views_by_filter[filter_id][cycle.id]
                     states = PropertyState.objects.filter(propertyview__in=views)
 
-                    for aggregation in [Avg, Max, Min, Sum, Count, 'views_by_default_field']:
+                    for aggregation in [Avg, Max, Min, Sum, Count, "views_by_default_field"]:
                         self._format_aggregation_name(aggregation)
                         self._format_filter_group_data(data_cycles, cycle.id, aggregation)
 
-                        if aggregation == 'views_by_default_field':
+                        if aggregation == "views_by_default_field":
                             self._assign_views_by_default_field_values(views, data, data_cycles, column, cycle.id, aggregation)
                         else:
                             value = self._evaluate_aggregation(states, aggregation, column)
@@ -141,13 +139,13 @@ class DataView(models.Model):
             for column in columns:
                 for aggregation in [Avg, Max, Min, Sum, Count]:  # NEED TO ADD 'views_by_label' for scatter plot
                     self._format_aggregation_name(aggregation)
-                    dataset = {'data': [], 'column': column.display_name, 'aggregation': aggregation.name, 'filter_group': filter_name}
-                    for cycle in sorted(list(self.cycles.all()), key=lambda x: x.name):
+                    dataset = {"data": [], "column": column.display_name, "aggregation": aggregation.name, "filter_group": filter_name}
+                    for cycle in sorted(self.cycles.all(), key=lambda x: x.name):
                         views = views_by_filter[filter_id][cycle.id]
                         states = PropertyState.objects.filter(propertyview__in=views)
                         value = self._evaluate_aggregation(states, aggregation, column)
-                        dataset['data'].append(value)
-                    response['graph_data']['datasets'].append(dataset)
+                        dataset["data"].append(value)
+                    response["graph_data"]["datasets"].append(dataset)
 
     def _format_property_display_field(self, view):
         try:
@@ -157,13 +155,21 @@ class DataView(models.Model):
 
     def _format_aggregation_name(self, aggregation):
         if aggregation == Avg:
-            aggregation.name = 'Average'
+            aggregation.name = "Average"
         elif aggregation == Max:
-            aggregation.name = 'Maximum'
+            aggregation.name = "Maximum"
         elif aggregation == Min:
-            aggregation.name = 'Minimum'
+            aggregation.name = "Minimum"
 
-    def _assign_views_by_default_field_values(self, views, data, data_cycles, column, cycle_id, aggregation, ):
+    def _assign_views_by_default_field_values(
+        self,
+        views,
+        data,
+        data_cycles,
+        column,
+        cycle_id,
+        aggregation,
+    ):
         for view in views:
             # Default assignment on first pass
             view_key = self._format_property_display_field(view)
@@ -178,19 +184,19 @@ class DataView(models.Model):
 
             try:
                 value = round(state_value.m, 2)
-                unit = '{:P~}'.format(state_value.u)
+                unit = f"{state_value.u:P~}"
             except AttributeError:
                 value = state_value
                 unit = None
 
-            if not data[column.id].get('unit'):
-                data[column.id]['unit'] = unit
+            if not data[column.id].get("unit"):
+                data[column.id]["unit"] = unit
 
             view_key = self._format_property_display_field(view)
             data_cycles[cycle_id][aggregation][view_key] = value
 
     def _format_filter_group_data(self, data_cycles, cycle_id, aggregation):
-        if aggregation == 'views_by_default_field':
+        if aggregation == "views_by_default_field":
             data_cycles[cycle_id][aggregation] = {}
         else:
             data_cycles[cycle_id][aggregation.name] = []
@@ -203,21 +209,19 @@ class DataView(models.Model):
         else:
             aggregation = states.aggregate(value=aggregation(column.column_name))
 
-            if aggregation.get('value') or aggregation.get('value') == 0:
-                value = aggregation['value']
-                if isinstance(value, int) or isinstance(value, float):
+            if aggregation.get("value") or aggregation.get("value") == 0:
+                value = aggregation["value"]
+                if isinstance(value, (float, int)):
                     return round(value, 2)
                 return round(value.m, 2)
 
     def _evaluate_extra_data(self, states, aggregation, column):
-        extra_data_col = 'extra_data__' + column.column_name
+        extra_data_col = "extra_data__" + column.column_name
         q_set = states.values(extra_data_col)
         values = []
         for val in list(q_set):
-            try:
+            with contextlib.suppress(ValueError, TypeError):
                 values.append(float(val[extra_data_col]))
-            except (ValueError, TypeError):
-                pass
         if values:
             type_to_aggregate = {Avg: sum(values) / len(values), Count: len(values), Max: max(values), Min: min(values), Sum: sum(values)}
             return round(type_to_aggregate[aggregation], 2)
@@ -269,26 +273,18 @@ class DataView(models.Model):
 
     def _get_filter_group_views(self, cycle, query_dict, user_ali):
         org_id = self.organization.id
-        columns = Column.retrieve_all(
-            org_id=org_id,
-            inventory_type='property',
-            only_used=False,
-            include_related=False
-        )
+        columns = Column.retrieve_all(org_id=org_id, inventory_type="property", only_used=False, include_related=False)
         annotations = {}
         try:
-            filters, annotations, order_by = build_view_filters_and_sorts(query_dict, columns, 'property')
+            filters, annotations, order_by = build_view_filters_and_sorts(query_dict, columns, "property")
         except Exception:
-            logging.error('error with filter group')
+            logging.error("error with filter group")
 
-        views_list = (
-            PropertyView.objects.select_related('property', 'state', 'cycle')
-            .filter(
-                property__organization_id=org_id,
-                cycle=cycle,
-                property__access_level_instance__lft__gte=user_ali.lft,
-                property__access_level_instance__rgt__lte=user_ali.rgt,
-            )
+        views_list = PropertyView.objects.select_related("property", "state", "cycle").filter(
+            property__organization_id=org_id,
+            cycle=cycle,
+            property__access_level_instance__lft__gte=user_ali.lft,
+            property__access_level_instance__rgt__lte=user_ali.rgt,
         )
 
         views_list = views_list.annotate(**annotations).filter(filters).order_by(*order_by)
@@ -296,7 +292,7 @@ class DataView(models.Model):
 
 
 class DataViewParameter(models.Model):
-    data_view = models.ForeignKey(DataView, on_delete=models.CASCADE, related_name='parameters')
+    data_view = models.ForeignKey(DataView, on_delete=models.CASCADE, related_name="parameters")
     column = models.ForeignKey(Column, on_delete=models.CASCADE)
     location = models.CharField(max_length=255)
     aggregations = models.JSONField(blank=True)

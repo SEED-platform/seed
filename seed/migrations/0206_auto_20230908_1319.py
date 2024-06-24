@@ -5,20 +5,19 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('seed', '0205_auto_20230913_1417'),
+        ("seed", "0205_auto_20230913_1417"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='atevent',
-            name='building_file',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='seed.buildingfile'),
+            model_name="atevent",
+            name="building_file",
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="seed.buildingfile"),
         ),
         migrations.AlterField(
-            model_name='scenario',
-            name='event',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, related_name='scenarios', to='seed.atevent'),
+            model_name="scenario",
+            name="event",
+            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, related_name="scenarios", to="seed.atevent"),
         ),
     ]

@@ -4,25 +4,24 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('seed', '0149_auto_20210922_1740'),
+        ("seed", "0149_auto_20210922_1740"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='greenassessmentproperty',
-            name='eligibility',
+            model_name="greenassessmentproperty",
+            name="eligibility",
             field=models.BooleanField(null=True),
         ),
         migrations.AlterField(
-            model_name='projectpropertyview',
-            name='compliant',
+            model_name="projectpropertyview",
+            name="compliant",
             field=models.BooleanField(null=True),
         ),
         migrations.AlterField(
-            model_name='projecttaxlotview',
-            name='compliant',
+            model_name="projecttaxlotview",
+            name="compliant",
             field=models.BooleanField(null=True),
         ),
     ]

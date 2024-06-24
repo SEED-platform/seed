@@ -1,19 +1,15 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 Tests related to sharing of data between users, orgs, suborgs, etc.
 """
+
 from django.test import TestCase
 
 from seed.landing.models import SEEDUser as User
-from seed.lib.superperms.orgs.models import (
-    ROLE_MEMBER,
-    ROLE_OWNER,
-    Organization
-)
+from seed.lib.superperms.orgs.models import ROLE_MEMBER, ROLE_OWNER, Organization
 
 
 class SharingViewTests(TestCase):
@@ -23,33 +19,23 @@ class SharingViewTests(TestCase):
 
     def setUp(self):
         self.admin_details = {
-            'username': 'test_user@demo.com',
-            'password': 'test_pass',
-            'email': 'test_user@demo.com',
-            'show_shared_buildings': True
+            "username": "test_user@demo.com",
+            "password": "test_pass",
+            "email": "test_user@demo.com",
+            "show_shared_buildings": True,
         }
         self.admin_user = User.objects.create_superuser(**self.admin_details)
-        self.parent_org = Organization.objects.create(name='Parent')
+        self.parent_org = Organization.objects.create(name="Parent")
         self.parent_org.add_member(self.admin_user, self.parent_org.root.id, ROLE_OWNER)
 
-        self.eng_user_details = {
-            'username': 'eng_owner@demo.com',
-            'password': 'eng_pass',
-            'email': 'eng_owner@demo.com'
-        }
+        self.eng_user_details = {"username": "eng_owner@demo.com", "password": "eng_pass", "email": "eng_owner@demo.com"}
         self.eng_user = User.objects.create_user(**self.eng_user_details)
-        self.eng_org = Organization.objects.create(parent_org=self.parent_org,
-                                                   name='Engineers')
+        self.eng_org = Organization.objects.create(parent_org=self.parent_org, name="Engineers")
         self.eng_org.add_member(self.eng_user, self.eng_org.root.pk, ROLE_OWNER)
 
-        self.des_user_details = {
-            'username': 'des_owner@demo.com',
-            'password': 'des_pass',
-            'email': 'des_owner@demo.com'
-        }
+        self.des_user_details = {"username": "des_owner@demo.com", "password": "des_pass", "email": "des_owner@demo.com"}
         self.des_user = User.objects.create_user(**self.des_user_details)
-        self.des_org = Organization.objects.create(parent_org=self.parent_org,
-                                                   name='Designers')
+        self.des_org = Organization.objects.create(parent_org=self.parent_org, name="Designers")
         self.des_org.add_member(self.des_user, self.parent_org.root.id, ROLE_MEMBER)
 
     def test_scenario(self):

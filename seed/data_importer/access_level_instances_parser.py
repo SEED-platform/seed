@@ -1,5 +1,4 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
@@ -9,7 +8,7 @@ from seed.lib.mcm import reader
 from seed.lib.superperms.orgs.models import Organization
 
 
-class AccessLevelInstancesParser(object):
+class AccessLevelInstancesParser:
     """
     This class parses and validates different details about access level instances
     Import File - to be created before execution.

@@ -5,14 +5,13 @@
 describe('controller: admin_controller', () => {
   let mock_organization_service;
   let mock_uploader_service;
-  let controller; let
-    admin_controller_scope;
+  let controller;
+  let admin_controller_scope;
 
   beforeEach(() => {
     module('BE.seed');
     inject((_$httpBackend_) => {
-      $httpBackend = _$httpBackend_;
-      $httpBackend.whenGET(/^\/static\/seed\/locales\/.*\.json/).respond(200, {});
+      _$httpBackend_.whenGET(/^\/static\/seed\/locales\/.*\.json/).respond(200, {});
     });
     inject(($controller, $rootScope, user_service, organization_service, uploader_service, $q) => {
       admin_controller_scope = $rootScope.$new();
@@ -20,33 +19,12 @@ describe('controller: admin_controller', () => {
       mock_organization_service = organization_service;
       mock_uploader_service = uploader_service;
 
-      spyOn(mock_organization_service, 'get_organization_users').andCallFake(() =>
-        // return $q.reject for error scenario
-        $q.reject({
-          status: 'fail'
-        }));
-      spyOn(mock_organization_service, 'add_user_to_org').andCallFake(() =>
-        // return $q.reject for error scenario
-        $q.reject({
-          status: 'fail'
-        }));
-      spyOn(mock_organization_service, 'remove_user').andCallFake(() =>
-        // return $q.reject for error scenario
-        $q.reject({
-          status: 'fail'
-        }));
-      spyOn(mock_organization_service, 'get_organizations').andCallFake(() =>
-        // return $q.reject for error scenario
-        $q.reject({
-          status: 'fail'
-        }));
-      spyOn(mock_organization_service, 'delete_organization_inventory').andCallFake(() =>
-        // return $q.reject for error scenario
-        $q.resolve({
-          status: 'success'
-        }));
+      spyOn(mock_organization_service, 'get_organization_users').andCallFake(() => $q.reject({ status: 'fail' }));
+      spyOn(mock_organization_service, 'add_user_to_org').andCallFake(() => $q.reject({ status: 'fail' }));
+      spyOn(mock_organization_service, 'remove_user').andCallFake(() => $q.reject({ status: 'fail' }));
+      spyOn(mock_organization_service, 'get_organizations').andCallFake(() => $q.reject({ status: 'fail' }));
+      spyOn(mock_organization_service, 'delete_organization_inventory').andCallFake(() => $q.resolve({ status: 'success' }));
       spyOn(mock_uploader_service, 'check_progress_loop').andCallFake((progress, num, num2, cb) => {
-        // return $q.reject for error scenario
         cb();
         return $q.resolve({
           status: 'success',

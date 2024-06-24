@@ -1,9 +1,10 @@
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 import json
+import locale
 import logging
 import re
 import string
@@ -32,11 +33,11 @@ def _snake_case(display_name):
     :param display_name: BuildingSync measure displayname
     :return: string
     """
-    str_re = re.compile('[{0}]'.format(re.escape(string.punctuation)))
-    str = str_re.sub(' ', display_name)
-    str = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', str)
-    str = re.sub('([a-z0-9])([A-Z])', r'\1_\2', str).lower()
-    return re.sub(' +', '_', str)
+    str_re = re.compile(f"[{re.escape(string.punctuation)}]")
+    str = str_re.sub(" ", display_name)
+    str = re.sub("(.)([A-Z][a-z]+)", r"\1_\2", str)
+    str = re.sub("([a-z0-9])([A-Z])", r"\1_\2", str).lower()
+    return re.sub(" +", "_", str)
 
 
 class Measure(models.Model):
@@ -44,26 +45,26 @@ class Measure(models.Model):
     display_name = models.CharField(max_length=255)
     category = models.CharField(max_length=255)
     category_display_name = models.CharField(max_length=255)
-    schema_type = models.CharField(max_length=255, default='BuildingSync')
-    schema_version = models.CharField(max_length=15, default='1.0.0')
+    schema_type = models.CharField(max_length=255, default="BuildingSync")
+    schema_version = models.CharField(max_length=15, default="1.0.0")
 
     # relationships
-    properties = models.ManyToManyField('PropertyState', through='PropertyMeasure')
+    properties = models.ManyToManyField("PropertyState", through="PropertyMeasure")
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
 
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return 'Measure - %s.%s' % (self.category, self.name)
+        return f"Measure - {self.category}.{self.name}"
 
     class Meta:
-        ordering = ['-created']
-        get_latest_by = 'created'
-        unique_together = ('organization', 'category', 'name')
+        ordering = ["-created"]
+        get_latest_by = "created"
+        unique_together = ("organization", "category", "name")
 
     @classmethod
-    def populate_measures(cls, organization_id, schema_type='BuildingSync', schema_version="1.0.0"):
+    def populate_measures(cls, organization_id, schema_type="BuildingSync", schema_version="1.0.0"):
         """
         Populate the list of measures from the BuildingSync
         Default is BuildingSync 1.0.0
@@ -72,7 +73,7 @@ class Measure(models.Model):
         :return:
         """
         filename = "seed/building_sync/lib/enumerations.json"
-        with open(filename) as f:
+        with open(filename, encoding=locale.getpreferredencoding(False)) as f:
             data = json.load(f)
 
             for datum in data:
@@ -95,7 +96,7 @@ class Measure(models.Model):
                             name=_snake_case(enum),
                             display_name=enum,
                             schema_type=schema_type,
-                            schema_version=schema_version
+                            schema_version=schema_version,
                         )
 
     @classmethod
@@ -117,13 +118,13 @@ class Measure(models.Model):
                         continue
                     else:
                         if "." not in d or len(d) == 1:
-                            _log.error("Invalid measure name: {}".format(d))
+                            _log.error(f"Invalid measure name: {d}")
                             continue
 
                         measure = d.split(".")
                         resp.append(Measure.objects.get(category=measure[0], name=measure[1]).pk)
                 except Measure.DoesNotExist:
-                    _log.error("Could not find measure for {}".format(d))
+                    _log.error(f"Could not find measure for {d}")
             return resp
         else:
             return []

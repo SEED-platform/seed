@@ -1,30 +1,26 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 from django.test import TestCase
 from quantityfield.units import ureg
 
 from seed.landing.models import SEEDUser as User
 from seed.models import Analysis, AnalysisPropertyView
-from seed.test_helpers.fake import (
-    FakeAnalysisFactory,
-    FakeCycleFactory,
-    FakePropertyViewFactory
-)
+from seed.test_helpers.fake import FakeAnalysisFactory, FakeCycleFactory, FakePropertyViewFactory
 from seed.utils.organizations import create_organization
 
 
 class TestAnalysisPropertyViews(TestCase):
     def setUp(self):
         user_details = {
-            'username': 'test_user@demo.com',
-            'password': 'test_pass',
-            'email': 'test_user@demo.com',
-            'first_name': 'Test',
-            'last_name': 'User',
+            "username": "test_user@demo.com",
+            "password": "test_pass",
+            "email": "test_user@demo.com",
+            "first_name": "Test",
+            "last_name": "User",
         }
         self.user = User.objects.create_user(**user_details)
         self.org_a, _, _ = create_organization(self.user)
@@ -33,44 +29,29 @@ class TestAnalysisPropertyViews(TestCase):
         cycle_a = FakeCycleFactory(organization=self.org_a, user=self.user).get_cycle(name="Cycle Org A")
         cycle_b = FakeCycleFactory(organization=self.org_b, user=self.user).get_cycle(name="Cycle Org B")
 
-        self.analysis_a = (
-            FakeAnalysisFactory(organization=self.org_a, user=self.user)
-            .get_analysis(
-                name='Quite neat',
-                service=Analysis.BSYNCR,
-                configuration={'model_type': 'Simple Linear Regression'}
-            )
+        self.analysis_a = FakeAnalysisFactory(organization=self.org_a, user=self.user).get_analysis(
+            name="Quite neat", service=Analysis.BSYNCR, configuration={"model_type": "Simple Linear Regression"}
         )
 
         view_factory_a = FakePropertyViewFactory(cycle=cycle_a, organization=self.org_a, user=self.user)
         self.property_views_a = [
             view_factory_a.get_property_view(
                 # override unitted fields so that hashes are correct
-                site_eui=ureg.Quantity(
-                    float(view_factory_a.fake.random_int(min=50, max=600)),
-                    "kBtu / foot ** 2 / year"
-                ),
-                gross_floor_area=ureg.Quantity(
-                    float(view_factory_a.fake.random_number(digits=6)),
-                    "foot ** 2"
-                ),
+                site_eui=ureg.Quantity(float(view_factory_a.fake.random_int(min=50, max=600)), "kBtu / foot ** 2 / year"),
+                gross_floor_area=ureg.Quantity(float(view_factory_a.fake.random_number(digits=6)), "foot ** 2"),
             )
-            for i in range(2)]
+            for i in range(2)
+        ]
 
         view_factory_b = FakePropertyViewFactory(cycle=cycle_b, organization=self.org_b, user=self.user)
         self.property_views_b = [
             view_factory_b.get_property_view(
                 # override unitted fields so that hashes are correct
-                site_eui=ureg.Quantity(
-                    float(view_factory_b.fake.random_int(min=50, max=600)),
-                    "kBtu / foot ** 2 / year"
-                ),
-                gross_floor_area=ureg.Quantity(
-                    float(view_factory_b.fake.random_number(digits=6)),
-                    "foot ** 2"
-                ),
+                site_eui=ureg.Quantity(float(view_factory_b.fake.random_int(min=50, max=600)), "kBtu / foot ** 2 / year"),
+                gross_floor_area=ureg.Quantity(float(view_factory_b.fake.random_number(digits=6)), "foot ** 2"),
             )
-            for i in range(2)]
+            for i in range(2)
+        ]
 
     def test_batch_create_is_successful_with_valid_inputs(self):
         # Act
@@ -84,10 +65,7 @@ class TestAnalysisPropertyViews(TestCase):
         self.assertEqual(0, len(failures))
         self.assertEqual(len(self.property_views_a), len(analysis_view_ids))
         analysis_views = AnalysisPropertyView.objects.filter(id__in=analysis_view_ids, analysis=self.analysis_a)
-        self.assertEqual(
-            len(analysis_view_ids),
-            analysis_views.count()
-        )
+        self.assertEqual(len(analysis_view_ids), analysis_views.count())
 
         # check that the PropertyState has the same content, but is not the same row
         original_property_view = self.property_views_a[0]
@@ -95,14 +73,8 @@ class TestAnalysisPropertyViews(TestCase):
             property=original_property_view.property,
             cycle=original_property_view.cycle,
         )
-        self.assertNotEqual(
-            original_property_view.state.id,
-            analysis_property_view.property_state.id
-        )
-        self.assertEqual(
-            original_property_view.state.hash_object,
-            analysis_property_view.property_state.hash_object
-        )
+        self.assertNotEqual(original_property_view.state.id, analysis_property_view.property_state.id)
+        self.assertEqual(original_property_view.state.hash_object, analysis_property_view.property_state.hash_object)
 
     def test_batch_create_removes_duplicate_ids(self):
         # Setup
@@ -120,10 +92,7 @@ class TestAnalysisPropertyViews(TestCase):
         # Assert
         self.assertEqual(0, len(failures))
         self.assertEqual(len(set(property_view_ids)), len(analysis_view_ids))
-        self.assertEqual(
-            len(analysis_view_ids),
-            AnalysisPropertyView.objects.filter(id__in=analysis_view_ids).count()
-        )
+        self.assertEqual(len(analysis_view_ids), AnalysisPropertyView.objects.filter(id__in=analysis_view_ids).count())
 
     def test_batch_create_returns_failures_when_property_views_dont_exist(self):
         # Setup
@@ -140,7 +109,7 @@ class TestAnalysisPropertyViews(TestCase):
         self.assertEqual(0, len(analysis_view_ids))
         failure_ids = [failure.property_view_id for failure in failures]
         self.assertEqual(set(failure_ids), set(bad_property_view_ids))
-        self.assertEqual(failures[0].message, 'No such PropertyView')
+        self.assertEqual(failures[0].message, "No such PropertyView")
 
     def test_batch_create_returns_failures_for_property_views_outside_of_org(self):
         # Setup
@@ -159,5 +128,5 @@ class TestAnalysisPropertyViews(TestCase):
         self.assertEqual(len(analysis_view_ids), len(self.property_views_a))
         failure_ids = [failure.property_view_id for failure in failures]
         # the failures should all be from other org
-        self.assertEqual(set(failure_ids), set([p.id for p in self.property_views_b]))
-        self.assertEqual(failures[0].message, 'No such PropertyView')
+        self.assertEqual(set(failure_ids), {p.id for p in self.property_views_b})
+        self.assertEqual(failures[0].message, "No such PropertyView")

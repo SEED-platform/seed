@@ -1,10 +1,11 @@
 # !/usr/bin/env python
-# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 import csv
+import locale
 import os
 
 from django.db import models
@@ -18,9 +19,9 @@ class ColumnMappingProfile(models.Model):
     BUILDINGSYNC_CUSTOM = 2
 
     COLUMN_MAPPING_PROFILE_TYPES = (
-        (NORMAL, 'Normal'),
-        (BUILDINGSYNC_DEFAULT, 'BuildingSync Default'),
-        (BUILDINGSYNC_CUSTOM, 'BuildingSync Custom')
+        (NORMAL, "Normal"),
+        (BUILDINGSYNC_DEFAULT, "BuildingSync Default"),
+        (BUILDINGSYNC_CUSTOM, "BuildingSync Custom"),
     )
 
     name = models.CharField(max_length=255, blank=False)
@@ -46,13 +47,15 @@ class ColumnMappingProfile(models.Model):
         """
         if isinstance(profile_type, int):
             return profile_type
-        types_dict = dict((v, k) for k, v in cls.COLUMN_MAPPING_PROFILE_TYPES)
+        types_dict = {v: k for k, v in cls.COLUMN_MAPPING_PROFILE_TYPES}
         if profile_type in types_dict:
             return types_dict[profile_type]
         raise Exception(f'Invalid profile type "{profile_type}"')
 
     @classmethod
-    def create_from_file(cls, filename: str, org: Organization, profile_name: str, profile_type: int = NORMAL, overwrite_if_exists: bool = False):
+    def create_from_file(
+        cls, filename: str, org: Organization, profile_name: str, profile_type: int = NORMAL, overwrite_if_exists: bool = False
+    ):
         """Generate a ColumnMappingProfile from a set of mappings in a file. The format of the file
         is slightly different from the Column.create_mappings_from_file, but is the same format as
         the file that you download from the column mappings page within SEED.
@@ -69,7 +72,7 @@ class ColumnMappingProfile(models.Model):
         """
         mappings = []
         if os.path.isfile(filename):
-            with open(filename, 'r', newline=None) as csvfile:
+            with open(filename, newline=None, encoding=locale.getpreferredencoding(False)) as csvfile:
                 csvreader = csv.reader(csvfile)
                 next(csvreader)  # skip header
                 for row in csvreader:
