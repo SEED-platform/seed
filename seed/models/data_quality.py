@@ -1096,11 +1096,12 @@ class DataQualityCheck(models.Model):
     def add_goal_rule_labels(self, rule):
         # Add labels to default portfolio/goal rules
         if rule:
+            org = rule.data_quality_check.organization
             try:
                 if "Missing" in rule.name:
-                    rule.status_label = StatusLabel.objects.get(name="Missing Data")
+                    rule.status_label = StatusLabel.objects.get(name="Missing Data", super_organization=org)
                 else:
-                    rule.status_label = StatusLabel.objects.get(name=rule.name)
+                    rule.status_label = StatusLabel.objects.get(name=rule.name, super_organization=org)
                 rule.save()
             except StatusLabel.DoesNotExist:
                 pass
