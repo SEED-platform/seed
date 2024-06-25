@@ -38,7 +38,7 @@
         assign or remove a label if the condition is not met.<br />
         Reset All Rules: delete all rules and reinitialize the default set of rules.
       </p>
-      <button class="btn btn-info btn-sm" style="margin-bottom: 15px" ng-click="create_new_rule()" translate>Create a new rule</button>
+      <button class="btn btn-info btn-sm" style="margin-bottom: 15px" ng-click="create_new_rule()"  ng-if="rule_type !== 'goals'" translate>Create a new rule</button>
 
       <div class="alert alert-danger" ng-show="invalid_conditions.length > 0" translate>
         Fields that have a "Must Contain" or "Must Not Contain" Condition Check rule cannot have a "Range" Condition Check rule.

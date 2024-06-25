@@ -988,7 +988,7 @@ class DataQualityCheck(models.Model):
             baseline = self.get_value(row, data_type, goal, "baseline")
             current = self.get_value(row, data_type, goal, "current")
             # EUI is inverese as a drop in EUI is an improvement
-            cycle_values =  [baseline, current] if data_type == 'eui' else [current, baseline]
+            cycle_values = [baseline, current] if data_type == "eui" else [current, baseline]
 
             if rule.cross_cycle:
                 cycle_key = "current"
