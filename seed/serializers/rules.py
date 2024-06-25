@@ -79,6 +79,9 @@ class RuleSerializer(serializers.ModelSerializer):
             # Rule is new
             severity_is_valid = False
             label_is_not_associated = False
+            # prevent new Goal type rules from being created
+            if data.get('table_name' == "Goal"):
+                return
         else:
             severity_is_valid = self.instance.severity == Rule.SEVERITY_VALID
             label_is_not_associated = self.instance.status_label is None
