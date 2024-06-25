@@ -8,52 +8,122 @@ from django.utils.decorators import method_decorator
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework.parsers import FormParser, JSONParser
-from rest_framework.renderers import JSONRenderer
 
+from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm_class
 from seed.models import MeterReading, PropertyView
 from seed.serializers.meter_readings import MeterReadingSerializer
-from seed.utils.api_schema import AutoSchemaHelper
-from seed.utils.viewsets import SEEDOrgModelViewSet
+from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema_org_query_param
+from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
 
 
 @method_decorator(
+    name="list",
+    decorator=[
+        swagger_auto_schema_org_query_param,
+        has_perm_class("requires_viewer"),
+        has_hierarchy_access(property_view_id_kwarg="property_pk"),
+    ],
+)
+@method_decorator(
+    name="retrieve",
+    decorator=[
+        swagger_auto_schema_org_query_param,
+        has_perm_class("requires_viewer"),
+        has_hierarchy_access(property_view_id_kwarg="property_pk"),
+    ],
+)
+@method_decorator(
     name="create",
-    decorator=swagger_auto_schema(
-        manual_parameters=[
-            AutoSchemaHelper.base_field(
-                name="property_pk",
-                location_attr="IN_PATH",
-                type_attr="TYPE_INTEGER",
-                required=True,
-                description="ID of the property view where the meter is associated.",
+    decorator=[
+        has_perm_class("requires_member"),
+        has_hierarchy_access(property_view_id_kwarg="property_pk"),
+        swagger_auto_schema(
+            manual_parameters=[
+                AutoSchemaHelper.query_org_id_field(),
+                AutoSchemaHelper.base_field(
+                    name="property_pk",
+                    location_attr="IN_PATH",
+                    type_attr="TYPE_INTEGER",
+                    required=True,
+                    description="ID of the property view where the meter is associated.",
+                ),
+                AutoSchemaHelper.base_field(
+                    name="meter_pk",
+                    location_attr="IN_PATH",
+                    type_attr="TYPE_INTEGER",
+                    required=True,
+                    description="ID of the meter to attached the meter readings.",
+                ),
+            ],
+            request_body=openapi.Schema(
+                type=openapi.TYPE_ARRAY,
+                items=AutoSchemaHelper.schema_factory(
+                    {
+                        "start_time": "datetime",
+                        "end_time": "datetime",
+                        "reading": "number",
+                        "source_unit": "string",
+                        "conversion_factor": "number",
+                    },
+                    required=["start_time", "end_time", "reading", "source_unit", "conversion_factor"],
+                ),
+                description="Dictionary or list of dictionaries of meter readings to add.",
             ),
-            AutoSchemaHelper.base_field(
-                name="meter_pk",
-                location_attr="IN_PATH",
-                type_attr="TYPE_INTEGER",
-                required=True,
-                description="ID of the meter to attached the meter readings.",
-            ),
-        ],
-        request_body=openapi.Schema(
-            type=openapi.TYPE_ARRAY,
-            items=AutoSchemaHelper.schema_factory(
-                {"start_time": "string", "end_time": "string", "reading": "number", "source_unit": "string", "conversion_factor": "number"},
+        ),
+    ],
+)
+@method_decorator(
+    name="update",
+    decorator=[
+        has_perm_class("requires_member"),
+        has_hierarchy_access(property_view_id_kwarg="property_pk"),
+        swagger_auto_schema(
+            manual_parameters=[
+                AutoSchemaHelper.query_org_id_field(),
+                AutoSchemaHelper.base_field(
+                    name="property_pk",
+                    location_attr="IN_PATH",
+                    type_attr="TYPE_INTEGER",
+                    required=True,
+                    description="ID of the property view where the meter is associated.",
+                ),
+                AutoSchemaHelper.base_field(
+                    name="meter_pk",
+                    location_attr="IN_PATH",
+                    type_attr="TYPE_INTEGER",
+                    required=True,
+                    description="ID of the meter to attached the meter readings.",
+                ),
+            ],
+            request_body=AutoSchemaHelper.schema_factory(
+                {
+                    "start_time": "datetime",
+                    "end_time": "datetime",
+                    "reading": "number",
+                    "source_unit": "string",
+                    "conversion_factor": "number",
+                },
                 required=["start_time", "end_time", "reading", "source_unit", "conversion_factor"],
             ),
-            description="Dictionary or list of dictionaries of meter readings to add.",
+            description="Meter reading to update.",
         ),
-    ),
+    ],
 )
-class MeterReadingViewSet(SEEDOrgModelViewSet):
+@method_decorator(
+    name="destroy",
+    decorator=[
+        swagger_auto_schema_org_query_param,
+        has_perm_class("requires_member"),
+        has_hierarchy_access(property_view_id_kwarg="property_pk"),
+    ],
+)
+class MeterReadingViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
     """API endpoint for managing meters."""
 
     serializer_class = MeterReadingSerializer
-    renderer_classes = (JSONRenderer,)
     pagination_class = None
     model = MeterReading
     parser_classes = (JSONParser, FormParser)
-    orgfilter = "property__organization"
 
     def get_queryset(self):
         # return the organization id from the request. This also check
@@ -72,7 +142,7 @@ class MeterReadingViewSet(SEEDOrgModelViewSet):
         except PropertyView.DoesNotExist:
             return MeterReading.objects.none()
 
-        self.property_pk = property_view.property.pk
+        self.property_pk = property_view.property_id
 
         # Grab the meter id
         meter_pk = self.kwargs.get("meter_pk", None)
