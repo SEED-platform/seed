@@ -9,7 +9,6 @@ import json
 import locale
 import logging
 import operator
-from collections import defaultdict
 from io import BytesIO
 from numbers import Number
 from pathlib import Path
@@ -62,7 +61,6 @@ from seed.serializers.pint import apply_display_unit_preferences
 from seed.utils.api import api_endpoint_class
 from seed.utils.api_schema import AutoSchemaHelper
 from seed.utils.encrypt import decrypt, encrypt
-from seed.utils.generic import median, round_down_hundred_thousand
 from seed.utils.geocode import geocode_buildings
 from seed.utils.match import match_merge_link
 from seed.utils.merge import merge_properties
@@ -785,13 +783,13 @@ class OrganizationViewSet(viewsets.ViewSet):
                 column.column_name: column.column_name if not column.is_extra_data else f"extra_data__{column.column_name}"
                 for column in additional_columns
             },
-            "x": x_var if x_var in dir(PropertyState) else f"extra_data__{x_var}",
-            "y": y_var if y_var in dir(PropertyState) else f"extra_data__{y_var}",
+            "x": F("state__" + (x_var if x_var in dir(PropertyState) else f"extra_data__{x_var}")),
+            "y": F("state__" + (y_var if y_var in dir(PropertyState) else f"extra_data__{y_var}")),
         }
         if x_var == "Count":
             fields["x"] = Value(1)
         for k, v in fields.items():
-            all_property_views = all_property_views.annotate(**{k: F("state__" + v)})
+            all_property_views = all_property_views.annotate(**{k: v})
 
         # get data for each cycle
         results = []
@@ -898,7 +896,7 @@ class OrganizationViewSet(viewsets.ViewSet):
         property_counts = []
 
         # set bins and choose agg type
-        ys = [building["y"] for datum in data for building in datum["chart_data"]]
+        ys = [building["y"] for datum in data for building in datum["chart_data"] if building["y"] is not None]
         if ys and isinstance(ys[0], Number):
             bins = np.histogram_bin_edges(ys, bins=5)
             aggregate_data = self.continuous_aggregate_data
@@ -952,40 +950,6 @@ class OrganizationViewSet(viewsets.ViewSet):
             results.append({"y": bin, "x": x, "yr_e": yr_e})
 
         return results
-
-    def aggregate_gross_floor_area(self, yr_e, x_var, buildings):
-        chart_data = []
-        y_display_map = {
-            0: "0-99k",
-            100000: "100-199k",
-            200000: "200k-299k",
-            300000: "300k-399k",
-            400000: "400-499k",
-            500000: "500-599k",
-            600000: "600-699k",
-            700000: "700-799k",
-            800000: "800-899k",
-            900000: "900-999k",
-            1000000: "over 1,000k",
-        }
-        max_bin = max(y_display_map)
-
-        # Group buildings in this year_ending group into ranges
-        grouped_ranges = defaultdict(list)
-        for b in buildings:
-            if b["y"] is None:
-                continue
-            area = b["y"]
-            # make sure anything greater than the biggest bin gets put in
-            # the biggest bin
-            range_bin = min(max_bin, round_down_hundred_thousand(area))
-            grouped_ranges[range_bin].append(b)
-
-        # Now iterate over range groups to make each chart item
-        for range_floor, buildings_in_range in grouped_ranges.items():
-            x = [b["x"] for b in buildings_in_range if b["x"] is not None]
-            chart_data.append({"x": sum(x) if x_var == "Count" else median(x), "y": y_display_map[range_floor], "yr_e": yr_e})
-        return chart_data
 
     @swagger_auto_schema(
         manual_parameters=[

@@ -132,8 +132,8 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
     const localStorageYAxisKey = `${base_storage_key}.yaxis`;
 
     // Currently selected x and y variables - check local storage first, otherwise initialize to first choice
-    $scope.yAxisSelectedItem = JSON.parse(localStorage.getItem(localStorageXAxisKey)) || $scope.yAxisVars[0];
-    $scope.xAxisSelectedItem = JSON.parse(localStorage.getItem(localStorageYAxisKey)) || $scope.xAxisVars[0];
+    $scope.yAxisSelectedItem = JSON.parse(localStorage.getItem(localStorageYAxisKey)) || $scope.yAxisVars[0];
+    $scope.xAxisSelectedItem = JSON.parse(localStorage.getItem(localStorageXAxisKey)) || $scope.xAxisVars[0];
 
     // Chart data
     $scope.chartData = [];
@@ -335,6 +335,8 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
 
     /* Update the titles above each chart */
     function updateChartTitlesAndAxes() {
+      if ($scope.xAxisSelectedItem == undefined || $scope.yAxisSelectedItem == undefined) return;
+
       let interpolationParams;
       try {
         interpolationParams = {
@@ -388,8 +390,13 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
        The chart will update automatically as it's watching the chartData property on the scope.
        */
     function getChartData() {
-      const yVar = $scope.yAxisSelectedItem.varName;
-      const xVar = $scope.xAxisSelectedItem.varName;
+      const yVar = $scope.yAxisSelectedItem?.varName;
+      const xVar = $scope.xAxisSelectedItem?.varName;
+      if (yVar == undefined || xVar == undefined) {
+        $scope.chartStatusMessage = "No Axis";
+        return;
+      }
+
       $scope.chartIsLoading = true;
 
       inventory_reports_service
@@ -453,8 +460,13 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
 
        * */
     function getAggChartData() {
-      const xVar = $scope.yAxisSelectedItem.varName;
-      const yVar = $scope.xAxisSelectedItem.varName;
+      const xVar = $scope.yAxisSelectedItem?.varName;
+      const yVar = $scope.xAxisSelectedItem?.varName;
+      if (yVar == undefined || xVar == undefined) {
+        $scope.aggChartStatusMessage = "No Axis"
+        return;
+      }
+
       $scope.aggChartIsLoading = true;
       inventory_reports_service
         .get_aggregated_report_data(xVar, yVar, $scope.selected_cycles)
@@ -499,8 +511,8 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
 
     function updateStorage() {
       // Save axis and cycle selections
-      localStorage.setItem(localStorageXAxisKey, JSON.stringify($scope.xAxisSelectedItem));
-      localStorage.setItem(localStorageYAxisKey, JSON.stringify($scope.yAxisSelectedItem));
+      localStorage.setItem(localStorageXAxisKey, JSON.stringify($scope.xAxisSelectedItem?? ""));
+      localStorage.setItem(localStorageYAxisKey, JSON.stringify($scope.yAxisSelectedItem?? ""));
       localStorage.setItem(localStorageSelectedCycles, JSON.stringify($scope.selected_cycles));
     }
 
