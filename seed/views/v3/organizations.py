@@ -919,7 +919,7 @@ class OrganizationViewSet(viewsets.ViewSet):
         return Response(result, status=status.HTTP_200_OK)
 
     def continuous_aggregate_data(self, yr_e, buildings, bins, count=False):
-        buildings = [b for b in buildings if b["x"] is not None]
+        buildings = [b for b in buildings if b["x"] is not None and b["y"] is not None]
         binplace = np.digitize([b["y"] for b in buildings], bins)
         xs = [b["x"] for b in buildings]
 
