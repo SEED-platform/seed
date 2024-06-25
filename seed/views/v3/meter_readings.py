@@ -8,6 +8,7 @@ from django.utils.decorators import method_decorator
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework.parsers import FormParser, JSONParser
+from rest_framework.renderers import JSONRenderer
 
 from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm_class
 from seed.models import MeterReading, PropertyView
@@ -121,6 +122,7 @@ class MeterReadingViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
     """API endpoint for managing meters."""
 
     serializer_class = MeterReadingSerializer
+    renderer_classes = (JSONRenderer,)
     pagination_class = None
     model = MeterReading
     parser_classes = (JSONParser, FormParser)

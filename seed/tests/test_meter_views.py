@@ -511,8 +511,14 @@ class TestMeterReadingCRUD(DeleteModelsTestCase):
         meter_pk_2 = response.json()["id"]
 
         # create meter readings
-        url_1 = reverse("api:v3:property-meter-readings-list", kwargs={"property_pk": property_view.id, "meter_pk": meter_pk_1})
-        url_2 = reverse("api:v3:property-meter-readings-list", kwargs={"property_pk": property_view.id, "meter_pk": meter_pk_2})
+        url_1 = (
+            reverse("api:v3:property-meter-readings-list", kwargs={"property_pk": property_view.id, "meter_pk": meter_pk_1})
+            + f"?organization_id={self.org.id}"
+        )
+        url_2 = (
+            reverse("api:v3:property-meter-readings-list", kwargs={"property_pk": property_view.id, "meter_pk": meter_pk_2})
+            + f"?organization_id={self.org.id}"
+        )
 
         readings_1 = {
             "start_time": "2022-01-05 05:00:00",
@@ -568,8 +574,14 @@ class TestMeterReadingCRUD(DeleteModelsTestCase):
         meter_pk_2 = response.json()["id"]
 
         # create meter readings
-        url_1 = reverse("api:v3:property-meter-readings-list", kwargs={"property_pk": property_view.id, "meter_pk": meter_pk_1})
-        url_2 = reverse("api:v3:property-meter-readings-list", kwargs={"property_pk": property_view.id, "meter_pk": meter_pk_2})
+        url_1 = (
+            reverse("api:v3:property-meter-readings-list", kwargs={"property_pk": property_view.id, "meter_pk": meter_pk_1})
+            + f"?organization_id={self.org.id}"
+        )
+        url_2 = (
+            reverse("api:v3:property-meter-readings-list", kwargs={"property_pk": property_view.id, "meter_pk": meter_pk_2})
+            + f"?organization_id={self.org.id}"
+        )
 
         # write a few values to the database
         for values in [
@@ -785,9 +797,12 @@ class TestMeterReadingCRUD(DeleteModelsTestCase):
         self.assertEqual(response.json()["reading"], 10)
 
         # now delete the item and verify that there are no more readings in the database
-        detail_url = reverse(
-            "api:v3:property-meter-readings-detail",
-            kwargs={"property_pk": property_view.id, "meter_pk": meter_pk, "pk": "2022-01-05 05:00:00"},
+        detail_url = (
+            reverse(
+                "api:v3:property-meter-readings-detail",
+                kwargs={"property_pk": property_view.id, "meter_pk": meter_pk, "pk": "2022-01-05T13:00:00Z"},
+            )
+            + f"?organization_id={self.org.id}"
         )
         response = self.client.get(detail_url, content_type="application/json")
         self.assertEqual(response.status_code, 200)
