@@ -91,7 +91,7 @@ describe('controller: data_quality_admin_controller', () => {
       }
     };
     data_quality_admin_controller_scope.ruleGroups = ruleGroups;
-    data_quality_admin_controller_scope.inventory_type = 'properties';
+    data_quality_admin_controller_scope.rule_type = 'properties';
     // act
     data_quality_admin_controller_scope.change_field(ruleGroups.properties.address_line_1[0], 'address_line_1', 0);
     data_quality_admin_controller_scope.change_data_type(ruleGroups.properties.address_line_1[0], 'string');
