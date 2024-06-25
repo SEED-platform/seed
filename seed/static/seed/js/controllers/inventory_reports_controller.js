@@ -335,7 +335,7 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
 
     /* Update the titles above each chart */
     function updateChartTitlesAndAxes() {
-      if ($scope.xAxisSelectedItem == undefined || $scope.yAxisSelectedItem == undefined) return;
+      if ($scope.xAxisSelectedItem === undefined || $scope.yAxisSelectedItem === undefined) return;
 
       let interpolationParams;
       try {
@@ -392,8 +392,8 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
     function getChartData() {
       const yVar = $scope.yAxisSelectedItem?.varName;
       const xVar = $scope.xAxisSelectedItem?.varName;
-      if (yVar == undefined || xVar == undefined) {
-        $scope.chartStatusMessage = "No Axis";
+      if (yVar === undefined || xVar === undefined) {
+        $scope.chartStatusMessage = 'No Axis';
         return;
       }
 
@@ -462,8 +462,8 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
     function getAggChartData() {
       const xVar = $scope.yAxisSelectedItem?.varName;
       const yVar = $scope.xAxisSelectedItem?.varName;
-      if (yVar == undefined || xVar == undefined) {
-        $scope.aggChartStatusMessage = "No Axis"
+      if (yVar === undefined || xVar === undefined) {
+        $scope.aggChartStatusMessage = 'No Axis';
         return;
       }
 
@@ -511,8 +511,8 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
 
     function updateStorage() {
       // Save axis and cycle selections
-      localStorage.setItem(localStorageXAxisKey, JSON.stringify($scope.xAxisSelectedItem?? ""));
-      localStorage.setItem(localStorageYAxisKey, JSON.stringify($scope.yAxisSelectedItem?? ""));
+      localStorage.setItem(localStorageXAxisKey, JSON.stringify($scope.xAxisSelectedItem ?? ''));
+      localStorage.setItem(localStorageYAxisKey, JSON.stringify($scope.yAxisSelectedItem ?? ''));
       localStorage.setItem(localStorageSelectedCycles, JSON.stringify($scope.selected_cycles));
     }
 
