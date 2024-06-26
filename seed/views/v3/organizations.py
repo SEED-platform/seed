@@ -780,7 +780,7 @@ class OrganizationViewSet(viewsets.ViewSet):
         # annotate properties with fields
         fields = {
             **{
-                column.column_name: column.column_name if not column.is_extra_data else f"extra_data__{column.column_name}"
+                column.column_name: F("state__" + (column.column_name if not column.is_extra_data else f"extra_data__{column.column_name}"))
                 for column in additional_columns
             },
             "x": F("state__" + (x_var if x_var in dir(PropertyState) else f"extra_data__{x_var}")),
