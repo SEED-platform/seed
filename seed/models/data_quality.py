@@ -775,7 +775,7 @@ class DataQualityCheck(models.Model):
         for row in rows:
             # Initialize the ID if it does not exist yet. Add in the other
             # fields that are of interest to the GUI
-            self.init_result(row, fields)
+            self.init_result(record_type, row, fields)
 
             # Run the checks
             self._check(rules, row, derived_columns_by_name)
@@ -796,7 +796,7 @@ class DataQualityCheck(models.Model):
         fields = self.get_fieldnames("PropertyState")
         for row in state_pairs:
             for cycle_key in ["baseline", "current"]:
-                self.init_result(row[cycle_key], fields)
+                self.init_result('PropertyState', row[cycle_key], fields)
 
             goal_note = self._check_cross_cycle(rules, row, goal_notes)
             if goal_note:
@@ -806,14 +806,14 @@ class DataQualityCheck(models.Model):
 
         GoalNote.objects.bulk_update(goal_notes_to_update, ["passed_checks"])
 
-    def init_result(self, row, fields):
+    def init_result(self, record_type, row, fields):
         # Initialize the ID if it does not exist yet. Add in the other
         # fields that are of interest to the GUI
         if row and row.id not in self.results:
             self.results[row.id] = {}
             for field in fields:
                 self.results[row.id][field] = getattr(row, field)
-                view = row.propertyview_set.first()
+                view = row.taxlotview_set.first() if record_type == "TaxLotState" else row.propertyview_set.first()
                 if view:
                     self.results[row.id]["cycle"] = view.cycle.name
             self.results[row.id]["data_quality_results"] = []
