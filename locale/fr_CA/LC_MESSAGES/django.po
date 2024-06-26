@@ -1356,13 +1356,11 @@ msgstr "Exporter des propriétés vers votre compte de modèle d'audit"
 msgid "Exporting selected properties..."
 msgstr "Exportation des propriétés sélectionnées..."
 
-#, fuzzy
 msgid "FAILED_GEOCODE_INVALID_MAPQUEST_API_KEY"
-msgstr "Geocoding failed - Your MapQuest API Key is invalid."
+msgstr "Échec du géocodage : votre clé API MapQuest n'est pas valide."
 
-#, fuzzy
 msgid "FAILED_GEOCODE_MAPQUEST_API_KEY_ERROR"
-msgstr "Geocoding failed - Your MapQuest API Key is either invalid or at its limit."
+msgstr "Échec du géocodage : votre clé API MapQuest est soit invalide, soit à sa limite."
 
 msgid "FIELDS NEEDED TO MAKE MATCHES:"
 msgstr "CHAMPS NÉCESSAIRES POUR ÉTABLIR DES CORRESPONDANCES:"
