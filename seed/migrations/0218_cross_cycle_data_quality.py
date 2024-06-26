@@ -2,7 +2,7 @@
 
 import django.db.models.deletion
 import quantityfield.fields
-from django.db import migrations, models
+from django.db import migrations, models, connection
 
 
 def forwards(apps, schema_editor):
@@ -38,6 +38,24 @@ def forwards(apps, schema_editor):
     for org in Organization.objects.all():
         for label in NEW_DEFAULT_LABELS:
             Label.objects.get_or_create(name=label, super_organization=org, defaults={"color": "blue"}, show_in_list=True)
+
+def remove_unique_constraint(apps, schema_editor):
+    # The auto generated unique constraint for PropertyViewLabels is PropertyView_id and StatusLabel_id.
+    # The constraint needs to be updated to include PropertyView_id, StatusLabel_id, and Goal.id
+    PropertyViewLabel = apps.get_model("seed", "PropertyViewLabel")
+    table_name = PropertyViewLabel._meta.db_table
+
+    # Get the original unique constraint
+    constraints = connection.introspection.get_constraints(connection.cursor(), table_name)
+    constraint_names = [
+        name for name, details in constraints.items()
+        if details.get("unique") and set(details.get("columns")) == {"propertyview_id", "statuslabel_id"}
+    ]
+    # Remove the constraint 
+    if constraint_names:
+        with connection.cursor() as cursor:
+            cursor.execute(f"ALTER TABLE {table_name} DROP CONSTRAINT {constraint_names[0]};")
+    # A new unique constraint will be created in the following operation
 
 
 class Migration(migrations.Migration):
@@ -96,6 +114,7 @@ class Migration(migrations.Migration):
             name="cross_cycle",
             field=models.BooleanField(default=False),
         ),
+        migrations.RunPython(remove_unique_constraint),
         migrations.AddConstraint(
             model_name="propertyviewlabel",
             constraint=models.UniqueConstraint(fields=("propertyview", "statuslabel", "goal"), name="unique_propertyview_statuslabel_goal"),
