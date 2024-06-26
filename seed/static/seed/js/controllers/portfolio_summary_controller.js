@@ -1109,7 +1109,6 @@ angular.module('BE.seed.controller.portfolio_summary', [])
       };
 
       $scope.run_data_quality_check = () => {
-        console.log('run it');
         data_quality_service.start_data_quality_checks([], [], $scope.goal.id)
           .then((response) => {
             spinner_utility.show();
@@ -1117,7 +1116,6 @@ angular.module('BE.seed.controller.portfolio_summary', [])
               .then((result) => {
                 data_quality_service.get_data_quality_results($scope.organization.id, result.unique_id)
                   .then((dq_result) => {
-                    console.log(dq_result);
                     $uibModal.open({
                       templateUrl: `${urls.static_url}seed/partials/data_quality_modal.html`,
                       controller: 'data_quality_modal_controller',

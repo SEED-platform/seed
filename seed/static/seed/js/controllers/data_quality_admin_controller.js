@@ -66,7 +66,6 @@ angular.module('BE.seed.controller.data_quality_admin', []).controller('data_qua
       { id: 'exclude', label: 'Must Not Contain' }
     ];
 
-    console.log('RULES', data_quality_rules_payload);
     $scope.original_rules = angular.copy(data_quality_rules_payload);
 
     $scope.data_type_keys = {
