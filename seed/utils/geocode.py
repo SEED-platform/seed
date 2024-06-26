@@ -11,6 +11,7 @@ from numbers import Number
 import requests
 from django.contrib.gis.geos import GEOSGeometry
 from django.db.models import Q
+from django.utils.translation import gettext_lazy as _
 from shapely import geometry, wkt
 
 from seed.lib.superperms.orgs.models import Organization
@@ -258,17 +259,13 @@ def _address_geocoding_results(id_addresses, mapquest_api_key):
         try:
             # Catch the invalid API key error before parsing the response
             if response.status_code == 401:
-                raise MapQuestAPIKeyError(
-                    f"Failed geocoding property states due to MapQuest error. API Key is invalid with message: {response.content}."
-                )
+                raise MapQuestAPIKeyError(_("FAILED_GEOCODE_INVALID_MAPQUEST_API_KEY"))
 
             results += response.json().get("results")
 
         except Exception as e:
             if response.status_code == 403:
-                raise MapQuestAPIKeyError(
-                    "Failed geocoding property states due to MapQuest error. Your MapQuest API Key is either invalid or at its limit."
-                )
+                raise MapQuestAPIKeyError(_("FAILED_GEOCODE_MAPQUEST_API_KEY_ERROR"))
             else:
                 raise e
 
