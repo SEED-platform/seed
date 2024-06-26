@@ -6,8 +6,11 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 import ast
 
+import vcr
+from django.conf import settings
 from django.test import TestCase
 from django.urls import reverse
+from rest_framework import status
 
 from seed.landing.models import SEEDUser as User
 from seed.models.properties import PropertyState
@@ -16,6 +19,21 @@ from seed.test_helpers.fake import FakePropertyStateFactory, FakePropertyViewFac
 from seed.tests.util import AccessLevelBaseTestCase
 from seed.utils.geocode import long_lat_wkt
 from seed.utils.organizations import create_organization
+
+
+def scrub_key_from_response(key=""):
+    bytes_key = key.encode("utf-8")
+
+    def before_record_response(response):
+        response["body"]["string"] = response["body"]["string"].replace(bytes_key, b"key")
+        return response
+
+    return before_record_response
+
+
+test_key = settings.TESTING_MAPQUEST_API_KEY or "placeholder"
+
+base_vcr = vcr.VCR(filter_query_parameters=["key"], before_record_response=scrub_key_from_response(test_key))
 
 
 class GeocodeViewTests(TestCase):
@@ -52,6 +70,24 @@ class GeocodeViewTests(TestCase):
         refreshed_property = PropertyState.objects.get(pk=property.id)
 
         self.assertEqual("POINT (-104.986138 39.765251)", long_lat_wkt(refreshed_property))
+
+    def test_geocode_with_bad_api_key(self):
+        with base_vcr.use_cassette("seed/tests/data/vcr_cassettes/geocode_invalid_or_expired_key.yaml"):
+            property_details = self.property_state_factory.get_details()
+            property_details["organization_id"] = self.org.id
+            self.org.mapquest_api_key = "placeholder"
+            self.org.save()
+
+            property = PropertyState(**property_details)
+            property.save()
+
+            property_view = self.property_view_factory.get_property_view(state=property)
+
+            post_params = {"property_view_ids": [property_view.id], "taxlot_view_ids": []}
+
+            url = reverse("api:v3:geocode-geocode-by-ids") + "?organization_id=%s" % self.org.pk
+            response = self.client.post(url, post_params)
+            self.assertEqual(response.status_code, status.HTTP_412_PRECONDITION_FAILED)
 
     def test_geocode_confidence_summary_returns_summary_dictionary(self):
         property_none_details = self.property_state_factory.get_details()
