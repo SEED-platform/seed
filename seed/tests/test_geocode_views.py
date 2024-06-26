@@ -71,6 +71,29 @@ class GeocodeViewTests(TestCase):
 
         self.assertEqual("POINT (-104.986138 39.765251)", long_lat_wkt(refreshed_property))
 
+    def test_geocode_with_good_api_key(self):
+        with base_vcr.use_cassette("seed/tests/data/vcr_cassettes/geocode_base_case.yaml"):
+            property_details = self.property_state_factory.get_details()
+            property_details["organization_id"] = self.org.id
+            property_details["address_line_1"] = "3001 Brighton Blvd"
+            property_details["address_line_2"] = "suite 2693"
+            property_details["city"] = "Denver"
+            property_details["state"] = "Colorado"
+            property_details["postal_code"] = "80216"
+            self.org.mapquest_api_key = test_key
+            self.org.save()
+
+            property = PropertyState(**property_details)
+            property.save()
+
+            property_view = self.property_view_factory.get_property_view(state=property)
+
+            post_params = {"property_view_ids": [property_view.id], "taxlot_view_ids": []}
+
+            url = reverse("api:v3:geocode-geocode-by-ids") + "?organization_id=%s" % self.org.pk
+            response = self.client.post(url, post_params)
+            self.assertEqual(response.status_code, status.HTTP_200_OK)
+
     def test_geocode_with_bad_api_key(self):
         with base_vcr.use_cassette("seed/tests/data/vcr_cassettes/geocode_invalid_or_expired_key.yaml"):
             property_details = self.property_state_factory.get_details()
