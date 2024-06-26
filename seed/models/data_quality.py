@@ -796,7 +796,7 @@ class DataQualityCheck(models.Model):
         fields = self.get_fieldnames("PropertyState")
         for row in state_pairs:
             for cycle_key in ["baseline", "current"]:
-                self.init_result('PropertyState', row[cycle_key], fields)
+                self.init_result("PropertyState", row[cycle_key], fields)
 
             goal_note = self._check_cross_cycle(rules, row, goal_notes)
             if goal_note:

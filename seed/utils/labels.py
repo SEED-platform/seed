@@ -61,7 +61,7 @@ def get_labels(request, qs, super_organization, inv_type):
     # remove labels that have been applied to goals
     if inv_type == "property_view":
         qs = qs.filter(propertyviewlabel__goal__isnull=True)
-    
+
     # "is_applied" is a list of views with the label, but only the views that are in inventory.
     qs = qs.annotate(
         is_applied=ArrayAgg(f"{inv_type[: -5]}view", filter=Q(**{f"{inv_type[: -5]}view__in": inventory.values_list("id", flat=True)}))
