@@ -189,12 +189,12 @@ class TestOrganizationPermissions(AccessLevelBaseTestCase):
 
         # child user cannot
         self.login_as_child_member()
-        resp = self.client.get(url, content_type="application/json")
+        resp = self.client.get(url + "&access_level_instance_id=" + str(self.child_level_instance.pk), content_type="application/json")
         assert resp.json()["aggregated_data"]["property_counts"][0]["num_properties"] == 0
 
         # root users can
         self.login_as_root_member()
-        resp = self.client.get(url, content_type="application/json")
+        resp = self.client.get(url + "&access_level_instance_id=" + str(self.root_level_instance.pk), content_type="application/json")
         assert resp.json()["aggregated_data"]["property_counts"][0]["num_properties"] == 1
 
     def test_report_export(self):
