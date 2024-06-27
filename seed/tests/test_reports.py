@@ -108,7 +108,7 @@ class ExportReport(DataMappingBaseTestCase):
             "cycle_ids": [self.cycle.id, self.cycle_2.id],
             "x_var": "site_eui",
             "y_var": "gross_floor_area",
-            "access_level_instance_id": self.org.root.id
+            "access_level_instance_id": self.org.root.id,
         }
         response = self.client.get(url, data)
         assert response.json()["aggregated_data"]["property_counts"] == [
