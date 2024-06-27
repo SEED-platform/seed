@@ -58,13 +58,23 @@
     <div id="portfolio-summary" class="wide-900" ng-if="summary_loading || summary_valid">
       <div style="display: flex">
         <h3 translate>Portfolio Summary</h3>
-        <i class="ui-grid-icon-info-circled" ng-mouseenter="show_help = true" ng-mouseleave="show_help = false"></i>
-        <div class="alert alert-info portfolio-summary-info" ng-show="show_help">
-          <p>
-            Portfolio Summary calculations only include properties that have "Passed Checks" and are not "New Build or Acquired" (see far right column below). The "Passed Checks" column can be auto
-            populated by running "Data Quality Check" from the Actions dropdown. <br /><br />Data Quality Checks can be configured in Data Quality settings.
-          </p>
-        </div>
+        <i class="ui-grid-icon-info-circled" ng-mouseenter="show_help = true"></i>
+      </div>
+      <div class="alert alert-warning portfolio-summary-help-text" ng-show="show_help">
+        <h4>Unexpected Portfolio Summary Calculations?</h4>
+        <p>
+          Run "Data Quality Check" from the Actions dropdown to auto populate the "Passed Checks" column.<br/><br/>
+          Portfolio Summary calculations only include properties that have "Passed Checks" and are not "New Build or Acquired" (see far right columns below).<br/>
+          <div ng-if="::organization.is_parent && auth.requires_owner">
+            <i>Data Quality Checks can be configured in</i>
+            <a ui-sref="organization_data_quality(::{organization_id: organization.id, rule_type: 'goals'})"
+               ng-class="::{active: state.name === 'organization_data_quality'}"
+              translate>Data Quality Settings
+            </a>.
+
+          </div>
+        </p>
+        <button class="btn btn-light" ng-click="show_help=false" style="margin-top:20px;">Hide</button>
       </div>
       <div ng-if="summary_valid" ui-grid="summaryGridOptions" ui-grid-resize-columns style="margin-bottom: 30px"></div>
       <div class="portfolio-summary-loading" ng-if="summary_loading">

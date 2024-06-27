@@ -148,6 +148,8 @@ angular.module('BE.seed.controller.portfolio_summary', [])
 
       const get_goal_stats = (summary) => {
         const passing_sqft = summary.current ? summary.current.total_sqft : null;
+        // show help text if less than {50}% of properties are passing checks
+        $scope.show_help = summary.total_passing <= summary.total_properties * 0.5;
         $scope.goal_stats = [
           { name: 'Commitment (Sq. Ft)', value: $scope.goal.commitment_sqft },
           { name: 'Shared (Sq. Ft)', value: summary.shared_sqft },
