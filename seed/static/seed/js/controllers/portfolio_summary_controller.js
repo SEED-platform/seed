@@ -288,11 +288,11 @@ angular.module('BE.seed.controller.portfolio_summary', [])
 
       $scope.max_label_width = 750;
       $scope.get_label_column_width = (labels_col, key) => {
-        if (!$scope.show_full_labels[key]) {
+        const renderContainer = document.body.getElementsByClassName('ui-grid-render-container-body')[1];
+        if (!$scope.show_full_labels[key] || !renderContainer) {
           return 31;
         }
         let maxWidth = 0;
-        const renderContainer = document.body.getElementsByClassName('ui-grid-render-container-body')[1];
         const col = $scope.gridApi.grid.getColumn(labels_col);
         const cells = renderContainer.querySelectorAll(`.${uiGridConstants.COL_CLASS_PREFIX}${col.uid} .ui-grid-cell-contents`);
         Array.prototype.forEach.call(cells, (cell) => {
@@ -891,6 +891,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
       };
 
       const set_grid_options = (result) => {
+        $scope.show_full_labels = { baseline: false, current: false };
         $scope.selected_ids = [];
         $scope.data = format_properties(result);
         spinner_utility.hide();
