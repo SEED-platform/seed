@@ -34,19 +34,36 @@
         <span translate>to enable or disable Public Feed functionality</span>
       </p>
       <div ng-if="org.public_feed_enabled">
-        <p><span translate>PUBLIC_JSON</span>: <strong> {$:: base_url $}/api/v3/public/organizations/{$:: org.id $}/feed.json</strong></p>
-        <p><span translate>PUBLIC_HTML</span>: <strong> {$:: base_url $}/api/v3/public/organizations/{$:: org.id $}/feed.html</strong></p>
-        <h3 translate>URL_OPTIONS</h3>
-        <p translate>SHARING_QUERY_PARAMS</p>
-        <ul>
-          <li><strong>page</strong>&mdash;<span translate>SHARING_PAGE</span></li>
-          <li><strong>per_page</strong>&mdash;<span translate>SHARING_PER_PAGE</span></li>
-          <li><strong>properties</strong>&mdash;<span translate>SHARING_PROPERTIES</span></li>
-          <li><strong>taxlots</strong>&mdash;<span translate>SHARING_TAXLOTS</span></li>
-          <li><strong>cycles</strong>&mdash;<span translate>SHARING_CYCLES</span></li>
-          <li><strong>labels</strong>&mdash;<span translate>SHARING_LABELS</span></li>
-        </ul>
-        <p><strong>Example:</strong> {$:: base_url $}/api/v3/public/organizations/{$:: org.id $}/feed.json?properties=True&taxlots=False&per_page=25&cycles=12,13</p>
+        <button type="button" class="btn btn-primary" data-toggle="collapse" data-target="#instructions" ng-click="changeText(btnText)">{$ btnText $}</button>
+        <div class="collapse" id="instructions">
+          <h2 class="sharing-type">JSON/HTML</h2>
+          <p><span translate>PUBLIC_JSON</span>: <strong> {$:: base_url $}/api/v3/public/organizations/{$:: org.id $}/feed.json</strong></p>
+          <p><span translate>PUBLIC_HTML</span>: <strong> {$:: base_url $}/api/v3/public/organizations/{$:: org.id $}/feed.html</strong></p>
+          <h3 translate>URL_OPTIONS</h3>
+          <p translate>SHARING_QUERY_PARAMS</p>
+          <ul>
+            <li><strong>page</strong>&mdash;<span translate>SHARING_PAGE</span></li>
+            <li><strong>per_page</strong>&mdash;<span translate>SHARING_PER_PAGE</span></li>
+            <li><strong>properties</strong>&mdash;<span translate>SHARING_PROPERTIES</span></li>
+            <li><strong>taxlots</strong>&mdash;<span translate>SHARING_TAXLOTS</span></li>
+            <li><strong>cycles</strong>&mdash;<span translate>SHARING_CYCLES</span></li>
+            <li><strong>labels</strong>&mdash;<span translate>SHARING_LABELS</span></li>
+          </ul>
+          <p><strong>Example:</strong> {$:: base_url $}/api/v3/public/organizations/{$:: org.id $}/feed.json?properties=True&taxlots=False&per_page=25&cycles=12,13</p>
+          <div ng-if="org.public_geojson_enabled">
+            <h2 class="sharing-type">GeoJSON</h2>
+            <p>
+              <span translate>PUBLIC_GEOJSON_TEXT_1</span>: <strong>{$:: base_url $}/api/v3/public/organizations/{$:: org.id $}/cycles/CYCLE_ID/geo.json</strong>.
+              <span translate>PUBLIC_GEOJSON_TEXT_2</span> <a ui-sref="organization_cycles(::{organization_id: org.id})">{$:: 'Cycles Page' | translate $}</a>
+            </p>
+            <h3 translate>URL_OPTIONS</h3>
+            <p translate>SHARING_QUERY_PARAMS</p>
+            <ul>
+              <li><strong>taxlots</strong>&mdash;<span translate>SHARING_TAXLOTS</span></li>
+            </ul>
+            <p><strong>Example:</strong> {$:: base_url $}/api/v3/public/organizations/{$:: org.id $}/cycles/1/geo.json?taxlots=true</p>
+          </div>
+        </div>
         <h3 translate>Selecting Fields to Share</h3>
         <p translate>PUBLIC_SHARE</p>
         <div class="table_list_container has_borders">

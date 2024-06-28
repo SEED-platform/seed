@@ -783,6 +783,8 @@
     "PUBLIC_FEED_HELP": "Cochez la case ci-dessous pour activer la fonctionnalité Flux Public. Les champs de données peuvent être activés individuellement pour le Flux Public à partir de la page",
     "PUBLIC_FEED_LABELS": "Cochez la case ci-dessous pour autoriser le renvoi des étiquettes dans le flux public et pouvoir filtrer le Flux Public par une étiquette spécifique.",
     "PUBLIC_GEOJSON": "Renvoie un GeoJSON avec les champs définis dans les sélections de partage d'organisation",
+    "PUBLIC_GEOJSON_TEXT_1": "Votre URL HTML publique",
+    "PUBLIC_GEJSON_TEXT_2": "Vous devrez remplacer 'CYCLE_ID' dans l'URL par l'ID du cycle que vous souhaitez récupérer. Vous pouvez accéder aux identifiants de cycle sur la page {cycle_admin}.",
     "PUBLIC_HTML": "Votre URL HTML publique est",
     "PUBLIC_JSON": "L'URL de votre flux JSON public est",
     "PUBLIC_SHARE": "Si la fonctionnalité Flux public est activée, cette page peut être utilisée pour configurer les données partagées en externe avec le grand public.",
