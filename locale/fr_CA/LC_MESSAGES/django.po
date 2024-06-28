@@ -849,7 +849,10 @@ msgid "Current Cycle will be measured against Baseline Cycle"
 msgstr "Le cycle actuel sera mesuré par rapport au cycle de référence"
 
 msgid "Current Filters"
-msgstr "Filtres Actuel"
+msgstr "Filtres Actuels"
+
+msgid "Current Method"
+msgstr "Méthode actuelle"
 
 msgid "Current Name"
 msgstr "Nom Actuel"
@@ -1352,6 +1355,12 @@ msgstr "Exporter des propriétés vers votre compte de modèle d'audit"
 
 msgid "Exporting selected properties..."
 msgstr "Exportation des propriétés sélectionnées..."
+
+msgid "FAILED_GEOCODE_INVALID_MAPQUEST_API_KEY"
+msgstr "Échec du géocodage : votre clé API MapQuest n'est pas valide."
+
+msgid "FAILED_GEOCODE_MAPQUEST_API_KEY_ERROR"
+msgstr "Échec du géocodage : votre clé API MapQuest est soit invalide, soit à sa limite."
 
 msgid "FIELDS NEEDED TO MAKE MATCHES:"
 msgstr "CHAMPS NÉCESSAIRES POUR ÉTABLIR DES CORRESPONDANCES:"
@@ -2418,6 +2427,12 @@ msgstr "Cochez la case ci-dessous pour autoriser le renvoi des étiquettes dans 
 msgid "PUBLIC_GEOJSON"
 msgstr "Renvoie un GeoJSON avec les champs définis dans les sélections de partage d'organisation"
 
+msgid "PUBLIC_GEOJSON_TEXT_1"
+msgstr "Votre URL HTML publique"
+
+msgid "PUBLIC_GEOJSON_TEXT_2"
+msgstr "Vous devrez remplacer 'CYCLE_ID' dans l'URL par l'ID du cycle que vous souhaitez récupérer. Vous pouvez accéder aux identifiants de cycle sur la page Cycles."
+
 msgid "PUBLIC_HTML"
 msgstr "Votre URL HTML publique est"
 
@@ -3382,6 +3397,25 @@ msgstr "Au moins l'un des domaines fiscal Lot suivants est requis"
 msgid "THERMAL_CONV_ASSUMPTION_TITLE"
 msgstr "Choix de Conversion Thermique"
 
+msgid "TWO_FACTOR_DISABLED_TEXT"
+msgstr "Choisir cette option désactivera l’authentification à deux facteurs pour votre compte, le rendant moins sécurisé."
+
+msgid "TWO_FACTOR_EMAIL_SELECTED_TEXT"
+msgstr "La sélection de cette option activera l'authentification à deux facteurs par e-mail ( {email} ). Vous recevrez un code de vérification via votre adresse e-mail enregistrée à chaque fois que vous vous connecterez."
+
+msgid "TWO_FACTOR_ENABLE"
+msgstr "Activer l'authentification à deux facteurs pour votre compte"
+
+msgid "TWO_FACTOR_REQUIRED"
+msgstr "L'authentification à deux facteurs a été requise par un administrateur d'organisation."
+
+#, fuzzy
+msgid "TWO_FACTOR_SELECT"
+msgstr "Choisissez l'une des méthodes suivantes pour appliquer l'authentification à deux facteurs à votre compte SEED"
+
+msgid "TWO_FACTOR_TOKEN_SELECTED_TEXT"
+msgstr "La sélection de cette option activera l'authentification à deux facteurs à l'aide de l'application génératrice de jetons de votre choix, telle que Google Authenticator, Microsoft Authenticator ou Authy. Vous devrez scanner un code QR pour configurer l'application."
+
 msgid "TYPE_TO_CONFIRM"
 msgstr "Veuillez saisir <strong> {org} </strong> pour confirmer."
 
@@ -3621,6 +3655,9 @@ msgstr "Toggle Boîtes englobantes UBID Taxlot"
 msgid "Toggle Taxlot UBID Centroids"
 msgstr "Basculer les centroïdes UBID Taxlot"
 
+msgid "Token Generator"
+msgstr "Générateur de jetons"
+
 msgid "Total Properties"
 msgstr "Total des propriétés"
 
@@ -3629,6 +3666,9 @@ msgstr "Nombre total de lignes dans le fichier d'importation"
 
 msgid "Two UBIDs are required for comparison. Click Custom UBIDs to continue."
 msgstr "Deux UBID sont nécessaires pour la comparaison. Cliquez sur UBID personnalisés pour continuer."
+
+msgid "Two-Factor Authentication"
+msgstr "Authentification à deux facteurs"
 
 msgid "Type"
 msgstr "Type"

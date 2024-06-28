@@ -842,6 +842,9 @@ msgstr "Current Cycle will be measured against Baseline Cycle"
 msgid "Current Filters"
 msgstr "Current Filters"
 
+msgid "Current Method"
+msgstr "Current Method"
+
 msgid "Current Name"
 msgstr "Current Name"
 
@@ -1341,6 +1344,12 @@ msgstr "Exporting properties to your Audit Template account"
 
 msgid "Exporting selected properties..."
 msgstr "Exporting selected properties..."
+
+msgid "FAILED_GEOCODE_INVALID_MAPQUEST_API_KEY"
+msgstr "Geocoding failed - Your MapQuest API Key is invalid."
+
+msgid "FAILED_GEOCODE_MAPQUEST_API_KEY_ERROR"
+msgstr "Geocoding failed - Your MapQuest API Key is either invalid or at its limit."
 
 msgid "FIELDS NEEDED TO MAKE MATCHES:"
 msgstr "FIELDS NEEDED TO MAKE MATCHES:"
@@ -2402,6 +2411,12 @@ msgstr "Check the box below to allow labels to be returned in the Public Feed an
 msgid "PUBLIC_GEOJSON"
 msgstr "Returns a GeoJSON with the fields defined in the Organization Sharing selections"
 
+msgid "PUBLIC_GEOJSON_TEXT_1"
+msgstr "Your public HTML URL"
+
+msgid "PUBLIC_GEOJSON_TEXT_2"
+msgstr "You will need to replace 'CYCLE_ID' in the URL with the ID of the cycle you want to retrieve. You can access cycle IDs on the Cycles page."
+
 msgid "PUBLIC_HTML"
 msgstr "Your public HTML URL is"
 
@@ -3355,6 +3370,24 @@ msgstr "At least one of the following Tax Lot fields is required"
 msgid "THERMAL_CONV_ASSUMPTION_TITLE"
 msgstr "Thermal Conversion Assumption"
 
+msgid "TWO_FACTOR_DISABLED_TEXT"
+msgstr "Choosing this option will disable two-factor authentication for your account, making it less secure."
+
+msgid "TWO_FACTOR_EMAIL_SELECTED_TEXT"
+msgstr "Selecting this option will enable two-factor authentication via email ({email}). You will receive a verification code through your registered email address each time you log in."
+
+msgid "TWO_FACTOR_ENABLE"
+msgstr "Enable Two-Factor Authentication for your account"
+
+msgid "TWO_FACTOR_REQUIRED"
+msgstr "Two-Factor Authentication has been required by an organization admin."
+
+msgid "TWO_FACTOR_SELECT"
+msgstr "Choose one of the following methods to apply two-factor authentication to your SEED account"
+
+msgid "TWO_FACTOR_TOKEN_SELECTED_TEXT"
+msgstr "Selecting this option will enable two-factor authentication using the token generator app of your choice, such as Google Authenticator, Microsoft Authenticator, or Authy. You will need to scan a QR code to set up the app."
+
 msgid "TYPE_TO_CONFIRM"
 msgstr "Please type <strong>{org}</strong> to confirm."
 
@@ -3593,6 +3626,9 @@ msgstr "Toggle Taxlot UBID Bounding Boxes"
 msgid "Toggle Taxlot UBID Centroids"
 msgstr "Toggle Taxlot UBID Centroids"
 
+msgid "Token Generator"
+msgstr "Token Generator"
+
 msgid "Total Properties"
 msgstr "Total Properties"
 
@@ -3601,6 +3637,9 @@ msgstr "Total rows in the import file"
 
 msgid "Two UBIDs are required for comparison. Click Custom UBIDs to continue."
 msgstr "Two UBIDs are required for comparison. Click Custom UBIDs to continue."
+
+msgid "Two-Factor Authentication"
+msgstr "Two-Factor Authentication"
 
 msgid "Type"
 msgstr "Type"
