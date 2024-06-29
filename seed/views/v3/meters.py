@@ -12,13 +12,25 @@ from rest_framework.renderers import JSONRenderer
 from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm_class
 from seed.models import Meter, PropertyView
 from seed.serializers.meters import MeterSerializer
-from seed.utils.api_schema import AutoSchemaHelper
+from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema_org_query_param
 from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
 
 
-@method_decorator(name="list", decorator=[has_perm_class("requires_viewer"), has_hierarchy_access(property_view_id_kwarg="property_pk")])
 @method_decorator(
-    name="retrieve", decorator=[has_perm_class("requires_viewer"), has_hierarchy_access(property_view_id_kwarg="property_pk")]
+    name="list",
+    decorator=[
+        swagger_auto_schema_org_query_param,
+        has_perm_class("requires_viewer"),
+        has_hierarchy_access(property_view_id_kwarg="property_pk"),
+    ],
+)
+@method_decorator(
+    name="retrieve",
+    decorator=[
+        swagger_auto_schema_org_query_param,
+        has_perm_class("requires_viewer"),
+        has_hierarchy_access(property_view_id_kwarg="property_pk"),
+    ],
 )
 @method_decorator(
     name="create",
@@ -27,6 +39,7 @@ from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
         has_hierarchy_access(property_view_id_kwarg="property_pk"),
         swagger_auto_schema(
             manual_parameters=[
+                AutoSchemaHelper.query_org_id_field(),
                 AutoSchemaHelper.base_field(
                     name="property_pk",
                     location_attr="IN_PATH",
@@ -50,8 +63,22 @@ from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
         ),
     ],
 )
-@method_decorator(name="destroy", decorator=[has_perm_class("requires_member"), has_hierarchy_access(property_view_id_kwarg="property_pk")])
-@method_decorator(name="update", decorator=[has_perm_class("requires_member"), has_hierarchy_access(property_view_id_kwarg="property_pk")])
+@method_decorator(
+    name="update",
+    decorator=[
+        swagger_auto_schema_org_query_param,
+        has_perm_class("requires_member"),
+        has_hierarchy_access(property_view_id_kwarg="property_pk"),
+    ],
+)
+@method_decorator(
+    name="destroy",
+    decorator=[
+        swagger_auto_schema_org_query_param,
+        has_perm_class("requires_member"),
+        has_hierarchy_access(property_view_id_kwarg="property_pk"),
+    ],
+)
 class MeterViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
     """API endpoint for managing meters."""
 
@@ -74,7 +101,7 @@ class MeterViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
             return Meter.objects.none()
 
         property_view = PropertyView.objects.get(pk=property_view_pk)
-        self.property_pk = property_view.property.pk
+        self.property_pk = property_view.property_id
         return Meter.objects.filter(property__organization_id=org_id, property_id=self.property_pk)
 
     def perform_create(self, serializer):

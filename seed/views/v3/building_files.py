@@ -41,7 +41,7 @@ class BuildingFileViewSet(SEEDOrgReadOnlyModelViewSet):
             )
 
         else:
-            return BuildingFile.objects.filter(pk=-1)
+            return BuildingFile.objects.none()
 
     def get_serializer_class(self):
         if self.action == "create":

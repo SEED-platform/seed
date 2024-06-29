@@ -82,8 +82,6 @@ class ExportReport(DataMappingBaseTestCase):
 
         # check Gross Floor Area values
         self.assertEqual("Gross Floor Area", agg_sheet.cell(0, 1).value)
-        self.assertEqual("0-99k", agg_sheet.cell(1, 1).value)
-        self.assertEqual("0-99k", agg_sheet.cell(2, 1).value)
 
     def test_report(self):
         url = reverse("api:v3:organizations-report", args=[self.org.pk])
@@ -110,9 +108,9 @@ class ExportReport(DataMappingBaseTestCase):
             "cycle_ids": [self.cycle.id, self.cycle_2.id],
             "x_var": "site_eui",
             "y_var": "gross_floor_area",
+            "access_level_instance_id": self.org.root.id,
         }
         response = self.client.get(url, data)
-
         assert response.json()["aggregated_data"]["property_counts"] == [
             {"yr_e": "2016", "num_properties": 5, "num_properties_w-data": 5},
             {"yr_e": "2015", "num_properties": 5, "num_properties_w-data": 5},

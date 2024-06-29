@@ -66,7 +66,7 @@ seed-salesforce==0.1.0
 # geospatial and pnnl/buildingid-py
 shapely==2.0.1
 usaddress==0.5.10
--e git+https://github.com/SEED-platform/buildingid.git@603300c8a7212b339b7e8cb7a4365be6726195aa#egg=pnnl-buildingid
+-e git+https://github.com/SEED-platform/buildingid.git@892958be07c55eebdbf582f5a81d4b1ce6d61412#egg=pnnl-buildingid
 
 oauthlib==2.0.3
 

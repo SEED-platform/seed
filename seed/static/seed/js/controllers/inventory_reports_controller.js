@@ -9,6 +9,7 @@
 
 angular.module('BE.seed.controller.inventory_reports', []).controller('inventory_reports_controller', [
   '$scope',
+  '$state',
   '$log',
   '$stateParams',
   'spinner_utility',
@@ -21,10 +22,49 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
   '$sce',
   '$translate',
   '$uibModal',
+  'ah_service',
+  'access_level_tree',
+  'user_service',
   // eslint-disable-next-line func-names
-  function ($scope, $log, $stateParams, spinner_utility, inventory_reports_service, simple_modal_service, columns, cycles, organization_payload, urls, $sce, $translate, $uibModal) {
+  function (
+    $scope,
+    $state,
+    $log,
+    $stateParams,
+    spinner_utility,
+    inventory_reports_service,
+    simple_modal_service,
+    columns,
+    cycles,
+    organization_payload,
+    urls,
+    $sce,
+    $translate,
+    $uibModal,
+    ah_service,
+    access_level_tree,
+    user_service
+  ) {
     const org_id = organization_payload.organization.id;
     const base_storage_key = `report.${org_id}`;
+
+    $scope.access_level_tree = access_level_tree.access_level_tree;
+    $scope.level_names = access_level_tree.access_level_names;
+    $scope.level_name_index = null;
+    $scope.potential_level_instances = [];
+    $scope.access_level_instance_id = null;
+    $scope.users_access_level_instance_id = user_service.get_access_level_instance().id;
+
+    const access_level_instances_by_depth = ah_service.calculate_access_level_instances_by_depth($scope.access_level_tree);
+    // cannot select parents alis
+    const [users_depth] = Object.entries(access_level_instances_by_depth).find(([, x]) => x.length === 1 && x[0].id === parseInt($scope.users_access_level_instance_id, 10));
+    $scope.level_names = access_level_tree.access_level_names.slice(users_depth - 1);
+
+    $scope.change_selected_level_index = () => {
+      const new_level_instance_depth = parseInt($scope.level_name_index, 10) + parseInt(users_depth, 10);
+      $scope.potential_level_instances = access_level_instances_by_depth[new_level_instance_depth];
+      $scope.access_level_instance_id = null;
+    };
 
     const pretty_unit = (pint_spec) => {
       const mappings = {
@@ -90,21 +130,16 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
        either of these arrays. (However, at first when adding new variables we might need to add
        new functionality to the directive to handle any idiosyncrasies of graphing that new variable.)
        */
-
-    const acceptable_column_types = ['area', 'eui', 'float', 'integer', 'number'];
-
-    const filtered_columns = _.filter(columns, (column) => _.includes(acceptable_column_types, column.data_type));
-
-    $scope.xAxisVars = [
+    $scope.yAxisVars = [
       {
         name: 'Count',
         label: 'Count',
         varName: 'Count',
         axisLabel: 'Count'
       },
-      ..._.map(filtered_columns, (column) => ({
-        name: $translate.instant(column.displayName), // short name for variable, used in pulldown
-        label: $translate.instant(column.displayName), // full name for variable
+      ..._.map(organization_payload.organization.default_reports_x_axis_options, (column) => ({
+        name: $translate.instant(column.display_name), // short name for variable, used in pulldown
+        label: $translate.instant(column.display_name), // full name for variable
         varName: column.column_name, // name of variable, to be sent to server
         axisLabel: parse_axis_label(column) // label to be used in charts, should include units
       // axisType: 'Measure', //DimpleJS property for axis type
@@ -112,12 +147,9 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
       }))
     ];
 
-    const acceptable_y_column_names = ['gross_floor_area', 'property_type', 'year_built'];
-    const filtered_y_columns = _.filter(columns, (column) => _.includes(acceptable_y_column_names, column.column_name));
-
-    $scope.yAxisVars = _.map(filtered_y_columns, (column) => ({
-      name: $translate.instant(column.displayName), // short name for variable, used in pulldown
-      label: $translate.instant(column.displayName), // full name for variable
+    $scope.xAxisVars = _.map(organization_payload.organization.default_reports_y_axis_options, (column) => ({
+      name: $translate.instant(column.display_name), // short name for variable, used in pulldown
+      label: $translate.instant(column.display_name), // full name for variable
       varName: column.column_name, // name of variable, to be sent to server
       axisLabel: parse_axis_label(column) // label to be used in charts, should include units
       // axisType: 'Measure', //DimpleJS property for axis type
@@ -137,10 +169,17 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
 
     const localStorageXAxisKey = `${base_storage_key}.xaxis`;
     const localStorageYAxisKey = `${base_storage_key}.yaxis`;
+    const localStorageALIndex = `${base_storage_key}.ALIndex`;
+    const localStorageALIID = `${base_storage_key}.ALIID`;
 
     // Currently selected x and y variables - check local storage first, otherwise initialize to first choice
-    $scope.xAxisSelectedItem = JSON.parse(localStorage.getItem(localStorageXAxisKey)) || $scope.xAxisVars[0];
     $scope.yAxisSelectedItem = JSON.parse(localStorage.getItem(localStorageYAxisKey)) || $scope.yAxisVars[0];
+    $scope.xAxisSelectedItem = JSON.parse(localStorage.getItem(localStorageXAxisKey)) || $scope.xAxisVars[0];
+
+    $scope.level_name_index = JSON.parse(localStorage.getItem(localStorageALIndex)) || '0';
+    const new_level_instance_depth = parseInt($scope.level_name_index, 10) + parseInt(users_depth, 10);
+    $scope.potential_level_instances = access_level_instances_by_depth[new_level_instance_depth];
+    $scope.access_level_instance_id = JSON.parse(localStorage.getItem(localStorageALIID)) || parseInt($scope.users_access_level_instance_id, 10);
 
     // Chart data
     $scope.chartData = [];
@@ -174,6 +213,16 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
           ]
         },
         options: {
+          onClick: (event) => {
+            if (type === 'bar') return;
+            const activePoints = event.chart.getActiveElements(event);
+
+            if (activePoints[0]) {
+              const activePoint = activePoints[0];
+              const item = event.chart.data.datasets[activePoint.datasetIndex].data[activePoint.index];
+              $state.go('inventory_detail', { inventory_type: 'properties', view_id: item.id });
+            }
+          },
           responsive: true,
           maintainAspectRatio: false,
           layout: {
@@ -218,17 +267,14 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
               displayColors: false,
               mode: 'index',
               callbacks: {
-                label(ctx) {
-                  const label = [];
-                  const labeltmp = $scope.chartData.chartData.filter((entry) => entry.id === ctx.raw.id);
-                  if (labeltmp.length > 0) {
-                    label.push(`${$scope.yAxisSelectedItem.label}: ${ctx.formattedValue}`);
-                    // The x axis data is generated more programmatically than the y, so only
-                    // grab the `label` since the `axisLabel` has redundant unit information.
-                    label.push(`${$scope.xAxisSelectedItem.label}: ${ctx.parsed.x}`);
-                  }
-                  return label;
-                }
+                title: (ctx) => {
+                  if (type === 'bar') return;
+                  return ctx[0]?.raw.display_name;
+                },
+                label: (ctx) => [
+                  `${$scope.xAxisSelectedItem.label}: ${type === 'bar' ? ctx.raw : ctx.parsed.y}`,
+                  `${$scope.yAxisSelectedItem.label}: ${type === 'bar' ? ctx.label : ctx.parsed.x}`
+                ]
               }
             }
           }
@@ -238,12 +284,12 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
 
     $scope.scatterChart = createChart('chartNew', 'scatter', 'x', $scope.pointBackgroundColors);
 
-    $scope.barChart = createChart('aggChartNew', 'bar', 'y', $scope.aggPointBackgroundColors);
+    $scope.barChart = createChart('aggChartNew', 'bar', 'x', $scope.aggPointBackgroundColors);
 
     // specific styling for bar chart
-    $scope.barChart.options.scales.x.ticks = { precision: 0 };
-    $scope.barChart.options.scales.y.type = 'category';
-    $scope.barChart.options.scales.y.ticks = {};
+    $scope.barChart.options.scales.y.ticks = { precision: 0 };
+    $scope.barChart.options.scales.x.type = 'category';
+    $scope.barChart.options.scales.x.ticks = {};
 
     // specific styling for scatter chart
     $scope.scatterChart.options.scales.x.suggestedMin = 0;
@@ -335,6 +381,8 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
 
     /* Update the titles above each chart */
     function updateChartTitlesAndAxes() {
+      if ($scope.xAxisSelectedItem === undefined || $scope.yAxisSelectedItem === undefined) return;
+
       let interpolationParams;
       try {
         interpolationParams = {
@@ -388,12 +436,17 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
        The chart will update automatically as it's watching the chartData property on the scope.
        */
     function getChartData() {
-      const xVar = $scope.xAxisSelectedItem.varName;
-      const yVar = $scope.yAxisSelectedItem.varName;
+      const yVar = $scope.yAxisSelectedItem?.varName;
+      const xVar = $scope.xAxisSelectedItem?.varName;
+      if (yVar === undefined || xVar === undefined) {
+        $scope.chartStatusMessage = 'No Axis';
+        return;
+      }
+
       $scope.chartIsLoading = true;
 
       inventory_reports_service
-        .get_report_data(xVar, yVar, $scope.selected_cycles)
+        .get_report_data(xVar, yVar, $scope.selected_cycles, $scope.access_level_instance_id)
         .then(
           (data) => {
             data = data.data;
@@ -453,11 +506,16 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
 
        * */
     function getAggChartData() {
-      const xVar = $scope.xAxisSelectedItem.varName;
-      const yVar = $scope.yAxisSelectedItem.varName;
+      const xVar = $scope.yAxisSelectedItem?.varName;
+      const yVar = $scope.xAxisSelectedItem?.varName;
+      if (yVar === undefined || xVar === undefined) {
+        $scope.aggChartStatusMessage = 'No Axis';
+        return;
+      }
+
       $scope.aggChartIsLoading = true;
       inventory_reports_service
-        .get_aggregated_report_data(xVar, yVar, $scope.selected_cycles)
+        .get_aggregated_report_data(xVar, yVar, $scope.selected_cycles, $scope.access_level_instance_id)
         .then(
           (data) => {
             data = data.aggregated_data;
@@ -499,9 +557,11 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
 
     function updateStorage() {
       // Save axis and cycle selections
-      localStorage.setItem(localStorageXAxisKey, JSON.stringify($scope.xAxisSelectedItem));
-      localStorage.setItem(localStorageYAxisKey, JSON.stringify($scope.yAxisSelectedItem));
+      localStorage.setItem(localStorageXAxisKey, JSON.stringify($scope.xAxisSelectedItem ?? ''));
+      localStorage.setItem(localStorageYAxisKey, JSON.stringify($scope.yAxisSelectedItem ?? ''));
       localStorage.setItem(localStorageSelectedCycles, JSON.stringify($scope.selected_cycles));
+      localStorage.setItem(localStorageALIndex, JSON.stringify($scope.level_name_index));
+      localStorage.setItem(localStorageALIID, JSON.stringify($scope.access_level_instance_id));
     }
 
     /*  Generate an array of color objects to be used as part of chart configuration

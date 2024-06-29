@@ -17,6 +17,7 @@ class AutoSchemaHelper(SwaggerAutoSchema):
         "integer": openapi.TYPE_INTEGER,
         "object": openapi.TYPE_OBJECT,
         "number": openapi.TYPE_NUMBER,
+        "datetime": openapi.TYPE_STRING,
     }
 
     @classmethod
@@ -101,6 +102,8 @@ class AutoSchemaHelper(SwaggerAutoSchema):
 
         if isinstance(obj, str):
             openapi_type = cls._openapi_type(obj)
+            if obj == "datetime":
+                return openapi.Schema(type=openapi_type, format=openapi.FORMAT_DATETIME, **kwargs)
             return openapi.Schema(type=openapi_type, **kwargs)
 
         if isinstance(obj, list):

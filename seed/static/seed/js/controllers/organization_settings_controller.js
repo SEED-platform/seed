@@ -8,6 +8,7 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
   'urls',
   'organization_payload',
   'auth_payload',
+  'property_columns',
   'analyses_service',
   'organization_service',
   'salesforce_mapping_service',
@@ -27,6 +28,7 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
     urls,
     organization_payload,
     auth_payload,
+    property_columns,
     analyses_service,
     organization_service,
     salesforce_mapping_service,
@@ -65,6 +67,7 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
     $scope.config_errors = null;
     $scope.changes_possible = false;
     $scope.secrets = { pwd: 'password', token: 'password' };
+    $scope.columns = property_columns;
 
     $scope.unit_options_eui = [
       {
@@ -230,6 +233,40 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
         });
     };
 
+    const acceptable_column_types = ['area', 'eui', 'float', 'integer', 'number'];
+    const filtered_columns = _.filter($scope.columns, (column) => _.includes(acceptable_column_types, column.data_type));
+
+    $scope.selected_x_columns = $scope.org.default_reports_x_axis_options.map((c) => c.id);
+    $scope.available_x_columns = () => filtered_columns.filter(({ id }) => !$scope.selected_x_columns.includes(id));
+
+    $scope.add_x_column = (x_column_id) => {
+      $scope.selected_x_columns.push(x_column_id);
+    };
+
+    $scope.remove_x_column = (x_column_id) => {
+      const index = $scope.selected_x_columns.indexOf(x_column_id);
+      if (index !== -1) $scope.selected_x_columns.splice(index, 1);
+    };
+
+    $scope.selected_y_columns = $scope.org.default_reports_y_axis_options.map((c) => c.id);
+    $scope.available_y_columns = () => $scope.columns.filter(({ id }) => !$scope.selected_y_columns.includes(id));
+
+    $scope.add_y_column = (y_column_id) => {
+      $scope.selected_y_columns.push(y_column_id);
+    };
+
+    $scope.remove_y_column = (y_column_id) => {
+      const index = $scope.selected_y_columns.indexOf(y_column_id);
+      if (index !== -1) $scope.selected_y_columns.splice(index, 1);
+    };
+
+    $scope.get_column_display = (id) => {
+      const record = _.find($scope.columns, { id });
+      if (record) {
+        return record.displayName;
+      }
+    };
+
     /**
      * saves the updates settings
      */
@@ -239,7 +276,11 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
       $scope.form_errors = null;
       update_display_unit_for_scoped_org();
       organization_service
-        .save_org_settings($scope.org)
+        .save_org_settings({
+          ...$scope.org,
+          default_reports_x_axis_options: $scope.selected_x_columns,
+          default_reports_y_axis_options: $scope.selected_y_columns
+        })
         .then(() => {
           $scope.settings_updated = true;
           $scope.org_static = angular.copy($scope.org);

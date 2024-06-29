@@ -13,15 +13,31 @@ from seed.filtersets import PropertyViewFilterSet
 from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm_class
 from seed.models import AccessLevelInstance, Organization, PropertyView
 from seed.serializers.properties import BriefPropertyViewSerializer
-from seed.utils.api import api_endpoint_class
+from seed.utils.api_schema import swagger_auto_schema_org_query_param
 from seed.utils.viewsets import SEEDOrgModelViewSet
 
 
-@method_decorator(name="list", decorator=[has_perm_class("requires_viewer")])
-@method_decorator(name="retrieve", decorator=[has_perm_class("requires_viewer"), has_hierarchy_access(property_view_id_kwarg="pk")])
-@method_decorator(name="destroy", decorator=[has_perm_class("requires_viewer"), has_hierarchy_access(property_view_id_kwarg="pk")])
-@method_decorator(name="update", decorator=[has_perm_class("requires_viewer"), has_hierarchy_access(property_view_id_kwarg="pk")])
-@method_decorator(name="create", decorator=[has_perm_class("requires_viewer"), has_hierarchy_access(body_property_id="property_id")])
+@method_decorator(name="list", decorator=[swagger_auto_schema_org_query_param, has_perm_class("requires_viewer")])
+@method_decorator(
+    name="retrieve",
+    decorator=[swagger_auto_schema_org_query_param, has_perm_class("requires_viewer"), has_hierarchy_access(property_view_id_kwarg="pk")],
+)
+@method_decorator(
+    name="destroy",
+    decorator=[swagger_auto_schema_org_query_param, has_perm_class("requires_member"), has_hierarchy_access(property_view_id_kwarg="pk")],
+)
+@method_decorator(
+    name="update",
+    decorator=[swagger_auto_schema_org_query_param, has_perm_class("requires_member"), has_hierarchy_access(property_view_id_kwarg="pk")],
+)
+@method_decorator(
+    name="create",
+    decorator=[
+        swagger_auto_schema_org_query_param,
+        has_perm_class("requires_member"),
+        has_hierarchy_access(body_property_id="property_id"),
+    ],
+)
 class PropertyViewViewSet(SEEDOrgModelViewSet):
     """PropertyViews API Endpoint
 
@@ -69,7 +85,7 @@ class PropertyViewViewSet(SEEDOrgModelViewSet):
             )
 
         else:
-            return PropertyView.objects.filter(pk=-1)
+            return PropertyView.objects.none()
 
     serializer_class = BriefPropertyViewSerializer
     pagination_class = None
@@ -79,10 +95,7 @@ class PropertyViewViewSet(SEEDOrgModelViewSet):
     data_name = "property_views"
     queryset = PropertyView.objects.all()
 
-    # Overwrite method to make it work
-    @api_endpoint_class
-    @has_perm_class("requires_viewer")
-    def create(self, request, organization_pk=None):
+    def create(self, request, *args, **kwargs):
         org_id = int(self.get_organization(request))
         try:
             Organization.objects.get(pk=org_id)
