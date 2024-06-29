@@ -90,6 +90,9 @@ class AccountsViewTests(TestCase):
             "ubid_threshold": 1.0,
             "inventory_count": 0,
             "access_level_names": [self.org.name],
+            "public_feed_enabled": False,
+            "public_feed_labels": False,
+            "public_geojson_enabled": False,
             "default_reports_x_axis_options": [],
             "default_reports_y_axis_options": [],
         }
@@ -183,6 +186,9 @@ class AccountsViewTests(TestCase):
                     "salesforce_enabled": False,
                     "ubid_threshold": 1.0,
                     "inventory_count": 0,
+                    "public_feed_enabled": False,
+                    "public_feed_labels": False,
+                    "public_geojson_enabled": False,
                     "default_reports_x_axis_options": [],
                     "default_reports_y_axis_options": [],
                 }
@@ -216,6 +222,9 @@ class AccountsViewTests(TestCase):
             "ubid_threshold": 1.0,
             "inventory_count": 0,
             "access_level_names": ["my org"],
+            "public_feed_enabled": False,
+            "public_feed_labels": False,
+            "public_geojson_enabled": False,
             "default_reports_x_axis_options": [],
             "default_reports_y_axis_options": [],
         }

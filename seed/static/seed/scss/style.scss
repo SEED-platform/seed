@@ -984,7 +984,7 @@ a:not([href]) {
     }
 
     .vert_table_scroll_container {
-      height: 400px;
+      height: 600px;
       overflow-y: scroll;
       border-bottom: 1px solid $gray_lighter;
       background: url('../../seed/images/bg_first_td.webp') repeat-x top center;
@@ -3893,6 +3893,10 @@ $pairedCellWidth: 60px;
   padding-top: 10px;
 }
 
+.pad-top-20 {
+  padding-top: 20px;
+}
+
 .access-tree {
   margin-top: 20px;
 }
@@ -5520,6 +5524,22 @@ tags-input .tags .tag-item {
   border-top: 1px solid #d4d4d4;
 }
 
+.label-success {
+  background: #5cb85c;
+}
+
+.label-default {
+  background: #777;
+}
+
+.label-lg {
+  font-size: 1.2em;
+}
+
+.wider-diff {
+  width: 30% !important;
+}
+
 .property-report-header {
   font-size: 18px;
   margin: 0;
@@ -5549,4 +5569,9 @@ tags-input .tags .tag-item {
     color: $gray_lighter;
     font-weight: normal;
   }
+}
+
+.sharing-type {
+  font-size: 20px;
+  font-weight: bold;
 }

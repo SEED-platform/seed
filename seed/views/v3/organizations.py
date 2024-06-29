@@ -66,6 +66,7 @@ from seed.utils.match import match_merge_link
 from seed.utils.merge import merge_properties
 from seed.utils.organizations import create_organization, create_suborganization
 from seed.utils.properties import pair_unpair_property_taxlot
+from seed.utils.public import public_feed
 from seed.utils.salesforce import toggle_salesforce_sync
 from seed.utils.users import get_js_role
 
@@ -149,6 +150,9 @@ def _dict_org(request, organizations):
             "ubid_threshold": o.ubid_threshold,
             "inventory_count": o.property_set.count() + o.taxlot_set.count(),
             "access_level_names": o.access_level_names,
+            "public_feed_enabled": o.public_feed_enabled,
+            "public_feed_labels": o.public_feed_labels,
+            "public_geojson_enabled": o.public_geojson_enabled,
             "default_reports_x_axis_options": ColumnSerializer(
                 Column.objects.filter(organization=o, table_name="PropertyState", is_option_for_reports_x_axis=True), many=True
             ).data,
@@ -511,6 +515,25 @@ class OrganizationViewSet(viewsets.ViewSet):
         geocoding_enabled = posted_org.get("geocoding_enabled", True)
         if geocoding_enabled != org.geocoding_enabled:
             org.geocoding_enabled = geocoding_enabled
+
+        # Update public_feed_enabled option
+        public_feed_enabled = posted_org.get("public_feed_enabled")
+        if public_feed_enabled:
+            org.public_feed_enabled = True
+        elif org.public_feed_enabled:
+            org.public_feed_enabled = False
+            org.public_feed_labels = False
+            org.public_geojson_enabled = False
+
+        # Update public_feed_labels option
+        public_feed_labels = posted_org.get("public_feed_labels", False)
+        if public_feed_enabled and public_feed_labels != org.public_feed_labels:
+            org.public_feed_labels = public_feed_labels
+
+        # Update public_geojson_enabled option
+        public_geojson_enabled = posted_org.get("public_geojson_enabled", False)
+        if public_feed_enabled and public_geojson_enabled != org.public_geojson_enabled:
+            org.public_geojson_enabled = public_geojson_enabled
 
         # Update BETTER Analysis API Key if it's been changed
         better_analysis_api_key = posted_org.get("better_analysis_api_key", "").strip()
@@ -1265,3 +1288,30 @@ class OrganizationViewSet(viewsets.ViewSet):
         save_raw_data(import_greenbutton.id)
 
         return JsonResponse({"status": "success"})
+
+    @ajax_request_class
+    def public_feed_json(self, request, pk):
+        """
+        Returns all property and taxlot state data for a given organization as a json object. The results are ordered by "state.update".
+
+        Optional and configurable url query_params:
+        :query_param labels: comma separated list of case sensitive label names. Results will include inventory that has any of the listed labels. Default is all inventory
+        :query_param cycles: comma separated list of cycle ids. Results include inventory from the listed cycles. Default is all cycles
+        :query_param properties: boolean to return properties. Default is True
+        :query_param taxlots: boolan to return taxlots. Default is True
+        :query_param page: integer page number
+        :query_param per_page: integer results per page
+
+        Example requests:
+        {seed_url}/api/v3/organizations/public_feed.json?{query_param1}={value1}&{query_param2}={value2}
+        dev1.seed-platform.org/api/v3/organizations/1/public_feed.json
+        dev1.seed-platform.org/api/v3/organizations/1/public_feed.json?page=2&labels=Compliant&cycles=1,2,3&taxlots=False
+        """
+        try:
+            org = Organization.objects.get(pk=pk)
+        except Organization.DoesNotExist:
+            return JsonResponse({"erorr": "Organization does not exist"}, status=status.HTTP_404_NOT_FOUND)
+
+        feed = public_feed(org, request)
+
+        return JsonResponse(feed, json_dumps_params={"indent": 4}, status=status.HTTP_200_OK)
