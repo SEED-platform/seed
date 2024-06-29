@@ -5,7 +5,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("seed", "0218_rehash"),
+        ("seed", "0219_rehash"),
     ]
 
     operations = [

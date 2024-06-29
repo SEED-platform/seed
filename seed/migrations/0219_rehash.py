@@ -45,7 +45,7 @@ def rehash(apps, schema_editor):
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("seed", "0217_goal_commitment_sqft"),
+        ("seed", "0218_auto_20240604_1605"),
     ]
 
     operations = [
