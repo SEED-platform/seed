@@ -5524,6 +5524,22 @@ tags-input .tags .tag-item {
   border-top: 1px solid #d4d4d4;
 }
 
+.label-success {
+  background: #5cb85c;
+}
+
+.label-default {
+  background: #777;
+}
+
+.label-lg {
+  font-size: 1.2em;
+}
+
+.wider-diff {
+  width: 30% !important;
+}
+
 #batch-edit-goalnotes-form {
   div {
     display: flex;
@@ -5545,18 +5561,7 @@ tags-input .tags .tag-item {
   }
 }
 
-.label-success {
-  background: #5cb85c;
-}
-
-.label-default {
-  background: #777;
-}
-
-.label-lg {
-  font-size: 1.2em;
-}
-
-.wider-diff {
-  width: 30% !important;
+.sharing-type {
+  font-size: 20px;
+  font-weight: bold;
 }

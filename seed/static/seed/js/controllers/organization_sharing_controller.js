@@ -23,6 +23,15 @@ angular.module('BE.seed.controller.organization_sharing', []).controller('organi
       select_all: false
     };
 
+    $scope.btnText = 'Expand Help';
+    $scope.changeText = (btnText) => {
+      if (btnText === 'Collapse Help') {
+        $scope.btnText = 'Expand Help';
+      } else {
+        $scope.btnText = 'Collapse Help';
+      }
+    };
+
     $scope.$watch('filter_params.title', () => {
       if (!$scope.filter_params.title) {
         $scope.controls.select_all = false;

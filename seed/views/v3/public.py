@@ -3,8 +3,17 @@ from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny
 
-from seed.models import Organization
-from seed.utils.public import PUBLIC_HTML_DISABLED, PUBLIC_HTML_HEADER, PUBLIC_HTML_STYLE, dict_to_table, page_navigation_link, public_feed
+from seed.models import Cycle, Organization
+from seed.utils.public import (
+    PUBLIC_HTML_DISABLED,
+    PUBLIC_HTML_HEADER,
+    PUBLIC_HTML_STYLE,
+    dict_to_table,
+    get_request_cycles,
+    page_navigation_link,
+    public_feed,
+    public_geojson,
+)
 
 
 class PublicOrganizationViewSet(viewsets.ViewSet):
@@ -40,10 +49,12 @@ class PublicOrganizationViewSet(viewsets.ViewSet):
 
         if not org.public_feed_enabled:
             return JsonResponse(
-                {"detail": f"Public feed is not enabled for organization '{org.name}'. Public feed can be enabled in organization settings"}
+                {
+                    "detail": f"Public feed is not enabled for organization '{org.name}'. Public endpoints can be enabled in organization settings"
+                }
             )
-
-        feed = public_feed(org, request)
+        cycles = get_request_cycles(org, request)
+        feed = public_feed(org, request, cycles)
         return JsonResponse(feed, json_dumps_params={"indent": 4}, status=status.HTTP_200_OK)
 
     @action(detail=True, methods=["get"], url_path="feed.html")
@@ -75,7 +86,8 @@ class PublicOrganizationViewSet(viewsets.ViewSet):
 
         query_params = request.GET.copy()
         base_url = f"/api/v3/public/organizations/{pk}/feed.html"
-        data = public_feed(org, request, html_view=True)
+        cycles = get_request_cycles(org, request)
+        data = public_feed(org, request, cycles, "html")
 
         page_header = f"""
             <div class="page_title">
@@ -123,3 +135,39 @@ class PublicOrganizationViewSet(viewsets.ViewSet):
         """
 
         return HttpResponse(html)
+
+
+class PublicCycleViewSet(viewsets.ViewSet):
+    permission_classes = [AllowAny]
+
+    @action(detail=True, methods=["get"], url_path="geo.json")
+    def geojson(self, request, organization_pk, pk):
+        """
+        Returns geojson data for selected inventory type within a specific cycle
+        Optional and configurable query_params
+        :query_param taxlots: boolean string to display taxlots or properties. Default is 'false', returning only properties.
+        :query_param page: integer page number
+        :query_param per_page: integer results per page
+        Example Requests:
+        {seed_url}/api/v3/public/organizations/{organization_id}/cycles/{cycle_id}/geo.json?{query_param1}={value1}
+        dev1.seed-platform.org/api/v3/public/organizations/1/cycles/2/geo.json
+        dev1.seed-platform.org/api/v3/public/organizations/1/cycles/2/geo.json?taxlots=true
+        """
+        try:
+            org = Organization.objects.get(pk=organization_pk)
+            cycle = Cycle.objects.get(organization_id=organization_pk, pk=pk)
+        except Organization.DoesNotExist:
+            return JsonResponse({"erorr": "Organization does not exist"}, status=status.HTTP_404_NOT_FOUND)
+        except Cycle.DoesNotExist:
+            return JsonResponse({"erorr": "Cycle does not exist"}, status=status.HTTP_404_NOT_FOUND)
+
+        if not org.public_feed_enabled or not org.public_geojson_enabled:
+            return JsonResponse(
+                {
+                    "detail": f"Public GeoJSON is not enabled for organization '{org.name}'. Public endpoints can be enabled in organization settings"
+                }
+            )
+
+        geojson = public_geojson(org, cycle, request)
+
+        return JsonResponse(geojson, json_dumps_params={"indent": 4}, status=status.HTTP_200_OK)
