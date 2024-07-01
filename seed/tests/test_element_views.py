@@ -4,7 +4,6 @@ SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and othe
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
-
 from django.urls import reverse
 from rest_framework import status
 
@@ -52,7 +51,7 @@ class ElementViewTests(AssertDictSubsetMixin, DeleteModelsTestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         data = response.json()
-        self.assertEqual(data['id'], self.element3.element_id)
+        self.assertEqual(data["id"], self.element3.element_id)
 
     def test_get_property_elements(self):
         url = self.reverse("api:v3:property-elements-list", args=[self.property1.pk])
@@ -71,7 +70,7 @@ class ElementViewTests(AssertDictSubsetMixin, DeleteModelsTestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         data = response.json()
-        self.assertEqual(data['id'], self.element3.element_id)
+        self.assertEqual(data["id"], self.element3.element_id)
 
     def test_create_property_element(self):
         url = self.reverse("api:v3:property-elements-list", args=[self.property2.pk])
@@ -95,7 +94,7 @@ class ElementViewTests(AssertDictSubsetMixin, DeleteModelsTestCase):
                 "Quantity": 1,
                 "Construction Type": "Permanent",
                 "Operational Status": "Active",
-            }
+            },
         }
         response = self.client.post(url, payload, content_type="application/json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
@@ -109,17 +108,13 @@ class ElementViewTests(AssertDictSubsetMixin, DeleteModelsTestCase):
         element = elements[0]
         self.assertEqual(data["id"], element["element_id"])
 
-        response = self.client.post(url, {
-            **payload,
-            "id": "dcc29e47-814e-49c3-a3e1-02a0d3ab1abd",
-            "extra_data": {
-                "nested": {
-                    "key": "value"
-                }
-            }
-        }, content_type="application/json")
+        response = self.client.post(
+            url,
+            {**payload, "id": "dcc29e47-814e-49c3-a3e1-02a0d3ab1abd", "extra_data": {"nested": {"key": "value"}}},
+            content_type="application/json",
+        )
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(response.json(), {'extra_data': ['Nested structures are not allowed']})
+        self.assertEqual(response.json(), {"extra_data": ["Nested structures are not allowed"]})
 
     def test_update_property_element(self):
         url = self.reverse("api:v3:property-elements-detail", args=[self.property1.pk, self.element1.element_id])
@@ -173,7 +168,7 @@ class PropertyElementViewPermissionsTests(AccessLevelBaseTestCase, AssertDictSub
                 "Quantity": 1,
                 "Construction Type": "Permanent",
                 "Operational Status": "Active",
-            }
+            },
         }
 
         self.property_factory = FakePropertyFactory(organization=self.org)
