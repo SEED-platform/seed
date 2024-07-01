@@ -17,7 +17,7 @@ from seed.landing.models import SEEDUser as User
 from seed.models import Meter, MeterReading, Property
 from seed.models.scenarios import Scenario
 from seed.test_helpers.fake import FakePropertyViewFactory
-from seed.tests.util import AccessLevelBaseTestCase, DeleteModelsTestCase
+from seed.tests.util import AccessLevelBaseTestCase, AssertDictSubsetMixin, DeleteModelsTestCase
 from seed.utils.organizations import create_organization
 
 
@@ -44,7 +44,7 @@ class TestMeterValidTypesUnits(DeleteModelsTestCase):
         self.assertEqual(result_dict, expectation)
 
 
-class TestMeterCRUD(DeleteModelsTestCase):
+class TestMeterCRUD(AssertDictSubsetMixin, DeleteModelsTestCase):
     def setUp(self):
         super().setUp()
 

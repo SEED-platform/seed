@@ -319,7 +319,6 @@ class ColumnsViewPermissionsTests(AccessLevelBaseTestCase, DeleteModelsTestCase)
     def setUp(self):
         super().setUp()
         self.column = Column.objects.create(column_name="test", organization=self.org, table_name="PropertyState", is_extra_data=True)
-        self.column.save()
 
     def test_column_create_permissions(self):
         url = reverse_lazy("api:v3:columns-list") + "?organization_id=" + str(self.org.id)

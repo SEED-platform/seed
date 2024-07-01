@@ -9,6 +9,7 @@ from drf_yasg.utils import swagger_auto_schema
 from rest_framework.viewsets import ReadOnlyModelViewSet
 
 from seed.decorators import DRFEndpointMixin
+from seed.lib.uniformat.uniformat import uniformat_codes
 from seed.models import Uniformat
 from seed.serializers.uniformat import UniformatChildSerializer, UniformatSerializer
 from seed.utils.api_schema import AutoSchemaHelper
@@ -28,6 +29,9 @@ from seed.utils.api_schema import AutoSchemaHelper
     decorator=[
         swagger_auto_schema(
             manual_parameters=[
+                AutoSchemaHelper.path_enum_field(
+                    name="code", description=Uniformat._meta.get_field("code").help_text, enum=uniformat_codes
+                ),
                 AutoSchemaHelper.query_boolean_field(
                     name="include_children",
                     required=False,

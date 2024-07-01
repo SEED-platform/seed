@@ -8,6 +8,7 @@ from django.db import IntegrityError
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
 from rest_framework import status
+from rest_framework.renderers import JSONRenderer
 
 from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm_class
 from seed.lib.superperms.orgs.models import AccessLevelInstance
@@ -38,6 +39,7 @@ class OrgElementViewSet(SEEDOrgReadOnlyModelViewSet):
 
     lookup_field = "element_id"
     model = Element
+    renderer_classes = (JSONRenderer,)
     serializer_class = ElementSerializer
 
     def get_queryset(self):
@@ -99,6 +101,7 @@ class ElementViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
     lookup_field = "element_id"
     model = Element
     pagination_class = None
+    renderer_classes = (JSONRenderer,)
     serializer_class = ElementPropertySerializer
 
     def get_queryset(self):
@@ -109,6 +112,6 @@ class ElementViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
 
     def create(self, request, *args, **kwargs):
         try:
-            return super().create(request)
+            return super().create(request, args, kwargs)
         except IntegrityError as e:
             return JsonResponse({"status": "error", "message": str(e)}, status=status.HTTP_400_BAD_REQUEST)

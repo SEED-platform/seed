@@ -32,9 +32,25 @@ class ElementPropertySerializer(ElementSerializer):
         exclude = [*ElementSerializer.Meta.exclude, "property"]
 
     def validate_code(self, code: str) -> Uniformat:
+        """
+        Validator that restricts code to only valid Uniformat values
+        """
         if code not in uniformat_codes:
             raise serializers.ValidationError(f"Invalid Uniformat code '{code}'")
         return Uniformat.objects.only("id").get(code=code)
+
+    def validate_extra_data(self, extra_data) -> dict:
+        """
+        Validator that restricts extra_data to only key-value pairs and disallows nested structures
+        """
+        if not isinstance(extra_data, dict):
+            raise serializers.ValidationError("Only flat JSON objects are allowed")
+
+        for key, val in extra_data.items():
+            if isinstance(val, (dict, list)):
+                raise serializers.ValidationError("Nested structures are not allowed")
+
+        return extra_data
 
     def create(self, validated_data):
         validated_data["organization_id"] = self.context["request"].query_params["organization_id"]
