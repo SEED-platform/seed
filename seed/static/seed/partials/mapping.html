@@ -331,7 +331,7 @@
     </ul>
     <div class="item-count">
       <i class="fa-regular fa-calendar-days"></i> <span class="pad-right-20">{$ cycleName $}</span> <i class="fa-regular fa-map"></i>
-      <span translate="NUMBER_OF_TAXLOTS" translate-values="{ num: mappedData.tax_lots.length }"></span>
+      <span translate="NUMBER_OF_TAXLOTS" translate-values="{ num: (mappedData.tax_lots.length | number) }"></span>
     </div>
   </div>
   <div class="section_content_container" ng-if="show_mapped_buildings && mappedData.tax_lots.length">

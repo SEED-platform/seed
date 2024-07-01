@@ -9,7 +9,7 @@ angular.module('BE.seed.service.element', []).factory('element_service', [
     get_elements: (organization_id, property_id) => $http
       .get(`/api/v3/properties/${property_id}/elements/`, {
         params: { organization_id }
-      }).then(({ data: { data } }) => data),
+      }).then(({ data }) => data),
 
     // Creates a new element for a given property
     create_element: (organization_id, property_id, element_data) => $http
