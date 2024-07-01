@@ -129,8 +129,8 @@ angular.module('BE.seed.controller.data_quality_admin', []).controller('data_qua
     ];
 
     $scope.cross_cycle_options = [
-      { bool: true, label: 'Cross-Cycle' },
-      { bool: false, label: 'Within Cycle' }
+      { bool: true, label: '% Change aross cycle' },
+      { bool: false, label: 'Within cycle' }
     ];
 
     $scope.columns = _.map(angular.copy(columns.filter((col) => !col.derived_column)), (col) => {
