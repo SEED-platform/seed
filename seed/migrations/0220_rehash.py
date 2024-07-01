@@ -45,7 +45,7 @@ def rehash(apps, schema_editor):
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("seed", "0218_auto_20240604_1605"),
+        ("seed", "0219_column_is_excluded_from_hash"),
     ]
 
     operations = [
