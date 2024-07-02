@@ -183,6 +183,7 @@ describe('controller: inventory_detail_controller', () => {
         analyses: []
       },
       elements_payload: [],
+      tkbl_payload: [],
       uniformat_payload: {},
       views_payload: {
         status: 'success',

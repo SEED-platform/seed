@@ -385,7 +385,7 @@
               </thead>
               <tbody>
                 <tr ng-repeat="element in ::elements">
-                  <td><span ng-attr-title="{$:: uniformat_category(element.code) $}">{$:: element.code $}</span></td>
+                  <td><span ng-attr-title="{$:: uniformat_hierarchy(element.code) $} ({$:: element.code $})">{$:: uniformat[element.code].category | startCase $}</span></td>
                   <td>{$:: element.description $}</td>
                   <td>{$:: element.installation_date $}</td>
                   <td>{$:: element.manufacturing_date $}</td>
@@ -393,6 +393,58 @@
                   <td ng-attr-title="{$:: element.remaining_service_life $}">{$:: element.remaining_service_life | number:2 $}</td>
                   <td ng-attr-title="{$:: element.replacement_cost $}">{$:: element.replacement_cost | currency:'$':0 $}</td>
                   <td ng-repeat="column in ::element_extra_data_columns">{$:: element.extra_data[column] $}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="section" ng-if="::tkbl.length > 0">
+        <div class="section_header_container" style="margin-top: 20px; border-bottom: 0">
+          <div class="section_header fixed_height_short has_no_padding">
+            <div class="section_action_container left" style="width: 50%">
+              <h2><i class="fa-solid fa-atom"></i>{$:: 'Building Performance Standard (BPS) Compliance Pathway Support' | translate $}</h2>
+            </div>
+          </div>
+        </div>
+        <div class="section_content">
+          <div class="table_list_container table_item_detail" style="overflow: auto hidden">
+            <table class="table table-striped tkbl-table" style="margin-bottom: -1px">
+              <thead>
+                <tr>
+                  <th translate>Remaining Service Life</th>
+                  <th translate>Uniformat</th>
+                  <th translate>Description</th>
+                  <th translate>GSA SFTool Guidance</th>
+                  <th translate>ESTCP Report</th>
+                  <th translate>BuildingSync Recommended Measures</th>
+                  <th translate>Federal BPS Recommended Measures</th>
+                  <th translate>Auditor Recommended Measures</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr ng-repeat="element in tkbl">
+                  <td>{$:: element.remaining_service_life | number $}</td>
+                  <td ng-attr-title="{$:: uniformat_hierarchy(element.code) $} ({$:: element.code $})">{$:: uniformat[element.code].category | startCase $}</td>
+                  <td>{$:: element.description $}</td>
+                  <td>
+                    <ul ng-if="element.tkbl.sftool.length > 0">
+                      <li ng-repeat="entry in ::element.tkbl.sftool">
+                        <a ng-href="{$:: entry.url $}" target="_blank" rel="noopener noreferrer">{$:: entry.name $}</a>
+                      </li>
+                    </ul>
+                  </td>
+                  <td>
+                    <ul ng-if="element.tkbl.estcp.length > 0">
+                      <li ng-repeat="entry in ::element.tkbl.estcp">
+                        <a ng-href="{$:: entry.url $}" target="_blank" rel="noopener noreferrer">{$:: entry.name $}</a>
+                      </li>
+                    </ul>
+                  </td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
                 </tr>
               </tbody>
             </table>

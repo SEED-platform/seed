@@ -840,12 +840,12 @@ class FakeElementFactory(BaseFake):
     Factory Class for producing Element instances.
     """
 
-    def __init__(self, organization=None, property=None):
+    def __init__(self, organization=None, property=None):  # noqa: A002
         self.organization = organization
         self.property = property
         super().__init__()
 
-    def get_element(self, organization=None, property=None, **kw):
+    def get_element(self, organization=None, property=None, **kw):  # noqa: A002
         uniformat_code = random.choice(uniformat_codes)
         formatted_date = datetime.date.today().strftime("%Y-%m-%d")
         element_details = {

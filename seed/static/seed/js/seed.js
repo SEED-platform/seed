@@ -149,6 +149,7 @@ angular.module('BE.seed.filters', [
   'getAnalysisRunAuthor',
   'htmlToPlainText',
   'ignoremap',
+  'startCase',
   'startFrom',
   'stripImportPrefix',
   'titleCase',
@@ -2342,6 +2343,12 @@ SEED_app.config([
             'user_service',
             'inventory_payload',
             (element_service, user_service, inventory_payload) => element_service.get_elements(user_service.get_organization().id, inventory_payload.property.id)
+          ],
+          tkbl_payload: [
+            'element_service',
+            'user_service',
+            'inventory_payload',
+            (element_service, user_service, inventory_payload) => element_service.get_tkbl(user_service.get_organization().id, inventory_payload.property.id)
           ]
         }
       })
