@@ -122,6 +122,7 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.postoffice_modal',
   'BE.seed.controller.profile',
   'BE.seed.controller.program_setup',
+  'BE.seed.controller.qr_code_scan_modal',
   'BE.seed.controller.record_match_merge_link_modal',
   'BE.seed.controller.rename_column_modal',
   'BE.seed.controller.reset_modal',
@@ -134,6 +135,7 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.set_update_to_now_modal',
   'BE.seed.controller.settings_profile_modal',
   'BE.seed.controller.show_populated_columns_modal',
+  'BE.seed.controller.two_factor_profile',
   'BE.seed.controller.ubid_admin',
   'BE.seed.controller.ubid_admin_modal',
   'BE.seed.controller.ubid_decode_modal',
@@ -208,6 +210,7 @@ angular.module('BE.seed.services', [
   'BE.seed.service.search',
   'BE.seed.service.sensor',
   'BE.seed.service.simple_modal',
+  'BE.seed.service.two_factor',
   'BE.seed.service.ubid',
   'BE.seed.service.uploader',
   'BE.seed.service.user'
@@ -388,6 +391,32 @@ SEED_app.config([
               const organization_id = user_service.get_organization().id;
               return auth_service.is_authorized(organization_id, ['requires_superuser']);
             }
+          ],
+          user_profile_payload: [
+            'user_service',
+            (user_service) => user_service.get_user_profile()
+          ]
+        }
+      })
+      .state({
+        name: 'two_factor_profile',
+        url: '/profile/two_factor_profile',
+        templateUrl: `${static_url}seed/partials/two_factor_profile.html`,
+        controller: 'two_factor_profile_controller',
+        resolve: {
+          auth_payload: [
+            'auth_service',
+            '$q',
+            'user_service',
+            (auth_service, $q, user_service) => {
+              const organization_id = user_service.get_organization().id;
+              return auth_service.is_authorized(organization_id, ['requires_superuser']);
+            }
+          ],
+          organization_payload: [
+            'user_service',
+            'organization_service',
+            (user_service, organization_service) => organization_service.get_organization(user_service.get_organization().id)
           ],
           user_profile_payload: [
             'user_service',

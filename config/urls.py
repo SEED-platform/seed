@@ -11,10 +11,11 @@ from django.urls import include, path, re_path
 from drf_yasg import openapi
 from drf_yasg.views import get_schema_view
 from rest_framework import permissions
+from two_factor.urls import urlpatterns as tf_urls
 
 from config.views import robots_txt
 from seed.api.base.urls import urlpatterns as api
-from seed.landing.views import password_reset_complete, password_reset_confirm, password_reset_done
+from seed.landing.views import CustomLoginView, password_reset_complete, password_reset_confirm, password_reset_done
 from seed.views.main import angular_js_tests, health_check, version
 
 schema_view = get_schema_view(
@@ -57,6 +58,8 @@ urlpatterns = [
     re_path(r"^api/version/$", version, name="version"),
     re_path(r"^api/", include((api, "seed"), namespace="api")),
     re_path(r"^oauth/", include(("oauth2_jwt_provider.urls", "oauth2_jwt_provider"), namespace="oauth2_provider")),
+    re_path(r"^account/login", CustomLoginView.as_view(), name="login"),
+    re_path(r"^", include(tf_urls)),
     # test sentry error
     path("sentry-debug/", trigger_error),
 ]

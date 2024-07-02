@@ -5540,3 +5540,22 @@ tags-input .tags .tag-item {
     font-weight: normal;
   }
 }
+
+.two_factor_selection {
+  margin: 10px;
+
+  input {
+    transform: scale(2);
+    margin: 10px;
+  }
+
+  .help-text {
+    margin-left: 40px;
+  }
+}
+
+.two_factor_current {
+  margin: 30px;
+  font-size: 14px;
+  font-weight: bold;
+}

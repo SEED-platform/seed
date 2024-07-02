@@ -62,7 +62,7 @@ from seed.utils.generic import median, round_down_hundred_thousand
 from seed.utils.geocode import geocode_buildings
 from seed.utils.match import match_merge_link
 from seed.utils.merge import merge_properties
-from seed.utils.organizations import create_organization, create_suborganization
+from seed.utils.organizations import create_organization, create_suborganization, set_default_2fa_method
 from seed.utils.properties import pair_unpair_property_taxlot
 from seed.utils.salesforce import toggle_salesforce_sync
 from seed.utils.users import get_js_role
@@ -147,6 +147,7 @@ def _dict_org(request, organizations):
             "ubid_threshold": o.ubid_threshold,
             "inventory_count": o.property_set.count() + o.taxlot_set.count(),
             "access_level_names": o.access_level_names,
+            "require_2fa": o.require_2fa,
         }
         orgs.append(org)
 
@@ -574,6 +575,12 @@ class OrganizationViewSet(viewsets.ViewSet):
             org.salesforce_enabled = salesforce_enabled
             # if salesforce_enabled was toggled, must start/stop auto sync functionality
             toggle_salesforce_sync(salesforce_enabled, org.id)
+
+        require_2fa = posted_org.get("require_2fa", False)
+        if require_2fa != org.require_2fa:
+            org.require_2fa = require_2fa
+            if require_2fa:
+                set_default_2fa_method(org)
 
         # update the ubid threshold option
         ubid_threshold = posted_org.get("ubid_threshold")

@@ -90,6 +90,7 @@ class AccountsViewTests(TestCase):
             "ubid_threshold": 1.0,
             "inventory_count": 0,
             "access_level_names": [self.org.name],
+            "require_2fa": False,
         }
 
         org_payload = _dict_org(self.fake_request, [self.org])
@@ -181,6 +182,7 @@ class AccountsViewTests(TestCase):
                     "salesforce_enabled": False,
                     "ubid_threshold": 1.0,
                     "inventory_count": 0,
+                    "require_2fa": False,
                 }
             ],
             "is_parent": True,
@@ -212,6 +214,7 @@ class AccountsViewTests(TestCase):
             "ubid_threshold": 1.0,
             "inventory_count": 0,
             "access_level_names": ["my org"],
+            "require_2fa": False,
         }
 
         org_payload = _dict_org(self.fake_request, Organization.objects.all())
@@ -547,7 +550,14 @@ class AccountsViewTests(TestCase):
         )
         self.assertEqual(
             json.loads(resp.content),
-            {"status": "success", "api_key": "", "email": "test_user@demo.com", "first_name": "Johnny", "last_name": "Energy"},
+            {
+                "status": "success",
+                "api_key": "",
+                "email": "test_user@demo.com",
+                "first_name": "Johnny",
+                "last_name": "Energy",
+                "two_factor_method": "disabled",
+            },
         )
         resp = self.client.post(
             reverse_lazy("api:v3:user-generate-api-key", args=[self.user.pk]),
@@ -565,6 +575,7 @@ class AccountsViewTests(TestCase):
                 "email": "test_user@demo.com",
                 "first_name": "Johnny",
                 "last_name": "Energy",
+                "two_factor_method": "disabled",
             },
         )
 
