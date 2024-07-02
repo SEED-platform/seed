@@ -450,6 +450,7 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
     };
 
     $scope.open_match_merge_modal = () => {
+      $scope.save_settings()
       $uibModal.open({
         templateUrl: `${urls.static_url}seed/partials/match_merge_modal.html`,
         controller: 'match_merge_modal_controller',
