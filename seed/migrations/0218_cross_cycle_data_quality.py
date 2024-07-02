@@ -24,15 +24,30 @@ def forwards(apps, schema_editor):
         Column.objects.create(**{**wui_column, "organization_id": org_id})
 
     # Populate the default labels for goal rules.
+    DEFAULT_GOAL_LABELS = [
+        "Missing Data",
+        "High EUI",
+        "Low EUI",
+        "High EUI % Change",
+        "Low EUI % Change",
+        "High WUI",
+        "Low WUI",
+        "High WUI % Change",
+        "Low WUI % Change",
+        "High Area",
+        "Low Area",
+        "High Area % Change",
+        "Low Area % Change",
+    ]
     # Update existing labels "show_in_list" to true
-    existing_labels = Label.objects.filter(name__in=Label.DEFAULT_GOAL_LABELS)
+    existing_labels = Label.objects.filter(name__in=DEFAULT_GOAL_LABELS)
     existing_labels.update(show_in_list=True)
     existing_label_set = set(existing_labels.values_list("name", "super_organization_id"))
 
     # create remaining labels
     new_labels = []
     for org in Organization.objects.all():
-        for label_name in Label.DEFAULT_GOAL_LABELS:
+        for label_name in DEFAULT_GOAL_LABELS:
             if (label_name, org.id) not in existing_label_set:
                 new_labels.append(Label(name=label_name, super_organization=org, color="blue", show_in_list=True))
 
