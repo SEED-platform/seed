@@ -8,12 +8,16 @@ from django.db import IntegrityError
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
 from rest_framework import status
+from rest_framework.decorators import action
 from rest_framework.renderers import JSONRenderer
 
+from seed.decorators import ajax_request_class
 from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm_class
 from seed.lib.superperms.orgs.models import AccessLevelInstance
+from seed.lib.tkbl.tkbl import scope_one_emission_codes
 from seed.models import Element
-from seed.serializers.elements import ElementPropertySerializer, ElementSerializer
+from seed.serializers.elements import ElementPropertySerializer, ElementPropertyTKBLSerializer, ElementSerializer
+from seed.utils.api import api_endpoint_class
 from seed.utils.api_schema import swagger_auto_schema_org_query_param
 from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet, SEEDOrgReadOnlyModelViewSet
 
@@ -108,10 +112,20 @@ class ElementViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
         return self.model.objects.filter(
             organization_id=self.get_organization(self.request),
             property_id=self.kwargs.get("property_pk"),
-        )
+        ).select_related("code")
 
     def create(self, request, *args, **kwargs):
         try:
             return super().create(request, args, kwargs)
         except IntegrityError as e:
             return JsonResponse({"status": "error", "message": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+    @swagger_auto_schema_org_query_param
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class("requires_viewer")
+    @has_hierarchy_access(property_id_kwarg="property_pk")
+    @action(detail=False, methods=["GET"])
+    def tkbl(self, request, *args, **kwargs):
+        tkbl_elements = self.get_queryset().filter(code__code__in=scope_one_emission_codes).order_by("remaining_service_life")[:3]
+        return ElementPropertyTKBLSerializer(tkbl_elements, many=True).data
