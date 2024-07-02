@@ -64,10 +64,7 @@ class DataLoggerViewSet(viewsets.ViewSet, OrgMixin):
         org_id = self.get_organization(request)
         property_view_id = request.GET["property_view_id"]
 
-        property_view = PropertyView.objects.get(
-            pk=property_view_id,
-            cycle__organization_id=org_id
-        )
+        property_view = PropertyView.objects.get(pk=property_view_id, cycle__organization_id=org_id)
         property_id = property_view.property.id
 
         # for every weekday from 2020-2023, mark as occupied from 8-5
@@ -88,15 +85,12 @@ class DataLoggerViewSet(viewsets.ViewSet, OrgMixin):
             day += timedelta(days=1)
 
         data = request.data
-        data['property'] = property_id
-        data['is_occupied_data'] = is_occupied_data
+        data["property"] = property_id
+        data["is_occupied_data"] = is_occupied_data
         serializer = DataLoggerSerializer(data=data)
 
         if not serializer.is_valid():
-            return JsonResponse({
-                'status': 'error',
-                'errors': serializer.errors
-            }, status=status.HTTP_400_BAD_REQUEST)
+            return JsonResponse({"status": "error", "errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
         serializer.save()
 
@@ -135,18 +129,12 @@ class DataLoggerViewSet(viewsets.ViewSet, OrgMixin):
         try:
             datalogger = DataLogger.objects.get(pk=pk, property__organization=org_id)
         except DataLogger.DoesNotExist:
-            return JsonResponse({
-                'status': 'error',
-                'errors': 'No such resource.'
-            })
+            return JsonResponse({"status": "error", "errors": "No such resource."})
 
         serializer = DataLoggerSerializer(datalogger, data=request.data, partial=True)
 
         if not serializer.is_valid():
-            return JsonResponse({
-                'status': 'error',
-                'errors': serializer.errors
-            }, status=status.HTTP_400_BAD_REQUEST)
+            return JsonResponse({"status": "error", "errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
         serializer.save()
         return JsonResponse(serializer.data)
