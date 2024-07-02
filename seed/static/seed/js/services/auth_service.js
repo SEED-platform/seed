@@ -5,10 +5,8 @@
 angular.module('BE.seed.service.auth', []).factory('auth_service', [
   '$http',
   'user_service',
-  'generated_urls',
-  ($http, user_service, generated_urls) => {
+  ($http, user_service) => {
     const auth_factory = {};
-    const urls = generated_urls;
 
     /**
      * checks against the auth backend to determine if the requesting user is
@@ -20,10 +18,11 @@ angular.module('BE.seed.service.auth', []).factory('auth_service', [
      *      auth = data.auth; // auth === {'can_invite_member': true, 'can_remove_member': true}
      *  });
      *
-     * @param  {integer}  organization_id is the id of organization
-     * @param  {array}  actions is an array of actions
-     * @return {promise} then a an object with keys as the actions, and bool
-     * values
+     * @param {number} organization_id - id of organization
+     * @param {string[]} actions - an array of actions
+     * @return {Promise<Object>} A promise that resolves to an object containing:
+     *  * - `status`: A string that indicates the success of the operation.
+     *  * - `auth`: An object mapping string keys to boolean values representing authorization statuses.
      */
     auth_factory.is_authorized = (organization_id, actions) => user_service.get_user_id().then((user_id) => $http
       .post(
@@ -38,12 +37,6 @@ angular.module('BE.seed.service.auth', []).factory('auth_service', [
         }
       )
       .then((response) => response.data));
-
-    /**
-     * gets all available actions
-     * @return {promise} then an array of actions
-     */
-    auth_factory.get_actions = () => $http.get(urls.accounts.get_actions).then((response) => response.data);
 
     return auth_factory;
   }

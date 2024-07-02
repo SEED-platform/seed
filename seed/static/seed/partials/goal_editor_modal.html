@@ -12,14 +12,14 @@
     <div class="section">
       <div class="section_content_container rp-data-view">
         <div class="goals-text">
-          Configure one or more portfolio Energy Use Intensity (EUI) reduction goals below.
+          <span translate>GOAL_CONFIG_TEXT</span>
           <i class="ui-grid-icon-info-circled" ng-mouseenter="show_help = true" ng-mouseleave="show_help = false"></i>
           <div class="alert alert-info" ng-show="show_help" style="position: absolute; z-index: 1; font-weight: normal">
             <ul>
-              <li>Select a baseline cycle and a current cycle for comparison</li>
-              <li>Indicate the level in your access level tree that this goal applies to</li>
-              <li>Indicate which fields in your data should be used for EUI and floor area information</li>
-              <li>Specify a percentage EUI improvement target</li>
+              <li translate>GOAL_SELECT_CYCLES</li>
+              <li translate>GOAL_SELECT_ALI</li>
+              <li translate>GOAL_SELECT_EUI_FIELDS</li>
+              <li translate>GOAL_SELECT_PERCENTAGE</li>
             </ul>
           </div>
         </div>
@@ -165,7 +165,7 @@
                   <li class="r-list-header" translate>EUI Target Columns</li>
                   <!-- EUI Column1 -->
                   <li class="r-row r-row-centered">
-                    <label for="select-eui-column1" class="r-pad-right-5 goal-label">Primary Column</label>
+                    <label for="select-eui-column1" class="r-pad-right-5 goal-label" translate>Primary Column</label>
                     <select
                       id="select-eui-column1"
                       class="form-control goal-form-control"
@@ -177,7 +177,7 @@
                   </li>
                   <!-- EUI Column2 -->
                   <li class="r-row r-row-centered" ng-if="goal.eui_column1">
-                    <label for="select-eui-column2" class="r-pad-right-5 goal-label">Secondary (optional)</label>
+                    <label for="select-eui-column2" class="r-pad-right-5 goal-label" translate>Secondary (optional)</label>
                     <select
                       id="select-eui-column2"
                       class="form-control goal-form-control"
@@ -189,7 +189,7 @@
                   </li>
                   <!-- EUI Column3 -->
                   <li class="r-row r-row-centered" ng-if="goal.eui_column2">
-                    <label for="select-eui-column3" class="r-pad-right-5 goal-label">Tertiary (optional)</label>
+                    <label for="select-eui-column3" class="r-pad-right-5 goal-label" translate>Tertiary (optional)</label>
                     <select
                       id="select-eui-column3"
                       class="form-control goal-form-control"
@@ -213,13 +213,22 @@
                   </li>
                 </ul>
                 <!-- Target -->
-                <ul class="r-list" style="margin-bottom: 40px">
+                <ul class="r-list">
                   <li class="r-list-header" translate>Portfolio Target</li>
                   <li class="r-row r-row-centered">
-                    <label for="input-target" class="r-pad-right-5 goal-label">Percentage (%)</label>
+                    <label for="input-target" class="r-pad-right-5 goal-label" translate>Percentage (%)</label>
                     <input id="input-target" class="form-control goal-form-control" type="number" ng-model="goal.target_percentage" min="0" max="100" style="padding-left: 5px" required />
                   </li>
                   <li class="r-info"><i class="fa-solid fa-arrow-up r-pad-right-5"></i><span translate>Target to quantify Portfolio EUI improvement. Must be between 0 and 100.</span></li>
+                </ul>
+                <!-- Commitment Sq Ft -->
+                <ul class="r-list" style="margin-bottom: 50px">
+                  <li class="r-list-header" translate>Commitment</li>
+                  <li class="r-row r-row-centered">
+                    <label for="input-target" class="r-pad-right-5 goal-label" translate>Commitment (Sq Ft)</label>
+                    <input id="input-target" class="form-control goal-form-control" type="number" ng-model="goal.commitment_sqft" min="0" style="padding-left: 5px" />
+                  </li>
+                  <li class="r-info"><i class="fa-solid fa-arrow-up r-pad-right-5"></i><span translate>Committed Area</span></li>
                 </ul>
               </div>
             </form>

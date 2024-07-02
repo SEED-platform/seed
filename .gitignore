@@ -9,7 +9,6 @@
 .pydevproject
 .python-version
 .vscode
-coverage.protractor.json
 *~
 *~$*
 *.ipynb
@@ -65,12 +64,6 @@ seed/tests/api/api_test_user.json
 seed/building_sync/tests/data/test_file.xml
 seed/tests/output
 test.sqlite
-
-# Ignore all protractor coverage
-protractorReports/
-protractorInstrumented/
-protractorSaved/
-protractorCoverage/
 
 docs/build/
 docs/scripts/Gemfile.lock

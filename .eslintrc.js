@@ -23,7 +23,6 @@ module.exports = {
     moment: true,
     ol: true,
     pluralize: true,
-    protractor: true,
     qq: true,
     saveAs: true,
     Spinner: true,
@@ -32,8 +31,7 @@ module.exports = {
   },
   plugins: [
     'angular',
-    'prefer-arrow',
-    'protractor'
+    'prefer-arrow'
   ],
   rules: {
     'arrow-parens': [

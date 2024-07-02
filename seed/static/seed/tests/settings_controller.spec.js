@@ -12,8 +12,7 @@ describe('controller: organization_settings_controller', () => {
   beforeEach(() => {
     module('BE.seed');
     inject((_$httpBackend_) => {
-      $httpBackend = _$httpBackend_;
-      $httpBackend.whenGET(/^\/static\/seed\/locales\/.*\.json/).respond(200, {});
+      _$httpBackend_.whenGET(/^\/static\/seed\/locales\/.*\.json/).respond(200, {});
     });
     inject(($controller, $rootScope, $uibModal, $q, organization_service, meters_service) => {
       controller = $controller;
@@ -22,17 +21,9 @@ describe('controller: organization_settings_controller', () => {
       mock_organization_service = organization_service;
       mock_meters_service = meters_service;
 
-      spyOn(mock_organization_service, 'save_org_settings').andCallFake(() =>
-        // return $q.reject for error scenario
-        $q.resolve({
-          status: 'success'
-        }));
+      spyOn(mock_organization_service, 'save_org_settings').andCallFake(() => $q.resolve({ status: 'success' }));
 
-      spyOn(mock_meters_service, 'valid_energy_types_units').andCallFake(() =>
-        // return $q.reject for error scenario
-        $q.resolve({
-          status: 'success'
-        }));
+      spyOn(mock_meters_service, 'valid_energy_types_units').andCallFake(() => $q.resolve({ status: 'success' }));
     });
   });
 
