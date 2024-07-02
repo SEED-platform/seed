@@ -121,10 +121,18 @@ def create_organization(user=None, org_name="test_org", *args, **kwargs):
             user=user, organization=organization, access_level_instance=organization.root
         )
 
-    for label in Label.DEFAULT_LABELS:
+    for label in Label.DEFAULT_INVENTORY_LABELS:
         Label.objects.get_or_create(
             name=label,
             super_organization=organization,
+            defaults={"color": "blue"},
+        )
+
+    for label in Label.DEFAULT_GOAL_LABELS:
+        Label.objects.get_or_create(
+            name=label,
+            super_organization=organization,
+            show_in_list=True,
             defaults={"color": "blue"},
         )
 

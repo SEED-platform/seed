@@ -10,6 +10,7 @@ def forwards(apps, schema_editor):
     Organization = apps.get_model("orgs", "Organization")
     Label = apps.get_model("seed", "StatusLabel")
 
+    # Create new wui column
     wui_column = {
         "column_name": "site_wui",
         "table_name": "PropertyState",
@@ -23,21 +24,19 @@ def forwards(apps, schema_editor):
         Column.objects.create(**{**wui_column, "organization_id": org_id})
 
     # Populate the default labels for goal rules.
-    NEW_DEFAULT_LABELS = [
-        "High EUI % Change",
-        "Low EUI % Change",
-        "High WUI",
-        "Low WUI" "High WUI % Change",
-        "Low WUI % Change",
-        "High Area",
-        "Low Area",
-        "High Area % Change",
-        "Low Area % Change",
-    ]
+    # Update existing labels "show_in_list" to true
+    existing_labels = Label.objects.filter(name__in=Label.DEFAULT_GOAL_LABELS)
+    existing_labels.update(show_in_list=True)
+    existing_label_set = set(existing_labels.values_list("name", "super_organization_id"))
 
+    # create remaining labels
+    new_labels = []
     for org in Organization.objects.all():
-        for label in NEW_DEFAULT_LABELS:
-            Label.objects.get_or_create(name=label, super_organization=org, defaults={"color": "blue"}, show_in_list=True)
+        for label_name in Label.DEFAULT_GOAL_LABELS:
+            if (label_name, org.id) not in existing_label_set:
+                new_labels.append(Label(name=label_name, super_organization=org, color="blue", show_in_list=True))
+
+    Label.objects.bulk_create(new_labels)
 
 
 def remove_unique_constraint(apps, schema_editor):
