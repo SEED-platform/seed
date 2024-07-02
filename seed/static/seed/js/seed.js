@@ -645,6 +645,14 @@ SEED_app.config([
               const organization_id = user_service.get_organization().id;
               return organization_service.get_organization(organization_id);
             }
+          ],
+          access_level_tree: [
+            'organization_service',
+            'user_service',
+            (organization_service, user_service) => {
+              const organization_id = user_service.get_organization().id;
+              return organization_service.get_organization_access_level_tree(organization_id);
+            }
           ]
         }
       })
@@ -1209,6 +1217,11 @@ SEED_app.config([
                 (data) => $q.reject(data.message)
               );
             }
+          ],
+          property_columns: [
+            'inventory_service',
+            'user_service',
+            (inventory_service) => inventory_service.get_property_columns()
           ]
         }
       })
@@ -1220,10 +1233,10 @@ SEED_app.config([
         resolve: {
           all_columns: [
             '$stateParams',
-            'inventory_service',
-            ($stateParams, inventory_service) => {
+            'analyses_service',
+            ($stateParams, analyses_service) => {
               const { organization_id } = $stateParams;
-              return inventory_service.get_used_columns(organization_id);
+              return analyses_service.get_used_columns(organization_id);
             }
           ],
           organization_payload: [

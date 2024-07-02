@@ -55,6 +55,7 @@ from seed.views.v3.properties import PropertyViewSet
 from seed.views.v3.property_measures import PropertyMeasureViewSet
 from seed.views.v3.property_scenarios import PropertyScenarioViewSet
 from seed.views.v3.property_views import PropertyViewViewSet
+from seed.views.v3.public import PublicCycleViewSet, PublicOrganizationViewSet
 from seed.views.v3.salesforce_configs import SalesforceConfigViewSet
 from seed.views.v3.salesforce_mappings import SalesforceMappingViewSet
 from seed.views.v3.sensors import SensorViewSet
@@ -146,6 +147,15 @@ property_measures_router.register(r"measures", PropertyMeasureViewSet, basename=
 taxlots_router = nested_routers.NestedSimpleRouter(api_v3_router, r"taxlots", lookup="taxlot")
 taxlots_router.register(r"notes", NoteViewSet, basename="taxlot-notes")
 
+public_organizations_router = routers.DefaultRouter()
+public_organizations_router.register(
+    r"public/organizations",
+    PublicOrganizationViewSet,
+    basename="public-organizations",
+)
+
+public_cycles_router = nested_routers.NestedSimpleRouter(public_organizations_router, r"public/organizations", lookup="organization")
+public_cycles_router.register(r"cycles", PublicCycleViewSet, basename="public-organizations-cycles")
 
 urlpatterns = [
     re_path(r"^", include(api_v3_router.urls)),
@@ -168,6 +178,8 @@ urlpatterns = [
     re_path(r"^", include(meters_router.urls)),
     re_path(r"^", include(property_measures_router.urls)),
     re_path(r"^", include(taxlots_router.urls)),
+    re_path(r"^", include(public_organizations_router.urls)),
+    re_path(r"^", include(public_cycles_router.urls)),
     re_path(r"^celery_queue/$", celery_queue, name="celery_queue"),
     re_path(r"media/(?P<filepath>.*)$", MediaViewSet.as_view()),
 ]
