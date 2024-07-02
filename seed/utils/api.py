@@ -428,7 +428,7 @@ class OrgQuerySetMixin(OrgMixin):
     """Mixin proving a get_queryset method that filters on organization.
 
     In order to use this mixin you must specify the model attributes on the
-    View[Set] class. By default it assumes there is an organization field
+    View[Set] class. By default, it assumes there is an organization field
     on the model. You can override this by setting the orgfilter attribute
     to the appropriate fieldname. This also allows nested fields e.g.
     foreign_key.organization
@@ -440,7 +440,6 @@ class OrgQuerySetMixin(OrgMixin):
 
     def get_queryset(self):
         """get_queryset filtered on organization"""
-        # pylint:disable=invalid-name
         # raises Attribute Error if not set
         Model = self.model
         qsfilter = getattr(self, "orgfilter", "organization_id")

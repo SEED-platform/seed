@@ -1354,10 +1354,8 @@ class Column(models.Model):
 
         :return: list, names of columns, independent of inventory type.
         """
-        result = []
         columns = Column.retrieve_db_fields_from_db_tables()
-        for c in columns:
-            result.append(c["column_name"])
+        result = [c["column_name"] for c in columns]
 
         return sorted(set(result))
 

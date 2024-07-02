@@ -4,10 +4,10 @@
  */
 describe('controller: dataset_detail_controller', () => {
   // globals set up and used in each test scenario
-  let controller; let
-    delete_called;
-  let mock_dataset_service; let
-    dataset_detail_controller_scope;
+  let controller;
+  let delete_called;
+  let mock_dataset_service;
+  let dataset_detail_controller_scope;
 
   // make the seed app available for each test
   // 'config.seed' is created in TestFilters.html

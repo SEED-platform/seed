@@ -4738,6 +4738,8 @@ uniformat_data: list[UniformatEntry] = [
     },
 ]
 
+uniformat_codes = [element["code"] for element in uniformat_data]
+
 
 def import_uniformat() -> None:
     with transaction.atomic():

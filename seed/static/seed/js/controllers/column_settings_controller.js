@@ -376,7 +376,7 @@ angular.module('BE.seed.controller.column_settings', []).controller('column_sett
       // size: 'lg',
       resolve: {
         org_id: $scope.org.id,
-        table_name: () => ($scope.inventory_type === 'properties' ? 'PropertyState' : 'TaxlotState'),
+        table_name: () => ($scope.inventory_type === 'properties' ? 'PropertyState' : 'TaxLotState'),
         black_listed_names: () => ['', ...$scope.columns.map((c) => c.column_name)]
       }
     });
