@@ -749,7 +749,7 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
       const property_view_ids = $scope.inventory_type === 'properties' ? selectedViewIds : [];
       const taxlot_view_ids = $scope.inventory_type === 'taxlots' ? selectedViewIds : [];
 
-      data_quality_service.start_data_quality_checks(property_view_ids, taxlot_view_ids).then((response) => {
+      data_quality_service.start_data_quality_checks(property_view_ids, taxlot_view_ids, null).then((response) => {
         data_quality_service
           .data_quality_checks_status(response.progress_key)
           .then((result) => {
@@ -809,7 +809,7 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
         options.cellFilter = "date:'yyyy-MM-dd h:mm a'";
       } else if (['longitude', 'latitude'].includes(col.column_name)) {
         options.cellFilter = 'floatingPoint';
-      } else if (['area', 'eui', 'float', 'number'].includes(col.data_type)) {
+      } else if (['area', 'eui', 'float', 'number', 'wui'].includes(col.data_type)) {
         options.cellFilter = `tolerantNumber: ${$scope.organization.display_decimal_places}`;
       } else if (col.is_derived_column) {
         options.cellFilter = `number: ${$scope.organization.display_decimal_places}`;

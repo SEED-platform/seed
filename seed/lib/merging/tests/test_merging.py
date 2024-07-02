@@ -97,6 +97,7 @@ class StateFieldsTest(TestCase):
             ("site_eui", "site_eui"),
             ("site_eui_modeled", "site_eui_modeled"),
             ("site_eui_weather_normalized", "site_eui_weather_normalized"),
+            ("site_wui", "site_wui"),
             ("source_eui", "source_eui"),
             ("source_eui_modeled", "source_eui_modeled"),
             ("source_eui_weather_normalized", "source_eui_weather_normalized"),

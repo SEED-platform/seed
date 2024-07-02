@@ -36,7 +36,7 @@
                   ><i class="fa-solid fa-sliders"></i>{$:: 'Column Settings' | translate $}</a
                 >
                 <a ui-sref="organization_cycles(::{organization_id: org.id})" ng-if="::org.is_parent"><i class="fa-regular fa-calendar-days"></i>{$:: 'Cycles' | translate $}</a>
-                <a ui-sref="organization_data_quality(::{organization_id: org.id, inventory_type: 'properties'})" ng-if="::org.is_parent"
+                <a ui-sref="organization_data_quality(::{organization_id: org.id, rule_type: 'properties'})" ng-if="::org.is_parent"
                   ><i class="fa-solid fa-flag"></i>{$:: 'Data Quality' | translate $}</a
                 >
                 <a ui-sref="organization_derived_columns(::{organization_id: org.id, inventory_type: 'properties'})"><i class="fa-solid fa-calculator"></i>Derived Columns</a>
