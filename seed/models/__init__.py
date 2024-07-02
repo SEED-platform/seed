@@ -44,5 +44,6 @@ from .ubid_models import *
 from .uniformat import *
 from .goals import *
 from .goal_notes import *
+from .audit_template_configs import *
 
 from .certification import GreenAssessment, GreenAssessmentProperty, GreenAssessmentURL
