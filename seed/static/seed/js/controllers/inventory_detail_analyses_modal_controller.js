@@ -110,6 +110,9 @@ angular.module('BE.seed.controller.inventory_detail_analyses_modal', []).control
         case 'EEEJ':
           $scope.new_analysis.configuration = {};
           break;
+        case 'Hannah':
+          $scope.new_analysis.configuration = {};
+          break;
         default:
           $log.error('Unknown analysis type.', $scope.new_analysis.service);
           Notification.error(`Unknown analysis type: ${$scope.new_analysis.service}`);
