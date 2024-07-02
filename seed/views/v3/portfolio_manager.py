@@ -91,7 +91,7 @@ class PortfolioManagerViewSet(GenericViewSet):
                 "report_format": "string",
             },
             description="ESPM account credentials.",
-            required=["username", "password"],
+            required=["username", "password", "template"],
         ),
         responses={
             200: AutoSchemaHelper.schema_factory(
@@ -388,7 +388,7 @@ class PortfolioManagerImport:
                 _log.debug("Received the following child JSON return: " + json.dumps(child_object, indent=2))
                 for child_row in child_object:
                     child_row["z_seed_child_row"] = True
-                    child_row["display_name"] = "  -  %s" % child_row["name"]
+                    child_row["display_name"] = f"  -  {child_row['name']}"
                     template_response.append(child_row)
         return template_response
 
@@ -426,7 +426,7 @@ class PortfolioManagerImport:
             self.login_and_set_cookie_header()
 
         template_report_id = template["id"]
-        update_report_url = "https://portfoliomanager.energystar.gov/pm/reports/generateData/" + str(template_report_id)
+        update_report_url = f"https://portfoliomanager.energystar.gov/pm/reports/generateData/{template_report_id}"
 
         new_authenticated_headers = self.authenticated_headers.copy()
         new_authenticated_headers["Content-Type"] = "application/x-www-form-urlencoded"
@@ -437,7 +437,7 @@ class PortfolioManagerImport:
             raise PMError("SSL Error in Portfolio Manager Query; check VPN/Network/Proxy.")
         if not response.status_code == status.HTTP_200_OK:
             raise PMError("Unsuccessful response from POST to update report; aborting.")
-        _log.debug("Triggered report update,\n status code=" + str(response.status_code) + "\n response headers=" + str(response.headers))
+        _log.debug(f"Triggered report update,\n status code={response.status_code}\n response headers={response.headers!s}")
 
         return response.content
 
@@ -462,16 +462,14 @@ class PortfolioManagerImport:
 
         # We should then trigger generation of the report we selected
         template_report_id = matched_template["id"]
-        generation_url = f"https://portfoliomanager.energystar.gov/pm/reports/generateData/{template_report_id!s}"
+        generation_url = f"https://portfoliomanager.energystar.gov/pm/reports/generateData/{template_report_id}"
         try:
             response = requests.post(generation_url, headers=self.authenticated_headers, timeout=300)
         except requests.exceptions.SSLError:
             raise PMError("SSL Error in Portfolio Manager Query; check VPN/Network/Proxy.")
         if not response.status_code == status.HTTP_200_OK:
             raise PMError("Unsuccessful response from POST to trigger report generation; aborting.")
-        _log.debug(
-            "Triggered report generation,\n status code=" + str(response.status_code) + "\n response headers=" + str(response.headers)
-        )
+        _log.debug(f"Triggered report generation,\n status code={response.status_code}\n response headers={response.headers!s}")
 
         # Now we need to wait while the report is being generated
         attempt_count = 0

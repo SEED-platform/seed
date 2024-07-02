@@ -14,8 +14,7 @@ describe('controller: dataset_detail_controller', () => {
   beforeEach(() => {
     module('BE.seed');
     inject((_$httpBackend_) => {
-      $httpBackend = _$httpBackend_;
-      $httpBackend.whenGET(/^\/static\/seed\/locales\/.*\.json/).respond(200, {});
+      _$httpBackend_.whenGET(/^\/static\/seed\/locales\/.*\.json/).respond(200, {});
     });
     inject(($controller, $rootScope, $uibModal, urls, $q, dataset_service) => {
       controller = $controller;
@@ -26,7 +25,6 @@ describe('controller: dataset_detail_controller', () => {
       // and return their promises
       mock_dataset_service = dataset_service;
       spyOn(mock_dataset_service, 'get_dataset').andCallFake(() => {
-        // return $q.reject for error scenario
         const fake_importfiles = [
           {
             name: 'DC_CoveredBuildings_50k.csv',
