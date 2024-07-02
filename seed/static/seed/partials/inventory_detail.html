@@ -358,7 +358,7 @@
     <br />
     <br />
 
-    <div ng-if="::inventory_type==='properties'">
+    <div ng-if="::inventory_type==='properties' && elements.length > 0">
       <!-- Elements Section -->
       <div class="section">
         <div class="section_header_container" style="margin-top: 20px; border-bottom: 0">
@@ -373,7 +373,7 @@
             <table class="table table-striped" style="margin-bottom: -1px">
               <thead>
                 <tr>
-                  <th translate>Uniformat</th>
+                  <th translate>Uniformat Category</th>
                   <th translate>Description</th>
                   <th translate>Installation Date</th>
                   <th translate>Manufacturing Date</th>
@@ -413,8 +413,8 @@
             <table class="table table-striped tkbl-table" style="margin-bottom: -1px">
               <thead>
                 <tr>
-                  <th translate>Remaining Service Life</th>
-                  <th translate>Uniformat</th>
+                  <th translate>Uniformat Category</th>
+                  <th style="display: flex; align-items: end; gap: 4px"><span translate>Remaining Service Life</span><i class="fa-solid fa-sort-up"></i></th>
                   <th translate>Description</th>
                   <th translate>GSA SFTool Guidance</th>
                   <th translate>ESTCP Report</th>
@@ -425,8 +425,8 @@
               </thead>
               <tbody>
                 <tr ng-repeat="element in tkbl">
-                  <td>{$:: element.remaining_service_life | number $}</td>
                   <td ng-attr-title="{$:: uniformat_hierarchy(element.code) $} ({$:: element.code $})">{$:: uniformat[element.code].category | startCase $}</td>
+                  <td ng-attr-title="{$:: element.remaining_service_life $}">{$:: element.remaining_service_life | number:2 $}</td>
                   <td>{$:: element.description $}</td>
                   <td>
                     <ul ng-if="element.tkbl.sftool.length > 0">

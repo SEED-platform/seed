@@ -76,7 +76,7 @@ class TestMeterCRUD(AssertDictSubsetMixin, DeleteModelsTestCase):
 
         response = self.client.post(url, data=json.dumps(payload), content_type="application/json")
         self.assertEqual(response.status_code, 201)
-        self.assertDictContainsSubset(payload, response.data)
+        self.assertDictContainsSubset(payload, response.json())
 
         payload = {
             "type": "Electric - Grid",
@@ -87,8 +87,8 @@ class TestMeterCRUD(AssertDictSubsetMixin, DeleteModelsTestCase):
         response = self.client.post(url, data=json.dumps(payload), content_type="application/json")
         self.assertEqual(response.status_code, 201)
         # verify that the source_id gets updated when GreenButton
-        self.assertEqual(response.data["source_id"], "123fakeID")
-        self.assertEqual(response.data["alias"], "Electric - Grid - GreenButton - 123fakeID")
+        self.assertEqual(response.json()["source_id"], "123fakeID")
+        self.assertEqual(response.json()["alias"], "Electric - Grid - GreenButton - 123fakeID")
 
         payload = {
             "type": "Natural Gas",
@@ -99,7 +99,7 @@ class TestMeterCRUD(AssertDictSubsetMixin, DeleteModelsTestCase):
 
         response = self.client.post(url, data=json.dumps(payload), content_type="application/json")
         self.assertEqual(response.status_code, 201)
-        self.assertDictContainsSubset(payload, response.data)
+        self.assertDictContainsSubset(payload, response.json())
 
     def test_create_meter_with_scenario(self):
         property_view = self.property_view_factory.get_property_view()
@@ -163,14 +163,14 @@ class TestMeterCRUD(AssertDictSubsetMixin, DeleteModelsTestCase):
         }
         response = self.client.post(url, data=json.dumps(payload), content_type="application/json")
         self.assertEqual(response.status_code, 201)
-        self.assertDictContainsSubset(payload, response.data)
+        self.assertDictContainsSubset(payload, response.json())
 
         # verify that there is only 1 meter for property
         response = self.client.get(url, content_type="application/json")
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.data), 1)
+        self.assertEqual(len(response.json()), 1)
 
-        meter_id = response.data[0]["id"]
+        meter_id = response.json()[0]["id"]
         meter_url = (
             reverse("api:v3:property-meters-detail", kwargs={"property_pk": property_view.id, "pk": meter_id})
             + f"?organization_id={self.org.id}"
@@ -180,7 +180,7 @@ class TestMeterCRUD(AssertDictSubsetMixin, DeleteModelsTestCase):
         # make sure there are no meters for property
         response = self.client.get(url, content_type="application/json")
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.data), 0)
+        self.assertEqual(len(response.json()), 0)
 
     def test_update_meter(self):
         # create meter
@@ -194,18 +194,18 @@ class TestMeterCRUD(AssertDictSubsetMixin, DeleteModelsTestCase):
         }
         response = self.client.post(url, data=json.dumps(payload), content_type="application/json")
         self.assertEqual(response.status_code, 201)
-        self.assertDictContainsSubset(payload, response.data)
+        self.assertDictContainsSubset(payload, response.json())
 
         new_payload = copy.deepcopy(payload)
         new_payload["is_virtual"] = True
-        meter_id = response.data["id"]
+        meter_id = response.json()["id"]
         meter_url = (
             reverse("api:v3:property-meters-detail", kwargs={"property_pk": property_view.id, "pk": meter_id})
             + f"?organization_id={self.org.id}"
         )
         response = self.client.put(meter_url, data=json.dumps(new_payload), content_type="application/json")
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data["is_virtual"], True)
+        self.assertEqual(response.json()["is_virtual"], True)
 
 
 class TestMetersPermissions(AccessLevelBaseTestCase, DeleteModelsTestCase):
