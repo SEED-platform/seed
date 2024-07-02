@@ -8,7 +8,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
     dependencies = [
         ("orgs", "0032_org_audit_template_fields"),
-        ("seed", "0216_alter_sensor_unique_together"),
+        ("seed", "0217_goal_commitment_sqft"),
     ]
 
     operations = [
