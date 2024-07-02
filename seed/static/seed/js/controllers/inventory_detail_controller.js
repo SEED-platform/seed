@@ -41,6 +41,7 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
   'scenario_service',
   'uniformat_payload',
   'elements_payload',
+  'tkbl_payload',
   // eslint-disable-next-line func-names
   function (
     $http,
@@ -80,7 +81,8 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
     property_measure_service,
     scenario_service,
     uniformat_payload,
-    elements_payload
+    elements_payload,
+    tkbl_payload
   ) {
     $scope.inventory_type = $stateParams.inventory_type;
     $scope.organization = organization_payload.organization;
@@ -103,6 +105,7 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
 
     $scope.uniformat = uniformat_payload;
     $scope.elements = elements_payload;
+    $scope.tkbl = tkbl_payload;
 
     $scope.element_extra_data_columns = [...elements_payload.reduce((set, element) => {
       for (const key of Object.keys(element.extra_data)) {
@@ -1061,11 +1064,12 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
      * @param {string} code - Code representing the Uniformat category.
      * @return {string} Formatted category hierarchy or the original code if the category is not found.
      */
-    $scope.uniformat_category = (code) => {
+    $scope.uniformat_hierarchy = (code) => {
       const element = uniformat_payload[code];
       if (element) {
         const { category, parent } = element;
-        return parent ? `${$scope.uniformat_category(parent)} → ${category}` : category;
+        const formattedCategory = $filter('startCase')(category);
+        return parent ? `${$scope.uniformat_hierarchy(parent)} → ${formattedCategory}` : formattedCategory;
       }
       return code;
     };

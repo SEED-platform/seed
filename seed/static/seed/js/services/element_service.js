@@ -29,6 +29,12 @@ angular.module('BE.seed.service.element', []).factory('element_service', [
     delete_element: (organization_id, property_id, element_id) => $http
       .delete(`/api/v3/properties/${property_id}/elements/${element_id}/`, {
         organization_id
+      }).then(({ data }) => data),
+
+    // Return Technology Knowledge Base Library guidance for a given property
+    get_tkbl: (organization_id, property_id) => $http
+      .get(`/api/v3/properties/${property_id}/elements/tkbl`, {
+        params: { organization_id }
       }).then(({ data }) => data)
   })
 ]);
