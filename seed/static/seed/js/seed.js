@@ -2352,16 +2352,28 @@ SEED_app.config([
             (uniformat_service) => uniformat_service.get_uniformat()
           ],
           elements_payload: [
+            '$stateParams',
             'element_service',
             'user_service',
             'inventory_payload',
-            (element_service, user_service, inventory_payload) => element_service.get_elements(user_service.get_organization().id, inventory_payload.property.id)
+            ($stateParams, element_service, user_service, inventory_payload) => {
+              if ($stateParams.inventory_type === 'properties') {
+                return element_service.get_elements(user_service.get_organization().id, inventory_payload.property.id);
+              }
+              return [];
+            }
           ],
           tkbl_payload: [
+            '$stateParams',
             'element_service',
             'user_service',
             'inventory_payload',
-            (element_service, user_service, inventory_payload) => element_service.get_tkbl(user_service.get_organization().id, inventory_payload.property.id)
+            ($stateParams, element_service, user_service, inventory_payload) => {
+              if ($stateParams.inventory_type === 'properties') {
+                return element_service.get_tkbl(user_service.get_organization().id, inventory_payload.property.id);
+              }
+              return [];
+            }
           ]
         }
       })

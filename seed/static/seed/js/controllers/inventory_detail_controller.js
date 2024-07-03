@@ -587,7 +587,8 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
         templateUrl: `${urls.static_url}seed/partials/unmerge_modal.html`,
         controller: 'unmerge_modal_controller',
         resolve: {
-          inventory_type: () => $scope.inventory_type
+          inventory_type: () => $scope.inventory_type,
+          has_elements: () => $scope.elements.length > 0
         }
       });
 
