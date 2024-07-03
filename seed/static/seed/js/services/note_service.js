@@ -10,7 +10,7 @@ angular.module('BE.seed.service.note', []).factory('note_service', [
     const note_factory = {};
 
     /*
-      Return a list of notes for a giving property or taxlot
+      Return a list of notes for a given property or taxlot
 
       {
         "created": "2018-01-11T21:00:16.178317Z",

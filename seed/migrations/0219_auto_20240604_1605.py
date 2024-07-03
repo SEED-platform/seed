@@ -5,7 +5,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("seed", "0217_goal_commitment_sqft"),
+        ("seed", "0218_elements"),
     ]
 
     operations = [

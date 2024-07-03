@@ -4,14 +4,16 @@
  */
 describe('controller: inventory_detail_controller', () => {
   // globals set up and used in each test scenario
-  let ngFilter; let ngLog; let
-    ngUrls;
-  let controller; let
-    inventory_detail_controller_scope;
-  let mock_inventory_service; let
-    state;
-  let mock_uib_modal; let mock_label_service; let
-    mock_label_payload;
+  let ngFilter;
+  let ngLog;
+  let ngUrls;
+  let controller;
+  let inventory_detail_controller_scope;
+  let mock_inventory_service;
+  let state;
+  let mock_uib_modal;
+  let mock_label_service;
+  let mock_label_payload;
 
   beforeEach(() => {
     module('BE.seed');
@@ -275,9 +277,9 @@ describe('controller: inventory_detail_controller', () => {
       analyses_payload: {
         analyses: []
       },
-      users_payload: {
-        users: []
-      },
+      elements_payload: [],
+      tkbl_payload: [],
+      uniformat_payload: {},
       views_payload: {
         status: 'success',
         property_views: []

@@ -27,6 +27,7 @@ from seed.views.v3.data_views import DataViewViewSet
 from seed.views.v3.datasets import DatasetViewSet
 from seed.views.v3.derived_columns import DerivedColumnViewSet
 from seed.views.v3.eeej import EEEJViewSet
+from seed.views.v3.elements import ElementViewSet, OrgElementViewSet
 from seed.views.v3.events import EventViewSet
 from seed.views.v3.filter_group import FilterGroupViewSet
 from seed.views.v3.gbr_properties import GBRPropertyViewSet
@@ -62,6 +63,7 @@ from seed.views.v3.tax_lot_properties import TaxLotPropertyViewSet
 from seed.views.v3.taxlot_views import TaxlotViewViewSet
 from seed.views.v3.taxlots import TaxlotViewSet
 from seed.views.v3.ubid import UbidViewSet
+from seed.views.v3.uniformat import UniformatViewSet
 from seed.views.v3.uploads import UploadViewSet
 from seed.views.v3.users import UserViewSet
 
@@ -80,6 +82,7 @@ api_v3_router.register(r"data_views", DataViewViewSet, basename="data_views")
 api_v3_router.register(r"datasets", DatasetViewSet, basename="datasets")
 api_v3_router.register(r"derived_columns", DerivedColumnViewSet, basename="derived_columns")
 api_v3_router.register(r"eeej", EEEJViewSet, basename="eeej")
+api_v3_router.register(r"elements", OrgElementViewSet, basename="elements")
 api_v3_router.register(r"filter_groups", FilterGroupViewSet, basename="filter_groups")
 api_v3_router.register(r"gbr_properties", GBRPropertyViewSet, basename="gbr_properties")
 api_v3_router.register(r"goals", GoalViewSet, basename="goals")
@@ -103,6 +106,7 @@ api_v3_router.register(r"tax_lot_properties", TaxLotPropertyViewSet, basename="t
 api_v3_router.register(r"taxlot_views", TaxlotViewViewSet, basename="taxlot_views")
 api_v3_router.register(r"taxlots", TaxlotViewSet, basename="taxlots")
 api_v3_router.register(r"ubid", UbidViewSet, basename="ubid")
+api_v3_router.register(r"uniformat", UniformatViewSet, basename="uniformat")
 api_v3_router.register(r"upload", UploadViewSet, basename="upload")
 api_v3_router.register(r"users", UserViewSet, basename="user")
 
@@ -125,6 +129,7 @@ analysis_view_messages_router.register(r"views_messages", AnalysisMessageViewSet
 properties_router = nested_routers.NestedSimpleRouter(api_v3_router, r"properties", lookup="property")
 properties_router.register(r"meters", MeterViewSet, basename="property-meters")
 properties_router.register(r"notes", NoteViewSet, basename="property-notes")
+properties_router.register(r"elements", ElementViewSet, basename="property-elements")
 properties_router.register(r"scenarios", PropertyScenarioViewSet, basename="property-scenarios")
 properties_router.register(r"events", EventViewSet, basename="property-events")
 properties_router.register(r"goal_notes", GoalNoteViewSet, basename="property-goal-notes")
