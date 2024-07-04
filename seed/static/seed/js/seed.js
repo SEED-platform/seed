@@ -149,6 +149,7 @@ angular.module('BE.seed.filters', [
   'getAnalysisRunAuthor',
   'htmlToPlainText',
   'ignoremap',
+  'startCase',
   'startFrom',
   'stripImportPrefix',
   'titleCase',
@@ -180,6 +181,7 @@ angular.module('BE.seed.services', [
   'BE.seed.service.data_view',
   'BE.seed.service.dataset',
   'BE.seed.service.derived_columns',
+  'BE.seed.service.element',
   'BE.seed.service.espm',
   'BE.seed.service.event',
   'BE.seed.service.filter_groups',
@@ -209,6 +211,7 @@ angular.module('BE.seed.services', [
   'BE.seed.service.sensor',
   'BE.seed.service.simple_modal',
   'BE.seed.service.ubid',
+  'BE.seed.service.uniformat',
   'BE.seed.service.uploader',
   'BE.seed.service.user'
 ]);
@@ -641,6 +644,14 @@ SEED_app.config([
             (organization_service, user_service) => {
               const organization_id = user_service.get_organization().id;
               return organization_service.get_organization(organization_id);
+            }
+          ],
+          access_level_tree: [
+            'organization_service',
+            'user_service',
+            (organization_service, user_service) => {
+              const organization_id = user_service.get_organization().id;
+              return organization_service.get_organization_access_level_tree(organization_id);
             }
           ]
         }
@@ -1206,6 +1217,11 @@ SEED_app.config([
                 (data) => $q.reject(data.message)
               );
             }
+          ],
+          property_columns: [
+            'inventory_service',
+            'user_service',
+            (inventory_service) => inventory_service.get_property_columns()
           ]
         }
       })
@@ -1217,10 +1233,10 @@ SEED_app.config([
         resolve: {
           all_columns: [
             '$stateParams',
-            'inventory_service',
-            ($stateParams, inventory_service) => {
+            'analyses_service',
+            ($stateParams, analyses_service) => {
               const { organization_id } = $stateParams;
-              return inventory_service.get_used_columns(organization_id);
+              return analyses_service.get_used_columns(organization_id);
             }
           ],
           organization_payload: [
@@ -2305,11 +2321,6 @@ SEED_app.config([
               return inventory_service.get_column_list_profiles('Detail View Profile', inventory_type);
             }
           ],
-          // users_payload: [
-          //   'organization_service',
-          //   'user_service',
-          //   (organization_service, user_service) => organization_service.get_organization_users({ org_id: user_service.get_organization().id })
-          // ],
           current_profile: [
             '$stateParams',
             'inventory_service',
@@ -2335,6 +2346,34 @@ SEED_app.config([
             'user_service',
             'organization_service',
             (user_service, organization_service) => organization_service.get_organization(user_service.get_organization().id)
+          ],
+          uniformat_payload: [
+            'uniformat_service',
+            (uniformat_service) => uniformat_service.get_uniformat()
+          ],
+          elements_payload: [
+            '$stateParams',
+            'element_service',
+            'user_service',
+            'inventory_payload',
+            ($stateParams, element_service, user_service, inventory_payload) => {
+              if ($stateParams.inventory_type === 'properties') {
+                return element_service.get_elements(user_service.get_organization().id, inventory_payload.property.id);
+              }
+              return [];
+            }
+          ],
+          tkbl_payload: [
+            '$stateParams',
+            'element_service',
+            'user_service',
+            'inventory_payload',
+            ($stateParams, element_service, user_service, inventory_payload) => {
+              if ($stateParams.inventory_type === 'properties') {
+                return element_service.get_tkbl(user_service.get_organization().id, inventory_payload.property.id);
+              }
+              return [];
+            }
           ]
         }
       })
