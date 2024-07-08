@@ -92,7 +92,7 @@ class SEEDOrgReadOnlyModelViewSet(
 
 
 class SEEDOrgCreateUpdateModelViewSet(OrgCreateUpdateMixin, SEEDOrgModelViewSet):
-    """Extends SEEDModelViewset to add perform_create method to attach org.
+    """Extends SEEDOrgModelViewSet to add perform_create method to attach org.
 
     Provides the perform_create and update_create methods to save the
     Organization foreignkey relationship for models that have linked via an
@@ -100,7 +100,7 @@ class SEEDOrgCreateUpdateModelViewSet(OrgCreateUpdateMixin, SEEDOrgModelViewSet)
 
     This viewset is not suitable for models using 'super_organization' or
     having additional foreign key relationships, such as user. Any such models
-    should instead extend SEEDOrgModelViewset and create perform_create
+    should instead extend SEEDOrgModelViewSet and create perform_create
     and/or perform_update overrides appropriate to the model's needs.
     """
 
