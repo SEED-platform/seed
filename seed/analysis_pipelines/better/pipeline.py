@@ -340,6 +340,7 @@ def _start_analysis(self, analysis_id):
             context,
         )
 
+
 @shared_task(bind=True)
 @analysis_pipeline_task(Analysis.RUNNING)
 def _process_results(self, analysis_id):
@@ -375,7 +376,7 @@ def _process_results(self, analysis_id):
         {"token": "INCREASE_COOLING_SETPOINTS", "name": "Increase Cooling Setpoints"},
         {"token": "ADD_FIX_ECONOMIZERS", "name": "Add/Fix Economizers"},
         {"token": "UPGRADE_WINDOWS_TO_IMPROVE_THERMAL_EFFICIENCY", "name": "Upgrade Windows to Improve Thermal Efficiency"},
-        {"token": "OTHER_AREAS", "name": "Other Areas"}
+        {"token": "OTHER_AREAS", "name": "Other Areas"},
     ]
 
     ee_measure_column_data_paths = [
@@ -417,9 +418,14 @@ def _process_results(self, analysis_id):
         ),
         # Energy-specific Savings
         ExtraDataColumnPath(
-            BETTER_VALID_MODEL_E_COL, "BETTER Valid Electricity Model", 1, "assessment.assessment_results.assessment_energy_use.valid_model_e"
+            BETTER_VALID_MODEL_E_COL,
+            "BETTER Valid Electricity Model",
+            1,
+            "assessment.assessment_results.assessment_energy_use.valid_model_e",
         ),
-        ExtraDataColumnPath(BETTER_VALID_MODEL_F_COL, "BETTER Valid Fuel Model", 1, "assessment.assessment_results.assessment_energy_use.valid_model_f"),
+        ExtraDataColumnPath(
+            BETTER_VALID_MODEL_F_COL, "BETTER Valid Fuel Model", 1, "assessment.assessment_results.assessment_energy_use.valid_model_f"
+        ),
         ExtraDataColumnPath(
             "better_cost_savings_electricity",
             "BETTER Potential Electricity Cost Savings (USD)",
@@ -427,7 +433,10 @@ def _process_results(self, analysis_id):
             "assessment.assessment_results.assessment_energy_use.cost_savings_e",
         ),
         ExtraDataColumnPath(
-            "better_cost_savings_fuel", "BETTER Potential Fuel Cost Savings (USD)", 1, "assessment.assessment_results.assessment_energy_use.cost_savings_f"
+            "better_cost_savings_fuel",
+            "BETTER Potential Fuel Cost Savings (USD)",
+            1,
+            "assessment.assessment_results.assessment_energy_use.cost_savings_f",
         ),
         ExtraDataColumnPath(
             "better_energy_savings_electricity",
