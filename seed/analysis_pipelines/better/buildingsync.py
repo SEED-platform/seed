@@ -32,8 +32,11 @@ BETTER_TO_BSYNC_PROPERTY_TYPE = {
     "Retail Store": "Retail",
     "Senior Care Community": "Health care-Skilled nursing facility",
     "Supermarket/Grocery Store": "Food sales-Grocery store",
+    "Restaurant": "Food service",
+    "Public Library": "Assembly-Public",
     "Other": "Other",
 }
+
 
 # maps SEED Meter types to BuildingSync ResourceUse types
 # NOTE: this is semi-redundant with to_energy_type dict in building_sync/mappings.py
