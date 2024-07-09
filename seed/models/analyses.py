@@ -119,12 +119,12 @@ class Analysis(models.Model):
                 {
                     "name": ["Potential Cost Savings (USD)"],
                     "value_template": ["${json_value:,.2f}"],
-                    "json_path": ["assessment.assessment_energy_use.cost_savings_combined"],
+                    "json_path": ["assessment.assessment_results.assessment_energy_use.cost_savings_combined"],
                 },
                 {
                     "name": ["Potential Energy Savings"],
                     "value_template": ["{json_value:,.2f} kWh"],
-                    "json_path": ["assessment.assessment_energy_use.energy_savings_combined"],
+                    "json_path": ["assessment.assessment_results.assessment_energy_use.energy_savings_combined"],
                 },
                 {
                     "name": ["BETTER Inverse Model R^2 (Electricity", "Fossil Fuel)"],
