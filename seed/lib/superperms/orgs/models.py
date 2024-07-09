@@ -166,6 +166,13 @@ class Organization(models.Model):
         ("MtCO2e/m**2/year", "MtCO2e/m²/year"),
     )
 
+    AUDIT_TEMPLATE_STATUS_CHOICES = (
+        ("Complies", "Complies"),
+        ("Pending", "Pending"),
+        ("Rejected", "Rejected"),
+        ("Received", "Complies"),
+    )
+
     US = 1
     CAN = 2
 
@@ -267,6 +274,9 @@ class Organization(models.Model):
     audit_template_user = models.EmailField(blank=True, max_length=128, default="")
     audit_template_password = models.CharField(blank=True, max_length=128, default="")
     audit_template_report_type = models.CharField(blank=True, max_length=128, default="Demo City Report")
+    audit_template_status_type = models.CharField(
+        blank=True, max_length=32, choices=AUDIT_TEMPLATE_STATUS_CHOICES, default="Complies"
+    )
     audit_template_city_id = models.IntegerField(blank=True, null=True)
     audit_template_sync_enabled = models.BooleanField(default=False)
 

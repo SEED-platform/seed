@@ -497,6 +497,7 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
     * fetch Audit Template city submission data
     */
     $scope.get_city_submission_data = () => {
+      $scope.save_settings();
       $uibModal.open({
         templateUrl: `${urls.static_url}seed/partials/at_submission_import_modal.html`,
         controller: 'at_submission_import_modal_controller',
@@ -517,9 +518,6 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
       { 6: 'Saturday' }
     ];
 
-    $scope.reset_at_update = () => {
-      $scope.at_conf = $scope.at_conf.id ? { id: $scope.at_conf.id } : {};
-    };
     const validate_at_conf = () => {
       const { update_at_day, update_at_hour, update_at_minute } = $scope.at_conf;
 
@@ -549,5 +547,7 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
       'WA Commerce Clean Buildings - Form D Report',
       'WA Commerce Grants Report'
     ];
+
+    $scope.audit_template_status_types = ["Received", "Pending", "Rejected", "Complies"]
   }
 ]);

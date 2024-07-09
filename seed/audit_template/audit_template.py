@@ -63,6 +63,7 @@ def schedule_sync(data, org_id):
 
         # then schedule task (create/update with new crontab)
         tasks = PeriodicTask.objects.filter(name=AUTO_SYNC_NAME + str(org_id))
+        logging.error('tasks %s', tasks)
         if not tasks:
             PeriodicTask.objects.create(
                 crontab=schedule, name=AUTO_SYNC_NAME + str(org_id), task="seed.tasks.sync_audit_template", args=json.dumps([org_id])
@@ -167,13 +168,13 @@ class AuditTemplate:
         return response, ""
 
     @require_token
-    def get_city_submissions(self, city_id):
+    def get_city_submissions(self, city_id, status_type):
         """Return all submissions for a city"""
 
         headers = {"accept": "application/xml"}
         url = f"{self.API_URL}/rp/cities/{city_id}?token={self.token}"
-        # stauts options are: 'Received', 'Pending', 'Rejected', 'Complies'
-        params = {"status": "Received"}
+        # status options are: 'Received', 'Pending', 'Rejected', 'Complies'
+        params = {"status": status_type}
         try:
             response = requests.request("GET", url, headers=headers, params=params)
             if response.status_code != 200:
@@ -442,10 +443,13 @@ def _batch_get_city_submission_xml(org_id, city_id, progress_key):
     4. group data by cycles
     5. update cycle grouped views in cycle batches
     """
+    org = Organization.objects.get(pk=org_id)
+    status_type = org.audit_template_status_type
     audit_template = AuditTemplate(org_id)
     progress_data = ProgressData.from_key(progress_key)
+    logging.error(">>> CALLED")
 
-    response, messages = audit_template.get_city_submissions(city_id)
+    response, messages = audit_template.get_city_submissions(city_id, status_type)
     if not response:
         progress_data.finish_with_error(messages)
         return None, messages
@@ -493,11 +497,14 @@ def _batch_get_city_submission_xml(org_id, city_id, progress_key):
     property_view_set = PropertyViewSet()
     # Update is cycle based, going to have update in cycle specific batches
     combined_results = {"success": 0, "failure": 0}
-    for cycle, xmls in xml_data_by_cycle.items():
-        # does progress_data need to be recursively passed?
-        results = property_view_set.batch_update_with_building_sync(xmls, org_id, cycle, progress_data.key, finish=False)
-        combined_results["success"] += results["success"]
-        combined_results["failure"] += results["failure"]
+    try:
+        for cycle, xmls in xml_data_by_cycle.items():
+            # does progress_data need to be recursively passed?
+            results = property_view_set.batch_update_with_building_sync(xmls, org_id, cycle, progress_data.key, finish=False)
+            combined_results["success"] += results["success"]
+            combined_results["failure"] += results["failure"]
+    except:
+        progress_data.finish_with_error("Unexepected Error")
 
     progress_data.finish_with_success(combined_results)
 

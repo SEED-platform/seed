@@ -168,7 +168,7 @@
               <div class="col-sm-5">
                 <p translate>SEED Properties will be exported to Audit Template with the Organization Report Type</p>
                 <select ng-model="org.audit_template_report_type" ng-disabled="::!auth.requires_owner" class="settings-dropdown">
-                  <option ng-repeat="report_type in audit_template_report_types" value="{$ report_type $}">{$ report_type$}</option>
+                  <option ng-repeat="report_type in audit_template_report_types">{$ report_type$}</option>
                 </select>
               </div>
             </div>
@@ -183,15 +183,32 @@
             <div class="form-group">
               <div class="col-sm-5">
                 <p translate>SEED will import submission data for the following City ID</p>
-                <div class="input-group">
-                  <input type="number" class="form-control" ng-model="org.audit_template_city_id" ng-disabled="::!auth.requires_owner" />
-                  <span class="input-group-btn">
-                    <button class="btn btn-default" type="button" ng-click="get_city_submission_data()">Sync Submissions</button>
-                  </span>
-                </div>
+                <input type="number" class="form-control" ng-model="org.audit_template_city_id" ng-disabled="::!auth.requires_owner" />
               </div>
             </div>
           </form>
+        </div>
+      </div>
+
+      <div class="section_content_container">
+        <div class="section_content with_padding">
+          <h3 translate>Audit Template Submission Status</h3>
+          <form class="form-horizontal" role="form">
+            <div class="form-group">
+              <div class="col-sm-5">
+                <p translate>SEED will import submission data for the following submission status</p>
+                <select ng-model="org.audit_template_status_type" ng-disabled="::!auth.requires_owner" class="settings-dropdown">
+                  <option ng-repeat="status_type in audit_template_status_types">{$ status_type$}</option>
+                </select>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div class="section_content_container">
+        <div class="section_content with_padding">
+            <button class="btn btn-info" style="margin-top:20px;" type="button" ng-click="get_city_submission_data()">Sync Submissions</button>
         </div>
       </div>
 
@@ -248,7 +265,6 @@
                     </tr>
                   </tbody>
                 </table>
-                <button type="button" class="btn btn-info" ng-click="reset_at_update()">{$:: 'Reset' | translate$}</button>
               </div>
             </div>
           </form>
