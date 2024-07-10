@@ -592,7 +592,7 @@ def states_to_views(unmatched_state_ids, org, access_level_instance, cycle, Stat
         matching_criteria = matching_filter_criteria(state, column_names)
 
         # compare UBIDs via jaccard index instead of a direct match
-        check_jaccard = "ubid" in matching_criteria and matching_criteria.get("ubid")
+        check_jaccard = bool(matching_criteria.get("ubid"))
         if check_jaccard:
             # Only pop the UBID value if it's populated
             # If it's `None` then we still want to match against existing records with empty UBIDs
@@ -706,7 +706,7 @@ def link_states(states, ViewClass, cycle, highest_ali, sub_progress_key):  # noq
     """
     Run each of the given -States through a linking round.
 
-    For details on the actual linking logic, please refer to the the
+    For details on the actual linking logic, please refer to the
     match_merge_link() method.
     """
 
