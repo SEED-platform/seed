@@ -87,6 +87,12 @@ class Column(models.Model):
         ("PropertyState", "total_marginal_ghg_emissions"),
         ("PropertyState", "total_ghg_emissions_intensity"),
         ("PropertyState", "total_marginal_ghg_emissions_intensity"),
+        ("PropertyState", "total_marginal_ghg_emissions_intensity"),
+        ("PropertyState", "water_use"),
+        ("PropertyState", "indoor_water_use"),
+        ("PropertyState", "outdoor_water_use"),
+        ("PropertyState", "wui"),
+        ("PropertyState", "indoor_wui"),
     ]
 
     COLUMN_MERGE_FAVOR_NEW = 0
@@ -192,6 +198,8 @@ class Column(models.Model):
         "eui": lambda v: float(v.replace(",", "") if isinstance(v, basestring) else v),
         "ghg_intensity": lambda v: float(v.replace(",", "") if isinstance(v, basestring) else v),
         "ghg": lambda v: float(v.replace(",", "") if isinstance(v, basestring) else v),
+        "wui": lambda v: float(v.replace(",", "") if isinstance(v, basestring) else v),
+        "water_use": lambda v: float(v.replace(",", "") if isinstance(v, basestring) else v),
     }
 
     # These are the default columns (also known as the fields in the database)
@@ -738,6 +746,41 @@ class Column(models.Model):
             "column_description": "Time zone of the property",
             "data_type": "string",
         },
+        {
+            "column_name": "water_use",
+            "table_name": "PropertyState",
+            "display_name": "Water Use (All Water Sources)",
+            "column_description": "Water Use (All Water Sources)",
+            "data_type": "water_use",
+        },
+        {
+            "column_name": "indoor_water_use",
+            "table_name": "PropertyState",
+            "display_name": "Indoor Water Use (All Water Sources)",
+            "column_description": "Indoor Water Use (All Water Sources)",
+            "data_type": "water_use",
+        },
+        {
+            "column_name": "outdoor_water_use",
+            "table_name": "PropertyState",
+            "display_name": "Outdoor Water Use (All Water Sources)",
+            "column_description": "Outdoor Water Use (All Water Sources)",
+            "data_type": "water_use",
+        },
+        {
+            "column_name": "wui",
+            "table_name": "PropertyState",
+            "display_name": "Water Use Intensity (All Water Sources)",
+            "column_description": "Water Use Intensity (All Water Sources)",
+            "data_type": "wui",
+        },
+        {
+            "column_name": "indoor_wui",
+            "table_name": "PropertyState",
+            "display_name": "Indoor Water Use Intensity (All Water Sources)",
+            "column_description": "Indoor Water Use Intensity (All Water Sources)",
+            "data_type": "wui",
+        },
     ]
     organization = models.ForeignKey(SuperOrganization, on_delete=models.CASCADE, blank=True, null=True)
     column_name = models.CharField(max_length=512, db_index=True)
@@ -1282,6 +1325,8 @@ class Column(models.Model):
             "eui": "float",
             "ghg": "float",
             "ghg_intensity": "float",
+            "wui": "float",
+            "water_use": "float"
         }
 
         types = OrderedDict()

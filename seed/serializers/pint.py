@@ -28,17 +28,23 @@ AREA_DIMENSIONALITY = "[length] ** 2"
 EUI_DIMENSIONALITY = "[mass] / [time] ** 3"
 GHG_DIMENSIONALITY = "[mass] / [time]"
 GHG_INTENSITY_DIMENSIONALITY = "[mass] / [length] ** 2 / [time]"
+WUI_DIMENSIONALITY = "[length] / [time]"  # kgal/ft2/year => length3/length2/time => length/time3
+WATER_USE_DIMENSONALITY = "[length] ** 3"
 
 AREA_DEFAULT_UNITS = "ft**2"
 EUI_DEFAULT_UNITS = "kBtu/ft**2/year"
 GHG_DEFAULT_UNITS = "MtCO2e/year"
 GHG_INTENSITY_DEFAULT_UNITS = "kgCO2e/ft**2/year"
+WUI_DEFAULT_UNITS = "kgal/ft**2/year"
+WATER_USE_DEFAULT_UNITS = "kgal"
 
 DEFAULT_UNITS = {
     "area": AREA_DEFAULT_UNITS,
     "eui": EUI_DEFAULT_UNITS,
     "ghg": GHG_DEFAULT_UNITS,
     "ghg_intensity": GHG_INTENSITY_DEFAULT_UNITS,
+    "wui": WUI_DEFAULT_UNITS,
+    "water_use": WATER_USE_DEFAULT_UNITS
 }
 
 
@@ -64,6 +70,8 @@ def collapse_unit(org, x):
         AREA_DIMENSIONALITY: org.display_units_area or AREA_DEFAULT_UNITS,
         GHG_DIMENSIONALITY: org.display_units_ghg or GHG_DEFAULT_UNITS,
         GHG_INTENSITY_DIMENSIONALITY: org.display_units_ghg_intensity or GHG_INTENSITY_DEFAULT_UNITS,
+        WUI_DIMENSIONALITY: org.display_units_wui or WUI_DEFAULT_UNITS,
+        WATER_USE_DIMENSONALITY: org.display_units_water_use or WATER_USE_DEFAULT_UNITS
     }
 
     if isinstance(x, ureg.Quantity):

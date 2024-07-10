@@ -646,5 +646,95 @@
     "units": "",
     "type": "float",
     "schema": ""
+  },
+  {
+    "display_name": "Water Use",
+    "to_field": "water_use",
+    "to_table_name": "PropertyState",
+    "from_field": "Water Use",
+    "units": "kgal",
+    "type": "float",
+    "schema": ""
+  },
+  {
+    "display_name": "Indoor Water Use (All Water Sources)",
+    "to_field": "indoor_water_use",
+    "to_table_name": "PropertyState",
+    "from_field": "Indoor Water Use",
+    "units": "kgal",
+    "type": "float",
+    "schema": ""
+  },
+  {
+    "display_name": "Indoor Water Use (All Water Sources)",
+    "to_field": "indoor_water_use",
+    "to_table_name": "PropertyState",
+    "from_field": "Indoor Water Use (All Water Sources)",
+    "units": "kgal",
+    "type": "float",
+    "schema": ""
+  },
+  {
+    "display_name": "Outdoor Water Use (All Water Sources)",
+    "to_field": "outdoor_water_use",
+    "to_table_name": "PropertyState",
+    "from_field": "Outdoor Water Use (All Water Sources)",
+    "units": "kgal",
+    "type": "float",
+    "schema": ""
+  },
+  {
+    "display_name": "Outdoor Water Use (All Water Sources)",
+    "to_field": "outdoor_water_use",
+    "to_table_name": "PropertyState",
+    "from_field": "Outdoor Water Use",
+    "units": "kgal",
+    "type": "float",
+    "schema": ""
+  },
+  {
+    "display_name": "Water Use Intensity (All Water Sources)",
+    "to_field": "wui",
+    "to_table_name": "PropertyState",
+    "from_field": "Water Use Intensity (All Water Sources)",
+    "units": "kgal",
+    "type": "float",
+    "schema": ""
+  },
+  {
+    "display_name": "Water Use Intensity (All Water Sources)",
+    "to_field": "wui",
+    "to_table_name": "PropertyState",
+    "from_field": "Water Use Intensity",
+    "units": "kgal",
+    "type": "float",
+    "schema": ""
+  },
+  {
+    "display_name": "Water Use Intensity (All Water Sources)",
+    "to_field": "wui",
+    "to_table_name": "PropertyState",
+    "from_field": "WUI",
+    "units": "kgal",
+    "type": "float",
+    "schema": ""
+  },
+  {
+    "display_name": "Indoor Water Use Intensity (All Water Sources)",
+    "to_field": "indoor_wui",
+    "to_table_name": "PropertyState",
+    "from_field": "Indoor Water Use Intensity",
+    "units": "kgal",
+    "type": "float",
+    "schema": ""
+  },
+  {
+    "display_name": "Indoor Water Use Intensity (All Water Sources)",
+    "to_field": "indoor_wui",
+    "to_table_name": "PropertyState",
+    "from_field": "Indoor WUI",
+    "units": "kgal",
+    "type": "float",
+    "schema": ""
   }
 ]

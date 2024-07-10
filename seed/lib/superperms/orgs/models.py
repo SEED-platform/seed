@@ -166,6 +166,8 @@ class Organization(models.Model):
         ("MtCO2e/m**2/year", "MtCO2e/m²/year"),
     )
 
+    # RP HERE
+
     US = 1
     CAN = 2
 
@@ -227,6 +229,7 @@ class Organization(models.Model):
     display_units_ghg_intensity = models.CharField(
         max_length=32, choices=MEASUREMENT_CHOICES_GHG_INTENSITY, blank=False, default="kgCO2e/ft**2/year"
     )
+    # display_units_wui = moels.CharField(max_length=32, choices=)
     display_decimal_places = models.PositiveSmallIntegerField(blank=False, default=2)
 
     created = models.DateTimeField(auto_now_add=True, null=True)
