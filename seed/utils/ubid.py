@@ -87,8 +87,8 @@ def get_jaccard_index(ubid1: str, ubid2: str) -> float:
     The Jaccard index is a value between zero and one, representing the area of the intersection divided by the area of the union.
     Not a Match (0.0) <-----> (1.0) Perfect Match
 
-    :param ubid1: A Property State Ubid
-    :param ubid2: A Property State Ubid
+    :param ubid1: A Property State UBID
+    :param ubid2: A Property State UBID
     :return: The Jaccard index
     """
     if (not ubid1 or not ubid2) or (ubid1 == ubid2):

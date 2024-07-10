@@ -590,10 +590,12 @@ def states_to_views(unmatched_state_ids, org, access_level_instance, cycle, Stat
 
     for idx, state in enumerate(unmatched_states):
         matching_criteria = matching_filter_criteria(state, column_names)
-        # compare ubids via jaccard index instead of a direct match, drop from matching criteria
-        check_jaccard = False
-        if "ubid" in matching_criteria:
-            check_jaccard = bool(matching_criteria.get("ubid"))
+
+        # compare UBIDs via jaccard index instead of a direct match
+        check_jaccard = "ubid" in matching_criteria and matching_criteria.get("ubid")
+        if check_jaccard:
+            # Only pop the UBID value if it's populated
+            # If it's `None` then we still want to match against existing records with empty UBIDs
             ubid = matching_criteria.pop("ubid")
 
         existing_state_matches = StateClass.objects.filter(
@@ -603,7 +605,7 @@ def states_to_views(unmatched_state_ids, org, access_level_instance, cycle, Stat
 
         if check_jaccard:
             existing_state_matches = [
-                state for state in existing_state_matches if check_jaccard_match(ubid, state.ubid, org.ubid_threshold, matching_criteria)
+                state for state in existing_state_matches if state.ubid and check_jaccard_match(ubid, state.ubid, org.ubid_threshold)
             ]
 
         count = len(existing_state_matches)
@@ -825,21 +827,14 @@ def save_state_match(state1, state2, priorities):
     return merged_state
 
 
-def check_jaccard_match(ubid, state_ubid, ubid_threshold, matching_criteria):
+def check_jaccard_match(ubid: str, state_ubid: str, ubid_threshold: float):
     """
     Use jaccard index between an incoming ubid and an existing state_ubid to determine if states are 'matching'
 
     :param ubid: string, incoming ubid
     :param state_ubid: string, existing state's ubid
     :param ubid_threshold: float, organization's ubid_threshold
-    :param matching_criteria: dict, organization's matching criteria with ubid removed
     """
-    # If state_ubid is None and ubid is the only matching_criteria, no match
-    if not state_ubid and not matching_criteria:
-        return False
-
-    # If state_ubid is None and matching_criteria exists, get_jaccard_index will default to 1.0
-    # allowing the remaining matching criteria to determine if it's a match
     jaccard_index = get_jaccard_index(ubid, state_ubid)
 
     if ubid_threshold == 0:
