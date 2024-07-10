@@ -822,7 +822,7 @@ class OrganizationViewSet(viewsets.ViewSet):
 
             # count before and after we prune the empty ones
             count_total = len(data)
-            data = [d for d in data if "x" in d and "y" in d]
+            data = [d for d in data if d["x"] and d["y"]]
             count_with_data = len(data)
 
             result = {
