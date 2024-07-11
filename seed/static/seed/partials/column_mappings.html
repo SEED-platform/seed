@@ -173,27 +173,33 @@
                   ng-disabled="!profile_action_ok('change_to_field')"
                 />
               </td>
-              <td ng-class="{'danger': col.from_units === null && (is_area_column(col) || is_eui_column(col))}">
-                <select ng-model="col.from_units" ng-change="flag_change()" ng-if="is_area_column(col)" ng-disabled="!profile_action_ok('change_from_units')">
+              <td ng-class="{'danger': col.from_units === null && is_pint_column(col)}">
+                <select ng-model="col.from_units" ng-change="flag_change()" ng-if="is_data_type_column('area', col)" ng-disabled="!profile_action_ok('change_from_units')">
                   <option value="ft**2" translate>square feet</option>
                   <option value="m**2" translate>square metres</option>
                 </select>
-                <select ng-model="col.from_units" ng-change="flag_change()" ng-if="is_eui_column(col)" ng-disabled="!profile_action_ok('change_from_units')">
-                  <option value="kBtu/ft**2/year" translate>kBtu/sq. ft./year</option>
+                <select ng-model="col.from_units" ng-change="flag_change()" ng-if="is_data_type_column('eui', col)" ng-disabled="!profile_action_ok('change_from_units')">
+                  <option value="kBtu/ft**2/year" translate>kBtu/ft²/year</option>
                   <option value="kWh/m**2/year" translate>kWh/m²/year</option>
                   <option value="GJ/m**2/year" translate>GJ/m²/year</option>
                   <option value="MJ/m**2/year" translate>MJ/m²/year</option>
                   <option value="kBtu/m**2/year" translate>kBtu/m²/year</option>
                 </select>
-                <select ng-model="col.from_units" ng-change="flag_change()" ng-if="is_ghg_column(col)">
+                <select ng-model="col.from_units" ng-change="flag_change()" ng-if="is_data_type_column('ghg', col)">
                   <option value="MtCO2e/year" translate>MtCO2e/year</option>
                   <option value="kgCO2e/year" translate>kgCO2e/year</option>
                 </select>
-                <select ng-model="col.from_units" ng-change="flag_change()" ng-if="is_ghg_intensity_column(col)">
-                  <option value="MtCO2e/ft**2/year" translate>MtCO2e/ft**2/year</option>
-                  <option value="kgCO2e/ft**2/year" translate>kgCO2e/ft**2/year</option>
-                  <option value="MtCO2e/m**2/year" translate>MtCO2e/m**2/year</option>
-                  <option value="kgCO2e/m**2/year" translate>kgCO2e/m**2/year</option>
+                <select ng-model="col.from_units" ng-change="flag_change()" ng-if="is_data_type_column('ghg_intensity', col)">
+                  <option value="MtCO2e/ft**2/year" translate>MtCO2e/ft²/year</option>
+                  <option value="kgCO2e/ft**2/year" translate>kgCO2e/ft²/year</option>
+                  <option value="MtCO2e/m**2/year" translate>MtCO2e/m²/year</option>
+                  <option value="kgCO2e/m**2/year" translate>kgCO2e/m²/year</option>
+                </select>
+                <select ng-model="col.from_units" ng-change="flag_change()" ng-if="is_data_type_column('water_use', col)">
+                  <option value="kgal" translate>kgal</option>
+                </select>
+                <select ng-model="col.from_units" ng-change="flag_change()" ng-if="is_data_type_column('wui', col)">
+                  <option value="kgal/ft**2/year" translate>kgal/ft²/year</option>
                 </select>
               </td>
               <td ng-class="{'danger': is_file_header_duplicate(col)}">
