@@ -44,7 +44,7 @@ DEFAULT_UNITS = {
     "ghg": GHG_DEFAULT_UNITS,
     "ghg_intensity": GHG_INTENSITY_DEFAULT_UNITS,
     "wui": WUI_DEFAULT_UNITS,
-    "water_use": WATER_USE_DEFAULT_UNITS
+    "water_use": WATER_USE_DEFAULT_UNITS,
 }
 
 
@@ -71,7 +71,7 @@ def collapse_unit(org, x):
         GHG_DIMENSIONALITY: org.display_units_ghg or GHG_DEFAULT_UNITS,
         GHG_INTENSITY_DIMENSIONALITY: org.display_units_ghg_intensity or GHG_INTENSITY_DEFAULT_UNITS,
         WUI_DIMENSIONALITY: org.display_units_wui or WUI_DEFAULT_UNITS,
-        WATER_USE_DIMENSONALITY: org.display_units_water_use or WATER_USE_DEFAULT_UNITS
+        WATER_USE_DIMENSONALITY: org.display_units_water_use or WATER_USE_DEFAULT_UNITS,
     }
 
     if isinstance(x, ureg.Quantity):

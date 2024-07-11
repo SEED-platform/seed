@@ -166,13 +166,9 @@ class Organization(models.Model):
         ("MtCO2e/m**2/year", "MtCO2e/m²/year"),
     )
 
-    MEASUREMENT_CHOICES_WUI = (
-        ("kgal/ft**2/year","kgal/ft**2/year"),
-    )
+    MEASUREMENT_CHOICES_WUI = (("kgal/ft**2/year", "kgal/ft**2/year"),)
 
-    MEASUREMENT_CHOICES_WATER_USE = (
-        ("kgal","kgal"),
-    )
+    MEASUREMENT_CHOICES_WATER_USE = (("kgal", "kgal"),)
 
     US = 1
     CAN = 2

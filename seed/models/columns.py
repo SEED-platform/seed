@@ -1325,7 +1325,7 @@ class Column(models.Model):
             "ghg": "float",
             "ghg_intensity": "float",
             "wui": "float",
-            "water_use": "float"
+            "water_use": "float",
         }
 
         types = OrderedDict()

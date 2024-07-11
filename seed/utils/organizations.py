@@ -42,10 +42,10 @@ def default_pm_mappings():
         "MtCO2e/ft**2/year",
         "kgCO2e/m**2/year",
         "MtCO2e/m**2/year",
-        # wui units 
+        # wui units
         "kgal/ft**2/year",
         # water_user units
-        "kgal"
+        "kgal",
     ]
 
     formatted_mappings = []

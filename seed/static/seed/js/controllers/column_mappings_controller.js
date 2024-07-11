@@ -324,15 +324,15 @@ angular.module('BE.seed.controller.column_mappings', []).controller('column_mapp
 
     // Handle units
     $scope.is_data_type_column = (data_type, mapping) => {
-      const data_type_columns = _.filter($scope.mappable_property_columns, { data_type: data_type });
+      const data_type_columns = _.filter($scope.mappable_property_columns, { data_type });
       return mapping.to_table_name === 'PropertyState' && Boolean(_.find(data_type_columns, { displayName: mapping.to_field }));
-    }
+    };
 
     $scope.is_pint_column = (mapping) => {
-      const data_types = ['area', 'eui', 'ghg', 'ghg_intenity', 'water_use', 'wui']
-      const data_type_columns = _.filter($scope.mappable_property_columns, (column) => _.includes(data_types, column.data_type))
+      const data_types = ['area', 'eui', 'ghg', 'ghg_intenity', 'water_use', 'wui'];
+      const data_type_columns = _.filter($scope.mappable_property_columns, (column) => _.includes(data_types, column.data_type));
       return mapping.to_table_name === 'PropertyState' && Boolean(_.find(data_type_columns, { displayName: mapping.to_field }));
-    }
+    };
 
     // Add and remove column methods
     $scope.add_new_column = () => {
@@ -425,7 +425,7 @@ angular.module('BE.seed.controller.column_mappings', []).controller('column_mapp
 
     $scope.empty_units_present = () => Boolean(
       _.find($scope.current_profile.mappings, (field) => {
-        const has_units = $scope.is_pint_column(field)
+        const has_units = $scope.is_pint_column(field);
         return field.to_table_name === 'PropertyState' && field.from_units === null && has_units;
       })
     );

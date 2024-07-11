@@ -282,16 +282,15 @@ angular.module('BE.seed.controller.mapping', []).controller('mapping_controller'
 
     // Handle units
     $scope.is_data_type_column = (data_type, col) => {
-      const unit_columns = _.filter($scope.mappable_property_columns, { data_type: data_type} )
-      return col.suggestion_table_name === 'PropertyState' && Boolean(_.find(unit_columns, { column_name: col.suggestion_column_name }))
+      const unit_columns = _.filter($scope.mappable_property_columns, { data_type });
+      return col.suggestion_table_name === 'PropertyState' && Boolean(_.find(unit_columns, { column_name: col.suggestion_column_name }));
     };
 
     $scope.is_pint_column = (col) => {
-      const data_types = ['area', 'eui', 'ghg', 'ghg_intensity', 'water_use', 'wui']
-      const data_type_columns = _.filter($scope.mappable_property_columns, (column) => _.includes(data_types, column.data_type))
-      return col.suggestion_table_name === 'PropertyState' && Boolean(_.find(data_type_columns, { column_name: col.suggestion_column_name }))
+      const data_types = ['area', 'eui', 'ghg', 'ghg_intensity', 'water_use', 'wui'];
+      const data_type_columns = _.filter($scope.mappable_property_columns, (column) => _.includes(data_types, column.data_type));
+      return col.suggestion_table_name === 'PropertyState' && Boolean(_.find(data_type_columns, { column_name: col.suggestion_column_name }));
     };
-
 
     const get_default_quantity_units = (col) => {
       // TODO - hook up to org preferences / last mapping in DB
