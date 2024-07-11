@@ -166,7 +166,13 @@ class Organization(models.Model):
         ("MtCO2e/m**2/year", "MtCO2e/m²/year"),
     )
 
-    # RP HERE
+    MEASUREMENT_CHOICES_WUI = (
+        ("kgal/ft**2/year","kgal/ft**2/year"),
+    )
+
+    MEASUREMENT_CHOICES_WATER_USE = (
+        ("kgal","kgal"),
+    )
 
     US = 1
     CAN = 2
@@ -229,7 +235,9 @@ class Organization(models.Model):
     display_units_ghg_intensity = models.CharField(
         max_length=32, choices=MEASUREMENT_CHOICES_GHG_INTENSITY, blank=False, default="kgCO2e/ft**2/year"
     )
-    # display_units_wui = moels.CharField(max_length=32, choices=)
+    display_units_wui = models.CharField(max_length=32, choices=MEASUREMENT_CHOICES_WUI, blank=True, default="kgal/ft**2/year")
+    display_units_water_use = models.CharField(max_length=32, choices=MEASUREMENT_CHOICES_WATER_USE, blank=True, default="kgal")
+
     display_decimal_places = models.PositiveSmallIntegerField(blank=False, default=2)
 
     created = models.DateTimeField(auto_now_add=True, null=True)

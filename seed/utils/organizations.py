@@ -34,6 +34,18 @@ def default_pm_mappings():
         "GJ/m**2/year",
         "MJ/m**2/year",
         "kBtu/m**2/year",
+        # ghg units
+        "kgCO2e/year",
+        "MtCO2e/year",
+        # ghg_i units
+        "kgCO2e/ft**2/year",
+        "MtCO2e/ft**2/year",
+        "kgCO2e/m**2/year",
+        "MtCO2e/m**2/year",
+        # wui units 
+        "kgal/ft**2/year",
+        # water_user units
+        "kgal"
     ]
 
     formatted_mappings = []

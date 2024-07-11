@@ -140,6 +140,10 @@ def add_pint_unit_suffix(organization, column, data_key="data_type", display_key
             column[display_key] = format_column_name(column[display_key], organization.display_units_ghg)
         elif column[data_key] == "ghg_intensity":
             column[display_key] = format_column_name(column[display_key], organization.display_units_ghg_intensity)
+        elif column[data_key] == "water_use":
+            column[display_key] = format_column_name(column[display_key], organization.display_units_water_use)
+        elif column[data_key] == "wui":
+            column[display_key] = format_column_name(column[display_key], organization.display_units_wui)
     except KeyError:
         pass  # no transform needed if we can't detect dataType, nbd
 

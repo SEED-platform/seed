@@ -544,7 +544,16 @@
     "to_field": "total_ghg_emissions",
     "to_table_name": "PropertyState",
     "from_field": "totalGHGEmissions",
-    "units": "MtCO2e",
+    "units": "MtCO2e/year",
+    "type": "float",
+    "schema": ""
+  },
+  {
+    "display_name": "Total GHG Emissions",
+    "to_field": "total_ghg_emissions",
+    "to_table_name": "PropertyState",
+    "from_field": "Total GHG Emissions",
+    "units": "MtCO2e/year",
     "type": "float",
     "schema": ""
   },
@@ -553,7 +562,7 @@
     "to_field": "total_ghg_emissions",
     "to_table_name": "PropertyState",
     "from_field": "Total GHG Emissions (MtCO2e)",
-    "units": "MtCO2e",
+    "units": "MtCO2e/year",
     "type": "float",
     "schema": ""
   },
@@ -562,7 +571,7 @@
     "to_field": "total_ghg_emissions",
     "to_table_name": "PropertyState",
     "from_field": "Total GHG Emissions (Metric Tons CO2e)",
-    "units": "MtCO2e",
+    "units": "MtCO2e/year",
     "type": "float",
     "schema": ""
   },
@@ -657,7 +666,7 @@
     "schema": ""
   },
   {
-    "display_name": "Indoor Water Use (All Water Sources)",
+    "display_name": "Indoor Water Use",
     "to_field": "indoor_water_use",
     "to_table_name": "PropertyState",
     "from_field": "Indoor Water Use",
@@ -666,25 +675,7 @@
     "schema": ""
   },
   {
-    "display_name": "Indoor Water Use (All Water Sources)",
-    "to_field": "indoor_water_use",
-    "to_table_name": "PropertyState",
-    "from_field": "Indoor Water Use (All Water Sources)",
-    "units": "kgal",
-    "type": "float",
-    "schema": ""
-  },
-  {
-    "display_name": "Outdoor Water Use (All Water Sources)",
-    "to_field": "outdoor_water_use",
-    "to_table_name": "PropertyState",
-    "from_field": "Outdoor Water Use (All Water Sources)",
-    "units": "kgal",
-    "type": "float",
-    "schema": ""
-  },
-  {
-    "display_name": "Outdoor Water Use (All Water Sources)",
+    "display_name": "Outdoor Water Use",
     "to_field": "outdoor_water_use",
     "to_table_name": "PropertyState",
     "from_field": "Outdoor Water Use",
@@ -693,47 +684,20 @@
     "schema": ""
   },
   {
-    "display_name": "Water Use Intensity (All Water Sources)",
-    "to_field": "wui",
-    "to_table_name": "PropertyState",
-    "from_field": "Water Use Intensity (All Water Sources)",
-    "units": "kgal",
-    "type": "float",
-    "schema": ""
-  },
-  {
-    "display_name": "Water Use Intensity (All Water Sources)",
-    "to_field": "wui",
-    "to_table_name": "PropertyState",
-    "from_field": "Water Use Intensity",
-    "units": "kgal",
-    "type": "float",
-    "schema": ""
-  },
-  {
-    "display_name": "Water Use Intensity (All Water Sources)",
+    "display_name": "WUI",
     "to_field": "wui",
     "to_table_name": "PropertyState",
     "from_field": "WUI",
-    "units": "kgal",
+    "units": "kgal/ft**2/year",
     "type": "float",
     "schema": ""
   },
   {
-    "display_name": "Indoor Water Use Intensity (All Water Sources)",
-    "to_field": "indoor_wui",
-    "to_table_name": "PropertyState",
-    "from_field": "Indoor Water Use Intensity",
-    "units": "kgal",
-    "type": "float",
-    "schema": ""
-  },
-  {
-    "display_name": "Indoor Water Use Intensity (All Water Sources)",
+    "display_name": "Indoor WUI",
     "to_field": "indoor_wui",
     "to_table_name": "PropertyState",
     "from_field": "Indoor WUI",
-    "units": "kgal",
+    "units": "kgal/ft**2/year",
     "type": "float",
     "schema": ""
   }
