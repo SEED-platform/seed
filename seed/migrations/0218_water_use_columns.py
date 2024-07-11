@@ -2,6 +2,7 @@
 
 from django.db import migrations
 import quantityfield.fields
+from seed.utils.organizations import default_pm_mappings
 
 
 def forwards(apps, schema_editor):
@@ -46,9 +47,21 @@ def forwards(apps, schema_editor):
         },
     ]
 
-    for org_id in list(Organization.objects.values_list("id", flat=True)):
+    for org in Organization.objects.all():
+        # create new columns
         for column in new_columns:
-            Column.objects.create(**{**column, "organization_id": org_id})
+            Column.objects.create(**{**column, "organization_id": org.id})
+
+        # update existing default profile mappings
+        default_profile = org.columnmappingprofile_set.filter(profile_type=0).first()
+        if not default_profile:
+            continue
+
+        for mapping in default_pm_mappings():
+            if mapping not in default_profile.mappings:
+                default_profile.mappings.append(mapping)
+
+        default_profile.save()
 
 
 class Migration(migrations.Migration):
