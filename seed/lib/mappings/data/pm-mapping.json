@@ -657,6 +657,24 @@
     "schema": ""
   },
   {
+    "display_name": "Total GHG Emissions Intensity",
+    "to_field": "total_ghg_emissions_intensity",
+    "to_table_name": "PropertyState",
+    "from_field": "Total GHG Emissions Intensity",
+    "units": "MtCO2e/ft**2/year",
+    "type": "float",
+    "schema": ""
+  },
+  {
+    "display_name": "Total Marginal GHG Emissions Intensity",
+    "to_field": "total_marginal_ghg_emissions_intensity",
+    "to_table_name": "PropertyState",
+    "from_field": "Total Marginal GHG Emissions Intensity",
+    "units": "MtCO2e/ft**2/year",
+    "type": "float",
+    "schema": ""
+  },
+  {
     "display_name": "Water Use",
     "to_field": "water_use",
     "to_table_name": "PropertyState",

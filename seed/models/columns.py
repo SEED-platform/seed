@@ -87,7 +87,6 @@ class Column(models.Model):
         ("PropertyState", "total_marginal_ghg_emissions"),
         ("PropertyState", "total_ghg_emissions_intensity"),
         ("PropertyState", "total_marginal_ghg_emissions_intensity"),
-        ("PropertyState", "total_marginal_ghg_emissions_intensity"),
         ("PropertyState", "water_use"),
         ("PropertyState", "indoor_water_use"),
         ("PropertyState", "outdoor_water_use"),
