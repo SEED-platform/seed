@@ -704,7 +704,7 @@ class TestAHImportMatchExistingDifferentCycle(TestAHImportFile):
 
     def test_has_ali_merges_and_links(self):
         # Set Up - create view for merge
-        self.property_view_factory.get_property_view(prprty=self.existing_property, cycle=self.cycle)
+        self.property_view_factory.get_property_view(prprty=self.existing_property, cycle=self.cycle, ubid=self.base_details["ubid"])
 
         # Set Up - update new state info
         self.base_details["raw_access_level_instance_id"] = self.me_ali.id
@@ -747,7 +747,7 @@ class TestAHImportMatchExistingDifferentCycle(TestAHImportFile):
 
     def test_no_ali_merges_and_links(self):
         # Set Up - create view for merge
-        self.property_view_factory.get_property_view(prprty=self.existing_property, cycle=self.cycle)
+        self.property_view_factory.get_property_view(prprty=self.existing_property, cycle=self.cycle, ubid=self.base_details["ubid"])
 
         # Set Up - update new state info
         self.base_details["raw_access_level_instance_error"] = "uh oh"

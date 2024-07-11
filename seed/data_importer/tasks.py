@@ -1699,10 +1699,10 @@ def hash_state_object(obj, include_extra_data=True):
         return hash_obj
 
     def _get_field_from_obj(field_obj, field):
-        if not hasattr(field_obj, field):
-            return "FOO"  # Return a random value so we can distinguish between this and None.
-        else:
+        if hasattr(field_obj, field):
             return getattr(field_obj, field)
+        else:
+            return "FOO"  # Return a random value so we can distinguish between this and None.
 
     m = hashlib.md5()  # noqa: S324
     for f in Column.retrieve_db_field_name_for_hash_comparison():
@@ -1800,10 +1800,6 @@ def pair_new_states(merged_property_views, merged_taxlot_views, sub_progress_key
     sub_progress_data.delete()
     sub_progress_data.total = 12
     sub_progress_data.save()
-
-    # Not sure what the below cycle code does.
-    # Commented out during Python3 upgrade.
-    # cycle = chain(merged_property_views, merged_taxlot_views).next().cycle
 
     tax_cmp_fmt = [
         ("jurisdiction_tax_lot_id", "custom_id_1"),
