@@ -47,7 +47,7 @@ def empty_criteria_filter(StateClass, column_names):  # noqa: N803
 
 def matching_filter_criteria(state, column_names):
     """
-    For a given -State, returns a dictionary of it's matching criteria values.
+    For a given -State, returns a dictionary of its matching criteria values.
 
     This dictionary is frequently unpacked for a QuerySet filter or exclude.
     """
@@ -63,7 +63,9 @@ def matching_criteria_column_names(organization_id, table_name):
     """
     return {
         "normalized_address" if c.column_name == "address_line_1" else c.column_name
-        for c in Column.objects.filter(organization_id=organization_id, is_matching_criteria=True, table_name=table_name)
+        for c in Column.objects.filter(organization_id=organization_id, is_matching_criteria=True, table_name=table_name).only(
+            "column_name"
+        )
     }
 
 
@@ -242,7 +244,7 @@ def _get_ali(view, matching_views, highest_ali, class_name, ViewClass):  # noqa:
     elif view_ali_id is None:
         ali_id = matching_ali_id
 
-    # if views ali is different, the views invalid
+    # if view's ali is different, the view is invalid
     elif view_ali_id != matching_ali_id:
         raise MultipleALIError
 
@@ -251,7 +253,7 @@ def _get_ali(view, matching_views, highest_ali, class_name, ViewClass):  # noqa:
 
     ali = AccessLevelInstance.objects.get(pk=ali_id)
 
-    # if we don't has access to matching_ali, raise an access error
+    # if we don't have access to matching_ali, raise an access error
     if highest_ali and not (ali == highest_ali or ali.is_descendant_of(highest_ali)):
         raise NoAccessError
 
@@ -284,7 +286,7 @@ def match_merge_link(state_id, state_class_name: Literal["PropertyState", "TaxLo
 
     # MERGE
     # TODO: _merge_matches_across_cycles wants _all_ the matching views. idk quite why. Why would
-    # the out of cycle views need to merge? Why would both the target state and view need to be
+    # the out-of-cycle views need to merge? Why would both the target state and view need to be
     # passed? We should take a look at this, But for now, I don't want to anger it.
     all_matching_views = (
         ViewClass.objects.filter(pk=view.id).prefetch_related("state") | matching_views_in_cycle | matching_views_out_of_cycle
@@ -312,7 +314,7 @@ def whole_org_match_merge_link(org_id, state_class_name, proposed_columns=[]):
             - Focus on -States associated with -Views in this Cycle.
             - Ignore -States where all matching criteria is None.
             - Group -State IDs by whether they match each other.
-            - Ignore each groups of size size 1 (not matched).
+            - Ignore each groups of size 1 (not matched).
             - For each remaining group, run merge logic so that there's only one
             Set left. Any labels, notes, pairings, and meters are transferred to
             and persisted in this Set.
