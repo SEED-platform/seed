@@ -458,7 +458,7 @@ class PropertyViewSet(ViewSet, ProfileIdMixin):
 
         merged_state = merge_properties(state_ids, organization_id, "Manual Match")
 
-        merge_count, link_count, _view = match_merge_link(merged_state, "PropertyState")
+        merge_count, link_count, _view = match_merge_link(merged_state)
 
         result = {"status": "success"}
 
@@ -651,7 +651,7 @@ class PropertyViewSet(ViewSet, ProfileIdMixin):
         was not involved in a merge.
         """
         state = PropertyState.objects.get(pk=pk)
-        merge_count, link_count, view = match_merge_link(state, "PropertyState")
+        merge_count, link_count, view = match_merge_link(state)
 
         result = {
             "view_id": view.id,
@@ -1035,7 +1035,7 @@ class PropertyViewSet(ViewSet, ProfileIdMixin):
 
                         Note.create_from_edit(request.user.id, property_view, new_property_state_data, previous_data)
 
-                        merge_count, link_count, view = match_merge_link(property_view.state, "PropertyState")
+                        merge_count, link_count, view = match_merge_link(property_view.state)
 
                         result.update(
                             {

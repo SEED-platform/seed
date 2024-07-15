@@ -737,11 +737,6 @@ def link_states(states, ViewClass, cycle, highest_ali, sub_progress_key):  # noq
 
     sub_progress_data = update_sub_progress_total(100, sub_progress_key)
 
-    if ViewClass == PropertyView:
-        state_class_name = "PropertyState"
-    else:
-        state_class_name = "TaxLotState"
-
     linked_views = []
     unlinked_views = []
     invalid_link_states = []
@@ -750,7 +745,7 @@ def link_states(states, ViewClass, cycle, highest_ali, sub_progress_key):  # noq
     batch_size = math.ceil(len(states) / 100)
     for idx, state in enumerate(states):
         try:
-            _merge_count, link_count, view = match_merge_link(state, state_class_name, highest_ali=highest_ali, cycle=cycle)
+            _merge_count, link_count, view = match_merge_link(state, highest_ali=highest_ali, cycle=cycle)
         except (MultipleALIError, NoAccessError):
             invalid_link_states.append(state.id)
             continue
