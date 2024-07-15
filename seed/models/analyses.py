@@ -25,9 +25,16 @@ class Analysis(models.Model):
     EUI = 3
     CO2 = 4
     EEEJ = 5
-    HANNAH = 6
+    ELEMENTSTATISTICS = 6
 
-    SERVICE_TYPES = ((BSYNCR, "BSyncr"), (BETTER, "BETTER"), (EUI, "EUI"), (CO2, "CO2"), (EEEJ, "EEEJ"), (HANNAH, "Hannah"))
+    SERVICE_TYPES = (
+        (BSYNCR, "BSyncr"),
+        (BETTER, "BETTER"),
+        (EUI, "EUI"),
+        (CO2, "CO2"),
+        (EEEJ, "EEEJ"),
+        (ELEMENTSTATISTICS, "Element Statistics"),
+    )
 
     PENDING_CREATION = 8
     CREATING = 10
@@ -173,10 +180,10 @@ class Analysis(models.Model):
 
             return [{"name": "Average Annual CO2", "value": f"{value} kgCO2e"}, {"name": "Annual Coverage", "value": f"{coverage}%"}]
 
-        # Hannah
-        elif self.service == self.HANNAH:
-            hannah_result = results.get("my random number")
-            return [{"name": "my random number", "value": f"{hannah_result}!"}]
+        # Element Statistics
+        elif self.service == self.ELEMENTSTATISTICS:
+            element_statistics_result = results.get("my random number")
+            return [{"name": "my random number", "value": f"{element_statistics_result}!"}]
 
         # Unexpected
         return [{"name": "Unexpected Analysis Type", "value": "Oops!"}]

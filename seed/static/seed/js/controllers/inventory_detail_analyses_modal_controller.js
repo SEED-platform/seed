@@ -110,7 +110,7 @@ angular.module('BE.seed.controller.inventory_detail_analyses_modal', []).control
         case 'EEEJ':
           $scope.new_analysis.configuration = {};
           break;
-        case 'Hannah':
+        case 'Element Statistics':
           $scope.new_analysis.configuration = {};
           break;
         default:

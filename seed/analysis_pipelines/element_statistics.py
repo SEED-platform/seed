@@ -50,7 +50,7 @@ def _log_errors(errors_by_apv_id, analysis_id):
             )
 
 
-class HannahPipeline(AnalysisPipeline):
+class ElementStatisticsPipeline(AnalysisPipeline):
     def _prepare_analysis(self, property_view_ids, start_analysis=True):
         # current implementation will *always* start the analysis immediately
 
@@ -73,7 +73,7 @@ class HannahPipeline(AnalysisPipeline):
 @shared_task(bind=True)
 @analysis_pipeline_task(Analysis.CREATING)
 def _finish_preparation(self, analysis_view_ids_by_property_view_id, analysis_id):
-    pipeline = HannahPipeline(analysis_id)
+    pipeline = ElementStatisticsPipeline(analysis_id)
     pipeline.set_analysis_status_to_ready("Ready to run Hannah analysis")
 
     # here is where errors would be filtered out
@@ -84,7 +84,7 @@ def _finish_preparation(self, analysis_view_ids_by_property_view_id, analysis_id
 @shared_task(bind=True)
 @analysis_pipeline_task(Analysis.READY)
 def _run_analysis(self, analysis_property_view_ids, analysis_id):
-    pipeline = HannahPipeline(analysis_id)
+    pipeline = ElementStatisticsPipeline(analysis_id)
     progress_data = pipeline.set_analysis_status_to_running()
     progress_data.step("Aggregating scope one emissions.")
     analysis = Analysis.objects.get(id=analysis_id)
