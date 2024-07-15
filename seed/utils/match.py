@@ -233,10 +233,7 @@ def _get_ali(view, matching_views, highest_ali, class_name):
         raise AssertionError  # if matches have different alis, BIG problem
 
     # get the ali of the view
-    if view:
-        view_ali = getattr(view, class_name).access_level_instance
-    else:
-        view_ali = None
+    view_ali = getattr(view, class_name).access_level_instance if view else None
 
     # get the ali
     if matching_ali is None and view_ali is None:
