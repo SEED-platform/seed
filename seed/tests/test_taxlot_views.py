@@ -436,7 +436,7 @@ class TaxLotViewTestPermissions(AccessLevelBaseTestCase):
         self.taxlot_2 = self.taxlot_factory.get_taxlot()
         self.view_2 = TaxLotView.objects.create(taxlot=self.taxlot_2, cycle=self.cycle, state=self.state_2)
         merged_state = merge_taxlots([self.view.state.pk, self.state_2.pk], self.org.pk, "Manual Match")
-        _, _, view_id = match_merge_link(merged_state.id, "TaxLotState", self.org.root, self.cycle)
+        _, _, view = match_merge_link(merged_state, "TaxLotState", self.org.root, self.cycle)
         view_id = TaxLotView.objects.first().id
         url = reverse("api:v3:taxlots-unmerge", args=[view_id]) + f"?organization_id={self.org.pk}"
 

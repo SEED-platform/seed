@@ -458,7 +458,7 @@ class PropertyViewSet(ViewSet, ProfileIdMixin):
 
         merged_state = merge_properties(state_ids, organization_id, "Manual Match")
 
-        merge_count, link_count, _view_id = match_merge_link(merged_state.id, "PropertyState")
+        merge_count, link_count, _view = match_merge_link(merged_state, "PropertyState")
 
         result = {"status": "success"}
 
@@ -650,10 +650,11 @@ class PropertyViewSet(ViewSet, ProfileIdMixin):
         Note that this method can return a view_id of None if the given -View
         was not involved in a merge.
         """
-        merge_count, link_count, view_id = match_merge_link(pk, "PropertyState")
+        state = PropertyState.objects.get(pk=pk)
+        merge_count, link_count, view = match_merge_link(state, "PropertyState")
 
         result = {
-            "view_id": view_id,
+            "view_id": view.id,
             "match_merged_count": merge_count,
             "match_link_count": link_count,
         }
@@ -1034,11 +1035,11 @@ class PropertyViewSet(ViewSet, ProfileIdMixin):
 
                         Note.create_from_edit(request.user.id, property_view, new_property_state_data, previous_data)
 
-                        merge_count, link_count, view_id = match_merge_link(property_view.state_id, "PropertyState")
+                        merge_count, link_count, view = match_merge_link(property_view.state, "PropertyState")
 
                         result.update(
                             {
-                                "view_id": view_id,
+                                "view_id": view.id,
                                 "match_merged_count": merge_count,
                                 "match_link_count": link_count,
                             }
