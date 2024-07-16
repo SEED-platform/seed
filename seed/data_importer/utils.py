@@ -387,6 +387,39 @@ def kbtu_thermal_conversion_factors(country):
 
     return factors
 
+def kgal_water_conversion_factor(coutry):
+    """
+    Returns water conversion factor provided by Portfolio Manager.
+    # CAN WE DO THIS FOR WATER? (from kbtu_thermal_conversion_factors)
+        # In the PM app, using NREL's test account, a property was created for each US
+        # and CAN. All possible Meters of different Type and Units were added.
+        # Readings of value 1 were added to deduce the factors provided below.
+
+    # should country be considered?
+    """
+    factors = defaultdict(dict)
+
+    meter_types = [
+        "Potable Indoor",
+        "Potable: Mixed Indoor/Outdoor",
+        "Potable Outdoor"
+    ]
+
+    unit_conversion = {
+        "ccf (hundred cubic feet)" : 1.34,
+        "cf (cubic feet))" : 3.68,
+        "cGal (hundred gallons) (US)" : 0.1,
+        "Gallons (US)" : 0.001,
+        "kGal (thousand gallons) (US)" : 1.00,
+        "kGal (thousand gallons) (UK)" : 0.8327,
+    }
+
+    for meter_type in meter_types:
+        for unit, conversion in unit_conversion.items():
+            factors[meter_type][unit] = conversion
+
+    return factors
+
 
 def usage_point_id(raw_source_id):
     """
