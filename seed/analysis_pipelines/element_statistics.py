@@ -17,37 +17,10 @@ from seed.analysis_pipelines.pipeline import (
 )
 from seed.lib.tkbl.tkbl import scope_one_emission_codes
 from seed.lib.uniformat.uniformat import uniformat_data
-from seed.models import Analysis, AnalysisMessage, AnalysisPropertyView, Column
+from seed.models import Analysis, AnalysisPropertyView, Column
 
-logger = logging.getLogger(__name__)
-
-ERROR_INVALID_LOCATION = 0
-ERROR_RETRIEVING_CENSUS_TRACT = 1
-ERROR_NO_VALID_PROPERTIES = 2
-WARNING_SOME_INVALID_PROPERTIES = 3
-ERROR_NO_TRACT_OR_LOCATION = 4
-
-EEEJ_ANALYSIS_MESSAGES = {
-    ERROR_INVALID_LOCATION: "Property missing Lat/Lng (High, Census, or Manually geocoded) or one of: Address Line 1, City & State, or Postal Code.",
-    ERROR_RETRIEVING_CENSUS_TRACT: "Unable to retrieve Census Tract for this property.",
-    ERROR_NO_TRACT_OR_LOCATION: "Property missing location or Census Tract",
-    ERROR_NO_VALID_PROPERTIES: "Analysis found no valid properties to analyze.",
-    WARNING_SOME_INVALID_PROPERTIES: "Some properties failed to validate.",
-}
-
-
-def _log_errors(errors_by_apv_id, analysis_id):
-    """Log individual analysis property view errors to the analysis"""
-    if errors_by_apv_id:
-        for av_id in errors_by_apv_id:
-            AnalysisMessage.log_and_create(
-                logger=logger,
-                type_=AnalysisMessage.ERROR,
-                analysis_id=analysis_id,
-                analysis_property_view_id=av_id,
-                user_message="  ".join(errors_by_apv_id[av_id]),
-                debug_message="",
-            )
+logger = logging.get
+(__name__)
 
 
 class ElementStatisticsPipeline(AnalysisPipeline):
@@ -74,7 +47,7 @@ class ElementStatisticsPipeline(AnalysisPipeline):
 @analysis_pipeline_task(Analysis.CREATING)
 def _finish_preparation(self, analysis_view_ids_by_property_view_id, analysis_id):
     pipeline = ElementStatisticsPipeline(analysis_id)
-    pipeline.set_analysis_status_to_ready("Ready to run Hannah analysis")
+    pipeline.set_analysis_status_to_ready("Ready to run Element Statistics analysis")
 
     # here is where errors would be filtered out
 
@@ -92,7 +65,7 @@ def _run_analysis(self, analysis_property_view_ids, analysis_id):
     property_views_by_apv_id = AnalysisPropertyView.get_property_views(analysis_property_views)
 
     # get/create relevant columns
-    existing_columns_names_by_code = _create_hannah_analysis_columns(analysis)
+    existing_columns_names_by_code = _create_element_columns(analysis)
 
     # creates a dict where the first key is a property we are analyzing, the second key is a scope_one_emission_code in that property (should there in )
     query = f"""
@@ -143,7 +116,7 @@ def _run_analysis(self, analysis_property_view_ids, analysis_id):
     pipeline.set_analysis_status_to_completed()
 
 
-def _create_hannah_analysis_columns(analysis):
+def _create_element_columns(analysis):
     existing_columns_names_by_code = {}
     column_meta_by_code = {
         data["code"]: {
