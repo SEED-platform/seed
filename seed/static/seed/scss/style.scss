@@ -4059,7 +4059,7 @@ FAQ page
     .tab-content-cards {
       display: flex;
       padding: 10px;
-      gap: 10px 10px;
+      gap: 10px;
       flex-wrap: wrap;
       justify-content: space-evenly;
     }
@@ -4146,7 +4146,7 @@ FAQ page
     border-bottom: 1px solid rgb(255 255 255 / 50%);
     display: flex;
     align-items: center;
-    gap: 10px 10px;
+    gap: 10px;
   }
 
   & > .row:first-child {
