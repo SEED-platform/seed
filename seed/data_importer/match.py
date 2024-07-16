@@ -619,9 +619,10 @@ def states_to_views(unmatched_state_ids, org, access_level_instance, cycle, Stat
 
         if check_jaccard:
             existing_state_matches = [
-                state
-                for state in existing_state_matches
-                if state.get("ubid") and check_jaccard_match(matching_criteria.get("ubid"), state.get("ubid"), org.ubid_threshold)
+                existing_state
+                for existing_state in existing_state_matches
+                if existing_state.get("ubid")
+                and check_jaccard_match(matching_criteria.get("ubid"), existing_state.get("ubid"), org.ubid_threshold)
             ]
 
         count = len(existing_state_matches)
