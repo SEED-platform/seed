@@ -9,16 +9,18 @@ import json
 import locale
 import logging
 import operator
-from collections import defaultdict
 from io import BytesIO
+from numbers import Number
 from pathlib import Path
 
+import numpy as np
 from django.conf import settings
 from django.contrib.auth.decorators import permission_required
 from django.contrib.auth.forms import PasswordResetForm
 from django.contrib.postgres.aggregates.general import ArrayAgg
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.db.models import F, Value
 from django.http import HttpResponse, JsonResponse
 from django.utils.decorators import method_decorator
 from drf_yasg import openapi
@@ -53,17 +55,18 @@ from seed.models import (
 )
 from seed.models import StatusLabel as Label
 from seed.serializers.column_mappings import SaveColumnMappingsRequestPayloadSerializer
+from seed.serializers.columns import ColumnSerializer
 from seed.serializers.organizations import SaveSettingsSerializer, SharedFieldsReturnSerializer
 from seed.serializers.pint import apply_display_unit_preferences
 from seed.utils.api import api_endpoint_class
 from seed.utils.api_schema import AutoSchemaHelper
 from seed.utils.encrypt import decrypt, encrypt
-from seed.utils.generic import median, round_down_hundred_thousand
 from seed.utils.geocode import geocode_buildings
 from seed.utils.match import match_merge_link
 from seed.utils.merge import merge_properties
 from seed.utils.organizations import create_organization, create_suborganization
 from seed.utils.properties import pair_unpair_property_taxlot
+from seed.utils.public import public_feed
 from seed.utils.salesforce import toggle_salesforce_sync
 from seed.utils.users import get_js_role
 
@@ -147,6 +150,15 @@ def _dict_org(request, organizations):
             "ubid_threshold": o.ubid_threshold,
             "inventory_count": o.property_set.count() + o.taxlot_set.count(),
             "access_level_names": o.access_level_names,
+            "public_feed_enabled": o.public_feed_enabled,
+            "public_feed_labels": o.public_feed_labels,
+            "public_geojson_enabled": o.public_geojson_enabled,
+            "default_reports_x_axis_options": ColumnSerializer(
+                Column.objects.filter(organization=o, table_name="PropertyState", is_option_for_reports_x_axis=True), many=True
+            ).data,
+            "default_reports_y_axis_options": ColumnSerializer(
+                Column.objects.filter(organization=o, table_name="PropertyState", is_option_for_reports_y_axis=True), many=True
+            ).data,
         }
         orgs.append(org)
 
@@ -504,6 +516,25 @@ class OrganizationViewSet(viewsets.ViewSet):
         if geocoding_enabled != org.geocoding_enabled:
             org.geocoding_enabled = geocoding_enabled
 
+        # Update public_feed_enabled option
+        public_feed_enabled = posted_org.get("public_feed_enabled")
+        if public_feed_enabled:
+            org.public_feed_enabled = True
+        elif org.public_feed_enabled:
+            org.public_feed_enabled = False
+            org.public_feed_labels = False
+            org.public_geojson_enabled = False
+
+        # Update public_feed_labels option
+        public_feed_labels = posted_org.get("public_feed_labels", False)
+        if public_feed_enabled and public_feed_labels != org.public_feed_labels:
+            org.public_feed_labels = public_feed_labels
+
+        # Update public_geojson_enabled option
+        public_geojson_enabled = posted_org.get("public_geojson_enabled", False)
+        if public_feed_enabled and public_geojson_enabled != org.public_geojson_enabled:
+            org.public_geojson_enabled = public_geojson_enabled
+
         # Update BETTER Analysis API Key if it's been changed
         better_analysis_api_key = posted_org.get("better_analysis_api_key", "").strip()
         if better_analysis_api_key != org.better_analysis_api_key:
@@ -548,6 +579,24 @@ class OrganizationViewSet(viewsets.ViewSet):
             org.new_user_email_signature = new_user_email_signature
         if not org.new_user_email_signature:
             org.new_user_email_signature = Organization._meta.get_field("new_user_email_signature").get_default()
+
+        # update default_reports_x_axis_options
+        default_reports_x_axis_options = sorted(posted_org.get("default_reports_x_axis_options", []))
+        current_default_reports_x_axis_options = Column.objects.filter(organization=org, is_option_for_reports_x_axis=True).order_by("id")
+        if default_reports_x_axis_options != list(current_default_reports_x_axis_options.values_list("id", flat=True)):
+            current_default_reports_x_axis_options.update(is_option_for_reports_x_axis=False)
+            Column.objects.filter(organization=org, table_name="PropertyState", id__in=default_reports_x_axis_options).update(
+                is_option_for_reports_x_axis=True
+            )
+
+        # update default_reports_y_axis_options
+        default_reports_y_axis_options = sorted(posted_org.get("default_reports_y_axis_options", []))
+        current_default_reports_y_axis_options = Column.objects.filter(organization=org, is_option_for_reports_y_axis=True).order_by("id")
+        if default_reports_y_axis_options != list(current_default_reports_y_axis_options.values_list("id", flat=True)):
+            current_default_reports_y_axis_options.update(is_option_for_reports_y_axis=False)
+            Column.objects.filter(organization=org, table_name="PropertyState", id__in=default_reports_y_axis_options).update(
+                is_option_for_reports_y_axis=True
+            )
 
         comstock_enabled = posted_org.get("comstock_enabled", False)
         if comstock_enabled != org.comstock_enabled:
@@ -732,46 +781,14 @@ class OrganizationViewSet(viewsets.ViewSet):
 
         return JsonResponse(geocoding_columns)
 
-    def get_data(self, property_view, x_var, y_var, matching_columns):
-        result = {}
-        state = property_view.state
-
-        # set matching columns
-        for matching_column in matching_columns:
-            name = matching_column.column_name
-            if matching_column.is_extra_data:
-                result[name] = state.extra_data.get(name)
-            else:
-                result[name] = getattr(state, name)
-
-        # set x
-        if x_var == "Count":
-            result["x"] = 1
-        else:
-            try:
-                result["x"] = getattr(state, x_var)
-            except AttributeError:
-                # check extra data
-                try:
-                    result["x"] = state.extra_data.get(x_var)
-                except AttributeError:
-                    return {}
-
-        # set y
+    def _format_property_display_field(self, view, org):
         try:
-            result["y"] = getattr(state, y_var)
+            return getattr(view.state, org.property_display_field)
         except AttributeError:
-            # check extra data
-            try:
-                result["y"] = state.extra_data.get(y_var)
-            except AttributeError:
-                return {}
+            return None
 
-        return result
-
-    def get_raw_report_data(self, organization_id, access_level_instance, cycles, x_var, y_var, additional_columns=None):
-        if additional_columns is None:
-            additional_columns = []
+    def get_raw_report_data(self, organization_id, access_level_instance, cycles, x_var, y_var, additional_columns=[]):
+        organization = Organization.objects.get(pk=organization_id)
         all_property_views = (
             PropertyView.objects.select_related("property", "state")
             .filter(
@@ -782,29 +799,39 @@ class OrganizationViewSet(viewsets.ViewSet):
             )
             .order_by("id")
         )
-        organization = Organization.objects.get(pk=organization_id)
+
+        # annotate properties with fields
+        fields = {
+            **{
+                column.column_name: F("state__" + (column.column_name if not column.is_extra_data else f"extra_data__{column.column_name}"))
+                for column in additional_columns
+            },
+            "x": F("state__" + (x_var if x_var in dir(PropertyState) else f"extra_data__{x_var}")),
+            "y": F("state__" + (y_var if y_var in dir(PropertyState) else f"extra_data__{y_var}")),
+        }
+        if x_var == "Count":
+            fields["x"] = Value(1)
+        for k, v in fields.items():
+            all_property_views = all_property_views.annotate(**{k: v})
+
+        # get data for each cycle
         results = []
         for cycle in cycles:
-            property_views = all_property_views.filter(cycle_id=cycle)
-            count_total = []
-            count_with_data = []
-            data = []
-            for property_view in property_views:
-                property_pk = property_view.property_id
-                count_total.append(property_pk)
-                result = self.get_data(property_view, x_var, y_var, additional_columns)
-                if result:
-                    result["yr_e"] = cycle.end.strftime("%Y")
-                    de_unitted_result = apply_display_unit_preferences(organization, result)
-                    data.append(de_unitted_result)
-                    count_with_data.append(property_pk)
+            property_views = all_property_views.annotate(yr_e=Value(str(cycle.end.year))).filter(cycle_id=cycle)
+            data = [apply_display_unit_preferences(organization, d) for d in property_views.values("id", *fields.keys(), "yr_e")]
+
+            # count before and after we prune the empty ones
+            count_total = len(data)
+            data = [d for d in data if d["x"] and d["y"]]
+            count_with_data = len(data)
+
             result = {
                 "cycle_id": cycle.pk,
                 "chart_data": data,
                 "property_counts": {
                     "yr_e": cycle.end.strftime("%Y"),
-                    "num_properties": len(count_total),
-                    "num_properties_w-data": len(count_with_data),
+                    "num_properties": count_total,
+                    "num_properties_w-data": count_with_data,
                 },
             }
             results.append(result)
@@ -826,12 +853,25 @@ class OrganizationViewSet(viewsets.ViewSet):
     @action(detail=True, methods=["GET"])
     def report(self, request, pk=None):
         """Retrieve a summary report for charting x vs y"""
-        access_level_instance = AccessLevelInstance.objects.get(pk=self.request.access_level_instance_id)
         params = {
             "x_var": request.query_params.get("x_var", None),
             "y_var": request.query_params.get("y_var", None),
+            "access_level_instance_id": request.query_params.get("access_level_instance_id", None),
             "cycle_ids": request.query_params.getlist("cycle_ids", None),
         }
+
+        user_ali = AccessLevelInstance.objects.get(pk=self.request.access_level_instance_id)
+        if params["access_level_instance_id"] is None:
+            ali = user_ali
+        else:
+            try:
+                selected_ali = AccessLevelInstance.objects.get(pk=params["access_level_instance_id"])
+                if not (selected_ali == user_ali or selected_ali.is_descendant_of(user_ali)):
+                    raise AccessLevelInstance.DoesNotExist
+            except (AccessLevelInstance.DoesNotExist, AssertionError):
+                return Response({"status": "error", "message": "No such ali"}, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                ali = selected_ali
 
         excepted_params = ["x_var", "y_var", "cycle_ids"]
         missing_params = [p for p in excepted_params if p not in params]
@@ -841,7 +881,7 @@ class OrganizationViewSet(viewsets.ViewSet):
             )
 
         cycles = Cycle.objects.filter(id__in=params["cycle_ids"])
-        data = self.get_raw_report_data(pk, access_level_instance, cycles, params["x_var"], params["y_var"])
+        data = self.get_raw_report_data(pk, ali, cycles, params["x_var"], params["y_var"])
         data = {
             "chart_data": functools.reduce(operator.iadd, [d["chart_data"] for d in data], []),
             "property_counts": [d["property_counts"] for d in data],
@@ -869,39 +909,53 @@ class OrganizationViewSet(viewsets.ViewSet):
     @action(detail=True, methods=["GET"])
     def report_aggregated(self, request, pk=None):
         """Retrieve a summary report for charting x vs y aggregated by y_var"""
-        access_level_instance = AccessLevelInstance.objects.get(pk=self.request.access_level_instance_id)
-
         # get params
         params = {
             "x_var": request.query_params.get("x_var", None),
             "y_var": request.query_params.get("y_var", None),
             "cycle_ids": request.query_params.getlist("cycle_ids", None),
+            "access_level_instance_id": request.query_params.get("access_level_instance_id", None),
         }
 
+        user_ali = AccessLevelInstance.objects.get(pk=self.request.access_level_instance_id)
+        if params["access_level_instance_id"] is None:
+            ali = user_ali
+        else:
+            try:
+                selected_ali = AccessLevelInstance.objects.get(pk=params["access_level_instance_id"])
+                if not (selected_ali == user_ali or selected_ali.is_descendant_of(user_ali)):
+                    raise AccessLevelInstance.DoesNotExist
+            except (AccessLevelInstance.DoesNotExist, AssertionError):
+                return Response({"status": "error", "message": "No such ali"}, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                ali = selected_ali
+
         # error if missing
-        excepted_params = ["x_var", "y_var", "cycle_ids"]
-        missing_params = [p for p in excepted_params if p not in params]
+        missing_params = [p for (p, v) in params.items() if v is None]
         if missing_params:
             return Response(
                 {"status": "error", "message": "Missing params: {}".format(", ".join(missing_params))}, status=status.HTTP_400_BAD_REQUEST
             )
 
-        # error if y_var invalid
-        valid_y_values = ["gross_floor_area", "property_type", "year_built"]
-        if params["y_var"] not in valid_y_values:
-            return Response(
-                {"status": "error", "message": f"{params['y_var']} is not a valid value for y_var"}, status=status.HTTP_400_BAD_REQUEST
-            )
-
         # get data
         cycles = Cycle.objects.filter(id__in=params["cycle_ids"])
-        data = self.get_raw_report_data(pk, access_level_instance, cycles, params["x_var"], params["y_var"])
+        data = self.get_raw_report_data(pk, ali, cycles, params["x_var"], params["y_var"])
         chart_data = []
         property_counts = []
+
+        # set bins and choose agg type
+        ys = [building["y"] for datum in data for building in datum["chart_data"] if building["y"] is not None]
+        if ys and isinstance(ys[0], Number):
+            bins = np.histogram_bin_edges(ys, bins=5)
+            aggregate_data = self.continuous_aggregate_data
+        else:
+            bins = list(set(ys))
+            aggregate_data = self.discrete_aggregate_data
+
         for datum in data:
             buildings = datum["chart_data"]
             yr_e = datum["property_counts"]["yr_e"]
-            (chart_data.extend(self.aggregate_data(yr_e, params["x_var"], params["y_var"], buildings)),)
+            chart_data.extend(aggregate_data(yr_e, buildings, bins, count=params["x_var"] == "Count"))
             property_counts.append(datum["property_counts"])
 
         # Send back to client
@@ -912,81 +966,38 @@ class OrganizationViewSet(viewsets.ViewSet):
 
         return Response(result, status=status.HTTP_200_OK)
 
-    def aggregate_data(self, yr_e, x_var, y_var, buildings):
-        aggregation_method = {
-            "property_type": self.aggregate_property_type,
-            "year_built": self.aggregate_year_built,
-            "gross_floor_area": self.aggregate_gross_floor_area,
-        }
-        return aggregation_method[y_var](yr_e, x_var, buildings)
+    def continuous_aggregate_data(self, yr_e, buildings, bins, count=False):
+        buildings = [b for b in buildings if b["x"] is not None and b["y"] is not None]
+        binplace = np.digitize([b["y"] for b in buildings], bins)
+        xs = [b["x"] for b in buildings]
 
-    def aggregate_property_type(self, yr_e, x_var, buildings):
-        # Group buildings in this year_ending group into uses
-        chart_data = []
-        grouped_uses = defaultdict(list)
-        for b in buildings:
-            grouped_uses[str(b["y"]).lower()].append(b)
+        results = []
+        for i in range(len(bins) - 1):
+            bin = f"{bins[i]} - {bins[i+1]}"
+            values = np.array(xs)[np.where(binplace == i + 1)]
+            x = sum(values) if count else np.average(values).item()
+            results.append({"y": bin, "x": None if np.isnan(x) else x, "yr_e": yr_e})
 
-        # Now iterate over use groups to make each chart item
-        # Only include non-None values
-        for use, buildings_in_uses in grouped_uses.items():
-            x = [b["x"] for b in buildings_in_uses if b["x"] is not None]
-            if x:
-                chart_data.append({"x": sum(x) if x_var == "Count" else median(x), "y": use.capitalize(), "yr_e": yr_e})
-        return chart_data
+        return results
 
-    def aggregate_year_built(self, yr_e, x_var, buildings):
-        # Group buildings in this year_ending group into decades
-        chart_data = []
-        grouped_decades = defaultdict(list)
-        for b in buildings:
-            grouped_decades["%s0" % str(b["y"])[:-1]].append(b)
+    def discrete_aggregate_data(self, yr_e, buildings, bins, count=False):
+        xs_by_bin = {bin: [] for bin in bins}
 
-        # Now iterate over decade groups to make each chart item
-        for decade, buildings_in_decade in grouped_decades.items():
-            x = [b["x"] for b in buildings_in_decade if b["x"] is not None]
-            chart_data.append(
-                {
-                    "x": sum(x) if x_var == "Count" else median(x),
-                    "y": f'{decade}-{"%s9" % str(decade)[:-1]}',  # 1990-1999
-                    "yr_e": yr_e,
-                }
-            )
-        return chart_data
+        for building in buildings:
+            xs_by_bin[building["y"]].append(building["x"])
 
-    def aggregate_gross_floor_area(self, yr_e, x_var, buildings):
-        chart_data = []
-        y_display_map = {
-            0: "0-99k",
-            100000: "100-199k",
-            200000: "200k-299k",
-            300000: "300k-399k",
-            400000: "400-499k",
-            500000: "500-599k",
-            600000: "600-699k",
-            700000: "700-799k",
-            800000: "800-899k",
-            900000: "900-999k",
-            1000000: "over 1,000k",
-        }
-        max_bin = max(y_display_map)
+        results = []
+        for bin, xs in xs_by_bin.items():
+            if count:
+                x = sum(xs)
+            elif len(xs) == 0:
+                x = None
+            else:
+                x = sum(xs) / len(xs)
 
-        # Group buildings in this year_ending group into ranges
-        grouped_ranges = defaultdict(list)
-        for b in buildings:
-            if b["y"] is None:
-                continue
-            area = b["y"]
-            # make sure anything greater than the biggest bin gets put in
-            # the biggest bin
-            range_bin = min(max_bin, round_down_hundred_thousand(area))
-            grouped_ranges[range_bin].append(b)
+            results.append({"y": bin, "x": x, "yr_e": yr_e})
 
-        # Now iterate over range groups to make each chart item
-        for range_floor, buildings_in_range in grouped_ranges.items():
-            x = [b["x"] for b in buildings_in_range if b["x"] is not None]
-            chart_data.append({"x": sum(x) if x_var == "Count" else median(x), "y": y_display_map[range_floor], "yr_e": yr_e})
-        return chart_data
+        return results
 
     @swagger_auto_schema(
         manual_parameters=[
@@ -1085,13 +1096,23 @@ class OrganizationViewSet(viewsets.ViewSet):
             # Write Base/Raw Data
             data_rows = cycle_results["chart_data"]
             for datum in data_rows:
+                del datum["id"]
                 for i, k in enumerate(datum.keys()):
                     base_sheet.write(base_row, data_col_start + i, datum.get(k))
 
                 base_row += 1
 
+            # set bins and choose agg type
+            ys = [building["y"] for datum in data for building in datum["chart_data"]]
+            if ys and isinstance(ys[0], Number):
+                bins = np.histogram_bin_edges(ys, bins=5)
+                aggregate_data = self.continuous_aggregate_data
+            else:
+                bins = list(set(ys))
+                aggregate_data = self.discrete_aggregate_data
+
             # Gather and write Agg data
-            for agg_datum in self.aggregate_data(yr_e, params["x_var"], params["y_var"], data_rows):
+            for agg_datum in aggregate_data(yr_e, data_rows, bins, count=params["x_var"] == "Count"):
                 agg_sheet.write(agg_row, data_col_start, agg_datum.get("x"))
                 agg_sheet.write(agg_row, data_col_start + 1, agg_datum.get("y"))
                 agg_sheet.write(agg_row, data_col_start + 2, agg_datum.get("yr_e"))
@@ -1267,3 +1288,30 @@ class OrganizationViewSet(viewsets.ViewSet):
         save_raw_data(import_greenbutton.id)
 
         return JsonResponse({"status": "success"})
+
+    @ajax_request_class
+    def public_feed_json(self, request, pk):
+        """
+        Returns all property and taxlot state data for a given organization as a json object. The results are ordered by "state.update".
+
+        Optional and configurable url query_params:
+        :query_param labels: comma separated list of case sensitive label names. Results will include inventory that has any of the listed labels. Default is all inventory
+        :query_param cycles: comma separated list of cycle ids. Results include inventory from the listed cycles. Default is all cycles
+        :query_param properties: boolean to return properties. Default is True
+        :query_param taxlots: boolan to return taxlots. Default is True
+        :query_param page: integer page number
+        :query_param per_page: integer results per page
+
+        Example requests:
+        {seed_url}/api/v3/organizations/public_feed.json?{query_param1}={value1}&{query_param2}={value2}
+        dev1.seed-platform.org/api/v3/organizations/1/public_feed.json
+        dev1.seed-platform.org/api/v3/organizations/1/public_feed.json?page=2&labels=Compliant&cycles=1,2,3&taxlots=False
+        """
+        try:
+            org = Organization.objects.get(pk=pk)
+        except Organization.DoesNotExist:
+            return JsonResponse({"erorr": "Organization does not exist"}, status=status.HTTP_404_NOT_FOUND)
+
+        feed = public_feed(org, request)
+
+        return JsonResponse(feed, json_dumps_params={"indent": 4}, status=status.HTTP_200_OK)

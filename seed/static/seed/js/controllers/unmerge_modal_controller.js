@@ -6,9 +6,11 @@ angular.module('BE.seed.controller.unmerge_modal', []).controller('unmerge_modal
   '$scope',
   '$uibModalInstance',
   'inventory_type',
+  'has_elements',
   // eslint-disable-next-line func-names
-  function ($scope, $uibModalInstance, inventory_type) {
+  function ($scope, $uibModalInstance, inventory_type, has_elements) {
     $scope.inventory_type = inventory_type;
+    $scope.has_elements = has_elements;
 
     $scope.close = () => {
       $uibModalInstance.close();
