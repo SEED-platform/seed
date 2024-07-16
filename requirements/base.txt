@@ -20,9 +20,9 @@ django-compressor==4.4
 django-extensions==3.2.3
 django-model-utils==4.3.1
 
-# Time zones support - Do not update these without doing significant testing!
-pytz==2018.7
-python-dateutil==2.7.3
+# Time zones support
+pytz==2024.1
+python-dateutil==2.9.0.post0
 
 # Metric/imperial units support
 django-pint==0.6
@@ -66,7 +66,7 @@ seed-salesforce==0.1.0
 # geospatial and pnnl/buildingid-py
 shapely==2.0.1
 usaddress==0.5.10
--e git+https://github.com/SEED-platform/buildingid.git@892958be07c55eebdbf582f5a81d4b1ce6d61412#egg=pnnl-buildingid
+-e git+https://github.com/SEED-platform/buildingid.git@bdb0a6efc37754f1946095896fa507b5ce866d6a#egg=pnnl-buildingid
 
 oauthlib==2.0.3
 
