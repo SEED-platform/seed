@@ -182,8 +182,7 @@ class Analysis(models.Model):
 
         # Element Statistics
         elif self.service == self.ELEMENTSTATISTICS:
-            element_statistics_result = results.get("my random number")
-            return [{"name": "my random number", "value": f"{element_statistics_result}!"}]
+            return [{"name": k, "value": v} for k, v in results.items()]
 
         # Unexpected
         return [{"name": "Unexpected Analysis Type", "value": "Oops!"}]

@@ -126,16 +126,17 @@ def _run_analysis(self, analysis_property_view_ids, analysis_id):
         mean_condition_index_by_code_and_property_id[property_id][code] = mean_condition_index
 
     for analysis_property_view in analysis_property_views:
-        # update the analysis_property_view
+        # update the property view and analysis_property_view
         analysis_property_view.parsed_results = {}
-        analysis_property_view.save()
-
-        # update the property view
         mean_condition_index_by_code = mean_condition_index_by_code_and_property_id.get(analysis_property_view.property_id, {})
         property_view = property_views_by_apv_id[analysis_property_view.id]
         for code, col in existing_columns_names_by_code.items():
-            property_view.state.extra_data[col] = mean_condition_index_by_code.get(code)
+            mean_condition_index = mean_condition_index_by_code.get(code)
+            property_view.state.extra_data[col] = mean_condition_index
+            if mean_condition_index:
+                analysis_property_view.parsed_results[col] = mean_condition_index
 
+        analysis_property_view.save()
         property_view.state.save()
 
     # all done!
