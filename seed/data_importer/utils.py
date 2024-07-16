@@ -402,18 +402,40 @@ def kgal_water_conversion_factor(coutry):
     meter_types = [
         "Potable Indoor",
         "Potable: Mixed Indoor/Outdoor",
-        "Potable Outdoor"
+        "Potable Outdoor",
     ]
+    # SHOULD THESE BE INCLUDED?
+    # other_types = [
+    #     "Other: Mixed Indoor/Outdoor",
+    #     "Other Indoor",
+    #     "Other Outdoor",
+    #     "Reclaimed: Mixed Indoor/Outdoor"
+    #     "Reclaimed: Indoor"
+    #     "Reclaimed: Outdoor"
+    #     "Well Water: Mixed Indoor/Outdoor"
+    #     "Well Water: Indoor"
+    #     "Well Water: Outdoor"
+    # ]
 
     unit_conversion = {
-        "ccf (hundred cubic feet)" : 1.34,
-        "cf (cubic feet))" : 3.68,
+        "ccf (hundred cubic feet)" : 0.748,
+        "cf (cubic feet))" : 0.00748,
         "cGal (hundred gallons) (US)" : 0.1,
+        "cGal (hundred gallons) (UK)" : 0.368,
+        "cm (cubic meters)": 0.2642,
         "Gallons (US)" : 0.001,
+        "Gallons (UK)" : 0.0012,
+        "kcf (thousand cubic feet)": 7.481,
+        "kcm (thousand cubit meters)": 264.17,
         "kGal (thousand gallons) (US)" : 1.00,
-        "kGal (thousand gallons) (UK)" : 0.8327,
+        "kGal (thousand gallons) (UK)" : 1.2,
+        "Liters": 0.000264,
+        "Mcf (million cubic feed)": 7480.52,
+        "MGal (million gallons) (UK)": 1000,
+        "MGal (million gallons) (US)": 1200
     }
 
+    # Create dict of pattern {meter_type: {unit: conversion}, ...}
     for meter_type in meter_types:
         for unit, conversion in unit_conversion.items():
             factors[meter_type][unit] = conversion
