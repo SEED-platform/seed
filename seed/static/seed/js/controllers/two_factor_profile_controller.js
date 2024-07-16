@@ -30,7 +30,7 @@ angular.module('BE.seed.controller.two_factor_profile', []).controller('two_fact
     $scope.require_2fa = $scope.organization.require_2fa;
     $scope.user = user_profile_payload;
     $scope.temp_user = { ...$scope.user };
-    $scope.settings_unchanged = () => _.isEqual($scope.temp_user, $scope.user)
+    $scope.settings_unchanged = () => _.isEqual($scope.temp_user, $scope.user);
 
     const email = $scope.user.email;
 
@@ -61,8 +61,8 @@ angular.module('BE.seed.controller.two_factor_profile', []).controller('two_fact
             $scope.qr_code_img = `data:image/png;base64,${response.qr_code}`;
             open_qr_code_scan_modal();
           } else {
-            Notification.success("Changes Saved")
-          } 
+            Notification.success('Changes Saved');
+          }
         });
       });
     };
