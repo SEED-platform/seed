@@ -302,8 +302,8 @@ class AnalysisPipeline(abc.ABC):
                 locked_analysis.status = Analysis.CREATING
                 locked_analysis.save()
                 progress_data = ProgressData(
-                    self._get_progress_data_key_prefix(locked_analysis),
-                    self._analysis_id,
+                    func_name=self._get_progress_data_key_prefix(locked_analysis),
+                    unique_id=self._analysis_id,
                 )
             else:
                 raise AnalysisPipelineError("Analysis has already been prepared or is currently being prepared")
@@ -322,8 +322,8 @@ class AnalysisPipeline(abc.ABC):
                 locked_analysis.status = Analysis.QUEUED
                 locked_analysis.save()
                 progress_data = ProgressData(
-                    self._get_progress_data_key_prefix(locked_analysis),
-                    self._analysis_id,
+                    func_name=self._get_progress_data_key_prefix(locked_analysis),
+                    unique_id=self._analysis_id,
                 )
             else:
                 statuses = dict(Analysis.STATUS_TYPES)
@@ -447,7 +447,10 @@ class AnalysisPipeline(abc.ABC):
                 locked_analysis.start_time = tz.now()
                 locked_analysis.save()
 
-                return ProgressData(self._get_progress_data_key_prefix(locked_analysis), locked_analysis.id)
+                return ProgressData(
+                    func_name=self._get_progress_data_key_prefix(locked_analysis),
+                    unique_id=locked_analysis.id,
+                )
             else:
                 statuses = dict(Analysis.STATUS_TYPES)
                 valid_statuses_str = " or ".join([statuses[s] for s in valid_statuses])

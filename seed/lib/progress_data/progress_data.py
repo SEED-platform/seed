@@ -5,6 +5,10 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
 import logging
+from enum import Enum
+from typing import Optional
+
+from typing_extensions import NotRequired, TypedDict
 
 from seed.decorators import get_prog_key
 from seed.utils.cache import delete_cache, get_cache, set_cache
@@ -12,13 +16,38 @@ from seed.utils.cache import delete_cache, get_cache, set_cache
 _log = logging.getLogger(__name__)
 
 
+class ProgressStatus(Enum):
+    ERROR = "error"
+    PENDING = "pending"
+    RUNNING = "running"
+    SUCCESS = "success"
+    WARNING = "warning"
+
+
+class Progress(TypedDict):
+    status: ProgressStatus
+    func_name: str
+    unique_id: str
+    status_message: NotRequired[str]
+    total: NotRequired[int]
+    # message
+    # summary
+    # stacktrace
+    # file_info
+    #
+
+
 class ProgressData:
-    def __init__(self, func_name, unique_id, init_data=None):
-        self.func_name = func_name
-        self.unique_id = unique_id
+    def __init__(self, func_name: str, unique_id: str, init_data=None, total: Optional[int] = None):
+        self.data: Progress = {
+            "status": ProgressStatus.PENDING,
+            "func_name": func_name,
+            "unique_id": unique_id,
+        }
         self.key = get_prog_key(func_name, unique_id)
-        self.total = None
-        self.increment_by = None
+        # TODO continue from here
+        self.completed = None
+        self.total = total
 
         # Load in the initialized data, some of this may be overloaded based
         # on the contents in the cache
@@ -31,22 +60,25 @@ class ProgressData:
         if init_data:
             self.data = init_data
         else:
-            self.data = {}
-            self.data["status"] = "not-started"
-            self.data["status_message"] = ""
-            self.data["progress"] = 0
-            self.data["progress_key"] = self.key
-            self.data["unique_id"] = self.unique_id
-            self.data["func_name"] = self.func_name
-            self.data["message"] = None
-            self.data["stacktrace"] = None
-            self.data["summary"] = None
+            self.data = {
+                "status": "pending",
+                "status_message": "",
+                "progress_key": self.key,
+                "unique_id": self.unique_id,
+                "func_name": self.func_name,
+                "message": None,
+                "stacktrace": None,
+                "summary": None,
+            }
+            self.completed = None
             self.total = None
-            self.increment_by = None
 
         # set some member variables
         if "progress_key" in self.data:
             self.key = self.data["progress_key"]
+
+        if "completed" in self.data:
+            self.completed = self.data["completed"]
 
         if "total" in self.data:
             self.total = self.data["total"]
@@ -102,7 +134,7 @@ class ProgressData:
         if "func_name" in data and "unique_id" in data:
             return cls(func_name=data["func_name"], unique_id=data["unique_id"], init_data=data)
         else:
-            raise Exception(f"Could not find key {key} in cache")
+            raise Exception("Could not find key %s in cache" % key)
 
     def save(self):
         """Save the data to the cache"""
@@ -126,7 +158,7 @@ class ProgressData:
         if self.data["total"]:
             self.total = self.data["total"]
 
-    def step(self, status_message=None, new_summary=None):
+    def step(self, status_message=None, summary=None):
         """Step the function by increment_value and save back to the cache"""
         # load the latest value out of the cache
         self.load()
@@ -142,12 +174,10 @@ class ProgressData:
         if status_message is not None:
             self.data["status_message"] = status_message
 
-        if new_summary is not None:
-            self.data["summary"] = new_summary
+        if summary is not None:
+            self.data["summary"] = summary
 
-        self.save()
-
-        return self.result()
+        return self.save()
 
     def step_with_counter(self):
         """Step the function by increment_value and save back to the cache with a count"""
@@ -165,9 +195,7 @@ class ProgressData:
         self.data["completed_records"] = round(value / 100.0 * self.data["total_records"])
         self.data["status_message"] = f'{self.data["completed_records"]:,} / {self.data["total_records"]:,}'
 
-        self.save()
-
-        return self.result()
+        return self.save()
 
     def result(self):
         """
@@ -179,8 +207,8 @@ class ProgressData:
 
     def increment_value(self):
         """
-        Return the value used to increment the progress. Currently, this always assumes that the
-        size of the step is 1 / self.total count.
+        Return the value to increment the progress back. Currently this is always assume that that
+        size of the step is 1 to the self.total count.
 
         :return: float, value to increment the step by
         """

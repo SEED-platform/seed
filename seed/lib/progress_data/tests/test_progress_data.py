@@ -26,7 +26,7 @@ class TestProgressData(TestCase):
         self.assertEqual(pd.key, ":1:SEED:test_func:PROG:abc123")
 
         data_eql = {
-            "status": "not-started",
+            "status": "pending",
             "status_message": "",
             "summary": None,
             "stacktrace": None,
@@ -37,7 +37,7 @@ class TestProgressData(TestCase):
             "total": None,
             "unique_id": "abc123",
         }
-        self.assertEqual(pd.data["status"], "not-started")
+        self.assertEqual(pd.data["status"], "pending")
         self.assertDictEqual(pd.data, data_eql)
         self.assertEqual(pd.total, None)
 

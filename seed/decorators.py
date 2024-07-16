@@ -12,11 +12,12 @@ from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseForbid
 from seed.lib.superperms.orgs.models import OrganizationUser
 from seed.serializers.pint import PintJSONEncoder
 from seed.utils.api import drf_api_endpoint
-from seed.utils.cache import get_lock, lock_cache, make_key, unlock_cache
+from seed.utils.cache import is_locked, lock_cache, make_key, unlock_cache
 
 SEED_CACHE_PREFIX = "SEED:{0}"
 LOCK_CACHE_PREFIX = SEED_CACHE_PREFIX + ":LOCK"
 PROGRESS_CACHE_PREFIX = SEED_CACHE_PREFIX + ":PROG"
+PROGRESS_CACHE_COMPLETED_SUFFIX = "{0}:COMPLETED"
 
 FORMAT_TYPES = {
     "application/json": lambda response: json.dumps(response, cls=PintJSONEncoder),
@@ -38,6 +39,11 @@ def get_prog_key(func_name, import_file_pk):
     return _get_cache_key(PROGRESS_CACHE_PREFIX.format(func_name), import_file_pk)
 
 
+def get_prog_completed_key(progress_key):
+    """Return the key for the completed integer related to a progress key"""
+    return PROGRESS_CACHE_COMPLETED_SUFFIX.format(progress_key)
+
+
 def lock_and_track(fn, *args, **kwargs):
     """Decorator to lock tasks to single executor and provide progress url."""
     func_name = fn.__name__
@@ -47,9 +53,8 @@ def lock_and_track(fn, *args, **kwargs):
         """Lock and return progress url for updates."""
         lock_key = _get_lock_key(func_name, import_file_pk)
         prog_key = get_prog_key(func_name, import_file_pk)
-        is_locked = get_lock(lock_key)
         # If we're already processing a given task, don't proceed.
-        if is_locked:
+        if is_locked(lock_key):
             return {"error": "locked"}
 
         # Otherwise, set the lock for 1 minute.
