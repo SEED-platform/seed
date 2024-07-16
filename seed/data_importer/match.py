@@ -606,7 +606,7 @@ def states_to_views(unmatched_state_ids, org, access_level_instance, cycle, Stat
     # If multiple matches are found, merge them together, pass along the resulting record.
     # Otherwise, add current -State to be promoted as-is.
     merged_between_existing_count = 0
-    merge_state_pairs: list[Union[tuple[PropertyState, PropertyState], Union[TaxLotState, TaxLotState]]] = []
+    merge_state_pairs: list[Union[tuple[PropertyState, PropertyState], tuple[TaxLotState, TaxLotState]]] = []
     batch_size = math.ceil(len(unmatched_states) / 100)
 
     for idx, state in enumerate(unmatched_states):
