@@ -2,7 +2,7 @@
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
  * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
-angular.module('BE.seed.controller.inventory_list', []).controller('inventory_list_controller', [
+angular.module('SEED.controller.inventory_list', []).controller('inventory_list_controller', [
   '$scope',
   '$filter',
   '$window',
@@ -91,7 +91,7 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
     $scope.organization = organization_payload.organization;
 
     // $scope.menu.user.is_ali_root not always populated (on redirects); force it
-    $scope.menu.user.is_ali_root = window.BE.is_ali_root;
+    $scope.menu.user.is_ali_root = window.SEED.is_ali_root;
 
     // set up i18n
     //

@@ -2,7 +2,7 @@
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
  * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
-angular.module('BE.seed.controller.ubid_admin', []).controller('ubid_admin_controller', [
+angular.module('SEED.controller.ubid_admin', []).controller('ubid_admin_controller', [
   '$scope',
   '$stateParams',
   'ubid_service',

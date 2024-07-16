@@ -2,7 +2,7 @@
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
  * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
-angular.module('BE.seed.controller.data_quality_admin', []).controller('data_quality_admin_controller', [
+angular.module('SEED.controller.data_quality_admin', []).controller('data_quality_admin_controller', [
   '$scope',
   '$q',
   '$state',

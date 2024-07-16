@@ -2,7 +2,7 @@
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
  * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
-angular.module('BE.seed.controller.organization_sharing', []).controller('organization_sharing_controller', [
+angular.module('SEED.controller.organization_sharing', []).controller('organization_sharing_controller', [
   '$scope',
   'all_columns',
   'organization_payload',

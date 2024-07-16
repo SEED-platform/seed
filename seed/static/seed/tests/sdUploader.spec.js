@@ -28,7 +28,7 @@ describe('The sdUploader directive', () => {
         g_file = fine_object.file;
         g_progress = fine_object.progress;
       };
-      window.BE = window.BE || {};
+      window.SEED = window.SEED || {};
     });
   });
 

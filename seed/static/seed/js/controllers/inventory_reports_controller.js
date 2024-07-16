@@ -7,7 +7,7 @@
  * and then updating the chart directives when the user clicks the update chart button.
  */
 
-angular.module('BE.seed.controller.inventory_reports', []).controller('inventory_reports_controller', [
+angular.module('SEED.controller.inventory_reports', []).controller('inventory_reports_controller', [
   '$scope',
   '$state',
   '$log',

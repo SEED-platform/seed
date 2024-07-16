@@ -2,7 +2,7 @@
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
  * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
-angular.module('BE.seed.service.uniformat', []).factory('uniformat_service', [
+angular.module('SEED.service.uniformat', []).factory('uniformat_service', [
   '$http',
   ($http) => ({
     // Return all uniformat categories

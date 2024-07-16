@@ -10,7 +10,7 @@ describe('controller: organization_settings_controller', () => {
   let mock_meters_service;
 
   beforeEach(() => {
-    module('BE.seed');
+    module('SEED');
     inject((_$httpBackend_) => {
       _$httpBackend_.whenGET(/^\/static\/seed\/locales\/.*\.json/).respond(200, {});
     });

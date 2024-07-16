@@ -2,7 +2,7 @@
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
  * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
-angular.module('BE.seed.controller.column_settings', []).controller('column_settings_controller', [
+angular.module('SEED.controller.column_settings', []).controller('column_settings_controller', [
   '$scope',
   '$q',
   '$state',
