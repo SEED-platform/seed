@@ -465,7 +465,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         """
         types_and_units = {
             "energy": {type: list(units.keys()) for type, units in kbtu_thermal_conversion_factors("US").items()},
-            "water": {type: list(units.keys()) for type, units in kgal_water_conversion_factors("US").items()}
+            "water": {type: list(units.keys()) for type, units in kgal_water_conversion_factors("US").items()},
         }
         return types_and_units
 

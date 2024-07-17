@@ -171,7 +171,7 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
     const update_display_unit_for_scoped_org = () => {
       let { type, unit } = $scope.chosen_type_unit;
       if (type && unit) {
-        $scope.org.display_meter_units[type] = unit; 
+        $scope.org.display_meter_units[type] = unit;
       }
 
       ({type, unit} = $scope.chosen_water_type_unit);

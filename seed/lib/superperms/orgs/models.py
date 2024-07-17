@@ -50,6 +50,7 @@ def _get_default_meter_units():
     `Organization._default_display_meter_units` directly."""
     return Organization._default_display_meter_units
 
+
 def _get_default_meter_water_units():
     """Returns the default meter water units for an organization. This method
     is used only to set the default units for a new organization.

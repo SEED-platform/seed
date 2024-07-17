@@ -13,7 +13,7 @@ from django.utils.timezone import make_aware
 from pytz import timezone
 
 from config.settings.common import TIME_ZONE
-from seed.data_importer.utils import kbtu_thermal_conversion_factors, usage_point_id, kgal_water_conversion_factors
+from seed.data_importer.utils import kbtu_thermal_conversion_factors, kgal_water_conversion_factors, usage_point_id
 from seed.lib.superperms.orgs.models import Organization
 from seed.models import Meter
 

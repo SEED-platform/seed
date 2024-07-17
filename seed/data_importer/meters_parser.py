@@ -14,7 +14,7 @@ from django.utils.timezone import make_aware
 from pytz import AmbiguousTimeError, NonExistentTimeError, timezone
 
 from config.settings.common import TIME_ZONE
-from seed.data_importer.utils import kbtu_thermal_conversion_factors, usage_point_id, kgal_water_conversion_factors
+from seed.data_importer.utils import kbtu_thermal_conversion_factors, kgal_water_conversion_factors, usage_point_id
 from seed.lib.mcm import reader
 from seed.lib.superperms.orgs.models import Organization
 from seed.models import Meter, PropertyState, PropertyView
@@ -110,11 +110,11 @@ class MetersParser:
             self._cache_kbtu_thermal_conversion_factors = kbtu_thermal_conversion_factors(self._org_country)
 
         return self._cache_kbtu_thermal_conversion_factors
-    
-    @property 
+
+    @property
     def _kgal_water_conversion_factors(self):
         if self._cache_kgal_water_conversion_factors is None:
-            self._cache_kgal_water_conversion_factors = kgal_water_conversion_factors(self._org_country) 
+            self._cache_kgal_water_conversion_factors = kgal_water_conversion_factors(self._org_country)
 
         return self._cache_kgal_water_conversion_factors
 
