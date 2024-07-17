@@ -2,7 +2,7 @@
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
  * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
-angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
+angular.module('SEED.service.inventory', []).factory('inventory_service', [
   '$http',
   '$log',
   '$q',

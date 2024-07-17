@@ -4,8 +4,6 @@ SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and othe
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
-from typing import Literal
-
 from celery import shared_task
 from django.contrib.postgres.aggregates.general import ArrayAgg
 from django.db import transaction
@@ -186,18 +184,24 @@ def _link_matches(matching_views, org_id, view, ViewClass):  # noqa: N803
     return matching_views.count() - 1
 
 
-def match(state_id, cycle_id, StateClass, StateClassName, ViewClass):  # noqa: N803
-    state = StateClass.objects.get(pk=state_id)
+def match(state, cycle_id):
     org_id = state.organization_id
 
+    state_class_name = state.__class__.__name__
+    if state_class_name == "PropertyState":
+        ViewClass = PropertyView
+        class_name = "property"
+    elif state_class_name == "TaxLotState":
+        ViewClass = TaxLotView
+        class_name = "taxlot"
+
     # Get the View, if any, attached to this State
-    try:
-        self_view = ViewClass.objects.get(state_id=state_id, cycle_id=cycle_id)
-    except ViewClass.DoesNotExist:
-        self_view = None
+    self_view = (
+        ViewClass.objects.filter(state_id=state.id, cycle_id=cycle_id).prefetch_related(f"{class_name}__access_level_instance").first()
+    )
 
     # Create matching criteria filter
-    column_names = matching_criteria_column_names(org_id, StateClassName)
+    column_names = matching_criteria_column_names(org_id, state_class_name)
     matching_criteria = matching_filter_criteria(state, column_names)
     state_appended_matching_criteria = {"state__" + col_name: v for col_name, v in matching_criteria.items()}
 
@@ -218,40 +222,35 @@ def match(state_id, cycle_id, StateClass, StateClassName, ViewClass):  # noqa: N
     return self_view, matching_views_in_cycle, matching_views_out_of_cycle
 
 
-def _get_ali(view, matching_views, highest_ali, class_name, ViewClass):  # noqa: N803
+def _get_ali(view, matching_views, highest_ali, class_name):
     # Get the ali of the matching views
-    matching_ali_ids = list(set(matching_views.values_list(f"{class_name}__access_level_instance", flat=True)))
-    if len(matching_ali_ids) == 0:
-        matching_ali_id = None
-    elif len(matching_ali_ids) == 1:
-        matching_ali_id = matching_ali_ids[0]
-    elif len(matching_ali_ids) > 1:
+    matching_alis = {getattr(v, class_name).access_level_instance for v in matching_views}
+    if len(matching_alis) == 0:
+        matching_ali = None
+    elif len(matching_alis) == 1:
+        matching_ali = matching_alis.pop()
+    elif len(matching_alis) > 1:
         raise AssertionError  # if matches have different alis, BIG problem
 
     # get the ali of the view
-    if view:
-        view_ali_id = next(iter(ViewClass.objects.filter(id=view.id).values_list(f"{class_name}__access_level_instance", flat=True)))
-    else:
-        view_ali_id = None
+    view_ali = getattr(view, class_name).access_level_instance if view else None
 
     # get the ali
-    if matching_ali_id is None and view_ali_id is None:
+    if matching_ali is None and view_ali is None:
         raise NoViewsError
 
-    elif matching_ali_id is None:
-        ali_id = view_ali_id
+    elif matching_ali is None:
+        ali = view_ali
 
-    elif view_ali_id is None:
-        ali_id = matching_ali_id
+    elif view_ali is None:
+        ali = matching_ali
 
-    # if view's ali is different, the view is invalid
-    elif view_ali_id != matching_ali_id:
+    # if view's ali is different, the views invalid
+    elif view_ali != matching_ali:
         raise MultipleALIError
 
     else:
-        ali_id = matching_ali_id
-
-    ali = AccessLevelInstance.objects.get(pk=ali_id)
+        ali = matching_ali
 
     # if we don't have access to matching_ali, raise an access error
     if highest_ali and not (ali == highest_ali or ali.is_descendant_of(highest_ali)):
@@ -260,7 +259,8 @@ def _get_ali(view, matching_views, highest_ali, class_name, ViewClass):  # noqa:
     return ali
 
 
-def match_merge_link(state_id, state_class_name: Literal["PropertyState", "TaxLotState"], highest_ali, cycle):
+def match_merge_link(state, highest_ali, cycle):
+    state_class_name = state.__class__.__name__
     if state_class_name == "PropertyState":
         StateClass = PropertyState
         ViewClass = PropertyView
@@ -270,14 +270,18 @@ def match_merge_link(state_id, state_class_name: Literal["PropertyState", "TaxLo
         ViewClass = TaxLotView
         class_name = "taxlot"
 
-    state = StateClass.objects.get(pk=state_id)
     org_id = state.organization_id
 
     # MATCH
-    view, matching_views_in_cycle, matching_views_out_of_cycle = match(state_id, cycle.id, StateClass, state_class_name, ViewClass)
+    view, matching_views_in_cycle, matching_views_out_of_cycle = match(state, cycle.id)
 
     # Get ali and perform ali related checks
-    ali = _get_ali(view, matching_views_in_cycle | matching_views_out_of_cycle, highest_ali, class_name, ViewClass)
+    ali = _get_ali(
+        view,
+        (matching_views_in_cycle | matching_views_out_of_cycle).prefetch_related(f"{class_name}__access_level_instance"),
+        highest_ali,
+        class_name,
+    )
 
     # if a view for this cycle doesn't already exist, create one
     if view is None:
@@ -291,13 +295,13 @@ def match_merge_link(state_id, state_class_name: Literal["PropertyState", "TaxLo
     all_matching_views = (
         ViewClass.objects.filter(pk=view.id).prefetch_related("state") | matching_views_in_cycle | matching_views_out_of_cycle
     )
-    merge_count, target_state_id = _merge_matches_across_cycles(all_matching_views, org_id, state_id, StateClass)
+    merge_count, target_state_id = _merge_matches_across_cycles(all_matching_views, org_id, state.id, StateClass)
     view = ViewClass.objects.get(state_id=target_state_id)
 
     # LINK
     link_count = _link_matches(all_matching_views, org_id, view, ViewClass)
 
-    return merge_count, link_count, view.id
+    return merge_count, link_count, view
 
 
 @shared_task(serializer="pickle", ignore_result=True)

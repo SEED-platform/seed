@@ -6,7 +6,7 @@ describe('The ignoremap filter', () => {
   let ignoremapFilter;
 
   beforeEach(() => {
-    module('BE.seed');
+    module('SEED');
     inject((_ignoremapFilter_) => {
       ignoremapFilter = _ignoremapFilter_;
     });

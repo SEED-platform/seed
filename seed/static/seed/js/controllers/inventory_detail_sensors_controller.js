@@ -2,7 +2,7 @@
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
  * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
-angular.module('BE.seed.controller.inventory_detail_sensors', []).controller('inventory_detail_sensors_controller', [
+angular.module('SEED.controller.inventory_detail_sensors', []).controller('inventory_detail_sensors_controller', [
   '$scope',
   '$stateParams',
   '$uibModal',
@@ -214,7 +214,7 @@ angular.module('BE.seed.controller.inventory_detail_sensors', []).controller('in
       enableFiltering: true,
       flatEntityAccess: true,
       fastWatch: true,
-      exporterCsvFilename: `${window.BE.initial_org_name + ($scope.inventory_type === 'taxlots' ? ' Tax Lot ' : ' Property ')}sensors.csv`,
+      exporterCsvFilename: `${window.SEED.initial_org_name + ($scope.inventory_type === 'taxlots' ? ' Tax Lot ' : ' Property ')}sensors.csv`,
       enableGridMenu: true,
       exporterMenuPdf: false,
       exporterMenuExcel: false,
@@ -227,7 +227,7 @@ angular.module('BE.seed.controller.inventory_detail_sensors', []).controller('in
       enableColumnResizing: true,
       flatEntityAccess: true,
       fastWatch: true,
-      exporterCsvFilename: `${window.BE.initial_org_name + ($scope.inventory_type === 'taxlots' ? ' Tax Lot ' : ' Property ')}sensor readings.csv`,
+      exporterCsvFilename: `${window.SEED.initial_org_name + ($scope.inventory_type === 'taxlots' ? ' Tax Lot ' : ' Property ')}sensor readings.csv`,
       enableGridMenu: true,
       exporterMenuPdf: false,
       exporterMenuExcel: false,

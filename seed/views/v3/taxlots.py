@@ -230,9 +230,7 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
             with transaction.atomic():
                 merged_state = merge_taxlots(taxlot_state_ids, organization_id, "Manual Match")
                 view = merged_state.taxlotview_set.first()
-                merge_count, link_count, _view_id = match_merge_link(
-                    merged_state.id, "TaxLotState", view.taxlot.access_level_instance, view.cycle
-                )
+                merge_count, link_count, _view = match_merge_link(merged_state, view.taxlot.access_level_instance, view.cycle)
 
         except MergeLinkPairError:
             return JsonResponse(
@@ -416,8 +414,8 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
         taxlot_view = TaxLotView.objects.get(pk=pk, cycle__organization_id=org_id)
         try:
             with transaction.atomic():
-                merge_count, link_count, view_id = match_merge_link(
-                    taxlot_view.state.pk, "TaxLotState", taxlot_view.taxlot.access_level_instance, taxlot_view.cycle
+                merge_count, link_count, view = match_merge_link(
+                    taxlot_view.state, taxlot_view.taxlot.access_level_instance, taxlot_view.cycle
                 )
 
         except MergeLinkPairError:
@@ -430,7 +428,7 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
             )
 
         result = {
-            "view_id": view_id,
+            "view_id": view.id,
             "match_merged_count": merge_count,
             "match_link_count": link_count,
         }
@@ -679,8 +677,8 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
 
                         try:
                             with transaction.atomic():
-                                merge_count, link_count, view_id = match_merge_link(
-                                    taxlot_view.state_id, "TaxLotState", taxlot_view.taxlot.access_level_instance, taxlot_view.cycle
+                                merge_count, link_count, view = match_merge_link(
+                                    taxlot_view.state, taxlot_view.taxlot.access_level_instance, taxlot_view.cycle
                                 )
 
                         except MergeLinkPairError:
@@ -694,7 +692,7 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
 
                         result.update(
                             {
-                                "view_id": view_id,
+                                "view_id": view.id,
                                 "match_merged_count": merge_count,
                                 "match_link_count": link_count,
                             }
