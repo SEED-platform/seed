@@ -387,7 +387,7 @@ def kbtu_thermal_conversion_factors(country):
 
     return factors
 
-def kgal_water_conversion_factor(coutry):
+def kgal_water_conversion_factors(coutry):
     """
     Returns water conversion factor provided by Portfolio Manager.
     # CAN WE DO THIS FOR WATER? (from kbtu_thermal_conversion_factors)
@@ -400,6 +400,7 @@ def kgal_water_conversion_factor(coutry):
     factors = defaultdict(dict)
 
     meter_types = [
+        "Default",
         "Potable Indoor",
         "Potable: Mixed Indoor/Outdoor",
         "Potable Outdoor",
@@ -421,15 +422,15 @@ def kgal_water_conversion_factor(coutry):
         "ccf (hundred cubic feet)" : 0.748,
         "cf (cubic feet))" : 0.00748,
         "cGal (hundred gallons) (US)" : 0.1,
-        "cGal (hundred gallons) (UK)" : 0.368,
-        "cm (cubic meters)": 0.2642,
+        "cGal (hundred gallons) (UK)" : 0.12,
+        "cm (cubic meters)": 0.264172,
         "Gallons (US)" : 0.001,
         "Gallons (UK)" : 0.0012,
-        "kcf (thousand cubic feet)": 7.481,
-        "kcm (thousand cubit meters)": 264.17,
+        "kcf (thousand cubic feet)": 7.48,
+        "kcm (thousand cubit meters)": 264.172,
         "kGal (thousand gallons) (US)" : 1.00,
         "kGal (thousand gallons) (UK)" : 1.2,
-        "Liters": 0.000264,
+        "Liters": 0.000264172,
         "Mcf (million cubic feed)": 7480.52,
         "MGal (million gallons) (UK)": 1000,
         "MGal (million gallons) (US)": 1200

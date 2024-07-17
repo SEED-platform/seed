@@ -124,18 +124,27 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
       type: null,
       unit: null
     };
+    $scope.chosen_water_type_unit = {
+      type: null,
+      unit: null
+    };
 
     // Energy type option executed within this method in order to repeat on organization update
-    const get_energy_type_options = () => {
-      $scope.energy_type_options = _.map($scope.org.display_meter_units, (unit, type) => ({
-        label: `${type} | ${unit}`,
-        value: type
-      }));
+    const get_meter_type_options = () => {
+      const map_display_units = (display_units) => {
+        return _.map(display_units, (unit, type) => ({
+          label: `${type} | ${unit}`,
+          value: type
+        }));
+      }
+      $scope.energy_type_options = map_display_units($scope.org.display_meter_units);
+      $scope.water_type_options = map_display_units($scope.org.display_meter_water_units);
     };
-    get_energy_type_options();
+    get_meter_type_options();
 
     meters_service.valid_energy_types_units().then((results) => {
-      $scope.energy_unit_options = results;
+      $scope.energy_unit_options = results.energy;
+      $scope.water_unit_options = results.water;
     });
 
     $scope.get_valid_units_for_type = () => {
@@ -148,15 +157,29 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
       }
     };
 
+    $scope.get_valid_water_units_for_type = () => {
+      const options = $scope.water_unit_options[$scope.chosen_water_type_unit.type];
+      const previous_unit = $scope.org.display_meter_water_units[$scope.chosen_water_type_unit.type];
+      if (_.includes(options, previous_unit)) {
+        $scope.chosen_water_type_unit.unit = previous_unit;
+      } else {
+        $scope.chosen_water_type_unit.unit = null;
+      }
+    };
+
     // Called when save_settings is called to update the scoped org before org save request is sent.
     const update_display_unit_for_scoped_org = () => {
-      const { type } = $scope.chosen_type_unit;
-      const { unit } = $scope.chosen_type_unit;
-
+      let { type, unit } = $scope.chosen_type_unit;
       if (type && unit) {
-        $scope.org.display_meter_units[type] = unit;
-        get_energy_type_options();
+        $scope.org.display_meter_units[type] = unit; 
       }
+
+      ({type, unit} = $scope.chosen_water_type_unit);
+      if (type && unit) {
+        $scope.org.display_meter_water_units[type] = unit;
+      }
+
+      get_meter_type_options();
     };
 
     $scope.unit_options_area = [

@@ -30,7 +30,7 @@ from seed.data_importer.match import save_state_match
 from seed.data_importer.meters_parser import MetersParser
 from seed.data_importer.models import ImportFile, ImportRecord
 from seed.data_importer.tasks import _save_pm_meter_usage_data_task
-from seed.data_importer.utils import kbtu_thermal_conversion_factors
+from seed.data_importer.utils import kbtu_thermal_conversion_factors, kgal_water_conversion_factors
 from seed.decorators import ajax_request_class
 from seed.hpxml.hpxml import HPXML
 from seed.lib.progress_data.progress_data import ProgressData
@@ -463,7 +463,11 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         the two.
         (https://portfoliomanager.energystar.gov/pdf/reference/Thermal%20Conversions.pdf)
         """
-        return {type: list(units.keys()) for type, units in kbtu_thermal_conversion_factors("US").items()}
+        types_and_units = {
+            "energy": {type: list(units.keys()) for type, units in kbtu_thermal_conversion_factors("US").items()},
+            "water": {type: list(units.keys()) for type, units in kgal_water_conversion_factors("US").items()}
+        }
+        return types_and_units
 
     @swagger_auto_schema(
         manual_parameters=[AutoSchemaHelper.query_org_id_field()],
