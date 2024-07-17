@@ -19,8 +19,7 @@ from seed.lib.tkbl.tkbl import scope_one_emission_codes
 from seed.lib.uniformat.uniformat import uniformat_data
 from seed.models import Analysis, AnalysisPropertyView, Column
 
-logger = logging.get
-(__name__)
+logger = logging.get(__name__)
 
 
 class ElementStatisticsPipeline(AnalysisPipeline):
