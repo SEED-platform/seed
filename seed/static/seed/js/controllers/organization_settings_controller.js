@@ -134,12 +134,10 @@ angular.module('SEED.controller.organization_settings', []).controller('organiza
 
     // Energy type option executed within this method in order to repeat on organization update
     const get_meter_type_options = () => {
-      const map_display_units = (display_units) => {
-        return _.map(display_units, (unit, type) => ({
-          label: `${type} | ${unit}`,
-          value: type
-        }));
-      }
+      const map_display_units = (display_units) => _.map(display_units, (unit, type) => ({
+        label: `${type} | ${unit}`,
+        value: type
+      }));
       $scope.energy_type_options = map_display_units($scope.org.display_meter_units);
       $scope.water_type_options = map_display_units($scope.org.display_meter_water_units);
     };
@@ -177,7 +175,7 @@ angular.module('SEED.controller.organization_settings', []).controller('organiza
         $scope.org.display_meter_units[type] = unit;
       }
 
-      ({type, unit} = $scope.chosen_water_type_unit);
+      ({ type, unit } = $scope.chosen_water_type_unit);
       if (type && unit) {
         $scope.org.display_meter_water_units[type] = unit;
       }

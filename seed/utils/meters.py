@@ -236,9 +236,9 @@ class PropertyMeterReadingsExporter:
             display_unit = self.org_meter_display_settings[type_text]
             conversion_factor = self.thermal_factors[type_text][display_unit]
         elif type_text in self.org_meter_water_display_settings:
-            display_unit = self.org_meter_water_display_settings[type_text]
-            conversion_factor = self.water_factors[type_text][display_unit]
-        else:  # will this break if its a water type and gets assigned default kbtu?
+            display_unit = self.org_meter_water_display_settings.get(type_text, "Default")
+            conversion_factor = self.water_factors.get(type_text, "Default")[display_unit]
+        else:
             display_unit = self.org_meter_display_settings["Default"]
             conversion_factor = self.thermal_factors["Default"][display_unit]
 

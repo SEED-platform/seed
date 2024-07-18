@@ -391,12 +391,7 @@ def kbtu_thermal_conversion_factors(country):
 def kgal_water_conversion_factors(coutry):
     """
     Returns water conversion factor provided by Portfolio Manager.
-    # CAN WE DO THIS FOR WATER? (from kbtu_thermal_conversion_factors)
-        # In the PM app, using NREL's test account, a property was created for each US
-        # and CAN. All possible Meters of different Type and Units were added.
-        # Readings of value 1 were added to deduce the factors provided below.
-
-    # Conversion factors taken from: https://www.kylesconverter.com/volume/kilogallons
+    Conversion factors taken from: https://www.kylesconverter.com/volume/kilogallons
 
     # should country be considered?
     """
