@@ -396,6 +396,8 @@ def kgal_water_conversion_factors(coutry):
         # and CAN. All possible Meters of different Type and Units were added.
         # Readings of value 1 were added to deduce the factors provided below.
 
+    # Conversion factors taken from: https://www.kylesconverter.com/volume/kilogallons
+
     # should country be considered?
     """
     factors = defaultdict(dict)
