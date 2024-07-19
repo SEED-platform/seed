@@ -134,7 +134,7 @@ angular.module('SEED.controller.organization_settings', []).controller('organiza
       {
         label: $translate.instant('L/year'),
         value: 'L/year'
-      },
+      }
 
     ];
 
@@ -150,7 +150,7 @@ angular.module('SEED.controller.organization_settings', []).controller('organiza
       {
         label: $translate.instant('L/m²/year'),
         value: 'L/m**2/year'
-      },
+      }
     ];
 
     // Ideally, these units and types for meters should be translatable.
