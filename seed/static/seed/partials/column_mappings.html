@@ -196,10 +196,14 @@
                   <option value="kgCO2e/m**2/year" translate>kgCO2e/m²/year</option>
                 </select>
                 <select ng-model="col.from_units" ng-change="flag_change()" ng-if="is_data_type_column('water_use', col)">
-                  <option value="kgal" translate>kgal</option>
+                  <option value="kgal/year" trnaslate>kgal/year</option>
+                  <option value="gal/year" trnaslate>gal/year</option>
+                  <option value="L/year" trnaslate>L/year</option>
                 </select>
                 <select ng-model="col.from_units" ng-change="flag_change()" ng-if="is_data_type_column('wui', col)">
-                  <option value="kgal/ft**2/year" translate>kgal/ft²/year</option>
+                  <option value="kgal/ft**2/year" trnaslate>kgal/ft²/year</option>
+                  <option value="gal/ft**2/year" trnaslate>gal/ft²/year</option>
+                  <option value="L/m**2/year" trnaslate>L/m²/year</option>
                 </select>
               </td>
               <td ng-class="{'danger': is_file_header_duplicate(col)}">

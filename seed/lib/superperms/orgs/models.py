@@ -166,9 +166,17 @@ class Organization(models.Model):
         ("MtCO2e/m**2/year", "MtCO2e/m²/year"),
     )
 
-    MEASUREMENT_CHOICES_WUI = (("kgal/ft**2/year", "kgal/ft**2/year"),)
+    MEASUREMENT_CHOICES_WUI = (
+        ("kgal/ft**2/year", "kgal/ft²/year"),
+        ("gal/ft**2/year", "gal/ft²/year"),
+        ("L/m**2/year", "L/m²/year"),
+    )
 
-    MEASUREMENT_CHOICES_WATER_USE = (("kgal", "kgal"),)
+    MEASUREMENT_CHOICES_WATER_USE = (
+        ("kgal/year", "kgal/year"),
+        ("gal/year", "gal/year"),
+        ("L/year", "L/year"),
+    )
 
     US = 1
     CAN = 2
@@ -231,8 +239,8 @@ class Organization(models.Model):
     display_units_ghg_intensity = models.CharField(
         max_length=32, choices=MEASUREMENT_CHOICES_GHG_INTENSITY, blank=False, default="kgCO2e/ft**2/year"
     )
-    display_units_wui = models.CharField(max_length=32, choices=MEASUREMENT_CHOICES_WUI, blank=True, default="kgal/ft**2/year")
-    display_units_water_use = models.CharField(max_length=32, choices=MEASUREMENT_CHOICES_WATER_USE, blank=True, default="kgal")
+    display_units_wui = models.CharField(max_length=32, choices=MEASUREMENT_CHOICES_WUI, blank=True, default="gal/ft**2/year")
+    display_units_water_use = models.CharField(max_length=32, choices=MEASUREMENT_CHOICES_WATER_USE, blank=True, default="kgal/year")
 
     display_decimal_places = models.PositiveSmallIntegerField(blank=False, default=2)
 

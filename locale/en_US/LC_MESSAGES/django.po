@@ -1911,6 +1911,9 @@ msgstr "Meter energy display units (change one at a time)"
 msgid "METER_READING_COUNTS_TITLE"
 msgstr "Meter Reading Counts"
 
+msgid "METER_WATER_DISPLAY_SETTINGS_TITLE"
+msgstr "Meter water display units (change one at a time)"
+
 msgid "MJ/m²/year"
 msgstr "MJ/m²/year"
 
@@ -2286,6 +2289,12 @@ msgstr "Are you sure you want to delete {num_properties,plural, one{<strong>1</s
 
 msgid "OR"
 msgstr "OR"
+
+msgid "ORGANIZATION_WATER_USE_DISPLAY_UNITS"
+msgstr "Measurement unit display for Water Use"
+
+msgid "ORGANIZATION_WUI_DISPLAY_UNITS"
+msgstr "Measurement unit display for Water Use Intensity (WUI)"
 
 msgid "ORG_MATCH_MERGE_LINK_WARNING"
 msgstr "WARNING: You have modified the criteria that your organization's data will be matched and merged against. Once a column has been added to an organization's matching criteria it cannot be removed while the organization has inventory."
@@ -3898,6 +3907,9 @@ msgstr "Visit the BETTER website to run a portfolio analysis"
 
 msgid "Visualization Settings"
 msgstr "Visualization Settings"
+
+msgid "WATER_TYPE_DISPLAY_CHOICE_PLACEHOLDER"
+msgstr "----Choose water type----"
 
 msgid "WHEN_YOU_CLICK_MAP_YOUR_DATA"
 msgstr "When you click the <span class=\"label label-primary\">Map Your Data</span> button, the program will show a grid with the new field names as the column headings and your data in the rows. In that view, you can still come back to the initial mapping screen and change the field mapping."

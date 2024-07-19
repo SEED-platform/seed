@@ -29,14 +29,14 @@ EUI_DIMENSIONALITY = "[mass] / [time] ** 3"
 GHG_DIMENSIONALITY = "[mass] / [time]"
 GHG_INTENSITY_DIMENSIONALITY = "[mass] / [length] ** 2 / [time]"
 WUI_DIMENSIONALITY = "[length] / [time]"  # kgal/ft2/year => length3/length2/time => length/time3
-WATER_USE_DIMENSONALITY = "[length] ** 3"
+WATER_USE_DIMENSONALITY = "[length] ** 3 / [time]"
 
 AREA_DEFAULT_UNITS = "ft**2"
 EUI_DEFAULT_UNITS = "kBtu/ft**2/year"
 GHG_DEFAULT_UNITS = "MtCO2e/year"
 GHG_INTENSITY_DEFAULT_UNITS = "kgCO2e/ft**2/year"
-WUI_DEFAULT_UNITS = "kgal/ft**2/year"
-WATER_USE_DEFAULT_UNITS = "kgal"
+WUI_DEFAULT_UNITS = "gal/ft**2/year"
+WATER_USE_DEFAULT_UNITS = "kgal/year"
 
 DEFAULT_UNITS = {
     "area": AREA_DEFAULT_UNITS,

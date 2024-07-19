@@ -122,6 +122,37 @@ angular.module('SEED.controller.organization_settings', []).controller('organiza
       }
     ];
 
+    $scope.unit_options_water_use = [
+      {
+        label: $translate.instant('gal/year'),
+        value: 'gal/year'
+      },
+      {
+        label: $translate.instant('kgal/year'),
+        value: 'kgal/year'
+      },
+      {
+        label: $translate.instant('L/year'),
+        value: 'L/year'
+      },
+
+    ];
+
+    $scope.unit_options_wui = [
+      {
+        label: $translate.instant('gal/ft²/year'),
+        value: 'gal/ft**2/year'
+      },
+      {
+        label: $translate.instant('kgal/ft²/year'),
+        value: 'kgal/ft**2/year'
+      },
+      {
+        label: $translate.instant('L/m²/year'),
+        value: 'L/m**2/year'
+      },
+    ];
+
     // Ideally, these units and types for meters should be translatable.
     $scope.chosen_type_unit = {
       type: null,

@@ -327,9 +327,9 @@ class PropertyState(models.Model):
     total_marginal_ghg_emissions = QuantityField("MtCO2e/year", null=True, blank=True)
     total_ghg_emissions_intensity = QuantityField("kgCO2e/ft**2/year", null=True, blank=True)
     total_marginal_ghg_emissions_intensity = QuantityField("kgCO2e/ft**2/year", null=True, blank=True)
-    water_use = QuantityField("kgal", null=True, blank=True)
-    indoor_water_use = QuantityField("kgal", null=True, blank=True)
-    outdoor_water_use = QuantityField("kgal", null=True, blank=True)
+    water_use = QuantityField("kgal/year", null=True, blank=True)
+    indoor_water_use = QuantityField("kgal/year", null=True, blank=True)
+    outdoor_water_use = QuantityField("kgal/year", null=True, blank=True)
     wui = QuantityField("gal/ft**2/year", null=True, blank=True)
     indoor_wui = QuantityField("gal/ft**2/year", null=True, blank=True)
 

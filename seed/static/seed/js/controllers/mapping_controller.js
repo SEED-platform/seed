@@ -307,10 +307,10 @@ angular.module('SEED.controller.mapping', []).controller('mapping_controller', [
         return 'kgCO2e/ft**2/year';
       }
       if ($scope.is_data_type_column('water_use', col)) {
-        return 'kgal';
+        return 'kgal/year';
       }
       if ($scope.is_data_type_column('wui', col)) {
-        return 'kgal/ft**2/year';
+        return 'gal/ft**2/year';
       }
       return null;
     };

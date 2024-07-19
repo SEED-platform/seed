@@ -1053,6 +1053,32 @@
 
       <div class="section_content_container">
         <div class="section_content with_padding">
+          <h3 translate>ORGANIZATION_WATER_USE_DISPLAY_UNITS</h3>
+          <form class="form-horizontal" role="form">
+            <div class="form-group">
+              <div class="col-sm-4">
+                <select class="form-control" ng-options="o.value as o.label for o in unit_options_water_use" ng-model="org.display_units_water_use"></select>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div class="section_content_container">
+        <div class="section_content with_padding">
+          <h3 translate>ORGANIZATION_WUI_DISPLAY_UNITS</h3>
+          <form class="form-horizontal" role="form">
+            <div class="form-group">
+              <div class="col-sm-4">
+                <select class="form-control" ng-options="o.value as o.label for o in unit_options_wui" ng-model="org.display_units_wui"></select>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div class="section_content_container">
+        <div class="section_content with_padding">
           <h3 translate>METER_DISPLAY_SETTINGS_TITLE</h3>
           <form class="form-horizontal" role="form">
             <div class="form-group">

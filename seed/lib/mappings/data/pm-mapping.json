@@ -679,7 +679,7 @@
     "to_field": "water_use",
     "to_table_name": "PropertyState",
     "from_field": "Water Use",
-    "units": "kgal",
+    "units": "kgal/year",
     "type": "float",
     "schema": ""
   },
@@ -688,7 +688,7 @@
     "to_field": "indoor_water_use",
     "to_table_name": "PropertyState",
     "from_field": "Indoor Water Use",
-    "units": "kgal",
+    "units": "kgal/year",
     "type": "float",
     "schema": ""
   },
@@ -697,7 +697,7 @@
     "to_field": "outdoor_water_use",
     "to_table_name": "PropertyState",
     "from_field": "Outdoor Water Use",
-    "units": "kgal",
+    "units": "kgal/year",
     "type": "float",
     "schema": ""
   },
@@ -706,7 +706,7 @@
     "to_field": "wui",
     "to_table_name": "PropertyState",
     "from_field": "WUI",
-    "units": "kgal/ft**2/year",
+    "units": "gal/ft**2/year",
     "type": "float",
     "schema": ""
   },
@@ -715,7 +715,7 @@
     "to_field": "indoor_wui",
     "to_table_name": "PropertyState",
     "from_field": "Indoor WUI",
-    "units": "kgal/ft**2/year",
+    "units": "gal/ft**2/year",
     "type": "float",
     "schema": ""
   }

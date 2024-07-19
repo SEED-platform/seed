@@ -124,6 +124,8 @@ def _dict_org(request, organizations):
             "display_units_eui": o.display_units_eui,
             "display_units_ghg": o.display_units_ghg,
             "display_units_ghg_intensity": o.display_units_ghg_intensity,
+            "display_units_water_use": o.display_units_water_use,
+            "display_units_wui": o.display_units_wui,
             "display_units_area": o.display_units_area,
             "display_decimal_places": o.display_decimal_places,
             "cycles": cycles,
@@ -485,6 +487,18 @@ class OrganizationViewSet(viewsets.ViewSet):
             org.display_units_ghg_intensity = desired_display_units_ghg_intensity
         else:
             warn_bad_pint_spec("ghg_intensity", desired_display_units_ghg_intensity)
+
+        desired_display_units_water_use = posted_org.get("display_units_water_use")
+        if is_valid_choice(Organization.MEASUREMENT_CHOICES_WATER_USE, desired_display_units_water_use):
+            org.display_units_water_use = desired_display_units_water_use
+        else:
+            warn_bad_pint_spec("water_use", desired_display_units_water_use)
+
+        desired_display_units_wui = posted_org.get("display_units_wui")
+        if is_valid_choice(Organization.MEASUREMENT_CHOICES_WUI, desired_display_units_wui):
+            org.display_units_wui = desired_display_units_wui
+        else:
+            warn_bad_pint_spec("wui", desired_display_units_wui)
 
         desired_display_units_area = posted_org.get("display_units_area")
         if is_valid_choice(Organization.MEASUREMENT_CHOICES_AREA, desired_display_units_area):
