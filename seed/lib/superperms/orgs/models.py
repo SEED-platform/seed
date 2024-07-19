@@ -213,10 +213,10 @@ class Organization(models.Model):
     }
 
     _default_display_meter_water_units = {
-        "Default": "kGal (thousand gallons)",
-        "Potable Indoor": "kGal (thousand gallons)",
-        "Potable Outdoor": "kGal (thousand gallons)",
-        "Potable: Mixed Indoor/Outdoor": "kGal (thousand gallons)",
+        "Default": "kGal (thousand gallons) (US)",
+        "Potable Indoor": "kGal (thousand gallons) (US)",
+        "Potable Outdoor": "kGal (thousand gallons) (US)",
+        "Potable: Mixed Indoor/Outdoor": "kGal (thousand gallons) (US)",
     }
 
     class Meta:

@@ -418,7 +418,7 @@ def kgal_water_conversion_factors(coutry):
 
     unit_conversion = {
         "ccf (hundred cubic feet)": 0.748,
-        "cf (cubic feet))": 0.00748,
+        "cf (cubic feet)": 0.00748,
         "cGal (hundred gallons) (US)": 0.1,
         "cGal (hundred gallons) (UK)": 0.12,
         "cm (cubic meters)": 0.264172,
