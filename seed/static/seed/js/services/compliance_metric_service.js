@@ -2,7 +2,7 @@
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
  * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
-angular.module('BE.seed.service.compliance_metric', []).factory('compliance_metric_service', [
+angular.module('SEED.service.compliance_metric', []).factory('compliance_metric_service', [
   '$http',
   '$log',
   'user_service',

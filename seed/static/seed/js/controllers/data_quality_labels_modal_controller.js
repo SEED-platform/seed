@@ -8,7 +8,7 @@
  * The Property or Tax Lot ID is passed in as 'inventory_id', identified by
  * inventory_type="properties" or inventory_type="taxlots"
  */
-angular.module('BE.seed.controller.data_quality_labels_modal', []).controller('data_quality_labels_modal_controller', [
+angular.module('SEED.controller.data_quality_labels_modal', []).controller('data_quality_labels_modal_controller', [
   '$scope',
   '$uibModalInstance',
   'label_service',

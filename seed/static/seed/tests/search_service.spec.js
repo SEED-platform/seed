@@ -3,7 +3,7 @@
  * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
 // create dummy angularJS app to attach filter(s)
-angular.module('searchTestApp', ['BE.seed.service.search', 'BE.seed.utilities']);
+angular.module('searchTestApp', ['SEED.service.search', 'SEED.utilities']);
 
 describe('The search_service service', () => {
   let saas;

@@ -13,7 +13,7 @@ describe('controller: mapping_controller', () => {
   // make the seed app available for each test
   // 'config.seed' is created in TestFilters.html
   beforeEach(() => {
-    module('BE.seed');
+    module('SEED');
     inject((_$httpBackend_) => {
       _$httpBackend_.whenGET(/^\/static\/seed\/locales\/.*\.json/).respond(200, {});
     });

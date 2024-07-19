@@ -2,7 +2,7 @@
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
  * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
-angular.module('BE.seed.service.derived_columns', []).factory('derived_columns_service', [
+angular.module('SEED.service.derived_columns', []).factory('derived_columns_service', [
   '$http',
   ($http) => {
     const derived_columns_factory = {};

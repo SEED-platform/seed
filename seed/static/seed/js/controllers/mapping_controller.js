@@ -2,7 +2,7 @@
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
  * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
-angular.module('BE.seed.controller.mapping', []).controller('mapping_controller', [
+angular.module('SEED.controller.mapping', []).controller('mapping_controller', [
   '$scope',
   '$state',
   '$log',
@@ -405,7 +405,7 @@ angular.module('BE.seed.controller.mapping', []).controller('mapping_controller'
     };
 
     $scope.updateColIsDisallowedCreation = () => {
-      if (window.BE.is_ali_root) {
+      if (window.SEED.is_ali_root) {
         return;
       }
 

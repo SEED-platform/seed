@@ -10,10 +10,10 @@ from seed.data_importer.match import match_and_link_incoming_properties_and_taxl
 from seed.lib.progress_data.progress_data import ProgressData
 from seed.models import ASSESSED_RAW, DATA_STATE_MAPPING, DATA_STATE_MATCHING, Property, PropertyState, PropertyView
 from seed.test_helpers.fake import FakeCycleFactory, FakePropertyFactory, FakePropertyStateFactory, FakePropertyViewFactory
-from seed.tests.util import DataMappingBaseTestCase
+from seed.tests.util import AssertDictSubsetMixin, DataMappingBaseTestCase
 
 
-class TestAHImportFile(DataMappingBaseTestCase):
+class TestAHImportFile(AssertDictSubsetMixin, DataMappingBaseTestCase):
     def setUp(self):
         selfvars = self.set_up(ASSESSED_RAW)
         self.user, self.org, self.import_file, self.import_record, self.cycle = selfvars
@@ -704,7 +704,7 @@ class TestAHImportMatchExistingDifferentCycle(TestAHImportFile):
 
     def test_has_ali_merges_and_links(self):
         # Set Up - create view for merge
-        self.property_view_factory.get_property_view(prprty=self.existing_property, cycle=self.cycle)
+        self.property_view_factory.get_property_view(prprty=self.existing_property, cycle=self.cycle, ubid=self.base_details["ubid"])
 
         # Set Up - update new state info
         self.base_details["raw_access_level_instance_id"] = self.me_ali.id
@@ -747,7 +747,7 @@ class TestAHImportMatchExistingDifferentCycle(TestAHImportFile):
 
     def test_no_ali_merges_and_links(self):
         # Set Up - create view for merge
-        self.property_view_factory.get_property_view(prprty=self.existing_property, cycle=self.cycle)
+        self.property_view_factory.get_property_view(prprty=self.existing_property, cycle=self.cycle, ubid=self.base_details["ubid"])
 
         # Set Up - update new state info
         self.base_details["raw_access_level_instance_error"] = "uh oh"

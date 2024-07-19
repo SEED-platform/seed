@@ -3,7 +3,7 @@
  * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
 /* eslint-disable no-underscore-dangle */
-angular.module('BE.seed.controller.inventory_map', []).controller('inventory_map_controller', [
+angular.module('SEED.controller.inventory_map', []).controller('inventory_map_controller', [
   '$scope',
   '$stateParams',
   '$state',
