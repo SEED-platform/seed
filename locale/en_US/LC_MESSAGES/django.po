@@ -1911,6 +1911,9 @@ msgstr "Meter energy display units (change one at a time)"
 msgid "METER_READING_COUNTS_TITLE"
 msgstr "Meter Reading Counts"
 
+msgid "METER_WATER_DISPLAY_SETTINGS_TITLE"
+msgstr "Meter water display units (change one at a time)"
+
 msgid "MJ/m²/year"
 msgstr "MJ/m²/year"
 
@@ -3898,6 +3901,9 @@ msgstr "Visit the BETTER website to run a portfolio analysis"
 
 msgid "Visualization Settings"
 msgstr "Visualization Settings"
+
+msgid "WATER_TYPE_DISPLAY_CHOICE_PLACEHOLDER"
+msgstr "----Choose water type----"
 
 msgid "WHEN_YOU_CLICK_MAP_YOUR_DATA"
 msgstr "When you click the <span class=\"label label-primary\">Map Your Data</span> button, the program will show a grid with the new field names as the column headings and your data in the rows. In that view, you can still come back to the initial mapping screen and change the field mapping."
