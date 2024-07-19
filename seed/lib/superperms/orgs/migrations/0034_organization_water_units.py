@@ -4,20 +4,29 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('orgs', '0033_organization_public_geojson_enabled'),
+        ("orgs", "0033_organization_public_geojson_enabled"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='organization',
-            name='display_units_water_use',
-            field=models.CharField(blank=True, choices=[('kgal/year', 'kgal/year'), ('gal/year', 'gal/year'), ('L/year', 'L/year')], default='kgal/year', max_length=32),
+            model_name="organization",
+            name="display_units_water_use",
+            field=models.CharField(
+                blank=True,
+                choices=[("kgal/year", "kgal/year"), ("gal/year", "gal/year"), ("L/year", "L/year")],
+                default="kgal/year",
+                max_length=32,
+            ),
         ),
         migrations.AlterField(
-            model_name='organization',
-            name='display_units_wui',
-            field=models.CharField(blank=True, choices=[('kgal/ft**2/year', 'kgal/ft²/year'), ('gal/ft**2/year', 'gal/ft²/year'), ('L/m**2/year', 'L/m²/year')], default='gal/ft**2/year', max_length=32),
+            model_name="organization",
+            name="display_units_wui",
+            field=models.CharField(
+                blank=True,
+                choices=[("kgal/ft**2/year", "kgal/ft²/year"), ("gal/ft**2/year", "gal/ft²/year"), ("L/m**2/year", "L/m²/year")],
+                default="gal/ft**2/year",
+                max_length=32,
+            ),
         ),
     ]
