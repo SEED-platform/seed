@@ -841,7 +841,7 @@ class MeterUtilTests(TestCase):
 
         expected_readings = [0.748, 0.00748, 0.1, 0.12, 0.26417, 0.001, 0.0012, 7.480, 264.172, 1, 1.2, 0.000264172, 7480.52, 1000, 1200]
         actual_readings = [reading["reading"] for reading in meters_parser.meter_and_reading_objs[0]["readings"]]
-        breakpoint()
+
         self.assertEqual(len(actual_readings), 15)
 
         zipped_readings = zip(actual_readings, expected_readings)
