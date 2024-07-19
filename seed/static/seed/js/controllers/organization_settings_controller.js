@@ -135,7 +135,6 @@ angular.module('SEED.controller.organization_settings', []).controller('organiza
         label: $translate.instant('L/year'),
         value: 'L/year'
       }
-
     ];
 
     $scope.unit_options_wui = [
