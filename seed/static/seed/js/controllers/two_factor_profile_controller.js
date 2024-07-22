@@ -2,7 +2,7 @@
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
  * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
-angular.module('BE.seed.controller.two_factor_profile', []).controller('two_factor_profile_controller', [
+angular.module('SEED.controller.two_factor_profile', []).controller('two_factor_profile_controller', [
   '$scope',
   '$uibModal',
   'urls',

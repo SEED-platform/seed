@@ -151,7 +151,7 @@ def activate(request, uidb64, token):
 class CustomLoginView(LoginView):
     def post(self, request, *args, **kwargs):
         response = super().post(request, *args, **kwargs)
-        logging.error("POST")
+
         if "resend_email" in request.POST:
             try:
                 user = SEEDUser.objects.get(username=cache.get("user_email"))
