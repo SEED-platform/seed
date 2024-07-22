@@ -239,8 +239,8 @@ class Organization(models.Model):
     display_units_ghg_intensity = models.CharField(
         max_length=32, choices=MEASUREMENT_CHOICES_GHG_INTENSITY, blank=False, default="kgCO2e/ft**2/year"
     )
-    display_units_wui = models.CharField(max_length=32, choices=MEASUREMENT_CHOICES_WUI, blank=True, default="gal/ft**2/year")
-    display_units_water_use = models.CharField(max_length=32, choices=MEASUREMENT_CHOICES_WATER_USE, blank=True, default="kgal/year")
+    display_units_wui = models.CharField(max_length=32, choices=MEASUREMENT_CHOICES_WUI, blank=False, default="gal/ft**2/year")
+    display_units_water_use = models.CharField(max_length=32, choices=MEASUREMENT_CHOICES_WATER_USE, blank=False, default="kgal/year")
 
     display_decimal_places = models.PositiveSmallIntegerField(blank=False, default=2)
 
