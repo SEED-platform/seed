@@ -21,7 +21,7 @@
  * ng-switch-when="12" == Error Processing Data
  * ng-switch-when="13" == Portfolio Manager Import
  */
-angular.module('BE.seed.controller.data_upload_modal', []).controller('data_upload_modal_controller', [
+angular.module('SEED.controller.data_upload_modal', []).controller('data_upload_modal_controller', [
   '$http',
   '$scope',
   '$rootScope',

@@ -91,6 +91,11 @@ class AccountsViewTests(TestCase):
             "inventory_count": 0,
             "access_level_names": [self.org.name],
             "require_2fa": False,
+            "public_feed_enabled": False,
+            "public_feed_labels": False,
+            "public_geojson_enabled": False,
+            "default_reports_x_axis_options": [],
+            "default_reports_y_axis_options": [],
         }
 
         org_payload = _dict_org(self.fake_request, [self.org])
@@ -183,6 +188,11 @@ class AccountsViewTests(TestCase):
                     "ubid_threshold": 1.0,
                     "inventory_count": 0,
                     "require_2fa": False,
+                    "public_feed_enabled": False,
+                    "public_feed_labels": False,
+                    "public_geojson_enabled": False,
+                    "default_reports_x_axis_options": [],
+                    "default_reports_y_axis_options": [],
                 }
             ],
             "is_parent": True,
@@ -215,6 +225,11 @@ class AccountsViewTests(TestCase):
             "inventory_count": 0,
             "access_level_names": ["my org"],
             "require_2fa": False,
+            "public_feed_enabled": False,
+            "public_feed_labels": False,
+            "public_geojson_enabled": False,
+            "default_reports_x_axis_options": [],
+            "default_reports_y_axis_options": [],
         }
 
         org_payload = _dict_org(self.fake_request, Organization.objects.all())
@@ -516,6 +531,8 @@ class AccountsViewTests(TestCase):
                         "public_checked": True,
                     },
                 ],
+                "default_reports_x_axis_options": [],
+                "default_reports_y_axis_options": [],
             },
         }
 

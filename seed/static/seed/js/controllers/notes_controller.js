@@ -2,7 +2,7 @@
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
  * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
-angular.module('BE.seed.controller.notes', []).controller('notes_controller', [
+angular.module('SEED.controller.notes', []).controller('notes_controller', [
   '$scope',
   '$uibModalInstance',
   'urls',

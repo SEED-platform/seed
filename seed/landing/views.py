@@ -218,15 +218,3 @@ class CustomLoginView(LoginView):
         logging.error(">>> GET")
         request.session["include_acct_reg"] = settings.INCLUDE_ACCT_REG
         return super().get(request, *args, **kwargs)
-
-
-# # THIS DOESNT WORK.
-# class CustomSetupView(SetupView):
-
-#     def get(self, request, *args, **kwargs):
-#         logging.error('get')
-#         return super().get(request, *args, **kwargs)
-
-#     def post(self, request, *args, **kwargs):
-#         logging.error('post')
-#         return super().post(request, *args, **kwargs)

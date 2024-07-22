@@ -142,7 +142,7 @@ class NoteViewTests(TestCase):
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
 
-class PropertyNoteViewPermissionsTests(AccessLevelBaseTestCase, TestCase):
+class PropertyNoteViewPermissionsTests(AccessLevelBaseTestCase):
     def setUp(self):
         super().setUp()
 
@@ -223,7 +223,7 @@ class PropertyNoteViewPermissionsTests(AccessLevelBaseTestCase, TestCase):
         assert resp.status_code == 204
 
 
-class TaxlotNoteViewPermissionsTests(AccessLevelBaseTestCase, TestCase):
+class TaxlotNoteViewPermissionsTests(AccessLevelBaseTestCase):
     def setUp(self):
         super().setUp()
 

@@ -4,7 +4,7 @@
  *
  * Provides methods to access email templates and to send emails on the server
  */
-angular.module('BE.seed.service.postoffice', []).factory('postoffice_service', [
+angular.module('SEED.service.postoffice', []).factory('postoffice_service', [
   '$http',
   '$q',
   'user_service',

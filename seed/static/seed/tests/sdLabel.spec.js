@@ -6,7 +6,7 @@ describe('The sdLabel directive', () => {
   let $compile;
   let $rootScope;
   beforeEach(() => {
-    module('BE.seed');
+    module('SEED');
     inject((_$compile_, _$httpBackend_, _$rootScope_) => {
       $compile = _$compile_;
       _$httpBackend_.whenGET(/^\/static\/seed\/locales\/.*\.json/).respond(200, {});
