@@ -199,7 +199,8 @@ angular.module('SEED.controller.data_quality_admin', []).controller('data_qualit
         $scope.rule_count_cross_cycle += rule.length;
       });
     };
-    loadRules(data_quality_rules_payload);
+    // Developer Note: hide WUI rules until WUI is fully integrated,
+    loadRules(data_quality_rules_payload.filter(rule => rule.data_type != 6));
 
     $scope.isModified = () => modified_service.isModified();
 
