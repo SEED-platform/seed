@@ -2,7 +2,7 @@
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
  * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
-angular.module('BE.seed.service.property_measure', []).factory('property_measure_service', [
+angular.module('SEED.service.property_measure', []).factory('property_measure_service', [
   '$http',
   ($http) => {
     const property_measure_factory = {};

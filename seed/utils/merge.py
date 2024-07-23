@@ -14,6 +14,7 @@ from seed.models import (
     MERGE_STATE_MERGED,
     MERGE_STATE_UNKNOWN,
     Column,
+    Element,
     Note,
     Property,
     PropertyAuditLog,
@@ -53,7 +54,7 @@ def merge_properties(state_ids, org_id, log_name, ignore_merge_protection=False)
         state_2 = PropertyState.objects.get(id=state_ids[index])
 
         merged_state = PropertyState.objects.create(organization_id=org_id)
-        merged_state = merge_ubid_models(state_ids, merged_state.id, PropertyState)
+        merged_state = merge_ubid_models([state_1.id, state_2.id], merged_state.id, PropertyState)
 
         views = PropertyView.objects.filter(state_id__in=[state_1.id, state_2.id])
         view_ids = list(views.values_list("id", flat=True))
@@ -66,14 +67,14 @@ def merge_properties(state_ids, org_id, log_name, ignore_merge_protection=False)
             raise MultipleALIError
 
         # Create new inventory record and associate it to a new view
-        new_property = Property(organization_id=org_id, access_level_instance_id=alis.first())
-        new_property.save()
+        new_property = Property.objects.create(organization_id=org_id, access_level_instance_id=alis.first())
 
         cycle_id = views.first().cycle_id
-        new_view = PropertyView(cycle_id=cycle_id, state_id=merged_state.id, property_id=new_property.id)
-        new_view.save()
+        new_view = PropertyView.objects.create(cycle_id=cycle_id, state_id=merged_state.id, property_id=new_property.id)
 
         _merge_log_states(merged_state, org_id, state_1, state_2, log_name, ignore_merge_protection)
+
+        _merge_elements(canonical_ids, new_property)
 
         _copy_meters_in_order(state_1.id, state_2.id, new_property)
         _copy_propertyview_relationships(view_ids, new_view)
@@ -174,6 +175,10 @@ def _merge_log_states(merged_state, org_id, state_1, state_2, log_name, ignore_m
     state_1.save()
     state_2.merge_state = MERGE_STATE_UNKNOWN
     state_2.save()
+
+
+def _merge_elements(canonical_ids, new_property):
+    Element.objects.filter(property_id__in=canonical_ids).update(property=new_property)
 
 
 def _copy_meters_in_order(state_1_id, state_2_id, new_property):

@@ -3,7 +3,7 @@
  * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
 
-angular.module('BE.seed.controller.analysis_run', []).controller('analysis_run_controller', [
+angular.module('SEED.controller.analysis_run', []).controller('analysis_run_controller', [
   '$scope',
   '$stateParams',
   '$state',

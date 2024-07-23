@@ -10,7 +10,7 @@ describe('controller: organization_settings_controller', () => {
   let mock_meters_service;
 
   beforeEach(() => {
-    module('BE.seed');
+    module('SEED');
     inject((_$httpBackend_) => {
       _$httpBackend_.whenGET(/^\/static\/seed\/locales\/.*\.json/).respond(200, {});
     });
@@ -39,7 +39,9 @@ describe('controller: organization_settings_controller', () => {
         ]
       },
       organization_payload: {
-        organization: { name: 'my org', id: 4 }
+        organization: {
+          name: 'my org', id: 4, default_reports_x_axis_options: [], default_reports_y_axis_options: []
+        }
       },
       query_threshold_payload: {
         query_threshold: 10
@@ -80,7 +82,23 @@ describe('controller: organization_settings_controller', () => {
         }
       ],
       property_column_names: { column_name: 'test', display_name: 'test' },
-      taxlot_column_names: { column_name: 'test', display_name: 'test' }
+      taxlot_column_names: { column_name: 'test', display_name: 'test' },
+      property_columns: [
+        {
+          id: 500,
+          name: 'test',
+          organization_id: 4,
+          table_name: 'TaxLotState',
+          column_name: 'test'
+        },
+        {
+          id: 501,
+          name: 'test',
+          organization_id: 4,
+          table_name: 'PropertyState',
+          column_name: 'test'
+        }
+      ]
     });
   }
 
@@ -100,7 +118,9 @@ describe('controller: organization_settings_controller', () => {
     // assertions
     expect(ctrl_scope.org).toEqual({
       name: 'my org',
-      id: 4
+      id: 4,
+      default_reports_x_axis_options: [],
+      default_reports_y_axis_options: []
       // query_threshold: 10
     });
     expect(mock_organization_service.save_org_settings).toHaveBeenCalledWith(ctrl_scope.org);

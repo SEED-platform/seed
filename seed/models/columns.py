@@ -766,6 +766,8 @@ class Column(models.Model):
     unit = models.ForeignKey(Unit, on_delete=models.CASCADE, blank=True, null=True)
     is_extra_data = models.BooleanField(default=False)
     is_matching_criteria = models.BooleanField(default=False)
+    is_option_for_reports_x_axis = models.BooleanField(default=False)
+    is_option_for_reports_y_axis = models.BooleanField(default=False)
     import_file = models.ForeignKey("data_importer.ImportFile", on_delete=models.CASCADE, blank=True, null=True)
     # TODO: units_pint should be renamed to `from_units` as this is the unit of the incoming data in pint format
     units_pint = models.CharField(max_length=64, blank=True, null=True)
@@ -1365,10 +1367,8 @@ class Column(models.Model):
 
         :return: list, names of columns, independent of inventory type.
         """
-        result = []
         columns = Column.retrieve_db_fields_from_db_tables()
-        for c in columns:
-            result.append(c["column_name"])
+        result = [c["column_name"] for c in columns]
 
         return sorted(set(result))
 

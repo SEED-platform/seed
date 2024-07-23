@@ -6,7 +6,7 @@ describe('The TitleCase filter', () => {
   let titleCaseFilter;
 
   beforeEach(() => {
-    module('BE.seed');
+    module('SEED');
     inject((_titleCaseFilter_) => {
       titleCaseFilter = _titleCaseFilter_;
     });

@@ -6,7 +6,7 @@ describe('service: inventory_service', () => {
   let mock_inventory_service;
 
   beforeEach(() => {
-    module('BE.seed');
+    module('SEED');
     inject((inventory_service) => {
       mock_inventory_service = inventory_service;
     });

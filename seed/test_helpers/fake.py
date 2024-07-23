@@ -13,13 +13,16 @@ method multiple times will always return the same sequence of results
 """
 
 import datetime
+import random
 import re
 import string
+import uuid
 from collections import namedtuple
 
 from django.utils import timezone
 from faker import Factory
 
+from seed.lib.uniformat.uniformat import uniformat_codes
 from seed.models import (
     VIEW_LIST,
     VIEW_LIST_PROPERTY,
@@ -30,6 +33,7 @@ from seed.models import (
     ColumnListProfileColumn,
     Cycle,
     DerivedColumn,
+    Element,
     Goal,
     GreenAssessment,
     GreenAssessmentProperty,
@@ -47,6 +51,7 @@ from seed.models import (
     TaxLotProperty,
     TaxLotState,
     TaxLotView,
+    Uniformat,
 )
 from seed.models.auditlog import AUDIT_IMPORT, AUDIT_USER_CREATE
 from seed.utils.strings import titlecase
@@ -883,6 +888,37 @@ class FakeGoalFactory(BaseFake):
             "name": name,
         }
         return Goal.objects.create(**config)
+class FakeElementFactory(BaseFake):
+    """
+    Factory Class for producing Element instances.
+    """
+
+    def __init__(self, organization=None, property=None):  # noqa: A002
+        self.organization = organization
+        self.property = property
+        super().__init__()
+
+    def get_element(self, organization=None, property=None, **kw):  # noqa: A002
+        uniformat_code = random.choice(uniformat_codes)
+        formatted_date = datetime.date.today().strftime("%Y-%m-%d")
+        element_details = {
+            "organization_id": organization.pk if organization else self.organization.pk,
+            "property_id": property.pk if property else self.property.pk,
+            "element_id": str(uuid.uuid4()),
+            "code": Uniformat.objects.get(code=uniformat_code),
+            "description": "Building element",
+            "installation_date": formatted_date,
+            "condition_index": 90.5,
+            "remaining_service_life": 12.1,
+            "replacement_cost": 1000,
+            "manufacturing_date": formatted_date,
+            "extra_data": {
+                "additional": "info",
+            },
+        }
+        element_details.update(kw)
+        element, _ = Element.objects.get_or_create(**element_details)
+        return element
 
 
 def mock_queryset_factory(model, flatten=False, **kwargs):

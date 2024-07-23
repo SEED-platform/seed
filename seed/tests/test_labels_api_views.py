@@ -60,9 +60,9 @@ class TestLabelsViewSet(DeleteModelsTestCase):
         response = client.get(url, {"organization_id": organization.pk, "inventory_type": "property"})
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), organization.labels.count())
+        self.assertEqual(len(response.json()), organization.labels.count())
 
-        results = response.data
+        results = response.json()
 
         self.assertEqual(len(results), organization.labels.count())
 
@@ -300,7 +300,7 @@ class TestUpdateInventoryLabelsAPIView(DeleteModelsTestCase):
             "inventory_ids": [pvid_1, pvid_2, pvid_3],
         }
         response = client.put(url, post_params, format="json")
-        result = response.data
+        result = response.json()
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(result["status"], "success")
@@ -322,7 +322,7 @@ class TestUpdateInventoryLabelsAPIView(DeleteModelsTestCase):
             "inventory_ids": [pvid_1, pvid_2],
         }
         response = client.put(url, post_params, format="json")
-        result = response.data
+        result = response.json()
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(result["status"], "success")

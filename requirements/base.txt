@@ -6,7 +6,7 @@ django-autoslug==1.9.8
 django-crispy-forms==1.8.1
 
 # Persistence stores
-psycopg2-binary==2.9.6
+psycopg2-binary==2.9.9
 
 
 # background process management
@@ -17,12 +17,10 @@ hiredis==2.3.2
 
 brotli==1.1.0
 django-compressor==4.4
-django-extensions==3.1.3
+django-extensions==3.2.3
 django-model-utils==4.3.1
 
-# Time zones support - Do not update these without doing significant testing!
-# pytz==2018.7
-# python-dateutil==2.7.3
+# Time zones support
 pytz==2024.1
 python-dateutil==2.9.0.post0
 
@@ -34,7 +32,7 @@ djangorestframework==3.12.2
 # Django-post-office dependency needs to be installed via github b/c
 # with pypi version Celery fails to auto discover post_office tasks
 -e git+https://github.com/ui/django-post_office.git@v3.6.0#egg=django-post_office
-drf-yasg==1.20.0
+drf-yasg==1.20.0  # TODO bump this to 1.21.7 to add `get_paginated_response_schema` bug fix (once pytz is bumped)
 django-filter==2.4.0
 drf-nested-routers==0.91
 
@@ -68,7 +66,7 @@ seed-salesforce==0.1.0
 # geospatial and pnnl/buildingid-py
 shapely==2.0.1
 usaddress==0.5.10
--e git+https://github.com/SEED-platform/buildingid.git@892958be07c55eebdbf582f5a81d4b1ce6d61412#egg=pnnl-buildingid
+-e git+https://github.com/SEED-platform/buildingid.git@bdb0a6efc37754f1946095896fa507b5ce866d6a#egg=pnnl-buildingid
 
 oauthlib==2.0.3
 

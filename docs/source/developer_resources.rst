@@ -178,7 +178,7 @@ renamed `{$` and `$}`.
 
 .. code-block:: JavaScript
 
-    window.BE.apps.seed = angular.module('BE.seed', ['$interpolateProvider', ($interpolateProvider) => {
+    window.SEED.apps.seed = angular.module('SEED', ['$interpolateProvider', ($interpolateProvider) => {
       $interpolateProvider.startSymbol('{$');
       $interpolateProvider.endSymbol('$}');
     }]);
@@ -191,7 +191,7 @@ recommended by http://django-angular.readthedocs.io/en/latest/integration.html#x
 
 .. code-block:: JavaScript
 
-    window.BE.apps.seed.run(($http, $cookies) => {
+    window.SEED.apps.seed.run(($http, $cookies) => {
       $http.defaults.headers.common['X-CSRFToken'] = $cookies['csrftoken'];
     });
 

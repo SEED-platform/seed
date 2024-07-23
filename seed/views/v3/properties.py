@@ -300,13 +300,14 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
     @has_hierarchy_access(property_id_kwarg="pk")
     def analyses(self, request, pk):
         organization_id = self.get_organization(request)
+        cycle_id = request.query_params.get("cycle_id")
 
-        analyses_queryset = (
-            Analysis.objects.filter(organization=organization_id, analysispropertyview__property=pk).distinct().order_by("-id")
-        )
+        analyses_queryset = Analysis.objects.filter(organization=organization_id, analysispropertyview__property=pk)
+        if cycle_id is not None:
+            analyses_queryset = analyses_queryset.filter(analysispropertyview__cycle_id=cycle_id)
 
         analyses = []
-        for analysis in analyses_queryset:
+        for analysis in analyses_queryset.distinct().order_by("-id"):
             serialized_analysis = AnalysisSerializer(analysis).data
             serialized_analysis.update(analysis.get_property_view_info(pk))
             serialized_analysis.update({"highlights": analysis.get_highlights(pk)})
@@ -508,9 +509,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             with transaction.atomic():
                 merged_state = merge_properties(property_state_ids, organization_id, "Manual Match")
                 view = merged_state.propertyview_set.first()
-                merge_count, link_count, _view_id = match_merge_link(
-                    merged_state.id, "PropertyState", view.property.access_level_instance, view.cycle
-                )
+                merge_count, link_count, _view = match_merge_link(merged_state, view.property.access_level_instance, view.cycle)
 
         except MergeLinkPairError:
             return JsonResponse(
@@ -703,8 +702,8 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         property_view = PropertyView.objects.get(pk=pk, cycle__organization_id=org_id)
         try:
             with transaction.atomic():
-                merge_count, link_count, view_id = match_merge_link(
-                    property_view.state.id, "PropertyState", property_view.property.access_level_instance, property_view.cycle
+                merge_count, link_count, view = match_merge_link(
+                    property_view.state, property_view.property.access_level_instance, property_view.cycle
                 )
 
         except MergeLinkPairError:
@@ -717,7 +716,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             )
 
         result = {
-            "view_id": view_id,
+            "view_id": view.id,
             "match_merged_count": merge_count,
             "match_link_count": link_count,
         }
@@ -1185,9 +1184,8 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
 
                         try:
                             with transaction.atomic():
-                                merge_count, link_count, view_id = match_merge_link(
-                                    property_view.state.id,
-                                    "PropertyState",
+                                merge_count, link_count, view = match_merge_link(
+                                    property_view.state,
                                     property_view.property.access_level_instance,
                                     property_view.cycle,
                                 )
@@ -1202,7 +1200,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
 
                         result.update(
                             {
-                                "view_id": view_id,
+                                "view_id": view.id,
                                 "match_merged_count": merge_count,
                                 "match_link_count": link_count,
                             }

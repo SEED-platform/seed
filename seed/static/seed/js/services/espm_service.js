@@ -2,7 +2,7 @@
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
  * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
-angular.module('BE.seed.service.espm', []).factory('espm_service', [
+angular.module('SEED.service.espm', []).factory('espm_service', [
   '$http',
   ($http) => {
     const get_espm_building_xlsx = (org_id, pm_property_id, espm_username, espm_password) => $http
