@@ -186,8 +186,8 @@ class TestApi(TestCase):
         # dict order can vary
         rx = sorted(r["organization"]["default_reports_x_axis_options"], key=lambda x: x["id"])
         ry = sorted(r["organization"]["default_reports_y_axis_options"], key=lambda x: x["id"])
-        cx = sorted([dict(x) for x in ColumnSerializer(self.default_reports_x_axis_options, many=True).data], key=lambda y: y['id'])
-        cy = sorted([dict(x) for x in ColumnSerializer(self.default_reports_y_axis_options, many=True).data], key=lambda y: y['id'])
+        cx = sorted([dict(x) for x in ColumnSerializer(self.default_reports_x_axis_options, many=True).data], key=lambda y: y["id"])
+        cy = sorted([dict(x) for x in ColumnSerializer(self.default_reports_y_axis_options, many=True).data], key=lambda y: y["id"])
 
         self.assertEqual(rx, cx)
         self.assertEqual(ry, cy)
