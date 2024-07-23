@@ -149,7 +149,7 @@ angular.module('SEED.controller.portfolio_summary', [])
       $scope.toggle_help = (bool) => {
         $scope.show_help = bool;
         _.delay($scope.updateHeight, 150);
-      }
+      };
 
       const get_goal_stats = (summary) => {
         const passing_sqft = summary.current ? summary.current.total_sqft : null;
@@ -353,12 +353,12 @@ angular.module('SEED.controller.portfolio_summary', [])
         $scope.show_labels_by_inventory_id[key] = {};
         for (const n in labels) {
           const label = labels[n];
-            const property_id = $scope.property_lookup[label.propertyview];
-            if (!$scope.show_labels_by_inventory_id[key][property_id]) {
-              $scope.show_labels_by_inventory_id[key][property_id] = [];
-            }
-            $scope.show_labels_by_inventory_id[key][property_id].push(label);
+          const property_id = $scope.property_lookup[label.propertyview];
+          if (!$scope.show_labels_by_inventory_id[key][property_id]) {
+            $scope.show_labels_by_inventory_id[key][property_id] = [];
           }
+          $scope.show_labels_by_inventory_id[key][property_id].push(label);
+        }
       };
 
       // Builds the html to display labels associated with this row entity
