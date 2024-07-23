@@ -58,7 +58,7 @@
     <div id="portfolio-summary" class="wide-900" ng-if="summary_loading || summary_valid">
       <div style="display: flex">
         <h3 translate>Portfolio Summary</h3>
-        <i class="ui-grid-icon-info-circled" ng-mouseenter="show_help = true"></i>
+        <i class="ui-grid-icon-info-circled" ng-mouseenter="toggle_help(true)"></i>
       </div>
       <div class="alert alert-warning portfolio-summary-help-text" ng-show="show_help">
         <h4>Unexpected Portfolio Summary Calculations?</h4>
