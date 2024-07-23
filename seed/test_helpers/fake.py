@@ -888,6 +888,8 @@ class FakeGoalFactory(BaseFake):
             "name": name,
         }
         return Goal.objects.create(**config)
+
+
 class FakeElementFactory(BaseFake):
     """
     Factory Class for producing Element instances.
