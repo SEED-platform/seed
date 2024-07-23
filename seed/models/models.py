@@ -108,11 +108,12 @@ class StatusLabel(TimeStampedModel):
     )
     show_in_list = models.BooleanField(default=False)
 
-    DEFAULT_INVENTORY_LABELS = [
+    DEFAULT_LABELS = [
         "Residential",
         "Non-Residential",
         "Violation",
         "Compliant",
+        "Missing Data",
         "Questionable Report",
         "Update Bldg Info",
         "Call",
@@ -120,11 +121,6 @@ class StatusLabel(TimeStampedModel):
         "Exempted",
         "Extension",
         "Change of Ownership",
-    ]
-
-    # goal labels will be defaulted to show_in_list=True
-    DEFAULT_GOAL_LABELS = [
-        "Missing Data",
         "High EUI",
         "Low EUI",
         "High EUI % Change",
@@ -138,8 +134,6 @@ class StatusLabel(TimeStampedModel):
         "High Area % Change",
         "Low Area % Change",
     ]
-
-    DEFAULT_LABELS = DEFAULT_INVENTORY_LABELS + DEFAULT_GOAL_LABELS
 
     class Meta:
         unique_together = ("name", "super_organization")

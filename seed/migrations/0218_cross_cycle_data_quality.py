@@ -24,10 +24,7 @@ def forwards(apps, schema_editor):
         Column.objects.create(**{**wui_column, "organization_id": org_id})
 
     # Populate the default labels for goal rules.
-    DEFAULT_GOAL_LABELS = [
-        "Missing Data",
-        "High EUI",
-        "Low EUI",
+    NEW_DEFAULT_LABELS = [
         "High EUI % Change",
         "Low EUI % Change",
         "High WUI",
@@ -39,19 +36,10 @@ def forwards(apps, schema_editor):
         "High Area % Change",
         "Low Area % Change",
     ]
-    # Update existing labels "show_in_list" to true
-    existing_labels = Label.objects.filter(name__in=DEFAULT_GOAL_LABELS)
-    existing_labels.update(show_in_list=True)
-    existing_label_set = set(existing_labels.values_list("name", "super_organization_id"))
 
-    # create remaining labels
-    new_labels = []
     for org in Organization.objects.all():
-        for label_name in DEFAULT_GOAL_LABELS:
-            if (label_name, org.id) not in existing_label_set:
-                new_labels.append(Label(name=label_name, super_organization=org, color="blue", show_in_list=True))
-
-    Label.objects.bulk_create(new_labels)
+        for label in NEW_DEFAULT_LABELS:
+            Label.objects.get_or_create(name=label, super_organization=org, defaults={"color": "blue"})
 
 
 def remove_unique_constraint(apps, schema_editor):
