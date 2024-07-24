@@ -2,7 +2,7 @@
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
  * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
-angular.module('BE.seed.controller.dataset', []).controller('dataset_list_controller', [
+angular.module('SEED.controller.dataset', []).controller('dataset_list_controller', [
   '$scope',
   '$rootScope',
   'datasets_payload',

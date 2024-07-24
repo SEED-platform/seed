@@ -447,7 +447,6 @@ def _batch_get_city_submission_xml(org_id, city_id, progress_key):
     status_type = org.audit_template_status_type
     audit_template = AuditTemplate(org_id)
     progress_data = ProgressData.from_key(progress_key)
-    logging.error(">>> CALLED")
 
     response, messages = audit_template.get_city_submissions(city_id, status_type)
     if not response:

@@ -2,7 +2,7 @@
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
  * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
-angular.module('BE.seed.controller.organization_sharing', []).controller('organization_sharing_controller', [
+angular.module('SEED.controller.organization_sharing', []).controller('organization_sharing_controller', [
   '$scope',
   'all_columns',
   'organization_payload',
@@ -23,11 +23,22 @@ angular.module('BE.seed.controller.organization_sharing', []).controller('organi
       select_all: false
     };
 
+    $scope.btnText = 'Expand Help';
+    $scope.changeText = (btnText) => {
+      if (btnText === 'Collapse Help') {
+        $scope.btnText = 'Expand Help';
+      } else {
+        $scope.btnText = 'Collapse Help';
+      }
+    };
+
     $scope.$watch('filter_params.title', () => {
       if (!$scope.filter_params.title) {
         $scope.controls.select_all = false;
       }
     });
+
+    $scope.base_url = window.location.host;
 
     /**
      * updates all the fields checkboxes to match the ``select_all`` checkbox

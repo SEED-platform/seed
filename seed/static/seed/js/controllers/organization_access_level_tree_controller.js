@@ -2,7 +2,7 @@
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
  * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
-angular.module('BE.seed.controller.organization_access_level_tree', [])
+angular.module('SEED.controller.organization_access_level_tree', [])
   .controller('organization_access_level_tree_controller', [
     '$scope',
     '$uibModal',
