@@ -15,9 +15,14 @@ class Migration(migrations.Migration):
             field=models.IntegerField(blank=True, null=True),
         ),
         migrations.AddField(
-            model_name='organization',
-            name='audit_template_status_type',
-            field=models.CharField(blank=True, choices=[('Complies', 'Complies'), ('Pending', 'Pending'), ('Rejected', 'Rejected'), ('Received', 'Complies')], default='Complies', max_length=32),
+            model_name="organization",
+            name="audit_template_status_type",
+            field=models.CharField(
+                blank=True,
+                choices=[("Complies", "Complies"), ("Pending", "Pending"), ("Rejected", "Rejected"), ("Received", "Complies")],
+                default="Complies",
+                max_length=32,
+            ),
         ),
         migrations.AddField(
             model_name="organization",
