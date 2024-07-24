@@ -589,6 +589,6 @@ angular.module('SEED.controller.organization_settings', []).controller('organiza
       'WA Commerce Grants Report'
     ];
 
-    $scope.audit_template_status_types = ["Received", "Pending", "Rejected", "Complies"]
+    $scope.audit_template_status_types = ['Received', 'Pending', 'Rejected', 'Complies'];
   }
 ]);

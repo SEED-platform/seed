@@ -63,7 +63,6 @@ def schedule_sync(data, org_id):
 
         # then schedule task (create/update with new crontab)
         tasks = PeriodicTask.objects.filter(name=AUTO_SYNC_NAME + str(org_id))
-        logging.error('tasks %s', tasks)
         if not tasks:
             PeriodicTask.objects.create(
                 crontab=schedule, name=AUTO_SYNC_NAME + str(org_id), task="seed.tasks.sync_audit_template", args=json.dumps([org_id])
@@ -502,7 +501,7 @@ def _batch_get_city_submission_xml(org_id, city_id, progress_key):
             results = property_view_set.batch_update_with_building_sync(xmls, org_id, cycle, progress_data.key, finish=False)
             combined_results["success"] += results["success"]
             combined_results["failure"] += results["failure"]
-    except:
+    except Exception:
         progress_data.finish_with_error("Unexepected Error")
 
     progress_data.finish_with_success(combined_results)

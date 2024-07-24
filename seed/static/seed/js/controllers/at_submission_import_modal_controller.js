@@ -30,23 +30,30 @@ angular.module('SEED.controller.at_submission_import_modal', []).controller('at_
       audit_template_service.batch_get_city_submission_xml_and_update($scope.org.id, $scope.org.audit_template_city_id)
         .then((response) => {
           const data = response.data;
-          uploader_service.check_progress_loop(
-            data.progress_key,
-            0,
-            1,
-            (data) => {
-              $scope.status.in_progress = false;
-              $scope.status.complete = true;
-              $scope.status.result = data.message;
-            },
-            (data) => {
-              $scope.status.in_progress = false;
-              $scope.status.complete = true;
-              $scope.status.result = { error: data.data.message };
-            },
-            $scope.status
-          );
-        });
+          if (response.status !== 200) {
+            handle_response(data.message, true);
+          } else {
+            uploader_service.check_progress_loop(
+              data.progress_key,
+              0,
+              1,
+              (data) => handle_response(data.message),
+              (data) => handle_response(data.data.message, true),
+              $scope.status
+            );
+          }
+        })
+        .catch(() => handle_response('Unexpected Error.', true));
+    };
+
+    const handle_response = (message, error = false) => {
+      $scope.status.in_progress = false;
+      $scope.status.complete = true;
+      if (error) {
+        $scope.status.result.error = message;
+      } else {
+        $scope.status.result = message;
+      }
     };
 
     $scope.close = () => {
