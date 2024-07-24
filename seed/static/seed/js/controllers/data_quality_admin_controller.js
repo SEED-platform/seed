@@ -75,7 +75,6 @@ angular.module('SEED.controller.data_quality_admin', []).controller('data_qualit
       year: 3,
       area: 4,
       eui: 5,
-      wui: 6
     };
 
     $scope.data_types = [
@@ -90,7 +89,6 @@ angular.module('SEED.controller.data_quality_admin', []).controller('data_qualit
         { id: $scope.data_type_keys.year, label: $translate.instant('Year') },
         { id: $scope.data_type_keys.area, label: $translate.instant('Area') },
         { id: $scope.data_type_keys.eui, label: $translate.instant('EUI') },
-        { id: $scope.data_type_keys.wui, label: $translate.instant('WUI') }
       ],
       [
         { id: null, label: '' },
@@ -100,7 +98,6 @@ angular.module('SEED.controller.data_quality_admin', []).controller('data_qualit
         { id: $scope.data_type_keys.year, label: $translate.instant('Year') },
         { id: $scope.data_type_keys.area, label: $translate.instant('Area') },
         { id: $scope.data_type_keys.eui, label: $translate.instant('EUI') },
-        { id: $scope.data_type_keys.wui, label: $translate.instant('WUI') }
       ]
     ];
 
@@ -199,8 +196,7 @@ angular.module('SEED.controller.data_quality_admin', []).controller('data_qualit
         $scope.rule_count_cross_cycle += rule.length;
       });
     };
-    // Developer Note: hide WUI rules until WUI is fully integrated,
-    loadRules(data_quality_rules_payload.filter((rule) => rule.data_type !== 6));
+    loadRules(data_quality_rules_payload);
 
     $scope.isModified = () => modified_service.isModified();
 

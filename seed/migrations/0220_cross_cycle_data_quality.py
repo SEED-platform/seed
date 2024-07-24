@@ -6,31 +6,13 @@ from django.db import connection, migrations, models
 
 
 def forwards(apps, schema_editor):
-    Column = apps.get_model("seed", "Column")
     Organization = apps.get_model("orgs", "Organization")
     Label = apps.get_model("seed", "StatusLabel")
-
-    # Create new wui column
-    wui_column = {
-        "column_name": "site_wui",
-        "table_name": "PropertyState",
-        "display_name": "Site WUI",
-        "column_description": "Site WUI",
-        "data_type": "wui",
-    }
-
-    # Add to all organizations
-    for org_id in list(Organization.objects.values_list("id", flat=True)):
-        Column.objects.create(**{**wui_column, "organization_id": org_id})
 
     # Populate the default labels for goal rules.
     NEW_DEFAULT_LABELS = [
         "High EUI % Change",
         "Low EUI % Change",
-        "High WUI",
-        "Low WUI",
-        "High WUI % Change",
-        "Low WUI % Change",
         "High Area",
         "Low Area",
         "High Area % Change",
@@ -68,18 +50,6 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.AddField(
-            model_name="propertystate",
-            name="site_wui",
-            field=quantityfield.fields.QuantityField(base_units="gal/ft**2/year", blank=True, null=True, unit_choices=["gal/ft**2/year"]),
-        ),
-        migrations.AlterField(
-            model_name="rule",
-            name="data_type",
-            field=models.IntegerField(
-                choices=[(0, "number"), (1, "string"), (2, "date"), (3, "year"), (4, "area"), (5, "eui"), (6, "wui")], null=True
-            ),
-        ),
         migrations.SeparateDatabaseAndState(
             database_operations=[
                 migrations.RunSQL(

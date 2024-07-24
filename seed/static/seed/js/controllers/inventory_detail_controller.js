@@ -852,7 +852,7 @@ angular.module('SEED.controller.inventory_detail', []).controller('inventory_det
       if (['longitude', 'latitude'].includes(column_name)) {
         return $filter('floatingPoint')(value);
       }
-      if (['area', 'eui', 'float', 'number', 'wui'].includes(data_type)) {
+      if (['area', 'eui', 'float', 'number'].includes(data_type)) {
         return $filter('number')(value, $scope.organization.display_decimal_places);
       }
       return value;

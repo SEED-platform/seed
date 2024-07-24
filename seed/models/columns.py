@@ -80,7 +80,6 @@ class Column(models.Model):
         ("PropertyState", "site_eui"),
         ("PropertyState", "site_eui_modeled"),
         ("PropertyState", "site_eui_weather_normalized"),
-        ("PropertyState", "site_wui"),
         ("PropertyState", "source_eui"),
         ("PropertyState", "source_eui_modeled"),
         ("PropertyState", "source_eui_weather_normalized"),
@@ -193,7 +192,6 @@ class Column(models.Model):
         "eui": lambda v: float(v.replace(",", "") if isinstance(v, basestring) else v),
         "ghg_intensity": lambda v: float(v.replace(",", "") if isinstance(v, basestring) else v),
         "ghg": lambda v: float(v.replace(",", "") if isinstance(v, basestring) else v),
-        "wui": lambda v: float(v.replace(",", "") if isinstance(v, basestring) else v),
     }
 
     # These are the default columns (also known as the fields in the database)
@@ -629,14 +627,6 @@ class Column(models.Model):
             "display_name": "Site EUI Modeled",
             "column_description": "Site EUI Modeled",
             "data_type": "eui",
-            # "type": "number",
-        },
-        {
-            "column_name": "site_wui",
-            "table_name": "PropertyState",
-            "display_name": "Site WUI",
-            "column_description": "Site WUI",
-            "data_type": "wui",
             # "type": "number",
         },
         {
@@ -1294,7 +1284,6 @@ class Column(models.Model):
             "eui": "float",
             "ghg": "float",
             "ghg_intensity": "float",
-            "wui": "float",
         }
 
         types = OrderedDict()

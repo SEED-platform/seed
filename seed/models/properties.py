@@ -318,7 +318,6 @@ class PropertyState(models.Model):
     site_eui = QuantityField("kBtu/ft**2/year", null=True, blank=True)
     site_eui_weather_normalized = QuantityField("kBtu/ft**2/year", null=True, blank=True)
     site_eui_modeled = QuantityField("kBtu/ft**2/year", null=True, blank=True)
-    site_wui = QuantityField("gal/ft**2/year", null=True, blank=True)
     source_eui = QuantityField("kBtu/ft**2/year", null=True, blank=True)
     source_eui_weather_normalized = QuantityField("kBtu/ft**2/year", null=True, blank=True)
     source_eui_modeled = QuantityField("kBtu/ft**2/year", null=True, blank=True)
@@ -634,7 +633,6 @@ class PropertyState(models.Model):
                     ps.energy_score,
                     ps.site_eui,
                     ps.site_eui_modeled,
-                    ps.site_wui,
                     ps.total_ghg_emissions,
                     ps.total_marginal_ghg_emissions,
                     ps.total_ghg_emissions_intensity,
@@ -697,7 +695,6 @@ class PropertyState(models.Model):
             "energy_score",
             "site_eui",
             "site_eui_modeled",
-            "site_wui",
             "total_ghg_emissions",
             "total_marginal_ghg_emissions",
             "total_ghg_emissions_intensity",
