@@ -68,7 +68,7 @@ angular.module('SEED.controller.column_settings', []).controller('column_setting
       { id: 'eui', label: $translate.instant('EUI') },
       { id: 'geometry', label: $translate.instant('Geometry') },
       { id: 'ghg', label: $translate.instant('GHG') },
-      { id: 'ghg_intensity', label: $translate.instant('GHG Intensity') },
+      { id: 'ghg_intensity', label: $translate.instant('GHG Intensity') }
     ];
 
     $scope.comstock_types = [

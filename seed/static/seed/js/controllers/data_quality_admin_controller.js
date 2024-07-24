@@ -74,7 +74,7 @@ angular.module('SEED.controller.data_quality_admin', []).controller('data_qualit
       date: 2,
       year: 3,
       area: 4,
-      eui: 5,
+      eui: 5
     };
 
     $scope.data_types = [
@@ -88,7 +88,7 @@ angular.module('SEED.controller.data_quality_admin', []).controller('data_qualit
         { id: $scope.data_type_keys.date, label: $translate.instant('Date') },
         { id: $scope.data_type_keys.year, label: $translate.instant('Year') },
         { id: $scope.data_type_keys.area, label: $translate.instant('Area') },
-        { id: $scope.data_type_keys.eui, label: $translate.instant('EUI') },
+        { id: $scope.data_type_keys.eui, label: $translate.instant('EUI') }
       ],
       [
         { id: null, label: '' },
@@ -97,7 +97,7 @@ angular.module('SEED.controller.data_quality_admin', []).controller('data_qualit
         { id: $scope.data_type_keys.date, label: $translate.instant('Date') },
         { id: $scope.data_type_keys.year, label: $translate.instant('Year') },
         { id: $scope.data_type_keys.area, label: $translate.instant('Area') },
-        { id: $scope.data_type_keys.eui, label: $translate.instant('EUI') },
+        { id: $scope.data_type_keys.eui, label: $translate.instant('EUI') }
       ]
     ];
 
