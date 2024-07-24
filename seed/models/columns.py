@@ -1134,6 +1134,9 @@ class Column(models.Model):
                 "table_name": "" if is_ah_data else field["to_table_name"],
                 "is_extra_data": is_extra_data,
             }
+            if "to_data_type" in field:
+                to_col_params["data_type"] = field["to_data_type"]
+
             if is_root_user or is_ah_data:
                 to_org_col, _ = Column.objects.get_or_create(**to_col_params)
             else:

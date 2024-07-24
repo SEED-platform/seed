@@ -197,6 +197,7 @@
               <th><translate>Is Omitted</translate></th>
               <th><translate>Inventory Type</translate></th>
               <th class="mapping_field ellipsis-resizable" sd-resizable><translate>SEED Header</translate></th>
+              <th class="ellipsis-resizable" sd-resizable><translate>Data Type</translate></th>
               <th><translate>Measurement Units</translate></th>
               <th class="import_column_name ellipsis-resizable" sd-resizable><translate>Data File Header</translate></th>
               <th class="ellipsis-resizable" sd-resizable><translate>Row 1</translate></th>
@@ -245,6 +246,16 @@
                   autocapitalize="off"
                   spellcheck="false"
                 />
+              </td>
+              <td class="text-center">
+                <select
+                  class="form-control input-sm"
+                  ng-change="change(col)"
+                  ng-model="col.data_type"
+                  ng-options="type.id as type.label for type in ::data_types"
+                  ng-disabled="col.suggestion_column_name"
+              ></select>
+
               </td>
               <td ng-class="{'danger': col.from_units === null && (is_area_column(col) || is_eui_column(col) || is_ghg_column(col) || is_ghg_intensity_column(col)), 'omitted': col.isOmitted}">
                 <select ng-model="col.from_units" ng-if="is_area_column(col)" ng-change="flag_mappings_change()" ng-disabled="col.isOmitted">
