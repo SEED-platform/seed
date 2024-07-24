@@ -40,7 +40,7 @@ class DataQualityCheckTests(AssertDictSubsetMixin, DataMappingBaseTestCase):
 
     def test_default_create(self):
         dq = DataQualityCheck.retrieve(self.org.id)
-        self.assertEqual(dq.rules.count(), 34)
+        self.assertEqual(dq.rules.count(), 32)
         # Example rule to check
         ex_rule = {
             "table_name": "PropertyState",
@@ -58,7 +58,7 @@ class DataQualityCheckTests(AssertDictSubsetMixin, DataMappingBaseTestCase):
 
     def test_remove_rules(self):
         dq = DataQualityCheck.retrieve(self.org.id)
-        self.assertEqual(dq.rules.count(), 34)
+        self.assertEqual(dq.rules.count(), 32)
         dq.remove_all_rules()
         self.assertEqual(dq.rules.count(), 0)
 
@@ -526,7 +526,7 @@ class DataQualityCrossCycleTests(AccessLevelBaseTestCase):
 
         # create default rules
         self.dq = DataQualityCheck.retrieve(self.org.id)
-        self.assertEqual(self.dq.rules.count(), 34)
+        self.assertEqual(self.dq.rules.count(), 32)
 
         self.label_lookup = {
             "Missing Data": StatusLabel.objects.get(name="Missing Data"),

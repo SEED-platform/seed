@@ -28,7 +28,7 @@ class RuleViewTests(DataMappingBaseTestCase):
         response = self.client.get(url)
         rules = json.loads(response.content)
 
-        self.assertEqual(len(rules), 34)
+        self.assertEqual(len(rules), 32)
 
         property_count = 0
         taxlot_count = 0
@@ -66,7 +66,7 @@ class RuleViewTests(DataMappingBaseTestCase):
         response = self.client.put(url)
         rules = json.loads(response.content)
 
-        self.assertEqual(len(rules), 34)
+        self.assertEqual(len(rules), 32)
 
         property_count = 0
         taxlot_count = 0
