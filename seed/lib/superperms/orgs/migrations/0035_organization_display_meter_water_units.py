@@ -7,7 +7,7 @@ import seed.lib.superperms.orgs.models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("orgs", "0033_organization_public_geojson_enabled"),
+        ("orgs", "0034_organization_display_water_units"),
     ]
 
     operations = [
