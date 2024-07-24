@@ -51,6 +51,15 @@ def _get_default_meter_units():
     return Organization._default_display_meter_units
 
 
+def _get_default_meter_water_units():
+    """Returns the default meter water units for an organization. This method
+    is used only to set the default units for a new organization.
+
+    Do not use this method otherwise, simply call
+    `Organization._default_display_meter_water_units` directly."""
+    return Organization._default_display_meter_water_units
+
+
 class OrganizationUser(models.Model):
     class Meta:
         constraints = [
@@ -215,6 +224,13 @@ class Organization(models.Model):
         "Wood": "kBtu (thousand Btu)",
     }
 
+    _default_display_meter_water_units = {
+        "Default": "kGal (thousand gallons) (US)",
+        "Potable Indoor": "kGal (thousand gallons) (US)",
+        "Potable Outdoor": "kGal (thousand gallons) (US)",
+        "Potable: Mixed Indoor/Outdoor": "kGal (thousand gallons) (US)",
+    }
+
     class Meta:
         ordering = ["name"]
         constraints = [
@@ -249,6 +265,7 @@ class Organization(models.Model):
 
     # Default preferred all meter units to kBtu
     display_meter_units = models.JSONField(default=_get_default_meter_units)
+    display_meter_water_units = models.JSONField(default=_get_default_meter_water_units)
 
     # If below this threshold, we don't show results from this Org
     # in exported views of its data.

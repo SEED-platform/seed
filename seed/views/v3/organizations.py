@@ -137,6 +137,7 @@ def _dict_org(request, organizations):
             "property_display_field": o.property_display_field,
             "taxlot_display_field": o.taxlot_display_field,
             "display_meter_units": dict(sorted(o.display_meter_units.items(), key=lambda item: (item[0], item[1]))),
+            "display_meter_water_units": dict(sorted(o.display_meter_water_units.items(), key=lambda item: (item[0], item[1]))),
             "thermal_conversion_assumption": o.thermal_conversion_assumption,
             "comstock_enabled": o.comstock_enabled,
             "new_user_email_from": o.new_user_email_from,
@@ -515,6 +516,10 @@ class OrganizationViewSet(viewsets.ViewSet):
         desired_display_meter_units = posted_org.get("display_meter_units")
         if desired_display_meter_units:
             org.display_meter_units = desired_display_meter_units
+
+        desired_display_meter_water_units = posted_org.get("display_meter_water_units")
+        if desired_display_meter_water_units:
+            org.display_meter_water_units = desired_display_meter_water_units
 
         desired_thermal_conversion_assumption = posted_org.get("thermal_conversion_assumption")
         if is_valid_choice(Organization.THERMAL_CONVERSION_ASSUMPTION_CHOICES, desired_thermal_conversion_assumption):
