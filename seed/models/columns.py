@@ -1134,7 +1134,8 @@ class Column(models.Model):
                 "table_name": "" if is_ah_data else field["to_table_name"],
                 "is_extra_data": is_extra_data,
             }
-            if "to_data_type" in field:
+            # Only compare against data type if it is provided && the column is an extra data column
+            if ("to_data_type" in field) and (is_extra_data):
                 to_col_params["data_type"] = field["to_data_type"]
 
             if is_root_user or is_ah_data:
