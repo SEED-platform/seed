@@ -85,8 +85,9 @@ class AuditTemplateViewSet(viewsets.ViewSet, OrgMixin):
                 {
                     "audit_template_building_id": "integer",
                     "property_view": "integer",
+                    "name": "string",
                     "email": "string",
-                    "updated_at": "string",
+                    "updated_at": "datetime",
                 }
             ],
         ),
@@ -135,7 +136,7 @@ class AuditTemplateViewSet(viewsets.ViewSet, OrgMixin):
         if not all(valid):
             return (
                 False,
-                "Request data must be structured as: {audit_template_building_id: integer, property_view: integer, email: string, updated_at: date time iso string 'YYYY-MM-DDTHH:MM:SSZ'}",
+                "Request data must be structured as: {audit_template_building_id: integer, property_view: integer, name: string, email: string, updated_at: date time iso string 'YYYY-MM-DDTHH:MM:SSZ'}",
             )
         else:
             return True, ""
@@ -194,7 +195,9 @@ class AuditTemplateViewSet(viewsets.ViewSet, OrgMixin):
             return JsonResponse({"success": False, "message": message or "Unexpected Error"}, status=400)
         return JsonResponse(progress_data)
 
-    @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_org_id_field()])
+    @swagger_auto_schema(
+        manual_parameters=[AutoSchemaHelper.query_org_id_field()], request_body=AutoSchemaHelper.schema_factory({"city_id": "integer"})
+    )
     @has_perm_class("can_modify_data")
     @action(detail=False, methods=["PUT"])
     def batch_get_city_submission_xml(self, request):

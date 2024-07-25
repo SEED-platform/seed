@@ -37,7 +37,15 @@ class AuditTemplateConfigViewSet(viewsets.ViewSet, OrgMixin):
     @swagger_auto_schema(
         manual_parameters=[
             AutoSchemaHelper.query_org_id_field(),
-        ]
+        ],
+        request_body=AutoSchemaHelper.schema_factory(
+            {
+                "update_at_day": "integer",
+                "update_at_hour": "integer",
+                "update_at_minute": "integer",
+                "last_update_date": "datetime",
+            },
+        ),
     )
     @has_perm_class("requires_owner")
     def create(self, request):
@@ -67,7 +75,15 @@ class AuditTemplateConfigViewSet(viewsets.ViewSet, OrgMixin):
     @swagger_auto_schema(
         manual_parameters=[
             AutoSchemaHelper.query_org_id_field(),
-        ]
+        ],
+        request_body=AutoSchemaHelper.schema_factory(
+            {
+                "update_at_day": "integer",
+                "update_at_hour": "integer",
+                "update_at_minute": "integer",
+                "last_update_date": "datetime",
+            },
+        ),
     )
     @has_perm_class("requires_owner")
     def update(self, request, pk):
