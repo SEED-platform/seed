@@ -54,6 +54,7 @@
             Export to Audit Template
           </option>
           <option ng-show="menu.user.organization.user_role !== 'viewer'" value="open_update_labels_modal" ng-disabled="selectedCount === 0" translate>Add/Remove Labels</option>
+          <option ng-show="menu.user.organization.user_role !== 'viewer'" value="open_update_inventory_groups_modal" ng-disabled="selectedCount === 0" translate>Add to/Remove from Groups</option>
           <option ng-show="menu.user.organization.user_role !== 'viewer'" value="run_data_quality_check" ng-disabled="selectedCount === 0" translate>Data Quality Check</option>
           <option ng-show="menu.user.organization.user_role !== 'viewer'" value="open_postoffice_modal" ng-disabled="selectedCount === 0" translate>Email</option>
           <option ng-show="menu.user.organization.user_role !== 'viewer'" value="open_analyses_modal" ng-disabled="selectedCount === 0" translate>Run Analysis</option>
@@ -218,10 +219,10 @@
 </div>
 <div class="inventory-list-tab-container">
   <ul class="nav nav-tabs" style="pointer-events: none">
-    <li ng-class="::{active: inventory_type==='properties'}" heading="View by Property" style="pointer-events: all">
+    <li ng-class="{active: inventory_type==='properties' && inventory_group_tab === -1}" ng-click="change_tab(-1,'Property')" heading="View by Property" style="pointer-events: all">
       <a ui-sref="inventory_list(::{inventory_type: 'properties'})" translate>View by Property</a>
     </li>
-    <li ng-class="::{active: inventory_type==='taxlots'}" heading="View by Tax Lot" style="pointer-events: all">
+    <li ng-class="{active: inventory_type==='taxlots' && inventory_group_tab === -1}" ng-click="change_tab(-1,'Tax Lot')" heading="View by Tax Lot" style="pointer-events: all">
       <a ui-sref="inventory_list(::{inventory_type: 'taxlots'})" translate>View by Tax Lot</a>
     </li>
   </ul>
@@ -239,6 +240,16 @@
       <i class="fa-solid fa-chevron-right"></i>
     </button>
   </div>
+</div>
+<div class="inventory-list-tab-container">
+    <ul class="nav nav-tabs" style="margin-bottom:1px;" role="tablist">
+        <li ng-style="{'display': inventory_type === 'properties' ? 'inherit' : 'none'}" ng-repeat="inventory_group in inventory_groups | filter: { inventory_type: 'Property' }" class="nav-item" ng-class="{active: inventory_group_tab === inventory_group.id}" ng-click="change_tab(inventory_group.id,inventory_group.inventory_type)" heading="{$ inventory_group.name $}">
+            <a class="nav-link" ui-sref="inventory_list(::{inventory_type: (inventory_group.inventory_type === 'Property' ? 'properties' : 'taxlots')})" role="tab">{$ inventory_type === 'properties' ? inventory_group.name : '   ' $}</a>
+        </li>
+        <li ng-style="{'display': inventory_type === 'taxlots' ? 'inherit' : 'none'}" ng-repeat="inventory_group in inventory_groups | filter: { inventory_type: 'Tax Lot' }" class="nav-item" ng-class="{active: inventory_group_tab === inventory_group.id}" ng-click="change_tab(inventory_group.id,inventory_group.inventory_type)" heading="{$ inventory_group.name $}">
+            <a class="nav-link" ui-sref="inventory_list(::{inventory_type: (inventory_group.inventory_type === 'Property' ? 'properties' : 'taxlots')})" role="tab">{$ inventory_type === 'taxlots' ? inventory_group.name : '   ' $}</a>
+        </li>
+    </ul>
 </div>
 
 <div class="section_content_container" ng-cloak style="display: flex; flex: 1">

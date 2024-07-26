@@ -32,6 +32,7 @@ from .sensors import *
 from .simulations import *
 from .building_file import *
 from .inventory_document import *
+from .inventory_groups import *  # noqa
 from .notes import *
 from .analysis_property_views import *
 from .analysis_input_files import *
