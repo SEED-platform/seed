@@ -1,7 +1,3 @@
-# encoding: utf-8
-
-from __future__ import unicode_literals
-
 from django.db import models
 
 from seed.lib.superperms.orgs.models import Organization
@@ -11,8 +7,8 @@ from seed.models.tax_lots import TaxLot
 VIEW_LIST_PROPERTY = 0
 VIEW_LIST_TAXLOT = 1
 VIEW_LIST_INVENTORY_TYPE = [
-    (VIEW_LIST_PROPERTY, 'Property'),
-    (VIEW_LIST_TAXLOT, 'Tax Lot'),
+    (VIEW_LIST_PROPERTY, "Property"),
+    (VIEW_LIST_TAXLOT, "Tax Lot"),
 ]
 
 
@@ -22,7 +18,7 @@ class InventoryGroup(models.Model):
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE, blank=True, null=True)
 
     class Meta:
-        ordering = ['name']
+        ordering = ["name"]
 
 
 class InventoryGroupMapping(models.Model):

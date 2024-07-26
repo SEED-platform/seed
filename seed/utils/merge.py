@@ -216,10 +216,7 @@ def _copy_propertyview_relationships(view_ids, new_view):
     # Associate groups
     group_mappings = InventoryGroupMapping.objects.filter(property__views__in=view_ids)
     for grouping in group_mappings:
-        InventoryGroupMapping(
-            property=new_view.property,
-            group=grouping.group
-        ).save()
+        InventoryGroupMapping(property=new_view.property, group=grouping.group).save()
     # Associate pairs while deleting old relationships
     paired_view_ids = list(
         TaxLotProperty.objects.filter(property_view_id__in=view_ids)
@@ -261,10 +258,7 @@ def _copy_taxlotview_relationships(view_ids, new_view):
     # Associate groups
     group_mappings = InventoryGroupMapping.objects.filter(taxlot__views__in=view_ids)
     for grouping in group_mappings:
-        InventoryGroupMapping(
-            tax_lot=new_view.taxlot,
-            group=grouping.group
-        ).save()
+        InventoryGroupMapping(tax_lot=new_view.taxlot, group=grouping.group).save()
 
     # Associate pairs while deleting old relationships
     paired_view_ids = list(
