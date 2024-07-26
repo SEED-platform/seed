@@ -358,9 +358,9 @@
     <br />
     <br />
 
-    <div ng-if="::inventory_type==='properties' && elements.length > 0">
+    <div ng-if="::inventory_type==='properties'">
       <!-- Elements Section -->
-      <div class="section">
+      <div class="section" ng-if="::elements.length > 0">
         <div class="section_header_container" style="margin-top: 20px; border-bottom: 0">
           <div class="section_header fixed_height_short has_no_padding">
             <div class="section_action_container left" style="width: 50%">
