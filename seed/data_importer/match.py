@@ -605,6 +605,55 @@ def states_to_views(unmatched_state_ids, org, access_level_instance, cycle, Stat
     # If one match is found, pass that along.
     # If multiple matches are found, merge them together, pass along the resulting record.
     # Otherwise, add current -State to be promoted as-is.
+
+    (
+        merged_between_existing_count,
+        merged_views,
+        errored_merged_states,
+        new_views,
+        errored_new_states,
+    ) = merge_unmatched_states(
+        access_level_instance,
+        cycle,
+        matching_columns,
+        match_lookup,
+        org,
+        promote_state_ids,
+        state_lookup,
+        sub_progress_key,
+        StateClass,
+        tuple_values,
+        table_name,
+        unmatched_states,
+        ViewClass,
+    )
+
+    return (
+        merged_between_existing_count,
+        duplicate_count,
+        merged_views,
+        errored_merged_states,
+        new_views,
+        errored_new_states,
+    )
+
+def merge_unmatched_states(
+        access_level_instance,
+        cycle,
+        matching_columns,
+        match_lookup,
+        org,
+        promote_state_ids,
+        state_lookup,
+        sub_progress_key,
+        StateClass,
+        tuple_values,
+        table_name,
+        unmatched_states,
+        ViewClass,
+    ):
+    sub_progress_data = update_sub_progress_total(100, sub_progress_key, finish=True)
+
     merged_between_existing_count = 0
     merge_state_pairs: list[Union[tuple[PropertyState, PropertyState], tuple[TaxLotState, TaxLotState]]] = []
     batch_size = math.ceil(len(unmatched_states) / 100)
@@ -720,7 +769,6 @@ def states_to_views(unmatched_state_ids, org, access_level_instance, cycle, Stat
 
     return (
         merged_between_existing_count,
-        duplicate_count,
         list(set(merged_views)),  # so no dupes, I think?
         errored_merged_states,
         new_views,
