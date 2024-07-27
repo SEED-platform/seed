@@ -281,7 +281,7 @@ class AuditTemplateBatchTests(TestCase):
     @mock.patch("requests.request")
     def test_batch_get_building_xml_bad_data(self, mock_request):
         mock_request.side_effect = [self.good_authenticate_response, self.good_batch_xml_response, self.good_batch_xml_response]
-        exp_message = "Request data must be structured as: {audit_template_building_id: integer, property_view: integer, email: string, updated_at: date time iso string 'YYYY-MM-DDTHH:MM:SSZ'}"
+        exp_message = "Request data must be structured as: {audit_template_building_id: integer, property_view: integer, name: string, email: string, updated_at: date time iso string 'YYYY-MM-DDTHH:MM:SSZ'}"
 
         # missing property view
         url = (
