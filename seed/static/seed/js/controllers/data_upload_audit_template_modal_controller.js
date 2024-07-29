@@ -4,34 +4,28 @@
  */
 angular.module('SEED.controller.data_upload_audit_template_modal', []).controller('data_upload_audit_template_modal_controller', [
   '$scope',
-  '$state',
-  '$uibModal',
   '$uibModalInstance',
-  'urls',
-  'uiGridConstants',
+  'Notification',
   'spinner_utility',
+  'uploader_service',
   'organization',
   'cycle_id',
   'upload_from_file',
   'audit_template_service',
   'custom_id_1',
-  'organization_service',
   'view_id',
   // eslint-disable-next-line func-names
   function (
     $scope,
-    $state,
-    $uibModal,
     $uibModalInstance,
-    urls,
-    uiGridConstants,
+    Notification,
     spinner_utility,
-    organization,
+    uploader_service,
+    organization, 
     cycle_id,
     upload_from_file,
     audit_template_service,
     custom_id_1,
-    organization_service,
     view_id
   ) {
     $scope.organization = organization;
@@ -44,6 +38,7 @@ angular.module('SEED.controller.data_upload_audit_template_modal', []).controlle
       custom_id_1
     };
     const city_id = $scope.organization.audit_template_city_id
+    $scope.status = {};
 
     $scope.upload_from_file_and_close = (event_message, file, progress) => {
       $scope.close();
@@ -60,25 +55,43 @@ angular.module('SEED.controller.data_upload_audit_template_modal', []).controlle
       }
     };
 
+    const handle_response = (message, error=false) => {
+      spinner_utility.hide()
+      if (error) {
+        Notification.error(message)
+        $scope.close(true)
+      } else {
+        Notification.success("Successfully updated property")
+        $scope.close()
+      }
+      spinner_utility.hide();
+    };
+
     $scope.submit_request = () => {
       $scope.error = '';
       $scope.busy = true;
       spinner_utility.show();
-      return audit_template_service.get_city_submission_xml_and_update($scope.organization.id, city_id, $scope.fields.custom_id_1).then((result) => {
-        spinner_utility.hide();
-        if (typeof result === 'object' && result.status !== 200) {
-          $scope.error = `Error: ${result.message}`;
-          $scope.busy = false;
+      return audit_template_service.get_city_submission_xml_and_update($scope.organization.id, city_id, $scope.fields.custom_id_1).then((response) => {
+        if (response.status !== 200) {
+          handle_response(data.message, true);
         } else {
-          $scope.close();
-          $scope.upload_from_file('upload_complete', null, null);
-          $scope.busy = false;
+          data = response.data
+          uploader_service.check_progress_loop(
+            data.progress_key,
+            0,
+            1,
+            (data) => handle_response(data.message),
+            (data) => handle_response(data.data.message, true),
+            $scope.status
+          );
         }
       });
     };
-
-    $scope.close = () => {
+    
+    $scope.close = (reload=false) => {
       $uibModalInstance.dismiss();
+      reload && $window.location.reload()
+      
     };
   }
 ]);
