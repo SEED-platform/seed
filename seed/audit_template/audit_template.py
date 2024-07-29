@@ -484,7 +484,7 @@ def _batch_get_city_submission_xml(org_id, city_id, progress_key):
             cycle__start__lte=created_at,
             cycle__end__gte=created_at,
             # Do we only update old views?
-            state__updated__lte=updated_at,
+            # state__updated__lte=updated_at,
         ).first()
 
         progress_data.step("Getting XML for submissions...")

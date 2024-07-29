@@ -25,6 +25,7 @@ angular.module('SEED.controller.data_upload_modal', []).controller('data_upload_
   '$http',
   '$scope',
   '$rootScope',
+  '$uibModal',
   '$uibModalInstance',
   '$log',
   '$timeout',
@@ -49,6 +50,7 @@ angular.module('SEED.controller.data_upload_modal', []).controller('data_upload_
     $http,
     $scope,
     $rootScope,
+    $uibModal,
     $uibModalInstance,
     $log,
     $timeout,
@@ -938,28 +940,17 @@ angular.module('SEED.controller.data_upload_modal', []).controller('data_upload_
       saveAs(new Blob([data.join('\n')], { type: 'text/csv' }), new_file_name);
     };
 
-    $scope.import_audit_template_buildings = () => {
-      $scope.show_loading = true;
-      audit_template_service.get_buildings($scope.organization.id, $scope.selectedCycle.id).then((response) => {
-        $scope.show_error = !response.success;
-
-        if ($scope.show_error) {
-          $scope.error_message = response.message;
-        } else {
-          const parsed_message = JSON.parse(response.message);
-
-          if (parsed_message.length) {
-            $scope.at_building_data = parsed_message;
-            setAtPropertyGrid();
-          } else {
-            $scope.show_error = true;
-            $scope.error_message = 'Your inventory is already synced with your Audit Template account';
-          }
+    $scope.open_at_submission_import_modal = () => {
+      $uibModal.open({
+        templateUrl: `${urls.static_url}seed/partials/at_submission_import_modal.html`,
+        controller: 'at_submission_import_modal_controller',
+        backdrop: 'static',
+        resolve: {
+          org: () => $scope.organization
         }
-        $scope.show_loading = false;
-        $scope.step.number = 18;
       });
-    };
+      $scope.cancel() 
+    }
 
     const setAtPropertyGrid = () => {
       $scope.atPropertySelectGridOptions = {
