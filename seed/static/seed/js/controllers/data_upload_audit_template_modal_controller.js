@@ -14,8 +14,8 @@ angular.module('SEED.controller.data_upload_audit_template_modal', []).controlle
   'cycle_id',
   'upload_from_file',
   'audit_template_service',
+  'custom_id_1',
   'organization_service',
-  'audit_template_building_id',
   'view_id',
   // eslint-disable-next-line func-names
   function (
@@ -30,8 +30,8 @@ angular.module('SEED.controller.data_upload_audit_template_modal', []).controlle
     cycle_id,
     upload_from_file,
     audit_template_service,
+    custom_id_1,
     organization_service,
-    audit_template_building_id,
     view_id
   ) {
     $scope.organization = organization;
@@ -41,8 +41,9 @@ angular.module('SEED.controller.data_upload_audit_template_modal', []).controlle
     $scope.error = '';
     $scope.busy = false;
     $scope.fields = {
-      audit_template_building_id
+      custom_id_1
     };
+    const city_id = $scope.organization.audit_template_city_id
 
     $scope.upload_from_file_and_close = (event_message, file, progress) => {
       $scope.close();
@@ -50,8 +51,10 @@ angular.module('SEED.controller.data_upload_audit_template_modal', []).controlle
     };
 
     $scope.confirm_import = () => {
-      if (!$scope.fields.audit_template_building_id) {
-        $scope.error = 'An Audit Template building ID is required.';
+      if (!$scope.fields.custom_id_1) {
+        $scope.error = 'A Custom ID 1 is required.';
+      } else if (!city_id) {
+        $scope.error = 'Organization city id must be set in Organization Settings'
       } else {
         $scope.submit_request();
       }
@@ -61,17 +64,15 @@ angular.module('SEED.controller.data_upload_audit_template_modal', []).controlle
       $scope.error = '';
       $scope.busy = true;
       spinner_utility.show();
-      return audit_template_service.get_building_xml($scope.organization.id, $scope.fields.audit_template_building_id).then((result) => {
+      return audit_template_service.get_city_submission_xml_and_update($scope.organization.id, city_id, $scope.fields.custom_id_1).then((result) => {
         spinner_utility.hide();
-        if (typeof result === 'object' && !result.success) {
+        if (typeof result === 'object' && result.status !== 200) {
           $scope.error = `Error: ${result.message}`;
           $scope.busy = false;
         } else {
-          return audit_template_service.update_building_with_xml($scope.organization.id, $scope.cycle_id, $scope.view_id, $scope.fields.audit_template_building_id, result).then(() => {
-            $scope.close();
-            $scope.upload_from_file('upload_complete', null, null);
-            $scope.busy = false;
-          });
+          $scope.close();
+          $scope.upload_from_file('upload_complete', null, null);
+          $scope.busy = false;
         }
       });
     };

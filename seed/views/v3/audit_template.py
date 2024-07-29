@@ -215,3 +215,28 @@ class AuditTemplateViewSet(viewsets.ViewSet, OrgMixin):
         if progress_data is None:
             return JsonResponse({"success": False, "message": message or "Unexpected Error"}, status=400)
         return JsonResponse(progress_data)
+
+    @swagger_auto_schema(
+        manual_parameters=[AutoSchemaHelper.query_org_id_field()], 
+        request_body=AutoSchemaHelper.schema_factory({"city_id": "integer", "custom_id_1": "string"})
+    )
+    @has_perm_class("can_modify_data")
+    @action(detail=False, methods=["PUT"])
+    def get_city_submission_xml(self, request):        
+        """
+        Import from Audit Template using the submissions endpoint for a given city
+        Property are updated with returned xml using custom_id_1 as matching criteria
+        """
+        city_id = request.data.get("city_id")
+        if not city_id:
+            return JsonResponse({"success": False, "message": "City ID argument required"}, status=400)
+        custom_id_1 = request.data.get("custom_id_1")
+        if not custom_id_1:
+            return JsonResponse({"success": False, "message": "Custom ID argument required"}, stauts=400)
+
+        at = AuditTemplate(self.get_organization(request))
+        progress_data, message = at.get_city_submission_xml(custom_id_1)
+
+        if progress_data is None:
+            return JsonResponse({"success": False, "message": message or "Unexpected Error"}, status=400)
+        return JsonResponse(progress_data)

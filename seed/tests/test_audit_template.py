@@ -19,6 +19,7 @@ from seed.audit_template.audit_template import AuditTemplate
 from seed.landing.models import SEEDUser as User
 from seed.test_helpers.fake import FakeCycleFactory, FakePropertyFactory, FakePropertyStateFactory, FakePropertyViewFactory
 from seed.utils.organizations import create_organization
+# from seed.utils.encrypt import encrypt
 
 
 class AuditTemplateViewTests(TestCase):
@@ -697,3 +698,18 @@ class AuditTemplateSubmissionImport(TestCase):
         assert self.view2.state.address_line_1 == "old address 2"
         assert self.view3.state.address_line_1 == "old address 3"
         assert self.view4.state.address_line_1 == "old address 4"
+
+    def test_audit_template_single_submission(self):
+        if self.skip_test:
+            self.skipTest("This test is skipped in non-development environments as it is only relevant for developer checks.")
+
+        self.view1.state.address_line_1 = "old address 1"
+        self.view1.state.save()
+
+        url = reverse("api:v3:audit_template-get-city-submission-xml") + f"?organization_id={self.org.id}"
+        params = {"city_id": self.org.audit_template_city_id, "custom_id_1": self.view1.state.custom_id_1}
+        self.client.put(url, params, content_type="application/json")
+
+        self.view1.refresh_from_db()
+        assert (self.view1.state.address_line_1 == "ABC Street")
+

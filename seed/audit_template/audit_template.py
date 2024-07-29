@@ -131,6 +131,13 @@ class AuditTemplate:
         _batch_get_city_submission_xml.delay(self.org_id, self.org.audit_template_city_id, progress_data.key)
 
         return progress_data.result(), ""
+    
+    def get_city_submission_xml(self, custom_id_1):
+        progress_data = ProgressData(func_name="get_city_submission_xml", unique_id=self.org_id)
+
+        _get_city_submission_xml.delay(self.org_id, self.org.audit_template_city_id, custom_id_1, progress_data.key)
+
+        return progress_data.result(), ""
 
     @require_token
     def get_submission(self, audit_template_submission_id: int, report_format: str = "pdf"):
@@ -467,13 +474,13 @@ def _batch_get_city_submission_xml(org_id, city_id, progress_key):
 
     xml_data_by_cycle = {}
     for sub in submissions:
-        custom_id = sub["tax_id"]
+        custom_id_1 = sub["tax_id"]
         created_at = parser.parse(sub["created_at"])
         updated_at = parser.parse(sub["updated_at"])
 
         view = PropertyView.objects.filter(
             property__organization=org_id,
-            state__custom_id_1=custom_id,
+            state__custom_id_1=custom_id_1,
             cycle__start__lte=created_at,
             cycle__end__gte=created_at,
             # Do we only update old views?
@@ -489,7 +496,7 @@ def _batch_get_city_submission_xml(org_id, city_id, progress_key):
                     xml_data_by_cycle[view.cycle.id] = []
 
                 xml_data_by_cycle[view.cycle.id].append(
-                    {"property_view": view.id, "matching_field": custom_id, "xml": xml.text, "updated_at": sub["updated_at"]}
+                    {"property_view": view.id, "matching_field": custom_id_1, "xml": xml.text, "updated_at": sub["updated_at"]}
                 )
 
     property_view_set = PropertyViewSet()
@@ -505,6 +512,67 @@ def _batch_get_city_submission_xml(org_id, city_id, progress_key):
         progress_data.finish_with_error("Unexepected Error")
 
     progress_data.finish_with_success(combined_results)
+
+
+@shared_task
+def _get_city_submission_xml(org_id, city_id, custom_id_1, progress_key):
+    """
+    1. get city_cubmissions
+    2. find view using xml fields custom_id_1 and updated for cycle start/end bounds
+    3. get xml corresponding to submission matching a view
+    4. update view
+    """
+    org = Organization.objects.get(pk=org_id)
+    status_type = org.audit_template_status_type
+    audit_template = AuditTemplate(org_id)
+    progress_data = ProgressData.from_key(progress_key)
+
+    response, messages = audit_template.get_city_submissions(city_id, status_type)
+    if not response:
+        progress_data.finish_with_error(messages)
+        return None, messages
+    submissions = response.json()
+    # Progress data is difficult to calculate as not all submissions will need an xml
+    # Each xml has 2 steps (get and update)
+    progress_data.total = len(submissions) * 2
+    progress_data.save()
+
+    submissions = [sub for sub in submissions if sub["tax_id"] == custom_id_1]
+    if not len(submissions):
+        return progress_data.finish_with_error("No matching submissions for custom id: %s", custom_id_1)
+    sub = submissions[0]
+    created_at = parser.parse(sub["created_at"])
+
+    view = PropertyView.objects.filter(
+        property__organization=org_id,
+        state__custom_id_1=custom_id_1,
+        cycle__start__lte=created_at,
+        cycle__end__gte=created_at,
+    ).first()
+
+    if not view:
+        progress_data.finish_with_error("No such resource.")
+
+    progress_data.step("Getting XML for submissions...")
+    if view:
+        xml, _ = audit_template.get_submission(sub["id"], "xml")
+        if hasattr(xml, "text"):
+            xmls = [{"property_view": view.id, "matching_field": custom_id_1, "xml": xml.text, "updated_at": sub["updated_at"]}]
+
+    property_view_set = PropertyViewSet()
+    # Update is cycle based, going to have update in cycle specific batches
+
+    try:
+        logging.error(">>> A")
+        results = property_view_set.batch_update_with_building_sync(xmls, org_id, view.cycle.id, progress_data.key, finish=False)
+        if results.get("success"):
+            message = {"message": "Successfully updated property"}
+        else:
+            message = {"message": "Failed to update property"}
+    except Exception:
+        return progress_data.finish_with_error("Unexepected Error")
+
+    progress_data.finish_with_success(message)
 
 
 @shared_task
