@@ -101,6 +101,7 @@
     'SEED.controller.inventory_reports',
     'SEED.controller.inventory_summary',
     'SEED.controller.label_admin',
+    'SEED.controller.match_merge_modal',
     'SEED.controller.mapping',
     'SEED.controller.members',
     'SEED.controller.menu',
@@ -1177,6 +1178,22 @@
                 const { organization_id } = $stateParams;
                 return inventory_service.get_taxlot_column_names_for_org(organization_id);
               }
+            ],
+            property_columns: [
+              '$stateParams',
+              'inventory_service',
+              ($stateParams, inventory_service) => inventory_service.get_property_columns().then((columns) => {
+                columns = _.reject(columns, 'related');
+                return _.map(columns, (col) => _.omit(col, ['pinnedLeft', 'related']));
+              })
+            ],
+            taxlot_columns: [
+              '$stateParams',
+              'inventory_service',
+              ($stateParams, inventory_service) => inventory_service.get_taxlot_columns().then((columns) => {
+                columns = _.reject(columns, 'related');
+                return _.map(columns, (col) => _.omit(col, ['pinnedLeft', 'related']));
+              })
             ],
             labels_payload: [
               'label_service',

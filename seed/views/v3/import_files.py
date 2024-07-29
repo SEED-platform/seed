@@ -16,12 +16,13 @@ from rest_framework.decorators import action
 from seed.data_importer.meters_parser import MetersParser
 from seed.data_importer.models import ROW_DELIMITER, ImportRecord
 from seed.data_importer.sensor_readings_parser import SensorsReadingsParser
-from seed.data_importer.tasks import do_checks, geocode_and_match_buildings_task, map_data
+from seed.data_importer.tasks import do_checks, geocode_and_match_buildings_task, map_data, match_merge_cycle_inventory
 from seed.data_importer.tasks import save_raw_data as task_save_raw
 from seed.data_importer.tasks import validate_use_cases as task_validate_use_cases
 from seed.decorators import ajax_request_class
 from seed.lib.mappings import mapper as simple_mapper
 from seed.lib.mcm import mapper, reader
+from seed.lib.progress_data.progress_data import ProgressData
 from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm_class
 from seed.lib.superperms.orgs.models import OrganizationUser
 from seed.lib.xml_mapping import mapper as xml_mapper
@@ -35,6 +36,7 @@ from seed.models import (
     MERGE_STATE_UNKNOWN,
     PORTFOLIO_METER_USAGE,
     SEED_DATA_SOURCES,
+    AccessLevelInstance,
     Column,
     Cycle,
     ImportFile,
@@ -1047,3 +1049,24 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
         result["unlinkable_pm_ids"] = meters_parser.unlinkable_pm_ids
 
         return result
+
+    @has_perm_class("requires_owner")
+    @action(detail=False, methods=["POST"])
+    def match_merge_inventory(self, request):
+        org_id = self.get_organization(request)
+
+        access_level_instance = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
+
+        try:
+            org = Organization.objects.get(pk=org_id)
+            cycle = Cycle.objects.get(pk=request.data.get("cycle_id", -1))
+        except (Organization.DoesNotExist, Cycle.DoesNotExist):
+            return JsonResponse({"error": "No such resource.b"})
+
+        progress_data = ProgressData(func_name="match_progress", unique_id=org_id)
+        progress_key = progress_data.key
+
+        match_merge_cycle_inventory.delay(org.id, cycle.id, access_level_instance.id, "PropertyState", progress_key)
+        match_merge_cycle_inventory.delay(org.id, cycle.id, access_level_instance.id, "TaxLotState", progress_key)
+
+        return JsonResponse(progress_data.result())

@@ -15,6 +15,8 @@ angular.module('SEED.controller.organization_settings', []).controller('organiza
   'salesforce_config_service',
   'property_column_names',
   'taxlot_column_names',
+  'property_columns',
+  'taxlot_columns',
   'labels_payload',
   'salesforce_mappings_payload',
   'salesforce_configs_payload',
@@ -35,6 +37,8 @@ angular.module('SEED.controller.organization_settings', []).controller('organiza
     salesforce_config_service,
     property_column_names,
     taxlot_column_names,
+    property_columns,
+    taxlot_columns,
     labels_payload,
     salesforce_mappings_payload,
     salesforce_configs_payload,
@@ -54,6 +58,8 @@ angular.module('SEED.controller.organization_settings', []).controller('organiza
     $scope.auth = auth_payload.auth;
     $scope.property_column_names = property_column_names;
     $scope.taxlot_column_names = taxlot_column_names;
+    $scope.property_columns = property_columns;
+    $scope.taxlot_columns = taxlot_columns;
     $scope.salesforce_mappings = salesforce_mappings_payload;
     $scope.org_static = angular.copy($scope.org);
     $scope.token_validity = { message: 'Verify Token' };
@@ -127,6 +133,12 @@ angular.module('SEED.controller.organization_settings', []).controller('organiza
       type: null,
       unit: null
     };
+
+    const property_ubid = $scope.property_columns.find((c) => c.column_name === 'ubid');
+    const taxlot_ubid = $scope.taxlot_columns.find((c) => c.column_name === 'ubid');
+    $scope.property_ubid_matching = property_ubid ? property_ubid.is_matching_criteria : false;
+    $scope.taxlot_ubid_matching = taxlot_ubid ? taxlot_ubid.is_matching_criteria : false;
+    $scope.ubid_matching = $scope.property_ubid_matching || $scope.taxlot_ubid_matching;
 
     // Energy type option executed within this method in order to repeat on organization update
     const get_energy_type_options = () => {
@@ -480,6 +492,20 @@ angular.module('SEED.controller.organization_settings', []).controller('organiza
       } else {
         $scope.invalid_ubid_threshold = !($scope.org.ubid_threshold >= 0 && $scope.org.ubid_threshold <= 1);
       }
+    };
+
+    $scope.open_match_merge_modal = () => {
+      $scope.save_settings();
+      $uibModal.open({
+        templateUrl: `${urls.static_url}seed/partials/match_merge_modal.html`,
+        controller: 'match_merge_modal_controller',
+        backdrop: 'static',
+        resolve: {
+          org: $scope.org,
+          property_ubid_matching: $scope.property_ubid_matching,
+          taxlot_ubid_matching: $scope.taxlot_ubid_matching
+        }
+      });
     };
 
     /**
