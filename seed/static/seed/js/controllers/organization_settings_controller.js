@@ -544,7 +544,8 @@ angular.module('SEED.controller.organization_settings', []).controller('organiza
         controller: 'at_submission_import_modal_controller',
         backdrop: 'static',
         resolve: {
-          org: () => $scope.org
+          org: () => $scope.org,
+          view_ids: () => []
         }
       });
     };

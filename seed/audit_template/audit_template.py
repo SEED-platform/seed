@@ -118,7 +118,7 @@ class AuditTemplate:
 
         return response, ""
 
-    def batch_get_city_submission_xml(self):
+    def batch_get_city_submission_xml(self, view_ids):
         """
         1. get city_cubmissions
         2. find views using xml fields custom_id_1 and updated for cycle start/end bounds
@@ -128,7 +128,7 @@ class AuditTemplate:
         """
         progress_data = ProgressData(func_name="batch_get_city_submission_xml", unique_id=self.org_id)
 
-        _batch_get_city_submission_xml.delay(self.org_id, self.org.audit_template_city_id, progress_data.key)
+        _batch_get_city_submission_xml.delay(self.org_id, self.org.audit_template_city_id, view_ids, progress_data.key)
 
         return progress_data.result(), ""
     
@@ -441,7 +441,7 @@ def _batch_get_building_xml(org_id, cycle_id, token, properties, progress_key):
 
 
 @shared_task
-def _batch_get_city_submission_xml(org_id, city_id, progress_key):
+def _batch_get_city_submission_xml(org_id, city_id, view_ids, progress_key):
     """
     1. get city_cubmissions
     2. find views using xml fields custom_id_1 and updated for cycle start/end bounds
@@ -472,13 +472,16 @@ def _batch_get_city_submission_xml(org_id, city_id, progress_key):
     # however that could return multiple views across many cycles
     # filtering by custom_id and 'updated_at' will require looping through results to query views
 
+    property_views = PropertyView.objects.filter(id__in=view_ids) if view_ids else PropertyView.objects
+    logging.error(">>> %s", property_views.count())
+
     xml_data_by_cycle = {}
     for sub in submissions:
         custom_id_1 = sub["tax_id"]
         created_at = parser.parse(sub["created_at"])
         updated_at = parser.parse(sub["updated_at"])
 
-        view = PropertyView.objects.filter(
+        view = property_views.filter(
             property__organization=org_id,
             state__custom_id_1=custom_id_1,
             cycle__start__lte=created_at,

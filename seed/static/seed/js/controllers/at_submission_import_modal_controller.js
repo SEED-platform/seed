@@ -8,15 +8,18 @@ angular.module('SEED.controller.at_submission_import_modal', []).controller('at_
   'audit_template_service',
   'uploader_service',
   'org',
+  'view_ids',
   // eslint-disable-next-line func-names
   function (
     $scope,
     $uibModalInstance,
     audit_template_service,
     uploader_service,
-    org
+    org,
+    view_ids
   ) {
     $scope.org = org;
+    $scope.view_ids = view_ids;
     $scope.status = {
       progress: 0,
       status_message: '',
@@ -27,7 +30,7 @@ angular.module('SEED.controller.at_submission_import_modal', []).controller('at_
 
     $scope.get_submissions = () => {
       $scope.status.in_progress = true;
-      audit_template_service.batch_get_city_submission_xml_and_update($scope.org.id, $scope.org.audit_template_city_id)
+      audit_template_service.batch_get_city_submission_xml_and_update($scope.org.id, $scope.view_ids)
         .then((response) => {
           const data = response.data;
           if (response.status !== 200) {

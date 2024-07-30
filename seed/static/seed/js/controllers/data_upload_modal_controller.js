@@ -946,7 +946,8 @@ angular.module('SEED.controller.data_upload_modal', []).controller('data_upload_
         controller: 'at_submission_import_modal_controller',
         backdrop: 'static',
         resolve: {
-          org: () => $scope.organization
+          org: () => $scope.organization,
+          view_ids: () => []
         }
       });
       $scope.cancel() 

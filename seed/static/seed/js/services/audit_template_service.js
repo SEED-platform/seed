@@ -46,8 +46,8 @@ angular.module('SEED.service.audit_template', []).factory('audit_template_servic
       .then((response) => response)
       .catch((response) => response);
 
-    audit_template_factory.batch_get_city_submission_xml_and_update = (org_id, city_id) => $http
-      .put(`/api/v3/audit_template/batch_get_city_submission_xml/?organization_id=${org_id}`, { city_id })
+    audit_template_factory.batch_get_city_submission_xml_and_update = (org_id, view_ids) => $http
+      .put(`/api/v3/audit_template/batch_get_city_submission_xml/?organization_id=${org_id}`, { view_ids })
       .then((response) => response)
       .catch((response) => response);
 

@@ -4,6 +4,7 @@
  */
 angular.module('SEED.controller.data_upload_audit_template_modal', []).controller('data_upload_audit_template_modal_controller', [
   '$scope',
+  '$state',
   '$uibModalInstance',
   'Notification',
   'spinner_utility',
@@ -17,6 +18,7 @@ angular.module('SEED.controller.data_upload_audit_template_modal', []).controlle
   // eslint-disable-next-line func-names
   function (
     $scope,
+    $state,
     $uibModalInstance,
     Notification,
     spinner_utility,
@@ -59,10 +61,10 @@ angular.module('SEED.controller.data_upload_audit_template_modal', []).controlle
       spinner_utility.hide()
       if (error) {
         Notification.error(message)
-        $scope.close(true)
+        $scope.close()
       } else {
         Notification.success("Successfully updated property")
-        $scope.close()
+        $scope.close(true)
       }
       spinner_utility.hide();
     };
@@ -90,8 +92,7 @@ angular.module('SEED.controller.data_upload_audit_template_modal', []).controlle
     
     $scope.close = (reload=false) => {
       $uibModalInstance.dismiss();
-      reload && $window.location.reload()
-      
+      reload && $state.reload()      
     };
   }
 ]);
