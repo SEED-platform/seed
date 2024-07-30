@@ -395,7 +395,7 @@ def sync_audit_template(org_id):
         return
 
     at = AuditTemplate(org_id)
-    at.batch_get_city_submission_xml()
+    at.batch_get_city_submission_xml([])
 
 
 @shared_task

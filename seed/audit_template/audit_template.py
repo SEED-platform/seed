@@ -102,6 +102,8 @@ class AuditTemplate:
         3. get xmls corresponding to submissions matching a view
         4. group data by cycles
         5. update cycle grouped views in cycle batches
+
+        if param view_ids is empty [], all SEED properties will be used to determine the correct PropertyView
         """
         progress_data = ProgressData(func_name="batch_get_city_submission_xml", unique_id=self.org_id)
 
@@ -467,7 +469,6 @@ def _get_city_submission_xml(org_id, city_id, custom_id_1, progress_key):
     # Update is cycle based, going to have update in cycle specific batches
 
     try:
-        logging.error(">>> A")
         results = property_view_set.batch_update_with_building_sync(xmls, org_id, view.cycle.id, progress_data.key, finish=False)
         if results.get("success"):
             message = {"message": "Successfully updated property"}

@@ -333,7 +333,7 @@ class AuditTemplateSubmissionImport(TestCase):
         assert not self.view1.state.audit_template_building_id
         assert not self.view1.state.extra_data
 
-        self.at.batch_get_city_submission_xml()
+        self.at.batch_get_city_submission_xml([])
 
         for view in [self.view1, self.view2, self.view3, self.view4]:
             view.refresh_from_db()
