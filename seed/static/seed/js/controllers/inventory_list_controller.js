@@ -1499,7 +1499,7 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
           view_ids: () => selectedViewIds
         }
       });
-    }
+    };
 
     $scope.model_actions = 'none';
     const elSelectActions = document.getElementById('select-actions');

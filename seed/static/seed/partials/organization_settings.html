@@ -257,9 +257,10 @@
           <form class="form-horizontal" role="form">
             <div class="form-group">
               <div class="col-sm-5">
-                <p translate>When checked, SEED will only import Audit Template data that has been updated more recently than SEED data. If unchecked, all data will be imported regardless of updated date</p>
-                <input type="checkbox" class="form-control" style="width: 34px" ng-model="org.audit_template_conditional_import"
-                  ng-disabled="::!auth.requires_owner" />
+                <p translate>
+                  When checked, SEED will only import Audit Template data that has been updated more recently than SEED data. If unchecked, all data will be imported regardless of updated date
+                </p>
+                <input type="checkbox" class="form-control" style="width: 34px" ng-model="org.audit_template_conditional_import" ng-disabled="::!auth.requires_owner" />
               </div>
             </div>
           </form>

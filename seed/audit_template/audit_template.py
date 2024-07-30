@@ -6,14 +6,12 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 import json
 import logging
-from datetime import datetime
 from functools import wraps
 
 import requests
 from celery import shared_task
 from dateutil import parser
 from django.conf import settings
-from django.db.models import Q
 from django.utils.timezone import get_current_timezone
 from django_celery_beat.models import CrontabSchedule, PeriodicTask
 from lxml import etree
@@ -110,7 +108,7 @@ class AuditTemplate:
         _batch_get_city_submission_xml.delay(self.org_id, self.org.audit_template_city_id, view_ids, progress_data.key)
 
         return progress_data.result(), ""
-    
+
     def get_city_submission_xml(self, custom_id_1):
         progress_data = ProgressData(func_name="get_city_submission_xml", unique_id=self.org_id)
 
@@ -168,7 +166,6 @@ class AuditTemplate:
             return None, f"Unexpected error from Audit Template: {e}"
 
         return response, ""
-
 
     def get_api_token(self):
         if not self.org.at_organization_token or not self.org.audit_template_user or not self.org.audit_template_password:

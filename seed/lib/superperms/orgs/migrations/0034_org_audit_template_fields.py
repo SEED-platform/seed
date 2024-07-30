@@ -30,8 +30,8 @@ class Migration(migrations.Migration):
             field=models.BooleanField(default=False),
         ),
         migrations.AddField(
-            model_name='organization',
-            name='audit_template_conditional_import',
+            model_name="organization",
+            name="audit_template_conditional_import",
             field=models.BooleanField(default=True),
         ),
     ]

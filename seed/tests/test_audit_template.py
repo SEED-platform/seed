@@ -5,7 +5,6 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
 import json
-import locale
 from datetime import datetime
 from unittest import mock
 
@@ -19,6 +18,7 @@ from seed.audit_template.audit_template import AuditTemplate
 from seed.landing.models import SEEDUser as User
 from seed.test_helpers.fake import FakeCycleFactory, FakePropertyFactory, FakePropertyStateFactory, FakePropertyViewFactory
 from seed.utils.organizations import create_organization
+
 # from seed.utils.encrypt import encrypt
 
 
@@ -53,7 +53,6 @@ class AuditTemplateViewTests(TestCase):
         self.good_get_submission_response.status_code = 200
         self.good_get_submission_response.text = "submission response"
         self.good_get_submission_response.content = "submission response"
-
 
     @mock.patch("requests.request")
     def test_get_submission_from_audit_template(self, mock_request):
@@ -387,5 +386,4 @@ class AuditTemplateSubmissionImport(TestCase):
         self.client.put(url, params, content_type="application/json")
 
         self.view1.refresh_from_db()
-        assert (self.view1.state.address_line_1 == "ABC Street")
-
+        assert self.view1.state.address_line_1 == "ABC Street"

@@ -23,7 +23,7 @@ angular.module('SEED.controller.data_upload_audit_template_modal', []).controlle
     Notification,
     spinner_utility,
     uploader_service,
-    organization, 
+    organization,
     cycle_id,
     upload_from_file,
     audit_template_service,
@@ -39,7 +39,7 @@ angular.module('SEED.controller.data_upload_audit_template_modal', []).controlle
     $scope.fields = {
       custom_id_1
     };
-    const city_id = $scope.organization.audit_template_city_id
+    const city_id = $scope.organization.audit_template_city_id;
     $scope.status = {};
 
     $scope.upload_from_file_and_close = (event_message, file, progress) => {
@@ -51,20 +51,20 @@ angular.module('SEED.controller.data_upload_audit_template_modal', []).controlle
       if (!$scope.fields.custom_id_1) {
         $scope.error = 'A Custom ID 1 is required.';
       } else if (!city_id) {
-        $scope.error = 'Organization city id must be set in Organization Settings'
+        $scope.error = 'Organization city id must be set in Organization Settings';
       } else {
         $scope.submit_request();
       }
     };
 
-    const handle_response = (message, error=false) => {
-      spinner_utility.hide()
+    const handle_response = (message, error = false) => {
+      spinner_utility.hide();
       if (error) {
-        Notification.error(message)
-        $scope.close()
+        Notification.error(message);
+        $scope.close();
       } else {
-        Notification.success("Successfully updated property")
-        $scope.close(true)
+        Notification.success('Successfully updated property');
+        $scope.close(true);
       }
       spinner_utility.hide();
     };
@@ -74,10 +74,10 @@ angular.module('SEED.controller.data_upload_audit_template_modal', []).controlle
       $scope.busy = true;
       spinner_utility.show();
       return audit_template_service.get_city_submission_xml_and_update($scope.organization.id, city_id, $scope.fields.custom_id_1).then((response) => {
+        const data = response.data;
         if (response.status !== 200) {
           handle_response(data.message, true);
         } else {
-          data = response.data
           uploader_service.check_progress_loop(
             data.progress_key,
             0,
@@ -89,10 +89,10 @@ angular.module('SEED.controller.data_upload_audit_template_modal', []).controlle
         }
       });
     };
-    
-    $scope.close = (reload=false) => {
+
+    $scope.close = (reload = false) => {
       $uibModalInstance.dismiss();
-      reload && $state.reload()      
+      if (reload) $state.reload();
     };
   }
 ]);

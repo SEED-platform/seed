@@ -950,8 +950,8 @@ angular.module('SEED.controller.data_upload_modal', []).controller('data_upload_
           view_ids: () => []
         }
       });
-      $scope.cancel() 
-    }
+      $scope.cancel();
+    };
 
     $scope.rowsSelected = () => $scope.gridApiAtPropertySelection && $scope.gridApiAtPropertySelection.selection.getSelectedRows().length;
 

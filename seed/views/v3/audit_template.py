@@ -13,7 +13,6 @@ from rest_framework.decorators import action
 
 from seed.audit_template.audit_template import AuditTemplate
 from seed.lib.superperms.orgs.decorators import has_perm_class
-from seed.models import Cycle
 from seed.utils.api import OrgMixin
 from seed.utils.api_schema import AutoSchemaHelper
 
@@ -62,7 +61,6 @@ class AuditTemplateViewSet(viewsets.ViewSet, OrgMixin):
         response2.headers["Content-Disposition"] = f'attachment; filename="at_submission_{pk}.pdf"'
         return response2
 
-
     def validate_properties(self, properties):
         valid = [bool(properties)]
         for property in properties:
@@ -80,7 +78,6 @@ class AuditTemplateViewSet(viewsets.ViewSet, OrgMixin):
             )
         else:
             return True, ""
-
 
     @swagger_auto_schema(
         manual_parameters=[
@@ -123,12 +120,12 @@ class AuditTemplateViewSet(viewsets.ViewSet, OrgMixin):
         return JsonResponse(progress_data)
 
     @swagger_auto_schema(
-        manual_parameters=[AutoSchemaHelper.query_org_id_field()], 
-        request_body=AutoSchemaHelper.schema_factory({"city_id": "integer", "custom_id_1": "string"})
+        manual_parameters=[AutoSchemaHelper.query_org_id_field()],
+        request_body=AutoSchemaHelper.schema_factory({"city_id": "integer", "custom_id_1": "string"}),
     )
     @has_perm_class("can_modify_data")
     @action(detail=False, methods=["PUT"])
-    def get_city_submission_xml(self, request):        
+    def get_city_submission_xml(self, request):
         """
         Import from Audit Template using the submissions endpoint for a given city
         Property are updated with returned xml using custom_id_1 as matching criteria
