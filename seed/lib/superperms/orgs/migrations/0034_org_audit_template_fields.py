@@ -29,4 +29,9 @@ class Migration(migrations.Migration):
             name="audit_template_sync_enabled",
             field=models.BooleanField(default=False),
         ),
+        migrations.AddField(
+            model_name='organization',
+            name='audit_template_conditional_import',
+            field=models.BooleanField(default=True),
+        ),
     ]

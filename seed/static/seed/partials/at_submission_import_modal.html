@@ -4,6 +4,10 @@
 
 <div class="modal-body no_bottom_padding">
   <div style="padding-bottom: 20px" ng-if="!status.complete">Update inventory with Audit Template Submissions for City {$ org.audit_template_city_id $}</div>
+  <div style="padding-bottom: 20px" ng-if="!status.complete" translate>Import setting: 
+    <strong ng-if="org.audit_template_conditional_import" class="label label-info" translate>MORE RECENT DATA</strong>
+    <strong ng-if="!org.audit_template_conditional_import" class="label label-default" translate>ALL DATA</strong>
+  </div>
   <div style="padding-bottom: 20px" ng-if="status.complete">Results for City {$ org.audit_template_city_id $}</div>
 
   <div class="progress_bar_container" ng-show="status.in_progress">
@@ -22,6 +26,6 @@
 
 <div class="modal-footer">
   <button type="button" class="btn btn-default" ng-show="!status.complete" ng-click="close()" translate>Cancel</button>
-  <button type="submit" class="btn btn-primary" ng-show="!status.complete" ng-click="get_submissions()">Sync</button>
+  <button type="submit" class="btn btn-primary" ng-show="!status.complete" ng-click="get_submissions()">Import</button>
   <button type="button" class="btn btn-primary" ng-show="status.complete" ng-click="close()">Close</button>
 </div>

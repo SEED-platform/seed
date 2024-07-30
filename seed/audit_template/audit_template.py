@@ -473,22 +473,24 @@ def _batch_get_city_submission_xml(org_id, city_id, view_ids, progress_key):
     # filtering by custom_id and 'updated_at' will require looping through results to query views
 
     property_views = PropertyView.objects.filter(id__in=view_ids) if view_ids else PropertyView.objects
-    logging.error(">>> %s", property_views.count())
 
     xml_data_by_cycle = {}
     for sub in submissions:
         custom_id_1 = sub["tax_id"]
         created_at = parser.parse(sub["created_at"])
-        updated_at = parser.parse(sub["updated_at"])
 
-        view = property_views.filter(
-            property__organization=org_id,
-            state__custom_id_1=custom_id_1,
-            cycle__start__lte=created_at,
-            cycle__end__gte=created_at,
-            # Do we only update old views?
-            # state__updated__lte=updated_at,
-        ).first()
+        filter_criteria = {
+            "property__organization": org_id,
+            "state__custom_id_1": custom_id_1,
+            "cycle__start__lte": created_at,
+            "cycle__end__gte": created_at,
+        }
+
+        if org.audit_template_conditional_import:
+            updated_at = parser.parse(sub["updated_at"])
+            filter_criteria["state__updated__lte"] = updated_at
+
+        view = property_views.filter(**filter_criteria).first()
 
         progress_data.step("Getting XML for submissions...")
         if view:
