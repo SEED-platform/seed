@@ -200,7 +200,7 @@ class AuditTemplate:
 
     @require_token
     def batch_export_to_audit_template(self, view_ids):
-        progress_data = ProgressData(func_name="batch_export_to_audit_template", unique_id=view_ids[0])
+        progress_data = ProgressData(func_name="batch_export_to_audit_template", unique_id=self.org_id)
         progress_data.total = len(view_ids)
         progress_data.save()
 

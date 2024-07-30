@@ -102,7 +102,11 @@ class AuditTemplateViewSet(viewsets.ViewSet, OrgMixin):
         return JsonResponse(progress_data)
 
     @swagger_auto_schema(
-        manual_parameters=[AutoSchemaHelper.query_org_id_field()], request_body=AutoSchemaHelper.schema_factory({"city_id": "integer"})
+        manual_parameters=[AutoSchemaHelper.query_org_id_field()],
+        request_body=AutoSchemaHelper.schema_factory(
+            {"city_id": "integer", "view_ids": ["integer"]},
+            description="if view_ids is empty [] all SEED properties will be used to determine the correct PropertyView",
+        ),
     )
     @has_perm_class("can_modify_data")
     @action(detail=False, methods=["PUT"])
@@ -135,7 +139,7 @@ class AuditTemplateViewSet(viewsets.ViewSet, OrgMixin):
             return JsonResponse({"success": False, "message": "City ID argument required"}, status=400)
         custom_id_1 = request.data.get("custom_id_1")
         if not custom_id_1:
-            return JsonResponse({"success": False, "message": "Custom ID argument required"}, stauts=400)
+            return JsonResponse({"success": False, "message": "Custom ID argument required"}, status=400)
 
         at = AuditTemplate(self.get_organization(request))
         progress_data, message = at.get_city_submission_xml(custom_id_1)

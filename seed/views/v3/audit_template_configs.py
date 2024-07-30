@@ -117,17 +117,17 @@ class AuditTemplateConfigViewSet(viewsets.ViewSet, OrgMixin):
         ]
     )
     @has_perm_class("requires_owner")
-    def delete(self, request, pk):
+    def destroy(self, request, pk):
         org_id = self.get_organization(self.request)
         org = Organization.objects.get(pk=org_id)
         try:
             atc = AuditTemplateConfig.objects.get(pk=pk)
             if org.audit_template_sync_enabled:
-                toggle_audit_template_sync()
+                toggle_audit_template_sync(org.audit_template_sync_enabled, org.id)
             atc.delete()
 
         except AuditTemplateConfig.DoesNotExist:
-            return JsonResponse({"stauts": "error", "message": "No such resource."})
+            return JsonResponse({"status": "error", "message": "No such resource."})
 
         return HttpResponse(status=204)
 

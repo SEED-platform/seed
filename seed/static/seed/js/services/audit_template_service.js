@@ -50,11 +50,6 @@ angular.module('SEED.service.audit_template', []).factory('audit_template_servic
       .then((response) => response.data.data)
       .catch((response) => response.data);
 
-    audit_template_factory.delete_audit_template_config = (org_id, config_id) => $http
-      .delete(`/api/v3/audit_template_configs/${config_id}/?organization_id=${org_id}`)
-      .then((response) => response.data)
-      .catch((response) => response.data);
-
     return audit_template_factory;
   }
 ]);
