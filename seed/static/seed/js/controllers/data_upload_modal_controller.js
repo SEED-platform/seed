@@ -953,61 +953,6 @@ angular.module('SEED.controller.data_upload_modal', []).controller('data_upload_
       $scope.cancel() 
     }
 
-    const setAtPropertyGrid = () => {
-      $scope.atPropertySelectGridOptions = {
-        data: $scope.at_building_data.map((building) => ({
-          audit_template_building_id: building.audit_template_building_id,
-          name: building.name,
-          email: building.email,
-          updated_at: building.updated_at,
-          property_view: building.property_view
-        })),
-        columnDefs: [
-          { field: 'audit_template_building_id', displayName: 'Audit Template Building ID' },
-          { field: 'name', displayName: 'Name' },
-          { field: 'email', displayName: 'Owner Email' },
-          { field: 'updated_at', displayName: 'Updated At' },
-          { field: 'property_view', visible: false }
-        ],
-        enableColumnMenus: false,
-        enableColumnResizing: true,
-        enableFiltering: true,
-        enableSorting: true,
-        enableHorizontalScrollbar: uiGridConstants.scrollbars.WHEN_NEEDED,
-        enableVerticalScrollbar: uiGridConstants.scrollbars.WHEN_NEEDED,
-        minRowsToShow: Math.min($scope.at_building_data.length, 25),
-        rowHeight: '30px',
-        onRegisterApi: (gridApi) => {
-          $scope.gridApiAtPropertySelection = gridApi;
-        }
-      };
-    };
-
-    $scope.update_buildings_from_audit_template = () => {
-      $scope.show_loading = true;
-      const selected_property_views = $scope.gridApiAtPropertySelection.selection
-        .getSelectedRows()
-        .map((row) => row.property_view)
-        .sort();
-      const selected_data = $scope.at_building_data.filter((building) => selected_property_views.includes(building.property_view));
-      audit_template_service.batch_get_building_xml_and_update($scope.organization.id, $scope.selectedCycle.id, selected_data).then(({ progress_key }) => {
-        uploader_service.check_progress_loop(
-          progress_key,
-          0,
-          1,
-          (summary) => {
-            $scope.show_loading = false;
-            $scope.at_upload_summary = summary.message;
-            $scope.step.number = 19;
-          },
-          () => {
-            // do nothing
-          },
-          $scope.uploader
-        );
-      });
-    };
-
     $scope.rowsSelected = () => $scope.gridApiAtPropertySelection && $scope.gridApiAtPropertySelection.selection.getSelectedRows().length;
 
     /**
