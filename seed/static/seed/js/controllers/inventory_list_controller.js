@@ -17,11 +17,14 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
   'data_quality_service',
   'geocode_service',
   'user_service',
+  'inventory_group_service',
   'derived_columns_service',
   'Notification',
   'cycles',
   'profiles',
   'current_profile',
+  'inventory_groups',
+  'inventory_group_tab',
   'filter_groups',
   'current_filter_group',
   'filter_groups_service',
@@ -52,11 +55,14 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
     data_quality_service,
     geocode_service,
     user_service,
+    inventory_group_service,
     derived_columns_service,
     Notification,
     cycles,
     profiles,
     current_profile,
+    inventory_groups,
+    inventory_group_tab,
     filter_groups,
     current_filter_group,
     filter_groups_service,
@@ -92,6 +98,17 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
 
     // $scope.menu.user.is_ali_root not always populated (on redirects); force it
     $scope.menu.user.is_ali_root = window.SEED.is_ali_root;
+
+    $scope.inventory_groups = inventory_groups;
+    $scope.inventory_group_tab = inventory_group_tab;
+    $scope.change_tab = function (id, inv_type) {
+    // Switches to new tab (either viewing all or viewing by group)
+      $scope.inventory_group_tab = id;
+      if ($scope.inventory_type === (inv_type === 'Property' ? 'properties' : 'taxlots')) {
+        $scope.load_inventory(1);
+      }
+      inventory_service.save_last_inventory_group(id);
+    };
 
     // set up i18n
     //
@@ -634,6 +651,25 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
       });
     };
 
+     /**
+       Opens the update building groups modal.
+     */
+    $scope.open_update_inventory_groups_modal = function (selectedViewIds) {
+      var modalInstance = $uibModal.open({
+        templateUrl: urls.static_url + 'seed/partials/update_inventory_groups_modal.html',
+        controller: 'update_inventory_groups_modal_controller',
+        resolve: {
+          inventory_ids: () => selectedViewIds,
+          inventory_type: () => $scope.inventory_type,
+          org_id: () => $scope.organization.id,
+        }
+      });
+      modalInstance.result.then(function () {
+        //dialog was closed with 'Done' button.
+        get_inventory_groups();
+      });
+    };
+
     $scope.open_merge_modal = (selectedViewIds) => {
       spinner_utility.show();
       selectedViewIds.reverse();
@@ -689,7 +725,7 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
       modalInstance.result.then(() => {
         // dialog was closed with 'Merge' button.
         $scope.selectedOrder = [];
-        $scope.load_inventory(1);
+        get_inventory_groups(); // refreshes groups, then runs load_inventory(1), which will update the group's ids correctly
       });
     };
 
@@ -1174,6 +1210,16 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
         exclude_ids = _.union.apply(null, _.map($scope.selected_exclude_labels, 'is_applied'));
       }
 
+      if ($scope.inventory_group_tab != -1) {
+        var group_ids = _.filter($scope.inventory_groups, {'id': $scope.inventory_group_tab})[0].member_list;
+        if (typeof include_ids !== 'undefined' && group_ids.length && include_ids[0] != 0) { // if there's a sort
+          include_ids = _.intersection(include_ids, group_ids);
+        } else if (!group_ids.length) {
+          include_ids = [0];
+        } else if (typeof include_ids === 'undefined') { // if there's no sort & there are group_ids
+          include_ids = group_ids;
+        }
+      }
       return fn(
         page,
         chunk,
@@ -1296,6 +1342,13 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
       inventory_service.save_last_cycle(cycle.id);
       $scope.cycle.selected_cycle = cycle;
       get_and_filter_by_labels();
+    };
+
+    var get_inventory_groups = function () {
+      inventory_group_service.get_groups_for_inventory($stateParams.inventory_type, []).then(function (inventory_groups) {
+        $scope.inventory_groups = inventory_groups;
+        $scope.load_inventory(1);
+      });
     };
 
     $scope.open_ubid_decode_modal = (selectedViewIds) => {
@@ -1576,6 +1629,9 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
           break;
         case 'update_salesforce':
           $scope.update_salesforce(selectedViewIds);
+          break;
+        case 'open_update_inventory_groups_modal':
+          $scope.open_update_inventory_groups_modal(selectedViewIds);
           break;
         default:
           console.error('Unknown action:', elSelectActions.value, 'Update "run_action()"');
