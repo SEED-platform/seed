@@ -968,9 +968,9 @@ class Column(models.Model):
                         "from_field": row[0],
                         "to_table_name": row[1],
                         "to_field": row[2],
-                        # "to_display_name": row[3],
-                        # "to_data_type": row[4],
-                        # "to_unit_type": row[5],
+                        "to_display_name": row[3],
+                        "to_data_type": row[4],
+                        "to_unit_type": row[5],
                     }
                     mappings.append(data)
         else:
