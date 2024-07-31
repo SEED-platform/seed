@@ -1163,22 +1163,6 @@
                 return organization_service.get_organization(organization_id);
               }
             ],
-            property_column_names: [
-              '$stateParams',
-              'inventory_service',
-              ($stateParams, inventory_service) => {
-                const { organization_id } = $stateParams;
-                return inventory_service.get_property_column_names_and_ids_for_org(organization_id);
-              }
-            ],
-            taxlot_column_names: [
-              '$stateParams',
-              'inventory_service',
-              ($stateParams, inventory_service) => {
-                const { organization_id } = $stateParams;
-                return inventory_service.get_taxlot_column_names_for_org(organization_id);
-              }
-            ],
             property_columns: [
               '$stateParams',
               'inventory_service',
@@ -1236,11 +1220,6 @@
                 );
               }
             ],
-            property_columns: [
-              'inventory_service',
-              'user_service',
-              (inventory_service) => inventory_service.get_property_columns()
-            ]
           }
         })
         .state({

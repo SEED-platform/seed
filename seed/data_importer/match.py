@@ -557,7 +557,7 @@ def states_to_views(unmatched_state_ids, org, access_level_instance, cycle, Stat
     """
     table_name = StateClass.__name__
 
-    sub_progress_data = update_sub_progress_total(100, sub_progress_key)
+    # sub_progress_data = update_sub_progress_total(100, sub_progress_key)
 
     unmatched_state_ids = set(unmatched_state_ids)
 
@@ -619,11 +619,11 @@ def states_to_views(unmatched_state_ids, org, access_level_instance, cycle, Stat
         match_lookup,
         org,
         promote_state_ids,
+        StateClass,
         state_lookup,
         sub_progress_key,
-        StateClass,
-        tuple_values,
         table_name,
+        tuple_values,
         unmatched_states,
         ViewClass,
     )
@@ -644,11 +644,11 @@ def merge_unmatched_states(
         match_lookup,
         org,
         promote_state_ids,
+        StateClass,
         state_lookup,
         sub_progress_key,
-        StateClass,
-        tuple_values,
         table_name,
+        tuple_values,
         unmatched_states,
         ViewClass,
     ):
@@ -681,7 +681,8 @@ def merge_unmatched_states(
             existing_state_ids = [state["id"] for state in sorted(existing_state_matches, key=lambda state: state["updated"])]
             # The following merge action ignores merge protection and prioritizes -States by most recent AuditLog
             merged_state = merge_states_with_views(existing_state_ids, org.id, "System Match", StateClass)
-            merge_state_pairs.append((merged_state, state))
+            if merged_state:
+                merge_state_pairs.append((merged_state, state))
         elif count == 1:
             merge_state_pairs.append((state_lookup[existing_state_matches[0]["id"]], state))
         else:

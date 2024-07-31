@@ -8,13 +8,10 @@ angular.module('SEED.controller.organization_settings', []).controller('organiza
   'urls',
   'organization_payload',
   'auth_payload',
-  'property_columns',
   'analyses_service',
   'organization_service',
   'salesforce_mapping_service',
   'salesforce_config_service',
-  'property_column_names',
-  'taxlot_column_names',
   'property_columns',
   'taxlot_columns',
   'labels_payload',
@@ -30,13 +27,10 @@ angular.module('SEED.controller.organization_settings', []).controller('organiza
     urls,
     organization_payload,
     auth_payload,
-    property_columns,
     analyses_service,
     organization_service,
     salesforce_mapping_service,
     salesforce_config_service,
-    property_column_names,
-    taxlot_column_names,
     property_columns,
     taxlot_columns,
     labels_payload,
@@ -56,8 +50,6 @@ angular.module('SEED.controller.organization_settings', []).controller('organiza
     $scope.timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
     $scope.auth = auth_payload.auth;
-    $scope.property_column_names = property_column_names;
-    $scope.taxlot_column_names = taxlot_column_names;
     $scope.property_columns = property_columns;
     $scope.taxlot_columns = taxlot_columns;
     $scope.salesforce_mappings = salesforce_mappings_payload;
