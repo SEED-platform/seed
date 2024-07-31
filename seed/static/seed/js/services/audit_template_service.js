@@ -36,14 +36,8 @@ angular.module('SEED.service.audit_template', []).factory('audit_template_servic
 
     audit_template_factory.create_audit_template_config = (org_id, data) => $http
       .post(`/api/v3/audit_template_configs/?organization_id=${org_id}`, data)
-      .then((response) => {
-        console.log('service', response);
-        return response.data.data;
-      })
-      .catch((response) => {
-        console.log('service fail', response);
-        return response.data.data;
-      });
+      .then((response) => response.data.data)
+      .catch((response) => response.data.data);
 
     audit_template_factory.update_audit_template_config = (org_id, data) => $http
       .put(`/api/v3/audit_template_configs/${data.id}/?organization_id=${org_id}`, data)

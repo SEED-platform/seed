@@ -258,7 +258,7 @@
             <div class="form-group">
               <div class="col-sm-5">
                 <p translate>
-                  When checked, SEED will only import Audit Template data that has been updated more recently than SEED data. If unchecked, all data will be imported regardless of updated date
+                  When checked, SEED will only import Audit Template data that has been updated more recently than SEED data. If unchecked, all data will be imported regardless of updated date.
                 </p>
                 <input type="checkbox" class="form-control" style="width: 34px" ng-model="org.audit_template_conditional_import" ng-disabled="::!auth.requires_owner" />
               </div>
@@ -269,13 +269,13 @@
 
       <div class="section_content_container">
         <div class="section_content with_padding">
-          <button class="btn btn-info" style="margin-top: 20px" type="button" ng-click="get_city_submission_data()">Import Submissions</button>
+          <button class="btn btn-info" style="margin-top: 20px" type="button" ng-click="get_city_submission_data()" translate>Import Submissions</button>
         </div>
       </div>
 
       <div class="section_header_container has_btm_margin">
         <div class="section_header">
-          <h2><i class="fa-solid fa-clock"></i> Schedule Weekly Update</h2>
+          <h2><i class="fa-solid fa-clock"></i> {$ 'Schedule Weekly Update' | translate $}</h2>
         </div>
       </div>
 
@@ -297,7 +297,7 @@
           <form class="form-horizontal" role="form">
             <div class="form-group">
               <div class="col-sm-5">
-                <div>If you would like to automatically update inventory with Audit Template submission data for the selected Audit Template City ID, configure fields below.</div>
+                <div translate>If you would like to automatically update inventory with Audit Template submission data for the selected Audit Template City ID, configure fields below.</div>
                 <div style="margin: 10px; color: gray"><i>timezone: {$ timezone $}</i></div>
                 <table class="time-table">
                   <thead>
