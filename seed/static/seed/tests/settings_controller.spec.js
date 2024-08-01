@@ -81,8 +81,8 @@ describe('controller: organization_settings_controller', () => {
           unique_benchmark_id_fieldname: 'Salesforce_Benchmark_ID__c'
         }
       ],
-      property_columns: { column_name: 'test', display_name: 'test' },
-      taxlot_columns: { column_name: 'test', display_name: 'test' }
+      property_columns: [],
+      taxlot_columns: []
     });
   }
 
