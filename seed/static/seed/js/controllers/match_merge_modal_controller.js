@@ -27,6 +27,7 @@ angular.module('SEED.controller.match_merge_modal', []).controller('match_merge_
     $scope.org = org;
     $scope.cycles = org.cycles;
     $scope.selected_cycle = {};
+    $scope.selected_cycle = $scope.cycles[0] || {};
     $scope.property_ubid_matching = property_ubid_matching;
     $scope.taxlot_ubid_matching = taxlot_ubid_matching;
 
@@ -50,16 +51,13 @@ angular.module('SEED.controller.match_merge_modal', []).controller('match_merge_
             $scope.close();
           },
           () => {
-            console.log('failure');
+            Notification.error('Unexpected Error');
           },
           $scope.uploader
         );
       });
     };
 
-    $scope.cycle_change = () => {
-      console.log($scope.selected_cycle);
-    };
     $scope.close = () => {
       $uibModalInstance.close();
     };

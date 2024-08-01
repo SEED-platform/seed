@@ -13,14 +13,7 @@
 
   <div class="form-group cycle-select-container" ng-show="!uploader.in_progress">
     <label for="cycle-select">Select Cycle</label>
-    <select
-      id="cycle-select"
-      class="form-control"
-      ng-model="selected_cycle"
-      ng-options="cycle.name for cycle in cycles"
-      ng-change="cycle_change()"
-      placeholder="{$:: 'Cycle Name' | translate $}"
-    ></select>
+    <select id="cycle-select" class="form-control" ng-model="selected_cycle" ng-options="cycle.name for cycle in cycles" placeholder="{$:: 'Cycle Name' | translate $}"></select>
   </div>
   <div ng-show="uploader.in_progress" style="margin: 20px 0">Selected Cycle: <strong>{$ selected_cycle.name $}</strong></div>
 
@@ -32,5 +25,5 @@
 </div>
 <div class="modal-footer">
   <button type="button" class="btn btn-primary" ng-click="close()" autofocus ng-disabled="uploader.in_progress" translate>Close</button>
-  <button type="button" class="btn btn-warning" ng-click="trigger_match_merge()" ng-disabled="uploader.in_progress" translate>Match and Merge</button>
+  <button type="button" class="btn btn-warning" ng-click="trigger_match_merge()" ng-disabled="uploader.in_progress || !selected_cycle.cycle_id" translate>Match and Merge</button>
 </div>
