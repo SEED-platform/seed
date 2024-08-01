@@ -82,7 +82,7 @@ describe('controller: organization_settings_controller', () => {
         }
       ],
       property_columns: { column_name: 'test', display_name: 'test' },
-      taxlot_columns: { column_name: 'test', display_name: 'test' },
+      taxlot_columns: { column_name: 'test', display_name: 'test' }
     });
   }
 

@@ -1219,7 +1219,7 @@
                   (data) => $q.reject(data.message)
                 );
               }
-            ],
+            ]
           }
         })
         .state({
