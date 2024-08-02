@@ -23,6 +23,7 @@ from seed.models import (
     MERGE_STATE_DELETE,
     MERGE_STATE_MERGED,
     MERGE_STATE_NEW,
+    InventoryGroupMapping,
     Note,
     PropertyView,
     StatusLabel,
@@ -277,6 +278,8 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
         for note in notes:
             note.taxlot_view = None
 
+        groupings = set(old_view.taxlot.inventorygroupmapping_set.all().values_list("group_id", flat=True))
+
         merged_state = old_view.state
         if merged_state.data_state != DATA_STATE_MATCHING or merged_state.merge_state != MERGE_STATE_MERGED:
             return {"status": "error", "message": f"taxlot view with id {pk} is not a merged taxlot view"}
@@ -356,6 +359,10 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
             ids.append(note.id)
             # Correct the created and updated times to match the original note
             Note.objects.filter(id__in=ids).update(created=created, updated=updated)
+
+        for group in list(groupings):
+            InventoryGroupMapping(tax_lot=new_view1.taxlot, group_id=group).save()
+            InventoryGroupMapping(tax_lot=new_view2.taxlot, group_id=group).save()
 
         for paired_view_id in paired_view_ids:
             TaxLotProperty(primary=True, cycle_id=cycle_id, taxlot_view_id=new_view1.id, property_view_id=paired_view_id).save()
