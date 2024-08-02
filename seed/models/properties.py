@@ -13,7 +13,6 @@ from django.conf import settings
 from django.contrib.gis.db import models as geomodels
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError, models, transaction
-from django.db.models import Case, Value, When
 from django.db.models.signals import m2m_changed, post_save, pre_delete, pre_save
 from django.dispatch import receiver
 from django.forms.models import model_to_dict
@@ -850,29 +849,20 @@ def post_save_property_state(sender, **kwargs):
     """
     state: PropertyState = kwargs.get("instance")
 
-    ubid = getattr(state, "ubid")
-    if not ubid:
-        state.ubidmodel_set.filter(preferred=True).update(preferred=False)
+    ubids = getattr(state, "ubid")
+    if not ubids:
         return
 
-    ubid_model = state.ubidmodel_set.filter(ubid=ubid)
-    if not ubid_model.exists():
-        # First set all others to non-preferred without calling save
-        state.ubidmodel_set.filter(preferred=True).update(preferred=False)
-        # Add UBID and set as preferred
-        ubid_model = state.ubidmodel_set.create(
-            preferred=True,
-            ubid=ubid,
-        )
-        # Update lat/long/centroid
-        decode_unique_ids(state)
-    elif ubid_model.filter(preferred=False).exists():
-        state.ubidmodel_set.update(
-            preferred=Case(
-                When(ubid=ubid, then=Value(True)),
-                default=Value(False),
-            )
-        )
+    # Allow ';' separated ubids
+    ubids = ubids.split(";")
+    state.ubidmodel_set.filter(preferred=True).update(preferred=False)
+    for idx, ubid in enumerate(ubids):
+        # trim leading/trailing spaces
+        ubid_stripped = ubid.strip()
+        is_last = idx == len(ubids) - 1
+        _, created = state.ubidmodel_set.update_or_create(ubid=ubid_stripped, defaults={"preferred": is_last})
+        if created:
+            decode_unique_ids(state)
 
 
 class PropertyView(models.Model):
