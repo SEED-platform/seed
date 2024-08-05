@@ -973,7 +973,7 @@ class OrganizationViewSet(viewsets.ViewSet):
 
         results = []
         for i in range(len(bins) - 1):
-            bin = f"{bins[i]} - {bins[i+1]}"
+            bin = f"{round(bins[i], 2)} - {round(bins[i+1], 2)}"
             values = np.array(xs)[np.where(binplace == i + 1)]
             x = sum(values) if count else np.average(values).item()
             results.append({"y": bin, "x": None if np.isnan(x) else x, "yr_e": yr_e})
