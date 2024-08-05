@@ -137,7 +137,7 @@ angular.module('SEED.controller.inventory_reports', []).controller('inventory_re
         varName: 'Count',
         axisLabel: 'Count'
       },
-      ..._.map(organization_payload.organization.default_reports_x_axis_options, (column) => ({
+      ..._.map(organization_payload.organization.default_reports_y_axis_options, (column) => ({
         name: $translate.instant(column.display_name), // short name for variable, used in pulldown
         label: $translate.instant(column.display_name), // full name for variable
         varName: column.column_name, // name of variable, to be sent to server
@@ -147,7 +147,7 @@ angular.module('SEED.controller.inventory_reports', []).controller('inventory_re
       }))
     ];
 
-    $scope.xAxisVars = _.map(organization_payload.organization.default_reports_y_axis_options, (column) => ({
+    $scope.xAxisVars = _.map(organization_payload.organization.default_reports_x_axis_options, (column) => ({
       name: $translate.instant(column.display_name), // short name for variable, used in pulldown
       label: $translate.instant(column.display_name), // full name for variable
       varName: column.column_name, // name of variable, to be sent to server
@@ -272,8 +272,8 @@ angular.module('SEED.controller.inventory_reports', []).controller('inventory_re
                   return ctx[0]?.raw.display_name;
                 },
                 label: (ctx) => [
-                  `${$scope.xAxisSelectedItem.label}: ${type === 'bar' ? ctx.raw : ctx.parsed.y}`,
-                  `${$scope.yAxisSelectedItem.label}: ${type === 'bar' ? ctx.label : ctx.parsed.x}`
+                  `${$scope.xAxisSelectedItem.label}: ${type === 'bar' ? ctx.label : ctx.parsed.x}`,
+                  `${$scope.yAxisSelectedItem.label}: ${type === 'bar' ? ctx.raw : ctx.parsed.y}`
                 ]
               }
             }
@@ -529,7 +529,7 @@ angular.module('SEED.controller.inventory_reports', []).controller('inventory_re
             };
 
             // new agg chart
-            const the_data = _.orderBy($scope.aggChartData.chartData, ['y'], ['desc']);
+            const the_data = _.orderBy($scope.aggChartData.chartData, ['y'], ['acs']);
             $scope.barChart.data.labels = the_data.map((a) => a.y);
             $scope.barChart.data.datasets[0].data = the_data.map((a) => a.x);
             // add the colors to the datapoints, need to create a hash map first

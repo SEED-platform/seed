@@ -237,7 +237,7 @@ angular.module('SEED.controller.organization_settings', []).controller('organiza
     const filtered_columns = _.filter($scope.columns, (column) => _.includes(acceptable_column_types, column.data_type));
 
     $scope.selected_x_columns = $scope.org.default_reports_x_axis_options.map((c) => c.id);
-    $scope.available_x_columns = () => filtered_columns.filter(({ id }) => !$scope.selected_x_columns.includes(id));
+    $scope.available_x_columns = () => $scope.columns.filter(({ id }) => !$scope.selected_x_columns.includes(id));
 
     $scope.add_x_column = (x_column_id) => {
       $scope.selected_x_columns.push(x_column_id);
@@ -249,7 +249,7 @@ angular.module('SEED.controller.organization_settings', []).controller('organiza
     };
 
     $scope.selected_y_columns = $scope.org.default_reports_y_axis_options.map((c) => c.id);
-    $scope.available_y_columns = () => $scope.columns.filter(({ id }) => !$scope.selected_y_columns.includes(id));
+    $scope.available_y_columns = () => filtered_columns.filter(({ id }) => !$scope.selected_y_columns.includes(id));
 
     $scope.add_y_column = (y_column_id) => {
       $scope.selected_y_columns.push(y_column_id);
