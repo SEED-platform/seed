@@ -456,9 +456,9 @@ angular.module('SEED.controller.inventory_reports', []).controller('inventory_re
             $scope.chartData = {
               series: $scope.chartSeries,
               chartData: data.chart_data,
-              xAxisTitle: $scope.xAxisSelectedItem.axisLabel,
+              xAxisTitle: $scope.xAxisSelectedItem.label,
               xAxisVarName: $scope.xAxisSelectedItem.varName,
-              yAxisTitle: $scope.yAxisSelectedItem.axisLabel,
+              yAxisTitle: $scope.yAxisSelectedItem.label,
               yAxisVarName: $scope.yAxisSelectedItem.varName,
               yAxisType: $scope.yAxisSelectedItem.axisType,
               yAxisMin: $scope.yAxisSelectedItem.axisMin,
