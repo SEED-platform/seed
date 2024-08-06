@@ -35,12 +35,12 @@ angular.module('SEED.controller.match_merge_modal', []).controller('match_merge_
       progress: 0,
       complete: false,
       status_message: ''
-    }
+    };
 
     $scope.uploader = {
       in_progress: false,
-      properties: {...uploader_obj},
-      taxlots: {...uploader_obj}
+      properties: { ...uploader_obj },
+      taxlots: { ...uploader_obj }
     };
 
     spinner_utility.hide();
