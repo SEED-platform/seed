@@ -1063,10 +1063,9 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
         except (Organization.DoesNotExist, Cycle.DoesNotExist):
             return JsonResponse({"error": "No such resource.b"})
 
-        progress_data = ProgressData(func_name="match_progress", unique_id=org_id)
-        progress_key = progress_data.key
+        progress_data_p = ProgressData(func_name="match_progress_properties", unique_id=org_id)
+        progress_data_tl = ProgressData(func_name="match_progress_taxlots", unique_id=org_id)
+        match_merge_cycle_inventory.delay(org.id, cycle.id, access_level_instance.id, "PropertyState", progress_data_p.key)
+        match_merge_cycle_inventory.delay(org.id, cycle.id, access_level_instance.id, "TaxLotState", progress_data_tl.key)
 
-        match_merge_cycle_inventory.delay(org.id, cycle.id, access_level_instance.id, "PropertyState", progress_key)
-        match_merge_cycle_inventory.delay(org.id, cycle.id, access_level_instance.id, "TaxLotState", progress_key)
-
-        return JsonResponse(progress_data.result())
+        return JsonResponse({"properties": progress_data_p.result(), "taxlots": progress_data_tl.result()})

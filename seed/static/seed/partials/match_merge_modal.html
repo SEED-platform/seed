@@ -18,9 +18,18 @@
   <div ng-show="uploader.in_progress" style="margin: 20px 0">Selected Cycle: <strong>{$ selected_cycle.name $}</strong></div>
 
   <div class="progress_bar_container" ng-if="uploader.in_progress">
-    <div class="progress_bar_copy_top">Progress:</div>
-    <uib-progressbar class="progress-striped active" value="uploader.progress" type="success"></uib-progressbar>
-    <div class="progress_bar_copy_bottom">{$ uploader.progress | number:0 $}% {$:: 'Complete' | translate $} {$ uploader.status_message ? ': ' + uploader.status_message : '' $}</div>
+    <div class="progress_bar_copy_top">Properties:</div>
+    <uib-progressbar class="progress-striped active" value="uploader.properties.progress" type="success"></uib-progressbar>
+    <div class="progress_bar_copy_bottom">
+      {$ uploader.properties.progress | number:0 $}% {$:: 'Complete' | translate $} {$ uploader.properties.status_message ? ': ' + uploader.properties.status_message : '' $}
+    </div>
+  </div>
+  <div class="progress_bar_container sub_progress" ng-if="uploader.in_progress">
+    <div class="progress_bar_copy_top">Taxlots:</div>
+    <uib-progressbar class="progress-striped active" value="uploader.taxlots.progress" type="success"></uib-progressbar>
+    <div class="progress_bar_copy_bottom">
+      {$ uploader.taxlots.progress | number:0 $}% {$:: 'Complete' | translate $} {$ uploader.taxlots.status_message ? ': ' + uploader.taxlots.status_message : '' $}
+    </div>
   </div>
 </div>
 <div class="modal-footer">
