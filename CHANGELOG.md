@@ -1,3 +1,48 @@
+# SEED Version 3.0.0
+
+<!-- Release notes generated using configuration in .github/release.yml at 3.0.0-release-prep -->
+
+## What's Changed
+### New Features 🎉
+* Docker upgrade database by @dhaley in https://github.com/SEED-platform/seed/pull/4650
+* Update portfolio summary by @perryr16 in https://github.com/SEED-platform/seed/pull/4666
+### Improvements 📈
+* Speed up derived columns by @haneslinger in https://github.com/SEED-platform/seed/pull/4630
+* Speed up get labels by @haneslinger in https://github.com/SEED-platform/seed/pull/4619
+* Speed up taxlot property serializer by @haneslinger in https://github.com/SEED-platform/seed/pull/4621
+* Speed up get column list profile by @haneslinger in https://github.com/SEED-platform/seed/pull/4628
+* Don't call get-inventory twice on cycle update by @haneslinger in https://github.com/SEED-platform/seed/pull/4607
+* Speed up column list by @haneslinger in https://github.com/SEED-platform/seed/pull/4631
+* Updated homepage background by @axelstudios in https://github.com/SEED-platform/seed/pull/4643
+* Speed up get brief organization by @haneslinger in https://github.com/SEED-platform/seed/pull/4633
+* Speed up stats by @haneslinger in https://github.com/SEED-platform/seed/pull/4636
+* Improve Column list profile creation by @haneslinger in https://github.com/SEED-platform/seed/pull/4646
+* Speed up ali tree by @haneslinger in https://github.com/SEED-platform/seed/pull/4654
+* Comprehensive performance improvements by @axelstudios in https://github.com/SEED-platform/seed/pull/4669
+* Nginx brotli compression by @axelstudios in https://github.com/SEED-platform/seed/pull/4686
+* Fix timeline user display by @haneslinger in https://github.com/SEED-platform/seed/pull/4705
+* Major import performance improvements by @axelstudios in https://github.com/SEED-platform/seed/pull/4718
+### Maintenance 🧹
+* Postgres 16 upgrade documentation by @axelstudios in https://github.com/SEED-platform/seed/pull/4651
+* Bump requests from 2.31.0 to 2.32.0 in /requirements by @dependabot in https://github.com/SEED-platform/seed/pull/4673
+* Bump braces from 3.0.2 to 3.0.3 by @dependabot in https://github.com/SEED-platform/seed/pull/4697
+* Node dependency upgrade by @axelstudios in https://github.com/SEED-platform/seed/pull/4699
+### Bug Fixes 🐛
+* Ensure `is_ali_root` is populated on redirects by @kflemin in https://github.com/SEED-platform/seed/pull/4641
+* Don't duplicate inventory rows by @haneslinger in https://github.com/SEED-platform/seed/pull/4638
+* BETTER update by @kflemin in https://github.com/SEED-platform/seed/pull/4645
+* Fix email by @haneslinger in https://github.com/SEED-platform/seed/pull/4642
+* Replaced missing ESPM report by @axelstudios in https://github.com/SEED-platform/seed/pull/4683
+* Fix has meter indicator by @haneslinger in https://github.com/SEED-platform/seed/pull/4672
+* Set default portfolio summary cell type by @perryr16 in https://github.com/SEED-platform/seed/pull/4681
+* Lock Numpy by @axelstudios in https://github.com/SEED-platform/seed/pull/4696
+* Fix several AH meter issues by @axelstudios in https://github.com/SEED-platform/seed/pull/4706
+* BETTER v1.7 updates by @kflemin in https://github.com/SEED-platform/seed/pull/4679
+* Fix UBID matching behavior by @axelstudios in https://github.com/SEED-platform/seed/pull/4715
+
+
+**Full Changelog**: https://github.com/SEED-platform/seed/compare/v3.0.0-beta.0...v3.0.0
+
 # SEED Version 3.0.0-beta.0
 
 <!-- Release notes generated using configuration in .github/release.yml at develop -->

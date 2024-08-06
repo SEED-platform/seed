@@ -2,7 +2,7 @@
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
  * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
-angular.module('BE.seed.service.element', []).factory('element_service', [
+angular.module('SEED.service.element', []).factory('element_service', [
   '$http',
   ($http) => ({
     // Return a list of elements for a given property

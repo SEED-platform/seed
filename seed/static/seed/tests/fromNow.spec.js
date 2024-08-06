@@ -9,7 +9,7 @@ describe('The fromNow filter', () => {
   let fromNowFilter;
 
   beforeEach(() => {
-    module('BE.seed');
+    module('SEED');
     inject((_fromNowFilter_) => {
       fromNowFilter = _fromNowFilter_;
     });

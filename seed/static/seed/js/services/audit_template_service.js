@@ -2,7 +2,7 @@
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
  * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
-angular.module('BE.seed.service.audit_template', []).factory('audit_template_service', [
+angular.module('SEED.service.audit_template', []).factory('audit_template_service', [
   '$http',
   ($http) => {
     const get_building_xml = (org_id, audit_template_building_id) => $http

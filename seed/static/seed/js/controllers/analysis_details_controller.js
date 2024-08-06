@@ -3,7 +3,7 @@
  * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
 
-angular.module('BE.seed.controller.analysis_details', []).controller('analysis_details_controller', [
+angular.module('SEED.controller.analysis_details', []).controller('analysis_details_controller', [
   '$scope',
   '$state',
   'analyses_service',

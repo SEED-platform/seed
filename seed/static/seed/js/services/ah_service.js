@@ -2,7 +2,7 @@
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
  * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
-angular.module('BE.seed.service.ah', []).factory('ah_service', [
+angular.module('SEED.service.ah', []).factory('ah_service', [
   () => {
     const { compare } = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
 

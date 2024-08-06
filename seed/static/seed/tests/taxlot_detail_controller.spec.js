@@ -16,7 +16,7 @@ describe('controller: inventory_detail_controller', () => {
   let mock_label_payload;
 
   beforeEach(() => {
-    module('BE.seed');
+    module('SEED');
     inject((_$httpBackend_) => {
       _$httpBackend_.whenGET(/^\/static\/seed\/locales\/.*\.json/).respond(200, {});
     });

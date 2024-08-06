@@ -6,7 +6,7 @@
  * The selected Property IDs or Tax Lot IDs are passed into 'inventory_id', identified by
  * inventory_type="properties" or inventory_type="taxlots"
  */
-angular.module('BE.seed.controller.postoffice_modal', []).controller('postoffice_modal_controller', [
+angular.module('SEED.controller.postoffice_modal', []).controller('postoffice_modal_controller', [
   '$scope',
   '$uibModalInstance',
   'postoffice_service',

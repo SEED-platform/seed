@@ -2,7 +2,7 @@
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
  * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
-angular.module('BE.seed.controller.delete_dataset_modal', []).controller('delete_dataset_modal_controller', [
+angular.module('SEED.controller.delete_dataset_modal', []).controller('delete_dataset_modal_controller', [
   '$scope',
   '$uibModalInstance',
   'dataset_service',
