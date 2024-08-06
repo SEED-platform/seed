@@ -119,8 +119,8 @@ def _create_element_columns(analysis):
     existing_columns_names_by_code = {}
     column_meta_by_code = {
         data["code"]: {
-            "column_name": data["category"],
-            "display_name": data["category"].replace(" ", "_"),
+            "column_name": data["category"] + " CI",
+            "display_name": data["category"].replace(" ", "_") + " CI",
             "description": data["code"] if "definition" not in data else data["code"] + ": " + data["definition"],
         }
         for data in uniformat_data
