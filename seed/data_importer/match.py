@@ -682,8 +682,7 @@ def merge_unmatched_states(
             existing_state_ids = [state["id"] for state in sorted(existing_state_matches, key=lambda state: state["updated"])]
             # The following merge action ignores merge protection and prioritizes -States by most recent AuditLog
             merged_state = merge_states_with_views(existing_state_ids, org.id, "System Match", state_klass)
-            if merged_state:
-                merge_state_pairs.append((merged_state, state))
+            merge_state_pairs.append((merged_state, state))
         elif count == 1:
             merge_state_pairs.append((state_lookup[existing_state_matches[0]["id"]], state))
         else:

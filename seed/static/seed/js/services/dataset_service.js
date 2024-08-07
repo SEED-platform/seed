@@ -100,12 +100,6 @@ angular.module('SEED.service.dataset', []).factory('dataset_service', [
         cycle_id
       }).then((response) => response.data);
 
-    dataset_service.match_merge_inventory = (cycle_id) => $http
-      .post('/api/v3/import_files/match_merge_inventory/', {
-        organization_id: user_service.get_organization().id,
-        cycle_id
-      }).then((response) => response.data);
-
     return dataset_service;
   }
 ]);
