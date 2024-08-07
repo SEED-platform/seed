@@ -6,7 +6,6 @@ angular.module('SEED.controller.at_submission_import_modal', []).controller('at_
   '$scope',
   '$uibModalInstance',
   'audit_template_service',
-  'organization_service',
   'uploader_service',
   'org',
   'view_ids',
@@ -15,15 +14,11 @@ angular.module('SEED.controller.at_submission_import_modal', []).controller('at_
     $scope,
     $uibModalInstance,
     audit_template_service,
-    organization_service,
     uploader_service,
     org,
     view_ids
   ) {
-    // Refresh org
-    organization_service.get_organization_brief(org.id).then((response) => {
-      $scope.org = response.organization;
-    });
+    $scope.org = org;
     $scope.view_ids = view_ids;
     $scope.status = {
       progress: 0,
