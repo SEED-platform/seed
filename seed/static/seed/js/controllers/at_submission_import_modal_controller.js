@@ -22,8 +22,8 @@ angular.module('SEED.controller.at_submission_import_modal', []).controller('at_
   ) {
     // Refresh org
     organization_service.get_organization_brief(org.id).then((response) => {
-      $scope.org = response.organization
-    })
+      $scope.org = response.organization;
+    });
     $scope.view_ids = view_ids;
     $scope.status = {
       progress: 0,
