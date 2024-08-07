@@ -3,7 +3,7 @@
 </div>
 
 <div class="modal-body no_bottom_padding">
-  <div style="padding-bottom: 20px" ng-if="!status.complete">{$ 'Update inventory with Audit Template Submissions for City' | translate $} {$ org.audit_template_city_id $}</div>
+  <div style="padding-bottom: 20px" ng-if="!status.complete">{$ 'Update inventory with Audit Template Submissions' | translate $}</div>
   <div style="padding-bottom: 20px" ng-if="!status.complete">
     <span translate>Import setting: </span>
     <span ng-if="org.audit_template_conditional_import" class="label label-info" translate>MORE RECENT DATA</span>
@@ -11,7 +11,7 @@
     <span ng-if="!org.audit_template_conditional_import" class="label label-default" translate>ALL DATA</span>
     <div class="at-details" ng-if="!org.audit_template_conditional_import" translate>AT_ALL_DATA</div>
   </div>
-  <div style="padding-bottom: 20px" ng-if="status.complete">{$ 'Results for City ' | translate $} {$ org.audit_template_city_id | translate $}</div>
+  <div style="padding-bottom: 20px" ng-if="status.complete">{$ 'Results' | translate $}</div>
 
   <div class="progress_bar_container" ng-show="status.in_progress">
     <div class="progress_bar_copy_top" translate>Progress</div>
