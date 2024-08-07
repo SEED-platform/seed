@@ -13,7 +13,7 @@ from django.utils.timezone import make_aware
 from pytz import timezone
 
 from config.settings.common import TIME_ZONE
-from seed.data_importer.utils import kbtu_thermal_conversion_factors, usage_point_id
+from seed.data_importer.utils import kbtu_thermal_conversion_factors, kgal_water_conversion_factors, usage_point_id
 from seed.lib.superperms.orgs.models import Organization
 from seed.models import Meter
 
@@ -28,21 +28,31 @@ class PropertyMeterReadingsExporter:
     """
 
     def __init__(self, property_id, org_id, excluded_meter_ids, scenario_ids=None):
-        self._cache_factors = None
+        self._cache_thermal_factors = None
+        self._cache_water_factors = None
         self._cache_org_country = None
 
         scenario_ids = scenario_ids if scenario_ids is not None else []
         self.meters = Meter.objects.filter(Q(property_id=property_id) | Q(scenario_id__in=scenario_ids)).exclude(pk__in=excluded_meter_ids)
         self.org_id = org_id
-        self.org_meter_display_settings = Organization.objects.get(pk=org_id).display_meter_units
+        org = Organization.objects.get(pk=org_id)
+        self.org_meter_display_settings = org.display_meter_units
+        self.org_meter_water_display_settings = org.display_meter_water_units
         self.tz = timezone(TIME_ZONE)
 
     @property
-    def factors(self):
-        if self._cache_factors is None:
-            self._cache_factors = kbtu_thermal_conversion_factors(self._org_country)
+    def thermal_factors(self):
+        if self._cache_thermal_factors is None:
+            self._cache_thermal_factors = kbtu_thermal_conversion_factors(self._org_country)
 
-        return self._cache_factors
+        return self._cache_thermal_factors
+
+    @property
+    def water_factors(self):
+        if self._cache_water_factors is None:
+            self._cache_water_factors = kgal_water_conversion_factors(self._org_country)
+
+        return self._cache_water_factors
 
     @property
     def _org_country(self):
@@ -224,10 +234,13 @@ class PropertyMeterReadingsExporter:
             conversion_factor = 1.00
         elif type_text in self.org_meter_display_settings:
             display_unit = self.org_meter_display_settings[type_text]
-            conversion_factor = self.factors[type_text][display_unit]
+            conversion_factor = self.thermal_factors[type_text][display_unit]
+        elif type_text in self.org_meter_water_display_settings:
+            display_unit = self.org_meter_water_display_settings.get(type_text, "Default")
+            conversion_factor = self.water_factors.get(type_text, "Default")[display_unit]
         else:
             display_unit = self.org_meter_display_settings["Default"]
-            conversion_factor = self.factors["Default"][display_unit]
+            conversion_factor = self.thermal_factors["Default"][display_unit]
 
         column_defs[field_name] = {
             "field": field_name,

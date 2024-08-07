@@ -1926,6 +1926,9 @@ msgstr "Compteur d'énergie d'affichage (changer un à la fois)"
 msgid "METER_READING_COUNTS_TITLE"
 msgstr "Compte de Relevé de Compteur"
 
+msgid "METER_WATER_DISPLAY_SETTINGS_TITLE"
+msgstr "Unités d'affichage du compteur d'eau (changer une à la fois)"
+
 msgid "MJ/m²/year"
 msgstr "MJ/m²/année"
 
@@ -2302,6 +2305,12 @@ msgstr "Voulez-vous vraiment supprimer {num_properties,plural,one{<strong>1</str
 
 msgid "OR"
 msgstr "OU"
+
+msgid "ORGANIZATION_WATER_USE_DISPLAY_UNITS"
+msgstr "Affichage de l'unité de mesure pour l'utilisation de l'eau"
+
+msgid "ORGANIZATION_WUI_DISPLAY_UNITS"
+msgstr "Affichage de l'unité de mesure de l'intensité d'utilisation de l'eau (WUI)"
 
 msgid "ORG_MATCH_MERGE_LINK_WARNING"
 msgstr "AVERTISSEMENT: Vous avez modifié les critères selon lesquels les données de votre organisation seront mises en correspondance et fusionnées. Une fois qu'une colonne a été ajoutée aux critères de correspondance d'une organisation, elle ne peut pas être supprimée tant que l'organisation dispose d'un inventaire."
@@ -3929,6 +3938,9 @@ msgstr "Visitez le site Web de BETTER pour effectuer une analyse de portefeuille
 
 msgid "Visualization Settings"
 msgstr "Paramètres de visualisation"
+
+msgid "WATER_TYPE_DISPLAY_CHOICE_PLACEHOLDER"
+msgstr "----Choisissez le type d'eau----"
 
 msgid "WHEN_YOU_CLICK_MAP_YOUR_DATA"
 msgstr "Lorsque vous cliquez sur le bouton <span class=\"label label-primary\">Mapper vos données</span> , le programme affiche une grille avec les nouveaux noms de champs comme en-têtes de colonne et vos données dans les lignes. Dans cette vue, vous pouvez toujours revenir à l'écran de mappage initial et modifier le mappage de champ."
