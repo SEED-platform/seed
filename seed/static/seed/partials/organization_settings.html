@@ -160,6 +160,11 @@
     <uib-tab index="2" heading="Audit Template">
       <div class="section_content_container">
         <div class="section_content with_padding">
+          <p class="settings-header" translate>AT_SETTINGS_TEXT</p>
+        </div>
+      </div>
+      <div class="section_content_container">
+        <div class="section_content with_padding">
           <h3 translate>Audit Template Organization Token</h3>
           <form class="form-horizontal" role="form">
             <div class="form-group">
@@ -207,27 +212,11 @@
 
       <div class="section_content_container">
         <div class="section_content with_padding">
-          <h3 translate>Audit Template Report Type</h3>
-          <form class="form-horizontal" role="form">
-            <div class="form-group">
-              <div class="col-sm-5">
-                <p translate>SEED Properties will be exported to Audit Template with the Organization Report Type</p>
-                <select ng-model="org.audit_template_report_type" ng-disabled="::!auth.requires_owner" class="settings-dropdown">
-                  <option ng-repeat="report_type in audit_template_report_types">{$ report_type$}</option>
-                </select>
-              </div>
-            </div>
-          </form>
-        </div>
-      </div>
-
-      <div class="section_content_container">
-        <div class="section_content with_padding">
           <h3 translate>Audit Template City ID</h3>
           <form class="form-horizontal" role="form">
             <div class="form-group">
               <div class="col-sm-5">
-                <p translate>SEED will import submission data for the following City ID</p>
+                <p translate>AT_CITY_ID</p>
                 <input type="number" class="form-control" ng-model="org.audit_template_city_id" ng-disabled="::!auth.requires_owner" />
               </div>
             </div>
@@ -241,7 +230,7 @@
           <form class="form-horizontal" role="form">
             <div class="form-group">
               <div class="col-sm-5">
-                <p translate>SEED will import submission data for the following submission status</p>
+                <p translate>AT_SUBMISSION_STATUS</p>
                 <select ng-model="org.audit_template_status_type" ng-disabled="::!auth.requires_owner" class="settings-dropdown">
                   <option ng-repeat="status_type in audit_template_status_types">{$ status_type$}</option>
                 </select>
@@ -257,9 +246,7 @@
           <form class="form-horizontal" role="form">
             <div class="form-group">
               <div class="col-sm-5">
-                <p translate>
-                  When checked, SEED will only import Audit Template data that has been updated more recently than SEED data. If unchecked, all data will be imported regardless of updated date.
-                </p>
+                <p translate>AT_CONDITION_INDEX</p>
                 <input type="checkbox" class="form-control" style="width: 34px" ng-model="org.audit_template_conditional_import" ng-disabled="::!auth.requires_owner" />
               </div>
             </div>
@@ -273,7 +260,7 @@
         </div>
       </div>
 
-      <div class="section_header_container has_btm_margin">
+      <div class="section_header_container has_btm_margin r-margin-top-10">
         <div class="section_header">
           <h2><i class="fa-solid fa-clock"></i> {$ 'Schedule Weekly Update' | translate $}</h2>
         </div>
@@ -297,7 +284,7 @@
           <form class="form-horizontal" role="form">
             <div class="form-group">
               <div class="col-sm-5">
-                <div translate>If you would like to automatically update inventory with Audit Template submission data for the selected Audit Template City ID, configure fields below.</div>
+                <div translate>AT_AUTO_SYNC</div>
                 <div style="margin: 10px; color: gray"><i>timezone: {$ timezone $}</i></div>
                 <table class="time-table">
                   <thead>
@@ -326,6 +313,26 @@
                     </tr>
                   </tbody>
                 </table>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+      <div class="section_header_container has_btm_margin">
+        <div class="section_header">
+          <h2><i class="fa-solid fa-clock"></i> {$ 'Advanced Settings' | translate $}</h2>
+        </div>
+      </div>
+      <div class="section_content_container">
+        <div class="section_content with_padding">
+          <h3 translate>Audit Template Report Type</h3>
+          <form class="form-horizontal" role="form">
+            <div class="form-group">
+              <div class="col-sm-5">
+                <p translate>AT_REPORT_TYPE</p>
+                <select ng-model="org.audit_template_report_type" ng-disabled="::!auth.requires_owner" class="settings-dropdown">
+                  <option ng-repeat="report_type in audit_template_report_types">{$ report_type$}</option>
+                </select>
               </div>
             </div>
           </form>
