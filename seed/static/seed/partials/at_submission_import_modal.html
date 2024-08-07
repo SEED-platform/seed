@@ -24,20 +24,17 @@
       <table id="import-export-at-table" class="table table-striped">
         <tbody style="border: 1px solid #cccccc">
           <tr style="background: #dff0d8">
-            <td>{$ 'Properties updated:' | translate $} </td>
+            <td>{$ 'Properties updated:' | translate $}</td>
             <td>{$ status.result.success $}</td>
           </tr>
           <tr class="import-export-detail-row" ng-if="status.result.data.length">
             <td>
               <div class="import-export-details">
-                <div ng-repeat="data in status.result.data" class="alert-info">Custom ID 1 
-                  <a 
-                    ui-sref="inventory_detail({inventory_type: 'properties', view_id: data.view_id})" 
-                    ng-click="close()" 
-                    style="color: black">
-                      {$ data.custom_id_1 $}
-                  </a>
-                   in cycle {$ data.cycle_name $}</div>
+                <div ng-repeat="data in status.result.data" class="alert-info">
+                  Custom ID 1
+                  <a ui-sref="inventory_detail({inventory_type: 'properties', view_id: data.view_id})" ng-click="close()" style="color: black"> {$ data.custom_id_1 $} </a>
+                  in cycle {$ data.cycle_name $}
+                </div>
               </div>
             </td>
           </tr>

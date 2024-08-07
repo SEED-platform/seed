@@ -1365,15 +1365,17 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             response = json.loads(response.content)
             results["success" if response["success"] else "failure"] += 1
             try:
-                view = response['data']['property_view']
-                view_id = view['id']
-                custom_id_1 = view["state"]['custom_id_1']
-                results["data"].append({
-                    "custom_id_1": custom_id_1,
-                    "cycle_id": cycle.id,
-                    "cycle_name": cycle.name,
-                    "view_id": view_id,
-                })
+                view = response["data"]["property_view"]
+                view_id = view["id"]
+                custom_id_1 = view["state"]["custom_id_1"]
+                results["data"].append(
+                    {
+                        "custom_id_1": custom_id_1,
+                        "cycle_id": cycle.id,
+                        "cycle_name": cycle.name,
+                        "view_id": view_id,
+                    }
+                )
             except KeyError:
                 pass
             progress_data.step("Updating Properties...")
