@@ -253,7 +253,7 @@
                   ng-change="change(col)"
                   ng-model="col.data_type"
                   ng-options="type.id as type.label for type in ::data_types"
-                  ng-disabled="col.suggestion_column_name"
+                  ng-disabled="col.suggestion_column_name || col.isOmitted"
               ></select>
 
               </td>

@@ -154,7 +154,8 @@ angular.module('SEED.controller.mapping', []).controller('mapping_controller', [
           from_field: mapping.name,
           from_units: mapping.from_units,
           to_field: mapping.suggestion_column_name || mapping.suggestion || '',
-          to_table_name: mapping.suggestion_table_name
+          to_table_name: mapping.suggestion_table_name,
+          isOmitted: mapping.isOmitted
         };
         const isBuildingSyncProfile =
             $scope.current_profile.profile_type !== undefined &&
@@ -163,6 +164,7 @@ angular.module('SEED.controller.mapping', []).controller('mapping_controller', [
         if (isBuildingSyncProfile) {
           this_mapping.from_field_value = mapping.from_field_value;
         }
+        $log.warn("Mapping: ", this_mapping)
         profile_mapping_data.push(this_mapping);
         return profile_mapping_data;
       },
@@ -446,6 +448,7 @@ angular.module('SEED.controller.mapping', []).controller('mapping_controller', [
     };
 
     const get_col_from_suggestion = (name) => {
+
       const suggestion = _.find($scope.current_profile.mappings, { from_field: name }) || {};
 
       return {
@@ -456,7 +459,7 @@ angular.module('SEED.controller.mapping', []).controller('mapping_controller', [
         suggestion: suggestion.to_field,
         suggestion_column_name: suggestion.to_field,
         suggestion_table_name: suggestion.to_table_name,
-        isOmitted: false
+        isOmitted: suggestion.isOmitted,
       };
     };
 
@@ -482,6 +485,7 @@ angular.module('SEED.controller.mapping', []).controller('mapping_controller', [
         }
         if (match) {
           col.suggestion = match.display_name;
+          $scope.change(col, true);
         } else if ($scope.mappingBuildingSync) {
           col.suggestion = $filter('titleCase')(col.suggestion_column_name);
         }

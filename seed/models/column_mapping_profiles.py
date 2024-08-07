@@ -81,6 +81,7 @@ class ColumnMappingProfile(models.Model):
                         "from_units": row[1],
                         "to_table_name": row[2],
                         "to_field": row[3],
+                        "isOmitted": row[4],
                     }
                     mappings.append(data)
         else:

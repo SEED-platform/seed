@@ -190,7 +190,7 @@ class TestColumns(TestCase):
     def test_save_column_mapping_by_file_with_datatypes(self):
         self.mapping_import_file = os.path.abspath("./seed/tests/data/test_datatype_mapping.csv")
         Column.create_mappings_from_file(self.mapping_import_file, self.fake_org, self.fake_user)
-        c_note_field = Column.objects.filter(column_name="note_field")[0]
+        c_note_field = Column.objects.filter(column_name="new_note_field")[0]
         self.assertTrue(c_note_field.is_extra_data)
         self.assertEqual(c_note_field.data_type, "string")
         c_city_field = Column.objects.filter(column_name="city", table_name="PropertyState")[0]

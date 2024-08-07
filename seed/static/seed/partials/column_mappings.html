@@ -110,7 +110,7 @@
         <table class="table table-striped">
           <thead>
             <tr>
-              <th colspan="3" class="source_data">SEED</th>
+              <th colspan="4" class="source_data">SEED</th>
               <th colspan="6" class="source_data">{$ current_profile.name $}</th>
             </tr>
           </thead>
@@ -123,12 +123,13 @@
                 </span>
               </td>
               <td style="border-right: 0 none"><h3 translate>Mapped Fields</h3></td>
-              <td style="max-width: 128px; width: 128px"></td>
+              <td colspan="2" style="max-width: 128px; width: 128px"></td>
               <td colspan="6"></td>
             </tr>
           </tbody>
           <thead>
             <tr>
+              <th><translate>Is Omitted</translate></th>
               <th><translate>Inventory Type</translate></th>
               <th class="mapping_field ellipsis-resizable" ng-click="sort_by('seed')" sd-resizable>
                 <span><translate>SEED Header</translate><i class="fa-solid {$ get_sort_icon('seed') $} pad-left-5"></i></span>
@@ -153,6 +154,12 @@
           </thead>
           <tbody id="mapped-table">
             <tr ng-repeat="(index, col) in dropdown_selected_profile.mappings">
+              <td
+              style="text-align: center; width: min-content"
+              ng-attr-id="mapped-row-isOmitted-{$:: $index $}"
+            >
+              <input type="checkbox" ng-model="col.isOmitted" ng-disabled="import_file.matching_done" />
+            </td>
               <td style="text-align: right" ng-attr-id="mapped-row-type-{$:: $index $}">
                 <select ng-model="col.to_table_name" ng-change="updateSingleInventoryTypeDropdown()">
                   <option value="PropertyState" translate>Property</option>

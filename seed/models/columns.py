@@ -179,6 +179,21 @@ class Column(models.Model):
         "PointField": "geometry",
     }
 
+    DB_TYPES = {
+        "number": "float",
+        "float": "float",
+        "integer": "integer",
+        "string": "string",
+        "geometry": "geometry",
+        "datetime": "datetime",
+        "date": "date",
+        "boolean": "boolean",
+        "area": "float",
+        "eui": "float",
+        "ghg": "float",
+        "ghg_intensity": "float",
+    }
+
     DATA_TYPE_PARSERS: dict[str, Callable] = {
         "number": lambda v: float(v.replace(",", "") if isinstance(v, basestring) else v),
         "float": lambda v: float(v.replace(",", "") if isinstance(v, basestring) else v),
@@ -1017,13 +1032,13 @@ class Column(models.Model):
                         'to_field': 'gross_floor_area',
                         'to_field_display_name': 'Gross Floor Area',
                         'to_table_name': 'PropertyState',
+                        'to_data_type': 'string', # an internal data type mapping
                     }
                 ]
         """
 
         # initialize a cache to store the mappings
         cache_column_mapping = []
-
         # Take the existing object and return the same object with the db column objects added to
         # the dictionary (to_column_object and from_column_object)
         mappings = Column._column_fields_to_columns(mappings, organization, user)
@@ -1059,7 +1074,6 @@ class Column(models.Model):
 
                 column_mapping.user = user
                 column_mapping.save()
-
                 cache_column_mapping.append(
                     {
                         "from_field": mapping["from_field"],
@@ -1274,26 +1288,10 @@ class Column(models.Model):
         """
         columns = copy.deepcopy(Column.DATABASE_COLUMNS)
 
-        # TODO: There seem to be lots of these lists floating around. We should consolidate them.
-        MAP_TYPES = {
-            "number": "float",
-            "float": "float",
-            "integer": "integer",
-            "string": "string",
-            "geometry": "geometry",
-            "datetime": "datetime",
-            "date": "date",
-            "boolean": "boolean",
-            "area": "float",
-            "eui": "float",
-            "ghg": "float",
-            "ghg_intensity": "float",
-        }
-
         types = OrderedDict()
         for c in columns:
             try:
-                types[c["column_name"]] = MAP_TYPES[c["data_type"]]
+                types[c["column_name"]] = Column.DB_TYPES[c["data_type"]]
             except KeyError:
                 _log.error("could not find data_type for %s" % c)
                 types[c["column_name"]] = ""
