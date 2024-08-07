@@ -105,7 +105,9 @@ angular.module('SEED.service.inventory_reports', []).factory('inventory_reports_
     };
 
     const export_reports_data = (axes_data, cycle_ids) => {
-      const { xVar, xLabel, yVar, yLabel } = axes_data;
+      const {
+        xVar, xLabel, yVar, yLabel
+      } = axes_data;
       // Error checks
       if ([xVar, xLabel, yVar, yLabel].includes(null)) {
         $log.error('#inventory_reports_service.get_aggregated_report_data(): null parameter');
