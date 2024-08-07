@@ -407,13 +407,14 @@ def _batch_get_city_submission_xml(org_id, city_id, view_ids, progress_key):
 
     property_view_set = PropertyViewSet()
     # Update is cycle based, going to have update in cycle specific batches
-    combined_results = {"success": 0, "failure": 0}
+    combined_results = {"success": 0, "failure": 0, "data": []}
     try:
         for cycle, xmls in xml_data_by_cycle.items():
             # does progress_data need to be recursively passed?
             results = property_view_set.batch_update_with_building_sync(xmls, org_id, cycle, progress_data.key, finish=False)
             combined_results["success"] += results["success"]
             combined_results["failure"] += results["failure"]
+            combined_results["data"].extend(results["data"])
     except Exception:
         progress_data.finish_with_error("Unexepected Error")
 

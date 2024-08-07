@@ -195,6 +195,7 @@ def _dict_org_brief(request, organizations):
             "display_decimal_places": o.display_decimal_places,
             "salesforce_enabled": o.salesforce_enabled,
             "access_level_names": o.access_level_names,
+            "audit_template_conditional_import": o.audit_template_conditional_import,
         }
         orgs.append(org)
 

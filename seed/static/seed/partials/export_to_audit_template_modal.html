@@ -31,7 +31,7 @@
   <!-- step 2 -->
   <div ng-switch-when="2">
     <div class="table_list_container has_borders" style="max-width: 400px">
-      <table id="export-at-table" class="table table-striped">
+      <table id="import-export-at-table" class="table table-striped">
         <tbody style="border: 1px solid #cccccc">
           <tr style="background: #dff0d8">
             <td translate>Successful Exports</td>
@@ -41,9 +41,9 @@
             <td translate>Existing Audit Template Properties (skipped)</td>
             <td>{$ upload_summary.info.count || 0 $}</td>
           </tr>
-          <tr class="export-detail-row" ng-if="upload_summary.info.details.length">
+          <tr class="import-export-detail-row" ng-if="upload_summary.info.details.length">
             <td>
-              <div class="export-details">
+              <div class="import-export-details">
                 <div ng-repeat="detail in upload_summary.info.details" class="alert-warning">{$ detail.message $}</div>
               </div>
             </td>
@@ -53,9 +53,9 @@
             <td translate>Unsuccessful Exports</td>
             <td>{$ upload_summary.error.count || 0 $}</td>
           </tr>
-          <tr class="export-detail-row" ng-if="upload_summary.error.details.length">
+          <tr class="import-export-detail-row" ng-if="upload_summary.error.details.length">
             <td>
-              <div class="export-details">
+              <div class="import-export-details">
                 <div ng-repeat="detail in upload_summary.error.details" class="alert-danger">{$ detail.message $}</div>
               </div>
             </td>

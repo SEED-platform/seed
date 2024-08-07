@@ -5085,21 +5085,21 @@ ul.r-list {
   }
 }
 
-#export-at-table {
+#import-export-at-table {
   .export-summary-row {
     background: #fff;
   }
 
-  .export-detail-row {
+  .import-export-detail-row {
     background: #f9f9f9;
 
     td {
       padding: 0 8px;
 
-      .export-details {
+      .import-export-details {
         max-height: 200px;
         overflow-y: scroll;
-        padding: 0 8px !important;
+        padding: 10px 8px !important;
 
         div {
           padding: 10px;

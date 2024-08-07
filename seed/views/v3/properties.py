@@ -1352,18 +1352,30 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         The optional :param finish: is set to False when updating in cycle batches through AuditTemplate._batch_get_city_submission_xml
         """
         progress_data = ProgressData.from_key(progress_key)
-        if not Cycle.objects.filter(pk=cycle_id):
+        cycle = Cycle.objects.filter(pk=cycle_id, organization=org_id).first()
+        if not cycle:
             logging.warning(f"Cycle {cycle_id} does not exist")
             return progress_data.finish_with_error(f"Cycle {cycle_id} does not exist")
 
-        results = {"success": 0, "failure": 0}
+        results = {"success": 0, "failure": 0, "data": []}
         for property in properties:
             formatted_time = time.strftime("%Y%m%d_%H%M%S", time.localtime(time.time()))
             blob = ContentFile(property["xml"], name=f'at_{property["matching_field"]}_{formatted_time}.xml')
             response = self._update_with_building_sync(blob, 1, org_id, cycle_id, property["property_view"], property["updated_at"])
             response = json.loads(response.content)
             results["success" if response["success"] else "failure"] += 1
-
+            try:
+                view = response['data']['property_view']
+                view_id = view['id']
+                custom_id_1 = view["state"]['custom_id_1']
+                results["data"].append({
+                    "custom_id_1": custom_id_1,
+                    "cycle_id": cycle.id,
+                    "cycle_name": cycle.name,
+                    "view_id": view_id,
+                })
+            except KeyError:
+                pass
             progress_data.step("Updating Properties...")
 
         if finish:
