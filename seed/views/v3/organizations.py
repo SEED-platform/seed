@@ -31,6 +31,7 @@ from rest_framework.response import Response
 from xlsxwriter import Workbook
 
 from seed import tasks
+from seed.audit_template.audit_template import toggle_audit_template_sync
 from seed.data_importer.models import ImportFile, ImportRecord
 from seed.data_importer.tasks import save_raw_data
 from seed.decorators import ajax_request_class
@@ -142,10 +143,14 @@ def _dict_org(request, organizations):
             "new_user_email_content": o.new_user_email_content,
             "new_user_email_signature": o.new_user_email_signature,
             "at_organization_token": o.at_organization_token,
+            "at_host_url": settings.AUDIT_TEMPLATE_HOST,
             "audit_template_user": o.audit_template_user,
             "audit_template_password": decrypt(o.audit_template_password)[0] if o.audit_template_password else "",
-            "at_host_url": settings.AUDIT_TEMPLATE_HOST,
+            "audit_template_city_id": o.audit_template_city_id,
+            "audit_template_conditional_import": o.audit_template_conditional_import,
             "audit_template_report_type": o.audit_template_report_type,
+            "audit_template_status_type": o.audit_template_status_type,
+            "audit_template_sync_enabled": o.audit_template_sync_enabled,
             "salesforce_enabled": o.salesforce_enabled,
             "ubid_threshold": o.ubid_threshold,
             "inventory_count": o.property_set.count() + o.taxlot_set.count(),
@@ -190,6 +195,7 @@ def _dict_org_brief(request, organizations):
             "display_decimal_places": o.display_decimal_places,
             "salesforce_enabled": o.salesforce_enabled,
             "access_level_names": o.access_level_names,
+            "audit_template_conditional_import": o.audit_template_conditional_import,
         }
         orgs.append(org)
 
@@ -617,6 +623,24 @@ class OrganizationViewSet(viewsets.ViewSet):
         audit_template_report_type = posted_org.get("audit_template_report_type", False)
         if audit_template_report_type != org.audit_template_report_type:
             org.audit_template_report_type = audit_template_report_type
+
+        audit_template_status_type = posted_org.get("audit_template_status_type", False)
+        if audit_template_status_type != org.audit_template_status_type:
+            org.audit_template_status_type = audit_template_status_type
+
+        audit_template_city_id = posted_org.get("audit_template_city_id", False)
+        if audit_template_city_id != org.audit_template_city_id:
+            org.audit_template_city_id = audit_template_city_id
+
+        audit_template_conditional_import = posted_org.get("audit_template_conditional_import", False)
+        if audit_template_conditional_import != org.audit_template_conditional_import:
+            org.audit_template_conditional_import = audit_template_conditional_import
+
+        audit_template_sync_enabled = posted_org.get("audit_template_sync_enabled", False)
+        if audit_template_sync_enabled != org.audit_template_sync_enabled:
+            org.audit_template_sync_enabled = audit_template_sync_enabled
+            # if audit_template_sync_enabled was toggled, must start/stop auto sync functionality
+            toggle_audit_template_sync(audit_template_sync_enabled, org.id)
 
         salesforce_enabled = posted_org.get("salesforce_enabled", False)
         if salesforce_enabled != org.salesforce_enabled:

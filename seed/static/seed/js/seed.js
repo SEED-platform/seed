@@ -38,6 +38,7 @@
     'SEED.controller.analysis',
     'SEED.controller.analysis_details',
     'SEED.controller.analysis_run',
+    'SEED.controller.at_submission_import_modal',
     'SEED.controller.bulk_edit_goalnotes_modal',
     'SEED.controller.column_mapping_profile_modal',
     'SEED.controller.column_mappings',
@@ -1200,6 +1201,14 @@
               (salesforce_config_service, $stateParams) => {
                 const { organization_id } = $stateParams;
                 return salesforce_config_service.get_salesforce_configs(organization_id);
+              }
+            ],
+            audit_template_configs_payload: [
+              'audit_template_service',
+              '$stateParams',
+              (audit_template_service, $stateParams) => {
+                const { organization_id } = $stateParams;
+                return audit_template_service.get_audit_template_configs(organization_id);
               }
             ],
             auth_payload: [
