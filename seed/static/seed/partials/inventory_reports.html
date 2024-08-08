@@ -54,6 +54,9 @@
                     </select>
                   </li>
                 </div>
+                <div class="form-group pad-top-10">
+                  <p translate>CONFIGURE_CYCLES</p>
+                </div>
               </div>
 
               <div style="display: flex; flex-direction: column; flex: 1 1 0">
@@ -65,6 +68,13 @@
                 <div class="form-group">
                   <label for="yAxisSelector">{$:: 'Y Axis' | translate $}:</label>
                   <select class="form-control" id="yAxisSelector" ng-model="yAxisSelectedItem" ng-options="y.name for y in yAxisVars track by y.varName"></select>
+                </div>
+                <div class="form-group pad-top-10">
+                  <p>
+                    <span translate>Visit</span>
+                    <a ui-sref="organization_settings(::{organization_id: org_id})">{$:: 'Organization Settings' | translate $}</a>
+                    <span translate>CONFIGURE_XY_AXES</span>
+                  </p>
                 </div>
               </div>
               <div style="display: flex; flex-direction: column; align-self: flex-end">
