@@ -31,6 +31,7 @@ from rest_framework.response import Response
 from xlsxwriter import Workbook
 
 from seed import tasks
+from seed.audit_template.audit_template import toggle_audit_template_sync
 from seed.data_importer.models import ImportFile, ImportRecord
 from seed.data_importer.tasks import save_raw_data
 from seed.decorators import ajax_request_class
@@ -64,7 +65,7 @@ from seed.utils.encrypt import decrypt, encrypt
 from seed.utils.geocode import geocode_buildings
 from seed.utils.match import match_merge_link
 from seed.utils.merge import merge_properties
-from seed.utils.organizations import create_organization, create_suborganization
+from seed.utils.organizations import create_organization, create_suborganization, set_default_2fa_method
 from seed.utils.properties import pair_unpair_property_taxlot
 from seed.utils.public import public_feed
 from seed.utils.salesforce import toggle_salesforce_sync
@@ -142,10 +143,14 @@ def _dict_org(request, organizations):
             "new_user_email_content": o.new_user_email_content,
             "new_user_email_signature": o.new_user_email_signature,
             "at_organization_token": o.at_organization_token,
+            "at_host_url": settings.AUDIT_TEMPLATE_HOST,
             "audit_template_user": o.audit_template_user,
             "audit_template_password": decrypt(o.audit_template_password)[0] if o.audit_template_password else "",
-            "at_host_url": settings.AUDIT_TEMPLATE_HOST,
+            "audit_template_city_id": o.audit_template_city_id,
+            "audit_template_conditional_import": o.audit_template_conditional_import,
             "audit_template_report_type": o.audit_template_report_type,
+            "audit_template_status_type": o.audit_template_status_type,
+            "audit_template_sync_enabled": o.audit_template_sync_enabled,
             "salesforce_enabled": o.salesforce_enabled,
             "ubid_threshold": o.ubid_threshold,
             "inventory_count": o.property_set.count() + o.taxlot_set.count(),
@@ -159,6 +164,7 @@ def _dict_org(request, organizations):
             "default_reports_y_axis_options": ColumnSerializer(
                 Column.objects.filter(organization=o, table_name="PropertyState", is_option_for_reports_y_axis=True), many=True
             ).data,
+            "require_2fa": o.require_2fa,
         }
         orgs.append(org)
 
@@ -190,6 +196,7 @@ def _dict_org_brief(request, organizations):
             "display_decimal_places": o.display_decimal_places,
             "salesforce_enabled": o.salesforce_enabled,
             "access_level_names": o.access_level_names,
+            "audit_template_conditional_import": o.audit_template_conditional_import,
         }
         orgs.append(org)
 
@@ -618,11 +625,35 @@ class OrganizationViewSet(viewsets.ViewSet):
         if audit_template_report_type != org.audit_template_report_type:
             org.audit_template_report_type = audit_template_report_type
 
+        audit_template_status_type = posted_org.get("audit_template_status_type", False)
+        if audit_template_status_type != org.audit_template_status_type:
+            org.audit_template_status_type = audit_template_status_type
+
+        audit_template_city_id = posted_org.get("audit_template_city_id", False)
+        if audit_template_city_id != org.audit_template_city_id:
+            org.audit_template_city_id = audit_template_city_id
+
+        audit_template_conditional_import = posted_org.get("audit_template_conditional_import", False)
+        if audit_template_conditional_import != org.audit_template_conditional_import:
+            org.audit_template_conditional_import = audit_template_conditional_import
+
+        audit_template_sync_enabled = posted_org.get("audit_template_sync_enabled", False)
+        if audit_template_sync_enabled != org.audit_template_sync_enabled:
+            org.audit_template_sync_enabled = audit_template_sync_enabled
+            # if audit_template_sync_enabled was toggled, must start/stop auto sync functionality
+            toggle_audit_template_sync(audit_template_sync_enabled, org.id)
+
         salesforce_enabled = posted_org.get("salesforce_enabled", False)
         if salesforce_enabled != org.salesforce_enabled:
             org.salesforce_enabled = salesforce_enabled
             # if salesforce_enabled was toggled, must start/stop auto sync functionality
             toggle_salesforce_sync(salesforce_enabled, org.id)
+
+        require_2fa = posted_org.get("require_2fa", False)
+        if require_2fa != org.require_2fa:
+            org.require_2fa = require_2fa
+            if require_2fa:
+                set_default_2fa_method(org)
 
         # update the ubid threshold option
         ubid_threshold = posted_org.get("ubid_threshold")

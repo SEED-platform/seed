@@ -37,7 +37,7 @@ django-filter==2.4.0
 drf-nested-routers==0.91
 
 # Server monitoring
-sentry-sdk==1.14.0
+sentry-sdk==2.11.0
 
 # Various packages
 jellyfish==0.8.2
@@ -82,3 +82,7 @@ django-oauth-toolkit==1.2.0
 future==0.18.3
 
 django-treebeard==4.6.1
+
+django-two-factor-auth[phonenumbers]==1.16.0
+qrcode[pil]==6.1
+pyotp==2.9.0
