@@ -36,7 +36,6 @@ from seed.models import (
     MERGE_STATE_UNKNOWN,
     PORTFOLIO_METER_USAGE,
     SEED_DATA_SOURCES,
-    AccessLevelInstance,
     Column,
     Cycle,
     ImportFile,
@@ -1055,8 +1054,6 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
     def match_merge_inventory(self, request):
         org_id = self.get_organization(request)
 
-        access_level_instance = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
-
         try:
             org = Organization.objects.get(pk=org_id)
             cycle = Cycle.objects.get(pk=request.data.get("cycle_id", -1))
@@ -1065,7 +1062,7 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
 
         progress_data_p = ProgressData(func_name="match_progress_properties", unique_id=org_id)
         progress_data_tl = ProgressData(func_name="match_progress_taxlots", unique_id=org_id)
-        match_merge_cycle_inventory.delay(org.id, cycle.id, access_level_instance.id, "PropertyState", progress_data_p.key)
-        match_merge_cycle_inventory.delay(org.id, cycle.id, access_level_instance.id, "TaxLotState", progress_data_tl.key)
+        match_merge_cycle_inventory.delay(org.id, cycle.id, "PropertyState", progress_data_p.key)
+        match_merge_cycle_inventory.delay(org.id, cycle.id, "TaxLotState", progress_data_tl.key)
 
         return JsonResponse({"properties": progress_data_p.result(), "taxlots": progress_data_tl.result()})

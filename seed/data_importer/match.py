@@ -608,13 +608,9 @@ def states_to_views(unmatched_state_ids, org, access_level_instance, cycle, Stat
 
     (
         merged_between_existing_count,
-        merged_views,
-        errored_merged_states,
-        new_views,
-        errored_new_states,
+        merge_state_pairs,
+        promote_state_ids,
     ) = merge_unmatched_states(
-        access_level_instance,
-        cycle,
         matching_columns,
         match_lookup,
         org,
@@ -622,10 +618,17 @@ def states_to_views(unmatched_state_ids, org, access_level_instance, cycle, Stat
         StateClass,
         state_lookup,
         sub_progress_key,
-        table_name,
         tuple_values,
         unmatched_states,
-        ViewClass,
+    )
+
+    (
+        merged_views,
+        errored_merged_states,
+        new_views,
+        errored_new_states,
+    ) = process_states(
+        org.id, cycle, merge_state_pairs, promote_state_ids, table_name, StateClass, ViewClass, access_level_instance, sub_progress_key
     )
 
     return (
@@ -639,8 +642,6 @@ def states_to_views(unmatched_state_ids, org, access_level_instance, cycle, Stat
 
 
 def merge_unmatched_states(
-    access_level_instance,
-    cycle,
     matching_columns,
     match_lookup,
     org,
@@ -648,11 +649,15 @@ def merge_unmatched_states(
     state_klass,
     state_lookup,
     sub_progress_key,
-    table_name,
     tuple_values,
     unmatched_states,
-    view_klass,
+    manual_trigger=False,
 ):
+    """
+    Analyzes unmatched_states to determine if any matching states exist.
+    If matches are found, they will be merged.
+    The manual_trigger parameter allows this function to be invoked manually, ensuring that the merging logic is appropriately applied in manual scenarios.
+    """
     sub_progress_data = update_sub_progress_total(100, sub_progress_key, finish=True)
 
     merged_between_existing_count = 0
@@ -664,8 +669,8 @@ def merge_unmatched_states(
 
         # compare UBIDs via jaccard index instead of a direct match
         check_jaccard = bool(matching_criteria.get("ubid"))
-
-        existing_state_matches = match_lookup.get(tuple(getattr(state, c) for c in tuple_values), [])
+        key = tuple(getattr(state, c) for c in tuple_values)
+        existing_state_matches = match_lookup.get(key, [])
 
         if check_jaccard:
             existing_state_matches = [
@@ -683,7 +688,8 @@ def merge_unmatched_states(
             # The following merge action ignores merge protection and prioritizes -States by most recent AuditLog
             merged_state = merge_states_with_views(existing_state_ids, org.id, "System Match", state_klass)
             merge_state_pairs.append((merged_state, state))
-        elif count == 1:
+        # single matches during manual trigger will be to itself
+        elif count == 1 and not manual_trigger:
             merge_state_pairs.append((state_lookup[existing_state_matches[0]["id"]], state))
         else:
             promote_state_ids.add(state.id)
@@ -691,11 +697,32 @@ def merge_unmatched_states(
         if batch_size > 0 and idx % batch_size == 0:
             sub_progress_data.step("Matching Data (3/6): Merging Unmatched States")
 
-    sub_progress_data = update_sub_progress_total(100, sub_progress_key, finish=True)
+        # when run manually, following a merge, remove matches to prevent duplicate merges
+        if manual_trigger:
+            for match in existing_state_matches:
+                key = tuple(match.get(c) for c in tuple_values)
+                if match_lookup.get(key):
+                    del match_lookup[key]
 
-    # Process -States into -Views either directly (promoted_ids) or post-merge (merge_state_pairs).
+    if manual_trigger:
+        sub_progress_data.finish_with_success()
+
+    return (
+        merged_between_existing_count,
+        merge_state_pairs,
+        promote_state_ids,
+    )
+
+
+def process_states(
+    org_id, cycle, merge_state_pairs, promote_state_ids, table_name, state_klass, view_klass, access_level_instance, sub_progress_key
+):
+    """
+    Process -States into -Views either directly (promoted_ids) or post-merge (merge_state_pairs).
+    """
+    sub_progress_data = update_sub_progress_total(100, sub_progress_key, finish=True)
     _log.debug(f"There are {len(merge_state_pairs)} merge_state_pairs and {len(promote_state_ids)} promote_states")
-    priorities = Column.retrieve_priorities(org.pk)
+    priorities = Column.retrieve_priorities(org_id)
     try:
         with transaction.atomic():
             # For each merge_state_pairs, try to merge the new state into the existing property views
@@ -769,7 +796,6 @@ def merge_unmatched_states(
     state_klass.objects.filter(pk__in=merged_state_ids).update(data_state=DATA_STATE_MATCHING, merge_state=MERGE_STATE_MERGED)
 
     return (
-        merged_between_existing_count,
         list(set(merged_views)),  # so no dupes, I think?
         errored_merged_states,
         new_views,

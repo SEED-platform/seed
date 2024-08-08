@@ -2007,27 +2007,24 @@ def validate_use_cases(file_pk):
 
 
 @shared_task
-def match_merge_cycle_inventory(org_id, cycle_id, ali_id, table_name, sub_progress_key):
+def match_merge_cycle_inventory(org_id, cycle_id, table_name, sub_progress_key):
     """
     Background task to match and merge existing inventory within a cycle.
     This is primarily used when UBID thershold has changed.
     """
     org = Organization.objects.filter(pk=org_id).first()
     cycle = Cycle.objects.filter(pk=cycle_id).first()
-    access_level_instance = AccessLevelInstance.objects.filter(pk=ali_id).first()
 
     if table_name == "TaxLotState":
-        view_klass = TaxLotView
         state_klass = TaxLotState
         existing_cycle_views = TaxLotView.objects.filter(cycle=cycle)
         unmatched_states = TaxLotState.objects.filter(taxlotview__in=existing_cycle_views)
-        promote_state_ids = TaxLotState.objects.none()
+        promote_state_ids = set()
     else:
-        view_klass = PropertyView
         state_klass = PropertyState
         existing_cycle_views = PropertyView.objects.filter(cycle=cycle)
         unmatched_states = PropertyState.objects.filter(propertyview__in=existing_cycle_views)
-        promote_state_ids = PropertyState.objects.none()
+        promote_state_ids = set()
 
     matching_columns = matching_criteria_column_names(org.id, "PropertyState")
     tuple_values = matching_columns.copy()
@@ -2040,8 +2037,6 @@ def match_merge_cycle_inventory(org_id, cycle_id, ali_id, table_name, sub_progre
         match_lookup[tuple(state[c] for c in tuple_values)].append(state)
 
     merge_unmatched_states(
-        access_level_instance,
-        cycle,
         matching_columns,
         match_lookup,
         org,
@@ -2049,8 +2044,7 @@ def match_merge_cycle_inventory(org_id, cycle_id, ali_id, table_name, sub_progre
         state_klass,
         state_lookup,
         sub_progress_key,
-        table_name,
         tuple_values,
         unmatched_states,
-        view_klass,
+        manual_trigger=True,
     )
