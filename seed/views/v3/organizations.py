@@ -65,7 +65,7 @@ from seed.utils.encrypt import decrypt, encrypt
 from seed.utils.geocode import geocode_buildings
 from seed.utils.match import match_merge_link
 from seed.utils.merge import merge_properties
-from seed.utils.organizations import create_organization, create_suborganization
+from seed.utils.organizations import create_organization, create_suborganization, set_default_2fa_method
 from seed.utils.properties import pair_unpair_property_taxlot
 from seed.utils.public import public_feed
 from seed.utils.salesforce import toggle_salesforce_sync
@@ -164,6 +164,7 @@ def _dict_org(request, organizations):
             "default_reports_y_axis_options": ColumnSerializer(
                 Column.objects.filter(organization=o, table_name="PropertyState", is_option_for_reports_y_axis=True), many=True
             ).data,
+            "require_2fa": o.require_2fa,
         }
         orgs.append(org)
 
@@ -647,6 +648,12 @@ class OrganizationViewSet(viewsets.ViewSet):
             org.salesforce_enabled = salesforce_enabled
             # if salesforce_enabled was toggled, must start/stop auto sync functionality
             toggle_salesforce_sync(salesforce_enabled, org.id)
+
+        require_2fa = posted_org.get("require_2fa", False)
+        if require_2fa != org.require_2fa:
+            org.require_2fa = require_2fa
+            if require_2fa:
+                set_default_2fa_method(org)
 
         # update the ubid threshold option
         ubid_threshold = posted_org.get("ubid_threshold")
