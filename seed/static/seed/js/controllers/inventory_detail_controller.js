@@ -139,7 +139,7 @@ angular.module('SEED.controller.inventory_detail', []).controller('inventory_det
     };
 
     $scope.labels = _.filter(labels_payload, (label) => !_.isEmpty(label.is_applied));
-    $scope.audit_template_building_id = inventory_payload.state.audit_template_building_id;
+    $scope.custom_id_1 = inventory_payload.state.custom_id_1;
     $scope.pm_property_id = inventory_payload.state.pm_property_id;
 
     /** See service for structure of returned payload */
@@ -612,7 +612,7 @@ angular.module('SEED.controller.inventory_detail', []).controller('inventory_det
         templateUrl: `${urls.static_url}seed/partials/data_upload_audit_template_modal.html`,
         controller: 'data_upload_audit_template_modal_controller',
         resolve: {
-          audit_template_building_id: () => $scope.audit_template_building_id,
+          custom_id_1: () => $scope.custom_id_1,
           organization: () => $scope.organization,
           cycle_id: () => $scope.cycle.id,
           upload_from_file: () => $scope.uploaderfunc,
