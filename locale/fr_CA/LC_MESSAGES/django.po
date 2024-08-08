@@ -105,6 +105,9 @@ msgstr "Ajouter ou supprimer des étiquettes de {num, plural, one{1 lot d'impôt
 msgid "AH_FILE_TYPES_SUPPORTED"
 msgstr "Types de fichiers pris en charge: .csv, .xls et .xlsx."
 
+msgid "ALL DATA"
+msgstr "TOUTES LES DONNÉES"
+
 msgid "ALSO_DELETE_ANALYSES"
 msgstr "Supprimez également {num,plural, one{ 1 analyse } other{# analyses }} ."
 
@@ -379,6 +382,9 @@ msgstr "Audit Template le mot de passe"
 
 msgid "Audit Template Report Type"
 msgstr "Type de rapport du modèle d'audit"
+
+msgid "Audit Template Submission Status"
+msgstr "Statut de soumission du modèle d'audit"
 
 msgid "Audit Template Upload Results"
 msgstr "Résultats du téléchargement du modèle d'audit"
@@ -1223,6 +1229,9 @@ msgstr "Modèles d'e-mails"
 msgid "Emission Metric"
 msgstr "Mesure des émissions"
 
+msgid "Enable Audit Template Auto Sync"
+msgstr "Activer la synchronisation automatique du modèle d'audit"
+
 msgid "Enable ComStock Functionality"
 msgstr "Activer la fonctionnalité ComStock"
 
@@ -1684,6 +1693,9 @@ msgstr "Cette opération est irréversible."
 msgid "ITEMS_WILL_NOT_CHANGE"
 msgstr "ceux-ci ne changeront pas"
 
+msgid "If you would like to automatically update inventory with Audit Template submission data for the selected Audit Template City ID, configure fields below."
+msgstr "Si vous souhaitez mettre à jour automatiquement l'inventaire avec les données de soumission du modèle d'audit pour l'ID de ville du modèle d'audit sélectionné, configurez les champs ci-dessous."
+
 msgid "Ignored duplicates of existing properties"
 msgstr "Copies ignorées des propriétés existantes"
 
@@ -1696,6 +1708,9 @@ msgstr "Copies de propriété ignorées dans le fichier d'importation"
 msgid "Ignored tax lot duplicates within the import file"
 msgstr "Copies des lots d'impôt ignorées dans the fichier d'importation"
 
+msgid "Import"
+msgstr "Importer"
+
 msgid "Import Access Level Instances"
 msgstr "Importer des instances de niveau d'accès"
 
@@ -1705,11 +1720,17 @@ msgstr "Importer des bâtiments de modèle d'audit"
 msgid "Import Portfolio Manager Data"
 msgstr "Importer les données de Portfolio Manager"
 
+msgid "Import Submissions"
+msgstr "Importer des soumissions"
+
 msgid "Import directly from ESPM"
 msgstr "Importer directement depuis ESPM"
 
 msgid "Import from Audit Template"
 msgstr "Importer à partir du Audit Template"
+
+msgid "Import setting:"
+msgstr "Paramètre d'importation :"
 
 msgid "In addition, you need to specify where the field should be associated with Tax Lot data or Property data. This will affect how the data is matched and merged, as well as how it is displayed in the Inventory view."
 msgstr "En outre, vous devez spécifier où le champ doit être associé aux données du lot d'impôt ou aux données de la propriété. Cela affectera la manière dont les données sont mises en correspondance et fusionnées, ainsi que la manière dont elles sont affichées dans la vue Inventaire."
@@ -1926,11 +1947,17 @@ msgstr "Compteur d'énergie d'affichage (changer un à la fois)"
 msgid "METER_READING_COUNTS_TITLE"
 msgstr "Compte de Relevé de Compteur"
 
+msgid "METER_WATER_DISPLAY_SETTINGS_TITLE"
+msgstr "Unités d'affichage du compteur d'eau (changer une à la fois)"
+
 msgid "MJ/m²/year"
 msgstr "MJ/m²/année"
 
 msgid "MODIFYING_COLUMN_SETTINGS"
 msgstr "Modification des paramètres de colonne"
+
+msgid "MORE RECENT DATA"
+msgstr "DONNÉES PLUS RÉCENTES"
 
 msgid "MULTIPLE_COL_MOD_OPTIONS"
 msgstr "Dans le tableau ci-dessous, vous pouvez modifier les colonnes des manières suivantes:"
@@ -2303,6 +2330,12 @@ msgstr "Voulez-vous vraiment supprimer {num_properties,plural,one{<strong>1</str
 msgid "OR"
 msgstr "OU"
 
+msgid "ORGANIZATION_WATER_USE_DISPLAY_UNITS"
+msgstr "Affichage de l'unité de mesure pour l'utilisation de l'eau"
+
+msgid "ORGANIZATION_WUI_DISPLAY_UNITS"
+msgstr "Affichage de l'unité de mesure de l'intensité d'utilisation de l'eau (WUI)"
+
 msgid "ORG_MATCH_MERGE_LINK_WARNING"
 msgstr "AVERTISSEMENT: Vous avez modifié les critères selon lesquels les données de votre organisation seront mises en correspondance et fusionnées. Une fois qu'une colonne a été ajoutée aux critères de correspondance d'une organisation, elle ne peut pas être supprimée tant que l'organisation dispose d'un inventaire."
 
@@ -2637,6 +2670,12 @@ msgstr "Liste Des Propriétés"
 msgid "Properties List (legacy)"
 msgstr "Liste des propriétés (héritage)"
 
+msgid "Properties failed to update:"
+msgstr "Les propriétés n'ont pas pu être mises à jour :"
+
+msgid "Properties updated:"
+msgstr "Propriétés mises à jour :"
+
 msgid "Properties with Data"
 msgstr "Propriétés avec données"
 
@@ -2828,6 +2867,9 @@ msgstr "Résolution"
 msgid "Restore Default Rules"
 msgstr "Restaurer les règles par défaut"
 
+msgid "Results for City"
+msgstr "Résultats pour Ville"
+
 #: seed/models/models.py:137
 msgid "Retro Commissioning"
 msgstr "Rétrospection de mise en service"
@@ -2915,6 +2957,12 @@ msgstr "SEED ne prend pas actuellement en charge ce format de fichier"
 #: seed/templates/seed/account_create_email.html:6
 msgid "SEED is easy, flexible, and cost effective software designed to help organizations clean, manage and share information about large portfolios of buildings. SEED is a free, open source web application that you can use privately.  While SEED was originally designed to help cities and States implement benchmarking programs for public or private buildings, it has the potential to be useful for many other activities by public entities, efficiency programs and private companies."
 msgstr "SEED est un logiciel simple, flexible et rentable conçu pour aider les entreprises à nettoyer, gérer et partager des informations sur les grands portefeuilles de bâtiments. SEED est une application Web open source gratuite que vous pouvez utiliser en privé. Bien que SEED ait été conçue à l'origine pour aider les villes et les États à mettre en œuvre des programmes de benchmarking pour les bâtiments publics ou privés, il est susceptible d'être utile pour de nombreuses autres activités par des entités publiques, des programmes d'efficacité et des entreprises privées."
+
+msgid "SEED will import submission data for the following City ID"
+msgstr "SEED importera les données de soumission pour l'ID de ville suivant"
+
+msgid "SEED will import submission data for the following submission status"
+msgstr "SEED importera les données de soumission pour le statut de soumission suivant"
 
 msgid "SELECT_DATA_SET_TITLE"
 msgstr "Sélectionner un ensemble de données"
@@ -3143,6 +3191,9 @@ msgstr "Enregistrer les mappages"
 
 msgid "Save Settings"
 msgstr "Enregistrer les paramètres"
+
+msgid "Schedule Weekly Update"
+msgstr "Planifier une mise à jour hebdomadaire"
 
 msgid "Scheduled Daily Update"
 msgstr "Mise à jour programmée quotidienne"
@@ -3787,6 +3838,12 @@ msgstr "Mettre à jour Salesforce"
 msgid "Update UBID"
 msgstr "Mettre à jour UBID"
 
+msgid "Update from Audit Template"
+msgstr "Mise à jour à partir du modèle d'audit"
+
+msgid "Update inventory with Audit Template Submissions for City"
+msgstr "Mettre à jour l'inventaire avec les soumissions de modèles d'audit pour la ville"
+
 msgid "Update the data type of the column to \"Area\" in"
 msgstr "Assurez-vous que le type de données de la colonne est bien \"Area\" dans"
 
@@ -3930,6 +3987,9 @@ msgstr "Visitez le site Web de BETTER pour effectuer une analyse de portefeuille
 msgid "Visualization Settings"
 msgstr "Paramètres de visualisation"
 
+msgid "WATER_TYPE_DISPLAY_CHOICE_PLACEHOLDER"
+msgstr "----Choisissez le type d'eau----"
+
 msgid "WHEN_YOU_CLICK_MAP_YOUR_DATA"
 msgstr "Lorsque vous cliquez sur le bouton <span class=\"label label-primary\">Mapper vos données</span> , le programme affiche une grille avec les nouveaux noms de champs comme en-têtes de colonne et vos données dans les lignes. Dans cette vue, vous pouvez toujours revenir à l'écran de mappage initial et modifier le mappage de champ."
 
@@ -3972,6 +4032,9 @@ msgstr "Qu'est-ce qu'un rapport personnalisé ?"
 
 msgid "What type of file would you like to upload?"
 msgstr "Quel type de fichier souhaitez-vous télécharger?"
+
+msgid "When checked, SEED will only import Audit Template data that has been updated more recently than SEED data. If unchecked, all data will be imported regardless of updated date."
+msgstr "Lorsque cette case est cochée, SEED importera uniquement les données du modèle d'audit qui ont été mises à jour plus récemment que les données SEED. Si cette case n'est pas cochée, toutes les données seront importées quelle que soit la date de mise à jour."
 
 msgid "When checked, properties/taxlots will be matched to existing cycles based on the 'year_ending' column or the default cycle if there is no match"
 msgstr "Lorsque cette case est cochée, les propriétés/taxlots seront appariés aux cycles existants en fonction de la colonne 'year_ending' ou du cycle par défaut s'il n'y a pas de correspondance"

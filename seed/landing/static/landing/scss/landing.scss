@@ -14,7 +14,7 @@ $gray_dark: #2b2b32;
 $gray_lighter: #ccc;
 $gray_lightest: #eee;
 $blue: #428bca;
-$beige: #f5f4ec;
+$beige: #020202;
 $orange: #fc882a;
 $green: #66b132;
 $yellow: #ffc40d;
@@ -87,6 +87,33 @@ body {
   font-weight: normal;
   text-rendering: optimizelegibility;
   -webkit-font-smoothing: antialiased;
+}
+
+////// TWO FACTOR AUTH ///////
+#login-content {
+  background: white;
+  width: 500px;
+  margin: auto;
+  padding: 50px;
+  border-radius: 5px;
+}
+
+.login-or-create {
+  margin: auto;
+  padding: 10px;
+
+  .login-btn {
+    width: 160px;
+    margin-bottom: 20px;
+  }
+}
+
+.login-wizard-actions {
+  margin: 10px;
+
+  button {
+    margin: 10px;
+  }
 }
 
 ////////// MAKE FLOAT CONTAINERS PLAY NICE ////////////
