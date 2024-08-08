@@ -712,6 +712,8 @@
     "More details": "Plus de détails",
     "Move Buildings": "Déplacer les bâtiments",
     "Move\/copy buildings to another project": "Déplacer\/copier des bâtiments dans un autre projet",
+    "Must include all selected labels (AND)": "Doit inclure toutes les étiquettes sélectionnées (ET)",
+    "Must include at least one selected label (OR)": "Doit inclure au moins une étiquette sélectionnée (OU)",
     "NEW_COLUMN_REPLACE_DATA_WARNING": "Une nouvelle colonne sera créée et\/ou les données existantes peuvent être remplacées.",
     "NON_UNIQUE_DATA_LOGGER_DISPLAY_NAME": "Le nom d'affichage doit être unique.",
     "NOT_GEOCODED_PREVIOUSLY": "Non géocodé auparavant",
