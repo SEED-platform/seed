@@ -104,6 +104,9 @@ msgstr "Add or remove labels from {num, plural, one{1 selected tax lot} other{# 
 msgid "AH_FILE_TYPES_SUPPORTED"
 msgstr "File types supported: .csv, .xls, and .xlsx."
 
+msgid "ALL DATA"
+msgstr "ALL DATA"
+
 msgid "ALSO_DELETE_ANALYSES"
 msgstr "Also delete {num,plural, one{1 analysis} other{# analyses}}."
 
@@ -377,6 +380,9 @@ msgstr "Audit Template Password"
 
 msgid "Audit Template Report Type"
 msgstr "Audit Template Report Type"
+
+msgid "Audit Template Submission Status"
+msgstr "Audit Template Submission Status"
 
 msgid "Audit Template Upload Results"
 msgstr "Audit Template Upload Results"
@@ -1212,6 +1218,9 @@ msgstr "Email Templates"
 msgid "Emission Metric"
 msgstr "Emission Metric"
 
+msgid "Enable Audit Template Auto Sync"
+msgstr "Enable Audit Template Auto Sync"
+
 msgid "Enable ComStock Functionality"
 msgstr "Enable ComStock Functionality"
 
@@ -1671,6 +1680,9 @@ msgstr "This operation is irreversible."
 msgid "ITEMS_WILL_NOT_CHANGE"
 msgstr "these will not change"
 
+msgid "If you would like to automatically update inventory with Audit Template submission data for the selected Audit Template City ID, configure fields below."
+msgstr "If you would like to automatically update inventory with Audit Template submission data for the selected Audit Template City ID, configure fields below."
+
 msgid "Ignored duplicates of existing properties"
 msgstr "Ignored duplicates of existing properties"
 
@@ -1683,6 +1695,9 @@ msgstr "Ignored property duplicates within the import file"
 msgid "Ignored tax lot duplicates within the import file"
 msgstr "Ignored tax lot duplicates within the import file"
 
+msgid "Import"
+msgstr "Import"
+
 msgid "Import Access Level Instances"
 msgstr "Import Access Level Instances"
 
@@ -1692,11 +1707,17 @@ msgstr "Import Audit Template Buildings"
 msgid "Import Portfolio Manager Data"
 msgstr "Import Portfolio Manager Data"
 
+msgid "Import Submissions"
+msgstr "Import Submissions"
+
 msgid "Import directly from ESPM"
 msgstr "Import directly from ESPM"
 
 msgid "Import from Audit Template"
 msgstr "Import from Audit Template"
+
+msgid "Import setting:"
+msgstr "Import setting:"
 
 msgid "In addition, you need to specify where the field should be associated with Tax Lot data or Property data. This will affect how the data is matched and merged, as well as how it is displayed in the Inventory view."
 msgstr "In addition, you need to specify where the field should be associated with Tax Lot data or Property data. This will affect how the data is matched and merged, as well as how it is displayed in the Inventory view."
@@ -1911,11 +1932,17 @@ msgstr "Meter energy display units (change one at a time)"
 msgid "METER_READING_COUNTS_TITLE"
 msgstr "Meter Reading Counts"
 
+msgid "METER_WATER_DISPLAY_SETTINGS_TITLE"
+msgstr "Meter water display units (change one at a time)"
+
 msgid "MJ/m²/year"
 msgstr "MJ/m²/year"
 
 msgid "MODIFYING_COLUMN_SETTINGS"
 msgstr "Modifying Column Settings"
+
+msgid "MORE RECENT DATA"
+msgstr "MORE RECENT DATA"
 
 msgid "MULTIPLE_COL_MOD_OPTIONS"
 msgstr "From the table below, you may modify the columns in the following ways: "
@@ -2287,6 +2314,12 @@ msgstr "Are you sure you want to delete {num_properties,plural, one{<strong>1</s
 msgid "OR"
 msgstr "OR"
 
+msgid "ORGANIZATION_WATER_USE_DISPLAY_UNITS"
+msgstr "Measurement unit display for Water Use"
+
+msgid "ORGANIZATION_WUI_DISPLAY_UNITS"
+msgstr "Measurement unit display for Water Use Intensity (WUI)"
+
 msgid "ORG_MATCH_MERGE_LINK_WARNING"
 msgstr "WARNING: You have modified the criteria that your organization's data will be matched and merged against. Once a column has been added to an organization's matching criteria it cannot be removed while the organization has inventory."
 
@@ -2620,6 +2653,12 @@ msgstr "Properties List"
 msgid "Properties List (legacy)"
 msgstr "Properties List (legacy)"
 
+msgid "Properties failed to update:"
+msgstr "Properties failed to update:"
+
+msgid "Properties updated:"
+msgstr "Properties updated:"
+
 msgid "Properties with Data"
 msgstr "Properties with Data"
 
@@ -2807,6 +2846,9 @@ msgstr "Resolution"
 msgid "Restore Default Rules"
 msgstr "Restore Default Rules"
 
+msgid "Results for City"
+msgstr "Results for City"
+
 #: seed/models/models.py:137
 msgid "Retro Commissioning"
 msgstr "Retro Commissioning"
@@ -2894,6 +2936,12 @@ msgstr "SEED doesn't currently support that file format"
 #: seed/templates/seed/account_create_email.html:6
 msgid "SEED is easy, flexible, and cost effective software designed to help organizations clean, manage and share information about large portfolios of buildings. SEED is a free, open source web application that you can use privately.  While SEED was originally designed to help cities and States implement benchmarking programs for public or private buildings, it has the potential to be useful for many other activities by public entities, efficiency programs and private companies."
 msgstr "SEED is easy, flexible, and cost effective software designed to help organizations clean, manage and share information about large portfolios of buildings. SEED is a free, open source web application that you can use privately.  While SEED was originally designed to help cities and States implement benchmarking programs for public or private buildings, it has the potential to be useful for many other activities by public entities, efficiency programs and private companies."
+
+msgid "SEED will import submission data for the following City ID"
+msgstr "SEED will import submission data for the following City ID"
+
+msgid "SEED will import submission data for the following submission status"
+msgstr "SEED will import submission data for the following submission status"
 
 msgid "SELECT_DATA_SET_TITLE"
 msgstr "Select Data Set"
@@ -3116,6 +3164,9 @@ msgstr "Save Mappings"
 
 msgid "Save Settings"
 msgstr "Save Settings"
+
+msgid "Schedule Weekly Update"
+msgstr "Schedule Weekly Update"
 
 msgid "Scheduled Daily Update"
 msgstr "Scheduled Daily Update"
@@ -3757,6 +3808,12 @@ msgstr "Update Salesforce"
 msgid "Update UBID"
 msgstr "Update UBID"
 
+msgid "Update from Audit Template"
+msgstr "Update from Audit Template"
+
+msgid "Update inventory with Audit Template Submissions for City"
+msgstr "Update inventory with Audit Template Submissions for City"
+
 msgid "Update the data type of the column to \"Area\" in"
 msgstr "Update the column's data type to \"Area\" in"
 
@@ -3899,6 +3956,9 @@ msgstr "Visit the BETTER website to run a portfolio analysis"
 msgid "Visualization Settings"
 msgstr "Visualization Settings"
 
+msgid "WATER_TYPE_DISPLAY_CHOICE_PLACEHOLDER"
+msgstr "----Choose water type----"
+
 msgid "WHEN_YOU_CLICK_MAP_YOUR_DATA"
 msgstr "When you click the <span class=\"label label-primary\">Map Your Data</span> button, the program will show a grid with the new field names as the column headings and your data in the rows. In that view, you can still come back to the initial mapping screen and change the field mapping."
 
@@ -3941,6 +4001,9 @@ msgstr "What is a Custom Report?"
 
 msgid "What type of file would you like to upload?"
 msgstr "What type of file would you like to upload?"
+
+msgid "When checked, SEED will only import Audit Template data that has been updated more recently than SEED data. If unchecked, all data will be imported regardless of updated date."
+msgstr "When checked, SEED will only import Audit Template data that has been updated more recently than SEED data. If unchecked, all data will be imported regardless of updated date."
 
 msgid "When checked, properties/taxlots will be matched to existing cycles based on the 'year_ending' column or the default cycle if there is no match"
 msgstr "When checked, properties/taxlots will be matched to existing cycles based on the 'year_ending' column or the default cycle if there is no match"

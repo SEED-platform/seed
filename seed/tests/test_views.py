@@ -1613,7 +1613,6 @@ class InventoryViewTests(AssertDictSubsetMixin, DeleteModelsTestCase):
             "derived_column": None,
         }
         self.assertIn(jurisdiction_tax_lot_id_col, results)
-        # breakpoint()
 
         expected_property_extra_data_column = {
             "table_name": "PropertyState",

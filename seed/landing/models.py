@@ -55,6 +55,7 @@ class SEEDUser(AbstractBaseUser, PermissionsMixin):
     show_shared_buildings = models.BooleanField(_("active"), default=False, help_text=_("shows shared buildings within search results"))
     default_organization = models.ForeignKey(Organization, on_delete=models.SET_NULL, blank=True, null=True, related_name="default_users")
     api_key = models.CharField(_("api key"), max_length=128, blank=True, default="", db_index=True)
+    prompt_2fa = models.BooleanField(default=True)
 
     objects = UserManager()
 
