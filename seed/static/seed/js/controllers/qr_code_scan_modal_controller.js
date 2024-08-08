@@ -2,7 +2,7 @@
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
  * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
-angular.module('BE.seed.controller.qr_code_scan_modal', []).controller('qr_code_scan_modal_controller', [
+angular.module('SEED.controller.qr_code_scan_modal', []).controller('qr_code_scan_modal_controller', [
   '$scope',
   '$uibModalInstance',
   'Notification',
@@ -25,9 +25,7 @@ angular.module('BE.seed.controller.qr_code_scan_modal', []).controller('qr_code_
     };
 
     $scope.verify_token = (code) => {
-      console.log(code);
       two_factor_service.verify_code(code, $scope.user.email).then((response) => {
-        console.log(response);
         if (response.data.success) {
           Notification.success('Authenticator App Verified!');
           verified = true;

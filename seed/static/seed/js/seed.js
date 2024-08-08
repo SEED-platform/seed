@@ -124,6 +124,7 @@
     'SEED.controller.postoffice_modal',
     'SEED.controller.profile',
     'SEED.controller.program_setup',
+    'SEED.controller.qr_code_scan_modal',
     'SEED.controller.record_match_merge_link_modal',
     'SEED.controller.rename_column_modal',
     'SEED.controller.reset_modal',
@@ -136,6 +137,7 @@
     'SEED.controller.set_update_to_now_modal',
     'SEED.controller.settings_profile_modal',
     'SEED.controller.show_populated_columns_modal',
+    'SEED.controller.two_factor_profile',
     'SEED.controller.ubid_admin',
     'SEED.controller.ubid_admin_modal',
     'SEED.controller.ubid_decode_modal',
@@ -212,6 +214,7 @@
     'SEED.service.search',
     'SEED.service.sensor',
     'SEED.service.simple_modal',
+    'SEED.service.two_factor',
     'SEED.service.ubid',
     'SEED.service.uniformat',
     'SEED.service.uploader',
@@ -374,6 +377,32 @@
               }
             ],
             user_profile_payload: ['user_service', (user_service) => user_service.get_user_profile()]
+          }
+        })
+        .state({
+          name: 'two_factor_profile',
+          url: '/profile/two_factor_profile',
+          templateUrl: `${static_url}seed/partials/two_factor_profile.html`,
+          controller: 'two_factor_profile_controller',
+          resolve: {
+            auth_payload: [
+              'auth_service',
+              '$q',
+              'user_service',
+              (auth_service, $q, user_service) => {
+                const organization_id = user_service.get_organization().id;
+                return auth_service.is_authorized(organization_id, ['requires_superuser']);
+              }
+            ],
+            organization_payload: [
+              'user_service',
+              'organization_service',
+              (user_service, organization_service) => organization_service.get_organization(user_service.get_organization().id)
+            ],
+            user_profile_payload: [
+              'user_service',
+              (user_service) => user_service.get_user_profile()
+            ]
           }
         })
         .state({

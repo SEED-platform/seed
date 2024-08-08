@@ -2,10 +2,11 @@
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
  * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
-angular.module('BE.seed.controller.two_factor_profile', []).controller('two_factor_profile_controller', [
+angular.module('SEED.controller.two_factor_profile', []).controller('two_factor_profile_controller', [
   '$scope',
   '$uibModal',
   'urls',
+  'Notification',
   'two_factor_service',
   'user_service',
   'auth_payload',
@@ -17,6 +18,7 @@ angular.module('BE.seed.controller.two_factor_profile', []).controller('two_fact
     $scope,
     $uibModal,
     urls,
+    Notification,
     two_factor_service,
     user_service,
     auth_payload,
@@ -28,6 +30,8 @@ angular.module('BE.seed.controller.two_factor_profile', []).controller('two_fact
     $scope.require_2fa = $scope.organization.require_2fa;
     $scope.user = user_profile_payload;
     $scope.temp_user = { ...$scope.user };
+    $scope.settings_unchanged = () => _.isEqual($scope.temp_user, $scope.user);
+
     const email = $scope.user.email;
 
     $scope.generate_qr_code = () => {
@@ -56,9 +60,10 @@ angular.module('BE.seed.controller.two_factor_profile', []).controller('two_fact
           if (response.qr_code) {
             $scope.qr_code_img = `data:image/png;base64,${response.qr_code}`;
             open_qr_code_scan_modal();
+          } else {
+            Notification.success('Changes Saved');
           }
         });
-        console.log(response);
       });
     };
 

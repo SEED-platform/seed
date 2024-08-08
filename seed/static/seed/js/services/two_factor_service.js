@@ -2,7 +2,7 @@
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
  * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
-angular.module('BE.seed.service.two_factor', []).factory('two_factor_service', [
+angular.module('SEED.service.two_factor', []).factory('two_factor_service', [
   '$http',
   'user_service',
   ($http, user_service) => {

@@ -34,7 +34,7 @@
                 <input class="form-check-input" ng-model="temp_user.two_factor_method" value="disabled" type="radio" ng-disabled="require_2fa" name="flexRadioDefault" id="flexRadioDisabled" />
                 <label class="form-check-label" for="flexRadioDisabled">Disabled</label>
                 <p class="help-text" translate="TWO_FACTOR_DISABLED_TEXT"></p>
-                <p class="help-text" ng-if="require_2fa"><em>* {$:: TWO_FACTOR_REQUIRED_TEXT | translate $}</em></p>
+                <p class="help-text" ng-if="require_2fa"><em>* {$ 'TWO_FACTOR_REQUIRED' | translate $}</em></p>
               </div>
               <div class="form-check two_factor_selection">
                 <input class="form-check-input" ng-model="temp_user.two_factor_method" value="email" type="radio" name="flexRadioDefault" id="flexRadioEmail" />
@@ -52,7 +52,9 @@
       </div>
       <div class="section_content_container" style="margin: 30px 0" ng-if="::auth.requires_owner">
         <div class="section_content with_padding">
-          <button type="button" class="btn btn-primary" ng-click="save_settings()">{$:: 'Save Changes' | translate $} <i class="fa-solid fa-check" ng-show="settings_updated"></i></button>
+          <button type="button" class="btn btn-primary" ng-disabled="settings_unchanged()" ng-click="save_settings()">
+            {$:: 'Save Changes' | translate $} <i class="fa-solid fa-check" ng-show="settings_updated"></i>
+          </button>
           <div ng-if="form_errors" class="r-error-msg r-margin-right-10"><i class="fa-solid fa-circle-exclamation fa-lg"></i> Error saving: {$ form_errors $}</div>
         </div>
       </div>

@@ -5,7 +5,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("orgs", "0031_encrypt_existing_audit_template_passwords"),
+        ("orgs", "0033_organization_public_geojson_enabled"),
     ]
 
     operations = [
