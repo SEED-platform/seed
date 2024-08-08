@@ -2,36 +2,32 @@
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
  * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
-angular.module('BE.seed.controller.data_upload_audit_template_modal', []).controller('data_upload_audit_template_modal_controller', [
+angular.module('SEED.controller.data_upload_audit_template_modal', []).controller('data_upload_audit_template_modal_controller', [
   '$scope',
   '$state',
-  '$uibModal',
   '$uibModalInstance',
-  'urls',
-  'uiGridConstants',
+  'Notification',
   'spinner_utility',
+  'uploader_service',
   'organization',
   'cycle_id',
   'upload_from_file',
   'audit_template_service',
-  'organization_service',
-  'audit_template_building_id',
+  'custom_id_1',
   'view_id',
   // eslint-disable-next-line func-names
   function (
     $scope,
     $state,
-    $uibModal,
     $uibModalInstance,
-    urls,
-    uiGridConstants,
+    Notification,
     spinner_utility,
+    uploader_service,
     organization,
     cycle_id,
     upload_from_file,
     audit_template_service,
-    organization_service,
-    audit_template_building_id,
+    custom_id_1,
     view_id
   ) {
     $scope.organization = organization;
@@ -41,8 +37,10 @@ angular.module('BE.seed.controller.data_upload_audit_template_modal', []).contro
     $scope.error = '';
     $scope.busy = false;
     $scope.fields = {
-      audit_template_building_id
+      custom_id_1
     };
+    const city_id = $scope.organization.audit_template_city_id;
+    $scope.status = {};
 
     $scope.upload_from_file_and_close = (event_message, file, progress) => {
       $scope.close();
@@ -50,34 +48,51 @@ angular.module('BE.seed.controller.data_upload_audit_template_modal', []).contro
     };
 
     $scope.confirm_import = () => {
-      if (!$scope.fields.audit_template_building_id) {
-        $scope.error = 'An Audit Template building ID is required.';
+      if (!$scope.fields.custom_id_1) {
+        $scope.error = 'A Custom ID 1 is required.';
+      } else if (!city_id) {
+        $scope.error = 'Organization city id must be set in Organization Settings';
       } else {
         $scope.submit_request();
       }
+    };
+
+    const handle_response = (message, error = false) => {
+      spinner_utility.hide();
+      if (error) {
+        Notification.error(message);
+        $scope.close();
+      } else {
+        Notification.success('Successfully updated property');
+        $scope.close(true);
+      }
+      spinner_utility.hide();
     };
 
     $scope.submit_request = () => {
       $scope.error = '';
       $scope.busy = true;
       spinner_utility.show();
-      return audit_template_service.get_building_xml($scope.organization.id, $scope.fields.audit_template_building_id).then((result) => {
-        spinner_utility.hide();
-        if (typeof result === 'object' && !result.success) {
-          $scope.error = `Error: ${result.message}`;
-          $scope.busy = false;
+      return audit_template_service.get_city_submission_xml_and_update($scope.organization.id, city_id, $scope.fields.custom_id_1).then((response) => {
+        const data = response.data;
+        if (response.status !== 200) {
+          handle_response(data.message, true);
         } else {
-          return audit_template_service.update_building_with_xml($scope.organization.id, $scope.cycle_id, $scope.view_id, $scope.fields.audit_template_building_id, result).then(() => {
-            $scope.close();
-            $scope.upload_from_file('upload_complete', null, null);
-            $scope.busy = false;
-          });
+          uploader_service.check_progress_loop(
+            data.progress_key,
+            0,
+            1,
+            (data) => handle_response(data.message),
+            (data) => handle_response(data.data.message, true),
+            $scope.status
+          );
         }
       });
     };
 
-    $scope.close = () => {
+    $scope.close = (reload = false) => {
       $uibModalInstance.dismiss();
+      if (reload) $state.reload();
     };
   }
 ]);

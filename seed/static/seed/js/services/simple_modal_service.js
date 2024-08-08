@@ -30,7 +30,7 @@
     Again, this service is only for simple modals. More complex modal windows should be
     created as a separate service.
  */
-angular.module('BE.seed.service.simple_modal', []).factory('simple_modal_service', [
+angular.module('SEED.service.simple_modal', []).factory('simple_modal_service', [
   '$uibModal',
   'urls',
   ($uibModal, urls) => {

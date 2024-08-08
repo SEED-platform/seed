@@ -55,7 +55,7 @@
       const lastName = "{{ request.user.last_name }}";
       const email = "{{ request.user.email }}";
 
-      window.BE = {
+      window.SEED = {
         username: username || `${firstName} ${lastName}`.trim() || email,
         initial_org_id: '{{ initial_org_id }}',
         initial_org_user_role: '{{ initial_org_user_role }}',
@@ -78,7 +78,7 @@
 
 {% block body %}
   <body>
-  <div class="app" ng-app="BE.seed" ng-strict-di>
+  <div class="app" ng-app="SEED" ng-strict-di>
     {% block content %}
     {% endblock %}
   </div>

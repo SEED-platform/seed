@@ -6,7 +6,7 @@
  * The Property or Tax Lot ID is passed in as 'inventory_id', identified by
  * inventory_type="properties" or inventory_type="taxlots"
  */
-angular.module('BE.seed.controller.inventory_detail_analyses_modal', []).controller('inventory_detail_analyses_modal_controller', [
+angular.module('SEED.controller.inventory_detail_analyses_modal', []).controller('inventory_detail_analyses_modal_controller', [
   '$scope',
   '$log',
   '$uibModalInstance',
@@ -110,6 +110,9 @@ angular.module('BE.seed.controller.inventory_detail_analyses_modal', []).control
         case 'EEEJ':
           $scope.new_analysis.configuration = {};
           break;
+        case 'Element Statistics':
+          $scope.new_analysis.configuration = {};
+          break;
         default:
           $log.error('Unknown analysis type.', $scope.new_analysis.service);
           Notification.error(`Unknown analysis type: ${$scope.new_analysis.service}`);
@@ -123,7 +126,7 @@ angular.module('BE.seed.controller.inventory_detail_analyses_modal', []).control
       }
       $scope.waiting_for_server = true;
 
-      analyses_service.create_analysis($scope.new_analysis.name, $scope.new_analysis.service, $scope.new_analysis.configuration, inventory_ids, window.BE.access_level_instance_id).then(
+      analyses_service.create_analysis($scope.new_analysis.name, $scope.new_analysis.service, $scope.new_analysis.configuration, inventory_ids, window.SEED.access_level_instance_id).then(
         (data) => {
           $scope.waiting_for_server = false;
           Notification.primary('Created Analysis');

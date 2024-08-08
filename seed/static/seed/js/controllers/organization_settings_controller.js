@@ -2,12 +2,14 @@
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
  * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
-angular.module('BE.seed.controller.organization_settings', []).controller('organization_settings_controller', [
+angular.module('SEED.controller.organization_settings', []).controller('organization_settings_controller', [
   '$scope',
   '$uibModal',
   'urls',
   'organization_payload',
+  'audit_template_service',
   'auth_payload',
+  'property_columns',
   'analyses_service',
   'organization_service',
   'salesforce_mapping_service',
@@ -17,6 +19,7 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
   'labels_payload',
   'salesforce_mappings_payload',
   'salesforce_configs_payload',
+  'audit_template_configs_payload',
   'meters_service',
   'Notification',
   '$translate',
@@ -26,7 +29,9 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
     $uibModal,
     urls,
     organization_payload,
+    audit_template_service,
     auth_payload,
+    property_columns,
     analyses_service,
     organization_service,
     salesforce_mapping_service,
@@ -36,6 +41,7 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
     labels_payload,
     salesforce_mappings_payload,
     salesforce_configs_payload,
+    audit_template_configs_payload,
     meters_service,
     Notification,
     $translate
@@ -45,6 +51,11 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
     $scope.conf = {};
     if (salesforce_configs_payload.length > 0) {
       $scope.conf = salesforce_configs_payload[0];
+    }
+
+    $scope.at_conf = {};
+    if (audit_template_configs_payload.length > 0) {
+      $scope.at_conf = audit_template_configs_payload[0];
     }
 
     $scope.timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -65,6 +76,7 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
     $scope.config_errors = null;
     $scope.changes_possible = false;
     $scope.secrets = { pwd: 'password', token: 'password' };
+    $scope.columns = property_columns;
 
     $scope.unit_options_eui = [
       {
@@ -230,6 +242,40 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
         });
     };
 
+    const acceptable_column_types = ['area', 'eui', 'float', 'integer', 'number'];
+    const filtered_columns = _.filter($scope.columns, (column) => _.includes(acceptable_column_types, column.data_type));
+
+    $scope.selected_x_columns = $scope.org.default_reports_x_axis_options.map((c) => c.id);
+    $scope.available_x_columns = () => filtered_columns.filter(({ id }) => !$scope.selected_x_columns.includes(id));
+
+    $scope.add_x_column = (x_column_id) => {
+      $scope.selected_x_columns.push(x_column_id);
+    };
+
+    $scope.remove_x_column = (x_column_id) => {
+      const index = $scope.selected_x_columns.indexOf(x_column_id);
+      if (index !== -1) $scope.selected_x_columns.splice(index, 1);
+    };
+
+    $scope.selected_y_columns = $scope.org.default_reports_y_axis_options.map((c) => c.id);
+    $scope.available_y_columns = () => $scope.columns.filter(({ id }) => !$scope.selected_y_columns.includes(id));
+
+    $scope.add_y_column = (y_column_id) => {
+      $scope.selected_y_columns.push(y_column_id);
+    };
+
+    $scope.remove_y_column = (y_column_id) => {
+      const index = $scope.selected_y_columns.indexOf(y_column_id);
+      if (index !== -1) $scope.selected_y_columns.splice(index, 1);
+    };
+
+    $scope.get_column_display = (id) => {
+      const record = _.find($scope.columns, { id });
+      if (record) {
+        return record.displayName;
+      }
+    };
+
     /**
      * saves the updates settings
      */
@@ -239,7 +285,11 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
       $scope.form_errors = null;
       update_display_unit_for_scoped_org();
       organization_service
-        .save_org_settings($scope.org)
+        .save_org_settings({
+          ...$scope.org,
+          default_reports_x_axis_options: $scope.selected_x_columns,
+          default_reports_y_axis_options: $scope.selected_y_columns
+        })
         .then(() => {
           $scope.settings_updated = true;
           $scope.org_static = angular.copy($scope.org);
@@ -296,6 +346,14 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
               Notification.error({ message: `Error: ${$scope.config_errors}`, delay: 15000, closeOnClick: true });
             });
         }
+      }
+
+      if ($scope.org.audit_template_sync_enabled && validate_at_conf()) {
+        audit_template_service.upsert_audit_template_config($scope.org.id, $scope.at_conf, $scope.timezone)
+          .then(() => {
+            audit_template_service.get_audit_template_configs($scope.org.id)
+              .then((response) => { $scope.at_conf = response[0]; });
+          });
       }
 
       // also save NEW/UPDATED salesforce mappings if any
@@ -476,6 +534,44 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
         });
     };
 
+    /*
+    * fetch Audit Template city submission data
+    */
+    $scope.get_city_submission_data = () => {
+      $scope.save_settings();
+      $uibModal.open({
+        templateUrl: `${urls.static_url}seed/partials/at_submission_import_modal.html`,
+        controller: 'at_submission_import_modal_controller',
+        backdrop: 'static',
+        resolve: {
+          org: () => $scope.org,
+          view_ids: () => []
+        }
+      });
+    };
+
+    $scope.days_of_week = [
+      { 0: 'Sunday' },
+      { 1: 'Monday' },
+      { 2: 'Tuesday' },
+      { 3: 'Wednesday' },
+      { 4: 'Thursday' },
+      { 5: 'Friday' },
+      { 6: 'Saturday' }
+    ];
+
+    const validate_at_conf = () => {
+      const { update_at_day, update_at_hour, update_at_minute } = $scope.at_conf;
+
+      const validate_input = (input, upper_limit) => typeof input === 'number' && input >= 0 && input <= upper_limit;
+
+      return (
+        validate_input(update_at_day, 6) &&
+        validate_input(update_at_hour, 23) &&
+        validate_input(update_at_minute, 59)
+      );
+    };
+
     $scope.audit_template_report_types = [
       'ASHRAE Level 2 Report',
       'Atlanta Report',
@@ -493,5 +589,7 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
       'WA Commerce Clean Buildings - Form D Report',
       'WA Commerce Grants Report'
     ];
+
+    $scope.audit_template_status_types = ['Received', 'Pending', 'Rejected', 'Complies'];
   }
 ]);

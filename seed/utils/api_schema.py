@@ -17,6 +17,7 @@ class AutoSchemaHelper(SwaggerAutoSchema):
         "integer": openapi.TYPE_INTEGER,
         "object": openapi.TYPE_OBJECT,
         "number": openapi.TYPE_NUMBER,
+        "datetime": openapi.TYPE_STRING,
     }
 
     @classmethod
@@ -72,6 +73,10 @@ class AutoSchemaHelper(SwaggerAutoSchema):
     def path_id_field(description):
         return openapi.Parameter("id", openapi.IN_PATH, description=description, required=True, type=openapi.TYPE_INTEGER)
 
+    @staticmethod
+    def path_enum_field(name, description, enum):
+        return openapi.Parameter(name, openapi.IN_PATH, description=description, required=True, type=openapi.TYPE_STRING, enum=enum)
+
     @classmethod
     def body_field(cls, required, description, name="body", params_to_formats={}):
         return openapi.Parameter(
@@ -101,6 +106,8 @@ class AutoSchemaHelper(SwaggerAutoSchema):
 
         if isinstance(obj, str):
             openapi_type = cls._openapi_type(obj)
+            if obj == "datetime":
+                return openapi.Schema(type=openapi_type, format=openapi.FORMAT_DATETIME, **kwargs)
             return openapi.Schema(type=openapi_type, **kwargs)
 
         if isinstance(obj, list):
