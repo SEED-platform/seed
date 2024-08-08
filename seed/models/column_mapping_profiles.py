@@ -81,8 +81,11 @@ class ColumnMappingProfile(models.Model):
                         "from_units": row[1],
                         "to_table_name": row[2],
                         "to_field": row[3],
-                        "isOmitted": row[4],
                     }
+                    try:
+                        data["isOmitted"] = row[4]
+                    except IndexError:
+                        data["isOmitted"] = False
                     mappings.append(data)
         else:
             raise Exception(f"Mapping file does not exist: {filename}")
