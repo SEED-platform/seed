@@ -48,6 +48,7 @@ angular.module('SEED.controller.inventory_reports', []).controller('inventory_re
     const org_id = organization_payload.organization.id;
     const base_storage_key = `report.${org_id}`;
 
+    $scope.org_id = org_id;
     $scope.access_level_tree = access_level_tree.access_level_tree;
     $scope.level_names = access_level_tree.access_level_names;
     $scope.level_name_index = null;

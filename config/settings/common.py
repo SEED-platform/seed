@@ -47,7 +47,7 @@ SESSION_ENGINE = "django.contrib.sessions.backends.signed_cookies"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [os.path.join(BASE_DIR, "seed", "templates")],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -60,6 +60,7 @@ TEMPLATES = [
                 "django.contrib.messages.context_processors.messages",
                 "config.template_context.session_key",
                 "config.template_context.sentry_js",
+                "seed.context_processors.global_vars",
             ],
         },
     },
@@ -73,6 +74,7 @@ MIDDLEWARE = (
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django_otp.middleware.OTPMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
 )
 
@@ -99,6 +101,14 @@ DJANGO_CORE_APPS = (
     "post_office",
     "django_celery_beat",
     "treebeard",
+    "django_otp",
+    "django_otp.plugins.otp_static",
+    "django_otp.plugins.otp_totp",
+    "django_otp.plugins.otp_email",  # <- if you want email capability.
+    "two_factor",
+    "two_factor.plugins.phonenumber",  # <- if you want phone number capability.
+    "two_factor.plugins.email",  # <- if you want email capability.
+    # "two_factor.plugins.yubikey",  # <- for yubikey capability.
 )
 
 
@@ -200,7 +210,9 @@ LOGGING = {
     },
 }
 
-LOGIN_REDIRECT_URL = "/app/"
+# LOGIN_URL = "two_factor:login"
+LOGIN_REDIRECT_URL = "two_factor:profile"
+# LOGIN_REDIRECT_URL = "/app/"
 
 APPEND_SLASH = True
 

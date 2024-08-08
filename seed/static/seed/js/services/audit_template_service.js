@@ -5,48 +5,45 @@
 angular.module('SEED.service.audit_template', []).factory('audit_template_service', [
   '$http',
   ($http) => {
-    const get_building_xml = (org_id, audit_template_building_id) => $http
-      .get(['/api/v3/audit_template/', audit_template_building_id, '/get_building_xml/?organization_id=', org_id].join(''))
-      .then((response) => response.data)
-      .catch((response) => response.data);
+    const audit_template_factory = {};
 
-    const batch_get_building_xml_and_update = (org_id, cycle_id, properties) => $http
-      .put(['/api/v3/audit_template/batch_get_building_xml/?organization_id=', org_id, '&cycle_id=', cycle_id].join(''), properties)
-      .then((response) => response.data)
-      .catch((response) => response.data);
-
-    const get_buildings = (org_id, cycle_id) => $http
-      .get(['/api/v3/audit_template/get_buildings/?organization_id=', org_id, '&cycle_id=', cycle_id].join(''))
-      .then((response) => response.data)
-      .catch((response) => response.data);
-
-    const update_building_with_xml = (org_id, cycle_id, property_view_id, audit_template_building_id, xml_string) => {
-      const body = new FormData();
-      const blob = new Blob([xml_string], { type: 'text/xml' });
-      const title = `at_${audit_template_building_id}_${moment().format('YYYYMMDD_HHmmss')}.xml`;
-      body.append('file', blob, title);
-      body.append('file_type', 1);
-      const headers = { 'Content-Type': undefined };
-
-      return $http
-        .put(['/api/v3/properties/', property_view_id, '/update_with_building_sync/?', 'cycle_id=', cycle_id, '&', 'organization_id=', org_id].join(''), body, { headers })
-        .then((response) => response.data)
-        .catch((response) => response.data);
-    };
-
-    const batch_export_to_audit_template = (org_id, property_view_ids) => $http
+    audit_template_factory.batch_export_to_audit_template = (org_id, property_view_ids) => $http
       .post(`/api/v3/audit_template/batch_export_to_audit_template/?organization_id=${org_id}`, property_view_ids)
       .then((response) => response.data)
       .catch((response) => response.data);
 
-    const analyses_factory = {
-      get_building_xml,
-      batch_get_building_xml_and_update,
-      get_buildings,
-      update_building_with_xml,
-      batch_export_to_audit_template
+    audit_template_factory.get_city_submission_xml_and_update = (org_id, city_id, custom_id_1) => $http
+      .put(`/api/v3/audit_template/get_city_submission_xml/?organization_id=${org_id}`, { city_id, custom_id_1 })
+      .then((response) => response)
+      .catch((response) => response);
+
+    audit_template_factory.batch_get_city_submission_xml_and_update = (org_id, view_ids) => $http
+      .put(`/api/v3/audit_template/batch_get_city_submission_xml/?organization_id=${org_id}`, { view_ids })
+      .then((response) => response)
+      .catch((response) => response);
+
+    audit_template_factory.get_audit_template_configs = (org_id) => $http
+      .get(`/api/v3/audit_template_configs/?organization_id=${org_id}`)
+      .then((response) => response.data.data)
+      .catch((response) => response.data.data);
+
+    audit_template_factory.upsert_audit_template_config = (org_id, data, timezone) => {
+      data.timezone = timezone;
+      return data.id ?
+        audit_template_factory.update_audit_template_config(org_id, data) :
+        audit_template_factory.create_audit_template_config(org_id, data);
     };
 
-    return analyses_factory;
+    audit_template_factory.create_audit_template_config = (org_id, data) => $http
+      .post(`/api/v3/audit_template_configs/?organization_id=${org_id}`, data)
+      .then((response) => response.data.data)
+      .catch((response) => response.data.data);
+
+    audit_template_factory.update_audit_template_config = (org_id, data) => $http
+      .put(`/api/v3/audit_template_configs/${data.id}/?organization_id=${org_id}`, data)
+      .then((response) => response.data.data)
+      .catch((response) => response.data);
+
+    return audit_template_factory;
   }
 ]);
