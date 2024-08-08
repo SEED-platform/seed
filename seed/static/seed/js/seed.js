@@ -424,25 +424,6 @@
           }
         })
         .state({
-          name: 'two_factor_profile',
-          url: '/profile/two_factor_profile',
-          templateUrl: `${static_url}seed/partials/two_factor_profile.html`,
-          controller: 'two_factor_profile_controller',
-          resolve: {
-            auth_payload: [
-              'auth_service',
-              '$q',
-              'user_service',
-              (auth_service, $q, user_service) => {
-                const organization_id = user_service.get_organization().id;
-                return auth_service.is_authorized(organization_id, ['requires_superuser']);
-              }
-            ],
-            organization_payload: ['user_service', 'organization_service', (user_service, organization_service) => organization_service.get_organization(user_service.get_organization().id)],
-            user_profile_payload: ['user_service', (user_service) => user_service.get_user_profile()]
-          }
-        })
-        .state({
           name: 'developer',
           url: '/profile/developer',
           templateUrl: `${static_url}seed/partials/developer.html`,
