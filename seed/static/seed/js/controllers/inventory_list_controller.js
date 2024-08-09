@@ -749,7 +749,7 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
       const property_view_ids = $scope.inventory_type === 'properties' ? selectedViewIds : [];
       const taxlot_view_ids = $scope.inventory_type === 'taxlots' ? selectedViewIds : [];
 
-      data_quality_service.start_data_quality_checks(property_view_ids, taxlot_view_ids).then((response) => {
+      data_quality_service.start_data_quality_checks(property_view_ids, taxlot_view_ids, null).then((response) => {
         data_quality_service
           .data_quality_checks_status(response.progress_key)
           .then((result) => {

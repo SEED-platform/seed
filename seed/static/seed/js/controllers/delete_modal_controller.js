@@ -43,7 +43,6 @@ angular.module('SEED.controller.delete_modal', []).controller('delete_modal_cont
           $scope.delete_state = 'success';
         })
         .catch((resp) => {
-          console.log('resp', resp);
           $scope.delete_state = 'fail';
           if (resp.status === 422) {
             $scope.error = resp.data.message;
