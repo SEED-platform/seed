@@ -1102,8 +1102,7 @@ class TestColumnsByInventory(TestCase):
             "year_ending",
         ]
 
-        self.maxDiff = None
-        method_columns = Column.retrieve_db_field_name_for_hash_comparison(PropertyState)
+        method_columns = Column.retrieve_db_field_name_for_hash_comparison(PropertyState, self.fake_org.id)
         self.assertListEqual(method_columns, expected)
 
     def test_retrieve_db_field_table_and_names_from_db_tables(self):

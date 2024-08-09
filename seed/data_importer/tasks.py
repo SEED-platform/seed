@@ -1682,18 +1682,20 @@ def finish_matching(result, import_file_id, progress_key):
 
 
 def hash_state_object(obj, include_extra_data=True):
+    all_excluded_keys = Column.objects.filter(is_excluded_from_hash=True, organization_id=obj.organization_id)
+    excluded_taxlot_keys = all_excluded_keys.filter(table_name="TaxLotState").values_list("column_name", flat=True)
+    excluded_property_keys = all_excluded_keys.filter(table_name="PropertyState").values_list("column_name", flat=True)
+
     def add_dictionary_repr_to_hash(hash_obj, dict_obj, inventory_type):
         if not isinstance(dict_obj, dict):
             raise ValueError("Only dictionaries can be hashed")
 
-        excluded_keys = Column.objects.filter(is_excluded_from_hash=True, table_name=inventory_type.__name__).values_list(
-            "column_name", flat=True
-        )
+        excluded_keys = excluded_property_keys if inventory_type == PropertyState else excluded_taxlot_keys
         for key, value in sorted(dict_obj.items(), key=lambda x_y: x_y[0]):
             if key in excluded_keys:
                 continue
             if isinstance(value, dict):
-                add_dictionary_repr_to_hash(hash_obj, value)
+                add_dictionary_repr_to_hash(hash_obj, value, inventory_type)
             else:
                 # TODO: Do we need to normalize_unicode_and_characters (formerly unidecode) here?
                 hash_obj.update(str(normalize_unicode_and_characters(key)).encode("utf-8"))
@@ -1710,7 +1712,7 @@ def hash_state_object(obj, include_extra_data=True):
             return "FOO"  # Return a random value so we can distinguish between this and None.
 
     m = hashlib.md5()  # noqa: S324
-    for f in Column.retrieve_db_field_name_for_hash_comparison(type(obj)):
+    for f in Column.retrieve_db_field_name_for_hash_comparison(type(obj), obj.organization_id):
         obj_val = _get_field_from_obj(obj, f)
         m.update(f.encode("utf-8"))
         if isinstance(obj_val, datetime):
