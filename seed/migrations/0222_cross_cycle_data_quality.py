@@ -6,6 +6,8 @@ from django.db import connection, migrations, models
 
 def forwards(apps, schema_editor):
     Organization = apps.get_model("orgs", "Organization")
+    Rule = apps.get_model("seed", "Rule")
+    DataQualityCheck = apps.get_model("seed", "DataQualityCheck")
     Label = apps.get_model("seed", "StatusLabel")
 
     # Populate the default labels for goal rules.
@@ -18,9 +20,125 @@ def forwards(apps, schema_editor):
         "Low Area % Change",
     ]
 
+    # Populate the default data quality goal rules if they do not already exist.
+    TYPE_AREA = 4
+    TYPE_EUI = 5
+    RULE_TYPE_DEFAULT = 0
+    SEVERITY_ERROR = 0
+    RULE_NOT_NULL = "not_null"
+    RULE_RANGE = "range"
+
+    NEW_DEFAULT_RULES = [
+        {
+            "table_name": "Goal",
+            "name": "High EUI % Change",
+            "field": "eui",
+            "data_type": TYPE_EUI,
+            "rule_type": RULE_TYPE_DEFAULT,
+            "severity": SEVERITY_ERROR,
+            "condition": RULE_RANGE,
+            "max": 40,
+            "cross_cycle": True,
+        },
+        {
+            "table_name": "Goal",
+            "name": "Low EUI % Change",
+            "field": "eui",
+            "data_type": TYPE_EUI,
+            "rule_type": RULE_TYPE_DEFAULT,
+            "severity": SEVERITY_ERROR,
+            "condition": RULE_RANGE,
+            "min": -40,
+            "cross_cycle": True,
+        },
+        {
+            "table_name": "Goal",
+            "name": "High Area % Change",
+            "field": "area",
+            "data_type": TYPE_AREA,
+            "rule_type": RULE_TYPE_DEFAULT,
+            "severity": SEVERITY_ERROR,
+            "condition": RULE_RANGE,
+            "max": 5,
+            "cross_cycle": True,
+        },
+        {
+            "table_name": "Goal",
+            "name": "Low Area % Change",
+            "field": "area",
+            "data_type": TYPE_AREA,
+            "rule_type": RULE_TYPE_DEFAULT,
+            "severity": SEVERITY_ERROR,
+            "condition": RULE_RANGE,
+            "min": -5,
+            "cross_cycle": True,
+        },
+        {
+            "table_name": "Goal",
+            "name": "High EUI",
+            "field": "eui",
+            "data_type": TYPE_EUI,
+            "rule_type": RULE_TYPE_DEFAULT,
+            "severity": SEVERITY_ERROR,
+            "condition": RULE_RANGE,
+            "max": 1000,
+        },
+        {
+            "table_name": "Goal",
+            "name": "Low EUI",
+            "field": "eui",
+            "data_type": TYPE_EUI,
+            "rule_type": RULE_TYPE_DEFAULT,
+            "severity": SEVERITY_ERROR,
+            "condition": RULE_RANGE,
+            "min": 40,
+        },
+        {
+            "table_name": "Goal",
+            "name": "High Area",
+            "field": "area",
+            "data_type": TYPE_AREA,
+            "rule_type": RULE_TYPE_DEFAULT,
+            "severity": SEVERITY_ERROR,
+            "condition": RULE_RANGE,
+            "max": 1000000,
+        },
+        {
+            "table_name": "Goal",
+            "name": "Low Area",
+            "field": "area",
+            "data_type": TYPE_AREA,
+            "rule_type": RULE_TYPE_DEFAULT,
+            "severity": SEVERITY_ERROR,
+            "condition": RULE_RANGE,
+            "min": 1000,
+        },
+        {
+            "table_name": "Goal",
+            "name": "Missing EUI",
+            "field": "eui",
+            "data_type": TYPE_EUI,
+            "rule_type": RULE_TYPE_DEFAULT,
+            "severity": SEVERITY_ERROR,
+            "condition": RULE_NOT_NULL,
+        },
+        {
+            "table_name": "Goal",
+            "name": "Missing Area",
+            "field": "area",
+            "data_type": TYPE_AREA,
+            "rule_type": RULE_TYPE_DEFAULT,
+            "severity": SEVERITY_ERROR,
+            "condition": RULE_NOT_NULL,
+        },
+    ]
+
     for org in Organization.objects.all():
         for label in NEW_DEFAULT_LABELS:
             Label.objects.get_or_create(name=label, super_organization=org, defaults={"color": "blue"})
+    for dqc in DataQualityCheck.objects.all():
+        for rule in NEW_DEFAULT_RULES:
+            Rule.objects.get_or_create(**rule, data_quality_check=dqc)
 
 
 def remove_unique_constraint(apps, schema_editor):
