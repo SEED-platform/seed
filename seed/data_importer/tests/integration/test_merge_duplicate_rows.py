@@ -76,9 +76,9 @@ class TestCaseMultipleDuplicateMatching(DataMappingBaseTestCase):
         self.assertEqual(len(hash_res), 32)
 
     def test_is_excluded_from_hash(self):
-        ps1 = PropertyState(address_line_1="a", address_line_2="b")
-        ps2 = PropertyState(address_line_1="a", address_line_2="b")
-        ps3 = PropertyState(address_line_1="a", address_line_2="c")
+        ps1 = PropertyState(address_line_1="a", address_line_2="b", organization=self.org)
+        ps2 = PropertyState(address_line_1="a", address_line_2="b", organization=self.org)
+        ps3 = PropertyState(address_line_1="a", address_line_2="c", organization=self.org)
 
         self.assertEqual(tasks.hash_state_object(ps1), tasks.hash_state_object(ps2))
         self.assertNotEqual(tasks.hash_state_object(ps1), tasks.hash_state_object(ps3))
@@ -97,9 +97,9 @@ class TestCaseMultipleDuplicateMatching(DataMappingBaseTestCase):
             organization=self.org,
             is_extra_data=True,
         )
-        ps1 = PropertyState(address_line_1="a", extra_data={"boo": "b"})
-        ps2 = PropertyState(address_line_1="a", extra_data={"boo": "b"})
-        ps3 = PropertyState(address_line_1="a", extra_data={"boo": "c"})
+        ps1 = PropertyState(address_line_1="a", extra_data={"boo": "b"}, organization=self.org)
+        ps2 = PropertyState(address_line_1="a", extra_data={"boo": "b"}, organization=self.org)
+        ps3 = PropertyState(address_line_1="a", extra_data={"boo": "c"}, organization=self.org)
 
         self.assertEqual(tasks.hash_state_object(ps1), tasks.hash_state_object(ps2))
         self.assertNotEqual(tasks.hash_state_object(ps1), tasks.hash_state_object(ps3))
