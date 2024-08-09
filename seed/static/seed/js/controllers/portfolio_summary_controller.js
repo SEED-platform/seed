@@ -1115,9 +1115,9 @@ angular.module('SEED.controller.portfolio_summary', [])
       };
 
       $scope.run_data_quality_check = () => {
+        spinner_utility.show();
         data_quality_service.start_data_quality_checks([], [], $scope.goal.id)
           .then((response) => {
-            spinner_utility.show();
             data_quality_service.data_quality_checks_status(response.progress_key)
               .then((result) => {
                 data_quality_service.get_data_quality_results($scope.organization.id, result.unique_id)
