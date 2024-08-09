@@ -1004,7 +1004,7 @@ class OrganizationViewSet(viewsets.ViewSet):
 
         results = []
         for i in range(len(bins) - 1):
-            bin = f"{bins[i]} - {bins[i+1]}"
+            bin = f"{round(bins[i], 2)} - {round(bins[i+1], 2)}"
             values = np.array(xs)[np.where(binplace == i + 1)]
             x = sum(values) if count else np.average(values).item()
             results.append({"y": bin, "x": None if np.isnan(x) else x, "yr_e": yr_e})
@@ -1104,8 +1104,8 @@ class OrganizationViewSet(viewsets.ViewSet):
 
         for i, matching_column in enumerate(matching_columns):
             base_sheet.write(data_row_start, data_col_start + i, matching_column.display_name, bold)
-        base_sheet.write(data_row_start, data_col_start + len(matching_columns) + 0, request.query_params.get("x_label"), bold)
-        base_sheet.write(data_row_start, data_col_start + len(matching_columns) + 1, request.query_params.get("y_label"), bold)
+        base_sheet.write(data_row_start, data_col_start + len(matching_columns) + 0, params["x_label"], bold)
+        base_sheet.write(data_row_start, data_col_start + len(matching_columns) + 1, params["y_label"], bold)
         base_sheet.write(data_row_start, data_col_start + len(matching_columns) + 2, "Year Ending", bold)
 
         base_row = data_row_start + 1
