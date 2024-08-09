@@ -254,8 +254,7 @@
                   ng-model="col.data_type"
                   ng-options="type.id as type.label for type in ::data_types"
                   ng-disabled="col.suggestion_column_name || col.isOmitted"
-              ></select>
-
+                ></select>
               </td>
               <td ng-class="{'danger': col.from_units === null && (is_area_column(col) || is_eui_column(col) || is_ghg_column(col) || is_ghg_intensity_column(col)), 'omitted': col.isOmitted}">
                 <select ng-model="col.from_units" ng-if="is_area_column(col)" ng-change="flag_mappings_change()" ng-disabled="col.isOmitted">
