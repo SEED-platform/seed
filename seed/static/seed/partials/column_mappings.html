@@ -155,7 +155,7 @@
           <tbody id="mapped-table">
             <tr ng-repeat="(index, col) in dropdown_selected_profile.mappings">
               <td style="text-align: center; width: min-content" ng-attr-id="mapped-row-isOmitted-{$:: $index $}">
-                <input type="checkbox" ng-model="col.isOmitted" ng-disabled="import_file.matching_done" ng-change="flag_change(col)"/>
+                <input type="checkbox" ng-model="col.isOmitted" ng-disabled="import_file.matching_done" ng-change="flag_change(col)" />
               </td>
               <td style="text-align: right" ng-attr-id="mapped-row-type-{$:: $index $}">
                 <select ng-model="col.to_table_name" ng-change="updateSingleInventoryTypeDropdown()">
