@@ -18,7 +18,8 @@ from seed.decorators import ajax_request_class
 from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm_class
 from seed.lib.superperms.orgs.models import AccessLevelInstance
 from seed.lib.tkbl.tkbl import SCOPE_ONE_EMISSION_CODES
-from seed.models import Element
+from seed.lib.uniformat.uniformat import uniformat_codes
+from seed.models import Element, Uniformat
 from seed.serializers.elements import ElementPropertySerializer, ElementSerializer
 from seed.utils.api import api_endpoint_class
 from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema_org_query_param
@@ -51,13 +52,42 @@ class OrgElementViewSet(SEEDOrgReadOnlyModelViewSet):
 
     def get_queryset(self):
         if hasattr(self.request, "access_level_instance_id"):
+            element_fields = [field.name for field in Element._meta.get_fields()]
+
             access_level_instance = AccessLevelInstance.objects.only("lft", "rgt").get(pk=self.request.access_level_instance_id)
-            return self.model.objects.filter(
-                organization_id=self.get_organization(self.request),
-                property__access_level_instance__lft__gte=access_level_instance.lft,
-                property__access_level_instance__rgt__lte=access_level_instance.rgt,
+            return (
+                self.model.objects.filter(
+                    organization_id=self.get_organization(self.request),
+                    property__access_level_instance__lft__gte=access_level_instance.lft,
+                    property__access_level_instance__rgt__lte=access_level_instance.rgt,
+                )
+                .select_related("code")
+                .only(*element_fields, "code__code")
             )
         return self.model.objects.none()
+
+    @swagger_auto_schema(
+        manual_parameters=[
+            AutoSchemaHelper.query_org_id_field(),
+            AutoSchemaHelper.query_enum_field(name="code", description=Uniformat._meta.get_field("code").help_text, enum=uniformat_codes),
+        ],
+    )
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class("requires_viewer")
+    @action(detail=False, methods=["GET"])
+    def filter(self, request):
+        """
+        Filter all Properties within an organization that have Elements under a specific Uniformat code
+        """
+        code = request.query_params.get("code")
+        if code not in uniformat_codes:
+            return JsonResponse({"status": "error", "message": f"Invalid Uniformat code '{code}'"}, status=status.HTTP_400_BAD_REQUEST)
+
+        elements = self.get_queryset().filter(code__code__startswith=code)
+        page = self.paginator.paginate_queryset(elements, request)
+
+        return self.paginator.get_paginated_response(self.serializer_class(page, many=True).data)
 
 
 @method_decorator(
