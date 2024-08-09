@@ -1343,6 +1343,9 @@ msgstr "Exemple d'utilisation"
 msgid "Exclude"
 msgstr "Exclure"
 
+msgid "Exclude all selected labels"
+msgstr "Exclure toutes les étiquettes sélectionnées"
+
 msgid "Existing Audit Template Properties (skipped)"
 msgstr "Propriétés du modèle d'audit existant (ignoré)"
 
