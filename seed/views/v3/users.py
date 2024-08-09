@@ -207,6 +207,8 @@ class UserViewSet(viewsets.ViewSet, OrgMixin):
             user.email = email
             user.first_name = first_name
             user.last_name = last_name
+            if org.require_2fa:
+                EmailDevice.objects.create(user=user, name="default", email=user.email)
         user.save()
 
         try:
