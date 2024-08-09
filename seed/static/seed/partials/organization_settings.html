@@ -348,7 +348,7 @@
           <form class="form-horizontal" role="form">
             <div class="form-group">
               <div class="col-sm-4">
-                <select class="form-control" ng-options="column.column_name as column.display_name for column in property_column_names" ng-model="org.property_display_field"></select>
+                <select class="form-control" ng-options="column.column_name as column.displayName for column in property_columns" ng-model="org.property_display_field"></select>
               </div>
             </div>
           </form>
@@ -362,7 +362,7 @@
           <form class="form-horizontal" role="form">
             <div class="form-group">
               <div class="col-sm-4">
-                <select class="form-control" ng-options="column.column_name as column.display_name for column in taxlot_column_names" ng-model="org.taxlot_display_field"></select>
+                <select class="form-control" ng-options="column.column_name as column.displayName for column in taxlot_columns" ng-model="org.taxlot_display_field"></select>
               </div>
             </div>
           </form>
@@ -762,7 +762,7 @@
                   <select
                     class="form-control"
                     id="seed_benchmark_id"
-                    ng-options="col.id as col.display_name for col in property_column_names"
+                    ng-options="col.id as col.displayName for col in property_columns"
                     ng-model="conf.seed_benchmark_id_column"
                     ng-disabled="::!auth.requires_owner"
                   >
@@ -866,7 +866,7 @@
                   <select
                     class="form-control"
                     id="account_column"
-                    ng-options="col.id as col.display_name for col in property_column_names"
+                    ng-options="col.id as col.displayName for col in property_columns"
                     ng-model="conf.account_name_column"
                     ng-disabled="::!auth.requires_owner"
                   >
@@ -900,7 +900,7 @@
                   <select
                     class="form-control"
                     id="contact_fieldname"
-                    ng-options="col.id as col.display_name for col in property_column_names"
+                    ng-options="col.id as col.displayName for col in property_columns"
                     ng-model="conf.contact_name_column"
                     ng-disabled="::!auth.requires_owner"
                   >
@@ -921,7 +921,7 @@
                   <select
                     class="form-control"
                     id="contact_email"
-                    ng-options="col.id as col.display_name for col in property_column_names"
+                    ng-options="col.id as col.displayName for col in property_columns"
                     ng-model="conf.contact_email_column"
                     ng-disabled="::!auth.requires_owner"
                   >
@@ -961,7 +961,7 @@
                   <select
                     class="form-control"
                     id="admin_account_column"
-                    ng-options="col.id as col.display_name for col in property_column_names"
+                    ng-options="col.id as col.displayName for col in property_columns"
                     ng-model="conf.data_admin_account_name_column"
                     ng-disabled="::!auth.requires_owner"
                   >
@@ -995,7 +995,7 @@
                   <select
                     class="form-control"
                     id="admin_name"
-                    ng-options="col.id as col.display_name for col in property_column_names"
+                    ng-options="col.id as col.displayName for col in property_columns"
                     ng-model="conf.data_admin_name_column"
                     ng-disabled="::!auth.requires_owner"
                   >
@@ -1016,7 +1016,7 @@
                   <select
                     class="form-control"
                     id="admin_email"
-                    ng-options="col.id as col.display_name for col in property_column_names"
+                    ng-options="col.id as col.displayName for col in property_columns"
                     ng-model="conf.data_admin_email_column"
                     ng-disabled="::!auth.requires_owner"
                   >
@@ -1073,7 +1073,7 @@
                     </td>
                     <td ng-attr-id="mapped-row-input-{$:: $index $}">
                       <select id="select-column" class="form-control" ng-model="col.column" ng-change="flag_change()">
-                        <option ng-repeat="property_column in property_column_names" ng-value="property_column.id">{$:: property_column.display_name $}</option>
+                        <option ng-repeat="property_column in property_columns" ng-value="property_column.id">{$:: property_column.displayName $}</option>
                       </select>
                     </td>
 
@@ -1143,6 +1143,10 @@
           </form>
           <div style="margin-top: 30px">
             <span class="alert alert-danger" ng-show="invalid_ubid_threshold" translate> UBID Threshold must be between 0.0 and 1.0 </span>
+          </div>
+          <div>
+            <p ng-if="!ubid_matching">UBID must be a matching criteria column to match and merge inventory</p>
+            <button class="btn btn-danger" type="button" ng-click="open_match_merge_modal()" ng-disabled="!ubid_matching">Trigger Matching and Merging</button>
           </div>
         </div>
       </div>

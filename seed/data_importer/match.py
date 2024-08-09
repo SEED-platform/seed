@@ -557,7 +557,7 @@ def states_to_views(unmatched_state_ids, org, access_level_instance, cycle, Stat
     """
     table_name = StateClass.__name__
 
-    sub_progress_data = update_sub_progress_total(100, sub_progress_key)
+    # sub_progress_data = update_sub_progress_total(100, sub_progress_key)
 
     unmatched_state_ids = set(unmatched_state_ids)
 
@@ -605,6 +605,56 @@ def states_to_views(unmatched_state_ids, org, access_level_instance, cycle, Stat
     # If one match is found, pass that along.
     # If multiple matches are found, merge them together, pass along the resulting record.
     # Otherwise, add current -State to be promoted as-is.
+
+    (
+        merged_between_existing_count,
+        merged_views,
+        errored_merged_states,
+        new_views,
+        errored_new_states,
+    ) = merge_unmatched_states(
+        access_level_instance,
+        cycle,
+        matching_columns,
+        match_lookup,
+        org,
+        promote_state_ids,
+        StateClass,
+        state_lookup,
+        sub_progress_key,
+        table_name,
+        tuple_values,
+        unmatched_states,
+        ViewClass,
+    )
+
+    return (
+        merged_between_existing_count,
+        duplicate_count,
+        merged_views,
+        errored_merged_states,
+        new_views,
+        errored_new_states,
+    )
+
+
+def merge_unmatched_states(
+    access_level_instance,
+    cycle,
+    matching_columns,
+    match_lookup,
+    org,
+    promote_state_ids,
+    state_klass,
+    state_lookup,
+    sub_progress_key,
+    table_name,
+    tuple_values,
+    unmatched_states,
+    view_klass,
+):
+    sub_progress_data = update_sub_progress_total(100, sub_progress_key, finish=True)
+
     merged_between_existing_count = 0
     merge_state_pairs: list[Union[tuple[PropertyState, PropertyState], tuple[TaxLotState, TaxLotState]]] = []
     batch_size = math.ceil(len(unmatched_states) / 100)
@@ -631,7 +681,7 @@ def states_to_views(unmatched_state_ids, org, access_level_instance, cycle, Stat
             merged_between_existing_count += count
             existing_state_ids = [state["id"] for state in sorted(existing_state_matches, key=lambda state: state["updated"])]
             # The following merge action ignores merge protection and prioritizes -States by most recent AuditLog
-            merged_state = merge_states_with_views(existing_state_ids, org.id, "System Match", StateClass)
+            merged_state = merge_states_with_views(existing_state_ids, org.id, "System Match", state_klass)
             merge_state_pairs.append((merged_state, state))
         elif count == 1:
             merge_state_pairs.append((state_lookup[existing_state_matches[0]["id"]], state))
@@ -658,7 +708,7 @@ def states_to_views(unmatched_state_ids, org, access_level_instance, cycle, Stat
             canonical_field = "property" if table_name == "PropertyState" else "taxlot"
             view_lookup = {
                 view.state_id: view
-                for view in ViewClass.objects.select_related(f"{canonical_field}__access_level_instance").filter(
+                for view in view_klass.objects.select_related(f"{canonical_field}__access_level_instance").filter(
                     state_id__in=[existing_state.id for existing_state, _ in merge_state_pairs]
                 )
             }
@@ -682,7 +732,7 @@ def states_to_views(unmatched_state_ids, org, access_level_instance, cycle, Stat
 
                 # Merge -States and assign new/merged -State to existing -View
                 merged_state = save_state_match(existing_state, newer_state, priorities)
-                merge_ubid_models([existing_state.id], merged_state.id, StateClass)
+                merge_ubid_models([existing_state.id], merged_state.id, state_klass)
                 existing_view.state = merged_state
                 existing_view.save()
 
@@ -699,7 +749,7 @@ def states_to_views(unmatched_state_ids, org, access_level_instance, cycle, Stat
             errored_new_states = []
             if len(promote_state_ids) > 0:
                 batch_size = math.ceil(len(promote_state_ids) / 100)
-                promote_states = StateClass.objects.filter(pk__in=promote_state_ids)
+                promote_states = state_klass.objects.filter(pk__in=promote_state_ids)
                 for idx, state in enumerate(promote_states):
                     created_view = state.promote(cycle)
                     if created_view is None:
@@ -715,12 +765,11 @@ def states_to_views(unmatched_state_ids, org, access_level_instance, cycle, Stat
         raise IntegrityError("Could not merge results with error: %s" % (e))
 
     # update merge_state while excluding any states that were a product of a previous, file-inclusive merge
-    StateClass.objects.filter(pk__in=promoted_state_ids).exclude(merge_state=MERGE_STATE_MERGED).update(merge_state=MERGE_STATE_NEW)
-    StateClass.objects.filter(pk__in=merged_state_ids).update(data_state=DATA_STATE_MATCHING, merge_state=MERGE_STATE_MERGED)
+    state_klass.objects.filter(pk__in=promoted_state_ids).exclude(merge_state=MERGE_STATE_MERGED).update(merge_state=MERGE_STATE_NEW)
+    state_klass.objects.filter(pk__in=merged_state_ids).update(data_state=DATA_STATE_MATCHING, merge_state=MERGE_STATE_MERGED)
 
     return (
         merged_between_existing_count,
-        duplicate_count,
         list(set(merged_views)),  # so no dupes, I think?
         errored_merged_states,
         new_views,

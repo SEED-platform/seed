@@ -102,6 +102,7 @@
     'SEED.controller.inventory_reports',
     'SEED.controller.inventory_summary',
     'SEED.controller.label_admin',
+    'SEED.controller.match_merge_modal',
     'SEED.controller.mapping',
     'SEED.controller.members',
     'SEED.controller.menu',
@@ -1098,21 +1099,21 @@
                 return organization_service.get_organization(organization_id);
               }
             ],
-            property_column_names: [
+            property_columns: [
               '$stateParams',
               'inventory_service',
-              ($stateParams, inventory_service) => {
-                const { organization_id } = $stateParams;
-                return inventory_service.get_property_column_names_and_ids_for_org(organization_id);
-              }
+              ($stateParams, inventory_service) => inventory_service.get_property_columns().then((columns) => {
+                columns = _.reject(columns, 'related');
+                return _.map(columns, (col) => _.omit(col, ['pinnedLeft', 'related']));
+              })
             ],
-            taxlot_column_names: [
+            taxlot_columns: [
               '$stateParams',
               'inventory_service',
-              ($stateParams, inventory_service) => {
-                const { organization_id } = $stateParams;
-                return inventory_service.get_taxlot_column_names_for_org(organization_id);
-              }
+              ($stateParams, inventory_service) => inventory_service.get_taxlot_columns().then((columns) => {
+                columns = _.reject(columns, 'related');
+                return _.map(columns, (col) => _.omit(col, ['pinnedLeft', 'related']));
+              })
             ],
             labels_payload: [
               'label_service',
@@ -1162,8 +1163,7 @@
                   (data) => $q.reject(data.message)
                 );
               }
-            ],
-            property_columns: ['inventory_service', 'user_service', (inventory_service) => inventory_service.get_property_columns()]
+            ]
           }
         })
         .state({
