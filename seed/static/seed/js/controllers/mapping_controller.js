@@ -74,6 +74,20 @@ angular.module('SEED.controller.mapping', []).controller('mapping_controller', [
     COLUMN_MAPPING_PROFILE_TYPE_BUILDINGSYNC_CUSTOM,
     derived_columns_payload
   ) {
+    $scope.data_types = [
+      { id: 'None', label: 'None' },
+      { id: 'number', label: $translate.instant('Number') },
+      { id: 'integer', label: $translate.instant('Integer') },
+      { id: 'string', label: $translate.instant('Text') },
+      { id: 'datetime', label: $translate.instant('Datetime') },
+      { id: 'date', label: $translate.instant('Date') },
+      { id: 'boolean', label: $translate.instant('Boolean') },
+      { id: 'area', label: $translate.instant('Area') },
+      { id: 'eui', label: $translate.instant('EUI') },
+      { id: 'geometry', label: $translate.instant('Geometry') },
+      { id: 'ghg', label: $translate.instant('GHG') },
+      { id: 'ghg_intensity', label: $translate.instant('GHG Intensity') }
+    ];
     $scope.profiles = [{ id: 0, mappings: [], name: '<None selected>' }].concat(column_mapping_profiles_payload);
 
     $scope.current_profile = $scope.profiles[0] ?? {};
@@ -140,7 +154,8 @@ angular.module('SEED.controller.mapping', []).controller('mapping_controller', [
           from_field: mapping.name,
           from_units: mapping.from_units,
           to_field: mapping.suggestion_column_name || mapping.suggestion || '',
-          to_table_name: mapping.suggestion_table_name
+          to_table_name: mapping.suggestion_table_name,
+          isOmitted: mapping.isOmitted
         };
         const isBuildingSyncProfile =
             $scope.current_profile.profile_type !== undefined &&
@@ -280,8 +295,7 @@ angular.module('SEED.controller.mapping', []).controller('mapping_controller', [
       });
     }
 
-    const eui_columns = _.filter($scope.mappable_property_columns, { data_type: 'eui' });
-    $scope.is_eui_column = (
+    /* $scope.is_eui_column = (
       col // All of these are on the PropertyState table
     ) => col.suggestion_table_name === 'PropertyState' && Boolean(_.find(eui_columns, { column_name: col.suggestion_column_name }));
 
@@ -295,7 +309,12 @@ angular.module('SEED.controller.mapping', []).controller('mapping_controller', [
 
     const ghg_intensity_columns = _.filter($scope.mappable_property_columns, { data_type: 'ghg_intensity' });
     $scope.is_ghg_intensity_column = (col) => col.suggestion_table_name === 'PropertyState' && Boolean(_.find(ghg_intensity_columns, { column_name: col.suggestion_column_name }));
+    */
 
+    $scope.is_eui_column = (col) => col.suggestion_table_name === 'PropertyState' && col.data_type === 'eui';
+    $scope.is_area_column = (col) => col.suggestion_table_name === 'PropertyState' && col.data_type === 'area';
+    $scope.is_ghg_column = (col) => col.suggestion_table_name === 'PropertyState' && col.data_type === 'ghg';
+    $scope.is_ghg_intensity_column = (col) => col.suggestion_table_name === 'PropertyState' && col.data_type === 'ghg_intensity';
     const get_default_quantity_units = (col) => {
       // TODO - hook up to org preferences / last mapping in DB
       if ($scope.is_eui_column(col)) {
@@ -358,6 +377,7 @@ angular.module('SEED.controller.mapping', []).controller('mapping_controller', [
         }
         if (match) {
           col.suggestion_column_name = match.column_name;
+          col.data_type = match.data_type;
         } else {
           col.suggestion_column_name = null;
         }
@@ -436,7 +456,7 @@ angular.module('SEED.controller.mapping', []).controller('mapping_controller', [
         suggestion: suggestion.to_field,
         suggestion_column_name: suggestion.to_field,
         suggestion_table_name: suggestion.to_table_name,
-        isOmitted: false
+        isOmitted: suggestion.isOmitted
       };
     };
 
@@ -462,6 +482,7 @@ angular.module('SEED.controller.mapping', []).controller('mapping_controller', [
         }
         if (match) {
           col.suggestion = match.display_name;
+          $scope.change(col, true);
         } else if ($scope.mappingBuildingSync) {
           col.suggestion = $filter('titleCase')(col.suggestion_column_name);
         }
@@ -525,7 +546,8 @@ angular.module('SEED.controller.mapping', []).controller('mapping_controller', [
             from_units: col.from_units || null,
             to_field: col.suggestion_column_name || col.suggestion,
             to_field_display_name: col.suggestion,
-            to_table_name: col.suggestion_table_name
+            to_table_name: col.suggestion_table_name,
+            to_data_type: col.data_type
           });
         }
       );
