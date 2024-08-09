@@ -9,7 +9,6 @@ angular.module('SEED.controller.two_factor_profile', []).controller('two_factor_
   'Notification',
   'two_factor_service',
   'user_service',
-  'auth_payload',
   'organization_payload',
   'user_profile_payload',
 
@@ -21,11 +20,9 @@ angular.module('SEED.controller.two_factor_profile', []).controller('two_factor_
     Notification,
     two_factor_service,
     user_service,
-    auth_payload,
     organization_payload,
     user_profile_payload
   ) {
-    $scope.is_superuser = auth_payload.auth.requires_superuser;
     $scope.organization = organization_payload.organization;
     $scope.require_2fa = $scope.organization.require_2fa;
     $scope.user = user_profile_payload;
