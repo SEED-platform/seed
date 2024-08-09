@@ -1327,6 +1327,9 @@ msgstr "Example Access Level Tree"
 msgid "Example Usage"
 msgstr "Example Usage"
 
+msgid "Exclude"
+msgstr "Exclude"
+
 msgid "Existing Audit Template Properties (skipped)"
 msgstr "Existing Audit Template Properties (skipped)"
 
@@ -1755,6 +1758,9 @@ msgstr "In addition, you need to specify where the field should be associated wi
 #: seed/models/projects.py:23
 msgid "Inactive"
 msgstr "Inactive"
+
+msgid "Include Any"
+msgstr "Include Any"
 
 msgid "Include CSV Label Header"
 msgstr "Include CSV Label Header"
@@ -2190,6 +2196,9 @@ msgstr "Move Buildings"
 
 msgid "Move/copy buildings to another project"
 msgstr "Move/copy buildings to another project"
+
+msgid "Must Include"
+msgstr "Must Include"
 
 msgid "Must include all selected labels (AND)"
 msgstr "Must include all selected labels (AND)"

@@ -1340,6 +1340,9 @@ msgstr "Exemple de graphe en arbre de niveaux d'accès"
 msgid "Example Usage"
 msgstr "Exemple d'utilisation"
 
+msgid "Exclude"
+msgstr "Exclure"
+
 msgid "Existing Audit Template Properties (skipped)"
 msgstr "Propriétés du modèle d'audit existant (ignoré)"
 
@@ -1770,6 +1773,9 @@ msgstr "En outre, vous devez spécifier où le champ doit être associé aux don
 #: seed/models/projects.py:23
 msgid "Inactive"
 msgstr "Inactif"
+
+msgid "Include Any"
+msgstr "Inclure tout"
 
 msgid "Include CSV Label Header"
 msgstr "Inclure l'en-tête d'étiquette CSV"
@@ -2208,6 +2214,9 @@ msgstr "Déplacer les bâtiments"
 
 msgid "Move/copy buildings to another project"
 msgstr "Déplacer/copier des bâtiments dans un autre projet"
+
+msgid "Must Include"
+msgstr "Doit inclure"
 
 msgid "Must include all selected labels (AND)"
 msgstr "Doit inclure toutes les étiquettes sélectionnées (ET)"
