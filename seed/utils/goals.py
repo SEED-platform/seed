@@ -4,12 +4,12 @@ SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and othe
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
-from django.db.models import Case, F, FloatField, IntegerField, Sum, Value, When
+from django.db.models import Case, F, FloatField, IntegerField, Prefetch, Sum, Value, When
 from django.db.models.fields.json import KeyTextTransform
 from django.db.models.functions import Cast, Coalesce
 from quantityfield.units import ureg
 
-from seed.models import GoalNote, PropertyView
+from seed.models import Goal, GoalNote, Property, PropertyView
 from seed.serializers.pint import collapse_unit
 
 
@@ -52,6 +52,22 @@ def get_area_expression(goal):
         return extra_data_expression(goal.area_column, 0.0)
     else:
         return Cast(F(f"state__{goal.area_column.column_name}"), output_field=IntegerField())
+
+
+def get_eui_value(property_state, goal):
+    """
+    Return the eui valuef or a given property and goal
+    """
+    property_view = PropertyView.objects.filter(state__id=property_state.id).annotate(eui_value=get_eui_expression(goal)).first()
+    return property_view.eui_value
+
+
+def get_area_value(property_state, goal):
+    """
+    Return the area valuef or a given property and goal
+    """
+    property_view = PropertyView.objects.filter(state__id=property_state.id).annotate(area_value=get_area_expression(goal)).first()
+    return property_view.area_value
 
 
 def extra_data_expression(column, default_value):
@@ -168,3 +184,31 @@ def get_portfolio_summary(org, goal):
     summary["eui_change"] = percentage_difference(summary["baseline"]["weighted_eui"], summary["current"]["weighted_eui"])
 
     return summary
+
+
+def get_state_pairs(property_ids, goal_id):
+    """Given a list of property ids, return a dictionary containing baseline and current states"""
+    # Prefetch PropertyView objects
+    try:
+        goal = Goal.objects.get(id=goal_id)
+    except Goal.DoesNotExist:
+        return []
+
+    property_views = PropertyView.objects.filter(cycle__in=[goal.baseline_cycle, goal.current_cycle], property__in=property_ids)
+    prefetch = Prefetch("views", queryset=property_views, to_attr="prefetched_views")
+
+    # Fetch properties and related PropertyView objects
+    qs = Property.objects.filter(id__in=property_ids).prefetch_related(prefetch)
+
+    state_pairs = []
+    for property in qs:
+        # find related view from prefetched views
+        baseline_view = next((pv for pv in property.prefetched_views if pv.cycle == goal.baseline_cycle), None)
+        current_view = next((pv for pv in property.prefetched_views if pv.cycle == goal.current_cycle), None)
+
+        baseline_state = baseline_view.state if baseline_view else None
+        current_state = current_view.state if current_view else None
+
+        state_pairs.append({"property": property, "baseline": baseline_state, "current": current_state})
+
+    return state_pairs

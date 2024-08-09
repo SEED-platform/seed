@@ -34,6 +34,7 @@ from seed.models import (
     Cycle,
     DerivedColumn,
     Element,
+    Goal,
     GreenAssessment,
     GreenAssessmentProperty,
     GreenAssessmentURL,
@@ -833,6 +834,60 @@ class FakeDerivedColumnFactory(BaseFake):
         config = {"expression": expression, "name": name, "organization": organization, "inventory_type": inventory_type}
 
         return DerivedColumn.objects.create(**config)
+
+
+class FakeGoalFactory(BaseFake):
+    def __init__(
+        self,
+        organization=None,
+        baseline_cycle=None,
+        current_cycle=None,
+        access_level_instance=None,
+        eui_column1=None,
+        area_column=None,
+        target_percentage=None,
+        name=None,
+    ):
+        super().__init__()
+        self.organization = organization
+        self.baseline_cycle = baseline_cycle
+        self.current_cycle = current_cycle
+        self.access_level_instance = access_level_instance
+        self.eui_column1 = eui_column1
+        self.area_column = area_column
+        self.target_percentage = target_percentage
+        self.name = name
+
+    def get_goal(
+        self,
+        organization=None,
+        baseline_cycle=None,
+        current_cycle=None,
+        access_level_instance=None,
+        eui_column1=None,
+        area_column=None,
+        target_percentage=None,
+        name=None,
+    ):
+        organization = organization if organization is not None else self.organization
+        baseline_cycle = baseline_cycle if baseline_cycle is not None else self.baseline_cycle
+        current_cycle = current_cycle if current_cycle is not None else self.current_cycle
+        access_level_instance = access_level_instance if access_level_instance is not None else self.access_level_instance
+        eui_column1 = eui_column1 if eui_column1 is not None else self.eui_column1
+        target_percentage = target_percentage if target_percentage is not None else self.target_percentage
+        name = name if name is not None else self.name
+
+        config = {
+            "organization": organization,
+            "baseline_cycle": baseline_cycle,
+            "current_cycle": current_cycle,
+            "access_level_instance": access_level_instance,
+            "eui_column1": eui_column1,
+            "area_column": area_column,
+            "target_percentage": target_percentage,
+            "name": name,
+        }
+        return Goal.objects.create(**config)
 
 
 class FakeElementFactory(BaseFake):

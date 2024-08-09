@@ -54,10 +54,13 @@ def get_labels(request, qs, super_organization, inv_type):
     in_subtree = Q(
         **{
             f"{inv_type[: -5]}__access_level_instance__lft__gte": ali.lft,
-            f"{inv_type[  :-5]}__access_level_instance__rgt__lte": ali.rgt,
+            f"{inv_type[: -5]}__access_level_instance__rgt__lte": ali.rgt,
         }
     )
     inventory = inventory.filter(in_subtree)
+    # remove labels that have been applied to goals
+    if inv_type == "property_view":
+        qs = qs.filter(propertyviewlabel__goal__isnull=True)
 
     # "is_applied" is a list of views with the label, but only the views that are in inventory.
     qs = qs.annotate(

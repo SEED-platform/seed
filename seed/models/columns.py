@@ -458,7 +458,7 @@ class Column(models.Model):
             "display_name": "Gross Floor Area",
             "column_description": "Gross Floor Area",
             "data_type": "area",
-            # 'type': 'number',
+            # "type": "number",
         },
         {
             "column_name": "use_description",
@@ -473,7 +473,7 @@ class Column(models.Model):
             "display_name": "ENERGY STAR Score",
             "column_description": "ENERGY STAR Score",
             "data_type": "integer",
-            # 'type': 'number',
+            # "type": "number",
         },
         {
             "column_name": "property_notes",
@@ -523,7 +523,7 @@ class Column(models.Model):
             "display_name": "Building Count",
             "column_description": "Building Count",
             "data_type": "integer",
-            # 'type': 'number',
+            # "type": "number",
         },
         {
             "column_name": "year_built",
@@ -531,7 +531,7 @@ class Column(models.Model):
             "display_name": "Year Built",
             "column_description": "Year Built",
             "data_type": "integer",
-            # 'type': 'number',
+            # "type": "number",
         },
         {
             "column_name": "recent_sale_date",
@@ -548,7 +548,7 @@ class Column(models.Model):
             "display_name": "Conditioned Floor Area",
             "column_description": "Conditioned Floor Area",
             "data_type": "area",
-            # 'type': 'number',
+            # "type": "number",
             # 'dbField': True,
         },
         {
@@ -557,7 +557,7 @@ class Column(models.Model):
             "display_name": "Occupied Floor Area",
             "column_description": "Occupied Floor Area",
             "data_type": "area",
-            # 'type': 'number',
+            # "type": "number",
         },
         {
             "column_name": "owner_address",
@@ -611,7 +611,7 @@ class Column(models.Model):
             "display_name": "Site EUI",
             "column_description": "Site EUI",
             "data_type": "eui",
-            # 'type': 'number',
+            # "type": "number",
         },
         {
             "column_name": "site_eui_weather_normalized",
@@ -619,7 +619,7 @@ class Column(models.Model):
             "display_name": "Site EUI Weather Normalized",
             "column_description": "Site EUI Weather Normalized",
             "data_type": "eui",
-            # 'type': 'number',
+            # "type": "number",
         },
         {
             "column_name": "site_eui_modeled",
@@ -627,7 +627,7 @@ class Column(models.Model):
             "display_name": "Site EUI Modeled",
             "column_description": "Site EUI Modeled",
             "data_type": "eui",
-            # 'type': 'number',
+            # "type": "number",
         },
         {
             "column_name": "source_eui",
@@ -635,7 +635,7 @@ class Column(models.Model):
             "display_name": "Source EUI",
             "column_description": "Source EUI",
             "data_type": "eui",
-            # 'type': 'number',
+            # "type": "number",
         },
         {
             "column_name": "source_eui_weather_normalized",
@@ -643,7 +643,7 @@ class Column(models.Model):
             "display_name": "Source EUI Weather Normalized",
             "column_description": "Source EUI Weather Normalized",
             "data_type": "eui",
-            # 'type': 'number',
+            # "type": "number",
         },
         {
             "column_name": "source_eui_modeled",
@@ -651,7 +651,7 @@ class Column(models.Model):
             "display_name": "Source EUI Modeled",
             "column_description": "Source EUI Modeled",
             "data_type": "eui",
-            # 'type': 'number',
+            # "type": "number",
         },
         {
             "column_name": "energy_alerts",
@@ -680,7 +680,7 @@ class Column(models.Model):
             "display_name": "Number Properties",
             "column_description": "Number Properties",
             "data_type": "integer",
-            # 'type': 'number',
+            # "type": "number",
         },
         {
             "column_name": "block_number",

@@ -118,11 +118,17 @@ class StatusLabel(TimeStampedModel):
         "Update Bldg Info",
         "Call",
         "Email",
-        "High EUI",
-        "Low EUI",
         "Exempted",
         "Extension",
         "Change of Ownership",
+        "High EUI",
+        "Low EUI",
+        "High EUI % Change",
+        "Low EUI % Change",
+        "High Area",
+        "Low Area",
+        "High Area % Change",
+        "Low Area % Change",
     ]
 
     class Meta:

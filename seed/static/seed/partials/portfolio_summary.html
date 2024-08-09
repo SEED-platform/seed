@@ -56,7 +56,24 @@
   <div id="portfolio-summary-selection-wrapper">
     <!-- Summary Table-->
     <div id="portfolio-summary" class="wide-900" ng-if="summary_loading || summary_valid">
-      <h3 translate>Portfolio Summary</h3>
+      <div style="display: flex">
+        <h3 translate>Portfolio Summary</h3>
+        <i class="ui-grid-icon-info-circled" ng-mouseenter="toggle_help(true)"></i>
+      </div>
+      <div class="alert alert-warning portfolio-summary-help-text" ng-show="show_help">
+        <h4>Unexpected Portfolio Summary Calculations?</h4>
+        <div>
+          Run "<a ng-click="run_data_quality_check()">Data Quality Check</a>" from the Actions dropdown to auto populate the "Passed Checks" column.<br /><br />
+          Portfolio Summary calculations only include properties that have "Passed Checks" and are not "New Build or Acquired" (see far right columns below).<br />
+          <div ng-if="::organization.is_parent && auth.requires_owner">
+            <i>Data Quality Checks can be configured in</i>
+            <a ui-sref="organization_data_quality(::{organization_id: organization.id, rule_type: 'goals'})" ng-class="::{active: state.name === 'organization_data_quality'}" translate
+              >Data Quality Settings </a
+            >.
+          </div>
+        </div>
+        <button class="btn btn-light" ng-click="toggle_help(false)" style="margin-top: 20px">Hide</button>
+      </div>
       <div ng-if="summary_valid" ui-grid="summaryGridOptions" ui-grid-resize-columns style="margin-bottom: 30px"></div>
       <div class="portfolio-summary-loading" ng-if="summary_loading">
         <h4>{$:: 'Loading Summary Data...' | translate $}</h4>
@@ -92,6 +109,9 @@
             <li class="drowndown-header goal-action">
               <a ng-if="!selected_count < 1" ng-click="open_bulk_edit_goalnotes_modal()" translate>Edit Fields for Selected</a>
               <span ng-if="selected_count < 1" class="disabled-action" translate>Edit Fields for Selected</span>
+            </li>
+            <li class="drowndown-header goal-action">
+              <a ng-click="run_data_quality_check()">Data Quality Check</a>
             </li>
             <li class="drowndown-header goal-action">
               <a ng-if="!level_names.count < 2" ng-click="toggle_show_access_level_instances()">{$ show_access_level_instances ? 'Hide': 'Show' $} Access Levels</a>
