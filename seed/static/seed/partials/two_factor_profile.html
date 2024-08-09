@@ -1,0 +1,74 @@
+<div class="page_header_container">
+  <div class="page_header">
+    <div class="left page_action_container"></div>
+    <div class="page_title">
+      <h1>{$:: username $}</h1>
+    </div>
+    <div class="right page_action_container"></div>
+  </div>
+</div>
+<div class="section_nav_container">
+  <div class="section_nav" ng-include="::urls.static_url + 'seed/partials/profile_nav.html'"></div>
+</div>
+<div class="display">
+  <div class="section">
+    <div class="section">
+      <div class="alert {$ alert.css $}" ng-show="alert.show">{$ alert.message $}</div>
+      <div class="section_header_container has_btm_margin">
+        <div class="section_header">
+          <h2><i class="fas fa-user-shield"></i> {$:: 'Two-Factor Authentication' | translate $}</h2>
+        </div>
+      </div>
+      <div class="section_content_container">
+        <div class="section_content with_padding">
+          <h3 translate="TWO_FACTOR_ENABLE"></h3>
+          <h4 class="two_factor_current">
+            {$:: 'Current Method' | translate $}
+            <span ng-if="user.two_factor_method=='disabled'" class="label label-default">{$ user.two_factor_method.toUpperCase() $}</span>
+            <span ng-if="user.two_factor_method!='disabled'" class="label label-info">{$ user.two_factor_method.toUpperCase() $}</span>
+          </h4>
+          <p translate="TWO_FACTOR_SELECT"></p>
+          <div class="row">
+            <div class="col-sm-offset-1 col-sm-6">
+              <div class="form-check two_factor_selection">
+                <input class="form-check-input" ng-model="temp_user.two_factor_method" value="disabled" type="radio" ng-disabled="require_2fa" name="flexRadioDefault" id="flexRadioDisabled" />
+                <label class="form-check-label" for="flexRadioDisabled">Disabled</label>
+                <p class="help-text" translate="TWO_FACTOR_DISABLED_TEXT"></p>
+                <p class="help-text" ng-if="require_2fa"><em>* {$ 'TWO_FACTOR_REQUIRED' | translate $}</em></p>
+              </div>
+              <div class="form-check two_factor_selection">
+                <input class="form-check-input" ng-model="temp_user.two_factor_method" value="email" type="radio" name="flexRadioDefault" id="flexRadioEmail" />
+                <label class="form-check-label" for="flexRadioEmail" translate>Email</label>
+                <p class="help-text" translate="TWO_FACTOR_EMAIL_SELECTED_TEXT" translate-values="{ email: user.email }"></p>
+              </div>
+              <div class="form-check two_factor_selection">
+                <input class="form-check-input" ng-model="temp_user.two_factor_method" value="token" type="radio" name="flexRadioDefault" id="flexRadioToken" />
+                <label class="form-check-label" for="flexRadioToken" translate>Token Generator</label>
+                <p class="help-text" translate="TWO_FACTOR_TOKEN_SELECTED_TEXT"></p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="section_content_container" style="margin: 30px 0" ng-if="::auth.requires_owner">
+        <div class="section_content with_padding">
+          <button type="button" class="btn btn-primary" ng-disabled="settings_unchanged()" ng-click="save_settings()">
+            {$:: 'Save Changes' | translate $} <i class="fa-solid fa-check" ng-show="settings_updated"></i>
+          </button>
+          <div ng-if="form_errors" class="r-error-msg r-margin-right-10"><i class="fa-solid fa-circle-exclamation fa-lg"></i> Error saving: {$ form_errors $}</div>
+        </div>
+      </div>
+      <div class="section_content_container">
+        <div class="section_content with_padding">
+          <!-- <div ng-if="user.two_factor_method == 'email'">
+            <button class="btn btn-default" ng-click="resend_token_email()">Resend Test Email Token</button>
+            <div ng-if="email_sent">A sample token has been sent to {$ user.email $}</div>
+          </div> -->
+          <div ng-if="user.two_factor_method == 'token'">
+            <button class="btn btn-default" ng-click="generate_qr_code()">Re-Generate Token</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

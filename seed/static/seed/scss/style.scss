@@ -1645,6 +1645,11 @@ a:not([href]) {
         padding: 0;
       }
     }
+
+    .time-table {
+      border-collapse: separate;
+      border-spacing: 5px;
+    }
   }
 }
 
@@ -5080,21 +5085,21 @@ ul.r-list {
   }
 }
 
-#export-at-table {
+#import-export-at-table {
   .export-summary-row {
     background: #fff;
   }
 
-  .export-detail-row {
+  .import-export-detail-row {
     background: #f9f9f9;
 
     td {
       padding: 0 8px;
 
-      .export-details {
+      .import-export-details {
         max-height: 200px;
         overflow-y: scroll;
-        padding: 0 8px !important;
+        padding: 10px 8px !important;
 
         div {
           padding: 10px;
@@ -5578,4 +5583,31 @@ tags-input .tags .tag-item {
 
 .tkbl-table ul {
   padding-left: 18px;
+}
+
+.settings-header {
+  font-size: 16px;
+}
+
+.at-details {
+  padding-top: 15px;
+}
+
+.two_factor_selection {
+  margin: 10px;
+
+  input {
+    transform: scale(2);
+    margin: 10px;
+  }
+
+  .help-text {
+    margin-left: 40px;
+  }
+}
+
+.two_factor_current {
+  margin: 30px;
+  font-size: 14px;
+  font-weight: bold;
 }
