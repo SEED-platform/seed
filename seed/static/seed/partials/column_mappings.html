@@ -43,7 +43,7 @@
         ng-click="save_profile()"
         ng-disabled="!changes_possible || header_duplicates_present() || empty_units_present() || !profile_action_ok('update')"
         tooltip-placement="bottom"
-        uib-tooltip="Save"
+        uib-tooltip="{$ save_button_tooltip() $}"
       >
         <i class="fa-solid fa-check"></i>
       </button>
