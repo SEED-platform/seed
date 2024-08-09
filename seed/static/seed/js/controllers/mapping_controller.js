@@ -295,7 +295,6 @@ angular.module('SEED.controller.mapping', []).controller('mapping_controller', [
       });
     }
 
-    const eui_columns = _.filter($scope.mappable_property_columns, { data_type: 'eui' });
     /* $scope.is_eui_column = (
       col // All of these are on the PropertyState table
     ) => col.suggestion_table_name === 'PropertyState' && Boolean(_.find(eui_columns, { column_name: col.suggestion_column_name }));
