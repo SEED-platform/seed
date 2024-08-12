@@ -43,7 +43,7 @@
         ng-click="save_profile()"
         ng-disabled="!changes_possible || header_duplicates_present() || empty_units_present() || !profile_action_ok('update')"
         tooltip-placement="bottom"
-        uib-tooltip="Save"
+        uib-tooltip="{$ save_button_tooltip() $}"
       >
         <i class="fa-solid fa-check"></i>
       </button>
@@ -177,7 +177,7 @@
                   ng-disabled="!profile_action_ok('change_to_field')"
                 />
               </td>
-              <td ng-class="{'danger': col.from_units === null && (is_area_column(col) || is_eui_column(col))}">
+              <td ng-class="{'danger': col.from_units === null && (is_area_column(col) || is_eui_column(col) || is_ghg_column(col) || is_ghg_intensity_column(col))}">
                 <select ng-model="col.from_units" ng-change="flag_change()" ng-if="is_area_column(col)" ng-disabled="!profile_action_ok('change_from_units')">
                   <option value="ft**2" translate>square feet</option>
                   <option value="m**2" translate>square metres</option>

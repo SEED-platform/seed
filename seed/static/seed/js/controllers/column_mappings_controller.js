@@ -426,11 +426,21 @@ angular.module('SEED.controller.column_mappings', []).controller('column_mapping
       return Boolean(_.find(_.values(grouped_by_from_field), (group) => group.length > 1));
     };
 
+    $scope.save_button_tooltip = () => {
+      if (!$scope.changes_possible) return 'No changes';
+      if ($scope.header_duplicates_present()) return 'Duplicate headers present';
+      if ($scope.empty_units_present()) return 'Empty units present';
+      if ($scope.current_profile.profile_type === COLUMN_MAPPING_PROFILE_TYPE_BUILDINGSYNC_DEFAULT) return 'This profile cannot be changed';
+      if (!$scope.profile_action_ok('update')) return 'Unknown profile type';
+      return 'Save';
+    };
+
     $scope.empty_units_present = () => Boolean(
       _.find($scope.current_profile.mappings, (field) => {
         const has_units = $scope.is_area_column(field) || $scope.is_eui_column(field) || $scope.is_ghg_column(field) || $scope.is_ghg_intensity_column(field);
         return field.to_table_name === 'PropertyState' && field.from_units === null && has_units;
       })
+
     );
 
     $scope.profile_action_ok = (action) => {
