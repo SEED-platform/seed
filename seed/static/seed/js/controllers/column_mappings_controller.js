@@ -45,7 +45,6 @@ angular.module('SEED.controller.column_mappings', []).controller('column_mapping
 
     $scope.mappable_property_columns = mappable_property_columns_payload;
     $scope.mappable_taxlot_columns = mappable_taxlot_columns_payload;
-    $scope.profile_action_message = '';
 
     // Helpers to convert to and from DB column names and column display names
     const mapping_db_to_display = (mapping) => {
@@ -424,53 +423,38 @@ angular.module('SEED.controller.column_mappings', []).controller('column_mapping
     $scope.header_duplicates_present = () => {
       const grouped_by_from_field = _.groupBy($scope.current_profile.mappings, 'from_field');
 
-      if (_.find(_.values(grouped_by_from_field), (group) => group.length > 1)) {
-        $scope.profile_action_message = '';
-        return true;
-      }
-      $scope.profile_action_message = 'Duplicate Headers';
-      return false;
+      return Boolean(_.find(_.values(grouped_by_from_field), (group) => group.length > 1));
     };
 
     $scope.save_button_tooltip = () => {
-      if ($scope.profile_action_message !== '') {
-        return $scope.profile_action_message;
-      } if ($scope.changes_possible === false) {
-        return 'No changes to save';
-      }
+      if (!$scope.changes_possible) return 'No changes';
+      if ($scope.header_duplicates_present()) return 'Duplicate headers present';
+      if ($scope.empty_units_present()) return 'Empty units present';
+      if ($scope.current_profile.profile_type === COLUMN_MAPPING_PROFILE_TYPE_BUILDINGSYNC_DEFAULT) return 'This profile cannot be changed';
+      if (!$scope.profile_action_ok('update')) return 'Unknown profile type';
       return 'Save';
     };
 
     $scope.empty_units_present = () => Boolean(
       _.find($scope.current_profile.mappings, (field) => {
         const has_units = $scope.is_area_column(field) || $scope.is_eui_column(field) || $scope.is_ghg_column(field) || $scope.is_ghg_intensity_column(field);
-        if (field.to_table_name === 'PropertyState' && field.from_units === null && has_units) {
-          $scope.profile_action_message = `${field.name} require a unit type`;
-          return true;
-        }
-        $scope.profile_action_message = '';
+        return field.to_table_name === 'PropertyState' && field.from_units === null && has_units;
       })
 
     );
 
     $scope.profile_action_ok = (action) => {
       if ($scope.current_profile.profile_type === COLUMN_MAPPING_PROFILE_TYPE_NORMAL) {
-        $scope.profile_action_message = '';
         return true;
       }
 
       if ($scope.current_profile.profile_type === COLUMN_MAPPING_PROFILE_TYPE_BUILDINGSYNC_DEFAULT) {
-        $scope.profile_action_message = 'Cannot update Building Sync Default Profile';
         return false;
       }
 
       if ($scope.current_profile.profile_type === COLUMN_MAPPING_PROFILE_TYPE_BUILDINGSYNC_CUSTOM) {
         const allowed_actions = ['update', 'rename', 'delete', 'change_to_field', 'change_from_units'];
-        if (allowed_actions.includes(action)) {
-          $scope.profile_action_message = '';
-          return true;
-        }
-        $scope.profile_action_message = 'This action is not permitted.';
+        return allowed_actions.includes(action);
       }
 
       $log.warn(`Unknown profile type "${$scope.current_profile.profile_type}"`);
