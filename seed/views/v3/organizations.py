@@ -65,7 +65,7 @@ from seed.utils.encrypt import decrypt, encrypt
 from seed.utils.geocode import geocode_buildings
 from seed.utils.match import match_merge_link
 from seed.utils.merge import merge_properties
-from seed.utils.organizations import create_organization, create_suborganization
+from seed.utils.organizations import create_organization, create_suborganization, set_default_2fa_method
 from seed.utils.properties import pair_unpair_property_taxlot
 from seed.utils.public import public_feed
 from seed.utils.salesforce import toggle_salesforce_sync
@@ -164,6 +164,7 @@ def _dict_org(request, organizations):
             "default_reports_y_axis_options": ColumnSerializer(
                 Column.objects.filter(organization=o, table_name="PropertyState", is_option_for_reports_y_axis=True), many=True
             ).data,
+            "require_2fa": o.require_2fa,
         }
         orgs.append(org)
 
@@ -648,6 +649,12 @@ class OrganizationViewSet(viewsets.ViewSet):
             # if salesforce_enabled was toggled, must start/stop auto sync functionality
             toggle_salesforce_sync(salesforce_enabled, org.id)
 
+        require_2fa = posted_org.get("require_2fa", False)
+        if require_2fa != org.require_2fa:
+            org.require_2fa = require_2fa
+            if require_2fa:
+                set_default_2fa_method(org)
+
         # update the ubid threshold option
         ubid_threshold = posted_org.get("ubid_threshold")
         if ubid_threshold is not None and ubid_threshold != org.ubid_threshold:
@@ -997,7 +1004,7 @@ class OrganizationViewSet(viewsets.ViewSet):
 
         results = []
         for i in range(len(bins) - 1):
-            bin = f"{bins[i]} - {bins[i+1]}"
+            bin = f"{round(bins[i], 2)} - {round(bins[i+1], 2)}"
             values = np.array(xs)[np.where(binplace == i + 1)]
             x = sum(values) if count else np.average(values).item()
             results.append({"y": bin, "x": None if np.isnan(x) else x, "yr_e": yr_e})
@@ -1097,8 +1104,8 @@ class OrganizationViewSet(viewsets.ViewSet):
 
         for i, matching_column in enumerate(matching_columns):
             base_sheet.write(data_row_start, data_col_start + i, matching_column.display_name, bold)
-        base_sheet.write(data_row_start, data_col_start + len(matching_columns) + 0, request.query_params.get("x_label"), bold)
-        base_sheet.write(data_row_start, data_col_start + len(matching_columns) + 1, request.query_params.get("y_label"), bold)
+        base_sheet.write(data_row_start, data_col_start + len(matching_columns) + 0, params["x_label"], bold)
+        base_sheet.write(data_row_start, data_col_start + len(matching_columns) + 1, params["y_label"], bold)
         base_sheet.write(data_row_start, data_col_start + len(matching_columns) + 2, "Year Ending", bold)
 
         base_row = data_row_start + 1

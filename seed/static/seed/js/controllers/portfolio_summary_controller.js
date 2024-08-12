@@ -11,9 +11,11 @@ angular.module('SEED.controller.portfolio_summary', [])
     '$window',
     'urls',
     'ah_service',
+    'data_quality_service',
     'inventory_service',
     'label_service',
     'goal_service',
+    'Notification',
     'cycles',
     'organization_payload',
     'access_level_tree',
@@ -31,9 +33,11 @@ angular.module('SEED.controller.portfolio_summary', [])
       $window,
       urls,
       ah_service,
+      data_quality_service,
       inventory_service,
       label_service,
       goal_service,
+      Notification,
       cycles,
       organization_payload,
       access_level_tree,
@@ -142,8 +146,15 @@ angular.module('SEED.controller.portfolio_summary', [])
         }
       };
 
+      $scope.toggle_help = (bool) => {
+        $scope.show_help = bool;
+        _.delay($scope.updateHeight, 150);
+      };
+
       const get_goal_stats = (summary) => {
         const passing_sqft = summary.current ? summary.current.total_sqft : null;
+        // show help text if less than {50}% of properties are passing checks
+        $scope.show_help = summary.total_passing <= summary.total_properties * 0.5;
         $scope.goal_stats = [
           { name: 'Commitment (Sq. Ft)', value: $scope.goal.commitment_sqft },
           { name: 'Shared (Sq. Ft)', value: summary.shared_sqft },
@@ -284,11 +295,11 @@ angular.module('SEED.controller.portfolio_summary', [])
 
       $scope.max_label_width = 750;
       $scope.get_label_column_width = (labels_col, key) => {
-        if (!$scope.show_full_labels[key]) {
+        const renderContainer = document.body.getElementsByClassName('ui-grid-render-container-body')[1];
+        if (!$scope.show_full_labels[key] || !renderContainer) {
           return 31;
         }
         let maxWidth = 0;
-        const renderContainer = document.body.getElementsByClassName('ui-grid-render-container-body')[1];
         const col = $scope.gridApi.grid.getColumn(labels_col);
         const cells = renderContainer.querySelectorAll(`.${uiGridConstants.COL_CLASS_PREFIX}${col.uid} .ui-grid-cell-contents`);
         Array.prototype.forEach.call(cells, (cell) => {
@@ -318,17 +329,9 @@ angular.module('SEED.controller.portfolio_summary', [])
         }, 0);
       };
 
-      // retrieve labels for cycle
+      // retrieve labels, key = 'baseline' or 'current'
       const get_labels = (key) => {
-        const cycle = key === 'baseline' ? $scope.goal.baseline_cycle : $scope.goal.current_cycle;
-
-        label_service.get_labels('properties', undefined, cycle).then((current_labels) => {
-          const labels = _.filter(current_labels, (label) => !_.isEmpty(label.is_applied));
-
-          // load saved label filter
-          // const ids = inventory_service.loadSelectedLabels('grid.properties.labels');
-          // $scope.selected_labels = _.filter(labels, (label) => _.includes(ids, label.id));
-
+        label_service.get_property_view_labels_by_goal($scope.organization.id, $scope.goal.id, key).then((labels) => {
           if (key === 'baseline') {
             $scope.baseline_labels = labels;
             $scope.build_labels(key, $scope.baseline_labels);
@@ -338,6 +341,7 @@ angular.module('SEED.controller.portfolio_summary', [])
           }
         });
       };
+
       const get_all_labels = () => {
         get_labels('baseline');
         get_labels('current');
@@ -349,16 +353,11 @@ angular.module('SEED.controller.portfolio_summary', [])
         $scope.show_labels_by_inventory_id[key] = {};
         for (const n in labels) {
           const label = labels[n];
-          if (label.show_in_list) {
-            for (const m in label.is_applied) {
-              const id = label.is_applied[m];
-              const property_id = $scope.property_lookup[id];
-              if (!$scope.show_labels_by_inventory_id[key][property_id]) {
-                $scope.show_labels_by_inventory_id[key][property_id] = [];
-              }
-              $scope.show_labels_by_inventory_id[key][property_id].push(label);
-            }
+          const property_id = $scope.property_lookup[label.propertyview];
+          if (!$scope.show_labels_by_inventory_id[key][property_id]) {
+            $scope.show_labels_by_inventory_id[key][property_id] = [];
           }
+          $scope.show_labels_by_inventory_id[key][property_id].push(label);
         }
       };
 
@@ -897,6 +896,7 @@ angular.module('SEED.controller.portfolio_summary', [])
       };
 
       const set_grid_options = (result) => {
+        $scope.show_full_labels = { baseline: false, current: false };
         $scope.selected_ids = [];
         $scope.data = format_properties(result);
         spinner_utility.hide();
@@ -1112,5 +1112,37 @@ angular.module('SEED.controller.portfolio_summary', [])
             $scope.summaryGridApi = gridApi;
           }
         };
+      };
+
+      $scope.run_data_quality_check = () => {
+        spinner_utility.show();
+        data_quality_service.start_data_quality_checks([], [], $scope.goal.id)
+          .then((response) => {
+            data_quality_service.data_quality_checks_status(response.progress_key)
+              .then((result) => {
+                data_quality_service.get_data_quality_results($scope.organization.id, result.unique_id)
+                  .then((dq_result) => {
+                    $uibModal.open({
+                      templateUrl: `${urls.static_url}seed/partials/data_quality_modal.html`,
+                      controller: 'data_quality_modal_controller',
+                      size: 'lg',
+                      resolve: {
+                        dataQualityResults: () => dq_result,
+                        name: () => null,
+                        uploaded: () => null,
+                        run_id: () => result.unique_id,
+                        orgId: () => $scope.organization.id
+                      }
+                    });
+                    spinner_utility.hide();
+                    load_summary();
+                    load_inventory();
+                  });
+              });
+          })
+          .catch(() => {
+            spinner_utility.hide();
+            Notification.erorr('Unexpected Error');
+          });
       };
     }]);

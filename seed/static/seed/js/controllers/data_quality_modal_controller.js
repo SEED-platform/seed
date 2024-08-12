@@ -40,6 +40,11 @@ angular.module('SEED.controller.data_quality_modal', []).controller('data_qualit
         title: 'Table'
       },
       {
+        sort_column: 'cycle',
+        sortable: true,
+        title: 'Cycle'
+      },
+      {
         sort_column: 'address_line_1',
         sortable: true,
         title: 'Address Line 1'
