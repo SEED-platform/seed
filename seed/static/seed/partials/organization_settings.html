@@ -1092,7 +1092,26 @@
       </div>
     </uib-tab>
 
-    <uib-tab index="7" heading="UBID">
+    <uib-tab index="7" heading="{$:: 'Two-Factor Authentication' | translate $}">
+      <div class="section_content_container">
+        <div class="section_content with_padding">
+          <h3 translate>Require two-factor authentication</h3>
+          <p>
+            Checking this box requires all organization users to use Two-Factor Authentication (2FA). If a user does not already have a 2FA method configured, an email-based authentication method will
+            be set as the default.
+          </p>
+          <form class="form-horizontal" role="form">
+            <div class="form-group">
+              <div class="col-sm-4">
+                <input type="checkbox" class="form-control" style="width: 34px" ng-model="org.require_2fa" ng-disabled="::!auth.requires_owner" />
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </uib-tab>
+
+    <uib-tab index="8" heading="UBID">
       <div class="section_content_container">
         <div class="section_content with_padding">
           <h3 translate>Set UBID Threshold</h3>
@@ -1129,7 +1148,7 @@
       </div>
     </uib-tab>
 
-    <uib-tab index="8" heading="{$:: 'Units' | translate $}">
+    <uib-tab index="9" heading="{$:: 'Units' | translate $}">
       <div class="section_content_container">
         <div class="section_content with_padding">
           <h3 translate>Measurement unit display for energy use intensities (EUI)</h3>

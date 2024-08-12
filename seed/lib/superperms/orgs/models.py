@@ -291,6 +291,9 @@ class Organization(models.Model):
     public_feed_labels = models.BooleanField(default=False)
     public_geojson_enabled = models.BooleanField(default=False)
 
+    # 2 Factor Auth
+    require_2fa = models.BooleanField(default=False)
+
     def save(self, *args, **kwargs):
         """Perform checks before saving."""
         # There can only be one.
