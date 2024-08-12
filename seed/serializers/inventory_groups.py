@@ -26,7 +26,7 @@ class InventoryGroupSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = InventoryGroup
-        fields = ("id", "name", "inventory_type", "organization", "member_list")
+        fields = ("id", "name", "inventory_type", "access_level_instance", "organization", "member_list")
 
     def get_member_list(self, obj):
         filtered_result = []

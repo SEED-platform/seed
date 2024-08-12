@@ -7,8 +7,9 @@ angular.module('SEED.controller.update_inventory_groups_modal', [])
     'inventory_ids',
     'inventory_type',
     'org_id',
+    'user_service',
     'Notification',
-    function ($scope, $log, $uibModalInstance, inventory_group_service, inventory_ids, inventory_type, org_id, notification) {
+    function ($scope, $log, $uibModalInstance, inventory_group_service, inventory_ids, inventory_type, org_id, user_service, notification) {
       $scope.inventory_ids = inventory_ids;
       $scope.inventory_type = inventory_type;
       $scope.org_id = org_id;
@@ -28,7 +29,8 @@ angular.module('SEED.controller.update_inventory_groups_modal', [])
         $scope.new_group = {
           organization: $scope.org_id,
           inventory_type: $scope.inventory_type === 'properties' ? 'Property' : 'Tax Lot',
-          name: ''
+          name: '',
+          access_level_instance: user_service.get_access_level_instance().id,
         };
       };
 
