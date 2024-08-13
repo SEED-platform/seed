@@ -89,10 +89,7 @@ def rehash(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-    dependencies = [
-        ("orgs", "0037_organization_display_water_units"),
-        ("seed", "0222_cross_cycle_data_quality")
-    ]
+    dependencies = [("orgs", "0037_organization_display_water_units"), ("seed", "0222_cross_cycle_data_quality")]
 
     operations = [
         migrations.AddField(

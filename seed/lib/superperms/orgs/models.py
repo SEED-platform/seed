@@ -181,11 +181,7 @@ class Organization(models.Model):
         ("L/m**2/year", "L/m²/year"),
     )
 
-    MEASUREMENT_CHOICES_WATER_USE = (
-        ("kgal/year", "kgal/year"),
-        ("gal/year", "gal/year"),
-        ("L/year", "L/year")
-    )
+    MEASUREMENT_CHOICES_WATER_USE = (("kgal/year", "kgal/year"), ("gal/year", "gal/year"), ("L/year", "L/year"))
 
     AUDIT_TEMPLATE_STATUS_CHOICES = (
         ("Complies", "Complies"),
