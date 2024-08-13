@@ -139,15 +139,41 @@ msgstr "Documentation de l'API"
 msgid "API Key"
 msgstr "Clé API"
 
+msgid "AT_ALL_DATA"
+msgstr "Les soumissions de modèles d’audit seront importées quelle que soit la date de soumission. Vous pouvez configurer ce paramètre dans la page des paramètres de votre organisation SEED."
+
+msgid "AT_AUTO_SYNC"
+msgstr "Si vous souhaitez mettre à jour automatiquement votre organisation SEED avec les données de soumission du modèle d'audit pour l'ID de ville du modèle d'audit sélectionné, configurez les champs ci-dessous pour planifier votre mise à jour hebdomadaire."
+
+#, fuzzy
+msgid "AT_CITY_ID"
+msgstr "Spécifiez l'ID de votre ville dans Audit Template. Ce numéro est visible dans l'URL du site Audit Template lorsque vous accédez à l'onglet « CITIES ». SEED importera les données de soumission pour la ville spécifiée uniquement."
+
+msgid "AT_CONDITION_INDEX"
+msgstr "Lorsque cette case est cochée, SEED importera uniquement les soumissions Audit Template qui ont été soumises plus récemment que la mise à jour la plus récente des enregistrements SEED. Si cette case n'est pas cochée, toutes les soumissions Audit Template seront importées quelle que soit la date de soumission."
+
 msgid "AT_EMAIL_TEXT"
 msgstr "Utilisez l'e-mail associé à votre compte depuis <a href=\"{link}/\" target=\"_blank\" rel=\"noopener noreferrer\"> Building Energy Score </a> ."
+
+#, fuzzy
+msgid "AT_MOST_RECENT_ONLY"
+msgstr "Seules les soumissions Audit Template qui ont été soumises plus récemment que la mise à jour la plus récente de l'inventaire SEED seront importées. Vous pouvez configurer ce paramètre dans la page des paramètres de votre organisation SEED."
 
 msgid "AT_PASS_TEXT"
 msgstr "Utilisez le mot de passe associé à votre compte sur le <a href=\"{link}/\" target=\"_blank\" rel=\"noopener noreferrer\"> Building Energy Score </a> ."
 
+msgid "AT_REPORT_TYPE"
+msgstr "Si vous souhaitez générer des rapports Audit Template stub à partir des données SEED, sélectionnez le type de rapport Audit Template que SEED doit générer."
+
+msgid "AT_SETTINGS_TEXT"
+msgstr "Si votre organisation a configuré un formulaire de rapport personnalisé dans Audit Template, remplissez les paramètres ci-dessous pour activer l'importation des soumissions Audit Template dans votre organisation SEED."
+
+msgid "AT_SUBMISSION_STATUS"
+msgstr "SEED importera les données pour les soumissions étiquetées avec le statut suivant sur le site Audit Template. Le statut de soumission par défaut sur le site Audit Template est « Received »."
+
 #. Helper text for the Audit Template token in organization settings.
 msgid "AT_TOKEN_TEXT"
-msgstr "Veuillez consulter la <a href=\"{link}/reports/api/\" target=\"_blank\" rel=\"noopener noreferrer\"> documentation sur Audit Template </a> pour savoir comment obtenir une clé API. Remarque, ne préfixez pas le jeton avec \"Jeton \", incluez uniquement le jeton lui-même."
+msgstr "Le jeton API de votre organisation devrait être visible sur votre page de compte dans Audit Template. Veuillez vous référer à la <a href=\"{link}/reports/api/\" target=\"_blank\" rel=\"noopener noreferrer\"> documentation sur Audit Template </a> pour savoir comment obtenir une clé API. Notez que ne préfixez pas le jeton avec \"Jeton\", incluez uniquement le jeton lui-même."
 
 msgid "About"
 msgstr "À Propos"
@@ -298,6 +324,9 @@ msgstr "Adresse Ligne 2 (Lot d'impôt)"
 
 msgid "Admin"
 msgstr "Admin"
+
+msgid "Advanced Settings"
+msgstr "Réglages avancés"
 
 msgid "An Audit Template organization token, user email and password are required"
 msgstr "Un jeton d'organisation Audit Template, un e-mail d'utilisateur et un mot de passe sont requis"
@@ -517,8 +546,14 @@ msgstr "Normalement, lorsqu'un enregistrement importé est fusionné dans un aut
 msgid "COMPLETE_AND_REFRESH"
 msgstr "Complétez et Actualisez la Page"
 
+msgid "CONFIGURE_CYCLES"
+msgstr "Sélectionnez un ou plusieurs cycles dans la liste déroulante ci-dessus pour visualiser dans les graphiques ci-dessous."
+
 msgid "CONFIGURE_PROGRAM"
 msgstr "Besoin de configurer votre programme?"
+
+msgid "CONFIGURE_XY_AXES"
+msgstr "pour configurer l'ensemble des colonnes sélectionnables comme axes X et Y. Ceux-ci peuvent être définis dans l’onglet Champs d’affichage par défaut."
 
 msgid "CONFIRMING_DELETE_PROFILE"
 msgstr "Êtes-vous sûr de vouloir supprimer le profil"
@@ -1305,6 +1340,12 @@ msgstr "Exemple de graphe en arbre de niveaux d'accès"
 msgid "Example Usage"
 msgstr "Exemple d'utilisation"
 
+msgid "Exclude"
+msgstr "Exclure"
+
+msgid "Exclude all selected labels"
+msgstr "Exclure toutes les étiquettes sélectionnées"
+
 msgid "Existing Audit Template Properties (skipped)"
 msgstr "Propriétés du modèle d'audit existant (ignoré)"
 
@@ -1693,9 +1734,6 @@ msgstr "Cette opération est irréversible."
 msgid "ITEMS_WILL_NOT_CHANGE"
 msgstr "ceux-ci ne changeront pas"
 
-msgid "If you would like to automatically update inventory with Audit Template submission data for the selected Audit Template City ID, configure fields below."
-msgstr "Si vous souhaitez mettre à jour automatiquement l'inventaire avec les données de soumission du modèle d'audit pour l'ID de ville du modèle d'audit sélectionné, configurez les champs ci-dessous."
-
 msgid "Ignored duplicates of existing properties"
 msgstr "Copies ignorées des propriétés existantes"
 
@@ -1738,6 +1776,9 @@ msgstr "En outre, vous devez spécifier où le champ doit être associé aux don
 #: seed/models/projects.py:23
 msgid "Inactive"
 msgstr "Inactif"
+
+msgid "Include Any"
+msgstr "Inclure tout"
 
 msgid "Include CSV Label Header"
 msgstr "Inclure l'en-tête d'étiquette CSV"
@@ -2176,6 +2217,15 @@ msgstr "Déplacer les bâtiments"
 
 msgid "Move/copy buildings to another project"
 msgstr "Déplacer/copier des bâtiments dans un autre projet"
+
+msgid "Must Include"
+msgstr "Doit inclure"
+
+msgid "Must include all selected labels (AND)"
+msgstr "Doit inclure toutes les étiquettes sélectionnées (ET)"
+
+msgid "Must include at least one selected label (OR)"
+msgstr "Doit inclure au moins une étiquette sélectionnée (OU)"
 
 msgid "NEW_COLUMN_REPLACE_DATA_WARNING"
 msgstr "Une nouvelle colonne sera créée et/ou les données existantes peuvent être remplacées."
@@ -2867,8 +2917,8 @@ msgstr "Résolution"
 msgid "Restore Default Rules"
 msgstr "Restaurer les règles par défaut"
 
-msgid "Results for City"
-msgstr "Résultats pour Ville"
+msgid "Results"
+msgstr "Résultats"
 
 #: seed/models/models.py:137
 msgid "Retro Commissioning"
@@ -2945,9 +2995,6 @@ msgstr "Plate-forme SEED"
 msgid "SEED Platform™"
 msgstr "SEED Platform™"
 
-msgid "SEED Properties will be exported to Audit Template with the Organization Report Type"
-msgstr "Les propriétés SEED seront exportées vers le modèle d'audit avec le type de rapport d'organisation."
-
 msgid "SEED Unique Benchmark ID Fieldname"
 msgstr "Unique nom de champ pour Benchmark ID SEED"
 
@@ -2957,12 +3004,6 @@ msgstr "SEED ne prend pas actuellement en charge ce format de fichier"
 #: seed/templates/seed/account_create_email.html:6
 msgid "SEED is easy, flexible, and cost effective software designed to help organizations clean, manage and share information about large portfolios of buildings. SEED is a free, open source web application that you can use privately.  While SEED was originally designed to help cities and States implement benchmarking programs for public or private buildings, it has the potential to be useful for many other activities by public entities, efficiency programs and private companies."
 msgstr "SEED est un logiciel simple, flexible et rentable conçu pour aider les entreprises à nettoyer, gérer et partager des informations sur les grands portefeuilles de bâtiments. SEED est une application Web open source gratuite que vous pouvez utiliser en privé. Bien que SEED ait été conçue à l'origine pour aider les villes et les États à mettre en œuvre des programmes de benchmarking pour les bâtiments publics ou privés, il est susceptible d'être utile pour de nombreuses autres activités par des entités publiques, des programmes d'efficacité et des entreprises privées."
-
-msgid "SEED will import submission data for the following City ID"
-msgstr "SEED importera les données de soumission pour l'ID de ville suivant"
-
-msgid "SEED will import submission data for the following submission status"
-msgstr "SEED importera les données de soumission pour le statut de soumission suivant"
 
 msgid "SELECT_DATA_SET_TITLE"
 msgstr "Sélectionner un ensemble de données"
@@ -3841,8 +3882,8 @@ msgstr "Mettre à jour UBID"
 msgid "Update from Audit Template"
 msgstr "Mise à jour à partir du modèle d'audit"
 
-msgid "Update inventory with Audit Template Submissions for City"
-msgstr "Mettre à jour l'inventaire avec les soumissions de modèles d'audit pour la ville"
+msgid "Update inventory with Audit Template Submissions"
+msgstr "Mettre à jour l'inventaire avec les soumissions de Audit Template"
 
 msgid "Update the data type of the column to \"Area\" in"
 msgstr "Assurez-vous que le type de données de la colonne est bien \"Area\" dans"
@@ -4032,9 +4073,6 @@ msgstr "Qu'est-ce qu'un rapport personnalisé ?"
 
 msgid "What type of file would you like to upload?"
 msgstr "Quel type de fichier souhaitez-vous télécharger?"
-
-msgid "When checked, SEED will only import Audit Template data that has been updated more recently than SEED data. If unchecked, all data will be imported regardless of updated date."
-msgstr "Lorsque cette case est cochée, SEED importera uniquement les données du modèle d'audit qui ont été mises à jour plus récemment que les données SEED. Si cette case n'est pas cochée, toutes les données seront importées quelle que soit la date de mise à jour."
 
 msgid "When checked, properties/taxlots will be matched to existing cycles based on the 'year_ending' column or the default cycle if there is no match"
 msgstr "Lorsque cette case est cochée, les propriétés/taxlots seront appariés aux cycles existants en fonction de la colonne 'year_ending' ou du cycle par défaut s'il n'y a pas de correspondance"

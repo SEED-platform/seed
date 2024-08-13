@@ -13,6 +13,7 @@ from django.conf import settings
 from django.contrib.gis.db import models as geomodels
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError, models, transaction
+from django.db.models import Case, UniqueConstraint, Value, When
 from django.db.models.signals import m2m_changed, post_save, pre_delete, pre_save
 from django.dispatch import receiver
 from django.forms.models import model_to_dict
@@ -21,8 +22,6 @@ from quantityfield.fields import QuantityField
 from quantityfield.units import ureg
 
 from seed.data_importer.models import ImportFile
-
-# from seed.utils.cprofile import cprofile
 from seed.lib.mcm.cleaners import date_cleaner
 from seed.lib.superperms.orgs.models import AccessLevelInstance, Organization
 from seed.models.cycles import Cycle
@@ -77,7 +76,7 @@ class Property(models.Model):
         verbose_name_plural = "properties"
 
     def __str__(self):
-        return "Property - %s" % (self.pk)
+        return f"Property - {self.pk}"
 
     def copy_meters(self, source_property_id, source_persists=True):
         """
@@ -871,7 +870,6 @@ class PropertyView(models.Model):
 
     A PropertyView contains a reference to a property (which should not change) and to a
     cycle (time period), and a state (characteristics).
-
     """
 
     # different property views can be associated with each other (2012, 2013)
@@ -879,12 +877,12 @@ class PropertyView(models.Model):
     cycle = models.ForeignKey(Cycle, on_delete=models.PROTECT)
     state = models.ForeignKey(PropertyState, on_delete=models.CASCADE)
 
-    labels = models.ManyToManyField(StatusLabel)
+    labels = models.ManyToManyField(StatusLabel, through="PropertyViewLabel", through_fields=("propertyview", "statuslabel"))
 
     # notes has a relationship here -- PropertyViews have notes, not the state, and not the property.
 
     def __str__(self):
-        return "Property View - %s" % self.pk
+        return f"Property View - {self.pk}"
 
     class Meta:
         unique_together = (
@@ -946,6 +944,15 @@ def post_save_property_view(sender, **kwargs):
     """
     if kwargs["instance"].property:
         kwargs["instance"].property.save()
+
+
+class PropertyViewLabel(models.Model):
+    propertyview = models.ForeignKey(PropertyView, on_delete=models.CASCADE)
+    statuslabel = models.ForeignKey(StatusLabel, on_delete=models.CASCADE)
+    goal = models.ForeignKey("seed.Goal", on_delete=models.CASCADE, null=True)
+
+    class Meta:
+        constraints = [UniqueConstraint(fields=["propertyview", "statuslabel", "goal"], name="unique_propertyview_statuslabel_goal")]
 
 
 class PropertyAuditLog(models.Model):

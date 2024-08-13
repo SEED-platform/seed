@@ -5154,7 +5154,7 @@ ul.r-list {
         margin: 15px;
 
         .goal-select-label {
-          margin: auto;
+          margin-top: auto;
         }
 
         .goal-selection {
@@ -5230,6 +5230,10 @@ ul.r-list {
       h3 {
         margin: 0;
         padding-bottom: 10px;
+      }
+
+      .portfolio-summary-help-text {
+        width: fit-content;
       }
     }
   }
