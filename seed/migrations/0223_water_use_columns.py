@@ -90,7 +90,8 @@ def rehash(apps, schema_editor):
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("seed", "0219_auto_20240604_1605"),
+        ("orgs", "0037_organization_display_water_units"),
+        ("seed", "0222_cross_cycle_data_quality")
     ]
 
     operations = [

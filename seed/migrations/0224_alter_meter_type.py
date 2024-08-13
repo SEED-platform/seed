@@ -5,7 +5,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("seed", "0220_water_use_columns"),
+        ("seed", "0223_water_use_columns"),
     ]
 
     operations = [

@@ -7,7 +7,7 @@ import seed.lib.superperms.orgs.models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("orgs", "0034_organization_display_water_units"),
+        ("orgs", "0035_organization_require_2fa"),
     ]
 
     operations = [

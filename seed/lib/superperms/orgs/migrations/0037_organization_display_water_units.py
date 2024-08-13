@@ -5,7 +5,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("orgs", "0033_organization_public_geojson_enabled"),
+        ("orgs", "0036_organization_display_meter_water_units"),
     ]
 
     operations = [

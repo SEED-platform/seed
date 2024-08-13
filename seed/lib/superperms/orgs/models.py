@@ -184,7 +184,9 @@ class Organization(models.Model):
     MEASUREMENT_CHOICES_WATER_USE = (
         ("kgal/year", "kgal/year"),
         ("gal/year", "gal/year"),
-        ("L/year", "L/year"),
+        ("L/year", "L/year")
+    )
+
     AUDIT_TEMPLATE_STATUS_CHOICES = (
         ("Complies", "Complies"),
         ("Pending", "Pending"),
