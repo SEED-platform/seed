@@ -50,7 +50,7 @@ from seed.views.v3.notes import NoteViewSet
 from seed.views.v3.organization_users import OrganizationUserViewSet
 from seed.views.v3.organizations import OrganizationViewSet
 from seed.views.v3.portfolio_manager import PortfolioManagerViewSet
-from seed.views.v3.postoffice import PostOfficeEmailViewSet, PostOfficeViewSet
+from seed.views.v3.postoffice import PostOfficeEmailTemplateViewSet, PostOfficeEmailViewSet
 from seed.views.v3.progress import ProgressViewSet
 from seed.views.v3.properties import PropertyViewSet
 from seed.views.v3.property_measures import PropertyMeasureViewSet
@@ -99,7 +99,7 @@ api_v3_router.register(r"labels", LabelViewSet, basename="labels")
 api_v3_router.register(r"measures", MeasureViewSet, basename="measures")
 api_v3_router.register(r"organizations", OrganizationViewSet, basename="organizations")
 api_v3_router.register(r"portfolio_manager", PortfolioManagerViewSet, basename="portfolio_manager")
-api_v3_router.register(r"postoffice", PostOfficeViewSet, basename="postoffice")
+api_v3_router.register(r"postoffice", PostOfficeEmailTemplateViewSet, basename="postoffice")
 api_v3_router.register(r"postoffice_email", PostOfficeEmailViewSet, basename="postoffice_email")
 api_v3_router.register(r"progress", ProgressViewSet, basename="progress")
 api_v3_router.register(r"properties", PropertyViewSet, basename="properties")

@@ -11,49 +11,19 @@ from post_office import mail
 
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.models import PostOfficeEmail, PostOfficeEmailTemplate, PropertyState, TaxLotState
-from seed.serializers.postoffice import PostOfficeEmailSerializer, PostOfficeSerializer
-from seed.utils.viewsets import SEEDOrgModelViewSet
-from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema_org_query_param
+from seed.serializers.postoffice import PostOfficeEmailSerializer, PostOfficeEmailTemplateSerializer
+from seed.utils.api_schema import swagger_auto_schema_org_query_param
+from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
 
 
-@method_decorator(
-    name="list", 
-    decorator=[
-        swagger_auto_schema_org_query_param,
-        has_perm_class("requires_owner")
-    ]
-)
-@method_decorator(
-    name="retrieve", 
-    decorator=[
-        swagger_auto_schema_org_query_param,
-        has_perm_class("requires_owner")
-    ]
-)
-@method_decorator(
-    name="update", 
-    decorator=[
-        swagger_auto_schema_org_query_param,
-        has_perm_class("requires_owner")
-    ]
-)
-@method_decorator(
-    name="destroy", 
-    decorator=[
-        swagger_auto_schema_org_query_param,
-        has_perm_class("requires_owner")
-    ]
-)
-@method_decorator(
-    name="create", 
-    decorator=[
-        swagger_auto_schema_org_query_param,
-        has_perm_class("requires_owner")
-    ]
-)
-class PostOfficeViewSet(SEEDOrgModelViewSet):
+@method_decorator(name="list", decorator=[swagger_auto_schema_org_query_param, has_perm_class("requires_owner")])
+@method_decorator(name="retrieve", decorator=[swagger_auto_schema_org_query_param, has_perm_class("requires_owner")])
+@method_decorator(name="update", decorator=[swagger_auto_schema_org_query_param, has_perm_class("requires_owner")])
+@method_decorator(name="destroy", decorator=[swagger_auto_schema_org_query_param, has_perm_class("requires_owner")])
+@method_decorator(name="create", decorator=[swagger_auto_schema_org_query_param, has_perm_class("requires_owner")])
+class PostOfficeEmailTemplateViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
     model = PostOfficeEmailTemplate
-    serializer_class = PostOfficeSerializer
+    serializer_class = PostOfficeEmailTemplateSerializer
     pagination_class = None
 
     def get_queryset(self):
@@ -65,18 +35,18 @@ class PostOfficeViewSet(SEEDOrgModelViewSet):
         serializer.save(organization_id=org_id, user=user)
 
 
-@method_decorator(name="list", decorator=[has_perm_class("requires_owner")])
-@method_decorator(name="retrieve", decorator=[has_perm_class("requires_owner")])
-@method_decorator(name="update", decorator=[has_perm_class("requires_owner")])
-@method_decorator(name="destroy", decorator=[has_perm_class("requires_owner")])
-@method_decorator(name="create", decorator=[has_perm_class("requires_owner")])
-class PostOfficeEmailViewSet(SEEDOrgModelViewSet):
+@method_decorator(name="list", decorator=[swagger_auto_schema_org_query_param, has_perm_class("requires_owner")])
+@method_decorator(name="retrieve", decorator=[swagger_auto_schema_org_query_param, has_perm_class("requires_owner")])
+@method_decorator(name="update", decorator=[swagger_auto_schema_org_query_param, has_perm_class("requires_owner")])
+@method_decorator(name="destroy", decorator=[swagger_auto_schema_org_query_param, has_perm_class("requires_owner")])
+@method_decorator(name="create", decorator=[swagger_auto_schema_org_query_param, has_perm_class("requires_owner")])
+class PostOfficeEmailViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
     model = PostOfficeEmail
     serializer_class = PostOfficeEmailSerializer
     pagination_class = None
 
     def get_queryset(self):
-        return PostOfficeEmail.objects.all()
+        return PostOfficeEmail.objects.filter(organization_id=self.get_organization(self.request))
 
     def perform_create(self, serializer):
         template_id = self.request.data.get("template_id")
