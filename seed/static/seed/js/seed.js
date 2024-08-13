@@ -1959,12 +1959,6 @@
               }
             ],
             organization_payload: ['user_service', 'organization_service', (user_service, organization_service) => organization_service.get_organization_brief(user_service.get_organization().id)],
-            derived_columns_payload: [
-              '$stateParams',
-              'derived_columns_service',
-              'organization_payload',
-              ($stateParams, derived_columns_service, organization_payload) => derived_columns_service.get_derived_columns(organization_payload.organization.id, $stateParams.inventory_type)
-            ]
           }
         })
         .state({
@@ -2170,15 +2164,6 @@
                   _.remove(columns, 'related');
                   return _.map(columns, (col) => _.omit(col, ['pinnedLeft', 'related']));
                 });
-              }
-            ],
-            derived_columns_payload: [
-              '$stateParams',
-              'user_service',
-              'derived_columns_service',
-              ($stateParams, user_service, derived_columns_service) => {
-                const organization_id = user_service.get_organization().id;
-                return derived_columns_service.get_derived_columns(organization_id, $stateParams.inventory_type);
               }
             ],
             profiles: [

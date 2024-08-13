@@ -252,10 +252,15 @@ class TaxLotProperty(models.Model):
             filtered_fields = {col["column_name"] for col in obj_columns if not col["is_extra_data"] and col["id"] in show_columns}
             extra_data_units = {}
             filtered_extra_data_fields = set()
+            derived_data_units = {}
+            filtered_derived_data_fields = set()
             for col in obj_columns:
                 if col["is_extra_data"] and col["id"] in show_columns:
                     filtered_extra_data_fields.add(col["column_name"])
                     extra_data_units[col["column_name"]] = DEFAULT_UNITS.get(col["data_type"])
+                elif col["derived_column"] is not None and col["id"] in show_columns:
+                    filtered_derived_data_fields.add(col["column_name"])
+                    derived_data_units[col["column_name"]] = DEFAULT_UNITS.get(col["data_type"])
 
         # get the related data
         join_map = {}
@@ -275,6 +280,11 @@ class TaxLotProperty(models.Model):
                 obj_dict.update(
                     TaxLotProperty.extra_data_to_dict_with_mapping(
                         obj.state.extra_data, obj_column_name_mapping, fields=filtered_extra_data_fields, units=extra_data_units
+                    ).items()
+                )
+                obj_dict.update(
+                    TaxLotProperty.extra_data_to_dict_with_mapping(
+                        obj.state.derived_data, obj_column_name_mapping, fields=filtered_derived_data_fields, units=derived_data_units
                     ).items()
                 )
 
