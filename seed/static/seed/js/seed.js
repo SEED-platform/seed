@@ -38,6 +38,7 @@
     'SEED.controller.analysis',
     'SEED.controller.analysis_details',
     'SEED.controller.analysis_run',
+    'SEED.controller.at_submission_import_modal',
     'SEED.controller.bulk_edit_goalnotes_modal',
     'SEED.controller.column_mapping_profile_modal',
     'SEED.controller.column_mappings',
@@ -123,6 +124,7 @@
     'SEED.controller.postoffice_modal',
     'SEED.controller.profile',
     'SEED.controller.program_setup',
+    'SEED.controller.qr_code_scan_modal',
     'SEED.controller.record_match_merge_link_modal',
     'SEED.controller.rename_column_modal',
     'SEED.controller.reset_modal',
@@ -135,6 +137,7 @@
     'SEED.controller.set_update_to_now_modal',
     'SEED.controller.settings_profile_modal',
     'SEED.controller.show_populated_columns_modal',
+    'SEED.controller.two_factor_profile',
     'SEED.controller.ubid_admin',
     'SEED.controller.ubid_admin_modal',
     'SEED.controller.ubid_decode_modal',
@@ -211,6 +214,7 @@
     'SEED.service.search',
     'SEED.service.sensor',
     'SEED.service.simple_modal',
+    'SEED.service.two_factor',
     'SEED.service.ubid',
     'SEED.service.uniformat',
     'SEED.service.uploader',
@@ -372,6 +376,20 @@
                 return auth_service.is_authorized(organization_id, ['requires_superuser']);
               }
             ],
+            user_profile_payload: ['user_service', (user_service) => user_service.get_user_profile()]
+          }
+        })
+        .state({
+          name: 'two_factor_profile',
+          url: '/profile/two_factor_profile',
+          templateUrl: `${static_url}seed/partials/two_factor_profile.html`,
+          controller: 'two_factor_profile_controller',
+          resolve: {
+            organization_payload: [
+              'user_service',
+              'organization_service',
+              (user_service, organization_service) => organization_service.get_organization(user_service.get_organization().id)
+            ],
             user_profile_payload: [
               'user_service',
               (user_service) => user_service.get_user_profile()
@@ -393,10 +411,7 @@
                 return auth_service.is_authorized(organization_id, ['requires_superuser']);
               }
             ],
-            user_profile_payload: [
-              'user_service',
-              (user_service) => user_service.get_user_profile()
-            ]
+            user_profile_payload: ['user_service', (user_service) => user_service.get_user_profile()]
           }
         })
         .state({
@@ -414,10 +429,7 @@
                 return auth_service.is_authorized(organization_id, ['requires_superuser']);
               }
             ],
-            user_profile_payload: [
-              'user_service',
-              (user_service) => user_service.get_user_profile()
-            ]
+            user_profile_payload: ['user_service', (user_service) => user_service.get_user_profile()]
           }
         })
         .state({
@@ -449,10 +461,7 @@
               // Require auth_payload to successfully complete before attempting
               (auth_payload, organization_service) => organization_service.get_organizations()
             ],
-            user_profile_payload: [
-              'user_service',
-              (user_service) => user_service.get_user_profile()
-            ],
+            user_profile_payload: ['user_service', (user_service) => user_service.get_user_profile()],
             users_payload: [
               'auth_payload',
               'user_service',
@@ -467,16 +476,8 @@
           templateUrl: `${static_url}seed/partials/analyses.html`,
           controller: 'analyses_controller',
           resolve: {
-            analyses_payload: [
-              'analyses_service',
-              'user_service',
-              (analyses_service, user_service) => analyses_service.get_analyses_for_org(user_service.get_organization().id)
-            ],
-            organization_payload: [
-              'user_service',
-              'organization_service',
-              (user_service, organization_service) => organization_service.get_organization(user_service.get_organization().id)
-            ],
+            analyses_payload: ['analyses_service', 'user_service', (analyses_service, user_service) => analyses_service.get_analyses_for_org(user_service.get_organization().id)],
+            organization_payload: ['user_service', 'organization_service', (user_service, organization_service) => organization_service.get_organization(user_service.get_organization().id)],
             messages_payload: [
               'analyses_service',
               'user_service',
@@ -502,11 +503,7 @@
                 (data) => $q.reject(data.message)
               )
             ],
-            cycles_payload: [
-              'cycle_service',
-              '$stateParams',
-              (cycle_service, $stateParams) => cycle_service.get_cycles_for_org($stateParams.organization_id)
-            ]
+            cycles_payload: ['cycle_service', '$stateParams', (cycle_service, $stateParams) => cycle_service.get_cycles_for_org($stateParams.organization_id)]
           }
         })
         .state({
@@ -527,11 +524,7 @@
               '$stateParams',
               (analyses_service, user_service, $stateParams) => analyses_service.get_analysis_messages_for_org($stateParams.analysis_id, user_service.get_organization().id)
             ],
-            organization_payload: [
-              'user_service',
-              'organization_service',
-              (user_service, organization_service) => organization_service.get_organization(user_service.get_organization().id)
-            ],
+            organization_payload: ['user_service', 'organization_service', (user_service, organization_service) => organization_service.get_organization(user_service.get_organization().id)],
             users_payload: [
               'organization_service',
               'user_service',
@@ -557,11 +550,7 @@
                 (data) => $q.reject(data.message)
               )
             ],
-            cycles_payload: [
-              'cycle_service',
-              '$stateParams',
-              (cycle_service, $stateParams) => cycle_service.get_cycles_for_org($stateParams.organization_id)
-            ]
+            cycles_payload: ['cycle_service', '$stateParams', (cycle_service, $stateParams) => cycle_service.get_cycles_for_org($stateParams.organization_id)]
           }
         })
         .state({
@@ -588,11 +577,7 @@
               '$stateParams',
               (analyses_service, user_service, $stateParams) => analyses_service.get_analysis_view_for_org($stateParams.analysis_id, $stateParams.run_id, user_service.get_organization().id)
             ],
-            organization_payload: [
-              'user_service',
-              'organization_service',
-              (user_service, organization_service) => organization_service.get_organization(user_service.get_organization().id)
-            ],
+            organization_payload: ['user_service', 'organization_service', (user_service, organization_service) => organization_service.get_organization(user_service.get_organization().id)],
             users_payload: [
               'organization_service',
               'user_service',
@@ -635,10 +620,7 @@
                 });
               }
             ],
-            cycles: [
-              'cycle_service',
-              (cycle_service) => cycle_service.get_cycles()
-            ],
+            cycles: ['cycle_service', (cycle_service) => cycle_service.get_cycles()],
             organization_payload: [
               'organization_service',
               'user_service',
@@ -664,8 +646,7 @@
           controller: 'inventory_column_list_profiles_controller',
           resolve: {
             $uibModalInstance: () => ({
-              close() {
-              }
+              close() {}
             }),
             all_columns: [
               '$stateParams',
@@ -700,10 +681,7 @@
                 return currentProfile;
               }
             ],
-            shared_fields_payload: [
-              'user_service',
-              (user_service) => user_service.get_shared_buildings()
-            ]
+            shared_fields_payload: ['user_service', (user_service) => user_service.get_shared_buildings()]
           }
         })
         .state({
@@ -788,19 +766,9 @@
                 return promise;
               }
             ],
-            inventory_type: [
-              '$stateParams',
-              ($stateParams) => $stateParams.inventory_type
-            ],
-            view_id: [
-              '$stateParams',
-              ($stateParams) => $stateParams.view_id
-            ],
-            organization_payload: [
-              'user_service',
-              'organization_service',
-              (user_service, organization_service) => organization_service.get_organization(user_service.get_organization().id)
-            ],
+            inventory_type: ['$stateParams', ($stateParams) => $stateParams.inventory_type],
+            view_id: ['$stateParams', ($stateParams) => $stateParams.view_id],
+            organization_payload: ['user_service', 'organization_service', (user_service, organization_service) => organization_service.get_organization(user_service.get_organization().id)],
             notes: [
               '$stateParams',
               'note_service',
@@ -846,11 +814,7 @@
                 return promise;
               }
             ],
-            organization_payload: [
-              'user_service',
-              'organization_service',
-              (user_service, organization_service) => organization_service.get_organization(user_service.get_organization().id)
-            ]
+            organization_payload: ['user_service', 'organization_service', (user_service, organization_service) => organization_service.get_organization(user_service.get_organization().id)]
           }
         })
         .state({
@@ -916,10 +880,7 @@
                 return mapping_service.get_first_five_rows(importfile_id);
               }
             ],
-            cycles: [
-              'cycle_service',
-              (cycle_service) => cycle_service.get_cycles()
-            ],
+            cycles: ['cycle_service', (cycle_service) => cycle_service.get_cycles()],
             matching_criteria_columns_payload: [
               'organization_service',
               'user_service',
@@ -942,11 +903,7 @@
                 );
               }
             ],
-            organization_payload: [
-              'user_service',
-              'organization_service',
-              (user_service, organization_service) => organization_service.get_organization(user_service.get_organization().id)
-            ],
+            organization_payload: ['user_service', 'organization_service', (user_service, organization_service) => organization_service.get_organization(user_service.get_organization().id)],
             derived_columns_payload: [
               'derived_columns_service',
               '$stateParams',
@@ -988,18 +945,9 @@
                 return _.map(columns, (col) => _.omit(col, ['pinnedLeft', 'related']));
               })
             ],
-            propertyInventory: [
-              'inventory_service',
-              (inventory_service) => inventory_service.get_properties(1, undefined, undefined, -1)
-            ],
-            taxlotInventory: [
-              'inventory_service',
-              (inventory_service) => inventory_service.get_taxlots(1, undefined, undefined, -1)
-            ],
-            cycles: [
-              'cycle_service',
-              (cycle_service) => cycle_service.get_cycles()
-            ]
+            propertyInventory: ['inventory_service', (inventory_service) => inventory_service.get_properties(1, undefined, undefined, -1)],
+            taxlotInventory: ['inventory_service', (inventory_service) => inventory_service.get_taxlots(1, undefined, undefined, -1)],
+            cycles: ['cycle_service', (cycle_service) => cycle_service.get_cycles()]
           }
         })
         .state({
@@ -1040,10 +988,7 @@
           templateUrl: `${static_url}seed/partials/dataset_list.html`,
           controller: 'dataset_list_controller',
           resolve: {
-            datasets_payload: [
-              'dataset_service',
-              (dataset_service) => dataset_service.get_datasets()
-            ],
+            datasets_payload: ['dataset_service', (dataset_service) => dataset_service.get_datasets()],
             auth_payload: [
               'auth_service',
               '$q',
@@ -1091,10 +1036,7 @@
                 return $q.reject(response);
               })
             ],
-            cycles: [
-              'cycle_service',
-              (cycle_service) => cycle_service.get_cycles()
-            ],
+            cycles: ['cycle_service', (cycle_service) => cycle_service.get_cycles()],
             auth_payload: [
               'auth_service',
               '$q',
@@ -1130,10 +1072,7 @@
           templateUrl: `${static_url}seed/partials/about.html`,
           controller: 'about_controller',
           resolve: {
-            version_payload: [
-              'main_service',
-              (main_service) => main_service.version()
-            ]
+            version_payload: ['main_service', (main_service) => main_service.version()]
           }
         })
         .state({
@@ -1142,10 +1081,7 @@
           templateUrl: `${static_url}seed/partials/accounts.html`,
           controller: 'accounts_controller',
           resolve: {
-            organization_payload: [
-              'organization_service',
-              (organization_service) => organization_service.get_organizations()
-            ]
+            organization_payload: ['organization_service', (organization_service) => organization_service.get_organizations()]
           }
         })
         .state({
@@ -1202,6 +1138,14 @@
                 return salesforce_config_service.get_salesforce_configs(organization_id);
               }
             ],
+            audit_template_configs_payload: [
+              'audit_template_service',
+              '$stateParams',
+              (audit_template_service, $stateParams) => {
+                const { organization_id } = $stateParams;
+                return audit_template_service.get_audit_template_configs(organization_id);
+              }
+            ],
             auth_payload: [
               'auth_service',
               '$stateParams',
@@ -1219,11 +1163,7 @@
                 );
               }
             ],
-            property_columns: [
-              'inventory_service',
-              'user_service',
-              (inventory_service) => inventory_service.get_property_columns()
-            ]
+            property_columns: ['inventory_service', 'user_service', (inventory_service) => inventory_service.get_property_columns()]
           }
         })
         .state({
@@ -1289,27 +1229,15 @@
           templateUrl: `${static_url}seed/partials/program_setup.html`,
           controller: 'program_setup_controller',
           resolve: {
-            valid_column_data_types: [
-              () => ['number', 'float', 'integer', 'ghg', 'ghg_intensity', 'area', 'eui', 'boolean']
-            ],
-            valid_x_axis_data_types: [
-              () => ['number', 'string', 'float', 'integer', 'ghg', 'ghg_intensity', 'area', 'eui', 'boolean']
-            ],
+            valid_column_data_types: [() => ['number', 'float', 'integer', 'ghg', 'ghg_intensity', 'area', 'eui', 'boolean']],
+            valid_x_axis_data_types: [() => ['number', 'string', 'float', 'integer', 'ghg', 'ghg_intensity', 'area', 'eui', 'boolean']],
             compliance_metrics: [
               '$stateParams',
               'compliance_metric_service',
               ($stateParams, compliance_metric_service) => compliance_metric_service.get_compliance_metrics($stateParams.organization_id)
             ],
-            organization_payload: [
-              'organization_service',
-              '$stateParams',
-              (organization_service, $stateParams) => organization_service.get_organization($stateParams.organization_id)
-            ],
-            cycles_payload: [
-              'cycle_service',
-              '$stateParams',
-              (cycle_service, $stateParams) => cycle_service.get_cycles_for_org($stateParams.organization_id)
-            ],
+            organization_payload: ['organization_service', '$stateParams', (organization_service, $stateParams) => organization_service.get_organization($stateParams.organization_id)],
+            cycles_payload: ['cycle_service', '$stateParams', (cycle_service, $stateParams) => cycle_service.get_cycles_for_org($stateParams.organization_id)],
             property_columns: [
               'valid_column_data_types',
               '$stateParams',
@@ -1360,27 +1288,15 @@
           templateUrl: `${static_url}seed/partials/program_setup.html`,
           controller: 'program_setup_controller',
           resolve: {
-            valid_column_data_types: [
-              () => ['number', 'float', 'integer', 'ghg', 'ghg_intensity', 'area', 'eui', 'boolean']
-            ],
-            valid_x_axis_data_types: [
-              () => ['number', 'string', 'float', 'integer', 'ghg', 'ghg_intensity', 'area', 'eui', 'boolean']
-            ],
+            valid_column_data_types: [() => ['number', 'float', 'integer', 'ghg', 'ghg_intensity', 'area', 'eui', 'boolean']],
+            valid_x_axis_data_types: [() => ['number', 'string', 'float', 'integer', 'ghg', 'ghg_intensity', 'area', 'eui', 'boolean']],
             compliance_metrics: [
               '$stateParams',
               'compliance_metric_service',
               ($stateParams, compliance_metric_service) => compliance_metric_service.get_compliance_metrics($stateParams.organization_id)
             ],
-            organization_payload: [
-              'organization_service',
-              '$stateParams',
-              (organization_service, $stateParams) => organization_service.get_organization($stateParams.organization_id)
-            ],
-            cycles_payload: [
-              'cycle_service',
-              '$stateParams',
-              (cycle_service, $stateParams) => cycle_service.get_cycles_for_org($stateParams.organization_id)
-            ],
+            organization_payload: ['organization_service', '$stateParams', (organization_service, $stateParams) => organization_service.get_organization($stateParams.organization_id)],
+            cycles_payload: ['cycle_service', '$stateParams', (cycle_service, $stateParams) => cycle_service.get_cycles_for_org($stateParams.organization_id)],
             property_columns: [
               'valid_column_data_types',
               '$stateParams',
@@ -1437,13 +1353,12 @@
               '$q',
               (organization_service, $stateParams, $q) => {
                 const organization_id = $stateParams.organization_id;
-                return organization_service.get_organization(organization_id)
-                  .then((data) => {
-                    if (data.organization.is_parent) {
-                      return data;
-                    }
-                    return $q.reject('Your page could not be located!');
-                  });
+                return organization_service.get_organization(organization_id).then((data) => {
+                  if (data.organization.is_parent) {
+                    return data;
+                  }
+                  return $q.reject('Your page could not be located!');
+                });
               }
             ],
             auth_payload: [
@@ -1452,13 +1367,15 @@
               '$q',
               (auth_service, $stateParams, $q) => {
                 const organization_id = $stateParams.organization_id;
-                return auth_service.is_authorized(organization_id, ['requires_viewer', 'requires_owner'])
-                  .then((data) => {
+                return auth_service.is_authorized(organization_id, ['requires_viewer', 'requires_owner']).then(
+                  (data) => {
                     if (data.auth.requires_viewer) {
                       return data;
                     }
                     return $q.reject('not authorized');
-                  }, (data) => $q.reject(data.message));
+                  },
+                  (data) => $q.reject(data.message)
+                );
               }
             ],
             access_level_tree: [
@@ -1532,14 +1449,8 @@
           templateUrl: `${static_url}seed/partials/column_mappings.html`,
           controller: 'column_mappings_controller',
           resolve: {
-            mappable_property_columns_payload: [
-              'inventory_service',
-              (inventory_service) => inventory_service.get_mappable_property_columns().then((result) => result)
-            ],
-            mappable_taxlot_columns_payload: [
-              'inventory_service',
-              (inventory_service) => inventory_service.get_mappable_taxlot_columns().then((result) => result)
-            ],
+            mappable_property_columns_payload: ['inventory_service', (inventory_service) => inventory_service.get_mappable_property_columns().then((result) => result)],
+            mappable_taxlot_columns_payload: ['inventory_service', (inventory_service) => inventory_service.get_mappable_taxlot_columns().then((result) => result)],
             column_mapping_profiles_payload: [
               'column_mappings_service',
               '$stateParams',
@@ -1577,7 +1488,7 @@
         })
         .state({
           name: 'organization_data_quality',
-          url: '/accounts/{organization_id:int}/data_quality/{inventory_type:properties|taxlots}',
+          url: '/accounts/{organization_id:int}/data_quality/{rule_type:properties|taxlots|goals}',
           templateUrl: `${static_url}seed/partials/data_quality_admin.html`,
           controller: 'data_quality_admin_controller',
           resolve: {
@@ -1587,7 +1498,7 @@
               'naturalSort',
               ($stateParams, inventory_service, naturalSort) => {
                 const { organization_id } = $stateParams;
-                if ($stateParams.inventory_type === 'properties') {
+                if ($stateParams.rule_type === 'properties' || $stateParams.rule_type === 'goals') {
                   return inventory_service.get_property_columns_for_org(organization_id).then((columns) => {
                     columns = _.reject(columns, 'related');
                     columns = _.map(columns, (col) => _.omit(col, ['pinnedLeft', 'related']));
@@ -1595,12 +1506,14 @@
                     return columns;
                   });
                 }
-                return inventory_service.get_taxlot_columns_for_org(organization_id).then((columns) => {
-                  columns = _.reject(columns, 'related');
-                  columns = _.map(columns, (col) => _.omit(col, ['pinnedLeft', 'related']));
-                  columns.sort((a, b) => naturalSort(a.displayName, b.displayName));
-                  return columns;
-                });
+                if ($stateParams.rule_type === 'taxlots') {
+                  return inventory_service.get_taxlot_columns_for_org(organization_id).then((columns) => {
+                    columns = _.reject(columns, 'related');
+                    columns = _.map(columns, (col) => _.omit(col, ['pinnedLeft', 'related']));
+                    columns.sort((a, b) => naturalSort(a.displayName, b.displayName));
+                    return columns;
+                  });
+                }
               }
             ],
             used_columns: [
@@ -1676,16 +1589,8 @@
           templateUrl: `${static_url}seed/partials/cycle_admin.html`,
           controller: 'cycle_admin_controller',
           resolve: {
-            organization_payload: [
-              'organization_service',
-              '$stateParams',
-              (organization_service, $stateParams) => organization_service.get_organization($stateParams.organization_id)
-            ],
-            cycles_payload: [
-              'cycle_service',
-              '$stateParams',
-              (cycle_service, $stateParams) => cycle_service.get_cycles_for_org($stateParams.organization_id)
-            ],
+            organization_payload: ['organization_service', '$stateParams', (organization_service, $stateParams) => organization_service.get_organization($stateParams.organization_id)],
+            cycles_payload: ['cycle_service', '$stateParams', (cycle_service, $stateParams) => cycle_service.get_cycles_for_org($stateParams.organization_id)],
             auth_payload: [
               'auth_service',
               '$stateParams',
@@ -1832,10 +1737,7 @@
                 );
               }
             ],
-            user_profile_payload: [
-              'user_service',
-              (user_service) => user_service.get_user_profile()
-            ],
+            user_profile_payload: ['user_service', (user_service) => user_service.get_user_profile()],
             access_level_tree: [
               'organization_service',
               '$stateParams',
@@ -1852,11 +1754,7 @@
           templateUrl: `${static_url}seed/partials/email_templates.html`,
           controller: 'email_templates_controller',
           resolve: {
-            organization_payload: [
-              'organization_service',
-              '$stateParams',
-              (organization_service, $stateParams) => organization_service.get_organization($stateParams.organization_id)
-            ],
+            organization_payload: ['organization_service', '$stateParams', (organization_service, $stateParams) => organization_service.get_organization($stateParams.organization_id)],
             auth_payload: [
               'auth_service',
               '$stateParams',
@@ -1874,11 +1772,7 @@
                 );
               }
             ],
-            templates_payload: [
-              'postoffice_service',
-              '$stateParams',
-              (postoffice_service, $stateParams) => postoffice_service.get_templates_for_org($stateParams.organization_id)
-            ],
+            templates_payload: ['postoffice_service', '$stateParams', (postoffice_service, $stateParams) => postoffice_service.get_templates_for_org($stateParams.organization_id)],
             current_template: [
               'postoffice_service',
               'templates_payload',
@@ -2006,10 +1900,7 @@
           templateUrl: `${static_url}seed/partials/inventory_list.html`,
           controller: 'inventory_list_controller',
           resolve: {
-            cycles: [
-              'cycle_service',
-              (cycle_service) => cycle_service.get_cycles()
-            ],
+            cycles: ['cycle_service', (cycle_service) => cycle_service.get_cycles()],
             profiles: [
               '$stateParams',
               'inventory_service',
@@ -2067,11 +1958,7 @@
                 return inventory_service.get_taxlot_columns();
               }
             ],
-            organization_payload: [
-              'user_service',
-              'organization_service',
-              (user_service, organization_service) => organization_service.get_organization_brief(user_service.get_organization().id)
-            ],
+            organization_payload: ['user_service', 'organization_service', (user_service, organization_service) => organization_service.get_organization_brief(user_service.get_organization().id)],
             derived_columns_payload: [
               '$stateParams',
               'derived_columns_service',
@@ -2086,10 +1973,7 @@
           templateUrl: `${static_url}seed/partials/inventory_map.html`,
           controller: 'inventory_map_controller',
           resolve: {
-            cycles: [
-              'cycle_service',
-              (cycle_service) => cycle_service.get_cycles()
-            ],
+            cycles: ['cycle_service', (cycle_service) => cycle_service.get_cycles()],
             labels: [
               '$stateParams',
               'label_service',
@@ -2103,10 +1987,7 @@
           templateUrl: `${static_url}seed/partials/inventory_summary.html`,
           controller: 'inventory_summary_controller',
           resolve: {
-            cycles: [
-              'cycle_service',
-              (cycle_service) => cycle_service.get_cycles()
-            ]
+            cycles: ['cycle_service', (cycle_service) => cycle_service.get_cycles()]
           }
         })
         .state({
@@ -2115,10 +1996,7 @@
           templateUrl: `${static_url}seed/partials/inventory_plots.html`,
           controller: 'inventory_plots_controller',
           resolve: {
-            cycles: [
-              'cycle_service',
-              (cycle_service) => cycle_service.get_cycles()
-            ],
+            cycles: ['cycle_service', (cycle_service) => cycle_service.get_cycles()],
             profiles: [
               '$stateParams',
               'inventory_service',
@@ -2155,11 +2033,7 @@
                 return inventory_service.get_taxlot_columns();
               }
             ],
-            organization_payload: [
-              'user_service',
-              'organization_service',
-              (user_service, organization_service) => organization_service.get_organization_brief(user_service.get_organization().id)
-            ],
+            organization_payload: ['user_service', 'organization_service', (user_service, organization_service) => organization_service.get_organization_brief(user_service.get_organization().id)],
             derived_columns_payload: [
               '$stateParams',
               'derived_columns_service',
@@ -2195,10 +2069,7 @@
                 return organization_service.matching_criteria_columns(org_id);
               }
             ],
-            cycles: [
-              'cycle_service',
-              (cycle_service) => cycle_service.get_cycles()
-            ],
+            cycles: ['cycle_service', (cycle_service) => cycle_service.get_cycles()],
             profiles: [
               '$stateParams',
               'inventory_service',
@@ -2232,11 +2103,7 @@
                 return inventory_service.get_taxlot_columns();
               }
             ],
-            organization_payload: [
-              'user_service',
-              'organization_service',
-              (user_service, organization_service) => organization_service.get_organization(user_service.get_organization().id)
-            ]
+            organization_payload: ['user_service', 'organization_service', (user_service, organization_service) => organization_service.get_organization(user_service.get_organization().id)]
           }
         })
         .state({
@@ -2343,15 +2210,8 @@
               'label_service',
               ($stateParams, inventory_payload, label_service) => label_service.get_labels($stateParams.inventory_type, [$stateParams.view_id])
             ],
-            organization_payload: [
-              'user_service',
-              'organization_service',
-              (user_service, organization_service) => organization_service.get_organization(user_service.get_organization().id)
-            ],
-            uniformat_payload: [
-              'uniformat_service',
-              (uniformat_service) => uniformat_service.get_uniformat()
-            ],
+            organization_payload: ['user_service', 'organization_service', (user_service, organization_service) => organization_service.get_organization(user_service.get_organization().id)],
+            uniformat_payload: ['uniformat_service', (uniformat_service) => uniformat_service.get_uniformat()],
             elements_payload: [
               '$stateParams',
               'element_service',
@@ -2420,10 +2280,7 @@
                 });
               }
             ],
-            cycles: [
-              'cycle_service',
-              (cycle_service) => cycle_service.get_cycles()
-            ],
+            cycles: ['cycle_service', (cycle_service) => cycle_service.get_cycles()],
             profiles: [
               '$stateParams',
               'inventory_service',
@@ -2447,11 +2304,7 @@
                 return currentProfile;
               }
             ],
-            organization_payload: [
-              'user_service',
-              'organization_service',
-              (user_service, organization_service) => organization_service.get_organization(user_service.get_organization().id)
-            ]
+            organization_payload: ['user_service', 'organization_service', (user_service, organization_service) => organization_service.get_organization(user_service.get_organization().id)]
           }
         })
         .state({
@@ -2486,11 +2339,7 @@
               'inventory_payload',
               (inventory_service, analyses_service, $stateParams, inventory_payload) => analyses_service.get_analyses_for_canonical_property(inventory_payload.property.id)
             ],
-            organization_payload: [
-              'user_service',
-              'organization_service',
-              (user_service, organization_service) => organization_service.get_organization(user_service.get_organization().id)
-            ],
+            organization_payload: ['user_service', 'organization_service', (user_service, organization_service) => organization_service.get_organization(user_service.get_organization().id)],
             // users_payload: [
             //   'user_service',
             //   'organization_service',
@@ -2553,15 +2402,8 @@
                 return meter_service.get_meters($stateParams.view_id, organization_id);
               }
             ],
-            cycles: [
-              'cycle_service',
-              (cycle_service) => cycle_service.get_cycles()
-            ],
-            organization_payload: [
-              'user_service',
-              'organization_service',
-              (user_service, organization_service) => organization_service.get_organization(user_service.get_organization().id)
-            ]
+            cycles: ['cycle_service', (cycle_service) => cycle_service.get_cycles()],
+            organization_payload: ['user_service', 'organization_service', (user_service, organization_service) => organization_service.get_organization(user_service.get_organization().id)]
           }
         })
         .state({
@@ -2614,15 +2456,8 @@
                 return sensor_service.get_data_loggers($stateParams.view_id, organization_id);
               }
             ],
-            cycles: [
-              'cycle_service',
-              (cycle_service) => cycle_service.get_cycles()
-            ],
-            organization_payload: [
-              'user_service',
-              'organization_service',
-              (user_service, organization_service) => organization_service.get_organization(user_service.get_organization().id)
-            ]
+            cycles: ['cycle_service', (cycle_service) => cycle_service.get_cycles()],
+            organization_payload: ['user_service', 'organization_service', (user_service, organization_service) => organization_service.get_organization(user_service.get_organization().id)]
           }
         })
         .state({
@@ -2659,20 +2494,13 @@
                 return event_service.get_events(organization_id, $stateParams.inventory_type, property_id);
               }
             ],
-            cycles: [
-              'cycle_service',
-              (cycle_service) => cycle_service.get_cycles()
-            ],
+            cycles: ['cycle_service', (cycle_service) => cycle_service.get_cycles()],
             users_payload: [
               'organization_service',
               'user_service',
               (organization_service, user_service) => organization_service.get_organization_users({ org_id: user_service.get_organization().id })
             ],
-            organization_payload: [
-              'user_service',
-              'organization_service',
-              (user_service, organization_service) => organization_service.get_organization(user_service.get_organization().id)
-            ]
+            organization_payload: ['user_service', 'organization_service', (user_service, organization_service) => organization_service.get_organization(user_service.get_organization().id)]
           }
         })
         .state({
@@ -2689,14 +2517,8 @@
                 return auth_service.is_authorized(organization_id, ['requires_member']);
               }
             ],
-            compliance_metrics: [
-              'compliance_metric_service',
-              (compliance_metric_service) => compliance_metric_service.get_compliance_metrics()
-            ],
-            cycles: [
-              'cycle_service',
-              (cycle_service) => cycle_service.get_cycles()
-            ],
+            compliance_metrics: ['compliance_metric_service', (compliance_metric_service) => compliance_metric_service.get_compliance_metrics()],
+            cycles: ['cycle_service', (cycle_service) => cycle_service.get_cycles()],
             property_columns: [
               'inventory_service',
               'user_service',
@@ -2705,11 +2527,7 @@
                 return inventory_service.get_property_columns_for_org(organization_id);
               }
             ],
-            organization_payload: [
-              'user_service',
-              'organization_service',
-              (user_service, organization_service) => organization_service.get_organization(user_service.get_organization().id)
-            ],
+            organization_payload: ['user_service', 'organization_service', (user_service, organization_service) => organization_service.get_organization(user_service.get_organization().id)],
             filter_groups: [
               '$stateParams',
               'filter_groups_service',
@@ -2734,15 +2552,8 @@
                 return auth_service.is_authorized(organization_id, ['requires_member']);
               }
             ],
-            compliance_metrics: [
-              'compliance_metric_service',
-              (compliance_metric_service) => compliance_metric_service.get_compliance_metrics()
-            ],
-            organization_payload: [
-              'user_service',
-              'organization_service',
-              (user_service, organization_service) => organization_service.get_organization(user_service.get_organization().id)
-            ],
+            compliance_metrics: ['compliance_metric_service', (compliance_metric_service) => compliance_metric_service.get_compliance_metrics()],
+            organization_payload: ['user_service', 'organization_service', (user_service, organization_service) => organization_service.get_organization(user_service.get_organization().id)],
             filter_groups: [
               '$stateParams',
               'filter_groups_service',
@@ -2759,10 +2570,7 @@
                 return inventory_service.get_property_columns_for_org(organization_id);
               }
             ],
-            cycles: [
-              'cycle_service',
-              (cycle_service) => cycle_service.get_cycles()
-            ]
+            cycles: ['cycle_service', (cycle_service) => cycle_service.get_cycles()]
           }
         })
         .state({
@@ -2779,9 +2587,7 @@
                 return auth_service.is_authorized(organization_id, ['requires_member']);
               }
             ],
-            valid_column_data_types: [
-              () => ['number', 'float', 'integer', 'area', 'eui', 'ghg', 'ghg_intensity']
-            ],
+            valid_column_data_types: [() => ['number', 'float', 'integer', 'area', 'eui', 'ghg', 'ghg_intensity']],
             property_columns: [
               'valid_column_data_types',
               '$stateParams',
@@ -2802,14 +2608,8 @@
                 return columns;
               })
             ],
-            cycles: [
-              'cycle_service',
-              (cycle_service) => cycle_service.get_cycles()
-            ],
-            data_views: [
-              'data_view_service',
-              (data_view_service) => data_view_service.get_data_views()
-            ],
+            cycles: ['cycle_service', (cycle_service) => cycle_service.get_cycles()],
+            data_views: ['data_view_service', (data_view_service) => data_view_service.get_data_views()],
             filter_groups: [
               'filter_groups_service',
               (filter_groups_service) => {
@@ -2826,20 +2626,33 @@
           controller: 'portfolio_summary_controller',
           resolve: {
             valid_column_data_types: [() => ['number', 'float', 'integer', 'area', 'eui', 'ghg', 'ghg_intensity']],
-            property_columns: ['valid_column_data_types', '$stateParams', 'inventory_service', (valid_column_data_types, $stateParams, inventory_service) => inventory_service.get_property_columns_for_org($stateParams.organization_id).then((columns) => {
-              _.remove(columns, { table_name: 'TaxLotState' });
-              return columns;
-            })],
+            property_columns: [
+              'valid_column_data_types',
+              '$stateParams',
+              'inventory_service',
+              (valid_column_data_types, $stateParams, inventory_service) => inventory_service.get_property_columns_for_org($stateParams.organization_id).then((columns) => {
+                _.remove(columns, { table_name: 'TaxLotState' });
+                return columns;
+              })
+            ],
             cycles: ['cycle_service', (cycle_service) => cycle_service.get_cycles()],
             organization_payload: ['user_service', 'organization_service', (user_service, organization_service) => organization_service.get_organization(user_service.get_organization().id)],
-            access_level_tree: ['organization_payload', 'organization_service', (organization_payload, organization_service) => {
-              const organization_id = organization_payload.organization.id;
-              return organization_service.get_organization_access_level_tree(organization_id);
-            }],
-            auth_payload: ['auth_service', 'organization_payload', (auth_service, organization_payload) => {
-              const organization_id = organization_payload.organization.id;
-              return auth_service.is_authorized(organization_id, ['requires_owner']);
-            }]
+            access_level_tree: [
+              'organization_payload',
+              'organization_service',
+              (organization_payload, organization_service) => {
+                const organization_id = organization_payload.organization.id;
+                return organization_service.get_organization_access_level_tree(organization_id);
+              }
+            ],
+            auth_payload: [
+              'auth_service',
+              'organization_payload',
+              (auth_service, organization_payload) => {
+                const organization_id = organization_payload.organization.id;
+                return auth_service.is_authorized(organization_id, ['requires_owner']);
+              }
+            ]
           }
         })
         .state({
@@ -2856,9 +2669,7 @@
                 return auth_service.is_authorized(organization_id, ['requires_member']);
               }
             ],
-            valid_column_data_types: [
-              () => ['number', 'float', 'integer', 'area', 'eui', 'ghg', 'ghg_intensity']
-            ],
+            valid_column_data_types: [() => ['number', 'float', 'integer', 'area', 'eui', 'ghg', 'ghg_intensity']],
             property_columns: [
               'valid_column_data_types',
               '$stateParams',
@@ -2879,14 +2690,8 @@
                 return columns;
               })
             ],
-            cycles: [
-              'cycle_service',
-              (cycle_service) => cycle_service.get_cycles()
-            ],
-            data_views: [
-              'data_view_service',
-              (data_view_service) => data_view_service.get_data_views()
-            ],
+            cycles: ['cycle_service', (cycle_service) => cycle_service.get_cycles()],
+            data_views: ['data_view_service', (data_view_service) => data_view_service.get_data_views()],
             filter_groups: [
               'filter_groups_service',
               (filter_groups_service) => {

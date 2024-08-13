@@ -25,8 +25,16 @@ class Analysis(models.Model):
     EUI = 3
     CO2 = 4
     EEEJ = 5
+    ELEMENTSTATISTICS = 6
 
-    SERVICE_TYPES = ((BSYNCR, "BSyncr"), (BETTER, "BETTER"), (EUI, "EUI"), (CO2, "CO2"), (EEEJ, "EEEJ"))
+    SERVICE_TYPES = (
+        (BSYNCR, "BSyncr"),
+        (BETTER, "BETTER"),
+        (EUI, "EUI"),
+        (CO2, "CO2"),
+        (EEEJ, "EEEJ"),
+        (ELEMENTSTATISTICS, "Element Statistics"),
+    )
 
     PENDING_CREATION = 8
     CREATING = 10
@@ -171,6 +179,10 @@ class Analysis(models.Model):
                 coverage = "N/A"
 
             return [{"name": "Average Annual CO2", "value": f"{value} kgCO2e"}, {"name": "Annual Coverage", "value": f"{coverage}%"}]
+
+        # Element Statistics
+        elif self.service == self.ELEMENTSTATISTICS:
+            return [{"name": k, "value": round(v, 2)} for k, v in results.items()]
 
         # Unexpected
         return [{"name": "Unexpected Analysis Type", "value": "Oops!"}]

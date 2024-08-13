@@ -7,6 +7,9 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 import locale
 from json import load
 
+from django_otp import devices_for_user
+from django_otp.plugins.otp_email.models import EmailDevice
+
 from seed.lib.superperms.orgs.exceptions import TooManyNestedOrgsError
 from seed.lib.superperms.orgs.models import ROLE_MEMBER, Organization, OrganizationUser
 from seed.lib.xml_mapping.mapper import default_buildingsync_profile_mappings
@@ -189,3 +192,10 @@ def create_suborganization(user, current_org, suborg_name="", user_role=ROLE_MEM
         return False, "Tried to create child of a child organization.", None
 
     return True, sub_org, ou
+
+
+def set_default_2fa_method(org):
+    for user in org.users.iterator():
+        devices = list(devices_for_user(user))
+        if not devices:
+            EmailDevice.objects.create(user=user, name="default", email=user.username)

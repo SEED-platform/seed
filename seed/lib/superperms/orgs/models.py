@@ -185,6 +185,11 @@ class Organization(models.Model):
         ("kgal/year", "kgal/year"),
         ("gal/year", "gal/year"),
         ("L/year", "L/year"),
+    AUDIT_TEMPLATE_STATUS_CHOICES = (
+        ("Complies", "Complies"),
+        ("Pending", "Pending"),
+        ("Rejected", "Rejected"),
+        ("Received", "Complies"),
     )
 
     US = 1
@@ -299,6 +304,10 @@ class Organization(models.Model):
     audit_template_user = models.EmailField(blank=True, max_length=128, default="")
     audit_template_password = models.CharField(blank=True, max_length=128, default="")
     audit_template_report_type = models.CharField(blank=True, max_length=128, default="Demo City Report")
+    audit_template_status_type = models.CharField(blank=True, max_length=32, choices=AUDIT_TEMPLATE_STATUS_CHOICES, default="Complies")
+    audit_template_city_id = models.IntegerField(blank=True, null=True)
+    audit_template_conditional_import = models.BooleanField(default=True)
+    audit_template_sync_enabled = models.BooleanField(default=False)
 
     # Salesforce Functionality
     salesforce_enabled = models.BooleanField(default=False)
@@ -311,6 +320,9 @@ class Organization(models.Model):
     public_feed_enabled = models.BooleanField(default=False)
     public_feed_labels = models.BooleanField(default=False)
     public_geojson_enabled = models.BooleanField(default=False)
+
+    # 2 Factor Auth
+    require_2fa = models.BooleanField(default=False)
 
     def save(self, *args, **kwargs):
         """Perform checks before saving."""
