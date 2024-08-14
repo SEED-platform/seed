@@ -13,17 +13,17 @@ from seed.lib.superperms.orgs.models import Organization
 # and adding columns for organization id and user id
 
 
-class PostOfficeEmailTemplate(EmailTemplate):
-    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, blank=True, null=True)
-    user = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True)
-
-    def __str__(self):
-        return "PostOfficeEmailTemplate - %s" % self.pk
-
-
 class PostOfficeEmail(Email):
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE, blank=True, null=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True)
 
     def __str__(self):
         return "PostOfficeEmail - %s" % self.pk
+
+
+class PostOfficeEmailTemplate(EmailTemplate):
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, blank=True, null=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True)
+
+    def __str__(self):
+        return "PostOfficeEmailTemplate - %s" % self.pk
