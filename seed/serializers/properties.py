@@ -168,6 +168,11 @@ class PropertyStateSerializer(serializers.ModelSerializer):
     total_marginal_ghg_emissions = PintQuantitySerializerField(allow_null=True)
     total_ghg_emissions_intensity = PintQuantitySerializerField(allow_null=True)
     total_marginal_ghg_emissions_intensity = PintQuantitySerializerField(allow_null=True)
+    water_use = PintQuantitySerializerField(allow_null=True)
+    indoor_water_use = PintQuantitySerializerField(allow_null=True)
+    outdoor_water_use = PintQuantitySerializerField(allow_null=True)
+    wui = PintQuantitySerializerField(allow_null=True)
+    indoor_wui = PintQuantitySerializerField(allow_null=True)
 
     # support naive datetime objects
     generation_date = serializers.DateTimeField("%Y-%m-%dT%H:%M:%S", allow_null=True)

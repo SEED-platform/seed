@@ -30,7 +30,7 @@ from seed.data_importer.match import save_state_match
 from seed.data_importer.meters_parser import MetersParser
 from seed.data_importer.models import ImportFile, ImportRecord
 from seed.data_importer.tasks import _save_pm_meter_usage_data_task
-from seed.data_importer.utils import kbtu_thermal_conversion_factors
+from seed.data_importer.utils import kbtu_thermal_conversion_factors, kgal_water_conversion_factors
 from seed.decorators import ajax_request_class
 from seed.hpxml.hpxml import HPXML
 from seed.lib.progress_data.progress_data import ProgressData
@@ -464,7 +464,11 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         the two.
         (https://portfoliomanager.energystar.gov/pdf/reference/Thermal%20Conversions.pdf)
         """
-        return {type: list(units.keys()) for type, units in kbtu_thermal_conversion_factors("US").items()}
+        types_and_units = {
+            "energy": {type: list(units.keys()) for type, units in kbtu_thermal_conversion_factors("US").items()},
+            "water": {type: list(units.keys()) for type, units in kgal_water_conversion_factors("US").items()},
+        }
+        return types_and_units
 
     @swagger_auto_schema(
         manual_parameters=[AutoSchemaHelper.query_org_id_field()],
@@ -1346,26 +1350,44 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
 
         return self._update_with_building_sync(the_file, file_type, organization_id, cycle_id, pk)
 
-    def batch_update_with_building_sync(self, properties, org_id, cycle_id, progress_key):
+    def batch_update_with_building_sync(self, properties, org_id, cycle_id, progress_key, finish=True):
         """
         Update a list of PropertyViews with a building file. Currently only supports BuildingSync.
+        The optional :param finish: is set to False when updating in cycle batches through AuditTemplate._batch_get_city_submission_xml
         """
         progress_data = ProgressData.from_key(progress_key)
-        if not Cycle.objects.filter(pk=cycle_id):
+        cycle = Cycle.objects.filter(pk=cycle_id, organization=org_id).first()
+        if not cycle:
             logging.warning(f"Cycle {cycle_id} does not exist")
             return progress_data.finish_with_error(f"Cycle {cycle_id} does not exist")
 
-        results = {"success": 0, "failure": 0}
+        results = {"success": 0, "failure": 0, "data": []}
         for property in properties:
             formatted_time = time.strftime("%Y%m%d_%H%M%S", time.localtime(time.time()))
-            blob = ContentFile(property["xml"], name=f'at_{property["audit_template_building_id"]}_{formatted_time}.xml')
+            blob = ContentFile(property["xml"], name=f'at_{property["matching_field"]}_{formatted_time}.xml')
             response = self._update_with_building_sync(blob, 1, org_id, cycle_id, property["property_view"], property["updated_at"])
             response = json.loads(response.content)
             results["success" if response["success"] else "failure"] += 1
-
+            try:
+                view = response["data"]["property_view"]
+                view_id = view["id"]
+                custom_id_1 = view["state"]["custom_id_1"]
+                results["data"].append(
+                    {
+                        "custom_id_1": custom_id_1,
+                        "cycle_id": cycle.id,
+                        "cycle_name": cycle.name,
+                        "view_id": view_id,
+                    }
+                )
+            except KeyError:
+                pass
             progress_data.step("Updating Properties...")
 
-        progress_data.finish_with_success(results)
+        if finish:
+            progress_data.finish_with_success(results)
+        else:
+            return results
 
     def _update_with_building_sync(self, the_file, file_type, organization_id, cycle_id, view_id, at_updated=False):
         try:

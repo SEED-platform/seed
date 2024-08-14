@@ -183,12 +183,14 @@ class TestApi(TestCase):
         self.assertEqual(r["organization"]["number_of_users"], 1)
         self.assertEqual(len(r["organization"]["owners"]), 1)
         self.assertEqual(r["organization"]["user_is_owner"], True)
-        self.assertEqual(
-            r["organization"]["default_reports_x_axis_options"], ColumnSerializer(self.default_reports_x_axis_options, many=True).data
-        )
-        self.assertEqual(
-            r["organization"]["default_reports_y_axis_options"], ColumnSerializer(self.default_reports_y_axis_options, many=True).data
-        )
+        # dict order can vary
+        rx = sorted(r["organization"]["default_reports_x_axis_options"], key=lambda x: x["id"])
+        ry = sorted(r["organization"]["default_reports_y_axis_options"], key=lambda x: x["id"])
+        cx = sorted([dict(x) for x in ColumnSerializer(self.default_reports_x_axis_options, many=True).data], key=lambda y: y["id"])
+        cy = sorted([dict(x) for x in ColumnSerializer(self.default_reports_y_axis_options, many=True).data], key=lambda y: y["id"])
+
+        self.assertEqual(rx, cx)
+        self.assertEqual(ry, cy)
 
     def test_set_default_reports_axis_options(self):
         # assert old axis set

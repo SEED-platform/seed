@@ -749,7 +749,7 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
       const property_view_ids = $scope.inventory_type === 'properties' ? selectedViewIds : [];
       const taxlot_view_ids = $scope.inventory_type === 'taxlots' ? selectedViewIds : [];
 
-      data_quality_service.start_data_quality_checks(property_view_ids, taxlot_view_ids).then((response) => {
+      data_quality_service.start_data_quality_checks(property_view_ids, taxlot_view_ids, null).then((response) => {
         data_quality_service
           .data_quality_checks_status(response.progress_key)
           .then((result) => {
@@ -1489,6 +1489,18 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
       });
     };
 
+    $scope.open_at_submission_import_modal = (selectedViewIds) => {
+      $uibModal.open({
+        templateUrl: `${urls.static_url}seed/partials/at_submission_import_modal.html`,
+        controller: 'at_submission_import_modal_controller',
+        backdrop: 'static',
+        resolve: {
+          org: () => $scope.organization,
+          view_ids: () => selectedViewIds
+        }
+      });
+    };
+
     $scope.model_actions = 'none';
     const elSelectActions = document.getElementById('select-actions');
     $scope.run_action = (viewIds = [], action = null) => {
@@ -1534,6 +1546,9 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
           break;
         case 'open_export_to_audit_template_modal':
           $scope.open_export_to_audit_template_modal(selectedViewIds);
+          break;
+        case 'open_at_submission_import_modal':
+          $scope.open_at_submission_import_modal(selectedViewIds);
           break;
         case 'open_update_labels_modal':
           $scope.open_update_labels_modal(selectedViewIds);
