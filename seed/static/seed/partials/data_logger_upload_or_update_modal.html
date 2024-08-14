@@ -5,7 +5,7 @@
 <div class="modal-body">
   <div class="data_upload_steps container-fluid">
     <div class="alert alert-danger" ng-show="data_logger_display_name_not_entered_alert" style="margin-bottom: 18px" translate="NO_DATA_LOGGER_DISPLAY_NAME"></div>
-    <div class="alert alert-danger" ng-show="data_logger_display_name_not_unique_alert" style="margin-bottom: 18px" translate="NON_UNIQUE_DATA_LOGGER_DISPLAY_NAME"></div>
+    <div class="alert alert-danger" ng-show="error_message" style="margin-bottom: 18px">{$ error_message $}</div>
     <div class="row" style="display: flex; flex-direction: column; gap: 15px">
       <div>
         <label class="col-sm-3 col-sm-offset-1 control-label" translate>Display Name</label>
