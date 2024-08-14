@@ -873,8 +873,8 @@ def post_save_property_state(sender, **kwargs):
     for idx, ubid in enumerate(ubids):
         # trim leading/trailing spaces
         ubid_stripped = ubid.strip()
-        is_last = idx == len(ubids) - 1
-        _, created = state.ubidmodel_set.update_or_create(ubid=ubid_stripped, defaults={"preferred": is_last})
+        is_first = idx == 0
+        _, created = state.ubidmodel_set.update_or_create(ubid=ubid_stripped, defaults={"preferred": is_first})
         if created:
             decode_unique_ids(state)
 
