@@ -6,6 +6,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 import json
 from datetime import datetime
+from unittest import mock
 
 from django.test import TestCase
 from django.urls import reverse, reverse_lazy
@@ -1451,7 +1452,9 @@ class InventoryViewTests(AssertDictSubsetMixin, DeleteModelsTestCase):
         response = self.client.get(reverse("api:v3:cycles-list"), params)
         self.assertEqual(403, response.status_code)
 
-    def test_postoffice(self):
+    @mock.patch("post_office.tasks.send_queued_mail.delay")
+    def test_postoffice(self, mock_send_mail):
+        mock_send_mail.return_value = None
         # Create a template
         response = self.client.post(
             "/api/v3/postoffice/",
