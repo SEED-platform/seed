@@ -1479,17 +1479,17 @@ class InventoryViewTests(AssertDictSubsetMixin, DeleteModelsTestCase):
 
         # Send email
         state = self.property_state_factory.get_property_state()
-        prprty = self.property_factory.get_property()
-        pv = PropertyView.objects.create(property=prprty, cycle=self.cycle, state=state)
         response = self.client.post(
             "/api/v3/postoffice_email/",
             {
                 "organization_id": self.org.pk,
                 "from_email": "dummy@email.com",
                 "template_id": template["id"],
-                "inventory_id": pv.id,
+                "inventory_id": [state.id],
                 "inventory_type": "properties",
+                "to": ["dummy@email.com"],
             },
+            content_type="application/json",
         )
         results = response.json()
         self.assertEqual(results["status"], "success")
