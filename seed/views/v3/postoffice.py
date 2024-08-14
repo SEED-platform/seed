@@ -7,12 +7,13 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 from django.conf import settings
 from django.forms.models import model_to_dict
 from django.utils.decorators import method_decorator
+from drf_yasg.utils import swagger_auto_schema
 from post_office import mail
 
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.models import PostOfficeEmail, PostOfficeEmailTemplate, PropertyState, TaxLotState
 from seed.serializers.postoffice import PostOfficeEmailSerializer, PostOfficeEmailTemplateSerializer
-from seed.utils.api_schema import swagger_auto_schema_org_query_param
+from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema_org_query_param
 from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
 
 
@@ -37,9 +38,79 @@ class PostOfficeEmailTemplateViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
 
 @method_decorator(name="list", decorator=[swagger_auto_schema_org_query_param, has_perm_class("requires_owner")])
 @method_decorator(name="retrieve", decorator=[swagger_auto_schema_org_query_param, has_perm_class("requires_owner")])
-@method_decorator(name="update", decorator=[swagger_auto_schema_org_query_param, has_perm_class("requires_owner")])
+@method_decorator(
+    name="update",
+    decorator=[
+        swagger_auto_schema(
+            request_body=AutoSchemaHelper.schema_factory(
+                {
+                    "to": ["string"],
+                    "from_email": "string",
+                    "template_id": "integer",
+                    "inventory_id": ["integer"],
+                    "inventory_type": "string",
+                    "cc": ["string"],
+                    "bcc": ["string"],
+                    "subject": "string",
+                    "message": "string",
+                    "html_message": "string",
+                    "status": "integer",
+                    "priority": "integer",
+                    "scheduled_time": "datetime",
+                    "expires_at": "datetime",
+                    "number_of_retries": "integer",
+                    "headers": "string",
+                    "context": "string",
+                    "backend_alias": "string",
+                },
+                required=["to", "from_email", "template_id"],
+                description="""
+                    - inventory_type: "properties" or "taxlots"
+                    - template_id: ID of PostOfficeEmailTemplate
+                """,
+            ),
+            manual_parameters=[AutoSchemaHelper.query_org_id_field()],
+        ),
+        has_perm_class("requires_owner"),
+    ],
+)
 @method_decorator(name="destroy", decorator=[swagger_auto_schema_org_query_param, has_perm_class("requires_owner")])
-@method_decorator(name="create", decorator=[swagger_auto_schema_org_query_param, has_perm_class("requires_owner")])
+@method_decorator(
+    name="create",
+    decorator=[
+        swagger_auto_schema(
+            request_body=AutoSchemaHelper.schema_factory(
+                {
+                    "to": ["string"],
+                    "from_email": "string",
+                    "template_id": "integer",
+                    "inventory_id": ["integer"],
+                    "inventory_type": "string",
+                    "cc": ["string"],
+                    "bcc": ["string"],
+                    "subject": "string",
+                    "message": "string",
+                    "html_message": "string",
+                    "status": "integer",
+                    "priority": "integer",
+                    "scheduled_time": "datetime",
+                    "expires_at": "datetime",
+                    "number_of_retries": "integer",
+                    "headers": "string",
+                    "context": "string",
+                    "backend_alias": "string",
+                },
+                required=["to", "from_email", "inventory_id", "inventory_type", "template_id"],
+                description="""
+                    - inventory_type: "properties" or "taxlots"
+                    - template_id: ID of PostOfficeEmailTemplate
+                """,
+            ),
+            manual_parameters=[AutoSchemaHelper.query_org_id_field()],
+        ),
+        has_perm_class("requires_owner"),
+    ],
+)
 class PostOfficeEmailViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
     model = PostOfficeEmail
     serializer_class = PostOfficeEmailSerializer
@@ -53,13 +124,11 @@ class PostOfficeEmailViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
         inventory_id = self.request.data.get("inventory_id", [])
         if self.request.data.get("inventory_type") == "properties":
             state = PropertyState
-            org_filter = "propertyview__property__organization_id"
         else:
             state = TaxLotState
-            org_filter = "taxlotview__taxlot__organization_id"
 
         org_id = self.get_organization(self.request)
-        properties = state.objects.filter(id__in=inventory_id, **{org_filter: org_id})
+        properties = state.objects.filter(id__in=inventory_id, organization=org_id)
 
         for prop in properties:  # loop to include details in template
             context = {}

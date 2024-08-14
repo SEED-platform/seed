@@ -45,6 +45,14 @@ class PostOfficeEmailSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         inventory_id = self.initial_data.get("inventory_id")
+        inventory_type = self.initial_data.get("inventory_type")
+        template_id = self.initial_data.get("template_id")
+        method = self.context.get("request").method
+
         if inventory_id is not None and not isinstance(inventory_id, list):
             raise serializers.ValidationError("'inventory_id' must be a list.")
+        if method == "POST" and inventory_type not in ["properties", "taxlots"]:
+            raise serializers.ValidationError("'inventory_type' must be 'properties' or 'taxlots'")
+        if not PostOfficeEmailTemplate.objects.filter(id=template_id).first():
+            raise serializers.ValidationError("PostOfficeEmailTemplate not found.")
         return data

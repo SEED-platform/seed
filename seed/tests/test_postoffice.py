@@ -179,7 +179,7 @@ class TestPostOfficeEmail(AccessLevelBaseTestCase):
         # create (valid)
         params["inventory_id"] = [self.state1.id]
         response = self.client.post(url, params, content_type="application/json")
-        data = response.json()["data"]
+        data = response.json().get("data")
         postoffice_email_id = data["id"]
         assert response.status_code == 201
         assert PostOfficeEmail.objects.count() == original_count + 1
@@ -196,12 +196,9 @@ class TestPostOfficeEmail(AccessLevelBaseTestCase):
 
         # update
         url = reverse("api:v3:postoffice_email-detail", args=[postoffice_email_id]) + "?organization_id=" + str(self.org.id)
-        params = {
-            "from_email": "b@b.com",
-            "to": ["b@b.com"],
-        }
+        params = {"from_email": "b@b.com", "to": ["b@b.com"], "template_id": self.postoffice.id}
         response = self.client.put(url, params, content_type="application/json")
-        data = response.json()["data"]
+        data = response.json().get("data")
         assert response.status_code == 200
         assert data["id"] == postoffice_email_id
         assert data["from_email"] == "b@b.com"
