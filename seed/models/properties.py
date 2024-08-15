@@ -325,6 +325,11 @@ class PropertyState(models.Model):
     total_marginal_ghg_emissions = QuantityField("MtCO2e/year", null=True, blank=True)
     total_ghg_emissions_intensity = QuantityField("kgCO2e/ft**2/year", null=True, blank=True)
     total_marginal_ghg_emissions_intensity = QuantityField("kgCO2e/ft**2/year", null=True, blank=True)
+    water_use = QuantityField("kgal/year", null=True, blank=True)
+    indoor_water_use = QuantityField("kgal/year", null=True, blank=True)
+    outdoor_water_use = QuantityField("kgal/year", null=True, blank=True)
+    wui = QuantityField("gal/ft**2/year", null=True, blank=True)
+    indoor_wui = QuantityField("gal/ft**2/year", null=True, blank=True)
 
     extra_data = models.JSONField(default=dict, blank=True)
     hash_object = models.CharField(max_length=32, null=True, blank=True, default=None)
@@ -661,6 +666,11 @@ class PropertyState(models.Model):
                     ps.space_alerts,
                     ps.building_certification,
                     ps.egrid_subregion_code,
+                    ps.water_use,
+                    ps.indoor_water_use,
+                    ps.outdoor_water_use,
+                    ps.wui,
+                    ps.indoor_wui,
                     ps.extra_data,
                     NULL
                 FROM seed_propertystate ps, audit_id aid
@@ -722,6 +732,11 @@ class PropertyState(models.Model):
             "energy_alerts",
             "space_alerts",
             "building_certification",
+            "water_use",
+            "indoor_water_use",
+            "outdoor_water_use",
+            "wui",
+            "indoor_wui",
             "extra_data",
         ]
         coparents = [{key: getattr(c, key) for key in keep_fields} for c in coparents]
