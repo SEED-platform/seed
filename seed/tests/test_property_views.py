@@ -1738,6 +1738,23 @@ class PropertyUnmergeViewTests(DataMappingBaseTestCase):
 
         self.assertEqual(reading_sets[0], reading_sets[1])
 
+    def test_unmerging_two_properties_with_notes(self):
+        view = PropertyView.objects.first()  # There's only one PropertyView
+
+        # add note
+        note_factory = FakeNoteFactory(organization=self.org, user=self.user)
+        note1 = note_factory.get_note(name="non_default_name_1")
+        view.notes.add(note1)
+
+        # Unmerge the properties
+        url = reverse("api:v3:properties-unmerge", args=[view.id]) + f"?organization_id={self.org.pk}"
+        self.client.put(url, content_type="application/json")
+        view_1, view_2 = PropertyView.objects.all()
+
+        assert view_1.notes.count() == 1
+        assert view_2.notes.count() == 2
+        assert view_2.notes.first().text == f"This PropertyView was unmerged from PropertyView id {view_1.id}"
+
     def test_unmerge_results_in_the_use_of_new_canonical_records_and_deletion_of_old_canonical_state_if_unrelated_to_any_views(self):
         # Capture "old" property_id - there's only one PropertyView
         view = PropertyView.objects.first()

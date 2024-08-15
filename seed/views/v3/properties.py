@@ -633,6 +633,15 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             # Correct the created and updated times to match the original note
             Note.objects.filter(id__in=ids).update(created=created, updated=updated)
 
+        Note.objects.create(
+            organization=old_property.organization,
+            note_type=Note.LOG,
+            name="Unmerged Property",
+            text=f"This PropertyView was unmerged from PropertyView id {new_view1.id}",
+            user=request.user,
+            property_view=new_view2,
+        )
+
         for paired_view_id in paired_view_ids:
             TaxLotProperty(primary=True, cycle_id=cycle_id, property_view_id=new_view1.id, taxlot_view_id=paired_view_id).save()
             TaxLotProperty(primary=True, cycle_id=cycle_id, property_view_id=new_view2.id, taxlot_view_id=paired_view_id).save()
