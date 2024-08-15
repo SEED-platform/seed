@@ -41,3 +41,12 @@
         </div>
     </div>
 </div>
+
+<div class="section_content">
+    <div id="meters-grid-container" ng-show="inventory_groups.length != 0">
+        <div ui-grid="groupGridOptions" ui-grid-selection ui-grid-resize-columns ui-grid-exporter></div>
+    </div>
+    <div ng-hide="inventory_groups.length != 0">
+        <div class="jumbotron text-center" translate>No Data</div>
+    </div>
+</div>

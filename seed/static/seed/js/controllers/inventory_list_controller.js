@@ -88,6 +88,8 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
     }
 
     $scope.inventory_type = $stateParams.inventory_type;
+    $scope.group_id = $stateParams.group_id;
+    console.log($scope.group_id);
     $scope.data = [];
     const lastCycleId = inventory_service.get_last_cycle();
     $scope.cycle = {
@@ -1210,8 +1212,8 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
         exclude_ids = _.union.apply(null, _.map($scope.selected_exclude_labels, 'is_applied'));
       }
 
-      if ($scope.inventory_group_tab != -1) {
-        var group_ids = _.filter($scope.inventory_groups, {'id': $scope.inventory_group_tab})[0].member_list;
+      if ($scope.group_id) {
+        var group_ids = _.filter($scope.inventory_groups, {'id': $scope.group_id})[0].member_list;
         if (typeof include_ids !== 'undefined' && group_ids.length && include_ids[0] != 0) { // if there's a sort
           include_ids = _.intersection(include_ids, group_ids);
         } else if (!group_ids.length) {
