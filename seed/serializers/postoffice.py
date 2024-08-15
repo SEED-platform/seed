@@ -17,10 +17,7 @@ class PostOfficeEmailTemplateSerializer(serializers.ModelSerializer):
 
 
 class PostOfficeEmailSerializer(serializers.ModelSerializer):
-    to = serializers.ListField(
-        child=serializers.EmailField(),
-        allow_empty=False,
-    )
+    to = serializers.ListField(child=serializers.EmailField(), allow_empty=True, default=[])
     cc = serializers.ListField(
         child=serializers.EmailField(),
         required=False,
