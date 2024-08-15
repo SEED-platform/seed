@@ -51,15 +51,15 @@ http {
     # instead of using partial frames. Default is 'off'.
     tcp_nopush on;
 
-    # Enable gzipping of responses
-    gzip on;
-    gzip_vary on;
-    gzip_comp_level 6;
-    gzip_proxied any;
-    gzip_types application/javascript application/json application/x-javascript text/javascript;
-    gzip_types application/xml image/svg+xml text/xml;
-    gzip_types image/x-icon;
-    gzip_types text/css text/plain;
+    # Enable pre-compressed and on-the-fly compression using brotli
+    brotli on;
+    brotli_comp_level 6;
+    brotli_static on;
+    brotli_types application/atom+xml application/javascript application/json application/vnd.api+json application/rss+xml
+                 application/vnd.ms-fontobject application/x-font-opentype application/x-font-truetype
+                 application/x-font-ttf application/x-javascript application/xhtml+xml application/xml
+                 font/eot font/opentype font/otf font/truetype image/svg+xml image/vnd.microsoft.icon
+                 image/x-icon image/x-win-bitmap text/css text/javascript text/plain text/xml;
 
 
     # Helper variable for proxying websockets.
@@ -88,13 +88,12 @@ http {
 
     # helper to apply CSP only to html responses
     map $sent_http_content_type $csp_for_html {
-        ~^text/html "$CSP";
-        default     "";
+        ~^text/html$ "$CSP";
+        default      "";
     }
 
     # configuration of the server
     server {
-
         listen      80 default_server ${NGINX_LISTEN_OPTS};
         server_name localhost;
         charset     utf-8;
@@ -145,18 +144,19 @@ http {
 
         location /static {
             alias /seed/collected_static;
-            types {
-                text/css css;
-                application/javascript js;
-                image/svg+xml svg;
-                text/plain txt;
-            }
-            default_type application/octet-stream;
-            index nonextistent;
-            autoindex off;
             expires 1d;
             include seed-security-headers.conf;
             add_header Cache-Control "public";
+            # Prevent serving index.html files when a directory is requested
+            if (-d $request_filename) {
+                return 404;
+            }
+            # Prevent serving node_modules html files
+            location ~* /node_modules/.*\.html$ {
+                types {
+                    application/octet-stream html;
+                }
+            }
         }
 
         location / {

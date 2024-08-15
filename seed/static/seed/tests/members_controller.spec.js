@@ -9,7 +9,7 @@ describe('controller: members_controller', () => {
   let mock_organization_service;
 
   beforeEach(() => {
-    module('BE.seed');
+    module('SEED');
     inject((_$httpBackend_) => {
       _$httpBackend_.whenGET(/^\/static\/seed\/locales\/.*\.json/).respond(200, {});
     });

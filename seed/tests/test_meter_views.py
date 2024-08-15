@@ -7,15 +7,17 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 import ast
 import copy
 import json
+from datetime import datetime
 
 from django.urls import reverse
+from django.utils import timezone as tz
 
-from seed.data_importer.utils import kbtu_thermal_conversion_factors as conversion_factors
+from seed.data_importer.utils import kbtu_thermal_conversion_factors, kgal_water_conversion_factors
 from seed.landing.models import SEEDUser as User
-from seed.models import Meter, Property
+from seed.models import Meter, MeterReading, Property
 from seed.models.scenarios import Scenario
 from seed.test_helpers.fake import FakePropertyViewFactory
-from seed.tests.util import AccessLevelBaseTestCase, DeleteModelsTestCase
+from seed.tests.util import AccessLevelBaseTestCase, AssertDictSubsetMixin, DeleteModelsTestCase
 from seed.utils.organizations import create_organization
 
 
@@ -37,12 +39,14 @@ class TestMeterValidTypesUnits(DeleteModelsTestCase):
         result = self.client.get(url)
         result_dict = ast.literal_eval(result.content.decode("utf-8"))
 
-        expectation = {type: list(units.keys()) for type, units in conversion_factors("US").items()}
-
+        expectation = {
+            "energy": {type: list(units.keys()) for type, units in kbtu_thermal_conversion_factors("US").items()},
+            "water": {type: list(units.keys()) for type, units in kgal_water_conversion_factors("US").items()},
+        }
         self.assertEqual(result_dict, expectation)
 
 
-class TestMeterCRUD(DeleteModelsTestCase):
+class TestMeterCRUD(AssertDictSubsetMixin, DeleteModelsTestCase):
     def setUp(self):
         super().setUp()
 
@@ -64,7 +68,7 @@ class TestMeterCRUD(DeleteModelsTestCase):
 
     def test_create_meter(self):
         property_view = self.property_view_factory.get_property_view()
-        url = reverse("api:v3:property-meters-list", kwargs={"property_pk": property_view.id}) + "?organization_id=" + str(self.org.id)
+        url = reverse("api:v3:property-meters-list", kwargs={"property_pk": property_view.id}) + f"?organization_id={self.org.id}"
 
         payload = {
             "type": "Electric - Grid",
@@ -74,7 +78,7 @@ class TestMeterCRUD(DeleteModelsTestCase):
 
         response = self.client.post(url, data=json.dumps(payload), content_type="application/json")
         self.assertEqual(response.status_code, 201)
-        self.assertDictContainsSubset(payload, response.data)
+        self.assertDictContainsSubset(payload, response.json())
 
         payload = {
             "type": "Electric - Grid",
@@ -85,8 +89,8 @@ class TestMeterCRUD(DeleteModelsTestCase):
         response = self.client.post(url, data=json.dumps(payload), content_type="application/json")
         self.assertEqual(response.status_code, 201)
         # verify that the source_id gets updated when GreenButton
-        self.assertEqual(response.data["source_id"], "123fakeID")
-        self.assertEqual(response.data["alias"], "Electric - Grid - GreenButton - 123fakeID")
+        self.assertEqual(response.json()["source_id"], "123fakeID")
+        self.assertEqual(response.json()["alias"], "Electric - Grid - GreenButton - 123fakeID")
 
         payload = {
             "type": "Natural Gas",
@@ -97,11 +101,11 @@ class TestMeterCRUD(DeleteModelsTestCase):
 
         response = self.client.post(url, data=json.dumps(payload), content_type="application/json")
         self.assertEqual(response.status_code, 201)
-        self.assertDictContainsSubset(payload, response.data)
+        self.assertDictContainsSubset(payload, response.json())
 
     def test_create_meter_with_scenario(self):
         property_view = self.property_view_factory.get_property_view()
-        url = reverse("api:v3:property-meters-list", kwargs={"property_pk": property_view.id}) + "?organization_id=" + str(self.org.id)
+        url = reverse("api:v3:property-meters-list", kwargs={"property_pk": property_view.id}) + f"?organization_id={self.org.id}"
 
         # create a scenario and test again
         scenario = Scenario.objects.create(
@@ -136,7 +140,7 @@ class TestMeterCRUD(DeleteModelsTestCase):
         )
 
         property_view = self.property_view_factory.get_property_view()
-        url = reverse("api:v3:property-meters-list", kwargs={"property_pk": property_view.id}) + "?organization_id=" + str(self.org.id)
+        url = reverse("api:v3:property-meters-list", kwargs={"property_pk": property_view.id}) + f"?organization_id={self.org.id}"
 
         payload = {
             "type": "Electric - Grid",
@@ -152,7 +156,7 @@ class TestMeterCRUD(DeleteModelsTestCase):
     def test_delete_meter(self):
         # create meter
         property_view = self.property_view_factory.get_property_view()
-        url = reverse("api:v3:property-meters-list", kwargs={"property_pk": property_view.id}) + "?organization_id=" + str(self.org.id)
+        url = reverse("api:v3:property-meters-list", kwargs={"property_pk": property_view.id}) + f"?organization_id={self.org.id}"
         payload = {
             "type": "Natural Gas",
             "source": "Portfolio Manager",
@@ -161,30 +165,29 @@ class TestMeterCRUD(DeleteModelsTestCase):
         }
         response = self.client.post(url, data=json.dumps(payload), content_type="application/json")
         self.assertEqual(response.status_code, 201)
-        self.assertDictContainsSubset(payload, response.data)
+        self.assertDictContainsSubset(payload, response.json())
 
         # verify that there is only 1 meter for property
         response = self.client.get(url, content_type="application/json")
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.data), 1)
+        self.assertEqual(len(response.json()), 1)
 
-        meter_id = response.data[0]["id"]
+        meter_id = response.json()[0]["id"]
         meter_url = (
             reverse("api:v3:property-meters-detail", kwargs={"property_pk": property_view.id, "pk": meter_id})
-            + "?organization_id="
-            + str(self.org.id)
+            + f"?organization_id={self.org.id}"
         )
         response = self.client.delete(meter_url, content_type="application/json")
         self.assertEqual(response.status_code, 204)
         # make sure there are no meters for property
         response = self.client.get(url, content_type="application/json")
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.data), 0)
+        self.assertEqual(len(response.json()), 0)
 
     def test_update_meter(self):
         # create meter
         property_view = self.property_view_factory.get_property_view()
-        url = reverse("api:v3:property-meters-list", kwargs={"property_pk": property_view.id}) + "?organization_id=" + str(self.org.id)
+        url = reverse("api:v3:property-meters-list", kwargs={"property_pk": property_view.id}) + f"?organization_id={self.org.id}"
         payload = {
             "type": "Natural Gas",
             "source": "Portfolio Manager",
@@ -193,19 +196,18 @@ class TestMeterCRUD(DeleteModelsTestCase):
         }
         response = self.client.post(url, data=json.dumps(payload), content_type="application/json")
         self.assertEqual(response.status_code, 201)
-        self.assertDictContainsSubset(payload, response.data)
+        self.assertDictContainsSubset(payload, response.json())
 
         new_payload = copy.deepcopy(payload)
         new_payload["is_virtual"] = True
-        meter_id = response.data["id"]
+        meter_id = response.json()["id"]
         meter_url = (
             reverse("api:v3:property-meters-detail", kwargs={"property_pk": property_view.id, "pk": meter_id})
-            + "?organization_id="
-            + str(self.org.id)
+            + f"?organization_id={self.org.id}"
         )
         response = self.client.put(meter_url, data=json.dumps(new_payload), content_type="application/json")
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data["is_virtual"], True)
+        self.assertEqual(response.json()["is_virtual"], True)
 
 
 class TestMetersPermissions(AccessLevelBaseTestCase, DeleteModelsTestCase):
@@ -215,12 +217,19 @@ class TestMetersPermissions(AccessLevelBaseTestCase, DeleteModelsTestCase):
         self.property = self.property_factory.get_property()
         self.property_view = self.property_view_factory.get_property_view(self.property)
         self.meter = Meter.objects.create(property=self.property)
+        self.meter_reading = MeterReading.objects.create(
+            meter=self.meter,
+            start_time=datetime(2024, 1, 1, 0, 0, tzinfo=tz.utc),
+            end_time=datetime(2024, 1, 2, 0, 0, tzinfo=tz.utc),
+            reading=12345,
+            source_unit="kWh",
+            conversion_factor=1,
+        )
 
     def test_get_meters_detail_permissions(self):
         meter_url = (
             reverse("api:v3:property-meters-detail", kwargs={"property_pk": self.property_view.id, "pk": self.meter.id})
-            + "?organization_id="
-            + str(self.org.id)
+            + f"?organization_id={self.org.id}"
         )
 
         # root users can see meters in root
@@ -235,7 +244,7 @@ class TestMetersPermissions(AccessLevelBaseTestCase, DeleteModelsTestCase):
 
     def test_get_meters_list_permissions(self):
         meter_url = (
-            reverse("api:v3:property-meters-list", kwargs={"property_pk": self.property_view.id}) + "?organization_id=" + str(self.org.id)
+            reverse("api:v3:property-meters-list", kwargs={"property_pk": self.property_view.id}) + f"?organization_id={self.org.id}"
         )
 
         # root users can see meters in root
@@ -251,8 +260,7 @@ class TestMetersPermissions(AccessLevelBaseTestCase, DeleteModelsTestCase):
     def test_get_meters_delete_permissions(self):
         meter_url = (
             reverse("api:v3:property-meters-detail", kwargs={"property_pk": self.property_view.id, "pk": self.meter.id})
-            + "?organization_id="
-            + str(self.org.id)
+            + f"?organization_id={self.org.id}"
         )
 
         # child user cannot delete meters in root
@@ -266,7 +274,7 @@ class TestMetersPermissions(AccessLevelBaseTestCase, DeleteModelsTestCase):
         assert response.status_code == 204
 
     def test_create_meter_permissions(self):
-        url = reverse("api:v3:property-meters-list", kwargs={"property_pk": self.property_view.id}) + "?organization_id=" + str(self.org.id)
+        url = reverse("api:v3:property-meters-list", kwargs={"property_pk": self.property_view.id}) + f"?organization_id={self.org.id}"
         payload = {"type": "Electric", "source": "Manual Entry", "source_id": "1234567890"}
 
         # root users can create meters in root
@@ -282,8 +290,7 @@ class TestMetersPermissions(AccessLevelBaseTestCase, DeleteModelsTestCase):
     def test_update_meter_permissions(self):
         url = (
             reverse("api:v3:property-meters-detail", kwargs={"property_pk": self.property_view.id, "pk": self.meter.id})
-            + "?organization_id="
-            + str(self.org.id)
+            + f"?organization_id={self.org.id}"
         )
         payload = {"type": "Electric", "source": "Manual Entry", "source_id": "boo"}
 
@@ -296,6 +303,133 @@ class TestMetersPermissions(AccessLevelBaseTestCase, DeleteModelsTestCase):
         self.login_as_child_member()
         response = self.client.put(url, data=json.dumps(payload), content_type="application/json")
         assert response.status_code == 404
+
+    def test_get_meter_reading_list_permissions(self):
+        meter_reading_url = (
+            reverse(
+                "api:v3:property-meter-readings-list",
+                kwargs={
+                    "property_pk": self.property_view.id,
+                    "meter_pk": self.meter.id,
+                },
+            )
+            + f"?organization_id={self.org.id}"
+        )
+
+        # root users can see meters in root
+        self.login_as_root_member()
+        response = self.client.get(meter_reading_url)
+        assert response.status_code == 200
+
+        # child user cannot
+        self.login_as_child_member()
+        response = self.client.get(meter_reading_url)
+        assert response.status_code == 404
+
+    def test_create_meter_reading_list_permissions(self):
+        meter_reading_url = (
+            reverse(
+                "api:v3:property-meter-readings-list",
+                kwargs={
+                    "property_pk": self.property_view.id,
+                    "meter_pk": self.meter.id,
+                },
+            )
+            + f"?organization_id={self.org.id}"
+        )
+        payload = {
+            "start_time": "2024-01-01T00:00:00",
+            "end_time": "2024-01-02T00:00:00",
+            "reading": 12345,
+            "source_unit": "kWh",
+            "conversion_factor": 1,
+        }
+
+        # root users can create meter readings in root
+        self.login_as_root_member()
+        response = self.client.post(meter_reading_url, data=json.dumps(payload), content_type="application/json")
+        assert response.status_code == 201
+
+        # child user cannot
+        self.login_as_child_member()
+        response = self.client.post(meter_reading_url, data=json.dumps(payload), content_type="application/json")
+        assert response.status_code == 404
+
+    def test_get_meter_reading_detail_permissions(self):
+        meter_reading_url = (
+            reverse(
+                "api:v3:property-meter-readings-detail",
+                kwargs={
+                    "property_pk": self.property_view.id,
+                    "meter_pk": self.meter.id,
+                    "pk": "2024-01-01T00:00:00Z",
+                },
+            )
+            + f"?organization_id={self.org.id}"
+        )
+
+        # root users can see meter readings in root
+        self.login_as_root_member()
+        response = self.client.get(meter_reading_url)
+        assert response.status_code == 200
+
+        # child user cannot
+        self.login_as_child_member()
+        response = self.client.get(meter_reading_url)
+        assert response.status_code == 404
+
+    def test_update_meter_reading_detail_permissions(self):
+        meter_reading_url = (
+            reverse(
+                "api:v3:property-meter-readings-detail",
+                kwargs={
+                    "property_pk": self.property_view.id,
+                    "meter_pk": self.meter.id,
+                    "pk": "2024-01-01T00:00:00Z",
+                },
+            )
+            + f"?organization_id={self.org.id}"
+        )
+        payload = {
+            "start_time": "2024-01-01T00:00:00",
+            "end_time": "2024-01-02T00:00:00",
+            "reading": 1337,
+            "source_unit": "kWh",
+            "conversion_factor": 1,
+        }
+
+        # root users can update meter readings in root
+        self.login_as_root_member()
+        response = self.client.put(meter_reading_url, data=json.dumps(payload), content_type="application/json")
+        assert response.status_code == 200
+
+        # child user cannot
+        self.login_as_child_member()
+        response = self.client.put(meter_reading_url, data=json.dumps(payload), content_type="application/json")
+        assert response.status_code == 404
+
+    def test_delete_meter_reading_detail_permissions(self):
+        meter_reading_url = (
+            reverse(
+                "api:v3:property-meter-readings-detail",
+                kwargs={
+                    "property_pk": self.property_view.id,
+                    "meter_pk": self.meter.id,
+                    "pk": "2024-01-01T00:00:00Z",
+                },
+            )
+            + f"?organization_id={self.org.id}"
+        )
+
+        # child user cannot delete meter readings in root
+        self.login_as_child_member()
+        response = self.client.delete(meter_reading_url)
+        assert response.status_code == 404
+
+        # root users can
+        self.login_as_root_member()
+        response = self.client.delete(meter_reading_url)
+        assert response.status_code == 204
 
 
 class TestMeterReadingCRUD(DeleteModelsTestCase):
@@ -315,7 +449,7 @@ class TestMeterReadingCRUD(DeleteModelsTestCase):
 
     def test_create_meter_readings(self):
         property_view = self.property_view_factory.get_property_view()
-        url = reverse("api:v3:property-meters-list", kwargs={"property_pk": property_view.id}) + "?organization_id=" + str(self.org.id)
+        url = reverse("api:v3:property-meters-list", kwargs={"property_pk": property_view.id}) + f"?organization_id={self.org.id}"
 
         payload = {
             "type": "Electric",
@@ -329,8 +463,7 @@ class TestMeterReadingCRUD(DeleteModelsTestCase):
         # create meter readings
         url = (
             reverse("api:v3:property-meter-readings-list", kwargs={"property_pk": property_view.id, "meter_pk": meter_pk})
-            + "?organization_id="
-            + str(self.org.id)
+            + f"?organization_id={self.org.id}"
         )
 
         # write a few values to the database
@@ -361,7 +494,7 @@ class TestMeterReadingCRUD(DeleteModelsTestCase):
         """Test edge case to make sure that data for two different meters don't overwrite each other"""
         property_view = self.property_view_factory.get_property_view()
         url_meters = reverse("api:v3:property-meters-list", kwargs={"property_pk": property_view.id})
-        url_meters += "?organization_id=" + str(self.org.id)
+        url_meters += f"?organization_id={self.org.id}"
 
         payload = {
             "type": "Electric",
@@ -380,8 +513,14 @@ class TestMeterReadingCRUD(DeleteModelsTestCase):
         meter_pk_2 = response.json()["id"]
 
         # create meter readings
-        url_1 = reverse("api:v3:property-meter-readings-list", kwargs={"property_pk": property_view.id, "meter_pk": meter_pk_1})
-        url_2 = reverse("api:v3:property-meter-readings-list", kwargs={"property_pk": property_view.id, "meter_pk": meter_pk_2})
+        url_1 = (
+            reverse("api:v3:property-meter-readings-list", kwargs={"property_pk": property_view.id, "meter_pk": meter_pk_1})
+            + f"?organization_id={self.org.id}"
+        )
+        url_2 = (
+            reverse("api:v3:property-meter-readings-list", kwargs={"property_pk": property_view.id, "meter_pk": meter_pk_2})
+            + f"?organization_id={self.org.id}"
+        )
 
         readings_1 = {
             "start_time": "2022-01-05 05:00:00",
@@ -418,7 +557,7 @@ class TestMeterReadingCRUD(DeleteModelsTestCase):
         """Test edge case to make sure that data for two different meters don't overwrite each other"""
         property_view = self.property_view_factory.get_property_view()
         url_meters = reverse("api:v3:property-meters-list", kwargs={"property_pk": property_view.id})
-        url_meters += "?organization_id=" + str(self.org.id)
+        url_meters += f"?organization_id={self.org.id}"
 
         payload = {
             "type": "Electric",
@@ -437,8 +576,14 @@ class TestMeterReadingCRUD(DeleteModelsTestCase):
         meter_pk_2 = response.json()["id"]
 
         # create meter readings
-        url_1 = reverse("api:v3:property-meter-readings-list", kwargs={"property_pk": property_view.id, "meter_pk": meter_pk_1})
-        url_2 = reverse("api:v3:property-meter-readings-list", kwargs={"property_pk": property_view.id, "meter_pk": meter_pk_2})
+        url_1 = (
+            reverse("api:v3:property-meter-readings-list", kwargs={"property_pk": property_view.id, "meter_pk": meter_pk_1})
+            + f"?organization_id={self.org.id}"
+        )
+        url_2 = (
+            reverse("api:v3:property-meter-readings-list", kwargs={"property_pk": property_view.id, "meter_pk": meter_pk_2})
+            + f"?organization_id={self.org.id}"
+        )
 
         # write a few values to the database
         for values in [
@@ -482,7 +627,7 @@ class TestMeterReadingCRUD(DeleteModelsTestCase):
 
     def test_error_with_time_aware(self):
         property_view = self.property_view_factory.get_property_view()
-        url = reverse("api:v3:property-meters-list", kwargs={"property_pk": property_view.id}) + "?organization_id=" + str(self.org.id)
+        url = reverse("api:v3:property-meters-list", kwargs={"property_pk": property_view.id}) + f"?organization_id={self.org.id}"
 
         payload = {
             "type": "Electric",
@@ -496,8 +641,7 @@ class TestMeterReadingCRUD(DeleteModelsTestCase):
         # create meter readings
         url = (
             reverse("api:v3:property-meter-readings-list", kwargs={"property_pk": property_view.id, "meter_pk": meter_pk})
-            + "?organization_id="
-            + str(self.org.id)
+            + f"?organization_id={self.org.id}"
         )
 
         # write a few values to the database
@@ -532,7 +676,7 @@ class TestMeterReadingCRUD(DeleteModelsTestCase):
     def test_bulk_import(self):
         # create property
         property_view = self.property_view_factory.get_property_view()
-        url = reverse("api:v3:property-meters-list", kwargs={"property_pk": property_view.id}) + "?organization_id=" + str(self.org.id)
+        url = reverse("api:v3:property-meters-list", kwargs={"property_pk": property_view.id}) + f"?organization_id={self.org.id}"
 
         payload = {
             "type": "Electric",
@@ -545,8 +689,7 @@ class TestMeterReadingCRUD(DeleteModelsTestCase):
 
         url = (
             reverse("api:v3:property-meter-readings-list", kwargs={"property_pk": property_view.id, "meter_pk": meter_pk})
-            + "?organization_id="
-            + str(self.org.id)
+            + f"?organization_id={self.org.id}"
         )
 
         # prepare the data in bulk format
@@ -582,7 +725,7 @@ class TestMeterReadingCRUD(DeleteModelsTestCase):
 
         property_view = self.property_view_factory.get_property_view()
         url = reverse("api:v3:property-meters-list", kwargs={"property_pk": property_view.id})
-        url += "?organization_id=" + str(self.org.id)
+        url += f"?organization_id={self.org.id}"
 
         payload = {
             "type": "Electric",
@@ -594,7 +737,7 @@ class TestMeterReadingCRUD(DeleteModelsTestCase):
         meter_pk = response.json()["id"]
 
         url = reverse("api:v3:property-meter-readings-list", kwargs={"property_pk": property_view.id, "meter_pk": meter_pk})
-        url += "?organization_id=" + str(self.org.id)
+        url += f"?organization_id={self.org.id}"
 
         # prepare the data in bulk format
         reading1 = {
@@ -623,9 +766,9 @@ class TestMeterReadingCRUD(DeleteModelsTestCase):
         )
 
     def test_delete_meter_readings(self):
-        # would be nice nice to make a factory out of the meter / meter reading requests
+        # would be nice to make a factory out of the meter / meter reading requests
         property_view = self.property_view_factory.get_property_view()
-        url = reverse("api:v3:property-meters-list", kwargs={"property_pk": property_view.id}) + "?organization_id=" + str(self.org.id)
+        url = reverse("api:v3:property-meters-list", kwargs={"property_pk": property_view.id}) + f"?organization_id={self.org.id}"
 
         payload = {
             "type": "Natural Gas",
@@ -639,8 +782,7 @@ class TestMeterReadingCRUD(DeleteModelsTestCase):
         # create meter reading  property-meter-readings-list
         url = (
             reverse("api:v3:property-meter-readings-list", kwargs={"property_pk": property_view.id, "meter_pk": meter_pk})
-            + "?organization_id="
-            + str(self.org.id)
+            + f"?organization_id={self.org.id}"
         )
 
         payload = {
@@ -657,9 +799,12 @@ class TestMeterReadingCRUD(DeleteModelsTestCase):
         self.assertEqual(response.json()["reading"], 10)
 
         # now delete the item and verify that there are no more readings in the database
-        detail_url = reverse(
-            "api:v3:property-meter-readings-detail",
-            kwargs={"property_pk": property_view.id, "meter_pk": meter_pk, "pk": "2022-01-05 05:00:00"},
+        detail_url = (
+            reverse(
+                "api:v3:property-meter-readings-detail",
+                kwargs={"property_pk": property_view.id, "meter_pk": meter_pk, "pk": "2022-01-05T13:00:00Z"},
+            )
+            + f"?organization_id={self.org.id}"
         )
         response = self.client.get(detail_url, content_type="application/json")
         self.assertEqual(response.status_code, 200)
@@ -697,8 +842,7 @@ class TestMeterReadingPermission(AccessLevelBaseTestCase):
     def test_meter_readings_get(self):
         url = (
             reverse("api:v3:property-meters-detail", kwargs={"property_pk": self.view.id, "pk": self.meter.id})
-            + "?organization_id="
-            + str(self.org.id)
+            + f"?organization_id={self.org.id}"
         )
 
         # root member can
@@ -714,8 +858,7 @@ class TestMeterReadingPermission(AccessLevelBaseTestCase):
     def test_meter_readings_update(self):
         url = (
             reverse("api:v3:property-meters-detail", kwargs={"property_pk": self.view.id, "pk": self.meter.id})
-            + "?organization_id="
-            + str(self.org.id)
+            + f"?organization_id={self.org.id}"
         )
         param = json.dumps({"type": "Electric", "source": "Manual Entry", "source_id": "boo"})
 
@@ -730,7 +873,7 @@ class TestMeterReadingPermission(AccessLevelBaseTestCase):
         assert resp.status_code == 404
 
     def test_meter_readings_create(self):
-        url = reverse("api:v3:property-meters-list", kwargs={"property_pk": self.view.id}) + "?organization_id=" + str(self.org.id)
+        url = reverse("api:v3:property-meters-list", kwargs={"property_pk": self.view.id}) + f"?organization_id={self.org.id}"
         param = json.dumps({"type": "Electric", "source": "Manual Entry", "source_id": "boo"})
 
         # root member can
@@ -746,8 +889,7 @@ class TestMeterReadingPermission(AccessLevelBaseTestCase):
     def test_meter_readings_delete(self):
         url = (
             reverse("api:v3:property-meters-detail", kwargs={"property_pk": self.view.id, "pk": self.meter.id})
-            + "?organization_id="
-            + str(self.org.id)
+            + f"?organization_id={self.org.id}"
         )
 
         # child member cannot

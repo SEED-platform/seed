@@ -9,7 +9,7 @@ describe('controller: admin_controller', () => {
   let admin_controller_scope;
 
   beforeEach(() => {
-    module('BE.seed');
+    module('SEED');
     inject((_$httpBackend_) => {
       _$httpBackend_.whenGET(/^\/static\/seed\/locales\/.*\.json/).respond(200, {});
     });

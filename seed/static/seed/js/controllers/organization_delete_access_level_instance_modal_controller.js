@@ -2,7 +2,7 @@
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
  * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
-angular.module('BE.seed.controller.organization_delete_access_level_instance_modal', [])
+angular.module('SEED.controller.organization_delete_access_level_instance_modal', [])
   .controller('organization_delete_access_level_instance_modal_controller', [
     '$scope',
     '$state',

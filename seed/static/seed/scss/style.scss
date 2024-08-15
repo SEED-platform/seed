@@ -984,7 +984,7 @@ a:not([href]) {
     }
 
     .vert_table_scroll_container {
-      height: 400px;
+      height: 600px;
       overflow-y: scroll;
       border-bottom: 1px solid $gray_lighter;
       background: url('../../seed/images/bg_first_td.webp') repeat-x top center;
@@ -1644,6 +1644,11 @@ a:not([href]) {
       &.has_no_padding {
         padding: 0;
       }
+    }
+
+    .time-table {
+      border-collapse: separate;
+      border-spacing: 5px;
     }
   }
 }
@@ -3893,6 +3898,10 @@ $pairedCellWidth: 60px;
   padding-top: 10px;
 }
 
+.pad-top-20 {
+  padding-top: 20px;
+}
+
 .access-tree {
   margin-top: 20px;
 }
@@ -4059,7 +4068,7 @@ FAQ page
     .tab-content-cards {
       display: flex;
       padding: 10px;
-      gap: 10px 10px;
+      gap: 10px;
       flex-wrap: wrap;
       justify-content: space-evenly;
     }
@@ -4146,7 +4155,7 @@ FAQ page
     border-bottom: 1px solid rgb(255 255 255 / 50%);
     display: flex;
     align-items: center;
-    gap: 10px 10px;
+    gap: 10px;
   }
 
   & > .row:first-child {
@@ -5076,21 +5085,21 @@ ul.r-list {
   }
 }
 
-#export-at-table {
+#import-export-at-table {
   .export-summary-row {
     background: #fff;
   }
 
-  .export-detail-row {
+  .import-export-detail-row {
     background: #f9f9f9;
 
     td {
       padding: 0 8px;
 
-      .export-details {
+      .import-export-details {
         max-height: 200px;
         overflow-y: scroll;
-        padding: 0 8px !important;
+        padding: 10px 8px !important;
 
         div {
           padding: 10px;
@@ -5145,7 +5154,7 @@ ul.r-list {
         margin: 15px;
 
         .goal-select-label {
-          margin: auto;
+          margin-top: auto;
         }
 
         .goal-selection {
@@ -5221,6 +5230,10 @@ ul.r-list {
       h3 {
         margin: 0;
         padding-bottom: 10px;
+      }
+
+      .portfolio-summary-help-text {
+        width: fit-content;
       }
     }
   }
@@ -5520,6 +5533,32 @@ tags-input .tags .tag-item {
   border-top: 1px solid #d4d4d4;
 }
 
+.label-success {
+  background: #5cb85c;
+}
+
+.label-default {
+  background: #777;
+}
+
+.label-lg {
+  font-size: 1.2em;
+}
+
+.wider-diff {
+  width: 30% !important;
+}
+
+.property-report-header {
+  font-size: 18px;
+  margin: 0;
+  padding: 15px;
+}
+
+.chart-controls-container {
+  margin: 0 5px 10px;
+}
+
 #batch-edit-goalnotes-form {
   div {
     display: flex;
@@ -5539,4 +5578,40 @@ tags-input .tags .tag-item {
     color: $gray_lighter;
     font-weight: normal;
   }
+}
+
+.sharing-type {
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.tkbl-table ul {
+  padding-left: 18px;
+}
+
+.settings-header {
+  font-size: 16px;
+}
+
+.at-details {
+  padding-top: 15px;
+}
+
+.two_factor_selection {
+  margin: 10px;
+
+  input {
+    transform: scale(2);
+    margin: 10px;
+  }
+
+  .help-text {
+    margin-left: 40px;
+  }
+}
+
+.two_factor_current {
+  margin: 30px;
+  font-size: 14px;
+  font-weight: bold;
 }

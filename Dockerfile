@@ -28,6 +28,8 @@ RUN apk add --no-cache \
         bash \
         bash-completion \
         nginx \
+        brotli \
+        nginx-mod-http-brotli \
         openssl-dev \
         geos-dev \
         gdal \

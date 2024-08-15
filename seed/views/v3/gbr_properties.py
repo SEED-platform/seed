@@ -65,7 +65,7 @@ class GBRPropertyViewSet(SEEDOrgCreateUpdateModelViewSet):
             )
 
         else:
-            return PropertyModel.objects.filter(pk=-1)
+            return PropertyModel.objects.none()
 
     def create(self, request, *args, **kwargs):
         org_id = self.get_organization(self.request)

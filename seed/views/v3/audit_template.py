@@ -13,7 +13,6 @@ from rest_framework.decorators import action
 
 from seed.audit_template.audit_template import AuditTemplate
 from seed.lib.superperms.orgs.decorators import has_perm_class
-from seed.models import Cycle
 from seed.utils.api import OrgMixin
 from seed.utils.api_schema import AutoSchemaHelper
 
@@ -62,66 +61,6 @@ class AuditTemplateViewSet(viewsets.ViewSet, OrgMixin):
         response2.headers["Content-Disposition"] = f'attachment; filename="at_submission_{pk}.pdf"'
         return response2
 
-    @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_org_id_field()])
-    @has_perm_class("can_view_data")
-    @action(detail=True, methods=["GET"])
-    def get_building_xml(self, request, pk):
-        """
-        Fetches a Building XML for an Audit Template property (only)
-        """
-        at = AuditTemplate(self.get_organization(self.request))
-        response, message = at.get_building(pk)
-        if response is None:
-            return JsonResponse({"success": False, "message": message}, status=400)
-        return HttpResponse(response.text)
-
-    @swagger_auto_schema(
-        manual_parameters=[
-            AutoSchemaHelper.query_org_id_field(),
-            AutoSchemaHelper.query_integer_field("cycle_id", required=True, description="Cycle ID"),
-        ],
-        request_body=AutoSchemaHelper.schema_factory(
-            [
-                {
-                    "audit_template_building_id": "integer",
-                    "property_view": "integer",
-                    "email": "string",
-                    "updated_at": "string",
-                }
-            ],
-        ),
-    )
-    @has_perm_class("can_modify_data")
-    @action(detail=False, methods=["PUT"])
-    def batch_get_building_xml(self, request):
-        """
-        Fetches Building XMLs for a list of Audit Template properties and updates corresponding PropertyViews.
-        The return value is a ProgressData object used to monitor the status of the background task.
-        """
-
-        properties = request.data
-
-        valid, message = self.validate_properties(properties)
-        if not valid:
-            return JsonResponse({"success": False, "message": message}, status=400)
-
-        org = self.get_organization(request)
-        cycle_id = request.query_params.get("cycle_id")
-
-        if not cycle_id:
-            return JsonResponse({"success": False, "message": "Missing Cycle ID"})
-
-        if not Cycle.objects.filter(id=cycle_id, organization=org).exists():
-            return JsonResponse({"success": False, "message": "Cycle does not exist"}, status=404)
-
-        at = AuditTemplate(org)
-        progress_data = at.batch_get_building_xml(cycle_id, properties)
-
-        if progress_data is None:
-            return JsonResponse({"success": False, "message": "Unexpected Error"}, status=400)
-
-        return JsonResponse(progress_data)
-
     def validate_properties(self, properties):
         valid = [bool(properties)]
         for property in properties:
@@ -135,42 +74,10 @@ class AuditTemplateViewSet(viewsets.ViewSet, OrgMixin):
         if not all(valid):
             return (
                 False,
-                "Request data must be structured as: {audit_template_building_id: integer, property_view: integer, email: string, updated_at: date time iso string 'YYYY-MM-DDTHH:MM:SSZ'}",
+                "Request data must be structured as: {audit_template_building_id: integer, property_view: integer, name: string, email: string, updated_at: date time iso string 'YYYY-MM-DDTHH:MM:SSZ'}",
             )
         else:
             return True, ""
-
-    @swagger_auto_schema(
-        manual_parameters=[
-            AutoSchemaHelper.query_org_id_field(),
-            AutoSchemaHelper.query_integer_field("cycle_id", required=True, description="Cycle ID"),
-        ]
-    )
-    @has_perm_class("can_modify_data")
-    @action(detail=False, methods=["GET"])
-    def get_buildings(self, request):
-        """
-        Fetches all properties associated with the linked Audit Template account via the Audit Template API
-        """
-        org = self.get_organization(request)
-        cycle_id = request.query_params.get("cycle_id")
-        if not cycle_id:
-            return JsonResponse({"success": False, "message": "Missing Cycle ID"})
-
-        if not Cycle.objects.filter(id=cycle_id, organization=org).exists():
-            return JsonResponse({"success": False, "message": "Cycle does not exist"}, status=404)
-
-        at = AuditTemplate(org)
-        result = at.get_buildings(cycle_id)
-
-        if isinstance(result, tuple):
-            return JsonResponse({"success": False, "message": result[1]}, status=200)
-
-        response, message = result.get()
-        if response is None:
-            return JsonResponse({"success": False, "message": message}, status=400)
-
-        return JsonResponse({"success": True, "message": response}, status=200)
 
     @swagger_auto_schema(
         manual_parameters=[
@@ -190,6 +97,53 @@ class AuditTemplateViewSet(viewsets.ViewSet, OrgMixin):
         at = AuditTemplate(self.get_organization(request))
 
         progress_data, message = at.batch_export_to_audit_template(property_view_ids)
+        if progress_data is None:
+            return JsonResponse({"success": False, "message": message or "Unexpected Error"}, status=400)
+        return JsonResponse(progress_data)
+
+    @swagger_auto_schema(
+        manual_parameters=[AutoSchemaHelper.query_org_id_field()],
+        request_body=AutoSchemaHelper.schema_factory(
+            {"city_id": "integer", "view_ids": ["integer"]},
+            description="if view_ids is empty [] all SEED properties will be used to determine the correct PropertyView",
+        ),
+    )
+    @has_perm_class("can_modify_data")
+    @action(detail=False, methods=["PUT"])
+    def batch_get_city_submission_xml(self, request):
+        """
+        Batch import from Audit Template using the submissions endpoint for a given city
+        Properties are updated with xmls using custom_id_1 as matching criteria
+        """
+        view_ids = request.data.get("view_ids", [])
+        at = AuditTemplate(self.get_organization(request))
+        progress_data, message = at.batch_get_city_submission_xml(view_ids)
+
+        if progress_data is None:
+            return JsonResponse({"success": False, "message": message or "Unexpected Error"}, status=400)
+        return JsonResponse(progress_data)
+
+    @swagger_auto_schema(
+        manual_parameters=[AutoSchemaHelper.query_org_id_field()],
+        request_body=AutoSchemaHelper.schema_factory({"city_id": "integer", "custom_id_1": "string"}),
+    )
+    @has_perm_class("can_modify_data")
+    @action(detail=False, methods=["PUT"])
+    def get_city_submission_xml(self, request):
+        """
+        Import from Audit Template using the submissions endpoint for a given city
+        Property are updated with returned xml using custom_id_1 as matching criteria
+        """
+        city_id = request.data.get("city_id")
+        if not city_id:
+            return JsonResponse({"success": False, "message": "City ID argument required"}, status=400)
+        custom_id_1 = request.data.get("custom_id_1")
+        if not custom_id_1:
+            return JsonResponse({"success": False, "message": "Custom ID argument required"}, status=400)
+
+        at = AuditTemplate(self.get_organization(request))
+        progress_data, message = at.get_city_submission_xml(custom_id_1)
+
         if progress_data is None:
             return JsonResponse({"success": False, "message": message or "Unexpected Error"}, status=400)
         return JsonResponse(progress_data)

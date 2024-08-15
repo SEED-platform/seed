@@ -393,23 +393,21 @@ class TestMatchingExistingViewMatching(DataMappingBaseTestCase):
         )
 
         # Update -States to make the roll up order be 4, 2, 3
-        refreshed_ps_4 = PropertyState.objects.get(id=ps_4.id)
-        refreshed_ps_4.pm_property_id = "123MatchID"
-        refreshed_ps_4.save()
+        ps_4.refresh_from_db()
+        ps_4.pm_property_id = "123MatchID"
+        ps_4.save()
 
-        refreshed_ps_2 = PropertyState.objects.get(id=ps_2.id)
-        refreshed_ps_2.pm_property_id = "123MatchID"
-        refreshed_ps_2.save()
+        ps_2.refresh_from_db()
+        ps_2.pm_property_id = "123MatchID"
+        ps_2.save()
 
-        refreshed_ps_3 = PropertyState.objects.get(id=ps_3.id)
-        refreshed_ps_3.pm_property_id = "123MatchID"
-        refreshed_ps_3.save()
+        ps_3.refresh_from_db()
+        ps_3.pm_property_id = "123MatchID"
+        ps_3.save()
 
         # run match_merge_link giving
         manual_merge_view = PropertyView.objects.get(state_id=ps_1.id)
-        count_result, _link_count, _view_id_result = match_merge_link(
-            manual_merge_view.state.id, "PropertyState", self.org.root, manual_merge_view.cycle
-        )
+        count_result, _link_count, _view_result = match_merge_link(manual_merge_view.state, self.org.root, manual_merge_view.cycle)
         self.assertEqual(count_result, 4)
 
         """
@@ -473,7 +471,7 @@ class TestMatchingExistingViewMatching(DataMappingBaseTestCase):
 
         # Verify no match merges happen
         ps_1_view = PropertyView.objects.get(state_id=ps_1.id)
-        count_result, link_count, _view_id = match_merge_link(ps_1_view.state_id, "PropertyState", self.org.root, ps_1_view.cycle)
+        count_result, link_count, _view = match_merge_link(ps_1_view.state, self.org.root, ps_1_view.cycle)
         self.assertEqual(count_result, 0)
         self.assertEqual(link_count, 0)
 
@@ -536,23 +534,21 @@ class TestMatchingExistingViewMatching(DataMappingBaseTestCase):
         self.org.column_set.filter(column_name="city", table_name="TaxLotState").update(merge_protection=Column.COLUMN_MERGE_FAVOR_EXISTING)
 
         # Update -States to make the roll up order be 4, 2, 3
-        refreshed_tls_4 = TaxLotState.objects.get(id=tls_4.id)
-        refreshed_tls_4.jurisdiction_tax_lot_id = "123MatchID"
-        refreshed_tls_4.save()
+        tls_4.refresh_from_db()
+        tls_4.jurisdiction_tax_lot_id = "123MatchID"
+        tls_4.save()
 
-        refreshed_tls_2 = TaxLotState.objects.get(id=tls_2.id)
-        refreshed_tls_2.jurisdiction_tax_lot_id = "123MatchID"
-        refreshed_tls_2.save()
+        tls_2.refresh_from_db()
+        tls_2.jurisdiction_tax_lot_id = "123MatchID"
+        tls_2.save()
 
-        refreshed_tls_3 = TaxLotState.objects.get(id=tls_3.id)
-        refreshed_tls_3.jurisdiction_tax_lot_id = "123MatchID"
-        refreshed_tls_3.save()
+        tls_3.refresh_from_db()
+        tls_3.jurisdiction_tax_lot_id = "123MatchID"
+        tls_3.save()
 
         # run match_merge_link giving
         manual_merge_view = TaxLotView.objects.get(state_id=tls_1.id)
-        count_result, _link_count, _view_id_result = match_merge_link(
-            manual_merge_view.state_id, "TaxLotState", self.org.root, manual_merge_view.cycle
-        )
+        count_result, _link_count, _view_result = match_merge_link(manual_merge_view.state, self.org.root, manual_merge_view.cycle)
         self.assertEqual(count_result, 4)
 
         """
@@ -609,7 +605,7 @@ class TestMatchingExistingViewMatching(DataMappingBaseTestCase):
 
         # Verify no match merges happen
         tls_1_view = TaxLotView.objects.get(state_id=tls_1.id)
-        count_result, link_count, _view_id = match_merge_link(tls_1_view.state_id, "TaxLotState", self.org.root, tls_1_view.cycle)
+        count_result, link_count, _view = match_merge_link(tls_1_view.state, self.org.root, tls_1_view.cycle)
         self.assertEqual(count_result, 0)
         self.assertEqual(link_count, 0)
 
@@ -735,24 +731,23 @@ class TestMatchMergeLink(DataMappingBaseTestCase):
         PropertyState.objects.filter(id__in=to_be_matched_ids).update(pm_property_id="1st Match Set")
 
         # Give ps_22 priority in Cycle 2
-        refreshed_ps_22 = PropertyState.objects.get(id=ps_22.id)
-        refreshed_ps_22.save()
+        PropertyState.objects.get(id=ps_22.id).save()
 
         pv_13 = PropertyView.objects.get(state_id=ps_13.id)
         pv_24 = PropertyView.objects.get(state_id=ps_24.id)
         pv_32 = PropertyView.objects.get(state_id=ps_32.id)
 
         # run match_merge_link on Sets that WON'T trigger merges or linkings
-        match_merge_link(ps_13.id, "PropertyState", self.org.root, pv_13.cycle)
-        match_merge_link(ps_24.id, "PropertyState", self.org.root, pv_24.cycle)
-        match_merge_link(ps_32.id, "PropertyState", self.org.root, pv_32.cycle)
+        match_merge_link(ps_13, self.org.root, pv_13.cycle)
+        match_merge_link(ps_24, self.org.root, pv_24.cycle)
+        match_merge_link(ps_32, self.org.root, pv_32.cycle)
         self.assertEqual(9, PropertyView.objects.count())
         self.assertEqual(9, PropertyState.objects.count())
         self.assertEqual(9, Property.objects.count())
 
         # run match_merge_link on a Set that WILL trigger merges and linkings
         target_view = PropertyView.objects.get(state_id=ps_11.id)
-        merge_count, link_count, _view_id = match_merge_link(target_view.state_id, "PropertyState", self.org.root, target_view.cycle)
+        merge_count, link_count, _view = match_merge_link(target_view.state, self.org.root, target_view.cycle)
 
         self.assertEqual(5, merge_count)
         self.assertEqual(2, link_count)
@@ -903,15 +898,15 @@ class TestMatchMergeLink(DataMappingBaseTestCase):
         tlv_11 = TaxLotView.objects.get(state_id=tls_11.id)
 
         # run match_merge_link on Sets that WON'T trigger merges or linkings
-        match_merge_link(tls_13.id, "TaxLotState", self.org.root, tlv_13.cycle)
-        match_merge_link(tls_24.id, "TaxLotState", self.org.root, tlv_24.cycle)
-        match_merge_link(tls_32.id, "TaxLotState", self.org.root, tlv_32.cycle)
+        match_merge_link(tls_13, self.org.root, tlv_13.cycle)
+        match_merge_link(tls_24, self.org.root, tlv_24.cycle)
+        match_merge_link(tls_32, self.org.root, tlv_32.cycle)
         self.assertEqual(9, TaxLotView.objects.count())
         self.assertEqual(9, TaxLotState.objects.count())
         self.assertEqual(9, TaxLot.objects.count())
 
         # run match_merge_link on a Set that WILL trigger merges and linkings
-        merge_count, link_count, _view_id = match_merge_link(tls_11.id, "TaxLotState", self.org.root, tlv_11.cycle)
+        merge_count, link_count, _view = match_merge_link(tls_11, self.org.root, tlv_11.cycle)
 
         self.assertEqual(5, merge_count)
         self.assertEqual(2, link_count)
@@ -1001,22 +996,26 @@ class TestMatchMergeLink(DataMappingBaseTestCase):
         self.assertEqual(3, Property.objects.count())
 
         # Update Sets 2 and 3 to match
-        PropertyState.objects.filter(id__in=[ps_21.id, ps_31.id]).update(pm_property_id="Match Set")
+        ps_21.pm_property_id = "Match Set"
+        ps_31.pm_property_id = "Match Set"
+        ps_21.save()
+        ps_31.save()
         # Third Set's canonical record/ID should be linking ID.
         linking_id = PropertyView.objects.get(state_id=ps_31.id).property_id
         view_21 = PropertyView.objects.get(state_id=ps_21.id)
 
-        match_merge_link(ps_21.id, "PropertyState", self.org.root, view_21.cycle)
+        match_merge_link(ps_21, self.org.root, view_21.cycle)
 
         self.assertEqual(2, PropertyView.objects.filter(property_id=linking_id).count())
         self.assertEqual(linking_id, PropertyView.objects.get(state_id=ps_21.id).property_id)
         self.assertEqual(linking_id, PropertyView.objects.get(state_id=ps_31.id).property_id)
 
         # Update Set 1 to match
-        PropertyState.objects.filter(id__in=[ps_11.id]).update(pm_property_id="Match Set")
+        ps_11.pm_property_id = "Match Set"
+        ps_11.save()
 
         view_11 = PropertyView.objects.get(state_id=ps_11.id)
-        match_merge_link(ps_11.id, "PropertyState", self.org.root, view_11.cycle)
+        match_merge_link(ps_11, self.org.root, view_11.cycle)
 
         # All 3 sets should be linked using the first linking ID
         self.assertEqual(3, PropertyView.objects.count())
@@ -1065,22 +1064,26 @@ class TestMatchMergeLink(DataMappingBaseTestCase):
         self.assertEqual(3, TaxLot.objects.count())
 
         # Update Sets 2 and 3 to match
-        TaxLotState.objects.filter(id__in=[tls_21.id, tls_31.id]).update(jurisdiction_tax_lot_id="Match Set")
+        tls_21.jurisdiction_tax_lot_id = "Match Set"
+        tls_31.jurisdiction_tax_lot_id = "Match Set"
+        tls_21.save()
+        tls_31.save()
         # Third Set's canonical record/ID should be linking ID.
         linking_id = TaxLotView.objects.get(state_id=tls_31.id).taxlot_id
         view_21 = TaxLotView.objects.get(state_id=tls_21.id)
 
-        match_merge_link(tls_21.id, "TaxLotState", self.org.root, view_21.cycle)
+        match_merge_link(tls_21, self.org.root, view_21.cycle)
 
         self.assertEqual(2, TaxLotView.objects.filter(taxlot_id=linking_id).count())
         self.assertEqual(linking_id, TaxLotView.objects.get(state_id=tls_21.id).taxlot_id)
         self.assertEqual(linking_id, TaxLotView.objects.get(state_id=tls_31.id).taxlot_id)
 
         # Update Set 1 to match
-        TaxLotState.objects.filter(id__in=[tls_11.id]).update(jurisdiction_tax_lot_id="Match Set")
+        tls_11.jurisdiction_tax_lot_id = "Match Set"
+        tls_11.save()
 
         view_11 = TaxLotView.objects.get(state_id=tls_11.id)
-        match_merge_link(tls_11.id, "TaxLotState", self.org.root, view_11.cycle)
+        match_merge_link(tls_11, self.org.root, view_11.cycle)
 
         # All 3 sets should be linked using the first linking ID
         self.assertEqual(3, TaxLotView.objects.count())
@@ -1128,15 +1131,16 @@ class TestMatchMergeLink(DataMappingBaseTestCase):
 
         # Link all 3
         view_21 = PropertyView.objects.get(state_id=ps_21.id)
-        match_merge_link(ps_21.id, "PropertyState", self.org.root, view_21.cycle)
+        match_merge_link(ps_21, self.org.root, view_21.cycle)
 
         # Capture linked ID
         view_11 = PropertyView.objects.get(state_id=ps_11.id)
         initial_linked_id = view_11.property_id
 
         # Unlink the first
-        PropertyState.objects.filter(id__in=[ps_11.id]).update(pm_property_id="No longer matches")
-        match_merge_link(ps_11.id, "PropertyState", self.org.root, view_11.cycle)
+        PropertyState.objects.filter(id=ps_11.id).update(pm_property_id="No longer matches")
+        ps_11.refresh_from_db()
+        match_merge_link(ps_11, self.org.root, view_11.cycle)
 
         refreshed_view_11 = PropertyView.objects.get(state_id=ps_11.id)
 
@@ -1189,15 +1193,16 @@ class TestMatchMergeLink(DataMappingBaseTestCase):
 
         # Link all 3
         view_21 = TaxLotView.objects.get(state_id=tls_21.id)
-        match_merge_link(tls_21.id, "TaxLotState", self.org.root, view_21.cycle)
+        match_merge_link(tls_21, self.org.root, view_21.cycle)
 
         # Capture linked ID
         view_11 = TaxLotView.objects.get(state_id=tls_11.id)
         initial_linked_id = view_11.taxlot_id
 
         # Unlink the first
-        TaxLotState.objects.filter(id__in=[tls_11.id]).update(jurisdiction_tax_lot_id="No longer matches")
-        match_merge_link(tls_11.id, "TaxLotState", self.org.root, view_11.cycle)
+        tls_11.jurisdiction_tax_lot_id = "No longer matches"
+        tls_11.save()
+        match_merge_link(tls_11, self.org.root, view_11.cycle)
 
         refreshed_view_11 = TaxLotView.objects.get(state_id=tls_11.id)
 
@@ -1303,8 +1308,12 @@ class TestMatchMergeLink(DataMappingBaseTestCase):
 
         # Update all Sets to match and run match merge link
         PropertyState.objects.update(pm_property_id="Match Set")
+        ps_11.refresh_from_db()
+        ps_21.refresh_from_db()
+        ps_31.refresh_from_db()
+
         view_11 = PropertyView.objects.get(state_id=ps_11.id)
-        match_merge_link(ps_11.id, "PropertyState", self.org.root, view_11.cycle)
+        match_merge_link(ps_11, self.org.root, view_11.cycle)
 
         # Check Meters and MeterReadings
         linking_property = PropertyView.objects.first().property
@@ -1323,9 +1332,10 @@ class TestMatchMergeLink(DataMappingBaseTestCase):
         Outcome:
             - The 2 readings were copied over to the 1st Set's Property
         """
-        PropertyState.objects.filter(id=ps_11.id).update(pm_property_id="No longer matches")
+        ps_11.pm_property_id = "No longer matches"
+        ps_11.save()
         view_11 = PropertyView.objects.get(state_id=ps_11.id)
-        match_merge_link(ps_11.id, "PropertyState", self.org.root, view_11.cycle)
+        match_merge_link(ps_11, self.org.root, view_11.cycle)
 
         # Check meter was copied
         view_11_unlinked_property = PropertyView.objects.get(state_id=ps_11.id).property
@@ -1353,9 +1363,10 @@ class TestMatchMergeLink(DataMappingBaseTestCase):
             conversion_factor=1.00,
         )
 
-        PropertyState.objects.filter(id=ps_11.id).update(pm_property_id="Match Set")
+        ps_11.pm_property_id = "Match Set"
+        ps_11.save()
         view_11 = PropertyView.objects.get(state_id=ps_11.id)
-        match_merge_link(ps_11.id, "PropertyState", self.org.root, view_11.cycle)
+        match_merge_link(ps_11, self.org.root, view_11.cycle)
 
         # Check MeterReadings - latest created reading was copied over
         self.assertEqual(3, agg_meter.meter_readings.count())

@@ -2,7 +2,7 @@
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
  * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
-angular.module('BE.seed.service.pairing', []).factory('pairing_service', [
+angular.module('SEED.service.pairing', []).factory('pairing_service', [
   '$http',
   'user_service',
   ($http, user_service) => {

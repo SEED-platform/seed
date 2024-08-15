@@ -4,16 +4,27 @@ SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and othe
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
+from datetime import datetime
+
 import pytest
 from django.forms.models import model_to_dict
+from django.urls import reverse_lazy
 from quantityfield.units import ureg
 
-from seed.models import Column, DerivedColumnParameter, PropertyView
+from seed.models import Column, DerivedColumnParameter, Goal, PropertyView, PropertyViewLabel
 from seed.models.data_quality import DataQualityCheck, DataQualityTypeCastError, Rule, StatusLabel, UnitMismatchError
 from seed.models.derived_columns import DerivedColumn
 from seed.models.models import ASSESSED_RAW
-from seed.test_helpers.fake import FakeDerivedColumnFactory, FakePropertyFactory, FakePropertyStateFactory, FakeTaxLotStateFactory
-from seed.tests.util import AssertDictSubsetMixin, DataMappingBaseTestCase
+from seed.test_helpers.fake import (
+    FakeColumnFactory,
+    FakeCycleFactory,
+    FakeDerivedColumnFactory,
+    FakePropertyFactory,
+    FakePropertyStateFactory,
+    FakePropertyViewFactory,
+    FakeTaxLotStateFactory,
+)
+from seed.tests.util import AccessLevelBaseTestCase, AssertDictSubsetMixin, DataMappingBaseTestCase
 
 
 class DataQualityCheckTests(AssertDictSubsetMixin, DataMappingBaseTestCase):
@@ -29,7 +40,7 @@ class DataQualityCheckTests(AssertDictSubsetMixin, DataMappingBaseTestCase):
 
     def test_default_create(self):
         dq = DataQualityCheck.retrieve(self.org.id)
-        self.assertEqual(dq.rules.count(), 22)
+        self.assertEqual(dq.rules.count(), 32)
         # Example rule to check
         ex_rule = {
             "table_name": "PropertyState",
@@ -47,7 +58,7 @@ class DataQualityCheckTests(AssertDictSubsetMixin, DataMappingBaseTestCase):
 
     def test_remove_rules(self):
         dq = DataQualityCheck.retrieve(self.org.id)
-        self.assertEqual(dq.rules.count(), 22)
+        self.assertEqual(dq.rules.count(), 32)
         dq.remove_all_rules()
         self.assertEqual(dq.rules.count(), 0)
 
@@ -440,3 +451,168 @@ class DataQualityCheckTests(AssertDictSubsetMixin, DataMappingBaseTestCase):
 
         bad_results = dq.results[ps_bad.id]["data_quality_results"]
         self.assertDictContainsSubset({"field": derived_column_name, "message": f"{derived_column_name} out of range"}, bad_results[0])
+
+
+class DataQualityCrossCycleTests(AccessLevelBaseTestCase):
+    def setUp(self):
+        # create goal
+        super().setUp()
+        self.cycle_factory = FakeCycleFactory(organization=self.org, user=self.root_owner_user)
+        self.column_factory = FakeColumnFactory(organization=self.org)
+        self.property_factory = FakePropertyFactory(organization=self.org)
+        self.property_view_factory = FakePropertyViewFactory(organization=self.org)
+        self.property_state_factory = FakePropertyStateFactory(organization=self.org)
+
+        # cycles
+        self.cycle1 = self.cycle_factory.get_cycle(start=datetime(2001, 1, 1), end=datetime(2002, 1, 1))
+        self.cycle2 = self.cycle_factory.get_cycle(start=datetime(2002, 1, 1), end=datetime(2003, 1, 1))
+        self.root_ali = self.org.root
+
+        def create_property_details(eui, gfa):
+            details = self.property_state_factory.get_details()
+            details["site_eui"] = eui
+            details["gross_floor_area"] = gfa
+            return details
+
+        # passing checks
+        property_details11 = create_property_details(100, 5000)
+        property_details12 = create_property_details(90, 5005)
+        # failing gfa
+        property_details21 = create_property_details(100, 5000)
+        property_details22 = create_property_details(100, 100)
+        # failing eui
+        property_details31 = create_property_details(100, 5000)
+        property_details32 = create_property_details(5, 5000)
+        # missing data
+        property_details41 = create_property_details(None, 5000)
+        property_details42 = create_property_details(100, None)
+
+        # property{property}{cycle}
+        self.property1 = self.property_factory.get_property(access_level_instance=self.root_ali)
+        self.property2 = self.property_factory.get_property(access_level_instance=self.root_ali)
+        self.property3 = self.property_factory.get_property(access_level_instance=self.root_ali)
+        self.property4 = self.property_factory.get_property(access_level_instance=self.root_ali)
+        # state{property}{cycle}
+        self.state11 = self.property_state_factory.get_property_state(**property_details11)
+        self.state12 = self.property_state_factory.get_property_state(**property_details12)
+        self.state21 = self.property_state_factory.get_property_state(**property_details21)
+        self.state22 = self.property_state_factory.get_property_state(**property_details22)
+        self.state31 = self.property_state_factory.get_property_state(**property_details31)
+        self.state32 = self.property_state_factory.get_property_state(**property_details32)
+        self.state41 = self.property_state_factory.get_property_state(**property_details41)
+        self.state42 = self.property_state_factory.get_property_state(**property_details42)
+        # view{property}{cycle}
+        self.view11 = self.property_view_factory.get_property_view(prprty=self.property1, state=self.state11, cycle=self.cycle1)
+        self.view12 = self.property_view_factory.get_property_view(prprty=self.property1, state=self.state12, cycle=self.cycle2)
+        self.view21 = self.property_view_factory.get_property_view(prprty=self.property2, state=self.state21, cycle=self.cycle1)
+        self.view22 = self.property_view_factory.get_property_view(prprty=self.property2, state=self.state22, cycle=self.cycle2)
+        self.view31 = self.property_view_factory.get_property_view(prprty=self.property3, state=self.state31, cycle=self.cycle1)
+        self.view32 = self.property_view_factory.get_property_view(prprty=self.property3, state=self.state32, cycle=self.cycle2)
+        self.view41 = self.property_view_factory.get_property_view(prprty=self.property4, state=self.state41, cycle=self.cycle1)
+        self.view42 = self.property_view_factory.get_property_view(prprty=self.property4, state=self.state42, cycle=self.cycle2)
+
+        self.goal = Goal.objects.create(
+            organization=self.org,
+            baseline_cycle=self.cycle1,
+            current_cycle=self.cycle2,
+            access_level_instance=self.root_ali,
+            eui_column1=Column.objects.get(organization=self.org.id, column_name="source_eui_weather_normalized"),
+            eui_column2=Column.objects.get(organization=self.org.id, column_name="source_eui"),
+            eui_column3=Column.objects.get(organization=self.org.id, column_name="site_eui"),
+            area_column=Column.objects.get(organization=self.org.id, column_name="gross_floor_area"),
+            target_percentage=20,
+            name="goal1",
+        )
+
+        # create default rules
+        self.dq = DataQualityCheck.retrieve(self.org.id)
+        self.assertEqual(self.dq.rules.count(), 32)
+
+        self.label_lookup = {
+            "Missing Data": StatusLabel.objects.get(name="Missing Data"),
+            "Low EUI % Change": StatusLabel.objects.get(name="Low EUI % Change"),
+            "Low EUI": StatusLabel.objects.get(name="Low EUI"),
+            "High EUI % Change": StatusLabel.objects.get(name="High EUI % Change"),
+            "High EUI": StatusLabel.objects.get(name="High EUI"),
+            "High Area % Change": StatusLabel.objects.get(name="High Area % Change"),
+            "High Area": StatusLabel.objects.get(name="High Area"),
+            "Low Area % Change": StatusLabel.objects.get(name="Low Area % Change"),
+            "Low Area": StatusLabel.objects.get(name="Low Area"),
+        }
+
+    def test_cross_cycle_dqc(self):
+        self.login_as_root_member()
+
+        goalnote1 = self.property1.goalnote_set.get(goal=self.goal)
+        goalnote2 = self.property2.goalnote_set.get(goal=self.goal)
+        goalnote3 = self.property3.goalnote_set.get(goal=self.goal)
+        assert not goalnote1.passed_checks
+        assert not goalnote2.passed_checks
+        assert not goalnote3.passed_checks
+        assert self.view12.labels.count() == 0
+        assert self.view22.labels.count() == 0
+        assert self.view32.labels.count() == 0
+
+        url = reverse_lazy("api:v3:data_quality_checks-start", args=[self.org.id])
+        self.client.post(
+            url,
+            {"property_view_ids": [], "taxlot_view_ids": [], "goal_id": self.goal.id},
+            content_type="application/json",
+        )
+
+        goalnote1 = self.property1.goalnote_set.get(goal=self.goal)
+        goalnote2 = self.property2.goalnote_set.get(goal=self.goal)
+        goalnote3 = self.property3.goalnote_set.get(goal=self.goal)
+
+        assert goalnote1.passed_checks
+        assert not goalnote2.passed_checks
+        assert not goalnote3.passed_checks
+
+        assert self.view11.labels.count() == 0
+        assert self.view12.labels.count() == 0
+
+        assert self.view21.labels.count() == 0
+        assert self.view22.labels.count() == 2
+
+        assert self.label_lookup["Low Area % Change"] in self.view22.labels.all()
+        assert self.label_lookup["Low Area"] in self.view22.labels.all()
+
+        assert self.view31.labels.count() == 0
+        assert self.view32.labels.count() == 2
+        assert self.label_lookup["High EUI % Change"] in self.view32.labels.all()
+        assert self.label_lookup["Low EUI"] in self.view32.labels.all()
+
+        assert self.view41.labels.count() == 1
+        assert self.view42.labels.count() == 1
+        assert self.label_lookup["Missing Data"] in self.view41.labels.all()
+        assert self.label_lookup["Missing Data"] in self.view42.labels.all()
+
+        cross_cycle_labels = PropertyViewLabel.objects.filter(goal_id__isnull=False)
+        assert cross_cycle_labels.count() == 6
+
+        # change targets so all goals are passing. labels should be removed
+        goal_rules = Rule.objects.filter(table_name="Goal")
+        for rule in goal_rules:
+            if rule.condition == "range":
+                rule.min = -10000
+                rule.max = 10000
+                rule.save()
+        self.state41.site_eui = 100
+        self.state42.gross_floor_area = 5000
+        self.state41.save()
+        self.state42.save()
+
+        self.client.post(
+            url,
+            {"property_view_ids": [], "taxlot_view_ids": [], "goal_id": self.goal.id},
+            content_type="application/json",
+        )
+        assert goalnote1.passed_checks
+        assert not goalnote2.passed_checks
+        assert not goalnote3.passed_checks
+        assert self.view12.labels.count() == 0
+        assert self.view22.labels.count() == 0
+        assert self.view32.labels.count() == 0
+
+        cross_cycle_labels = PropertyViewLabel.objects.filter(goal_id__isnull=False)
+        assert cross_cycle_labels.count() == 0

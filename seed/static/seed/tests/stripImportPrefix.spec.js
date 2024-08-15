@@ -6,7 +6,7 @@ describe('The stripImportPrefix filter', () => {
   let stripImportPrefixFilter;
 
   beforeEach(() => {
-    module('BE.seed');
+    module('SEED');
     inject((_stripImportPrefixFilter_) => {
       stripImportPrefixFilter = _stripImportPrefixFilter_;
     });

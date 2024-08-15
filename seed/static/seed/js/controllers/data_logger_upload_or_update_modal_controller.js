@@ -2,7 +2,7 @@
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
  * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
-angular.module('BE.seed.controller.data_logger_upload_or_update_modal', []).controller('data_logger_upload_or_update_modal_controller', [
+angular.module('SEED.controller.data_logger_upload_or_update_modal', []).controller('data_logger_upload_or_update_modal_controller', [
   '$scope',
   '$state',
   '$uibModalInstance',
@@ -51,7 +51,7 @@ angular.module('BE.seed.controller.data_logger_upload_or_update_modal', []).cont
           })
           .catch((err) => {
             if (err.status === 400) {
-              $scope.data_logger_display_name_not_unique_alert = true;
+              $scope.error_message = format_errors(err.data.errors);
             }
           });
       } else {
@@ -72,7 +72,7 @@ angular.module('BE.seed.controller.data_logger_upload_or_update_modal', []).cont
           })
           .catch((err) => {
             if (err.status === 400) {
-              $scope.data_logger_display_name_not_unique_alert = true;
+              $scope.error_message = format_errors(err.data.errors);
             }
           });
       }
@@ -86,5 +86,9 @@ angular.module('BE.seed.controller.data_logger_upload_or_update_modal', []).cont
     $scope.cancel = () => {
       $uibModalInstance.dismiss('cancel');
     };
+
+    const format_errors = (errors) => Object.entries(errors)
+      .map(([key, value]) => (key === 'non_field_errors' ? ` ${value.join('. ')}` : ` ${key}: ${value.join('. ')}`))
+      .join('. ');
   }
 ]);

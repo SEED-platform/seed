@@ -105,6 +105,9 @@ msgstr "Ajouter ou supprimer des étiquettes de {num, plural, one{1 lot d'impôt
 msgid "AH_FILE_TYPES_SUPPORTED"
 msgstr "Types de fichiers pris en charge: .csv, .xls et .xlsx."
 
+msgid "ALL DATA"
+msgstr "TOUTES LES DONNÉES"
+
 msgid "ALSO_DELETE_ANALYSES"
 msgstr "Supprimez également {num,plural, one{ 1 analyse } other{# analyses }} ."
 
@@ -136,15 +139,41 @@ msgstr "Documentation de l'API"
 msgid "API Key"
 msgstr "Clé API"
 
+msgid "AT_ALL_DATA"
+msgstr "Les soumissions de modèles d’audit seront importées quelle que soit la date de soumission. Vous pouvez configurer ce paramètre dans la page des paramètres de votre organisation SEED."
+
+msgid "AT_AUTO_SYNC"
+msgstr "Si vous souhaitez mettre à jour automatiquement votre organisation SEED avec les données de soumission du modèle d'audit pour l'ID de ville du modèle d'audit sélectionné, configurez les champs ci-dessous pour planifier votre mise à jour hebdomadaire."
+
+#, fuzzy
+msgid "AT_CITY_ID"
+msgstr "Spécifiez l'ID de votre ville dans Audit Template. Ce numéro est visible dans l'URL du site Audit Template lorsque vous accédez à l'onglet « CITIES ». SEED importera les données de soumission pour la ville spécifiée uniquement."
+
+msgid "AT_CONDITION_INDEX"
+msgstr "Lorsque cette case est cochée, SEED importera uniquement les soumissions Audit Template qui ont été soumises plus récemment que la mise à jour la plus récente des enregistrements SEED. Si cette case n'est pas cochée, toutes les soumissions Audit Template seront importées quelle que soit la date de soumission."
+
 msgid "AT_EMAIL_TEXT"
 msgstr "Utilisez l'e-mail associé à votre compte depuis <a href=\"{link}/\" target=\"_blank\" rel=\"noopener noreferrer\"> Building Energy Score </a> ."
+
+#, fuzzy
+msgid "AT_MOST_RECENT_ONLY"
+msgstr "Seules les soumissions Audit Template qui ont été soumises plus récemment que la mise à jour la plus récente de l'inventaire SEED seront importées. Vous pouvez configurer ce paramètre dans la page des paramètres de votre organisation SEED."
 
 msgid "AT_PASS_TEXT"
 msgstr "Utilisez le mot de passe associé à votre compte sur le <a href=\"{link}/\" target=\"_blank\" rel=\"noopener noreferrer\"> Building Energy Score </a> ."
 
+msgid "AT_REPORT_TYPE"
+msgstr "Si vous souhaitez générer des rapports Audit Template stub à partir des données SEED, sélectionnez le type de rapport Audit Template que SEED doit générer."
+
+msgid "AT_SETTINGS_TEXT"
+msgstr "Si votre organisation a configuré un formulaire de rapport personnalisé dans Audit Template, remplissez les paramètres ci-dessous pour activer l'importation des soumissions Audit Template dans votre organisation SEED."
+
+msgid "AT_SUBMISSION_STATUS"
+msgstr "SEED importera les données pour les soumissions étiquetées avec le statut suivant sur le site Audit Template. Le statut de soumission par défaut sur le site Audit Template est « Received »."
+
 #. Helper text for the Audit Template token in organization settings.
 msgid "AT_TOKEN_TEXT"
-msgstr "Veuillez consulter la <a href=\"{link}/reports/api/\" target=\"_blank\" rel=\"noopener noreferrer\"> documentation sur Audit Template </a> pour savoir comment obtenir une clé API. Remarque, ne préfixez pas le jeton avec \"Jeton \", incluez uniquement le jeton lui-même."
+msgstr "Le jeton API de votre organisation devrait être visible sur votre page de compte dans Audit Template. Veuillez vous référer à la <a href=\"{link}/reports/api/\" target=\"_blank\" rel=\"noopener noreferrer\"> documentation sur Audit Template </a> pour savoir comment obtenir une clé API. Notez que ne préfixez pas le jeton avec \"Jeton\", incluez uniquement le jeton lui-même."
 
 msgid "About"
 msgstr "À Propos"
@@ -296,6 +325,9 @@ msgstr "Adresse Ligne 2 (Lot d'impôt)"
 msgid "Admin"
 msgstr "Admin"
 
+msgid "Advanced Settings"
+msgstr "Réglages avancés"
+
 msgid "An Audit Template organization token, user email and password are required"
 msgstr "Un jeton d'organisation Audit Template, un e-mail d'utilisateur et un mot de passe sont requis"
 
@@ -379,6 +411,9 @@ msgstr "Audit Template le mot de passe"
 
 msgid "Audit Template Report Type"
 msgstr "Type de rapport du modèle d'audit"
+
+msgid "Audit Template Submission Status"
+msgstr "Statut de soumission du modèle d'audit"
 
 msgid "Audit Template Upload Results"
 msgstr "Résultats du téléchargement du modèle d'audit"
@@ -511,8 +546,14 @@ msgstr "Normalement, lorsqu'un enregistrement importé est fusionné dans un aut
 msgid "COMPLETE_AND_REFRESH"
 msgstr "Complétez et Actualisez la Page"
 
+msgid "CONFIGURE_CYCLES"
+msgstr "Sélectionnez un ou plusieurs cycles dans la liste déroulante ci-dessus pour visualiser dans les graphiques ci-dessous."
+
 msgid "CONFIGURE_PROGRAM"
 msgstr "Besoin de configurer votre programme?"
+
+msgid "CONFIGURE_XY_AXES"
+msgstr "pour configurer l'ensemble des colonnes sélectionnables comme axes X et Y. Ceux-ci peuvent être définis dans l’onglet Champs d’affichage par défaut."
 
 msgid "CONFIRMING_DELETE_PROFILE"
 msgstr "Êtes-vous sûr de vouloir supprimer le profil"
@@ -650,6 +691,15 @@ msgstr "Cartographie ComStock"
 
 msgid "Commercial"
 msgstr "Commercial"
+
+msgid "Commitment"
+msgstr "Engagement"
+
+msgid "Commitment (Sq Ft)"
+msgstr "Engagement (pieds carrés)"
+
+msgid "Committed Area"
+msgstr "Zone d'engagement"
 
 msgid "Compare UBIDs"
 msgstr "Comparez les UBID"
@@ -840,7 +890,10 @@ msgid "Current Cycle will be measured against Baseline Cycle"
 msgstr "Le cycle actuel sera mesuré par rapport au cycle de référence"
 
 msgid "Current Filters"
-msgstr "Filtres Actuel"
+msgstr "Filtres Actuels"
+
+msgid "Current Method"
+msgstr "Méthode actuelle"
 
 msgid "Current Name"
 msgstr "Nom Actuel"
@@ -1132,6 +1185,15 @@ msgstr "Copie"
 msgid "Duplicates"
 msgstr "Copies"
 
+msgid "EDIT_GOAL_NOTES"
+msgstr "Modifier les champs pour les propriétés sélectionnées"
+
+msgid "ENABLED"
+msgstr "ACTIVÉ"
+
+msgid "ENABLE_PUBLIC_FEED"
+msgstr "pour activer ou désactiver la fonctionnalité de flux public"
+
 msgid "ENERGY STAR Score"
 msgstr "Compte ENERGY STAR"
 
@@ -1161,7 +1223,7 @@ msgid "EUI"
 msgstr "IUE"
 
 msgid "EUI Target Columns"
-msgstr "Colonnes cibles EUI"
+msgstr "Colonnes cibles IUE"
 
 msgid "EXCLUDE"
 msgstr "EXCLURE"
@@ -1174,6 +1236,9 @@ msgstr "Modifier"
 
 msgid "Edit Access Level Instance Name"
 msgstr "Modifier le nom de l'instance du niveau d'accès"
+
+msgid "Edit Fields for Selected"
+msgstr "Modifier les champs pour les sélections"
 
 msgid "Edit Name"
 msgstr "Modifier le nom"
@@ -1199,11 +1264,23 @@ msgstr "Modèles d'e-mails"
 msgid "Emission Metric"
 msgstr "Mesure des émissions"
 
+msgid "Enable Audit Template Auto Sync"
+msgstr "Activer la synchronisation automatique du modèle d'audit"
+
 msgid "Enable ComStock Functionality"
 msgstr "Activer la fonctionnalité ComStock"
 
 msgid "Enable Geocoding"
 msgstr "Activer le géocodage"
+
+msgid "Enable Labels in Public Feed"
+msgstr "Activer les étiquettes dans le flux public"
+
+msgid "Enable Public Endpoints"
+msgstr "Activer les points de terminaison publics"
+
+msgid "Enable Public GeoJSON"
+msgstr "Activer GeoJSON public"
 
 msgid "Enable Salesforce Integration"
 msgstr "Activer la fonctionnalité Salesforce"
@@ -1262,6 +1339,12 @@ msgstr "Exemple de graphe en arbre de niveaux d'accès"
 
 msgid "Example Usage"
 msgstr "Exemple d'utilisation"
+
+msgid "Exclude"
+msgstr "Exclure"
+
+msgid "Exclude all selected labels"
+msgstr "Exclure toutes les étiquettes sélectionnées"
 
 msgid "Existing Audit Template Properties (skipped)"
 msgstr "Propriétés du modèle d'audit existant (ignoré)"
@@ -1322,6 +1405,12 @@ msgstr "Exporter des propriétés vers votre compte de modèle d'audit"
 
 msgid "Exporting selected properties..."
 msgstr "Exportation des propriétés sélectionnées..."
+
+msgid "FAILED_GEOCODE_INVALID_MAPQUEST_API_KEY"
+msgstr "Échec du géocodage : votre clé API MapQuest n'est pas valide."
+
+msgid "FAILED_GEOCODE_MAPQUEST_API_KEY_ERROR"
+msgstr "Échec du géocodage : votre clé API MapQuest est soit invalide, soit à sa limite."
 
 msgid "FIELDS NEEDED TO MAKE MATCHES:"
 msgstr "CHAMPS NÉCESSAIRES POUR ÉTABLIR DES CORRESPONDANCES:"
@@ -1484,6 +1573,21 @@ msgstr "GJ/m²/année"
 msgid "GOAL"
 msgstr "OBJECTIF"
 
+msgid "GOAL_CONFIG_TEXT"
+msgstr "Configurez ci-dessous un ou plusieurs objectifs de réduction de l’intensité de l'utilisation d’énergie (IUE) du portefeuille."
+
+msgid "GOAL_SELECT_ALI"
+msgstr "Indiquez le niveau dans votre arborescence de niveaux d'accès auquel cet objectif s'applique"
+
+msgid "GOAL_SELECT_CYCLES"
+msgstr "Sélectionnez un cycle de référence et un cycle actuel pour comparaison"
+
+msgid "GOAL_SELECT_EUI_FIELDS"
+msgstr "Indiquez quels champs de vos données doivent être utilisés pour les informations sur l'IUE et la surface de plancher"
+
+msgid "GOAL_SELECT_PERCENTAGE"
+msgstr "Spécifier un objectif d'amélioration de l'IUE en pourcentage"
+
 msgid "GOAL_SETUP_TEXT"
 msgstr "Configurez un ou plusieurs objectifs de réduction de l'intensité de l'utilisation d'énergie (IUE) du portefeuille ci-dessous. Sélectionnez un cycle de référence et un cycle actuel à des fins de comparaison, identifiez le niveau dans votre arborescence de niveaux d'accès auquel cet objectif s'applique, spécifiez un objectif d'amélioration de l'IUE en pourcentage et indiquez quels champs de vos données doivent être utilisés pour les informations sur l'IUE et la superficie en pieds carrés."
 
@@ -1570,6 +1674,9 @@ msgstr "Bacs Hexagonaux"
 msgid "Highlights of SEED Platform™"
 msgstr "Points forts de la Plate-Forme SEED™"
 
+msgid "Historical Note"
+msgstr "Note historique"
+
 msgid "Home Energy Score ID"
 msgstr "ID de score d'énergie domestique"
 
@@ -1639,6 +1746,9 @@ msgstr "Copies de propriété ignorées dans le fichier d'importation"
 msgid "Ignored tax lot duplicates within the import file"
 msgstr "Copies des lots d'impôt ignorées dans the fichier d'importation"
 
+msgid "Import"
+msgstr "Importer"
+
 msgid "Import Access Level Instances"
 msgstr "Importer des instances de niveau d'accès"
 
@@ -1648,11 +1758,17 @@ msgstr "Importer des bâtiments de modèle d'audit"
 msgid "Import Portfolio Manager Data"
 msgstr "Importer les données de Portfolio Manager"
 
+msgid "Import Submissions"
+msgstr "Importer des soumissions"
+
 msgid "Import directly from ESPM"
 msgstr "Importer directement depuis ESPM"
 
 msgid "Import from Audit Template"
 msgstr "Importer à partir du Audit Template"
+
+msgid "Import setting:"
+msgstr "Paramètre d'importation :"
 
 msgid "In addition, you need to specify where the field should be associated with Tax Lot data or Property data. This will affect how the data is matched and merged, as well as how it is displayed in the Inventory view."
 msgstr "En outre, vous devez spécifier où le champ doit être associé aux données du lot d'impôt ou aux données de la propriété. Cela affectera la manière dont les données sont mises en correspondance et fusionnées, ainsi que la manière dont elles sont affichées dans la vue Inventaire."
@@ -1660,6 +1776,9 @@ msgstr "En outre, vous devez spécifier où le champ doit être associé aux don
 #: seed/models/projects.py:23
 msgid "Inactive"
 msgstr "Inactif"
+
+msgid "Include Any"
+msgstr "Inclure tout"
 
 msgid "Include CSV Label Header"
 msgstr "Inclure l'en-tête d'étiquette CSV"
@@ -1869,11 +1988,17 @@ msgstr "Compteur d'énergie d'affichage (changer un à la fois)"
 msgid "METER_READING_COUNTS_TITLE"
 msgstr "Compte de Relevé de Compteur"
 
+msgid "METER_WATER_DISPLAY_SETTINGS_TITLE"
+msgstr "Unités d'affichage du compteur d'eau (changer une à la fois)"
+
 msgid "MJ/m²/year"
 msgstr "MJ/m²/année"
 
 msgid "MODIFYING_COLUMN_SETTINGS"
 msgstr "Modification des paramètres de colonne"
+
+msgid "MORE RECENT DATA"
+msgstr "DONNÉES PLUS RÉCENTES"
 
 msgid "MULTIPLE_COL_MOD_OPTIONS"
 msgstr "Dans le tableau ci-dessous, vous pouvez modifier les colonnes des manières suivantes:"
@@ -2093,6 +2218,15 @@ msgstr "Déplacer les bâtiments"
 msgid "Move/copy buildings to another project"
 msgstr "Déplacer/copier des bâtiments dans un autre projet"
 
+msgid "Must Include"
+msgstr "Doit inclure"
+
+msgid "Must include all selected labels (AND)"
+msgstr "Doit inclure toutes les étiquettes sélectionnées (ET)"
+
+msgid "Must include at least one selected label (OR)"
+msgstr "Doit inclure au moins une étiquette sélectionnée (OU)"
+
 msgid "NEW_COLUMN_REPLACE_DATA_WARNING"
 msgstr "Une nouvelle colonne sera créée et/ou les données existantes peuvent être remplacées."
 
@@ -2134,6 +2268,9 @@ msgstr "Laboratoire National Des Énergies Renouvelables"
 
 msgid "New Analysis"
 msgstr "Nouvelle analyse"
+
+msgid "New Build or Acquisition"
+msgstr "Nouvelle construction ou acquisition"
 
 msgid "New Goal"
 msgstr "Nouvel Objectif"
@@ -2242,6 +2379,12 @@ msgstr "Voulez-vous vraiment supprimer {num_properties,plural,one{<strong>1</str
 
 msgid "OR"
 msgstr "OU"
+
+msgid "ORGANIZATION_WATER_USE_DISPLAY_UNITS"
+msgstr "Affichage de l'unité de mesure pour l'utilisation de l'eau"
+
+msgid "ORGANIZATION_WUI_DISPLAY_UNITS"
+msgstr "Affichage de l'unité de mesure de l'intensité d'utilisation de l'eau (WUI)"
 
 msgid "ORG_MATCH_MERGE_LINK_WARNING"
 msgstr "AVERTISSEMENT: Vous avez modifié les critères selon lesquels les données de votre organisation seront mises en correspondance et fusionnées. Une fois qu'une colonne a été ajoutée aux critères de correspondance d'une organisation, elle ne peut pas être supprimée tant que l'organisation dispose d'un inventaire."
@@ -2358,6 +2501,30 @@ msgstr "Au moins un des champs de propriété suivants est requis"
 msgid "PUBLIC"
 msgstr "PUBLIC"
 
+msgid "PUBLIC_FEED_HELP"
+msgstr "Cochez la case ci-dessous pour activer la fonctionnalité Flux Public. Les champs de données peuvent être activés individuellement pour le Flux Public à partir de la page"
+
+msgid "PUBLIC_FEED_LABELS"
+msgstr "Cochez la case ci-dessous pour autoriser le renvoi des étiquettes dans le flux public et pouvoir filtrer le Flux Public par une étiquette spécifique."
+
+msgid "PUBLIC_GEOJSON"
+msgstr "Renvoie un GeoJSON avec les champs définis dans les sélections de partage d'organisation"
+
+msgid "PUBLIC_GEOJSON_TEXT_1"
+msgstr "Votre URL HTML publique"
+
+msgid "PUBLIC_GEOJSON_TEXT_2"
+msgstr "Vous devrez remplacer 'CYCLE_ID' dans l'URL par l'ID du cycle que vous souhaitez récupérer. Vous pouvez accéder aux identifiants de cycle sur la page Cycles."
+
+msgid "PUBLIC_HTML"
+msgstr "Votre URL HTML publique est"
+
+msgid "PUBLIC_JSON"
+msgstr "L'URL de votre flux JSON public est"
+
+msgid "PUBLIC_SHARE"
+msgstr "Si la fonctionnalité Flux public est activée, cette page peut être utilisée pour configurer les données partagées en externe avec le grand public."
+
 msgid "Pair Properties to Tax Lots"
 msgstr "Associer des propriétés à des lots d'impôt"
 
@@ -2378,6 +2545,9 @@ msgstr "Paramètres de jumelage"
 
 msgid "Parent ID"
 msgstr "ID du Parent"
+
+msgid "Passed Checks"
+msgstr "Vérifications Réussies"
 
 #: seed/landing/forms.py:20
 msgid "Password"
@@ -2403,6 +2573,9 @@ msgstr "Mot de passe défini"
 #: seed/landing/templates/landing/password_set.html:12
 msgid "Password set unsuccessful"
 msgstr "Mot de passe pas défini"
+
+msgid "Percentage (%)"
+msgstr "Pourcentage (%)"
 
 msgid "Permanently delete extra_data columns and all associated data"
 msgstr "Supprimer définitivement les colonnes extra_data et toutes les données associées"
@@ -2547,6 +2720,12 @@ msgstr "Liste Des Propriétés"
 msgid "Properties List (legacy)"
 msgstr "Liste des propriétés (héritage)"
 
+msgid "Properties failed to update:"
+msgstr "Les propriétés n'ont pas pu être mises à jour :"
+
+msgid "Properties updated:"
+msgstr "Propriétés mises à jour :"
+
 msgid "Properties with Data"
 msgstr "Propriétés avec données"
 
@@ -2604,6 +2783,12 @@ msgstr "Visibilité de la propriété"
 
 msgid "Property and Tax Lot Data"
 msgstr "Données foncières et fiscales"
+
+msgid "Public Disclosure - Sharing Your Data"
+msgstr "Divulgation publique – Partage de données"
+
+msgid "Question"
+msgstr "Question"
 
 msgid "RECOGNIZE_EMPTY_EXPLANATION"
 msgstr "Cocher cette case pour un champ affectera la façon dont les valeurs vides ou vides sont traitées lors des fusions. Plus précisément, les valeurs vides pourront remplacer les valeurs non vides par le paramètre \"Protection contre la fusion\"."
@@ -2726,8 +2911,14 @@ msgstr "Réinitialiser par défaut"
 msgid "Residential"
 msgstr "Résidentiel"
 
+msgid "Resolution"
+msgstr "Résolution"
+
 msgid "Restore Default Rules"
 msgstr "Restaurer les règles par défaut"
+
+msgid "Results"
+msgstr "Résultats"
 
 #: seed/models/models.py:137
 msgid "Retro Commissioning"
@@ -2803,9 +2994,6 @@ msgstr "Plate-forme SEED"
 #: seed/templates/seed/base.html:7
 msgid "SEED Platform™"
 msgstr "SEED Platform™"
-
-msgid "SEED Properties will be exported to Audit Template with the Organization Report Type"
-msgstr "Les propriétés SEED seront exportées vers le modèle d'audit avec le type de rapport d'organisation."
 
 msgid "SEED Unique Benchmark ID Fieldname"
 msgstr "Unique nom de champ pour Benchmark ID SEED"
@@ -2945,6 +3133,29 @@ msgstr "Étiquette qui signale qu'une propriété a une violation.  Example: 'Vi
 msgid "SHARE DATA WITH"
 msgstr "PARTAGE DE DONNÉES AVEC"
 
+#, fuzzy
+msgid "SHARING_CYCLES"
+msgstr "Liste d’identifiants de cycle séparés par des virgules. Les résultats incluent l’inventaire des cycles répertoriés. La valeur par défaut est tous les cycles."
+
+#, fuzzy
+msgid "SHARING_LABELS"
+msgstr "Liste de noms d'étiquettes sensibles à la casse, séparés par des virgules. Les résultats incluront l'inventaire portant l'une des étiquettes répertoriées. La valeur par défaut est tout l'inventaire."
+
+msgid "SHARING_PAGE"
+msgstr "Numéro de la page de résultats à retourner. La valeur par défaut est 1."
+
+msgid "SHARING_PER_PAGE"
+msgstr "Nombre de résultats par page. La valeur par défaut est 100."
+
+msgid "SHARING_PROPERTIES"
+msgstr "Booléen True/False pour renvoyer un inventaire de type « Propriété ». La valeur par défaut est True."
+
+msgid "SHARING_QUERY_PARAMS"
+msgstr "Des paramètres de requête peuvent être ajoutés à l'URL pour filtrer les données renvoyées"
+
+msgid "SHARING_TAXLOTS"
+msgstr "Booléen True/False pour renvoyer un inventaire de type « Lot fiscal ». La valeur par défaut est True."
+
 msgid "SHOWING_AVAILABLE_MATCHES"
 msgstr "Affichage des {start} à {end} de {total} correspondances disponibles "
 
@@ -3022,6 +3233,9 @@ msgstr "Enregistrer les mappages"
 msgid "Save Settings"
 msgstr "Enregistrer les paramètres"
 
+msgid "Schedule Weekly Update"
+msgstr "Planifier une mise à jour hebdomadaire"
+
 msgid "Scheduled Daily Update"
 msgstr "Mise à jour programmée quotidienne"
 
@@ -3045,6 +3259,9 @@ msgstr "Sécurité"
 
 msgid "Security Token"
 msgstr "Jeton d'authentification"
+
+msgid "See API Documentation for more information about the /v3/public endpoints"
+msgstr "pour plus d'informations sur le"
 
 #: seed/models/columns.py:688 seed/models/models.py:195
 #: seed/models/models.py:256 seed/models/projects.py:42
@@ -3272,6 +3489,25 @@ msgstr "Au moins l'un des domaines fiscal Lot suivants est requis"
 msgid "THERMAL_CONV_ASSUMPTION_TITLE"
 msgstr "Choix de Conversion Thermique"
 
+msgid "TWO_FACTOR_DISABLED_TEXT"
+msgstr "Choisir cette option désactivera l’authentification à deux facteurs pour votre compte, le rendant moins sécurisé."
+
+msgid "TWO_FACTOR_EMAIL_SELECTED_TEXT"
+msgstr "La sélection de cette option activera l'authentification à deux facteurs par e-mail ( {email} ). Vous recevrez un code de vérification via votre adresse e-mail enregistrée à chaque fois que vous vous connecterez."
+
+msgid "TWO_FACTOR_ENABLE"
+msgstr "Activer l'authentification à deux facteurs pour votre compte"
+
+msgid "TWO_FACTOR_REQUIRED"
+msgstr "L'authentification à deux facteurs a été requise par un administrateur d'organisation."
+
+#, fuzzy
+msgid "TWO_FACTOR_SELECT"
+msgstr "Choisissez l'une des méthodes suivantes pour appliquer l'authentification à deux facteurs à votre compte SEED"
+
+msgid "TWO_FACTOR_TOKEN_SELECTED_TEXT"
+msgstr "La sélection de cette option activera l'authentification à deux facteurs à l'aide de l'application génératrice de jetons de votre choix, telle que Google Authenticator, Microsoft Authenticator ou Authy. Vous devrez scanner un code QR pour configurer l'application."
+
 msgid "TYPE_TO_CONFIRM"
 msgstr "Veuillez saisir <strong> {org} </strong> pour confirmer."
 
@@ -3376,6 +3612,9 @@ msgstr "La Spécification d'Échange de Données Energétiques du Bâtiment (BED
 
 msgid "The DOE developed the Standard Energy Efficiency Data (SEED) Platform™ as a free software tool that provides a standardized format for collecting, storing and analyzing building energy performance information about large portfolios. Upload your buildings list to get started."
 msgstr "Le DOE a développé la Plate-forme SEED™ (Standard Energy Efficiency Data) en tant qu'outil logiciel gratuit qui fournit un format standardisé pour la collecte, le stockage et l'analyse des informations sur la performance énergétique des bâtiments concernant les grands portefeuilles. Téléchargez votre liste de bâtiments pour commencer."
+
+msgid "The GeoJSON will expose all populated property and taxlot columns"
+msgstr "Le GeoJSON exposera toutes les colonnes de propriété et de lot fiscal renseignées"
 
 msgid "The Open Source code is available on the Github organization SEED-Platform:"
 msgstr "Le code Open Source est disponible sur l'organisation Github SEED-Platform:"
@@ -3508,6 +3747,9 @@ msgstr "Toggle Boîtes englobantes UBID Taxlot"
 msgid "Toggle Taxlot UBID Centroids"
 msgstr "Basculer les centroïdes UBID Taxlot"
 
+msgid "Token Generator"
+msgstr "Générateur de jetons"
+
 msgid "Total Properties"
 msgstr "Total des propriétés"
 
@@ -3516,6 +3758,9 @@ msgstr "Nombre total de lignes dans le fichier d'importation"
 
 msgid "Two UBIDs are required for comparison. Click Custom UBIDs to continue."
 msgstr "Deux UBID sont nécessaires pour la comparaison. Cliquez sur UBID personnalisés pour continuer."
+
+msgid "Two-Factor Authentication"
+msgstr "Authentification à deux facteurs"
 
 msgid "Type"
 msgstr "Type"
@@ -3600,6 +3845,9 @@ msgstr "Télécharger le capteur"
 msgid "UPLOAD_SENSOR_READINGS_BUTTON"
 msgstr "Télécharger les relevés de capteur"
 
+msgid "URL_OPTIONS"
+msgstr "Options d'URL"
+
 #, fuzzy
 msgid "USING_DEFAULT_UNITS_WARNING"
 msgstr "Pour les colonnes avec des paramètres d'unité, les unités par défaut seront utilisées pour les conversions."
@@ -3630,6 +3878,12 @@ msgstr "Mettre à jour Salesforce"
 
 msgid "Update UBID"
 msgstr "Mettre à jour UBID"
+
+msgid "Update from Audit Template"
+msgstr "Mise à jour à partir du modèle d'audit"
+
+msgid "Update inventory with Audit Template Submissions"
+msgstr "Mettre à jour l'inventaire avec les soumissions de Audit Template"
 
 msgid "Update the data type of the column to \"Area\" in"
 msgstr "Assurez-vous que le type de données de la colonne est bien \"Area\" dans"
@@ -3765,11 +4019,17 @@ msgstr "Spectateur"
 msgid "Violation Label"
 msgstr "Étiquette de Violation"
 
+msgid "Visit"
+msgstr "Visitez"
+
 msgid "Visit the BETTER website to run a portfolio analysis"
 msgstr "Visitez le site Web de BETTER pour effectuer une analyse de portefeuille"
 
 msgid "Visualization Settings"
 msgstr "Paramètres de visualisation"
+
+msgid "WATER_TYPE_DISPLAY_CHOICE_PLACEHOLDER"
+msgstr "----Choisissez le type d'eau----"
 
 msgid "WHEN_YOU_CLICK_MAP_YOUR_DATA"
 msgstr "Lorsque vous cliquez sur le bouton <span class=\"label label-primary\">Mapper vos données</span> , le programme affiche une grille avec les nouveaux noms de champs comme en-têtes de colonne et vos données dans les lignes. Dans cette vue, vous pouvez toujours revenir à l'écran de mappage initial et modifier le mappage de champ."
@@ -4065,6 +4325,9 @@ msgstr "adresse e-mail"
 #: seed/models/models.py:237
 msgid "end_date"
 msgstr "date de fin"
+
+msgid "endpoints see the"
+msgstr "points de terminaison voir le"
 
 #: seed/landing/forms.py:14
 msgid "ex: joe@company.com"

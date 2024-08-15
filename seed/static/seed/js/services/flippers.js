@@ -6,7 +6,7 @@
  * bit minimum-usable right now .. just want this to squawk after it goes stale so as not to
  * forget about it.
  */
-angular.module('BE.seed.service.flippers', []).factory('flippers', [
+angular.module('SEED.service.flippers', []).factory('flippers', [
   '$log',
   ($log) => {
     const registry = {};
