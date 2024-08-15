@@ -168,7 +168,7 @@ class AuditTemplate:
             while True:
                 params["page"] = idx
                 response = requests.request("GET", url, headers=headers, params=params)
-                # Raise an exception for non 200 responses
+                # Raise an exception for non 2XX responses
                 response.raise_for_status()
 
                 data = response.json()

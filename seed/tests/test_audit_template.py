@@ -292,6 +292,7 @@ class AuditTemplateSubmissionImport(TestCase):
         )
 
         self.org.audit_template_conditional_import = False
+        self.org.audit_template_status_type = "Complies"
         self.org.audit_template_city_id = 36
         self.org.save()
         self.at = AuditTemplate(self.org.id)
