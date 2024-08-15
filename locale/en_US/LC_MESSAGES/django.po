@@ -137,15 +137,39 @@ msgstr "API Documentation"
 msgid "API Key"
 msgstr "API Key"
 
+msgid "AT_ALL_DATA"
+msgstr "Audit Template submissions will be imported regardless of submission date. You can configure this setting in your SEED organization's settings page."
+
+msgid "AT_AUTO_SYNC"
+msgstr "If you would like to automatically update your SEED organization with Audit Template submission data for the selected Audit Template City ID, configure the fields below to schedule your weekly update."
+
+msgid "AT_CITY_ID"
+msgstr "Specify your Audit Template City ID. This number is visible in the Audit Template URL when browsing to the 'CITIES' tab. SEED will import submission data for the specified City only."
+
+msgid "AT_CONDITION_INDEX"
+msgstr "When this checkbox is checked, SEED will only import Audit Template submissions that have been submitted more recently than the SEED records' most recent update. If unchecked, all Audit Template submissions will be imported regardless of the submission date."
+
 msgid "AT_EMAIL_TEXT"
 msgstr "Use the email associated with your account from <a href=\"{link}/\" target=\"_blank\" rel=\"noopener noreferrer\">Building Energy Score website</a>."
+
+msgid "AT_MOST_RECENT_ONLY"
+msgstr "Only Audit Template submissions that have been submitted more recently than the SEED inventory's most recent update will be imported. You can configure this setting in your SEED organization's settings page."
 
 msgid "AT_PASS_TEXT"
 msgstr "Use the password associated with your account from <a href=\"{link}/\" target=\"_blank\" rel=\"noopener noreferrer\">Building Energy Score website</a>."
 
+msgid "AT_REPORT_TYPE"
+msgstr "If you wish to generate stub Audit Template reports from SEED data, select which Audit Template Report Type SEED should generate."
+
+msgid "AT_SETTINGS_TEXT"
+msgstr "If your organization has configured a customized report form in Audit Template, fill out the settings below to enable importing Audit Template submissions into your SEED organization."
+
+msgid "AT_SUBMISSION_STATUS"
+msgstr "SEED will import data for submissions labeled with the following status in Audit Template.  The default submission status in Audit Template is 'Received'."
+
 #. Helper text for the Audit Template token in organization settings.
 msgid "AT_TOKEN_TEXT"
-msgstr "Please refer to the <a href=\"{link}/reports/api/\" target=\"_blank\" rel=\"noopener noreferrer\">Audit Template documentation</a> to learn how to get an API key. Note, do not prefix the token with \"Token \", only include the token itself."
+msgstr "Your Organization API Token should be visible on your Account page in Audit Template. Please refer to the <a href=\"{link}/reports/api/\" target=\"_blank\" rel=\"noopener noreferrer\">Audit Template documentation</a> to learn how to get an API key. Note, do not prefix the token with \"Token \", only include the token itself."
 
 msgid "About"
 msgstr "About"
@@ -296,6 +320,9 @@ msgstr "Address Line 2 (Tax Lot)"
 
 msgid "Admin"
 msgstr "Admin"
+
+msgid "Advanced Settings"
+msgstr "Advanced Settings"
 
 msgid "An Audit Template organization token, user email and password are required"
 msgstr "An Audit Template organization token, user email and password are required"
@@ -511,8 +538,14 @@ msgstr "Normally when an imported record is merged into another record the newes
 msgid "COMPLETE_AND_REFRESH"
 msgstr "Complete and Refresh Page"
 
+msgid "CONFIGURE_CYCLES"
+msgstr "Select one or more cycles from the dropdown above to visualize in the charts below."
+
 msgid "CONFIGURE_PROGRAM"
 msgstr "Need to configure your Program?"
+
+msgid "CONFIGURE_XY_AXES"
+msgstr "to configure the set of columns selectable as X and Y axes. These can be set on the Default Display Fields tab."
 
 msgid "CONFIRMING_DELETE_PROFILE"
 msgstr "Are you sure you want to delete the profile"
@@ -1294,6 +1327,12 @@ msgstr "Example Access Level Tree"
 msgid "Example Usage"
 msgstr "Example Usage"
 
+msgid "Exclude"
+msgstr "Exclude"
+
+msgid "Exclude all selected labels"
+msgstr "Exclude all selected labels"
+
 msgid "Existing Audit Template Properties (skipped)"
 msgstr "Existing Audit Template Properties (skipped)"
 
@@ -1680,9 +1719,6 @@ msgstr "This operation is irreversible."
 msgid "ITEMS_WILL_NOT_CHANGE"
 msgstr "these will not change"
 
-msgid "If you would like to automatically update inventory with Audit Template submission data for the selected Audit Template City ID, configure fields below."
-msgstr "If you would like to automatically update inventory with Audit Template submission data for the selected Audit Template City ID, configure fields below."
-
 msgid "Ignored duplicates of existing properties"
 msgstr "Ignored duplicates of existing properties"
 
@@ -1725,6 +1761,9 @@ msgstr "In addition, you need to specify where the field should be associated wi
 #: seed/models/projects.py:23
 msgid "Inactive"
 msgstr "Inactive"
+
+msgid "Include Any"
+msgstr "Include Any"
 
 msgid "Include CSV Label Header"
 msgstr "Include CSV Label Header"
@@ -2160,6 +2199,15 @@ msgstr "Move Buildings"
 
 msgid "Move/copy buildings to another project"
 msgstr "Move/copy buildings to another project"
+
+msgid "Must Include"
+msgstr "Must Include"
+
+msgid "Must include all selected labels (AND)"
+msgstr "Must include all selected labels (AND)"
+
+msgid "Must include at least one selected label (OR)"
+msgstr "Must include at least one selected label (OR)"
 
 msgid "NEW_COLUMN_REPLACE_DATA_WARNING"
 msgstr "A new column will be created, and/or existing data can be replaced."
@@ -2846,8 +2894,8 @@ msgstr "Resolution"
 msgid "Restore Default Rules"
 msgstr "Restore Default Rules"
 
-msgid "Results for City"
-msgstr "Results for City"
+msgid "Results"
+msgstr "Results"
 
 #: seed/models/models.py:137
 msgid "Retro Commissioning"
@@ -2924,9 +2972,6 @@ msgstr "SEED Platform"
 msgid "SEED Platform™"
 msgstr "SEED Platform™"
 
-msgid "SEED Properties will be exported to Audit Template with the Organization Report Type"
-msgstr "SEED Properties will be exported to Audit Template with the Organization Report Type"
-
 msgid "SEED Unique Benchmark ID Fieldname"
 msgstr "SEED Unique Benchmark ID Fieldname"
 
@@ -2936,12 +2981,6 @@ msgstr "SEED doesn't currently support that file format"
 #: seed/templates/seed/account_create_email.html:6
 msgid "SEED is easy, flexible, and cost effective software designed to help organizations clean, manage and share information about large portfolios of buildings. SEED is a free, open source web application that you can use privately.  While SEED was originally designed to help cities and States implement benchmarking programs for public or private buildings, it has the potential to be useful for many other activities by public entities, efficiency programs and private companies."
 msgstr "SEED is easy, flexible, and cost effective software designed to help organizations clean, manage and share information about large portfolios of buildings. SEED is a free, open source web application that you can use privately.  While SEED was originally designed to help cities and States implement benchmarking programs for public or private buildings, it has the potential to be useful for many other activities by public entities, efficiency programs and private companies."
-
-msgid "SEED will import submission data for the following City ID"
-msgstr "SEED will import submission data for the following City ID"
-
-msgid "SEED will import submission data for the following submission status"
-msgstr "SEED will import submission data for the following submission status"
 
 msgid "SELECT_DATA_SET_TITLE"
 msgstr "Select Data Set"
@@ -3811,8 +3850,8 @@ msgstr "Update UBID"
 msgid "Update from Audit Template"
 msgstr "Update from Audit Template"
 
-msgid "Update inventory with Audit Template Submissions for City"
-msgstr "Update inventory with Audit Template Submissions for City"
+msgid "Update inventory with Audit Template Submissions"
+msgstr "Update inventory with Audit Template Submissions"
 
 msgid "Update the data type of the column to \"Area\" in"
 msgstr "Update the column's data type to \"Area\" in"
@@ -4001,9 +4040,6 @@ msgstr "What is a Custom Report?"
 
 msgid "What type of file would you like to upload?"
 msgstr "What type of file would you like to upload?"
-
-msgid "When checked, SEED will only import Audit Template data that has been updated more recently than SEED data. If unchecked, all data will be imported regardless of updated date."
-msgstr "When checked, SEED will only import Audit Template data that has been updated more recently than SEED data. If unchecked, all data will be imported regardless of updated date."
 
 msgid "When checked, properties/taxlots will be matched to existing cycles based on the 'year_ending' column or the default cycle if there is no match"
 msgstr "When checked, properties/taxlots will be matched to existing cycles based on the 'year_ending' column or the default cycle if there is no match"

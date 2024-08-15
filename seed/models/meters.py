@@ -36,6 +36,9 @@ class Meter(models.Model):
     WOOD = 22
     COST = 23
     ELECTRICITY_UNKNOWN = 24
+    POTABLE_INDOOR = 27
+    POTABLE_MIXED = 28
+    POTABLE_OUTDOOR = 29
     CUSTOM_METER = 99
 
     # Taken from EnergyStar Portfolio Manager
@@ -67,6 +70,9 @@ class Meter(models.Model):
         (COST, "Cost"),
         (ELECTRICITY_UNKNOWN, "Electric - Unknown"),
         (CUSTOM_METER, "Custom Meter"),
+        (POTABLE_INDOOR, "Potable Indoor"),
+        (POTABLE_OUTDOOR, "Potable Outdoor"),
+        (POTABLE_MIXED, "Potable: Mixed Indoor/Outdoor"),
     )
     ENERGY_TYPE_BY_METER_TYPE = dict(ENERGY_TYPES)
 

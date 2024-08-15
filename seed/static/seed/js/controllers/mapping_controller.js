@@ -295,21 +295,17 @@ angular.module('SEED.controller.mapping', []).controller('mapping_controller', [
       });
     }
 
-    /* $scope.is_eui_column = (
-      col // All of these are on the PropertyState table
-    ) => col.suggestion_table_name === 'PropertyState' && Boolean(_.find(eui_columns, { column_name: col.suggestion_column_name }));
+    // Handle units
+    $scope.is_data_type_column = (data_type, col) => {
+      const unit_columns = _.filter($scope.mappable_property_columns, { data_type });
+      return col.suggestion_table_name === 'PropertyState' && Boolean(_.find(unit_columns, { column_name: col.suggestion_column_name }));
+    };
 
-    const area_columns = _.filter($scope.mappable_property_columns, { data_type: 'area' });
-    $scope.is_area_column = (
-      col // All of these are on the PropertyState table
-    ) => col.suggestion_table_name === 'PropertyState' && Boolean(_.find(area_columns, { column_name: col.suggestion_column_name }));
-
-    const ghg_columns = _.filter($scope.mappable_property_columns, { data_type: 'ghg' });
-    $scope.is_ghg_column = (col) => col.suggestion_table_name === 'PropertyState' && Boolean(_.find(ghg_columns, { column_name: col.suggestion_column_name }));
-
-    const ghg_intensity_columns = _.filter($scope.mappable_property_columns, { data_type: 'ghg_intensity' });
-    $scope.is_ghg_intensity_column = (col) => col.suggestion_table_name === 'PropertyState' && Boolean(_.find(ghg_intensity_columns, { column_name: col.suggestion_column_name }));
-    */
+    $scope.is_pint_column = (col) => {
+      const data_types = ['area', 'eui', 'ghg', 'ghg_intensity', 'water_use', 'wui'];
+      const data_type_columns = _.filter($scope.mappable_property_columns, (column) => _.includes(data_types, column.data_type));
+      return col.suggestion_table_name === 'PropertyState' && Boolean(_.find(data_type_columns, { column_name: col.suggestion_column_name }));
+    };
 
     $scope.is_eui_column = (col) => col.suggestion_table_name === 'PropertyState' && col.data_type === 'eui';
     $scope.is_area_column = (col) => col.suggestion_table_name === 'PropertyState' && col.data_type === 'area';
@@ -317,17 +313,23 @@ angular.module('SEED.controller.mapping', []).controller('mapping_controller', [
     $scope.is_ghg_intensity_column = (col) => col.suggestion_table_name === 'PropertyState' && col.data_type === 'ghg_intensity';
     const get_default_quantity_units = (col) => {
       // TODO - hook up to org preferences / last mapping in DB
-      if ($scope.is_eui_column(col)) {
+      if ($scope.is_data_type_column('eui', col)) {
         return 'kBtu/ft**2/year';
       }
-      if ($scope.is_area_column(col)) {
+      if ($scope.is_data_type_column('area', col)) {
         return 'ft**2';
       }
-      if ($scope.is_ghg_column(col)) {
+      if ($scope.is_data_type_column('ghg', col)) {
         return 'MtCO2e/year';
       }
-      if ($scope.is_ghg_intensity_column(col)) {
+      if ($scope.is_data_type_column('ghg_intensity', col)) {
         return 'kgCO2e/ft**2/year';
+      }
+      if ($scope.is_data_type_column('water_use', col)) {
+        return 'kgal/year';
+      }
+      if ($scope.is_data_type_column('wui', col)) {
+        return 'gal/ft**2/year';
       }
       return null;
     };
@@ -645,7 +647,7 @@ angular.module('SEED.controller.mapping', []).controller('mapping_controller', [
       !field.is_omitted &&
           field.suggestion_table_name === 'PropertyState' &&
           field.from_units === null &&
-          ($scope.is_area_column(field) || $scope.is_eui_column(field))
+          $scope.is_pint_column(field)
     ));
 
     /**
