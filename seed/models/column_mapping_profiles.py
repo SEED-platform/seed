@@ -83,9 +83,9 @@ class ColumnMappingProfile(models.Model):
                         "to_field": row[3],
                     }
                     try:
-                        data["isOmitted"] = "True" if row[4].lower().strip() == "true" else "False"
+                        data["is_omitted"] = "True" if row[4].lower().strip() == "true" else "False"
                     except IndexError:
-                        data["isOmitted"] = "False"
+                        data["is_omitted"] = "False"
                     mappings.append(data)
         else:
             raise Exception(f"Mapping file does not exist: {filename}")
