@@ -5,7 +5,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("seed", "0221_audittemplateconfig"),
+        ("seed", "0222_cross_cycle_data_quality"),
     ]
 
     operations = [
