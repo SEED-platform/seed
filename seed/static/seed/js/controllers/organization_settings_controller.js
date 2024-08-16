@@ -304,7 +304,7 @@ angular.module('SEED.controller.organization_settings', []).controller('organiza
 
     const linkify = (text) => {
       // Regular expression matching any string starting with http:// or https://
-      const urlPattern = /(\b(https?):\/\/[-A-Z0-9+&@#%?=~_|!:,.;]*[-A-Z0-9+&@#%=~_|])/ig;
+      const urlPattern = /(\b(https?):\/\/[-A-Z0-9+&@#/%?=~_|!:,.;]*[-A-Z0-9+&@#/%=~_|])/ig;
 
       // Add link html
       const linkedText = text.replace(urlPattern, '<a href="$1" target="_blank">$1</a>');
