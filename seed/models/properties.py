@@ -866,6 +866,7 @@ def post_save_property_state(sender, **kwargs):
     ubid = getattr(state, "ubid")
     if not ubid:
         state.ubidmodel_set.filter(preferred=True).update(preferred=False)
+        return
 
     ubid_model = state.ubidmodel_set.filter(ubid=ubid)
     if not ubid_model.exists():
