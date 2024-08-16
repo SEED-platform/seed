@@ -8,10 +8,10 @@
 <div class="page_header_container" ng-cloak>
   <div class="page_header">
     <div class="left page_action_container">
-        <a ng-show="group_id != null" ui-sref="inventory_groups(::{inventory_type: inventory_type})" class="page_action">
-          <i class="fa-solid fa-chevron-left"></i>
-          {$:: 'Groups' | translate $}
-        </a>
+      <a ng-show="group_id != null" ui-sref="inventory_groups(::{inventory_type: inventory_type})" class="page_action">
+        <i class="fa-solid fa-chevron-left"></i>
+        {$:: 'Groups' | translate $}
+      </a>
     </div>
     <div class="page_title">
       <h1>{$:: (group_id? 'Group - ': '')$}{$:: (inventory_type === 'taxlots' ? 'Tax Lots' : 'Properties') | translate $}</h1>

@@ -27,21 +27,21 @@ angular.module('SEED.controller.inventory_group_modal', [])
 
       $scope.rename_inventory_group = function () {
         if (!$scope.disabled()) {
-          var id = $scope.data.id;
-          var group = _.omit($scope.data, 'id');
+          const id = $scope.data.id;
+          const group = _.omit($scope.data, 'id');
           group.name = $scope.newName;
-          inventory_group_service.update_group(id, group).then(function (result) {
+          inventory_group_service.update_group(id, group).then((result) => {
             $uibModalInstance.close(result.name);
-          }).catch(function () {
+          }).catch(() => {
             $uibModalInstance.dismiss();
           });
         }
       };
 
       $scope.remove_inventory_group = function () {
-        inventory_group_service.remove_group($scope.data.id).then(function () {
+        inventory_group_service.remove_group($scope.data.id).then(() => {
           $uibModalInstance.close();
-        }).catch(function () {
+        }).catch(() => {
           $uibModalInstance.dismiss();
         });
       };
@@ -52,7 +52,7 @@ angular.module('SEED.controller.inventory_group_modal', [])
             name: $scope.newName,
             inventory_type: $scope.inventory_type,
             organization: $scope.org_id
-          }).then(function (result) {
+          }).then((result) => {
             $uibModalInstance.close(result.data);
           });
         }
@@ -61,7 +61,7 @@ angular.module('SEED.controller.inventory_group_modal', [])
       $scope.disabled = function () {
         if ($scope.action === 'rename') {
           return _.isEmpty($scope.newName) || $scope.newName === $scope.data.name;
-        } else if ($scope.action === 'new') {
+        } if ($scope.action === 'new') {
           return _.isEmpty($scope.newName);
         }
       };
@@ -69,4 +69,4 @@ angular.module('SEED.controller.inventory_group_modal', [])
       $scope.cancel = function () {
         $uibModalInstance.dismiss();
       };
-  }]);
+    }]);

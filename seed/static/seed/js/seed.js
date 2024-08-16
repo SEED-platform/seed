@@ -2008,20 +2008,20 @@
         .state({
           name: 'inventory_groups',
           url: '/{inventory_type:properties|taxlots}/groups',
-          templateUrl: static_url + 'seed/partials/inventory_groups_list.html',
+          templateUrl: `${static_url}seed/partials/inventory_groups_list.html`,
           controller: 'inventory_group_list_controller',
           resolve: {
-            inventory_groups: ['$stateParams', 'inventory_group_service', function ($stateParams, inventory_group_service) {
-              var inventory_type = $stateParams.inventory_type === 'properties' ? 'Property' : 'Tax Lot';
+            inventory_groups: ['$stateParams', 'inventory_group_service', ($stateParams, inventory_group_service) => {
+              const inventory_type = $stateParams.inventory_type === 'properties' ? 'Property' : 'Tax Lot';
               return inventory_group_service.get_groups(inventory_type);
             }],
-            current_inventory_group: ['$stateParams', 'inventory_group_service', 'inventory_groups', 'inventory_service', function ($stateParams, inventory_group_service, inventory_groups, inventory_service) {
-              var validGroupIds = _.map(inventory_groups, 'id');
-              var lastGroupId = inventory_service.get_last_inventory_group($stateParams.inventory_type);
+            current_inventory_group: ['$stateParams', 'inventory_group_service', 'inventory_groups', 'inventory_service', ($stateParams, inventory_group_service, inventory_groups, inventory_service) => {
+              const validGroupIds = _.map(inventory_groups, 'id');
+              const lastGroupId = inventory_service.get_last_inventory_group($stateParams.inventory_type);
               if (_.includes(validGroupIds, lastGroupId)) {
-                return _.find(inventory_groups, {id: lastGroupId});
+                return _.find(inventory_groups, { id: lastGroupId });
               }
-              var currentInventoryGroup = _.first(inventory_groups);
+              const currentInventoryGroup = _.first(inventory_groups);
               if (currentInventoryGroup) inventory_service.save_last_inventory_group(currentInventoryGroup.id, $stateParams.inventory_type);
               return currentInventoryGroup;
             }],
@@ -2029,7 +2029,7 @@
               'user_service',
               'organization_service',
               (user_service, organization_service) => organization_service.get_organization(user_service.get_organization().id)
-            ],
+            ]
           }
         })
         .state({
@@ -2122,7 +2122,7 @@
                 inventory_service.save_last_inventory_group(-1);
                 return -1;
               }
-            ],
+            ]
           }
         })
         .state({
@@ -2215,7 +2215,7 @@
                 inventory_service.save_last_inventory_group(-1);
                 return -1;
               }
-            ],
+            ]
           }
         })
         .state({

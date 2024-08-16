@@ -689,12 +689,12 @@ angular.module('SEED.service.inventory', []).factory('inventory_service', [
       localStorage.setItem(`detailProfiles.${key}`, JSON.stringify(profiles));
     };
 
-    inventory_service.get_last_inventory_group = function () {
+    inventory_service.get_last_inventory_group = () => {
       const organization_id = user_service.get_organization().id;
       return (JSON.parse(localStorage.getItem('inventoryGroup')) || {})[organization_id];
     };
 
-    inventory_service.save_last_inventory_group = function (pk) {
+    inventory_service.save_last_inventory_group = (pk) => {
       const organization_id = user_service.get_organization().id;
       const inventory_group = JSON.parse(localStorage.getItem('inventoryGroup')) || {};
       inventory_group[organization_id] = _.toInteger(pk);

@@ -653,21 +653,21 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
       });
     };
 
-     /**
+    /**
        Opens the update building groups modal.
      */
     $scope.open_update_inventory_groups_modal = function (selectedViewIds) {
-      var modalInstance = $uibModal.open({
-        templateUrl: urls.static_url + 'seed/partials/update_inventory_groups_modal.html',
+      const modalInstance = $uibModal.open({
+        templateUrl: `${urls.static_url}seed/partials/update_inventory_groups_modal.html`,
         controller: 'update_inventory_groups_modal_controller',
         resolve: {
           inventory_ids: () => selectedViewIds,
           inventory_type: () => $scope.inventory_type,
-          org_id: () => $scope.organization.id,
+          org_id: () => $scope.organization.id
         }
       });
-      modalInstance.result.then(function () {
-        //dialog was closed with 'Done' button.
+      modalInstance.result.then(() => {
+        // dialog was closed with 'Done' button.
         get_inventory_groups();
       });
     };
@@ -1213,8 +1213,8 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
       }
 
       if ($scope.group_id) {
-        var group_ids = _.filter($scope.inventory_groups, {'id': $scope.group_id})[0].member_list;
-        if (typeof include_ids !== 'undefined' && group_ids.length && include_ids[0] != 0) { // if there's a sort
+        const group_ids = _.filter($scope.inventory_groups, { id: $scope.group_id })[0].member_list;
+        if (typeof include_ids !== 'undefined' && group_ids.length && include_ids[0] !== 0) { // if there's a sort
           include_ids = _.intersection(include_ids, group_ids);
         } else if (!group_ids.length) {
           include_ids = [0];
@@ -1346,8 +1346,8 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
       get_and_filter_by_labels();
     };
 
-    var get_inventory_groups = function () {
-      inventory_group_service.get_groups_for_inventory($stateParams.inventory_type, []).then(function (inventory_groups) {
+    const get_inventory_groups = () => {
+      inventory_group_service.get_groups_for_inventory($stateParams.inventory_type, []).then((inventory_groups) => {
         $scope.inventory_groups = inventory_groups;
         $scope.load_inventory(1);
       });

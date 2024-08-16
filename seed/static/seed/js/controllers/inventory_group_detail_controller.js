@@ -7,20 +7,14 @@ angular.module('SEED.controller.inventory_group_detail', [])
     '$scope',
     '$state',
     '$stateParams',
-    '$uibModal',
-    'Notification',
-    '$translate',
-  function (
+    function (
       $scope,
       $state,
-      $stateParams,
-      $uibModal,
-      Notification,
-      $translate,
-  ) {
-    $scope.inventory_type = $stateParams.inventory_type;
-    $scope.group_id = $stateParams.group_id;
+      $stateParams
+    ) {
+      $scope.inventory_type = $stateParams.inventory_type;
+      $scope.group_id = $stateParams.group_id;
 
-    console.log($stateParams)
-    $scope.message = "yo";
-  }]);
+      console.log($stateParams);
+      $scope.message = 'yo';
+    }]);

@@ -570,26 +570,18 @@ angular.module('SEED.controller.inventory_detail', []).controller('inventory_det
     };
 
     $scope.open_update_inventory_groups_modal = function () {
-      var modalInstance = $uibModal.open({
-        templateUrl: urls.static_url + 'seed/partials/update_inventory_groups_modal.html',
+      const modalInstance = $uibModal.open({
+        templateUrl: `${urls.static_url}seed/partials/update_inventory_groups_modal.html`,
         controller: 'update_inventory_groups_modal_controller',
         resolve: {
-          inventory_ids: function () {
-            return [$scope.inventory.view_id];
-          },
-          inventory_type: function () {
-            return $scope.inventory_type;
-          },
-          org_id: function () {
-            return $scope.organization.id;
-          },
-          cycle: function () {
-            return $scope.cycle.id;
-          }
+          inventory_ids: () => [$scope.inventory.view_id],
+          inventory_type: () => $scope.inventory_type,
+          org_id: () => $scope.organization.id,
+          cycle: () => $scope.cycle.id
         }
       });
-      modalInstance.result.then(function () {
-        //do nothing
+      modalInstance.result.then(() => {
+        // do nothing
       });
     };
 
