@@ -667,10 +667,10 @@ class UbidModelSignalCreationTests(TestCase):
         property1 = PropertyState(**property_details)
         property1.save()
         self.assertEqual(3, property1.ubidmodel_set.count())
-        self.assertEqual("A+A-3-3-3-3", property1.ubid)
+        self.assertEqual("A+A-1-1-1-1", property1.ubid)
         ubids = property1.ubidmodel_set.all()
         for ubid in ubids:
-            if ubid.ubid == "A+A-3-3-3-3":
+            if ubid.ubid == "A+A-1-1-1-1":
                 self.assertTrue(ubid.preferred)
             else:
                 self.assertFalse(ubid.preferred)
