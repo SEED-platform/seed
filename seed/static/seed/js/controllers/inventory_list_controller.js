@@ -1560,6 +1560,7 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
           break;
         case 'open_export_cts_modal':
           $scope.open_export_cts_modal(selectedViewIds);
+          break;
         case 'open_at_submission_import_modal':
           $scope.open_at_submission_import_modal(selectedViewIds);
           break;
