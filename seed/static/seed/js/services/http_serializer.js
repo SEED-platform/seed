@@ -6,7 +6,7 @@
  * Custom $http params serializer that url encodes semicolons.
  * Temporary until a fix is landed in angular.
  */
-angular.module('BE.seed.service.httpParamSerializerSeed', []).factory('httpParamSerializerSeed', [
+angular.module('SEED.service.httpParamSerializerSeed', []).factory('httpParamSerializerSeed', [
   () => {
     function serializeValue(v) {
       if (angular.isObject(v)) {

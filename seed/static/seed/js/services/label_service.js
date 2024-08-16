@@ -2,7 +2,7 @@
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
  * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
-angular.module('BE.seed.service.label', []).factory('label_service', [
+angular.module('SEED.service.label', []).factory('label_service', [
   '$http',
   '$log',
   'user_service',
@@ -281,6 +281,12 @@ angular.module('BE.seed.service.label', []).factory('label_service', [
       }
     ];
 
+    const get_property_view_labels_by_goal = (org_id, goal_id, cycle) => $http.get(
+      '/api/v3/property_view_labels/list_by_goal/',
+      { params: { organization_id: org_id, goal_id, cycle } }
+    )
+      .then(map_labels);
+
     return {
       get_labels,
       get_labels_for_org,
@@ -293,6 +299,7 @@ angular.module('BE.seed.service.label', []).factory('label_service', [
       update_property_labels,
       update_taxlot_labels,
       get_available_colors,
+      get_property_view_labels_by_goal,
       lookup_label
     };
   }

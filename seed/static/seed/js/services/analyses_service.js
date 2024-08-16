@@ -2,7 +2,7 @@
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
  * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
-angular.module('BE.seed.service.analyses', []).factory('analyses_service', [
+angular.module('SEED.service.analyses', []).factory('analyses_service', [
   '$http',
   '$log',
   '$timeout',
@@ -81,6 +81,17 @@ angular.module('BE.seed.service.analyses', []).factory('analyses_service', [
         url: '/api/v3/analyses/stats',
         method: 'GET',
         params: { organization_id, cycle_id }
+      })
+        .then((response) => response.data)
+        .catch((response) => response.data);
+    };
+
+    const get_used_columns = () => {
+      const organization_id = user_service.get_organization().id;
+      return $http({
+        url: '/api/v3/analyses/used_columns',
+        method: 'GET',
+        params: { organization_id }
       })
         .then((response) => response.data)
         .catch((response) => response.data);
@@ -194,6 +205,7 @@ angular.module('BE.seed.service.analyses', []).factory('analyses_service', [
       stop_analysis,
       delete_analysis,
       get_summary,
+      get_used_columns,
       get_progress_key,
       check_progress_loop,
       verify_token

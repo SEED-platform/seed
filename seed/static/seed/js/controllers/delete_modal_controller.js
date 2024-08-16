@@ -2,7 +2,7 @@
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
  * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
-angular.module('BE.seed.controller.delete_modal', []).controller('delete_modal_controller', [
+angular.module('SEED.controller.delete_modal', []).controller('delete_modal_controller', [
   '$scope',
   '$q',
   '$uibModalInstance',
@@ -43,7 +43,6 @@ angular.module('BE.seed.controller.delete_modal', []).controller('delete_modal_c
           $scope.delete_state = 'success';
         })
         .catch((resp) => {
-          console.log('resp', resp);
           $scope.delete_state = 'fail';
           if (resp.status === 422) {
             $scope.error = resp.data.message;

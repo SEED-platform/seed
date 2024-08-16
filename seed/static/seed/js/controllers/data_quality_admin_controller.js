@@ -2,7 +2,7 @@
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
  * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
-angular.module('BE.seed.controller.data_quality_admin', []).controller('data_quality_admin_controller', [
+angular.module('SEED.controller.data_quality_admin', []).controller('data_quality_admin_controller', [
   '$scope',
   '$q',
   '$state',
@@ -48,7 +48,7 @@ angular.module('BE.seed.controller.data_quality_admin', []).controller('data_qua
     naturalSort,
     $translate
   ) {
-    $scope.inventory_type = $stateParams.inventory_type;
+    $scope.rule_type = $stateParams.rule_type;
     $scope.org = organization_payload.organization;
     $scope.auth = auth_payload.auth;
     $scope.ruleGroups = {};
@@ -56,6 +56,7 @@ angular.module('BE.seed.controller.data_quality_admin', []).controller('data_qua
     $scope.state = $state.current;
     $scope.rule_count_property = 0;
     $scope.rule_count_taxlot = 0;
+    $scope.rule_count_cross_cycle = 0;
 
     $scope.conditions = [
       { id: 'required', label: 'Required' },
@@ -117,10 +118,16 @@ angular.module('BE.seed.controller.data_quality_admin', []).controller('data_qua
       { id: 'ft**2', label: 'square feet' },
       { id: 'm**2', label: 'square metres' },
       { id: 'kBtu/ft**2/year', label: 'kBtu/sq. ft./year' },
+      { id: 'gal/ft**2/year', label: 'gal/sq. ft./year' },
       { id: 'GJ/m**2/year', label: 'GJ/m²/year' },
       { id: 'MJ/m**2/year', label: 'MJ/m²/year' },
       { id: 'kWh/m**2/year', label: 'kWh/m²/year' },
       { id: 'kBtu/m**2/year', label: 'kBtu/m²/year' }
+    ];
+
+    $scope.cross_cycle_options = [
+      { bool: true, label: '% Change aross cycle' },
+      { bool: false, label: 'Within cycle' }
     ];
 
     $scope.columns = _.map(angular.copy(columns.filter((col) => !col.derived_column)), (col) => {
@@ -147,19 +154,20 @@ angular.module('BE.seed.controller.data_quality_admin', []).controller('data_qua
     const loadRules = (rules_payload) => {
       const ruleGroups = {
         properties: {},
-        taxlots: {}
+        taxlots: {},
+        goals: {}
       };
-      let inventory_type;
+      let rule_type;
       _.forEach(rules_payload, (rule) => {
         if (rule.table_name === 'PropertyState') {
-          inventory_type = 'properties';
+          rule_type = 'properties';
         } else if (rule.table_name === 'TaxLotState') {
-          inventory_type = 'taxlots';
+          rule_type = 'taxlots';
         } else {
-          inventory_type = rule.table_name;
+          rule_type = 'goals';
         }
 
-        if (!_.has(ruleGroups[inventory_type], rule.field)) ruleGroups[inventory_type][rule.field] = [];
+        if (!_.has(ruleGroups[rule_type], rule.field)) ruleGroups[rule_type][rule.field] = [];
         const row = rule;
         if (row.data_type === $scope.data_type_keys.date) {
           if (row.min) row.min = moment(row.min, 'YYYYMMDD').toDate();
@@ -171,17 +179,21 @@ angular.module('BE.seed.controller.data_quality_admin', []).controller('data_qua
             row.label = match;
           }
         }
-        ruleGroups[inventory_type][rule.field].push(row);
+        ruleGroups[rule_type][rule.field].push(row);
       });
 
       $scope.ruleGroups = ruleGroups;
       $scope.rule_count_property = 0;
       $scope.rule_count_taxlot = 0;
+      $scope.rule_count_cross_cycle = 0;
       _.map($scope.ruleGroups.properties, (rule) => {
         $scope.rule_count_property += rule.length;
       });
       _.map($scope.ruleGroups.taxlots, (rule) => {
         $scope.rule_count_taxlot += rule.length;
+      });
+      _.map($scope.ruleGroups.goals, (rule) => {
+        $scope.rule_count_cross_cycle += rule.length;
       });
     };
     loadRules(data_quality_rules_payload);
@@ -224,7 +236,7 @@ angular.module('BE.seed.controller.data_quality_admin', []).controller('data_qua
       const rules = [];
       const misconfigured_rules = [];
       $scope.duplicate_rule_keys = [];
-      _.forEach($scope.ruleGroups, (ruleGroups, inventory_type) => {
+      _.forEach($scope.ruleGroups, (ruleGroups, rule_type) => {
         _.forEach(ruleGroups, (ruleGroup) => {
           const duplicate_rules = _.groupBy(
             ruleGroup,
@@ -244,6 +256,7 @@ angular.module('BE.seed.controller.data_quality_admin', []).controller('data_qua
             if (rule.field === null) return;
 
             const column = _.find($scope.columns, { column_name: rule.field }) || {};
+            const rule_type_lookup = { properties: 'PropertyState', taxlots: 'TaxLotState', goals: 'Goal' };
             const r = {
               enabled: rule.enabled,
               condition: rule.condition,
@@ -255,10 +268,11 @@ angular.module('BE.seed.controller.data_quality_admin', []).controller('data_qua
               not_null: rule.not_null,
               min: rule.min,
               max: rule.max,
-              table_name: inventory_type === 'properties' ? 'PropertyState' : 'TaxLotState',
+              table_name: rule_type_lookup[rule_type],
               text_match: rule.text_match,
               severity: rule.severity,
               units: rule.units,
+              target: rule.target,
               status_label: null,
               for_derived_column: !!column.is_derived
             };
@@ -451,7 +465,7 @@ angular.module('BE.seed.controller.data_quality_admin', []).controller('data_qua
     };
 
     // perform checks on load
-    _.forEach($scope.ruleGroups[$scope.inventory_type], (group, group_name) => {
+    _.forEach($scope.ruleGroups[$scope.rule_type], (group, group_name) => {
       $scope.validate_data_types(group, group_name);
       $scope.validate_conditions(group, group_name);
     });
@@ -475,7 +489,7 @@ angular.module('BE.seed.controller.data_quality_admin', []).controller('data_qua
       }
 
       const group_name = rule.field;
-      const group = $scope.ruleGroups[$scope.inventory_type][group_name];
+      const group = $scope.ruleGroups[$scope.rule_type][group_name];
       $scope.validate_conditions(group, group_name);
       $scope.validate_data_types(group, group_name);
     };
@@ -509,33 +523,33 @@ angular.module('BE.seed.controller.data_quality_admin', []).controller('data_qua
       rule.data_type = newDataType;
 
       // move rule to appropriate spot in ruleGroups.
-      if (!_.has($scope.ruleGroups[$scope.inventory_type], rule.field)) {
-        $scope.ruleGroups[$scope.inventory_type][rule.field] = [];
+      if (!_.has($scope.ruleGroups[$scope.rule_type], rule.field)) {
+        $scope.ruleGroups[$scope.rule_type][rule.field] = [];
       } else {
         // Rules already exist for the new field name, so match the data_type, required, and not_null columns
-        const existingRule = _.first($scope.ruleGroups[$scope.inventory_type][rule.field]);
+        const existingRule = _.first($scope.ruleGroups[$scope.rule_type][rule.field]);
         rule.data_type = existingRule.data_type;
         rule.required = existingRule.required;
         rule.not_null = existingRule.not_null;
       }
-      $scope.ruleGroups[$scope.inventory_type][rule.field].push(rule);
+      $scope.ruleGroups[$scope.rule_type][rule.field].push(rule);
       // remove old rule.
-      if ($scope.ruleGroups[$scope.inventory_type][oldField].length === 1) delete $scope.ruleGroups[$scope.inventory_type][oldField];
-      else $scope.ruleGroups[$scope.inventory_type][oldField].splice(index, 1);
+      if ($scope.ruleGroups[$scope.rule_type][oldField].length === 1) delete $scope.ruleGroups[$scope.rule_type][oldField];
+      else $scope.ruleGroups[$scope.rule_type][oldField].splice(index, 1);
       rule.autofocus = true;
 
       const group_name = rule.field;
-      const group = $scope.ruleGroups[$scope.inventory_type][group_name];
+      const group = $scope.ruleGroups[$scope.rule_type][group_name];
       $scope.validate_data_types(group, group_name);
       $scope.validate_conditions(group, group_name);
 
-      $scope.validate_data_types($scope.ruleGroups[$scope.inventory_type][oldField], oldField);
-      $scope.validate_conditions($scope.ruleGroups[$scope.inventory_type][oldField], oldField);
+      $scope.validate_data_types($scope.ruleGroups[$scope.rule_type][oldField], oldField);
+      $scope.validate_conditions($scope.ruleGroups[$scope.rule_type][oldField], oldField);
     };
     // Keep field types consistent for identical fields
     $scope.change_data_type = (rule, oldValue) => {
       const { data_type } = rule;
-      const rule_group = $scope.ruleGroups[$scope.inventory_type][rule.field];
+      const rule_group = $scope.ruleGroups[$scope.rule_type][rule.field];
 
       _.forEach(rule_group, (currentRule) => {
         currentRule.text_match = null;
@@ -558,10 +572,10 @@ angular.module('BE.seed.controller.data_quality_admin', []).controller('data_qua
     // create a new rule.
     $scope.create_new_rule = () => {
       const field = null;
-      if (!_.has($scope.ruleGroups[$scope.inventory_type], field)) {
-        $scope.ruleGroups[$scope.inventory_type][field] = [];
+      if (!_.has($scope.ruleGroups[$scope.rule_type], field)) {
+        $scope.ruleGroups[$scope.rule_type][field] = [];
       }
-      $scope.ruleGroups[$scope.inventory_type][field].push({
+      $scope.ruleGroups[$scope.rule_type][field].push({
         enabled: true,
         condition: '',
         field,
@@ -581,8 +595,9 @@ angular.module('BE.seed.controller.data_quality_admin', []).controller('data_qua
         autofocus: true
       });
       $scope.rules_changed();
-      if ($scope.inventory_type === 'properties') $scope.rule_count_property += 1;
-      else $scope.rule_count_taxlot += 1;
+      if ($scope.rule_type === 'properties') $scope.rule_count_property += 1;
+      else if ($scope.rule_type === 'taxlots') $scope.rule_count_taxlot += 1;
+      else $scope.rule_count_cross_cycle += 1;
     };
 
     // create label and assign to that rule
@@ -608,12 +623,13 @@ angular.module('BE.seed.controller.data_quality_admin', []).controller('data_qua
 
     // set rule as deleted.
     $scope.delete_rule = (rule, index) => {
-      if ($scope.ruleGroups[$scope.inventory_type][rule.field].length === 1) {
-        delete $scope.ruleGroups[$scope.inventory_type][rule.field];
-      } else $scope.ruleGroups[$scope.inventory_type][rule.field].splice(index, 1);
+      if ($scope.ruleGroups[$scope.rule_type][rule.field].length === 1) {
+        delete $scope.ruleGroups[$scope.rule_type][rule.field];
+      } else $scope.ruleGroups[$scope.rule_type][rule.field].splice(index, 1);
       $scope.rules_changed();
-      if ($scope.inventory_type === 'properties') $scope.rule_count_property -= 1;
-      else $scope.rule_count_taxlot -= 1;
+      if ($scope.rule_type === 'properties') $scope.rule_count_property -= 1;
+      else if ($scope.rule_type === 'taxlots') $scope.rule_count_taxlot -= 1;
+      else $scope.rule_count_cross_cycle -= 1;
     };
 
     const displayNames = {};
@@ -623,7 +639,7 @@ angular.module('BE.seed.controller.data_quality_admin', []).controller('data_qua
     });
 
     $scope.sortedRuleGroups = () => {
-      const sortedKeys = _.keys($scope.ruleGroups[$scope.inventory_type]).sort((a, b) => naturalSort(displayNames[a], displayNames[b]));
+      const sortedKeys = _.keys($scope.ruleGroups[$scope.rule_type]).sort((a, b) => naturalSort(displayNames[a], displayNames[b]));
       const nullKey = _.remove(sortedKeys, (key) => key === 'null');
 
       // Put created unassigned rows first
@@ -634,7 +650,7 @@ angular.module('BE.seed.controller.data_quality_admin', []).controller('data_qua
       $scope.rules_changed();
 
       const allEnabled = $scope.allEnabled();
-      _.forEach($scope.ruleGroups[$scope.inventory_type], (ruleGroup) => {
+      _.forEach($scope.ruleGroups[$scope.rule_type], (ruleGroup) => {
         _.forEach(ruleGroup, (rule) => {
           rule.enabled = !allEnabled;
         });
@@ -644,7 +660,7 @@ angular.module('BE.seed.controller.data_quality_admin', []).controller('data_qua
     $scope.allEnabled = () => {
       let total = 0;
       const enabled = _.reduce(
-        $scope.ruleGroups[$scope.inventory_type],
+        $scope.ruleGroups[$scope.rule_type],
         (result, ruleGroup) => {
           total += ruleGroup.length;
           return result + _.filter(ruleGroup, 'enabled').length;

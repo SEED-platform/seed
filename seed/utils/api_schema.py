@@ -73,6 +73,10 @@ class AutoSchemaHelper(SwaggerAutoSchema):
     def path_id_field(description):
         return openapi.Parameter("id", openapi.IN_PATH, description=description, required=True, type=openapi.TYPE_INTEGER)
 
+    @staticmethod
+    def path_enum_field(name, description, enum):
+        return openapi.Parameter(name, openapi.IN_PATH, description=description, required=True, type=openapi.TYPE_STRING, enum=enum)
+
     @classmethod
     def body_field(cls, required, description, name="body", params_to_formats={}):
         return openapi.Parameter(

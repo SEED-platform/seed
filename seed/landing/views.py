@@ -10,9 +10,10 @@ import urllib
 
 from django.conf import settings
 from django.contrib import auth
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import login
 from django.contrib.auth.forms import SetPasswordForm
 from django.contrib.auth.tokens import default_token_generator
+from django.core.cache import cache
 from django.forms.forms import NON_FIELD_ERRORS
 from django.forms.utils import ErrorList
 from django.http import HttpResponseRedirect
@@ -20,11 +21,16 @@ from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.utils.encoding import force_text
 from django.utils.http import urlsafe_base64_decode
+from django_otp import devices_for_user
+from django_otp.plugins.otp_email.models import EmailDevice
+from django_otp.plugins.otp_totp.models import TOTPDevice
+from two_factor.views.core import LoginView
 
 from seed.landing.models import SEEDUser
 from seed.tasks import invite_new_user_to_seed
+from seed.utils.two_factor import send_token_email
 
-from .forms import CustomCreateUserForm, LoginForm
+from .forms import CustomCreateUserForm
 
 logger = logging.getLogger(__name__)
 
@@ -32,40 +38,8 @@ logger = logging.getLogger(__name__)
 def landing_page(request):
     if request.user.is_authenticated:
         return HttpResponseRedirect(reverse("seed:home"))
-
-    if request.method == "POST":
-        redirect_to = request.POST.get("next", request.GET.get("next", False))
-        if not redirect_to:
-            redirect_to = reverse("seed:home")
-
-        form = LoginForm(request.POST)
-        if form.is_valid():
-            new_user = authenticate(username=form.cleaned_data["email"].lower(), password=form.cleaned_data["password"])
-            if new_user is not None and new_user.is_active:
-                login(request, new_user)
-                return HttpResponseRedirect(redirect_to)
-            else:
-                errors = ErrorList()
-                errors = form._errors.setdefault(NON_FIELD_ERRORS, errors)
-                errors.append("Username and/or password were invalid.")
-                logger.error(f"User login failed: {form.cleaned_data['email']}")
     else:
-        form = LoginForm()
-
-    request.user = {"first_name": "", "last_name": "", "email": ""}
-    return render(
-        request,
-        "landing/home.html",
-        {
-            "context": {"self_registration": settings.INCLUDE_ACCT_REG},
-            "debug": settings.DEBUG,
-            "initial_org_id": 0,
-            "initial_org_user_role": 0,
-            "initial_org_name": "",
-            "login_form": form,
-            "username": "",
-        },
-    )
+        return redirect("two_factor:login")
 
 
 def password_set(request, uidb64=None, token=None):
@@ -104,7 +78,7 @@ def signup(request, uidb64=None, token=None):
         uidb64=uidb64,
         token=token,
         set_password_form=SetPasswordForm,
-        post_reset_redirect=reverse("landing:landing_page") + "?setup_complete",
+        post_reset_redirect=reverse("landing:login") + "?setup_complete",
     )
 
 
@@ -172,3 +146,75 @@ def activate(request, uidb64, token):
         return HttpResponseRedirect(reverse("seed:home"))
     else:
         return render(request, "account_activation_invalid.html", {"debug": settings.DEBUG})
+
+
+class CustomLoginView(LoginView):
+    def post(self, request, *args, **kwargs):
+        response = super().post(request, *args, **kwargs)
+
+        if "resend_email" in request.POST:
+            try:
+                user = SEEDUser.objects.get(username=cache.get("user_email"))
+                devices = list(devices_for_user(user))
+                device = devices[0]
+                if type(device) == EmailDevice:
+                    send_token_email(device)
+            except SEEDUser.DoesNotExist:
+                pass
+        if response.status_code not in [200, 302]:
+            return response
+        current_step = request.POST.get("custom_login_view-current_step")
+        if current_step == "auth":
+            return self.handle_auth(request, response)
+        elif current_step == "token":
+            return self.handle_token(request, response)
+        return response
+
+    def handle_auth(self, request, response):
+        user = SEEDUser.objects.filter(username=request.POST["auth-username"]).first()
+
+        if not user:
+            cache.set("username", None, timeout=3600)
+            return response  # retry
+        cache.set("user_email", user.email, timeout=3600)
+
+        devices = list(devices_for_user(user))
+
+        if devices:
+            device = devices[0]
+            method_2fa = "disabled"
+            if type(device) == EmailDevice:
+                method_2fa = "email"
+            if type(device) == TOTPDevice:
+                method_2fa = "token"
+
+            cache.set("method_2fa", method_2fa, timeout=3600)
+
+            return response  # go to token step
+
+        return self.handle_2fa_prompt(response, user)
+
+    def handle_token(self, request, response):
+        token = request.POST.get("token-otp_token")
+        user = request.user
+
+        if not token or not user.is_authenticated:
+            return response  # retry form
+        return self.handle_2fa_prompt(response, user)
+
+    def handle_2fa_prompt(self, response, user):
+        # django-two-factor-auth will always try to redirect users to the 2 factor profile.
+        # override and send users home if they have already been prompted.
+        if not getattr(user, "prompt_2fa", False) and isinstance(response, HttpResponseRedirect):
+            # user has already been prompted
+            return HttpResponseRedirect(reverse("seed:home"))
+        else:
+            user.prompt_2fa = False
+            user.save()
+        return HttpResponseRedirect("/app/#/profile/two_factor_profile")
+
+    def get(self, request, *args, **kwargs):
+        # add env var to session for conditional frontend display
+        logging.error(">>> GET")
+        request.session["include_acct_reg"] = settings.INCLUDE_ACCT_REG
+        return super().get(request, *args, **kwargs)

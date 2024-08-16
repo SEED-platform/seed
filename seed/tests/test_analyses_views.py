@@ -33,18 +33,18 @@ class TestAnalysesView(TestCase):
         self.client.login(**user_details)
 
         cycle_factory = FakeCycleFactory(organization=self.org, user=self.user)
-        cycle_a = cycle_factory.get_cycle(name="Cycle A")
-        cycle_b = cycle_factory.get_cycle(name="Cycle B")
+        self.cycle_a = cycle_factory.get_cycle(name="Cycle A")
+        self.cycle_b = cycle_factory.get_cycle(name="Cycle B")
 
-        property_factory = FakePropertyFactory(organization=self.org)
-        self.property_a = property_factory.get_property()
-        property_b = property_factory.get_property()
+        self.property_factory = FakePropertyFactory(organization=self.org)
+        self.property_a = self.property_factory.get_property()
+        property_b = self.property_factory.get_property()
 
-        property_state_factory = FakePropertyStateFactory(organization=self.org)
-        property_state_a = property_state_factory.get_property_state()
-        property_state_b = property_state_factory.get_property_state()
-        property_state_c = property_state_factory.get_property_state()
-        property_state_d = property_state_factory.get_property_state()
+        self.property_state_factory = FakePropertyStateFactory(organization=self.org)
+        property_state_a = self.property_state_factory.get_property_state()
+        property_state_b = self.property_state_factory.get_property_state()
+        property_state_c = self.property_state_factory.get_property_state()
+        property_state_d = self.property_state_factory.get_property_state()
 
         # create an analysis with two property views, each with the same property but a different cycle
         self.analysis_a = Analysis.objects.create(
@@ -56,10 +56,10 @@ class TestAnalysesView(TestCase):
             access_level_instance=self.org.root,
         )
         self.analysis_property_view_a = AnalysisPropertyView.objects.create(
-            analysis=self.analysis_a, property=self.property_a, cycle=cycle_a, property_state=property_state_a
+            analysis=self.analysis_a, property=self.property_a, cycle=self.cycle_a, property_state=property_state_a
         )
         self.analysis_property_view_b = AnalysisPropertyView.objects.create(
-            analysis=self.analysis_a, property=self.property_a, cycle=cycle_b, property_state=property_state_b
+            analysis=self.analysis_a, property=self.property_a, cycle=self.cycle_b, property_state=property_state_b
         )
 
         # create an analysis with two property views, each with the same cycle but a different property
@@ -72,10 +72,10 @@ class TestAnalysesView(TestCase):
             access_level_instance=self.org.root,
         )
         self.analysis_property_view_c = AnalysisPropertyView.objects.create(
-            analysis=self.analysis_b, property=self.property_a, cycle=cycle_a, property_state=property_state_c
+            analysis=self.analysis_b, property=self.property_a, cycle=self.cycle_a, property_state=property_state_c
         )
         self.analysis_property_view_d = AnalysisPropertyView.objects.create(
-            analysis=self.analysis_b, property=property_b, cycle=cycle_a, property_state=property_state_d
+            analysis=self.analysis_b, property=property_b, cycle=self.cycle_a, property_state=property_state_d
         )
 
         # create an analysis with no property views
@@ -191,6 +191,41 @@ class TestAnalysesView(TestCase):
         view_b = next((x for x in result["views"] if x["id"] == self.analysis_property_view_b.id), None)
         self.assertIsNotNone(view_b)
         self.assertEqual(len(view_b["output_files"]), 1)
+
+    def test_list_views_with_cycle(self):
+        property = self.property_factory.get_property()
+
+        property_state_1 = self.property_state_factory.get_property_state()
+        analysis_x = Analysis.objects.create(
+            name="test x",
+            service=Analysis.BSYNCR,
+            status=Analysis.QUEUED,
+            user=self.user,
+            organization=self.org,
+            access_level_instance=self.org.root,
+        )
+        AnalysisPropertyView.objects.create(analysis=analysis_x, property=property, cycle=self.cycle_a, property_state=property_state_1)
+
+        property_state_2 = self.property_state_factory.get_property_state()
+        analysis_y = Analysis.objects.create(
+            name="test y",
+            service=Analysis.BSYNCR,
+            status=Analysis.QUEUED,
+            user=self.user,
+            organization=self.org,
+            access_level_instance=self.org.root,
+        )
+        AnalysisPropertyView.objects.create(analysis=analysis_y, property=property, cycle=self.cycle_b, property_state=property_state_2)
+
+        response = self.client.get(f"/api/v3/properties/{property.pk}/analyses/?organization_id={self.org.pk}")
+        self.assertEqual(response.status_code, 200)
+        result = json.loads(response.content)
+        self.assertEqual(sorted([a["id"] for a in result["analyses"]]), [analysis_x.pk, analysis_y.pk])
+
+        response = self.client.get(f"/api/v3/properties/{property.pk}/analyses/?organization_id={self.org.pk}&cycle_id={self.cycle_a.pk}")
+        self.assertEqual(response.status_code, 200)
+        result = json.loads(response.content)
+        self.assertEqual(sorted([a["id"] for a in result["analyses"]]), [analysis_x.pk])
 
     def test_retrieve_view_with_output_file(self):
         response = self.client.get(

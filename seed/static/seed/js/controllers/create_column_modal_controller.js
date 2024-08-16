@@ -2,7 +2,7 @@
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
  * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
-angular.module('BE.seed.controller.create_column_modal', []).controller('create_column_modal_controller', [
+angular.module('SEED.controller.create_column_modal', []).controller('create_column_modal_controller', [
   '$scope',
   '$state',
   '$uibModalInstance',

@@ -246,27 +246,37 @@
                   spellcheck="false"
                 />
               </td>
-              <td ng-class="{'danger': col.from_units === null && (is_area_column(col) || is_eui_column(col) || is_ghg_column(col) || is_ghg_intensity_column(col)), 'omitted': col.isOmitted}">
-                <select ng-model="col.from_units" ng-if="is_area_column(col)" ng-change="flag_mappings_change()" ng-disabled="col.isOmitted">
+              <td ng-class="{'danger': col.from_units === null && is_pint_column(col), 'omitted': col.isOmitted}">
+                <select ng-model="col.from_units" ng-if="is_data_type_column('area', col)" ng-change="flag_mappings_change()" ng-disabled="col.isOmitted">
                   <option value="ft**2" translate>square feet</option>
                   <option value="m**2" translate>square metres</option>
                 </select>
-                <select ng-model="col.from_units" ng-if="is_eui_column(col)" ng-change="flag_mappings_change()" ng-disabled="col.isOmitted">
+                <select ng-model="col.from_units" ng-if="is_data_type_column('eui', col)" ng-change="flag_mappings_change()" ng-disabled="col.isOmitted">
                   <option value="kBtu/ft**2/year" translate>kBtu/sq. ft./year</option>
                   <option value="kWh/m**2/year" translate>kWh/m²/year</option>
                   <option value="GJ/m**2/year" translate>GJ/m²/year</option>
                   <option value="MJ/m**2/year" translate>MJ/m²/year</option>
                   <option value="kBtu/m**2/year" translate>kBtu/m²/year</option>
                 </select>
-                <select ng-model="col.from_units" ng-if="is_ghg_column(col)" ng-change="flag_mappings_change()" ng-disabled="col.isOmitted">
+                <select ng-model="col.from_units" ng-if="is_data_type_column('ghg', col)" ng-change="flag_mappings_change()" ng-disabled="col.isOmitted">
                   <option value="MtCO2e/year" translate>MtCO2e/year</option>
                   <option value="kgCO2e/year" translate>kgCO2e/year</option>
                 </select>
-                <select ng-model="col.from_units" ng-if="is_ghg_intensity_column(col)" ng-change="flag_mappings_change()" ng-disabled="col.isOmitted">
+                <select ng-model="col.from_units" ng-if="is_data_type_column('ghg_intensity', col)" ng-change="flag_mappings_change()" ng-disabled="col.isOmitted">
                   <option value="MtCO2e/ft**2/year" translate>MtCO2e/ft**2/year</option>
                   <option value="kgCO2e/ft**2/year" translate>kgCO2e/ft**2/year</option>
                   <option value="MtCO2e/m**2/year" translate>MtCO2e/m**2/year</option>
                   <option value="kgCO2e/m**2/year" translate>kgCO2e/m**2/year</option>
+                </select>
+                <select ng-model="col.from_units" ng-change="flag_change()" ng-if="is_data_type_column('water_use', col)">
+                  <option value="kgal/year" trnaslate>kgal/year</option>
+                  <option value="gal/year" trnaslate>gal/year</option>
+                  <option value="L/year" trnaslate>L/year</option>
+                </select>
+                <select ng-model="col.from_units" ng-change="flag_change()" ng-if="is_data_type_column('wui', col)">
+                  <option value="kgal/ft**2/year" trnaslate>kgal/ft²/year</option>
+                  <option value="gal/ft**2/year" trnaslate>gal/ft²/year</option>
+                  <option value="L/m**2/year" trnaslate>L/m²/year</option>
                 </select>
               </td>
               <td ng-class="{'danger': col.is_duplicate || (!col.isOmitted && col.suggestion === '' || col.is_disallowed_creation), 'omitted': col.isOmitted}">
@@ -297,8 +307,8 @@
       <div class="right_60 section_action_container section_action_btn">
         <button type="button" class="btn btn-default" ng-click="open_data_quality_modal()">
           <i class="fa-solid fa-spinner fa-spin-pulse fa-fw" style="padding-right: 0" ng-if="!data_quality_results_ready"></i>
-          <span ng-if="data_quality_results_ready && data_quality_errors > 0"> {$ data_quality_errors $} <i class="fa-solid fa-triangle-exclamation" style="color: #ffb7b7"></i> </span>
-          <span ng-if="data_quality_results_ready && data_quality_warnings > 0"> {$ data_quality_warnings $} <i class="fa-solid fa-triangle-exclamation" style="color: #fdf4bf"></i> </span>
+          <span ng-if="data_quality_results_ready && data_quality_errors > 0"> {$ data_quality_errors | number $} <i class="fa-solid fa-triangle-exclamation" style="color: #ffb7b7"></i> </span>
+          <span ng-if="data_quality_results_ready && data_quality_warnings > 0"> {$ data_quality_warnings | number $} <i class="fa-solid fa-triangle-exclamation" style="color: #fdf4bf"></i> </span>
           {$:: 'Data Quality Results' | translate $}
         </button>
         <a ui-sref="mapping(::{importfile_id: import_file.id})">
@@ -315,7 +325,7 @@
     </ul>
     <div class="item-count">
       <i class="fa-regular fa-calendar-days"></i> <span class="pad-right-20">{$ cycleName $}</span> <i class="fa-regular fa-building"></i>
-      <span translate="NUMBER_OF_PROPERTIES" translate-values="{ num: mappedData.properties.length }"></span>
+      <span translate="NUMBER_OF_PROPERTIES" translate-values="{ num: (mappedData.properties.length | number) }"></span>
     </div>
   </div>
   <div class="section_content_container" ng-if="show_mapped_buildings && mappedData.properties.length">
@@ -331,7 +341,7 @@
     </ul>
     <div class="item-count">
       <i class="fa-regular fa-calendar-days"></i> <span class="pad-right-20">{$ cycleName $}</span> <i class="fa-regular fa-map"></i>
-      <span translate="NUMBER_OF_TAXLOTS" translate-values="{ num: mappedData.tax_lots.length }"></span>
+      <span translate="NUMBER_OF_TAXLOTS" translate-values="{ num: (mappedData.tax_lots.length | number) }"></span>
     </div>
   </div>
   <div class="section_content_container" ng-if="show_mapped_buildings && mappedData.tax_lots.length">

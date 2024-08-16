@@ -2,7 +2,7 @@
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
  * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
-angular.module('BE.seed.controller.geocode_modal', []).controller('geocode_modal_controller', [
+angular.module('SEED.controller.geocode_modal', []).controller('geocode_modal_controller', [
   '$scope',
   '$uibModalInstance',
   'geocode_service',
@@ -80,8 +80,11 @@ angular.module('BE.seed.controller.geocode_modal', []).controller('geocode_modal
         })
         .catch((e) => {
           $scope.geocode_state = 'fail';
-          if (e.message === 'MapQuestAPIKeyError') $scope.error_message = 'MapQuest API key may be invalid or at its limit.';
-          else $scope.error_message = e.statusText;
+          if (e.status === 412) {
+            $scope.error_message = e.data.message;
+          } else {
+            $scope.error_message = e.statusText;
+          }
         });
     };
 

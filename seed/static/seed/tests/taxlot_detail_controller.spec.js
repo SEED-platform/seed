@@ -4,16 +4,19 @@
  */
 describe('controller: inventory_detail_controller', () => {
   // globals set up and used in each test scenario
-  let controller; let ngFilter; let ngLog; let
-    ngUrls;
+  let controller;
+  let ngFilter;
+  let ngLog;
+  let ngUrls;
   let inventory_detail_controller_scope;
-  let mock_inventory_service; let
-    state;
-  let mock_uib_modal; let mock_label_service; let
-    mock_label_payload;
+  let mock_inventory_service;
+  let state;
+  let mock_uib_modal;
+  let mock_label_service;
+  let mock_label_payload;
 
   beforeEach(() => {
-    module('BE.seed');
+    module('SEED');
     inject((_$httpBackend_) => {
       _$httpBackend_.whenGET(/^\/static\/seed\/locales\/.*\.json/).respond(200, {});
     });
@@ -179,9 +182,9 @@ describe('controller: inventory_detail_controller', () => {
       analyses_payload: {
         analyses: []
       },
-      users_payload: {
-        users: []
-      },
+      elements_payload: [],
+      tkbl_payload: [],
+      uniformat_payload: {},
       views_payload: {
         status: 'success',
         taxlot_views: []

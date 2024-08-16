@@ -104,6 +104,9 @@ msgstr "Add or remove labels from {num, plural, one{1 selected tax lot} other{# 
 msgid "AH_FILE_TYPES_SUPPORTED"
 msgstr "File types supported: .csv, .xls, and .xlsx."
 
+msgid "ALL DATA"
+msgstr "ALL DATA"
+
 msgid "ALSO_DELETE_ANALYSES"
 msgstr "Also delete {num,plural, one{1 analysis} other{# analyses}}."
 
@@ -134,15 +137,39 @@ msgstr "API Documentation"
 msgid "API Key"
 msgstr "API Key"
 
+msgid "AT_ALL_DATA"
+msgstr "Audit Template submissions will be imported regardless of submission date. You can configure this setting in your SEED organization's settings page."
+
+msgid "AT_AUTO_SYNC"
+msgstr "If you would like to automatically update your SEED organization with Audit Template submission data for the selected Audit Template City ID, configure the fields below to schedule your weekly update."
+
+msgid "AT_CITY_ID"
+msgstr "Specify your Audit Template City ID. This number is visible in the Audit Template URL when browsing to the 'CITIES' tab. SEED will import submission data for the specified City only."
+
+msgid "AT_CONDITION_INDEX"
+msgstr "When this checkbox is checked, SEED will only import Audit Template submissions that have been submitted more recently than the SEED records' most recent update. If unchecked, all Audit Template submissions will be imported regardless of the submission date."
+
 msgid "AT_EMAIL_TEXT"
 msgstr "Use the email associated with your account from <a href=\"{link}/\" target=\"_blank\" rel=\"noopener noreferrer\">Building Energy Score website</a>."
+
+msgid "AT_MOST_RECENT_ONLY"
+msgstr "Only Audit Template submissions that have been submitted more recently than the SEED inventory's most recent update will be imported. You can configure this setting in your SEED organization's settings page."
 
 msgid "AT_PASS_TEXT"
 msgstr "Use the password associated with your account from <a href=\"{link}/\" target=\"_blank\" rel=\"noopener noreferrer\">Building Energy Score website</a>."
 
+msgid "AT_REPORT_TYPE"
+msgstr "If you wish to generate stub Audit Template reports from SEED data, select which Audit Template Report Type SEED should generate."
+
+msgid "AT_SETTINGS_TEXT"
+msgstr "If your organization has configured a customized report form in Audit Template, fill out the settings below to enable importing Audit Template submissions into your SEED organization."
+
+msgid "AT_SUBMISSION_STATUS"
+msgstr "SEED will import data for submissions labeled with the following status in Audit Template.  The default submission status in Audit Template is 'Received'."
+
 #. Helper text for the Audit Template token in organization settings.
 msgid "AT_TOKEN_TEXT"
-msgstr "Please refer to the <a href=\"{link}/reports/api/\" target=\"_blank\" rel=\"noopener noreferrer\">Audit Template documentation</a> to learn how to get an API key. Note, do not prefix the token with \"Token \", only include the token itself."
+msgstr "Your Organization API Token should be visible on your Account page in Audit Template. Please refer to the <a href=\"{link}/reports/api/\" target=\"_blank\" rel=\"noopener noreferrer\">Audit Template documentation</a> to learn how to get an API key. Note, do not prefix the token with \"Token \", only include the token itself."
 
 msgid "About"
 msgstr "About"
@@ -294,6 +321,9 @@ msgstr "Address Line 2 (Tax Lot)"
 msgid "Admin"
 msgstr "Admin"
 
+msgid "Advanced Settings"
+msgstr "Advanced Settings"
+
 msgid "An Audit Template organization token, user email and password are required"
 msgstr "An Audit Template organization token, user email and password are required"
 
@@ -377,6 +407,9 @@ msgstr "Audit Template Password"
 
 msgid "Audit Template Report Type"
 msgstr "Audit Template Report Type"
+
+msgid "Audit Template Submission Status"
+msgstr "Audit Template Submission Status"
 
 msgid "Audit Template Upload Results"
 msgstr "Audit Template Upload Results"
@@ -505,8 +538,14 @@ msgstr "Normally when an imported record is merged into another record the newes
 msgid "COMPLETE_AND_REFRESH"
 msgstr "Complete and Refresh Page"
 
+msgid "CONFIGURE_CYCLES"
+msgstr "Select one or more cycles from the dropdown above to visualize in the charts below."
+
 msgid "CONFIGURE_PROGRAM"
 msgstr "Need to configure your Program?"
+
+msgid "CONFIGURE_XY_AXES"
+msgstr "to configure the set of columns selectable as X and Y axes. These can be set on the Default Display Fields tab."
 
 msgid "CONFIRMING_DELETE_PROFILE"
 msgstr "Are you sure you want to delete the profile"
@@ -841,6 +880,9 @@ msgstr "Current Cycle will be measured against Baseline Cycle"
 
 msgid "Current Filters"
 msgstr "Current Filters"
+
+msgid "Current Method"
+msgstr "Current Method"
 
 msgid "Current Name"
 msgstr "Current Name"
@@ -1209,6 +1251,9 @@ msgstr "Email Templates"
 msgid "Emission Metric"
 msgstr "Emission Metric"
 
+msgid "Enable Audit Template Auto Sync"
+msgstr "Enable Audit Template Auto Sync"
+
 msgid "Enable ComStock Functionality"
 msgstr "Enable ComStock Functionality"
 
@@ -1282,6 +1327,12 @@ msgstr "Example Access Level Tree"
 msgid "Example Usage"
 msgstr "Example Usage"
 
+msgid "Exclude"
+msgstr "Exclude"
+
+msgid "Exclude all selected labels"
+msgstr "Exclude all selected labels"
+
 msgid "Existing Audit Template Properties (skipped)"
 msgstr "Existing Audit Template Properties (skipped)"
 
@@ -1341,6 +1392,12 @@ msgstr "Exporting properties to your Audit Template account"
 
 msgid "Exporting selected properties..."
 msgstr "Exporting selected properties..."
+
+msgid "FAILED_GEOCODE_INVALID_MAPQUEST_API_KEY"
+msgstr "Geocoding failed - Your MapQuest API Key is invalid."
+
+msgid "FAILED_GEOCODE_MAPQUEST_API_KEY_ERROR"
+msgstr "Geocoding failed - Your MapQuest API Key is either invalid or at its limit."
 
 msgid "FIELDS NEEDED TO MAKE MATCHES:"
 msgstr "FIELDS NEEDED TO MAKE MATCHES:"
@@ -1674,6 +1731,9 @@ msgstr "Ignored property duplicates within the import file"
 msgid "Ignored tax lot duplicates within the import file"
 msgstr "Ignored tax lot duplicates within the import file"
 
+msgid "Import"
+msgstr "Import"
+
 msgid "Import Access Level Instances"
 msgstr "Import Access Level Instances"
 
@@ -1683,11 +1743,17 @@ msgstr "Import Audit Template Buildings"
 msgid "Import Portfolio Manager Data"
 msgstr "Import Portfolio Manager Data"
 
+msgid "Import Submissions"
+msgstr "Import Submissions"
+
 msgid "Import directly from ESPM"
 msgstr "Import directly from ESPM"
 
 msgid "Import from Audit Template"
 msgstr "Import from Audit Template"
+
+msgid "Import setting:"
+msgstr "Import setting:"
 
 msgid "In addition, you need to specify where the field should be associated with Tax Lot data or Property data. This will affect how the data is matched and merged, as well as how it is displayed in the Inventory view."
 msgstr "In addition, you need to specify where the field should be associated with Tax Lot data or Property data. This will affect how the data is matched and merged, as well as how it is displayed in the Inventory view."
@@ -1695,6 +1761,9 @@ msgstr "In addition, you need to specify where the field should be associated wi
 #: seed/models/projects.py:23
 msgid "Inactive"
 msgstr "Inactive"
+
+msgid "Include Any"
+msgstr "Include Any"
 
 msgid "Include CSV Label Header"
 msgstr "Include CSV Label Header"
@@ -1902,11 +1971,17 @@ msgstr "Meter energy display units (change one at a time)"
 msgid "METER_READING_COUNTS_TITLE"
 msgstr "Meter Reading Counts"
 
+msgid "METER_WATER_DISPLAY_SETTINGS_TITLE"
+msgstr "Meter water display units (change one at a time)"
+
 msgid "MJ/m²/year"
 msgstr "MJ/m²/year"
 
 msgid "MODIFYING_COLUMN_SETTINGS"
 msgstr "Modifying Column Settings"
+
+msgid "MORE RECENT DATA"
+msgstr "MORE RECENT DATA"
 
 msgid "MULTIPLE_COL_MOD_OPTIONS"
 msgstr "From the table below, you may modify the columns in the following ways: "
@@ -2125,6 +2200,15 @@ msgstr "Move Buildings"
 msgid "Move/copy buildings to another project"
 msgstr "Move/copy buildings to another project"
 
+msgid "Must Include"
+msgstr "Must Include"
+
+msgid "Must include all selected labels (AND)"
+msgstr "Must include all selected labels (AND)"
+
+msgid "Must include at least one selected label (OR)"
+msgstr "Must include at least one selected label (OR)"
+
 msgid "NEW_COLUMN_REPLACE_DATA_WARNING"
 msgstr "A new column will be created, and/or existing data can be replaced."
 
@@ -2278,6 +2362,12 @@ msgstr "Are you sure you want to delete {num_properties,plural, one{<strong>1</s
 msgid "OR"
 msgstr "OR"
 
+msgid "ORGANIZATION_WATER_USE_DISPLAY_UNITS"
+msgstr "Measurement unit display for Water Use"
+
+msgid "ORGANIZATION_WUI_DISPLAY_UNITS"
+msgstr "Measurement unit display for Water Use Intensity (WUI)"
+
 msgid "ORG_MATCH_MERGE_LINK_WARNING"
 msgstr "WARNING: You have modified the criteria that your organization's data will be matched and merged against. Once a column has been added to an organization's matching criteria it cannot be removed while the organization has inventory."
 
@@ -2398,6 +2488,15 @@ msgstr "Check the box below to enable the Public Feed functionality. Data fields
 
 msgid "PUBLIC_FEED_LABELS"
 msgstr "Check the box below to allow labels to be returned in the Public Feed and to be able to filter the Public Feed by a specific label."
+
+msgid "PUBLIC_GEOJSON"
+msgstr "Returns a GeoJSON with the fields defined in the Organization Sharing selections"
+
+msgid "PUBLIC_GEOJSON_TEXT_1"
+msgstr "Your public HTML URL"
+
+msgid "PUBLIC_GEOJSON_TEXT_2"
+msgstr "You will need to replace 'CYCLE_ID' in the URL with the ID of the cycle you want to retrieve. You can access cycle IDs on the Cycles page."
 
 msgid "PUBLIC_HTML"
 msgstr "Your public HTML URL is"
@@ -2602,6 +2701,12 @@ msgstr "Properties List"
 msgid "Properties List (legacy)"
 msgstr "Properties List (legacy)"
 
+msgid "Properties failed to update:"
+msgstr "Properties failed to update:"
+
+msgid "Properties updated:"
+msgstr "Properties updated:"
+
 msgid "Properties with Data"
 msgstr "Properties with Data"
 
@@ -2789,6 +2894,9 @@ msgstr "Resolution"
 msgid "Restore Default Rules"
 msgstr "Restore Default Rules"
 
+msgid "Results"
+msgstr "Results"
+
 #: seed/models/models.py:137
 msgid "Retro Commissioning"
 msgstr "Retro Commissioning"
@@ -2863,9 +2971,6 @@ msgstr "SEED Platform"
 #: seed/templates/seed/base.html:7
 msgid "SEED Platform™"
 msgstr "SEED Platform™"
-
-msgid "SEED Properties will be exported to Audit Template with the Organization Report Type"
-msgstr "SEED Properties will be exported to Audit Template with the Organization Report Type"
 
 msgid "SEED Unique Benchmark ID Fieldname"
 msgstr "SEED Unique Benchmark ID Fieldname"
@@ -3098,6 +3203,9 @@ msgstr "Save Mappings"
 
 msgid "Save Settings"
 msgstr "Save Settings"
+
+msgid "Schedule Weekly Update"
+msgstr "Schedule Weekly Update"
 
 msgid "Scheduled Daily Update"
 msgstr "Scheduled Daily Update"
@@ -3352,6 +3460,24 @@ msgstr "At least one of the following Tax Lot fields is required"
 msgid "THERMAL_CONV_ASSUMPTION_TITLE"
 msgstr "Thermal Conversion Assumption"
 
+msgid "TWO_FACTOR_DISABLED_TEXT"
+msgstr "Choosing this option will disable two-factor authentication for your account, making it less secure."
+
+msgid "TWO_FACTOR_EMAIL_SELECTED_TEXT"
+msgstr "Selecting this option will enable two-factor authentication via email ({email}). You will receive a verification code through your registered email address each time you log in."
+
+msgid "TWO_FACTOR_ENABLE"
+msgstr "Enable Two-Factor Authentication for your account"
+
+msgid "TWO_FACTOR_REQUIRED"
+msgstr "Two-Factor Authentication has been required by an organization admin."
+
+msgid "TWO_FACTOR_SELECT"
+msgstr "Choose one of the following methods to apply two-factor authentication to your SEED account"
+
+msgid "TWO_FACTOR_TOKEN_SELECTED_TEXT"
+msgstr "Selecting this option will enable two-factor authentication using the token generator app of your choice, such as Google Authenticator, Microsoft Authenticator, or Authy. You will need to scan a QR code to set up the app."
+
 msgid "TYPE_TO_CONFIRM"
 msgstr "Please type <strong>{org}</strong> to confirm."
 
@@ -3590,6 +3716,9 @@ msgstr "Toggle Taxlot UBID Bounding Boxes"
 msgid "Toggle Taxlot UBID Centroids"
 msgstr "Toggle Taxlot UBID Centroids"
 
+msgid "Token Generator"
+msgstr "Token Generator"
+
 msgid "Total Properties"
 msgstr "Total Properties"
 
@@ -3598,6 +3727,9 @@ msgstr "Total rows in the import file"
 
 msgid "Two UBIDs are required for comparison. Click Custom UBIDs to continue."
 msgstr "Two UBIDs are required for comparison. Click Custom UBIDs to continue."
+
+msgid "Two-Factor Authentication"
+msgstr "Two-Factor Authentication"
 
 msgid "Type"
 msgstr "Type"
@@ -3714,6 +3846,12 @@ msgstr "Update Salesforce"
 
 msgid "Update UBID"
 msgstr "Update UBID"
+
+msgid "Update from Audit Template"
+msgstr "Update from Audit Template"
+
+msgid "Update inventory with Audit Template Submissions"
+msgstr "Update inventory with Audit Template Submissions"
 
 msgid "Update the data type of the column to \"Area\" in"
 msgstr "Update the column's data type to \"Area\" in"
@@ -3856,6 +3994,9 @@ msgstr "Visit the BETTER website to run a portfolio analysis"
 
 msgid "Visualization Settings"
 msgstr "Visualization Settings"
+
+msgid "WATER_TYPE_DISPLAY_CHOICE_PLACEHOLDER"
+msgstr "----Choose water type----"
 
 msgid "WHEN_YOU_CLICK_MAP_YOUR_DATA"
 msgstr "When you click the <span class=\"label label-primary\">Map Your Data</span> button, the program will show a grid with the new field names as the column headings and your data in the rows. In that view, you can still come back to the initial mapping screen and change the field mapping."
