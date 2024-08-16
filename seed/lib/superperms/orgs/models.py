@@ -51,6 +51,15 @@ def _get_default_meter_units():
     return Organization._default_display_meter_units
 
 
+def _get_default_meter_water_units():
+    """Returns the default meter water units for an organization. This method
+    is used only to set the default units for a new organization.
+
+    Do not use this method otherwise, simply call
+    `Organization._default_display_meter_water_units` directly."""
+    return Organization._default_display_meter_water_units
+
+
 class OrganizationUser(models.Model):
     class Meta:
         constraints = [
@@ -166,6 +175,21 @@ class Organization(models.Model):
         ("MtCO2e/m**2/year", "MtCO2e/m²/year"),
     )
 
+    MEASUREMENT_CHOICES_WUI = (
+        ("kgal/ft**2/year", "kgal/ft²/year"),
+        ("gal/ft**2/year", "gal/ft²/year"),
+        ("L/m**2/year", "L/m²/year"),
+    )
+
+    MEASUREMENT_CHOICES_WATER_USE = (("kgal/year", "kgal/year"), ("gal/year", "gal/year"), ("L/year", "L/year"))
+
+    AUDIT_TEMPLATE_STATUS_CHOICES = (
+        ("Complies", "Complies"),
+        ("Pending", "Pending"),
+        ("Rejected", "Rejected"),
+        ("Received", "Complies"),
+    )
+
     US = 1
     CAN = 2
 
@@ -203,6 +227,13 @@ class Organization(models.Model):
         "Wood": "kBtu (thousand Btu)",
     }
 
+    _default_display_meter_water_units = {
+        "Default": "kGal (thousand gallons) (US)",
+        "Potable Indoor": "kGal (thousand gallons) (US)",
+        "Potable Outdoor": "kGal (thousand gallons) (US)",
+        "Potable: Mixed Indoor/Outdoor": "kGal (thousand gallons) (US)",
+    }
+
     class Meta:
         ordering = ["name"]
         constraints = [
@@ -227,6 +258,9 @@ class Organization(models.Model):
     display_units_ghg_intensity = models.CharField(
         max_length=32, choices=MEASUREMENT_CHOICES_GHG_INTENSITY, blank=False, default="kgCO2e/ft**2/year"
     )
+    display_units_wui = models.CharField(max_length=32, choices=MEASUREMENT_CHOICES_WUI, blank=False, default="gal/ft**2/year")
+    display_units_water_use = models.CharField(max_length=32, choices=MEASUREMENT_CHOICES_WATER_USE, blank=False, default="kgal/year")
+
     display_decimal_places = models.PositiveSmallIntegerField(blank=False, default=2)
 
     created = models.DateTimeField(auto_now_add=True, null=True)
@@ -234,6 +268,7 @@ class Organization(models.Model):
 
     # Default preferred all meter units to kBtu
     display_meter_units = models.JSONField(default=_get_default_meter_units)
+    display_meter_water_units = models.JSONField(default=_get_default_meter_water_units)
 
     # If below this threshold, we don't show results from this Org
     # in exported views of its data.
@@ -267,6 +302,10 @@ class Organization(models.Model):
     audit_template_user = models.EmailField(blank=True, max_length=128, default="")
     audit_template_password = models.CharField(blank=True, max_length=128, default="")
     audit_template_report_type = models.CharField(blank=True, max_length=128, default="Demo City Report")
+    audit_template_status_type = models.CharField(blank=True, max_length=32, choices=AUDIT_TEMPLATE_STATUS_CHOICES, default="Complies")
+    audit_template_city_id = models.IntegerField(blank=True, null=True)
+    audit_template_conditional_import = models.BooleanField(default=True)
+    audit_template_sync_enabled = models.BooleanField(default=False)
 
     # Salesforce Functionality
     salesforce_enabled = models.BooleanField(default=False)
@@ -275,6 +314,13 @@ class Organization(models.Model):
 
     # UBID Threshold
     ubid_threshold = models.FloatField(default=1.0)
+    # Public settings
+    public_feed_enabled = models.BooleanField(default=False)
+    public_feed_labels = models.BooleanField(default=False)
+    public_geojson_enabled = models.BooleanField(default=False)
+
+    # 2 Factor Auth
+    require_2fa = models.BooleanField(default=False)
 
     def save(self, *args, **kwargs):
         """Perform checks before saving."""

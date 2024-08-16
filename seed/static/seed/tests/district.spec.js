@@ -7,7 +7,7 @@ describe('The district filter', () => {
   let districtFilter;
 
   beforeEach(() => {
-    module('BE.seed');
+    module('SEED');
     inject((_districtFilter_) => {
       districtFilter = _districtFilter_;
     });

@@ -8,7 +8,7 @@ describe('controller: create_sub_organization_modal_controller', () => {
   let controller;
   let ctrl_scope;
   beforeEach(() => {
-    module('BE.seed');
+    module('SEED');
     inject((_$httpBackend_) => {
       _$httpBackend_.whenGET(/^\/static\/seed\/locales\/.*\.json/).respond(200, {});
     });

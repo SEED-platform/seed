@@ -186,7 +186,6 @@ class SalesforceViewTests(DataMappingBaseTestCase):
     def test_salesforce_connection_fails(self):
         # test error when connection to salesforce fails due to no connection params
 
-        # enable sf
         self.org.salesforce_enabled = True
         self.org.save()
 

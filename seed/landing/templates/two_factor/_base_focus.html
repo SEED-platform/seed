@@ -1,0 +1,16 @@
+{% extends "two_factor/_base.html" %}{% load i18n %}
+
+{% block content%}
+  <div class="page">
+    <div class="page_section" style="border-radius: 8px; overflow: hidden">
+        {% include "landing/_marketing_bullets.html" %}
+      <div class="section_forms">
+        <div class="form_title">
+          <h2>{% trans "Log in to SEED Platform™" %}</h2>
+        </div>
+
+          {% block content_inner %}{% endblock %}
+      </div>
+    </div>
+  </div>
+{% endblock %}

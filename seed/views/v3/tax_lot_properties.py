@@ -197,7 +197,10 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
         if export_type == "csv":
             return self._csv_response(filename, data, column_name_mappings)
         elif export_type == "geojson":
-            return self._json_response(filename, data, column_name_mappings)
+            response_dict = self._json_response(filename, data, column_name_mappings)
+            response = JsonResponse(response_dict)
+            response["Content-Disposition"] = f'attachment; filename="{filename}"'
+            return response
         elif export_type == "xlsx":
             return self._spreadsheet_response(filename, data, column_name_mappings)
 
@@ -549,10 +552,7 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
             # be included.
             response_dict = {"type": "FeatureCollection", "name": f"SEED Export - {filename.replace('.geojson', '')}", "features": features}
 
-        response = JsonResponse(response_dict)
-        response["Content-Disposition"] = f'attachment; filename="{filename}"'
-
-        return response
+        return response_dict
 
     def _serialized_coordinates(self, polygon_wkt):
         string_coord_pairs = polygon_wkt.lstrip("POLYGON (").rstrip(")").split(", ")
@@ -582,6 +582,8 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
             is_property = True
         elif data[0].get("taxlot_state_id", None) is not None:
             is_property = False
+        else:
+            return []
 
         for datum in data:
             if datum.get("related", None) is not None:

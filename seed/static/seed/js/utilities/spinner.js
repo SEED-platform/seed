@@ -6,7 +6,7 @@
  * Eventually this may need to be refactored into a singleton factory that
  * instantiates new objects (spinners). - nicholasserra
  */
-angular.module('BE.seed.utility.spinner', []).factory('spinner_utility', [
+angular.module('SEED.utility.spinner', []).factory('spinner_utility', [
   () => {
     const spinner_utility = {};
     let _spinner;
