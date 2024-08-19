@@ -292,7 +292,7 @@ class AuditTemplateSubmissionImport(TestCase):
         )
 
         self.org.audit_template_conditional_import = False
-        self.org.audit_template_status_type = "Complies"
+        self.org.audit_template_status_types = "Complies"
         self.org.audit_template_city_id = 36
         self.org.save()
         self.at = AuditTemplate(self.org.id)
@@ -343,7 +343,7 @@ class AuditTemplateSubmissionImport(TestCase):
         # view1's state is the only state that matches the AT response's tax_id (custom_id_1) and cycle dates
         assert (
             self.view1.state.address_line_1 == "ABC Street"
-        ), "IMPORTANT: To run this test ensure that org setting audit_template_status_type matches the submission on AT."
+        ), "IMPORTANT: To run this test ensure that org setting audit_template_status_types includes the submission status on AT."
         assert self.view2.state.address_line_1 == "old address 2"
         assert self.view3.state.address_line_1 == "old address 3"
         assert self.view4.state.address_line_1 == "old address 4"
@@ -371,7 +371,7 @@ class AuditTemplateSubmissionImport(TestCase):
             view.refresh_from_db()
         assert (
             self.view1.state.address_line_1 == "ABC Street"
-        ), "IMPORTANT: To run this test ensure that org setting audit_template_status_type matches the submission on AT."
+        ), "IMPORTANT: To run this test ensure that org setting audit_template_status_types includes the submission status on AT."
         assert self.view2.state.address_line_1 == "old address 2"
         assert self.view3.state.address_line_1 == "old address 3"
         assert self.view4.state.address_line_1 == "old address 4"
