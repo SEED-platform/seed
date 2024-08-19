@@ -641,12 +641,20 @@ angular.module('SEED.controller.organization_settings', []).controller('organiza
       'WA Commerce Grants Report'
     ];
 
-    $scope.at_status_types = {
-      Complies: $scope.org.audit_template_status_types.includes('Complies'),
-      Pending: $scope.org.audit_template_status_types.includes('Pending'),
-      Received: $scope.org.audit_template_status_types.includes('Received'),
-      Rejected: $scope.org.audit_template_status_types.includes('Rejected')
+    const check_at_status = (status) => {
+      if (typeof $scope.org.audit_template_status_types === 'string') {
+        return $scope.org.audit_template_status_types.includes(status);
+      }
+      return false;
     };
+
+    $scope.at_status_types = {
+      Complies: check_at_status('Complies'),
+      Pending: check_at_status('Pending'),
+      Received: check_at_status('Received'),
+      Rejected: check_at_status('Rejected')
+    };
+
     $scope.toggle_at_status_type = (status) => {
       $scope.at_status_types[status] = !$scope.at_status_types[status];
       $scope.org.audit_template_status_types = Object.keys($scope.at_status_types).filter((key) => $scope.at_status_types[key]).sort().join(',');
