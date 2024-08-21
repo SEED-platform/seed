@@ -83,7 +83,7 @@ describe('controller: organization_settings_controller', () => {
       ],
       property_columns: [],
       taxlot_columns: [],
-      audit_template_configs_payload: [],
+      audit_template_configs_payload: []
     });
   }
 
