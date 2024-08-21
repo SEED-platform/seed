@@ -19,6 +19,7 @@ from collections import defaultdict, namedtuple
 from datetime import date, datetime
 from itertools import chain
 from math import ceil
+from typing import Union
 
 from _csv import Error
 from celery import chain as celery_chain
@@ -1704,7 +1705,7 @@ def finish_matching(result, import_file_id, progress_key):
     return progress_data.finish_with_success()
 
 
-def add_dictionary_repr_to_hash(hash_obj, dict_obj):
+def add_dictionary_repr_to_hash(hash_obj, dict_obj: dict):
     if not isinstance(dict_obj, dict):
         raise ValueError("Only dictionaries can be hashed")
 
@@ -1721,12 +1722,12 @@ def add_dictionary_repr_to_hash(hash_obj, dict_obj):
     return hash_obj
 
 
-def hash_state_object(obj, include_extra_data=True):
+def hash_state_object(obj: Union[PropertyState, TaxLotState], include_extra_data=True):
     m = hashlib.md5()  # noqa: S324
-    for f in Column.retrieve_db_field_name_for_hash_comparison():
+    for field in Column.retrieve_db_field_name_for_hash_comparison():
         # Default to a random value so we can distinguish between this and None.
-        obj_val = getattr(obj, f, "FOO")
-        m.update(f.encode("utf-8"))
+        obj_val = getattr(obj, field, "FOO")
+        m.update(field.encode("utf-8"))
         if isinstance(obj_val, datetime):
             # if this is a datetime, then make sure to save the string as a naive datetime.
             # Somehow, somewhere the data are being saved in mapping with a timezone,
