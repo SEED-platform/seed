@@ -42,8 +42,8 @@ from seed.utils.match import (
     NoAccessError,
     NoViewsError,
     empty_criteria_filter,
+    get_matching_criteria_column_names,
     match_merge_link,
-    matching_criteria_column_names,
     matching_filter_criteria,
     update_sub_progress_total,
 )
@@ -473,7 +473,7 @@ def inclusive_match_and_merge(unmatched_state_ids, org, StateClass, sub_progress
     :param StateClass: PropertyState or TaxLotState
     :return: promoted_ids: list
     """
-    column_names = matching_criteria_column_names(org.id, StateClass.__name__)
+    column_names = get_matching_criteria_column_names(org.id, StateClass.__name__)
 
     sub_progress_data = update_sub_progress_total(100, sub_progress_key)
 
@@ -566,7 +566,7 @@ def states_to_views(unmatched_state_ids, org, access_level_instance, cycle, Stat
     elif table_name == "TaxLotState":
         ViewClass = TaxLotView
 
-    matching_columns = matching_criteria_column_names(org.id, table_name)
+    matching_columns = get_matching_criteria_column_names(org.id, table_name)
 
     # Fetch existing states tied to views, and create a tuple-lookup using non-UBID matching columns
     tuple_values = matching_columns.copy()
@@ -742,11 +742,19 @@ def link_states(states, ViewClass, cycle, highest_ali, sub_progress_key):  # noq
     unlinked_views = []
     invalid_link_states = []
     unlinked_states = []
+    if len(states) > 0:
+        matching_criteria_column_names = get_matching_criteria_column_names(
+            states[0].organization_id, "PropertyState" if ViewClass == PropertyView else "TaxLotState"
+        )
+    else:
+        matching_criteria_column_names = []
 
     batch_size = math.ceil(len(states) / 100)
     for idx, state in enumerate(states):
         try:
-            _merge_count, link_count, view = match_merge_link(state, highest_ali=highest_ali, cycle=cycle)
+            _merge_count, link_count, view = match_merge_link(
+                state, highest_ali=highest_ali, cycle=cycle, matching_criteria_column_names=matching_criteria_column_names
+            )
         except (MultipleALIError, NoAccessError):
             invalid_link_states.append(state.id)
             continue
