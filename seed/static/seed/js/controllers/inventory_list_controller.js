@@ -2010,7 +2010,7 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
             $scope.gridApi.grid.columns.splice(3, 0, col);
           }
           staticColIndex = _.findIndex($scope.gridApi.grid.columns, { name: 'meters_exist_indicator' });
-          if (staticColIndex !== 4) {
+          if (staticColIndex !== 4 && $scope.inventory_type !== 'taxlots') {
             col = $scope.gridApi.grid.columns[staticColIndex];
             $scope.gridApi.grid.columns.splice(staticColIndex, 1);
             $scope.gridApi.grid.columns.splice(4, 0, col);
