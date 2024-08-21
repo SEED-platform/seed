@@ -37,6 +37,7 @@ class ColumnSerializer(serializers.ModelSerializer):
             "display_name",
             "data_type",
             "is_matching_criteria",
+            "is_updating",
             "geocoding_order",
             "recognize_empty",
             "comstock_mapping",

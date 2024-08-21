@@ -65,6 +65,7 @@
     'SEED.controller.delete_document_modal',
     'SEED.controller.delete_file_modal',
     'SEED.controller.delete_modal',
+    'SEED.controller.update_derived_data_modal',
     'SEED.controller.delete_org_modal',
     'SEED.controller.derived_columns_admin',
     'SEED.controller.derived_columns_editor',

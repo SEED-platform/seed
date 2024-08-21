@@ -51,6 +51,7 @@ from seed.models import (
     Column,
     ColumnMappingProfile,
     Cycle,
+    DerivedColumn,
     InventoryDocument,
     Meter,
     Note,
@@ -1745,6 +1746,35 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         # delete file
         doc_file.delete()
         return JsonResponse({"status": "success"})
+
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class("requires_member")
+    @action(detail=False, methods=["POST"])
+    def update_derived_data(self, request):
+        from seed.tasks import update_state_derived_data
+
+        # get states
+        org_id = self.get_organization(request)
+        ali = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
+        property_view_ids = request.data.get("property_view_ids", [])
+        property_views = PropertyView.objects.filter(
+            id__in=property_view_ids,
+            cycle__organization_id=org_id,
+            property__access_level_instance__lft__gte=ali.lft,
+            property__access_level_instance__rgt__lte=ali.rgt,
+        )
+        state_ids = list(property_views.values_list("state", flat=True))
+
+        # get all derived_columns and set them to updating
+        derived_columns = DerivedColumn.objects.filter(organization_id=org_id)
+        Column.objects.filter(derived_column__in=derived_columns).update(is_updating=True)
+        derived_column_ids = list(derived_columns.values_list("id", flat=True))
+
+        # update
+        update_state_derived_data(property_state_ids=state_ids, derived_column_ids=derived_column_ids)
+
+        return JsonResponse({"result": "success"})
 
 
 def diffupdate(old, new):

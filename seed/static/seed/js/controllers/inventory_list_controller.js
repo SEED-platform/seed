@@ -797,7 +797,7 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
 
       // Modify headerCellClass
       if (col.derived_column) {
-        col.headerCellClass = 'derived-column-display-name';
+        col.headerCellClass = col.is_updating? 'updating-derived-column-display-name' : 'derived-column-display-name';
       }
 
       // Modify misc
@@ -1318,6 +1318,26 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
       });
     };
 
+    $scope.open_update_derived_data_modal = (selectedViewIds) => {
+      const modalInstance = $uibModal.open({
+        templateUrl: `${urls.static_url}seed/partials/update_derived_data_modal.html`,
+        controller: 'update_derived_data_modal_controller',
+        resolve: {
+          property_view_ids: () => ($scope.inventory_type === 'properties' ? selectedViewIds : []),
+          taxlot_view_ids: () => ($scope.inventory_type === 'taxlots' ? selectedViewIds : [])
+        }
+      });
+      modalInstance.result.then(() => {
+        $scope.gridOptions.columnDefs.forEach((col) => {
+          if (col.derived_column) {
+            col.is_updating = true;
+            col.headerCellClass ='updating-derived-column-display-name';
+          }
+        });
+        $scope.gridApi.core.notifyDataChange(uiGridConstants.dataChange.COLUMN)
+      })
+    };
+
     $scope.open_delete_modal = (selectedViewIds) => {
       const modalInstance = $uibModal.open({
         templateUrl: `${urls.static_url}seed/partials/delete_modal.html`,
@@ -1535,6 +1555,9 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
           break;
         case 'update_salesforce':
           $scope.update_salesforce(selectedViewIds);
+          break;
+        case 'update_derived_columns':
+          $scope.open_update_derived_data_modal(selectedViewIds);
           break;
         default:
           console.error('Unknown action:', elSelectActions.value, 'Update "run_action()"');
