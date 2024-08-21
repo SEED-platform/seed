@@ -67,6 +67,8 @@ class AccountsViewTests(TestCase):
             "display_units_area": "ft**2",
             "display_units_ghg": "MtCO2e/year",
             "display_units_ghg_intensity": "kgCO2e/ft**2/year",
+            "display_units_water_use": "kgal/year",
+            "display_units_wui": "gal/ft**2/year",
             "display_decimal_places": 2,
             "cycles": [{"name": self.cal_year_name, "cycle_id": self.cycle.pk, "num_properties": 0, "num_taxlots": 0}],
             "created": self.org.created.strftime("%Y-%m-%d"),
@@ -76,6 +78,7 @@ class AccountsViewTests(TestCase):
             "property_display_field": "address_line_1",
             "taxlot_display_field": "address_line_1",
             "display_meter_units": Organization._default_display_meter_units,
+            "display_meter_water_units": Organization._default_display_meter_water_units,
             "thermal_conversion_assumption": Organization.US,
             "comstock_enabled": False,
             "new_user_email_from": "info@seed-platform.org",
@@ -86,6 +89,10 @@ class AccountsViewTests(TestCase):
             "audit_template_user": "",
             "audit_template_password": "",
             "audit_template_report_type": "Demo City Report",
+            "audit_template_city_id": None,
+            "audit_template_conditional_import": True,
+            "audit_template_status_type": "Complies",
+            "audit_template_sync_enabled": False,
             "salesforce_enabled": False,
             "ubid_threshold": 1.0,
             "inventory_count": 0,
@@ -95,6 +102,7 @@ class AccountsViewTests(TestCase):
             "public_geojson_enabled": False,
             "default_reports_x_axis_options": [],
             "default_reports_y_axis_options": [],
+            "require_2fa": False,
         }
 
         org_payload = _dict_org(self.fake_request, [self.org])
@@ -164,6 +172,8 @@ class AccountsViewTests(TestCase):
                     "display_units_area": "ft**2",
                     "display_units_ghg": "MtCO2e/year",
                     "display_units_ghg_intensity": "kgCO2e/ft**2/year",
+                    "display_units_water_use": "kgal/year",
+                    "display_units_wui": "gal/ft**2/year",
                     "display_decimal_places": 2,
                     "cycles": [{"name": self.cal_year_name, "cycle_id": new_cycle.pk, "num_properties": 0, "num_taxlots": 0}],
                     "created": new_org.created.strftime("%Y-%m-%d"),
@@ -173,6 +183,7 @@ class AccountsViewTests(TestCase):
                     "property_display_field": "address_line_1",
                     "taxlot_display_field": "address_line_1",
                     "display_meter_units": Organization._default_display_meter_units,
+                    "display_meter_water_units": Organization._default_display_meter_water_units,
                     "thermal_conversion_assumption": Organization.US,
                     "comstock_enabled": False,
                     "new_user_email_from": "info@seed-platform.org",
@@ -183,6 +194,10 @@ class AccountsViewTests(TestCase):
                     "audit_template_user": "",
                     "audit_template_password": "",
                     "audit_template_report_type": "Demo City Report",
+                    "audit_template_city_id": None,
+                    "audit_template_conditional_import": True,
+                    "audit_template_status_type": "Complies",
+                    "audit_template_sync_enabled": False,
                     "salesforce_enabled": False,
                     "ubid_threshold": 1.0,
                     "inventory_count": 0,
@@ -191,6 +206,7 @@ class AccountsViewTests(TestCase):
                     "public_geojson_enabled": False,
                     "default_reports_x_axis_options": [],
                     "default_reports_y_axis_options": [],
+                    "require_2fa": False,
                 }
             ],
             "is_parent": True,
@@ -199,6 +215,8 @@ class AccountsViewTests(TestCase):
             "display_units_area": "ft**2",
             "display_units_ghg": "MtCO2e/year",
             "display_units_ghg_intensity": "kgCO2e/ft**2/year",
+            "display_units_water_use": "kgal/year",
+            "display_units_wui": "gal/ft**2/year",
             "display_decimal_places": 2,
             "cycles": [{"name": self.cal_year_name, "cycle_id": self.cycle.pk, "num_properties": 0, "num_taxlots": 0}],
             "created": self.org.created.strftime("%Y-%m-%d"),
@@ -208,6 +226,7 @@ class AccountsViewTests(TestCase):
             "property_display_field": "address_line_1",
             "taxlot_display_field": "address_line_1",
             "display_meter_units": Organization._default_display_meter_units,
+            "display_meter_water_units": Organization._default_display_meter_water_units,
             "thermal_conversion_assumption": Organization.US,
             "comstock_enabled": False,
             "new_user_email_from": "info@seed-platform.org",
@@ -218,6 +237,10 @@ class AccountsViewTests(TestCase):
             "audit_template_user": "",
             "audit_template_password": "",
             "audit_template_report_type": "Demo City Report",
+            "audit_template_city_id": None,
+            "audit_template_conditional_import": True,
+            "audit_template_status_type": "Complies",
+            "audit_template_sync_enabled": False,
             "salesforce_enabled": False,
             "ubid_threshold": 1.0,
             "inventory_count": 0,
@@ -227,6 +250,7 @@ class AccountsViewTests(TestCase):
             "public_geojson_enabled": False,
             "default_reports_x_axis_options": [],
             "default_reports_y_axis_options": [],
+            "require_2fa": False,
         }
 
         org_payload = _dict_org(self.fake_request, Organization.objects.all())
@@ -564,7 +588,14 @@ class AccountsViewTests(TestCase):
         )
         self.assertEqual(
             json.loads(resp.content),
-            {"status": "success", "api_key": "", "email": "test_user@demo.com", "first_name": "Johnny", "last_name": "Energy"},
+            {
+                "status": "success",
+                "api_key": "",
+                "email": "test_user@demo.com",
+                "first_name": "Johnny",
+                "last_name": "Energy",
+                "two_factor_method": "disabled",
+            },
         )
         resp = self.client.post(
             reverse_lazy("api:v3:user-generate-api-key", args=[self.user.pk]),
@@ -582,6 +613,7 @@ class AccountsViewTests(TestCase):
                 "email": "test_user@demo.com",
                 "first_name": "Johnny",
                 "last_name": "Energy",
+                "two_factor_method": "disabled",
             },
         )
 

@@ -271,6 +271,7 @@ class AnalysisPipeline(abc.ABC):
         from seed.analysis_pipelines.bsyncr import BsyncrPipeline
         from seed.analysis_pipelines.co2 import CO2Pipeline
         from seed.analysis_pipelines.eeej import EEEJPipeline
+        from seed.analysis_pipelines.element_statistics import ElementStatisticsPipeline
         from seed.analysis_pipelines.eui import EUIPipeline
 
         if analysis.service == Analysis.BSYNCR:
@@ -283,6 +284,8 @@ class AnalysisPipeline(abc.ABC):
             return CO2Pipeline(analysis.id)
         elif analysis.service == Analysis.EEEJ:
             return EEEJPipeline(analysis.id)
+        elif analysis.service == Analysis.ELEMENTSTATISTICS:
+            return ElementStatisticsPipeline(analysis.id)
         else:
             raise AnalysisPipelineError(f'Analysis service type is unknown/unhandled. Service ID "{analysis.service}"')
 

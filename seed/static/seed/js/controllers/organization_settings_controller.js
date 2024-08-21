@@ -7,6 +7,7 @@ angular.module('SEED.controller.organization_settings', []).controller('organiza
   '$uibModal',
   'urls',
   'organization_payload',
+  'audit_template_service',
   'auth_payload',
   'analyses_service',
   'organization_service',
@@ -17,6 +18,7 @@ angular.module('SEED.controller.organization_settings', []).controller('organiza
   'labels_payload',
   'salesforce_mappings_payload',
   'salesforce_configs_payload',
+  'audit_template_configs_payload',
   'meters_service',
   'Notification',
   '$translate',
@@ -26,6 +28,7 @@ angular.module('SEED.controller.organization_settings', []).controller('organiza
     $uibModal,
     urls,
     organization_payload,
+    audit_template_service,
     auth_payload,
     analyses_service,
     organization_service,
@@ -36,6 +39,7 @@ angular.module('SEED.controller.organization_settings', []).controller('organiza
     labels_payload,
     salesforce_mappings_payload,
     salesforce_configs_payload,
+    audit_template_configs_payload,
     meters_service,
     Notification,
     $translate
@@ -45,6 +49,11 @@ angular.module('SEED.controller.organization_settings', []).controller('organiza
     $scope.conf = {};
     if (salesforce_configs_payload.length > 0) {
       $scope.conf = salesforce_configs_payload[0];
+    }
+
+    $scope.at_conf = {};
+    if (audit_template_configs_payload.length > 0) {
+      $scope.at_conf = audit_template_configs_payload[0];
     }
 
     $scope.timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -120,8 +129,42 @@ angular.module('SEED.controller.organization_settings', []).controller('organiza
       }
     ];
 
+    $scope.unit_options_water_use = [
+      {
+        label: $translate.instant('gal/year'),
+        value: 'gal/year'
+      },
+      {
+        label: $translate.instant('kgal/year'),
+        value: 'kgal/year'
+      },
+      {
+        label: $translate.instant('L/year'),
+        value: 'L/year'
+      }
+    ];
+
+    $scope.unit_options_wui = [
+      {
+        label: $translate.instant('gal/ft²/year'),
+        value: 'gal/ft**2/year'
+      },
+      {
+        label: $translate.instant('kgal/ft²/year'),
+        value: 'kgal/ft**2/year'
+      },
+      {
+        label: $translate.instant('L/m²/year'),
+        value: 'L/m**2/year'
+      }
+    ];
+
     // Ideally, these units and types for meters should be translatable.
     $scope.chosen_type_unit = {
+      type: null,
+      unit: null
+    };
+    $scope.chosen_water_type_unit = {
       type: null,
       unit: null
     };
@@ -133,16 +176,19 @@ angular.module('SEED.controller.organization_settings', []).controller('organiza
     $scope.ubid_matching = $scope.property_ubid_matching || $scope.taxlot_ubid_matching;
 
     // Energy type option executed within this method in order to repeat on organization update
-    const get_energy_type_options = () => {
-      $scope.energy_type_options = _.map($scope.org.display_meter_units, (unit, type) => ({
+    const get_meter_type_options = () => {
+      const map_display_units = (display_units) => _.map(display_units, (unit, type) => ({
         label: `${type} | ${unit}`,
         value: type
       }));
+      $scope.energy_type_options = map_display_units($scope.org.display_meter_units);
+      $scope.water_type_options = map_display_units($scope.org.display_meter_water_units);
     };
-    get_energy_type_options();
+    get_meter_type_options();
 
     meters_service.valid_energy_types_units().then((results) => {
-      $scope.energy_unit_options = results;
+      $scope.energy_unit_options = results.energy;
+      $scope.water_unit_options = results.water;
     });
 
     $scope.get_valid_units_for_type = () => {
@@ -155,15 +201,29 @@ angular.module('SEED.controller.organization_settings', []).controller('organiza
       }
     };
 
+    $scope.get_valid_water_units_for_type = () => {
+      const options = $scope.water_unit_options[$scope.chosen_water_type_unit.type];
+      const previous_unit = $scope.org.display_meter_water_units[$scope.chosen_water_type_unit.type];
+      if (_.includes(options, previous_unit)) {
+        $scope.chosen_water_type_unit.unit = previous_unit;
+      } else {
+        $scope.chosen_water_type_unit.unit = null;
+      }
+    };
+
     // Called when save_settings is called to update the scoped org before org save request is sent.
     const update_display_unit_for_scoped_org = () => {
-      const { type } = $scope.chosen_type_unit;
-      const { unit } = $scope.chosen_type_unit;
-
+      let { type, unit } = $scope.chosen_type_unit;
       if (type && unit) {
         $scope.org.display_meter_units[type] = unit;
-        get_energy_type_options();
       }
+
+      ({ type, unit } = $scope.chosen_water_type_unit);
+      if (type && unit) {
+        $scope.org.display_meter_water_units[type] = unit;
+      }
+
+      get_meter_type_options();
     };
 
     $scope.unit_options_area = [
@@ -241,7 +301,7 @@ angular.module('SEED.controller.organization_settings', []).controller('organiza
     const filtered_columns = _.filter($scope.columns, (column) => _.includes(acceptable_column_types, column.data_type));
 
     $scope.selected_x_columns = $scope.org.default_reports_x_axis_options.map((c) => c.id);
-    $scope.available_x_columns = () => filtered_columns.filter(({ id }) => !$scope.selected_x_columns.includes(id));
+    $scope.available_x_columns = () => $scope.columns.filter(({ id }) => !$scope.selected_x_columns.includes(id));
 
     $scope.add_x_column = (x_column_id) => {
       $scope.selected_x_columns.push(x_column_id);
@@ -253,7 +313,7 @@ angular.module('SEED.controller.organization_settings', []).controller('organiza
     };
 
     $scope.selected_y_columns = $scope.org.default_reports_y_axis_options.map((c) => c.id);
-    $scope.available_y_columns = () => $scope.columns.filter(({ id }) => !$scope.selected_y_columns.includes(id));
+    $scope.available_y_columns = () => filtered_columns.filter(({ id }) => !$scope.selected_y_columns.includes(id));
 
     $scope.add_y_column = (y_column_id) => {
       $scope.selected_y_columns.push(y_column_id);
@@ -341,6 +401,14 @@ angular.module('SEED.controller.organization_settings', []).controller('organiza
               Notification.error({ message: `Error: ${$scope.config_errors}`, delay: 15000, closeOnClick: true });
             });
         }
+      }
+
+      if ($scope.org.audit_template_sync_enabled && validate_at_conf()) {
+        audit_template_service.upsert_audit_template_config($scope.org.id, $scope.at_conf, $scope.timezone)
+          .then(() => {
+            audit_template_service.get_audit_template_configs($scope.org.id)
+              .then((response) => { $scope.at_conf = response[0]; });
+          });
       }
 
       // also save NEW/UPDATED salesforce mappings if any
@@ -535,6 +603,44 @@ angular.module('SEED.controller.organization_settings', []).controller('organiza
         });
     };
 
+    /*
+    * fetch Audit Template city submission data
+    */
+    $scope.get_city_submission_data = () => {
+      $scope.save_settings();
+      $uibModal.open({
+        templateUrl: `${urls.static_url}seed/partials/at_submission_import_modal.html`,
+        controller: 'at_submission_import_modal_controller',
+        backdrop: 'static',
+        resolve: {
+          org: () => $scope.org,
+          view_ids: () => []
+        }
+      });
+    };
+
+    $scope.days_of_week = [
+      { 0: 'Sunday' },
+      { 1: 'Monday' },
+      { 2: 'Tuesday' },
+      { 3: 'Wednesday' },
+      { 4: 'Thursday' },
+      { 5: 'Friday' },
+      { 6: 'Saturday' }
+    ];
+
+    const validate_at_conf = () => {
+      const { update_at_day, update_at_hour, update_at_minute } = $scope.at_conf;
+
+      const validate_input = (input, upper_limit) => typeof input === 'number' && input >= 0 && input <= upper_limit;
+
+      return (
+        validate_input(update_at_day, 6) &&
+        validate_input(update_at_hour, 23) &&
+        validate_input(update_at_minute, 59)
+      );
+    };
+
     $scope.audit_template_report_types = [
       'ASHRAE Level 2 Report',
       'Atlanta Report',
@@ -552,5 +658,7 @@ angular.module('SEED.controller.organization_settings', []).controller('organiza
       'WA Commerce Clean Buildings - Form D Report',
       'WA Commerce Grants Report'
     ];
+
+    $scope.audit_template_status_types = ['Received', 'Pending', 'Rejected', 'Complies'];
   }
 ]);
