@@ -7,7 +7,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 from django.db.models import Subquery
 from django.http import JsonResponse
 from drf_yasg.utils import swagger_auto_schema
-from rest_framework import viewsets
+from rest_framework import status, viewsets
 from rest_framework.decorators import action
 
 from seed.decorators import ajax_request_class
@@ -45,27 +45,30 @@ class GeocodeViewSet(viewsets.ViewSet, OrgMixin):
         property_view_ids = body.get("property_view_ids")
         taxlot_view_ids = body.get("taxlot_view_ids")
 
-        if property_view_ids:
-            property_views = PropertyView.objects.filter(
-                id__in=property_view_ids,
-                cycle__organization_id=org_id,
-                property__access_level_instance__lft__gte=access_level_instance.lft,
-                property__access_level_instance__rgt__lte=access_level_instance.rgt,
-            )
-            properties = PropertyState.objects.filter(id__in=Subquery(property_views.values("state_id")))
-            geocode_buildings(properties)
+        try:
+            if property_view_ids:
+                property_views = PropertyView.objects.filter(
+                    id__in=property_view_ids,
+                    cycle__organization_id=org_id,
+                    property__access_level_instance__lft__gte=access_level_instance.lft,
+                    property__access_level_instance__rgt__lte=access_level_instance.rgt,
+                )
+                properties = PropertyState.objects.filter(id__in=Subquery(property_views.values("state_id")))
+                geocode_buildings(properties)
 
-        if taxlot_view_ids:
-            taxlot_views = TaxLotView.objects.filter(
-                id__in=taxlot_view_ids,
-                cycle__organization_id=org_id,
-                taxlot__access_level_instance__lft__gte=access_level_instance.lft,
-                taxlot__access_level_instance__rgt__lte=access_level_instance.rgt,
-            )
-            taxlots = TaxLotState.objects.filter(id__in=Subquery(taxlot_views.values("state_id")))
-            geocode_buildings(taxlots)
+            if taxlot_view_ids:
+                taxlot_views = TaxLotView.objects.filter(
+                    id__in=taxlot_view_ids,
+                    cycle__organization_id=org_id,
+                    taxlot__access_level_instance__lft__gte=access_level_instance.lft,
+                    taxlot__access_level_instance__rgt__lte=access_level_instance.rgt,
+                )
+                taxlots = TaxLotState.objects.filter(id__in=Subquery(taxlot_views.values("state_id")))
+                geocode_buildings(taxlots)
 
-        return JsonResponse({"status": "success"})
+            return JsonResponse({"status": "success"})
+        except Exception as e:
+            return JsonResponse({"status": "error", "message": f"{e}"}, status=status.HTTP_412_PRECONDITION_FAILED)
 
     @swagger_auto_schema(
         manual_parameters=[AutoSchemaHelper.query_org_id_field()],
