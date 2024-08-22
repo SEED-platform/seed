@@ -57,7 +57,7 @@ angular.module('SEED.service.note', []).factory('note_service', [
       return $http.put(`/api/v3/${inventory_type}/${view_id}/notes/${note_id}/`, payload).then((response) => response.data);
     };
 
-    note_factory.delete_note = (inventory_type, view_id, note_id) => $http.delete(`/api/v3/${inventory_type}/${view_id}/notes/${note_id}/`, {}).then((response) => response.data);
+    note_factory.delete_note = (org_id, inventory_type, view_id, note_id) => $http.delete(`/api/v3/${inventory_type}/${view_id}/notes/${note_id}/?organization=${org_id}`).then((response) => response.data);
 
     note_factory.inventory_display_name = (property_type, organization, item_state) => {
       let error = '';

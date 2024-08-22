@@ -5,7 +5,10 @@
         <h2>
           <span ng-if="::inventory_type==='properties'"> <i class="fa-regular fa-building"></i><span translate>Property</span> : </span>
           <span ng-if="::inventory_type==='taxlots'"> <i class="fa-regular fa-map"></i><span translate>Tax Lot</span> : </span>
-          <span ng-bind-html="inventory_name"></span>
+          <span ng-style="!inventory_display_name && {'opacity': 0.5}">
+            {$ (inventory_display_name || 'Unknown') | translate $}
+            <i ng-if="!inventory_display_name" class="glyphicon glyphicon-question-sign" title="The display field can be changed from the organization settings page."></i>
+          </span>
         </h2>
       </span>
     </div>

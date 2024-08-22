@@ -17,13 +17,15 @@
 </div>
 <div class="section_header_container">
   <div class="section_header fixed_height_short has_no_padding">
-    <div class="section_action_container left" style="width: 50%">
+    <div class="section_action_container left-wide">
       <span>
         <h2>
           <span ng-if="::inventory_type === 'properties'"> <i class="fa-regular fa-building"></i><span translate>Property</span> : </span>
           <span ng-if="::inventory_type === 'taxlots'"> <i class="fa-regular fa-map"></i><span translate>Tax Lot</span> : </span>
-          <span ng-if="inventory_name">{$:: inventory_name | translate $}</span>
-          <span ng-if="!inventory_name">({$:: inventory_name_error $}) <i class="glyphicon glyphicon-question-sign" title="This can be changed from the organization settings page."></i></span>
+          <span ng-style="!inventory_display_name && {'opacity': 0.5}">
+            {$ (inventory_display_name || 'Unknown') | translate $}
+            <i ng-if="!inventory_display_name" class="glyphicon glyphicon-question-sign" title="The display field can be changed from the organization settings page."></i>
+          </span>
         </h2>
       </span>
     </div>
