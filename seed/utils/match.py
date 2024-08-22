@@ -208,7 +208,7 @@ def match(state, cycle_id, matching_criteria_column_names=[]):
 
     # If matching criteria for this state is None, return no matches (empty querysets)
     if all(v is None for v in matching_criteria.values()):
-        return self_view, ViewClass.objects.none(), ViewClass.objects.none()
+        return self_view, ViewClass.objects.none()
 
     # Get matching view in and outside of the cycle
     all_matching_views = ViewClass.objects.prefetch_related("state", f"{class_name}__access_level_instance").filter(
