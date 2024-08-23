@@ -137,13 +137,11 @@ def _link_matches(matching_views, org_id, view, ViewClass):  # noqa: N803
 
     # Exclude target and capture unique canonical IDs
     unique_canonical_ids = {getattr(v, canonical_id_col) for v in matching_views if v.id != view.id}
-    print("unique_canonical_ids", unique_canonical_ids)
 
     if len(unique_canonical_ids) == 0:
         # If no matches found - check for past links and disassociate if necessary
         canonical_id_dict = {canonical_id_col: getattr(view, canonical_id_col)}
         previous_links = ViewClass.objects.filter(**canonical_id_dict).exclude(id=view.id)
-        print("previous_links", previous_links)
         if previous_links.exists():
             new_record = CanonicalClass.objects.create(organization_id=org_id)
 

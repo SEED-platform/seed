@@ -375,7 +375,9 @@ def link_views_and_states(merged_views, new_views, errored_new_states, ViewClass
     tuple_values.discard("ubid")
 
     # This is ALL the org's views that ARE NOT in the give cycle, by their matching column values
-    existing_views = ViewClass.objects.select_related("state").filter(**{f"{class_name}__organization_id": cycle.organization_id})
+    existing_views = (
+        ViewClass.objects.select_related("state").filter(**{f"{class_name}__organization_id": cycle.organization_id}).exclude(cycle=cycle)
+    )
     view_lookup: dict[int, Union[PropertyState, TaxLotState]] = {view.state.id: view for view in existing_views}
     match_lookup: dict[tuple, list[dict[str, any]]] = defaultdict(list)
     for state in ({k: getattr(view.state, k) for k in ["id", "hash_object", "updated", *matching_columns]} for view in existing_views):
@@ -745,7 +747,6 @@ def states_to_views(unmatched_state_ids, org, access_level_instance, cycle, Stat
 
 
 def link_states(states, ViewClass, cycle, highest_ali, sub_progress_key, tuple_values, view_lookup, match_lookup):  # noqa: N803
-    _log.error("+++ link_states")
     class_name = "property" if ViewClass == PropertyView else "taxlot"
 
     # set up the progress bar
@@ -757,7 +758,6 @@ def link_states(states, ViewClass, cycle, highest_ali, sub_progress_key, tuple_v
     invalid_link_states = []
     unlinked_states = []
     for idx, state in enumerate(states):
-        # _log.error(f"+++ {idx}")
         # get matches
         existing_state_matches = match_lookup.get(tuple(getattr(state, c) for c in tuple_values), [])
         existing_views_matches = [view_lookup[x["id"]] for x in existing_state_matches]
@@ -779,7 +779,11 @@ def link_states(states, ViewClass, cycle, highest_ali, sub_progress_key, tuple_v
             view = state.promote(cycle=cycle)
 
         # link state
-        _link_matches(existing_views_matches, cycle.organization_id, view, ViewClass)
+        link_count = _link_matches([*existing_views_matches, view], cycle.organization_id, view, ViewClass)
+        if link_count == 0:
+            unlinked_views.append(view)
+        else:
+            linked_views.append(view)
 
         if batch_size > 0 and idx % batch_size == 0:
             sub_progress_data.step("Matching Data (6/6): Merging Views")

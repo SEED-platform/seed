@@ -1137,7 +1137,6 @@ class TestMatchMergeLink(DataMappingBaseTestCase):
         view_11 = PropertyView.objects.get(state_id=ps_11.id)
         initial_linked_id = view_11.property_id
 
-        print("+++++ unlink!")
         # Unlink the first
         PropertyState.objects.filter(id=ps_11.id).update(pm_property_id="No longer matches")
         ps_11.refresh_from_db()
