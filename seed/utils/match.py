@@ -136,17 +136,14 @@ def _link_matches(matching_views, org_id, view, ViewClass):  # noqa: N803
         canonical_id_col = "taxlot_id"
 
     # Exclude target and capture unique canonical IDs
-    unique_canonical_ids = (
-        matching_views.exclude(id=view.id)
-        .values(canonical_id_col)
-        .annotate(state_ids=ArrayAgg(canonical_id_col))
-        .values_list(canonical_id_col, flat=True)
-    )
+    unique_canonical_ids = {getattr(v, canonical_id_col) for v in matching_views if v.id != view.id}
+    print("unique_canonical_ids", unique_canonical_ids)
 
-    if unique_canonical_ids.exists() is False:
+    if len(unique_canonical_ids) == 0:
         # If no matches found - check for past links and disassociate if necessary
         canonical_id_dict = {canonical_id_col: getattr(view, canonical_id_col)}
         previous_links = ViewClass.objects.filter(**canonical_id_dict).exclude(id=view.id)
+        print("previous_links", previous_links)
         if previous_links.exists():
             new_record = CanonicalClass.objects.create(organization_id=org_id)
 
@@ -155,9 +152,9 @@ def _link_matches(matching_views, org_id, view, ViewClass):  # noqa: N803
 
             setattr(view, canonical_id_col, new_record.id)
             view.save()
-    elif unique_canonical_ids.count() == 1:
+    elif len(unique_canonical_ids) == 1:
         # If all matches are linked already - use the linking ID
-        linking_id = unique_canonical_ids.first()
+        linking_id = next(iter(unique_canonical_ids))
 
         if CanonicalClass == Property:
             linking_property = Property.objects.get(id=linking_id)
@@ -179,9 +176,11 @@ def _link_matches(matching_views, org_id, view, ViewClass):  # noqa: N803
 
         canonical_id_dict = {canonical_id_col: new_record.id}
 
-        matching_views.update(**canonical_id_dict)
+        for v in matching_views:
+            setattr(v, canonical_id_col, new_record.id)
+            v.save()
 
-    return matching_views.count() - 1
+    return len(matching_views) - 1
 
 
 def match(state, cycle_id, matching_criteria_column_names=[]):
@@ -291,9 +290,6 @@ def match_merge_link(state, highest_ali, cycle, matching_criteria_column_names=[
     # TODO: _merge_matches_across_cycles wants _all_ the matching views. idk quite why. Why would
     # the out-of-cycle views need to merge? Why would both the target state and view need to be
     # passed? We should take a look at this, But for now, I don't want to anger it.
-    if not all_matching_views.exists():
-        return 0, 0, view
-
     all_matching_views = ViewClass.objects.filter(pk=view.id).prefetch_related("state") | all_matching_views
     merge_count, target_state_id = _merge_matches_across_cycles(all_matching_views, org_id, state.id, StateClass)
     view = ViewClass.objects.get(state_id=target_state_id)
