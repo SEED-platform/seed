@@ -692,10 +692,6 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
             .values_list("file", flat=True)
         )
 
-        logging.error("++++")
-        logging.error(state_ids)
-        logging.error(building_files)
-        logging.error("++++")
         filename = request.data.get("filename", "ExportedData.xlsx")
         response = HttpResponse(content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
         response["Content-Disposition"] = f'attachment; filename="{filename}"'
