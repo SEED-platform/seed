@@ -1205,6 +1205,24 @@ angular.module('SEED.service.inventory', []).factory('inventory_service', [
       }
     });
 
+    inventory_service.set_update_to_now = (property_views, taxlot_views, progress_key) => $http.post('/api/v3/tax_lot_properties/set_update_to_now/', {
+      property_views,
+      taxlot_views,
+      progress_key,
+      organization_id: user_service.get_organization().id
+    });
+
+    inventory_service.export_to_cts = (property_view_ids, filename = 'test.xlsx') => $http.post(
+      `/api/v3/tax_lot_properties/export_to_cts/?organization_id=${user_service.get_organization().id}`,
+      {
+        filename,
+        property_view_ids
+      },
+      {
+        responseType: 'arraybuffer'
+      }
+    );
+
     inventory_service.filter_by_property = (cycle_id, property_ids) => $http.post('/api/v3/properties/filter_by_property/', {
       organization_id: user_service.get_organization().id,
       cycle: cycle_id,
