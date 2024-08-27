@@ -19,6 +19,7 @@ from collections import defaultdict, namedtuple
 from datetime import date, datetime
 from itertools import chain
 from math import ceil
+from typing import Union
 
 from _csv import Error
 from celery import chain as celery_chain
@@ -1704,33 +1705,29 @@ def finish_matching(result, import_file_id, progress_key):
     return progress_data.finish_with_success()
 
 
-def hash_state_object(obj, include_extra_data=True):
-    def add_dictionary_repr_to_hash(hash_obj, dict_obj):
-        if not isinstance(dict_obj, dict):
-            raise ValueError("Only dictionaries can be hashed")
+def add_dictionary_repr_to_hash(hash_obj, dict_obj: dict):
+    if not isinstance(dict_obj, dict):
+        raise ValueError("Only dictionaries can be hashed")
 
-        for key, value in sorted(dict_obj.items(), key=lambda x_y: x_y[0]):
-            if isinstance(value, dict):
-                add_dictionary_repr_to_hash(hash_obj, value)
-            else:
-                # TODO: Do we need to normalize_unicode_and_characters (formerly unidecode) here?
-                hash_obj.update(str(normalize_unicode_and_characters(key)).encode("utf-8"))
-                if isinstance(value, basestring):
-                    hash_obj.update(normalize_unicode_and_characters(value).encode("utf-8"))
-                else:
-                    hash_obj.update(str(value).encode("utf-8"))
-        return hash_obj
-
-    def _get_field_from_obj(field_obj, field):
-        if hasattr(field_obj, field):
-            return getattr(field_obj, field)
+    for key, value in sorted(dict_obj.items(), key=lambda x_y: x_y[0]):
+        if isinstance(value, dict):
+            add_dictionary_repr_to_hash(hash_obj, value)
         else:
-            return "FOO"  # Return a random value so we can distinguish between this and None.
+            # TODO: Do we need to normalize_unicode_and_characters (formerly unidecode) here?
+            hash_obj.update(str(normalize_unicode_and_characters(key)).encode("utf-8"))
+            if isinstance(value, basestring):
+                hash_obj.update(normalize_unicode_and_characters(value).encode("utf-8"))
+            else:
+                hash_obj.update(str(value).encode("utf-8"))
+    return hash_obj
 
+
+def hash_state_object(obj: Union[PropertyState, TaxLotState], include_extra_data=True):
     m = hashlib.md5()  # noqa: S324
-    for f in Column.retrieve_db_field_name_for_hash_comparison():
-        obj_val = _get_field_from_obj(obj, f)
-        m.update(f.encode("utf-8"))
+    for field in Column.retrieve_db_field_name_for_hash_comparison():
+        # Default to a random value so we can distinguish between this and None.
+        obj_val = getattr(obj, field, "FOO")
+        m.update(field.encode("utf-8"))
         if isinstance(obj_val, datetime):
             # if this is a datetime, then make sure to save the string as a naive datetime.
             # Somehow, somewhere the data are being saved in mapping with a timezone,
