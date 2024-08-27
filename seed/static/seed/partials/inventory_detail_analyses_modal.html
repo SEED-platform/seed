@@ -5,7 +5,7 @@
   </div>
   <div class="modal-body">
     <div class="newAnalysisInput" style="margin-top: 0">
-      <form id="newAnalysisForm" name="newAnalysisForm" role="form" ng-submit="submitNewAnalysisForm(newAnalysisForm)" novalidate>
+      <form ng-if="!error" id="newAnalysisForm" name="newAnalysisForm" role="form" ng-submit="submitNewAnalysisForm(newAnalysisForm)" novalidate>
         <div class="form-group">
           <label class="control-label sectionLabel" translate>Name</label>
           <input
@@ -253,10 +253,11 @@
           </div>
         </div>
       </form>
+      <p ng-if="error" class="alert alert-danger" ng-bind-html="error"></p>
     </div>
   </div>
   <div class="modal-footer">
     <button type="button" class="btn btn-default" style="min-width: 90px" ng-click="cancel()" translate>Cancel</button>
-    <button type="submit" class="btn btn-primary" form="newAnalysisForm" ng-disabled="newAnalysisForm.$invalid || waiting_for_server" translate>Create Analysis</button>
+    <button type="submit" class="btn btn-primary" form="newAnalysisForm" ng-disabled="newAnalysisForm.$invalid || waiting_for_server" ng-if="!error" translate>Create Analysis</button>
   </div>
 </div>
