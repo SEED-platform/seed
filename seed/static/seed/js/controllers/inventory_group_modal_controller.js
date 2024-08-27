@@ -51,7 +51,8 @@ angular.module('SEED.controller.inventory_group_modal', [])
           inventory_group_service.new_group({
             name: $scope.newName,
             inventory_type: $scope.inventory_type,
-            organization: $scope.org_id
+            organization: $scope.org_id,
+            access_level_instance: 1  // TODO: add access level instance dropdown to modal
           }).then((result) => {
             $uibModalInstance.close(result.data);
           });
