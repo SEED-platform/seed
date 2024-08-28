@@ -18,6 +18,7 @@ from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.lib.superperms.orgs.models import AccessLevelInstance
 from seed.models import Column, DerivedColumn, PropertyView, TaxLotView
 from seed.serializers.derived_columns import DerivedColumnSerializer
+from seed.tasks import update_state_derived_data
 from seed.utils.api import OrgMixin, api_endpoint_class
 from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema_org_query_param
 
@@ -89,14 +90,7 @@ class DerivedColumnViewSet(viewsets.ViewSet, OrgMixin):
             )
 
         try:
-            serializer.save()
-            return JsonResponse(
-                {
-                    "status": "success",
-                    "derived_column": serializer.data,
-                },
-                status=status.HTTP_200_OK,
-            )
+            derived_column = serializer.save()
         except django.core.exceptions.ValidationError as e:
             message_dict = e.message_dict
 
@@ -111,6 +105,20 @@ class DerivedColumnViewSet(viewsets.ViewSet, OrgMixin):
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
+
+        # populate column
+        Column.objects.filter(derived_column=derived_column).update(is_updating=True)
+        property_views = PropertyView.objects.filter(cycle__organization_id=org_id)
+        state_ids = list(property_views.values_list("state", flat=True))
+        update_state_derived_data(property_state_ids=state_ids, derived_column_ids=[derived_column.id])
+
+        return JsonResponse(
+            {
+                "status": "success",
+                "derived_column": serializer.data,
+            },
+            status=status.HTTP_200_OK,
+        )
 
     @swagger_auto_schema_org_query_param
     @require_organization_id_class
