@@ -738,7 +738,6 @@ angular.module('SEED.controller.data_upload_modal', []).controller('data_upload_
           $scope.uploader.in_progress = false;
           $scope.uploader.progress = 0;
           $scope.step.number = 10;
-          $scope.goto_step(10);
           $scope.step_10_style = 'danger';
           $scope.step_10_error_message = message;
           $scope.step_10_title = message;
@@ -831,6 +830,7 @@ angular.module('SEED.controller.data_upload_modal', []).controller('data_upload_
               $state.go('dataset_list');
             });
           };
+
           const failure_fn = (response) => {
             handleSystemMatchingError(response.data);
             if ($scope.step_10_error_message.toLowerCase().includes('mapquest')) {
