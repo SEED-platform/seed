@@ -8,6 +8,7 @@
  */
 angular.module('SEED.controller.inventory_detail_analyses_modal', []).controller('inventory_detail_analyses_modal_controller', [
   '$scope',
+  '$sce',
   '$log',
   '$uibModalInstance',
   'Notification',
@@ -17,7 +18,7 @@ angular.module('SEED.controller.inventory_detail_analyses_modal', []).controller
   'cycles',
   'user',
   // eslint-disable-next-line func-names
-  function ($scope, $log, $uibModalInstance, Notification, analyses_service, inventory_ids, current_cycle, cycles, user) {
+  function ($scope, $sce, $log, $uibModalInstance, Notification, analyses_service, inventory_ids, current_cycle, cycles, user) {
     $scope.inventory_count = inventory_ids.length;
     // used to disable buttons on submit
     $scope.waiting_for_server = false;
@@ -135,11 +136,20 @@ angular.module('SEED.controller.inventory_detail_analyses_modal', []).controller
         },
         (response) => {
           $scope.waiting_for_server = false;
+          $scope.error = linkify(response.data.message);
           $log.error('Error creating new analysis:', response);
-          Notification.error(`Failed to create Analysis: ${response.data.message}`);
-          $uibModalInstance.dismiss('cancel');
+          Notification.error(`Failed to create Analysis: ${$scope.error}`);
         }
       );
+    };
+
+    const linkify = (text) => {
+      // Regular expression matching any URL starting with http:// or https://
+      const urlPattern = /(\b(https?):\/\/[-A-Z0-9+&@#/%?=~_|!:,.;]*[-A-Z0-9+&@#/%=~_|])/ig;
+
+      // Add link html
+      const linkedText = text.replace(urlPattern, '<a href="$1" target="_blank">$1</a>');
+      return $sce.trustAsHtml(linkedText);
     };
 
     /* User has cancelled dialog */
