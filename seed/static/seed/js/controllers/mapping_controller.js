@@ -896,11 +896,7 @@ angular.module('SEED.controller.mapping', []).controller('mapping_controller', [
 
     const init = () => {
       $scope.initialize_mappings();
-
-      if ($scope.import_file.matching_done) {
-        display_cached_column_mappings();
-      }
-
+      display_cached_column_mappings();
       $scope.updateColDuplicateStatus();
       $scope.updateColIsDisallowedCreation();
       $scope.updateDerivedColumnMatchStatus();
