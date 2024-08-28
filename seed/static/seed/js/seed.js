@@ -76,6 +76,7 @@
     'SEED.controller.export_inventory_modal',
     'SEED.controller.export_report_modal',
     'SEED.controller.export_to_audit_template_modal',
+    'SEED.controller.export_to_cts_modal',
     'SEED.controller.faq',
     'SEED.controller.filter_group_modal',
     'SEED.controller.geocode_modal',

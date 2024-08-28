@@ -4,6 +4,7 @@
  */
 angular.module('SEED.controller.organization_settings', []).controller('organization_settings_controller', [
   '$scope',
+  '$sce',
   '$uibModal',
   'urls',
   'organization_payload',
@@ -26,6 +27,7 @@ angular.module('SEED.controller.organization_settings', []).controller('organiza
   // eslint-disable-next-line func-names
   function (
     $scope,
+    $sce,
     $uibModal,
     urls,
     organization_payload,
@@ -286,11 +288,27 @@ angular.module('SEED.controller.organization_settings', []).controller('organiza
     };
 
     $scope.verify_token = () => {
+      $scope.save_settings();
       analyses_service
-        .verify_token($scope.org.id)
+        .verify_token($scope.org.better_analysis_api_key)
         .then((response) => {
-          $scope.token_validity = response.validity ? { message: 'Valid Token', status: 'valid' } : { message: 'Invalid Token', status: 'invalid' };
+          if (response.validity) {
+            $scope.token_validity = { message: 'Valid Token', status: 'valid' };
+            $scope.error = null;
+          } else {
+            $scope.token_validity = { message: 'Invalid Token', status: 'invalid' };
+            $scope.error = linkify(response.message);
+          }
         });
+    };
+
+    const linkify = (text) => {
+      // Regular expression matching any URL starting with http:// or https://
+      const urlPattern = /(\b(https?):\/\/[-A-Z0-9+&@#/%?=~_|!:,.;]*[-A-Z0-9+&@#/%=~_|])/ig;
+
+      // Add link html
+      const linkedText = text.replace(urlPattern, '<a href="$1" target="_blank">$1</a>');
+      return $sce.trustAsHtml(linkedText);
     };
 
     const acceptable_column_types = ['area', 'eui', 'float', 'integer', 'number'];
