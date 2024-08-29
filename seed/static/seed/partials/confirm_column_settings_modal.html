@@ -30,16 +30,46 @@
       <button type="button" class="btn btn-warning center-block" ng-show="!preview_loading" ng-click="goto_step(2)" translate>Preview</button>
     </div>
   </div>
+
 </div>
 
-<div class="modal-footer container-fluid">
-  <div>
-    <div class="row text-center">
-      <button type="button" class="btn btn-primary col-sm-6 center-block" ng-click="confirm()" ng-disabled="!checks.warnings_acknowledged" translate>Confirm</button>
-    </div>
-  </div>
 
-  <div class="row text-center">
-    <button type="button" class="btn btn-default col-sm-6 center-block" ng-click="cancel()" translate>Cancel</button>
+<div class="modal-footer container-fluid" >
+  <div ng-switch="state">
+    <div class="col-sm-12">
+      <div ng-switch-default>
+        <div ng-if="rehash_required">
+          <p>Changing the Uniqueness Exclusions will require we recalculate the match criteria for your properties.</p>
+          <p>This operation may take a long time to complete, are you sure you want to continue?</p>
+        </div>
+      </div>
+      <div ng-switch-when="pending">
+        <uib-progressbar class="progress-striped active" value="100" type="info"></uib-progressbar>
+        <p>Please wait, scanning for affected records...</p>
+      </div>
+      <div ng-switch-when="evaluating">
+        <uib-progressbar class="progress-striped active" value="100" type="info"></uib-progressbar>
+        <p>Please wait, evaluating affected records. This may take several minutes...</p>
+      </div>
+      <div ng-switch-when="running">
+        <uib-progressbar class="progress-striped active" value="progressBar.progress" type="success"><span class="status-text">{$ progressBar.status_message $}</span></uib-progressbar>
+        <table class="time-table">
+          <tr>
+            <td>Elapsed:</td>
+            <td>{$ elapsed $}</td>
+          </tr>
+          <tr>
+            <td>ETA:</td>
+            <td>{$ eta $}</td>
+          </tr>
+        </table>
+      </div>
+      <div ng-switch-when="done">{$ result $}</div>
+    </div>
+
+  <div class="modal-footer" ng-if="state !== 'pending' && state !== 'running' && state !== 'evaluating'">
+    <button type="button" class="btn btn-default" ng-click="cancel()" ng-if="state !== 'done'" ng-disabled="state === 'running'">Cancel</button>
+    <button type="button" class="btn btn-info" ng-click="confirm_changes_and_rehash()" ng-if="state !== 'done'" ng-disabled="state === 'running'" autofocus>Confirm</button>
+    <button type="button" class="btn btn-info" ng-click="refresh()" ng-if="state === 'done'" autofocus>Refresh</button>
   </div>
 </div>
