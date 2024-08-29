@@ -11,6 +11,7 @@ from unittest.mock import patch
 
 import pytz
 from django.core.files.uploadedfile import SimpleUploadedFile
+from seed.models.derived_columns import DerivedColumn, DerivedColumnParameter, ExpressionEvaluator, InvalidExpressionError
 
 from config.settings.common import BASE_DIR
 from seed.data_importer.match import filter_duplicate_states, save_state_match
@@ -43,7 +44,7 @@ from seed.models import (
     TaxLotState,
     TaxLotView,
 )
-from seed.test_helpers.fake import FakePropertyStateFactory, FakeTaxLotStateFactory
+from seed.test_helpers.fake import FakePropertyStateFactory, FakeTaxLotStateFactory, FakeDerivedColumnFactory
 from seed.tests.util import DataMappingBaseTestCase
 
 
@@ -408,6 +409,101 @@ class TestMatchingInImportFile(DataMappingBaseTestCase):
         self.assertEqual(PropertyState.objects.count(), 7)
 
         self.assertEqual(PropertyView.objects.first().state.city, "Denver")
+
+class TestImportFileUpdatesDerivedColumns(DataMappingBaseTestCase):
+    def setUp(self):
+        selfvars = self.set_up(ASSESSED_RAW)
+        self.user, self.org, self.import_file, self.import_record, self.cycle = selfvars
+
+        self.property_state_factory = FakePropertyStateFactory(organization=self.org)
+        self.derived_col_factory = FakeDerivedColumnFactory(organization=self.org, inventory_type=DerivedColumn.PROPERTY_TYPE)
+
+
+    def _derived_column_for_property_factory(self, expression, column_parameters, name=None, create_property_state=True):
+        """Factory to create DerivedColumn, DerivedColumnParameters, and a PropertyState
+        which can be used to evaluate the DerivedColumn expression.
+
+        :param expression: str, expression for the DerivedColumn
+        :param column_parameters: dict, Columns to be added as parameters. Of the format:
+            {
+                <parameter name>: {
+                    'source_column': Column,
+                    'value': <value>,
+                },
+                ...
+            }
+            NOTE:
+                - <parameter name> is used for the DerivedColumnParameter.parameter_name
+                - `value` is used to set the value of the property state. If None,
+                  and the column is extra_data, it is not added the property state
+        :return: dict, of the format:
+            {
+                'property_state': PropertyState,
+                'derived_column': DerivedColumn,
+                'derived_column_parameters': [DerivedColumnParameters]
+            }
+        """
+        derived_column = self.derived_col_factory.get_derived_column(expression=expression, name=name)
+
+        # link the parameter columns to the derived column
+        derived_column_parameters = []
+        for param_name, param_config in column_parameters.items():
+            derived_column_parameters.append(
+                DerivedColumnParameter.objects.create(
+                    parameter_name=param_name,
+                    derived_column=derived_column,
+                    source_column=param_config["source_column"],
+                )
+            )
+
+        # make a property state which has all the values for the expression
+        property_state_config = {"extra_data": {}}
+        for param_name, param_config in column_parameters.items():
+            col = param_config["source_column"]
+            param_value = param_config["value"]
+            if col.is_extra_data:
+                # don't add extra data with value of None
+                # this is to assist testing properties with missing extra data columns
+                if param_value is not None:
+                    property_state_config["extra_data"][col.column_name] = param_value
+            else:
+                property_state_config[col.column_name] = param_value
+
+        property_state = None
+        if create_property_state:
+            property_state = self.property_state_factory.get_property_state(**property_state_config)
+
+        return {"property_state": property_state, "derived_column": derived_column, "derived_column_parameters": derived_column_parameters}
+
+    def test_import_updates_derived_data(self):
+        # -- Setup
+        expression = "$a + 1"
+        column_parameters = {
+            "a": {
+                "source_column": Column.objects.get(column_name="gross_floor_area"),
+                "value": 1,
+            },
+        }
+
+        derived_column = self._derived_column_for_property_factory(expression, column_parameters)["derived_column"]
+        
+        base_details = {
+            "custom_id_1": "MyCustomId123",
+            "import_file_id": self.import_file.id,
+            "data_state": DATA_STATE_MAPPING,
+            "no_default_data": False,
+            "raw_access_level_instance_id": self.org.root.id,
+            "gross_floor_area": 123,
+            
+        }
+        self.property_state_factory.get_property_state(**base_details)
+        self.import_file.mapping_done = True
+        self.import_file.save()
+        geocode_and_match_buildings_task(self.import_file.id)
+
+        print(PropertyView.objects.first().state.derived_data)
+        print(derived_column.name)
+        self.assertEqual(PropertyView.objects.first().state.derived_data[derived_column.name], 124)
 
 
 class TestMatchingOutsideImportFile(DataMappingBaseTestCase):

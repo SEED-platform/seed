@@ -35,6 +35,7 @@ from seed.models import (
     TaxLotAuditLog,
     TaxLotState,
     TaxLotView,
+    DerivedColumn
 )
 from seed.models.auditlog import AUDIT_IMPORT
 from seed.utils.match import (
@@ -326,6 +327,17 @@ def match_and_link_incoming_properties_and_taxlots_by_cycle(
         linked_property_views + new_property_views + merged_property_views,
         linked_taxlot_views + new_taxlot_views + merged_taxlot_views,
         sub_progress_key,
+    )
+
+    derived_columns = DerivedColumn.objects.filter(organization_id=cycle.organization_id)
+    Column.objects.filter(derived_column__in=derived_columns).update(is_updating=True)
+    derived_column_ids = list(derived_columns.values_list("id", flat=True))
+    from seed.tasks import update_state_derived_data
+
+    update_state_derived_data(
+        property_state_ids=[v.state.id for v in linked_property_views + new_property_views + merged_property_views], 
+        taxlot_state_ids=[v.state.id for v in linked_taxlot_views + new_taxlot_views + merged_taxlot_views], 
+        derived_column_ids=derived_column_ids
     )
 
     return {

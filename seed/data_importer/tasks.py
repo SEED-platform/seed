@@ -1569,6 +1569,7 @@ def save_raw_data(file_pk):
 
 
 def geocode_and_match_buildings_task(file_pk):
+    print("geocode_and_match_buildings_task")
     import_file = ImportFile.objects.get(pk=file_pk)
     org = import_file.import_record.super_organization
 

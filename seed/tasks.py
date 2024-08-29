@@ -436,6 +436,11 @@ def update_state_derived_data(property_state_ids=[], taxlot_state_ids=[], derive
     property_derived_column_ids = list(derived_columns.filter(inventory_type=DerivedColumn.PROPERTY_TYPE).values_list("id", flat=True))
     taxlot_derived_column_ids = list(derived_columns.filter(inventory_type=DerivedColumn.TAXLOT_TYPE).values_list("id", flat=True))
 
+    print("derived_columns", derived_columns)
+    print("property_derived_column_ids", property_derived_column_ids)
+    print("taxlot_derived_column_ids", taxlot_derived_column_ids)
+
+
     tasks = []
     for chunk_ids in batch(property_state_ids, chunk_size):
         tasks.append(_update_property_state_derived_data_chunk.si(chunk_ids, property_derived_column_ids))
@@ -454,6 +459,7 @@ def _update_property_state_derived_data_chunk(property_state_ids=[], derived_col
         for derived_column in derived_columns:
             state.derived_data[derived_column.name] = derived_column.evaluate(state)
         state.save()
+        print(state.derived_data)
 
 
 @shared_task
@@ -469,5 +475,7 @@ def _update_taxlot_state_derived_data_chunk(taxlot_state_ids=[], derived_column_
 
 @shared_task
 def _finish_update_state_derived_data(derived_column_ids):
+    import time
+    time.sleep(30)
     derived_columns = DerivedColumn.objects.filter(id__in=derived_column_ids)
     Column.objects.filter(derived_column__in=derived_columns).update(is_updating=False)
