@@ -24,7 +24,6 @@ from seed.serializers.columns import ColumnSerializer
 from seed.serializers.pint import add_pint_unit_suffix
 from seed.utils.api import OrgCreateUpdateMixin, OrgValidateMixin, api_endpoint_class
 from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema_org_query_param
-from seed.utils.cache import get_cache
 from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
 
 
@@ -207,8 +206,9 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet, Org
             )
 
         changes = request.data.get("changes")
-        progress_key = tasks.update_multiple_columns(table_name, org_id, changes)
-        return JsonResponse(get_cache(progress_key))
+        key = "".join(str(x) for x in changes)
+        result = tasks.update_multiple_columns(key, table_name, org_id, changes)
+        return JsonResponse(result)
 
     @swagger_auto_schema(request_body=AutoSchemaHelper.schema_factory({"new_column_name": "string", "overwrite": "boolean"}))
     @ajax_request_class

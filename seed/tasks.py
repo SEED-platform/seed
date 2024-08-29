@@ -302,13 +302,12 @@ def delete_organization_column(column_pk, org_pk, prog_key=None, chunk_size=100,
 
 @shared_task
 @lock_and_track
-def update_multiple_columns(table_name, org_pk, changes, prog_key=None):
+def update_multiple_columns(key, table_name, org_pk, changes, prog_key=None):
     """Updates several columns and optionally rehashes if need be."""
 
-    column_ids = "".join(str(x) for x in changes)
-    progress_data = ProgressData.from_key(prog_key) if prog_key else ProgressData(func_name="update_multiple_columns", unique_id=column_ids)
+    progress_data = ProgressData.from_key(prog_key) if prog_key else ProgressData(func_name="update_multiple_columns", unique_id=key)
     _evaluate_update_multiple_columns.subtask((progress_data.key, table_name, org_pk, changes)).apply_async()
-    return progress_data.key
+    return progress_data.result()
 
 
 @shared_task
