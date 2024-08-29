@@ -152,7 +152,7 @@ def _dict_org(request, organizations):
             "audit_template_city_id": o.audit_template_city_id,
             "audit_template_conditional_import": o.audit_template_conditional_import,
             "audit_template_report_type": o.audit_template_report_type,
-            "audit_template_status_type": o.audit_template_status_type,
+            "audit_template_status_types": o.audit_template_status_types,
             "audit_template_sync_enabled": o.audit_template_sync_enabled,
             "salesforce_enabled": o.salesforce_enabled,
             "ubid_threshold": o.ubid_threshold,
@@ -644,9 +644,9 @@ class OrganizationViewSet(viewsets.ViewSet):
         if audit_template_report_type != org.audit_template_report_type:
             org.audit_template_report_type = audit_template_report_type
 
-        audit_template_status_type = posted_org.get("audit_template_status_type", False)
-        if audit_template_status_type != org.audit_template_status_type:
-            org.audit_template_status_type = audit_template_status_type
+        audit_template_status_types = posted_org.get("audit_template_status_types", False)
+        if audit_template_status_types != org.audit_template_status_types:
+            org.audit_template_status_types = audit_template_status_types
 
         audit_template_city_id = posted_org.get("audit_template_city_id", False)
         if audit_template_city_id != org.audit_template_city_id:

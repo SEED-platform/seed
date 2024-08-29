@@ -233,9 +233,18 @@
             <div class="form-group">
               <div class="col-sm-5">
                 <p translate>AT_SUBMISSION_STATUS</p>
-                <select ng-model="org.audit_template_status_type" ng-disabled="::!auth.requires_owner" class="settings-dropdown">
-                  <option ng-repeat="status_type in audit_template_status_types">{$ status_type$}</option>
-                </select>
+                <div class="mutli-select-container">
+                  <div
+                    ng-repeat="status in ['Complies', 'Pending', 'Received', 'Rejected']"
+                    class="option"
+                    ng-class="{'option-selected': at_status_types[status]}"
+                    ng-click="toggle_at_status_type(status)"
+                  >
+                    <i class="option-indicator" ng-class="at_status_types[status] ? 'fa-solid fa-check' : 'fa-regular fa-square'"></i>
+                    {$ status $}
+                  </div>
+                </div>
+                <div ng-show="!org.audit_template_status_types" class="alert alert-warning" style="width: fit-content; margin: 10px">Select at least one status type</div>
               </div>
             </div>
           </form>
