@@ -50,7 +50,7 @@
     "AT_PASS_TEXT": "Utilisez le mot de passe associé à votre compte sur le <a href=\"{link}\/\" target=\"_blank\" rel=\"noopener noreferrer\"> Building Energy Score <\/a> .",
     "AT_REPORT_TYPE": "Si vous souhaitez générer des rapports Audit Template stub à partir des données SEED, sélectionnez le type de rapport Audit Template que SEED doit générer.",
     "AT_SETTINGS_TEXT": "Si votre organisation a configuré un formulaire de rapport personnalisé dans Audit Template, remplissez les paramètres ci-dessous pour activer l'importation des soumissions Audit Template dans votre organisation SEED.",
-    "AT_SUBMISSION_STATUS": "SEED importera les données pour les soumissions étiquetées avec le statut suivant sur le site Audit Template. Le statut de soumission par défaut sur le site Audit Template est « Received ».",
+    "AT_SUBMISSION_STATUS": "SEED importera les données des soumissions avec les statuts suivants dans le modèle d'audit.",
     "AT_TOKEN_TEXT": "Le jeton API de votre organisation devrait être visible sur votre page de compte dans Audit Template. Veuillez vous référer à la <a href=\"{link}\/reports\/api\/\" target=\"_blank\" rel=\"noopener noreferrer\"> documentation sur Audit Template <\/a> pour savoir comment obtenir une clé API. Notez que ne préfixez pas le jeton avec \"Jeton\", incluez uniquement le jeton lui-même.",
     "About": "À Propos",
     "About SEED Platform™": "À propos de SEED Platform™",

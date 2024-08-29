@@ -134,22 +134,24 @@
           <h3 translate>BETTER Analysis API Key</h3>
           <form class="form-horizontal" role="form">
             <div class="form-group">
-              <div class="col-sm-4">
-                <p><span translate translate-values="{ link: org.better_host_url }">BETTER_TOKEN_TEXT</span> {$:: org.better_host_url $}.</p>
+              <div class="col-sm-6">
+                <p>
+                  An API key will be assigned to your account upon creation of a BETTER account at <br />
+                  <a href="{$ org.better_host_url $}/accounts/signup/" target="_blank">{$ org.better_host_url $}/accounts/signup/</a>
+                </p>
                 <button
                   type="button"
                   class="btn btn-primary"
                   ng-class="{'btn-danger': token_validity.status == 'invalid', 'btn-success': token_validity.status == 'valid'}"
                   ng-click="verify_token()"
                   style="margin-bottom: 10px"
-                  ng-disabled="token_validity.status"
                 >
                   {$ token_validity.message $}
                   <i class="fa-solid fa-check" ng-show="token_validity.status == 'valid'"></i>
                   <i class="fa-solid fa-xmark" ng-show="token_validity.status == 'invalid'"></i>
                 </button>
-                <i class="ui-grid-icon-info-circled" style="position: absolute; margin-top: 0" ng-if="token_validity.status" uib-tooltip-html="'Save Settings to verify BETTER token'"></i>
                 <input type="text" class="form-control" ng-model="org.better_analysis_api_key" ng-disabled="::!auth.requires_owner" />
+                <p ng-if="error" class="alert alert-danger" style="margin-top: 10px" ng-bind-html="error"></p>
               </div>
             </div>
           </form>
@@ -231,9 +233,18 @@
             <div class="form-group">
               <div class="col-sm-5">
                 <p translate>AT_SUBMISSION_STATUS</p>
-                <select ng-model="org.audit_template_status_type" ng-disabled="::!auth.requires_owner" class="settings-dropdown">
-                  <option ng-repeat="status_type in audit_template_status_types">{$ status_type$}</option>
-                </select>
+                <div class="mutli-select-container">
+                  <div
+                    ng-repeat="status in ['Complies', 'Pending', 'Received', 'Rejected']"
+                    class="option"
+                    ng-class="{'option-selected': at_status_types[status]}"
+                    ng-click="toggle_at_status_type(status)"
+                  >
+                    <i class="option-indicator" ng-class="at_status_types[status] ? 'fa-solid fa-check' : 'fa-regular fa-square'"></i>
+                    {$ status $}
+                  </div>
+                </div>
+                <div ng-show="!org.audit_template_status_types" class="alert alert-warning" style="width: fit-content; margin: 10px">Select at least one status type</div>
               </div>
             </div>
           </form>
