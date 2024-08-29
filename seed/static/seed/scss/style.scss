@@ -5615,3 +5615,41 @@ tags-input .tags .tag-item {
   font-size: 14px;
   font-weight: bold;
 }
+
+.mutli-select-container {
+  display: flex;
+
+  div {
+    display: flex;
+  }
+
+  .option {
+    border: 1px solid $blue;
+    border-radius: 3px;
+    color: $blue;
+    margin: 2px;
+    padding: 5px 8px;
+    cursor: pointer;
+  }
+
+  .option:hover {
+    color: $blue;
+    background: #ebebeb;
+  }
+
+  .option:active {
+    background: darken(#ebebeb, 10%);
+    color: $blue;
+  }
+
+  .option-selected {
+    color: white;
+    background: $blue;
+  }
+
+  .option-indicator {
+    margin: auto;
+    padding-right: 5px;
+    width: 17px;
+  }
+}
