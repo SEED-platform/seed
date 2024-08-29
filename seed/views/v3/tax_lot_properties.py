@@ -23,7 +23,7 @@ from rest_framework.viewsets import GenericViewSet
 from seed.decorators import ajax_request_class
 from seed.lib.progress_data.progress_data import ProgressData
 from seed.lib.superperms.orgs.decorators import has_perm_class
-from seed.models import AccessLevelInstance, ColumnListProfile, PropertyView, TaxLotProperty, TaxLotView
+from seed.models import AccessLevelInstance, Column, ColumnListProfile, DerivedColumn, PropertyView, TaxLotProperty, TaxLotView
 from seed.models.meters import Meter, MeterReading
 from seed.models.property_measures import PropertyMeasure
 from seed.models.scenarios import Scenario
@@ -639,3 +639,44 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
         )
 
         set_update_to_now.subtask([property_view_ids, taxlot_view_ids, progress_key]).apply_async()
+
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class("requires_member")
+    @action(detail=False, methods=["POST"])
+    def update_derived_data(self, request):
+        from seed.tasks import update_state_derived_data
+
+        # get states
+        org_id = self.get_organization(request)
+        ali = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
+
+        taxlot_view_ids = request.data.get("taxlot_view_ids", [])
+        taxlot_views = TaxLotView.objects.filter(
+            id__in=taxlot_view_ids,
+            cycle__organization_id=org_id,
+            taxlot__access_level_instance__lft__gte=ali.lft,
+            taxlot__access_level_instance__rgt__lte=ali.rgt,
+        )
+        taxlot_state_ids = list(taxlot_views.values_list("state", flat=True))
+
+        property_view_ids = request.data.get("property_view_ids", [])
+        property_views = PropertyView.objects.filter(
+            id__in=property_view_ids,
+            cycle__organization_id=org_id,
+            property__access_level_instance__lft__gte=ali.lft,
+            property__access_level_instance__rgt__lte=ali.rgt,
+        )
+        property_state_ids = list(property_views.values_list("state", flat=True))
+
+        # get all derived_columns and set them to updating
+        derived_columns = DerivedColumn.objects.filter(organization_id=org_id)
+        Column.objects.filter(derived_column__in=derived_columns).update(is_updating=True)
+        derived_column_ids = list(derived_columns.values_list("id", flat=True))
+
+        # update
+        update_state_derived_data(
+            property_state_ids=property_state_ids, taxlot_state_ids=taxlot_state_ids, derived_column_ids=derived_column_ids
+        )
+
+        return JsonResponse({"result": "success"})

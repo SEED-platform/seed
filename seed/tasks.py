@@ -458,7 +458,7 @@ def _update_property_state_derived_data_chunk(property_state_ids=[], derived_col
 
 @shared_task
 def _update_taxlot_state_derived_data_chunk(taxlot_state_ids=[], derived_column_ids=[]):
-    states = TaxLot.objects.filter(id__in=taxlot_state_ids)
+    states = TaxLotState.objects.filter(id__in=taxlot_state_ids)
     derived_columns = DerivedColumn.objects.filter(id__in=derived_column_ids)
 
     for state in states:

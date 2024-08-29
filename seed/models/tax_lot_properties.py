@@ -360,6 +360,9 @@ class TaxLotProperty(models.Model):
             filtered_extra_data_fields = {
                 col["column_name"] for col in related_columns if col["is_extra_data"] and col["id"] in show_columns
             }
+            derived_data_units = {
+                col["column_name"] for col in related_columns if col["derived_column"] is not None and col["id"] in show_columns
+            }
 
         for related_view in related_views:
             related_dict = TaxLotProperty.model_to_dict_with_mapping(
@@ -393,6 +396,11 @@ class TaxLotProperty(models.Model):
                 related_dict.update(
                     TaxLotProperty.extra_data_to_dict_with_mapping(
                         related_view.state.extra_data, related_column_name_mapping, fields=filtered_extra_data_fields
+                    ).items()
+                )
+                related_dict.update(
+                    TaxLotProperty.extra_data_to_dict_with_mapping(
+                        related_view.state.derived_data, related_column_name_mapping, fields=derived_data_units
                     ).items()
                 )
             related_map[related_view.pk] = related_dict
