@@ -335,6 +335,9 @@ def _evaluate_update_multiple_columns(prog_key, table_name, org_pk, changes):
         progress_data.save()
     else:
         query = Q()
+        query.add(Q(data_state=DATA_STATE_MATCHING), Q.AND)
+        query.add(Q(organization_id=org_pk), Q.AND)
+        or_query = Q()
         fields = []
         extra_fields = []
         for column in rehashed_columns:
@@ -344,12 +347,11 @@ def _evaluate_update_multiple_columns(prog_key, table_name, org_pk, changes):
                 fields.append(column.column_name)
 
         for field in fields:
-            query.add(Q(**{field + "__isnull": False}), Q.OR)
+            or_query.add(Q(**{field + "__isnull": False}), Q.OR)
         if len(extra_fields) > 0:
-            query.add(Q(extra_data__has_any_key=extra_fields), Q.OR)
+            or_query.add(Q(extra_data__has_any_key=extra_fields), Q.OR)
 
-        query.add(Q(data_state=DATA_STATE_MATCHING), Q.AND)
-        query.add(Q(organization_id=org_pk), Q.AND)
+        query.add(or_query, Q.AND)
 
         ids = []
 
