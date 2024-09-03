@@ -1402,12 +1402,16 @@ class Column(models.Model):
 
         :return: list, names of columns, independent of inventory type.
         """
-        excluded_columns = list(
-            Column.objects.filter(
-                is_excluded_from_hash=True,
-                table_name=inventory_type.__name__,
-                organization_id=organization_id,
-            ).values_list("column_name", flat=True)
+        excluded_columns = (
+            list(
+                Column.objects.filter(
+                    is_excluded_from_hash=True,
+                    table_name=inventory_type.__name__,
+                    organization_id=organization_id,
+                ).values_list("column_name", flat=True)
+            )
+            if (inventory_type.__name__ in ("PropertyState", "TaxLotState") and organization_id)
+            else []
         )
         filter_fields_names = [
             f.name

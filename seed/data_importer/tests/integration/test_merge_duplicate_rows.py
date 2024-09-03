@@ -107,8 +107,8 @@ class TestCaseMultipleDuplicateMatching(DataMappingBaseTestCase):
         boo.is_excluded_from_hash = True
         boo.save()
 
-        self.assertEqual(tasks.hash_state_object(ps1), tasks.hash_state_object(ps2))
-        self.assertEqual(tasks.hash_state_object(ps1), tasks.hash_state_object(ps3))
+        self.assertEqual(tasks.hash_state_object(ps1, False), tasks.hash_state_object(ps2, False))
+        self.assertEqual(tasks.hash_state_object(ps1, False), tasks.hash_state_object(ps3, False))
 
     def test_hash_various_states(self):
         """The hashing should not affect the data_state, source, type and various other states"""
