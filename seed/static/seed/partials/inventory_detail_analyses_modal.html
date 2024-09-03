@@ -29,6 +29,7 @@
             <option ng-option value="CO2" selected="selected">Average Annual CO2</option>
             <option ng-option value="EEEJ" selected="selected">Energy Equity & Environmental Justice (EEEJ)</option>
             <option ng-option value="Element Statistics" selected="selected">Element Statistics</option>
+            <option ng-option value="Hannah" selected="selected">Hannah</option>
           </select>
         </div>
 
@@ -252,6 +253,24 @@
             </div>
           </div>
         </div>
+
+        <div class="form-group" ng-if="new_analysis.service == 'Hannah'">
+          <div class="form-group" style="padding-top: 1em">
+            <div class="container-fluid">
+              <label class="control-label sectionLabel text-muted">
+                Total EUI Goal
+              </label>
+              <input ng-model="new_analysis.configuration.total_eui_goal" type="number" class="form-control"
+                ng-init="new_analysis.configuration.total_eui_goal=0.6"/>
+              <label class="control-label sectionLabel text-muted">
+                FF EUI GOAL
+              </label>
+              <input ng-model="new_analysis.configuration.ff_eui_goal" type="number" class="form-control"
+                ng-init="new_analysis.configuration.ff_eui_goal=0.6"/>
+            </div>
+          </div>
+        </div>
+
       </form>
       <p ng-if="error" class="alert alert-danger" ng-bind-html="error"></p>
     </div>

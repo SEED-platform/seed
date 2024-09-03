@@ -111,8 +111,11 @@ angular.module('SEED.controller.inventory_detail_analyses_modal', []).controller
         case 'EEEJ':
           $scope.new_analysis.configuration = {};
           break;
-        case 'Element Statistics':
-          $scope.new_analysis.configuration = {};
+        case 'Hannah':
+          $scope.new_analysis.configuration = {
+            total_eui_goal:  0,
+            ff_eui_goal: 0,
+          };
           break;
         default:
           $log.error('Unknown analysis type.', $scope.new_analysis.service);
