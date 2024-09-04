@@ -26,7 +26,7 @@ class Analysis(models.Model):
     CO2 = 4
     EEEJ = 5
     ELEMENTSTATISTICS = 6
-    HANNAH = 7
+    ARMYS_PRIORITIZATION_PATHWAY = 7
 
     SERVICE_TYPES = (
         (BSYNCR, "BSyncr"),
@@ -35,7 +35,7 @@ class Analysis(models.Model):
         (CO2, "CO2"),
         (EEEJ, "EEEJ"),
         (ELEMENTSTATISTICS, "Element Statistics"),
-        (HANNAH, "Hannah"),
+        (ARMYS_PRIORITIZATION_PATHWAY, "armys_prioritization_pathway"),
     )
 
     PENDING_CREATION = 8
@@ -185,15 +185,12 @@ class Analysis(models.Model):
         # Element Statistics
         elif self.service == self.ELEMENTSTATISTICS:
             return [{"name": k, "value": round(v, 2)} for k, v in results.items()]
-        # Hannah
-        elif self.service == self.HANNAH:
-            my_random_number = results.get("my random number")
-            total_eui_goal = results.get("total_eui_goal")
-            ff_eui_goal = results.get("ff_eui_goal")
+        # ARMYS_PRIORITIZATION_PATHWAY
+        elif self.service == self.ARMYS_PRIORITIZATION_PATHWAY:
+            armys_prioritization_category = results.get("Armys Prioritization Category")
+
             return [
-                {"name": "my random number", "value": f"{my_random_number}!"},
-                {"name": "total_eui_goal", "value": f"{total_eui_goal}!"},
-                {"name": "ff_eui_goal", "value": f"{ff_eui_goal}!"},
+                {"name": "Armys Prioritization Category", "value": armys_prioritization_category},
             ]
 
         # Unexpected

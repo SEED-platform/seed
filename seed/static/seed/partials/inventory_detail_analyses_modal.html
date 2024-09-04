@@ -29,7 +29,7 @@
             <option ng-option value="CO2" selected="selected">Average Annual CO2</option>
             <option ng-option value="EEEJ" selected="selected">Energy Equity & Environmental Justice (EEEJ)</option>
             <option ng-option value="Element Statistics" selected="selected">Element Statistics</option>
-            <option ng-option value="Hannah" selected="selected">Hannah</option>
+            <option ng-option value="armys_prioritization_pathway" selected="selected">Army's Prioritization Pathway</option>
           </select>
         </div>
 
@@ -254,7 +254,7 @@
           </div>
         </div>
 
-        <div class="form-group" ng-if="new_analysis.service == 'Hannah'">
+        <div class="form-group" ng-if="new_analysis.service == 'armys_prioritization_pathway'">
           <div class="form-group" style="padding-top: 1em">
             <div class="container-fluid">
               <label class="control-label sectionLabel text-muted">
@@ -267,6 +267,36 @@
               </label>
               <input ng-model="new_analysis.configuration.ff_eui_goal" type="number" class="form-control"
                 ng-init="new_analysis.configuration.ff_eui_goal=0.6"/>
+              <label class="control-label sectionLabel text-muted">
+                Retrofit Threshold Year
+              </label>
+              <input ng-model="new_analysis.configuration.retrofit_threshold_year" type="number" class="form-control"
+                ng-init="new_analysis.configuration.retrofit_threshold_year=2010"/>
+              <label class="control-label sectionLabel text-muted">
+                Fair Actual to Benchmark EUI Ratio
+              </label>
+              <input ng-model="new_analysis.configuration.fair_actual_to_benchmark_eui_ratio" type="number" class="form-control"
+                ng-init="new_analysis.configuration.fair_actual_to_benchmark_eui_ratio=1.25"/>
+              <label class="control-label sectionLabel text-muted">
+                Poor Actual to Benchmark EUI Ratio
+              </label>
+              <input ng-model="new_analysis.configuration.poor_actual_to_benchmark_eui_ratio" type="number" class="form-control"
+                ng-init="new_analysis.configuration.poor_actual_to_benchmark_eui_ratio=1.4"/>
+              <label class="control-label sectionLabel text-muted">
+                Building SqFt Threshold
+              </label>
+              <input ng-model="new_analysis.configuration.building_sqft_threshold" type="number" class="form-control"
+                ng-init="new_analysis.configuration.building_sqft_threshold=1.4"/>
+              <label class="control-label sectionLabel text-muted">
+                Condition index Threshold
+              </label>
+              <input ng-model="new_analysis.configuration.condition_index_threshold" type="number" class="form-control"
+                ng-init="new_analysis.configuration.condition_index_threshold=1.4"/>
+              <label class="control-label sectionLabel text-muted">
+                FF-Fired Equipment RSL Threshold
+              </label>
+              <input ng-model="new_analysis.configuration.ff_fired_equipment_rsl_threshold type="number" class="form-control"
+                ng-init="new_analysis.configuration.ff_fired_equipment_rsl_threshold=1.4"/>
             </div>
           </div>
         </div>

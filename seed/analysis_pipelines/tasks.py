@@ -21,4 +21,4 @@ from seed.analysis_pipelines.co2 import _finish_preparation, _run_analysis  # no
 from seed.analysis_pipelines.eeej import _finish_preparation, _run_analysis  # noqa: F811
 from seed.analysis_pipelines.element_statistics import _finish_preparation, _run_analysis  # noqa: F811
 from seed.analysis_pipelines.eui import _finish_preparation, _run_analysis  # noqa: F811
-from seed.analysis_pipelines.hannah import _finish_preparation, _run_analysis  # noqa: F811, F401
+from seed.analysis_pipelines.armys_prioritization_pathway import _finish_preparation, _run_analysis  # noqa: F811, F401

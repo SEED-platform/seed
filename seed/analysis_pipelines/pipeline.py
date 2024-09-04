@@ -267,13 +267,13 @@ class AnalysisPipeline(abc.ABC):
         :returns: An implementation of AnalysisPipeline, e.g., BsyncrPipeline
         """
         # import here to avoid circular dependencies
+        from seed.analysis_pipelines.armys_prioritization_pathway import ArmysPrioritizationPathwayPipeline
         from seed.analysis_pipelines.better import BETTERPipeline
         from seed.analysis_pipelines.bsyncr import BsyncrPipeline
         from seed.analysis_pipelines.co2 import CO2Pipeline
         from seed.analysis_pipelines.eeej import EEEJPipeline
         from seed.analysis_pipelines.element_statistics import ElementStatisticsPipeline
         from seed.analysis_pipelines.eui import EUIPipeline
-        from seed.analysis_pipelines.hannah import HannahPipeline
 
         if analysis.service == Analysis.BSYNCR:
             return BsyncrPipeline(analysis.id)
@@ -287,8 +287,8 @@ class AnalysisPipeline(abc.ABC):
             return EEEJPipeline(analysis.id)
         elif analysis.service == Analysis.ELEMENTSTATISTICS:
             return ElementStatisticsPipeline(analysis.id)
-        elif analysis.service == Analysis.HANNAH:
-            return HannahPipeline(analysis.id)
+        elif analysis.service == Analysis.ARMYS_PRIORITIZATION_PATHWAY:
+            return ArmysPrioritizationPathwayPipeline(analysis.id)
         else:
             raise AnalysisPipelineError(f'Analysis service type is unknown/unhandled. Service ID "{analysis.service}"')
 

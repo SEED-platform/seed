@@ -13,7 +13,15 @@ class Migration(migrations.Migration):
             model_name="analysis",
             name="service",
             field=models.IntegerField(
-                choices=[(1, "BSyncr"), (2, "BETTER"), (3, "EUI"), (4, "CO2"), (5, "EEEJ"), (6, "Element Statistics"), (7, "Hannah")]
+                choices=[
+                    (1, "BSyncr"),
+                    (2, "BETTER"),
+                    (3, "EUI"),
+                    (4, "CO2"),
+                    (5, "EEEJ"),
+                    (6, "Element Statistics"),
+                    (7, "armys_prioritization_pathway"),
+                ]
             ),
         ),
     ]

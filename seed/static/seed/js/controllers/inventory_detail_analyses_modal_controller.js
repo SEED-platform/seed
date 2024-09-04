@@ -111,10 +111,16 @@ angular.module('SEED.controller.inventory_detail_analyses_modal', []).controller
         case 'EEEJ':
           $scope.new_analysis.configuration = {};
           break;
-        case 'Hannah':
+        case 'ARMYS_PRIORITIZATION_PATHWAY':
           $scope.new_analysis.configuration = {
-            total_eui_goal:  0,
+            total_eui_goal: 0,
             ff_eui_goal: 0,
+            retrofit_threshold_year: 0,
+            fair_actual_to_benchmark_eui_ratio: 0,
+            poor_actual_to_benchmark_eui_ratio: 0,
+            building_sqft_threshold: 0,
+            condition_index_threshold: 0,
+            ff_fired_equipment_rsl_threshold: 0
           };
           break;
         default:
