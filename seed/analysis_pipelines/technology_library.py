@@ -64,45 +64,25 @@ def _run_analysis(self, analysis_property_view_ids, analysis_id):
     property_views_by_apv_id = AnalysisPropertyView.get_property_views(analysis_property_views)
 
     # get/create relevant columns
-    existing_columns_names_by_code = _create_element_columns(analysis)
-
-    # creates a dict where the first key is a property we are analyzing, the second key is a scope_one_emission_code in that property (should there in )
-    query = f"""
-    SELECT
-        "seed_element"."property_id", "seed_uniformat"."code"
-    FROM
-        "seed_element"
-    INNER JOIN
-        "seed_uniformat" ON ("seed_element"."code_id" = "seed_uniformat"."id")
-    WHERE (
-        "seed_uniformat"."code" IN ({", ".join("'" + str(x) + "'" for x in existing_columns_names_by_code)})
-        AND
-        "seed_element"."property_id" IN (
-            SELECT
-            U0."property_id"
-            FROM
-                "seed_analysispropertyview" U0
-            WHERE
-                U0."id" IN ({", ".join("'" + str(x) + "'" for x in  analysis_property_view_ids)})
-        )
-    )
-    ORDER BY
-        "seed_element"."property_id", "seed_element"."condition_index"
-    """
-    with connection.cursor() as cursor:
-        cursor.execute(query)
-        result = cursor.fetchall()
-
-    mean_condition_index_by_code_and_property_id = defaultdict(dict)
-    for property_id, code, mean_condition_index in result:
-        mean_condition_index_by_code_and_property_id[property_id][code] = mean_condition_index
+    existing_columns_names, element_columns_to_extract = _create_element_columns(analysis)
 
     for analysis_property_view in analysis_property_views:
         # update the property view and analysis_property_view
         analysis_property_view.parsed_results = {}
-        mean_condition_index_by_code = mean_condition_index_by_code_and_property_id.get(analysis_property_view.property_id, {})
         property_view = property_views_by_apv_id[analysis_property_view.id]
-        for code, col in existing_columns_names_by_code.items():
+
+        elements = Element.objects.filter(property=property_view.property_id)
+        lowest_RSL = elements.filter(code__code__in=scope_one_emission_codes).order_by("remaining_service_life")[:3]
+
+        for rank, element in enumerate(lowest_RSL):
+
+            for element_column, column_name in existing_columns_names.items():
+
+                analysis_property_view.parsed_results[column_name] = getattr(element, element_column)
+
+
+
+        for code, col in existing_columns_names.items():
             mean_condition_index = mean_condition_index_by_code.get(code)
             property_view.state.extra_data[col] = mean_condition_index
             if mean_condition_index:
@@ -116,25 +96,47 @@ def _run_analysis(self, analysis_property_view_ids, analysis_id):
 
 
 def _create_element_columns(analysis):
-    existing_columns_names_by_code = {}
-    column_meta_by_code = {
-        data["code"]: {
-            "column_name": data["category"] + " CI",
-            "display_name": data["category"].replace(" ", "_") + " CI",
-            "description": data["code"] if "definition" not in data else data["code"] + ": " + data["definition"],
-        }
-        for data in uniformat_data
-        if data["code"] in scope_one_emission_codes
-    }
+    existing_columns_names = []
 
-    for code, col in column_meta_by_code.items():
+    # list of tuples where 0 is the element column name and 1 is the display name
+    element_columns_to_extract = [
+        ("RSL", 'Remaining Service Life')
+        , ('Component_Type', 'Component Type')
+        , ('Component_SubType', 'Component SubType')
+        , 'Heating Capacity'
+        , 'Heating Capacity Units'
+        , 'Cooling Capacity'
+        , 'Cooling Capacity Units'
+        , 'Condition Index'
+        , 'Component Replacement Value'
+        , 'SFTool Links'
+        , 'ESTCP Links'
+    ]
+
+    rank_columns = [
+        'Lowest RSL'
+        , '2nd Lowest RSL'
+        , '3rd Lowest RSL'
+    ]
+
+    column_meta_by_code = [
+        {
+            "column_name": rank.replace(" ", "_") + "__" + column[0],
+            "display_name": rank + ": " + column[1],
+            "description": rank + ": " + column[1],
+        }
+        for rank in rank_columns
+        for column in element_columns_to_extract
+    ]
+
+    for col in column_meta_by_code:
         try:
             Column.objects.get(
                 column_name=col["column_name"],
                 organization=analysis.organization,
                 table_name="PropertyState",
             )
-            existing_columns_names_by_code[code] = col["column_name"]
+            existing_columns_names += [col]
         except Exception:
             if analysis.can_create():
                 column = Column.objects.create(
@@ -146,6 +148,6 @@ def _create_element_columns(analysis):
                 column.display_name = col["display_name"]
                 column.column_description = col["description"]
                 column.save()
-                existing_columns_names_by_code[code] = col["column_name"]
+                existing_columns_names += [col]
 
-    return existing_columns_names_by_code
+    return existing_columns_names, element_columns_to_extract
