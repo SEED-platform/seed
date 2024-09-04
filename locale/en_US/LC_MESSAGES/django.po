@@ -1394,10 +1394,10 @@ msgid "Exporting selected properties..."
 msgstr "Exporting selected properties..."
 
 msgid "FAILED_GEOCODE_INVALID_MAPQUEST_API_KEY"
-msgstr "Geocoding failed - Your MapQuest API Key is invalid."
+msgstr "Geocoding failed - Your MapQuest API Key is invalid. Update your MapQuest API Key or disable geocoding in Organization Settings."
 
 msgid "FAILED_GEOCODE_MAPQUEST_API_KEY_ERROR"
-msgstr "Geocoding failed - Your MapQuest API Key is either invalid or at its limit."
+msgstr "Geocoding failed - Your MapQuest API Key is either invalid or at its limit. Update your MapQuest API Key or disable geocoding in Organization Settings."
 
 msgid "FIELDS NEEDED TO MAKE MATCHES:"
 msgstr "FIELDS NEEDED TO MAKE MATCHES:"
