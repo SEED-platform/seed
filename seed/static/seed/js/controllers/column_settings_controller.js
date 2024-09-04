@@ -19,7 +19,6 @@ angular.module('SEED.controller.column_settings', []).controller('column_setting
   'urls',
   'naturalSort',
   '$translate',
-  '$log',
   // eslint-disable-next-line func-names
   function (
     $scope,
@@ -37,8 +36,7 @@ angular.module('SEED.controller.column_settings', []).controller('column_setting
     spinner_utility,
     urls,
     naturalSort,
-    $translate,
-    $log
+    $translate
   ) {
     $scope.inventory_type = $stateParams.inventory_type;
     $scope.org = organization_payload.organization;
@@ -131,15 +129,17 @@ angular.module('SEED.controller.column_settings', []).controller('column_setting
     };
 
     $scope.column_can_be_excluded = (column) => {
-      if ($scope.matching_status(column) == 'locked') {
+      if ($scope.matching_status(column) === 'locked') {
         return false;
-      } else if (($scope.matching_status(column) == 'eligible') && (column.is_matching_criteria == false)) {
+      }
+      if (($scope.matching_status(column) === 'eligible') && (!column.is_matching_criteria)) {
         return true;
-      } else if ($scope.matching_status(column) == 'ineligible' && column.is_extra_data == true) {
+      }
+      if ($scope.matching_status(column) === 'ineligible' && column.is_extra_data) {
         return true;
       }
       return false;
-    }
+    };
 
     $scope.change_recognize_empty = (column) => {
       column.recognize_empty = !column.recognize_empty;
@@ -150,7 +150,7 @@ angular.module('SEED.controller.column_settings', []).controller('column_setting
       if (!$scope.column_can_be_excluded(column)) return false;
       column.is_excluded_from_hash = !column.is_excluded_from_hash;
       $scope.setModified();
-    }
+    };
 
     // Separate array used to capture and track geocoding-enabled columns and their order
     // Any change to the array leading to position switching should be followed by a

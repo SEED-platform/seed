@@ -62,8 +62,8 @@ angular.module('SEED.controller.confirm_column_settings_modal', []).controller('
     cycle_service.get_cycles_for_org($scope.org_id).then((cycles) => {
       $scope.cycles = cycles.cycles;
     });
-    const rehash = _.find(proposed_changes, {is_excluded_from_hash: true }) !== undefined ||
-                   _.find(proposed_changes, {is_excluded_from_hash: false }) !== undefined;
+    const rehash = _.find(proposed_changes, { is_excluded_from_hash: true }) !== undefined ||
+                   _.find(proposed_changes, { is_excluded_from_hash: false }) !== undefined;
     $scope.rehash_required = rehash;
 
     // parse proposed changes to create change summary to be presented to user
@@ -83,7 +83,6 @@ angular.module('SEED.controller.confirm_column_settings_modal', []).controller('
       },
       []
     );
-
 
     // If a preexisting ComStock mapping exists on the other table add it to the diff list for removal
     _.forEach($scope.change_summary_data, (diff) => {
@@ -195,7 +194,6 @@ angular.module('SEED.controller.confirm_column_settings_modal', []).controller('
       organization_service.matching_criteria_columns($scope.org_id);
     }
 
-
     $scope.confirm_changes_and_rehash = () => {
       $scope.state = 'pending';
       columns_service
@@ -231,7 +229,7 @@ angular.module('SEED.controller.confirm_column_settings_modal', []).controller('
           $scope.state = 'done';
           $interval.cancel($scope.interval);
         });
-    }
+    };
 
     $scope.cancel = () => {
       $uibModalInstance.dismiss();
@@ -289,8 +287,6 @@ angular.module('SEED.controller.confirm_column_settings_modal', []).controller('
       spinner_utility.show();
       $window.location.reload();
     };
-
   }
-
 
 ]);
