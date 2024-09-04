@@ -100,23 +100,23 @@ def _create_element_columns(analysis):
 
     # list of tuples where 0 is the element column name and 1 is the display name
     element_columns_to_extract = [
-        ("RSL", 'Remaining Service Life')
-        , ('Component_Type', 'Component Type')
-        , ('Component_SubType', 'Component SubType')
-        , 'Heating Capacity'
-        , 'Heating Capacity Units'
-        , 'Cooling Capacity'
-        , 'Cooling Capacity Units'
-        , 'Condition Index'
-        , 'Component Replacement Value'
-        , 'SFTool Links'
-        , 'ESTCP Links'
+        ("remaining_service_life", "Remaining Service Life") # element canonical field
+        , ("Component_Type", "Component Type") # not yet in extra_data...
+        , ("Component_SubType", "Component SubType") # element extra data
+        , ("Heating_Capacity", "Heating Capacity") # not yet in extra_data...
+        , ("Heating_Capacity_Units", "Heating Capacity Units") # not yet in extra_data...
+        , ("Cooling_Capacity", "Cooling Capacity") # not yet in extra_data...
+        , ("Cooling_Capacity_Units", "Cooling Capacity Units") # not yet in extra_data...
+        , ("condition_index", "Condition Index") # element canonical field
+        , ("replacement_cost", "Component Replacement Value") # element canonical field
+        , ("sftool_links", "SFTool Links") # from TKBL API
+        , ("estcp_links", "ESTCP Links") # from TKBL API
     ]
 
     rank_columns = [
-        'Lowest RSL'
-        , '2nd Lowest RSL'
-        , '3rd Lowest RSL'
+        "Lowest RSL"
+        , "2nd Lowest RSL"
+        , "3rd Lowest RSL"
     ]
 
     column_meta_by_code = [
