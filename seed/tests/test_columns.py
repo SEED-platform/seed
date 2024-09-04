@@ -755,6 +755,7 @@ class TestColumnsByInventory(TestCase):
             "recognize_empty": False,
             "comstock_mapping": None,
             "derived_column": None,
+            "is_excluded_from_hash": False,
         }
         self.assertIn(c, columns)
 
@@ -776,6 +777,7 @@ class TestColumnsByInventory(TestCase):
             "recognize_empty": False,
             "comstock_mapping": None,
             "derived_column": None,
+            "is_excluded_from_hash": False,
         }
         self.assertIn(c, columns)
 
@@ -797,6 +799,7 @@ class TestColumnsByInventory(TestCase):
             "recognize_empty": False,
             "comstock_mapping": None,
             "derived_column": None,
+            "is_excluded_from_hash": False,
         }
         self.assertIn(c, columns)
 
@@ -819,6 +822,7 @@ class TestColumnsByInventory(TestCase):
             "recognize_empty": False,
             "comstock_mapping": None,
             "derived_column": None,
+            "is_excluded_from_hash": False,
         }
         self.assertIn(c, columns)
 
@@ -840,6 +844,7 @@ class TestColumnsByInventory(TestCase):
             "recognize_empty": False,
             "comstock_mapping": None,
             "derived_column": None,
+            "is_excluded_from_hash": False,
         }
         self.assertIn(c, columns)
 
@@ -860,6 +865,7 @@ class TestColumnsByInventory(TestCase):
             "recognize_empty": False,
             "comstock_mapping": None,
             "derived_column": None,
+            "is_excluded_from_hash": False,
         }
         self.assertIn(c, columns)
 
@@ -891,6 +897,7 @@ class TestColumnsByInventory(TestCase):
             "recognize_empty": False,
             "comstock_mapping": None,
             "derived_column": None,
+            "is_excluded_from_hash": False,
         }
         self.assertIn(c, columns)
 
