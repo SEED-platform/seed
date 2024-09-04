@@ -101,14 +101,13 @@ def _create_element_columns(analysis):
     # list of tuples where 0 is the element column name and 1 is the display name
     element_columns_to_extract = [
         ("remaining_service_life", "Remaining Service Life") # element canonical field
-        , ("Component_Type", "Component Type") # not yet in extra_data...
-        , ("Component_SubType", "Component SubType") # element extra data
-        , ("Heating_Capacity", "Heating Capacity") # not yet in extra_data...
-        , ("Heating_Capacity_Units", "Heating Capacity Units") # not yet in extra_data...
-        , ("Cooling_Capacity", "Cooling Capacity") # not yet in extra_data...
-        , ("Cooling_Capacity_Units", "Cooling Capacity Units") # not yet in extra_data...
         , ("condition_index", "Condition Index") # element canonical field
         , ("replacement_cost", "Component Replacement Value") # element canonical field
+        , ("Component_SubType", "Component SubType") # element extra data
+        , ("CAPACITY_HEATING", "Heating Capacity") # element extra data
+        , ("CAPACITY_HEATING_UNITS", "Heating Capacity Units") # element extra data
+        , ("CAPACITY_COOLING", "Cooling Capacity") # element extra data
+        , ("CAPACITY_COOLING_UNITS", "Cooling Capacity Units") # element extra data
         , ("sftool_links", "SFTool Links") # from TKBL API
         , ("estcp_links", "ESTCP Links") # from TKBL API
     ]
