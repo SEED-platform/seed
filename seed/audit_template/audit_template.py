@@ -392,6 +392,9 @@ def _batch_get_city_submission_xml(org_id, city_id, view_ids, progress_key):
     # filtering by custom_id and 'updated_at' will require looping through results to query views
 
     property_views = PropertyView.objects.filter(id__in=view_ids) if view_ids else PropertyView.objects
+    # for development use
+    found_views = 0
+    no_text_key = 0
 
     xml_data_by_cycle = {}
     for sub in submissions:
@@ -413,6 +416,7 @@ def _batch_get_city_submission_xml(org_id, city_id, view_ids, progress_key):
 
         progress_data.step("Getting XML for submissions...")
         if view:
+            found_views += 1  # for development use
             xml, _ = audit_template.get_submission(sub["id"], "xml")
 
             if hasattr(xml, "text"):
@@ -422,10 +426,28 @@ def _batch_get_city_submission_xml(org_id, city_id, view_ids, progress_key):
                 xml_data_by_cycle[view.cycle.id].append(
                     {"property_view": view.id, "matching_field": custom_id_1, "xml": xml.text, "updated_at": sub["updated_at"]}
                 )
+            else:  # for development use
+                no_text_key += 1
 
     property_view_set = PropertyViewSet()
     # Update is cycle based, going to have update in cycle specific batches
-    combined_results = {"success": 0, "failure": 0, "data": []}
+    combined_results = {
+        "success": 0,
+        "failure": 0,
+        "data": [],
+        # for development use
+        "cycles": list(xml_data_by_cycle.keys()),
+        "property_views": str(type(property_views)),
+        "view_count": property_views.count(),
+        "found_views": found_views,
+        "no_text_key": no_text_key,
+        "submissions": len(submissions),
+        "org_id": org_id,
+        "city_id": city_id,
+        "view_ids": view_ids,
+        "status_types": status_types,
+        "progress_data.total": progress_data.total,
+    }
     try:
         for cycle, xmls in xml_data_by_cycle.items():
             # does progress_data need to be recursively passed?
