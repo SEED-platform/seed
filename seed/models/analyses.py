@@ -26,6 +26,7 @@ class Analysis(models.Model):
     CO2 = 4
     EEEJ = 5
     ELEMENTSTATISTICS = 6
+    TECHNOLOGYLIBRARY = 7
 
     SERVICE_TYPES = (
         (BSYNCR, "BSyncr"),
@@ -34,6 +35,7 @@ class Analysis(models.Model):
         (CO2, "CO2"),
         (EEEJ, "EEEJ"),
         (ELEMENTSTATISTICS, "Element Statistics"),
+        (TECHNOLOGYLIBRARY, "Technology Library"),
     )
 
     PENDING_CREATION = 8
@@ -183,6 +185,10 @@ class Analysis(models.Model):
         # Element Statistics
         elif self.service == self.ELEMENTSTATISTICS:
             return [{"name": k, "value": round(v, 2)} for k, v in results.items()]
+        # Technology Library
+        elif self.service == self.TECHNOLOGYLIBRARY:
+            technology_library_result = results.get("my random number")
+            return [{"name": "my random number", "value": f"{technology_library_result}!"}]
 
         # Unexpected
         return [{"name": "Unexpected Analysis Type", "value": "Oops!"}]

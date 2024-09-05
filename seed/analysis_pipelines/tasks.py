@@ -20,4 +20,5 @@ from seed.analysis_pipelines.bsyncr import (  # noqa: F401, F811
 from seed.analysis_pipelines.co2 import _finish_preparation, _run_analysis  # noqa: F811
 from seed.analysis_pipelines.eeej import _finish_preparation, _run_analysis  # noqa: F811
 from seed.analysis_pipelines.element_statistics import _finish_preparation, _run_analysis  # noqa: F811
-from seed.analysis_pipelines.eui import _finish_preparation, _run_analysis  # noqa: F811, F401
+from seed.analysis_pipelines.eui import _finish_preparation, _run_analysis  # noqa: F811
+from seed.analysis_pipelines.technology_library import _finish_preparation, _run_analysis  # noqa: F811, F401

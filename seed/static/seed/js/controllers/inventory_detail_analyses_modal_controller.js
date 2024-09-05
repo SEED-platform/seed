@@ -111,7 +111,7 @@ angular.module('SEED.controller.inventory_detail_analyses_modal', []).controller
         case 'EEEJ':
           $scope.new_analysis.configuration = {};
           break;
-        case 'Element Statistics':
+        case 'Technology Library':
           $scope.new_analysis.configuration = {};
           break;
         default:
