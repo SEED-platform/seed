@@ -4,9 +4,11 @@ SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and othe
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
+import json
 import logging
 
 from celery import chain, shared_task
+from tkbl import filter_by_uniformat_code
 
 from seed.analysis_pipelines.pipeline import (
     AnalysisPipeline,
@@ -29,6 +31,11 @@ element_columns_to_extract = [
     {"column_name": "CAPACITY_HEATING_UNITS", "display_name": "Heating Capacity Units", "is_extra_data": True},
     {"column_name": "CAPACITY_COOLING", "display_name": "Cooling Capacity", "is_extra_data": True},
     {"column_name": "CAPACITY_COOLING_UNITS", "display_name": "Cooling Capacity Units", "is_extra_data": True},
+]
+
+links_to_extract = [
+    {"column_name": "sftool_links", "display_name": "Sftool Links"},
+    {"column_name": "condition_index", "display_name": "Condition Index"},
 ]
 
 
@@ -82,8 +89,22 @@ def _run_analysis(self, analysis_property_view_ids, analysis_id):
         lowest_RSL = elements.filter(code__code__in=scope_one_emission_codes).order_by("remaining_service_life")[:3]
 
         for rank, element in zip(rank_columns, lowest_RSL):
+            links = [x["url"] for x in json.loads(filter_by_uniformat_code(element.code.code))]
+            sftool_links = [x for x in links if "https://sftool.gov" in x]
+            estcp_links = [x for x in links if "https://sftool.gov" not in x]
+
+            column_name = rank.replace(" ", "_") + "_sftool_links"
+            analysis_property_view.parsed_results[column_name] = sftool_links
+            if column_name in existing_columns:
+                property_view.state.extra_data[column_name] = sftool_links
+
+            column_name = rank.replace(" ", "_") + "_estcp_links"
+            analysis_property_view.parsed_results[column_name] = estcp_links
+            if column_name in existing_columns:
+                property_view.state.extra_data[column_name] = estcp_links
+
             for element_column in element_columns_to_extract:
-                column_name = f"{rank}: {element_column['display_name']}"
+                column_name = rank.replace(" ", "_") + "_" + element_column["column_name"]
                 if element_column["is_extra_data"]:
                     column_data = getattr(element.extra_data, element_column["column_name"], None)
                 else:
@@ -93,6 +114,9 @@ def _run_analysis(self, analysis_property_view_ids, analysis_id):
                 if column_name in existing_columns:
                     property_view.state.extra_data[column_name] = column_data
 
+        property_view.state.save()
+        analysis_property_view.save()
+
     # all done!
     pipeline.set_analysis_status_to_completed()
 
@@ -101,12 +125,12 @@ def _create_technology_library_analysis_columns(analysis):
     existing_columns = []
     column_meta = [
         {
-            "column_name": rank.replace(" ", "_") + "__" + column["column_name"],
+            "column_name": rank.replace(" ", "_") + "_" + column["column_name"],
             "display_name": rank + ": " + column["display_name"],
             "description": rank + ": " + column["display_name"],
         }
         for rank in rank_columns
-        for column in element_columns_to_extract
+        for column in element_columns_to_extract + links_to_extract
     ]
 
     for col in column_meta:

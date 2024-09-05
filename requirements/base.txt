@@ -86,3 +86,5 @@ django-treebeard==4.6.1
 django-two-factor-auth[phonenumbers]==1.16.0
 qrcode[pil]==6.1
 pyotp==2.9.0
+
+tkbl @ git+https://github.com/NREL/TKBL.git
