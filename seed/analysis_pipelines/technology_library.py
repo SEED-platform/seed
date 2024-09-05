@@ -5,7 +5,6 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
 import logging
-import random
 
 from celery import chain, shared_task
 
@@ -14,37 +13,23 @@ from seed.analysis_pipelines.pipeline import (
     analysis_pipeline_task,
     task_create_analysis_property_views,
 )
-from seed.models import Analysis, AnalysisMessage, AnalysisPropertyView, Column
+from seed.lib.tkbl.tkbl import scope_one_emission_codes
+from seed.models import Analysis, AnalysisPropertyView, Column, Element
 
 logger = logging.getLogger(__name__)
 
-ERROR_INVALID_LOCATION = 0
-ERROR_RETRIEVING_CENSUS_TRACT = 1
-ERROR_NO_VALID_PROPERTIES = 2
-WARNING_SOME_INVALID_PROPERTIES = 3
-ERROR_NO_TRACT_OR_LOCATION = 4
+rank_columns = ["Lowest RSL", "2nd Lowest RSL", "3rd Lowest RSL"]
 
-EEEJ_ANALYSIS_MESSAGES = {
-    ERROR_INVALID_LOCATION: "Property missing Lat/Lng (High, Census, or Manually geocoded) or one of: Address Line 1, City & State, or Postal Code.",
-    ERROR_RETRIEVING_CENSUS_TRACT: "Unable to retrieve Census Tract for this property.",
-    ERROR_NO_TRACT_OR_LOCATION: "Property missing location or Census Tract",
-    ERROR_NO_VALID_PROPERTIES: "Analysis found no valid properties to analyze.",
-    WARNING_SOME_INVALID_PROPERTIES: "Some properties failed to validate.",
-}
-
-
-def _log_errors(errors_by_apv_id, analysis_id):
-    """Log individual analysis property view errors to the analysis"""
-    if errors_by_apv_id:
-        for av_id in errors_by_apv_id:
-            AnalysisMessage.log_and_create(
-                logger=logger,
-                type_=AnalysisMessage.ERROR,
-                analysis_id=analysis_id,
-                analysis_property_view_id=av_id,
-                user_message="  ".join(errors_by_apv_id[av_id]),
-                debug_message="",
-            )
+element_columns_to_extract = [
+    {"column_name": "remaining_service_life", "display_name": "Remaining Service Life", "is_extra_data": False},
+    {"column_name": "condition_index", "display_name": "Condition Index", "is_extra_data": False},
+    {"column_name": "replacement_cost", "display_name": "Component Replacement Value", "is_extra_data": False},
+    {"column_name": "Component_SubType", "display_name": "Component SubType", "is_extra_data": True},
+    {"column_name": "CAPACITY_HEATING", "display_name": "Heating Capacity", "is_extra_data": True},
+    {"column_name": "CAPACITY_HEATING_UNITS", "display_name": "Heating Capacity Units", "is_extra_data": True},
+    {"column_name": "CAPACITY_COOLING", "display_name": "Cooling Capacity", "is_extra_data": True},
+    {"column_name": "CAPACITY_COOLING_UNITS", "display_name": "Cooling Capacity Units", "is_extra_data": True},
+]
 
 
 class TechnologyLibraryPipeline(AnalysisPipeline):
@@ -92,22 +77,21 @@ def _run_analysis(self, analysis_property_view_ids, analysis_id):
     analysis_property_views = AnalysisPropertyView.objects.filter(id__in=analysis_property_view_ids)
     property_views_by_apv_id = AnalysisPropertyView.get_property_views(analysis_property_views)
     for analysis_property_view in analysis_property_views:
-        # run the analysis
-        my_random_number = random.randrange(1, 100)
-
-        # update the analysis_property_view
-        analysis_property_view.parsed_results = {"my random number": my_random_number}
-        analysis_property_view.save()
-
-        # update the property view
         property_view = property_views_by_apv_id[analysis_property_view.id]
+        elements = Element.objects.filter(property=property_view.property_id)
+        lowest_RSL = elements.filter(code__code__in=scope_one_emission_codes).order_by("remaining_service_life")[:3]
 
-        logger.error("+++++")
-        logger.error(property_view)
-        logger.error(existing_columns)
-        if "random_number" in existing_columns:
-            property_view.state.extra_data.update({"random_number": my_random_number})
-            property_view.state.save()
+        for rank, element in zip(rank_columns, lowest_RSL):
+            for element_column in element_columns_to_extract:
+                column_name = f"{rank}: {element_column['display_name']}"
+                if element_column["is_extra_data"]:
+                    column_data = getattr(element.extra_data, element_column["column_name"], None)
+                else:
+                    column_data = getattr(element, element_column["column_name"])
+
+                analysis_property_view.parsed_results[column_name] = column_data
+                if column_name in existing_columns:
+                    property_view.state.extra_data[column_name] = column_data
 
     # all done!
     pipeline.set_analysis_status_to_completed()
@@ -116,7 +100,13 @@ def _run_analysis(self, analysis_property_view_ids, analysis_id):
 def _create_technology_library_analysis_columns(analysis):
     existing_columns = []
     column_meta = [
-        {"column_name": "random_number", "display_name": "Random Number", "description": "Hannah's Random Number"},
+        {
+            "column_name": rank.replace(" ", "_") + "__" + column["column_name"],
+            "display_name": rank + ": " + column["display_name"],
+            "description": rank + ": " + column["display_name"],
+        }
+        for rank in rank_columns
+        for column in element_columns_to_extract
     ]
 
     for col in column_meta:
