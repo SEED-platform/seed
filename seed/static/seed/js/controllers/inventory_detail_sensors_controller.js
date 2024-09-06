@@ -10,6 +10,7 @@ angular.module('SEED.controller.inventory_detail_sensors', []).controller('inven
   'cycles',
   'dataset_service',
   'inventory_service',
+  'organization_service',
   'inventory_payload',
   'sensors',
   'data_loggers',
@@ -27,6 +28,7 @@ angular.module('SEED.controller.inventory_detail_sensors', []).controller('inven
     cycles,
     dataset_service,
     inventory_service,
+    organization_service,
     inventory_payload,
     sensors,
     data_loggers,
@@ -425,19 +427,6 @@ angular.module('SEED.controller.inventory_detail_sensors', []).controller('inven
       });
     };
 
-    $scope.inventory_display_name = (property_type) => {
-      let error = '';
-      let field = property_type === 'property' ? $scope.organization.property_display_field : $scope.organization.taxlot_display_field;
-      if (!(field in $scope.item_state)) {
-        error = `${field} does not exist`;
-        field = 'address_line_1';
-      }
-      if (!$scope.item_state[field]) {
-        error += `${(error === '' ? '' : ' and default ') + field} is blank`;
-      }
-      $scope.inventory_name = $scope.item_state[field] ?
-        $scope.item_state[field] :
-        `(${error}) <i class="glyphicon glyphicon-question-sign" title="This can be changed from the organization settings page."></i>`;
-    };
+    $scope.inventory_display_name = organization_service.get_inventory_display_value($scope.organization, $scope.inventory_type === 'properties' ? 'property' : 'taxlot', $scope.item_state);
   }
 ]);

@@ -30,15 +30,15 @@
               <i class="fa-solid fa-chevron-right" id="indicator-{$ $index  $}"> </i>
               {$ scenario.name $}
             </td>
-            <td ng-class="{'measure-elec': scenario.annual_electricity_savings > 0}">
+            <td>
               <img class="legend-icon" ng-src="{$ static_url $}seed/images/timeline_electricity.svg" style="height: 40px" />
               <span style="font-weight: bold; font-size: 14px; margin-left: 10px"> {$ (scenario.annual_electricity_savings | number: 0) || 'N/A' $} </span>
             </td>
-            <td ng-class="{'measure-elec': scenario.annual_peak_electricity_reduction > 0}">
+            <td>
               <img ng-src="{$ static_url $}seed/images/timeline_peak_down.svg" style="height: 40px" />
               <span style="font-weight: bold; font-size: 14px; margin-left: 10px"> {$ (scenario.annual_peak_electricity_reduction | number: 0) || 'N/A' $} </span>
             </td>
-            <td ng-class="{'measure-gas': scenario.annual_natural_gas_savings > 0}">
+            <td>
               <img ng-src="{$ static_url $}seed/images/timeline_natural_gas.svg" style="height: 40px" />
               <span style="font-weight: bold; font-size: 14px; margin-left: 10px"> {$ (scenario.annual_natural_gas_savings | number: 0) || 'N/A' $} </span>
             </td>
