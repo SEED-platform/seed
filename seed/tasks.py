@@ -334,24 +334,7 @@ def _evaluate_update_multiple_columns(prog_key, table_name, org_pk, changes):
         progress_data.data["total_records"] = total
         progress_data.save()
     else:
-        query = Q()
-        query.add(Q(data_state=DATA_STATE_MATCHING), Q.AND)
-        query.add(Q(organization_id=org_pk), Q.AND)
-        or_query = Q()
-        fields = []
-        extra_fields = []
-        for column in rehashed_columns:
-            if column.is_extra_data:
-                extra_fields.append(column.column_name)
-            else:
-                fields.append(column.column_name)
-
-        for field in fields:
-            or_query.add(Q(**{field + "__isnull": False}), Q.OR)
-        if len(extra_fields) > 0:
-            or_query.add(Q(extra_data__has_any_key=extra_fields), Q.OR)
-
-        query.add(or_query, Q.AND)
+        query = _build_property_query_for_rehashed_columns(org_pk, rehashed_columns)
 
         ids = []
 
@@ -370,6 +353,29 @@ def _evaluate_update_multiple_columns(prog_key, table_name, org_pk, changes):
             _rehash_state_chunk(chunk_ids, table_name, progress_data.key)
 
     _finish_update_multiple_columns(changes, progress_data.key)
+
+
+@shared_task
+def _build_property_query_for_rehashed_columns(org_pk, rehashed_columns):
+    query = Q()
+    query.add(Q(data_state=DATA_STATE_MATCHING), Q.AND)
+    query.add(Q(organization_id=org_pk), Q.AND)
+    or_query = Q()
+    fields = []
+    extra_fields = []
+    for column in rehashed_columns:
+        if column.is_extra_data:
+            extra_fields.append(column.column_name)
+        else:
+            fields.append(column.column_name)
+
+    for field in fields:
+        or_query.add(Q(**{field + "__isnull": False}), Q.OR)
+    if len(extra_fields) > 0:
+        or_query.add(Q(extra_data__has_any_key=extra_fields), Q.OR)
+
+    query.add(or_query, Q.AND)
+    return query
 
 
 @shared_task
