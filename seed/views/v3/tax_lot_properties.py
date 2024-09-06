@@ -9,6 +9,8 @@ import datetime
 import io
 import logging
 import math
+import os
+import shutil
 import tempfile
 from collections import OrderedDict
 from pathlib import Path
@@ -696,18 +698,26 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
         response = HttpResponse(content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
         response["Content-Disposition"] = f'attachment; filename="{filename}"'
 
-        import shutil
+        with tempfile.TemporaryDirectory() as tmpdir:
+            # Since `building_sync_to_cts` takes a filename and not a file object we can't create the temp file inside a `with` context
+            # This is because of how Windows handles file locking
+            output_file = tempfile.NamedTemporaryFile(delete=False)
+            output_filename = Path(output_file.name)
+            # Close the temp file to release the lock
+            output_file.close()
 
-        with tempfile.TemporaryDirectory() as tmpdir, tempfile.NamedTemporaryFile() as output_file:
             bsync_files = []
             for i, f in enumerate(building_files):
                 new_file = f"{tmpdir}/{i}.xml"
-                shutil.copyfile(settings.MEDIA_ROOT + "/" + f, new_file)
-                bsync_files.append(new_file)
+                shutil.copyfile(f"{settings.MEDIA_ROOT}/{f}", new_file)
+                bsync_files.append(Path(new_file))
 
-            building_sync_to_cts(list(bsync_files), Path(output_file.name))
-            output = io.BytesIO(output_file.read())
-            xlsx_data = output.getvalue()
+            building_sync_to_cts(bsync_files, output_filename)
+            with open(output_filename, "rb") as file:
+                xlsx_data = file.read()
             response.write(xlsx_data)
+
+            # Explicitly delete the temp file
+            os.remove(output_filename)
 
         return response
