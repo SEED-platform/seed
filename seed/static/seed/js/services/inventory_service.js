@@ -1230,11 +1230,11 @@ angular.module('SEED.service.inventory', []).factory('inventory_service', [
     }).then((response) => response.data);
 
     inventory_service.batch_export_to_cts = (org_id, property_view_ids) => $http
-    .post(
-      `/api/v3/properties/batch_export_to_cts/?organization_id=${org_id}`,
-      property_view_ids,
-      {responseType: 'arraybuffer'}
-    );
+      .post(
+        `/api/v3/properties/batch_export_to_cts/?organization_id=${org_id}`,
+        property_view_ids,
+        { responseType: 'arraybuffer' }
+      );
 
     return inventory_service;
   }

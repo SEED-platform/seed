@@ -67,7 +67,7 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
                 "filename": "string",
                 "export_type": "string",
                 "profile_id": "integer",
-                "proress_key": "string",
+                "progress_key": "string",
                 "include_notes": "boolean",
                 "include_meter_readings": "boolean",
             },
@@ -649,21 +649,6 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class("requires_member")
-    @action(detail=False, methods=["GET"])
-    def start_export_to_cts(self, request):
-        """
-        Generate a ProgressData object that will be used to monitor property and tax lot exports
-        """
-        org_id = self.get_organization(request)
-
-        progress_data = ProgressData(func_name="export_to_cts", unique_id=f"{org_id}{randint(10000, 99999)}")
-        progress_key = progress_data.key
-        progress_data = update_sub_progress_total(100, progress_key)
-        return progress_data.result()
-
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_member")
     @action(detail=False, methods=["POST"])
     def export_to_cts(self, request):
         """
@@ -672,14 +657,6 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
         org_id = self.get_organization(request)
         access_level_instance = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
         property_view_ids = request.data.get("property_view_ids", [])
-
-        if request.data.get("progress_key"):
-            progress_key = request.data["progress_key"]
-            progress_data = ProgressData.from_key(progress_key)
-        else:
-            progress_data = ProgressData(func_name="export_to_cts", unique_id=org_id)
-            progress_key = progress_data.key
-        progress_data = update_sub_progress_total(100, progress_key)
 
         state_ids = PropertyView.objects.filter(
             property__organization_id=org_id,

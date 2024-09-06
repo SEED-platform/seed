@@ -2,49 +2,59 @@
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
  * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
-angular.module('SEED.controller.export_to_CTS_modal', []).controller('export_to_CTS_modal_controller', [
+angular.module('SEED.controller.export_to_cts_modal', []).controller('export_to_cts_modal_controller', [
+  '$http',
   '$scope',
   '$state',
   '$uibModalInstance',
+  'user_service',
   'ids',
   'org_id',
   'inventory_service',
-  'uploader_service',
   // eslint-disable-next-line func-names
-  function ($scope, $state, $uibModalInstance, ids, org_id, inventory_service, uploader_service) {
-    $scope.ids = ids;
-    $scope.org_id = org_id;
-    $scope.step = { number: 0 };
-    $scope.uploader = {
-      invalid_extension_alert: false,
-      invalid_geojson_extension_alert: false,
-      invalid_xml_extension_alert: false,
-      invalid_xml_zip_extension_alert: false,
-      in_progress: false,
-      progress: 0,
-      complete: false,
-      status_message: '',
-      progress_last_updated: null,
-      progress_last_checked: null
+  function ($http, $scope, $state, $uibModalInstance, user_service, ids, org_id, inventory_service) {
+    $scope.exporting = false;
+
+    /**
+     * @type {'template' | 'femp' | null}
+     */
+    $scope.export_selection = null;
+    $scope.set_selection = (selection) => {
+      $scope.export_selection = selection;
+    };
+
+    $scope.set_name = (name) => {
+      $scope.export_name = name;
     };
 
     $scope.export = () => {
-      const property_view_ids = { property_view_ids: ids };
-      inventory_service.batch_export_to_cts($scope.org_id, property_view_ids).then((response) => {
-        const blob_type = response.headers()['content-type'];
-        data = response.data;
-        const blob = new Blob([data], { type: blob_type });
+      let filename = $scope.export_name;
+      if (!filename.endsWith('.xlsx')) filename += '.xlsx';
+      $scope.exporting = true;
 
-        saveAs(blob, "hey.xlsx");
-
-        $scope.close();
-        return response.data;
-      });
+      if ($scope.export_selection === 'template') {
+        inventory_service.export_to_cts(ids).then((data) => {
+          const blob_type = data.headers()['content-type'];
+          const blob = new Blob([data.data], { type: blob_type });
+          saveAs(blob, filename);
+          $scope.close();
+        });
+      } else if ($scope.export_selection === 'femp') {
+        inventory_service.batch_export_to_cts(org_id, { property_view_ids: ids }).then((data) => {
+          const blob_type = data.headers()['content-type'];
+          const blob = new Blob([data.data], { type: blob_type });
+          saveAs(blob, filename);
+          $scope.close();
+        });
+      }
     };
 
-    $scope.cancel = (reload = false) => {
-      $uibModalInstance.close({});
-      if (reload) $state.reload();
+    $scope.cancel = () => {
+      $uibModalInstance.dismiss('cancel');
+    };
+
+    $scope.close = () => {
+      $uibModalInstance.close();
     };
   }
 ]);
