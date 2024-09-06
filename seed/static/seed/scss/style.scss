@@ -4868,14 +4868,6 @@ ul.r-list {
   }
 }
 
-.measure-elec {
-  background-color: rgb(243 158 72 / 20%);
-}
-
-.measure-gas {
-  background-color: rgb(75 119 242 / 20%);
-}
-
 .meters-detail .ui-grid-menu-button .ui-grid-menu .ui-grid-menu-mid {
   overflow: auto;
   max-height: 112px;
@@ -5614,4 +5606,42 @@ tags-input .tags .tag-item {
   margin: 30px;
   font-size: 14px;
   font-weight: bold;
+}
+
+.mutli-select-container {
+  display: flex;
+
+  div {
+    display: flex;
+  }
+
+  .option {
+    border: 1px solid $blue;
+    border-radius: 3px;
+    color: $blue;
+    margin: 2px;
+    padding: 5px 8px;
+    cursor: pointer;
+  }
+
+  .option:hover {
+    color: $blue;
+    background: #ebebeb;
+  }
+
+  .option:active {
+    background: darken(#ebebeb, 10%);
+    color: $blue;
+  }
+
+  .option-selected {
+    color: white;
+    background: $blue;
+  }
+
+  .option-indicator {
+    margin: auto;
+    padding-right: 5px;
+    width: 17px;
+  }
 }

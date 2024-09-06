@@ -165,7 +165,7 @@ msgid "AT_SETTINGS_TEXT"
 msgstr "If your organization has configured a customized report form in Audit Template, fill out the settings below to enable importing Audit Template submissions into your SEED organization."
 
 msgid "AT_SUBMISSION_STATUS"
-msgstr "SEED will import data for submissions labeled with the following status in Audit Template.  The default submission status in Audit Template is 'Received'."
+msgstr "SEED will import data for submissions with the following statuses in Audit Template."
 
 #. Helper text for the Audit Template token in organization settings.
 msgid "AT_TOKEN_TEXT"
@@ -1394,10 +1394,10 @@ msgid "Exporting selected properties..."
 msgstr "Exporting selected properties..."
 
 msgid "FAILED_GEOCODE_INVALID_MAPQUEST_API_KEY"
-msgstr "Geocoding failed - Your MapQuest API Key is invalid."
+msgstr "Geocoding failed - Your MapQuest API Key is invalid. Update your MapQuest API Key or disable geocoding in Organization Settings."
 
 msgid "FAILED_GEOCODE_MAPQUEST_API_KEY_ERROR"
-msgstr "Geocoding failed - Your MapQuest API Key is either invalid or at its limit."
+msgstr "Geocoding failed - Your MapQuest API Key is either invalid or at its limit. Update your MapQuest API Key or disable geocoding in Organization Settings."
 
 msgid "FIELDS NEEDED TO MAKE MATCHES:"
 msgstr "FIELDS NEEDED TO MAKE MATCHES:"
