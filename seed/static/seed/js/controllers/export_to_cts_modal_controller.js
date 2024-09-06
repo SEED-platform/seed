@@ -2,56 +2,49 @@
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
  * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
-angular.module('SEED.controller.export_to_cts_modal', []).controller('export_to_cts_modal_controller', [
-  '$http',
+angular.module('SEED.controller.export_to_CTS_modal', []).controller('export_to_CTS_modal_controller', [
   '$scope',
   '$state',
   '$uibModalInstance',
-  'user_service',
   'ids',
   'org_id',
   'inventory_service',
   'uploader_service',
   // eslint-disable-next-line func-names
-  function ($http, $scope, $state, $uibModalInstance, user_service, ids, org_id, inventory_service, uploader_service) {
+  function ($scope, $state, $uibModalInstance, ids, org_id, inventory_service, uploader_service) {
     $scope.ids = ids;
     $scope.org_id = org_id;
-    $scope.exporting = false;
+    $scope.step = { number: 0 };
+    $scope.uploader = {
+      invalid_extension_alert: false,
+      invalid_geojson_extension_alert: false,
+      invalid_xml_extension_alert: false,
+      invalid_xml_zip_extension_alert: false,
+      in_progress: false,
+      progress: 0,
+      complete: false,
+      status_message: '',
+      progress_last_updated: null,
+      progress_last_checked: null
+    };
 
     $scope.export = () => {
-      let filename = $scope.export_name;
-      if (!filename.endsWith('.xlsx')) filename += '.xlsx';
-      $scope.exporting = true;
+      const property_view_ids = { property_view_ids: ids };
+      inventory_service.batch_export_to_cts($scope.org_id, property_view_ids).then((response) => {
+        const blob_type = response.headers()['content-type'];
+        data = response.data;
+        const blob = new Blob([data], { type: blob_type });
 
-      $http.get('/api/v3/tax_lot_properties/start_export_to_cts/', {
-        params: {
-          organization_id: user_service.get_organization().id
-        }
-      })
-        .then((data) => {
-          uploader_service.check_progress_loop(
-            data.data.progress_key,
-            0,
-            1,
-            () => {},
-            () => {},
-            $scope.exporter_progress
-          );
-          return inventory_service.export_to_cts(ids).then((data) => {
-            const blob_type = data.headers()['content-type'];
-            const blob = new Blob([data.data], { type: blob_type });
-            saveAs(blob, filename);
-            $scope.close();
-          });
-        });
+        saveAs(blob, "hey.xlsx");
+
+        $scope.close();
+        return response.data;
+      });
     };
 
-    $scope.cancel = () => {
-      $uibModalInstance.dismiss('cancel');
-    };
-
-    $scope.close = () => {
-      $uibModalInstance.close();
+    $scope.cancel = (reload = false) => {
+      $uibModalInstance.close({});
+      if (reload) $state.reload();
     };
   }
 ]);

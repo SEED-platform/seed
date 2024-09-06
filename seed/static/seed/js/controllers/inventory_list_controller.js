@@ -1478,6 +1478,17 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
       });
     };
 
+    $scope.open_export_to_CTS_modal = (selectedViewIds) => {
+      $uibModal.open({
+        templateUrl: `${urls.static_url}seed/partials/export_to_CTS_modal.html`,
+        controller: 'export_to_CTS_modal_controller',
+        resolve: {
+          ids: () => selectedViewIds,
+          org_id: () => $scope.organization.id
+        }
+      });
+    };
+
     $scope.open_export_to_audit_template_modal = (selectedViewIds) => {
       $uibModal.open({
         templateUrl: `${urls.static_url}seed/partials/export_to_audit_template_modal.html`,
@@ -1554,6 +1565,9 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
           break;
         case 'open_export_modal':
           $scope.open_export_modal(selectedViewIds);
+          break;
+        case 'open_export_to_CTS_modal':
+          $scope.open_export_to_CTS_modal(selectedViewIds);
           break;
         case 'open_export_to_audit_template_modal':
           $scope.open_export_to_audit_template_modal(selectedViewIds);
