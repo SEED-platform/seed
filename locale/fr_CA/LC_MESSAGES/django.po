@@ -169,7 +169,7 @@ msgid "AT_SETTINGS_TEXT"
 msgstr "Si votre organisation a configuré un formulaire de rapport personnalisé dans Audit Template, remplissez les paramètres ci-dessous pour activer l'importation des soumissions Audit Template dans votre organisation SEED."
 
 msgid "AT_SUBMISSION_STATUS"
-msgstr "SEED importera les données pour les soumissions étiquetées avec le statut suivant sur le site Audit Template. Le statut de soumission par défaut sur le site Audit Template est « Received »."
+msgstr "SEED importera les données des soumissions avec les statuts suivants dans le modèle d'audit."
 
 #. Helper text for the Audit Template token in organization settings.
 msgid "AT_TOKEN_TEXT"
@@ -1407,10 +1407,10 @@ msgid "Exporting selected properties..."
 msgstr "Exportation des propriétés sélectionnées..."
 
 msgid "FAILED_GEOCODE_INVALID_MAPQUEST_API_KEY"
-msgstr "Échec du géocodage : votre clé API MapQuest n'est pas valide."
+msgstr "Échec du géocodage : votre clé API MapQuest n'est pas valide. Mettez à jour votre clé API MapQuest ou désactivez le géocodage dans les paramètres de l'organisation."
 
 msgid "FAILED_GEOCODE_MAPQUEST_API_KEY_ERROR"
-msgstr "Échec du géocodage : votre clé API MapQuest est soit invalide, soit à sa limite."
+msgstr "Échec du géocodage : votre clé API MapQuest n'est pas valide ou a atteint sa limite. Mettez à jour votre clé API MapQuest ou désactivez le géocodage dans les paramètres de l'organisation."
 
 msgid "FIELDS NEEDED TO MAKE MATCHES:"
 msgstr "CHAMPS NÉCESSAIRES POUR ÉTABLIR DES CORRESPONDANCES:"

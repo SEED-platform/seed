@@ -659,6 +659,30 @@ class UbidModelSignalCreationTests(TestCase):
         taxlot3.save()
         self.assertEqual(4, UbidModel.objects.count())
 
+    def test_creates_multiple_ubids_if_semicolon_separated(self):
+        self.assertEqual(0, UbidModel.objects.count())
+        property_details = self.property_state_factory.get_details()
+        property_details["organization_id"] = self.org.id
+        property_details["ubid"] = "A+A-1-1-1-1;A+A-2-2-2-2; A+A-3-3-3-3"
+        property1 = PropertyState(**property_details)
+        property1.save()
+        self.assertEqual(3, property1.ubidmodel_set.count())
+        self.assertEqual("A+A-1-1-1-1", property1.ubid)
+        ubids = property1.ubidmodel_set.all()
+        for ubid in ubids:
+            if ubid.ubid == "A+A-1-1-1-1":
+                self.assertTrue(ubid.preferred)
+            else:
+                self.assertFalse(ubid.preferred)
+
+        # non semicolon separated ubids will be treated as an entire ubid
+        property_details["ubid"] = "A+A-1-1-1-1,A+A-2-2-2-2"
+        property2 = PropertyState(**property_details)
+        property2.save()
+        self.assertEqual(1, property2.ubidmodel_set.count())
+        self.assertEqual("A+A-1-1-1-1,A+A-2-2-2-2", property2.ubid)
+        self.assertTrue(property2.ubidmodel_set.first().preferred)
+
 
 class UbidViewPermissionTests(AccessLevelBaseTestCase, DeleteModelsTestCase):
     def setUp(self):

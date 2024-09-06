@@ -41,9 +41,10 @@ from seed.utils.match import (
     MultipleALIError,
     NoAccessError,
     NoViewsError,
+    _get_ali,
+    _link_matches,
     empty_criteria_filter,
-    match_merge_link,
-    matching_criteria_column_names,
+    get_matching_criteria_column_names,
     matching_filter_criteria,
     update_sub_progress_total,
 )
@@ -365,7 +366,24 @@ def match_and_link_incoming_properties_and_taxlots_by_cycle(
 
 
 def link_views_and_states(merged_views, new_views, errored_new_states, ViewClass, cycle, ali, sub_progress_key):  # noqa: N803
-    shared_args = [ViewClass, cycle, ali, sub_progress_key]
+    state_class_name = "PropertyState" if ViewClass == PropertyView else "TaxLotState"
+    class_name = "property" if ViewClass == PropertyView else "taxlot"
+
+    # these are our matching columns
+    matching_columns = get_matching_criteria_column_names(cycle.organization_id, state_class_name)
+    tuple_values = matching_columns.copy()
+    tuple_values.discard("ubid")
+
+    # This is ALL the org's views that ARE NOT in the give cycle, by their matching column values
+    existing_views = (
+        ViewClass.objects.select_related("state").filter(**{f"{class_name}__organization_id": cycle.organization_id}).exclude(cycle=cycle)
+    )
+    view_lookup: dict[int, Union[PropertyState, TaxLotState]] = {view.state.id: view for view in existing_views}
+    match_lookup: dict[tuple, list[dict[str, any]]] = defaultdict(list)
+    for state in ({k: getattr(view.state, k) for k in ["id", "hash_object", "updated", *matching_columns]} for view in existing_views):
+        match_lookup[tuple(state[c] for c in tuple_values)].append(state)
+
+    shared_args = [ViewClass, cycle, ali, sub_progress_key, tuple_values, view_lookup, match_lookup]
 
     # merged_property_views are attached to properties that existed in the db prior to import, so it
     # REALLY should not fail.
@@ -473,7 +491,7 @@ def inclusive_match_and_merge(unmatched_state_ids, org, StateClass, sub_progress
     :param StateClass: PropertyState or TaxLotState
     :return: promoted_ids: list
     """
-    column_names = matching_criteria_column_names(org.id, StateClass.__name__)
+    column_names = get_matching_criteria_column_names(org.id, StateClass.__name__)
 
     sub_progress_data = update_sub_progress_total(100, sub_progress_key)
 
@@ -566,7 +584,7 @@ def states_to_views(unmatched_state_ids, org, access_level_instance, cycle, Stat
     elif table_name == "TaxLotState":
         ViewClass = TaxLotView
 
-    matching_columns = matching_criteria_column_names(org.id, table_name)
+    matching_columns = get_matching_criteria_column_names(org.id, table_name)
 
     # Fetch existing states tied to views, and create a tuple-lookup using non-UBID matching columns
     tuple_values = matching_columns.copy()
@@ -728,25 +746,26 @@ def states_to_views(unmatched_state_ids, org, access_level_instance, cycle, Stat
     )
 
 
-def link_states(states, ViewClass, cycle, highest_ali, sub_progress_key):  # noqa: N803
-    """
-    Run each of the given -States through a linking round.
+def link_states(states, ViewClass, cycle, highest_ali, sub_progress_key, tuple_values, view_lookup, match_lookup):  # noqa: N803
+    class_name = "property" if ViewClass == PropertyView else "taxlot"
 
-    For details on the actual linking logic, please refer to the
-    match_merge_link() method.
-    """
-
+    # set up the progress bar
     sub_progress_data = update_sub_progress_total(100, sub_progress_key)
+    batch_size = math.ceil(len(states) / 100)
 
     linked_views = []
     unlinked_views = []
     invalid_link_states = []
     unlinked_states = []
-
-    batch_size = math.ceil(len(states) / 100)
     for idx, state in enumerate(states):
+        # get matches
+        existing_state_matches = match_lookup.get(tuple(getattr(state, c) for c in tuple_values), [])
+        existing_views_matches = [view_lookup[x["id"]] for x in existing_state_matches]
+
+        # ensure ali is correct
+        view = ViewClass.objects.filter(state_id=state.id, cycle_id=cycle.id).select_related(f"{class_name}__access_level_instance").first()
         try:
-            _merge_count, link_count, view = match_merge_link(state, highest_ali=highest_ali, cycle=cycle)
+            ali = _get_ali(view, existing_views_matches, highest_ali, class_name)
         except (MultipleALIError, NoAccessError):
             invalid_link_states.append(state.id)
             continue
@@ -754,6 +773,13 @@ def link_states(states, ViewClass, cycle, highest_ali, sub_progress_key):  # noq
             unlinked_states.append(state.id)
             continue
 
+        # if a view for this cycle doesn't already exist, create one
+        if view is None:
+            state.raw_access_level_instance = ali
+            view = state.promote(cycle=cycle)
+
+        # link state
+        link_count = _link_matches([*existing_views_matches, view], cycle.organization_id, view, ViewClass)
         if link_count == 0:
             unlinked_views.append(view)
         else:

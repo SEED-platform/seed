@@ -1,3 +1,51 @@
+# SEED Version 3.1.0
+
+<!-- Release notes generated using configuration in .github/release.yml at 3.1-release-prep -->
+
+## What's Changed
+### New Features 🎉
+* Flip inventory reports chart axes by @haneslinger in https://github.com/SEED-platform/seed/pull/4693
+* Add org setting for default report axes by @haneslinger in https://github.com/SEED-platform/seed/pull/4691
+* Create public feed endpoints by @perryr16 in https://github.com/SEED-platform/seed/pull/4685
+* Add Elements and initial TKBL functionality by @axelstudios in https://github.com/SEED-platform/seed/pull/4689
+* Element Statistics analysis by @haneslinger in https://github.com/SEED-platform/seed/pull/4721
+* Add AT submission import by @perryr16 in https://github.com/SEED-platform/seed/pull/4620
+* Add 2-factor authentication by @perryr16 in https://github.com/SEED-platform/seed/pull/4700
+* Add cross cycle data quality checks by @perryr16 in https://github.com/SEED-platform/seed/pull/4695
+* Add water-type canonical columns and meters by @perryr16 in https://github.com/SEED-platform/seed/pull/4725
+* Handle BETTER terms and conditions error by @perryr16 in https://github.com/SEED-platform/seed/pull/4753
+* Add `Export to CTS` button by @haneslinger in https://github.com/SEED-platform/seed/pull/4680
+* Allow multiple ubids during import by @perryr16 in https://github.com/SEED-platform/seed/pull/4732
+### Improvements 📈
+* Add inventory reports click handler to navigate to property by @haneslinger in https://github.com/SEED-platform/seed/pull/4677
+* Speed up organization report endpoint by @haneslinger in https://github.com/SEED-platform/seed/pull/4648
+* Filter report by ali by @haneslinger in https://github.com/SEED-platform/seed/pull/4653
+* Filter analyses by cycle by @haneslinger in https://github.com/SEED-platform/seed/pull/4703
+* Add help-text to default reports inputs by @kflemin in https://github.com/SEED-platform/seed/pull/4739
+* Update inventory list filter placeholder text by @kflemin in https://github.com/SEED-platform/seed/pull/4742
+* Speed up import step 6 by @haneslinger in https://github.com/SEED-platform/seed/pull/4756
+### Maintenance 🧹
+* Lock pandas sub-dependency and update pytz by @axelstudios in https://github.com/SEED-platform/seed/pull/4652
+* Doubled rehash performance by @axelstudios in https://github.com/SEED-platform/seed/pull/4754
+### Bug Fixes 🐛
+* Fix reports with `None` values by @haneslinger in https://github.com/SEED-platform/seed/pull/4716
+* Fix missing inventory detail sections by @axelstudios in https://github.com/SEED-platform/seed/pull/4727
+* Don't automatically convert extra_data values to numbers by @haneslinger in https://github.com/SEED-platform/seed/pull/4729
+* Allow all users to save two-factor auth settings by @perryr16 in https://github.com/SEED-platform/seed/pull/4741
+* Clean up default reports by @haneslinger in https://github.com/SEED-platform/seed/pull/4733
+* Fix bug preventing tax lot columns from moving by @perryr16 in https://github.com/SEED-platform/seed/pull/4731
+* Display errors on the front end for bad mapquest keys when geocoding by @crutan in https://github.com/SEED-platform/seed/pull/4709
+* Fix Salesforce tests by @kflemin in https://github.com/SEED-platform/seed/pull/4760
+* Fix username case sensitivity by @perryr16 in https://github.com/SEED-platform/seed/pull/4758
+* Fix analysis import by @haneslinger in https://github.com/SEED-platform/seed/pull/4761
+* Add ability to retrieve all Audit Template submissions by @perryr16 in https://github.com/SEED-platform/seed/pull/4750
+* Fix ubid preferred setting bug by @perryr16 in https://github.com/SEED-platform/seed/pull/4755
+
+## New Contributors
+* @devinbrady made their first contribution in https://github.com/SEED-platform/seed/pull/4689
+
+**Full Changelog**: https://github.com/SEED-platform/seed/compare/v3.0.0...v3.1.0
+
 # SEED Version 3.0.0
 
 <!-- Release notes generated using configuration in .github/release.yml at 3.0.0-release-prep -->
