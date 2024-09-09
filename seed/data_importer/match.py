@@ -637,12 +637,10 @@ def states_to_views(unmatched_state_ids, org, access_level_instance, cycle, Stat
         existing_state_matches = match_lookup.get(tuple(getattr(state, c) for c in tuple_values), [])
 
         if check_jaccard:
-            # ignore if incomming or existing ubid is None
             existing_state_matches = [
                 existing_state
                 for existing_state in existing_state_matches
-                if not existing_state.get("ubid")
-                or check_jaccard_match(matching_criteria.get("ubid"), existing_state.get("ubid"), org.ubid_threshold)
+                if check_jaccard_match(matching_criteria.get("ubid"), existing_state.get("ubid"), org.ubid_threshold)
             ]
 
         count = len(existing_state_matches)
@@ -763,12 +761,10 @@ def link_states(states, ViewClass, cycle, highest_ali, sub_progress_key, tuple_v
         # get matches
         existing_state_matches = match_lookup.get(tuple(getattr(state, c) for c in tuple_values), [])
         if check_jaccard:
-            # ignore if incomming or existing ubid is None
             existing_state_matches = [
                 existing_state
                 for existing_state in existing_state_matches
-                if not existing_state.get("ubid")
-                or check_jaccard_match(state.ubid, existing_state.get("ubid"), cycle.organization.ubid_threshold)
+                if check_jaccard_match(state.ubid, existing_state.get("ubid"), cycle.organization.ubid_threshold)
             ]
         existing_views_matches = [view_lookup[x["id"]] for x in existing_state_matches]
 
@@ -886,6 +882,7 @@ def save_state_match(state1, state2, priorities):
 def check_jaccard_match(ubid: str, state_ubid: str, ubid_threshold: float):
     """
     Use jaccard index between an incoming ubid and an existing state_ubid to determine if states are 'matching'
+    If either ubid is None, 1.0 will be returned.
 
     :param ubid: string, incoming ubid
     :param state_ubid: string, existing state's ubid
