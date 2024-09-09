@@ -5,8 +5,8 @@
 angular.module('SEED.controller.inventory_detail_timeline', []).controller('inventory_detail_timeline_controller', [
   '$scope',
   '$stateParams',
-  '$timeout',
   'uiGridConstants',
+  'organization_service',
   'cycles',
   'events',
   'inventory_payload',
@@ -17,8 +17,8 @@ angular.module('SEED.controller.inventory_detail_timeline', []).controller('inve
   function (
     $scope,
     $stateParams,
-    $timeout,
     uiGridConstants,
+    organization_service,
     cycles,
     events,
     inventory_payload,
@@ -296,19 +296,7 @@ angular.module('SEED.controller.inventory_detail_timeline', []).controller('inve
       }
     };
 
-    const getInventoryDisplayName = (property_type) => {
-      let error = '';
-      let field = property_type === 'property' ? $scope.organization.property_display_field : $scope.organization.taxlot_display_field;
-      if (!(field in $scope.item_state)) {
-        error = `${field} does not exist`;
-        field = 'address_line_1';
-      }
-      if (!$scope.item_state[field]) {
-        error += `${error === '' ? '' : ' and default '}${field} is blank`;
-      }
-      $scope.inventory_name_error = error;
-      $scope.inventory_name = $scope.item_state[field] ? $scope.item_state[field] : '';
-    };
+    $scope.inventory_display_name = organization_service.get_inventory_display_value($scope.organization, $scope.inventory_type === 'properties' ? 'property' : 'taxlot', $scope.item_state);
 
     $scope.accordionsCollapsed = true;
     $scope.collapseAccordions = (collapseAll) => {
@@ -339,7 +327,6 @@ angular.module('SEED.controller.inventory_detail_timeline', []).controller('inve
     };
 
     // Initiate data population
-    getInventoryDisplayName($scope.inventory_type === 'properties' ? 'property' : 'taxlot');
     setMeasureGridOptions();
     setNoteGridOptions();
     setAnalysisGridOptions();

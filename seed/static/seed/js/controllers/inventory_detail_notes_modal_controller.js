@@ -46,7 +46,7 @@ angular.module('SEED.controller.inventory_detail_notes_modal', []).controller('i
     };
 
     $scope.delete = () => {
-      note_service.delete_note($scope.inventoryType, $scope.viewId, $scope.note.id).then(() => {
+      note_service.delete_note($scope.orgId, $scope.inventoryType, $scope.viewId, $scope.note.id).then(() => {
         $uibModalInstance.close();
       });
     };
