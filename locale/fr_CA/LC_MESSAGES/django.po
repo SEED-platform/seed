@@ -1376,6 +1376,9 @@ msgstr "Exporter les bâtiments"
 msgid "Export CSV"
 msgstr "Exporter au format CSV"
 
+msgid "Export File Name"
+msgstr "Nom du fichier d'export"
+
 msgid "Export GeoJSON"
 msgstr "Exporter GeoJSON"
 
@@ -1411,6 +1414,9 @@ msgstr "Échec du géocodage : votre clé API MapQuest n'est pas valide. Mettez 
 
 msgid "FAILED_GEOCODE_MAPQUEST_API_KEY_ERROR"
 msgstr "Échec du géocodage : votre clé API MapQuest n'est pas valide ou a atteint sa limite. Mettez à jour votre clé API MapQuest ou désactivez le géocodage dans les paramètres de l'organisation."
+
+msgid "FEMP CTS Reporting Export"
+msgstr "Export pour  FEMP CTS"
 
 msgid "FIELDS NEEDED TO MAKE MATCHES:"
 msgstr "CHAMPS NÉCESSAIRES POUR ÉTABLIR DES CORRESPONDANCES:"

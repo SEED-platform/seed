@@ -32,15 +32,15 @@ angular.module('SEED.controller.export_to_cts_modal', []).controller('export_to_
       if (!filename.endsWith('.xlsx')) filename += '.xlsx';
       $scope.exporting = true;
 
-      if ($scope.export_selection === 'template') {
-        inventory_service.export_to_cts(ids).then((data) => {
+      if ($scope.export_selection === 'evaluation_template') {
+        inventory_service.evaluation_export_to_cts(ids).then((data) => {
           const blob_type = data.headers()['content-type'];
           const blob = new Blob([data.data], { type: blob_type });
           saveAs(blob, filename);
           $scope.close();
         });
-      } else if ($scope.export_selection === 'femp') {
-        inventory_service.batch_export_to_cts(org_id, { property_view_ids: ids }).then((data) => {
+      } else if ($scope.export_selection === 'facility_bps_template') {
+        inventory_service.facility_bps_export_to_cts(org_id, { property_view_ids: ids }).then((data) => {
           const blob_type = data.headers()['content-type'];
           const blob = new Blob([data.data], { type: blob_type });
           saveAs(blob, filename);

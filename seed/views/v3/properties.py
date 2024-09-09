@@ -8,12 +8,15 @@ import io
 import json
 import logging
 import os
+import shutil
+import tempfile
 import time
 from collections import namedtuple
 from itertools import groupby
 from pathlib import Path
 
 import pandas as pd
+from buildingsync_asset_extractor.cts import building_sync_to_cts
 from django.conf import settings
 from django.core.files.base import ContentFile
 from django.core.files.storage import FileSystemStorage
@@ -1759,7 +1762,65 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
     @ajax_request_class
     @has_perm_class("requires_member")
     @action(detail=False, methods=["POST"])
-    def batch_export_to_cts(self, request):
+    def evaluation_export_to_cts(self, request):
+        """
+        Download CTS Comprehensive Evaluation Upload Template
+        which uses the BAE/BuildingSync workflow
+        """
+        org_id = self.get_organization(request)
+        access_level_instance = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
+        property_view_ids = request.data.get("property_view_ids", [])
+
+        state_ids = PropertyView.objects.filter(
+            property__organization_id=org_id,
+            pk__in=property_view_ids,
+            property__access_level_instance__lft__gte=access_level_instance.lft,
+            property__access_level_instance__rgt__lte=access_level_instance.rgt,
+        ).values_list("state_id", flat=True)
+        building_files = (
+            BuildingFile.objects.filter(property_state_id__in=state_ids)
+            .order_by("-property_state")
+            .distinct("property_state")
+            .values_list("file", flat=True)
+        )
+
+        filename = request.data.get("filename", "ExportedData.xlsx")
+        response = HttpResponse(content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+        response["Content-Disposition"] = f'attachment; filename="{filename}"'
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            # Since `building_sync_to_cts` takes a filename and not a file object we can't create the temp file inside a `with` context
+            # This is because of how Windows handles file locking
+            output_file = tempfile.NamedTemporaryFile(delete=False)
+            output_filename = Path(output_file.name)
+            # Close the temp file to release the lock
+            output_file.close()
+
+            bsync_files = []
+            for i, f in enumerate(building_files):
+                new_file = f"{tmpdir}/{i}.xml"
+                shutil.copyfile(f"{settings.MEDIA_ROOT}/{f}", new_file)
+                bsync_files.append(Path(new_file))
+
+            building_sync_to_cts(bsync_files, output_filename)
+            with open(output_filename, "rb") as file:
+                xlsx_data = file.read()
+            response.write(xlsx_data)
+
+            # Explicitly delete the temp file
+            os.remove(output_filename)
+
+        return response
+
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class("requires_member")
+    @action(detail=False, methods=["POST"])
+    def facility_bps_export_to_cts(self, request):
+        """
+        Download the CTS Facility Upload Template for Federal BPS
+        which uses the SEED-based workflow (not buildingsync)
+        """
         # import blank template
         BLANK_CTS_FILE_PATH = Path(__file__).parents[2] / "utils" / "CTS Facility Upload Template.xlsx"
         output_df = pd.read_excel(BLANK_CTS_FILE_PATH, sheet_name="Facility Upload Template")

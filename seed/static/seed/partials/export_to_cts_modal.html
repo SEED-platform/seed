@@ -1,17 +1,21 @@
 <div class="modal-header">
-  <h4 class="modal-title" translate>Export Properties to CTS</h4>
+  <h4 class="modal-title" translate>FEMP CTS Reporting Export</h4>
 </div>
 
 <div class="modal-body">
+
+  <div>
+    <h5>Select a reporting template to export for the Federal Energy Management Program (FEMP) Energy Independence and Security Act of 2007 (EISA) Compliance Tracking System (CTS) </h5>
+  </div>
   <div class="cts-export-buttons" ng-if="!export_selection">
-    <button type="button" class="btn btn-primary" ng-click="set_selection('template')">CTS Comprehensive Evaluation Upload Template</button>
-    <button type="button" class="btn btn-primary" ng-click="set_selection('femp')">Federal Energy Management Program (FEMP) Compliance Tracking System (CTS)</button>
+    <button type="button" class="btn btn-primary" ng-click="set_selection('evaluation_template')">CTS Comprehensive Evaluation Upload Template</button>
+    <button type="button" class="btn btn-primary" ng-click="set_selection('facility_bps_template')">CTS Facility Upload Template for Federal BPS</button>
   </div>
 
   <div ng-if="export_selection">
     <div class="section_content_container" ng-if="!exporting">
       <div class="section_content with_padding">
-        <label class="control-label col-sm-4" for="fileName" translate>Export Name</label>
+        <label class="control-label col-sm-4" for="fileName" translate>Export File Name</label>
         <form class="form-horizontal" role="form">
           <div class="form-group">
             <div class="col-sm-6">
