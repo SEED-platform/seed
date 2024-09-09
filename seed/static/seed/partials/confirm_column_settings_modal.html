@@ -36,28 +36,28 @@
   <div ng-switch="state">
     <div class="col-sm-12">
       <div ng-switch-default>
-        <div ng-if="rehash_required">
-          <p>Changing the Uniqueness Exclusions will require we recalculate the match criteria for your properties.</p>
-          <p>This operation may take a long time to complete, are you sure you want to continue?</p>
+        <div ng-if="rehash_required" class="warning-text">
+          <p translate>REHASH_TEXT</p>
+          <p class="bold" translate>LONG_OP_CONFIRM_TEXT</p>
         </div>
       </div>
       <div ng-switch-when="pending">
         <uib-progressbar class="progress-striped active" value="100" type="info"></uib-progressbar>
-        <p>Please wait, scanning for affected records...</p>
+        <p translate>WAIT_TEXT_1</p>
       </div>
       <div ng-switch-when="evaluating">
         <uib-progressbar class="progress-striped active" value="100" type="info"></uib-progressbar>
-        <p>Please wait, evaluating affected records. This may take several minutes...</p>
+        <p translate>WAIT_TEXT_2</p>
       </div>
       <div ng-switch-when="running">
         <uib-progressbar class="progress-striped active" value="progressBar.progress" type="success"><span class="status-text">{$ progressBar.status_message $}</span></uib-progressbar>
         <table class="time-table">
           <tr>
-            <td>Elapsed:</td>
+            <td translate>Elapsed:</td>
             <td>{$ elapsed $}</td>
           </tr>
           <tr>
-            <td>ETA:</td>
+            <td>Estimated Completion:</td>
             <td>{$ eta $}</td>
           </tr>
         </table>

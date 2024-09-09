@@ -5645,3 +5645,15 @@ tags-input .tags .tag-item {
     width: 17px;
   }
 }
+
+.warning-text {
+  padding: 10px;
+
+  p {
+    font-size: 1.2em;
+  }
+
+  .bold {
+    font-size: bold;
+  }
+}
