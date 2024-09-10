@@ -9,6 +9,7 @@ angular.module('SEED.controller.inventory_detail_meters', []).controller('invent
   '$uibModal',
   '$window',
   'meter_service',
+  'organization_service',
   'cycles',
   'dataset_service',
   'inventory_service',
@@ -27,6 +28,7 @@ angular.module('SEED.controller.inventory_detail_meters', []).controller('invent
     $uibModal,
     $window,
     meter_service,
+    organization_service,
     cycles,
     dataset_service,
     inventory_service,
@@ -80,7 +82,7 @@ angular.module('SEED.controller.inventory_detail_meters', []).controller('invent
       enableSelectAll: true,
       exporterMenuPdf: false,
       exporterMenuExcel: false,
-      exporterCsvFilename: () => `${$scope.inventory_name ? $scope.inventory_name : $stateParams.view_id} meter.csv`,
+      exporterCsvFilename: () => `${$scope.inventory_display_name ? $scope.inventory_display_name : $stateParams.view_id}_meters.csv`,
       enableColumnResizing: true,
       flatEntityAccess: true,
       fastWatch: true,
@@ -119,7 +121,7 @@ angular.module('SEED.controller.inventory_detail_meters', []).controller('invent
       enableSelectAll: true,
       exporterMenuPdf: false,
       exporterMenuExcel: false,
-      exporterCsvFilename: () => `${$scope.inventory_name ? $scope.inventory_name : $stateParams.view_id} meter_readings.csv`,
+      exporterCsvFilename: () => `${$scope.inventory_dispaly_name ? $scope.inventory_dispaly_name : $stateParams.view_id}_meter_readings.csv`,
       enableColumnResizing: true,
       enableFiltering: true,
       flatEntityAccess: true,
@@ -266,19 +268,7 @@ angular.module('SEED.controller.inventory_detail_meters', []).controller('invent
       });
     };
 
-    const get_inventory_display_name = (property_type) => {
-      let error = '';
-      let field = property_type === 'property' ? $scope.organization.property_display_field : $scope.organization.taxlot_display_field;
-      if (!(field in $scope.item_state)) {
-        error = `${field} does not exist`;
-        field = 'address_line_1';
-      }
-      if (!$scope.item_state[field]) {
-        error += `${error === '' ? '' : ' and default '}${field} is blank`;
-      }
-      $scope.inventory_name_error = error;
-      $scope.inventory_name = $scope.item_state[field] ? $scope.item_state[field] : '';
-    };
+    $scope.inventory_display_name = organization_service.get_inventory_display_value($scope.organization, $scope.inventory_type === 'properties' ? 'property' : 'taxlot', $scope.item_state);
 
     $scope.updateHeight = () => {
       let height = 0;
@@ -291,7 +281,5 @@ angular.module('SEED.controller.inventory_detail_meters', []).controller('invent
       $scope.readingGridApi.core.handleWindowResize();
       $scope.meterGridApi.core.handleWindowResize();
     };
-
-    get_inventory_display_name($scope.inventory_type === 'properties' ? 'property' : 'taxlot');
   }
 ]);
