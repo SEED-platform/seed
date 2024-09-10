@@ -26,7 +26,7 @@ class Analysis(models.Model):
     CO2 = 4
     EEEJ = 5
     ELEMENTSTATISTICS = 6
-    ARMYS_PRIORITIZATION_PATHWAY = 7
+    UPGRADERECOMMENDATION = 7
 
     SERVICE_TYPES = (
         (BSYNCR, "BSyncr"),
@@ -35,7 +35,7 @@ class Analysis(models.Model):
         (CO2, "CO2"),
         (EEEJ, "EEEJ"),
         (ELEMENTSTATISTICS, "Element Statistics"),
-        (ARMYS_PRIORITIZATION_PATHWAY, "armys_prioritization_pathway"),
+        (UPGRADERECOMMENDATION, "Building Upgrade Recommendation"),
     )
 
     PENDING_CREATION = 8
@@ -185,12 +185,12 @@ class Analysis(models.Model):
         # Element Statistics
         elif self.service == self.ELEMENTSTATISTICS:
             return [{"name": k, "value": round(v, 2)} for k, v in results.items()]
-        # ARMYS_PRIORITIZATION_PATHWAY
-        elif self.service == self.ARMYS_PRIORITIZATION_PATHWAY:
-            armys_prioritization_category = results.get("Armys Prioritization Category")
+        # Building Upgrade Recommendation
+        elif self.service == self.UPGRADERECOMMENDATION:
+            recommendation = results.get("Building Upgrade Recommendation")
 
             return [
-                {"name": "Armys Prioritization Category", "value": armys_prioritization_category},
+                {"name": "Building Upgrade Recommendation", "value": recommendation},
             ]
 
         # Unexpected

@@ -19,20 +19,6 @@ from seed.models import Analysis, AnalysisMessage, AnalysisPropertyView, Column,
 
 logger = logging.getLogger(__name__)
 
-ERROR_INVALID_LOCATION = 0
-ERROR_RETRIEVING_CENSUS_TRACT = 1
-ERROR_NO_VALID_PROPERTIES = 2
-WARNING_SOME_INVALID_PROPERTIES = 3
-ERROR_NO_TRACT_OR_LOCATION = 4
-
-EEEJ_ANALYSIS_MESSAGES = {
-    ERROR_INVALID_LOCATION: "Property missing Lat/Lng (High, Census, or Manually geocoded) or one of: Address Line 1, City & State, or Postal Code.",
-    ERROR_RETRIEVING_CENSUS_TRACT: "Unable to retrieve Census Tract for this property.",
-    ERROR_NO_TRACT_OR_LOCATION: "Property missing location or Census Tract",
-    ERROR_NO_VALID_PROPERTIES: "Analysis found no valid properties to analyze.",
-    WARNING_SOME_INVALID_PROPERTIES: "Some properties failed to validate.",
-}
-
 
 def _log_errors(errors_by_apv_id, analysis_id):
     """Log individual analysis property view errors to the analysis"""
@@ -48,7 +34,7 @@ def _log_errors(errors_by_apv_id, analysis_id):
             )
 
 
-class ArmysPrioritizationPathwayPipeline(AnalysisPipeline):
+class UpgradeRecommendationPipeline(AnalysisPipeline):
     def _prepare_analysis(self, property_view_ids, start_analysis=True):
         # current implementation will *always* start the analysis immediately
 
@@ -71,15 +57,15 @@ class ArmysPrioritizationPathwayPipeline(AnalysisPipeline):
 @shared_task(bind=True)
 @analysis_pipeline_task(Analysis.CREATING)
 def _finish_preparation(self, analysis_view_ids_by_property_view_id, analysis_id):
-    pipeline = ArmysPrioritizationPathwayPipeline(analysis_id)
-    pipeline.set_analysis_status_to_ready("Ready to run Army's Prioritization Pathway analysis")
+    pipeline = UpgradeRecommendationPipeline(analysis_id)
+    pipeline.set_analysis_status_to_ready("Ready to run Building Upgrade Recommendation analysis")
 
     # here is where errors would be filtered out
 
     return list(analysis_view_ids_by_property_view_id.values())
 
 
-def _get_views_armys_prioritization_category(property_view, config):
+def _get_views_upgrade_recommendation_category(property_view, config):
     sum_of_modeled_mdms_total_eui = property_view.state.extra_data.get("Sum of Modeled/MDMS Total EUI")
     sum_of_modeled_mdms_gas_eui = property_view.state.extra_data.get("Sum of Modeled/MDMS Gas EUI")
     sum_of_modeled_mdms_electric_eui = property_view.state.extra_data.get("Sum of Modeled/MDMS Electric EUI")
@@ -162,43 +148,43 @@ def _get_views_armys_prioritization_category(property_view, config):
 @shared_task(bind=True)
 @analysis_pipeline_task(Analysis.READY)
 def _run_analysis(self, analysis_property_view_ids, analysis_id):
-    pipeline = ArmysPrioritizationPathwayPipeline(analysis_id)
+    pipeline = UpgradeRecommendationPipeline(analysis_id)
     progress_data = pipeline.set_analysis_status_to_running()
     progress_data.step("Generating Numbers")
     analysis = Analysis.objects.get(id=analysis_id)
 
     # get/create relevant columns
-    existing_columns = _create_armys_prioritization_pathway_analysis_columns(analysis)
+    existing_columns = _create_upgrade_recommendation_analysis_columns(analysis)
 
     analysis_property_views = AnalysisPropertyView.objects.filter(id__in=analysis_property_view_ids)
     property_views_by_apv_id = AnalysisPropertyView.get_property_views(analysis_property_views)
     for analysis_property_view in analysis_property_views:
         # run the analysis
         property_view = property_views_by_apv_id[analysis_property_view.id]
-        armys_prioritization_category = _get_views_armys_prioritization_category(property_view, analysis.configuration)
+        upgrade_rec = _get_views_upgrade_recommendation_category(property_view, analysis.configuration)
 
         # update the analysis_property_view
         analysis_property_view.parsed_results = {
-            "Armys Prioritization Category": armys_prioritization_category,
+            "Building Upgrade Recommendation": upgrade_rec,
         }
         analysis_property_view.save()
 
         # update the property view
-        if "armys_prioritization_category" in existing_columns:
-            property_view.state.extra_data.update({"armys_prioritization_category": armys_prioritization_category})
+        if "building_upgrade_recommendation" in existing_columns:
+            property_view.state.extra_data.update({"building_upgrade_recommendation": upgrade_rec})
             property_view.state.save()
 
     # all done!
     pipeline.set_analysis_status_to_completed()
 
 
-def _create_armys_prioritization_pathway_analysis_columns(analysis):
+def _create_upgrade_recommendation_analysis_columns(analysis):
     existing_columns = []
     column_meta = [
         {
-            "column_name": "armys_prioritization_category",
-            "display_name": "Armys Prioritization Category",
-            "description": "Armys Prioritization Category",
+            "column_name": "building_upgrade_recommendation",
+            "display_name": "Building Upgrade Recommendation",
+            "description": "Upgrade recommendation as determined by the building upgrade recommendation analysis",
         },
     ]
 

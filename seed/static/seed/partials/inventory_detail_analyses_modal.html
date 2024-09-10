@@ -29,8 +29,10 @@
             <option ng-option value="CO2" selected="selected">Average Annual CO2</option>
             <option ng-option value="EEEJ" selected="selected">Energy Equity & Environmental Justice (EEEJ)</option>
             <option ng-option value="Element Statistics" selected="selected">Element Statistics</option>
-            <option ng-option value="armys_prioritization_pathway" selected="selected">Army's Prioritization Pathway</option>
+            <option ng-option value="Building Upgrade Recommendation" selected="selected">Building Upgrade Recommendation</option>
           </select>
+        </div>
+        <div class="form-group" ng-if="new_analysis.service" translate="ANALYSIS_DESCRIPTION_{$new_analysis.service.split(' ').join('')$}">
         </div>
 
         <div class="form-group" ng-if="new_analysis.service == 'BSyncr'">
@@ -254,7 +256,7 @@
           </div>
         </div>
 
-        <div class="form-group" ng-if="new_analysis.service == 'armys_prioritization_pathway'">
+        <div class="form-group" ng-if="new_analysis.service == 'Building Upgrade Recommendation'">
           <div class="form-group" style="padding-top: 1em">
             <div class="container-fluid">
               <label class="control-label sectionLabel text-muted">
@@ -295,7 +297,7 @@
               <label class="control-label sectionLabel text-muted">
                 FF-Fired Equipment RSL Threshold
               </label>
-              <input ng-model="new_analysis.configuration.ff_fired_equipment_rsl_threshold type="number" class="form-control"
+              <input ng-model="new_analysis.configuration.ff_fired_equipment_rsl_threshold" type="number" class="form-control"
                 ng-init="new_analysis.configuration.ff_fired_equipment_rsl_threshold=1.4"/>
             </div>
           </div>

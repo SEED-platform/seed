@@ -62,6 +62,7 @@ angular.module('SEED.controller.inventory_detail_analyses_modal', []).controller
     // if it's BETTER and selectMeters is 1
     // need to find start date and end date of meters data for first inventory?
     $scope.initializeAnalysisConfig = () => {
+      Notification.error(`SERVICE: ${$scope.new_analysis.service}`);
       switch ($scope.new_analysis.service) {
         case 'BSyncr':
           $scope.new_analysis.configuration = {
@@ -111,7 +112,10 @@ angular.module('SEED.controller.inventory_detail_analyses_modal', []).controller
         case 'EEEJ':
           $scope.new_analysis.configuration = {};
           break;
-        case 'ARMYS_PRIORITIZATION_PATHWAY':
+        case 'Element Statistics':
+          $scope.new_analysis.configuration = {};
+          break;
+        case 'Building Upgrade Recommendation':
           $scope.new_analysis.configuration = {
             total_eui_goal: 0,
             ff_eui_goal: 0,

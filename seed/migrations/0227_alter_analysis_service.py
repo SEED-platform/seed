@@ -5,7 +5,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("seed", "0224_alter_meter_type"),
+        ("seed", "0226_rehash"),
     ]
 
     operations = [
@@ -20,7 +20,7 @@ class Migration(migrations.Migration):
                     (4, "CO2"),
                     (5, "EEEJ"),
                     (6, "Element Statistics"),
-                    (7, "armys_prioritization_pathway"),
+                    (7, "Building Upgrade Recommendation"),
                 ]
             ),
         ),
