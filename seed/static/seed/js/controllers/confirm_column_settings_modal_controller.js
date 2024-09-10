@@ -225,7 +225,7 @@ angular.module('SEED.controller.confirm_column_settings_modal', []).controller('
         })
         .catch((err) => {
           $log.error(err);
-          $scope.result = 'Failed to delete column';
+          $scope.result = 'Failed to update column(s)';
           $scope.state = 'done';
           $interval.cancel($scope.interval);
         });
@@ -284,7 +284,7 @@ angular.module('SEED.controller.confirm_column_settings_modal', []).controller('
     };
 
     $scope.refresh = () => {
-      spinner_utility.show();
+      $window.onbeforeunload = null;
       $window.location.reload();
     };
   }
