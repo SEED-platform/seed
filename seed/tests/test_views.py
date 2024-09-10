@@ -1532,6 +1532,7 @@ class InventoryViewTests(AssertDictSubsetMixin, DeleteModelsTestCase):
             "recognize_empty": False,
             "comstock_mapping": None,
             "derived_column": None,
+            "is_excluded_from_hash": False,
         }
         self.assertIn(pm_property_id_col, results)
 
@@ -1552,6 +1553,7 @@ class InventoryViewTests(AssertDictSubsetMixin, DeleteModelsTestCase):
             "recognize_empty": False,
             "comstock_mapping": None,
             "derived_column": None,
+            "is_excluded_from_hash": False,
         }
         self.assertIn(expected_property_extra_data_column, results)
 
@@ -1572,6 +1574,7 @@ class InventoryViewTests(AssertDictSubsetMixin, DeleteModelsTestCase):
             "recognize_empty": False,
             "comstock_mapping": None,
             "derived_column": None,
+            "is_excluded_from_hash": False,
         }
         self.assertIn(expected_taxlot_extra_data_column, results)
 
@@ -1611,6 +1614,7 @@ class InventoryViewTests(AssertDictSubsetMixin, DeleteModelsTestCase):
             "recognize_empty": False,
             "comstock_mapping": None,
             "derived_column": None,
+            "is_excluded_from_hash": False,
         }
         self.assertIn(jurisdiction_tax_lot_id_col, results)
 
@@ -1631,6 +1635,7 @@ class InventoryViewTests(AssertDictSubsetMixin, DeleteModelsTestCase):
             "recognize_empty": False,
             "comstock_mapping": None,
             "derived_column": None,
+            "is_excluded_from_hash": False,
         }
         self.assertIn(expected_property_extra_data_column, results)
 
@@ -1651,5 +1656,6 @@ class InventoryViewTests(AssertDictSubsetMixin, DeleteModelsTestCase):
             "recognize_empty": False,
             "comstock_mapping": None,
             "derived_column": None,
+            "is_excluded_from_hash": False,
         }
         self.assertIn(expected_taxlot_extra_data_column, results)

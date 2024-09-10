@@ -42,6 +42,7 @@ class ColumnSerializer(serializers.ModelSerializer):
             "comstock_mapping",
             "column_description",
             "derived_column",
+            "is_excluded_from_hash",
         )
 
     def concat_name(self, obj):
