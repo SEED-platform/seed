@@ -1724,7 +1724,7 @@ def add_dictionary_repr_to_hash(hash_obj, dict_obj: dict):
 
 def hash_state_object(obj: Union[PropertyState, TaxLotState], include_extra_data=True):
     m = hashlib.md5()  # noqa: S324
-    for field in Column.retrieve_db_field_name_for_hash_comparison():
+    for field in Column.retrieve_db_field_name_for_hash_comparison(type(obj), obj.organization_id):
         # Default to a random value so we can distinguish between this and None.
         obj_val = getattr(obj, field, "FOO")
         m.update(field.encode("utf-8"))

@@ -499,6 +499,9 @@ msgstr "Specifies the underlying field name represented by the Display Name. The
 msgid "COL_CHANGE_NAME_EXT"
 msgstr "If a name has an “extra data” tag after it, these are fields that have been imported into SEED by the user from imported files. These fields cannot be used as matching fields under the Match Criteria section."
 
+msgid "COL_EXCLUDE_FROM_HASH"
+msgstr "Checking this box for a field will remove the field from the hash that uniquely represents each record. Incoming data will not be imported into SEED if the only fields changed are marked as excluded from the uniqueness calculations. The incoming data will instead be calculated to be a duplicate of the existing data and will therefore be ignored."
+
 msgid "COL_GEOCODING_TOGGLE"
 msgstr "Check the appropriate fields, as well as their order for the program to concatenate a full address, which SEED will use to generate latitude and longitude values for each record"
 
@@ -1207,6 +1210,9 @@ msgstr "ESPM Spreadsheet Upload (xlsx). The spreadsheet should contain a single 
 msgid "ESPM_IMPORT_TEXT"
 msgstr "Choose an EnergyStar Portfolio Manager (ESPM) data importing method below: you can either upload a property spreadsheet previously downloaded from ESPM, or you can connect to ESPM directly to access the data."
 
+msgid "ETA:"
+msgstr "Estimated Completion:"
+
 msgid "EUI"
 msgstr "EUI"
 
@@ -1233,6 +1239,9 @@ msgstr "Edit Name"
 
 msgid "Edit UBIDs"
 msgstr "Edit UBIDs"
+
+msgid "Elapsed:"
+msgstr "Elapsed:"
 
 #: seed/landing/forms.py:13
 msgid "Email"
@@ -1330,6 +1339,9 @@ msgstr "Example Usage"
 msgid "Exclude"
 msgstr "Exclude"
 
+msgid "Exclude From Uniqueness"
+msgstr "Exclude From Uniqueness"
+
 msgid "Exclude all selected labels"
 msgstr "Exclude all selected labels"
 
@@ -1362,6 +1374,9 @@ msgstr "Export Buildings"
 
 msgid "Export CSV"
 msgstr "Export CSV"
+
+msgid "Export File Name"
+msgstr "Export File Name"
 
 msgid "Export GeoJSON"
 msgstr "Export GeoJSON"
@@ -1398,6 +1413,9 @@ msgstr "Geocoding failed - Your MapQuest API Key is invalid. Update your MapQues
 
 msgid "FAILED_GEOCODE_MAPQUEST_API_KEY_ERROR"
 msgstr "Geocoding failed - Your MapQuest API Key is either invalid or at its limit. Update your MapQuest API Key or disable geocoding in Organization Settings."
+
+msgid "FEMP CTS Reporting Export"
+msgstr "FEMP CTS Reporting Export"
 
 msgid "FIELDS NEEDED TO MAKE MATCHES:"
 msgstr "FIELDS NEEDED TO MAKE MATCHES:"
@@ -1842,6 +1860,9 @@ msgstr "Select columns from the list below to make them appear in your Tax Lots 
 
 msgid "LONG_OPERATION_WARNING"
 msgstr "This operation may take a while."
+
+msgid "LONG_OP_CONFIRM_TEXT"
+msgstr "This operation may take a long time to complete. Are you sure you want to continue?"
 
 msgid "Label"
 msgstr "Label"
@@ -2775,6 +2796,9 @@ msgstr "Checking this box for a field will affect how empty or blank values are 
 
 msgid "RECOGNIZE_EMPTY_IMPORT_WARNING"
 msgstr "Warning: When this is checked for a field and that field is not mapped during import, the incoming records will be read as having an empty values for that field. Any resulting merges will have empty values for this field."
+
+msgid "REHASH_TEXT"
+msgstr "Changing the Uniqueness Exclusions will trigger the recalculation of the hashes that uniquely represent each record. "
 
 msgid "RENAME_COLUMN_TITLE"
 msgstr "Rename Column"
@@ -3994,6 +4018,12 @@ msgstr "Visit the BETTER website to run a portfolio analysis"
 
 msgid "Visualization Settings"
 msgstr "Visualization Settings"
+
+msgid "WAIT_TEXT_1"
+msgstr "Please wait, scanning for affected records..."
+
+msgid "WAIT_TEXT_2"
+msgstr "Please wait, evaluating affected records. This may take several minutes..."
 
 msgid "WATER_TYPE_DISPLAY_CHOICE_PLACEHOLDER"
 msgstr "----Choose water type----"
