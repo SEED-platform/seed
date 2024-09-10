@@ -800,6 +800,8 @@ class Column(models.Model):
     is_matching_criteria = models.BooleanField(default=False)
     is_option_for_reports_x_axis = models.BooleanField(default=False)
     is_option_for_reports_y_axis = models.BooleanField(default=False)
+    is_excluded_from_hash = models.BooleanField(default=False)
+
     import_file = models.ForeignKey("data_importer.ImportFile", on_delete=models.CASCADE, blank=True, null=True)
     # TODO: units_pint should be renamed to `from_units` as this is the unit of the incoming data in pint format
     units_pint = models.CharField(max_length=64, blank=True, null=True)
@@ -1391,7 +1393,7 @@ class Column(models.Model):
         return sorted(result)
 
     @staticmethod
-    def retrieve_db_field_name_for_hash_comparison():
+    def retrieve_db_field_name_for_hash_comparison(inventory_type, organization_id):
         """
         Names only of the columns in the database (fields only, not extra data), independent of inventory type.
         These fields are used for generating an MD5 hash to quickly check if the data are the same across
@@ -1400,10 +1402,28 @@ class Column(models.Model):
 
         :return: list, names of columns, independent of inventory type.
         """
-        columns = Column.retrieve_db_fields_from_db_tables()
-        result = [c["column_name"] for c in columns]
+        excluded_columns = (
+            list(
+                Column.objects.filter(
+                    is_excluded_from_hash=True,
+                    table_name=inventory_type.__name__,
+                    organization_id=organization_id,
+                ).values_list("column_name", flat=True)
+            )
+            if (inventory_type.__name__ in ("PropertyState", "TaxLotState") and organization_id)
+            else []
+        )
+        filter_fields_names = [
+            f.name
+            for f in inventory_type._meta.fields
+            if (
+                (f.get_internal_type() != "ForeignKey")
+                and (f.name not in Column.COLUMN_EXCLUDE_FIELDS)
+                and (f.name not in excluded_columns)
+            )
+        ]
 
-        return sorted(set(result))
+        return sorted(set(filter_fields_names))
 
     @staticmethod
     def retrieve_db_fields_from_db_tables():

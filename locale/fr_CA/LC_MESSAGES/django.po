@@ -505,6 +505,9 @@ msgstr "Spécifie le nom de champ sous-jacent représenté par le nom d'affichag
 msgid "COL_CHANGE_NAME_EXT"
 msgstr "Si un nom a une balise «données supplémentaires» après, ce sont des champs qui ont été importés dans SEED par l'utilisateur à partir de fichiers importés. Ces champs ne peuvent pas être utilisés comme champs correspondants dans la section Critère de correspondance."
 
+msgid "COL_EXCLUDE_FROM_HASH"
+msgstr "Cocher cette case pour un champ supprimera le champ du hachage qui représente de manière unique chaque enregistrement. Les données entrantes ne seront pas importées dans SEED si les seuls champs modifiés sont marqués comme exclus des calculs d'unicité. Les données entrantes seront plutôt calculées comme étant un doublon des données existantes et seront donc ignorées."
+
 #, fuzzy
 msgid "COL_GEOCODING_TOGGLE"
 msgstr "Activer / désactiver l’implication du géocodage et, si elle est activée, modifier l’ordre dans lequel les valeurs de colonne sont concaténées pour construire une adresse complète"
@@ -1219,6 +1222,9 @@ msgstr "Téléchargement de la feuille de calcul ESPM (xlsx). La feuille de calc
 msgid "ESPM_IMPORT_TEXT"
 msgstr "Choisissez une méthode d'importation de données EnergyStar Portfolio Manager (ESPM) ci-dessous: vous pouvez soit télécharger une feuille de calcul de propriétés précédemment téléchargée depuis ESPM, soit vous connecter directement à ESPM pour accéder aux données."
 
+msgid "ETA:"
+msgstr "Date d'achèvement estimée :"
+
 msgid "EUI"
 msgstr "IUE"
 
@@ -1245,6 +1251,9 @@ msgstr "Modifier le nom"
 
 msgid "Edit UBIDs"
 msgstr "Modifier les UBIDs"
+
+msgid "Elapsed:"
+msgstr "Écoulé:"
 
 #: seed/landing/forms.py:13
 msgid "Email"
@@ -1343,6 +1352,9 @@ msgstr "Exemple d'utilisation"
 msgid "Exclude"
 msgstr "Exclure"
 
+msgid "Exclude From Uniqueness"
+msgstr "Exclure de l'unicité"
+
 msgid "Exclude all selected labels"
 msgstr "Exclure toutes les étiquettes sélectionnées"
 
@@ -1375,6 +1387,9 @@ msgstr "Exporter les bâtiments"
 
 msgid "Export CSV"
 msgstr "Exporter au format CSV"
+
+msgid "Export File Name"
+msgstr "Nom du fichier d'export"
 
 msgid "Export GeoJSON"
 msgstr "Exporter GeoJSON"
@@ -1411,6 +1426,9 @@ msgstr "Échec du géocodage : votre clé API MapQuest n'est pas valide. Mettez 
 
 msgid "FAILED_GEOCODE_MAPQUEST_API_KEY_ERROR"
 msgstr "Échec du géocodage : votre clé API MapQuest n'est pas valide ou a atteint sa limite. Mettez à jour votre clé API MapQuest ou désactivez le géocodage dans les paramètres de l'organisation."
+
+msgid "FEMP CTS Reporting Export"
+msgstr "Export pour  FEMP CTS"
 
 msgid "FIELDS NEEDED TO MAKE MATCHES:"
 msgstr "CHAMPS NÉCESSAIRES POUR ÉTABLIR DES CORRESPONDANCES:"
@@ -1858,6 +1876,9 @@ msgstr "Sélectionnez les colonnes de la liste ci-dessous pour les faire appara�
 
 msgid "LONG_OPERATION_WARNING"
 msgstr "Cette opération peut prendre un certain temps."
+
+msgid "LONG_OP_CONFIRM_TEXT"
+msgstr "Cette opération peut prendre un certain temps. Êtes-vous sûr de vouloir continuer?"
 
 msgid "Label"
 msgstr "Étiquette"
@@ -2796,6 +2817,9 @@ msgstr "Cocher cette case pour un champ affectera la façon dont les valeurs vid
 #, fuzzy
 msgid "RECOGNIZE_EMPTY_IMPORT_WARNING"
 msgstr "Avertissement: Lorsque cette case est cochée pour un champ et que ce champ n'est pas mappé lors de l'importation, les enregistrements entrants seront lus comme ayant des valeurs vides pour ce champ. Toutes les fusions résultantes auront des valeurs vides pour ce champ."
+
+msgid "REHASH_TEXT"
+msgstr "La modification des exclusions d’unicité déclenchera le recalcul des hachages qui représentent de manière unique chaque enregistrement. "
 
 msgid "RENAME_COLUMN_TITLE"
 msgstr "Renommer la Colonne"
@@ -4027,6 +4051,13 @@ msgstr "Visitez le site Web de BETTER pour effectuer une analyse de portefeuille
 
 msgid "Visualization Settings"
 msgstr "Paramètres de visualisation"
+
+msgid "WAIT_TEXT_1"
+msgstr "Veuillez patienter, recherche des enregistrements concernés..."
+
+#, fuzzy
+msgid "WAIT_TEXT_2"
+msgstr "Veuillez patienter pendant l'évaluation des enregistrements concernés. Cela peut prendre plusieurs minutes..."
 
 msgid "WATER_TYPE_DISPLAY_CHOICE_PLACEHOLDER"
 msgstr "----Choisissez le type d'eau----"
