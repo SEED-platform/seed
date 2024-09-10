@@ -31,10 +31,10 @@
           <div class="row">
             <div class="col-sm-offset-1 col-sm-6">
               <div class="form-check two_factor_selection">
-                <input class="form-check-input" ng-model="temp_user.two_factor_method" value="disabled" type="radio" ng-disabled="require_2fa" name="flexRadioDefault" id="flexRadioDisabled" />
+                <input class="form-check-input" ng-model="temp_user.two_factor_method" value="disabled" type="radio" ng-disabled="orgs_require_2fa" name="flexRadioDefault" id="flexRadioDisabled" />
                 <label class="form-check-label" for="flexRadioDisabled">Disabled</label>
-                <p class="help-text" translate="TWO_FACTOR_DISABLED_TEXT"></p>
-                <p class="help-text" ng-if="require_2fa"><em>* {$ 'TWO_FACTOR_REQUIRED' | translate $}</em></p>
+                <p class="help-text" ng-if="!orgs_require_2fa" translate="TWO_FACTOR_DISABLED_TEXT"></p>
+                <p class="help-text alert alert-info" ng-if="orgs_require_2fa">{$ 'TWO_FACTOR_REQUIRED' | translate $} <em>{$ orgs_require_2fa $}</em></p>
               </div>
               <div class="form-check two_factor_selection">
                 <input class="form-check-input" ng-model="temp_user.two_factor_method" value="email" type="radio" name="flexRadioDefault" id="flexRadioEmail" />
