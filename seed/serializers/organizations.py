@@ -37,6 +37,7 @@ class SaveSettingsOrganizationSerializer(serializers.Serializer):
     audit_template_user = serializers.CharField(max_length=128)
     audit_template_password = serializers.CharField(max_length=128)
     salesforce_enabled = serializers.BooleanField()
+    ubid_threshold = serializers.FloatField(min_value=0.0001, max_value=1)
 
 
 class SaveSettingsSerializer(serializers.Serializer):

@@ -90,7 +90,7 @@ def get_jaccard_index(ubid1: str, ubid2: str) -> float:
     :param ubid2: A Property State UBID
     :return: The Jaccard index
     """
-    if (not ubid1 or not ubid2) or (ubid1 == ubid2):
+    if ubid1 == ubid2:
         return 1.0
 
     if not validate_ubid(ubid1) or not validate_ubid(ubid2):
@@ -146,6 +146,7 @@ def merge_ubid_models(old_state_ids, new_state_id, StateClass):  # noqa: N803
         state_field = "taxlot"
 
     old_ubids_to_promote = old_ubids_set - new_ubids_set
+    logging.error('>>> len(old_states) %s', len(old_states))
     if not old_ubids_to_promote:
         return new_state
 

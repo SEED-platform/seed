@@ -371,8 +371,8 @@ def link_views_and_states(merged_views, new_views, errored_new_states, ViewClass
 
     # these are our matching columns
     matching_columns = get_matching_criteria_column_names(cycle.organization_id, state_class_name)
+    check_jaccard = "ubid" in matching_columns
     tuple_values = matching_columns.copy()
-    check_jaccard = "ubid" in tuple_values
     tuple_values.discard("ubid")
 
     # This is ALL the org's views that ARE NOT in the give cycle, by their matching column values
@@ -586,6 +586,8 @@ def states_to_views(unmatched_state_ids, org, access_level_instance, cycle, Stat
         ViewClass = TaxLotView
 
     matching_columns = get_matching_criteria_column_names(org.id, table_name)
+    # compare UBIDs via jaccard index instead of a direct match
+    check_jaccard = 'ubid' in matching_columns
 
     # Fetch existing states tied to views, and create a tuple-lookup using non-UBID matching columns
     tuple_values = matching_columns.copy()
@@ -630,10 +632,6 @@ def states_to_views(unmatched_state_ids, org, access_level_instance, cycle, Stat
 
     for idx, state in enumerate(unmatched_states):
         matching_criteria = matching_filter_criteria(state, matching_columns)
-
-        # compare UBIDs via jaccard index instead of a direct match
-        check_jaccard = bool(matching_criteria.get("ubid"))
-
         existing_state_matches = match_lookup.get(tuple(getattr(state, c) for c in tuple_values), [])
 
         if check_jaccard:

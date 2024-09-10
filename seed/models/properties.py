@@ -862,6 +862,7 @@ def post_save_property_state(sender, **kwargs):
     Generate UbidModels for a PropertyState if the ubid field is present
     """
     state: PropertyState = kwargs.get("instance")
+    logging.error(">>> state %s", state)
 
     ubids = getattr(state, "ubid")
     if not ubids:
