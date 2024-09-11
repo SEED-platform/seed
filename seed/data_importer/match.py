@@ -698,7 +698,7 @@ def states_to_views(unmatched_state_ids, org, access_level_instance, cycle, Stat
 
                 # Merge -States and assign new/merged -State to existing -View
                 merged_state = save_state_match(existing_state, newer_state, priorities)
-                merge_ubid_models([existing_state.id], merged_state.id, StateClass)
+                merge_ubid_models([existing_state.id, newer_state.id], merged_state.id, StateClass)
                 existing_view.state = merged_state
                 existing_view.save()
 
