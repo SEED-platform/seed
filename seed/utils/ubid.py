@@ -239,7 +239,7 @@ def ubid_jaccard(ubid1: str, ubid2: str) -> float:
 
 def generate_ubidmodels_for_state(state):
     """
-    Generate UbidModels for a PropertyState if the ubid field is present
+    Generate UbidModels for a State if the ubid field is present
     """
     ubids = getattr(state, "ubid")
     if not ubids:

@@ -11,7 +11,6 @@ from os import path
 from django.contrib.gis.db import models as geomodels
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.db.models import Case, Value, When
 from django.db.models.signals import m2m_changed, post_save, pre_save
 from django.dispatch import receiver
 
@@ -23,7 +22,7 @@ from seed.models.tax_lot_properties import TaxLotProperty
 from seed.utils.address import normalize_address_str
 from seed.utils.generic import compare_orgs_between_label_and_target, obj_to_dict, split_model_fields
 from seed.utils.time import convert_to_js_timestamp
-from seed.utils.ubid import decode_unique_ids
+from seed.utils.ubid import generate_ubidmodels_for_state
 
 from .auditlog import AUDIT_IMPORT, DATA_UPDATE_TYPE
 
@@ -407,30 +406,7 @@ def post_save_taxlot_state(sender, **kwargs):
     Generate UbidModels for a TaxLotState if the ubid field is present
     """
     state: TaxLotState = kwargs.get("instance")
-
-    ubid = getattr(state, "ubid")
-    if not ubid:
-        state.ubidmodel_set.filter(preferred=True).update(preferred=False)
-        return
-
-    ubid_model = state.ubidmodel_set.filter(ubid=ubid)
-    if not ubid_model.exists():
-        # First set all others to non-preferred without calling save
-        state.ubidmodel_set.filter(preferred=True).update(preferred=False)
-        # Add UBID and set as preferred
-        ubid_model = state.ubidmodel_set.create(
-            preferred=True,
-            ubid=ubid,
-        )
-        # Update lat/long/centroid
-        decode_unique_ids(state)
-    elif ubid_model.filter(preferred=False).exists():
-        state.ubidmodel_set.update(
-            preferred=Case(
-                When(ubid=ubid, then=Value(True)),
-                default=Value(False),
-            )
-        )
+    generate_ubidmodels_for_state(state)
 
 
 class TaxLotView(models.Model):

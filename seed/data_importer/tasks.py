@@ -90,7 +90,7 @@ from seed.utils.buildings import get_source_type
 from seed.utils.geocode import MapQuestAPIKeyError, create_geocoded_additional_columns, geocode_buildings
 from seed.utils.goals import get_state_pairs
 from seed.utils.match import update_sub_progress_total
-from seed.utils.ubid import decode_unique_ids, generate_ubidmodels_for_state
+from seed.utils.ubid import decode_unique_ids
 
 _log = get_task_logger(__name__)
 
@@ -412,7 +412,6 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, **kwargs):
 
                         # There was an error with a field being too long [> 255 chars].
                         map_model_obj.save()
-                        generate_ubidmodels_for_state(map_model_obj)
 
                         # if importing BuildingSync create a BuildingFile for the property
                         if source_type == BUILDINGSYNC_RAW:

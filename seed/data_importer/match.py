@@ -880,7 +880,7 @@ def save_state_match(state1, state2, priorities):
 def check_jaccard_match(ubid: str, state_ubid: str, ubid_threshold: float):
     """
     Use jaccard index between an incoming ubid and an existing state_ubid to determine if states are 'matching'
-    If either ubid is None, 1.0 will be returned.
+    If one ubid is None, 0.0 will be returned.
 
     :param ubid: string, incoming ubid
     :param state_ubid: string, existing state's ubid
