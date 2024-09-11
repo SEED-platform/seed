@@ -38,7 +38,6 @@ from seed.models.tax_lot_properties import TaxLotProperty
 from seed.utils.address import normalize_address_str
 from seed.utils.generic import compare_orgs_between_label_and_target, obj_to_dict, split_model_fields
 from seed.utils.time import convert_datestr, convert_to_js_timestamp
-from seed.utils.ubid import decode_unique_ids
 
 from .auditlog import AUDIT_IMPORT, DATA_UPDATE_TYPE
 
@@ -855,29 +854,6 @@ def pre_delete_state(sender, **kwargs):
     # isn't working here.
     kwargs["instance"].propertymeasure_set.all().delete()
 
-
-@receiver(post_save, sender=PropertyState)
-def post_save_property_state(sender, **kwargs):
-    """
-    Generate UbidModels for a PropertyState if the ubid field is present
-    """
-    state: PropertyState = kwargs.get("instance")
-    logging.error(">>> state %s", state)
-
-    ubids = getattr(state, "ubid")
-    if not ubids:
-        return
-
-    # Allow ';' separated ubids
-    ubids = ubids.split(";")
-    state.ubidmodel_set.filter(preferred=True).update(preferred=False)
-    for idx, ubid in enumerate(ubids):
-        # trim leading/trailing spaces
-        ubid_stripped = ubid.strip()
-        is_first = idx == 0
-        _, created = state.ubidmodel_set.update_or_create(ubid=ubid_stripped, defaults={"preferred": is_first})
-        if created:
-            decode_unique_ids(state)
 
 
 class PropertyView(models.Model):

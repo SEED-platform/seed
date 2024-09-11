@@ -146,7 +146,7 @@ def merge_ubid_models(old_state_ids, new_state_id, StateClass):  # noqa: N803
         state_field = "taxlot"
 
     old_ubids_to_promote = old_ubids_set - new_ubids_set
-    logging.error('>>> len(old_states) %s', len(old_states))
+
     if not old_ubids_to_promote:
         return new_state
 
@@ -235,3 +235,25 @@ def ubid_jaccard(ubid1: str, ubid2: str) -> float:
     ubid2_code_area = decode(Code(ubid2))
 
     return ubid1_code_area.jaccard(ubid2_code_area) or 0.0
+
+
+def generate_ubidmodels_for_state(state):
+    """
+    Generate UbidModels for a PropertyState if the ubid field is present
+    """
+    logging.error(">>> generate_ubidmodel_for_state")
+
+    ubids = getattr(state, "ubid")
+    if not ubids:
+        return
+
+    # Allow ';' separated ubids
+    ubids = ubids.split(";")
+    state.ubidmodel_set.filter(preferred=True).update(preferred=False)
+    for idx, ubid in enumerate(ubids):
+        # trim leading/trailing spaces
+        ubid_stripped = ubid.strip()
+        is_first = idx == 0
+        _, created = state.ubidmodel_set.update_or_create(ubid=ubid_stripped, defaults={"preferred": is_first})
+        if created:
+            decode_unique_ids(state)

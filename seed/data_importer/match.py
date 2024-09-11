@@ -587,7 +587,7 @@ def states_to_views(unmatched_state_ids, org, access_level_instance, cycle, Stat
 
     matching_columns = get_matching_criteria_column_names(org.id, table_name)
     # compare UBIDs via jaccard index instead of a direct match
-    check_jaccard = 'ubid' in matching_columns
+    check_jaccard = "ubid" in matching_columns
 
     # Fetch existing states tied to views, and create a tuple-lookup using non-UBID matching columns
     tuple_values = matching_columns.copy()

@@ -5,15 +5,16 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('orgs', '0038_alter_organization_audit_template_status_type'),
+        ("orgs", "0038_alter_organization_audit_template_status_type"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='organization',
-            name='ubid_threshold',
-            field=models.FloatField(default=1.0, validators=[django.core.validators.MinValueValidator(0.0001), django.core.validators.MaxValueValidator(1.0)]),
+            model_name="organization",
+            name="ubid_threshold",
+            field=models.FloatField(
+                default=1.0, validators=[django.core.validators.MinValueValidator(0.0001), django.core.validators.MaxValueValidator(1.0)]
+            ),
         ),
     ]
