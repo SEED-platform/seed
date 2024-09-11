@@ -117,8 +117,12 @@ msgstr "Supprimez également {num,plural, one{ 1 analyse de lot associée } othe
 msgid "ANALYSIS_DESCRIPTION_BETTER"
 msgstr "L'analyse BETTER s'appuie sur better.lbl.gov pour calculer les économies d'énergie, de coûts et d'émissions de GES en comparant le modèle de point de changement de la propriété avec un modèle de référence. Les résultats comprennent un potentiel d'économie et une liste de mesures d'économie d'énergie de haut niveau recommandées."
 
-msgid "ANALYSIS_DESCRIPTION_BSYNCR"
+msgid "ANALYSIS_DESCRIPTION_BSyncr"
 msgstr "L'analyse BSyncr exploite l'analyse de consommation d'énergie normalisée mesurée (NMEC) pour calculer un modèle de point de changement. Les données sont transmises à l'analyse à l'aide de BuildingSync. Le résultat de l'analyse sont les coefficients du modèle de point de changement."
+
+#, fuzzy
+msgid "ANALYSIS_DESCRIPTION_BuildingUpgradeRecommendation"
+msgstr "Cette analyse met en œuvre un flux de travail pour identifier les bâtiments qui peuvent nécessiter une rénovation énergétique en profondeur, un remplacement ou un réajustement de l'équipement en fonction des attributs du bâtiment tels que la consommation d'énergie, l'année de construction et la superficie en pieds carrés."
 
 msgid "ANALYSIS_DESCRIPTION_CO2"
 msgstr "Cette analyse calcule les émissions annuelles moyennes de CO2 pour les données des compteurs de la propriété. L’analyse nécessite la définition d’une sous-région eGRID afin de déterminer avec précision les taux d’émission."
@@ -129,6 +133,9 @@ msgstr "L'analyse EEEJ utilise l'adresse de chaque propriété pour identifier l
 
 msgid "ANALYSIS_DESCRIPTION_EUI"
 msgstr "L'analyse EUI additionnera les relevés de compteurs de la propriété au cours des douze derniers mois pour calculer la consommation d'énergie par pied carré et par an. S'il manque des relevés de compteur, l'analyse renvoie une couverture inférieure à 100 % pour alerter l'utilisateur qu'il manque un relevé de compteur."
+
+msgid "ANALYSIS_DESCRIPTION_ElementStatistics"
+msgstr "Cette analyse examine les données des éléments d'une propriété (le cas échéant) pour compter le nombre d'éléments de type « Panneau de configuration DDC » et enregistre cette quantité dans la propriété"
 
 msgid "AND"
 msgstr "ET"
@@ -3523,7 +3530,7 @@ msgid "TWO_FACTOR_ENABLE"
 msgstr "Activer l'authentification à deux facteurs pour votre compte"
 
 msgid "TWO_FACTOR_REQUIRED"
-msgstr "L'authentification à deux facteurs a été requise par un administrateur d'organisation."
+msgstr "L'authentification à deux facteurs a été exigée par un administrateur d'organisation le :"
 
 #, fuzzy
 msgid "TWO_FACTOR_SELECT"

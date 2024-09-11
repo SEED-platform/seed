@@ -116,8 +116,11 @@ msgstr "Also delete {num,plural, one{1 associated batch analysis} other{# associ
 msgid "ANALYSIS_DESCRIPTION_BETTER"
 msgstr "The BETTER analysis leverages better.lbl.gov to calculate energy, cost, and GHG emission savings by comparing the property's change point model with a benchmarked model. The results include saving potential and a list of recommended high-level energy conservation measures."
 
-msgid "ANALYSIS_DESCRIPTION_BSYNCR"
+msgid "ANALYSIS_DESCRIPTION_BSyncr"
 msgstr "The BSyncr analysis leverages the Normalized Metered Energy Consumption (NMEC) analysis to calculate a change point model. The data are passed to the analysis using BuildingSync. The result of the analysis are the coefficients of the change point model."
+
+msgid "ANALYSIS_DESCRIPTION_BuildingUpgradeRecommendation"
+msgstr "The Building Upgrade Recommendation analysis implements a workflow to identify buildings that may need a deep energy retrofit, equipment replaced or re-tuning based on building attributes such as energy use, year built, and square footage."
 
 msgid "ANALYSIS_DESCRIPTION_CO2"
 msgstr "This analysis calculates the average annual CO2 emissions for the property's meter data. The analysis requires an eGRID Subregion to be defined in order to accurately determine the emission rates."
@@ -127,6 +130,9 @@ msgstr "The EEEJ Analysis uses each property's address to identify the 2010 cens
 
 msgid "ANALYSIS_DESCRIPTION_EUI"
 msgstr "The EUI analysis will sum the property's meter readings for the last twelve months to calculate the energy use per square footage per year. If there are missing meter readings, then the analysis will return a less that 100% coverage to alert the user that there is a missing meter reading."
+
+msgid "ANALYSIS_DESCRIPTION_ElementStatistics"
+msgstr "The Element Statistics analysis looks through a property's element data (if any) to count the number of elements of type 'D.D.C. Control Panel' and saves that quantity to the property"
 
 msgid "AND"
 msgstr "AND"
@@ -3494,7 +3500,7 @@ msgid "TWO_FACTOR_ENABLE"
 msgstr "Enable Two-Factor Authentication for your account"
 
 msgid "TWO_FACTOR_REQUIRED"
-msgstr "Two-Factor Authentication has been required by an organization admin."
+msgstr "Two-Factor Authentication has been required by an organization admin on:"
 
 msgid "TWO_FACTOR_SELECT"
 msgstr "Choose one of the following methods to apply two-factor authentication to your SEED account"
