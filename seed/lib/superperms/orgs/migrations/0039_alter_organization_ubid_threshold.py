@@ -17,4 +17,8 @@ class Migration(migrations.Migration):
                 default=1.0, validators=[django.core.validators.MinValueValidator(0.0001), django.core.validators.MaxValueValidator(1.0)]
             ),
         ),
+        migrations.RemoveConstraint(
+            model_name='organization',
+            name='ubid_threshold_range',
+        ),
     ]
