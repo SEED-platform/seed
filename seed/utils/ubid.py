@@ -241,8 +241,6 @@ def generate_ubidmodels_for_state(state):
     """
     Generate UbidModels for a PropertyState if the ubid field is present
     """
-    logging.error(">>> generate_ubidmodel_for_state")
-
     ubids = getattr(state, "ubid")
     if not ubids:
         return

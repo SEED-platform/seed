@@ -855,7 +855,6 @@ def pre_delete_state(sender, **kwargs):
     kwargs["instance"].propertymeasure_set.all().delete()
 
 
-
 class PropertyView(models.Model):
     """
     Similar to the old world of canonical building.
