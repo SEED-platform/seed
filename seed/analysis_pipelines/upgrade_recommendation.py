@@ -123,7 +123,7 @@ def _get_views_upgrade_recommendation_category(property_view, config):
     # if big and actual to benchmark eui ratio is "poor"
     poor_actual_to_benchmark_eui_ratio = config.get("poor_actual_to_benchmark_eui_ratio")
     building_sqft_threshold = config.get("building_sqft_threshold")
-    if ((eui / benchmark) > poor_actual_to_benchmark_eui_ratio) and float(gross_floor_area) > building_sqft_threshold:
+    if ((eui / benchmark) > poor_actual_to_benchmark_eui_ratio) and gross_floor_area > building_sqft_threshold:
         return "Deep Energy Retrofit"
 
     # for this next step, we will need CI
