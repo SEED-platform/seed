@@ -16,11 +16,7 @@ angular.module('SEED.controller.export_to_cts_modal', []).controller('export_to_
     $scope.exporting = false;
 
     /**
-<<<<<<< HEAD
-     * @type {'template' | 'femp' | null}
-=======
      * @type {'evaluation_template' | 'facility_bps_template' | null}
->>>>>>> 13eeec365dfffb8bc2a36455e8c247a906d009b1
      */
     $scope.export_selection = null;
     $scope.set_selection = (selection) => {
