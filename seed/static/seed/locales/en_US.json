@@ -1140,7 +1140,7 @@
     "TWO_FACTOR_DISABLED_TEXT": "Choosing this option will disable two-factor authentication for your account, making it less secure.",
     "TWO_FACTOR_EMAIL_SELECTED_TEXT": "Selecting this option will enable two-factor authentication via email ({email}). You will receive a verification code through your registered email address each time you log in.",
     "TWO_FACTOR_ENABLE": "Enable Two-Factor Authentication for your account",
-    "TWO_FACTOR_REQUIRED": "Two-Factor Authentication has been required by an organization admin.",
+    "TWO_FACTOR_REQUIRED": "Two-Factor Authentication has been required by an organization admin on:",
     "TWO_FACTOR_SELECT": "Choose one of the following methods to apply two-factor authentication to your SEED account",
     "TWO_FACTOR_TOKEN_SELECTED_TEXT": "Selecting this option will enable two-factor authentication using the token generator app of your choice, such as Google Authenticator, Microsoft Authenticator, or Authy. You will need to scan a QR code to set up the app.",
     "TYPE_TO_CONFIRM": "Please type <strong>{org}<\/strong> to confirm.",
