@@ -99,7 +99,7 @@ def _get_views_upgrade_recommendation_category(property_view, config):
         benchmark = (ashrae_target_gas_eui + ashrae_target_electric_eui) / 0.8
 
     # if young building:
-    retrofit_threshold_year = config.get("retrofit_threshold_year")
+    retrofit_threshold_year = config.get("year_built_threshold")
     if year_built > retrofit_threshold_year:
         # if has BAS and actual to benchmark eui ratio is "fair"
         ddc_control_panel_count = elements.annotate(

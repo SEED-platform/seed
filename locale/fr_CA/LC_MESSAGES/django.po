@@ -117,8 +117,12 @@ msgstr "Supprimez également {num,plural, one{ 1 analyse de lot associée } othe
 msgid "ANALYSIS_DESCRIPTION_BETTER"
 msgstr "L'analyse BETTER s'appuie sur better.lbl.gov pour calculer les économies d'énergie, de coûts et d'émissions de GES en comparant le modèle de point de changement de la propriété avec un modèle de référence. Les résultats comprennent un potentiel d'économie et une liste de mesures d'économie d'énergie de haut niveau recommandées."
 
-msgid "ANALYSIS_DESCRIPTION_BSYNCR"
+msgid "ANALYSIS_DESCRIPTION_BSyncr"
 msgstr "L'analyse BSyncr exploite l'analyse de consommation d'énergie normalisée mesurée (NMEC) pour calculer un modèle de point de changement. Les données sont transmises à l'analyse à l'aide de BuildingSync. Le résultat de l'analyse sont les coefficients du modèle de point de changement."
+
+#, fuzzy
+msgid "ANALYSIS_DESCRIPTION_BuildingUpgradeRecommendation"
+msgstr "Cette analyse met en œuvre un flux de travail pour identifier les bâtiments qui peuvent nécessiter une rénovation énergétique en profondeur, un remplacement ou un réajustement de l'équipement en fonction des attributs du bâtiment tels que la consommation d'énergie, l'année de construction et la superficie en pieds carrés."
 
 msgid "ANALYSIS_DESCRIPTION_CO2"
 msgstr "Cette analyse calcule les émissions annuelles moyennes de CO2 pour les données des compteurs de la propriété. L’analyse nécessite la définition d’une sous-région eGRID afin de déterminer avec précision les taux d’émission."
@@ -129,6 +133,9 @@ msgstr "L'analyse EEEJ utilise l'adresse de chaque propriété pour identifier l
 
 msgid "ANALYSIS_DESCRIPTION_EUI"
 msgstr "L'analyse EUI additionnera les relevés de compteurs de la propriété au cours des douze derniers mois pour calculer la consommation d'énergie par pied carré et par an. S'il manque des relevés de compteur, l'analyse renvoie une couverture inférieure à 100 % pour alerter l'utilisateur qu'il manque un relevé de compteur."
+
+msgid "ANALYSIS_DESCRIPTION_ElementStatistics"
+msgstr "Cette analyse examine les données des éléments d'une propriété (le cas échéant) pour compter le nombre d'éléments de type « Panneau de configuration DDC » et enregistre cette quantité dans la propriété"
 
 msgid "AND"
 msgstr "ET"
@@ -548,6 +555,9 @@ msgstr "Normalement, lorsqu'un enregistrement importé est fusionné dans un aut
 
 msgid "COMPLETE_AND_REFRESH"
 msgstr "Complétez et Actualisez la Page"
+
+msgid "CONDITION_INDEX_THRESHOLD_HELP"
+msgstr "L'indice de condition à utiliser comme seuil de comparaison dans les calculs."
 
 msgid "CONFIGURE_CYCLES"
 msgstr "Sélectionnez un ou plusieurs cycles dans la liste déroulante ci-dessus pour visualiser dans les graphiques ci-dessous."
@@ -1427,8 +1437,14 @@ msgstr "Échec du géocodage : votre clé API MapQuest n'est pas valide. Mettez 
 msgid "FAILED_GEOCODE_MAPQUEST_API_KEY_ERROR"
 msgstr "Échec du géocodage : votre clé API MapQuest n'est pas valide ou a atteint sa limite. Mettez à jour votre clé API MapQuest ou désactivez le géocodage dans les paramètres de l'organisation."
 
+msgid "FAIR_BENCHMARK_RATIO_HELP"
+msgstr "Le ratio équitable entre le total de l'IUE et la valeur totale de référence de l'IUE à utiliser. Ratio = Total de l'IUE/Indice de référence de l'IUE"
+
 msgid "FEMP CTS Reporting Export"
 msgstr "Export pour  FEMP CTS"
+
+msgid "FF_RSL_THRESHOLD_HELP"
+msgstr "La valeur de la durée de vie restante à utiliser pour votre équipement alimenté au combustible fossile comme seuil de comparaison dans les calculs. Par exemple, votre seuil de durée de vie restante est peut-être de 0 an et votre chaudière à gaz a une durée de vie restante de -1 an, ce qui ne correspond donc pas au seuil."
 
 msgid "FIELDS NEEDED TO MAKE MATCHES:"
 msgstr "CHAMPS NÉCESSAIRES POUR ÉTABLIR DES CORRESPONDANCES:"
@@ -1444,6 +1460,9 @@ msgstr "Noms de zone pour l'appariement"
 
 msgid "FILE_TYPES_SUPPORTED"
 msgstr "Types de fichiers pris en charge: <strong>.csv</strong>, <strong>.xls</strong>, <strong>.xlsx</strong>, <strong>.xml</strong>, <strong>.zip</strong>, <strong>.geojson</strong>, et <strong>.json</strong>."
+
+msgid "FOSSIL_FUEL_EUI_HELP"
+msgstr "Objectif d'IEC en matière de combustibles fossiles pour le bâtiment (y compris le gaz, etc.)"
 
 msgid "Failed to delete inventory"
 msgstr "Échec de la suppression de l'inventaire"
@@ -2510,6 +2529,9 @@ msgstr "Résultats d'importation de Portfolio Manager"
 msgid "PM_PROPERTY_ID_MATCHING_CRITERIA_WARNING"
 msgstr "La suppression de l'ID de propriété PM des critères de correspondance peut entraîner des problèmes inattendus pour les importations de compteurs Portfolio Manager."
 
+msgid "POOR_BENCHMARK_RATIO_HELP"
+msgstr "Le ratio entre l'IUE total et la valeur de l'IUE total de référence est faible. Ratio = IUE total/IUE de référence"
+
 msgid "PORTFOLIO_SUMMARY_HEADER_TEXT"
 msgstr "La page de résumé du portefeuille compare 2 cycles pour calculer les progrès vers un objectif de réduction de l'intensité de l'utilisation d'énergie. La sélection du cycle et les détails des objectifs peuvent être personnalisés en cliquant sur le bouton Configurer les Objectifs ci-dessous."
 
@@ -3202,6 +3224,9 @@ msgstr "Affichage {start} à {end} des {total} propriétés en tout"
 msgid "SHOWING_UNFILTERED_TAXLOTS"
 msgstr "Affichage {start} à {end} des {total} lots d'impôt en tout"
 
+msgid "SQUARE_FOOTAGE_THRESHOLD_HELP"
+msgstr "La superficie brute à utiliser comme seuil de comparaison dans les calculs"
+
 msgid "STEP 1: Map Your Data"
 msgstr "ÉTAPE 1: Mappez vos données"
 
@@ -3513,6 +3538,9 @@ msgstr "Au moins l'un des domaines fiscal Lot suivants est requis"
 msgid "THERMAL_CONV_ASSUMPTION_TITLE"
 msgstr "Choix de Conversion Thermique"
 
+msgid "TOTAL_EUI_HELP"
+msgstr "Objectif EUI total pour le bâtiment (comprend l'électricité, le gaz, etc.)"
+
 msgid "TWO_FACTOR_DISABLED_TEXT"
 msgstr "Choisir cette option désactivera l’authentification à deux facteurs pour votre compte, le rendant moins sécurisé."
 
@@ -3523,7 +3551,7 @@ msgid "TWO_FACTOR_ENABLE"
 msgstr "Activer l'authentification à deux facteurs pour votre compte"
 
 msgid "TWO_FACTOR_REQUIRED"
-msgstr "L'authentification à deux facteurs a été requise par un administrateur d'organisation."
+msgstr "L'authentification à deux facteurs a été exigée par un administrateur d'organisation le :"
 
 #, fuzzy
 msgid "TWO_FACTOR_SELECT"
@@ -4138,6 +4166,9 @@ msgstr "{x_axis_label} contre {y_axis_label} (agrégé)"
 
 msgid "Y Axis"
 msgstr "Axe Y"
+
+msgid "YEAR_BUILT_THRESHOLD_HELP"
+msgstr "L'année de construction à utiliser comme seuil de comparaison dans les calculs"
 
 msgid "Year"
 msgstr "An"

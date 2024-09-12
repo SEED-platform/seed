@@ -62,7 +62,6 @@ angular.module('SEED.controller.inventory_detail_analyses_modal', []).controller
     // if it's BETTER and selectMeters is 1
     // need to find start date and end date of meters data for first inventory?
     $scope.initializeAnalysisConfig = () => {
-      Notification.error(`SERVICE: ${$scope.new_analysis.service}`);
       switch ($scope.new_analysis.service) {
         case 'BSyncr':
           $scope.new_analysis.configuration = {
@@ -117,14 +116,14 @@ angular.module('SEED.controller.inventory_detail_analyses_modal', []).controller
           break;
         case 'Building Upgrade Recommendation':
           $scope.new_analysis.configuration = {
-            total_eui_goal: 0,
-            ff_eui_goal: 0,
-            retrofit_threshold_year: 0,
-            fair_actual_to_benchmark_eui_ratio: 0,
-            poor_actual_to_benchmark_eui_ratio: 0,
-            building_sqft_threshold: 0,
-            condition_index_threshold: 0,
-            ff_fired_equipment_rsl_threshold: 0
+            total_eui_goal: null,
+            ff_eui_goal: null,
+            year_built_threshold: null,
+            fair_actual_to_benchmark_eui_ratio: null,
+            poor_actual_to_benchmark_eui_ratio: null,
+            building_sqft_threshold: null,
+            condition_index_threshold: null,
+            ff_fired_equipment_rsl_threshold: null
           };
           break;
         default:
