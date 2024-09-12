@@ -1140,7 +1140,7 @@
     "TWO_FACTOR_DISABLED_TEXT": "Choisir cette option désactivera l’authentification à deux facteurs pour votre compte, le rendant moins sécurisé.",
     "TWO_FACTOR_EMAIL_SELECTED_TEXT": "La sélection de cette option activera l'authentification à deux facteurs par e-mail ( {email} ). Vous recevrez un code de vérification via votre adresse e-mail enregistrée à chaque fois que vous vous connecterez.",
     "TWO_FACTOR_ENABLE": "Activer l'authentification à deux facteurs pour votre compte",
-    "TWO_FACTOR_REQUIRED": "L'authentification à deux facteurs a été requise par un administrateur d'organisation.",
+    "TWO_FACTOR_REQUIRED": "L'authentification à deux facteurs a été exigée par un administrateur d'organisation le :",
     "TWO_FACTOR_SELECT": "Choisissez l'une des méthodes suivantes pour appliquer l'authentification à deux facteurs à votre compte SEED",
     "TWO_FACTOR_TOKEN_SELECTED_TEXT": "La sélection de cette option activera l'authentification à deux facteurs à l'aide de l'application génératrice de jetons de votre choix, telle que Google Authenticator, Microsoft Authenticator ou Authy. Vous devrez scanner un code QR pour configurer l'application.",
     "TYPE_TO_CONFIRM": "Veuillez saisir <strong> {org} <\/strong> pour confirmer.",

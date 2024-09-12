@@ -3494,7 +3494,7 @@ msgid "TWO_FACTOR_ENABLE"
 msgstr "Enable Two-Factor Authentication for your account"
 
 msgid "TWO_FACTOR_REQUIRED"
-msgstr "Two-Factor Authentication has been required by an organization admin."
+msgstr "Two-Factor Authentication has been required by an organization admin on:"
 
 msgid "TWO_FACTOR_SELECT"
 msgstr "Choose one of the following methods to apply two-factor authentication to your SEED account"

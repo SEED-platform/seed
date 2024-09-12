@@ -3523,7 +3523,7 @@ msgid "TWO_FACTOR_ENABLE"
 msgstr "Activer l'authentification à deux facteurs pour votre compte"
 
 msgid "TWO_FACTOR_REQUIRED"
-msgstr "L'authentification à deux facteurs a été requise par un administrateur d'organisation."
+msgstr "L'authentification à deux facteurs a été exigée par un administrateur d'organisation le :"
 
 #, fuzzy
 msgid "TWO_FACTOR_SELECT"
