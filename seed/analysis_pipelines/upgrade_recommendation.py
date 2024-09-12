@@ -8,6 +8,10 @@ import logging
 
 from celery import chain, shared_task
 from django.db.models import Count, Q
+from pint import (
+    util as pintutils,
+    Quantity
+)
 
 from seed.analysis_pipelines.pipeline import (
     AnalysisPipeline,
@@ -76,6 +80,10 @@ def _get_views_upgrade_recommendation_category(property_view, config):
     year_built = property_view.state.year_built
     gross_floor_area = property_view.state.gross_floor_area
     elements = Element.objects.filter(property=property_view.property_id)
+
+    # check if this is a pint, if so get value
+    if isinstance(gross_floor_area, Quantity):
+        gross_floor_area = gross_floor_area.to_base_units().magnitude 
 
     # calc eui
     if sum_of_modeled_mdms_total_eui:
