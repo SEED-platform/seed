@@ -18,7 +18,7 @@ class Migration(migrations.Migration):
             ),
         ),
         migrations.RemoveConstraint(
-            model_name='organization',
-            name='ubid_threshold_range',
+            model_name="organization",
+            name="ubid_threshold_range",
         ),
     ]
