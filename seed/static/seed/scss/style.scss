@@ -5653,3 +5653,15 @@ tags-input .tags .tag-item {
   margin: 0 auto;
   width: fit-content;
 }
+
+.warning-text {
+  padding: 10px;
+
+  p {
+    font-size: 1.2em;
+  }
+
+  .bold {
+    font-size: bold;
+  }
+}

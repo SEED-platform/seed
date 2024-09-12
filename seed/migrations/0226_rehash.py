@@ -7,7 +7,7 @@ from seed.utils.migrations import rehash
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("seed", "0199_rename_ulid_taxlotstate_ubid"),
+        ("seed", "0225_column_is_excluded_from_hash"),
     ]
 
     operations = [

@@ -9,13 +9,10 @@ import datetime
 import io
 import logging
 import math
-import os
 from collections import OrderedDict
-from pathlib import Path
 from random import randint
 
 import xlsxwriter
-from django.conf import settings
 from django.http import HttpResponse, JsonResponse
 from drf_yasg.utils import swagger_auto_schema
 from quantityfield.units import ureg
@@ -26,7 +23,7 @@ from rest_framework.viewsets import GenericViewSet
 from seed.decorators import ajax_request_class
 from seed.lib.progress_data.progress_data import ProgressData
 from seed.lib.superperms.orgs.decorators import has_perm_class
-from seed.models import AccessLevelInstance, BuildingFile, ColumnListProfile, PropertyView, TaxLotProperty, TaxLotView
+from seed.models import AccessLevelInstance, ColumnListProfile, PropertyView, TaxLotProperty, TaxLotView
 from seed.models.meters import Meter, MeterReading
 from seed.models.property_measures import PropertyMeasure
 from seed.models.scenarios import Scenario
@@ -642,4 +639,3 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
         )
 
         set_update_to_now.subtask([property_view_ids, taxlot_view_ids, progress_key]).apply_async()
-

@@ -755,6 +755,7 @@ class TestColumnsByInventory(TestCase):
             "recognize_empty": False,
             "comstock_mapping": None,
             "derived_column": None,
+            "is_excluded_from_hash": False,
         }
         self.assertIn(c, columns)
 
@@ -776,6 +777,7 @@ class TestColumnsByInventory(TestCase):
             "recognize_empty": False,
             "comstock_mapping": None,
             "derived_column": None,
+            "is_excluded_from_hash": False,
         }
         self.assertIn(c, columns)
 
@@ -797,6 +799,7 @@ class TestColumnsByInventory(TestCase):
             "recognize_empty": False,
             "comstock_mapping": None,
             "derived_column": None,
+            "is_excluded_from_hash": False,
         }
         self.assertIn(c, columns)
 
@@ -819,6 +822,7 @@ class TestColumnsByInventory(TestCase):
             "recognize_empty": False,
             "comstock_mapping": None,
             "derived_column": None,
+            "is_excluded_from_hash": False,
         }
         self.assertIn(c, columns)
 
@@ -840,6 +844,7 @@ class TestColumnsByInventory(TestCase):
             "recognize_empty": False,
             "comstock_mapping": None,
             "derived_column": None,
+            "is_excluded_from_hash": False,
         }
         self.assertIn(c, columns)
 
@@ -860,6 +865,7 @@ class TestColumnsByInventory(TestCase):
             "recognize_empty": False,
             "comstock_mapping": None,
             "derived_column": None,
+            "is_excluded_from_hash": False,
         }
         self.assertIn(c, columns)
 
@@ -891,6 +897,7 @@ class TestColumnsByInventory(TestCase):
             "recognize_empty": False,
             "comstock_mapping": None,
             "derived_column": None,
+            "is_excluded_from_hash": False,
         }
         self.assertIn(c, columns)
 
@@ -1062,13 +1069,11 @@ class TestColumnsByInventory(TestCase):
             "address_line_1",
             "address_line_2",
             "audit_template_building_id",
-            "block_number",
             "building_certification",
             "building_count",
             "city",
             "conditioned_floor_area",
             "custom_id_1",
-            "district",
             "egrid_subregion_code",
             "energy_alerts",
             "energy_score",
@@ -1078,11 +1083,9 @@ class TestColumnsByInventory(TestCase):
             "indoor_water_use",
             "indoor_wui",
             "jurisdiction_property_id",
-            "jurisdiction_tax_lot_id",
             "latitude",
             "longitude",
             "lot_number",
-            "number_properties",
             "occupied_floor_area",
             "outdoor_water_use",
             "owner",
@@ -1109,7 +1112,6 @@ class TestColumnsByInventory(TestCase):
             "source_eui_weather_normalized",
             "space_alerts",
             "state",
-            "taxlot_footprint",
             "total_ghg_emissions",
             "total_ghg_emissions_intensity",
             "total_marginal_ghg_emissions",
@@ -1122,7 +1124,7 @@ class TestColumnsByInventory(TestCase):
             "year_ending",
         ]
 
-        method_columns = Column.retrieve_db_field_name_for_hash_comparison()
+        method_columns = Column.retrieve_db_field_name_for_hash_comparison(PropertyState, self.fake_org.id)
         self.assertListEqual(method_columns, expected)
 
     def test_retrieve_db_field_table_and_names_from_db_tables(self):
