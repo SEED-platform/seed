@@ -66,6 +66,7 @@ def _finish_preparation(self, analysis_view_ids_by_property_view_id, analysis_id
 
 
 def _get_views_upgrade_recommendation_category(property_view, config):
+    # TODO: make these configurable (they can be defaulted if that helps)
     sum_of_modeled_mdms_total_eui = property_view.state.extra_data.get("Sum of Modeled/MDMS Total EUI")
     sum_of_modeled_mdms_gas_eui = property_view.state.extra_data.get("Sum of Modeled/MDMS Gas EUI")
     sum_of_modeled_mdms_electric_eui = property_view.state.extra_data.get("Sum of Modeled/MDMS Electric EUI")
@@ -76,18 +77,21 @@ def _get_views_upgrade_recommendation_category(property_view, config):
     gross_floor_area = property_view.state.gross_floor_area
     elements = Element.objects.filter(property=property_view.property_id)
 
+    print(f"EUI: {sum_of_modeled_mdms_total_eui}")
+    print(f" Type of EUI: {type(sum_of_modeled_mdms_total_eui)}")
+
     # calc eui
     if sum_of_modeled_mdms_total_eui:
-        eui = sum_of_modeled_mdms_total_eui
+        eui = float(sum_of_modeled_mdms_total_eui)
     elif sum_of_modeled_mdms_gas_eui and sum_of_modeled_mdms_electric_eui:
-        eui = sum_of_modeled_mdms_gas_eui + sum_of_modeled_mdms_electric_eui
+        eui = float(sum_of_modeled_mdms_gas_eui) + float(sum_of_modeled_mdms_electric_eui)
     else:
         return "Missing Data (EUI)"
 
     # If eui greater than total_eui_goal
     total_eui_goal = config.get("total_eui_goal")
     if eui < total_eui_goal:
-        return "NO DER project recommend"
+        return "NO DER project recommended"
 
     # For these next steps, we will need ashrae_target_gas_eui, ashrae_target_electric_eui, and year_built
     if not year_built:
@@ -96,7 +100,7 @@ def _get_views_upgrade_recommendation_category(property_view, config):
     if ashrae_target_gas_eui is None or ashrae_target_electric_eui is None:
         return "Missing Data (ASHRAE Target Gas EUI/ASHRAE Target Electric EUI)"
     else:
-        benchmark = (ashrae_target_gas_eui + ashrae_target_electric_eui) / 0.8
+        benchmark = (float(ashrae_target_gas_eui) + float(ashrae_target_electric_eui)) / 0.8
 
     # if young building:
     retrofit_threshold_year = config.get("year_built_threshold")
@@ -105,13 +109,15 @@ def _get_views_upgrade_recommendation_category(property_view, config):
         ddc_control_panel_count = elements.annotate(
             ddc_control_panel_count=Count("id", filter=Q(extra_data__Component_SubType="D.D.C. Control Panel"))
         )
-        has_bas = ddc_control_panel_count.order_by("ddc_control_panel_count").first().ddc_control_panel_count > 0
+        has_bas = False
+        if ddc_control_panel_count:
+            has_bas = ddc_control_panel_count.order_by("ddc_control_panel_count").first().ddc_control_panel_count > 0
 
         fair_actual_to_benchmark_eui_ratio = config.get("fair_actual_to_benchmark_eui_ratio")
         if ((eui / benchmark) > fair_actual_to_benchmark_eui_ratio) and has_bas:
             return "Re-tuning"
         else:
-            return "NO DER project recommend"
+            return "NO DER project recommended"
 
     # for this next step, we will need gross_floor_area
     if gross_floor_area is None:
@@ -120,29 +126,29 @@ def _get_views_upgrade_recommendation_category(property_view, config):
     # if big and actual to benchmark eui ratio is "poor"
     poor_actual_to_benchmark_eui_ratio = config.get("poor_actual_to_benchmark_eui_ratio")
     building_sqft_threshold = config.get("building_sqft_threshold")
-    if ((eui / benchmark) > poor_actual_to_benchmark_eui_ratio) and gross_floor_area > building_sqft_threshold:
+    if ((eui / benchmark) > poor_actual_to_benchmark_eui_ratio) and float(gross_floor_area) > building_sqft_threshold:
         return "Deep Energy Retrofit"
 
     # for this next step, we will need CI
     if CI is None:
-        return "NO DER project recommend"
+        return "NO DER project recommended"
 
     # if did not hit ff_fired_equipment_rsl_threshold and ff_fired_equipment_rsl_threshold or condition_index_threshold
     lowest_RSL = elements.filter(code__code__in=scope_one_emission_codes).order_by("remaining_service_life").first()
     if lowest_RSL is None:
-        return "NO DER project recommend"
+        return "NO DER project recommended"
     lowest_RSL = lowest_RSL.remaining_service_life
 
     if sum_of_modeled_mdms_gas_eui is None:
-        return "NO DER project recommend"
+        return "NO DER project recommended"
 
     ff_eui_goal = config.get("ff_eui_goal")
     ff_fired_equipment_rsl_threshold = config.get("ff_fired_equipment_rsl_threshold")
     condition_index_threshold = config.get("condition_index_threshold")
-    if sum_of_modeled_mdms_gas_eui > ff_eui_goal and (lowest_RSL < ff_fired_equipment_rsl_threshold or condition_index_threshold > CI):
+    if sum_of_modeled_mdms_gas_eui > ff_eui_goal and (float(lowest_RSL) < ff_fired_equipment_rsl_threshold or condition_index_threshold > CI):
         return "Equipment replacement"
     else:
-        return "NO DER project recommend"
+        return "NO DER project recommended"
 
 
 @shared_task(bind=True)
