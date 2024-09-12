@@ -77,9 +77,6 @@ def _get_views_upgrade_recommendation_category(property_view, config):
     gross_floor_area = property_view.state.gross_floor_area
     elements = Element.objects.filter(property=property_view.property_id)
 
-    print(f"EUI: {sum_of_modeled_mdms_total_eui}")
-    print(f" Type of EUI: {type(sum_of_modeled_mdms_total_eui)}")
-
     # calc eui
     if sum_of_modeled_mdms_total_eui:
         eui = float(sum_of_modeled_mdms_total_eui)
