@@ -9,7 +9,8 @@ angular.module('SEED.controller.two_factor_profile', []).controller('two_factor_
   'Notification',
   'two_factor_service',
   'user_service',
-  'organization_payload',
+  'auth_payload',
+  'organizations_payload',
   'user_profile_payload',
 
   // eslint-disable-next-line func-names
@@ -20,11 +21,14 @@ angular.module('SEED.controller.two_factor_profile', []).controller('two_factor_
     Notification,
     two_factor_service,
     user_service,
-    organization_payload,
+    auth_payload,
+    organizations_payload,
     user_profile_payload
   ) {
-    $scope.organization = organization_payload.organization;
-    $scope.require_2fa = $scope.organization.require_2fa;
+    $scope.is_superuser = auth_payload.auth.requires_superuser;
+    // Filter out any orgs that a superuser does not belong to
+    $scope.organizations = organizations_payload.organizations.filter((org) => org.user_role);
+    $scope.orgs_require_2fa = $scope.organizations.filter((org) => org.require_2fa).map((org) => org.name).join(', ');
     $scope.user = user_profile_payload;
     $scope.temp_user = { ...$scope.user };
     $scope.settings_unchanged = () => _.isEqual($scope.temp_user, $scope.user);
