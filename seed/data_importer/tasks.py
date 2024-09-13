@@ -40,7 +40,7 @@ from seed.building_sync import validation_client
 from seed.building_sync.building_sync import BuildingSync
 from seed.data_importer.access_level_instances_parser import AccessLevelInstancesParser
 from seed.data_importer.equivalence_partitioner import EquivalencePartitioner
-from seed.data_importer.match import match_and_link_incoming_properties_and_taxlots
+from seed.data_importer.match import match_and_link_incoming_properties_and_taxlots, merge_unmatched_states
 from seed.data_importer.meters_parser import MetersParser
 from seed.data_importer.models import STATUS_READY_TO_MERGE, ImportFile, ImportRecord
 from seed.data_importer.sensor_readings_parser import SensorsReadingsParser
@@ -89,7 +89,7 @@ from seed.models.data_quality import DataQualityCheck, Rule
 from seed.utils.buildings import get_source_type
 from seed.utils.geocode import MapQuestAPIKeyError, create_geocoded_additional_columns, geocode_buildings
 from seed.utils.goals import get_state_pairs
-from seed.utils.match import update_sub_progress_total
+from seed.utils.match import matching_criteria_column_names, update_sub_progress_total
 from seed.utils.ubid import decode_unique_ids
 
 _log = get_task_logger(__name__)
@@ -2023,3 +2023,47 @@ def validate_use_cases(file_pk):
     _validate_use_cases.s(file_pk, progress_data.key).apply_async()
     _log.debug(progress_data.result())
     return progress_data.result()
+
+
+@shared_task
+def match_merge_cycle_inventory(org_id, cycle_id, table_name, sub_progress_key):
+    """
+    Background task to match and merge existing inventory within a cycle.
+    This is primarily used when UBID thershold has changed.
+    """
+    org = Organization.objects.filter(pk=org_id).first()
+    cycle = Cycle.objects.filter(pk=cycle_id).first()
+
+    if table_name == "TaxLotState":
+        state_klass = TaxLotState
+        existing_cycle_views = TaxLotView.objects.filter(cycle=cycle)
+        unmatched_states = TaxLotState.objects.filter(taxlotview__in=existing_cycle_views)
+        promote_state_ids = set()
+    else:
+        state_klass = PropertyState
+        existing_cycle_views = PropertyView.objects.filter(cycle=cycle)
+        unmatched_states = PropertyState.objects.filter(propertyview__in=existing_cycle_views)
+        promote_state_ids = set()
+
+    matching_columns = matching_criteria_column_names(org.id, "PropertyState")
+    tuple_values = matching_columns.copy()
+    tuple_values.discard("ubid")
+    state_lookup: dict[int, Union[PropertyState, TaxLotState]] = {view.state.id: view.state for view in existing_cycle_views}
+    match_lookup: dict[tuple, list[dict[str, any]]] = defaultdict(list)
+    for state in (
+        {k: getattr(view.state, k) for k in ["id", "hash_object", "updated", *matching_columns]} for view in existing_cycle_views
+    ):
+        match_lookup[tuple(state[c] for c in tuple_values)].append(state)
+
+    merge_unmatched_states(
+        matching_columns,
+        match_lookup,
+        org,
+        promote_state_ids,
+        state_klass,
+        state_lookup,
+        sub_progress_key,
+        tuple_values,
+        unmatched_states,
+        manual_trigger=True,
+    )

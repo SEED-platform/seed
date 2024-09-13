@@ -1,0 +1,38 @@
+<div class="modal-header">
+  <h3 class="modal-title" translate>Match and Merge Inventory</h3>
+</div>
+<div class="modal-body">
+  <div>
+    Select a cycle to re-trigger matching and merging with <strong>ubid threshold: {$ org.ubid_threshold $}</strong>. This process will match and merge all records within the selected cycle based on
+    the matching criteria. This process may take several minutes.
+  </div>
+  <ul style="margin-top: 20px">
+    <li>Property UBID Mathcing Criteria: <strong>{$ property_ubid_matching $}</strong></li>
+    <li>TaxLot UBID Matching Criteria: <strong>{$ taxlot_ubid_matching $}</strong></li>
+  </ul>
+
+  <div class="form-group cycle-select-container" ng-show="!uploader.in_progress">
+    <label for="cycle-select">Select Cycle</label>
+    <select id="cycle-select" class="form-control" ng-model="selected_cycle" ng-options="cycle.name for cycle in cycles" placeholder="{$:: 'Cycle Name' | translate $}"></select>
+  </div>
+  <div ng-show="uploader.in_progress" style="margin: 20px 0">Selected Cycle: <strong>{$ selected_cycle.name $}</strong></div>
+
+  <div class="progress_bar_container" ng-if="uploader.in_progress">
+    <div class="progress_bar_copy_top">Properties:</div>
+    <uib-progressbar class="progress-striped active" value="uploader.properties.progress" type="success"></uib-progressbar>
+    <div class="progress_bar_copy_bottom">
+      {$ uploader.properties.progress | number:0 $}% {$:: 'Complete' | translate $} {$ uploader.properties.status_message ? ': ' + uploader.properties.status_message : '' $}
+    </div>
+  </div>
+  <div class="progress_bar_container sub_progress" ng-if="uploader.in_progress">
+    <div class="progress_bar_copy_top">Taxlots:</div>
+    <uib-progressbar class="progress-striped active" value="uploader.taxlots.progress" type="success"></uib-progressbar>
+    <div class="progress_bar_copy_bottom">
+      {$ uploader.taxlots.progress | number:0 $}% {$:: 'Complete' | translate $} {$ uploader.taxlots.status_message ? ': ' + uploader.taxlots.status_message : '' $}
+    </div>
+  </div>
+</div>
+<div class="modal-footer">
+  <button type="button" class="btn btn-primary" ng-click="cancel()" autofocus ng-disabled="uploader.in_progress" translate>Close</button>
+  <button type="button" class="btn btn-warning" ng-click="trigger_match_merge()" ng-disabled="uploader.in_progress || !selected_cycle.cycle_id" translate>Match and Merge</button>
+</div>

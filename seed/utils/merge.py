@@ -57,6 +57,9 @@ def merge_properties(state_ids, org_id, log_name, ignore_merge_protection=False)
         merged_state = merge_ubid_models([state_1.id, state_2.id], merged_state.id, PropertyState)
 
         views = PropertyView.objects.filter(state_id__in=[state_1.id, state_2.id])
+        if not views:
+            index += 1
+            continue
         view_ids = list(views.values_list("id", flat=True))
         canonical_ids = list(views.values_list("property_id", flat=True))
 
@@ -107,6 +110,9 @@ def merge_taxlots(state_ids, org_id, log_name, ignore_merge_protection=False):
         merged_state = merge_ubid_models(state_ids, merged_state.id, TaxLotState)
 
         views = TaxLotView.objects.filter(state_id__in=[state_1.id, state_2.id])
+        if not views:
+            index += 1
+            continue
         view_ids = list(views.values_list("id", flat=True))
         canonical_ids = list(views.values_list("taxlot_id", flat=True))
 
