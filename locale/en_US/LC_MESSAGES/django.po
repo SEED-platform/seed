@@ -116,8 +116,11 @@ msgstr "Also delete {num,plural, one{1 associated batch analysis} other{# associ
 msgid "ANALYSIS_DESCRIPTION_BETTER"
 msgstr "The BETTER analysis leverages better.lbl.gov to calculate energy, cost, and GHG emission savings by comparing the property's change point model with a benchmarked model. The results include saving potential and a list of recommended high-level energy conservation measures."
 
-msgid "ANALYSIS_DESCRIPTION_BSYNCR"
+msgid "ANALYSIS_DESCRIPTION_BSyncr"
 msgstr "The BSyncr analysis leverages the Normalized Metered Energy Consumption (NMEC) analysis to calculate a change point model. The data are passed to the analysis using BuildingSync. The result of the analysis are the coefficients of the change point model."
+
+msgid "ANALYSIS_DESCRIPTION_BuildingUpgradeRecommendation"
+msgstr "The Building Upgrade Recommendation analysis implements a workflow to identify buildings that may need a deep energy retrofit, equipment replaced or re-tuning based on building attributes such as energy use, year built, and square footage."
 
 msgid "ANALYSIS_DESCRIPTION_CO2"
 msgstr "This analysis calculates the average annual CO2 emissions for the property's meter data. The analysis requires an eGRID Subregion to be defined in order to accurately determine the emission rates."
@@ -127,6 +130,9 @@ msgstr "The EEEJ Analysis uses each property's address to identify the 2010 cens
 
 msgid "ANALYSIS_DESCRIPTION_EUI"
 msgstr "The EUI analysis will sum the property's meter readings for the last twelve months to calculate the energy use per square footage per year. If there are missing meter readings, then the analysis will return a less that 100% coverage to alert the user that there is a missing meter reading."
+
+msgid "ANALYSIS_DESCRIPTION_ElementStatistics"
+msgstr "The Element Statistics analysis looks through a property's element data (if any) to count the number of elements of type 'D.D.C. Control Panel' and saves that quantity to the property"
 
 msgid "AND"
 msgstr "AND"
@@ -540,6 +546,9 @@ msgstr "Normally when an imported record is merged into another record the newes
 
 msgid "COMPLETE_AND_REFRESH"
 msgstr "Complete and Refresh Page"
+
+msgid "CONDITION_INDEX_THRESHOLD_HELP"
+msgstr "The condition index to use as a comparison threshold in the calculations."
 
 msgid "CONFIGURE_CYCLES"
 msgstr "Select one or more cycles from the dropdown above to visualize in the charts below."
@@ -1414,8 +1423,14 @@ msgstr "Geocoding failed - Your MapQuest API Key is invalid. Update your MapQues
 msgid "FAILED_GEOCODE_MAPQUEST_API_KEY_ERROR"
 msgstr "Geocoding failed - Your MapQuest API Key is either invalid or at its limit. Update your MapQuest API Key or disable geocoding in Organization Settings."
 
+msgid "FAIR_BENCHMARK_RATIO_HELP"
+msgstr "The fair ratio of Total EUI to Benchmark Total EUI value to use. Ratio = Total EUI/Benchmark EUI"
+
 msgid "FEMP CTS Reporting Export"
 msgstr "FEMP CTS Reporting Export"
+
+msgid "FF_RSL_THRESHOLD_HELP"
+msgstr "The remaining service life value to use for your fossil fuel-fired equipment as a comparison threshold in the calculations. For instance, perhaps your remaining service life threshold is 0 years and your gas boiler has a remaining service life of -1 year, therefore not meeting the threshold."
 
 msgid "FIELDS NEEDED TO MAKE MATCHES:"
 msgstr "FIELDS NEEDED TO MAKE MATCHES:"
@@ -1431,6 +1446,9 @@ msgstr "Field names for matching"
 
 msgid "FILE_TYPES_SUPPORTED"
 msgstr "File types supported: <strong>.csv</strong>, <strong>.xls</strong>, <strong>.xlsx</strong>, <strong>.xml</strong>, <strong>.zip</strong>, <strong>.geojson</strong>, and <strong>.json</strong>."
+
+msgid "FOSSIL_FUEL_EUI_HELP"
+msgstr "Fossil Fuel EUI Goal for the building (includes Gas, Etc.)"
 
 msgid "Failed to delete inventory"
 msgstr "Failed to delete inventory"
@@ -2492,6 +2510,9 @@ msgstr "Portfolio Manager Meter Import Results"
 msgid "PM_PROPERTY_ID_MATCHING_CRITERIA_WARNING"
 msgstr "Removing PM Property ID from matching criteria can cause unexpected issues for Portfolio Manager Meter imports."
 
+msgid "POOR_BENCHMARK_RATIO_HELP"
+msgstr "The poor ratio of Total EUI to Benchmark Total EUI value to use. Ratio = Total EUI/Benchmark EUI"
+
 msgid "PORTFOLIO_SUMMARY_HEADER_TEXT"
 msgstr "The portfolio summary page compares 2 cycles to calculate progress toward an Energy Use Intensity reduction goal. Cycle selection and goal details can be customized by clicking the Configure Goals button below."
 
@@ -3174,6 +3195,9 @@ msgstr "Showing {start} to {end} of {total} properties"
 msgid "SHOWING_UNFILTERED_TAXLOTS"
 msgstr "Showing {start} to {end} of {total} tax lots"
 
+msgid "SQUARE_FOOTAGE_THRESHOLD_HELP"
+msgstr "The gross square footage to use as a comparison threshold in the calculations"
+
 msgid "STEP 1: Map Your Data"
 msgstr "STEP 1: Map Your Data"
 
@@ -3483,6 +3507,9 @@ msgstr "At least one of the following Tax Lot fields is required"
 
 msgid "THERMAL_CONV_ASSUMPTION_TITLE"
 msgstr "Thermal Conversion Assumption"
+
+msgid "TOTAL_EUI_HELP"
+msgstr "Total EUI Goal for the building (includes Electricity, Gas, etc.)"
 
 msgid "TWO_FACTOR_DISABLED_TEXT"
 msgstr "Choosing this option will disable two-factor authentication for your account, making it less secure."
@@ -4104,6 +4131,9 @@ msgstr "{x_axis_label} vs. {y_axis_label} (Aggregated)"
 
 msgid "Y Axis"
 msgstr "Y Axis"
+
+msgid "YEAR_BUILT_THRESHOLD_HELP"
+msgstr "The year built to use as a comparison threshold in the calculations"
 
 msgid "Year"
 msgstr "Year"

@@ -52,6 +52,7 @@ requests==2.32.0
 probablepeople==0.5.4
 xmlschema==1.1.1
 lark==0.11.3
+pandas==2.2.2
 
 # Parsing and managing geojson data (this is only used in managed tasks at the moment)
 geojson==2.5.0
