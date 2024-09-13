@@ -52,6 +52,7 @@ requests==2.32.0
 probablepeople==0.5.4
 xmlschema==1.1.1
 lark==0.11.3
+pandas==2.2.2
 
 # Parsing and managing geojson data (this is only used in managed tasks at the moment)
 geojson==2.5.0
@@ -86,3 +87,6 @@ django-treebeard==4.6.1
 django-two-factor-auth[phonenumbers]==1.16.0
 qrcode[pil]==6.1
 pyotp==2.9.0
+
+# This dependency can be removed once a version newer than 8.5.0 has been released that fixes Django autoreload
+importlib_metadata==8.4.0

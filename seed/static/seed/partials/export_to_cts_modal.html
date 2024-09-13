@@ -1,31 +1,46 @@
 <div class="modal-header">
-  <h4 class="modal-title" translate>Export properties to CTS</h4>
+  <h4 class="modal-title" translate>FEMP CTS Reporting Export</h4>
 </div>
 
 <div class="modal-body">
-  <div class="progress_bar_container export_progress" ng-if="exporting">
-    <div class="progress_bar_copy_top">Progress:</div>
-    <uib-progressbar class="progress-striped active" value="exporter_progress.progress" type="success"></uib-progressbar>
-    <div class="progress_bar_copy_bottom">
-      {$ exporter_progress.progress | number:0 $}% {$:: 'Complete' | translate $} {$ exporter_progress.status_message ? ': ' + exporter_progress.status_message : '' $}
-    </div>
+  <div>
+    <h5>Select a reporting template to export for the Federal Energy Management Program (FEMP) Energy Independence and Security Act of 2007 (EISA) Compliance Tracking System (CTS)</h5>
+  </div>
+  <div class="cts-export-buttons" ng-if="!export_selection">
+    <button type="button" class="btn btn-primary" ng-click="set_selection('evaluation_template')">CTS Comprehensive Evaluation Upload Template</button>
+    <button type="button" class="btn btn-primary" ng-click="set_selection('facility_bps_template')">CTS Facility Upload Template for Federal BPS</button>
   </div>
 
-  <div class="section_content_container" ng-show="!exporting">
-    <div class="section_content with_padding">
-      <label class="control-label col-sm-4" for="fileName" translate>Export Name</label>
-      <form class="form-horizontal" role="form">
-        <div class="form-group">
-          <div class="col-sm-6">
-            <input type="text" class="form-control" id="fileName" ng-model="export_name" placeholder="{$:: 'File Name' | translate $}" required />
+  <div ng-if="export_selection">
+    <div class="section_content_container" ng-if="!exporting">
+      <div class="section_content with_padding">
+        <label class="control-label col-sm-4" for="fileName" translate>Export File Name</label>
+        <form class="form-horizontal" role="form">
+          <div class="form-group">
+            <div class="col-sm-6">
+              <input
+                type="text"
+                class="form-control"
+                id="fileName"
+                ng-keyup="set_name($event.target.value)"
+                sd-enter="export_name && export()"
+                placeholder="{$:: 'File Name' | translate $}"
+                required
+              />
+            </div>
           </div>
-        </div>
-      </form>
+        </form>
+      </div>
+    </div>
+
+    <div class="progress_bar_container export_progress" ng-if="exporting">
+      <div class="progress_bar_copy_top">Exporting...</div>
+      <uib-progressbar class="progress-striped active" value="100" type="success" style="margin-bottom: 20px"></uib-progressbar>
     </div>
   </div>
 </div>
 
 <div class="modal-footer" ng-show="!exporting">
-  <button type="button" class="btn btn-primary" ng-click="export()" translate>Export</button>
+  <button type="button" class="btn btn-primary" ng-click="export()" ng-if="export_selection" ng-disabled="!export_name" translate>Export</button>
   <button type="button" class="btn btn-default" ng-click="cancel()" translate>Cancel</button>
 </div>

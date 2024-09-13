@@ -5615,7 +5615,7 @@ tags-input .tags .tag-item {
   font-weight: bold;
 }
 
-.mutli-select-container {
+.multi-select-container {
   display: flex;
 
   div {
@@ -5651,6 +5651,14 @@ tags-input .tags .tag-item {
     padding-right: 5px;
     width: 17px;
   }
+}
+
+.cts-export-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin: 0 auto;
+  width: fit-content;
 }
 
 .warning-text {
