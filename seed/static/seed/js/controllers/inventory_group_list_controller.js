@@ -33,58 +33,57 @@ angular.module('SEED.controller.inventory_group_list', [])
       organization_payload
     ) {
       $scope.inventory_type = $stateParams.inventory_type;
-      $scope.inventory_groups = inventory_groups;
+      $scope.inventory_groups = inventory_groups.sort((a, b) => a.name - b.name);
       $scope.currentInventoryGroup = current_inventory_group;
       $scope.org_id = organization_payload;
 
-      $scope.rename_inventory_group = function () {
-        const oldGroup = angular.copy($scope.currentInventoryGroup);
-
+      $scope.edit_inventory_group = function (group_id) {
+        const selected_group = $scope.inventory_groups.find(g => g.id === group_id);
+        const oldGroup = angular.copy(selected_group);
         const modalInstance = $uibModal.open({
           templateUrl: `${urls.static_url}seed/partials/inventory_group_modal.html`,
           controller: 'inventory_group_modal_controller',
           resolve: {
-            action: _.constant('rename'),
-            data: _.constant($scope.currentInventoryGroup),
-            org_id: () => user_service.get_organization().id,
-            inventory_type: () => ($scope.inventory_type === 'properties' ? 'Property' : 'Tax Lot')
-          }
-        });
-
-        modalInstance.result.then((newName) => {
-          $scope.currentInventoryGroup.name = newName;
-          _.find($scope.inventory_groups, { id: $scope.currentInventoryGroup.id }).name = newName;
-          Notification.primary(`Renamed ${oldGroup.name} to ${newName}`);
-        });
-      };
-
-      $scope.remove_inventory_group = function () {
-        const oldGroup = angular.copy($scope.currentInventoryGroup);
-        const modalInstance = $uibModal.open({
-          templateUrl: `${urls.static_url}seed/partials/inventory_group_modal.html`,
-          controller: 'inventory_group_modal_controller',
-          resolve: {
-            action: _.constant('remove'),
-            data: _.constant($scope.currentInventoryGroup),
+            action: _.constant('edit'),
+            data: selected_group,
             org_id: () => user_service.get_organization().id,
             inventory_type: () => ($scope.inventory_type === 'properties' ? 'Property' : 'Tax Lot')
           }
         });
 
         modalInstance.result.then(() => {
-          _.remove($scope.inventory_groups, oldGroup);
-          modified_service.resetModified();
-          $scope.currentInventoryGroup = _.first($scope.inventory_groups);
-          Notification.primary(`Removed ${oldGroup.name}`);
-        });
+          $state.reload();
+          Notification.primary(`Success!`);
+        })
       };
 
-      $scope.new_inventory_group = function () {
+      $scope.remove_inventory_group = function (group_id) {
+        const selected_group = $scope.inventory_groups.find(g => g.id === group_id);
+        const oldGroup = angular.copy(selected_group);
         const modalInstance = $uibModal.open({
           templateUrl: `${urls.static_url}seed/partials/inventory_group_modal.html`,
           controller: 'inventory_group_modal_controller',
           resolve: {
-            action: _.constant('new'),
+            action: _.constant('remove'),
+            data: _.constant(selected_group),
+            org_id: () => user_service.get_organization().id,
+            inventory_type: () => ($scope.inventory_type === 'properties' ? 'Property' : 'Tax Lot')
+          }
+        });
+
+        modalInstance.result.then(() => {
+          modified_service.resetModified();
+          $state.reload(); 
+          Notification.primary(`Removed ${oldGroup.name}`);
+        });
+      };
+
+      $scope.create_inventory_group = function () {
+        const modalInstance = $uibModal.open({
+          templateUrl: `${urls.static_url}seed/partials/inventory_group_modal.html`,
+          controller: 'inventory_group_modal_controller',
+          resolve: {
+            action: _.constant('create'),
             data: _.constant(''),
             org_id: () => user_service.get_organization().id,
             inventory_type: () => ($scope.inventory_type === 'properties' ? 'Property' : 'Tax Lot')
@@ -92,10 +91,7 @@ angular.module('SEED.controller.inventory_group_list', [])
         });
 
         modalInstance.result.then((newGroup) => {
-          $scope.inventory_groups.push(newGroup);
-          modified_service.resetModified();
-          $scope.currentInventoryGroup = _.last($scope.inventory_groups);
-          inventory_service.save_last_inventory_group(newGroup.id, $scope.inventory_type);
+          $state.reload();
           Notification.primary(`Created ${newGroup.name}`);
         });
       };

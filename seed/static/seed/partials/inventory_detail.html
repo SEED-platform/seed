@@ -139,7 +139,7 @@
           <strong style="padding-right: 5px; padding-top: 10px">{$:: 'Groups' | translate $}:</strong>
           <div class="groups_nav">
             <a class="btn btn btn-default" ng-repeat="group in groups"
-              ui-sref="inventory_group_detail({inventory_type: inventory_type, group_id: group.id})" ui-sref-active="">
+              ui-sref="inventory_group_detail({inventory_type: inventory_type, group_id: group.id})" ui-sref-active="active">
               {$ group.group_name $}
             </a>
           </div>

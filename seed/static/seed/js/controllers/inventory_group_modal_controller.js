@@ -8,6 +8,7 @@ angular.module('SEED.controller.inventory_group_modal', [])
     '$uibModalInstance',
     'action',
     'inventory_group_service',
+    'user_service',
     'inventory_type',
     'data',
     'org_id',
@@ -16,6 +17,7 @@ angular.module('SEED.controller.inventory_group_modal', [])
       $uibModalInstance,
       action,
       inventory_group_service,
+      user_service,
       inventory_type,
       data,
       org_id
@@ -24,8 +26,9 @@ angular.module('SEED.controller.inventory_group_modal', [])
       $scope.data = data;
       $scope.org_id = org_id;
       $scope.inventory_type = inventory_type;
+      const access_level_instance = user_service.get_access_level_instance()
 
-      $scope.rename_inventory_group = function () {
+      $scope.edit_inventory_group = function () {
         if (!$scope.disabled()) {
           const id = $scope.data.id;
           const group = _.omit($scope.data, 'id');
@@ -46,13 +49,13 @@ angular.module('SEED.controller.inventory_group_modal', [])
         });
       };
 
-      $scope.new_inventory_group = function () {
+      $scope.create_inventory_group = function () {
         if (!$scope.disabled()) {
           inventory_group_service.new_group({
             name: $scope.newName,
             inventory_type: $scope.inventory_type,
             organization: $scope.org_id,
-            access_level_instance: 1  // TODO: add access level instance dropdown to modal
+            access_level_instance: access_level_instance.id  // TODO: add access level instance dropdown to modal
           }).then((result) => {
             $uibModalInstance.close(result.data);
           });
@@ -60,9 +63,9 @@ angular.module('SEED.controller.inventory_group_modal', [])
       };
 
       $scope.disabled = function () {
-        if ($scope.action === 'rename') {
+        if ($scope.action === 'edit') {
           return _.isEmpty($scope.newName) || $scope.newName === $scope.data.name;
-        } if ($scope.action === 'new') {
+        } if ($scope.action === 'create') {
           return _.isEmpty($scope.newName);
         }
       };
