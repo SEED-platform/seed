@@ -31,6 +31,7 @@ from seed.serializers.access_level_instances import AccessLevelInstanceSerialize
 from seed.serializers.building_file import BuildingFileSerializer
 from seed.serializers.certification import GreenAssessmentPropertyReadOnlySerializer
 from seed.serializers.inventory_document import InventoryDocumentSerializer
+from seed.serializers.inventory_groups import InventoryGroupMappingSerializer
 from seed.serializers.measures import PropertyMeasureSerializer
 from seed.serializers.pint import PintQuantitySerializerField
 from seed.serializers.scenarios import ScenarioSerializer
@@ -106,6 +107,7 @@ class PropertySerializer(serializers.ModelSerializer):
 
     inventory_documents = InventoryDocumentSerializer(many=True, read_only=True)
     access_level_instance = AccessLevelInstanceSerializer(many=False, read_only=True)
+    group_mappings = InventoryGroupMappingSerializer(many=True, read_only=True)
 
     class Meta:
         model = Property

@@ -6,9 +6,14 @@ from seed.serializers.base import ChoiceField
 
 
 class InventoryGroupMappingSerializer(serializers.ModelSerializer):
+    group_name = serializers.SerializerMethodField()
+
     class Meta:
-        fields = ("id", "property_id", "tax_lot_id", "group_id")
+        fields = ("id", "property_id", "taxlot_id", "group_id", "group_name")
         model = InventoryGroupMapping
+
+    def get_group_name(self, obj):
+        return obj.group.name
 
 
 class InventoryGroupSerializer(serializers.ModelSerializer):

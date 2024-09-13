@@ -618,6 +618,23 @@ a:not([href]) {
   }
 }
 
+.groups_nav_container {
+  display: flex;
+  align-items: baseline;
+
+  .groups_nav {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: left;
+    a {
+      padding: 4px 7px;
+      margin: 2px;
+      color: $darkBlue;
+      border-color: $darkBlue;
+    }
+  }
+}
+
 .section {
   clear: both;
   display: block;
