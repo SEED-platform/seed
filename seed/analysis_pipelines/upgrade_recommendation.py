@@ -67,13 +67,25 @@ def _finish_preparation(self, analysis_view_ids_by_property_view_id, analysis_id
 
 
 def _get_views_upgrade_recommendation_category(property_view, config):
-    # TODO: make these configurable (they can be defaulted if that helps)
-    sum_of_modeled_mdms_total_eui = property_view.state.extra_data.get("Sum of Modeled/MDMS Total EUI")
-    sum_of_modeled_mdms_gas_eui = property_view.state.extra_data.get("Sum of Modeled/MDMS Gas EUI")
-    sum_of_modeled_mdms_electric_eui = property_view.state.extra_data.get("Sum of Modeled/MDMS Electric EUI")
-    ashrae_target_gas_eui = property_view.state.extra_data.get("ASHRAE Target Gas EUI")
-    ashrae_target_electric_eui = property_view.state.extra_data.get("ASHRAE Target Electric EUI")
-    CI = property_view.state.extra_data.get("CI")
+    column_params = config.get("column_params", {})
+    columns_by_id = {
+        c.id: {"name": c.column_name, "is_extra_data": c.is_extra_data} for c in Column.objects.filter(id__in=column_params.values())
+    }
+
+    def get_value(name):
+        column_id = column_params.get(name)
+        column = columns_by_id[column_id]
+        if column["is_extra_data"]:
+            return getattr(property_view.state.extra_data, column["name"], None)
+        else:
+            return getattr(property_view.state, column["name"])
+
+    sum_of_modeled_mdms_total_eui = get_value("sum_of_modeled_mdms_total_eui")
+    sum_of_modeled_mdms_gas_eui = get_value("sum_of_modeled_mdms_gas_eui")
+    sum_of_modeled_mdms_electric_eui = get_value("sum_of_modeled_mdms_electric_eui")
+    ashrae_target_gas_eui = get_value("ashrae_target_gas_eui")
+    ashrae_target_electric_eui = get_value("ashrae_target_electric_eui")
+    CI = get_value("CI")
     year_built = property_view.state.year_built
     gross_floor_area = property_view.state.gross_floor_area
     elements = Element.objects.filter(property=property_view.property_id)

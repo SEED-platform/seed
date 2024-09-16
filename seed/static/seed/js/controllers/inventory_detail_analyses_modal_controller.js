@@ -14,16 +14,18 @@ angular.module('SEED.controller.inventory_detail_analyses_modal', []).controller
   'Notification',
   'analyses_service',
   'inventory_ids',
+  'all_columns',
   'current_cycle',
   'cycles',
   'user',
   // eslint-disable-next-line func-names
-  function ($scope, $sce, $log, $uibModalInstance, Notification, analyses_service, inventory_ids, current_cycle, cycles, user) {
+  function ($scope, $sce, $log, $uibModalInstance, Notification, analyses_service, inventory_ids, all_columns, current_cycle, cycles, user) {
     $scope.inventory_count = inventory_ids.length;
     // used to disable buttons on submit
     $scope.waiting_for_server = false;
     $scope.cycles = cycles;
     $scope.user = user;
+    $scope.all_columns = all_columns;
 
     $scope.new_analysis = {
       name: null,

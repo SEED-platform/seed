@@ -258,35 +258,70 @@
         <div class="form-group" ng-if="new_analysis.service == 'Building Upgrade Recommendation'">
           <div class="form-group" style="padding-top: 1em">
             <div class="container-fluid">
-              <label class="control-label sectionLabel text-muted"> Total EUI Goal </label>
-              <input ng-model="new_analysis.configuration.total_eui_goal" type="number" class="form-control" />
-              <div class="analysis-help-text">
-                <small class="form-text text-muted" translate>TOTAL_EUI_HELP</small>
-              </div>
-              <label class="control-label sectionLabel text-muted"> Fossil Fuel EUI GOAL </label>
-              <input ng-model="new_analysis.configuration.ff_eui_goal" type="number" class="form-control" />
-              <div class="analysis-help-text"><small class="form-text text-muted" translate>FOSSIL_FUEL_EUI_HELP</small></div>
-
-              <label class="control-label sectionLabel text-muted"> Year Built Threshold </label>
-              <input ng-model="new_analysis.configuration.year_built_threshold" type="number" class="form-control" />
-              <div class="analysis-help-text"><small class="form-text text-muted" translate>YEAR_BUILT_THRESHOLD_HELP</small></div>
-
-              <label class="control-label sectionLabel text-muted"> Fair Actual to Benchmark EUI Ratio </label>
-              <input ng-model="new_analysis.configuration.fair_actual_to_benchmark_eui_ratio" type="number" class="form-control" />
-              <div class="analysis-help-text"><small class="form-text text-muted" translate>FAIR_BENCHMARK_RATIO_HELP</small></div>
-              <label class="control-label sectionLabel text-muted"> Poor Actual to Benchmark EUI Ratio </label>
-              <input ng-model="new_analysis.configuration.poor_actual_to_benchmark_eui_ratio" type="number" class="form-control" />
-              <div class="analysis-help-text"><small class="form-text text-muted" translate>POOR_BENCHMARK_RATIO_HELP</small></div>
-              <label class="control-label sectionLabel text-muted"> Building Square Footage Threshold </label>
-              <input ng-model="new_analysis.configuration.building_sqft_threshold" type="number" class="form-control" />
-              <div class="analysis-help-text"><small class="form-text text-muted" translate>SQUARE_FOOTAGE_THRESHOLD_HELP</small></div>
-
-              <label class="control-label sectionLabel text-muted"> Condition Index Threshold </label>
-              <input ng-model="new_analysis.configuration.condition_index_threshold" type="number" class="form-control" />
-              <div class="analysis-help-text"><small class="form-text text-muted" translate>CONDITION_INDEX_THRESHOLD_HELP</small></div>
-              <label class="control-label sectionLabel text-muted"> Fossil Fuel-Fired Equipment RSL Threshold </label>
-              <input ng-model="new_analysis.configuration.ff_fired_equipment_rsl_threshold" type="number" class="form-control" />
-              <div class="analysis-help-text"><small class="form-text text-muted" translate>FF_RSL_THRESHOLD_HELP</small></div>
+              <label class="control-label sectionLabel">Sum of Modeled/MDMS Total EUI</label>
+              <select class="form-control" ng-model="new_analysis.configuration.column_params.sum_of_modeled_mdms_total_eui" ng-dropdown required>
+                <option ng-repeat="col in all_columns" selected="selected" ng-value="col.id">{$:: col.displayName $}</option>
+              </select>
+              <label class="control-label sectionLabel">Sum of Modeled/MDMS Gas EUI</label>
+              <select class="form-control" ng-model="new_analysis.configuration.column_params.sum_of_modeled_mdms_gas_eui" ng-dropdown required>
+                <option ng-repeat="col in all_columns" selected="selected" ng-value="col.id">{$:: col.displayName $}</option>
+              </select>
+              <label class="control-label sectionLabel">Sum of Modeled/MDMS Electric EUI</label>
+              <select class="form-control" ng-model="new_analysis.configuration.column_params.sum_of_modeled_mdms_electric_eui" ng-dropdown required>
+                <option ng-repeat="col in all_columns" selected="selected" ng-value="col.id">{$:: col.displayName $}</option>
+              </select>
+              <label class="control-label sectionLabel">ASHRAE Target Gas EUI</label>
+              <select class="form-control" ng-model="new_analysis.configuration.column_params.ashrae_target_gas_eui" ng-dropdown required>
+                <option ng-repeat="col in all_columns" selected="selected" ng-value="col.id">{$:: col.displayName $}</option>
+              </select>
+              <label class="control-label sectionLabel">ASHRAE Target Electric EUI</label>
+              <select class="form-control" ng-model="new_analysis.configuration.column_params.ashrae_target_electric_eui" ng-dropdown required>
+                <option ng-repeat="col in all_columns" selected="selected" ng-value="col.id">{$:: col.displayName $}</option>
+              </select>
+              <label class="control-label sectionLabel">CI</label>
+              <select class="form-control" ng-model="new_analysis.configuration.column_params.CI" ng-dropdown required>
+                <option ng-repeat="col in all_columns" selected="selected" ng-value="col.id">{$:: col.displayName $}</option>
+              </select>
+              <label class="control-label sectionLabel text-muted">
+                Total EUI Goal
+              </label>
+              <input ng-model="new_analysis.configuration.total_eui_goal" type="number" class="form-control"
+                ng-init="new_analysis.configuration.total_eui_goal=0.6"/>
+              <label class="control-label sectionLabel text-muted">
+                FF EUI GOAL
+              </label>
+              <input ng-model="new_analysis.configuration.ff_eui_goal" type="number" class="form-control"
+                ng-init="new_analysis.configuration.ff_eui_goal=0.6"/>
+              <label class="control-label sectionLabel text-muted">
+                Retrofit Threshold Year
+              </label>
+              <input ng-model="new_analysis.configuration.retrofit_threshold_year" type="number" class="form-control"
+                ng-init="new_analysis.configuration.retrofit_threshold_year=2010"/>
+              <label class="control-label sectionLabel text-muted">
+                Fair Actual to Benchmark EUI Ratio
+              </label>
+              <input ng-model="new_analysis.configuration.fair_actual_to_benchmark_eui_ratio" type="number" class="form-control"
+                ng-init="new_analysis.configuration.fair_actual_to_benchmark_eui_ratio=1.25"/>
+              <label class="control-label sectionLabel text-muted">
+                Poor Actual to Benchmark EUI Ratio
+              </label>
+              <input ng-model="new_analysis.configuration.poor_actual_to_benchmark_eui_ratio" type="number" class="form-control"
+                ng-init="new_analysis.configuration.poor_actual_to_benchmark_eui_ratio=1.4"/>
+              <label class="control-label sectionLabel text-muted">
+                Building SqFt Threshold
+              </label>
+              <input ng-model="new_analysis.configuration.building_sqft_threshold" type="number" class="form-control"
+                ng-init="new_analysis.configuration.building_sqft_threshold=1.4"/>
+              <label class="control-label sectionLabel text-muted">
+                Condition index Threshold
+              </label>
+              <input ng-model="new_analysis.configuration.condition_index_threshold" type="number" class="form-control"
+                ng-init="new_analysis.configuration.condition_index_threshold=1.4"/>
+              <label class="control-label sectionLabel text-muted">
+                FF-Fired Equipment RSL Threshold
+              </label>
+              <input ng-model="new_analysis.configuration.ff_fired_equipment_rsl_threshold type="number" class="form-control"
+                ng-init="new_analysis.configuration.ff_fired_equipment_rsl_threshold=1.4"/>
             </div>
           </div>
         </div>
