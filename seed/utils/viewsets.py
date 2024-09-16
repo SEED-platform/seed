@@ -13,7 +13,6 @@ parser_classes, authentication_classes, and pagination_classes attributes.
 
 from typing import Any
 
-from oauth2_provider.contrib.rest_framework import OAuth2Authentication
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.mixins import CreateModelMixin, DestroyModelMixin, ListModelMixin, RetrieveModelMixin, UpdateModelMixin
 from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
@@ -28,7 +27,6 @@ from seed.utils.api import OrgCreateUpdateMixin, OrgQuerySetMixin
 
 # Constants
 AUTHENTICATION_CLASSES = (
-    OAuth2Authentication,
     SessionAuthentication,
     SEEDAuthentication,
 )
