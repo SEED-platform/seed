@@ -8,10 +8,7 @@ import logging
 
 from celery import chain, shared_task
 from django.db.models import Count, Q
-from pint import (
-    util as pintutils,
-    Quantity
-)
+from pint import Quantity
 
 from seed.analysis_pipelines.pipeline import (
     AnalysisPipeline,
@@ -83,7 +80,7 @@ def _get_views_upgrade_recommendation_category(property_view, config):
 
     # check if this is a pint, if so get value
     if isinstance(gross_floor_area, Quantity):
-        gross_floor_area = gross_floor_area.to_base_units().magnitude 
+        gross_floor_area = gross_floor_area.to_base_units().magnitude
 
     # calc eui
     if sum_of_modeled_mdms_total_eui:
@@ -150,7 +147,9 @@ def _get_views_upgrade_recommendation_category(property_view, config):
     ff_eui_goal = config.get("ff_eui_goal")
     ff_fired_equipment_rsl_threshold = config.get("ff_fired_equipment_rsl_threshold")
     condition_index_threshold = config.get("condition_index_threshold")
-    if sum_of_modeled_mdms_gas_eui > ff_eui_goal and (float(lowest_RSL) < ff_fired_equipment_rsl_threshold or condition_index_threshold > CI):
+    if sum_of_modeled_mdms_gas_eui > ff_eui_goal and (
+        float(lowest_RSL) < ff_fired_equipment_rsl_threshold or condition_index_threshold > CI
+    ):
         return "Equipment replacement"
     else:
         return "NO DER project recommended"
