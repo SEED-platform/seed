@@ -32,8 +32,7 @@
             <option ng-option value="Building Upgrade Recommendation" selected="selected">Building Upgrade Recommendation</option>
           </select>
         </div>
-        <div class="form-group" ng-if="new_analysis.service" translate="ANALYSIS_DESCRIPTION_{$new_analysis.service.split(' ').join('')$}">
-        </div>
+        <div class="form-group" ng-if="new_analysis.service" translate="ANALYSIS_DESCRIPTION_{$new_analysis.service.split(' ').join('')$}"></div>
 
         <div class="form-group" ng-if="new_analysis.service == 'BSyncr'">
           <label class="control-label sectionLabel">BSyncr Model Selection</label>
@@ -259,55 +258,38 @@
         <div class="form-group" ng-if="new_analysis.service == 'Building Upgrade Recommendation'">
           <div class="form-group" style="padding-top: 1em">
             <div class="container-fluid">
-              <label class="control-label sectionLabel text-muted">
-                Total EUI Goal
-              </label>
-              <input ng-model="new_analysis.configuration.total_eui_goal" type="number" class="form-control"/>
+              <label class="control-label sectionLabel text-muted"> Total EUI Goal </label>
+              <input ng-model="new_analysis.configuration.total_eui_goal" type="number" class="form-control" />
               <div class="analysis-help-text">
                 <small class="form-text text-muted" translate>TOTAL_EUI_HELP</small>
               </div>
-              <label class="control-label sectionLabel text-muted">
-                Fossil Fuel EUI GOAL
-              </label>
-              <input ng-model="new_analysis.configuration.ff_eui_goal" type="number" class="form-control"/>
+              <label class="control-label sectionLabel text-muted"> Fossil Fuel EUI GOAL </label>
+              <input ng-model="new_analysis.configuration.ff_eui_goal" type="number" class="form-control" />
               <div class="analysis-help-text"><small class="form-text text-muted" translate>FOSSIL_FUEL_EUI_HELP</small></div>
-              
-              <label class="control-label sectionLabel text-muted">
-                Year Built Threshold
-              </label>
-              <input ng-model="new_analysis.configuration.year_built_threshold" type="number" class="form-control"/>
+
+              <label class="control-label sectionLabel text-muted"> Year Built Threshold </label>
+              <input ng-model="new_analysis.configuration.year_built_threshold" type="number" class="form-control" />
               <div class="analysis-help-text"><small class="form-text text-muted" translate>YEAR_BUILT_THRESHOLD_HELP</small></div>
 
-              <label class="control-label sectionLabel text-muted">
-                Fair Actual to Benchmark EUI Ratio
-              </label>
-              <input ng-model="new_analysis.configuration.fair_actual_to_benchmark_eui_ratio" type="number" class="form-control"/>
+              <label class="control-label sectionLabel text-muted"> Fair Actual to Benchmark EUI Ratio </label>
+              <input ng-model="new_analysis.configuration.fair_actual_to_benchmark_eui_ratio" type="number" class="form-control" />
               <div class="analysis-help-text"><small class="form-text text-muted" translate>FAIR_BENCHMARK_RATIO_HELP</small></div>
-              <label class="control-label sectionLabel text-muted">
-                Poor Actual to Benchmark EUI Ratio
-              </label>
-              <input ng-model="new_analysis.configuration.poor_actual_to_benchmark_eui_ratio" type="number" class="form-control"/>
+              <label class="control-label sectionLabel text-muted"> Poor Actual to Benchmark EUI Ratio </label>
+              <input ng-model="new_analysis.configuration.poor_actual_to_benchmark_eui_ratio" type="number" class="form-control" />
               <div class="analysis-help-text"><small class="form-text text-muted" translate>POOR_BENCHMARK_RATIO_HELP</small></div>
-              <label class="control-label sectionLabel text-muted">
-                Building Square Footage Threshold
-              </label>
-              <input ng-model="new_analysis.configuration.building_sqft_threshold" type="number" class="form-control"/>
+              <label class="control-label sectionLabel text-muted"> Building Square Footage Threshold </label>
+              <input ng-model="new_analysis.configuration.building_sqft_threshold" type="number" class="form-control" />
               <div class="analysis-help-text"><small class="form-text text-muted" translate>SQUARE_FOOTAGE_THRESHOLD_HELP</small></div>
-              
-              <label class="control-label sectionLabel text-muted">
-                Condition Index Threshold
-              </label>
-              <input ng-model="new_analysis.configuration.condition_index_threshold" type="number" class="form-control"/>
+
+              <label class="control-label sectionLabel text-muted"> Condition Index Threshold </label>
+              <input ng-model="new_analysis.configuration.condition_index_threshold" type="number" class="form-control" />
               <div class="analysis-help-text"><small class="form-text text-muted" translate>CONDITION_INDEX_THRESHOLD_HELP</small></div>
-              <label class="control-label sectionLabel text-muted">
-                Fossil Fuel-Fired Equipment RSL Threshold
-              </label>
-              <input ng-model="new_analysis.configuration.ff_fired_equipment_rsl_threshold" type="number" class="form-control"/>
+              <label class="control-label sectionLabel text-muted"> Fossil Fuel-Fired Equipment RSL Threshold </label>
+              <input ng-model="new_analysis.configuration.ff_fired_equipment_rsl_threshold" type="number" class="form-control" />
               <div class="analysis-help-text"><small class="form-text text-muted" translate>FF_RSL_THRESHOLD_HELP</small></div>
             </div>
           </div>
         </div>
-
       </form>
       <p ng-if="error" class="alert alert-danger" ng-bind-html="error"></p>
     </div>
