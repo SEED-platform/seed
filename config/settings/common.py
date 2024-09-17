@@ -95,8 +95,6 @@ DJANGO_CORE_APPS = (
     "django_extensions",
     "django_filters",
     "rest_framework",
-    "oauth2_provider",
-    "oauth2_jwt_provider",
     "crispy_forms",  # needed to squash warnings around collectstatic with rest_framework
     "post_office",
     "django_celery_beat",
@@ -275,7 +273,6 @@ DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 # Django Rest Framework
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
-        "oauth2_provider.contrib.rest_framework.OAuth2Authentication",
         "rest_framework.authentication.SessionAuthentication",
         "seed.authentication.SEEDAuthentication",
     ),

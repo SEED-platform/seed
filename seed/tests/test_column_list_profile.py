@@ -1,11 +1,9 @@
-# !/usr/bin/env python
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
 from django.test import TestCase
-from past.builtins import basestring
 
 from seed.landing.models import SEEDUser as User
 from seed.models import Column, ColumnListProfile, ColumnListProfileColumn
@@ -51,8 +49,8 @@ class TestColumnListProfile(TestCase):
 
         # not the most robust tests, but they are least check for non-zero results
         self.assertIsInstance(ids[0], int)
-        self.assertIsInstance(next(iter(name_mappings.keys())), basestring)
-        self.assertIsInstance(next(iter(name_mappings.values())), basestring)
+        self.assertIsInstance(next(iter(name_mappings.keys())), str)
+        self.assertIsInstance(next(iter(name_mappings.values())), str)
 
     def test_returning_columns_with_profile(self):
         col1 = Column.objects.create(
@@ -77,5 +75,5 @@ class TestColumnListProfile(TestCase):
 
         # not the most robust tests, but they are least check for non-zero results
         self.assertIsInstance(ids[0], int)
-        self.assertIsInstance(next(iter(name_mappings.keys())), basestring)
-        self.assertIsInstance(next(iter(name_mappings.values())), basestring)
+        self.assertIsInstance(next(iter(name_mappings.keys())), str)
+        self.assertIsInstance(next(iter(name_mappings.values())), str)
