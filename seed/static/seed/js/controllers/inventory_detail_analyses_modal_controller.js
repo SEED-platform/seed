@@ -118,6 +118,14 @@ angular.module('SEED.controller.inventory_detail_analyses_modal', []).controller
           break;
         case 'Building Upgrade Recommendation':
           $scope.new_analysis.configuration = {
+            column_params: {
+              total_eui: null,
+              gas_eui: null,
+              electric_eui: null,
+              target_gas_eui: null,
+              target_electric_eui: null,
+              condition_index: null
+            },
             total_eui_goal: null,
             ff_eui_goal: null,
             year_built_threshold: null,
