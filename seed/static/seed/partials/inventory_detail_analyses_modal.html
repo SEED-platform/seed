@@ -282,7 +282,7 @@
               <select class="form-control" ng-model="new_analysis.configuration.column_params.condition_index" ng-dropdown required>
                 <option ng-repeat="col in all_columns" selected="selected" ng-value="col.id">{$:: col.displayName $}</option>
               </select>
-               <label class="control-label sectionLabel pad-top-10" translate>Total EUI Goal </label>
+              <label class="control-label sectionLabel pad-top-10" translate>Total EUI Goal </label>
               <input ng-model="new_analysis.configuration.total_eui_goal" type="number" class="form-control" />
               <div class="analysis-help-text">
                 <small class="form-text text-muted" translate>TOTAL_EUI_HELP</small>
@@ -309,8 +309,7 @@
               <div class="analysis-help-text"><small class="form-text text-muted" translate>CONDITION_INDEX_THRESHOLD_HELP</small></div>
               <label class="control-label sectionLabel" translate>Fossil Fuel-Fired Equipment RSL Threshold</label>
               <input ng-model="new_analysis.configuration.ff_fired_equipment_rsl_threshold" type="number" class="form-control" />
-              <div class="analysis-help-text"><small class="form-text text-muted" translate>FF_RSL_THRESHOLD_HELP</small>
-              </div>
+              <div class="analysis-help-text"><small class="form-text text-muted" translate>FF_RSL_THRESHOLD_HELP</small></div>
             </div>
           </div>
         </div>
