@@ -1,4 +1,3 @@
-# !/usr/bin/env python
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
@@ -19,7 +18,6 @@ from django.db import IntegrityError, models, transaction
 from django.db.models import Q
 from django.db.models.signals import pre_save
 from django.utils.translation import gettext_lazy as _
-from past.builtins import basestring
 
 from seed.lib.superperms.orgs.models import Organization as SuperOrganization
 from seed.lib.superperms.orgs.models import OrganizationUser
@@ -185,20 +183,20 @@ class Column(models.Model):
     }
 
     DATA_TYPE_PARSERS: dict[str, Callable] = {
-        "number": lambda v: float(v.replace(",", "") if isinstance(v, basestring) else v),
-        "float": lambda v: float(v.replace(",", "") if isinstance(v, basestring) else v),
-        "integer": lambda v: int(v.replace(",", "") if isinstance(v, basestring) else v),
+        "number": lambda v: float(v.replace(",", "") if isinstance(v, str) else v),
+        "float": lambda v: float(v.replace(",", "") if isinstance(v, str) else v),
+        "integer": lambda v: int(v.replace(",", "") if isinstance(v, str) else v),
         "string": str,
         "geometry": str,
         "datetime": datetime.fromisoformat,
         "date": lambda v: datetime.fromisoformat(v).date(),
         "boolean": lambda v: v.lower() == "true",
-        "area": lambda v: float(v.replace(",", "") if isinstance(v, basestring) else v),
-        "eui": lambda v: float(v.replace(",", "") if isinstance(v, basestring) else v),
-        "ghg_intensity": lambda v: float(v.replace(",", "") if isinstance(v, basestring) else v),
-        "ghg": lambda v: float(v.replace(",", "") if isinstance(v, basestring) else v),
-        "wui": lambda v: float(v.replace(",", "") if isinstance(v, basestring) else v),
-        "water_use": lambda v: float(v.replace(",", "") if isinstance(v, basestring) else v),
+        "area": lambda v: float(v.replace(",", "") if isinstance(v, str) else v),
+        "eui": lambda v: float(v.replace(",", "") if isinstance(v, str) else v),
+        "ghg_intensity": lambda v: float(v.replace(",", "") if isinstance(v, str) else v),
+        "ghg": lambda v: float(v.replace(",", "") if isinstance(v, str) else v),
+        "wui": lambda v: float(v.replace(",", "") if isinstance(v, str) else v),
+        "water_use": lambda v: float(v.replace(",", "") if isinstance(v, str) else v),
     }
 
     # These are the default columns (also known as the fields in the database)

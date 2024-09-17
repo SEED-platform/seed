@@ -1,4 +1,3 @@
-# !/usr/bin/env python
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
@@ -17,7 +16,6 @@ from django.db.models import UniqueConstraint
 from django.db.models.signals import m2m_changed, post_save, pre_delete, pre_save
 from django.dispatch import receiver
 from django.forms.models import model_to_dict
-from past.builtins import basestring
 from quantityfield.fields import QuantityField
 from quantityfield.units import ureg
 
@@ -415,7 +413,7 @@ class PropertyState(models.Model):
         date_field_names = ("year_ending", "generation_date", "release_date", "recent_sale_date")
         for field in date_field_names:
             value = getattr(self, field)
-            if value and isinstance(value, basestring):
+            if value and isinstance(value, str):
                 _log.info("Saving %s which is a date time" % field)
                 _log.info(convert_datestr(value))
                 _log.info(date_cleaner(value))
