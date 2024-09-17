@@ -132,32 +132,51 @@ class GreenButtonParser:
         If a valid type and unit could not be found, an empty list is returned.
         """
         if self._cache_data is None:
+            self._cache_data = []
             xml_string = self._xml_file.read()
             raw_data = xmltodict.parse(xml_string)
 
-            readings_entry = raw_data["feed"]["entry"][3]
+            # let's say we don't know which "entry the interval data is in"
+            # readings_entry = raw_data["feed"]["entry"][3]
+            r_entries = raw_data["feed"]["entry"]
+            print(f"----- ENTRIES: {r_entries}")
+            print(f" ------ num entries: {len(r_entries)}")
+            for readings_entry in r_entries:
 
-            href = readings_entry["link"]["@href"]
-            source_id = re.sub(r"/v./", "", href)
+                try:
+                    readings = readings_entry["content"]["IntervalBlock"]["IntervalReading"]
+                    print(f"!!!! readings: {readings}")
 
-            readings = readings_entry["content"]["IntervalBlock"]["IntervalReading"]
+                    if len(readings) > 0:
+                        # this is the right one
+                        print("THIS IS THE RIGHT ONE")
+                        # grab the first <link>, which should be the "self"
+                        links = readings_entry["link"]
+                        # this is either an OrderedDict or a List
+                        if isinstance(links, list):
+                            href = links[0]["@href"]
+                        else:
+                            href = links["@href"]
 
-            meter_type, unit, multiplier = self._parse_type_and_unit(raw_data)
+                        source_id = re.sub(r"/v./", "", href)
 
-            if meter_type and unit:
-                self._cache_data = [
-                    {
-                        "start_time": int(reading["timePeriod"]["start"]),
-                        "source_id": source_id,
-                        "duration": int(reading["timePeriod"]["duration"]),
-                        "Meter Type": meter_type,
-                        "Usage Units": unit,
-                        "Usage/Quantity": float(reading["value"]) * multiplier,
-                    }
-                    for reading in readings
-                ]
-            else:
-                self._cache_data = []
+                        meter_type, unit, multiplier = self._parse_type_and_unit(raw_data)
+
+                        if meter_type and unit:
+                            self._cache_data = [
+                                {
+                                    "start_time": int(reading["timePeriod"]["start"]),
+                                    "source_id": source_id,
+                                    "duration": int(reading["timePeriod"]["duration"]),
+                                    "Meter Type": meter_type,
+                                    "Usage Units": unit,
+                                    "Usage/Quantity": float(reading["value"]) * multiplier,
+                                }
+                                for reading in readings
+                            ]
+                        break
+                except:
+                    pass
 
         return self._cache_data
 
