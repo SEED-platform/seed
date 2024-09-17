@@ -1,4 +1,3 @@
-import autoslug.fields
 import django.db.models.deletion
 import django.utils.timezone
 import django_extensions.db.fields
@@ -338,7 +337,6 @@ class Migration(migrations.Migration):
                     ),
                 ),
                 ("name", models.CharField(max_length=255, verbose_name="name")),
-                ("slug", autoslug.fields.AutoSlugField(populate_from=b"name", editable=True, unique=True, verbose_name="slug")),
                 ("description", models.TextField(null=True, verbose_name="description", blank=True)),
                 ("status", models.IntegerField(default=1, verbose_name="status", choices=[(0, "Inactive"), (1, "Active")])),
             ],
