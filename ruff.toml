@@ -17,6 +17,7 @@ extend-select = [
     "COM", # flake8-commas
     # "DTZ", # flake8-datetimez
     "E",   # Error
+    "EXE", # flake8-executable
     "F",   # Pyflakes
     "I",   # isort
     "ICN", # flake8-import-conventions
