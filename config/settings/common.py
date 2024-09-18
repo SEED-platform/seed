@@ -15,15 +15,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__fil
 
 PROTOCOL = os.environ.get("PROTOCOL", "https")
 
-SESSION_COOKIE_DOMAIN = None
-SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 DATA_UPLOAD_MAX_MEMORY_SIZE = None
-
-# TODO: remove managers, admins in config files.
-ADMINS = (
-    # ('Your Name', 'your_email@domain.com'),
-)
-MANAGERS = ADMINS
 
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#wsgi-application
 WSGI_APPLICATION = "config.wsgi.application"
@@ -43,6 +35,8 @@ LANGUAGE_CODE = "en-us"
 SECRET_KEY = os.environ.get("SECRET_KEY", "default-ns=nb-w)#2ue-mtu!s&2krzfee1-t)^z7y8gyrp6mx^d*weifh")
 
 SESSION_ENGINE = "django.contrib.sessions.backends.signed_cookies"
+# Default to expiring cookies after 2 weeks
+SESSION_COOKIE_AGE = int(os.environ.get("COOKIE_EXPIRATION", 1_209_600))
 
 TEMPLATES = [
     {
@@ -95,8 +89,6 @@ DJANGO_CORE_APPS = (
     "django_extensions",
     "django_filters",
     "rest_framework",
-    "oauth2_provider",
-    "oauth2_jwt_provider",
     "crispy_forms",  # needed to squash warnings around collectstatic with rest_framework
     "post_office",
     "django_celery_beat",
@@ -275,7 +267,6 @@ DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 # Django Rest Framework
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
-        "oauth2_provider.contrib.rest_framework.OAuth2Authentication",
         "rest_framework.authentication.SessionAuthentication",
         "seed.authentication.SEEDAuthentication",
     ),

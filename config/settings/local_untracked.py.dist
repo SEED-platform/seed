@@ -70,16 +70,6 @@ GOOGLE_RECAPTCHA_SECRET_KEY = os.environ.get("GOOGLE_RECAPTCHA_SECRET_KEY", "6Le
 #     send_default_pii=True
 # )
 
-# OAuth2 Configuration (Optional)
-# Token request Url is a common choice for audience
-# see https://tools.ietf.org/html/rfc7523#section-3 and
-# https://github.com/GreenBuildingRegistry/jwt-oauth2 for additional details
-# OAUTH2_JWT_PROVIDER = {
-#     'JWT_AUDIENCE': 'https://example.com/oauth/token/',
-#     'DEVELOPER_GROUP': 'developers',
-#     'TRUSTED_OAUTH_GROUP': 'trusted_developers',
-# }
-
 
 # ================================= Database settings ===============================
 DATABASES = {

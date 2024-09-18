@@ -1,4 +1,3 @@
-# !/usr/bin/env python
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
@@ -16,7 +15,6 @@ from io import BytesIO
 import probablepeople as pp
 import usaddress
 from lxml import etree, objectify
-from past.builtins import basestring
 from quantityfield.units import ureg
 
 _log = logging.getLogger(__name__)
@@ -122,7 +120,7 @@ class HPXML:
             # set the value to magnitude if it is a quantity
             if isinstance(value, ureg.Quantity):
                 value = value.magnitude
-            setattr(el.getparent(), el.tag[el.tag.index("}") + 1 :], str(value) if not isinstance(value, basestring) else value)
+            setattr(el.getparent(), el.tag[el.tag.index("}") + 1 :], str(value) if not isinstance(value, str) else value)
 
         E = objectify.ElementMaker(annotate=False, namespace=self.NS, nsmap={None: self.NS})
 

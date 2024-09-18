@@ -1,4 +1,3 @@
-# !/usr/bin/env python
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
@@ -57,7 +56,6 @@ urlpatterns = [
     re_path(r"^api/swagger/$", schema_view.with_ui("swagger", cache_timeout=0), name="schema-swagger-ui"),
     re_path(r"^api/version/$", version, name="version"),
     re_path(r"^api/", include((api, "seed"), namespace="api")),
-    re_path(r"^oauth/", include(("oauth2_jwt_provider.urls", "oauth2_jwt_provider"), namespace="oauth2_provider")),
     re_path(r"^account/login", CustomLoginView.as_view(), name="login"),
     re_path(r"^", include(tf_urls)),
     # test sentry error
