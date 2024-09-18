@@ -453,6 +453,9 @@ msgstr "Back to Mapping"
 msgid "Baseline Cycle"
 msgstr "Baseline Cycle"
 
+msgid "Begin Update"
+msgstr "Begin Update"
+
 #: seed/models/models.py:135
 msgid "Benchmarking"
 msgstr "Benchmarking"
@@ -3855,6 +3858,12 @@ msgstr "UBID comparison result:"
 msgid "UBID thresholds are between 0.0 and 1.0"
 msgstr "UBID thresholds are between 0.0 and 1.0"
 
+msgid "UPDATE_DERIVED_DATA_TEXT_1"
+msgstr "Press the 'Begin Update' button below to begin the process of recalculating the data stored in derived columns for the selected properties and tax lots. The derived columns will appear yellow to indicate that the update is in progress."
+
+msgid "UPDATE_DERIVED_DATA_TEXT_2"
+msgstr "Note that while the columns are yellow, the data may not be up to date. Refresh the page to refresh the columns status."
+
 msgid "UPDATE_MANUALLY_GEOCODED_INSTRUCTIONS"
 msgstr "If the properties have been manually geocoded, then they will not be updated. To update geocoding, remove the lat/long."
 
@@ -3924,6 +3933,9 @@ msgstr "Until last date of"
 
 msgid "Update Charts"
 msgstr "Update Charts"
+
+msgid "Update Derived Data"
+msgstr "Update Derived Data"
 
 msgid "Update Filters"
 msgstr "Update Filters"
