@@ -1621,18 +1621,18 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
         controller: 'move_inventory_modal_controller',
         resolve: {
           ids: () => selectedViewIds,
-          org_id: () => $scope.organization.id,
+          org_id: () => $scope.organization.id
         }
       });
       modalInstance.result.then(
         (data) => {
           setTimeout(() => {
             if (data.success) {
-              Notification.success({ message: 'Property Update Successful: ' + data.message, delay: 5000 });
+              Notification.success({ message: `Property Update Successful: ${data.message}`, delay: 5000 });
               $scope.selectedOrder = [];
               $scope.load_inventory(1);
             } else {
-              Notification.error({ message: 'Property Move Failed: ' + data.message, delay: 5000 });
+              Notification.error({ message: `Property Move Failed: ${data.message}`, delay: 5000 });
             }
           }, 1000);
         },

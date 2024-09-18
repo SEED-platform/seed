@@ -13,10 +13,8 @@ angular.module('SEED.controller.move_inventory_modal', []).controller('move_inve
   'ids',
   'org_id',
   'inventory_service',
-  'uploader_service',
-  '$log',
   // eslint-disable-next-line func-names
-  function ($http, $scope, $state, $uibModalInstance, user_service, organization_service, ah_service, ids, org_id, inventory_service, uploader_service, $log) {
+  function ($http, $scope, $state, $uibModalInstance, user_service, organization_service, ah_service, ids, org_id, inventory_service) {
     $scope.ids = ids;
     $scope.org_id = org_id;
     let access_level_instances_by_depth = {};
@@ -33,8 +31,8 @@ angular.module('SEED.controller.move_inventory_modal', []).controller('move_inve
     function path_to_string(path) {
       const orderedPath = [];
       for (const i in $scope.level_names) {
-        if (path.hasOwnProperty($scope.level_names[i])) {
-          orderedPath.push(path[$scope.level_names[i]])
+        if (Object.prototype.hasOwnProperty.call(path, $scope.level_names[i])) {
+          orderedPath.push(path[$scope.level_names[i]]);
         }
       }
       return orderedPath.join(' : ');
@@ -44,9 +42,9 @@ angular.module('SEED.controller.move_inventory_modal', []).controller('move_inve
       const new_level_instance_depth = parseInt($scope.level_name_index, 10) + 1;
       $scope.potential_level_instances = access_level_instances_by_depth[new_level_instance_depth];
       for (const key in $scope.potential_level_instances) {
-        $scope.potential_level_instances[key].name = path_to_string($scope.potential_level_instances[key].path)
+        $scope.potential_level_instances[key].name = path_to_string($scope.potential_level_instances[key].path);
       }
-      $scope.potential_level_instances.sort((a,b) => a.name.localeCompare(b.name));
+      $scope.potential_level_instances.sort((a, b) => a.name.localeCompare(b.name));
     };
     organization_service.get_organization_access_level_tree(org_id).then((access_level_tree) => {
       $scope.level_names = access_level_tree.access_level_names;
@@ -60,19 +58,18 @@ angular.module('SEED.controller.move_inventory_modal', []).controller('move_inve
       $uibModalInstance.close();
     };
 
-
     $scope.move_properties = () => {
       $scope.moving = true;
       inventory_service
-      .move_properties($scope.new_access_level_instance_id, $scope.ids)
-      .then((result) => {
-        $uibModalInstance.close(result);
-      })
-      .catch((result) => {
-        Notification.error({ message: `Error ${result.data.message}`, delay: 15000, closeOnClick: true });
-        $uibModalInstance.dismiss('cancel');
-      });
+        .move_properties($scope.new_access_level_instance_id, $scope.ids)
+        .then((result) => {
+          $uibModalInstance.close(result);
+        })
+        .catch((result) => {
+          Notification.error({ message: `Error ${result.data.message}`, delay: 15000, closeOnClick: true });
+          $uibModalInstance.dismiss('cancel');
+        });
       $scope.moving = false;
-    }
+    };
   }
 ]);
