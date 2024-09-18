@@ -484,6 +484,9 @@ msgstr "Nombre de bâtiments"
 msgid "Building Filters"
 msgstr "Filtres de bâtiments"
 
+msgid "Building Square Footage Threshold"
+msgstr "Seuil de superficie en pieds carrés du bâtiment"
+
 msgid "Buildings"
 msgstr "Bâtiments"
 
@@ -746,6 +749,12 @@ msgstr "Concaténer les en-Têtes (colonnes de données)"
 
 msgid "Condition Check"
 msgstr "Vérification de l'état"
+
+msgid "Condition Index Field"
+msgstr "Champ d'index de condition"
+
+msgid "Condition Index Threshold"
+msgstr "Seuil d'indice de condition"
 
 msgid "Conditioned Floor Area"
 msgstr "Surface climatisé"
@@ -1265,6 +1274,9 @@ msgstr "Modifier les UBIDs"
 msgid "Elapsed:"
 msgstr "Écoulé:"
 
+msgid "Electric EUI Field"
+msgstr "Champ de l'UEI électrique"
+
 #: seed/landing/forms.py:13
 msgid "Email"
 msgstr "Email"
@@ -1467,6 +1479,9 @@ msgstr "Objectif d'IEC en matière de combustibles fossiles pour le bâtiment (y
 msgid "Failed to delete inventory"
 msgstr "Échec de la suppression de l'inventaire"
 
+msgid "Fair Actual to Benchmark EUI Ratio"
+msgstr "Ratio de l'UEI réel/référence équitable"
+
 msgid "Fetching your buildings from Audit Template..."
 msgstr "Récupération de vos bâtiments à partir du modèle d'audit..."
 
@@ -1541,6 +1556,12 @@ msgstr "Pour une aide directe sur un problème spécifique, veuillez envoyer un 
 #: seed/landing/templates/landing/login.html:31
 msgid "Forgot password?"
 msgstr "mot de passe oublié?"
+
+msgid "Fossil Fuel EUI Goal"
+msgstr "Objectif de l'UEI sur les combustibles fossiles"
+
+msgid "Fossil Fuel-Fired Equipment RSL Threshold"
+msgstr "Seuil RSL pour les équipements alimentés aux combustibles fossiles"
 
 #: config/settings/common.py:215
 msgid "French (Canadian)"
@@ -1630,6 +1651,9 @@ msgstr "Configurez un ou plusieurs objectifs de réduction de l'intensité de l'
 
 msgid "GREENBUTTON_CONTENTS_TITLE"
 msgstr "Confirmer le contenu du fichier GreenButton"
+
+msgid "Gas EUI Field"
+msgstr "Champ de l'UEI gazier"
 
 msgid "Generate Token"
 msgstr "Générer un jeton"
@@ -2653,6 +2677,9 @@ msgstr "S'il vous plaît visitez notre site Web d'assistance aux utilisateurs po
 msgid "Please wait while your data is loaded..."
 msgstr "Veuillez patienter pendant que vos données sont chargées ..."
 
+msgid "Poor Actual to Benchmark EUI Ratio"
+msgstr "Faible ratio de l'UEI réel/référence"
+
 msgid "Populate SEED Headers with best known matches"
 msgstr "Remplissez les en-têtes SEED avec les correspondances les plus connues"
 
@@ -3578,8 +3605,14 @@ msgstr "Cible >= Réel pour la conformité"
 msgid "Target Column"
 msgstr "Colonne cible"
 
+msgid "Target Electric EUI Field"
+msgstr "Champ cible de l'UEI électrique"
+
 msgid "Target Field"
 msgstr "Champ cible"
+
+msgid "Target Gas EUI Field"
+msgstr "Champ cible de l'UEI gazier"
 
 msgid "Target to quantify Portfolio EUI improvement. Must be between 0 and 100."
 msgstr "Cible pour quantifier l’amélioration de l’IUE du portefeuille. Doit être compris entre 0 et 100."
@@ -3801,6 +3834,12 @@ msgstr "Basculer les centroïdes UBID Taxlot"
 
 msgid "Token Generator"
 msgstr "Générateur de jetons"
+
+msgid "Total EUI Field"
+msgstr "Champ de l'UEI totale"
+
+msgid "Total EUI Goal"
+msgstr "Objectif total de l'UEI"
 
 msgid "Total Properties"
 msgstr "Total des propriétés"
@@ -4175,6 +4214,9 @@ msgstr "An"
 
 msgid "Year Built"
 msgstr "Année de construction"
+
+msgid "Year Built Threshold"
+msgstr "Seuil de l'année de construction"
 
 msgid "Year Ending"
 msgstr "Fin de l'année"
