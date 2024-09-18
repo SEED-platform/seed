@@ -4759,6 +4759,13 @@ ul.r-list {
   padding-left: 15px;
 }
 
+.analysis-help-text {
+  font-size: 1.1em;
+  padding-top: 0.3em;
+  padding-left: 10px;
+  padding-bottom: 10px;
+}
+
 .large-offset {
   padding-left: 50px;
 }
@@ -5608,7 +5615,7 @@ tags-input .tags .tag-item {
   font-weight: bold;
 }
 
-.mutli-select-container {
+.multi-select-container {
   display: flex;
 
   div {
@@ -5644,6 +5651,14 @@ tags-input .tags .tag-item {
     padding-right: 5px;
     width: 17px;
   }
+}
+
+.cts-export-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin: 0 auto;
+  width: fit-content;
 }
 
 .warning-text {
