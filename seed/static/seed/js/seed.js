@@ -1967,7 +1967,7 @@
                 return inventory_service.get_taxlot_columns();
               }
             ],
-            organization_payload: ['user_service', 'organization_service', (user_service, organization_service) => organization_service.get_organization_brief(user_service.get_organization().id)],
+            organization_payload: ['user_service', 'organization_service', (user_service, organization_service) => organization_service.get_organization_brief(user_service.get_organization().id)]
           }
         })
         .state({

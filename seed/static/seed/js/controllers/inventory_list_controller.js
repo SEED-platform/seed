@@ -797,7 +797,7 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
 
       // Modify headerCellClass
       if (col.derived_column) {
-        col.headerCellClass = col.is_updating? 'updating-derived-column-display-name' : 'derived-column-display-name';
+        col.headerCellClass = col.is_updating ? 'updating-derived-column-display-name' : 'derived-column-display-name';
       }
 
       // Modify misc
@@ -1331,11 +1331,11 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
         $scope.gridOptions.columnDefs.forEach((col) => {
           if (col.derived_column) {
             col.is_updating = true;
-            col.headerCellClass ='updating-derived-column-display-name';
+            col.headerCellClass = 'updating-derived-column-display-name';
           }
         });
-        $scope.gridApi.core.notifyDataChange(uiGridConstants.dataChange.COLUMN)
-      })
+        $scope.gridApi.core.notifyDataChange(uiGridConstants.dataChange.COLUMN);
+      });
     };
 
     $scope.open_delete_modal = (selectedViewIds) => {
