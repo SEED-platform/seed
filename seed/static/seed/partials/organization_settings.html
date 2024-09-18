@@ -19,7 +19,7 @@
         <h2><i class="fa-solid fa-gears"></i> {$:: 'Settings' | translate $}</h2>
       </div>
       <div class="section_action_container right section_action_btn">
-        <button type="button" class="pull-right btn btn-primary" ng-click="save_settings()">
+        <button type="button" class="pull-right btn btn-primary" ng-click="save_settings()" ng-disabled="invalid_ubid_threshold">
           {$:: 'Save Changes' | translate $}
           <i class="fa-solid fa-check" ng-show="settings_updated"></i>
         </button>
@@ -1134,7 +1134,7 @@
             The UBID Threshold defines the minimum Jaccard Index value required for a UBID Comparison to be considered acceptable. When the threshold is satisfied, the incoming property can be merged
             with the existing property.
           </p>
-          <p translate>UBID thresholds are between 0.0 and 1.0</p>
+          <p translate>UBID thresholds must be greater than 0 and up to 1.0</p>
           <form class="form-horizontal" role="form" lang="en-US">
             <div class="form-group">
               <label class="control-label col-md-1" style="width: fit-content" for="ubid-threshold-form" translate>UBID Threshold</label>
@@ -1143,7 +1143,7 @@
                   id="ubid-threshold-form"
                   class="form-control"
                   type="number"
-                  min="0"
+                  min="0.0001"
                   max="1"
                   ng-model="org.ubid_threshold"
                   ng-change="ubid_threshold_change()"
@@ -1153,7 +1153,7 @@
             </div>
           </form>
           <div style="margin-top: 30px">
-            <span class="alert alert-danger" ng-show="invalid_ubid_threshold" translate> UBID Threshold must be between 0.0 and 1.0 </span>
+            <span class="alert alert-danger" ng-show="invalid_ubid_threshold" translate> UBID Threshold must be between 0.0001 and 1.0 </span>
           </div>
         </div>
       </div>

@@ -370,6 +370,7 @@ def link_views_and_states(merged_views, new_views, errored_new_states, ViewClass
 
     # these are our matching columns
     matching_columns = get_matching_criteria_column_names(cycle.organization_id, state_class_name)
+    check_jaccard = "ubid" in matching_columns
     tuple_values = matching_columns.copy()
     tuple_values.discard("ubid")
 
@@ -382,7 +383,7 @@ def link_views_and_states(merged_views, new_views, errored_new_states, ViewClass
     for state in ({k: getattr(view.state, k) for k in ["id", "hash_object", "updated", *matching_columns]} for view in existing_views):
         match_lookup[tuple(state[c] for c in tuple_values)].append(state)
 
-    shared_args = [ViewClass, cycle, ali, sub_progress_key, tuple_values, view_lookup, match_lookup]
+    shared_args = [ViewClass, cycle, ali, sub_progress_key, tuple_values, view_lookup, match_lookup, check_jaccard]
 
     # merged_property_views are attached to properties that existed in the db prior to import, so it
     # REALLY should not fail.
@@ -584,6 +585,8 @@ def states_to_views(unmatched_state_ids, org, access_level_instance, cycle, Stat
         ViewClass = TaxLotView
 
     matching_columns = get_matching_criteria_column_names(org.id, table_name)
+    # compare UBIDs via jaccard index instead of a direct match
+    check_jaccard = "ubid" in matching_columns
 
     # Fetch existing states tied to views, and create a tuple-lookup using non-UBID matching columns
     tuple_values = matching_columns.copy()
@@ -628,18 +631,13 @@ def states_to_views(unmatched_state_ids, org, access_level_instance, cycle, Stat
 
     for idx, state in enumerate(unmatched_states):
         matching_criteria = matching_filter_criteria(state, matching_columns)
-
-        # compare UBIDs via jaccard index instead of a direct match
-        check_jaccard = bool(matching_criteria.get("ubid"))
-
         existing_state_matches = match_lookup.get(tuple(getattr(state, c) for c in tuple_values), [])
 
         if check_jaccard:
             existing_state_matches = [
                 existing_state
                 for existing_state in existing_state_matches
-                if existing_state.get("ubid")
-                and check_jaccard_match(matching_criteria.get("ubid"), existing_state.get("ubid"), org.ubid_threshold)
+                if check_jaccard_match(matching_criteria.get("ubid"), existing_state.get("ubid"), org.ubid_threshold)
             ]
 
         count = len(existing_state_matches)
@@ -699,7 +697,7 @@ def states_to_views(unmatched_state_ids, org, access_level_instance, cycle, Stat
 
                 # Merge -States and assign new/merged -State to existing -View
                 merged_state = save_state_match(existing_state, newer_state, priorities)
-                merge_ubid_models([existing_state.id], merged_state.id, StateClass)
+                merge_ubid_models([existing_state.id, newer_state.id], merged_state.id, StateClass)
                 existing_view.state = merged_state
                 existing_view.save()
 
@@ -745,7 +743,7 @@ def states_to_views(unmatched_state_ids, org, access_level_instance, cycle, Stat
     )
 
 
-def link_states(states, ViewClass, cycle, highest_ali, sub_progress_key, tuple_values, view_lookup, match_lookup):  # noqa: N803
+def link_states(states, ViewClass, cycle, highest_ali, sub_progress_key, tuple_values, view_lookup, match_lookup, check_jaccard):  # noqa: N803
     class_name = "property" if ViewClass == PropertyView else "taxlot"
 
     # set up the progress bar
@@ -759,6 +757,12 @@ def link_states(states, ViewClass, cycle, highest_ali, sub_progress_key, tuple_v
     for idx, state in enumerate(states):
         # get matches
         existing_state_matches = match_lookup.get(tuple(getattr(state, c) for c in tuple_values), [])
+        if check_jaccard:
+            existing_state_matches = [
+                existing_state
+                for existing_state in existing_state_matches
+                if check_jaccard_match(state.ubid, existing_state.get("ubid"), cycle.organization.ubid_threshold)
+            ]
         existing_views_matches = [view_lookup[x["id"]] for x in existing_state_matches]
 
         # ensure ali is correct
@@ -875,6 +879,7 @@ def save_state_match(state1, state2, priorities):
 def check_jaccard_match(ubid: str, state_ubid: str, ubid_threshold: float):
     """
     Use jaccard index between an incoming ubid and an existing state_ubid to determine if states are 'matching'
+    If one ubid is None, 0.0 will be returned.
 
     :param ubid: string, incoming ubid
     :param state_ubid: string, existing state's ubid

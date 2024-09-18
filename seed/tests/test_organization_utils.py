@@ -36,13 +36,11 @@ class TestOrganizationCreation(TestCase):
         property_default_matchers = [
             "custom_id_1",
             "pm_property_id",
-            "ubid",
         ]
 
         taxlot_default_matchers = [
             "custom_id_1",
             "jurisdiction_tax_lot_id",
-            "ubid",
         ]
 
         property_matching_criteria = [
