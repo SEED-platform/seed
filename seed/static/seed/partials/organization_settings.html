@@ -134,22 +134,24 @@
           <h3 translate>BETTER Analysis API Key</h3>
           <form class="form-horizontal" role="form">
             <div class="form-group">
-              <div class="col-sm-4">
-                <p><span translate translate-values="{ link: org.better_host_url }">BETTER_TOKEN_TEXT</span> {$:: org.better_host_url $}.</p>
+              <div class="col-sm-6">
+                <p>
+                  An API key will be assigned to your account upon creation of a BETTER account at <br />
+                  <a href="{$ org.better_host_url $}/accounts/signup/" target="_blank">{$ org.better_host_url $}/accounts/signup/</a>
+                </p>
                 <button
                   type="button"
                   class="btn btn-primary"
                   ng-class="{'btn-danger': token_validity.status == 'invalid', 'btn-success': token_validity.status == 'valid'}"
                   ng-click="verify_token()"
                   style="margin-bottom: 10px"
-                  ng-disabled="token_validity.status"
                 >
                   {$ token_validity.message $}
                   <i class="fa-solid fa-check" ng-show="token_validity.status == 'valid'"></i>
                   <i class="fa-solid fa-xmark" ng-show="token_validity.status == 'invalid'"></i>
                 </button>
-                <i class="ui-grid-icon-info-circled" style="position: absolute; margin-top: 0" ng-if="token_validity.status" uib-tooltip-html="'Save Settings to verify BETTER token'"></i>
                 <input type="text" class="form-control" ng-model="org.better_analysis_api_key" ng-disabled="::!auth.requires_owner" />
+                <p ng-if="error" class="alert alert-danger" style="margin-top: 10px" ng-bind-html="error"></p>
               </div>
             </div>
           </form>
@@ -231,9 +233,18 @@
             <div class="form-group">
               <div class="col-sm-5">
                 <p translate>AT_SUBMISSION_STATUS</p>
-                <select ng-model="org.audit_template_status_type" ng-disabled="::!auth.requires_owner" class="settings-dropdown">
-                  <option ng-repeat="status_type in audit_template_status_types">{$ status_type$}</option>
-                </select>
+                <div class="multi-select-container">
+                  <div
+                    ng-repeat="status in ['Complies', 'Pending', 'Received', 'Rejected']"
+                    class="option"
+                    ng-class="{'option-selected': at_status_types[status]}"
+                    ng-click="toggle_at_status_type(status)"
+                  >
+                    <i class="option-indicator" ng-class="at_status_types[status] ? 'fa-solid fa-check' : 'fa-regular fa-square'"></i>
+                    {$ status $}
+                  </div>
+                </div>
+                <div ng-show="!org.audit_template_status_types" class="alert alert-warning" style="width: fit-content; margin: 10px">Select at least one status type</div>
               </div>
             </div>
           </form>
@@ -1190,6 +1201,32 @@
 
       <div class="section_content_container">
         <div class="section_content with_padding">
+          <h3 translate>ORGANIZATION_WATER_USE_DISPLAY_UNITS</h3>
+          <form class="form-horizontal" role="form">
+            <div class="form-group">
+              <div class="col-sm-4">
+                <select class="form-control" ng-options="o.value as o.label for o in unit_options_water_use" ng-model="org.display_units_water_use"></select>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div class="section_content_container">
+        <div class="section_content with_padding">
+          <h3 translate>ORGANIZATION_WUI_DISPLAY_UNITS</h3>
+          <form class="form-horizontal" role="form">
+            <div class="form-group">
+              <div class="col-sm-4">
+                <select class="form-control" ng-options="o.value as o.label for o in unit_options_wui" ng-model="org.display_units_wui"></select>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div class="section_content_container">
+        <div class="section_content with_padding">
           <h3 translate>METER_DISPLAY_SETTINGS_TITLE</h3>
           <form class="form-horizontal" role="form">
             <div class="form-group">
@@ -1206,6 +1243,33 @@
                   ng-disabled="chosen_type_unit.type === null"
                   ng-options="unit as unit for unit in energy_unit_options[chosen_type_unit.type]"
                   ng-model="chosen_type_unit.unit"
+                >
+                  <option value="" translate>ENERGY_UNIT_DISPLAY_CHOICE_PLACEHOLDER</option>
+                </select>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div class="section_content_container">
+        <div class="section_content with_padding">
+          <h3 translate>METER_WATER_DISPLAY_SETTINGS_TITLE</h3>
+          <form class="form-horizontal" role="form">
+            <div class="form-group">
+              <div class="col-sm-4">
+                <select class="form-control" ng-change="get_valid_water_units_for_type()" ng-options="type.value as type.label for type in water_type_options" ng-model="chosen_water_type_unit.type">
+                  <option value="" translate>WATER_TYPE_DISPLAY_CHOICE_PLACEHOLDER</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <div class="col-sm-4">
+                <select
+                  class="form-control"
+                  ng-disabled="chosen_water_type_unit.type === null"
+                  ng-options="unit as unit for unit in water_unit_options[chosen_water_type_unit.type]"
+                  ng-model="chosen_water_type_unit.unit"
                 >
                   <option value="" translate>ENERGY_UNIT_DISPLAY_CHOICE_PLACEHOLDER</option>
                 </select>

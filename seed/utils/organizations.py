@@ -1,4 +1,3 @@
-# !/usr/bin/env python
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
@@ -37,6 +36,22 @@ def default_pm_mappings():
         "GJ/m**2/year",
         "MJ/m**2/year",
         "kBtu/m**2/year",
+        # ghg units
+        "kgCO2e/year",
+        "MtCO2e/year",
+        # ghg_i units
+        "kgCO2e/ft**2/year",
+        "MtCO2e/ft**2/year",
+        "kgCO2e/m**2/year",
+        "MtCO2e/m**2/year",
+        # wui units
+        "kgal/ft**2/year",
+        "gal/ft**2/year",
+        "L/m**2/year",
+        # water_user units
+        "kgal/year",
+        "gal/year",
+        "L/year",
     ]
 
     formatted_mappings = []

@@ -25,6 +25,13 @@ angular.module('SEED.service.columns', []).factory('columns_service', [
       })
       .then((response) => response.data);
 
+    columns_service.update_and_rehash_columns_for_org = (org_id, table_name, data) => $http
+      .post('/api/v3/columns/update_multiple/', {
+        organization_id: org_id,
+        table_name,
+        changes: data
+      });
+
     columns_service.rename_column = (column_id, column_name, overwrite_preference) => columns_service
       .rename_column_for_org(user_service.get_organization().id, column_id, column_name, overwrite_preference);
 

@@ -4,6 +4,7 @@
  */
 angular.module('SEED.controller.organization_settings', []).controller('organization_settings_controller', [
   '$scope',
+  '$sce',
   '$uibModal',
   'urls',
   'organization_payload',
@@ -26,6 +27,7 @@ angular.module('SEED.controller.organization_settings', []).controller('organiza
   // eslint-disable-next-line func-names
   function (
     $scope,
+    $sce,
     $uibModal,
     urls,
     organization_payload,
@@ -131,23 +133,60 @@ angular.module('SEED.controller.organization_settings', []).controller('organiza
       }
     ];
 
+    $scope.unit_options_water_use = [
+      {
+        label: $translate.instant('gal/year'),
+        value: 'gal/year'
+      },
+      {
+        label: $translate.instant('kgal/year'),
+        value: 'kgal/year'
+      },
+      {
+        label: $translate.instant('L/year'),
+        value: 'L/year'
+      }
+    ];
+
+    $scope.unit_options_wui = [
+      {
+        label: $translate.instant('gal/ft²/year'),
+        value: 'gal/ft**2/year'
+      },
+      {
+        label: $translate.instant('kgal/ft²/year'),
+        value: 'kgal/ft**2/year'
+      },
+      {
+        label: $translate.instant('L/m²/year'),
+        value: 'L/m**2/year'
+      }
+    ];
+
     // Ideally, these units and types for meters should be translatable.
     $scope.chosen_type_unit = {
       type: null,
       unit: null
     };
+    $scope.chosen_water_type_unit = {
+      type: null,
+      unit: null
+    };
 
     // Energy type option executed within this method in order to repeat on organization update
-    const get_energy_type_options = () => {
-      $scope.energy_type_options = _.map($scope.org.display_meter_units, (unit, type) => ({
+    const get_meter_type_options = () => {
+      const map_display_units = (display_units) => _.map(display_units, (unit, type) => ({
         label: `${type} | ${unit}`,
         value: type
       }));
+      $scope.energy_type_options = map_display_units($scope.org.display_meter_units);
+      $scope.water_type_options = map_display_units($scope.org.display_meter_water_units);
     };
-    get_energy_type_options();
+    get_meter_type_options();
 
     meters_service.valid_energy_types_units().then((results) => {
-      $scope.energy_unit_options = results;
+      $scope.energy_unit_options = results.energy;
+      $scope.water_unit_options = results.water;
     });
 
     $scope.get_valid_units_for_type = () => {
@@ -160,15 +199,29 @@ angular.module('SEED.controller.organization_settings', []).controller('organiza
       }
     };
 
+    $scope.get_valid_water_units_for_type = () => {
+      const options = $scope.water_unit_options[$scope.chosen_water_type_unit.type];
+      const previous_unit = $scope.org.display_meter_water_units[$scope.chosen_water_type_unit.type];
+      if (_.includes(options, previous_unit)) {
+        $scope.chosen_water_type_unit.unit = previous_unit;
+      } else {
+        $scope.chosen_water_type_unit.unit = null;
+      }
+    };
+
     // Called when save_settings is called to update the scoped org before org save request is sent.
     const update_display_unit_for_scoped_org = () => {
-      const { type } = $scope.chosen_type_unit;
-      const { unit } = $scope.chosen_type_unit;
-
+      let { type, unit } = $scope.chosen_type_unit;
       if (type && unit) {
         $scope.org.display_meter_units[type] = unit;
-        get_energy_type_options();
       }
+
+      ({ type, unit } = $scope.chosen_water_type_unit);
+      if (type && unit) {
+        $scope.org.display_meter_water_units[type] = unit;
+      }
+
+      get_meter_type_options();
     };
 
     $scope.unit_options_area = [
@@ -235,11 +288,27 @@ angular.module('SEED.controller.organization_settings', []).controller('organiza
     };
 
     $scope.verify_token = () => {
+      $scope.save_settings();
       analyses_service
-        .verify_token($scope.org.id)
+        .verify_token($scope.org.better_analysis_api_key)
         .then((response) => {
-          $scope.token_validity = response.validity ? { message: 'Valid Token', status: 'valid' } : { message: 'Invalid Token', status: 'invalid' };
+          if (response.validity) {
+            $scope.token_validity = { message: 'Valid Token', status: 'valid' };
+            $scope.error = null;
+          } else {
+            $scope.token_validity = { message: 'Invalid Token', status: 'invalid' };
+            $scope.error = linkify(response.message);
+          }
         });
+    };
+
+    const linkify = (text) => {
+      // Regular expression matching any URL starting with http:// or https://
+      const urlPattern = /(\b(https?):\/\/[-A-Z0-9+&@#/%?=~_|!:,.;]*[-A-Z0-9+&@#/%=~_|])/ig;
+
+      // Add link html
+      const linkedText = text.replace(urlPattern, '<a href="$1" target="_blank">$1</a>');
+      return $sce.trustAsHtml(linkedText);
     };
 
     const acceptable_column_types = ['area', 'eui', 'float', 'integer', 'number'];
@@ -590,6 +659,23 @@ angular.module('SEED.controller.organization_settings', []).controller('organiza
       'WA Commerce Grants Report'
     ];
 
-    $scope.audit_template_status_types = ['Received', 'Pending', 'Rejected', 'Complies'];
+    const check_at_status = (status) => {
+      if (typeof $scope.org.audit_template_status_types === 'string') {
+        return $scope.org.audit_template_status_types.includes(status);
+      }
+      return false;
+    };
+
+    $scope.at_status_types = {
+      Complies: check_at_status('Complies'),
+      Pending: check_at_status('Pending'),
+      Received: check_at_status('Received'),
+      Rejected: check_at_status('Rejected')
+    };
+
+    $scope.toggle_at_status_type = (status) => {
+      $scope.at_status_types[status] = !$scope.at_status_types[status];
+      $scope.org.audit_template_status_types = Object.keys($scope.at_status_types).filter((key) => $scope.at_status_types[key]).sort().join(',');
+    };
   }
 ]);

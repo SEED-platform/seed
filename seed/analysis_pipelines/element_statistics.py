@@ -1,4 +1,3 @@
-# !/usr/bin/env python
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
@@ -9,6 +8,7 @@ from collections import defaultdict
 
 from celery import chain, shared_task
 from django.db import connection
+from django.db.models import Count, Q
 
 from seed.analysis_pipelines.pipeline import (
     AnalysisPipeline,
@@ -17,7 +17,7 @@ from seed.analysis_pipelines.pipeline import (
 )
 from seed.lib.tkbl.tkbl import scope_one_emission_codes
 from seed.lib.uniformat.uniformat import uniformat_data
-from seed.models import Analysis, AnalysisPropertyView, Column
+from seed.models import Analysis, AnalysisPropertyView, Column, Element
 
 logger = logging.getLogger(__name__)
 
@@ -65,6 +65,7 @@ def _run_analysis(self, analysis_property_view_ids, analysis_id):
 
     # get/create relevant columns
     existing_columns_names_by_code = _create_element_columns(analysis)
+    ddc_count_column = _create_ddc_count_column(analysis)
 
     # creates a dict where the first key is a property we are analyzing, the second key is a scope_one_emission_code in that property (should there in )
     query = f"""
@@ -97,11 +98,28 @@ def _run_analysis(self, analysis_property_view_ids, analysis_id):
     for property_id, code, mean_condition_index in result:
         mean_condition_index_by_code_and_property_id[property_id][code] = mean_condition_index
 
+    # calc # of Elements where Component_SubType is D.D.C. Control Panel per Property
+    property_ids = analysis_property_views.values("property")
+    elements = Element.objects.filter(property__in=property_ids)
+    counts = elements.values("property").annotate(
+        ddc_control_panel_count=Count("id", filter=Q(extra_data__Component_SubType="D.D.C. Control Panel"))
+    )
+    ddc_count_by_property_id = {count["property"]: count["ddc_control_panel_count"] for count in counts}
+
     for analysis_property_view in analysis_property_views:
         # update the property view and analysis_property_view
         analysis_property_view.parsed_results = {}
         mean_condition_index_by_code = mean_condition_index_by_code_and_property_id.get(analysis_property_view.property_id, {})
         property_view = property_views_by_apv_id[analysis_property_view.id]
+
+        # add ddc count by property id
+        if ddc_count_column:
+            ddc_count = ddc_count_by_property_id[property_view.property_id]
+            property_view.state.extra_data[ddc_count_column.column_name] = ddc_count
+            if ddc_count:
+                analysis_property_view.parsed_results[ddc_count_column.column_name] = ddc_count
+
+        # add mean condition index by code
         for code, col in existing_columns_names_by_code.items():
             mean_condition_index = mean_condition_index_by_code.get(code)
             property_view.state.extra_data[col] = mean_condition_index
@@ -149,3 +167,29 @@ def _create_element_columns(analysis):
                 existing_columns_names_by_code[code] = col["column_name"]
 
     return existing_columns_names_by_code
+
+
+def _create_ddc_count_column(analysis):
+    try:
+        return Column.objects.get(
+            column_name="Number of D.D.C Control Panels",
+            organization=analysis.organization,
+            table_name="PropertyState",
+        )
+
+    except Exception:
+        if analysis.can_create():
+            column = Column.objects.create(
+                is_extra_data=True,
+                column_name="Number of D.D.C Control Panels",
+                organization=analysis.organization,
+                table_name="PropertyState",
+            )
+            column.display_name = "Number of D.D.C Control Panels"
+            column.column_description = "Number of D.D.C Control Panels"
+            column.save()
+
+            return column
+
+        else:
+            return None

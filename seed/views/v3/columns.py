@@ -1,4 +1,3 @@
-# !/usr/bin/env python
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
@@ -191,6 +190,23 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet, Org
             )
 
         result = tasks.delete_organization_column(column.id, org_id)
+        return JsonResponse(result)
+
+    @ajax_request_class
+    @has_perm_class("requires_root_member_access")
+    @action(detail=False, methods=["POST"])
+    def update_multiple(self, request):
+        org_id = self.get_organization(self.request)
+
+        table_name = self.request.data.get("table_name")
+        if table_name not in {"PropertyState", "TaxLotState"}:
+            return JsonResponse(
+                {"status": "error", "message": 'table_name must be "PropertyState" or "TaxLotState"'}, status=status.HTTP_400_BAD_REQUEST
+            )
+
+        changes = request.data.get("changes")
+        key = "".join(str(x) for x in changes)
+        result = tasks.update_multiple_columns(key, table_name, org_id, changes)
         return JsonResponse(result)
 
     @swagger_auto_schema(request_body=AutoSchemaHelper.schema_factory({"new_column_name": "string", "overwrite": "boolean"}))

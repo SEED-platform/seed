@@ -4,17 +4,24 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
 import contextlib
+import io
 import json
 import logging
 import os
+import shutil
+import tempfile
 import time
 from collections import namedtuple
+from itertools import groupby
+from pathlib import Path
 
+import pandas as pd
+from buildingsync_asset_extractor.cts import building_sync_to_cts
 from django.conf import settings
 from django.core.files.base import ContentFile
 from django.core.files.storage import FileSystemStorage
 from django.db import transaction
-from django.db.models import Q, Subquery
+from django.db.models import Exists, OuterRef, Q, Subquery
 from django.http import HttpResponse, JsonResponse
 from django_filters import CharFilter, DateFilter
 from django_filters import rest_framework as filters
@@ -23,6 +30,7 @@ from rest_framework import generics, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.parsers import JSONParser, MultiPartParser
 from rest_framework.renderers import JSONRenderer
+from styleframe import StyleFrame
 
 from seed.building_sync.building_sync import BuildingSync
 from seed.data_importer import tasks
@@ -30,7 +38,7 @@ from seed.data_importer.match import save_state_match
 from seed.data_importer.meters_parser import MetersParser
 from seed.data_importer.models import ImportFile, ImportRecord
 from seed.data_importer.tasks import _save_pm_meter_usage_data_task
-from seed.data_importer.utils import kbtu_thermal_conversion_factors
+from seed.data_importer.utils import kbtu_thermal_conversion_factors, kgal_water_conversion_factors
 from seed.decorators import ajax_request_class
 from seed.hpxml.hpxml import HPXML
 from seed.lib.progress_data.progress_data import ProgressData
@@ -464,7 +472,11 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         the two.
         (https://portfoliomanager.energystar.gov/pdf/reference/Thermal%20Conversions.pdf)
         """
-        return {type: list(units.keys()) for type, units in kbtu_thermal_conversion_factors("US").items()}
+        types_and_units = {
+            "energy": {type: list(units.keys()) for type, units in kbtu_thermal_conversion_factors("US").items()},
+            "water": {type: list(units.keys()) for type, units in kgal_water_conversion_factors("US").items()},
+        }
+        return types_and_units
 
     @swagger_auto_schema(
         manual_parameters=[AutoSchemaHelper.query_org_id_field()],
@@ -1745,6 +1757,151 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         # delete file
         doc_file.delete()
         return JsonResponse({"status": "success"})
+
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class("requires_member")
+    @action(detail=False, methods=["POST"])
+    def evaluation_export_to_cts(self, request):
+        """
+        Download CTS Comprehensive Evaluation Upload Template
+        which uses the BAE/BuildingSync workflow
+        """
+        org_id = self.get_organization(request)
+        access_level_instance = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
+        property_view_ids = request.data.get("property_view_ids", [])
+
+        state_ids = PropertyView.objects.filter(
+            property__organization_id=org_id,
+            pk__in=property_view_ids,
+            property__access_level_instance__lft__gte=access_level_instance.lft,
+            property__access_level_instance__rgt__lte=access_level_instance.rgt,
+        ).values_list("state_id", flat=True)
+        building_files = (
+            BuildingFile.objects.filter(property_state_id__in=state_ids)
+            .order_by("-property_state")
+            .distinct("property_state")
+            .values_list("file", flat=True)
+        )
+
+        filename = request.data.get("filename", "ExportedData.xlsx")
+        response = HttpResponse(content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+        response["Content-Disposition"] = f'attachment; filename="{filename}"'
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            # Since `building_sync_to_cts` takes a filename and not a file object we can't create the temp file inside a `with` context
+            # This is because of how Windows handles file locking
+            output_file = tempfile.NamedTemporaryFile(delete=False)
+            output_filename = Path(output_file.name)
+            # Close the temp file to release the lock
+            output_file.close()
+
+            bsync_files = []
+            for i, f in enumerate(building_files):
+                new_file = f"{tmpdir}/{i}.xml"
+                shutil.copyfile(f"{settings.MEDIA_ROOT}/{f}", new_file)
+                bsync_files.append(Path(new_file))
+
+            building_sync_to_cts(bsync_files, output_filename)
+            with open(output_filename, "rb") as file:
+                xlsx_data = file.read()
+            response.write(xlsx_data)
+
+            # Explicitly delete the temp file
+            os.remove(output_filename)
+
+        return response
+
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class("requires_member")
+    @action(detail=False, methods=["POST"])
+    def facility_bps_export_to_cts(self, request):
+        """
+        Download the CTS Facility Upload Template for Federal BPS
+        which uses the SEED-based workflow (not buildingsync)
+        """
+        # import blank template
+        BLANK_CTS_FILE_PATH = Path(__file__).parents[2] / "utils" / "CTS Facility Upload Template.xlsx"
+        output_df = pd.read_excel(BLANK_CTS_FILE_PATH, sheet_name="Facility Upload Template")
+        old_columns = output_df.columns
+        output_df.columns = output_df.loc[0]
+
+        # get relevant property views by view id
+        org_id = self.get_organization(request)
+        access_level_instance = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
+        model_views = PropertyView.objects.filter(
+            id__in=request.data.get("property_view_ids", []),
+            property__organization_id=org_id,
+            property__access_level_instance__lft__gte=access_level_instance.lft,
+            property__access_level_instance__rgt__lte=access_level_instance.rgt,
+        ).select_related("state")
+        model_views = model_views.annotate(
+            has_electric_meters=Exists(Meter.objects.filter(type=Meter.ELECTRICITY, property=OuterRef("property")))
+        )
+
+        # fill each row
+        for i, (k, views) in enumerate(groupby(list(model_views), lambda v: v.state.extra_data.get("Installation Code"))):
+            output_df.loc[3 + i] = _row_from_views(list(views))
+
+        # write back out
+        output_df.columns = old_columns
+        logger.error(output_df)
+        sf = StyleFrame.read_excel_as_template(BLANK_CTS_FILE_PATH, df=output_df, sheet_name="Facility Upload Template")
+
+        # build response
+        response = HttpResponse(content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+        response["Content-Disposition"] = 'attachment; filename="output.xlsx"'
+        output = io.BytesIO()
+        writer = sf.to_excel(pd.ExcelWriter(output, engine="openpyxl"), row_to_add_filters=1)
+        writer.close()
+        xlsx_data = output.getvalue()
+        response.write(xlsx_data)
+
+        return response
+
+
+def _row_from_views(views):
+    data = pd.Series()
+
+    def mode(field, extra_data=False):
+        if not extra_data:
+            m = pd.Series([getattr(v.state, field) for v in views]).mode()
+        else:
+            m = pd.Series([v.state.extra_data.get(field) for v in views]).mode()
+
+        logger.error("+++++")
+        logger.error(views[0].state.extra_data)
+        logger.error(m)
+        return None if len(m) < 1 else m[0]
+
+    # Facility Status
+    data["Facility Status"] = "C"
+    # Sub-agency Acronym
+    # Agency Designated Covered Facility ID
+    data["Agency Designated Covered Facility ID"] = mode("Installation Code", extra_data=True)
+    # Government Owned Facility
+    # Energy Management System Status
+    # Facility Name
+    data["Facility Name"] = mode("Installation", extra_data=True)
+    # City
+    data["City"] = mode("city")
+    # State
+    data["State"] = mode("state")
+    # Zip Code
+    data["Zip Code"] = mode("postal_code")
+    # Fiscal Year
+    logger.error(list(views))
+    data["Fiscal Year"] = next(iter(views)).cycle.name
+    # Gross Square Footage
+    data["Gross Square Footage"] = sum([v.state.gross_floor_area for v in views if v.state.gross_floor_area is not None])
+    # Number of Buildings Metered for Electricity
+    data["Number of Buildings Metered for Electricity"] = sum([v.has_electric_meters for v in views])
+    # Number of Buildings Metered for Water
+    # Annual Facility Energy Use
+    data["Annual Facility Energy Use"] = sum([v.state.extra_data.get("Sum of Modeled/MDMS Total Energy Usage", 0) for v in views])
+    # Annual Facility Water Use
+    return pd.Series(data)
 
 
 def diffupdate(old, new):

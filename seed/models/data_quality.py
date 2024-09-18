@@ -1,4 +1,3 @@
-# !/usr/bin/env python
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
@@ -15,7 +14,6 @@ import pytz
 from django.apps import apps
 from django.db import IntegrityError, models
 from django.utils.timezone import get_current_timezone, make_aware, make_naive
-from past.builtins import basestring
 from pint.errors import DimensionalityError
 from quantityfield.units import ureg
 
@@ -470,7 +468,7 @@ class Rule(models.Model):
         :param value: Value to validate rule against
         :return: bool, True is valid, False if the value does not match
         """
-        if self.data_type == self.TYPE_STRING and isinstance(value, basestring):
+        if self.data_type == self.TYPE_STRING and isinstance(value, str):
             if self.text_match is None or self.text_match == "":
                 return True
             elif self.condition == Rule.RULE_INCLUDE:
@@ -502,7 +500,7 @@ class Rule(models.Model):
                 rule_min = int(rule_min)
             elif isinstance(value, ureg.Quantity):
                 rule_min = rule_min * ureg(self.units)
-            elif isinstance(value, basestring):
+            elif isinstance(value, str):
                 # try to convert to float
                 try:
                     value = float(value)
@@ -541,7 +539,7 @@ class Rule(models.Model):
                 rule_max = int(rule_max)
             elif isinstance(value, ureg.Quantity):
                 rule_max = rule_max * ureg(self.units)
-            elif isinstance(value, basestring):
+            elif isinstance(value, str):
                 # try to convert to float
                 try:
                     value = float(value)
@@ -568,7 +566,7 @@ class Rule(models.Model):
         :return: typed value
         """
 
-        if isinstance(value, basestring):
+        if isinstance(value, str):
             # check if we can type cast the value
             try:
                 # strip the string of any leading/trailing spaces
@@ -629,7 +627,7 @@ class Rule(models.Model):
                 f_max = str(self.max)
         elif isinstance(value, ureg.Quantity):
             f_value, f_min, f_max = format_pint_violation(self, value)
-        elif isinstance(value, basestring):
+        elif isinstance(value, str):
             f_value = str(value)
             f_min = str(self.min)
             f_max = str(self.max)

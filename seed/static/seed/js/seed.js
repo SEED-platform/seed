@@ -77,6 +77,7 @@
     'SEED.controller.export_inventory_modal',
     'SEED.controller.export_report_modal',
     'SEED.controller.export_to_audit_template_modal',
+    'SEED.controller.export_to_cts_modal',
     'SEED.controller.faq',
     'SEED.controller.filter_group_modal',
     'SEED.controller.geocode_modal',
@@ -386,10 +387,17 @@
           templateUrl: `${static_url}seed/partials/two_factor_profile.html`,
           controller: 'two_factor_profile_controller',
           resolve: {
-            organization_payload: [
+            auth_payload: [
+              'auth_service',
               'user_service',
+              (auth_service, user_service) => {
+                const organization_id = user_service.get_organization().id;
+                return auth_service.is_authorized(organization_id, ['requires_superuser']);
+              }
+            ],
+            organizations_payload: [
               'organization_service',
-              (user_service, organization_service) => organization_service.get_organization(user_service.get_organization().id)
+              (organization_service) => organization_service.get_organizations()
             ],
             user_profile_payload: [
               'user_service',

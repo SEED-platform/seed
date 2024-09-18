@@ -37,9 +37,17 @@ class BETTERClient:
 
         try:
             response = requests.request("GET", url, headers=headers)
-            return response.status_code == 200
+            valid = response.status_code == 200
+            if not valid:
+                message = response.json()
+                if isinstance(message, dict) and message.get("error"):
+                    message = message["error"]
+                return valid, message
+
+            return valid, ""
+
         except Exception:
-            return False
+            return False, "Unexpected error."
 
     def get_buildings(self):
         """Get list of all buildings

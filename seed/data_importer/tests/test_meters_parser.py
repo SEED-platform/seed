@@ -1,4 +1,3 @@
-# !/usr/bin/env python
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
@@ -797,3 +796,86 @@ class MeterUtilTests(TestCase):
         meters_parser = MetersParser(self.org.id, raw_meters)
 
         self.assertEqual(meters_parser.meter_and_reading_objs, expected)
+
+    def test_meters_parser_can_handle_meter_water_units(self):
+        raw_meters = []
+        raw_meter = {
+            "Portfolio Manager ID": self.pm_property_id,
+            "Portfolio Manager Meter ID": "1-PMMeterID",
+            "Start Date": "2016-02-01 00:00:00",
+            "End Date": "2016-03-01 00:00:00",
+            "Meter Type": "Potable Indoor",
+            "Usage Units": "",
+            "Usage/Quantity": 1,
+        }
+
+        usage_units = [
+            "ccf (hundred cubic feet)",
+            "cf (cubic feet)",
+            "cGal (hundred gallons) (US)",
+            "cGal (hundred gallons) (UK)",
+            "cm (cubic meters)",
+            "Gallons (US)",
+            "Gallons (UK)",
+            "kcf (thousand cubic feet)",
+            "kcm (thousand cubit meters)",
+            "kGal (thousand gallons) (US)",
+            "kGal (thousand gallons) (UK)",
+            "Liters",
+            "Mcf (million cubic feed)",
+            "MGal (million gallons) (UK)",
+            "MGal (million gallons) (US)",
+            # invalid units
+            "invalid",
+            "ccf",
+            "Gallons",
+        ]
+
+        for usage_unit in usage_units:
+            meter = raw_meter.copy()
+            meter["Usage Units"] = usage_unit
+            raw_meters.append(meter)
+
+        meters_parser = MetersParser(self.org.id, raw_meters)
+
+        expected_readings = [0.748, 0.00748, 0.1, 0.12, 0.26417, 0.001, 0.0012, 7.480, 264.172, 1, 1.2, 0.000264172, 7480.52, 1000, 1200]
+        actual_readings = [reading["reading"] for reading in meters_parser.meter_and_reading_objs[0]["readings"]]
+
+        self.assertEqual(len(actual_readings), 15)
+
+        zipped_readings = zip(actual_readings, expected_readings)
+        # round to account for binary nature of floating point
+        for readings in zipped_readings:
+            self.assertEqual(round(readings[0], 5), round(readings[1], 5))
+
+    def test_meters_parser_ignores_unexpected_meter_water_types(self):
+        raw_meters = []
+        raw_meter = {
+            "Portfolio Manager ID": self.pm_property_id,
+            "Portfolio Manager Meter ID": "1-PMMeterID",
+            "Start Date": "2016-02-01 00:00:00",
+            "End Date": "2016-03-01 00:00:00",
+            "Meter Type": "",
+            "Usage Units": "kGal (thousand gallons) (US)",
+            "Usage/Quantity": 1,
+        }
+
+        meter_types = [
+            "Potable Indoor",
+            "Potable: Mixed Indoor/Outdoor",
+            "Potable Outdoor",
+            # invalid types
+            "Potable Invalid",
+            "Other Indoor",
+            "Well Water: Indoor",
+        ]
+
+        for type in meter_types:
+            meter = raw_meter.copy()
+            meter["Meter Type"] = type
+            raw_meters.append(meter)
+
+        meters_parser = MetersParser(self.org.id, raw_meters)
+        actual_readings = meters_parser.meter_and_reading_objs
+
+        self.assertEqual(len(actual_readings), 3)

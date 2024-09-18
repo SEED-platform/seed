@@ -1,4 +1,3 @@
-# !/usr/bin/env python
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
@@ -10,7 +9,6 @@ from collections import OrderedDict
 from datetime import timedelta
 
 from django.core.exceptions import ValidationError
-from past.builtins import basestring
 from rest_framework import serializers
 
 from seed.models import GreenAssessment, GreenAssessmentProperty, GreenAssessmentURL, PropertyView
@@ -78,7 +76,7 @@ class ValidityDurationField(serializers.Field):
         return obj.days
 
     def to_internal_value(self, data):
-        if isinstance(data, basestring):
+        if isinstance(data, str):
             try:
                 data = int(data)
             except ValueError:
@@ -236,7 +234,7 @@ class GreenAssessmentPropertySerializer(OrgValidateMixin, serializers.ModelSeria
         if rating and assessment.is_numeric_score:
             msg = f"{assessment.name} uses a metric (numeric score)."
             raise ValidationError(msg)
-        elif rating and not isinstance(rating, basestring):
+        elif rating and not isinstance(rating, str):
             raise ValidationError("Rating must be a string.")
 
         metric = data.get("metric")

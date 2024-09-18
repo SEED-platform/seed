@@ -1,4 +1,3 @@
-# !/usr/bin/env python
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
@@ -12,7 +11,6 @@ from collections import OrderedDict
 
 import pytz
 from django.db import models
-from past.builtins import basestring
 from rest_framework import serializers
 from rest_framework.fields import empty
 
@@ -168,6 +166,11 @@ class PropertyStateSerializer(serializers.ModelSerializer):
     total_marginal_ghg_emissions = PintQuantitySerializerField(allow_null=True)
     total_ghg_emissions_intensity = PintQuantitySerializerField(allow_null=True)
     total_marginal_ghg_emissions_intensity = PintQuantitySerializerField(allow_null=True)
+    water_use = PintQuantitySerializerField(allow_null=True)
+    indoor_water_use = PintQuantitySerializerField(allow_null=True)
+    outdoor_water_use = PintQuantitySerializerField(allow_null=True)
+    wui = PintQuantitySerializerField(allow_null=True)
+    indoor_wui = PintQuantitySerializerField(allow_null=True)
 
     # support naive datetime objects
     generation_date = serializers.DateTimeField("%Y-%m-%dT%H:%M:%S", allow_null=True)
@@ -507,7 +510,7 @@ class PropertyViewAsStateSerializer(serializers.ModelSerializer):
         # type validation
         for field in required_fields:
             # state is a writeable serializer field
-            if field != "state" and data.get(field) and not isinstance(data[field], (basestring, int)):
+            if field != "state" and data.get(field) and not isinstance(data[field], (str, int)):
                 wrong_type.append((field, type(field)))
         for fields in unique_together:
             field_vals = {}

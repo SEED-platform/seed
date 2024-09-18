@@ -1,4 +1,3 @@
-# !/usr/bin/env python
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
@@ -13,11 +12,10 @@ from django.conf import settings
 from django.contrib.gis.db import models as geomodels
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError, models, transaction
-from django.db.models import Case, UniqueConstraint, Value, When
+from django.db.models import UniqueConstraint
 from django.db.models.signals import m2m_changed, post_save, pre_delete, pre_save
 from django.dispatch import receiver
 from django.forms.models import model_to_dict
-from past.builtins import basestring
 from quantityfield.fields import QuantityField
 from quantityfield.units import ureg
 
@@ -325,6 +323,11 @@ class PropertyState(models.Model):
     total_marginal_ghg_emissions = QuantityField("MtCO2e/year", null=True, blank=True)
     total_ghg_emissions_intensity = QuantityField("kgCO2e/ft**2/year", null=True, blank=True)
     total_marginal_ghg_emissions_intensity = QuantityField("kgCO2e/ft**2/year", null=True, blank=True)
+    water_use = QuantityField("kgal/year", null=True, blank=True)
+    indoor_water_use = QuantityField("kgal/year", null=True, blank=True)
+    outdoor_water_use = QuantityField("kgal/year", null=True, blank=True)
+    wui = QuantityField("gal/ft**2/year", null=True, blank=True)
+    indoor_wui = QuantityField("gal/ft**2/year", null=True, blank=True)
 
     extra_data = models.JSONField(default=dict, blank=True)
     derived_data = models.JSONField(default=dict, blank=True)
@@ -411,7 +414,7 @@ class PropertyState(models.Model):
         date_field_names = ("year_ending", "generation_date", "release_date", "recent_sale_date")
         for field in date_field_names:
             value = getattr(self, field)
-            if value and isinstance(value, basestring):
+            if value and isinstance(value, str):
                 _log.info("Saving %s which is a date time" % field)
                 _log.info(convert_datestr(value))
                 _log.info(date_cleaner(value))
@@ -662,6 +665,11 @@ class PropertyState(models.Model):
                     ps.space_alerts,
                     ps.building_certification,
                     ps.egrid_subregion_code,
+                    ps.water_use,
+                    ps.indoor_water_use,
+                    ps.outdoor_water_use,
+                    ps.wui,
+                    ps.indoor_wui,
                     ps.extra_data,
                     NULL
                 FROM seed_propertystate ps, audit_id aid
@@ -723,6 +731,11 @@ class PropertyState(models.Model):
             "energy_alerts",
             "space_alerts",
             "building_certification",
+            "water_use",
+            "indoor_water_use",
+            "outdoor_water_use",
+            "wui",
+            "indoor_wui",
             "extra_data",
         ]
         coparents = [{key: getattr(c, key) for key in keep_fields} for c in coparents]
@@ -849,29 +862,20 @@ def post_save_property_state(sender, **kwargs):
     """
     state: PropertyState = kwargs.get("instance")
 
-    ubid = getattr(state, "ubid")
-    if not ubid:
-        state.ubidmodel_set.filter(preferred=True).update(preferred=False)
+    ubids = getattr(state, "ubid")
+    if not ubids:
         return
 
-    ubid_model = state.ubidmodel_set.filter(ubid=ubid)
-    if not ubid_model.exists():
-        # First set all others to non-preferred without calling save
-        state.ubidmodel_set.filter(preferred=True).update(preferred=False)
-        # Add UBID and set as preferred
-        ubid_model = state.ubidmodel_set.create(
-            preferred=True,
-            ubid=ubid,
-        )
-        # Update lat/long/centroid
-        decode_unique_ids(state)
-    elif ubid_model.filter(preferred=False).exists():
-        state.ubidmodel_set.update(
-            preferred=Case(
-                When(ubid=ubid, then=Value(True)),
-                default=Value(False),
-            )
-        )
+    # Allow ';' separated ubids
+    ubids = ubids.split(";")
+    state.ubidmodel_set.filter(preferred=True).update(preferred=False)
+    for idx, ubid in enumerate(ubids):
+        # trim leading/trailing spaces
+        ubid_stripped = ubid.strip()
+        is_first = idx == 0
+        _, created = state.ubidmodel_set.update_or_create(ubid=ubid_stripped, defaults={"preferred": is_first})
+        if created:
+            decode_unique_ids(state)
 
 
 class PropertyView(models.Model):
