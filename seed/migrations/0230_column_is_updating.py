@@ -5,7 +5,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("seed", "0223_add_extra_data_to_states"),
+        ("seed", "0229_add_extra_data_to_states"),
     ]
 
     operations = [

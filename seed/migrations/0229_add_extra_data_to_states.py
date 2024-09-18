@@ -5,7 +5,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("seed", "0222_cross_cycle_data_quality"),
+        ("seed", "0228_alter_analysis_service"),
     ]
 
     operations = [
