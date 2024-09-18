@@ -1,4 +1,3 @@
-# !/usr/bin/env python
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
@@ -13,7 +12,6 @@ import dateutil
 import dateutil.parser
 from django.contrib.gis.geos import GEOSGeometry
 from django.utils import timezone
-from past.builtins import basestring
 
 # django orm gets confused unless we specifically use `ureg` from quantityfield
 # ie. don't try `import pint; ureg = pint.UnitRegistry()`
@@ -53,8 +51,8 @@ CHAR_MAPPING = {
     ord("―"): "-",
     ord("¬"): "-",
     # guillemets to single and double quotes
-    ord("‹"): """,  # noqa: RUF001
-    ord('›'): """,  # noqa: RUF001
+    ord("‹"): '"',  # noqa: RUF001
+    ord("›"): '"',  # noqa: RUF001
     ord("«"): '"',
     ord("»"): '"',
 }
@@ -77,7 +75,7 @@ def normalize_unicode_and_characters(text):
 
 def default_cleaner(value, *args):
     """Pass-through validation for strings we don't know about."""
-    if isinstance(value, basestring):
+    if isinstance(value, str):
         if fuzzy_in_set(value.lower(), NONE_SYNONYMS):
             return None
         # guard against `''` coming in from an Excel empty cell
@@ -105,7 +103,7 @@ def float_cleaner(value, *args):
     if value is None:
         return None
 
-    if isinstance(value, basestring):
+    if isinstance(value, str):
         value = PUNCT_REGEX.sub("", value)
 
     try:
@@ -140,7 +138,7 @@ def date_time_cleaner(value, *args):
 
     try:
         # the dateutil parser only parses strings, make sure to return None if not a string
-        if isinstance(value, basestring):
+        if isinstance(value, str):
             value = dateutil.parser.parse(value)
             value = timezone.make_aware(value, timezone.get_current_timezone())
         else:
@@ -166,7 +164,7 @@ def int_cleaner(value, *args):
     if value is None:
         return None
 
-    if isinstance(value, basestring):
+    if isinstance(value, str):
         value = PUNCT_REGEX.sub("", value)
 
     try:

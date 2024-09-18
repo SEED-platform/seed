@@ -1,4 +1,3 @@
-# !/usr/bin/env python
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
@@ -18,7 +17,6 @@ from django.db.models import Q
 from django.db.models.fields.json import KeyTextTransform
 from django.db.models.functions import Cast, Coalesce, Collate, Replace
 from django.http.request import QueryDict
-from past.builtins import basestring
 
 from seed.models.columns import Column
 
@@ -49,7 +47,7 @@ def is_date_field(k):
 
 
 def is_string_query(q):
-    return isinstance(q, basestring)
+    return isinstance(q, str)
 
 
 def is_exact_match(q):
