@@ -14,7 +14,6 @@ from django.conf import settings
 from django.core.files.storage import FileSystemStorage
 from django.http import JsonResponse
 from drf_yasg.utils import no_body, swagger_auto_schema
-from past.builtins import basestring
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
@@ -282,7 +281,7 @@ class UploadViewSet(viewsets.ViewSet, OrgMixin):
                     # Next we need to check type.  If it is a string, we will add it here to avoid parsing numerics
                     # However, we need to be sure to not add the flagged bad strings.
                     # However, a flagged value *could* be a value property name, and we would want to allow that
-                    if isinstance(this_pm_variable, basestring):
+                    if isinstance(this_pm_variable, str):
                         if pm_variable == "property_name":
                             this_row.append(this_pm_variable)
                             added = True

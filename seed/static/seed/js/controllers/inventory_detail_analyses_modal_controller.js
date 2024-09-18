@@ -14,16 +14,18 @@ angular.module('SEED.controller.inventory_detail_analyses_modal', []).controller
   'Notification',
   'analyses_service',
   'inventory_ids',
+  'all_columns',
   'current_cycle',
   'cycles',
   'user',
   // eslint-disable-next-line func-names
-  function ($scope, $sce, $log, $uibModalInstance, Notification, analyses_service, inventory_ids, current_cycle, cycles, user) {
+  function ($scope, $sce, $log, $uibModalInstance, Notification, analyses_service, inventory_ids, all_columns, current_cycle, cycles, user) {
     $scope.inventory_count = inventory_ids.length;
     // used to disable buttons on submit
     $scope.waiting_for_server = false;
     $scope.cycles = cycles;
     $scope.user = user;
+    $scope.all_columns = all_columns;
 
     $scope.new_analysis = {
       name: null,
@@ -113,6 +115,26 @@ angular.module('SEED.controller.inventory_detail_analyses_modal', []).controller
           break;
         case 'Element Statistics':
           $scope.new_analysis.configuration = {};
+          break;
+        case 'Building Upgrade Recommendation':
+          $scope.new_analysis.configuration = {
+            column_params: {
+              total_eui: null,
+              gas_eui: null,
+              electric_eui: null,
+              target_gas_eui: null,
+              target_electric_eui: null,
+              condition_index: null
+            },
+            total_eui_goal: null,
+            ff_eui_goal: null,
+            year_built_threshold: null,
+            fair_actual_to_benchmark_eui_ratio: null,
+            poor_actual_to_benchmark_eui_ratio: null,
+            building_sqft_threshold: null,
+            condition_index_threshold: null,
+            ff_fired_equipment_rsl_threshold: null
+          };
           break;
         default:
           $log.error('Unknown analysis type.', $scope.new_analysis.service);

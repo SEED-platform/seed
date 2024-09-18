@@ -7,6 +7,7 @@ angular.module('SEED.controller.notes', []).controller('notes_controller', [
   '$uibModalInstance',
   'urls',
   'note_service',
+  'organization_service',
   'inventory_type',
   'view_id',
   'inventory_payload',
@@ -14,14 +15,15 @@ angular.module('SEED.controller.notes', []).controller('notes_controller', [
   'notes',
   'auth_payload',
   // eslint-disable-next-line func-names
-  function ($scope, $uibModalInstance, urls, note_service, inventory_type, view_id, inventory_payload, organization_payload, notes, auth_payload) {
+  function ($scope, $uibModalInstance, urls, note_service, organization_service, inventory_type, view_id, inventory_payload, organization_payload, notes, auth_payload) {
     $scope.inventory_type = inventory_type;
+    const item_state = inventory_payload.state;
     $scope.notes = notes;
-    $scope.org_id = organization_payload.organization.org_id;
+    $scope.organization = organization_payload.organization;
     $scope.urls = urls;
     $scope.auth = auth_payload.auth;
 
-    $scope.inventory_name = note_service.inventory_display_name(inventory_type === 'properties' ? 'property' : 'taxlot', organization_payload.organization, inventory_payload.state);
+    $scope.inventory_display_name = organization_service.get_inventory_display_value($scope.organization, $scope.inventory_type === 'properties' ? 'property' : 'taxlot', item_state);
 
     $scope.inventory = { view_id };
 
@@ -32,19 +34,19 @@ angular.module('SEED.controller.notes', []).controller('notes_controller', [
     };
 
     $scope.open_create_note_modal = () => {
-      note_service.open_create_note_modal($scope.inventory_type, $scope.org_id, view_id).then((notes) => {
+      note_service.open_create_note_modal($scope.inventory_type, $scope.organization.id, view_id).then((notes) => {
         $scope.notes = notes;
       });
     };
 
     $scope.open_edit_note_modal = (note) => {
-      note_service.open_edit_note_modal($scope.inventory_type, $scope.org_id, view_id, note).then((notes) => {
+      note_service.open_edit_note_modal($scope.inventory_type, $scope.organization.id, view_id, note).then((notes) => {
         $scope.notes = notes;
       });
     };
 
     $scope.open_delete_note_modal = (note) => {
-      note_service.open_delete_note_modal($scope.inventory_type, $scope.org_id, view_id, note).then((notes) => {
+      note_service.open_delete_note_modal($scope.inventory_type, $scope.organization.id, view_id, note).then((notes) => {
         $scope.notes = notes;
       });
     };

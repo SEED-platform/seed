@@ -11,39 +11,42 @@ angular.module('SEED.controller.export_to_cts_modal', []).controller('export_to_
   'ids',
   'org_id',
   'inventory_service',
-  'uploader_service',
   // eslint-disable-next-line func-names
-  function ($http, $scope, $state, $uibModalInstance, user_service, ids, org_id, inventory_service, uploader_service) {
-    $scope.ids = ids;
-    $scope.org_id = org_id;
+  function ($http, $scope, $state, $uibModalInstance, user_service, ids, org_id, inventory_service) {
     $scope.exporting = false;
+
+    /**
+     * @type {'evaluation_template' | 'facility_bps_template' | null}
+     */
+    $scope.export_selection = null;
+    $scope.set_selection = (selection) => {
+      $scope.export_selection = selection;
+    };
+
+    $scope.set_name = (name) => {
+      $scope.export_name = name;
+    };
 
     $scope.export = () => {
       let filename = $scope.export_name;
       if (!filename.endsWith('.xlsx')) filename += '.xlsx';
       $scope.exporting = true;
 
-      $http.get('/api/v3/tax_lot_properties/start_export_to_cts/', {
-        params: {
-          organization_id: user_service.get_organization().id
-        }
-      })
-        .then((data) => {
-          uploader_service.check_progress_loop(
-            data.data.progress_key,
-            0,
-            1,
-            () => {},
-            () => {},
-            $scope.exporter_progress
-          );
-          return inventory_service.export_to_cts(ids).then((data) => {
-            const blob_type = data.headers()['content-type'];
-            const blob = new Blob([data.data], { type: blob_type });
-            saveAs(blob, filename);
-            $scope.close();
-          });
+      if ($scope.export_selection === 'evaluation_template') {
+        inventory_service.evaluation_export_to_cts(ids).then((data) => {
+          const blob_type = data.headers()['content-type'];
+          const blob = new Blob([data.data], { type: blob_type });
+          saveAs(blob, filename);
+          $scope.close();
         });
+      } else if ($scope.export_selection === 'facility_bps_template') {
+        inventory_service.facility_bps_export_to_cts(org_id, { property_view_ids: ids }).then((data) => {
+          const blob_type = data.headers()['content-type'];
+          const blob = new Blob([data.data], { type: blob_type });
+          saveAs(blob, filename);
+          $scope.close();
+        });
+      }
     };
 
     $scope.cancel = () => {
