@@ -1960,6 +1960,7 @@ def _row_from_views(views):
     # Annual Facility Water Use
     return pd.Series(data)
 
+
 def diffupdate(old, new):
     """Returns lists of fields changed"""
     changed_fields = []
