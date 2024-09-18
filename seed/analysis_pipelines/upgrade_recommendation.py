@@ -170,9 +170,7 @@ def _get_views_upgrade_recommendation_category(property_view, config):
     ff_eui_goal = config.get("ff_eui_goal")
     ff_fired_equipment_rsl_threshold = config.get("ff_fired_equipment_rsl_threshold")
     condition_index_threshold = config.get("condition_index_threshold")
-    if gas_eui > ff_eui_goal and (
-        float(lowest_RSL) < ff_fired_equipment_rsl_threshold or condition_index_threshold > condition_index
-    ):
+    if gas_eui > ff_eui_goal and (float(lowest_RSL) < ff_fired_equipment_rsl_threshold or condition_index_threshold > condition_index):
         return "Equipment replacement"
     else:
         return "NO DER project recommended"
