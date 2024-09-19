@@ -478,6 +478,9 @@ msgstr "Building Count"
 msgid "Building Filters"
 msgstr "Building Filters"
 
+msgid "Building Square Footage Threshold"
+msgstr "Building Square Footage Threshold"
+
 msgid "Buildings"
 msgstr "Buildings"
 
@@ -735,6 +738,12 @@ msgstr "Concatenate Headers (Columns of Data)"
 
 msgid "Condition Check"
 msgstr "Condition Check"
+
+msgid "Condition Index Field"
+msgstr "Condition Index Field"
+
+msgid "Condition Index Threshold"
+msgstr "Condition Index Threshold"
 
 msgid "Conditioned Floor Area"
 msgstr "Conditioned Floor Area"
@@ -1252,6 +1261,9 @@ msgstr "Edit UBIDs"
 msgid "Elapsed:"
 msgstr "Elapsed:"
 
+msgid "Electric EUI Field"
+msgstr "Electric EUI Field"
+
 #: seed/landing/forms.py:13
 msgid "Email"
 msgstr "Email"
@@ -1453,6 +1465,9 @@ msgstr "Fossil Fuel EUI Goal for the building (includes Gas, Etc.)"
 msgid "Failed to delete inventory"
 msgstr "Failed to delete inventory"
 
+msgid "Fair Actual to Benchmark EUI Ratio"
+msgstr "Fair Actual to Benchmark EUI Ratio"
+
 msgid "Fetching your buildings from Audit Template..."
 msgstr "Fetching your buildings from Audit Template..."
 
@@ -1526,6 +1541,12 @@ msgstr "For direct help on a specific problem, please email:"
 #: seed/landing/templates/landing/login.html:31
 msgid "Forgot password?"
 msgstr "Forgot password?"
+
+msgid "Fossil Fuel EUI Goal"
+msgstr "Fossil Fuel EUI Goal"
+
+msgid "Fossil Fuel-Fired Equipment RSL Threshold"
+msgstr "Fossil Fuel-Fired Equipment RSL Threshold"
 
 #: config/settings/common.py:215
 msgid "French (Canadian)"
@@ -1614,6 +1635,9 @@ msgstr "Configure one or more portfolio Energy Use Intensity (EUI) reduction goa
 
 msgid "GREENBUTTON_CONTENTS_TITLE"
 msgstr "Confirm GreenButton File Contents"
+
+msgid "Gas EUI Field"
+msgstr "Gas EUI Field"
 
 msgid "Generate Token"
 msgstr "Generate Token"
@@ -2634,6 +2658,9 @@ msgstr "Please visit our User Support website for tutorials and documentation to
 msgid "Please wait while your data is loaded..."
 msgstr "Please wait while your data is loaded..."
 
+msgid "Poor Actual to Benchmark EUI Ratio"
+msgstr "Poor Actual to Benchmark EUI Ratio"
+
 msgid "Populate SEED Headers with best known matches"
 msgstr "Populate SEED Headers with best known matches"
 
@@ -3547,8 +3574,14 @@ msgstr "Target >= Actual for Compliance"
 msgid "Target Column"
 msgstr "Target Column"
 
+msgid "Target Electric EUI Field"
+msgstr "Target Electric EUI Field"
+
 msgid "Target Field"
 msgstr "Target Field"
+
+msgid "Target Gas EUI Field"
+msgstr "Target Gas EUI Field"
 
 msgid "Target to quantify Portfolio EUI improvement. Must be between 0 and 100."
 msgstr "Target to quantify Portfolio EUI improvement. Must be between 0 and 100."
@@ -3769,6 +3802,12 @@ msgstr "Toggle Taxlot UBID Centroids"
 
 msgid "Token Generator"
 msgstr "Token Generator"
+
+msgid "Total EUI Field"
+msgstr "Total EUI Field"
+
+msgid "Total EUI Goal"
+msgstr "Total EUI Goal"
 
 msgid "Total Properties"
 msgstr "Total Properties"
@@ -4140,6 +4179,9 @@ msgstr "Year"
 
 msgid "Year Built"
 msgstr "Year Built"
+
+msgid "Year Built Threshold"
+msgstr "Year Built Threshold"
 
 msgid "Year Ending"
 msgstr "Year Ending"
