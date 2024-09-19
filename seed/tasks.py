@@ -1,4 +1,3 @@
-# !/usr/bin/env python
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
@@ -15,12 +14,14 @@ from celery.utils.log import get_task_logger
 from django.conf import settings
 from django.core.mail import send_mail
 from django.db import transaction
+from django.db.models import Q
 from django.template import Context, Template, loader
 from django.urls import reverse_lazy
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 
 from seed.audit_template.audit_template import AuditTemplate
+from seed.data_importer.tasks import hash_state_object
 from seed.decorators import lock_and_track
 from seed.lib.mcm.utils import batch
 from seed.lib.progress_data.progress_data import ProgressData
@@ -296,6 +297,110 @@ def delete_organization_column(column_pk, org_pk, prog_key=None, chunk_size=100,
     _evaluate_delete_organization_column.subtask((column_pk, org_pk, progress_data.key, chunk_size)).apply_async()
 
     return progress_data.result()
+
+
+@shared_task
+@lock_and_track
+def update_multiple_columns(key, table_name, org_pk, changes, prog_key=None):
+    """Updates several columns and optionally rehashes if need be."""
+
+    progress_data = ProgressData.from_key(prog_key) if prog_key else ProgressData(func_name="update_multiple_columns", unique_id=key)
+    _evaluate_update_multiple_columns.subtask((progress_data.key, table_name, org_pk, changes)).apply_async()
+    return progress_data.result()
+
+
+@shared_task
+def _evaluate_update_multiple_columns(prog_key, table_name, org_pk, changes):
+    """Update columns, then check for required rehash - and rehash states if need be"""
+
+    chunk_size = 100
+
+    rehashed_columns = []
+    for key in changes:
+        c = Column.objects.get(pk=key)
+        for attribute in changes[key]:
+            if attribute == "is_excluded_from_hash":
+                rehashed_columns.append(c)
+            setattr(c, attribute, changes[key][attribute])
+        c.save()
+
+    progress_data = ProgressData.from_key(prog_key)
+
+    if len(rehashed_columns) == 0:
+        total = len(changes.keys())
+        progress_data.total = total / float(chunk_size) + 1
+        progress_data.data["completed_records"] = total
+        progress_data.data["total_records"] = total
+        progress_data.save()
+    else:
+        query = _build_property_query_for_rehashed_columns(org_pk, rehashed_columns)
+
+        ids = []
+
+        if table_name == "PropertyState":
+            ids = PropertyState.objects.filter(query).values_list("id", flat=True)
+        elif table_name == "TaxLotState":
+            ids = TaxLotState.objects.filter(query).values_list("id", flat=True)
+
+        total = len(ids)
+        progress_data.total = total / float(chunk_size) + 1
+        progress_data.data["completed_records"] = 0
+        progress_data.data["total_records"] = total
+        progress_data.save()
+
+        for chunk_ids in batch(ids, chunk_size):
+            _rehash_state_chunk(chunk_ids, table_name, progress_data.key)
+
+    _finish_update_multiple_columns(changes, progress_data.key)
+
+
+@shared_task
+def _build_property_query_for_rehashed_columns(org_pk, rehashed_columns):
+    query = Q()
+    query.add(Q(data_state=DATA_STATE_MATCHING), Q.AND)
+    query.add(Q(organization_id=org_pk), Q.AND)
+    or_query = Q()
+    fields = []
+    extra_fields = []
+    for column in rehashed_columns:
+        if column.is_extra_data:
+            extra_fields.append(column.column_name)
+        else:
+            fields.append(column.column_name)
+
+    for field in fields:
+        or_query.add(Q(**{field + "__isnull": False}), Q.OR)
+    if len(extra_fields) > 0:
+        or_query.add(Q(extra_data__has_any_key=extra_fields), Q.OR)
+
+    query.add(or_query, Q.AND)
+    return query
+
+
+@shared_task
+def _rehash_state_chunk(chunk_ids, table_name, prog_key):
+    if table_name == "PropertyState":
+        states = PropertyState.objects.filter(id__in=chunk_ids)
+    else:
+        states = TaxLotState.objects.filter(id__in=chunk_ids)
+    with transaction.atomic():
+        for state in states:
+            state.hash_object = hash_state_object(state)
+            state.save(update_fields=["hash_object"])
+
+    progress_data = ProgressData.from_key(prog_key)
+    progress_data.step_with_counter()
+
+
+@shared_task
+def _finish_update_multiple_columns(changes, prog_key):
+    progress_data = ProgressData.from_key(prog_key)
+    if progress_data.data["total_records"] == len(changes):
+        return progress_data.finish_with_success(f"Updated {len(changes.keys())} columns.")
+    else:
+        return progress_data.finish_with_success(
+            f'Updated {len(changes.keys())} columns.  Rebuilt {progress_data.data["total_records"]} records'
+        )
 
 
 @shared_task

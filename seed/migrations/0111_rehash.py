@@ -1,12 +1,9 @@
 # This rehashing file should be used in the future if needed as it has been optimized. Rehashing takes
 # awhile and should be avoided if possible.
 
-from django.db import connection, migrations, transaction
+from django.db import connection, migrations
 
-from seed.data_importer.tasks import hash_state_object
-
-# import time
-# from datetime import timedelta
+from seed.utils.migrations import rehash
 
 
 def forwards(apps, schema_editor):
@@ -29,42 +26,12 @@ def forwards(apps, schema_editor):
         cursor.execute(taxlot_sql)
 
 
-# Go through every property and tax lot and simply save it to create the hash_object
-def recalculate_hash_objects(apps, schema_editor):
-    PropertyState = apps.get_model("seed", "PropertyState")
-    TaxLotState = apps.get_model("seed", "TaxLotState")
-
-    # find which columns are not used in column mappings
-    property_count = PropertyState.objects.count()
-    taxlot_count = TaxLotState.objects.count()
-    # print("There are %s objects to traverse" % (property_count + taxlot_count))
-
-    # start = time.clock()
-    # print("Iterating over PropertyStates. Count %s" % property_count)
-    with transaction.atomic():
-        for idx, obj in enumerate(PropertyState.objects.all().iterator()):
-            if idx % 1000 == 0:
-                print(f"... {idx} / {property_count} ...")
-            obj.hash_object = hash_state_object(obj)
-            obj.save()
-
-    # print("Iterating over TaxLotStates. Count %s" % taxlot_count)
-    with transaction.atomic():
-        for idx, obj in enumerate(TaxLotState.objects.all().iterator()):
-            if idx % 1000 == 0:
-                print(f"... {idx} / {taxlot_count} ...")
-            obj.hash_object = hash_state_object(obj)
-            obj.save()
-    # execution_time = time.clock() - start
-    # print(timedelta(seconds=execution_time))
-
-
 class Migration(migrations.Migration):
     dependencies = [
         ("seed", "0110_matching_criteria"),
     ]
 
     operations = [
-        migrations.RunPython(recalculate_hash_objects),
+        migrations.RunPython(lambda apps, _schema_editor: rehash(apps)),
         migrations.RunPython(forwards),
     ]
