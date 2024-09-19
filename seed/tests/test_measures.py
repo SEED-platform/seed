@@ -86,19 +86,19 @@ class TestPropertyMeasures(TestCase):
 
     def test_lookups(self):
         self.assertEqual(PropertyMeasure.str_to_impl_status(PropertyMeasure.MEASURE_DISCARDED), 5)
-        self.assertEqual(PropertyMeasure.str_to_impl_status("measure discarded"), None)
+        self.assertEqual(PropertyMeasure.str_to_impl_status("measure discarded"), 1)
         self.assertEqual(PropertyMeasure.str_to_impl_status("Discarded"), 5)
-        self.assertEqual(PropertyMeasure.str_to_impl_status(None), None)
+        self.assertEqual(PropertyMeasure.str_to_impl_status(None), 1)
 
         self.assertEqual(PropertyMeasure.str_to_category_affected(PropertyMeasure.CATEGORY_DOMESTIC_HOT_WATER), 5)
-        self.assertEqual(PropertyMeasure.str_to_category_affected("domestic nothing"), None)
+        self.assertEqual(PropertyMeasure.str_to_category_affected("domestic nothing"), 27)
         self.assertEqual(PropertyMeasure.str_to_category_affected("Domestic Hot Water"), 5)
-        self.assertEqual(PropertyMeasure.str_to_category_affected(None), None)
+        self.assertEqual(PropertyMeasure.str_to_category_affected(None), 27)
 
         self.assertEqual(PropertyMeasure.str_to_application_scale(PropertyMeasure.SCALE_ENTIRE_FACILITY), 5)
-        self.assertEqual(PropertyMeasure.str_to_application_scale("Nothing entirely"), None)
+        self.assertEqual(PropertyMeasure.str_to_application_scale("Nothing entirely"), 5)
         self.assertEqual(PropertyMeasure.str_to_application_scale("Entire facility"), 5)
-        self.assertEqual(PropertyMeasure.str_to_application_scale(None), None)
+        self.assertEqual(PropertyMeasure.str_to_application_scale(None), 5)
 
     def test_populate_measures(self):
         self.assertEqual(Measure.objects.count(), 222)

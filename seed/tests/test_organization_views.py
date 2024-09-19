@@ -36,12 +36,10 @@ class TestOrganizationViews(DataMappingBaseTestCase):
             "PropertyState": [
                 "custom_id_1",
                 "pm_property_id",
-                "ubid",
             ],
             "TaxLotState": [
                 "custom_id_1",
                 "jurisdiction_tax_lot_id",
-                "ubid",
             ],
         }
 

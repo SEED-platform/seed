@@ -564,7 +564,7 @@ angular.module('SEED.controller.organization_settings', []).controller('organiza
       if (_.isNil($scope.org.ubid_threshold)) {
         $scope.invalid_ubid_threshold = true;
       } else {
-        $scope.invalid_ubid_threshold = !($scope.org.ubid_threshold >= 0 && $scope.org.ubid_threshold <= 1);
+        $scope.invalid_ubid_threshold = !($scope.org.ubid_threshold >= 0.0001 && $scope.org.ubid_threshold <= 1);
       }
     };
 

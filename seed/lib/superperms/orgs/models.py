@@ -7,6 +7,7 @@ import logging
 
 from django.conf import settings
 from django.contrib.auth.models import User
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import IntegrityError, models, transaction
 from django.db.models.signals import post_save, pre_delete, pre_save
 from django.dispatch import receiver
@@ -235,12 +236,6 @@ class Organization(models.Model):
 
     class Meta:
         ordering = ["name"]
-        constraints = [
-            models.CheckConstraint(
-                name="ubid_threshold_range",
-                check=models.Q(ubid_threshold__range=(0, 1)),
-            ),
-        ]
 
     name = models.CharField(max_length=100)
     users = models.ManyToManyField(
@@ -312,7 +307,7 @@ class Organization(models.Model):
     access_level_names = models.JSONField(default=list)
 
     # UBID Threshold
-    ubid_threshold = models.FloatField(default=1.0)
+    ubid_threshold = models.FloatField(default=1.0, validators=[MinValueValidator(0.0001), MaxValueValidator(1.0)])
     # Public settings
     public_feed_enabled = models.BooleanField(default=False)
     public_feed_labels = models.BooleanField(default=False)
