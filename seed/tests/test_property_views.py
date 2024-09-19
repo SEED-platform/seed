@@ -1103,11 +1103,10 @@ class PropertyViewTestsPermissions(AccessLevelBaseTestCase):
         self.property.access_level_instance = self.child_level_instance
         self.property.save()
 
-        url = (
-            reverse("api:v3:properties-move-properties-to")
-            + f"?organization_id={self.org.pk}&access_level_instance_id={self.root_level_instance.id}"
+        url = reverse("api:v3:properties-move-properties-to") + f"?organization_id={self.org.pk}"
+        post_params = json.dumps(
+            {"property_view_ids": [self.property.views.first().id], "access_level_instance_id": self.root_level_instance.id}
         )
-        post_params = json.dumps({"property_view_ids": [self.property.views.first().id]})
 
         response = self.client.post(url, post_params, content_type="application/json")
 

@@ -1775,20 +1775,21 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
     @ajax_request_class
     @action(detail=False, methods=["POST"])
     @has_perm_class("can_modify_data")
+    @has_hierarchy_access(body_ali_id="access_level_instance_id")
     def move_properties_to(self, request):
         """
         Move properties to a different ali
         """
         org_id = self.get_organization(request)
         ids = request.data.get("property_view_ids", [])
-        ali_id = request.query_params.get("access_level_instance_id", None)
+        ali_id = request.data.get("access_level_instance_id", None)
 
         if not ali_id:
             return JsonResponse({"status": "error", "message": "Target ALI not found"}, status=status.HTTP_404_NOT_FOUND)
 
         # filter ids based on request user's ali
         ali = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
-        target_ali = AccessLevelInstance.objects.filter(pk=ali_id, lft__gte=ali.lft).first()
+        target_ali = AccessLevelInstance.objects.get(pk=ali_id)
         if not target_ali:
             return JsonResponse({"status": "error", "message": "Target ALI not found"}, status=status.HTTP_404_NOT_FOUND)
 

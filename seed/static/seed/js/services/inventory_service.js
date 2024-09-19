@@ -374,18 +374,18 @@ angular.module('SEED.service.inventory', []).factory('inventory_service', [
         });
     };
 
-    inventory_service.move_properties = (ali_id, property_view_ids) => {
+    inventory_service.move_properties = (access_level_instance_id, property_view_ids) => {
       spinner_utility.show();
       return $http
         .post(
           '/api/v3/properties/move_properties_to/',
           {
-            property_view_ids
+            property_view_ids,
+            access_level_instance_id
           },
           {
             params: {
               organization_id: user_service.get_organization().id,
-              access_level_instance_id: ali_id
             }
           }
         )
