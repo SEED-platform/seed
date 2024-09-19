@@ -181,4 +181,4 @@ class GreenAssessmentViewSet(SEEDOrgCreateUpdateModelViewSet):
 
     serializer_class = GreenAssessmentSerializer
     model = GreenAssessment
-    filter_class = GreenAssessmentFilterSet
+    filterset_class = GreenAssessmentFilterSet

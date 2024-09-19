@@ -363,7 +363,7 @@ class Migration(migrations.Migration):
                         default=django.utils.timezone.now, verbose_name="modified", editable=False, blank=True
                     ),
                 ),
-                ("compliant", models.NullBooleanField()),
+                ("compliant", models.BooleanField(null=True)),
                 ("approved_date", models.DateField(null=True, verbose_name="approved_date", blank=True)),
                 (
                     "approver",
