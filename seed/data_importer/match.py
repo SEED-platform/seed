@@ -336,7 +336,7 @@ def match_and_link_incoming_properties_and_taxlots_by_cycle(
     derived_column_ids = list(derived_columns.values_list("id", flat=True))
     update_state_derived_data(
         property_state_ids=[v.state_id for v in new_property_views + merged_property_views],
-        taxlot_state_ids=[v.state_id for v in new_property_views + merged_taxlot_views],
+        taxlot_state_ids=[v.state_id for v in new_taxlot_views + merged_taxlot_views],
         derived_column_ids=derived_column_ids,
     )
 
