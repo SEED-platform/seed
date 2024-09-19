@@ -1076,7 +1076,7 @@ class TestEeejPipeline(TestCase):
         location, status = _get_location(self.property_view)
         self.assertEqual(status, "success")
         self.assertTrue(location is not None)
-        self.assertEqual(location, "730 Garcia Street, Boring, Oregon, 97080")
+        self.assertEqual(location, "1070 Hunt Street, Boring, Oregon, 97015")
 
     def test_get_data_for_census_tract_fetch(self):
         pvids = [self.property_view.id]
@@ -1091,7 +1091,7 @@ class TestEeejPipeline(TestCase):
                     "geocoding_confidence": None,
                     "tract": None,
                     "valid_coords": False,
-                    "location": "730 Garcia Street, Boring, Oregon, 97080",
+                    "location": "1070 Hunt Street, Boring, Oregon, 97015",
                 }
             },
         )

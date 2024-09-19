@@ -156,7 +156,7 @@ def build_shared_buildings_orgs(orgs):
             # this is a parent org, so get all of the child orgs
             other_orgs.extend(org.child_orgs.all())
             other_orgs.append(org)
-    # remove dups
+    # remove dupes
     other_orgs = list(set(other_orgs))
     return other_orgs
 
@@ -274,7 +274,7 @@ def inventory_search_filter_sort(inventory_type, params, user, cycle_id=None):
         cycle_id=cycle_id,
     )
 
-    if inventory != []:
+    if inventory:
         # full text search across a couple common fields
         inventory = search_inventory(inventory_type, params["q"], queryset=inventory)
 
