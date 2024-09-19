@@ -54,7 +54,7 @@ class Migration(migrations.Migration):
                 ("version", models.CharField(blank=True, max_length=50, null=True)),
                 ("date", models.DateField(blank=True, null=True)),
                 ("target_date", models.DateField(blank=True, null=True)),
-                ("eligibility", models.NullBooleanField()),
+                ("eligibility", models.BooleanField(null=True)),
                 ("_expiration_date", models.DateField(blank=True, null=True)),
                 ("extra_data", models.JSONField(blank=True, default=dict)),
                 ("assessment", models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to="seed.GreenAssessment")),

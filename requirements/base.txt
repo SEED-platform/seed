@@ -1,60 +1,57 @@
 # Django
-django==3.2.25
+django==3.2.25  # TODO update
 
 # Used by django-filter. See here: https://github.com/carltongibson/django-filter/blob/fe90e3a5fdeaff0983d1325a3e9dcf3458ef078f/docs/guide/rest_framework.txt#L210
-django-crispy-forms==1.8.1
+django-crispy-forms==1.8.1  # Update to major version 2
 
 # Persistence stores
 psycopg2-binary==2.9.9
 
-
-# background process management
-celery==5.2.2
-django-celery-beat==2.2.1
-django-redis==5.2.0  # Version is tied to compatibility with boto3
+# Background process management
+celery==5.4.0
+django-celery-beat==2.7.0
+django-redis==5.4.0
 hiredis==3.0.0
 
 brotli==1.1.0
-django-compressor==4.4
+django-compressor==4.4  # Update after Django 4.2
 django-extensions==3.2.3
-django-model-utils==4.3.1
+django-model-utils==5.0.0
 
 # Time zones support
-pytz==2024.1
+pytz==2024.2
 python-dateutil==2.9.0.post0
 
 # Metric/imperial units support
-django-pint==0.6
+django-pint==0.7.3
 
 # API
-djangorestframework==3.12.2
-# Django-post-office dependency needs to be installed via github b/c
-# with pypi version Celery fails to auto discover post_office tasks
-django-post_office @ git+https://github.com/ui/django-post_office@v3.6.0
-drf-yasg==1.20.0  # TODO bump this to 1.21.7 to add `get_paginated_response_schema` bug fix (once pytz is bumped)
-django-filter==2.4.0
-drf-nested-routers==0.91
+djangorestframework==3.15.1  # Update after Django 4.2
+django-post_office==3.8.0  # Update after Django 4.2
+drf-yasg==1.21.7
+django-filter==22.1  # Update after Django 4.2 and drf-spectacular
+drf-nested-routers==0.94.0  # Update after Django 4.2
 
 # Server monitoring
-sentry-sdk==2.11.0
+sentry-sdk==2.14.0
 
 # Various packages
-jellyfish==0.8.2
-Markdown==3.1.1
+jellyfish==1.1.0
+Markdown==3.7
 polling==0.3.2
-pyyaml==6.0.1
+pyyaml==6.0.2
 street-address==0.4.0
-xlrd==1.2.0
-xlsxwriter==1.2.7
-xmltodict==0.12.0
-requests==2.32.0
-probablepeople==0.5.4
-xmlschema==1.1.1
-lark==0.11.3
+xlrd==1.2.0  # Try updating this major version 2
+xlsxwriter==1.2.7  # Try updating this major version 3
+xmltodict==0.13.0
+requests==2.32.3
+probablepeople==0.5.5
+xmlschema==1.1.1  # Try updating this major version 3
+lark==0.11.3  # Try updating this major version 1
 pandas==2.2.2
 
 # Parsing and managing geojson data (this is only used in managed tasks at the moment)
-geojson==2.5.0
+geojson==3.1.0
 
 # BuildingSync Asset Extractor
 # this also includes the lxml dependency required by SEED
@@ -64,16 +61,14 @@ buildingsync-asset-extractor==v0.2.0
 seed-salesforce==0.1.0
 
 # geospatial and pnnl/buildingid-py
-shapely==2.0.1
+shapely==2.0.6
 usaddress==0.5.10
 pnnl-buildingid @ git+https://github.com/SEED-platform/buildingid@bdb0a6e
 
-future==0.18.3
+django-treebeard==4.7.1
 
-django-treebeard==4.6.1
-
-django-two-factor-auth[phonenumbers]==1.16.0
-qrcode[pil]==6.1
+django-two-factor-auth[phonenumbers]==1.16.0  # Update after Django 4.2
+qrcode[pil]==7.4.2
 pyotp==2.9.0
 
 # This dependency can be removed once a version newer than 8.5.0 has been released that fixes Django autoreload
