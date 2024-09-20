@@ -46,6 +46,8 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
     viewset for any tax lot / property join API call.
     """
 
+    # For the Swagger page, GenericViewSet asserts a value exists for `queryset`
+    queryset = TaxLotProperty.objects.none()
     renderer_classes = (JSONRenderer,)
     serializer_class = TaxLotPropertySerializer
 
