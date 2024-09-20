@@ -12,7 +12,7 @@ from seed.models import Cycle, Property
 
 class Event(TimeStampedModel):
     property = models.ForeignKey(Property, on_delete=models.CASCADE, related_name="events")
-    cycle = models.ForeignKey(Cycle, on_delete=models.PROTECT)
+    cycle = models.ForeignKey(Cycle, on_delete=models.CASCADE)
 
     objects = InheritanceManager()
 

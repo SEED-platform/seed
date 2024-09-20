@@ -151,48 +151,42 @@ class PropertyMeasure(models.Model):
 
     @classmethod
     def str_to_impl_status(cls, impl_status):
+        default = cls._meta.get_field("implementation_status").default
         if not impl_status:
-            return None
+            return default
 
         if isinstance(impl_status, int):
             if impl_status in [(t[0]) for t in cls.IMPLEMENTATION_TYPES]:
                 return impl_status
-            return None
+            return default
 
-        value = [y[0] for x, y in enumerate(cls.IMPLEMENTATION_TYPES) if y[1] == impl_status]
-        if len(value) == 1:
-            return value[0]
-        else:
-            return None
+        value = next((y[0] for x, y in enumerate(cls.IMPLEMENTATION_TYPES) if y[1] == impl_status), default)
+        return value
 
     @classmethod
     def str_to_category_affected(cls, category):
+        default = cls._meta.get_field("category_affected").default
         if not category:
-            return None
+            return default
 
         if isinstance(category, int):
             if category in [(t[0]) for t in cls.CATEGORY_AFFECTED_TYPE]:
                 return category
-            return None
+            return default
 
-        value = [y[0] for x, y in enumerate(cls.CATEGORY_AFFECTED_TYPE) if y[1] == category]
-        if len(value) == 1:
-            return value[0]
-        else:
-            return None
+        value = next((y[0] for x, y in enumerate(cls.CATEGORY_AFFECTED_TYPE) if y[1] == category), default)
+        return value
 
     @classmethod
     def str_to_application_scale(cls, app_scale):
+        default = cls._meta.get_field("application_scale").default
         if not app_scale:
-            return None
+            return default
 
         if isinstance(app_scale, int):
             if app_scale in [(t[0]) for t in cls.APPLICATION_SCALE_TYPES]:
                 return app_scale
-            return None
+            return default
 
-        value = [y[0] for x, y in enumerate(cls.APPLICATION_SCALE_TYPES) if y[1] == app_scale]
-        if len(value) == 1:
-            return value[0]
-        else:
-            return None
+        value = next((y[0] for x, y in enumerate(cls.APPLICATION_SCALE_TYPES) if y[1] == app_scale), default)
+        return value
