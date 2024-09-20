@@ -79,7 +79,7 @@ class GreenButtonParser:
         3) Should contain Unit and order of 10 information
         4) Should contain readings with start epoch times and second duration
 
-    UPDATE 9/19/2024: The XML file sometimes contains additional 'feed' tags and 
+    UPDATE 9/19/2024: The XML file sometimes contains additional 'feed' tags and
     information. Parsing no longer assumes the location of each particular entry type
     and instead searches for the correct ones
     """
@@ -158,7 +158,7 @@ class GreenButtonParser:
                         source_id = re.sub(r"/v./", "", href)
 
                         # pass in the reading ID to determing meter_type etc.
-                        res = re.findall(f"MeterReading\/\d*", href)
+                        res = re.findall("MeterReading\/\d*", href)
                         meter_reading = None
                         if res:
                             meter_reading = res[0]
@@ -178,7 +178,7 @@ class GreenButtonParser:
                                 for reading in readings
                             ]
                         break
-                except:
+                except Exception:  # noqa: S110
                     pass
 
         return self._cache_data
@@ -199,7 +199,7 @@ class GreenButtonParser:
             try:
                 kind = reading_entry["content"]["UsagePoint"]["ServiceCategory"]["kind"]
                 meter_type = self.kind_codes.get(int(kind), None)
-            except:
+            except Exception:  # noqa: S110
                 pass
 
         if meter_type is None:
@@ -210,23 +210,23 @@ class GreenButtonParser:
         reading_type = None
         for reading_entry in r_entries:
             try:
-                mr_entry = reading_entry["content"]["MeterReading"]
+                reading_entry["content"]["MeterReading"]
                 links = reading_entry["link"]
                 # this is either an OrderedDict or a List
                 if not isinstance(links, list):
                     links = [links]
 
-                # grab the first (self) href    
+                # grab the first (self) href
                 href = links[0]["@href"]
 
                 # check the first element to make sure that it matches
                 if href.endswith(meter_reading):
                     # we're in the right section. Now look for the reading type
                     for link in links:
-                        if 'ReadingType' in link["@href"]:
+                        if "ReadingType" in link["@href"]:
                             reading_type = link["@href"]
 
-            except Exception:
+            except Exception:  # noqa: S110
                 pass
 
         # if no reading_type, return
@@ -253,9 +253,10 @@ class GreenButtonParser:
                         uom = uom_entry["uom"]
                         raw_base_unit = self.uom_codes.get(int(uom), "")
                         power_of_ten_multiplier = int(uom_entry["powerOfTenMultiplier"])
-                        resulting_unit, multiplier = self._parse_valid_unit_and_multiplier(meter_type, power_of_ten_multiplier, raw_base_unit)
-
-            except Exception:
+                        resulting_unit, multiplier = self._parse_valid_unit_and_multiplier(
+                            meter_type, power_of_ten_multiplier, raw_base_unit
+                        )
+            except Exception:  # noqa: S110
                 pass
 
         return meter_type, resulting_unit, multiplier
