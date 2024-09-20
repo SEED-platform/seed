@@ -985,7 +985,7 @@ class Column(models.Model):
                         setattr(datum, new_column.column_name, getattr(datum, self.column_name))
                         setattr(datum, self.column_name, None)
                         datum.save()
-        except (ValidationError, DataError):
+        except (ValidationError, DataError, ValueError):
             return [
                 False,
                 "The column data aren't formatted properly for the new column due to type constraints (e.g., Datatime, Quantities, etc.).",

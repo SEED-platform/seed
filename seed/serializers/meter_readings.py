@@ -3,6 +3,7 @@ SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and othe
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
+from collections import OrderedDict
 from typing import Tuple
 
 import dateutil.parser
@@ -107,7 +108,7 @@ class MeterReadingSerializer(serializers.ModelSerializer):
         return updated_reading
 
     def to_representation(self, obj):
-        result = super().to_representation(obj)
+        result = OrderedDict(super().to_representation(obj))
 
         # TODO: we need to actually read the units from the meter, then convert accordingly.
         # SEED stores all energy data in kBtus

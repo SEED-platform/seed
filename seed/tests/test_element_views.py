@@ -195,7 +195,7 @@ class PropertyElementViewPermissionsTests(AccessLevelBaseTestCase, AssertDictSub
         self.login_as_child_member()
         response = self.client.get(url)
         assert response.status_code == 404
-        assert response.json() == {"detail": "Not found."}
+        assert response.json() == {"detail": "No Element matches the given query."}
 
         # root user can see element
         self.login_as_root_member()
