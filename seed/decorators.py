@@ -89,7 +89,7 @@ def ajax_request(func):
 
     @wraps(func)
     def wrapper(request, *args, **kwargs):
-        for accepted_type in request.META.get("HTTP_ACCEPT", "").split(","):
+        for accepted_type in request.headers.get("accept", "").split(","):
             if accepted_type in FORMAT_TYPES:
                 format_type = accepted_type
                 break
@@ -134,7 +134,7 @@ def ajax_request_class(func):
 
     @wraps(func)
     def wrapper(self, request, *args, **kwargs):
-        for accepted_type in request.META.get("HTTP_ACCEPT", "").split(","):
+        for accepted_type in request.headers.get("accept", "").split(","):
             if accepted_type in FORMAT_TYPES:
                 format_type = accepted_type
                 break

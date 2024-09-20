@@ -6,7 +6,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
-from django.urls import include, path, re_path
+from django.urls import include, path
 from drf_yasg import openapi
 from drf_yasg.views import get_schema_view
 from rest_framework import permissions
@@ -37,27 +37,27 @@ def trigger_error(request):
 
 
 urlpatterns = [
-    re_path(r"^accounts/password/reset/done/$", password_reset_done, name="password_reset_done"),
-    re_path(
-        r"^accounts/password/reset/complete/$",
+    path("accounts/password/reset/done/", password_reset_done, name="password_reset_done"),
+    path(
+        "accounts/password/reset/complete/",
         password_reset_complete,
         name="password_reset_complete",
     ),
     path("accounts/password/reset/confirm/<uidb64>/<token>/", password_reset_confirm, name="password_reset_confirm"),
     # Application
-    re_path(r"^", include(("seed.landing.urls", "seed.landing"), namespace="landing")),
-    re_path(r"^app/", include(("seed.urls", "seed"), namespace="seed")),
-    re_path(r"^documentation/", include(("seed.docs.urls", "seed.docs"), namespace="docs")),
+    path("", include(("seed.landing.urls", "seed.landing"), namespace="landing")),
+    path("app/", include(("seed.urls", "seed"), namespace="seed")),
+    path("documentation/", include(("seed.docs.urls", "seed.docs"), namespace="docs")),
     # root configuration items
-    re_path(r"^i18n/", include("django.conf.urls.i18n")),
-    re_path(r"^robots\.txt", robots_txt, name="robots_txt"),
+    path("i18n/", include("django.conf.urls.i18n")),
+    path("robots.txt", robots_txt, name="robots_txt"),
     # API
-    re_path(r"^api/health_check/$", health_check, name="health_check"),
-    re_path(r"^api/swagger/$", schema_view.with_ui("swagger", cache_timeout=0), name="schema-swagger-ui"),
-    re_path(r"^api/version/$", version, name="version"),
-    re_path(r"^api/", include((api, "seed"), namespace="api")),
-    re_path(r"^account/login", CustomLoginView.as_view(), name="login"),
-    re_path(r"^", include(tf_urls)),
+    path("api/health_check/", health_check, name="health_check"),
+    path("api/swagger/", schema_view.with_ui("swagger", cache_timeout=0), name="schema-swagger-ui"),
+    path("api/version/", version, name="version"),
+    path("api/", include((api, "seed"), namespace="api")),
+    path("account/login", CustomLoginView.as_view(), name="login"),
+    path("", include(tf_urls)),
     # test sentry error
     path("sentry-debug/", trigger_error),
 ]
@@ -76,7 +76,7 @@ if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
     urlpatterns += [
         # test URLs
-        re_path(r"^angular_js_tests/$", angular_js_tests, name="angular_js_tests"),
+        path("angular_js_tests/", angular_js_tests, name="angular_js_tests"),
         # admin
-        re_path(r"^admin/", admin.site.urls),
+        path("admin/", admin.site.urls),
     ]

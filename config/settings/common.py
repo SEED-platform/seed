@@ -89,7 +89,6 @@ DJANGO_CORE_APPS = (
     "django_extensions",
     "django_filters",
     "rest_framework",
-    "crispy_forms",  # needed to squash warnings around collectstatic with rest_framework
     "post_office",
     "django_celery_beat",
     "treebeard",

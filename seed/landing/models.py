@@ -12,7 +12,6 @@ from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, UserM
 from django.core.mail import send_mail
 from django.db import models
 from django.utils import timezone
-from django.utils.http import urlquote
 from django.utils.translation import gettext_lazy as _
 from rest_framework import exceptions
 
@@ -76,7 +75,7 @@ class SEEDUser(AbstractBaseUser, PermissionsMixin):
         auth_header = request.META.get("Authorization")
 
         if not auth_header:
-            auth_header = request.META.get("HTTP_AUTHORIZATION")
+            auth_header = request.headers.get("authorization")
 
         if not auth_header:
             return None

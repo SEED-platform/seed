@@ -1,8 +1,5 @@
 # Django
-django==3.2.25  # TODO update
-
-# Used by django-filter. See here: https://github.com/carltongibson/django-filter/blob/fe90e3a5fdeaff0983d1325a3e9dcf3458ef078f/docs/guide/rest_framework.txt#L210
-django-crispy-forms==1.8.1  # Update to major version 2
+django==4.2.16
 
 # Persistence stores
 psycopg2-binary==2.9.9
@@ -14,7 +11,7 @@ django-redis==5.4.0
 hiredis==3.0.0
 
 brotli==1.1.0
-django-compressor==4.4  # Update after Django 4.2
+django-compressor==4.5.1
 django-extensions==3.2.3
 django-model-utils==5.0.0
 
@@ -26,11 +23,11 @@ python-dateutil==2.9.0.post0
 django-pint==0.7.3
 
 # API
-djangorestframework==3.15.1  # Update after Django 4.2
-django-post_office==3.8.0  # Update after Django 4.2
+djangorestframework==3.15.2
+django-post-office==3.9.0
 drf-yasg==1.21.7
-django-filter==22.1  # Update after Django 4.2 and drf-spectacular
-drf-nested-routers==0.94.0  # Update after Django 4.2
+django-filter==24.3
+drf-nested-routers==0.94.1
 
 # Server monitoring
 sentry-sdk==2.14.0
@@ -67,7 +64,7 @@ pnnl-buildingid @ git+https://github.com/SEED-platform/buildingid@bdb0a6e
 
 django-treebeard==4.7.1
 
-django-two-factor-auth[phonenumbers]==1.16.0  # Update after Django 4.2
+django-two-factor-auth[phonenumbers]==1.17.0
 qrcode[pil]==7.4.2
 pyotp==2.9.0
 

@@ -404,8 +404,7 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
     @property
     def num_mapping_complete(self):
         num = (self.num_mapping_total or self.num_mapping_remaining) - self.num_mapping_remaining
-        if num < 0:
-            num = 0
+        num = max(num, 0)
         return num
 
     @property
@@ -419,8 +418,7 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
     @property
     def num_cleaning_complete(self):
         num = self.num_cleaning_total - self.num_cleaning_remaining
-        if num < 0:
-            num = 0
+        num = max(num, 0)
         return num
 
     @property

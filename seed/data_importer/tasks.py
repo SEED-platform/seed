@@ -13,6 +13,7 @@ import tempfile
 import time
 import traceback
 import zipfile
+from _csv import Error
 from bisect import bisect_left
 from collections import defaultdict, namedtuple
 from datetime import date, datetime
@@ -20,7 +21,6 @@ from itertools import chain
 from math import ceil
 from typing import Optional, Union
 
-from _csv import Error
 from celery import chain as celery_chain
 from celery import chord, group, shared_task
 from celery.utils.log import get_task_logger
