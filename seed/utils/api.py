@@ -1,4 +1,3 @@
-# !/usr/bin/env python
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
@@ -12,7 +11,6 @@ from importlib import import_module
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist, PermissionDenied, ValidationError
 from django.http import JsonResponse
-from past.builtins import basestring
 from rest_framework import exceptions, status
 
 from seed.landing.models import SEEDUser as User
@@ -41,7 +39,7 @@ def format_api_docstring(docstring):
     """
     Cleans up a python method docstring for human consumption.
     """
-    if not isinstance(docstring, basestring):
+    if not isinstance(docstring, str):
         return "INVALID DOCSTRING"
     whitespace_regex = r"\s+"
     ret = re.sub(whitespace_regex, " ", docstring)

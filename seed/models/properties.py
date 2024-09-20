@@ -1,4 +1,3 @@
-# !/usr/bin/env python
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
@@ -17,7 +16,6 @@ from django.db.models import UniqueConstraint
 from django.db.models.signals import m2m_changed, post_save, pre_delete, pre_save
 from django.dispatch import receiver
 from django.forms.models import model_to_dict
-from past.builtins import basestring
 from quantityfield.fields import QuantityField
 from quantityfield.units import ureg
 
@@ -38,7 +36,7 @@ from seed.models.tax_lot_properties import TaxLotProperty
 from seed.utils.address import normalize_address_str
 from seed.utils.generic import compare_orgs_between_label_and_target, obj_to_dict, split_model_fields
 from seed.utils.time import convert_datestr, convert_to_js_timestamp
-from seed.utils.ubid import decode_unique_ids
+from seed.utils.ubid import generate_ubidmodels_for_state
 
 from .auditlog import AUDIT_IMPORT, DATA_UPDATE_TYPE
 
@@ -415,7 +413,7 @@ class PropertyState(models.Model):
         date_field_names = ("year_ending", "generation_date", "release_date", "recent_sale_date")
         for field in date_field_names:
             value = getattr(self, field)
-            if value and isinstance(value, basestring):
+            if value and isinstance(value, str):
                 _log.info("Saving %s which is a date time" % field)
                 _log.info(convert_datestr(value))
                 _log.info(date_cleaner(value))
@@ -862,21 +860,7 @@ def post_save_property_state(sender, **kwargs):
     Generate UbidModels for a PropertyState if the ubid field is present
     """
     state: PropertyState = kwargs.get("instance")
-
-    ubids = getattr(state, "ubid")
-    if not ubids:
-        return
-
-    # Allow ';' separated ubids
-    ubids = ubids.split(";")
-    state.ubidmodel_set.filter(preferred=True).update(preferred=False)
-    for idx, ubid in enumerate(ubids):
-        # trim leading/trailing spaces
-        ubid_stripped = ubid.strip()
-        is_first = idx == 0
-        _, created = state.ubidmodel_set.update_or_create(ubid=ubid_stripped, defaults={"preferred": is_first})
-        if created:
-            decode_unique_ids(state)
+    generate_ubidmodels_for_state(state)
 
 
 class PropertyView(models.Model):

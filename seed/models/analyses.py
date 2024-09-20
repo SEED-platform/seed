@@ -1,4 +1,3 @@
-# !/usr/bin/env python
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
@@ -26,6 +25,7 @@ class Analysis(models.Model):
     CO2 = 4
     EEEJ = 5
     ELEMENTSTATISTICS = 6
+    UPGRADERECOMMENDATION = 7
 
     SERVICE_TYPES = (
         (BSYNCR, "BSyncr"),
@@ -34,6 +34,7 @@ class Analysis(models.Model):
         (CO2, "CO2"),
         (EEEJ, "EEEJ"),
         (ELEMENTSTATISTICS, "Element Statistics"),
+        (UPGRADERECOMMENDATION, "Building Upgrade Recommendation"),
     )
 
     PENDING_CREATION = 8
@@ -183,6 +184,13 @@ class Analysis(models.Model):
         # Element Statistics
         elif self.service == self.ELEMENTSTATISTICS:
             return [{"name": k, "value": round(v, 2)} for k, v in results.items()]
+        # Building Upgrade Recommendation
+        elif self.service == self.UPGRADERECOMMENDATION:
+            recommendation = results.get("Building Upgrade Recommendation")
+
+            return [
+                {"name": "Building Upgrade Recommendation", "value": recommendation},
+            ]
 
         # Unexpected
         return [{"name": "Unexpected Analysis Type", "value": "Oops!"}]

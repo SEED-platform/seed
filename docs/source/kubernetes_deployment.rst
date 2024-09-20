@@ -124,6 +124,8 @@ This chart contains the deployment specification for the SEED web container.  Re
           value: <super-secret-password>
         - name: SEED_ADMIN_USER
           value: <user@seed-platform.org>
+        - name: COOKIE_EXPIRATION
+          value: 1209600
         # Postgres variables
         - name: POSTGRES_DB
           value: seed

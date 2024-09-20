@@ -1,4 +1,3 @@
-# !/usr/bin/env python
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
@@ -92,7 +91,6 @@ def _create_default_columns(organization_id):
             "custom_id_1",
             "pm_property_id",
             "jurisdiction_tax_lot_id",
-            "ubid",
         ]
 
         # Default fields and order are those used before customization was enabled
