@@ -4759,6 +4759,13 @@ ul.r-list {
   padding-left: 15px;
 }
 
+.analysis-help-text {
+  font-size: 1.1em;
+  padding-top: 0.3em;
+  padding-left: 10px;
+  padding-bottom: 10px;
+}
+
 .large-offset {
   padding-left: 50px;
 }
@@ -4866,14 +4873,6 @@ ul.r-list {
     transform: rotate(0deg);
     transition: transform 0.5s;
   }
-}
-
-.measure-elec {
-  background-color: rgb(243 158 72 / 20%);
-}
-
-.measure-gas {
-  background-color: rgb(75 119 242 / 20%);
 }
 
 .meters-detail .ui-grid-menu-button .ui-grid-menu .ui-grid-menu-mid {
@@ -5287,6 +5286,7 @@ ul.r-list {
       display: flex;
       overflow-x: hidden;
       width: 100%;
+      height: 1570px !important;
     }
   }
 
@@ -5614,4 +5614,62 @@ tags-input .tags .tag-item {
   margin: 30px;
   font-size: 14px;
   font-weight: bold;
+}
+
+.multi-select-container {
+  display: flex;
+
+  div {
+    display: flex;
+  }
+
+  .option {
+    border: 1px solid $blue;
+    border-radius: 3px;
+    color: $blue;
+    margin: 2px;
+    padding: 5px 8px;
+    cursor: pointer;
+  }
+
+  .option:hover {
+    color: $blue;
+    background: #ebebeb;
+  }
+
+  .option:active {
+    background: darken(#ebebeb, 10%);
+    color: $blue;
+  }
+
+  .option-selected {
+    color: white;
+    background: $blue;
+  }
+
+  .option-indicator {
+    margin: auto;
+    padding-right: 5px;
+    width: 17px;
+  }
+}
+
+.cts-export-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin: 0 auto;
+  width: fit-content;
+}
+
+.warning-text {
+  padding: 10px;
+
+  p {
+    font-size: 1.2em;
+  }
+
+  .bold {
+    font-size: bold;
+  }
 }

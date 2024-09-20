@@ -19,7 +19,7 @@
         <h2><i class="fa-solid fa-gears"></i> {$:: 'Settings' | translate $}</h2>
       </div>
       <div class="section_action_container right section_action_btn">
-        <button type="button" class="pull-right btn btn-primary" ng-click="save_settings()">
+        <button type="button" class="pull-right btn btn-primary" ng-click="save_settings()" ng-disabled="invalid_ubid_threshold">
           {$:: 'Save Changes' | translate $}
           <i class="fa-solid fa-check" ng-show="settings_updated"></i>
         </button>
@@ -134,22 +134,24 @@
           <h3 translate>BETTER Analysis API Key</h3>
           <form class="form-horizontal" role="form">
             <div class="form-group">
-              <div class="col-sm-4">
-                <p><span translate translate-values="{ link: org.better_host_url }">BETTER_TOKEN_TEXT</span> {$:: org.better_host_url $}.</p>
+              <div class="col-sm-6">
+                <p>
+                  An API key will be assigned to your account upon creation of a BETTER account at <br />
+                  <a href="{$ org.better_host_url $}/accounts/signup/" target="_blank">{$ org.better_host_url $}/accounts/signup/</a>
+                </p>
                 <button
                   type="button"
                   class="btn btn-primary"
                   ng-class="{'btn-danger': token_validity.status == 'invalid', 'btn-success': token_validity.status == 'valid'}"
                   ng-click="verify_token()"
                   style="margin-bottom: 10px"
-                  ng-disabled="token_validity.status"
                 >
                   {$ token_validity.message $}
                   <i class="fa-solid fa-check" ng-show="token_validity.status == 'valid'"></i>
                   <i class="fa-solid fa-xmark" ng-show="token_validity.status == 'invalid'"></i>
                 </button>
-                <i class="ui-grid-icon-info-circled" style="position: absolute; margin-top: 0" ng-if="token_validity.status" uib-tooltip-html="'Save Settings to verify BETTER token'"></i>
                 <input type="text" class="form-control" ng-model="org.better_analysis_api_key" ng-disabled="::!auth.requires_owner" />
+                <p ng-if="error" class="alert alert-danger" style="margin-top: 10px" ng-bind-html="error"></p>
               </div>
             </div>
           </form>
@@ -231,9 +233,18 @@
             <div class="form-group">
               <div class="col-sm-5">
                 <p translate>AT_SUBMISSION_STATUS</p>
-                <select ng-model="org.audit_template_status_type" ng-disabled="::!auth.requires_owner" class="settings-dropdown">
-                  <option ng-repeat="status_type in audit_template_status_types">{$ status_type$}</option>
-                </select>
+                <div class="multi-select-container">
+                  <div
+                    ng-repeat="status in ['Complies', 'Pending', 'Received', 'Rejected']"
+                    class="option"
+                    ng-class="{'option-selected': at_status_types[status]}"
+                    ng-click="toggle_at_status_type(status)"
+                  >
+                    <i class="option-indicator" ng-class="at_status_types[status] ? 'fa-solid fa-check' : 'fa-regular fa-square'"></i>
+                    {$ status $}
+                  </div>
+                </div>
+                <div ng-show="!org.audit_template_status_types" class="alert alert-warning" style="width: fit-content; margin: 10px">Select at least one status type</div>
               </div>
             </div>
           </form>
@@ -1123,7 +1134,7 @@
             The UBID Threshold defines the minimum Jaccard Index value required for a UBID Comparison to be considered acceptable. When the threshold is satisfied, the incoming property can be merged
             with the existing property.
           </p>
-          <p translate>UBID thresholds are between 0.0 and 1.0</p>
+          <p translate>UBID thresholds must be greater than 0 and up to 1.0</p>
           <form class="form-horizontal" role="form" lang="en-US">
             <div class="form-group">
               <label class="control-label col-md-1" style="width: fit-content" for="ubid-threshold-form" translate>UBID Threshold</label>
@@ -1132,7 +1143,7 @@
                   id="ubid-threshold-form"
                   class="form-control"
                   type="number"
-                  min="0"
+                  min="0.0001"
                   max="1"
                   ng-model="org.ubid_threshold"
                   ng-change="ubid_threshold_change()"
@@ -1142,7 +1153,7 @@
             </div>
           </form>
           <div style="margin-top: 30px">
-            <span class="alert alert-danger" ng-show="invalid_ubid_threshold" translate> UBID Threshold must be between 0.0 and 1.0 </span>
+            <span class="alert alert-danger" ng-show="invalid_ubid_threshold" translate> UBID Threshold must be between 0.0001 and 1.0 </span>
           </div>
         </div>
       </div>

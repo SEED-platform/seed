@@ -1,4 +1,3 @@
-# !/usr/bin/env python
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
@@ -15,7 +14,6 @@ from functools import reduce
 
 from django.db.models import Q
 from django.http.request import RawPostDataException
-from past.builtins import basestring
 
 from seed.lib.superperms.orgs.models import Organization
 
@@ -120,7 +118,7 @@ def process_search_params(params, user, is_api_request=False):
     # inventory_type = params.pop('inventory_type', None)
     order_by = params.get("order_by", "id")
     sort_reverse = params.get("sort_reverse", False)
-    if isinstance(sort_reverse, basestring):
+    if isinstance(sort_reverse, str):
         sort_reverse = sort_reverse == "true"
     page = int(params.get("page", 1))
     number_per_page = int(params.get("number_per_page", 10))

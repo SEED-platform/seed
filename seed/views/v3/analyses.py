@@ -1,4 +1,3 @@
-# !/usr/bin/env python
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
@@ -13,7 +12,7 @@ from django.http import JsonResponse
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import serializers, status, viewsets
 from rest_framework.decorators import action
-from rest_framework.status import HTTP_409_CONFLICT
+from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_409_CONFLICT
 
 from seed.analysis_pipelines.better.client import BETTERClient
 from seed.analysis_pipelines.pipeline import AnalysisPipeline, AnalysisPipelineError
@@ -468,9 +467,10 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
     @ajax_request_class
     @action(detail=False, methods=["get"])
     def verify_better_token(self, request):
-        """Check the validity of organization's BETTER API token"""
-        organization_id = int(self.get_organization(request))
-        organization = Organization.objects.get(pk=organization_id)
-        client = BETTERClient(organization.better_analysis_api_key)
-        validity = client.token_is_valid()
-        return JsonResponse({"token": organization.better_analysis_api_key, "validity": validity})
+        """Check the validity of a BETTER API token"""
+        better_token = request.query_params.get("better_token")
+        client = BETTERClient(better_token)
+        validity, message = client.token_is_valid()
+        if message:
+            return JsonResponse({"status": "error", "message": message}, status=HTTP_400_BAD_REQUEST)
+        return JsonResponse({"token": better_token, "validity": validity})

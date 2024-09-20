@@ -1,4 +1,3 @@
-# !/usr/bin/env python
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
@@ -19,8 +18,10 @@ from django.forms.utils import ErrorList
 from django.http import HttpResponseRedirect
 from django.shortcuts import redirect, render
 from django.urls import reverse
+from django.utils.decorators import method_decorator
 from django.utils.encoding import force_text
 from django.utils.http import urlsafe_base64_decode
+from django.views.decorators.csrf import csrf_protect
 from django_otp import devices_for_user
 from django_otp.plugins.otp_email.models import EmailDevice
 from django_otp.plugins.otp_totp.models import TOTPDevice
@@ -149,6 +150,14 @@ def activate(request, uidb64, token):
 
 
 class CustomLoginView(LoginView):
+    @method_decorator(csrf_protect)
+    def dispatch(self, request, *args, **kwargs):
+        if request.method == "POST" and "auth-username" in request.POST:
+            request.POST = request.POST.copy()
+            request.POST["auth-username"] = request.POST["auth-username"].lower()
+
+        return super().dispatch(request, *args, **kwargs)
+
     def post(self, request, *args, **kwargs):
         response = super().post(request, *args, **kwargs)
 
@@ -215,6 +224,5 @@ class CustomLoginView(LoginView):
 
     def get(self, request, *args, **kwargs):
         # add env var to session for conditional frontend display
-        logging.error(">>> GET")
         request.session["include_acct_reg"] = settings.INCLUDE_ACCT_REG
         return super().get(request, *args, **kwargs)

@@ -1,4 +1,3 @@
-# !/usr/bin/env python
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
@@ -16,7 +15,6 @@ import re
 from csv import DictReader, Sniffer
 
 import xmltodict
-from past.builtins import basestring
 from xlrd import XLRDError, empty_cell, open_workbook, xldate
 from xlrd.xldate import XLDateAmbiguous
 
@@ -367,7 +365,7 @@ class ExcelParser:
             return ""
 
         # XL_CELL_TEXT
-        if isinstance(item.value, basestring):
+        if isinstance(item.value, str):
             if kwargs.get("trim_and_clean_strings", False):
                 # remove leading and trailing whitespace
                 value = item.value.strip()
@@ -582,7 +580,7 @@ class MCMParser:
             row_arr = []
             for x in first_row:
                 row_field = r[x]
-                if isinstance(row_field, basestring):
+                if isinstance(row_field, str):
                     row_field = normalize_unicode_and_characters(r[x])
                 else:
                     row_field = str(r[x])

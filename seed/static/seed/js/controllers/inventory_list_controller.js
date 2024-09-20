@@ -1489,6 +1489,17 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
       });
     };
 
+    $scope.open_export_cts_modal = (selectedViewIds) => {
+      $uibModal.open({
+        templateUrl: `${urls.static_url}seed/partials/export_to_cts_modal.html`,
+        controller: 'export_to_cts_modal_controller',
+        resolve: {
+          ids: () => selectedViewIds,
+          org_id: () => $scope.organization.id
+        }
+      });
+    };
+
     $scope.open_at_submission_import_modal = (selectedViewIds) => {
       $uibModal.open({
         templateUrl: `${urls.static_url}seed/partials/at_submission_import_modal.html`,
@@ -1546,6 +1557,9 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
           break;
         case 'open_export_to_audit_template_modal':
           $scope.open_export_to_audit_template_modal(selectedViewIds);
+          break;
+        case 'open_export_cts_modal':
+          $scope.open_export_cts_modal(selectedViewIds);
           break;
         case 'open_at_submission_import_modal':
           $scope.open_at_submission_import_modal(selectedViewIds);
@@ -1629,6 +1643,7 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
         controller: 'inventory_detail_analyses_modal_controller',
         resolve: {
           inventory_ids: () => ($scope.inventory_type === 'properties' ? selectedViewIds : []),
+          all_columns: () => all_columns.filter((x) => x.table_name === 'PropertyState'),
           cycles: () => cycles.cycles,
           current_cycle: () => $scope.cycle.selected_cycle,
           user: () => $scope.menu.user
@@ -1996,7 +2011,7 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
             $scope.gridApi.grid.columns.splice(3, 0, col);
           }
           staticColIndex = _.findIndex($scope.gridApi.grid.columns, { name: 'meters_exist_indicator' });
-          if (staticColIndex !== 4) {
+          if (staticColIndex !== 4 && $scope.inventory_type !== 'taxlots') {
             col = $scope.gridApi.grid.columns[staticColIndex];
             $scope.gridApi.grid.columns.splice(staticColIndex, 1);
             $scope.gridApi.grid.columns.splice(4, 0, col);

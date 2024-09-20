@@ -1,4 +1,3 @@
-# !/usr/bin/env python
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
@@ -37,12 +36,10 @@ class TestOrganizationViews(DataMappingBaseTestCase):
             "PropertyState": [
                 "custom_id_1",
                 "pm_property_id",
-                "ubid",
             ],
             "TaxLotState": [
                 "custom_id_1",
                 "jurisdiction_tax_lot_id",
-                "ubid",
             ],
         }
 

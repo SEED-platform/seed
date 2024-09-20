@@ -18,15 +18,7 @@
 <div class="section">
   <div class="section_header_container">
     <div class="section_header fixed_height_short has_no_padding">
-      <div class="section_action_container left" style="width: 50%">
-        <span>
-          <h2>
-            <span ng-if="::inventory_type==='properties'"> <i class="fa-regular fa-building"></i><span translate>Property</span> : </span>
-            <span ng-if="::inventory_type==='taxlots'"> <i class="fa-regular fa-map"></i><span translate>Tax Lot</span> : </span>
-            <span ng-bind-html="inventory_name">{$ inventory_display_name(inventory_type==='properties' ? 'property' : 'taxlot') | translate $}</span>
-          </h2>
-        </span>
-      </div>
+      <div ng-include="::urls.static_url + 'seed/partials/inventory_detail_header.html'"></div>
     </div>
   </div>
   <div class="section_content_container">
