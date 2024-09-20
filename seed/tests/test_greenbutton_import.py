@@ -236,3 +236,47 @@ class GreenButtonImportTest(DataMappingBaseTestCase):
         ]
 
         self.assertEqual(result["message"], expectation)
+
+    def test_import_different_ordered_file(self):
+        # import a file whose format is slightly different
+        filename = "example-GreenButton-data2.xml"
+        filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + filename
+
+        self.property_state_factory2 = FakePropertyStateFactory(organization=self.org)
+        property_details2 = self.property_state_factory2.get_details()
+        property_details2["organization_id"] = self.org.id
+        state_2 = PropertyState(**property_details2)
+        state_2.save()
+        self.state_2 = PropertyState.objects.get(pk=state_2.id)
+
+        self.property_factory2 = FakePropertyFactory(organization=self.org)
+        self.property_2 = self.property_factory2.get_property()
+
+        self.property_view_2 = PropertyView.objects.create(property=self.property_2, cycle=self.cycle, state=self.state_2)
+
+        self.import_record2 = ImportRecord.objects.create(
+            owner=self.user, last_modified_by=self.user, super_organization=self.org, access_level_instance=self.org.root
+        )
+
+        self.import_file2 = ImportFile.objects.create(
+            import_record=self.import_record2,
+            source_type=SEED_DATA_SOURCES[GREEN_BUTTON][1],
+            uploaded_filename=filename,
+            file=SimpleUploadedFile(name=filename, content=pathlib.Path(filepath).read_bytes()),
+            cycle=self.cycle,
+            matching_results_data={"property_id": self.property_2.id},
+        )
+
+        url = reverse("api:v3:import_files-start-save-data", args=[self.import_file2.id])
+        url += f"?organization_id={self.org.pk}"
+        post_params = {"cycle_id": self.cycle.pk}
+        self.client.post(url, post_params)
+
+        refreshed_property_2 = Property.objects.get(pk=self.property_2.id)
+        self.assertEqual(refreshed_property_2.meters.all().count(), 1)
+
+        meter_2 = refreshed_property_2.meters.get(type=Meter.ELECTRICITY_GRID)
+        self.assertEqual(meter_2.source, Meter.GREENBUTTON)
+        self.assertEqual(meter_2.source_id, "User/456/UsagePoint/123/MeterReading/01/IntervalBlock/789")
+        self.assertEqual(meter_2.is_virtual, False)
+        self.assertEqual(meter_2.meter_readings.all().count(), 22)

@@ -78,6 +78,10 @@ class GreenButtonParser:
         2) Not used but typically contains property information
         3) Should contain Unit and order of 10 information
         4) Should contain readings with start epoch times and second duration
+
+    UPDATE 9/19/2024: The XML file sometimes contains additional 'feed' tags and 
+    information. Parsing no longer assumes the location of each particular entry type
+    and instead searches for the correct ones
     """
 
     def __init__(self, xml_file):
@@ -136,31 +140,30 @@ class GreenButtonParser:
             xml_string = self._xml_file.read()
             raw_data = xmltodict.parse(xml_string)
 
-            # let's say we don't know which "entry the interval data is in"
-            # readings_entry = raw_data["feed"]["entry"][3]
+            # we don't know which "entry" the interval data is in
             r_entries = raw_data["feed"]["entry"]
-            print(f"----- ENTRIES: {r_entries}")
-            print(f" ------ num entries: {len(r_entries)}")
+            # find the interval reading entry
             for readings_entry in r_entries:
-
                 try:
                     readings = readings_entry["content"]["IntervalBlock"]["IntervalReading"]
-                    print(f"!!!! readings: {readings}")
-
                     if len(readings) > 0:
                         # this is the right one
-                        print("THIS IS THE RIGHT ONE")
                         # grab the first <link>, which should be the "self"
                         links = readings_entry["link"]
                         # this is either an OrderedDict or a List
-                        if isinstance(links, list):
-                            href = links[0]["@href"]
-                        else:
-                            href = links["@href"]
+                        if not isinstance(links, list):
+                            links = [links]
 
+                        href = links[0]["@href"]
                         source_id = re.sub(r"/v./", "", href)
 
-                        meter_type, unit, multiplier = self._parse_type_and_unit(raw_data)
+                        # pass in the reading ID to determing meter_type etc.
+                        res = re.findall(f"MeterReading\/\d*", href)
+                        meter_reading = None
+                        if res:
+                            meter_reading = res[0]
+
+                        meter_type, unit, multiplier = self._parse_type_and_unit(raw_data, meter_reading)
 
                         if meter_type and unit:
                             self._cache_data = [
@@ -180,7 +183,7 @@ class GreenButtonParser:
 
         return self._cache_data
 
-    def _parse_type_and_unit(self, raw_data):
+    def _parse_type_and_unit(self, raw_data, meter_reading):
         """
         Parses raw XML to read the kind and uom/powerOfTenMultiplier. Using
         those, an attempt is made to validate the type and unit as a combination
@@ -189,20 +192,71 @@ class GreenButtonParser:
         Then, if the type and unit are parsable and valid, they are returned,
         otherwise, None is returned as applicable.
         """
-        kind_entry = raw_data["feed"]["entry"][0]
-        kind = kind_entry["content"]["UsagePoint"]["ServiceCategory"]["kind"]
-        meter_type = self.kind_codes.get(int(kind), None)
+        r_entries = raw_data["feed"]["entry"]
+        # kind entry is not necessarily the first one. Find the right now
+        meter_type = None
+        for reading_entry in r_entries:
+            try:
+                kind = reading_entry["content"]["UsagePoint"]["ServiceCategory"]["kind"]
+                meter_type = self.kind_codes.get(int(kind), None)
+            except:
+                pass
 
         if meter_type is None:
             return None, None, 1
 
-        uom_entry = raw_data["feed"]["entry"][2]["content"]["ReadingType"]
-        uom = uom_entry["uom"]
-        raw_base_unit = self.uom_codes.get(int(uom), "")
+        # UOM entry determined from MeterReading type (there could be more than 1)
+        # first find the 'feed' entry with "MeterReading" matching the meter_reading passed in
+        reading_type = None
+        for reading_entry in r_entries:
+            try:
+                mr_entry = reading_entry["content"]["MeterReading"]
+                links = reading_entry["link"]
+                # this is either an OrderedDict or a List
+                if not isinstance(links, list):
+                    links = [links]
 
-        power_of_ten_multiplier = int(uom_entry["powerOfTenMultiplier"])
+                # grab the first (self) href    
+                href = links[0]["@href"]
 
-        resulting_unit, multiplier = self._parse_valid_unit_and_multiplier(meter_type, power_of_ten_multiplier, raw_base_unit)
+                # check the first element to make sure that it matches
+                if href.endswith(meter_reading):
+                    # we're in the right section. Now look for the reading type
+                    for link in links:
+                        if 'ReadingType' in link["@href"]:
+                            reading_type = link["@href"]
+
+            except Exception:
+                pass
+
+        # if no reading_type, return
+        if reading_type is None:
+            return meter_type, None, 1
+
+        # now find the right uom based on reading type
+        uom = None
+        resulting_unit = None
+        multiplier = None
+        raw_base_unit = None
+        power_of_ten_multiplier = None
+
+        for reading_entry in r_entries:
+            try:
+                uom_entry = reading_entry["content"]["ReadingType"]
+                links = reading_entry["link"]
+                # this is either an OrderedDict or a List
+                if not isinstance(links, list):
+                    links = [links]
+                for link in links:
+                    if reading_type in link["@href"]:
+                        # got the right one
+                        uom = uom_entry["uom"]
+                        raw_base_unit = self.uom_codes.get(int(uom), "")
+                        power_of_ten_multiplier = int(uom_entry["powerOfTenMultiplier"])
+                        resulting_unit, multiplier = self._parse_valid_unit_and_multiplier(meter_type, power_of_ten_multiplier, raw_base_unit)
+
+            except Exception:
+                pass
 
         return meter_type, resulting_unit, multiplier
 
