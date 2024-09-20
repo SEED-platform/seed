@@ -385,7 +385,7 @@ angular.module('SEED.service.inventory', []).factory('inventory_service', [
           },
           {
             params: {
-              organization_id: user_service.get_organization().id,
+              organization_id: user_service.get_organization().id
             }
           }
         )
