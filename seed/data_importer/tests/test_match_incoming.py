@@ -1,4 +1,3 @@
-# !/usr/bin/env python
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
@@ -266,7 +265,7 @@ class TestMatchingInImportFile(DataMappingBaseTestCase):
 
     def test_match_properties_on_ubid(self):
         base_details = {
-            "ubid": "86HJPCWQ+2VV-1-3-2-3",
+            "custom_id_1": "ABC123",
             "import_file_id": self.import_file.id,
             "data_state": DATA_STATE_MAPPING,
             "no_default_data": False,
@@ -721,8 +720,9 @@ class TestMatchingImportIntegration(DataMappingBaseTestCase):
         self.taxlot_state_factory = FakeTaxLotStateFactory(organization=self.org)
 
     def test_properties(self):
-        # For the sake of this test, update the matching criteria to include address line 1
+        # For the sake of this test, update the matching criteria to include address line 1 & ubid
         Column.objects.filter(column_name="address_line_1").update(is_matching_criteria=True)
+        Column.objects.filter(column_name="ubid").update(is_matching_criteria=True)
 
         # Define matching values
         matching_pm_property_id = "11111"
@@ -873,8 +873,9 @@ class TestMatchingImportIntegration(DataMappingBaseTestCase):
         self.assertEqual(results, expected)
 
     def test_taxlots(self):
-        # For the sake of this test, update the matching criteria to include address line 1
+        # For the sake of this test, update the matching criteria to include address line 1 & ubid
         Column.objects.filter(column_name="address_line_1").update(is_matching_criteria=True)
+        Column.objects.filter(column_name="ubid").update(is_matching_criteria=True)
 
         # Define matching values
         matching_jurisdiction_tax_lot_id = "11111"

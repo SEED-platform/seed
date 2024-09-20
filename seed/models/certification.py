@@ -1,4 +1,3 @@
-# !/usr/bin/env python
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
@@ -12,7 +11,6 @@ import datetime
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
-from past.builtins import basestring
 
 from seed.landing.models import SEEDUser
 from seed.lib.superperms.orgs.models import Organization
@@ -305,7 +303,7 @@ class GreenAssessmentProperty(models.Model):
         :param sub_name: add name to key
         :type sub_name: bool
         """
-        if isinstance(sub_name, basestring):
+        if isinstance(sub_name, str):
             sub = sub_name
         elif sub_name:
             sub = "".join([titlecase(word) for word in self.name.split()])

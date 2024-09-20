@@ -1,4 +1,3 @@
-# !/usr/bin/env python
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
@@ -34,7 +33,6 @@ from django.db.models import Q
 from django.db.utils import ProgrammingError
 from django.utils import timezone as tz
 from django.utils.timezone import make_naive
-from past.builtins import basestring
 
 from seed.building_sync import validation_client
 from seed.building_sync.building_sync import BuildingSync
@@ -793,7 +791,7 @@ def _save_raw_data_chunk(chunk, file_pk, progress_key):
                         raw_property.bounding_box = v
                     elif key == "_source_filename":  # grab source filename (for BSync)
                         source_filename = v
-                    elif isinstance(v, basestring):
+                    elif isinstance(v, str):
                         new_chunk[key] = normalize_unicode_and_characters(v)
                     elif isinstance(v, (datetime, date)):
                         raise TypeError("Datetime class not supported in Extra Data. Needs to be a string.")
@@ -1715,7 +1713,7 @@ def add_dictionary_repr_to_hash(hash_obj, dict_obj: dict):
         else:
             # TODO: Do we need to normalize_unicode_and_characters (formerly unidecode) here?
             hash_obj.update(str(normalize_unicode_and_characters(key)).encode("utf-8"))
-            if isinstance(value, basestring):
+            if isinstance(value, str):
                 hash_obj.update(normalize_unicode_and_characters(value).encode("utf-8"))
             else:
                 hash_obj.update(str(value).encode("utf-8"))

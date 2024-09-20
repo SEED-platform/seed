@@ -1,4 +1,3 @@
-# !/usr/bin/env python
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
@@ -11,7 +10,6 @@ from datetime import datetime
 
 from django.core import serializers
 from django.db import IntegrityError, models
-from past.builtins import basestring
 
 
 class MarkdownPackageDebugFilter(logging.Filter):
@@ -87,7 +85,7 @@ def obj_to_dict(obj, include_m2m=True):
         if isinstance(f, models.JSONField):
             e = getattr(obj, f.name)
             # PostgreSQL < 9.3 support -- this should never be run
-            while isinstance(e, basestring):
+            while isinstance(e, str):
                 e = json.loads(e)
             response[str(f.name)] = e
     return response
