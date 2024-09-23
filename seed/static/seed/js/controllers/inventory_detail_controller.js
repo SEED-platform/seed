@@ -28,6 +28,7 @@ angular.module('SEED.controller.inventory_detail', []).controller('inventory_det
   'dataset_service',
   'inventory_payload',
   'views_payload',
+  'access_level_tree',
   'analyses_payload',
   'columns',
   'derived_columns_payload',
@@ -69,6 +70,7 @@ angular.module('SEED.controller.inventory_detail', []).controller('inventory_det
     dataset_service,
     inventory_payload,
     views_payload,
+    access_level_tree,
     analyses_payload,
     columns,
     derived_columns_payload,
@@ -574,7 +576,9 @@ angular.module('SEED.controller.inventory_detail', []).controller('inventory_det
       const modalInstance = $uibModal.open({
         templateUrl: `${urls.static_url}seed/partials/update_inventory_groups_modal.html`,
         controller: 'update_inventory_groups_modal_controller',
+        size: 'lg',
         resolve: {
+          access_level_tree: () => access_level_tree,
           inventory_ids: () => [$scope.inventory.view_id],
           inventory_type: () => $scope.inventory_type,
           org_id: () => $scope.organization.id,

@@ -56,10 +56,10 @@ class InventoryGroup(models.Model):
         # starting with lowest node, determine if the node exists in all other ancestor lists. If it does, return the node.
         for base in reversed(base_ancestors):
             in_all = all(base in sublist for sublist in ancestor_lists)
-            if not in_all:
+            if in_all:
+                lowest_common = base 
                 break
-            lowest_common = base 
-
+            
         return lowest_common
 
 

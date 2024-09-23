@@ -3,16 +3,35 @@ angular.module('SEED.controller.update_inventory_groups_modal', [])
     '$scope',
     '$log',
     '$uibModalInstance',
+    'ah_service',
+    'user_service',
     'inventory_group_service',
+    'access_level_tree',
     'inventory_ids',
     'inventory_type',
     'org_id',
-    'user_service',
     'Notification',
-    function ($scope, $log, $uibModalInstance, inventory_group_service, inventory_ids, inventory_type, org_id, user_service, notification) {
+    function (
+      $scope,
+      $log,
+      $uibModalInstance,
+      ah_service,
+      user_service,
+      inventory_group_service,
+      access_level_tree,
+      inventory_ids,
+      inventory_type,
+      org_id,
+      notification
+    ) {
       $scope.inventory_ids = inventory_ids;
       $scope.inventory_type = inventory_type;
       $scope.org_id = org_id;
+      $scope.access_level_tree = access_level_tree.access_level_tree;
+      $scope.level_names = access_level_tree.access_level_names.map((level, i) => ({
+        index: i,
+        name: level
+      }));
       // keep track of status of service call
       $scope.loading = false;
 
@@ -23,6 +42,16 @@ angular.module('SEED.controller.update_inventory_groups_modal', [])
       $scope.inventory_groups = [];
 
       $scope.new_group = {};
+
+      // $scope.level_names = [];
+      $scope.level_name_index = null;
+      const access_level_instances_by_depth = ah_service.calculate_access_level_instances_by_depth($scope.access_level_tree);
+      $scope.change_selected_level_index = () => {
+        const new_level_instance_depth = parseInt($scope.new_group.level_name_index, 10) + 1;
+        $scope.potential_level_instances = access_level_instances_by_depth[new_level_instance_depth];
+        console.log($scope.potential_level_instances)
+      };
+      $scope.change_selected_level_index();
 
       /* Initialize the group props for a 'new' group */
       $scope.initialize_new_group = () => {

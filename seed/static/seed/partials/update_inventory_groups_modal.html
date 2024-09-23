@@ -1,19 +1,35 @@
-<div id="update-property-labels-modal">
+<div id="update-property-labels-modal" class="modal-content">
   <div class="modal-header">
     <h4 class="modal-title" id="manageGroupsModalGroup" translate>Add/Remove Groups</h4>
   </div>
   <div class="modal-body">
     <div class="newLabelInput" style="margin-top: 0">
       <form name="newGroupForm" class="form-inline" role="form" ng-submit="submitNewGroupForm(newGroupForm)" novalidate>
-        <div class="form-group" ng-class="{'has-error': newGroupForm.name.$invalid && newGroupForm.name.$dirty }">
-          <label class="control-group sectionGroup" style="padding-right: 20px" translate>Create new group</label>
-          <div class="input-group" style="padding-right: 20px">
+        <div class="form-group" id="group-add-container" ng-class="{'has-error': newGroupForm.name.$invalid && newGroupForm.name.$dirty }">
+          <div>
+            <label class="control-group sectionGroup" style="padding-right: 20px" translate>Create new group</label>
+            <!-- <div class="input-group" style="padding-right: 20px"> -->
             <input id="newGroupName" type="text" name="name" class="form-control" ng-model="new_group.name" placeholder="{$:: 'Group Name' | translate $}" sd-check-label-exists="groups" required />
+            <!-- </div> -->
           </div>
-          <button type="submit" class="btn btn-primary" ng-disabled="newGroupForm.$invalid || disabled" translate>Create group</button>
-          <div class="help-block">
-            <span class="has-error" ng-show="newGroupForm.name.$error.sdCheckGroupExists" translate>This group name is already taken.</span>
+          <div>
+            <label for="select-level-name" translate>Access Level</label>
+            <select id="select-level-name" class="form-control goal-form-control"
+              ng-options="level.index as level.name for level in level_names" ng-change="change_selected_level_index()"
+              ng-model="new_group.level_name_index" required>
+            <!-- goal.level_name can be found if an access level instance has been selected. not saved on goal.-->
+            </select>
           </div>
+          <div>
+            <label for="select-level-instance" translate>Level Instance</label>
+            <select id="select-level-instance" class="form-control goal-form-control" ng-change=""
+              ng-options="potential_level_instance.id as potential_level_instance.name for potential_level_instance in potential_level_instances"
+              ng-model="new_group.access_level_instance" required></select>
+          </div>
+          <button type="submit" class="btn btn-primary" ng-disabled="newGroupForm.$invalid || disabled"  style="height: 40px; margin-top: 20px;" translate>Create group</button>
+        </div>
+        <div class="help-block">
+          <span class="has-error" ng-show="newGroupForm.name.$error.sdCheckGroupExists" translate>This group name is already taken.</span>
         </div>
       </form>
     </div>

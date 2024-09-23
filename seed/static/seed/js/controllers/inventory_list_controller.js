@@ -20,6 +20,7 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
   'inventory_group_service',
   'derived_columns_service',
   'Notification',
+  'access_level_tree',
   'cycles',
   'profiles',
   'current_profile',
@@ -58,6 +59,7 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
     inventory_group_service,
     derived_columns_service,
     Notification,
+    access_level_tree,
     cycles,
     profiles,
     current_profile,
@@ -660,7 +662,9 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
       const modalInstance = $uibModal.open({
         templateUrl: `${urls.static_url}seed/partials/update_inventory_groups_modal.html`,
         controller: 'update_inventory_groups_modal_controller',
+        size: 'lg',
         resolve: {
+          access_level_tree: () => access_level_tree,
           inventory_ids: () => selectedViewIds,
           inventory_type: () => $scope.inventory_type,
           org_id: () => $scope.organization.id

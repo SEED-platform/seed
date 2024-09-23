@@ -1932,6 +1932,13 @@
           templateUrl: `${static_url}seed/partials/inventory_list.html`,
           controller: 'inventory_list_controller',
           resolve: {
+            access_level_tree: [
+              'organization_service', 'user_service',
+              (organization_service, user_service) => {
+                const organization_id = user_service.get_organization().id;
+                return organization_service.get_organization_access_level_tree(organization_id);
+              }
+            ],
             cycles: ['cycle_service', (cycle_service) => cycle_service.get_cycles()],
             profiles: [
               '$stateParams',
@@ -2018,6 +2025,13 @@
           templateUrl: `${static_url}seed/partials/inventory_list.html`,
           controller: 'inventory_list_controller',
           resolve: {
+            access_level_tree: [
+              'organization_service', 'user_service',
+              (organization_service, user_service) => {
+                const organization_id = user_service.get_organization().id;
+                return organization_service.get_organization_access_level_tree(organization_id);
+              }
+            ],
             cycles: [
               'cycle_service',
               (cycle_service) => cycle_service.get_cycles()
@@ -2288,6 +2302,13 @@
                 else if ($stateParams.inventory_type === 'taxlots') promise = inventory_service.get_taxlot_views(organization_id, inventory_payload.taxlot.id);
 
                 return promise;
+              }
+            ],
+            access_level_tree: [
+              'organization_service', 'user_service',
+              (organization_service, user_service) => {
+                const organization_id = user_service.get_organization().id;
+                return organization_service.get_organization_access_level_tree(organization_id);
               }
             ],
             analyses_payload: [
