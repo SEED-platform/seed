@@ -64,7 +64,7 @@ angular.module('SEED.controller.ubid_editor_modal', []).controller('ubid_editor_
         preferred_ubids.forEach((ubid) => {
           ubid.preferred = false;
         });
-        ubidsToUpdate = [...ubidsToUpdate, ...preferred_ubids];
+        ubidsToUpdate = [...preferred_ubids, ...ubidsToUpdate];
       }
 
       const promises = ubidsToUpdate.map((ubid) => ubid_service.update_ubid(ubid));

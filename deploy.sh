@@ -22,9 +22,10 @@ SEED_ADMIN_PASSWORD (required), admin password for SEED
 SEED_ADMIN_ORG (required), default organization for admin user in SEED
 SECRET_KEY (required), unique key for SEED web application
 AWS_ACCESS_KEY_ID (optional), Access key for AWS
-AWS_SECRET_ACCESS_KEY, Secret key for AWS
+AWS_SECRET_ACCESS_KEY (optional), Secret key for AWS
 AWS_SES_REGION_NAME (optional), AWS Region for SES
 AWS_SES_REGION_ENDPOINT (optional), AWS endpoint for SES
+COOKIE_EXPIRATION (optional), Time in seconds that a session should be valid
 SERVER_EMAIL (optional), Email that is used by the server to send messages
 SENTRY_JS_DSN (optional), Sentry JavaScript DSN
 SENTRY_RAVEN_DSN (optional), Sentry Django DSN (Raven-based)
@@ -42,6 +43,7 @@ export AWS_ACCESS_KEY_ID=key
 export AWS_SECRET_ACCESS_KEY=secret_key
 export AWS_SES_REGION_NAME=us-west-2
 export AWS_SES_REGION_ENDPOINT=email.us-west-2.amazonaws.com
+export COOKIE_EXPIRATION=1209600
 export SERVER_EMAIL=info@seed-platform.org
 export SENTRY_JS_DSN=https://bcde@sentry.io/123456789
 export SENTRY_RAVEN_DSN=https://abcd:1234@sentry.io/123456789

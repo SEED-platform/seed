@@ -1,4 +1,3 @@
-# !/usr/bin/env python
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
@@ -74,6 +73,41 @@ class TestCaseMultipleDuplicateMatching(DataMappingBaseTestCase):
         ps6 = PropertyState(address_line_1="123 fake st", extra_data=extra_data)
         hash_res = tasks.hash_state_object(ps6)
         self.assertEqual(len(hash_res), 32)
+
+    def test_is_excluded_from_hash(self):
+        ps1 = PropertyState(address_line_1="a", address_line_2="b", organization=self.org)
+        ps2 = PropertyState(address_line_1="a", address_line_2="b", organization=self.org)
+        ps3 = PropertyState(address_line_1="a", address_line_2="c", organization=self.org)
+
+        self.assertEqual(tasks.hash_state_object(ps1), tasks.hash_state_object(ps2))
+        self.assertNotEqual(tasks.hash_state_object(ps1), tasks.hash_state_object(ps3))
+
+        address_line_2 = Column.objects.get(column_name="address_line_2", table_name="PropertyState")
+        address_line_2.is_excluded_from_hash = True
+        address_line_2.save()
+
+        self.assertEqual(tasks.hash_state_object(ps1), tasks.hash_state_object(ps2))
+        self.assertEqual(tasks.hash_state_object(ps1), tasks.hash_state_object(ps3))
+
+    def test_is_extra_data_excluded_from_hash(self):
+        boo = Column.objects.create(
+            column_name="boo",
+            table_name="PropertyState",
+            organization=self.org,
+            is_extra_data=True,
+        )
+        ps1 = PropertyState(address_line_1="a", extra_data={"boo": "b"}, organization=self.org)
+        ps2 = PropertyState(address_line_1="a", extra_data={"boo": "b"}, organization=self.org)
+        ps3 = PropertyState(address_line_1="a", extra_data={"boo": "c"}, organization=self.org)
+
+        self.assertEqual(tasks.hash_state_object(ps1), tasks.hash_state_object(ps2))
+        self.assertNotEqual(tasks.hash_state_object(ps1), tasks.hash_state_object(ps3))
+
+        boo.is_excluded_from_hash = True
+        boo.save()
+
+        self.assertEqual(tasks.hash_state_object(ps1, False), tasks.hash_state_object(ps2, False))
+        self.assertEqual(tasks.hash_state_object(ps1, False), tasks.hash_state_object(ps3, False))
 
     def test_hash_various_states(self):
         """The hashing should not affect the data_state, source, type and various other states"""

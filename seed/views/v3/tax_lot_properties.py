@@ -1,4 +1,3 @@
-# !/usr/bin/env python
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
@@ -61,7 +60,7 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
                 "filename": "string",
                 "export_type": "string",
                 "profile_id": "integer",
-                "proress_key": "string",
+                "progress_key": "string",
                 "include_notes": "boolean",
                 "include_meter_readings": "boolean",
             },

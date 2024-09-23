@@ -22,7 +22,7 @@ angular.module('SEED.controller.analysis_details', []).controller('analysis_deta
     });
 
     // update analysis in scope
-    const refresh_analysis = (analysis_id) => analyses_service.get_analysis_for_org(analysis_id, $scope.org.id).then((data) => {
+    const refresh_analysis = (analysis_id) => analyses_service.get_analysis_for_org(analysis_id, $scope.organization.id).then((data) => {
       $scope.analysis = data.analysis;
       return data.analysis;
     });

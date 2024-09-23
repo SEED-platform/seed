@@ -1548,6 +1548,17 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
       });
     };
 
+    $scope.open_export_cts_modal = (selectedViewIds) => {
+      $uibModal.open({
+        templateUrl: `${urls.static_url}seed/partials/export_to_cts_modal.html`,
+        controller: 'export_to_cts_modal_controller',
+        resolve: {
+          ids: () => selectedViewIds,
+          org_id: () => $scope.organization.id
+        }
+      });
+    };
+
     $scope.open_at_submission_import_modal = (selectedViewIds) => {
       $uibModal.open({
         templateUrl: `${urls.static_url}seed/partials/at_submission_import_modal.html`,
@@ -1606,6 +1617,9 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
         case 'open_export_to_audit_template_modal':
           $scope.open_export_to_audit_template_modal(selectedViewIds);
           break;
+        case 'open_export_cts_modal':
+          $scope.open_export_cts_modal(selectedViewIds);
+          break;
         case 'open_at_submission_import_modal':
           $scope.open_at_submission_import_modal(selectedViewIds);
           break;
@@ -1642,6 +1656,9 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
         case 'toggle_access_level_instances':
           $scope.toggle_access_level_instances();
           break;
+        case 'open_move_inventory_modal':
+          $scope.open_move_inventory_modal(selectedViewIds);
+          break;
         case 'select_all':
           $scope.select_all();
           break;
@@ -1658,6 +1675,33 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
           console.error('Unknown action:', elSelectActions.value, 'Update "run_action()"');
       }
       $scope.model_actions = 'none';
+    };
+
+    $scope.open_move_inventory_modal = (selectedViewIds) => {
+      const modalInstance = $uibModal.open({
+        templateUrl: `${urls.static_url}seed/partials/move_inventory_modal.html`,
+        controller: 'move_inventory_modal_controller',
+        resolve: {
+          ids: () => selectedViewIds,
+          org_id: () => $scope.organization.id
+        }
+      });
+      modalInstance.result.then(
+        (data) => {
+          setTimeout(() => {
+            if (data.success) {
+              Notification.success({ message: `Property Update Successful: ${data.message}`, delay: 5000 });
+              $scope.selectedOrder = [];
+              $scope.load_inventory(1);
+            } else {
+              Notification.error({ message: `Property Move Failed: ${data.message}`, delay: 5000 });
+            }
+          }, 1000);
+        },
+        () => {
+          // Modal dismissed, do nothing
+        }
+      );
     };
 
     $scope.open_set_update_to_now_modal = () => {
@@ -1691,6 +1735,7 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
         controller: 'inventory_detail_analyses_modal_controller',
         resolve: {
           inventory_ids: () => ($scope.inventory_type === 'properties' ? selectedViewIds : []),
+          all_columns: () => all_columns.filter((x) => x.table_name === 'PropertyState'),
           cycles: () => cycles.cycles,
           current_cycle: () => $scope.cycle.selected_cycle,
           user: () => $scope.menu.user
