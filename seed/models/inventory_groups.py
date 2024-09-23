@@ -23,9 +23,50 @@ class InventoryGroup(models.Model):
     class Meta:
         ordering = ["name"]
 
+    def lowest_common_ancestor(self):
+        """
+        Find the least common ancestor between multiple properties within a group
+
+        Example ALI tree:
+             A
+           /   \
+          B     C
+         /\
+        D  E
+        
+        least common ancestor:
+        if A and D -> A
+        if B and C -> A
+        if B and D -> B
+        if D and E -> B
+        """
+        lookup = {0: ('property', Property), 1: ('taxlot', TaxLot)}
+        inventory_type, InventoryClass = lookup.get(self.inventory_type, ('property', Property))
+        mappings = self.inventorygroupmapping_set.all()
+        inventory = InventoryClass.objects.filter(id__in=mappings.values_list(inventory_type, flat=True))
+        alis = [i.access_level_instance for i in list(inventory)]
+
+        # generate a list of property ancestor lists
+        ancestor_lists = [
+            list(instance.get_ancestors()) + [instance] for instance in alis
+        ]
+
+        base_ancestors = min(ancestor_lists, key=len)
+        lowest_common = None
+        # starting with lowest node, determine if the node exists in all other ancestor lists. If it does, return the node.
+        for base in reversed(base_ancestors):
+            in_all = all(base in sublist for sublist in ancestor_lists)
+            if not in_all:
+                break
+            lowest_common = base 
+
+        return lowest_common
+
 
 @receiver(pre_save, sender=InventoryGroup)
 def presave_inventory_group(sender, instance, **kwargs):
+    
+
     if instance.access_level_instance.organization != instance.organization:
         raise IntegrityError("access_level_instance must be in organization")
 
