@@ -110,6 +110,7 @@
     'SEED.controller.merge_modal',
     'SEED.controller.meter_deletion_modal',
     'SEED.controller.modified_modal',
+    'SEED.controller.move_inventory_modal',
     'SEED.controller.new_member_modal',
     'SEED.controller.notes',
     'SEED.controller.organization',

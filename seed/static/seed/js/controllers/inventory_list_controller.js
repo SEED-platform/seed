@@ -1561,6 +1561,9 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
         case 'toggle_access_level_instances':
           $scope.toggle_access_level_instances();
           break;
+        case 'open_move_inventory_modal':
+          $scope.open_move_inventory_modal(selectedViewIds);
+          break;
         case 'select_all':
           $scope.select_all();
           break;
@@ -1577,6 +1580,33 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
           console.error('Unknown action:', elSelectActions.value, 'Update "run_action()"');
       }
       $scope.model_actions = 'none';
+    };
+
+    $scope.open_move_inventory_modal = (selectedViewIds) => {
+      const modalInstance = $uibModal.open({
+        templateUrl: `${urls.static_url}seed/partials/move_inventory_modal.html`,
+        controller: 'move_inventory_modal_controller',
+        resolve: {
+          ids: () => selectedViewIds,
+          org_id: () => $scope.organization.id
+        }
+      });
+      modalInstance.result.then(
+        (data) => {
+          setTimeout(() => {
+            if (data.success) {
+              Notification.success({ message: `Property Update Successful: ${data.message}`, delay: 5000 });
+              $scope.selectedOrder = [];
+              $scope.load_inventory(1);
+            } else {
+              Notification.error({ message: `Property Move Failed: ${data.message}`, delay: 5000 });
+            }
+          }, 1000);
+        },
+        () => {
+          // Modal dismissed, do nothing
+        }
+      );
     };
 
     $scope.open_set_update_to_now_modal = () => {

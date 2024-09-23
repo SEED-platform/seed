@@ -1771,6 +1771,64 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         doc_file.delete()
         return JsonResponse({"status": "success"})
 
+    @swagger_auto_schema(
+        manual_parameters=[
+            AutoSchemaHelper.query_org_id_field(),
+            AutoSchemaHelper.query_integer_field(
+                name="access_leevl_instance_id", required=True, description="Access Level Instance to move properties to"
+            ),
+        ],
+        request_body=AutoSchemaHelper.schema_factory(
+            {"property_view_ids": ["integer"]},
+            required=["property_view_ids"],
+            description="A list of property view ids to move between alis",
+        ),
+    )
+    @api_endpoint_class
+    @ajax_request_class
+    @action(detail=False, methods=["POST"])
+    @has_perm_class("can_modify_data")
+    @has_hierarchy_access(body_ali_id="access_level_instance_id")
+    def move_properties_to(self, request):
+        """
+        Move properties to a different ali
+        """
+        org_id = self.get_organization(request)
+        ids = request.data.get("property_view_ids", [])
+        ali_id = request.data.get("access_level_instance_id", None)
+
+        if not ali_id:
+            return JsonResponse({"status": "error", "message": "Target ALI not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        # filter ids based on request user's ali
+        ali = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
+        target_ali = AccessLevelInstance.objects.get(pk=ali_id)
+        if not target_ali:
+            return JsonResponse({"status": "error", "message": "Target ALI not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        checked_ids = PropertyView.objects.filter(
+            property__organization_id=org_id,
+            pk__in=ids,
+            property__access_level_instance__lft__gte=ali.lft,
+            property__access_level_instance__rgt__lte=ali.rgt,
+        ).values_list("property_id", flat=True)
+
+        if not checked_ids:
+            # no eligible IDs for this ali
+            return JsonResponse({"status": "error", "message": "ID not found"}, status=status.HTTP_404_NOT_FOUND)
+        if not target_ali:
+            return JsonResponse({"status": "error", "message": "Target ALI not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        Property.objects.filter(pk__in=checked_ids).update(access_level_instance_id=target_ali.pk)
+
+        return JsonResponse(
+            {
+                "success": True,
+                "status": "success",
+                "message": f"{len(checked_ids)} {'properties' if len(checked_ids) > 1 else 'property'} moved",
+            }
+        )
+
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class("requires_member")
