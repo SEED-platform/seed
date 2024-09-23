@@ -431,16 +431,12 @@
                   </td>
                   <td>
                     <ul ng-if="element.tkbl.bsync_measures.length > 0">
-                      <li ng-repeat="entry in ::element.tkbl.bsync_measures">
-                        {$:: entry $}
-                      </li>
+                      <li ng-repeat="entry in ::element.tkbl.bsync_measures">{$:: entry $}</li>
                     </ul>
                   </td>
                   <td class="col-sm-4">
-                     <ul ng-if="element.tkbl.federal_bps_measures.length > 0">
-                      <li class="elements-wrap" ng-repeat="entry in ::element.tkbl.federal_bps_measures">
-                        {$:: entry $}
-                      </li>
+                    <ul ng-if="element.tkbl.federal_bps_measures.length > 0">
+                      <li class="elements-wrap" ng-repeat="entry in ::element.tkbl.federal_bps_measures">{$:: entry $}</li>
                     </ul>
                   </td>
                   <td></td>
