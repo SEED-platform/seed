@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
     dependencies = [
         ("orgs", "0033_organization_public_geojson_enabled"),
-        ("seed", "0224_alter_meter_type"),
+        ("seed", "0229_alter_event_cycle"),
     ]
 
     operations = [

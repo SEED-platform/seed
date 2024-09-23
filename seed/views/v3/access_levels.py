@@ -21,6 +21,7 @@ from seed.decorators import ajax_request_class
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.lib.superperms.orgs.models import AccessLevelInstance, Organization, OrganizationUser
 from seed.models import Analysis, Property, PropertyState, TaxLot, TaxLotState
+from seed.serializers.access_level_instances import AccessLevelInstanceSerializer
 from seed.utils.api import api_endpoint_class
 from seed.utils.api_schema import AutoSchemaHelper
 from seed.views.v3.uploads import get_upload_path
@@ -491,3 +492,54 @@ class AccessLevelViewSet(viewsets.ViewSet):
         instance.delete()
 
         return JsonResponse({"status": "success"}, status=status.HTTP_204_NO_CONTENT)
+    
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class("requires_viewer")
+    @action(detail=False, methods=["PUT"])
+    def lowest_common_ancestor(self, request, organization_pk=None):
+        """
+        Given a list of inventory, find the least common ancestor between multiple properties within a group
+
+        Example ALI tree:
+             A
+           /   \
+          B     C
+         /\
+        D  E
+        
+        least common ancestor:
+        if A and D -> A
+        if B and C -> A
+        if B and D -> B
+        if D and E -> B
+        """
+        inventory_type = request.data.get('inventory_type')
+        inventory_ids = request.data.get('inventory_ids')
+        if not inventory_ids:
+            return JsonResponse({"status": "success", "data": None})
+
+        lookup = {0: ('property', Property), 1: ('taxlot', TaxLot)}
+        inventory_type, InventoryClass = lookup.get(inventory_type, ('property', Property))
+        inventory = InventoryClass.objects.filter(id__in=inventory_ids)
+        alis = [i.access_level_instance for i in list(inventory)]
+
+        # generate a list of property ancestor lists
+        ancestor_lists = [
+            list(instance.get_ancestors()) + [instance] for instance in alis
+        ]
+
+        base_ancestors = min(ancestor_lists, key=len)
+        lowest_common = None
+        # starting with lowest node, determine if the node exists in all other ancestor lists. If it does, return the node.
+        for base in reversed(base_ancestors):
+            in_all = all(base in sublist for sublist in ancestor_lists)
+            if in_all:
+                lowest_common = base 
+                break
+
+        if not lowest_common:
+            return JsonResponse({"status": "error", "message": "No such resource."})
+
+        serialized_ali = AccessLevelInstanceSerializer(lowest_common).data
+        return JsonResponse({"status": "success", "data": serialized_ali})

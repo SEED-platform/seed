@@ -7,7 +7,7 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('seed', '0225_inventorygroup_inventorygroupmapping'),
+        ('seed', '0230_inventorygroup_inventorygroupmapping'),
     ]
 
     operations = [

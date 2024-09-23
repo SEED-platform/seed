@@ -10,7 +10,8 @@ import time
 from django.urls import reverse_lazy
 
 from seed.lib.superperms.orgs.models import AccessLevelInstance
-from seed.models import Organization, TaxLot
+from seed.models import Organization, TaxLot, InventoryGroup, InventoryGroupMapping, Property, TaxLot
+from seed.models.inventory_groups import VIEW_LIST_PROPERTY, VIEW_LIST_TAXLOT
 from seed.tests.util import AccessLevelBaseTestCase
 
 
@@ -333,3 +334,58 @@ class TestOrganizationViews(AccessLevelBaseTestCase):
         result = self.client.delete(url)
 
         assert result.status_code == 400
+
+    def test_lowest_common_ancestor(self):
+        """
+        find the lowest common ALI in a group. 
+
+        ALI Tree:
+                          root
+                        /      \
+                     child     sibling
+                    /    \
+        grandchild a     grandchild b
+        """
+        self.org.access_level_names = ["1st Gen", "2nd Gen", "3rd Gen"]
+        self.sibling_level_instance = self.org.add_new_access_level_instance(self.org.root.id, "sibling")
+        self.child_a_level_instance = self.org.add_new_access_level_instance(self.child_level_instance.id, "grandchild a")
+        self.child_b_level_instance = self.org.add_new_access_level_instance(self.child_level_instance.id, "grandchild b")
+
+        self.p1 = Property.objects.create(organization=self.org, access_level_instance=self.org.root)
+        self.p2 = Property.objects.create(organization=self.org, access_level_instance=self.child_level_instance)
+        self.p3 = Property.objects.create(organization=self.org, access_level_instance=self.sibling_level_instance)
+        self.p4 = Property.objects.create(organization=self.org, access_level_instance=self.child_a_level_instance)
+        self.p5 = Property.objects.create(organization=self.org, access_level_instance=self.child_b_level_instance)
+
+        # all properties across all groups. Least common ancestor is root
+        # self.group1 = InventoryGroup.objects.create(
+        #     organization=self.org, name="test1", inventory_type=VIEW_LIST_PROPERTY, access_level_instance=self.org.root
+        # )
+        # # least common ancestor is child
+        # self.group2 = InventoryGroup.objects.create(
+        #     organization=self.org, name="test1", inventory_type=VIEW_LIST_PROPERTY, access_level_instance=self.org.root
+        # )
+
+        # InventoryGroupMapping.objects.bulk_create([InventoryGroupMapping(property=prop, group=self.group1) for prop in [self.p1, self.p2, self.p3, self.p4, self.p5]])
+        # InventoryGroupMapping.objects.bulk_create([InventoryGroupMapping(property=prop, group=self.group2) for prop in [self.p2, self.p4, self.p5]])
+
+
+        url = reverse_lazy(
+            "api:v3:organization-access_levels-lowest-common-ancestor",
+            args=[self.org.id],
+        )
+        data = {
+            "inventory_type": "property",
+            "inventory_ids": [self.p1.id, self.p2.id, self.p3.id, self.p4.id, self.p5.id]
+        }
+
+        result = self.client.put(url, data=json.dumps(data), content_type="application/json")
+        result = result.json()['data']
+        assert self.org.root.id == result['id']
+        assert self.org.root.name == result['name']
+
+        data["inventory_ids"] = [self.p2.id, self.p4.id, self.p5.id]
+        result = self.client.put(url, data=json.dumps(data), content_type="application/json")
+        result = result.json()['data']
+        assert self.child_level_instance.id == result['id']
+        assert self.child_level_instance.name == result['name']
