@@ -225,7 +225,7 @@ def create_inventory_queryset(inventory_type, orgs, exclude, order_by, other_org
     distinct_order_by = order_by.lstrip("-")
 
     if inventory_type.endswith("view"):
-        filter_key = "{}__organization_id__in".format(inventory_type.split("_")[0])
+        filter_key = f"{inventory_type.split('_')[0]}__organization_id__in"
     else:
         filter_key = "organization_id__in"
     orgs_filter_dict = {filter_key: orgs}

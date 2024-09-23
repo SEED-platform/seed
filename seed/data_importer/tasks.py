@@ -464,15 +464,15 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, **kwargs):
                     Column.save_column_names(map_model_obj)
     except IntegrityError as e:
         progress_data.finish_with_error("Could not map_row_chunk with error", str(e))
-        raise IntegrityError("Could not map_row_chunk with error: %s" % str(e))
+        raise IntegrityError(f"Could not map_row_chunk with error: {e!s}")
     except DataError as e:
         _log.error(traceback.format_exc())
         progress_data.finish_with_error("Invalid data found", str(e))
-        raise DataError("Invalid data found: %s" % str(e))
+        raise DataError(f"Invalid data found: {e!s}")
     except TypeError as e:
-        _log.error("Error mapping data with error: %s" % str(e))
+        _log.error(f"Error mapping data with error: {e!s}")
         progress_data.finish_with_error("Invalid type found while mapping data", str(e))
-        raise DataError("Invalid type found while mapping data: %s" % str(e))
+        raise DataError(f"Invalid type found while mapping data: {e!s}")
 
     progress_data.step()
 
@@ -668,7 +668,7 @@ def map_data_synchronous(import_file_id: int) -> dict:
     for header in column_headers:
         duplicate_tracker[header] += 1
         if duplicate_tracker[header] > 1:
-            raise Exception("Duplicate column found in file: %s" % (header))
+            raise Exception(f"Duplicate column found in file: {header}")
 
     source_type = SEED_DATA_SOURCES_MAPPING.get(import_file.source_type, ASSESSED_RAW)
 
@@ -714,7 +714,7 @@ def map_data(import_file_id, remap=False, mark_as_done=True):
     for header in column_headers:
         duplicate_tracker[header] += 1
         if duplicate_tracker[header] > 1:
-            raise Exception("Duplicate column found in file: %s" % (header))
+            raise Exception(f"Duplicate column found in file: {header}")
 
     if remap:
         # Check to ensure that import files has not already been matched/merged.
@@ -807,7 +807,7 @@ def _save_raw_data_chunk(chunk, file_pk, progress_key):
                     raw_property_state_to_filename[str(raw_property.id)] = source_filename
 
     except IntegrityError as e:
-        raise IntegrityError("Could not save_raw_data_chunk with error: %s" % (e))
+        raise IntegrityError(f"Could not save_raw_data_chunk with error: {e}")
 
     # Indicate progress
     progress_data = ProgressData.from_key(progress_key)
@@ -1262,9 +1262,7 @@ def _save_pm_meter_usage_data_task(meter_readings, file_pk, progress_key):
     except ProgrammingError as e:
         if "ON CONFLICT DO UPDATE command cannot affect row a second time" in str(e):
             type_lookup = dict(Meter.ENERGY_TYPES)
-            key = "{} - {} - {}".format(
-                meter_readings.get("property_id"), meter_readings.get("source_id"), type_lookup[meter_readings["type"]]
-            )
+            key = f"{meter_readings.get('property_id')} - {meter_readings.get('source_id')} - {type_lookup[meter_readings['type']]}"
             result[key] = {"error": "Import failed. Unable to import data with duplicate start and end date pairs."}
         else:
             progress_data.finish_with_error("data failed to import")
@@ -1342,7 +1340,7 @@ def _append_meter_import_results_to_summary(import_results, incoming_summary):
 
     # Next update summary of incoming meters imports with aggregated results.
     for import_info in incoming_summary:
-        key = "{} - {} - {}".format(import_info["property_id"], import_info["source_id"], import_info["type"])
+        key = f"{import_info['property_id']} - {import_info['source_id']} - {import_info['type']}"
 
         # check if there has already been a successfully_imported count on this key
         successfully_imported = import_info.get("successfully_imported", 0)

@@ -7,6 +7,7 @@ import base64
 import hmac
 import re
 import uuid
+from urllib.parse import quote
 
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, UserManager
 from django.core.mail import send_mail
@@ -100,7 +101,7 @@ class SEEDUser(AbstractBaseUser, PermissionsMixin):
             raise exceptions.AuthenticationFailed("Invalid API key")
 
     def get_absolute_url(self):
-        return f"/users/{urlquote(self.username)}/"
+        return f"/users/{quote(self.username)}/"
 
     def deactivate_user(self):
         self.is_active = False

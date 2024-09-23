@@ -93,7 +93,7 @@ class BaseFake:
         if not email:
             email = self.fake.company_email()
         ergx = re.compile(r".*@(.*)\..*")
-        company = "{} {}".format(string.capwords(ergx.match(email).group(1), "-").replace("-", " "), self.fake.company_suffix())
+        company = f"{string.capwords(ergx.match(email).group(1), '-').replace('-', ' ')} {self.fake.company_suffix()}"
         return company
 
     def owner(self, city=None, state=None):
@@ -246,7 +246,7 @@ class FakePropertyStateFactory(BaseFake):
             "address_line_1": self.address_line_1(),
             "city": "Boring",
             "state": "Oregon",
-            "postal_code": "970{}".format(self.fake.numerify(text="##")),
+            "postal_code": f"970{self.fake.numerify(text='##')}",
             "year_built": self.fake.random_int(min=1880, max=2015),
             "site_eui": self.fake.random_int(min=50, max=600),
             "gross_floor_area": self.fake.random_number(digits=6),
@@ -632,7 +632,7 @@ class FakeTaxLotStateFactory(BaseFake):
             "address_line_2": "",
             "city": "Boring",
             "state": "Oregon",
-            "postal_code": "970{}".format(self.fake.numerify(text="##")),
+            "postal_code": f"970{self.fake.numerify(text='##')}",
         }
         return taxlot_details
 

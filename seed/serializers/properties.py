@@ -525,14 +525,14 @@ class PropertyViewAsStateSerializer(serializers.ModelSerializer):
             else:
                 query = PropertyView.objects.filter(**field_vals)
             if query.exists():
-                unique.append("({})".format(", ".join(fields)))
+                unique.append(f"({', '.join(fields)})")
         errors = {}
         if missing:
-            msg = "Required fields are missing: {}".format(", ".join(missing))
+            msg = f"Required fields are missing: {', '.join(missing)}"
             errors["missing"] = msg
         if wrong_type:
-            wrong_type = ["{}({})".format(field, "json dict/int" if field == "state" else "int") for field in wrong_type]
-            msg = "Fields are wrong type: {}".format(", ".join(wrong_type))
+            wrong_type = [f"{field}({'json dict/int' if field == 'state' else 'int'})" for field in wrong_type]
+            msg = f"Fields are wrong type: {', '.join(wrong_type)}"
             errors["wrong_type"] = msg
         if unique:
             msg = f"Unique together constraint violated for: {unique}"

@@ -3,7 +3,7 @@ SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and othe
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
-from django.urls import include, path, re_path
+from django.urls import include, path
 from rest_framework import routers
 from rest_framework_nested import routers as nested_routers
 
@@ -186,5 +186,5 @@ urlpatterns = [
     path("", include(public_organizations_router.urls)),
     path("", include(public_cycles_router.urls)),
     path("celery_queue/", celery_queue, name="celery_queue"),
-    re_path(r"media/(?P<filepath>.*)$", MediaViewSet.as_view()),
+    path("media/<path:filepath>", MediaViewSet.as_view()),
 ]

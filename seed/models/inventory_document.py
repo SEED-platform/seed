@@ -25,7 +25,7 @@ class InventoryDocument(models.Model):
     filename = models.CharField(blank=True, max_length=255)
 
     def __str__(self):
-        return "Inventory Document - %s" % (self.pk)
+        return f"Inventory Document - {self.pk}"
 
     @classmethod
     def str_to_file_type(cls, file_type):

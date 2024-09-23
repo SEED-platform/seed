@@ -124,8 +124,8 @@ def _add_states_to_data(base_url, state_class, view_string, page, per_page, labe
 
             state_data[name] = value
 
-        json_link = f'{base_url}api/v3/{"properties" if type(state) == PropertyState else "taxlots"}/{view.id}/?organization_id={view.cycle.organization.id}'
-        html_link = f'{base_url}app/#/{"properties" if type(state) == PropertyState else "taxlots"}/{view.id}'
+        json_link = f'{base_url}api/v3/{"properties" if isinstance(state, PropertyState) else "taxlots"}/{view.id}/?organization_id={view.cycle.organization.id}'
+        html_link = f'{base_url}app/#/{"properties" if isinstance(state, PropertyState) else "taxlots"}/{view.id}'
 
         # /geo.json
         if endpoint == "geojson":

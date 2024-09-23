@@ -31,7 +31,7 @@ def forwards(apps, schema_editor):
             else:
                 if column.display_name is None or column.display_name == "":
                     column.display_name = new_db_field["display_name"]
-                if column.data_type is None or column.data_type == "" or column.data_type == "None":
+                if column.data_type is None or column.data_type in ("", "None"):
                     column.data_type = new_db_field["data_type"]
             column.save()
         else:

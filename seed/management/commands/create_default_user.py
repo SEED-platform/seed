@@ -28,10 +28,10 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         if User.objects.filter(username=options["username"]).exists():
-            self.stdout.write("User <%s> already exists" % options["username"], ending="\n")
+            self.stdout.write(f"User <{options['username']}> already exists", ending="\n")
             u = User.objects.get(username=options["username"])
         else:
-            self.stdout.write("Creating user <%s>, password <hidden> ..." % (options["username"]), ending=" ")
+            self.stdout.write(f"Creating user <{options['username']}>, password <hidden> ...", ending=" ")
 
             if options["usertype"] == "superuser":
                 u = User.objects.create_superuser(options["username"].lower(), options["username"], options["password"])
@@ -45,9 +45,9 @@ class Command(BaseCommand):
 
         if Organization.objects.filter(name=options["organization"]).exists():
             org = Organization.objects.get(name=options["organization"])
-            self.stdout.write("Org <%s> already exists, adding user" % options["organization"], ending="\n")
+            self.stdout.write(f"Org <{options['organization']}> already exists, adding user", ending="\n")
             org.add_member(u, org.root.id, ROLE_OWNER)
         else:
-            self.stdout.write("Creating org <%s> ..." % options["organization"], ending=" ")
+            self.stdout.write(f"Creating org <{options['organization']}> ...", ending=" ")
             org, _, _user_added = create_organization(u, options["organization"])
             self.stdout.write("Created!", ending="\n")

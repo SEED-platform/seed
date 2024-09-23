@@ -65,8 +65,8 @@ class TwoFactorViewSet(viewsets.ViewSet, OrgMixin):
             return JsonResponse({"status": "error", "message": "2 Factor Authentication is required for your organization"})
 
         devices = list(devices_for_user(user))
-        email_active = bool(devices and type(devices[0]) == EmailDevice)
-        token_active = bool(devices and type(devices[0]) == TOTPDevice)
+        email_active = bool(devices and isinstance(devices[0], EmailDevice))
+        token_active = bool(devices and isinstance(devices[0], TOTPDevice))
         qr_code_img = None
 
         # token_active = type(devices[0]) == Token?
@@ -101,8 +101,8 @@ class TwoFactorViewSet(viewsets.ViewSet, OrgMixin):
         response = {
             "methods": {
                 "disabled": bool(not devices),
-                "email": bool(devices and type(devices[0]) == EmailDevice),
-                "token": bool(devices and type(devices[0]) == TOTPDevice),
+                "email": bool(devices and isinstance(devices[0], EmailDevice)),
+                "token": bool(devices and isinstance(devices[0], TOTPDevice)),
             }
         }
         if qr_code_img:
@@ -128,7 +128,7 @@ class TwoFactorViewSet(viewsets.ViewSet, OrgMixin):
 
         devices = list(devices_for_user(user))
         device = devices[0]
-        if not device or type(device) != EmailDevice:
+        if not device or not isinstance(device, EmailDevice):
             return JsonResponse({"message": "Email two factor authentication not configured"})
 
         send_token_email(device)

@@ -771,7 +771,7 @@ class OrganizationViewSet(viewsets.ViewSet):
             user = User.objects.get(username=email)
         except User.DoesNotExist:
             return JsonResponse(
-                {"status": "error", "message": "User with email address (%s) does not exist" % email}, status=status.HTTP_400_BAD_REQUEST
+                {"status": "error", "message": f"User with email address ({email}) does not exist"}, status=status.HTTP_400_BAD_REQUEST
             )
 
         created, mess_or_org, _ = create_suborganization(user, org, body["sub_org_name"], ROLE_OWNER)
@@ -927,7 +927,7 @@ class OrganizationViewSet(viewsets.ViewSet):
         missing_params = [p for p in excepted_params if p not in params]
         if missing_params:
             return Response(
-                {"status": "error", "message": "Missing params: {}".format(", ".join(missing_params))}, status=status.HTTP_400_BAD_REQUEST
+                {"status": "error", "message": f"Missing params: {', '.join(missing_params)}"}, status=status.HTTP_400_BAD_REQUEST
             )
 
         cycles = Cycle.objects.filter(id__in=params["cycle_ids"])
@@ -984,7 +984,7 @@ class OrganizationViewSet(viewsets.ViewSet):
         missing_params = [p for (p, v) in params.items() if v is None]
         if missing_params:
             return Response(
-                {"status": "error", "message": "Missing params: {}".format(", ".join(missing_params))}, status=status.HTTP_400_BAD_REQUEST
+                {"status": "error", "message": f"Missing params: {', '.join(missing_params)}"}, status=status.HTTP_400_BAD_REQUEST
             )
 
         # get data
@@ -1085,7 +1085,7 @@ class OrganizationViewSet(viewsets.ViewSet):
         missing_params = [p for p in excepted_params if p not in params]
         if missing_params:
             return Response(
-                {"status": "error", "message": "Missing params: {}".format(", ".join(missing_params))}, status=status.HTTP_400_BAD_REQUEST
+                {"status": "error", "message": f"Missing params: {', '.join(missing_params)}"}, status=status.HTTP_400_BAD_REQUEST
             )
 
         response = HttpResponse(content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")

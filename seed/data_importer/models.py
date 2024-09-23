@@ -225,7 +225,7 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
         )
 
     def __str__(self):
-        return "%s" % self.file.name
+        return self.file.name
 
     def save(self, in_validation=False, *args, **kwargs):
         super().save(*args, **kwargs)
@@ -296,7 +296,7 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
         for row in self.data_rows:
             cleaned_row = []
             for tcm in self.tablecolumnmappings:
-                val = "%s" % row[tcm.order - 1]
+                val = row[tcm.order - 1]
                 try:
                     if tcm.datacoercions.all().filter(source_string=val).count() > 0:
                         cleaned_row.append(tcm.datacoercions.all().filter(source_string=val)[0].destination_value)
@@ -325,7 +325,7 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
                     self.cached_first_row = ROW_DELIMITER.join(row)
                     self.cached_second_to_fifth_row = ""
                 else:
-                    self.cached_second_to_fifth_row += "%s\n" % ROW_DELIMITER.join(row)
+                    self.cached_second_to_fifth_row += f"{ROW_DELIMITER.join(row)}\n"
 
         self.num_rows = counter
         if self.has_header_row:

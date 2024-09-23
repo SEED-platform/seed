@@ -166,7 +166,7 @@ class CustomLoginView(LoginView):
                 user = SEEDUser.objects.get(username=cache.get("user_email"))
                 devices = list(devices_for_user(user))
                 device = devices[0]
-                if type(device) == EmailDevice:
+                if isinstance(device, EmailDevice):
                     send_token_email(device)
             except SEEDUser.DoesNotExist:
                 pass
@@ -192,9 +192,9 @@ class CustomLoginView(LoginView):
         if devices:
             device = devices[0]
             method_2fa = "disabled"
-            if type(device) == EmailDevice:
+            if isinstance(device, EmailDevice):
                 method_2fa = "email"
-            if type(device) == TOTPDevice:
+            if isinstance(device, TOTPDevice):
                 method_2fa = "token"
 
             cache.set("method_2fa", method_2fa, timeout=3600)

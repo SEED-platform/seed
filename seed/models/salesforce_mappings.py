@@ -25,7 +25,7 @@ class SalesforceMapping(models.Model):
     salesforce_fieldname = models.CharField(max_length=255, null=False)
 
     def __str__(self):
-        return "Mapping - %s" % self.salesforce_fieldname
+        return f"Mapping - {self.salesforce_fieldname}"
 
     class Meta:
         constraints = [models.UniqueConstraint(fields=["column", "salesforce_fieldname"], name="unique_column_salesforce_field")]
