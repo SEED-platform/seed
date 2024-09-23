@@ -89,6 +89,9 @@ class DerivedColumnViewSet(viewsets.ViewSet, OrgMixin):
 
         try:
             serializer.save()
+
+            update_derived_data(serializer.data["id"], org_id, serializer.data["inventory_type"])
+
             return JsonResponse(
                 {
                     "status": "success",
@@ -145,6 +148,10 @@ class DerivedColumnViewSet(viewsets.ViewSet, OrgMixin):
             Column.objects.filter(derived_column=pk).update(
                 column_name=data["name"], display_name=data["name"], column_description=data["name"]
             )
+
+            if "parameters" in data or "expression" in data:
+                update_derived_data(serializer.data["id"], org_id, serializer.data["inventory_type"])
+
             return JsonResponse(
                 {
                     "status": "success",
@@ -256,3 +263,14 @@ class DerivedColumnViewSet(viewsets.ViewSet, OrgMixin):
             results.append({"id": getattr(view, inventory_name).id, "value": derived_column.evaluate(view.state)})
 
         return JsonResponse({"status": "success", "results": results})
+
+
+def update_derived_data(derived_column_id, org_id, inventory_type):
+    from seed.tasks import update_state_derived_data
+
+    Column.objects.filter(derived_column=derived_column_id).update(is_updating=True)
+    if inventory_type == "Property":
+        kwargs = {"property_state_ids": list(PropertyView.objects.filter(property__organization=org_id).values_list("state_id", flat=True))}
+    else:
+        kwargs = {"taxlot_state_ids": list(TaxLotView.objects.filter(taxlot__organization=org_id).values_list("state_id", flat=True))}
+    update_state_derived_data(derived_column_ids=[derived_column_id], **kwargs)

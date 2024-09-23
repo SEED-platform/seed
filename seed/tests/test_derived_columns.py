@@ -857,8 +857,8 @@ class TestDerivedColumnUpdates(AssertDictSubsetMixin, DataMappingBaseTestCase):
 
     def test_derived_data_updates_on_import_merge(self):
         # this causes all the states to match
-        self.base_details["ubid"] = "86HJPCWQ+2VV-1-3-2-3"
-        self.base_details["no_default_data"] = True
+        self.base_details["custom_id_1"] = "86HJPCWQ+2VV-1-3-2-3"
+        self.base_details["no_default_data"] = False
 
         # create preexisting-state
         self.state = self.property_state_factory.get_property_state(**self.base_details)
@@ -902,3 +902,53 @@ class TestDerivedColumnUpdates(AssertDictSubsetMixin, DataMappingBaseTestCase):
         self.assertEqual(PropertyView.objects.count(), 1)
         v = PropertyView.objects.first()
         self.assertEqual(v.state.derived_data, {self.derived_column.name: 4})  # for the moment, this is always empty
+
+    def test_derived_data_on_derived_column_creation(self):
+        # Create views
+        self.state = self.property_state_factory.get_property_state(year_built=2000)
+        self.property = self.property_factory.get_property()
+        self.view = PropertyView.objects.create(property=self.property, cycle=self.cycle, state=self.state)
+
+        # Merge the properties
+        year_built = Column.objects.get(column_name="year_built", table_name="PropertyState")
+        url = reverse("api:v3:derived_columns-list") + "?organization_id=" + str(self.org.id)
+        post_params = dumps(
+            {
+                "name": "new guy",
+                "expression": "$param_a * 2",
+                "inventory_type": "Property",
+                "parameters": [{"parameter_name": "param_a", "source_column": year_built.id}],
+            }
+        )
+        self.client.post(url, post_params, content_type="application/json")
+
+        # Assert
+        v = PropertyView.objects.first()
+        self.assertEqual(v.state.derived_data, {"new guy": 4000})  # for the moment, this is always empty
+
+    def test_derived_data_on_derived_column_update(self):
+        # Set Up
+        self.base_details[self.column_a.column_name] = 2
+        self.base_details[self.column_b.column_name] = 2
+        self.base_details["raw_access_level_instance_id"] = self.org.root.id
+        self.property_state_factory.get_property_state(**self.base_details)
+
+        # Action
+        match_and_link_incoming_properties_and_taxlots(*self.action_args)
+        v = PropertyView.objects.first()
+
+        self.assertEqual(v.state.derived_data, {self.derived_column.name: 4})  # for the moment, this is always empty
+
+        # Merge the properties
+        url = reverse("api:v3:derived_columns-detail", args=[self.derived_column.id]) + "?organization_id=" + str(self.org.id)
+        post_params = dumps(
+            {
+                "name": self.derived_column.name,
+                "expression": "$a - $b",
+            }
+        )
+        self.client.put(url, post_params, content_type="application/json")
+
+        # Assert
+        v = PropertyView.objects.first()
+        self.assertEqual(v.state.derived_data, {self.derived_column.name: 0})  # for the moment, this is always empty
