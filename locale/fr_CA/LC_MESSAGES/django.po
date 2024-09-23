@@ -458,6 +458,9 @@ msgstr "Retournez à les mappages"
 msgid "Baseline Cycle"
 msgstr "Cycle de référence"
 
+msgid "Begin Update"
+msgstr "Démarrer la mise à jour"
+
 #: seed/models/models.py:135
 #, fuzzy
 msgid "Benchmarking"
@@ -614,6 +617,9 @@ msgstr "Impossible de supprimer des objets protégés alors que des objets appar
 
 msgid "Cannot delete this access level instance."
 msgstr "Impossible de supprimer cette instance de niveau d'accès."
+
+msgid "Change Inventory Access Level"
+msgstr "Modifier le niveau d'accès à l'inventaire"
 
 msgid "Change Merged Property"
 msgstr "Modifier la propriété fusionnée"
@@ -2064,6 +2070,9 @@ msgstr "Modification des paramètres de colonne"
 msgid "MORE RECENT DATA"
 msgstr "DONNÉES PLUS RÉCENTES"
 
+msgid "MOVE_INVENTORY_ALI_TXT"
+msgstr "Veuillez sélectionner un niveau d'accès et une instance de niveau d'accès vers lesquels déplacer {num} {label}"
+
 msgid "MULTIPLE_COL_MOD_OPTIONS"
 msgstr "Dans le tableau ci-dessous, vous pouvez modifier les colonnes des manières suivantes:"
 
@@ -2278,6 +2287,12 @@ msgstr "Plus de détails"
 
 msgid "Move Buildings"
 msgstr "Déplacer les bâtiments"
+
+msgid "Move Inventory to a Different Access Level Instance"
+msgstr "Déplacer l'inventaire vers une instance de niveau d'accès différent"
+
+msgid "Move Properties"
+msgstr "Déplacer les propriétés"
 
 msgid "Move/copy buildings to another project"
 msgstr "Déplacer/copier des bâtiments dans un autre projet"
@@ -3887,6 +3902,13 @@ msgstr "Résultat de la comparaison UBID :"
 msgid "UBID thresholds are between 0.0 and 1.0"
 msgstr "Les seuils UBID sont compris entre 0,0 et 1,0"
 
+msgid "UPDATE_DERIVED_DATA_TEXT_1"
+msgstr "Appuyez sur le bouton « Démarrer la mise à jour » ci-dessous pour commencer le processus de recalcul des données stockées dans les colonnes dérivées pour les propriétés et les lots fiscaux sélectionnés. Les colonnes dérivées apparaîtront en jaune pour indiquer que la mise à jour est en cours."
+
+#, fuzzy
+msgid "UPDATE_DERIVED_DATA_TEXT_2"
+msgstr "Notez que pendant que les colonnes sont jaunes, les données peuvent ne pas être à jour. Actualisez la page pour actualiser l'état des colonnes."
+
 msgid "UPDATE_MANUALLY_GEOCODED_INSTRUCTIONS"
 msgstr "Si les propriétés ont été géocodées manuellement, elles ne seront pas mises à jour. Pour mettre à jour le géocodage, supprimez le lat / long."
 
@@ -3957,6 +3979,9 @@ msgstr "Jusqu'à la dernière date de"
 
 msgid "Update Charts"
 msgstr "Mettre à jour les graphiques"
+
+msgid "Update Derived Data"
+msgstr "Mettre à jour les données dérivées"
 
 msgid "Update Filters"
 msgstr "Mise à jour les filtres"

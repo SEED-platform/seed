@@ -374,6 +374,27 @@ angular.module('SEED.service.inventory', []).factory('inventory_service', [
         });
     };
 
+    inventory_service.move_properties = (access_level_instance_id, property_view_ids) => {
+      spinner_utility.show();
+      return $http
+        .post(
+          '/api/v3/properties/move_properties_to/',
+          {
+            property_view_ids,
+            access_level_instance_id
+          },
+          {
+            params: {
+              organization_id: user_service.get_organization().id
+            }
+          }
+        )
+        .then((response) => response.data)
+        .finally(() => {
+          spinner_utility.hide();
+        });
+    };
+
     inventory_service.delete_property_states = (property_view_ids) => $http.delete('/api/v3/properties/batch_delete/', {
       headers: {
         'Content-Type': 'application/json;charset=utf-8'
