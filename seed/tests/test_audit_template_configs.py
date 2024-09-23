@@ -57,10 +57,10 @@ class AuditTemplateCronTests(TestCase):
         assert data["update_at_hour"] == 23
         assert data["update_at_minute"] == 59
 
-        # testing one to one relationship
+        # testing one-to-one relationship
         response = self.client.post(url, params, content_type="application/json")
         assert response.status_code == 400
-        assert response.json()["errors"] == {"organization": ["This field must be unique."]}
+        assert response.json()["errors"] == {"organization": ["audit template config with this organization already exists."]}
 
     def test_audit_template_config_update(self):
         # Invalid params

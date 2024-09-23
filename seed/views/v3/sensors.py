@@ -13,6 +13,9 @@ from seed.utils.sensors import PropertySensorReadingsExporter
 
 
 class SensorViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, ProfileIdMixin):
+    # For the Swagger page, GenericAPIView asserts a value exists for `queryset`
+    queryset = Sensor.objects.none()
+
     @ajax_request_class
     @has_perm_class("requires_member")
     @has_hierarchy_access(property_view_id_kwarg="property_pk")

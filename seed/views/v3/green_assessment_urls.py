@@ -135,4 +135,4 @@ class GreenAssessmentURLViewSet(SEEDOrgModelViewSet):
     serializer_class = GreenAssessmentURLSerializer
     model = GreenAssessmentURL
     orgfilter = "property_assessment__assessment__organization_id"
-    filter_fields = ("property_assessment__id",)
+    filterset_fields = ("property_assessment__id",)

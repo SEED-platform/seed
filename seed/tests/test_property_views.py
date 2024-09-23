@@ -173,7 +173,7 @@ class PropertyViewTests(DataMappingBaseTestCase):
         url = reverse("api:v3:properties-list") + f"?organization_id={org_2.pk}"
         response = self.client.post(url, params, content_type="application/json")
         self.assertEqual(response.status_code, 403)
-        self.assertEqual(response.json()["detail"], "You do not have permission to perform this action.")
+        self.assertEqual(response.json()["detail"], "Incorrect org id.")
 
     def test_create_property_with_protected_fields(self):
         state = self.property_state_factory.get_property_state()
