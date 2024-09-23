@@ -41,13 +41,13 @@ Markdown==3.7
 polling==0.3.2
 pyyaml==6.0.2
 street-address==0.4.0
-xlrd==1.2.0  # Try updating this major version 2
-xlsxwriter==1.2.7  # Try updating this major version 3
+xlrd<2.0.0  # Version 2 removes xlsx support
+xlsxwriter==3.2.0
 xmltodict==0.13.0
 requests==2.32.3
 probablepeople==0.5.5
-xmlschema==1.1.1  # Try updating this major version 3
-lark==0.11.3  # Try updating this major version 1
+xmlschema==3.4.2
+lark==1.2.2
 pandas==2.2.2
 
 # Parsing and managing geojson data (this is only used in managed tasks at the moment)
