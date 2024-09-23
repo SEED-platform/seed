@@ -618,6 +618,9 @@ msgstr "Impossible de supprimer des objets protégés alors que des objets appar
 msgid "Cannot delete this access level instance."
 msgstr "Impossible de supprimer cette instance de niveau d'accès."
 
+msgid "Change Inventory Access Level"
+msgstr "Modifier le niveau d'accès à l'inventaire"
+
 msgid "Change Merged Property"
 msgstr "Modifier la propriété fusionnée"
 
@@ -2067,6 +2070,9 @@ msgstr "Modification des paramètres de colonne"
 msgid "MORE RECENT DATA"
 msgstr "DONNÉES PLUS RÉCENTES"
 
+msgid "MOVE_INVENTORY_ALI_TXT"
+msgstr "Veuillez sélectionner un niveau d'accès et une instance de niveau d'accès vers lesquels déplacer {num} {label}"
+
 msgid "MULTIPLE_COL_MOD_OPTIONS"
 msgstr "Dans le tableau ci-dessous, vous pouvez modifier les colonnes des manières suivantes:"
 
@@ -2281,6 +2287,12 @@ msgstr "Plus de détails"
 
 msgid "Move Buildings"
 msgstr "Déplacer les bâtiments"
+
+msgid "Move Inventory to a Different Access Level Instance"
+msgstr "Déplacer l'inventaire vers une instance de niveau d'accès différent"
+
+msgid "Move Properties"
+msgstr "Déplacer les propriétés"
 
 msgid "Move/copy buildings to another project"
 msgstr "Déplacer/copier des bâtiments dans un autre projet"
