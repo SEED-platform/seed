@@ -15,7 +15,7 @@ from seed.analysis_pipelines.pipeline import (
     analysis_pipeline_task,
     task_create_analysis_property_views,
 )
-from seed.lib.tkbl.tkbl import scope_one_emission_codes
+from seed.lib.tkbl.tkbl import SCOPE_ONE_EMISSION_CODES
 from seed.models import Analysis, AnalysisMessage, AnalysisPropertyView, Column, Element
 
 logger = logging.getLogger(__name__)
@@ -159,7 +159,7 @@ def _get_views_upgrade_recommendation_category(property_view, config):
         return "NO DER project recommended"
 
     # if did not hit ff_fired_equipment_rsl_threshold and ff_fired_equipment_rsl_threshold or condition_index_threshold
-    lowest_RSL = elements.filter(code__code__in=scope_one_emission_codes).order_by("remaining_service_life").first()
+    lowest_RSL = elements.filter(code__code__in=SCOPE_ONE_EMISSION_CODES).order_by("remaining_service_life").first()
     if lowest_RSL is None:
         return "NO DER project recommended"
     lowest_RSL = lowest_RSL.remaining_service_life
