@@ -71,7 +71,7 @@ class Migration(migrations.Migration):
         migrations.AddConstraint(
             model_name="compliancemetric",
             constraint=models.CheckConstraint(
-                check=models.Q(("actual_energy_column__isnull", False), ("actual_emission_column__isnull", False), _connector="OR"),
+                condition=models.Q(("actual_energy_column__isnull", False), ("actual_emission_column__isnull", False), _connector="OR"),
                 name="at_least_one_compliance_metric_type",
             ),
         ),
