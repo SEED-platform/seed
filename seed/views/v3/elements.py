@@ -11,7 +11,7 @@ from django.utils.decorators import method_decorator
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.renderers import JSONRenderer
-from tkbl import filter_by_uniformat_code
+from tkbl import filter_by_uniformat_code, bsync_by_uniformat_code, federal_bps_by_uniformat_code
 
 from seed.decorators import ajax_request_class
 from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm_class
@@ -133,9 +133,11 @@ class ElementViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
 
         results = []
         for e in tkbl_elements:
-            links = [x["url"] for x in json.loads(filter_by_uniformat_code(e.code.code))]
-            sftool_links = [x for x in links if "https://sftool.gov" in x]
-            estcp_links = [x for x in links if "https://sftool.gov" not in x]
+            links = json.loads(filter_by_uniformat_code(e.code.code))
+            sftool_links = [x for x in links if "https://sftool.gov" in x["url"]]
+            estcp_links = [x for x in links if "https://sftool.gov" not in x["url"]]
+            bsync = [x['eem_name'] for x in bsync_by_uniformat_code(e.code.code)]
+            federal_bps = [x['Federal BPS Prescriptive Measures'] for x in federal_bps_by_uniformat_code(e.code.code)]
             results.append(
                 {
                     "code": e.code.code,
@@ -144,7 +146,9 @@ class ElementViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
                     "tkbl": {
                         "sftool": sftool_links,
                         "estcp": estcp_links,
-                    },
+                        "bsync_measures": bsync,
+                        "federal_bps_measures": federal_bps
+                    }
                 }
             )
 
