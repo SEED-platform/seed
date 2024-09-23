@@ -36,6 +36,7 @@
       <tr>
         <th>Name</th>
         <th>Access Level Instance</th>
+        <th>Inventory Count</th>
         <th style="width: 110px">Actions</th>
       </tr>
     </thead>
@@ -48,6 +49,7 @@
           </a>
         </td>
         <td>{$ group.access_level_instance_name $}</td>
+        <td>{$ group.member_list.length $}</td>
         <td>
           <div class="buttons" ng-show="!rowform.$visible">
             <button class="btn btn-default btn-rowform" ng-click="edit_inventory_group(group.id)" translate>edit</button>

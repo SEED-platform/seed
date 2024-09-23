@@ -4,8 +4,9 @@ angular.module('SEED.controller.update_inventory_groups_modal', [])
     '$log',
     '$uibModalInstance',
     'ah_service',
-    'user_service',
     'inventory_group_service',
+    'organization_service',
+    'user_service',
     'access_level_tree',
     'inventory_ids',
     'inventory_type',
@@ -16,8 +17,9 @@ angular.module('SEED.controller.update_inventory_groups_modal', [])
       $log,
       $uibModalInstance,
       ah_service,
-      user_service,
       inventory_group_service,
+      organization_service,
+      user_service,
       access_level_tree,
       inventory_ids,
       inventory_type,
@@ -27,6 +29,10 @@ angular.module('SEED.controller.update_inventory_groups_modal', [])
       $scope.inventory_ids = inventory_ids;
       $scope.inventory_type = inventory_type;
       $scope.org_id = org_id;
+      organization_service.get_lowest_common_ancestor(org_id, inventory_type, inventory_ids).then((response) => {
+        console.log(response)
+        $scope.lowest_common_ancestor = response.data.name
+      })
       $scope.access_level_tree = access_level_tree.access_level_tree;
       $scope.level_names = access_level_tree.access_level_names.map((level, i) => ({
         index: i,

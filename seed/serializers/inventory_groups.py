@@ -57,6 +57,8 @@ class InventoryGroupSerializer(serializers.ModelSerializer):
                     .filter(tax_lot__in=self.inventory)
                     .values_list("tax_lot", flat=True)
                 )
+        import logging 
+        logging.error('>>> %s', filtered_result)
         return filtered_result
 
     def update(self, instance, validated_data):
