@@ -54,7 +54,7 @@ class InventoryGroupSerializer(serializers.ModelSerializer):
         else:
             filtered_result = obj.inventorygroupmapping_set.all().values_list(inventory_type, flat=True)
 
-        return filtered_result
+        return list(filtered_result)
 
     def update(self, instance, validated_data):
         instance.__dict__.update(**validated_data)

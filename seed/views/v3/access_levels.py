@@ -41,7 +41,7 @@ class AccessLevelViewSet(viewsets.ViewSet):
                 {"status": "error", "message": "Could not retrieve organization at pk = " + str(organization_pk)},
                 status=status.HTTP_404_NOT_FOUND,
             )
-
+        # rp - add an argument for lowest common ancestor and make sure user is a member.
         user_ali = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
 
         access_level_tree = []
@@ -524,22 +524,10 @@ class AccessLevelViewSet(viewsets.ViewSet):
         inventory = InventoryClass.objects.filter(id__in=inventory_ids)
         alis = [i.access_level_instance for i in list(inventory)]
 
-        # generate a list of property ancestor lists
-        ancestor_lists = [
-            list(instance.get_ancestors()) + [instance] for instance in alis
-        ]
-
-        base_ancestors = min(ancestor_lists, key=len)
-        lowest_common = None
-        # starting with lowest node, determine if the node exists in all other ancestor lists. If it does, return the node.
-        for base in reversed(base_ancestors):
-            in_all = all(base in sublist for sublist in ancestor_lists)
-            if in_all:
-                lowest_common = base 
-                break
-
-        if not lowest_common:
-            return JsonResponse({"status": "error", "message": "No such resource."})
+        left_most = min([ali.lft for ali in alis])
+        right_most = max([ali.lft for ali in alis])
+        shared_ancestors = AccessLevelInstance.objects.filter(lft__lte=left_most, rgt__gte=right_most)
+        lowest_common = shared_ancestors.order_by("depth").last()
 
         serialized_ali = AccessLevelInstanceSerializer(lowest_common).data
         return JsonResponse({"status": "success", "data": serialized_ali})

@@ -5,8 +5,10 @@ from rest_framework import response, status
 from rest_framework.decorators import action
 
 from seed.filters import ColumnListProfileFilterBackend
-from seed.models import InventoryGroup, Organization, PropertyView, TaxLotView
+from seed.lib.superperms.orgs.decorators import has_perm_class
+from seed.models import AccessLevelInstance, InventoryGroup, Organization, PropertyView, TaxLotView
 from seed.serializers.inventory_groups import InventoryGroupSerializer
+from seed.utils.access_level_instance import access_level_filter
 from seed.utils.api_schema import swagger_auto_schema_org_query_param
 from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
 
@@ -78,6 +80,8 @@ class InventoryGroupViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
         else:
             return self._get_taxlot_groups(request)
 
+    @swagger_auto_schema_org_query_param
+    @has_perm_class("requires_viewer")
     def retrieve(self, request, *args, **kwargs):
         org_id = self.get_organization(self.request)
 
@@ -97,3 +101,14 @@ class InventoryGroupViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
                 "data": data,
             }
         )
+
+    @swagger_auto_schema_org_query_param
+    @has_perm_class("requires_viewer")
+    def list(self, request):
+        organization_id = self.get_organization(request)
+        access_level_instance = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
+
+        groups = InventoryGroup.objects.filter(organization=organization_id).filter(**access_level_filter(access_level_instance))
+        serialized = self.serializer_class(groups, many=True).data
+
+        return JsonResponse({"status": "success", "data": serialized})
