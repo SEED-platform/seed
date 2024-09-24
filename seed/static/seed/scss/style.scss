@@ -5677,3 +5677,9 @@ tags-input .tags .tag-item {
     font-size: bold;
   }
 }
+
+.elements-wrap {
+  word-wrap: break-word;
+  white-space: normal;
+  min-width: 350px;
+}

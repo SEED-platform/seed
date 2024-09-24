@@ -79,3 +79,5 @@ pyotp==2.9.0
 
 # This dependency can be removed once a version newer than 8.5.0 has been released that fixes Django autoreload
 importlib_metadata==8.4.0
+
+tkbl==0.6
