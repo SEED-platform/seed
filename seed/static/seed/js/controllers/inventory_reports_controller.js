@@ -25,6 +25,7 @@ angular.module('SEED.controller.inventory_reports', []).controller('inventory_re
   'ah_service',
   'access_level_tree',
   'user_service',
+  'filter_groups_service',
   // eslint-disable-next-line func-names
   function (
     $scope,
@@ -43,11 +44,11 @@ angular.module('SEED.controller.inventory_reports', []).controller('inventory_re
     $uibModal,
     ah_service,
     access_level_tree,
-    user_service
+    user_service,
+    filter_groups_service
   ) {
     const org_id = organization_payload.organization.id;
     const base_storage_key = `report.${org_id}`;
-
     $scope.org_id = org_id;
     $scope.access_level_tree = access_level_tree.access_level_tree;
     $scope.level_names = access_level_tree.access_level_names;
@@ -56,6 +57,10 @@ angular.module('SEED.controller.inventory_reports', []).controller('inventory_re
     $scope.access_level_instance_id = null;
     $scope.users_access_level_instance_id = user_service.get_access_level_instance().id;
 
+    filter_groups_service.get_filter_groups('Property').then((filter_groups) => {
+      $scope.filter_groups = filter_groups;
+    });
+    $scope.filter_group_id = null;
     const access_level_instances_by_depth = ah_service.calculate_access_level_instances_by_depth($scope.access_level_tree);
     // cannot select parents alis
     const [users_depth] = Object.entries(access_level_instances_by_depth).find(([, x]) => x.length === 1 && x[0].id === parseInt($scope.users_access_level_instance_id, 10));
@@ -447,7 +452,7 @@ angular.module('SEED.controller.inventory_reports', []).controller('inventory_re
       $scope.chartIsLoading = true;
 
       inventory_reports_service
-        .get_report_data(xVar, yVar, $scope.selected_cycles, $scope.access_level_instance_id)
+        .get_report_data(xVar, yVar, $scope.selected_cycles, $scope.access_level_instance_id, $scope.filter_group_id)
         .then(
           (data) => {
             data = data.data;
@@ -516,7 +521,7 @@ angular.module('SEED.controller.inventory_reports', []).controller('inventory_re
 
       $scope.aggChartIsLoading = true;
       inventory_reports_service
-        .get_aggregated_report_data(xVar, yVar, $scope.selected_cycles, $scope.access_level_instance_id)
+        .get_aggregated_report_data(xVar, yVar, $scope.selected_cycles, $scope.access_level_instance_id, $scope.filter_group_id)
         .then(
           (data) => {
             data = data.aggregated_data;

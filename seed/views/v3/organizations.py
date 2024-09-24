@@ -21,7 +21,7 @@ from django.contrib.postgres.aggregates.general import ArrayAgg
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db.models import F, Value
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse, JsonResponse, QueryDict
 from django.utils.decorators import method_decorator
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
@@ -45,6 +45,7 @@ from seed.models import (
     SEED_DATA_SOURCES,
     Column,
     Cycle,
+    FilterGroup,
     Property,
     PropertyAuditLog,
     PropertyState,
@@ -69,6 +70,7 @@ from seed.utils.organizations import create_organization, create_suborganization
 from seed.utils.properties import pair_unpair_property_taxlot
 from seed.utils.public import public_feed
 from seed.utils.salesforce import toggle_salesforce_sync
+from seed.utils.search import build_view_filters_and_sorts
 from seed.utils.users import get_js_role
 
 _log = logging.getLogger(__name__)
@@ -837,7 +839,9 @@ class OrganizationViewSet(viewsets.ViewSet):
         except AttributeError:
             return None
 
-    def get_raw_report_data(self, organization_id, access_level_instance, cycles, x_var, y_var, additional_columns=[]):
+    def get_raw_report_data(
+        self, organization_id, access_level_instance, cycles, x_var, y_var, filter_group_id=None, additional_columns=[]
+    ):
         organization = Organization.objects.get(pk=organization_id)
         all_property_views = (
             PropertyView.objects.select_related("property", "state")
@@ -849,6 +853,15 @@ class OrganizationViewSet(viewsets.ViewSet):
             )
             .order_by("id")
         )
+
+        if filter_group_id:
+            filter_group = FilterGroup.objects.get(pk=filter_group_id)
+            if filter_group.query_dict:
+                qd = QueryDict(mutable=True)
+                qd.update(filter_group.query_dict)
+                columns = Column.retrieve_all(org_id=organization_id, inventory_type="property", only_used=False, include_related=False)
+                filters, _annotations, _order_by = build_view_filters_and_sorts(qd, columns, "property")
+                all_property_views = all_property_views.filter(filters)
 
         # annotate properties with fields
         fields = {
@@ -911,6 +924,7 @@ class OrganizationViewSet(viewsets.ViewSet):
         }
 
         user_ali = AccessLevelInstance.objects.get(pk=self.request.access_level_instance_id)
+        filter_group_id = request.query_params.get("filter_group_id", None)
         if params["access_level_instance_id"] is None:
             ali = user_ali
         else:
@@ -931,7 +945,7 @@ class OrganizationViewSet(viewsets.ViewSet):
             )
 
         cycles = Cycle.objects.filter(id__in=params["cycle_ids"])
-        data = self.get_raw_report_data(pk, ali, cycles, params["x_var"], params["y_var"])
+        data = self.get_raw_report_data(pk, ali, cycles, params["x_var"], params["y_var"], filter_group_id)
         data = {
             "chart_data": functools.reduce(operator.iadd, [d["chart_data"] for d in data], []),
             "property_counts": [d["property_counts"] for d in data],
@@ -966,7 +980,7 @@ class OrganizationViewSet(viewsets.ViewSet):
             "cycle_ids": request.query_params.getlist("cycle_ids", None),
             "access_level_instance_id": request.query_params.get("access_level_instance_id", None),
         }
-
+        filter_group_id = request.query_params.get("filter_group_id", None)
         user_ali = AccessLevelInstance.objects.get(pk=self.request.access_level_instance_id)
         if params["access_level_instance_id"] is None:
             ali = user_ali
@@ -989,7 +1003,7 @@ class OrganizationViewSet(viewsets.ViewSet):
 
         # get data
         cycles = Cycle.objects.filter(id__in=params["cycle_ids"])
-        data = self.get_raw_report_data(pk, ali, cycles, params["x_var"], params["y_var"])
+        data = self.get_raw_report_data(pk, ali, cycles, params["x_var"], params["y_var"], filter_group_id)
         chart_data = []
         property_counts = []
 
@@ -1117,7 +1131,7 @@ class OrganizationViewSet(viewsets.ViewSet):
         # Gather base data
         cycles = Cycle.objects.filter(id__in=params["cycle_ids"])
         matching_columns = Column.objects.filter(organization_id=pk, is_matching_criteria=True, table_name="PropertyState")
-        data = self.get_raw_report_data(pk, access_level_instance, cycles, params["x_var"], params["y_var"], matching_columns)
+        data = self.get_raw_report_data(pk, access_level_instance, cycles, params["x_var"], params["y_var"], None, matching_columns)
 
         base_sheet.write(data_row_start, data_col_start, "ID", bold)
 
