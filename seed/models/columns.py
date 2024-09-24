@@ -102,6 +102,7 @@ class Column(models.Model):
         "centroid",
         "created",
         "data_state",
+        "derived_data",
         "extra_data",
         "geocoding_confidence",
         "id",
