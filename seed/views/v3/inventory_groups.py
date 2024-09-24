@@ -46,8 +46,6 @@ class InventoryGroupViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
         return response.Response(results, status=status_code)
 
     def _get_property_groups(self, request):
-        import logging
-        logging.error(">>> _get_property_groups")
         qs = self.get_queryset_for_org()  # ALL groups from org
         org_id = self.get_organization(self.request)
 

@@ -43,22 +43,17 @@ class InventoryGroupSerializer(serializers.ModelSerializer):
         
 
     def get_member_list(self, obj):
+        inventory_type = 'tax_lot' if obj.inventory_type == 1 else 'property'
         filtered_result = []
         if hasattr(self, "inventory"):
-            if self.inventory_type == 0:
-                filtered_result = (
-                    InventoryGroupMapping.objects.filter(group=self.group_id)
-                    .filter(property__in=self.inventory)
-                    .values_list("property", flat=True)
-                )
-            elif self.inventory_type == 1:
-                filtered_result = (
-                    InventoryGroupMapping.objects.filter(group=self.group_id)
-                    .filter(tax_lot__in=self.inventory)
-                    .values_list("tax_lot", flat=True)
-                )
-        import logging 
-        logging.error('>>> %s', filtered_result)
+            filtered_result = (
+                InventoryGroupMapping.objects.filter(group=self.group_id)
+                .filter(**{f"{inventory_type}__in": self.inventory})
+                .values_list(inventory_type, flat=True)
+            )
+        else:
+            filtered_result = obj.inventorygroupmapping_set.all().values_list(inventory_type, flat=True)
+
         return filtered_result
 
     def update(self, instance, validated_data):
