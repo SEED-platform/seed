@@ -519,8 +519,7 @@ class AccessLevelViewSet(viewsets.ViewSet):
         if not inventory_ids:
             return JsonResponse({"status": "success", "data": None})
 
-        lookup = {0: ('property', Property), 1: ('taxlot', TaxLot)}
-        inventory_type, InventoryClass = lookup.get(inventory_type, ('property', Property))
+        inventory_type, InventoryClass =  ('taxlot', TaxLot) if inventory_type == 1 else ('property', Property)
         inventory = InventoryClass.objects.filter(id__in=inventory_ids)
         alis = [i.access_level_instance for i in list(inventory)]
 
@@ -531,3 +530,23 @@ class AccessLevelViewSet(viewsets.ViewSet):
 
         serialized_ali = AccessLevelInstanceSerializer(lowest_common).data
         return JsonResponse({"status": "success", "data": serialized_ali})
+    
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class("requires_viewer")
+    @action(detail=False, methods=["PUT"])
+    def filter_by_inventory(self, request, organization_pk=None):
+        """
+        Return a distinct list of access_level_instance_ids for a group of inventory_ids
+        """
+        logging.error(">>>HERE")
+        inventory_type = request.data.get('inventory_type', 0)
+        inventory_ids = request.data.get('inventory_ids')
+        if not inventory_ids:
+            return JsonResponse({"status": "success", "access_level_instance_ids": []})
+        
+        inventory_type, InventoryClass =  ('taxlot', TaxLot) if inventory_type == 1 else ('property', Property)
+        inventory_ids = InventoryClass.objects.filter(id__in=inventory_ids).values_list('id', flat=True)
+        access_level_instance_ids = AccessLevelInstance.objects.filter(properties__in=inventory_ids).distinct().values_list('id', flat=True)
+
+        return JsonResponse({"status": "success", "access_level_instance_ids": list(access_level_instance_ids)})

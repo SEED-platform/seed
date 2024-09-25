@@ -22,6 +22,9 @@ class InventoryGroup(models.Model):
 
     class Meta:
         ordering = ["name"]
+        constraints = [
+            models.UniqueConstraint(fields=["name", "organization"], name="unique_group_name_for_organization"),
+        ]
 
 
 

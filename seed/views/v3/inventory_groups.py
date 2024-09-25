@@ -9,24 +9,31 @@ from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.models import AccessLevelInstance, InventoryGroup, Organization, PropertyView, TaxLotView
 from seed.serializers.inventory_groups import InventoryGroupSerializer
 from seed.utils.access_level_instance import access_level_filter
+from seed.utils.api import OrgValidateMixin
 from seed.utils.api_schema import swagger_auto_schema_org_query_param
 from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
 
+import logging
 
+@method_decorator(name="list", decorator=[swagger_auto_schema_org_query_param, has_perm_class("requires_viewer")])
 @method_decorator(name="create", decorator=swagger_auto_schema_org_query_param)
-@method_decorator(name="update", decorator=swagger_auto_schema_org_query_param)
+@method_decorator(name="update", decorator=[swagger_auto_schema_org_query_param, has_perm_class("requires_member")])
 class InventoryGroupViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
     serializer_class = InventoryGroupSerializer
     model = InventoryGroup
     filter_backends = (ColumnListProfileFilterBackend,)
     pagination_class = None
 
-    def get_queryset_for_org(self):
-        groups = InventoryGroup.objects.filter(organization=self.get_organization(self.request)).order_by("name").distinct()
-        return groups
+    def get_queryset(self):
+        groups = InventoryGroup.objects.filter(organization=self.get_organization(self.request))
+        access_level_id = getattr(self.request, 'access_level_instance_id', None)
+        if access_level_id:
+            groups = groups.filter(**access_level_filter(access_level_id))
+        
+        return groups.order_by("name").distinct()
 
     def _get_taxlot_groups(self, request):
-        qs = self.get_queryset_for_org()
+        qs = self.get_queryset()
         org_id = self.get_organization(self.request)
 
         if not self.request.data.get("selected"):
@@ -48,7 +55,7 @@ class InventoryGroupViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
         return response.Response(results, status=status_code)
 
     def _get_property_groups(self, request):
-        qs = self.get_queryset_for_org()  # ALL groups from org
+        qs = self.get_queryset()  # ALL groups from org
         org_id = self.get_organization(self.request)
 
         if not self.request.data.get("selected"):
@@ -71,6 +78,7 @@ class InventoryGroupViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
         status_code = status.HTTP_200_OK
         return response.Response(results, status=status_code)
 
+    @has_perm_class("requires_viewer")
     @action(detail=False, methods=["POST"])
     def filter(self, request):
         # Given inventory ids, return group info & inventory ids that are in those groups
@@ -101,14 +109,3 @@ class InventoryGroupViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
                 "data": data,
             }
         )
-
-    @swagger_auto_schema_org_query_param
-    @has_perm_class("requires_viewer")
-    def list(self, request):
-        organization_id = self.get_organization(request)
-        access_level_instance = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
-
-        groups = InventoryGroup.objects.filter(organization=organization_id).filter(**access_level_filter(access_level_instance))
-        serialized = self.serializer_class(groups, many=True).data
-
-        return JsonResponse({"status": "success", "data": serialized})

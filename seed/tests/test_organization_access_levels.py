@@ -384,3 +384,37 @@ class TestOrganizationViews(AccessLevelBaseTestCase):
         result = result.json()['data']
         assert self.grand_child_b_level_instance.id == result['id']
         assert self.grand_child_b_level_instance.name == result['name']
+
+    def test_ali_filter_by_inventory(self):
+        self.sibling_level_instance = self.org.add_new_access_level_instance(self.org.root.id, "sibling")
+        self.org.save()
+
+        self.p1a = Property.objects.create(organization=self.org, access_level_instance=self.org.root)
+        self.p1b = Property.objects.create(organization=self.org, access_level_instance=self.org.root)
+        self.p2a = Property.objects.create(organization=self.org, access_level_instance=self.child_level_instance)
+        self.p2b = Property.objects.create(organization=self.org, access_level_instance=self.child_level_instance)
+        self.p3a = Property.objects.create(organization=self.org, access_level_instance=self.sibling_level_instance)
+        self.p3b = Property.objects.create(organization=self.org, access_level_instance=self.sibling_level_instance)
+
+        url = reverse_lazy(
+            "api:v3:organization-access_levels-filter-by-inventory",
+            args=[self.org.id],
+        )
+        data = {
+            "inventory_type": "property",
+            "inventory_ids": [self.p1a.id, self.p1b.id, self.p2a.id, self.p2b.id, self.p3a.id, self.p3b.id]
+        }
+        result = self.client.put(url, data=json.dumps(data), content_type="application/json")
+        alis = result.json()['access_level_instance_ids']
+        assert len(alis) == 3
+
+        data["inventory_ids"] = [self.p2a.id, self.p2b.id, self.p3a.id, self.p3b.id]
+        result = self.client.put(url, data=json.dumps(data), content_type="application/json")
+        alis = result.json()['access_level_instance_ids']
+        assert len(alis) == 2
+
+        data["inventory_ids"] = [self.p3a.id, self.p3b.id]
+        result = self.client.put(url, data=json.dumps(data), content_type="application/json")
+        alis = result.json()['access_level_instance_ids']
+        assert len(alis) == 1
+        assert alis == [self.sibling_level_instance.id]

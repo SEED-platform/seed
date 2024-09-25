@@ -1,5 +1,6 @@
 # !/usr/bin/env python
 from rest_framework import serializers
+from django.core.exceptions import ValidationError
 
 from seed.models import VIEW_LIST_INVENTORY_TYPE, InventoryGroup, InventoryGroupMapping
 from seed.serializers.base import ChoiceField
@@ -66,3 +67,8 @@ class InventoryGroupSerializer(serializers.ModelSerializer):
         q = InventoryGroup.objects.create(**validated_data)
         q.save()
         return q
+
+    def validate(self, data):
+        if InventoryGroup.objects.filter(organization=data['organization'], name=data['name']):
+            raise ValidationError("Inventory Group Name must be unique.")
+        return data

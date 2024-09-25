@@ -21,4 +21,8 @@ class Migration(migrations.Migration):
             name='taxlot',
             field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='group_mappings', to='seed.taxlot'),
         ),
+        migrations.AddConstraint(
+            model_name='inventorygroup',
+            constraint=models.UniqueConstraint(fields=('name', 'organization'), name='unique_group_name_for_organization'),
+        ),
     ]
