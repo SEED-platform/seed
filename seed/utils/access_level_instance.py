@@ -1,5 +1,11 @@
-def access_level_filter(access_level_instance):
-    if not access_level_instance:
+from django.core.exceptions import ObjectDoesNotExist
+from seed.models import AccessLevelInstance
+
+
+def access_level_filter(access_level_instance_id):
+    try:
+        access_level_instance = AccessLevelInstance.objects.get(pk=access_level_instance_id)
+    except ObjectDoesNotExist:
         return {}
 
     return {

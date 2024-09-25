@@ -7,7 +7,6 @@ angular.module('SEED.controller.update_inventory_groups_modal', [])
     'inventory_group_service',
     'organization_service',
     'user_service',
-    'access_level_tree',
     'inventory_ids',
     'inventory_type',
     'org_id',
@@ -20,7 +19,6 @@ angular.module('SEED.controller.update_inventory_groups_modal', [])
       inventory_group_service,
       organization_service,
       user_service,
-      access_level_tree,
       inventory_ids,
       inventory_type,
       org_id,
@@ -30,14 +28,10 @@ angular.module('SEED.controller.update_inventory_groups_modal', [])
       $scope.inventory_type = inventory_type;
       $scope.org_id = org_id;
       organization_service.get_lowest_common_ancestor(org_id, inventory_type, inventory_ids).then((response) => {
-        console.log(response)
-        $scope.lowest_common_ancestor = response.data.name
-      })
-      $scope.access_level_tree = access_level_tree.access_level_tree;
-      $scope.level_names = access_level_tree.access_level_names.map((level, i) => ({
-        index: i,
-        name: level
-      }));
+        console.log("TODO review")
+        $scope.lowest_common_ancestor = response.data
+        new_group.access_level_instance = response.data.id
+      });
       // keep track of status of service call
       $scope.loading = false;
 
@@ -48,16 +42,7 @@ angular.module('SEED.controller.update_inventory_groups_modal', [])
       $scope.inventory_groups = [];
 
       $scope.new_group = {};
-
-      // $scope.level_names = [];
-      $scope.level_name_index = null;
-      const access_level_instances_by_depth = ah_service.calculate_access_level_instances_by_depth($scope.access_level_tree);
-      $scope.change_selected_level_index = () => {
-        const new_level_instance_depth = parseInt($scope.new_group.level_name_index, 10) + 1;
-        $scope.potential_level_instances = access_level_instances_by_depth[new_level_instance_depth];
-        console.log($scope.potential_level_instances)
-      };
-      $scope.change_selected_level_index();
+     
 
       /* Initialize the group props for a 'new' group */
       $scope.initialize_new_group = () => {
@@ -93,6 +78,16 @@ angular.module('SEED.controller.update_inventory_groups_modal', [])
           }
         );
       };
+
+      $scope.add_permission = (group) => {
+        // const condition1 = [$scope.inventory_ids.length === 1 && group.member_list.length]
+        if ($scope.lowest_common_ancestor) {
+          console.log("TODO all must be same ali")
+          const x = group.access_level_instance_data.lft > $scope.lowest_common_ancestor.lft && group.access_level_instance_data.rgt < $scope.lowest_common_ancestor.rgt
+          return x
+        }
+        return false
+      }
 
       /* Toggle the add button for a group */
       $scope.toggle_add = (group) => {

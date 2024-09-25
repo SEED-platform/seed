@@ -12,20 +12,6 @@
             <input id="newGroupName" type="text" name="name" class="form-control" ng-model="new_group.name" placeholder="{$:: 'Group Name' | translate $}" sd-check-label-exists="groups" required />
             <!-- </div> -->
           </div>
-          <div>
-            <label for="select-level-name" translate>Access Level</label>
-            <select id="select-level-name" class="form-control goal-form-control"
-              ng-options="level.index as level.name for level in level_names" ng-change="change_selected_level_index()"
-              ng-model="new_group.level_name_index" required>
-            <!-- goal.level_name can be found if an access level instance has been selected. not saved on goal.-->
-            </select>
-          </div>
-          <div>
-            <label for="select-level-instance" translate>Level Instance</label>
-            <select id="select-level-instance" class="form-control goal-form-control" ng-change=""
-              ng-options="potential_level_instance.id as potential_level_instance.name for potential_level_instance in potential_level_instances"
-              ng-model="new_group.access_level_instance" required></select>
-          </div>
           <button type="submit" class="btn btn-primary" ng-disabled="newGroupForm.$invalid || disabled"  style="height: 40px; margin-top: 20px;" translate>Create group</button>
         </div>
         <div class="help-block">
@@ -47,41 +33,53 @@
       </div>
 
       <table ng-show="inventory_groups.length" class="table table-striped" style="margin-bottom: 0">
-        <tr ng-repeat="inventory_group in inventory_groups">
-          <td class="inventory_group_column" style="vertical-align: middle">
-            <span class="inventory_group inventory_group-{$ inventory_group.inventory_group $}">{$ inventory_group.name $}</span>
-          </td>
-          <td align="right">
-            <button
-              type="button"
-              uib-btn-checkbox
-              ng-model="inventory_group.is_checked_remove"
-              ng-show="inventory_group.member_list.length"
-              btn-checkbox-true="true"
-              btn-checkbox-false="false"
-              class="btn btn-sm btn-default action_link"
-              ng-class="{'btn-danger':inventory_group.is_checked_remove}"
-              ng-click="toggle_remove(inventory_group)"
-              translate
-            >
-              Remove
-            </button>
-            <button
-              type="button"
-              uib-btn-checkbox
-              ng-model="inventory_group.is_checked_add"
-              btn-checkbox-true="true"
-              btn-checkbox-false="false"
-              class="btn btn-sm btn-default action_link"
-              ng-class="{'btn-primary':inventory_group.is_checked_add}"
-              ng-disabled="inventory_ids.length === 1 && inventory_group.member_list.length"
-              ng-click="toggle_add(inventory_group)"
-              translate
-            >
-              Add
-            </button>
-          </td>
-        </tr>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Access Level Instance</th>
+            <th>Inventory Count</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr ng-repeat="inventory_group in inventory_groups">
+            <td class="inventory_group_column" style="vertical-align: middle">
+              <span class="inventory_group inventory_group-{$ inventory_group.inventory_group $}">{$ inventory_group.name $}</span>
+            </td>
+            <td>{$ inventory_group.access_level_instance_data.name $}</td>
+            <td>{$ inventory_group.member_list.length $}</td>
+            <td align="right">
+              <button
+                type="button"
+                uib-btn-checkbox
+                ng-model="inventory_group.is_checked_remove"
+                ng-show="inventory_group.member_list.length"
+                btn-checkbox-true="true"
+                btn-checkbox-false="false"
+                class="btn btn-sm btn-default action_link"
+                ng-class="{'btn-danger':inventory_group.is_checked_remove}"
+                ng-click="toggle_remove(inventory_group)"
+                translate
+              >
+                Remove
+              </button>
+              <button
+                type="button"
+                uib-btn-checkbox
+                ng-model="inventory_group.is_checked_add"
+                btn-checkbox-true="true"
+                btn-checkbox-false="false"
+                class="btn btn-sm btn-default action_link"
+                ng-class="{'btn-primary':inventory_group.is_checked_add}"
+                ng-disabled="add_permission(inventory_group)"
+                ng-click="toggle_add(inventory_group)"
+                translate
+              >
+                Add
+              </button>
+            </td>
+          </tr>
+        </tbody>
       </table>
     </div>
     <div ng-show="inventory_group.length">

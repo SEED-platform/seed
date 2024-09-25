@@ -33,7 +33,7 @@ angular.module('SEED.controller.inventory_group_list', [])
       organization_payload
     ) {
       $scope.inventory_type = $stateParams.inventory_type;
-      $scope.inventory_groups = inventory_groups.sort((a, b) => a.name - b.name);
+      $scope.inventory_groups = inventory_groups;
       $scope.currentInventoryGroup = current_inventory_group;
       $scope.org_id = organization_payload;
 

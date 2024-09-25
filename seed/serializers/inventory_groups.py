@@ -4,6 +4,7 @@ from rest_framework import serializers
 from seed.models import VIEW_LIST_INVENTORY_TYPE, InventoryGroup, InventoryGroupMapping
 from seed.serializers.base import ChoiceField
 from seed.models import AccessLevelInstance
+from seed.serializers.access_level_instances import AccessLevelInstanceSerializer
 
 
 class InventoryGroupMappingSerializer(serializers.ModelSerializer):
@@ -36,9 +37,8 @@ class InventoryGroupSerializer(serializers.ModelSerializer):
     
     def to_representation(self, obj):
         result = super().to_representation(obj)
-        result['access_level_instance_name'] = getattr(
-            AccessLevelInstance.objects.filter(id=result.get('access_level_instance')).first(), 'name', ''
-        )
+        ali =  AccessLevelInstance.objects.filter(id=result.get('access_level_instance')).first()
+        result['access_level_instance_data'] = AccessLevelInstanceSerializer(ali, many=False).data
         return result
         
 

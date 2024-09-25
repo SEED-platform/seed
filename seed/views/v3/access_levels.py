@@ -41,7 +41,7 @@ class AccessLevelViewSet(viewsets.ViewSet):
                 {"status": "error", "message": "Could not retrieve organization at pk = " + str(organization_pk)},
                 status=status.HTTP_404_NOT_FOUND,
             )
-        # rp - add an argument for lowest common ancestor and make sure user is a member.
+
         user_ali = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
 
         access_level_tree = []

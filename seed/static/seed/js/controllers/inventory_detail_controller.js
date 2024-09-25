@@ -148,7 +148,7 @@ angular.module('SEED.controller.inventory_detail', []).controller('inventory_det
     $scope.historical_items = inventory_payload.history;
     $scope.item_state = inventory_payload.state;
     $scope.inventory_docs = $scope.inventory_type === 'properties' ? inventory_payload.property.inventory_documents : null;
-    $scope.groups = $scope.inventory_type === 'properties' ? inventory_payload.property.group_mappings : inventory_payload.taxlot.group_mappings;
+    $scope.group_mappings = $scope.inventory_type === 'properties' ? inventory_payload.property.group_mappings : inventory_payload.taxlot.group_mappings;
     const ali = $scope.inventory_type === 'properties' ?
       inventory_payload.property.access_level_instance :
       inventory_payload.taxlot.access_level_instance;
