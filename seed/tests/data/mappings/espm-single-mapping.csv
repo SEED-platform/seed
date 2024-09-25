@@ -1,4 +1,4 @@
-Raw Columns,units,SEED Table,SEED Columns
+Raw Columns,units,SEED Table,SEED Columns,isOmitted
 How Many Buildings?,,PropertyState,building_count
 City/Municipality,,PropertyState,city
 Construction Status,,PropertyState,Construction Status

@@ -90,6 +90,7 @@ class ColumnMappingProfileViewSet(OrgMixin, ViewSet):
                         "from_field": "string",
                         "from_units": "string",
                         "to_table_name": "string",
+                        "omit": "boolean",
                     }
                 ],
             },
@@ -170,12 +171,12 @@ class ColumnMappingProfileViewSet(OrgMixin, ViewSet):
             return JsonResponse({"status": "error", "data": "No profile with given id"}, status=HTTP_400_BAD_REQUEST)
 
         writer = csv.writer(response)
-        writer.writerow(["Raw Columns", "units", "SEED Table", "SEED Columns"])
+        writer.writerow(["Raw Columns", "units", "SEED Table", "SEED Columns", "isOmitted"])
 
         # sort the mappings by the to_field
         sorted_mappings = sorted(profile.mappings, key=lambda m: m["to_field"].casefold())
         for map in sorted_mappings:
-            writer.writerow([map["from_field"], map["from_units"], map["to_table_name"], map["to_field"]])
+            writer.writerow([map["from_field"], map["from_units"], map["to_table_name"], map["to_field"], map.get("is_omitted", False)])
 
         return response
 
@@ -194,6 +195,7 @@ class ColumnMappingProfileViewSet(OrgMixin, ViewSet):
                         "from_field": "string",
                         "from_units": "string",
                         "to_table_name": "string",
+                        "is_omitted": "boolean",
                     }
                 ],
             },
