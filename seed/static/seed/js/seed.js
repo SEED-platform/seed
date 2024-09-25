@@ -2732,10 +2732,12 @@
           prefix: '/static/seed/locales/',
           suffix: '.json'
         })
-        .registerAvailableLanguageKeys(['en_US', 'fr_CA'], {
+        .registerAvailableLanguageKeys(['en_US', 'es', 'fr_CA'], {
           en: 'en_US',
+          es: 'es',
           fr: 'fr_CA',
           'en_*': 'en_US',
+          'es_*': 'es',
           'fr_*': 'fr_CA',
           '*': 'en_US'
         })
