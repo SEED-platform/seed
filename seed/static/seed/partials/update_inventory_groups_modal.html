@@ -12,10 +12,10 @@
             <input id="newGroupName" type="text" name="name" class="form-control" ng-model="new_group.name" placeholder="{$:: 'Group Name' | translate $}" sd-check-label-exists="groups" required />
             <!-- </div> -->
           </div>
-          <button type="submit" class="btn btn-primary" ng-disabled="newGroupForm.$invalid || disabled"  style="height: 40px; margin-top: 20px;" translate>Create group</button>
+          <button type="submit" class="btn btn-primary" ng-disabled="newGroupForm.$invalid || disabled"  style="height: 40px; margin-top: 20px;" ng-disabled="ali_count !== 1" translate>Create group</button>
         </div>
         <div class="help-block">
-          <span class="has-error" ng-show="newGroupForm.name.$error.sdCheckGroupExists" translate>This group name is already taken.</span>
+          <div class="alert alert-warning" ng-show="ali_count !== 1">All properties within a group must be in the same access level instance. Modify selection and try again.</div>
         </div>
       </form>
     </div>

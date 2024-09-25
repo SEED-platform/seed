@@ -6,20 +6,24 @@ angular.module('SEED.controller.inventory_group_modal', [])
   .controller('inventory_group_modal_controller', [
     '$scope',
     '$uibModalInstance',
-    'action',
+    'ah_service',
     'inventory_group_service',
     'user_service',
-    'inventory_type',
+    'access_level_tree',
+    'action',
     'data',
+    'inventory_type',
     'org_id',
     function (
       $scope,
       $uibModalInstance,
-      action,
+      ah_service,
       inventory_group_service,
       user_service,
-      inventory_type,
+      access_level_tree,
+      action,
       data,
+      inventory_type,
       org_id
     ) {
       $scope.action = action;
@@ -27,6 +31,19 @@ angular.module('SEED.controller.inventory_group_modal', [])
       $scope.org_id = org_id;
       $scope.inventory_type = inventory_type;
       const access_level_instance = user_service.get_access_level_instance()
+      $scope.access_level_tree = access_level_tree.access_level_tree;
+      $scope.level_names = access_level_tree.access_level_names.map((level, i) => ({
+        index: i,
+        name: level
+      }));
+      $scope.access_level = {};
+
+      const access_level_instances_by_depth = ah_service.calculate_access_level_instances_by_depth($scope.access_level_tree);
+      // $scope.level_name_index = null;
+      $scope.change_selected_level_index = () => {
+        const new_level_instance_depth = parseInt($scope.access_level.level_name_index, 10) + 1;
+        $scope.potential_level_instances = access_level_instances_by_depth[new_level_instance_depth];
+      };
 
       $scope.edit_inventory_group = function () {
         if (!$scope.disabled()) {
@@ -55,7 +72,7 @@ angular.module('SEED.controller.inventory_group_modal', [])
             name: $scope.newName,
             inventory_type: $scope.inventory_type,
             organization: $scope.org_id,
-            access_level_instance: access_level_instance.id  // TODO: add access level instance dropdown to modal
+            access_level_instance: $scope.access_level.access_level_instance
           }).then((result) => {
             $uibModalInstance.close(result.data);
           });
@@ -66,7 +83,11 @@ angular.module('SEED.controller.inventory_group_modal', [])
         if ($scope.action === 'edit') {
           return _.isEmpty($scope.newName) || $scope.newName === $scope.data.name;
         } if ($scope.action === 'create') {
-          return _.isEmpty($scope.newName);
+
+          return (
+            _.isEmpty($scope.newName) &&
+            _.isEmpty($scope.access_level.access_level_instance)
+          )
         }
       };
 

@@ -5713,3 +5713,14 @@ tags-input .tags .tag-item {
     font-size: bold;
   }
 }
+
+#group-create {
+  display: flex;
+  justify-content: space-between;
+  margin: 0 15px;
+
+  div {
+    margin: 0 2px;
+    width: 100%;
+  }
+}

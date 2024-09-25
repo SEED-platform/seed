@@ -22,16 +22,25 @@ angular.module('SEED.controller.update_inventory_groups_modal', [])
       inventory_ids,
       inventory_type,
       org_id,
-      notification
+      Notification
     ) {
       $scope.inventory_ids = inventory_ids;
       $scope.inventory_type = inventory_type;
       $scope.org_id = org_id;
-      organization_service.get_lowest_common_ancestor(org_id, inventory_type, inventory_ids).then((response) => {
-        console.log("TODO review")
-        $scope.lowest_common_ancestor = response.data
-        new_group.access_level_instance = response.data.id
+
+      // organization_service.get_lowest_common_ancestor(org_id, inventory_type, inventory_ids).then((response) => {
+      //   console.log("TODO review")
+      //   $scope.lowest_common_ancestor = response.data
+      //   new_group.access_level_instance = response.data.id
+      // });
+      organization_service.filter_access_levels_by_inventory(org_id, inventory_type, inventory_ids).then((response) => {
+        $scope.ali_count = response.access_level_instance_ids.length
+        console.log('ali_count', $scope.ali_count)
+        if ($scope.ali_count == 1) {
+          $scope.new_group.access_level_instance = response.access_level_instance_ids[0]
+        }
       });
+
       // keep track of status of service call
       $scope.loading = false;
 
@@ -70,10 +79,11 @@ angular.module('SEED.controller.update_inventory_groups_modal', [])
           (data) => {
             // reject promise
             // group name already exists
-            if (data.message === 'group already exists') {
-              alert('group already exists');
+            let error
+            if (data.data.message) {
+              Notification.error(Object.values(data.data.message)[0]);
             } else {
-              alert('error creating new group');
+              Notification.error("Error creating Group");
             }
           }
         );
@@ -81,12 +91,11 @@ angular.module('SEED.controller.update_inventory_groups_modal', [])
 
       $scope.add_permission = (group) => {
         // const condition1 = [$scope.inventory_ids.length === 1 && group.member_list.length]
-        if ($scope.lowest_common_ancestor) {
-          console.log("TODO all must be same ali")
-          const x = group.access_level_instance_data.lft > $scope.lowest_common_ancestor.lft && group.access_level_instance_data.rgt < $scope.lowest_common_ancestor.rgt
-          return x
+        if ($scope.new_group.access_level_instance){
+          console.log(
+            'rp task add permission if same ali'
+          )
         }
-        return false
       }
 
       /* Toggle the add button for a group */
@@ -115,9 +124,9 @@ angular.module('SEED.controller.update_inventory_groups_modal', [])
         if (inventory_type === 'properties') {
           inventory_group_service.update_inventory_groups(addGroupIDs, removeGroupIDs, inventory_ids, 'property').then((data) => {
             if (data.num_updated === 1) {
-              notification.primary(`${data.num_updated} property updated.`);
+              Notification.primary(`${data.num_updated} property updated.`);
             } else {
-              notification.primary(`${data.num_updated} properties updated.`);
+              Notification.primary(`${data.num_updated} properties updated.`);
             }
             $uibModalInstance.close();
           }, (data, status) => {
@@ -126,9 +135,9 @@ angular.module('SEED.controller.update_inventory_groups_modal', [])
         } else if (inventory_type === 'taxlots') {
           inventory_group_service.update_inventory_groups(addGroupIDs, removeGroupIDs, inventory_ids, 'tax_lot').then((data) => {
             if (data.num_updated === 1) {
-              notification.primary(`${data.num_updated} tax lot updated.`);
+              Notification.primary(`${data.num_updated} tax lot updated.`);
             } else {
-              notification.primary(`${data.num_updated} tax lots updated.`);
+              Notification.primary(`${data.num_updated} tax lots updated.`);
             }
             $uibModalInstance.close();
           }, (data, status) => {

@@ -77,6 +77,13 @@ angular.module('SEED.service.organization', []).factory('organization_service', 
       {inventory_type, inventory_ids}
     ).then((response) => response.data);
 
+    organization_factory.filter_access_levels_by_inventory = (org_id, inventory_type, inventory_ids) => $http.put(
+      `/api/v3/organizations/${org_id}/access_levels/filter_by_inventory/`,
+      {inventory_type, inventory_ids}
+    ).then((response) => response.data).catch((x) => {
+      console.log('x', x)
+    });
+
     /**
      * updates the role for a user within an org
      * @param  {int} user_id id of user

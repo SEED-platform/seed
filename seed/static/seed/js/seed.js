@@ -1914,6 +1914,13 @@
           templateUrl: `${static_url}seed/partials/inventory_groups_list.html`,
           controller: 'inventory_group_list_controller',
           resolve: {
+            access_level_tree: [
+              'organization_service', 'user_service',
+              (organization_service, user_service) => {
+                const organization_id = user_service.get_organization().id;
+                return organization_service.get_organization_access_level_tree(organization_id);
+              }
+            ],
             inventory_groups: ['$stateParams', 'inventory_group_service', ($stateParams, inventory_group_service) => {
               const inventory_type = $stateParams.inventory_type === 'properties' ? 'Property' : 'Tax Lot';
               return inventory_group_service.get_groups(inventory_type);

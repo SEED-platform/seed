@@ -14,6 +14,7 @@ angular.module('SEED.controller.inventory_group_list', [])
     'inventory_service',
     'user_service',
     'urls',
+    'access_level_tree',
     'inventory_groups',
     'current_inventory_group',
     'organization_payload',
@@ -28,6 +29,7 @@ angular.module('SEED.controller.inventory_group_list', [])
       inventory_service,
       user_service,
       urls,
+      access_level_tree,
       inventory_groups,
       current_inventory_group,
       organization_payload
@@ -39,17 +41,7 @@ angular.module('SEED.controller.inventory_group_list', [])
 
       $scope.edit_inventory_group = function (group_id) {
         const selected_group = $scope.inventory_groups.find(g => g.id === group_id);
-        const oldGroup = angular.copy(selected_group);
-        const modalInstance = $uibModal.open({
-          templateUrl: `${urls.static_url}seed/partials/inventory_group_modal.html`,
-          controller: 'inventory_group_modal_controller',
-          resolve: {
-            action: _.constant('edit'),
-            data: selected_group,
-            org_id: () => user_service.get_organization().id,
-            inventory_type: () => ($scope.inventory_type === 'properties' ? 'Property' : 'Tax Lot')
-          }
-        });
+        const modalInstance = $scope.open_inventory_group_modal('edit', selected_group)
 
         modalInstance.result.then(() => {
           $state.reload();
@@ -60,16 +52,7 @@ angular.module('SEED.controller.inventory_group_list', [])
       $scope.remove_inventory_group = function (group_id) {
         const selected_group = $scope.inventory_groups.find(g => g.id === group_id);
         const oldGroup = angular.copy(selected_group);
-        const modalInstance = $uibModal.open({
-          templateUrl: `${urls.static_url}seed/partials/inventory_group_modal.html`,
-          controller: 'inventory_group_modal_controller',
-          resolve: {
-            action: _.constant('remove'),
-            data: _.constant(selected_group),
-            org_id: () => user_service.get_organization().id,
-            inventory_type: () => ($scope.inventory_type === 'properties' ? 'Property' : 'Tax Lot')
-          }
-        });
+        const modalInstance = $scope.open_inventory_group_modal('remove', selected_group)
 
         modalInstance.result.then(() => {
           modified_service.resetModified();
@@ -79,22 +62,28 @@ angular.module('SEED.controller.inventory_group_list', [])
       };
 
       $scope.create_inventory_group = function () {
-        const modalInstance = $uibModal.open({
-          templateUrl: `${urls.static_url}seed/partials/inventory_group_modal.html`,
-          controller: 'inventory_group_modal_controller',
-          resolve: {
-            action: _.constant('create'),
-            data: _.constant(''),
-            org_id: () => user_service.get_organization().id,
-            inventory_type: () => ($scope.inventory_type === 'properties' ? 'Property' : 'Tax Lot')
-          }
-        });
+        const modalInstance = $scope.open_inventory_group_modal('create', "")
 
         modalInstance.result.then((newGroup) => {
           $state.reload();
           Notification.primary(`Created ${newGroup.name}`);
         });
       };
+
+      $scope.open_inventory_group_modal = (action, data) => {
+        return $uibModal.open({
+          templateUrl: `${urls.static_url}seed/partials/inventory_group_modal.html`,
+          controller: 'inventory_group_modal_controller',
+          resolve: {
+            access_level_tree: () => access_level_tree,
+            action: _.constant(action),
+            data: _.constant(data),
+            inventory_type: () => ($scope.inventory_type === 'properties' ? 'Property' : 'Tax Lot'),
+            org_id: () => user_service.get_organization().id
+          }
+        });
+
+      }
 
       $scope.profile_change = function () {
         inventory_service.save_last_inventory_group($scope.currentInventoryGroup.id, $scope.inventory_type);
