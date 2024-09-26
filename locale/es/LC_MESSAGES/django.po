@@ -5,7 +5,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: lokalise.com\n"
 "Project-Id-Version: SEED Platform\n"
-"PO-Revision-Date: 2024-09-26 01:33\n"
+"PO-Revision-Date: 2024-09-26 20:00\n"
 "Last-Translator: lokalise.com\n"
 "Language-Team: lokalise.com\n\n"
 "Language: es\n"
@@ -358,6 +358,9 @@ msgstr "Añadir propiedades compartidas"
 msgid "Add Shared Tax Lots"
 msgstr "Añadir lotes fiscales compartidos"
 
+msgid "Add a Document"
+msgstr "Añadir un documento"
+
 #, fuzzy
 msgid "Add a label"
 msgstr "Añadir una etiqueta"
@@ -578,6 +581,9 @@ msgstr "Auto Matching"
 msgid "Auto-Populate Sample Data"
 msgstr "Rellenar automáticamente los datos de la muestra"
 
+msgid "Available BuildingSync Measures"
+msgstr "Medidas BuildingSync disponibles"
+
 msgid "Available Templates"
 msgstr "Plantillas disponibles"
 
@@ -647,6 +653,9 @@ msgstr "Certificación de edificios"
 #, fuzzy
 msgid "Building Count"
 msgstr "Recuento de edificios"
+
+msgid "Building Files (Main State Only)"
+msgstr "Ficheros de edificios (sólo estado principal)"
 
 #, fuzzy
 msgid "Building Filters"
@@ -2039,6 +2048,9 @@ msgstr "Error al borrar inventario"
 msgid "Fair Actual to Benchmark EUI Ratio"
 msgstr "Ratio EUI justo real/de referencia"
 
+msgid "Federal BPS Prescriptive Measures"
+msgstr "Medidas prescriptivas federales BPS"
+
 #, fuzzy
 msgid "Federal BPS Recommended Measures"
 msgstr "Medidas federales recomendadas por el BPS"
@@ -2547,6 +2559,9 @@ msgstr "Incluir encabezado de etiqueta CSV"
 msgid "Include Notes"
 msgstr "Incluir notas"
 
+msgid "Includes Elements with Scope 1 Emissions Only"
+msgstr "Incluye sólo elementos con emisiones de Alcance 1"
+
 #, fuzzy
 msgid "Indication Label"
 msgstr "Indicación Etiqueta"
@@ -2578,6 +2593,9 @@ msgstr "UBID no válido"
 #, fuzzy
 msgid "Inventory"
 msgstr "Inventario"
+
+msgid "Inventory Documents"
+msgstr "Documentos de inventario"
 
 msgid "Inventory List"
 msgstr "Lista de inventario"
@@ -5434,6 +5452,9 @@ msgstr "Unidades"
 #, fuzzy
 msgid "Unknown"
 msgstr "Desconocido"
+
+msgid "Unmerge Last"
+msgstr "Fusión final"
 
 #, fuzzy
 msgid "Unsuccessful Exports"

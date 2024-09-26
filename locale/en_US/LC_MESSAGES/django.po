@@ -276,6 +276,9 @@ msgstr "Add Shared Properties"
 msgid "Add Shared Tax Lots"
 msgstr "Add Shared Tax Lots"
 
+msgid "Add a Document"
+msgstr "Add a Document"
+
 msgid "Add a label"
 msgstr "Add a label"
 
@@ -442,6 +445,9 @@ msgstr "Auto Matching"
 msgid "Auto-Populate Sample Data"
 msgstr "Auto-Populate Sample Data"
 
+msgid "Available BuildingSync Measures"
+msgstr "Available BuildingSync Measures"
+
 msgid "Available Templates"
 msgstr "Available Templates"
 
@@ -495,6 +501,9 @@ msgstr "Building Certification"
 
 msgid "Building Count"
 msgstr "Building Count"
+
+msgid "Building Files (Main State Only)"
+msgstr "Building Files (Main State Only)"
 
 msgid "Building Filters"
 msgstr "Building Filters"
@@ -1555,6 +1564,9 @@ msgstr "Failed to delete inventory"
 msgid "Fair Actual to Benchmark EUI Ratio"
 msgstr "Fair Actual to Benchmark EUI Ratio"
 
+msgid "Federal BPS Prescriptive Measures"
+msgstr "Federal BPS Prescriptive Measures"
+
 msgid "Federal BPS Recommended Measures"
 msgstr "Federal BPS Recommended Measures"
 
@@ -1942,6 +1954,9 @@ msgstr "Include CSV Label Header"
 msgid "Include Notes"
 msgstr "Include Notes"
 
+msgid "Includes Elements with Scope 1 Emissions Only"
+msgstr "Includes Elements with Scope 1 Emissions Only"
+
 msgid "Indication Label"
 msgstr "Indication Label"
 
@@ -1965,6 +1980,9 @@ msgstr "Invalid UBID"
 
 msgid "Inventory"
 msgstr "Inventory"
+
+msgid "Inventory Documents"
+msgstr "Inventory Documents"
 
 msgid "Inventory List"
 msgstr "Inventory List"
@@ -4140,6 +4158,9 @@ msgstr "Units"
 
 msgid "Unknown"
 msgstr "Unknown"
+
+msgid "Unmerge Last"
+msgstr "Unmerge Last"
 
 msgid "Unsuccessful Exports"
 msgstr "Unsuccessful Exports"

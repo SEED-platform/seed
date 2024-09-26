@@ -281,6 +281,9 @@ msgstr "Ajouter des propriétés partagées"
 msgid "Add Shared Tax Lots"
 msgstr "Ajouter des lots d'impôt partagés"
 
+msgid "Add a Document"
+msgstr "Ajouter un document"
+
 msgid "Add a label"
 msgstr "Ajouter une étiquette"
 
@@ -447,6 +450,9 @@ msgstr "Correspondance automatique"
 msgid "Auto-Populate Sample Data"
 msgstr "Remplir automatiquement les données de l'échantillon"
 
+msgid "Available BuildingSync Measures"
+msgstr "Mesures BuildingSync disponibles"
+
 msgid "Available Templates"
 msgstr "Modèles disponibles"
 
@@ -501,6 +507,9 @@ msgstr "Certification de bâtiment"
 
 msgid "Building Count"
 msgstr "Nombre de bâtiments"
+
+msgid "Building Files (Main State Only)"
+msgstr "Dossiers de construction (État principal uniquement)"
 
 msgid "Building Filters"
 msgstr "Filtres de bâtiments"
@@ -1569,6 +1578,9 @@ msgstr "Échec de la suppression de l'inventaire"
 msgid "Fair Actual to Benchmark EUI Ratio"
 msgstr "Ratio de l'UEI réel/référence équitable"
 
+msgid "Federal BPS Prescriptive Measures"
+msgstr "Mesures prescriptives du SPB fédéral"
+
 msgid "Federal BPS Recommended Measures"
 msgstr "Mesures recommandées par le BPS fédéral"
 
@@ -1958,6 +1970,9 @@ msgstr "Inclure l'en-tête d'étiquette CSV"
 msgid "Include Notes"
 msgstr "Inclure des notes"
 
+msgid "Includes Elements with Scope 1 Emissions Only"
+msgstr "Comprend uniquement les éléments dont les émissions relèvent du champ d'application 1"
+
 msgid "Indication Label"
 msgstr "Étiquette d'indication"
 
@@ -1981,6 +1996,9 @@ msgstr "UBID invalide"
 
 msgid "Inventory"
 msgstr "Inventaire"
+
+msgid "Inventory Documents"
+msgstr "Documents d'inventaire"
 
 msgid "Inventory List"
 msgstr "Liste d'inventaire"
@@ -4174,6 +4192,9 @@ msgstr "Unités"
 
 msgid "Unknown"
 msgstr "Inconnue"
+
+msgid "Unmerge Last"
+msgstr "Défaire la fusion Dernière"
 
 msgid "Unsuccessful Exports"
 msgstr "Exportations infructueuses"
