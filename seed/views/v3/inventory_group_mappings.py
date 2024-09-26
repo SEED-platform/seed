@@ -40,17 +40,17 @@ class InventoryGroupMappingViewSet(viewsets.ViewSet):
         For each inventory id, check org correctness & then match group id with inv id (and prop/taxlot type)
         """
         inventory_model = self.inventory_models[inventory_type]
-        inventory_org_id, inventory_ali_id = inventory_model.objects.filter(pk=inventory_id).values_list('organization', 'access_level_instance').first()
-        group_org_id, group_ali_id = InventoryGroup.objects.filter(pk=group_id).values_list('organization', 'access_level_instance').first()
+        inventory_org_id, inventory_ali_id = (
+            inventory_model.objects.filter(pk=inventory_id).values_list("organization", "access_level_instance").first()
+        )
+        group_org_id, group_ali_id = InventoryGroup.objects.filter(pk=group_id).values_list("organization", "access_level_instance").first()
 
         if inventory_org_id != group_org_id:
             raise IntegrityError(
                 f"Group with organization_id={group_org_id} cannot be applied to a record with " f"organization_id={inventory_org_id}."
             )
         elif inventory_ali_id != group_ali_id:
-            raise IntegrityError(
-                f"Access Level mismatch between group and inventory."
-            )
+            raise IntegrityError("Access Level mismatch between group and inventory.")
         else:
             create_dict = {"group_id": group_id, f"{inventory_type}_id": inventory_id}
             return InventoryGroupMapping(**create_dict)

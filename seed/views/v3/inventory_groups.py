@@ -1,4 +1,5 @@
 # !/usr/bin/env python
+
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
 from rest_framework import response, status
@@ -6,14 +7,12 @@ from rest_framework.decorators import action
 
 from seed.filters import ColumnListProfileFilterBackend
 from seed.lib.superperms.orgs.decorators import has_perm_class
-from seed.models import AccessLevelInstance, InventoryGroup, Organization, PropertyView, TaxLotView
+from seed.models import InventoryGroup, Organization, PropertyView, TaxLotView
 from seed.serializers.inventory_groups import InventoryGroupSerializer
 from seed.utils.access_level_instance import access_level_filter
-from seed.utils.api import OrgValidateMixin
 from seed.utils.api_schema import swagger_auto_schema_org_query_param
 from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
 
-import logging
 
 @method_decorator(name="list", decorator=[swagger_auto_schema_org_query_param, has_perm_class("requires_viewer")])
 @method_decorator(name="create", decorator=swagger_auto_schema_org_query_param)
@@ -26,10 +25,10 @@ class InventoryGroupViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
 
     def get_queryset(self):
         groups = InventoryGroup.objects.filter(organization=self.get_organization(self.request))
-        access_level_id = getattr(self.request, 'access_level_instance_id', None)
+        access_level_id = getattr(self.request, "access_level_instance_id", None)
         if access_level_id:
             groups = groups.filter(**access_level_filter(access_level_id))
-        
+
         return groups.order_by("name").distinct()
 
     def _get_taxlot_groups(self, request):

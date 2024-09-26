@@ -56,7 +56,7 @@ angular.module('SEED.controller.inventory_group_list', [])
 
         modalInstance.result.then(() => {
           modified_service.resetModified();
-          $state.reload(); 
+          $state.reload();
           Notification.primary(`Removed ${oldGroup.name}`);
         });
       };

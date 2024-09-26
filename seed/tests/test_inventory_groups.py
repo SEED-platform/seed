@@ -1,12 +1,13 @@
 import json
+
 import pytest
 from django.db import IntegrityError
 from django.urls import reverse_lazy
 
 from seed.models import InventoryGroup, InventoryGroupMapping, Property, TaxLot
 from seed.models.inventory_groups import VIEW_LIST_PROPERTY, VIEW_LIST_TAXLOT
-from seed.tests.util import AccessLevelBaseTestCase
 from seed.test_helpers.fake import FakePropertyFactory, FakePropertyViewFactory
+from seed.tests.util import AccessLevelBaseTestCase
 
 
 class PropertyViewTestsPermissions(AccessLevelBaseTestCase):
@@ -48,27 +49,22 @@ class PropertyViewTestsPermissions(AccessLevelBaseTestCase):
             InventoryGroupMapping.objects.create(property=self.property, group=self.property_group)
 
     def test_group_constraints(self):
-        url = reverse_lazy('api:v3:inventory_groups-list')
-        data = {
-            "name": "test1",
-            "organization": self.org.id,
-            "access_level_instance": self.org.root.id,
-            "inventory_type": "Property"
-        }
+        url = reverse_lazy("api:v3:inventory_groups-list")
+        data = {"name": "test1", "organization": self.org.id, "access_level_instance": self.org.root.id, "inventory_type": "Property"}
         response = self.client.post(url, data=json.dumps(data), content_type="application/json")
         assert response.status_code == 400
         response = response.json()
-        assert response == {'status': 'error', 'message': {'non_field_errors': ['Inventory Group Name must be unique.']}}
+        assert response == {"status": "error", "message": {"non_field_errors": ["Inventory Group Name must be unique."]}}
 
-        data["name"] = 'test3'
+        data["name"] = "test3"
         response = self.client.post(url, data=json.dumps(data), content_type="application/json")
         assert response.status_code == 201
 
-        url = reverse_lazy('api:v3:inventory_groups-detail', args=[self.property_group.id])
+        url = reverse_lazy("api:v3:inventory_groups-detail", args=[self.property_group.id])
         response = self.client.put(url, data=json.dumps(data), content_type="application/json")
-        assert response.status_code == 400 
+        assert response.status_code == 400
         response = response.json()
-        assert response == {'status': 'error', 'message': {'non_field_errors': ['Inventory Group Name must be unique.']}}
+        assert response == {"status": "error", "message": {"non_field_errors": ["Inventory Group Name must be unique."]}}
 
     def test_group_mapping_contraints(self):
         self.property_factory = FakePropertyFactory(organization=self.org)
@@ -82,20 +78,18 @@ class PropertyViewTestsPermissions(AccessLevelBaseTestCase):
         self.view1b = self.view_factory.get_property_view(prprty=self.p1b)
         self.view2a = self.view_factory.get_property_view(prprty=self.p2a)
 
-        url = reverse_lazy('api:v3:inventory_group_mappings-put') + f"?organization_id={self.org.id}"
+        url = reverse_lazy("api:v3:inventory_group_mappings-put") + f"?organization_id={self.org.id}"
         data = {
             "inventory_ids": [self.view1a.id, self.view1b.id, self.view2a.id],
             "add_group_ids": [self.property_group.id],
             "remove_group_ids": [],
-            "inventory_type": "property"
+            "inventory_type": "property",
         }
 
         response = self.client.put(url, data=json.dumps(data), content_type="application/json")
         assert response.status_code == 400
-        assert response.json()['message'] == 'Access Level mismatch between group and inventory.'
+        assert response.json()["message"] == "Access Level mismatch between group and inventory."
 
-        data['inventory_ids'] = [self.view1a.id]
+        data["inventory_ids"] = [self.view1a.id]
         response = self.client.put(url, data=json.dumps(data), content_type="application/json")
         assert response.status_code == 200
-        
-        

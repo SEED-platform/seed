@@ -40,7 +40,7 @@ angular.module('SEED.controller.analysis_details', []).controller('analysis_deta
       // if the status of the analysis has changed since we first loaded the page, refresh everything
       // so that analysis results and messages are updated. (this is lazy, but is good enough for now)
       if (starting_analysis_status !== $scope.analysis.status) {
-        $state.reload(); 
+        $state.reload();
       }
     };
 

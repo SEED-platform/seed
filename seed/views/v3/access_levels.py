@@ -492,7 +492,7 @@ class AccessLevelViewSet(viewsets.ViewSet):
         instance.delete()
 
         return JsonResponse({"status": "success"}, status=status.HTTP_204_NO_CONTENT)
-    
+
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class("requires_viewer")
@@ -507,19 +507,19 @@ class AccessLevelViewSet(viewsets.ViewSet):
           B     C
          /\
         D  E
-        
+
         least common ancestor:
         if A and D -> A
         if B and C -> A
         if B and D -> B
         if D and E -> B
         """
-        inventory_type = request.data.get('inventory_type')
-        inventory_ids = request.data.get('inventory_ids')
+        inventory_type = request.data.get("inventory_type")
+        inventory_ids = request.data.get("inventory_ids")
         if not inventory_ids:
             return JsonResponse({"status": "success", "data": None})
 
-        inventory_type, InventoryClass =  ('taxlot', TaxLot) if inventory_type == 1 else ('property', Property)
+        inventory_type, InventoryClass = ("taxlot", TaxLot) if inventory_type == 1 else ("property", Property)
         inventory = InventoryClass.objects.filter(id__in=inventory_ids)
         alis = [i.access_level_instance for i in list(inventory)]
 
@@ -530,7 +530,7 @@ class AccessLevelViewSet(viewsets.ViewSet):
 
         serialized_ali = AccessLevelInstanceSerializer(lowest_common).data
         return JsonResponse({"status": "success", "data": serialized_ali})
-    
+
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class("requires_viewer")
@@ -539,13 +539,13 @@ class AccessLevelViewSet(viewsets.ViewSet):
         """
         Return a distinct list of access_level_instance_ids for a group of inventory_ids
         """
-        inventory_type = request.data.get('inventory_type', 0)
-        inventory_ids = request.data.get('inventory_ids')
+        inventory_type = request.data.get("inventory_type", 0)
+        inventory_ids = request.data.get("inventory_ids")
         if not inventory_ids:
             return JsonResponse({"status": "success", "access_level_instance_ids": []})
-        
-        inventory_type, InventoryClass =  ('taxlot', TaxLot) if inventory_type == 1 else ('property', Property)
-        inventory_ids = InventoryClass.objects.filter(id__in=inventory_ids).values_list('id', flat=True)
-        access_level_instance_ids = AccessLevelInstance.objects.filter(properties__in=inventory_ids).distinct().values_list('id', flat=True)
+
+        inventory_type, InventoryClass = ("taxlot", TaxLot) if inventory_type == 1 else ("property", Property)
+        inventory_ids = InventoryClass.objects.filter(id__in=inventory_ids).values_list("id", flat=True)
+        access_level_instance_ids = AccessLevelInstance.objects.filter(properties__in=inventory_ids).distinct().values_list("id", flat=True)
 
         return JsonResponse({"status": "success", "access_level_instance_ids": list(access_level_instance_ids)})

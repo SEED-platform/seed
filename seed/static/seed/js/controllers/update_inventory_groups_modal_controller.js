@@ -52,7 +52,7 @@ angular.module('SEED.controller.update_inventory_groups_modal', [])
       $scope.inventory_groups = [];
 
       $scope.new_group = {};
-     
+
 
       /* Initialize the group props for a 'new' group */
       $scope.initialize_new_group = () => {
@@ -101,7 +101,7 @@ angular.module('SEED.controller.update_inventory_groups_modal', [])
           return true;
         }
         return (
-          $scope.inventory_access_level_instance_count == 1 && 
+          $scope.inventory_access_level_instance_count == 1 &&
           group.access_level_instance == $scope.inventory_access_level_instance_ids[0]
         );
       }

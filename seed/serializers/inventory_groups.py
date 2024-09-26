@@ -1,11 +1,10 @@
 # !/usr/bin/env python
-from rest_framework import serializers
 from django.core.exceptions import ValidationError
+from rest_framework import serializers
 
-from seed.models import VIEW_LIST_INVENTORY_TYPE, InventoryGroup, InventoryGroupMapping
-from seed.serializers.base import ChoiceField
-from seed.models import AccessLevelInstance
+from seed.models import VIEW_LIST_INVENTORY_TYPE, AccessLevelInstance, InventoryGroup, InventoryGroupMapping
 from seed.serializers.access_level_instances import AccessLevelInstanceSerializer
+from seed.serializers.base import ChoiceField
 
 
 class InventoryGroupMappingSerializer(serializers.ModelSerializer):
@@ -35,16 +34,15 @@ class InventoryGroupSerializer(serializers.ModelSerializer):
     class Meta:
         model = InventoryGroup
         fields = ("id", "name", "inventory_type", "access_level_instance", "organization", "member_list")
-    
+
     def to_representation(self, obj):
         result = super().to_representation(obj)
-        ali =  AccessLevelInstance.objects.filter(id=result.get('access_level_instance')).first()
-        result['access_level_instance_data'] = AccessLevelInstanceSerializer(ali, many=False).data
+        ali = AccessLevelInstance.objects.filter(id=result.get("access_level_instance")).first()
+        result["access_level_instance_data"] = AccessLevelInstanceSerializer(ali, many=False).data
         return result
-        
 
     def get_member_list(self, obj):
-        inventory_type = 'tax_lot' if obj.inventory_type == 1 else 'property'
+        inventory_type = "tax_lot" if obj.inventory_type == 1 else "property"
         filtered_result = []
         if hasattr(self, "inventory"):
             filtered_result = (
@@ -69,6 +67,6 @@ class InventoryGroupSerializer(serializers.ModelSerializer):
         return q
 
     def validate(self, data):
-        if InventoryGroup.objects.filter(organization=data['organization'], name=data['name']):
+        if InventoryGroup.objects.filter(organization=data["organization"], name=data["name"]):
             raise ValidationError("Inventory Group Name must be unique.")
         return data

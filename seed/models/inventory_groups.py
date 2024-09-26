@@ -27,11 +27,8 @@ class InventoryGroup(models.Model):
         ]
 
 
-
 @receiver(pre_save, sender=InventoryGroup)
 def presave_inventory_group(sender, instance, **kwargs):
-    
-
     if instance.access_level_instance.organization != instance.organization:
         raise IntegrityError("access_level_instance must be in organization")
 
@@ -48,11 +45,10 @@ class InventoryGroupMapping(models.Model):
             if i.access_level_instance != self.group.access_level_instance:
                 raise IntegrityError("Access Level mismatch between group and inventory.")
 
-        pass
-
     def save(self, *args, **kwargs):
         self.clean()
         super().save(*args, **kwargs)
+
 
 @receiver(pre_save, sender=InventoryGroupMapping)
 def presave_inventory_group_mapping(sender, instance, **kwargs):

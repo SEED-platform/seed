@@ -5633,9 +5633,8 @@ tags-input .tags .tag-item {
   font-weight: bold;
 }
 
-#groups_table{
-  
-  td{
+#groups_table {
+  td {
     vertical-align: middle;
   }
 }
@@ -5643,17 +5642,16 @@ tags-input .tags .tag-item {
 #group-add-container {
   display: flex;
   justify-content: space-between;
-  
-  div{
+
+  div {
     margin: 2px;
     display: grid;
     width: 100%;
-    
+
     label {
       padding-right: 15px;
     }
   }
-  
 }
 
 .multi-select-container {
