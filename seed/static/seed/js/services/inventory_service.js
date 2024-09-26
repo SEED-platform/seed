@@ -1261,6 +1261,12 @@ angular.module('SEED.service.inventory', []).factory('inventory_service', [
       property_ids
     }).then((response) => response.data);
 
+    inventory_service.update_derived_data = (property_view_ids, taxlot_view_ids) => $http.post('/api/v3/tax_lot_properties/update_derived_data/', {
+      organization_id: user_service.get_organization().id,
+      property_view_ids,
+      taxlot_view_ids
+    }).then((response) => response.data);
+
     return inventory_service;
   }
 ]);

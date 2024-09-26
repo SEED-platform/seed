@@ -102,6 +102,7 @@ class Column(models.Model):
         "centroid",
         "created",
         "data_state",
+        "derived_data",
         "extra_data",
         "geocoding_confidence",
         "id",
@@ -834,6 +835,7 @@ class Column(models.Model):
 
     comstock_mapping = models.CharField(max_length=64, null=True, blank=True, default=None)
     derived_column = models.OneToOneField("DerivedColumn", on_delete=models.CASCADE, null=True, blank=True)
+    is_updating = models.BooleanField(null=False, default=False)
 
     class Meta:
         constraints = [

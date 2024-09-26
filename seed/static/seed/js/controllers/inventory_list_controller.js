@@ -17,7 +17,6 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
   'data_quality_service',
   'geocode_service',
   'user_service',
-  'derived_columns_service',
   'Notification',
   'cycles',
   'profiles',
@@ -26,7 +25,6 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
   'current_filter_group',
   'filter_groups_service',
   'all_columns',
-  'derived_columns_payload',
   'urls',
   'spinner_utility',
   'naturalSort',
@@ -52,7 +50,6 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
     data_quality_service,
     geocode_service,
     user_service,
-    derived_columns_service,
     Notification,
     cycles,
     profiles,
@@ -61,7 +58,6 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
     current_filter_group,
     filter_groups_service,
     all_columns,
-    derived_columns_payload,
     urls,
     spinner_utility,
     naturalSort,
@@ -801,7 +797,7 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
 
       // Modify headerCellClass
       if (col.derived_column) {
-        col.headerCellClass = 'derived-column-display-name';
+        col.headerCellClass = col.is_updating ? 'updating-derived-column-display-name' : 'derived-column-display-name';
       }
 
       // Modify misc
@@ -1190,57 +1186,6 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
       );
     };
 
-    // evaluate all derived columns and add the results to the table
-    const evaluateDerivedColumns = () => {
-      const batch_size = 100;
-      const batched_inventory_ids = [];
-      let batch_index = 0;
-      while (batch_index < $scope.data.length) {
-        batched_inventory_ids.push($scope.data.slice(batch_index, batch_index + batch_size).map((d) => d.id));
-        batch_index += batch_size;
-      }
-
-      // Find all columns that linked to a derived column.
-      // With the associated derived columns evaluate it and attach it to the original column
-      const visible_columns_with_derived_columns = $scope.columns.filter((col) => col.derived_column);
-      const derived_column_ids = visible_columns_with_derived_columns.map((col) => col.derived_column);
-      const attached_derived_columns = derived_columns_payload.derived_columns.filter((col) => derived_column_ids.includes(col.id));
-      const column_name_lookup = {};
-      visible_columns_with_derived_columns.forEach((col) => {
-        column_name_lookup[col.column_name] = col.name;
-      });
-
-      const all_evaluation_results = [];
-      for (const col of attached_derived_columns) {
-        all_evaluation_results.push(
-          ...batched_inventory_ids.map((ids) => derived_columns_service.evaluate($scope.organization.id, col.id, $scope.cycle.selected_cycle.id, ids).then((res) => {
-            const formatted_results = res.results.map((x) => (typeof x.value === 'number' ? { ...x, value: _.round(x.value, $scope.organization.display_decimal_places) } : x));
-            return { derived_column_id: col.id, results: formatted_results };
-          }))
-        );
-      }
-
-      $q.all(all_evaluation_results).then((results) => {
-        const aggregated_results = {};
-        results.forEach((result) => {
-          if (result.derived_column_id in aggregated_results) {
-            aggregated_results[result.derived_column_id].push(...result.results);
-          } else {
-            aggregated_results[result.derived_column_id] = result.results;
-          }
-        });
-
-        // finally, update the data to include the calculated values
-        $scope.data.forEach((row) => {
-          Object.entries(aggregated_results).forEach(([derived_column_id, results]) => {
-            const derived_column = attached_derived_columns.find((col) => col.id === Number(derived_column_id));
-            const result = results.find((res) => res.id === row.id) || {};
-            row[column_name_lookup[derived_column.name]] = result.value;
-          });
-        });
-      });
-    };
-
     $scope.load_inventory = (page) => {
       const page_size = 100;
       spinner_utility.show();
@@ -1258,7 +1203,6 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
         $scope.inventory_pagination = data.pagination;
         processData(data.results);
         $scope.gridApi.core.notifyDataChange(uiGridConstants.dataChange.EDIT);
-        evaluateDerivedColumns();
         $scope.select_none();
         spinner_utility.hide();
       });
@@ -1371,6 +1315,26 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
       modalInstance.result.then((/* result */) => {
         // dialog was closed with 'Close' button.
         $scope.load_inventory(1);
+      });
+    };
+
+    $scope.open_update_derived_data_modal = (selectedViewIds) => {
+      const modalInstance = $uibModal.open({
+        templateUrl: `${urls.static_url}seed/partials/update_derived_data_modal.html`,
+        controller: 'update_derived_data_modal_controller',
+        resolve: {
+          property_view_ids: () => ($scope.inventory_type === 'properties' ? selectedViewIds : []),
+          taxlot_view_ids: () => ($scope.inventory_type === 'taxlots' ? selectedViewIds : [])
+        }
+      });
+      modalInstance.result.then(() => {
+        $scope.gridOptions.columnDefs.forEach((col) => {
+          if (col.derived_column) {
+            col.is_updating = true;
+            col.headerCellClass = 'updating-derived-column-display-name';
+          }
+        });
+        $scope.gridApi.core.notifyDataChange(uiGridConstants.dataChange.COLUMN);
       });
     };
 
@@ -1608,6 +1572,9 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
           break;
         case 'update_salesforce':
           $scope.update_salesforce(selectedViewIds);
+          break;
+        case 'update_derived_columns':
+          $scope.open_update_derived_data_modal(selectedViewIds);
           break;
         default:
           console.error('Unknown action:', elSelectActions.value, 'Update "run_action()"');

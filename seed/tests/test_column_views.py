@@ -150,6 +150,7 @@ class DefaultColumnsViewTests(DeleteModelsTestCase):
             "unit_name": None,
             "unit_type": None,
             "is_matching_criteria": True,
+            "is_updating": False,
             "recognize_empty": False,
             "comstock_mapping": None,
             "derived_column": None,

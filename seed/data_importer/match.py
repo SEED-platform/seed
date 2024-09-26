@@ -328,6 +328,18 @@ def match_and_link_incoming_properties_and_taxlots_by_cycle(
         sub_progress_key,
     )
 
+    from seed.models import Column, DerivedColumn
+    from seed.tasks import update_state_derived_data
+
+    derived_columns = DerivedColumn.objects.filter(organization_id=org.id)
+    Column.objects.filter(derived_column__in=derived_columns).update(is_updating=True)
+    derived_column_ids = list(derived_columns.values_list("id", flat=True))
+    update_state_derived_data(
+        property_state_ids=[v.state_id for v in new_property_views + merged_property_views],
+        taxlot_state_ids=[v.state_id for v in new_taxlot_views + merged_taxlot_views],
+        derived_column_ids=derived_column_ids,
+    )
+
     return {
         # property - within file
         "property_initial_incoming": property_initial_incoming_count,

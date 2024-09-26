@@ -23,7 +23,6 @@ from seed.lib.progress_data.progress_data import ProgressData
 from seed.lib.superperms.orgs.models import Organization
 from seed.models import PropertyView
 from seed.utils.encrypt import decrypt
-from seed.views.v3.properties import PropertyViewSet
 
 _log = logging.getLogger(__name__)
 
@@ -424,6 +423,8 @@ def _batch_get_city_submission_xml(org_id, city_id, view_ids, progress_key):
                     {"property_view": view.id, "matching_field": custom_id_1, "xml": xml.text, "updated_at": sub["updated_at"]}
                 )
 
+    from seed.views.v3.properties import PropertyViewSet
+
     property_view_set = PropertyViewSet()
     # Update is cycle based, going to have update in cycle specific batches
     combined_results = {"success": 0, "failure": 0, "data": []}
@@ -483,6 +484,8 @@ def _get_city_submission_xml(org_id, city_id, custom_id_1, progress_key):
         xml, _ = audit_template.get_submission(sub["id"], "xml")
         if hasattr(xml, "text"):
             xmls = [{"property_view": view.id, "matching_field": custom_id_1, "xml": xml.text, "updated_at": sub["updated_at"]}]
+
+    from seed.views.v3.properties import PropertyViewSet
 
     property_view_set = PropertyViewSet()
     # Update is cycle based, going to have update in cycle specific batches

@@ -101,7 +101,6 @@ def get_filtered_results(request: Request, inventory_type: Literal["property", "
         inventory_type=inventory_type,
         only_used=False,
         include_related=include_related,
-        exclude_derived=True,
     )
     try:
         filters, annotations, order_by = build_view_filters_and_sorts(

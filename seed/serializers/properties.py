@@ -235,6 +235,7 @@ class PropertyStatePromoteWritableSerializer(serializers.ModelSerializer):
     measures = PropertyMeasureSerializer(source="propertymeasure_set", many=True, read_only=True)
     scenarios = ScenarioSerializer(many=True, read_only=True)
     files = BuildingFileSerializer(source="building_files", many=True, read_only=True)
+    derived_data = serializers.JSONField(read_only=True)
 
     # to support the old state serializer method with the PROPERTY_STATE_FIELDS variables
     import_file_id = serializers.IntegerField(allow_null=True, read_only=True)
