@@ -41,6 +41,18 @@ class InventoryGroupMapping(models.Model):
     taxlot = models.ForeignKey(TaxLot, on_delete=models.CASCADE, blank=True, null=True, related_name="group_mappings")
     group = models.ForeignKey(InventoryGroup, on_delete=models.CASCADE)
 
+    def clean(self):
+        inventory = self.property or self.taxlot
+
+        for i in inventory:
+            if i.access_level_instance != self.group.access_level_instance:
+                raise IntegrityError("Access Level mismatch between group and inventory.")
+
+        pass
+
+    def save(self, *args, **kwargs):
+        self.clean()
+        super().save(*args, **kwargs)
 
 @receiver(pre_save, sender=InventoryGroupMapping)
 def presave_inventory_group_mapping(sender, instance, **kwargs):

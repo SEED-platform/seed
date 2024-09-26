@@ -2,6 +2,7 @@
 from collections import namedtuple
 
 from django.db import IntegrityError
+from django.http import JsonResponse
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import response, status, viewsets
 from rest_framework.decorators import action
@@ -39,18 +40,20 @@ class InventoryGroupMappingViewSet(viewsets.ViewSet):
         For each inventory id, check org correctness & then match group id with inv id (and prop/taxlot type)
         """
         inventory_model = self.inventory_models[inventory_type]
+        inventory_org_id, inventory_ali_id = inventory_model.objects.filter(pk=inventory_id).values_list('organization', 'access_level_instance').first()
+        group_org_id, group_ali_id = InventoryGroup.objects.filter(pk=group_id).values_list('organization', 'access_level_instance').first()
 
-        inventory_org_id = inventory_model.objects.get(pk=inventory_id).organization.id
-        group_org_id = InventoryGroup.objects.get(pk=group_id).organization.id
-
-        if inventory_org_id == group_org_id:
-            create_dict = {"group_id": group_id, f"{inventory_type}_id": inventory_id}
-            return InventoryGroupMapping(**create_dict)
-
-        else:
+        if inventory_org_id != group_org_id:
             raise IntegrityError(
                 f"Group with organization_id={group_org_id} cannot be applied to a record with " f"organization_id={inventory_org_id}."
             )
+        elif inventory_ali_id != group_ali_id:
+            raise IntegrityError(
+                f"Access Level mismatch between group and inventory."
+            )
+        else:
+            create_dict = {"group_id": group_id, f"{inventory_type}_id": inventory_id}
+            return InventoryGroupMapping(**create_dict)
 
     def get_inventory_id(self, q, inventory_type):
         return getattr(q, f"{inventory_type}_id")
@@ -117,7 +120,7 @@ class InventoryGroupMappingViewSet(viewsets.ViewSet):
         if inventory_type == "property":
             mappings = InventoryGroupMapping.objects.filter(property__isnull=False).order_by("group_id")
         else:
-            mappings = InventoryGroupMapping.objects.filter(tax_lot__isnull=False).order_by("group_id")
+            mappings = InventoryGroupMapping.objects.filter(taxlot__isnull=False).order_by("group_id")
         return mappings
 
     def get_inventory_ids(self, inventory_type, inventory_ids):
@@ -152,7 +155,7 @@ class InventoryGroupMappingViewSet(viewsets.ViewSet):
         """
         add_group_ids = request.data.get("add_group_ids", [])
         remove_group_ids = request.data.get("remove_group_ids", [])
-        inventory_ids = request.data.get("inventory_ids", None)
+        view_ids = request.data.get("inventory_ids", None)
         inventory_type = request.data.get("inventory_type", None)
         organization = request.query_params["organization_id"]
         error = None
@@ -166,13 +169,16 @@ class InventoryGroupMappingViewSet(viewsets.ViewSet):
             status_code = error.status_code
         else:
             # get ids from view_ids
-            inventory_ids = self.get_inventory_ids(inventory_type, inventory_ids)
+            inventory_ids = self.get_inventory_ids(inventory_type, view_ids)
 
             qs = self.get_queryset_for_inventory_type(inventory_type)
             qs = self.filter_by_inventory(qs, inventory_type, inventory_ids)
 
             removed = self.remove_groups(qs, inventory_type, inventory_ids, remove_group_ids)
-            added = self.add_groups(qs, inventory_type, inventory_ids, add_group_ids)
+            try:
+                added = self.add_groups(qs, inventory_type, inventory_ids, add_group_ids)
+            except IntegrityError as e:
+                return JsonResponse({"staus": "error", "message": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
             num_updated = len(set(added).union(removed))
             groups = self.combine_group_ids(add_group_ids, remove_group_ids)

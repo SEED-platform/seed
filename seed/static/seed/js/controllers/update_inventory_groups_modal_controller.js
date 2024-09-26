@@ -34,10 +34,11 @@ angular.module('SEED.controller.update_inventory_groups_modal', [])
       //   new_group.access_level_instance = response.data.id
       // });
       organization_service.filter_access_levels_by_inventory(org_id, inventory_type, inventory_ids).then((response) => {
-        $scope.ali_count = response.access_level_instance_ids.length
-        console.log('ali_count', $scope.ali_count)
-        if ($scope.ali_count == 1) {
-          $scope.new_group.access_level_instance = response.access_level_instance_ids[0]
+        $scope.inventory_access_level_instance_ids = response.access_level_instance_ids;
+        $scope.inventory_access_level_instance_count = $scope.inventory_access_level_instance_ids.length
+
+        if ($scope.inventory_access_level_instance_ids.length == 1) {
+          $scope.new_group.access_level_instance = $scope.inventory_access_level_instance_ids[0]
         }
       });
 
@@ -71,7 +72,8 @@ angular.module('SEED.controller.update_inventory_groups_modal', [])
           (data) => {
             // promise completed successfully
             const createdGroup = data.data;
-            createdGroup.is_checked_add = false;
+            createdGroup.is_checked_add = true;
+            createdGroup.member_list = $scope.inventory_ids;
             $scope.newGroupForm.$setPristine();
             $scope.inventory_groups.unshift(createdGroup);
             $scope.initialize_new_group();
@@ -89,13 +91,19 @@ angular.module('SEED.controller.update_inventory_groups_modal', [])
         );
       };
 
+      $scope.create_permission = () => {
+        return inventory_access_level_instance_count == 1
+      }
+
       $scope.add_permission = (group) => {
-        // const condition1 = [$scope.inventory_ids.length === 1 && group.member_list.length]
-        if ($scope.new_group.access_level_instance){
-          console.log(
-            'rp task add permission if same ali'
-          )
+        // Wait for ali information to populate
+        if (!$scope.inventory_access_level_instance_count) {
+          return true;
         }
+        return (
+          $scope.inventory_access_level_instance_count == 1 && 
+          group.access_level_instance == $scope.inventory_access_level_instance_ids[0]
+        );
       }
 
       /* Toggle the add button for a group */
@@ -129,8 +137,9 @@ angular.module('SEED.controller.update_inventory_groups_modal', [])
               Notification.primary(`${data.num_updated} properties updated.`);
             }
             $uibModalInstance.close();
-          }, (data, status) => {
-            $log.error('error:', data, status);
+          }, (data) => {
+            $scope.error = data.data.message
+            $log.error('error:', $scope.error);
           });
         } else if (inventory_type === 'taxlots') {
           inventory_group_service.update_inventory_groups(addGroupIDs, removeGroupIDs, inventory_ids, 'tax_lot').then((data) => {
@@ -140,8 +149,9 @@ angular.module('SEED.controller.update_inventory_groups_modal', [])
               Notification.primary(`${data.num_updated} tax lots updated.`);
             }
             $uibModalInstance.close();
-          }, (data, status) => {
-            $log.error('error:', data, status);
+          }, (data) => {
+            $scope.error = data.data.message
+            $log.error('error:', $scope.error);
           });
         }
       };
@@ -155,7 +165,9 @@ angular.module('SEED.controller.update_inventory_groups_modal', [])
       const init = () => {
         $scope.initialize_new_group();
         $scope.loading = true;
-        inventory_group_service.get_groups_for_inventory(inventory_type, inventory_ids).then((groups) => {
+        // rp why only get inventory for selected ids?
+        // inventory_group_service.get_groups_for_inventory(inventory_type, inventory_ids).then((groups) => {
+        inventory_group_service.get_groups(inventory_type).then((groups) => {
           $scope.inventory_groups = [];
           groups.forEach((group) => {
             if (group.organization === $scope.org_id &&

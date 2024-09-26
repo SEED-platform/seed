@@ -539,7 +539,6 @@ class AccessLevelViewSet(viewsets.ViewSet):
         """
         Return a distinct list of access_level_instance_ids for a group of inventory_ids
         """
-        logging.error(">>>HERE")
         inventory_type = request.data.get('inventory_type', 0)
         inventory_ids = request.data.get('inventory_ids')
         if not inventory_ids:
