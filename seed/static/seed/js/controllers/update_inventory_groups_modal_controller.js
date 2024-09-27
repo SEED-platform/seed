@@ -7,7 +7,7 @@ angular.module('SEED.controller.update_inventory_groups_modal', [])
     'inventory_group_service',
     'organization_service',
     'user_service',
-    'inventory_ids',
+    'view_ids',
     'inventory_type',
     'org_id',
     'Notification',
@@ -19,21 +19,21 @@ angular.module('SEED.controller.update_inventory_groups_modal', [])
       inventory_group_service,
       organization_service,
       user_service,
-      inventory_ids,
+      view_ids,
       inventory_type,
       org_id,
       Notification
     ) {
-      $scope.inventory_ids = inventory_ids;
+      $scope.view_ids = view_ids;
       $scope.inventory_type = inventory_type;
       $scope.org_id = org_id;
 
-      // organization_service.get_lowest_common_ancestor(org_id, inventory_type, inventory_ids).then((response) => {
+      // organization_service.get_lowest_common_ancestor(org_id, inventory_type, view_ids).then((response) => {
       //   console.log("TODO review")
       //   $scope.lowest_common_ancestor = response.data
       //   new_group.access_level_instance = response.data.id
       // });
-      organization_service.filter_access_levels_by_inventory(org_id, inventory_type, inventory_ids).then((response) => {
+      organization_service.filter_access_levels_by_inventory(org_id, inventory_type, view_ids).then((response) => {
         $scope.inventory_access_level_instance_ids = response.access_level_instance_ids;
         $scope.inventory_access_level_instance_count = $scope.inventory_access_level_instance_ids.length
 
@@ -73,7 +73,7 @@ angular.module('SEED.controller.update_inventory_groups_modal', [])
             // promise completed successfully
             const createdGroup = data.data;
             createdGroup.is_checked_add = true;
-            createdGroup.views_list = $scope.inventory_ids;
+            createdGroup.views_list = $scope.view_ids;
             $scope.newGroupForm.$setPristine();
             $scope.inventory_groups.unshift(createdGroup);
             $scope.initialize_new_group();
@@ -101,6 +101,7 @@ angular.module('SEED.controller.update_inventory_groups_modal', [])
           return true;
         }
         return (
+          !group.has_views &&
           $scope.inventory_access_level_instance_count == 1 &&
           group.access_level_instance == $scope.inventory_access_level_instance_ids[0]
         );
@@ -130,7 +131,7 @@ angular.module('SEED.controller.update_inventory_groups_modal', [])
           .sort();
 
         if (inventory_type === 'properties') {
-          inventory_group_service.update_inventory_groups(addGroupIDs, removeGroupIDs, inventory_ids, 'property').then((data) => {
+          inventory_group_service.update_inventory_groups(addGroupIDs, removeGroupIDs, view_ids, 'property').then((data) => {
             if (data.num_updated === 1) {
               Notification.primary(`${data.num_updated} property updated.`);
             } else {
@@ -142,7 +143,7 @@ angular.module('SEED.controller.update_inventory_groups_modal', [])
             $log.error('error:', $scope.error);
           });
         } else if (inventory_type === 'taxlots') {
-          inventory_group_service.update_inventory_groups(addGroupIDs, removeGroupIDs, inventory_ids, 'tax_lot').then((data) => {
+          inventory_group_service.update_inventory_groups(addGroupIDs, removeGroupIDs, view_ids, 'tax_lot').then((data) => {
             if (data.num_updated === 1) {
               Notification.primary(`${data.num_updated} tax lot updated.`);
             } else {
@@ -165,13 +166,12 @@ angular.module('SEED.controller.update_inventory_groups_modal', [])
       const init = () => {
         $scope.initialize_new_group();
         $scope.loading = true;
-        // rp why only get inventory for selected ids?
-        // inventory_group_service.get_groups_for_inventory(inventory_type, inventory_ids).then((groups) => {
         inventory_group_service.get_groups(inventory_type).then((groups) => {
           $scope.inventory_groups = [];
           groups.forEach((group) => {
             if (group.organization === $scope.org_id &&
                 group.inventory_type === ($scope.inventory_type === 'properties' ? 'Property' : 'Tax Lot')) {
+              group.has_views = group.views_list.some(view => view_ids.includes(view))
               $scope.inventory_groups.push(group);
             }
           });

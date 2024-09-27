@@ -579,14 +579,14 @@ angular.module('SEED.controller.inventory_detail', []).controller('inventory_det
         size: 'lg',
         resolve: {
           access_level_tree: () => access_level_tree,
-          inventory_ids: () => [$scope.inventory.view_id],
+          view_ids: () => [$scope.inventory.view_id],
           inventory_type: () => $scope.inventory_type,
           org_id: () => $scope.organization.id,
           cycle: () => $scope.cycle.id
         }
       });
       modalInstance.result.then(() => {
-        // do nothing
+        $state.reload();
       });
     };
 

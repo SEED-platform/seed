@@ -665,13 +665,14 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
         size: 'lg',
         resolve: {
           access_level_tree: () => access_level_tree,
-          inventory_ids: () => selectedViewIds,
+          view_ids: () => selectedViewIds,
           inventory_type: () => $scope.inventory_type,
           org_id: () => $scope.organization.id
         }
       });
       modalInstance.result.then(() => {
         // dialog was closed with 'Done' button.
+        $state.reload()
         get_inventory_groups();
       });
     };

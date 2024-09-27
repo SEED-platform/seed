@@ -12,10 +12,10 @@
             <input id="newGroupName" type="text" name="name" class="form-control" ng-model="new_group.name" placeholder="{$:: 'Group Name' | translate $}" sd-check-label-exists="groups" required />
             <!-- </div> -->
           </div>
-          <button type="submit" class="btn btn-primary" ng-disabled="newGroupForm.$invalid || disabled || inventory_access_level_insetance_count !== 1"  style="height: 40px; margin-top: 20px;" ng-disabled="" translate>Create group</button>
+          <button type="submit" class="btn btn-primary" ng-disabled="newGroupForm.$invalid || disabled || inventory_access_level_instance_count !== 1"  style="height: 40px; margin-top: 20px;" ng-disabled="" translate>Create group</button>
         </div>
         <div class="help-block">
-          <div class="alert alert-warning" ng-show="inventory_access_level_insetance_count !== 1">All properties within a group must be in the same access level instance. Modify selection and try again.</div>
+          <div class="alert alert-warning" ng-show="inventory_access_level_instance_count !== 1">All properties within a group must be in the same access level instance. Modify selection and try again.</div>
           <div class="alert alert-danger" ng-show="error">{$ error $}</div>
         </div>
       </form>
@@ -54,7 +54,7 @@
                 type="button"
                 uib-btn-checkbox
                 ng-model="inventory_group.is_checked_remove"
-                ng-show="inventory_group.inventory_list.length"
+                ng-show="inventory_group.has_views"
                 btn-checkbox-true="true"
                 btn-checkbox-false="false"
                 class="btn btn-sm btn-default action_link"
@@ -76,7 +76,7 @@
                 ng-click="toggle_add(inventory_group)"
                 translate
               >
-                Add
+                Add 
               </button>
             </td>
           </tr>
