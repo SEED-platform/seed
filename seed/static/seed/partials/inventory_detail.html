@@ -237,11 +237,10 @@
                 </span>
               </td>
 
-              <!-- Show read-only current derived column value -->
+              <!-- Show read-only derived column value -->
               <td ng-if="edit_form_showing===false && col.derived_column" class="ellipsis">
                 <span class="sd-data-content" uib-popover="{$ item_derived_values[col.column_description] $}" popover-trigger="'outsideClick'" popover-animation="false" popover-placement="top-left">
-                  <span ng-if="!item_derived_values.hasOwnProperty(col.id)"><i class="fa-solid fa-spinner fa-spin-pulse fa-fw" style="padding-right: 0"></i> Loading...</span>
-                  <span ng-if="!!item_derived_values.hasOwnProperty(col.id)">{$ item_derived_values[col.id] $}</span>
+                  <span>{$:: displayValue(col, item_state.derived_data[col.column_name]) $}</span>
                 </span>
               </td>
 
@@ -356,8 +355,6 @@
         </table>
       </div>
     </div>
-    <br />
-    <br />
 
     <div ng-if="::inventory_type==='properties'">
       <!-- Elements Section -->
@@ -401,10 +398,10 @@
         </div>
       </div>
 
-      <div class="section" ng-if="::tkbl.length > 0">
+      <div ng-if="::tkbl.length > 0">
         <div class="section_header_container" style="margin-top: 20px; border-bottom: 0">
           <div class="section_header fixed_height_short has_no_padding">
-            <div class="section_action_container left" style="width: 50%">
+            <div class="section_action_container" style="width: 75%">
               <h2><i class="fa-solid fa-atom"></i>{$:: 'Building Performance Standard (BPS) Compliance Pathway Support' | translate $}</h2>
             </div>
           </div>
@@ -432,19 +429,27 @@
                   <td>
                     <ul ng-if="element.tkbl.sftool.length > 0">
                       <li ng-repeat="entry in ::element.tkbl.sftool">
-                        <a ng-href="{$:: entry.url $}" target="_blank" rel="noopener noreferrer">{$:: entry.name $}</a>
+                        <a ng-href="{$:: entry.url $}" target="_blank" rel="noopener noreferrer">{$:: entry.subcategory $}</a>
                       </li>
                     </ul>
                   </td>
                   <td>
                     <ul ng-if="element.tkbl.estcp.length > 0">
                       <li ng-repeat="entry in ::element.tkbl.estcp">
-                        <a ng-href="{$:: entry.url $}" target="_blank" rel="noopener noreferrer">{$:: entry.name $}</a>
+                        <a ng-href="{$:: entry.url $}" target="_blank" rel="noopener noreferrer">{$:: entry.title $}</a>
                       </li>
                     </ul>
                   </td>
-                  <td></td>
-                  <td></td>
+                  <td>
+                    <ul ng-if="element.tkbl.bsync_measures.length > 0">
+                      <li ng-repeat="entry in ::element.tkbl.bsync_measures">{$:: entry $}</li>
+                    </ul>
+                  </td>
+                  <td class="col-sm-4">
+                    <ul ng-if="element.tkbl.federal_bps_measures.length > 0">
+                      <li class="elements-wrap" ng-repeat="entry in ::element.tkbl.federal_bps_measures">{$:: entry $}</li>
+                    </ul>
+                  </td>
                   <td></td>
                 </tr>
               </tbody>

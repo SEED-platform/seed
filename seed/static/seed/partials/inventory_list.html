@@ -50,6 +50,7 @@
           <option ng-show="menu.user.organization.user_role !== 'viewer'" value="open_merge_modal" ng-disabled="selectedParentCount < 2" translate>Merge</option>
           <option ng-show="menu.user.organization.user_role !== 'viewer'" value="open_delete_modal" ng-disabled="selectedCount === 0" translate>Delete</option>
           <option ng-show="menu.user.organization.user_role !== 'viewer'" value="open_export_modal" ng-disabled="selectedCount === 0" translate>Export</option>
+          <option ng-show="menu.user.organization.user_role !== 'viewer'" value="update_derived_columns" ng-disabled="selectedCount === 0" translate>Update Derived Data</option>
           <option
             ng-show="menu.user.organization.user_role !== 'viewer'"
             value="open_export_to_audit_template_modal"

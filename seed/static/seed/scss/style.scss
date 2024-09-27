@@ -4339,6 +4339,10 @@ iframe.analysis-results {
   float: left;
 }
 
+.updating-derived-column-display-name {
+  background-color: $yellow;
+}
+
 .sensor-header-container {
   position: relative;
   margin-top: 10px;
@@ -5721,4 +5725,9 @@ tags-input .tags .tag-item {
     margin: 0 2px;
     width: 100%;
   }
+
+.elements-wrap {
+  word-wrap: break-word;
+  white-space: normal;
+  min-width: 350px;
 }

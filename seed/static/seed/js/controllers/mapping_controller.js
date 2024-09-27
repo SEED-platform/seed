@@ -74,6 +74,20 @@ angular.module('SEED.controller.mapping', []).controller('mapping_controller', [
     COLUMN_MAPPING_PROFILE_TYPE_BUILDINGSYNC_CUSTOM,
     derived_columns_payload
   ) {
+    $scope.data_types = [
+      { id: 'None', label: 'None' },
+      { id: 'number', label: $translate.instant('Number') },
+      { id: 'integer', label: $translate.instant('Integer') },
+      { id: 'string', label: $translate.instant('Text') },
+      { id: 'datetime', label: $translate.instant('Datetime') },
+      { id: 'date', label: $translate.instant('Date') },
+      { id: 'boolean', label: $translate.instant('Boolean') },
+      { id: 'area', label: $translate.instant('Area') },
+      { id: 'eui', label: $translate.instant('EUI') },
+      { id: 'geometry', label: $translate.instant('Geometry') },
+      { id: 'ghg', label: $translate.instant('GHG') },
+      { id: 'ghg_intensity', label: $translate.instant('GHG Intensity') }
+    ];
     $scope.profiles = [{ id: 0, mappings: [], name: '<None selected>' }].concat(column_mapping_profiles_payload);
 
     $scope.current_profile = $scope.profiles[0] ?? {};
@@ -140,7 +154,8 @@ angular.module('SEED.controller.mapping', []).controller('mapping_controller', [
           from_field: mapping.name,
           from_units: mapping.from_units,
           to_field: mapping.suggestion_column_name || mapping.suggestion || '',
-          to_table_name: mapping.suggestion_table_name
+          to_table_name: mapping.suggestion_table_name,
+          is_omitted: mapping.is_omitted
         };
         const isBuildingSyncProfile =
             $scope.current_profile.profile_type !== undefined &&
@@ -292,6 +307,10 @@ angular.module('SEED.controller.mapping', []).controller('mapping_controller', [
       return col.suggestion_table_name === 'PropertyState' && Boolean(_.find(data_type_columns, { column_name: col.suggestion_column_name }));
     };
 
+    $scope.is_eui_column = (col) => col.suggestion_table_name === 'PropertyState' && col.data_type === 'eui';
+    $scope.is_area_column = (col) => col.suggestion_table_name === 'PropertyState' && col.data_type === 'area';
+    $scope.is_ghg_column = (col) => col.suggestion_table_name === 'PropertyState' && col.data_type === 'ghg';
+    $scope.is_ghg_intensity_column = (col) => col.suggestion_table_name === 'PropertyState' && col.data_type === 'ghg_intensity';
     const get_default_quantity_units = (col) => {
       // TODO - hook up to org preferences / last mapping in DB
       if ($scope.is_data_type_column('eui', col)) {
@@ -360,6 +379,7 @@ angular.module('SEED.controller.mapping', []).controller('mapping_controller', [
         }
         if (match) {
           col.suggestion_column_name = match.column_name;
+          col.data_type = match.data_type;
         } else {
           col.suggestion_column_name = null;
         }
@@ -438,7 +458,7 @@ angular.module('SEED.controller.mapping', []).controller('mapping_controller', [
         suggestion: suggestion.to_field,
         suggestion_column_name: suggestion.to_field,
         suggestion_table_name: suggestion.to_table_name,
-        isOmitted: false
+        is_omitted: suggestion.is_omitted
       };
     };
 
@@ -464,6 +484,7 @@ angular.module('SEED.controller.mapping', []).controller('mapping_controller', [
         }
         if (match) {
           col.suggestion = match.display_name;
+          $scope.change(col, true);
         } else if ($scope.mappingBuildingSync) {
           col.suggestion = $filter('titleCase')(col.suggestion_column_name);
         }
@@ -520,14 +541,15 @@ angular.module('SEED.controller.mapping', []).controller('mapping_controller', [
     $scope.get_mappings = () => {
       const mappings = [];
       _.forEach(
-        $scope.mappings.filter((m) => !m.isOmitted),
+        $scope.mappings.filter((m) => !m.is_omitted),
         (col) => {
           mappings.push({
             from_field: col.name,
             from_units: col.from_units || null,
             to_field: col.suggestion_column_name || col.suggestion,
             to_field_display_name: col.suggestion,
-            to_table_name: col.suggestion_table_name
+            to_table_name: col.suggestion_table_name,
+            to_data_type: col.data_type
           });
         }
       );
@@ -578,7 +600,7 @@ angular.module('SEED.controller.mapping', []).controller('mapping_controller', [
 
       const intersections = _.intersectionWith(
         required_property_fields,
-        $scope.mappings.filter((m) => !m.isOmitted),
+        $scope.mappings.filter((m) => !m.is_omitted),
         (required_field, raw_col) => _.isMatch(required_field, {
           column_name: raw_col.suggestion_column_name,
           inventory_type: raw_col.suggestion_table_name
@@ -613,7 +635,7 @@ angular.module('SEED.controller.mapping', []).controller('mapping_controller', [
      */
     $scope.empty_fields_present = () => Boolean(
       _.find(
-        $scope.mappings.filter((m) => !m.isOmitted),
+        $scope.mappings.filter((m) => !m.is_omitted),
         { suggestion: '' }
       )
     );
@@ -622,7 +644,7 @@ angular.module('SEED.controller.mapping', []).controller('mapping_controller', [
      * empty_units_present: used to disable or enable the 'Map Your Data' button if any units are empty
      */
     $scope.empty_units_present = () => $scope.mappings.some((field) => (
-      !field.isOmitted &&
+      !field.is_omitted &&
           field.suggestion_table_name === 'PropertyState' &&
           field.from_units === null &&
           $scope.is_pint_column(field)
@@ -633,7 +655,7 @@ angular.module('SEED.controller.mapping', []).controller('mapping_controller', [
      *   mappings' button. No warning associated as users "aren't done" listing their mapping settings.
      */
     const suggestions_not_provided_yet = () => {
-      const non_omitted_mappings = $scope.mappings.filter((m) => !m.isOmitted);
+      const non_omitted_mappings = $scope.mappings.filter((m) => !m.is_omitted);
       const no_suggestion_value = Boolean(_.find(non_omitted_mappings, { suggestion: undefined }));
       const no_suggestion_table_name = Boolean(_.find(non_omitted_mappings, { suggestion_table_name: undefined }));
 

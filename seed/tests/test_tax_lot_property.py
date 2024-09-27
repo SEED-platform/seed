@@ -16,10 +16,19 @@ from xlrd import open_workbook
 
 from seed.landing.models import SEEDUser as User
 from seed.lib.progress_data.progress_data import ProgressData
-from seed.models import Column, Cycle, Note, PropertyView, TaxLotProperty, TaxLotView
+from seed.models import (
+    Column,
+    Cycle,
+    DerivedColumn,
+    Note,
+    PropertyView,
+    TaxLotProperty,
+    TaxLotView,
+)
 from seed.serializers.pint import DEFAULT_UNITS
 from seed.tasks import set_update_to_now
 from seed.test_helpers.fake import (
+    FakeDerivedColumnFactory,
     FakePropertyFactory,
     FakePropertyStateFactory,
     FakePropertyViewFactory,
@@ -52,6 +61,9 @@ class TestTaxLotProperty(DataMappingBaseTestCase):
         self.property_view = self.property_view_factory.get_property_view()
         self.urls = ["http://example.com", "http://example.org"]
         self.client.login(**user_details)
+
+        self.derived_col_factory = FakeDerivedColumnFactory(organization=self.org, inventory_type=DerivedColumn.PROPERTY_TYPE)
+        self.property_view_factory = FakePropertyViewFactory(organization=self.org)
 
     def test_tax_lot_property_get_related(self):
         """Test to make sure get_related returns the fields"""
@@ -96,6 +108,19 @@ class TestTaxLotProperty(DataMappingBaseTestCase):
 
         self.assertEqual(len(data), 50)
         self.assertEqual(len(data[0]["related"]), 0)
+
+    def test_taxlot_property_returns_derived_data(self):
+        derived_column = self.derived_col_factory.get_derived_column(expression="$gross_floor_area + 1", name="my_derived_column")
+        column = Column.objects.get(derived_column=derived_column)
+
+        property_view = self.property_view_factory.get_property_view()
+        columns_from_database = Column.retrieve_all(self.org.id, "property", False)
+
+        # -- Action
+        data = TaxLotProperty.serialize([property_view], [column.id], columns_from_database)
+
+        # -- Assertion
+        assert "my_derived_column_" + str(column.id) in data[0]
 
     def test_csv_export(self):
         """Test to make sure get_related returns the fields"""

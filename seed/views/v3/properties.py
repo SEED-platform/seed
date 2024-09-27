@@ -59,6 +59,7 @@ from seed.models import (
     Column,
     ColumnMappingProfile,
     Cycle,
+    DerivedColumn,
     InventoryDocument,
     InventoryGroupMapping,
     Meter,
@@ -85,6 +86,7 @@ from seed.serializers.properties import (
     UpdatePropertyPayloadSerializer,
 )
 from seed.serializers.taxlots import TaxLotViewSerializer
+from seed.tasks import update_state_derived_data
 from seed.utils.api import OrgMixin, ProfileIdMixin, api_endpoint_class
 from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema_org_query_param
 from seed.utils.inventory_filter import get_filtered_results
@@ -529,6 +531,8 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
                 {"status": "error", "message": "These two properties have different alis."}, status=status.HTTP_400_BAD_REQUEST
             )
 
+        update_derived_data([_view.state.id], organization_id)
+
         return {
             "status": "success",
             "match_merged_count": merge_count,
@@ -739,6 +743,9 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             "match_merged_count": merge_count,
             "match_link_count": link_count,
         }
+
+        if merge_count > 0:
+            update_derived_data([view.state.id], org_id)
 
         return JsonResponse(result)
 
@@ -1225,6 +1232,8 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
                             }
                         )
 
+                        update_derived_data([view.state.id], log.organization_id)
+
                         return JsonResponse(result, encoder=PintJSONEncoder, status=status.HTTP_200_OK)
                     else:
                         result.update(
@@ -1446,6 +1455,8 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
                     table_name="PropertyState",
                 )
 
+            update_derived_data([new_pv_view.state.id], organization_id)
+
             return JsonResponse(
                 {
                     "success": True,
@@ -1620,6 +1631,8 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         progress_data.delete()
 
         if merged_state:
+            update_derived_data([property_view.state.id], org_id)
+
             return JsonResponse(
                 {
                     "success": True,
@@ -1980,3 +1993,10 @@ def diffupdate(old, new):
         changed_fields.remove("extra_data")
         changed_extra_data, _ = diffupdate(old["extra_data"], new["extra_data"])
     return changed_fields, changed_extra_data
+
+
+def update_derived_data(state_ids, org_id):
+    derived_columns = DerivedColumn.objects.filter(organization_id=org_id)
+    Column.objects.filter(derived_column__in=derived_columns).update(is_updating=True)
+    derived_column_ids = list(derived_columns.values_list("id", flat=True))
+    update_state_derived_data(property_state_ids=state_ids, derived_column_ids=derived_column_ids)

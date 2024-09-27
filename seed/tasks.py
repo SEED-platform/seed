@@ -531,3 +531,48 @@ def set_update_to_now(property_view_ids, taxlot_view_ids, progress_key):
 
     progress_data.finish_with_success()
     return progress_data.result()["progress"]
+
+
+@shared_task
+def update_state_derived_data(property_state_ids=[], taxlot_state_ids=[], derived_column_ids=[]):
+    chunk_size = 100
+
+    derived_columns = DerivedColumn.objects.filter(id__in=derived_column_ids)
+    property_derived_column_ids = list(derived_columns.filter(inventory_type=DerivedColumn.PROPERTY_TYPE).values_list("id", flat=True))
+    taxlot_derived_column_ids = list(derived_columns.filter(inventory_type=DerivedColumn.TAXLOT_TYPE).values_list("id", flat=True))
+
+    tasks = []
+    for chunk_ids in batch(property_state_ids, chunk_size):
+        tasks.append(_update_property_state_derived_data_chunk.si(chunk_ids, property_derived_column_ids))
+    for chunk_ids in batch(taxlot_state_ids, chunk_size):
+        tasks.append(_update_taxlot_state_derived_data_chunk.si(chunk_ids, taxlot_derived_column_ids))
+
+    chord(tasks, interval=15)(_finish_update_state_derived_data.si(property_derived_column_ids + taxlot_derived_column_ids))
+
+
+@shared_task
+def _update_property_state_derived_data_chunk(property_state_ids=[], derived_column_ids=[]):
+    states = PropertyState.objects.filter(id__in=property_state_ids)
+    derived_columns = DerivedColumn.objects.filter(id__in=derived_column_ids)
+
+    for state in states:
+        for derived_column in derived_columns:
+            state.derived_data[derived_column.name] = derived_column.evaluate(state)
+        state.save()
+
+
+@shared_task
+def _update_taxlot_state_derived_data_chunk(taxlot_state_ids=[], derived_column_ids=[]):
+    states = TaxLotState.objects.filter(id__in=taxlot_state_ids)
+    derived_columns = DerivedColumn.objects.filter(id__in=derived_column_ids)
+
+    for state in states:
+        for derived_column in derived_columns:
+            state.derived_data[derived_column.name] = derived_column.evaluate(state)
+        state.save()
+
+
+@shared_task
+def _finish_update_state_derived_data(derived_column_ids):
+    derived_columns = DerivedColumn.objects.filter(id__in=derived_column_ids)
+    Column.objects.filter(derived_column__in=derived_columns).update(is_updating=False)

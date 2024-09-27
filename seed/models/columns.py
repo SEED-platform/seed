@@ -102,6 +102,7 @@ class Column(models.Model):
         "centroid",
         "created",
         "data_state",
+        "derived_data",
         "extra_data",
         "geocoding_confidence",
         "id",
@@ -180,6 +181,23 @@ class Column(models.Model):
         "JSONField": "string",
         "PolygonField": "geometry",
         "PointField": "geometry",
+    }
+
+    DB_TYPES = {
+        "number": "float",
+        "float": "float",
+        "integer": "integer",
+        "string": "string",
+        "geometry": "geometry",
+        "datetime": "datetime",
+        "date": "date",
+        "boolean": "boolean",
+        "area": "float",
+        "eui": "float",
+        "ghg": "float",
+        "ghg_intensity": "float",
+        "wui": "float",
+        "water_use": "float",
     }
 
     DATA_TYPE_PARSERS: dict[str, Callable] = {
@@ -817,6 +835,7 @@ class Column(models.Model):
 
     comstock_mapping = models.CharField(max_length=64, null=True, blank=True, default=None)
     derived_column = models.OneToOneField("DerivedColumn", on_delete=models.CASCADE, null=True, blank=True)
+    is_updating = models.BooleanField(null=False, default=False)
 
     class Meta:
         constraints = [
@@ -1010,9 +1029,9 @@ class Column(models.Model):
                         "from_field": row[0],
                         "to_table_name": row[1],
                         "to_field": row[2],
-                        # "to_display_name": row[3],
-                        # "to_data_type": row[4],
-                        # "to_unit_type": row[5],
+                        "to_display_name": row[3],
+                        "to_data_type": row[4],
+                        "to_unit_type": row[5],
                     }
                     mappings.append(data)
         else:
@@ -1059,13 +1078,13 @@ class Column(models.Model):
                         'to_field': 'gross_floor_area',
                         'to_field_display_name': 'Gross Floor Area',
                         'to_table_name': 'PropertyState',
+                        'to_data_type': 'string', # an internal data type mapping
                     }
                 ]
         """
 
         # initialize a cache to store the mappings
         cache_column_mapping = []
-
         # Take the existing object and return the same object with the db column objects added to
         # the dictionary (to_column_object and from_column_object)
         mappings = Column._column_fields_to_columns(mappings, organization, user)
@@ -1101,7 +1120,6 @@ class Column(models.Model):
 
                 column_mapping.user = user
                 column_mapping.save()
-
                 cache_column_mapping.append(
                     {
                         "from_field": mapping["from_field"],
@@ -1176,6 +1194,10 @@ class Column(models.Model):
                 "table_name": "" if is_ah_data else field["to_table_name"],
                 "is_extra_data": is_extra_data,
             }
+            # Only compare against data type if it is provided && the column is an extra data column
+            if ("to_data_type" in field) and (is_extra_data):
+                to_col_params["data_type"] = field["to_data_type"]
+
             if is_root_user or is_ah_data:
                 to_org_col, _ = Column.objects.get_or_create(**to_col_params)
             else:
@@ -1312,28 +1334,10 @@ class Column(models.Model):
         """
         columns = copy.deepcopy(Column.DATABASE_COLUMNS)
 
-        # TODO: There seem to be lots of these lists floating around. We should consolidate them.
-        MAP_TYPES = {
-            "number": "float",
-            "float": "float",
-            "integer": "integer",
-            "string": "string",
-            "geometry": "geometry",
-            "datetime": "datetime",
-            "date": "date",
-            "boolean": "boolean",
-            "area": "float",
-            "eui": "float",
-            "ghg": "float",
-            "ghg_intensity": "float",
-            "wui": "float",
-            "water_use": "float",
-        }
-
         types = OrderedDict()
         for c in columns:
             try:
-                types[c["column_name"]] = MAP_TYPES[c["data_type"]]
+                types[c["column_name"]] = Column.DB_TYPES[c["data_type"]]
             except KeyError:
                 _log.error("could not find data_type for %s" % c)
                 types[c["column_name"]] = ""
