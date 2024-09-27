@@ -33,6 +33,7 @@
 * Improvements to UBID handling during upload by @perryr16 in https://github.com/SEED-platform/seed/pull/4780
 * Add property measure class method defaults by @perryr16 in https://github.com/SEED-platform/seed/pull/4778
 * Delete events when related cycle is deleted. by @perryr16 in https://github.com/SEED-platform/seed/pull/4779
+* Fix `hiredis` not found error by @axelstudios in https://github.com/SEED-platform/seed/pull/4821
 
 
 **Full Changelog**: https://github.com/SEED-platform/seed/compare/v3.1.0...v3.2.0
