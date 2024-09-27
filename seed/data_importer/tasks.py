@@ -18,7 +18,7 @@ from collections import defaultdict, namedtuple
 from datetime import date, datetime
 from itertools import chain
 from math import ceil
-from typing import Union
+from typing import Optional, Union
 
 from _csv import Error
 from celery import chain as celery_chain
@@ -1720,9 +1720,9 @@ def add_dictionary_repr_to_hash(hash_obj, dict_obj: dict):
     return hash_obj
 
 
-def hash_state_object(obj: Union[PropertyState, TaxLotState], include_extra_data=True):
+def hash_state_object(obj: Union[PropertyState, TaxLotState], include_extra_data=True, prefetched_columns: Optional[list[str]] = None):
     m = hashlib.md5()  # noqa: S324
-    for field in Column.retrieve_db_field_name_for_hash_comparison(type(obj), obj.organization_id):
+    for field in prefetched_columns or Column.retrieve_db_field_name_for_hash_comparison(type(obj), obj.organization_id):
         # Default to a random value so we can distinguish between this and None.
         obj_val = getattr(obj, field, "FOO")
         m.update(field.encode("utf-8"))
