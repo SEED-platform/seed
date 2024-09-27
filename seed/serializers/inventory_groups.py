@@ -44,14 +44,11 @@ class InventoryGroupSerializer(serializers.ModelSerializer):
         return result
 
     def get_member_list(self, obj):
-        inventory_lookup = {
-            0: ('property', PropertyView),
-            1: ('taxlot', TaxLotView)
-        }
+        inventory_lookup = {0: ("property", PropertyView), 1: ("taxlot", TaxLotView)}
         inventory_type, view_class = inventory_lookup[obj.inventory_type]
 
         inventory = obj.inventorygroupmapping_set.all().values_list(inventory_type, flat=True)
-        views = view_class.objects.filter(**{f"{inventory_type}__in": inventory}).values_list('id', flat=True)
+        views = view_class.objects.filter(**{f"{inventory_type}__in": inventory}).values_list("id", flat=True)
 
         return list(inventory), list(views)
 

@@ -42,7 +42,7 @@ angular.module('SEED.service.inventory_group', []).factory('inventory_group_serv
     };
 
     group_factory.get_groups = (inventory_type) => group_factory.get_groups_for_org(user_service.get_organization().id, inventory_type);
-    
+
     group_factory.get_groups_for_org = (organization_id, inventory_type) => $http.get('/api/v3/inventory_groups/', {
       params: {
         organization_id,
