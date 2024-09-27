@@ -1,3 +1,42 @@
+# SEED Version 3.2.0
+
+<!-- Release notes generated using configuration in .github/release.yml at 3.2-release-prep -->
+
+## What's Changed
+### New Features 🎉
+* Export CTS facility upload template for Federal BPS by @kflemin in https://github.com/SEED-platform/seed/pull/4792
+* Implement `Building Upgrade Recommendation` analysis by @haneslinger in https://github.com/SEED-platform/seed/pull/4771
+* Remaining Service Life table update by @kflemin in https://github.com/SEED-platform/seed/pull/4805
+* Filter elements endpoint by @axelstudios in https://github.com/SEED-platform/seed/pull/4808
+* Add Spanish translations by @axelstudios in https://github.com/SEED-platform/seed/pull/4818
+### Improvements 📈
+* Add number of D.D.C. Control Panels to Element analysis by @haneslinger in https://github.com/SEED-platform/seed/pull/4767
+* Allow columns to be excluded from hashing by @crutan in https://github.com/SEED-platform/seed/pull/4769
+* Add `COOKIE_EXPIRATION` environment variable by @axelstudios in https://github.com/SEED-platform/seed/pull/4801
+* Update GreenButton file processing by @kflemin in https://github.com/SEED-platform/seed/pull/4807
+* Add `Move Properties` option to inventory actions dropdown by @crutan in https://github.com/SEED-platform/seed/pull/4802
+* Enable data type setting during data import by @crutan in https://github.com/SEED-platform/seed/pull/4740
+* Add cached derived data by @haneslinger in https://github.com/SEED-platform/seed/pull/4763
+### Maintenance 🧹
+* DRY rehash by @axelstudios in https://github.com/SEED-platform/seed/pull/4783
+* Remove helm charts by @axelstudios in https://github.com/SEED-platform/seed/pull/4784
+* Remove jwt oauth by @axelstudios in https://github.com/SEED-platform/seed/pull/4798
+* Cleanup shebangs by @axelstudios in https://github.com/SEED-platform/seed/pull/4799
+* Fix rehash migrations prior to `is_excluded_from_hash` by @axelstudios in https://github.com/SEED-platform/seed/pull/4819
+### Bug Fixes 🐛
+* Add developer logs to Audit Template workflow by @perryr16 in https://github.com/SEED-platform/seed/pull/4770
+* Improve handling of failed ESPM imports  by @perryr16 in https://github.com/SEED-platform/seed/pull/4762
+* Remove highlight from scenario by @perryr16 in https://github.com/SEED-platform/seed/pull/4757
+* Standardize inventory detail display name by @perryr16 in https://github.com/SEED-platform/seed/pull/4759
+* Improve handling of 2-factor authentication requirement by @perryr16 in https://github.com/SEED-platform/seed/pull/4782
+* Fix Django autoreload by @axelstudios in https://github.com/SEED-platform/seed/pull/4794
+* Improvements to UBID handling during upload by @perryr16 in https://github.com/SEED-platform/seed/pull/4780
+* Add property measure class method defaults by @perryr16 in https://github.com/SEED-platform/seed/pull/4778
+* Delete events when related cycle is deleted. by @perryr16 in https://github.com/SEED-platform/seed/pull/4779
+
+
+**Full Changelog**: https://github.com/SEED-platform/seed/compare/v3.1.0...v3.2.0
+
 # SEED Version 3.1.0
 
 <!-- Release notes generated using configuration in .github/release.yml at 3.1-release-prep -->
