@@ -10,7 +10,7 @@ angular.module('SEED.service.inventory_group', []).factory('inventory_group_serv
     const group_factory = {};
 
     function map_group(group) {
-      if (group.member_list.length) {
+      if (group.views_list.length) {
         group.has_members = true;
       } else {
         group.has_members = false;
@@ -42,7 +42,7 @@ angular.module('SEED.service.inventory_group', []).factory('inventory_group_serv
     };
 
     group_factory.get_groups = (inventory_type) => group_factory.get_groups_for_org(user_service.get_organization().id, inventory_type);
-
+    
     group_factory.get_groups_for_org = (organization_id, inventory_type) => $http.get('/api/v3/inventory_groups/', {
       params: {
         organization_id,
@@ -51,6 +51,15 @@ angular.module('SEED.service.inventory_group', []).factory('inventory_group_serv
     }).then((response) => {
       const groups = response.data.data.sort((a, b) => naturalSort(a.name, b.name));
       return groups;
+    });
+
+    group_factory.get_group = (organization_id, group_id) => $http.get(`/api/v3/inventory_groups/${group_id}/`, {
+      params: {
+        organization_id
+      }
+    }).then((response) => {
+      const group = response.data.data
+      return group;
     });
 
     group_factory.new_group = (data) => $http.post('/api/v3/inventory_groups/', data, {

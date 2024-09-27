@@ -48,13 +48,13 @@
               <span class="inventory_group inventory_group-{$ inventory_group.inventory_group $}">{$ inventory_group.name $}</span>
             </td>
             <td>{$ inventory_group.access_level_instance_data.name $}</td>
-            <td>{$ inventory_group.member_list.length $}</td>
+            <td>{$ inventory_group.inventory_list.length $}</td>
             <td align="right">
               <button
                 type="button"
                 uib-btn-checkbox
                 ng-model="inventory_group.is_checked_remove"
-                ng-show="inventory_group.member_list.length"
+                ng-show="inventory_group.inventory_list.length"
                 btn-checkbox-true="true"
                 btn-checkbox-false="false"
                 class="btn btn-sm btn-default action_link"

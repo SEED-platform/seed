@@ -5,7 +5,8 @@
   </div>
 </script>
 
-<div class="page_header_container" ng-cloak>
+<!-- Populate header info for inventory_list or inventory_group -->
+<div class="page_header_container" ng-cloak ng-show="!group">
   <div class="page_header">
     <div class="left page_action_container"></div>
     <div class="page_title">
@@ -15,8 +16,26 @@
   </div>
 </div>
 
-<div class="section_nav_container">
+<div class="page_header_container" ng-cloak ng-show="group">
+  <div class="page_header">
+    <div class="left page_action_container">
+      <a ui-sref="inventory_groups(::{inventory_type: inventory_type})" class="page_action">
+        <i class="fa-solid fa-chevron-left"></i>
+        {$:: 'Groups' | translate $}
+      </a>
+    </div>
+    <div class="page_title">
+      <h1>{$:: 'Group Detail' | translate $}</h1>
+    </div>
+    <div class="right page_action_container"></div>
+  </div>
+</div>
+
+<div class="section_nav_container" ng-show="!group">
   <div class="section_nav" ng-include="::urls.static_url + 'seed/partials/inventory_nav.html'"></div>
+</div>
+<div class="section_nav_container" ng-show="group">
+  <div class="section_nav" ng-include="::urls.static_url + 'seed/partials/inventory_group_detail_nav.html'"></div>
 </div>
 
 <div class="inventory-list-controls">

@@ -2,7 +2,7 @@
 from django.core.exceptions import ValidationError
 from rest_framework import serializers
 
-from seed.models import VIEW_LIST_INVENTORY_TYPE, AccessLevelInstance, InventoryGroup, InventoryGroupMapping
+from seed.models import VIEW_LIST_INVENTORY_TYPE, AccessLevelInstance, InventoryGroup, InventoryGroupMapping, PropertyView, TaxLotView
 from seed.serializers.access_level_instances import AccessLevelInstanceSerializer
 from seed.serializers.base import ChoiceField
 
@@ -20,7 +20,6 @@ class InventoryGroupMappingSerializer(serializers.ModelSerializer):
 
 class InventoryGroupSerializer(serializers.ModelSerializer):
     inventory_type = ChoiceField(choices=VIEW_LIST_INVENTORY_TYPE)
-    member_list = serializers.SerializerMethodField()
 
     def __init__(self, *args, **kwargs):
         if "inventory" not in kwargs:
@@ -33,27 +32,28 @@ class InventoryGroupSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = InventoryGroup
-        fields = ("id", "name", "inventory_type", "access_level_instance", "organization", "member_list")
+        fields = ("id", "name", "inventory_type", "access_level_instance", "organization")
 
     def to_representation(self, obj):
         result = super().to_representation(obj)
         ali = AccessLevelInstance.objects.filter(id=result.get("access_level_instance")).first()
         result["access_level_instance_data"] = AccessLevelInstanceSerializer(ali, many=False).data
+        inventory_list, views_list = self.get_member_list(obj)
+        result["inventory_list"] = inventory_list
+        result["views_list"] = views_list
         return result
 
     def get_member_list(self, obj):
-        inventory_type = "tax_lot" if obj.inventory_type == 1 else "property"
-        filtered_result = []
-        if hasattr(self, "inventory"):
-            filtered_result = (
-                InventoryGroupMapping.objects.filter(group=self.group_id)
-                .filter(**{f"{inventory_type}__in": self.inventory})
-                .values_list(inventory_type, flat=True)
-            )
-        else:
-            filtered_result = obj.inventorygroupmapping_set.all().values_list(inventory_type, flat=True)
+        inventory_lookup = {
+            0: ('property', PropertyView),
+            1: ('taxlot', TaxLotView)
+        }
+        inventory_type, view_class = inventory_lookup[obj.inventory_type]
 
-        return list(filtered_result)
+        inventory = obj.inventorygroupmapping_set.all().values_list(inventory_type, flat=True)
+        views = view_class.objects.filter(**{f"{inventory_type}__in": inventory}).values_list('id', flat=True)
+
+        return list(inventory), list(views)
 
     def update(self, instance, validated_data):
         instance.__dict__.update(**validated_data)

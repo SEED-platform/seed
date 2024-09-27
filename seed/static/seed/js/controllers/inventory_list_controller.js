@@ -91,7 +91,6 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
 
     $scope.inventory_type = $stateParams.inventory_type;
     $scope.group_id = $stateParams.group_id;
-    console.log($scope.group_id);
     $scope.data = [];
     const lastCycleId = inventory_service.get_last_cycle();
     $scope.cycle = {
@@ -104,6 +103,7 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
     $scope.menu.user.is_ali_root = window.SEED.is_ali_root;
 
     $scope.inventory_groups = inventory_groups;
+    console.log('igs', inventory_groups)
     $scope.inventory_group_tab = inventory_group_tab;
     $scope.change_tab = function (id, inv_type) {
     // Switches to new tab (either viewing all or viewing by group)
@@ -1217,15 +1217,16 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
       }
 
       if ($scope.group_id) {
-        const group_ids = _.filter($scope.inventory_groups, { id: $scope.group_id })[0].member_list;
-        if (typeof include_ids !== 'undefined' && group_ids.length && include_ids[0] !== 0) { // if there's a sort
-          include_ids = _.intersection(include_ids, group_ids);
-        } else if (!group_ids.length) {
+        const group_view_ids = _.filter($scope.inventory_groups, { id: $scope.group_id })[0].views_list;
+        if (typeof include_ids !== 'undefined' && group_view_ids.length && include_ids[0] !== 0) { // if there's a sort
+          include_ids = _.intersection(include_ids, group_view_ids);
+        } else if (!group_view_ids.length) {
           include_ids = [0];
-        } else if (typeof include_ids === 'undefined') { // if there's no sort & there are group_ids
-          include_ids = group_ids;
+        } else if (typeof include_ids === 'undefined') { // if there's no sort & there are group_view_ids
+          include_ids = group_view_ids;
         }
       }
+      console.log('include_ids', include_ids)
       return fn(
         page,
         chunk,

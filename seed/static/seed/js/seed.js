@@ -2146,7 +2146,31 @@
               '$stateParams',
               'label_service',
               ($stateParams, label_service) => label_service.get_labels($stateParams.inventory_type).then((labels) => _.filter(labels, (label) => !_.isEmpty(label.is_applied)))
-            ]
+            ],
+            group: () => null,
+          }
+        })
+        .state({
+          name: 'inventory_group_map',
+          url: '/{inventory_type:properties|taxlots}/groups/{group_id:int}/map',
+          templateUrl: `${static_url}seed/partials/inventory_map.html`,
+          controller: 'inventory_map_controller',
+          resolve: {
+            cycles: ['cycle_service', (cycle_service) => cycle_service.get_cycles()],
+            labels: [
+              '$stateParams',
+              'label_service',
+              ($stateParams, label_service) => label_service.get_labels($stateParams.inventory_type).then((labels) => _.filter(labels, (label) => !_.isEmpty(label.is_applied)))
+            ],
+            group: [
+              '$stateParams', 'inventory_group_service', 'user_service', 
+              ($stateParams, inventory_group_service, user_service) => inventory_group_service.get_group(user_service.get_organization().id, $stateParams.group_id).then((group) => group)
+            ],
+            group: () => null,
+            group: [
+              '$stateParams', 'inventory_group_service', 'user_service', 
+              ($stateParams, inventory_group_service, user_service) => inventory_group_service.get_group(user_service.get_organization().id, $stateParams.group_id).then((group) => group)
+            ],
           }
         })
         .state({

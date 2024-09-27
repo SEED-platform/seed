@@ -73,7 +73,7 @@ angular.module('SEED.controller.update_inventory_groups_modal', [])
             // promise completed successfully
             const createdGroup = data.data;
             createdGroup.is_checked_add = true;
-            createdGroup.member_list = $scope.inventory_ids;
+            createdGroup.views_list = $scope.inventory_ids;
             $scope.newGroupForm.$setPristine();
             $scope.inventory_groups.unshift(createdGroup);
             $scope.initialize_new_group();
