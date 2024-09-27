@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
     dependencies = [
         ("orgs", "0033_organization_public_geojson_enabled"),
-        ("seed", "0229_alter_event_cycle"),
+        ("seed", "0231_column_is_updating"),
     ]
 
     operations = [
@@ -38,5 +38,23 @@ class Migration(migrations.Migration):
                 ("property", models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to="seed.property")),
                 ("taxlot", models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to="seed.taxlot")),
             ],
+        ),
+        migrations.AlterField(
+            model_name="inventorygroupmapping",
+            name="property",
+            field=models.ForeignKey(
+                blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name="group_mappings", to="seed.property"
+            ),
+        ),
+        migrations.AlterField(
+            model_name="inventorygroupmapping",
+            name="taxlot",
+            field=models.ForeignKey(
+                blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name="group_mappings", to="seed.taxlot"
+            ),
+        ),
+        migrations.AddConstraint(
+            model_name="inventorygroup",
+            constraint=models.UniqueConstraint(fields=("name", "organization"), name="unique_group_name_for_organization"),
         ),
     ]
