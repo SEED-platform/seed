@@ -16,11 +16,9 @@ angular.module('SEED.controller.inventory_map', []).controller('inventory_map_co
   'organization_service',
   'labels',
   'group',
-  'inventory_groups',
   'urls',
   // eslint-disable-next-line func-names
-  function ($scope, $stateParams, $state, $log, $uibModal, cycles, inventory_service, map_service, user_service, organization_service, labels, group, inventory_groups, urls) {
-    console.log('igs map', inventory_groups)
+  function ($scope, $stateParams, $state, $log, $uibModal, cycles, inventory_service, map_service, user_service, organization_service, labels, group, urls) {
     $scope.inventory_type = $stateParams.inventory_type;
     const isPropertiesTab = $scope.inventory_type === 'properties';
 

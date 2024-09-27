@@ -2161,7 +2161,6 @@
               '$stateParams', 'inventory_group_service', 'user_service',
               ($stateParams, inventory_group_service, user_service) => inventory_group_service.get_group(user_service.get_organization().id, $stateParams.group_id).then((group) => group)
             ],
-            group: () => null,
             group: [
               '$stateParams', 'inventory_group_service', 'user_service',
               ($stateParams, inventory_group_service, user_service) => inventory_group_service.get_group(user_service.get_organization().id, $stateParams.group_id).then((group) => group)
