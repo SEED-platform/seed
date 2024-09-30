@@ -34,6 +34,7 @@ angular.module('SEED.controller.inventory_map', []).controller('inventory_map_co
     });
 
     $scope.group = group;
+    $scope.group_id = group.id;
 
     const lastCycleId = inventory_service.get_last_cycle();
     $scope.cycle = {

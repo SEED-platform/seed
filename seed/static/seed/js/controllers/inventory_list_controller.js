@@ -1636,6 +1636,7 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
           break;
         case 'open_update_inventory_groups_modal':
           $scope.open_update_inventory_groups_modal(selectedViewIds);
+          break;
         case 'update_derived_columns':
           $scope.open_update_derived_data_modal(selectedViewIds);
           break;

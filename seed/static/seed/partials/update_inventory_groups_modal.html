@@ -48,7 +48,7 @@
               <span class="inventory_group inventory_group-{$ inventory_group.inventory_group $}">{$ inventory_group.name $}</span>
             </td>
             <td>{$ inventory_group.access_level_instance_data.name $}</td>
-            <td>{$ inventory_group.inventory_list.length $}</td>
+            <td>{$ inventory_group.inventory_list.length || inventory_group.views_list.length $}</td>
             <td align="right">
               <button
                 type="button"
