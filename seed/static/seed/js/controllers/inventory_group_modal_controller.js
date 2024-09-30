@@ -31,7 +31,6 @@ angular.module('SEED.controller.inventory_group_modal', [])
       $scope.data = data;
       $scope.org_id = org_id;
       $scope.inventory_type = inventory_type;
-      const access_level_instance = user_service.get_access_level_instance()
       $scope.access_level_tree = access_level_tree.access_level_tree;
       $scope.level_names = access_level_tree.access_level_names.map((level, i) => ({
         index: i,
@@ -80,15 +79,14 @@ angular.module('SEED.controller.inventory_group_modal', [])
         }
       };
 
-      $scope.disabled = function () {
+      $scope.disabled = () => {
         if ($scope.action === 'edit') {
           return _.isEmpty($scope.newName) || $scope.newName === $scope.data.name;
         } if ($scope.action === 'create') {
-
           return (
             _.isEmpty($scope.newName) &&
             _.isEmpty($scope.access_level.access_level_instance)
-          )
+          );
         }
       };
 

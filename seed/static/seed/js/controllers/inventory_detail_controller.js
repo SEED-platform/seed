@@ -27,7 +27,6 @@ angular.module('SEED.controller.inventory_detail', []).controller('inventory_det
   'dataset_service',
   'inventory_payload',
   'views_payload',
-  'access_level_tree',
   'analyses_payload',
   'columns',
   'profiles',
@@ -67,7 +66,6 @@ angular.module('SEED.controller.inventory_detail', []).controller('inventory_det
     dataset_service,
     inventory_payload,
     views_payload,
-    access_level_tree,
     analyses_payload,
     columns,
     profiles,
@@ -571,7 +569,6 @@ angular.module('SEED.controller.inventory_detail', []).controller('inventory_det
         controller: 'update_inventory_groups_modal_controller',
         size: 'lg',
         resolve: {
-          access_level_tree: () => access_level_tree,
           view_ids: () => [$scope.inventory.view_id],
           inventory_type: () => $scope.inventory_type,
           org_id: () => $scope.organization.id,

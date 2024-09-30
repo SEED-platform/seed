@@ -31,7 +31,7 @@
 </div>
 
 <div class="section_content">
-  <table id="groups_table" class="table table-striped table_highlight_first" style="border-bottom:1px solid #DDDDDD;">
+  <table id="groups_table" class="table table-striped table_highlight_first" style="border-bottom: 1px solid #dddddd">
     <thead>
       <tr>
         <th>Name</th>
@@ -43,8 +43,7 @@
     <tbody>
       <tr ng-repeat="group in inventory_groups">
         <td>
-          <a class="btn btn btn-default" style="padding: 4px 15px;"
-              ui-sref="inventory_group_detail_dashboard({inventory_type: inventory_type, group_id: group.id})" ui-sref-active="">
+          <a class="btn btn btn-default" style="padding: 4px 15px" ui-sref="inventory_group_detail_dashboard({inventory_type: inventory_type, group_id: group.id})" ui-sref-active="">
             {$ group.name $}
           </a>
         </td>

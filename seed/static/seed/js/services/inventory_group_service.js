@@ -59,7 +59,7 @@ angular.module('SEED.service.inventory_group', []).factory('inventory_group_serv
         organization_id
       }
     }).then((response) => {
-      const group = response.data.data
+      const group = response.data.data;
       return group;
     });
 

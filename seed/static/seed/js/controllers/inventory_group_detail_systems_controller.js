@@ -3,15 +3,16 @@
  * :author
  */
 angular.module('SEED.controller.inventory_group_detail_systems', [])
-    .controller('inventory_group_detail_systems_controller', [
-        '$scope',
-        '$state',
-        '$stateParams',
-        function (
-            $scope,
-            $state,
-            $stateParams
-        ) {
-            $scope.inventory_type = $stateParams.inventory_type;
-            $scope.group_id = $stateParams.group_id;
-        }]);
+  .controller('inventory_group_detail_systems_controller', [
+    '$scope',
+    '$state',
+    '$stateParams',
+    // eslint-disable-next-line func-names
+    function (
+      $scope,
+      $state,
+      $stateParams
+    ) {
+      $scope.inventory_type = $stateParams.inventory_type;
+      $scope.group_id = $stateParams.group_id;
+    }]);

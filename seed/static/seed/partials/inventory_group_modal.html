@@ -4,7 +4,7 @@
   <h4 class="modal-title" ng-switch-when="error" translate>Delete your Inventory Group</h4>
   <h4 class="modal-title" ng-switch-when="create" translate>Create Inventory Group</h4>
 </div>
-<div class="modal-body no_bottom_padding row form-horizontal" ng-switch="::action" style="margin:10px;">
+<div class="modal-body no_bottom_padding row form-horizontal" ng-switch="::action" style="margin: 10px">
   <div class="form-group" ng-switch-when="edit">
     <label class="control-label col-lg-3 col-sm-3" for="inputEdit" translate>Inventory Group Name</label>
     <div class="col-lg-8 col-sm-8">
@@ -15,23 +15,32 @@
   <div class="col-sm-12" style="padding-bottom: 15px" ng-switch-when="error">
     {$:: 'The selected inventory group is currently part of a compliance check and could not be deleted. Please have the group removed from the compliance check before deleting.' | translate $}
   </div>
-  <div class="form-group" id="group-create" ng-switch-when="create" >
+  <div class="form-group" id="group-create" ng-switch-when="create">
     <div>
       <label for="inputNew" translate>Inventory Group Name</label>
       <input type="text" class="form-control" id="inputNew" ng-model="$parent.newName" autofocus placeholder="{$:: 'your group name' | translate $}" sd-enter="create_inventory_group()" required />
     </div>
     <div>
       <label for="select-level-name" translate>Access Level</label>
-      <select id="select-level-name" class="form-control goal-form-control"
-        ng-options="level.index as level.name for level in level_names" ng-change="change_selected_level_index()"
-        ng-model="access_level.level_name_index" required>
-      </select>
+      <select
+        id="select-level-name"
+        class="form-control goal-form-control"
+        ng-options="level.index as level.name for level in level_names"
+        ng-change="change_selected_level_index()"
+        ng-model="access_level.level_name_index"
+        required
+      ></select>
     </div>
     <div>
       <label for="select-level-instance" translate>Level Instance</label>
-      <select id="select-level-instance" class="form-control goal-form-control" ng-change=""
+      <select
+        id="select-level-instance"
+        class="form-control goal-form-control"
+        ng-change=""
         ng-options="potential_level_instance.id as potential_level_instance.name for potential_level_instance in potential_level_instances"
-        ng-model="access_level.access_level_instance" required></select>
+        ng-model="access_level.access_level_instance"
+        required
+      ></select>
     </div>
   </div>
 </div>

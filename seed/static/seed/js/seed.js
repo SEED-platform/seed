@@ -2144,7 +2144,7 @@
               'label_service',
               ($stateParams, label_service) => label_service.get_labels($stateParams.inventory_type).then((labels) => _.filter(labels, (label) => !_.isEmpty(label.is_applied)))
             ],
-            group: () => null,
+            group: () => null
           }
         })
         .state({
@@ -2162,7 +2162,7 @@
             group: [
               '$stateParams', 'inventory_group_service', 'user_service',
               ($stateParams, inventory_group_service, user_service) => inventory_group_service.get_group(user_service.get_organization().id, $stateParams.group_id).then((group) => group)
-            ],
+            ]
           }
         })
         .state({
@@ -2348,13 +2348,6 @@
                 else if ($stateParams.inventory_type === 'taxlots') promise = inventory_service.get_taxlot_views(organization_id, inventory_payload.taxlot.id);
 
                 return promise;
-              }
-            ],
-            access_level_tree: [
-              'organization_service', 'user_service',
-              (organization_service, user_service) => {
-                const organization_id = user_service.get_organization().id;
-                return organization_service.get_organization_access_level_tree(organization_id);
               }
             ],
             analyses_payload: [

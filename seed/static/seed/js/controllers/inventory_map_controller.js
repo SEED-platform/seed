@@ -49,7 +49,7 @@ angular.module('SEED.controller.inventory_map', []).controller('inventory_map_co
 
     const chunk = 250;
     const fetchRecords = async (fn) => {
-      let include_ids = $scope.group ? $scope.group.views_list : []
+      const include_ids = $scope.group ? $scope.group.views_list : [];
 
       const pagination = await fn(1, chunk, $scope.cycle.selected_cycle, undefined, include_ids).then((data) => data.pagination);
 

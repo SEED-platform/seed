@@ -12,10 +12,21 @@
             <input id="newGroupName" type="text" name="name" class="form-control" ng-model="new_group.name" placeholder="{$:: 'Group Name' | translate $}" sd-check-label-exists="groups" required />
             <!-- </div> -->
           </div>
-          <button type="submit" class="btn btn-primary" ng-disabled="newGroupForm.$invalid || disabled || inventory_access_level_instance_count !== 1"  style="height: 40px; margin-top: 20px;" ng-disabled="" translate>Create group</button>
+          <button
+            type="submit"
+            class="btn btn-primary"
+            ng-disabled="newGroupForm.$invalid || disabled || inventory_access_level_instance_count !== 1"
+            style="height: 40px; margin-top: 20px"
+            ng-disabled=""
+            translate
+          >
+            Create group
+          </button>
         </div>
         <div class="help-block">
-          <div class="alert alert-warning" ng-show="inventory_access_level_instance_count !== 1">All properties within a group must be in the same access level instance. Modify selection and try again.</div>
+          <div class="alert alert-warning" ng-show="inventory_access_level_instance_count !== 1">
+            All properties within a group must be in the same access level instance. Modify selection and try again.
+          </div>
           <div class="alert alert-danger" ng-show="error">{$ error $}</div>
         </div>
       </form>
@@ -74,8 +85,8 @@
                 ng-class="{'btn-primary':inventory_group.is_checked_add}"
                 ng-disabled="!add_permission(inventory_group)"
                 ng-click="toggle_add(inventory_group)"
-                uib-tooltip="Cannot add to group. Access Level mismatch."
-                tooltip-enable="!add_permission(inventory_group)"
+                uib-tooltip="Access level mismatch."
+                tooltip-enable="!inventory_group.ali_match"
                 translate
               >
                 Add

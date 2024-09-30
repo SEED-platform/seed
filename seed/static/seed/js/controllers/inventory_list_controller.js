@@ -667,7 +667,7 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
       });
       modalInstance.result.then(() => {
         // dialog was closed with 'Done' button.
-        $state.reload()
+        $state.reload();
         get_inventory_groups();
       });
     };

@@ -238,7 +238,8 @@
       <a ui-sref="inventory_list(::{inventory_type: 'taxlots'})" translate>View by Tax Lot</a>
     </li>
   </ul>
-  <div ng-show="group_id != null"></div> <!-- empty element for styling -->
+  <div ng-show="group_id != null"></div>
+  <!-- empty element for styling -->
   <div class="item-count">
     {$ inventory_pagination.start $}-{$ inventory_pagination.end $}<span ng-if="inventory_pagination.num_pages > 1"> of {$ inventory_pagination.total | number:0 $}</span>
     <i ng-if="selectedCount > 0">
