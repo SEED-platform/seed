@@ -13,10 +13,10 @@ class PropertyViewTestsPermissions(AccessLevelBaseTestCase):
         self.property = Property.objects.create(organization=self.org, access_level_instance=self.org.root)
         self.taxlot = TaxLot.objects.create(organization=self.org, access_level_instance=self.org.root)
         self.property_group = InventoryGroup.objects.create(
-            name="test1", inventory_type=VIEW_LIST_PROPERTY, access_level_instance=self.org.root
+            name="test1", organization=self.org, inventory_type=VIEW_LIST_PROPERTY, access_level_instance=self.org.root
         )
         self.taxlot_group = InventoryGroup.objects.create(
-            name="test2", inventory_type=VIEW_LIST_TAXLOT, access_level_instance=self.org.root
+            name="test2", organization=self.org, inventory_type=VIEW_LIST_TAXLOT, access_level_instance=self.org.root
         )
 
     def test_create_good_mapping(self):
