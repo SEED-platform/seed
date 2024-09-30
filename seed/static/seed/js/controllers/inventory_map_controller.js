@@ -34,7 +34,7 @@ angular.module('SEED.controller.inventory_map', []).controller('inventory_map_co
     });
 
     $scope.group = group;
-    $scope.group_id = group.id;
+    if ($scope.group) $scope.group_id = group.id;
 
     const lastCycleId = inventory_service.get_last_cycle();
     $scope.cycle = {
@@ -76,7 +76,6 @@ angular.module('SEED.controller.inventory_map', []).controller('inventory_map_co
 
     const getInventoryFn = isPropertiesTab ? inventory_service.get_properties : inventory_service.get_taxlots;
     fetchRecords(getInventoryFn).then(async (data) => {
-      console.log('after get records?')
       loadingModal.close();
 
       $scope.data = data;
