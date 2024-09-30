@@ -102,7 +102,9 @@ class Migration(migrations.Migration):
         ),
         migrations.AddConstraint(
             model_name="salesforceconfig",
-            constraint=models.CheckConstraint(condition=models.Q(("update_at_hour__range", (0, 23))), name="salesforce_update_at_hour_range"),
+            constraint=models.CheckConstraint(
+                condition=models.Q(("update_at_hour__range", (0, 23))), name="salesforce_update_at_hour_range"
+            ),
         ),
         migrations.AddConstraint(
             model_name="salesforceconfig",

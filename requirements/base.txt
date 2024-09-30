@@ -45,22 +45,22 @@ requests==2.32.3
 probablepeople==0.5.5
 xmlschema==3.4.2
 lark==1.2.2
-pandas==2.2.2
+pandas==2.2.3
 
 # Parsing and managing geojson data (this is only used in managed tasks at the moment)
 geojson==3.1.0
 
 # BuildingSync Asset Extractor
-# this also includes the lxml dependency required by SEED
-buildingsync-asset-extractor==v0.2.0
+buildingsync-asset-extractor @ git+https://github.com/BuildingSync/BuildingSync-asset-extractor@5cd9b3d
 
 # Salesforce Integration
-seed-salesforce==0.1.0
+# seed-salesforce==0.1.0
+seed-salesforce @ git+https://github.com/SEED-platform/seed-salesforce@38e0994
 
 # geospatial and pnnl/buildingid-py
 shapely==2.0.6
 usaddress==0.5.10
-pnnl-buildingid @ git+https://github.com/SEED-platform/buildingid@bdb0a6e
+pnnl-buildingid @ git+https://github.com/SEED-platform/buildingid@df04c15
 
 django-treebeard==4.7.1
 

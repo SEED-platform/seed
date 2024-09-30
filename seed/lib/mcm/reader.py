@@ -36,7 +36,6 @@ from seed.lib.mcm.cleaners import normalize_unicode_and_characters
 ROW_DELIMITER = "|#*#|"
 SEED_GENERATED_HEADER_PREFIX = "SEED Generated Header"
 
-
 _log = logging.getLogger(__name__)
 
 
@@ -155,8 +154,8 @@ class GreenButtonParser:
                         href = links[0]["@href"]
                         source_id = re.sub(r"/v./", "", href)
 
-                        # pass in the reading ID to determing meter_type etc.
-                        res = re.findall("MeterReading\/\d*", href)
+                        # pass in the reading ID to determine meter_type etc.
+                        res = re.findall(r"MeterReading/\d*", href)
                         meter_reading = None
                         if res:
                             meter_reading = res[0]
