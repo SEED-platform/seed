@@ -100,7 +100,7 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
 
     $scope.inventory_groups = inventory_groups;
     $scope.inventory_group_tab = inventory_group_tab;
-    $scope.change_tab = function (id, inv_type) {
+    $scope.change_tab = (id, inv_type) => {
     // Switches to new tab (either viewing all or viewing by group)
       $scope.inventory_group_tab = id;
       if ($scope.inventory_type === (inv_type === 'Property' ? 'properties' : 'taxlots')) {
@@ -653,7 +653,7 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
     /**
        Opens the update building groups modal.
      */
-    $scope.open_update_inventory_groups_modal = function (selectedViewIds) {
+    $scope.open_update_inventory_groups_modal = (selectedViewIds) => {
       const modalInstance = $uibModal.open({
         templateUrl: `${urls.static_url}seed/partials/update_inventory_groups_modal.html`,
         controller: 'update_inventory_groups_modal_controller',

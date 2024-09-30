@@ -14,6 +14,7 @@ angular.module('SEED.controller.inventory_group_modal', [])
     'data',
     'inventory_type',
     'org_id',
+    // eslint-disable-next-line func-names
     function (
       $scope,
       $uibModalInstance,
@@ -45,7 +46,7 @@ angular.module('SEED.controller.inventory_group_modal', [])
         $scope.potential_level_instances = access_level_instances_by_depth[new_level_instance_depth];
       };
 
-      $scope.edit_inventory_group = function () {
+      $scope.edit_inventory_group = () => {
         if (!$scope.disabled()) {
           const id = $scope.data.id;
           const group = _.omit($scope.data, 'id');
@@ -58,7 +59,7 @@ angular.module('SEED.controller.inventory_group_modal', [])
         }
       };
 
-      $scope.remove_inventory_group = function () {
+      $scope.remove_inventory_group = () => {
         inventory_group_service.remove_group($scope.data.id).then(() => {
           $uibModalInstance.close();
         }).catch(() => {
@@ -66,7 +67,7 @@ angular.module('SEED.controller.inventory_group_modal', [])
         });
       };
 
-      $scope.create_inventory_group = function () {
+      $scope.create_inventory_group = () => {
         if (!$scope.disabled()) {
           inventory_group_service.new_group({
             name: $scope.newName,
@@ -91,7 +92,7 @@ angular.module('SEED.controller.inventory_group_modal', [])
         }
       };
 
-      $scope.cancel = function () {
+      $scope.cancel = () => {
         $uibModalInstance.dismiss();
       };
     }]);
