@@ -90,41 +90,4 @@ angular.module('SEED.controller.inventory_group_list', [])
       };
       $scope.isModified = () => modified_service.isModified();
 
-      $scope.groupGridOptions = {
-        data: 'inventory_groups',
-        columnDefs: [
-          {
-            name: 'id',
-            displayName: '',
-            headerCellTemplate: '<span></span>', // remove header
-            cellTemplate:
-            '<div class="ui-grid-row-header-link">' +
-            `  <a title="${$translate.instant('Go to Detail Page')}"` +
-            '     class="ui-grid-cell-contents" ' +
-            '     ui-sref="inventory_group_detail(grid.appScope.inventory_type === \'properties\' ? {inventory_type: \'properties\', group_id: row.entity.id} : {inventory_type: \'taxlots\', group_id: row.entity.id})">' +
-            '    <i class="ui-grid-icon-info-circled"></i>' +
-            '  </a>' +
-            '</div>',
-            enableColumnMenu: false,
-            enableColumnMoving: false,
-            enableColumnResizing: false,
-            enableFiltering: false,
-            enableHiding: false,
-            enableSorting: false,
-            exporterSuppressExport: true,
-            pinnedLeft: true,
-            visible: true,
-            width: 30
-          },
-          { field: 'name' }
-        ],
-        enableGridMenu: true,
-        exporterMenuPdf: false,
-        exporterMenuExcel: false,
-        enableColumnResizing: true,
-        flatEntityAccess: true,
-        fastWatch: true,
-        gridMenuShowHideColumns: false,
-        minRowsToShow: Math.min($scope.inventory_groups.length, 10)
-      };
     }]);

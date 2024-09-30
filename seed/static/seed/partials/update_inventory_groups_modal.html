@@ -74,6 +74,8 @@
                 ng-class="{'btn-primary':inventory_group.is_checked_add}"
                 ng-disabled="!add_permission(inventory_group)"
                 ng-click="toggle_add(inventory_group)"
+                uib-tooltip="Cannot add to group. Access Level mismatch."
+                tooltip-enable="!add_permission(inventory_group)"
                 translate
               >
                 Add

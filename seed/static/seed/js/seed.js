@@ -93,7 +93,9 @@
     'SEED.controller.inventory_detail_column_list_profiles',
     'SEED.controller.inventory_detail_cycles',
     'SEED.controller.inventory_group_list',
-    'SEED.controller.inventory_group_detail',
+    'SEED.controller.inventory_group_detail_dashboard',
+    'SEED.controller.inventory_group_detail_meters',
+    'SEED.controller.inventory_group_detail_systems',
     'SEED.controller.inventory_group_modal',
     'SEED.controller.inventory_detail_map',
     'SEED.controller.inventory_detail_meters',
@@ -2161,10 +2163,6 @@
               '$stateParams', 'inventory_group_service', 'user_service',
               ($stateParams, inventory_group_service, user_service) => inventory_group_service.get_group(user_service.get_organization().id, $stateParams.group_id).then((group) => group)
             ],
-            group: [
-              '$stateParams', 'inventory_group_service', 'user_service',
-              ($stateParams, inventory_group_service, user_service) => inventory_group_service.get_group(user_service.get_organization().id, $stateParams.group_id).then((group) => group)
-            ],
           }
         })
         .state({
@@ -2293,10 +2291,24 @@
           }
         })
         .state({
-          name: 'inventory_group_detail',
+          name: 'inventory_group_detail_dashboard',
           url: '/{inventory_type:properties|taxlots}/groups/{group_id:int}',
-          templateUrl: `${static_url}seed/partials/inventory_group_detail.html`,
-          controller: 'inventory_group_detail_controller',
+          templateUrl: `${static_url}seed/partials/inventory_group_detail_dashboard.html`,
+          controller: 'inventory_group_detail_dashboard_controller',
+          resolve: {}
+        })
+        .state({
+          name: 'inventory_group_detail_meters',
+          url: '/{inventory_type:properties|taxlots}/groups/{group_id:int}',
+          templateUrl: `${static_url}seed/partials/inventory_group_detail_meters.html`,
+          controller: 'inventory_group_detail_meters_controller',
+          resolve: {}
+        })
+        .state({
+          name: 'inventory_group_detail_systems',
+          url: '/{inventory_type:properties|taxlots}/groups/{group_id:int}',
+          templateUrl: `${static_url}seed/partials/inventory_group_detail_systems.html`,
+          controller: 'inventory_group_detail_systems_controller',
           resolve: {}
         })
         .state({

@@ -5732,3 +5732,11 @@ tags-input .tags .tag-item {
   white-space: normal;
   min-width: 350px;
 }
+
+// delete this after inventory groups detail pages are complete
+.in-development {
+  display: flex;
+  justify-content: center;
+  margin: 100px;
+  font-style: italic;
+}
