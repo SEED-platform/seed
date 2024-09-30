@@ -10,20 +10,23 @@ angular.module('SEED.controller.inventory_detail_cycles', []).controller('invent
   'cycles',
   'spinner_utility',
   'inventory_service',
+  'organization_service',
   'inventory_payload',
   'columns',
   'profiles',
   'current_profile',
   'organization_payload',
   // eslint-disable-next-line func-names
-  function ($scope, $filter, $stateParams, $window, cycles, spinner_utility, inventory_service, inventory_payload, columns, profiles, current_profile, organization_payload) {
+  function ($scope, $filter, $stateParams, $window, cycles, spinner_utility, inventory_service, organization_service, inventory_payload, columns, profiles, current_profile, organization_payload) {
     $scope.inventory_type = $stateParams.inventory_type;
     $scope.inventory = {
       view_id: $stateParams.view_id
     };
 
     $scope.states = inventory_payload.data;
+    $scope.item_state = $scope.states[0];
     $scope.base_state = _.find(inventory_payload.data, { view_id: $stateParams.view_id });
+    $scope.organization = organization_payload.organization;
 
     $scope.cycles = _.reduce(
       cycles.cycles,
@@ -33,8 +36,6 @@ angular.module('SEED.controller.inventory_detail_cycles', []).controller('invent
       },
       {}
     );
-
-    $scope.organization = organization_payload.organization;
 
     // Flag columns whose values have changed between cycles.
     const changes_check = (column) => {
@@ -84,20 +85,7 @@ angular.module('SEED.controller.inventory_detail_cycles', []).controller('invent
       $('.table-xscroll-fixed-header-container > .table-body-x-scroll').width(table_container.width() + table_container.scrollLeft());
     });
 
-    $scope.inventory_display_name = (property_type) => {
-      let error = '';
-      let field = property_type === 'property' ? $scope.organization.property_display_field : $scope.organization.taxlot_display_field;
-      if (!(field in $scope.base_state)) {
-        error = `${field} does not exist`;
-        field = 'address_line_1';
-      }
-      if (!$scope.base_state[field]) {
-        error += `${(error === '' ? '' : ' and default ') + field} is blank`;
-      }
-      $scope.inventory_name = $scope.base_state[field] ?
-        $scope.base_state[field] :
-        `(${error}) <i class="glyphicon glyphicon-question-sign" title="This can be changed from the organization settings page."></i>`;
-    };
+    $scope.inventory_display_name = organization_service.get_inventory_display_value($scope.organization, $scope.inventory_type === 'properties' ? 'property' : 'taxlot', $scope.item_state);
 
     $scope.displayValue = (dataType, value) => {
       if (dataType === 'datetime') {

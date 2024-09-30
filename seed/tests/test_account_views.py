@@ -1,4 +1,3 @@
-# !/usr/bin/env python
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
@@ -91,7 +90,7 @@ class AccountsViewTests(TestCase):
             "audit_template_report_type": "Demo City Report",
             "audit_template_city_id": None,
             "audit_template_conditional_import": True,
-            "audit_template_status_type": "Complies",
+            "audit_template_status_types": "Complies",
             "audit_template_sync_enabled": False,
             "salesforce_enabled": False,
             "ubid_threshold": 1.0,
@@ -196,7 +195,7 @@ class AccountsViewTests(TestCase):
                     "audit_template_report_type": "Demo City Report",
                     "audit_template_city_id": None,
                     "audit_template_conditional_import": True,
-                    "audit_template_status_type": "Complies",
+                    "audit_template_status_types": "Complies",
                     "audit_template_sync_enabled": False,
                     "salesforce_enabled": False,
                     "ubid_threshold": 1.0,
@@ -239,7 +238,7 @@ class AccountsViewTests(TestCase):
             "audit_template_report_type": "Demo City Report",
             "audit_template_city_id": None,
             "audit_template_conditional_import": True,
-            "audit_template_status_type": "Complies",
+            "audit_template_status_types": "Complies",
             "audit_template_sync_enabled": False,
             "salesforce_enabled": False,
             "ubid_threshold": 1.0,

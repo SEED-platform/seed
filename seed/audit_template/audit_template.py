@@ -1,4 +1,3 @@
-# !/usr/bin/env python
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
@@ -24,7 +23,6 @@ from seed.lib.progress_data.progress_data import ProgressData
 from seed.lib.superperms.orgs.models import Organization
 from seed.models import PropertyView
 from seed.utils.encrypt import decrypt
-from seed.views.v3.properties import PropertyViewSet
 
 _log = logging.getLogger(__name__)
 
@@ -153,21 +151,40 @@ class AuditTemplate:
         return response, ""
 
     @require_token
-    def get_city_submissions(self, city_id, status_type):
+    def get_city_submissions(self, city_id, status_types):
         """Return all submissions for a city"""
 
         headers = {"accept": "application/xml"}
         url = f"{self.API_URL}/rp/cities/{city_id}?token={self.token}"
-        # status options are: 'Received', 'Pending', 'Rejected', 'Complies'
-        params = {"status": status_type}
-        try:
-            response = requests.request("GET", url, headers=headers, params=params)
-            if response.status_code != 200:
-                return None, f"Expected 200 response from Audit Template cities but got {response.status_code}: {response.content}"
-        except Exception as e:
-            return None, f"Unexpected error from Audit Template: {e}"
+        per_page = 100
+        idx = 1
+        submissions = []
+        params = {"per_page": per_page}
+        valid_statuses = ["Complies", "Pending", "Received", "Rejected"]
+        # return all submissions for all selected status types
+        for status_type in status_types.split(","):
+            if status_type not in valid_statuses:
+                continue
 
-        return response, ""
+            params["status"] = status_type
+            try:
+                # AT submissions are paginated (max per_page = 100). Loop through all pages to return all submissions
+                while True:
+                    params["page"] = idx
+                    response = requests.request("GET", url, headers=headers, params=params)
+                    # Raise an exception for non 2XX responses
+                    response.raise_for_status()
+
+                    data = response.json()
+                    submissions.extend(data)
+                    if len(data) < per_page:
+                        break
+                    idx += 1
+
+            except Exception as e:
+                return None, f"Unexpected error from Audit Template: {e}"
+
+        return submissions, ""
 
     def get_api_token(self):
         if not self.org.at_organization_token or not self.org.audit_template_user or not self.org.audit_template_password:
@@ -351,15 +368,14 @@ def _batch_get_city_submission_xml(org_id, city_id, view_ids, progress_key):
     5. update cycle grouped views in cycle batches
     """
     org = Organization.objects.get(pk=org_id)
-    status_type = org.audit_template_status_type
+    status_types = org.audit_template_status_types
     audit_template = AuditTemplate(org_id)
     progress_data = ProgressData.from_key(progress_key)
 
-    response, messages = audit_template.get_city_submissions(city_id, status_type)
-    if not response:
+    submissions, messages = audit_template.get_city_submissions(city_id, status_types)
+    if not submissions:
         progress_data.finish_with_error(messages)
         return None, messages
-    submissions = response.json()
     # Progress data is difficult to calculate as not all submissions will need an xml
     # Each xml has 2 steps (get and update)
     progress_data.total = len(submissions) * 2
@@ -373,7 +389,9 @@ def _batch_get_city_submission_xml(org_id, city_id, view_ids, progress_key):
     # however that could return multiple views across many cycles
     # filtering by custom_id and 'updated_at' will require looping through results to query views
 
-    property_views = PropertyView.objects.filter(id__in=view_ids) if view_ids else PropertyView.objects
+    property_views = PropertyView.objects.filter(state__organization_id=org_id)
+    if view_ids:
+        property_views = property_views.filter(id__in=view_ids)
 
     xml_data_by_cycle = {}
     for sub in submissions:
@@ -405,6 +423,8 @@ def _batch_get_city_submission_xml(org_id, city_id, view_ids, progress_key):
                     {"property_view": view.id, "matching_field": custom_id_1, "xml": xml.text, "updated_at": sub["updated_at"]}
                 )
 
+    from seed.views.v3.properties import PropertyViewSet
+
     property_view_set = PropertyViewSet()
     # Update is cycle based, going to have update in cycle specific batches
     combined_results = {"success": 0, "failure": 0, "data": []}
@@ -430,15 +450,14 @@ def _get_city_submission_xml(org_id, city_id, custom_id_1, progress_key):
     4. update view
     """
     org = Organization.objects.get(pk=org_id)
-    status_type = org.audit_template_status_type
+    status_types = org.audit_template_status_types
     audit_template = AuditTemplate(org_id)
     progress_data = ProgressData.from_key(progress_key)
 
-    response, messages = audit_template.get_city_submissions(city_id, status_type)
-    if not response:
+    submissions, messages = audit_template.get_city_submissions(city_id, status_types)
+    if not submissions:
         progress_data.finish_with_error(messages)
         return None, messages
-    submissions = response.json()
     # Progress data is difficult to calculate as not all submissions will need an xml
     # Each xml has 2 steps (get and update)
     progress_data.total = len(submissions) * 2
@@ -465,6 +484,8 @@ def _get_city_submission_xml(org_id, city_id, custom_id_1, progress_key):
         xml, _ = audit_template.get_submission(sub["id"], "xml")
         if hasattr(xml, "text"):
             xmls = [{"property_view": view.id, "matching_field": custom_id_1, "xml": xml.text, "updated_at": sub["updated_at"]}]
+
+    from seed.views.v3.properties import PropertyViewSet
 
     property_view_set = PropertyViewSet()
     # Update is cycle based, going to have update in cycle specific batches

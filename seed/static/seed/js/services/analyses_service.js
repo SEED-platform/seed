@@ -97,10 +97,10 @@ angular.module('SEED.service.analyses', []).factory('analyses_service', [
         .catch((response) => response.data);
     };
 
-    const verify_token = (organization_id) => $http({
+    const verify_token = (better_token) => $http({
       url: '/api/v3/analyses/verify_better_token/',
       method: 'GET',
-      params: { organization_id }
+      params: { better_token }
     })
       .then((response) => response.data)
       .catch((response) => response.data);

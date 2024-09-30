@@ -1,4 +1,3 @@
-# !/usr/bin/env python
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
@@ -244,14 +243,14 @@ class GoalViewTests(AccessLevelBaseTestCase):
 
         # invalid data
         goal_data["access_level_instance"] = self.child_ali.id
-        goal_data["baseline_cycle"] = 999
-        goal_data["eui_column1"] = 998
+        goal_data["baseline_cycle"] = 9999
+        goal_data["eui_column1"] = 9998
         response = self.client.post(url, data=json.dumps(goal_data), content_type="application/json")
         assert response.status_code == 400
         errors = response.json()
         assert errors["name"] == ["goal with this name already exists."]
-        assert errors["baseline_cycle"] == ['Invalid pk "999" - object does not exist.']
-        assert errors["eui_column1"] == ['Invalid pk "998" - object does not exist.']
+        assert errors["baseline_cycle"] == ['Invalid pk "9999" - object does not exist.']
+        assert errors["eui_column1"] == ['Invalid pk "9998" - object does not exist.']
         assert Goal.objects.count() == goal_count
 
         # cycles must be unique

@@ -65,6 +65,7 @@
     'SEED.controller.delete_document_modal',
     'SEED.controller.delete_file_modal',
     'SEED.controller.delete_modal',
+    'SEED.controller.update_derived_data_modal',
     'SEED.controller.delete_org_modal',
     'SEED.controller.derived_columns_admin',
     'SEED.controller.derived_columns_editor',
@@ -76,6 +77,7 @@
     'SEED.controller.export_inventory_modal',
     'SEED.controller.export_report_modal',
     'SEED.controller.export_to_audit_template_modal',
+    'SEED.controller.export_to_cts_modal',
     'SEED.controller.faq',
     'SEED.controller.filter_group_modal',
     'SEED.controller.geocode_modal',
@@ -111,6 +113,7 @@
     'SEED.controller.merge_modal',
     'SEED.controller.meter_deletion_modal',
     'SEED.controller.modified_modal',
+    'SEED.controller.move_inventory_modal',
     'SEED.controller.new_member_modal',
     'SEED.controller.notes',
     'SEED.controller.organization',
@@ -390,10 +393,17 @@
           templateUrl: `${static_url}seed/partials/two_factor_profile.html`,
           controller: 'two_factor_profile_controller',
           resolve: {
-            organization_payload: [
+            auth_payload: [
+              'auth_service',
               'user_service',
+              (auth_service, user_service) => {
+                const organization_id = user_service.get_organization().id;
+                return auth_service.is_authorized(organization_id, ['requires_superuser']);
+              }
+            ],
+            organizations_payload: [
               'organization_service',
-              (user_service, organization_service) => organization_service.get_organization(user_service.get_organization().id)
+              (organization_service) => organization_service.get_organizations()
             ],
             user_profile_payload: [
               'user_service',
@@ -2317,15 +2327,6 @@
                 });
               }
             ],
-            derived_columns_payload: [
-              '$stateParams',
-              'user_service',
-              'derived_columns_service',
-              ($stateParams, user_service, derived_columns_service) => {
-                const organization_id = user_service.get_organization().id;
-                return derived_columns_service.get_derived_columns(organization_id, $stateParams.inventory_type);
-              }
-            ],
             profiles: [
               '$stateParams',
               'inventory_service',
@@ -2882,10 +2883,12 @@
           prefix: '/static/seed/locales/',
           suffix: '.json'
         })
-        .registerAvailableLanguageKeys(['en_US', 'fr_CA'], {
+        .registerAvailableLanguageKeys(['en_US', 'es', 'fr_CA'], {
           en: 'en_US',
+          es: 'es',
           fr: 'fr_CA',
           'en_*': 'en_US',
+          'es_*': 'es',
           'fr_*': 'fr_CA',
           '*': 'en_US'
         })

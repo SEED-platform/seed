@@ -1,4 +1,3 @@
-# !/usr/bin/env python
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
@@ -266,7 +265,7 @@ class TestMatchingInImportFile(DataMappingBaseTestCase):
 
     def test_match_properties_on_ubid(self):
         base_details = {
-            "ubid": "86HJPCWQ+2VV-1-3-2-3",
+            "custom_id_1": "ABC123",
             "import_file_id": self.import_file.id,
             "data_state": DATA_STATE_MAPPING,
             "no_default_data": False,
@@ -721,8 +720,9 @@ class TestMatchingImportIntegration(DataMappingBaseTestCase):
         self.taxlot_state_factory = FakeTaxLotStateFactory(organization=self.org)
 
     def test_properties(self):
-        # For the sake of this test, update the matching criteria to include address line 1
+        # For the sake of this test, update the matching criteria to include address line 1 & ubid
         Column.objects.filter(column_name="address_line_1").update(is_matching_criteria=True)
+        Column.objects.filter(column_name="ubid").update(is_matching_criteria=True)
 
         # Define matching values
         matching_pm_property_id = "11111"
@@ -873,8 +873,9 @@ class TestMatchingImportIntegration(DataMappingBaseTestCase):
         self.assertEqual(results, expected)
 
     def test_taxlots(self):
-        # For the sake of this test, update the matching criteria to include address line 1
+        # For the sake of this test, update the matching criteria to include address line 1 & ubid
         Column.objects.filter(column_name="address_line_1").update(is_matching_criteria=True)
+        Column.objects.filter(column_name="ubid").update(is_matching_criteria=True)
 
         # Define matching values
         matching_jurisdiction_tax_lot_id = "11111"
@@ -1288,73 +1289,89 @@ class TestMultiCycleImport(DataMappingBaseTestCase):
         # Properties for cycle 2010_2014
         base_details["property_name"] = "p2010_2014a"
         base_details["year_ending"] = date(2012, 12, 12)
+        base_details["custom_id_1"] = "1"
         self.property_state_factory.get_property_state(**base_details)
 
         base_details["property_name"] = "p2010_2014b"
         base_details["year_ending"] = date(2010, 10, 10)
+        base_details["custom_id_1"] = "2"
         self.property_state_factory.get_property_state(**base_details)
 
         base_details["property_name"] = "p2010_2014c"
         base_details["year_ending"] = date(2014, 10, 15)
+        base_details["custom_id_1"] = "3"
         self.property_state_factory.get_property_state(**base_details)
 
         # Properties for cycle 2018
         base_details["property_name"] = "p2018a"
         base_details["year_ending"] = date(2018, 12, 31)
+        base_details["custom_id_1"] = "1"
         self.property_state_factory.get_property_state(**base_details)
 
         base_details["property_name"] = "p2018b"
         base_details["year_ending"] = date(2018, 6, 15)
+        base_details["custom_id_1"] = "2"
         self.property_state_factory.get_property_state(**base_details)
 
         # Properties for cycle 2019
         base_details["property_name"] = "p2019a"
         base_details["year_ending"] = date(2019, 12, 31)
+        base_details["custom_id_1"] = "1"
         self.property_state_factory.get_property_state(**base_details)
 
         base_details["property_name"] = "p2019b"
         base_details["year_ending"] = date(2019, 6, 15)
+        base_details["custom_id_1"] = "2"
         self.property_state_factory.get_property_state(**base_details)
 
         # Properties for cycle 2020
         base_details["property_name"] = "p2020a"
         base_details["year_ending"] = date(2020, 12, 31)
+        base_details["custom_id_1"] = "1"
         self.property_state_factory.get_property_state(**base_details)
 
         base_details["property_name"] = "p2020b"
         base_details["year_ending"] = date(2020, 12, 30)
+        base_details["custom_id_1"] = "2"
         self.property_state_factory.get_property_state(**base_details)
 
         # Properties for cycle 2021
         base_details["property_name"] = "p2021a"
         base_details["year_ending"] = date(2021, 1, 1)
+        base_details["custom_id_1"] = "1"
         self.property_state_factory.get_property_state(**base_details)
 
         base_details["property_name"] = "p2021b"
         base_details["year_ending"] = date(2021, 12, 31)
+        base_details["custom_id_1"] = "2"
         self.property_state_factory.get_property_state(**base_details)
 
         # Properties for cycle 2022 april
         base_details["property_name"] = "p2022a"
         base_details["year_ending"] = date(2022, 5, 1)
+        base_details["custom_id_1"] = "1"
         self.property_state_factory.get_property_state(**base_details)
 
         base_details["property_name"] = "p2022b"
         base_details["year_ending"] = date(2023, 3, 1)
+        base_details["custom_id_1"] = "2"
         self.property_state_factory.get_property_state(**base_details)
 
         # Properties with year_ending that do not match any cycles will be placed in default cycle
         base_details["property_name"] = "p_default_a"
         base_details["year_ending"] = date(1990, 5, 25)
+        base_details["custom_id_1"] = "1"
         self.property_state_factory.get_property_state(**base_details)
 
         base_details["property_name"] = "p_default_b"
         base_details["year_ending"] = date(2000, 4, 10)
+        base_details["custom_id_1"] = "2"
         self.property_state_factory.get_property_state(**base_details)
 
         # Properties with missing year_ending will be placed in default cycle
         base_details["property_name"] = "p_default_c"
         base_details.pop("year_ending")
+        base_details["custom_id_1"] = "3"
         self.property_state_factory.get_property_state(**base_details)
 
         # Set multiple_cycle_upload to True to trigger MultiCycle import

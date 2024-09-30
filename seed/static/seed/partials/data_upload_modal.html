@@ -633,7 +633,7 @@
         View my properties
       </button>
     </div>
-    <div class="row text-center" ng-if="import_file_reusable_for_meters !== false">
+    <div class="row text-center" ng-hide="step_10_mapquest_api_error" ng-if="import_file_reusable_for_meters !== false">
       <button
         type="button"
         class="btn btn-primary col-sm-6 center-block"
@@ -647,7 +647,7 @@
       </button>
     </div>
     <div class="row text-center" ng-if="step_10_mapquest_api_error">
-      <button type="button" class="btn btn-primary col-sm-6 center-block" ng-click="reset_mapquest_api_key()" translate>Update MapQuest API key</button>
+      <button type="button" class="btn btn-primary col-sm-6 center-block" ng-click="goto_organization_settings()" translate>Organization Settings</button>
     </div>
   </div>
   <div ng-switch-when="11">

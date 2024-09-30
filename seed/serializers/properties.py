@@ -1,4 +1,3 @@
-# !/usr/bin/env python
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
@@ -12,7 +11,6 @@ from collections import OrderedDict
 
 import pytz
 from django.db import models
-from past.builtins import basestring
 from rest_framework import serializers
 from rest_framework.fields import empty
 
@@ -237,6 +235,7 @@ class PropertyStatePromoteWritableSerializer(serializers.ModelSerializer):
     measures = PropertyMeasureSerializer(source="propertymeasure_set", many=True, read_only=True)
     scenarios = ScenarioSerializer(many=True, read_only=True)
     files = BuildingFileSerializer(source="building_files", many=True, read_only=True)
+    derived_data = serializers.JSONField(read_only=True)
 
     # to support the old state serializer method with the PROPERTY_STATE_FIELDS variables
     import_file_id = serializers.IntegerField(allow_null=True, read_only=True)
@@ -512,7 +511,7 @@ class PropertyViewAsStateSerializer(serializers.ModelSerializer):
         # type validation
         for field in required_fields:
             # state is a writeable serializer field
-            if field != "state" and data.get(field) and not isinstance(data[field], (basestring, int)):
+            if field != "state" and data.get(field) and not isinstance(data[field], (str, int)):
                 wrong_type.append((field, type(field)))
         for fields in unique_together:
             field_vals = {}

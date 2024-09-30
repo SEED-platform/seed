@@ -1,4 +1,3 @@
-# !/usr/bin/env python
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
@@ -252,10 +251,15 @@ class TaxLotProperty(models.Model):
             filtered_fields = {col["column_name"] for col in obj_columns if not col["is_extra_data"] and col["id"] in show_columns}
             extra_data_units = {}
             filtered_extra_data_fields = set()
+            derived_data_units = {}
+            filtered_derived_data_fields = set()
             for col in obj_columns:
                 if col["is_extra_data"] and col["id"] in show_columns:
                     filtered_extra_data_fields.add(col["column_name"])
                     extra_data_units[col["column_name"]] = DEFAULT_UNITS.get(col["data_type"])
+                elif col["derived_column"] is not None and col["id"] in show_columns:
+                    filtered_derived_data_fields.add(col["column_name"])
+                    derived_data_units[col["column_name"]] = DEFAULT_UNITS.get(col["data_type"])
 
         # get the related data
         join_map = {}
@@ -275,6 +279,11 @@ class TaxLotProperty(models.Model):
                 obj_dict.update(
                     TaxLotProperty.extra_data_to_dict_with_mapping(
                         obj.state.extra_data, obj_column_name_mapping, fields=filtered_extra_data_fields, units=extra_data_units
+                    ).items()
+                )
+                obj_dict.update(
+                    TaxLotProperty.extra_data_to_dict_with_mapping(
+                        obj.state.derived_data, obj_column_name_mapping, fields=filtered_derived_data_fields, units=derived_data_units
                     ).items()
                 )
 
@@ -350,6 +359,9 @@ class TaxLotProperty(models.Model):
             filtered_extra_data_fields = {
                 col["column_name"] for col in related_columns if col["is_extra_data"] and col["id"] in show_columns
             }
+            derived_data_units = {
+                col["column_name"] for col in related_columns if col["derived_column"] is not None and col["id"] in show_columns
+            }
 
         for related_view in related_views:
             related_dict = TaxLotProperty.model_to_dict_with_mapping(
@@ -383,6 +395,11 @@ class TaxLotProperty(models.Model):
                 related_dict.update(
                     TaxLotProperty.extra_data_to_dict_with_mapping(
                         related_view.state.extra_data, related_column_name_mapping, fields=filtered_extra_data_fields
+                    ).items()
+                )
+                related_dict.update(
+                    TaxLotProperty.extra_data_to_dict_with_mapping(
+                        related_view.state.derived_data, related_column_name_mapping, fields=derived_data_units
                     ).items()
                 )
             related_map[related_view.pk] = related_dict

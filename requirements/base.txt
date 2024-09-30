@@ -13,7 +13,7 @@ psycopg2-binary==2.9.9
 celery==5.2.2
 django-celery-beat==2.2.1
 django-redis==5.2.0  # Version is tied to compatibility with boto3
-hiredis==2.3.2
+hiredis==3.0.0
 
 brotli==1.1.0
 django-compressor==4.4
@@ -31,7 +31,7 @@ django-pint==0.6
 djangorestframework==3.12.2
 # Django-post-office dependency needs to be installed via github b/c
 # with pypi version Celery fails to auto discover post_office tasks
--e git+https://github.com/ui/django-post_office.git@v3.6.0#egg=django-post_office
+django-post_office @ git+https://github.com/ui/django-post_office@v3.6.0
 drf-yasg==1.20.0  # TODO bump this to 1.21.7 to add `get_paginated_response_schema` bug fix (once pytz is bumped)
 django-filter==2.4.0
 drf-nested-routers==0.91
@@ -52,13 +52,14 @@ requests==2.32.0
 probablepeople==0.5.4
 xmlschema==1.1.1
 lark==0.11.3
+pandas==2.2.2
 
 # Parsing and managing geojson data (this is only used in managed tasks at the moment)
 geojson==2.5.0
 
 # BuildingSync Asset Extractor
 # this also includes the lxml dependency required by SEED
-buildingsync-asset-extractor==v0.1.14
+buildingsync-asset-extractor==v0.2.0
 
 # Salesforce Integration
 seed-salesforce==0.1.0
@@ -66,18 +67,7 @@ seed-salesforce==0.1.0
 # geospatial and pnnl/buildingid-py
 shapely==2.0.1
 usaddress==0.5.10
--e git+https://github.com/SEED-platform/buildingid.git@bdb0a6efc37754f1946095896fa507b5ce866d6a#egg=pnnl-buildingid
-
-oauthlib==2.0.3
-
-# Used by jwt-oauth2
-django-braces==1.14.0
-
-# Use forked jwt-oauth2 b/c the published version broke when updating to Django 3.x
-# See: https://docs.djangoproject.com/en/dev/releases/3.0/#removed-private-python-2-compatibility-apis
-# jwt-oauth2>=0.1.1
--e git+https://github.com/SEED-platform/jwt-oauth2.git@9726367db36b332c84fb1288a7df32196509c06d#egg=jwt-oauth2
-django-oauth-toolkit==1.2.0
+pnnl-buildingid @ git+https://github.com/SEED-platform/buildingid@bdb0a6e
 
 future==0.18.3
 
@@ -86,3 +76,8 @@ django-treebeard==4.6.1
 django-two-factor-auth[phonenumbers]==1.16.0
 qrcode[pil]==6.1
 pyotp==2.9.0
+
+# This dependency can be removed once a version newer than 8.5.0 has been released that fixes Django autoreload
+importlib_metadata==8.4.0
+
+tkbl==0.6

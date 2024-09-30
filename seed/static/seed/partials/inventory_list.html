@@ -50,6 +50,7 @@
           <option ng-show="menu.user.organization.user_role !== 'viewer'" value="open_merge_modal" ng-disabled="selectedParentCount < 2" translate>Merge</option>
           <option ng-show="menu.user.organization.user_role !== 'viewer'" value="open_delete_modal" ng-disabled="selectedCount === 0" translate>Delete</option>
           <option ng-show="menu.user.organization.user_role !== 'viewer'" value="open_export_modal" ng-disabled="selectedCount === 0" translate>Export</option>
+          <option ng-show="menu.user.organization.user_role !== 'viewer'" value="update_derived_columns" ng-disabled="selectedCount === 0" translate>Update Derived Data</option>
           <option
             ng-show="menu.user.organization.user_role !== 'viewer'"
             value="open_export_to_audit_template_modal"
@@ -58,6 +59,9 @@
             translate
           >
             Export to Audit Template
+          </option>
+          <option ng-show="menu.user.organization.user_role !== 'viewer'" value="open_export_cts_modal" ng-if="::inventory_type === 'properties'" ng-disabled="selectedCount === 0" translate>
+            FEMP CTS Reporting Export
           </option>
           <option ng-show="menu.user.organization.user_role !== 'viewer'" value="open_at_submission_import_modal" ng-disabled="selectedCount === 0" translate>Update with Audit Template</option>
           <option ng-show="menu.user.organization.user_role !== 'viewer'" value="open_update_labels_modal" ng-disabled="selectedCount === 0" translate>Add/Remove Labels</option>
@@ -73,6 +77,7 @@
           <option ng-show="menu.user.organization.user_role !== 'viewer'" value="update_salesforce" ng-disabled="!organization.salesforce_enabled || selectedCount === 0" translate>
             Update Salesforce
           </option>
+          <option ng-show="menu.user.organization.user_role !== 'viewer'" value="open_move_inventory_modal" ng-disabled="selectedCount === 0" translate>Change Inventory Access Level</option>
         </optgroup>
         <optgroup label="{$:: 'Options' | translate $}">
           <option ng-show="menu.user.organization.user_role !== 'viewer'" value="open_show_populated_columns_modal" ng-if="menu.user.is_ali_root" ng-disabled="data.length === 0" translate>

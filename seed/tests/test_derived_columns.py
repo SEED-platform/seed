@@ -1,4 +1,3 @@
-# !/usr/bin/env python
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
@@ -15,12 +14,19 @@ from hypothesis import assume, example, given, settings
 from hypothesis import strategies as st
 from hypothesis.extra.django import TestCase
 
+from seed.data_importer.match import match_and_link_incoming_properties_and_taxlots
 from seed.landing.models import SEEDUser as User
-from seed.models import PropertyView
+from seed.lib.progress_data.progress_data import ProgressData
+from seed.models import ASSESSED_RAW, DATA_STATE_MAPPING, DATA_STATE_MATCHING, Property, PropertyView
 from seed.models.columns import Column
 from seed.models.derived_columns import DerivedColumn, DerivedColumnParameter, ExpressionEvaluator, InvalidExpressionError
-from seed.test_helpers.fake import FakeColumnFactory, FakeDerivedColumnFactory, FakePropertyStateFactory
-from seed.tests.util import AccessLevelBaseTestCase
+from seed.test_helpers.fake import (
+    FakeColumnFactory,
+    FakeDerivedColumnFactory,
+    FakePropertyFactory,
+    FakePropertyStateFactory,
+)
+from seed.tests.util import AccessLevelBaseTestCase, AssertDictSubsetMixin, DataMappingBaseTestCase
 from seed.utils.organizations import create_organization
 
 no_deadline = settings(deadline=None)
@@ -455,6 +461,7 @@ class TestDerivedColumns(TestCase):
         result = derived_column.evaluate(property_state)
 
         # -- Assert
+        self.assertEqual(property_state.derived_data, {})  # for the moment, this is always empty
         self.assertEqual(2, result)
 
     def test_derived_column_evaluate_returns_none_when_missing_parameters(self):
@@ -735,3 +742,213 @@ class TestDerivedColumnsPermissions(AccessLevelBaseTestCase):
         data = json.loads(response.content)
         assert response.status_code == 200
         assert data["results"] == []
+
+
+class TestDerivedColumnUpdates(AssertDictSubsetMixin, DataMappingBaseTestCase):
+    def setUp(self):
+        # set up user and org
+        user_details = {"username": "test_user@demo.com", "password": "test_pass", "email": "test_user@demo.com"}
+        self.user = User.objects.create_superuser(**user_details)
+        selfvars = self.set_up(ASSESSED_RAW, user_name=user_details["username"], user_password=user_details["password"])
+        _, self.org, self.import_file, self.import_record, self.cycle = selfvars
+        self.client.login(**user_details)
+
+        # set up import file
+        self.import_file.mapping_done = True
+        self.import_file.save()
+        self.base_details = {
+            "import_file_id": self.import_file.id,
+            "data_state": DATA_STATE_MAPPING,
+        }
+        progress_data = ProgressData(func_name="match_buildings", unique_id=self.import_file)
+        sub_progress_data = ProgressData(func_name="match_sub_progress", unique_id=self.import_file)
+        self.action_args = [self.import_file.id, progress_data.key, sub_progress_data.key]
+
+        # set up factory
+        self.property_state_factory = FakePropertyStateFactory(organization=self.org)
+        self.property_factory = FakePropertyFactory(organization=self.org)
+
+        # -- Setup derived column
+        expression = "$a + $b"
+        self.column_a = Column.objects.get(column_name="gross_floor_area", table_name="PropertyState")
+        self.column_b = Column.objects.get(column_name="energy_score", table_name="PropertyState")
+        column_parameters = {
+            "a": {
+                "source_column": self.column_a,
+                "value": 1,
+            },
+            "b": {
+                "source_column": self.column_b,
+                "value": 1,
+            },
+        }
+        self.derived_col_factory = FakeDerivedColumnFactory(organization=self.org, inventory_type=DerivedColumn.PROPERTY_TYPE)
+        models = self._derived_column_for_property_factory(expression, column_parameters)
+        self.derived_column = models["derived_column"]
+
+    def _derived_column_for_property_factory(self, expression, column_parameters, name=None, create_property_state=True):
+        """Factory to create DerivedColumn, DerivedColumnParameters, and a PropertyState
+        which can be used to evaluate the DerivedColumn expression.
+
+        :param expression: str, expression for the DerivedColumn
+        :param column_parameters: dict, Columns to be added as parameters. Of the format:
+            {
+                <parameter name>: {
+                    'source_column': Column,
+                    'value': <value>,
+                },
+                ...
+            }
+            NOTE:
+                - <parameter name> is used for the DerivedColumnParameter.parameter_name
+                - `value` is used to set the value of the property state. If None,
+                  and the column is extra_data, it is not added the property state
+        :return: dict, of the format:
+            {
+                'property_state': PropertyState,
+                'derived_column': DerivedColumn,
+                'derived_column_parameters': [DerivedColumnParameters]
+            }
+        """
+        derived_column = self.derived_col_factory.get_derived_column(expression=expression, name=name)
+
+        # link the parameter columns to the derived column
+        derived_column_parameters = []
+        for param_name, param_config in column_parameters.items():
+            derived_column_parameters.append(
+                DerivedColumnParameter.objects.create(
+                    parameter_name=param_name,
+                    derived_column=derived_column,
+                    source_column=param_config["source_column"],
+                )
+            )
+
+        # make a property state which has all the values for the expression
+        property_state_config = {"extra_data": {}}
+        for param_name, param_config in column_parameters.items():
+            col = param_config["source_column"]
+            param_value = param_config["value"]
+            if col.is_extra_data:
+                # don't add extra data with value of None
+                # this is to assist testing properties with missing extra data columns
+                if param_value is not None:
+                    property_state_config["extra_data"][col.column_name] = param_value
+            else:
+                property_state_config[col.column_name] = param_value
+
+        property_state = None
+        if create_property_state:
+            property_state = self.property_state_factory.get_property_state(**property_state_config)
+
+        return {"property_state": property_state, "derived_column": derived_column, "derived_column_parameters": derived_column_parameters}
+
+    def test_derived_data_updates_on_import_creation(self):
+        # Set Up
+        self.base_details[self.column_a.column_name] = 2
+        self.base_details[self.column_b.column_name] = 2
+        self.base_details["raw_access_level_instance_id"] = self.org.root.id
+        self.property_state_factory.get_property_state(**self.base_details)
+
+        # Action
+        match_and_link_incoming_properties_and_taxlots(*self.action_args)
+        v = PropertyView.objects.first()
+
+        self.assertEqual(v.state.derived_data, {self.derived_column.name: 4})  # for the moment, this is always empty
+
+    def test_derived_data_updates_on_import_merge(self):
+        # this causes all the states to match
+        self.base_details["custom_id_1"] = "86HJPCWQ+2VV-1-3-2-3"
+        self.base_details["no_default_data"] = False
+
+        # create preexisting-state
+        self.state = self.property_state_factory.get_property_state(**self.base_details)
+        self.state.data_state = DATA_STATE_MATCHING
+        self.state.save()
+        self.existing_property = self.property_factory.get_property()
+        v = PropertyView.objects.create(property=self.existing_property, cycle=self.cycle, state=self.state)
+        self.assertEqual(v.state.derived_data, {})  # for the moment, this is always empty
+
+        # Set Up
+        self.base_details[self.column_a.column_name] = 2
+        self.base_details[self.column_b.column_name] = 2
+        self.base_details["raw_access_level_instance_id"] = self.org.root.id
+        s = self.property_state_factory.get_property_state(**self.base_details)
+        s.save()
+
+        # Action
+        match_and_link_incoming_properties_and_taxlots(*self.action_args)
+        self.assertEqual(Property.objects.count(), 1)
+        self.assertEqual(PropertyView.objects.count(), 1)
+        v = PropertyView.objects.first()
+
+        self.assertEqual(v.state.derived_data, {self.derived_column.name: 4})  # for the moment, this is always empty
+
+    def test_derived_data_on_merge(self):
+        # Create views
+        self.state_1 = self.property_state_factory.get_property_state(gross_floor_area=2)
+        self.property_1 = self.property_factory.get_property()
+        self.view_1 = PropertyView.objects.create(property=self.property_1, cycle=self.cycle, state=self.state_1)
+
+        self.state_2 = self.property_state_factory.get_property_state(energy_score=2, gross_floor_area=20)
+        self.property_2 = self.property_factory.get_property()
+        self.view_2 = PropertyView.objects.create(property=self.property_2, cycle=self.cycle, state=self.state_2)
+
+        # Merge the properties
+        url = reverse("api:v3:properties-merge") + f"?organization_id={self.org.pk}"
+        post_params = json.dumps({"property_view_ids": [self.view_2.pk, self.view_1.pk]})
+        self.client.post(url, post_params, content_type="application/json")
+
+        # Assert
+        self.assertEqual(PropertyView.objects.count(), 1)
+        v = PropertyView.objects.first()
+        self.assertEqual(v.state.derived_data, {self.derived_column.name: 4})  # for the moment, this is always empty
+
+    def test_derived_data_on_derived_column_creation(self):
+        # Create views
+        self.state = self.property_state_factory.get_property_state(year_built=2000)
+        self.property = self.property_factory.get_property()
+        self.view = PropertyView.objects.create(property=self.property, cycle=self.cycle, state=self.state)
+
+        # Merge the properties
+        year_built = Column.objects.get(column_name="year_built", table_name="PropertyState")
+        url = reverse("api:v3:derived_columns-list") + "?organization_id=" + str(self.org.id)
+        post_params = dumps(
+            {
+                "name": "new guy",
+                "expression": "$param_a * 2",
+                "inventory_type": "Property",
+                "parameters": [{"parameter_name": "param_a", "source_column": year_built.id}],
+            }
+        )
+        self.client.post(url, post_params, content_type="application/json")
+
+        # Assert
+        v = PropertyView.objects.first()
+        self.assertEqual(v.state.derived_data, {"new guy": 4000})  # for the moment, this is always empty
+
+    def test_derived_data_on_derived_column_update(self):
+        # Set Up
+        self.base_details[self.column_a.column_name] = 2
+        self.base_details[self.column_b.column_name] = 2
+        self.base_details["raw_access_level_instance_id"] = self.org.root.id
+        self.property_state_factory.get_property_state(**self.base_details)
+
+        # Action
+        match_and_link_incoming_properties_and_taxlots(*self.action_args)
+        v = PropertyView.objects.first()
+
+        self.assertEqual(v.state.derived_data, {self.derived_column.name: 4})  # for the moment, this is always empty
+
+        # Merge the properties
+        url = reverse("api:v3:derived_columns-detail", args=[self.derived_column.id]) + "?organization_id=" + str(self.org.id)
+        post_params = dumps(
+            {
+                "name": self.derived_column.name,
+                "expression": "$a - $b",
+            }
+        )
+        self.client.put(url, post_params, content_type="application/json")
+
+        # Assert
+        v = PropertyView.objects.first()
+        self.assertEqual(v.state.derived_data, {self.derived_column.name: 0})  # for the moment, this is always empty

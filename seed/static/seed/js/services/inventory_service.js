@@ -374,6 +374,27 @@ angular.module('SEED.service.inventory', []).factory('inventory_service', [
         });
     };
 
+    inventory_service.move_properties = (access_level_instance_id, property_view_ids) => {
+      spinner_utility.show();
+      return $http
+        .post(
+          '/api/v3/properties/move_properties_to/',
+          {
+            property_view_ids,
+            access_level_instance_id
+          },
+          {
+            params: {
+              organization_id: user_service.get_organization().id
+            }
+          }
+        )
+        .then((response) => response.data)
+        .finally(() => {
+          spinner_utility.hide();
+        });
+    };
+
     inventory_service.delete_property_states = (property_view_ids) => $http.delete('/api/v3/properties/batch_delete/', {
       headers: {
         'Content-Type': 'application/json;charset=utf-8'
@@ -1217,10 +1238,45 @@ angular.module('SEED.service.inventory', []).factory('inventory_service', [
       }
     });
 
+    inventory_service.set_update_to_now = (property_views, taxlot_views, progress_key) => $http.post('/api/v3/tax_lot_properties/set_update_to_now/', {
+      property_views,
+      taxlot_views,
+      progress_key,
+      organization_id: user_service.get_organization().id
+    });
+
+    // this is the CTS Comprehensive Evaluation Upload Template
+    // which uses the BAE/BuildingSync workflow
+    inventory_service.evaluation_export_to_cts = (property_view_ids, filename = 'test.xlsx') => $http.post(
+      `/api/v3/properties/evaluation_export_to_cts/?organization_id=${user_service.get_organization().id}`,
+      {
+        filename,
+        property_view_ids
+      },
+      {
+        responseType: 'arraybuffer'
+      }
+    );
+
+    // this is the CTS Facility Upload Template for Federal BPS
+    // which uses the SEED-based workflow (not buildingsync)
+    inventory_service.facility_bps_export_to_cts = (org_id, property_view_ids) => $http
+      .post(
+        `/api/v3/properties/facility_bps_export_to_cts/?organization_id=${org_id}`,
+        property_view_ids,
+        { responseType: 'arraybuffer' }
+      );
+
     inventory_service.filter_by_property = (cycle_id, property_ids) => $http.post('/api/v3/properties/filter_by_property/', {
       organization_id: user_service.get_organization().id,
       cycle: cycle_id,
       property_ids
+    }).then((response) => response.data);
+
+    inventory_service.update_derived_data = (property_view_ids, taxlot_view_ids) => $http.post('/api/v3/tax_lot_properties/update_derived_data/', {
+      organization_id: user_service.get_organization().id,
+      property_view_ids,
+      taxlot_view_ids
     }).then((response) => response.data);
 
     return inventory_service;

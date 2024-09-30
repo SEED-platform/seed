@@ -1,4 +1,3 @@
-# !/usr/bin/env python
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
@@ -7,7 +6,6 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 from rest_framework import serializers
 from rest_framework.fields import ChoiceField
 
-from seed.lib.tkbl.tkbl import tkbl_data
 from seed.lib.uniformat.uniformat import uniformat_codes
 from seed.models import Element, Uniformat
 
@@ -64,13 +62,3 @@ class ElementPropertySerializer(ElementSerializer):
         validated_data["property_id"] = self.context["request"].parser_context["kwargs"]["property_pk"]
         validated_data["element_id"] = validated_data.pop("id", None)
         return super().update(instance, validated_data)
-
-
-class ElementPropertyTKBLSerializer(ElementPropertySerializer):
-    tkbl = serializers.SerializerMethodField()
-
-    def get_tkbl(self, element):
-        return {
-            "estcp": tkbl_data["estcp"].get(element.code.code, []),
-            "sftool": tkbl_data["sftool"].get(element.code.code, []),
-        }
