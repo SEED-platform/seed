@@ -562,7 +562,7 @@ angular.module('SEED.controller.inventory_detail', []).controller('inventory_det
       });
     };
 
-    $scope.open_update_inventory_groups_modal = function () {
+    $scope.open_update_inventory_groups_modal = () => {
       const modalInstance = $uibModal.open({
         templateUrl: `${urls.static_url}seed/partials/update_inventory_groups_modal.html`,
         controller: 'update_inventory_groups_modal_controller',

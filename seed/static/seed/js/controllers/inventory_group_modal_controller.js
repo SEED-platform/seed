@@ -11,6 +11,7 @@ angular.module('SEED.controller.inventory_group_modal', [])
     'inventory_type',
     'data',
     'org_id',
+    // eslint-disable-next-line func-names
     function (
       $scope,
       $uibModalInstance,
@@ -25,7 +26,7 @@ angular.module('SEED.controller.inventory_group_modal', [])
       $scope.org_id = org_id;
       $scope.inventory_type = inventory_type;
 
-      $scope.rename_inventory_group = function () {
+      $scope.rename_inventory_group = () => {
         if (!$scope.disabled()) {
           const id = $scope.data.id;
           const group = _.omit($scope.data, 'id');
@@ -38,7 +39,7 @@ angular.module('SEED.controller.inventory_group_modal', [])
         }
       };
 
-      $scope.remove_inventory_group = function () {
+      $scope.remove_inventory_group = () => {
         inventory_group_service.remove_group($scope.data.id).then(() => {
           $uibModalInstance.close();
         }).catch(() => {
@@ -46,20 +47,20 @@ angular.module('SEED.controller.inventory_group_modal', [])
         });
       };
 
-      $scope.new_inventory_group = function () {
+      $scope.new_inventory_group = () => {
         if (!$scope.disabled()) {
           inventory_group_service.new_group({
             name: $scope.newName,
             inventory_type: $scope.inventory_type,
             organization: $scope.org_id,
-            access_level_instance: 1  // TODO: add access level instance dropdown to modal
+            access_level_instance: 1 // TODO: add access level instance dropdown to modal
           }).then((result) => {
             $uibModalInstance.close(result.data);
           });
         }
       };
 
-      $scope.disabled = function () {
+      $scope.disabled = () => {
         if ($scope.action === 'rename') {
           return _.isEmpty($scope.newName) || $scope.newName === $scope.data.name;
         } if ($scope.action === 'new') {
@@ -67,7 +68,7 @@ angular.module('SEED.controller.inventory_group_modal', [])
         }
       };
 
-      $scope.cancel = function () {
+      $scope.cancel = () => {
         $uibModalInstance.dismiss();
       };
     }]);

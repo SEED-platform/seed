@@ -4,9 +4,10 @@
  */
 angular.module('SEED.service.inventory_group', []).factory('inventory_group_service', [
   '$http',
+  '$q',
   'user_service',
   'naturalSort',
-  ($http, user_service, naturalSort) => {
+  ($http, $q, user_service, naturalSort) => {
     const group_factory = {};
 
     function map_group(group) {

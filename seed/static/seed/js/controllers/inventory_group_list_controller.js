@@ -17,6 +17,7 @@ angular.module('SEED.controller.inventory_group_list', [])
     'inventory_groups',
     'current_inventory_group',
     'organization_payload',
+    // eslint-disable-next-line func-names
     function (
       $scope,
       $state,
@@ -37,7 +38,7 @@ angular.module('SEED.controller.inventory_group_list', [])
       $scope.currentInventoryGroup = current_inventory_group;
       $scope.org_id = organization_payload;
 
-      $scope.rename_inventory_group = function () {
+      $scope.rename_inventory_group = () => {
         const oldGroup = angular.copy($scope.currentInventoryGroup);
 
         const modalInstance = $uibModal.open({
@@ -58,7 +59,7 @@ angular.module('SEED.controller.inventory_group_list', [])
         });
       };
 
-      $scope.remove_inventory_group = function () {
+      $scope.remove_inventory_group = () => {
         const oldGroup = angular.copy($scope.currentInventoryGroup);
         const modalInstance = $uibModal.open({
           templateUrl: `${urls.static_url}seed/partials/inventory_group_modal.html`,
@@ -79,7 +80,7 @@ angular.module('SEED.controller.inventory_group_list', [])
         });
       };
 
-      $scope.new_inventory_group = function () {
+      $scope.new_inventory_group = () => {
         const modalInstance = $uibModal.open({
           templateUrl: `${urls.static_url}seed/partials/inventory_group_modal.html`,
           controller: 'inventory_group_modal_controller',
@@ -100,7 +101,7 @@ angular.module('SEED.controller.inventory_group_list', [])
         });
       };
 
-      $scope.profile_change = function () {
+      $scope.profile_change = () => {
         inventory_service.save_last_inventory_group($scope.currentInventoryGroup.id, $scope.inventory_type);
       };
       $scope.isModified = () => modified_service.isModified();

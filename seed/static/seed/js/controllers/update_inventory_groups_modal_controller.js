@@ -9,6 +9,7 @@ angular.module('SEED.controller.update_inventory_groups_modal', [])
     'org_id',
     'user_service',
     'Notification',
+    // eslint-disable-next-line func-names
     function ($scope, $log, $uibModalInstance, inventory_group_service, inventory_ids, inventory_type, org_id, user_service, notification) {
       $scope.inventory_ids = inventory_ids;
       $scope.inventory_type = inventory_type;
