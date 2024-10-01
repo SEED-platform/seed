@@ -25,7 +25,7 @@ angular.module('SEED.controller.inventory_reports', []).controller('inventory_re
   'ah_service',
   'access_level_tree',
   'user_service',
-  'filter_groups_service',
+  'filter_groups',
   // eslint-disable-next-line func-names
   function (
     $scope,
@@ -45,7 +45,7 @@ angular.module('SEED.controller.inventory_reports', []).controller('inventory_re
     ah_service,
     access_level_tree,
     user_service,
-    filter_groups_service
+    filter_groups
   ) {
     const org_id = organization_payload.organization.id;
     const base_storage_key = `report.${org_id}`;
@@ -56,10 +56,7 @@ angular.module('SEED.controller.inventory_reports', []).controller('inventory_re
     $scope.potential_level_instances = [];
     $scope.access_level_instance_id = null;
     $scope.users_access_level_instance_id = user_service.get_access_level_instance().id;
-
-    filter_groups_service.get_filter_groups('Property').then((filter_groups) => {
-      $scope.filter_groups = filter_groups;
-    });
+    $scope.filter_groups = filter_groups;
     $scope.filter_group_id = null;
     const access_level_instances_by_depth = ah_service.calculate_access_level_instances_by_depth($scope.access_level_tree);
     // cannot select parents alis
