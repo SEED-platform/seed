@@ -114,7 +114,7 @@ def _run_analysis(self, analysis_property_view_ids, analysis_id):
 
         # add ddc count by property id
         if ddc_count_column:
-            ddc_count = ddc_count_by_property_id[property_view.property_id]
+            ddc_count = ddc_count_by_property_id.get(property_view.property_id, 0)
             property_view.state.extra_data[ddc_count_column.column_name] = ddc_count
             if ddc_count:
                 analysis_property_view.parsed_results[ddc_count_column.column_name] = ddc_count
