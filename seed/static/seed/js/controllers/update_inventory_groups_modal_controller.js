@@ -29,11 +29,6 @@ angular.module('SEED.controller.update_inventory_groups_modal', [])
       $scope.inventory_type = inventory_type;
       $scope.org_id = org_id;
 
-      // organization_service.get_lowest_common_ancestor(org_id, inventory_type, view_ids).then((response) => {
-      //   console.log("TODO review")
-      //   $scope.lowest_common_ancestor = response.data
-      //   new_group.access_level_instance = response.data.id
-      // });
       organization_service.filter_access_levels_by_inventory(org_id, inventory_type, view_ids).then((response) => {
         $scope.inventory_access_level_instance_ids = response.access_level_instance_ids;
         $scope.inventory_access_level_instance_count = $scope.inventory_access_level_instance_ids.length;
