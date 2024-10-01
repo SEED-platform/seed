@@ -57,6 +57,10 @@ class AutoSchemaHelper(SwaggerAutoSchema):
         return openapi.Parameter(name, openapi.IN_QUERY, description=description, required=required, type=openapi.TYPE_BOOLEAN)
 
     @staticmethod
+    def query_enum_field(name, description, enum):
+        return openapi.Parameter(name, openapi.IN_QUERY, description=description, required=True, type=openapi.TYPE_STRING, enum=enum)
+
+    @staticmethod
     def form_string_field(name, required, description):
         return openapi.Parameter(name, openapi.IN_FORM, description=description, required=required, type=openapi.TYPE_STRING)
 
