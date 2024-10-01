@@ -32,19 +32,18 @@ angular.module('SEED.controller.update_derived_data_modal', []).controller('upda
       inventory_service.update_derived_data($scope.property_view_ids, $scope.taxlot_view_ids).then((data) => {
         $scope.status = 'in progress';
 
-        const resultHandler = (error = false) => {
+        const resultHandler = (notification_type, message) => {
           $scope.uploader.in_progress = false;
           $uibModalInstance.close();
-          const [action, message] = error ? ['error', 'Unexpected Error'] : ['success', 'Success'];
-          Notification[action](message);
+          Notification[notification_type](message);
         };
 
         uploader_service.check_progress_loop(
           data.progress_key,
           0,
           1,
-          () => resultHandler(false), // success
-          () => resultHandler(true), // error
+          () => resultHandler('success', 'Success'),
+          () => resultHandler('error', 'Unexpected Error'),
           $scope.uploader
         );
       });
