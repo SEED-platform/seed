@@ -34,24 +34,27 @@ class Migration(migrations.Migration):
             name="InventoryGroupMapping",
             fields=[
                 ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-                ("group", models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="seed.inventorygroup")),
-                ("property", models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to="seed.property")),
-                ("taxlot", models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to="seed.taxlot")),
+                (
+                    "group",
+                    models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name="group_mappings", to="seed.inventorygroup"),
+                ),
+                (
+                    "property",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="group_mappings",
+                        to="seed.property",
+                    ),
+                ),
+                (
+                    "taxlot",
+                    models.ForeignKey(
+                        blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name="group_mappings", to="seed.taxlot"
+                    ),
+                ),
             ],
-        ),
-        migrations.AlterField(
-            model_name="inventorygroupmapping",
-            name="property",
-            field=models.ForeignKey(
-                blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name="group_mappings", to="seed.property"
-            ),
-        ),
-        migrations.AlterField(
-            model_name="inventorygroupmapping",
-            name="taxlot",
-            field=models.ForeignKey(
-                blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name="group_mappings", to="seed.taxlot"
-            ),
         ),
         migrations.AddConstraint(
             model_name="inventorygroup",

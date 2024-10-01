@@ -16,7 +16,7 @@ from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
 
 
 @method_decorator(name="list", decorator=[swagger_auto_schema_org_query_param, has_perm_class("requires_viewer")])
-@method_decorator(name="create", decorator=swagger_auto_schema_org_query_param)
+@method_decorator(name="create", decorator=[swagger_auto_schema_org_query_param, has_perm_class("requires_member")])
 @method_decorator(name="update", decorator=[swagger_auto_schema_org_query_param, has_perm_class("requires_member")])
 class InventoryGroupViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
     serializer_class = InventoryGroupSerializer

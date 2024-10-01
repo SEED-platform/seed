@@ -499,6 +499,9 @@ class AccessLevelViewSet(viewsets.ViewSet):
     @action(detail=False, methods=["PUT"])
     def lowest_common_ancestor(self, request, organization_pk=None):
         """
+        * THIS IS NOT IN USE, but could be useful in future development
+
+
         Given a list of inventory, find the least common ancestor between multiple properties within a group
 
         Example ALI tree:

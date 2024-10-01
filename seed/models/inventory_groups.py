@@ -36,7 +36,7 @@ def presave_inventory_group(sender, instance, **kwargs):
 class InventoryGroupMapping(models.Model):
     property = models.ForeignKey(Property, on_delete=models.CASCADE, blank=True, null=True, related_name="group_mappings")
     taxlot = models.ForeignKey(TaxLot, on_delete=models.CASCADE, blank=True, null=True, related_name="group_mappings")
-    group = models.ForeignKey(InventoryGroup, on_delete=models.CASCADE)
+    group = models.ForeignKey(InventoryGroup, on_delete=models.CASCADE, related_name="group_mappings")
 
     def clean(self):
         inventory = self.property or self.taxlot
