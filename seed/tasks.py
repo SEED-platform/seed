@@ -535,9 +535,13 @@ def set_update_to_now(property_view_ids, taxlot_view_ids, progress_key):
 
 @shared_task
 def update_state_derived_data(property_state_ids=[], taxlot_state_ids=[], derived_column_ids=[], check_progress=True):
-    progress_data = ProgressData(func_name="update_derived_data", unique_id=derived_column_ids[0])
-    progress_data.total = len(property_state_ids) + len(taxlot_state_ids)
-    progress_data.save()
+    if check_progress:
+        progress_data = ProgressData(func_name="update_derived_data", unique_id=derived_column_ids[0])
+        progress_data.total = len(property_state_ids) + len(taxlot_state_ids)
+        progress_data.save()
+        progress_key = progress_data.key
+    else:
+        progress_key = False
 
     chunk_size = 100
 
@@ -547,13 +551,11 @@ def update_state_derived_data(property_state_ids=[], taxlot_state_ids=[], derive
 
     tasks = []
     for chunk_ids in batch(property_state_ids, chunk_size):
-        tasks.append(_update_property_state_derived_data_chunk.si(progress_data.key, chunk_ids, property_derived_column_ids))
+        tasks.append(_update_property_state_derived_data_chunk.si(progress_key, chunk_ids, property_derived_column_ids))
     for chunk_ids in batch(taxlot_state_ids, chunk_size):
-        tasks.append(_update_taxlot_state_derived_data_chunk.si(progress_data.key, chunk_ids, taxlot_derived_column_ids))
+        tasks.append(_update_taxlot_state_derived_data_chunk.si(progress_key, chunk_ids, taxlot_derived_column_ids))
 
-    chord(tasks, interval=15)(
-        _finish_update_state_derived_data.si(progress_data.key, property_derived_column_ids + taxlot_derived_column_ids)
-    )
+    chord(tasks, interval=15)(_finish_update_state_derived_data.si(progress_key, property_derived_column_ids + taxlot_derived_column_ids))
 
     if check_progress:
         return progress_data.result()
@@ -561,7 +563,8 @@ def update_state_derived_data(property_state_ids=[], taxlot_state_ids=[], derive
 
 @shared_task
 def _update_property_state_derived_data_chunk(progress_key, property_state_ids=[], derived_column_ids=[]):
-    progress_data = ProgressData.from_key(progress_key)
+    if progress_key:
+        progress_data = ProgressData.from_key(progress_key)
 
     states = PropertyState.objects.filter(id__in=property_state_ids)
     derived_columns = DerivedColumn.objects.filter(id__in=derived_column_ids)
@@ -570,12 +573,14 @@ def _update_property_state_derived_data_chunk(progress_key, property_state_ids=[
         for derived_column in derived_columns:
             state.derived_data[derived_column.name] = derived_column.evaluate(state)
         state.save()
-        progress_data.step()
+        if progress_key:
+            progress_data.step()
 
 
 @shared_task
 def _update_taxlot_state_derived_data_chunk(progress_key, taxlot_state_ids=[], derived_column_ids=[]):
-    progress_data = ProgressData.from_key(progress_key)
+    if progress_key:
+        progress_data = ProgressData.from_key(progress_key)
 
     states = TaxLotState.objects.filter(id__in=taxlot_state_ids)
     derived_columns = DerivedColumn.objects.filter(id__in=derived_column_ids)
@@ -584,14 +589,15 @@ def _update_taxlot_state_derived_data_chunk(progress_key, taxlot_state_ids=[], d
         for derived_column in derived_columns:
             state.derived_data[derived_column.name] = derived_column.evaluate(state)
         state.save()
-        progress_data.step()
+        if progress_key:
+            progress_data.step()
 
 
 @shared_task
 def _finish_update_state_derived_data(progress_key, derived_column_ids):
-    progress_data = ProgressData.from_key(progress_key)
-
     derived_columns = DerivedColumn.objects.filter(id__in=derived_column_ids)
     Column.objects.filter(derived_column__in=derived_columns).update(is_updating=False)
 
-    return progress_data.finish_with_success("Updated Derived Data")
+    if progress_key:
+        progress_data = ProgressData.from_key(progress_key)
+        return progress_data.finish_with_success("Updated Derived Data")

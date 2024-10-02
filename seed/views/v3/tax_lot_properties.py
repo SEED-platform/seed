@@ -678,4 +678,4 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
             property_state_ids=property_state_ids, taxlot_state_ids=taxlot_state_ids, derived_column_ids=derived_column_ids
         )
 
-        return JsonResponse(result)
+        return JsonResponse(result or {"result": "success"})
