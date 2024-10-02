@@ -338,7 +338,6 @@ def match_and_link_incoming_properties_and_taxlots_by_cycle(
         property_state_ids=[v.state_id for v in new_property_views + merged_property_views],
         taxlot_state_ids=[v.state_id for v in new_taxlot_views + merged_taxlot_views],
         derived_column_ids=derived_column_ids,
-        check_progress=False,
     )
 
     return {
