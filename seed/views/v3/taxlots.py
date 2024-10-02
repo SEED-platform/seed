@@ -23,6 +23,8 @@ from seed.models import (
     MERGE_STATE_DELETE,
     MERGE_STATE_MERGED,
     MERGE_STATE_NEW,
+    Column,
+    DerivedColumn,
     Note,
     PropertyView,
     StatusLabel,
@@ -34,6 +36,7 @@ from seed.models import (
 )
 from seed.serializers.properties import PropertyViewSerializer
 from seed.serializers.taxlots import TaxLotSerializer, TaxLotStateSerializer, TaxLotViewSerializer, UpdateTaxLotPayloadSerializer
+from seed.tasks import update_state_derived_data
 from seed.utils.api import OrgMixin, ProfileIdMixin, api_endpoint_class
 from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema_org_query_param
 from seed.utils.inventory_filter import get_filtered_results
@@ -237,6 +240,8 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
                 {"status": "error", "message": "These two taxlots have different alis."}, status=status.HTTP_400_BAD_REQUEST
             )
 
+        update_derived_data([view.state.id], organization_id)
+
         return {
             "status": "success",
             "match_merged_count": merge_count,
@@ -426,6 +431,8 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
+
+        update_derived_data([view.state.id], org_id)
 
         result = {
             "view_id": view.id,
@@ -697,6 +704,7 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
                                 "match_link_count": link_count,
                             }
                         )
+                        update_derived_data([view.state.id], log.organization)
 
                         return JsonResponse(result, status=status.HTTP_200_OK)
                     else:
@@ -709,3 +717,10 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
                     return JsonResponse(result, status=status.HTTP_204_NO_CONTENT)
         else:
             return JsonResponse(result, status=status.HTTP_404_NOT_FOUND)
+
+
+def update_derived_data(state_ids, org_id):
+    derived_columns = DerivedColumn.objects.filter(organization_id=org_id)
+    Column.objects.filter(derived_column__in=derived_columns).update(is_updating=True)
+    derived_column_ids = list(derived_columns.values_list("id", flat=True))
+    update_state_derived_data(taxlot_state_ids=state_ids, derived_column_ids=derived_column_ids)

@@ -13,7 +13,7 @@ psycopg2-binary==2.9.9
 celery==5.2.2
 django-celery-beat==2.2.1
 django-redis==5.2.0  # Version is tied to compatibility with boto3
-hiredis==2.3.2
+hiredis==3.0.0
 
 brotli==1.1.0
 django-compressor==4.4

@@ -225,11 +225,10 @@
                 </span>
               </td>
 
-              <!-- Show read-only current derived column value -->
+              <!-- Show read-only derived column value -->
               <td ng-if="edit_form_showing===false && col.derived_column" class="ellipsis">
                 <span class="sd-data-content" uib-popover="{$ item_derived_values[col.column_description] $}" popover-trigger="'outsideClick'" popover-animation="false" popover-placement="top-left">
-                  <span ng-if="!item_derived_values.hasOwnProperty(col.id)"><i class="fa-solid fa-spinner fa-spin-pulse fa-fw" style="padding-right: 0"></i> Loading...</span>
-                  <span ng-if="!!item_derived_values.hasOwnProperty(col.id)">{$ item_derived_values[col.id] $}</span>
+                  <span>{$:: displayValue(col, item_state.derived_data[col.column_name]) $}</span>
                 </span>
               </td>
 
@@ -391,7 +390,8 @@
         <div class="section_header_container" style="margin-top: 20px; border-bottom: 0">
           <div class="section_header fixed_height_short has_no_padding">
             <div class="section_action_container" style="width: 75%">
-              <h2><i class="fa-solid fa-atom"></i>{$:: 'Building Performance Standard (BPS) Compliance Pathway Support' | translate $}</h2>
+              <h2><i class="fa-solid fa-atom"></i><span translate>Building Performance Standard (BPS) Compliance Pathway Support</span></h2>
+              <p translate style="padding-left: 24px">Includes Elements with Scope 1 Emissions Only</p>
             </div>
           </div>
         </div>
@@ -405,8 +405,8 @@
                   <th translate>Description</th>
                   <th translate>GSA SFTool Guidance</th>
                   <th translate>ESTCP Report</th>
-                  <th translate>BuildingSync Recommended Measures</th>
-                  <th translate>Federal BPS Recommended Measures</th>
+                  <th translate>Available BuildingSync Measures</th>
+                  <th translate>Federal BPS Prescriptive Measures</th>
                   <th translate>Auditor Recommended Measures</th>
                 </tr>
               </thead>

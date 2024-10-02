@@ -65,6 +65,7 @@
     'SEED.controller.delete_document_modal',
     'SEED.controller.delete_file_modal',
     'SEED.controller.delete_modal',
+    'SEED.controller.update_derived_data_modal',
     'SEED.controller.delete_org_modal',
     'SEED.controller.derived_columns_admin',
     'SEED.controller.derived_columns_editor',
@@ -1968,13 +1969,7 @@
                 return inventory_service.get_taxlot_columns();
               }
             ],
-            organization_payload: ['user_service', 'organization_service', (user_service, organization_service) => organization_service.get_organization_brief(user_service.get_organization().id)],
-            derived_columns_payload: [
-              '$stateParams',
-              'derived_columns_service',
-              'organization_payload',
-              ($stateParams, derived_columns_service, organization_payload) => derived_columns_service.get_derived_columns(organization_payload.organization.id, $stateParams.inventory_type)
-            ]
+            organization_payload: ['user_service', 'organization_service', (user_service, organization_service) => organization_service.get_organization_brief(user_service.get_organization().id)]
           }
         })
         .state({
@@ -2180,15 +2175,6 @@
                   _.remove(columns, 'related');
                   return _.map(columns, (col) => _.omit(col, ['pinnedLeft', 'related']));
                 });
-              }
-            ],
-            derived_columns_payload: [
-              '$stateParams',
-              'user_service',
-              'derived_columns_service',
-              ($stateParams, user_service, derived_columns_service) => {
-                const organization_id = user_service.get_organization().id;
-                return derived_columns_service.get_derived_columns(organization_id, $stateParams.inventory_type);
               }
             ],
             profiles: [
@@ -2747,10 +2733,12 @@
           prefix: '/static/seed/locales/',
           suffix: '.json'
         })
-        .registerAvailableLanguageKeys(['en_US', 'fr_CA'], {
+        .registerAvailableLanguageKeys(['en_US', 'es', 'fr_CA'], {
           en: 'en_US',
+          es: 'es',
           fr: 'fr_CA',
           'en_*': 'en_US',
+          'es_*': 'es',
           'fr_*': 'fr_CA',
           '*': 'en_US'
         })
