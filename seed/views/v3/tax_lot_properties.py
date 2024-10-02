@@ -675,10 +675,7 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
 
         # update
         result = update_state_derived_data(
-            property_state_ids=property_state_ids,
-            taxlot_state_ids=taxlot_state_ids,
-            derived_column_ids=derived_column_ids,
-            check_progress=True,
+            property_state_ids=property_state_ids, taxlot_state_ids=taxlot_state_ids, derived_column_ids=derived_column_ids
         )
 
         return JsonResponse(result or {"result": "success"})
