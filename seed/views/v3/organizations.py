@@ -21,7 +21,7 @@ from django.contrib.postgres.aggregates.general import ArrayAgg
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db.models import F, Value
-from django.http import HttpResponse, JsonResponse, QueryDict
+from django.http import HttpResponse, JsonResponse
 from django.utils.decorators import method_decorator
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
@@ -70,7 +70,6 @@ from seed.utils.organizations import create_organization, create_suborganization
 from seed.utils.properties import pair_unpair_property_taxlot
 from seed.utils.public import public_feed
 from seed.utils.salesforce import toggle_salesforce_sync
-from seed.utils.search import build_view_filters_and_sorts
 from seed.utils.users import get_js_role
 
 _log = logging.getLogger(__name__)
@@ -856,12 +855,8 @@ class OrganizationViewSet(viewsets.ViewSet):
 
         if filter_group_id:
             filter_group = FilterGroup.objects.get(pk=filter_group_id)
-            if filter_group.query_dict:
-                qd = QueryDict(mutable=True)
-                qd.update(filter_group.query_dict)
-                columns = Column.retrieve_all(org_id=organization_id, inventory_type="property", only_used=False, include_related=False)
-                filters, _annotations, _order_by = build_view_filters_and_sorts(qd, columns, "property")
-                all_property_views = all_property_views.filter(filters)
+            columns = Column.retrieve_all(org_id=organization_id, inventory_type="property", only_used=False, include_related=False)
+            all_property_views = filter_group.filtered_property_views(columns=columns, views=all_property_views)
 
         # annotate properties with fields
         fields = {
