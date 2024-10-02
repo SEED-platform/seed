@@ -195,11 +195,11 @@ angular.module('SEED.controller.confirm_column_settings_modal', []).controller('
     }
 
     $scope.confirm_changes_and_rehash = () => {
-      api_ready_proposed_changes = Object.keys(proposed_changes).reduce((acc, col_id)=> {
-        col = proposed_changes[col_id]
+      api_ready_proposed_changes = Object.keys(proposed_changes).reduce((acc, col_id) => {
+        col = proposed_changes[col_id];
         col.display_name = col.displayName; // Add display_name for backend
         delete col.displayName;
-        return {...acc, [col_id]: col}
+        return { ...acc, [col_id]: col };
       }, {}),
 
       $scope.state = 'pending';
