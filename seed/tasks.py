@@ -534,7 +534,7 @@ def set_update_to_now(property_view_ids, taxlot_view_ids, progress_key):
 
 
 @shared_task
-def update_state_derived_data(property_state_ids=[], taxlot_state_ids=[], derived_column_ids=[]):
+def update_state_derived_data(property_state_ids=[], taxlot_state_ids=[], derived_column_ids=[], check_progress=True):
     progress_data = ProgressData(func_name="update_derived_data", unique_id=derived_column_ids[0])
     progress_data.total = len(property_state_ids) + len(taxlot_state_ids)
     progress_data.save()
@@ -555,7 +555,8 @@ def update_state_derived_data(property_state_ids=[], taxlot_state_ids=[], derive
         _finish_update_state_derived_data.si(progress_data.key, property_derived_column_ids + taxlot_derived_column_ids)
     )
 
-    return progress_data.result()
+    if check_progress:
+        return progress_data.result()
 
 
 @shared_task
