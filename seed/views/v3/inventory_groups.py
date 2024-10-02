@@ -1,6 +1,6 @@
 # !/usr/bin/env python
 
-
+from django.core.exceptions import ObjectDoesNotExist
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
 from rest_framework import response, status
@@ -8,10 +8,11 @@ from rest_framework.decorators import action
 
 from seed.filters import ColumnListProfileFilterBackend
 from seed.lib.superperms.orgs.decorators import has_perm_class
-from seed.models import InventoryGroup, Organization
+from seed.models import AccessLevelInstance, InventoryGroup, Meter, Organization, PropertyView
 from seed.serializers.inventory_groups import InventoryGroupSerializer
-from seed.utils.access_level_instance import access_level_filter
+from seed.serializers.meters import MeterSerializer
 from seed.utils.api_schema import swagger_auto_schema_org_query_param
+from seed.utils.meters import PropertyMeterReadingsExporter
 from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
 
 
@@ -26,9 +27,12 @@ class InventoryGroupViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
 
     def get_queryset(self):
         groups = InventoryGroup.objects.filter(organization=self.get_organization(self.request))
-        access_level_id = getattr(self.request, "access_level_instance_id", None)
-        if access_level_id:
-            groups = groups.filter(**access_level_filter(access_level_id))
+        access_level_instance_id = getattr(self.request, "access_level_instance_id", None)
+        if access_level_instance_id:
+            access_level_instance = AccessLevelInstance.objects.get(pk=access_level_instance_id)
+            groups = groups.filter(
+                access_level_instance__lft__gte=access_level_instance.lft, access_level_instance__rgt__lte=access_level_instance.rgt
+            )
 
         return groups.order_by("name").distinct()
 
@@ -68,7 +72,6 @@ class InventoryGroupViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
 
         group = InventoryGroup.objects.filter(organization_id=org.id, pk=pk).first()
         data = InventoryGroupSerializer(group).data
-        # data = [InventoryGroupSerializer(q).data for q in group]
 
         return JsonResponse(
             {
@@ -76,3 +79,59 @@ class InventoryGroupViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
                 "data": data,
             }
         )
+
+    @swagger_auto_schema_org_query_param
+    @has_perm_class("requires_viewer")
+    @action(detail=True, methods=["GET"])
+    def meters(self, request, pk):
+        """
+        Return meters for a group
+        """
+        try:
+            group = InventoryGroup.objects.get(pk=pk)
+            group = InventoryGroupSerializer(group).data
+            ali = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
+        except ObjectDoesNotExist:
+            return [], JsonResponse({"status": "erorr", "message": "No such resource."})
+
+        # taxlots do not support meters
+        if group["inventory_type"] != "Property":
+            return [], JsonResponse({"stauts": "success", "data": []})
+
+        meters = Meter.objects.filter(
+            property_id__in=group["inventory_list"],
+            property__access_level_instance__lft__gte=ali.lft,
+            property__access_level_instance__rgt__lte=ali.rgt,
+        )
+        data = MeterSerializer(meters, many=True).data
+        return JsonResponse({"status": "success", "data": data})
+
+    @swagger_auto_schema_org_query_param
+    @has_perm_class("requires_viewer")
+    @action(detail=True, methods=["POST"])
+    def meter_usage(self, request, pk):
+        """
+        Returns meter usage for a group
+        """
+        try:
+            group = InventoryGroup.objects.get(pk=pk)
+            group = InventoryGroupSerializer(group).data
+            # ali = AccessLevelInstance.objects.get(pk=request.access_level_instance_id) # ?
+            org_id = self.get_organization(request)
+            interval = request.data.get("interval", "Exact")
+        except ObjectDoesNotExist:
+            return [], JsonResponse({"status": "erorr", "message": "No such resource."})
+
+        data = {"column_defs": [], "readings": []}
+        for property_id in group["inventory_list"]:
+            property_view = PropertyView.objects.filter(property=property_id).first()
+            scenario_ids = [s.id for s in property_view.state.scenarios.all()]
+            exporter = PropertyMeterReadingsExporter(property_id, org_id, [], scenario_ids=scenario_ids)
+            usage = exporter.readings_and_column_defs(interval)
+            data["readings"].extend(usage["readings"])
+            data["column_defs"].extend(usage["column_defs"])
+
+        # Remove duplicate dicts by converting to a set of tuples, then back to dicts
+        data["column_defs"] = [dict(t) for t in {tuple(d.items()) for d in data["column_defs"]}]
+
+        return JsonResponse({"status": "success", "data": data})

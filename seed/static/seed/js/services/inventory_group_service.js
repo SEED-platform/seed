@@ -104,5 +104,24 @@ angular.module('SEED.service.inventory_group', []).factory('inventory_group_serv
       }
     }).then((response) => response.data);
 
+    group_factory.get_meters_for_group = (id) => $http
+      .get(
+        `/api/v3/inventory_groups/${id}/meters/`,
+        {
+          params: { organization_id: user_service.get_organization().id }
+        }
+      ).then((response) => response.data.data);
+
+    group_factory.get_meter_usage = (id, interval) => $http
+      .post(
+        `/api/v3/inventory_groups/${id}/meter_usage/`,
+        {
+          interval
+        },
+        {
+          params: { organization_id: user_service.get_organization().id }
+        }
+      ).then((response) => response.data.data);
+
     return group_factory;
   }]);

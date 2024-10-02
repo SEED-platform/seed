@@ -72,16 +72,16 @@ angular.module('SEED.service.organization', []).factory('organization_service', 
       { name }
     ).then((response) => response.data);
 
-    organization_factory.get_lowest_common_ancestor = (org_id, inventory_type, inventory_ids) => $http.put(
+    organization_factory.get_lowest_common_ancestor = (org_id, inventory_type, inventory_ids) => $http.post(
       `/api/v3/organizations/${org_id}/access_levels/lowest_common_ancestor/`,
       { inventory_type, inventory_ids }
     ).then((response) => response.data);
 
-    organization_factory.filter_access_levels_by_inventory = (org_id, inventory_type, inventory_ids) => $http.put(
+    organization_factory.filter_access_levels_by_inventory = (org_id, inventory_type, inventory_ids) => $http.post(
       `/api/v3/organizations/${org_id}/access_levels/filter_by_inventory/`,
       { inventory_type, inventory_ids }
-    ).then((response) => response.data).catch((x) => {
-      console.log('x', x);
+    ).then((response) => response.data).catch((data) => {
+      console.log(data);
     });
 
     /**

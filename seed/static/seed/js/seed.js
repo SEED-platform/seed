@@ -2299,10 +2299,29 @@
         })
         .state({
           name: 'inventory_group_detail_meters',
-          url: '/{inventory_type:properties|taxlots}/groups/{group_id:int}',
-          templateUrl: `${static_url}seed/partials/inventory_group_detail_meters.html`,
-          controller: 'inventory_group_detail_meters_controller',
-          resolve: {}
+          url: '/{inventory_type:properties|taxlots}/groups/{group_id:int}/meters',
+          templateUrl: `${static_url}seed/partials/inventory_detail_meters.html`,
+          controller: 'inventory_detail_meters_controller',
+          resolve: {
+            inventory_payload: () => null,
+            property_meter_usage: [
+              '$stateParams',
+              'inventory_group_service',
+              ($stateParams, inventory_group_service) => inventory_group_service.get_meter_usage($stateParams.group_id, 'Exact')
+            ],
+            // rp
+            meters: [
+              '$stateParams',
+              'inventory_group_service',
+              ($stateParams, inventory_group_service) => inventory_group_service.get_meters_for_group($stateParams.group_id)
+            ],
+            cycles: ['cycle_service', (cycle_service) => cycle_service.get_cycles()],
+            organization_payload: ['user_service', 'organization_service', (user_service, organization_service) => organization_service.get_organization(user_service.get_organization().id)],
+            group: [
+              '$stateParams', 'inventory_group_service', 'user_service',
+              ($stateParams, inventory_group_service, user_service) => inventory_group_service.get_group(user_service.get_organization().id, $stateParams.group_id).then((group) => group)
+            ]
+          }
         })
         .state({
           name: 'inventory_group_detail_systems',
@@ -2599,7 +2618,8 @@
               }
             ],
             cycles: ['cycle_service', (cycle_service) => cycle_service.get_cycles()],
-            organization_payload: ['user_service', 'organization_service', (user_service, organization_service) => organization_service.get_organization(user_service.get_organization().id)]
+            organization_payload: ['user_service', 'organization_service', (user_service, organization_service) => organization_service.get_organization(user_service.get_organization().id)],
+            group: () => null
           }
         })
         .state({

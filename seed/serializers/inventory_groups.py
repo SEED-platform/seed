@@ -2,7 +2,7 @@
 from django.core.exceptions import ValidationError
 from rest_framework import serializers
 
-from seed.models import VIEW_LIST_INVENTORY_TYPE, AccessLevelInstance, InventoryGroup, InventoryGroupMapping, PropertyView, TaxLotView
+from seed.models import VIEW_LIST_INVENTORY_TYPE, InventoryGroup, InventoryGroupMapping, PropertyView, TaxLotView
 from seed.serializers.access_level_instances import AccessLevelInstanceSerializer
 from seed.serializers.base import ChoiceField
 
@@ -20,6 +20,7 @@ class InventoryGroupMappingSerializer(serializers.ModelSerializer):
 
 class InventoryGroupSerializer(serializers.ModelSerializer):
     inventory_type = ChoiceField(choices=VIEW_LIST_INVENTORY_TYPE)
+    access_level_instance_data = AccessLevelInstanceSerializer(source="access_level_instance", many=False, read_only=True)
 
     def __init__(self, *args, **kwargs):
         if "inventory" not in kwargs:
@@ -32,12 +33,10 @@ class InventoryGroupSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = InventoryGroup
-        fields = ("id", "name", "inventory_type", "access_level_instance", "organization")
+        fields = ("id", "name", "inventory_type", "access_level_instance", "access_level_instance_data", "organization")
 
     def to_representation(self, obj):
         result = super().to_representation(obj)
-        ali = AccessLevelInstance.objects.filter(id=result.get("access_level_instance")).first()
-        result["access_level_instance_data"] = AccessLevelInstanceSerializer(ali, many=False).data
         inventory_list, views_list = self.get_member_list(obj)
         result["inventory_list"] = inventory_list
         result["views_list"] = views_list

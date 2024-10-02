@@ -496,7 +496,7 @@ class AccessLevelViewSet(viewsets.ViewSet):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class("requires_viewer")
-    @action(detail=False, methods=["PUT"])
+    @action(detail=False, methods=["POST"])
     def lowest_common_ancestor(self, request, organization_pk=None):
         """
         * THIS IS NOT IN USE, but could be useful in future development
@@ -537,7 +537,7 @@ class AccessLevelViewSet(viewsets.ViewSet):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class("requires_viewer")
-    @action(detail=False, methods=["PUT"])
+    @action(detail=False, methods=["POST"])
     def filter_by_inventory(self, request, organization_pk=None):
         """
         Return a distinct list of access_level_instance_ids for a group of inventory_ids
