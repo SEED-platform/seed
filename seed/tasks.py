@@ -7,9 +7,9 @@ import itertools
 import math
 import sys
 from datetime import datetime
+from random import randint
 
 import pytz
-import randint
 from celery import chain, chord, shared_task
 from celery.utils.log import get_task_logger
 from django.conf import settings
