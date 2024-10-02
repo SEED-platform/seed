@@ -855,8 +855,7 @@ class OrganizationViewSet(viewsets.ViewSet):
 
         if filter_group_id:
             filter_group = FilterGroup.objects.get(pk=filter_group_id)
-            columns = Column.retrieve_all(org_id=organization_id, inventory_type="property", only_used=False, include_related=False)
-            all_property_views = filter_group.filtered_property_views(columns=columns, views=all_property_views)
+            all_property_views = filter_group.views(all_property_views)
 
         # annotate properties with fields
         fields = {

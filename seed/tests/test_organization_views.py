@@ -268,7 +268,7 @@ class TestOrganizationViewsWithFilters(AccessLevelBaseTestCase):
         self.office_filter_group = FilterGroup.objects.create(
             name="office",
             organization_id=self.org.id,
-            inventory_type=1,  # Property
+            inventory_type=0,  # Property
             query_dict={f"property_type_{property_type_id}__exact": "office", f"site_eui_{site_eui_id}__gt": 1},
         )
         self.office_filter_group.save()
@@ -283,4 +283,5 @@ class TestOrganizationViewsWithFilters(AccessLevelBaseTestCase):
 
         url += f"&filter_group_id={self.office_filter_group.id}"
         resp = self.client.get(url, content_type="application/json")
+        print(resp.json()["data"])
         assert resp.json()["data"]["property_counts"][0]["num_properties"] == 1
