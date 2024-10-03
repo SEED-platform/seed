@@ -14,6 +14,7 @@ from seed.models import (
     MERGE_STATE_UNKNOWN,
     Column,
     Element,
+    InventoryGroupMapping,
     Note,
     Property,
     PropertyAuditLog,
@@ -211,6 +212,10 @@ def _copy_propertyview_relationships(view_ids, new_view):
     label_ids = list(PropertyViewLabels.objects.filter(propertyview_id__in=view_ids).values_list("statuslabel_id", flat=True))
     new_view.labels.set(StatusLabel.objects.filter(pk__in=label_ids))
 
+    # Associate groups
+    group_mappings = InventoryGroupMapping.objects.filter(property__views__in=view_ids)
+    for grouping in group_mappings:
+        InventoryGroupMapping(property=new_view.property, group=grouping.group).save()
     # Associate pairs while deleting old relationships
     paired_view_ids = list(
         TaxLotProperty.objects.filter(property_view_id__in=view_ids)
@@ -248,6 +253,11 @@ def _copy_taxlotview_relationships(view_ids, new_view):
     TaxLotViewLabels = apps.get_model("seed", "TaxLotView_labels")
     label_ids = list(TaxLotViewLabels.objects.filter(taxlotview_id__in=view_ids).values_list("statuslabel_id", flat=True))
     new_view.labels.set(StatusLabel.objects.filter(pk__in=label_ids))
+
+    # Associate groups
+    group_mappings = InventoryGroupMapping.objects.filter(taxlot__views__in=view_ids)
+    for grouping in group_mappings:
+        InventoryGroupMapping(tax_lot=new_view.taxlot, group=grouping.group).save()
 
     # Associate pairs while deleting old relationships
     paired_view_ids = list(

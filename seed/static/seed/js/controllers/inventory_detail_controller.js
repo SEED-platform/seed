@@ -562,6 +562,22 @@ angular.module('SEED.controller.inventory_detail', []).controller('inventory_det
       });
     };
 
+    $scope.open_update_inventory_groups_modal = () => {
+      const modalInstance = $uibModal.open({
+        templateUrl: `${urls.static_url}seed/partials/update_inventory_groups_modal.html`,
+        controller: 'update_inventory_groups_modal_controller',
+        resolve: {
+          inventory_ids: () => [$scope.inventory.view_id],
+          inventory_type: () => $scope.inventory_type,
+          org_id: () => $scope.organization.id,
+          cycle: () => $scope.cycle.id
+        }
+      });
+      modalInstance.result.then(() => {
+        // do nothing
+      });
+    };
+
     $scope.open_analyses_modal = () => {
       $uibModal.open({
         templateUrl: `${urls.static_url}seed/partials/inventory_detail_analyses_modal.html`,
