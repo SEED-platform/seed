@@ -195,9 +195,16 @@ angular.module('SEED.controller.confirm_column_settings_modal', []).controller('
     }
 
     $scope.confirm_changes_and_rehash = () => {
+      const api_ready_proposed_changes = Object.keys(proposed_changes).reduce((acc, col_id) => {
+        const col = proposed_changes[col_id];
+        col.display_name = col.displayName; // Add display_name for backend
+        delete col.displayName;
+        return { ...acc, [col_id]: col };
+      }, {});
+
       $scope.state = 'pending';
       columns_service
-        .update_and_rehash_columns_for_org($scope.org_id, $scope.table_name, proposed_changes)
+        .update_and_rehash_columns_for_org($scope.org_id, $scope.table_name, api_ready_proposed_changes)
         .then((result) => {
           $scope.state = 'evaluating';
           $scope.interval = $interval(() => {
