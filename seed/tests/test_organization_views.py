@@ -283,5 +283,4 @@ class TestOrganizationViewsWithFilters(AccessLevelBaseTestCase):
 
         url += f"&filter_group_id={self.office_filter_group.id}"
         resp = self.client.get(url, content_type="application/json")
-        print(resp.json()["data"])
         assert resp.json()["data"]["property_counts"][0]["num_properties"] == 1
