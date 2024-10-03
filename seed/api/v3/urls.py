@@ -39,6 +39,8 @@ from seed.views.v3.green_assessment_urls import GreenAssessmentURLViewSet
 from seed.views.v3.green_assessments import GreenAssessmentViewSet
 from seed.views.v3.historical_notes import HistoricalNoteViewSet
 from seed.views.v3.import_files import ImportFileViewSet
+from seed.views.v3.inventory_group_mappings import InventoryGroupMappingViewSet
+from seed.views.v3.inventory_groups import InventoryGroupViewSet
 from seed.views.v3.label_inventories import LabelInventoryViewSet
 from seed.views.v3.labels import LabelViewSet
 from seed.views.v3.measures import MeasureViewSet
@@ -94,6 +96,8 @@ api_v3_router.register(r"green_assessment_properties", GreenAssessmentPropertyVi
 api_v3_router.register(r"green_assessment_urls", GreenAssessmentURLViewSet, basename="green_assessment_urls")
 api_v3_router.register(r"green_assessments", GreenAssessmentViewSet, basename="green_assessments")
 api_v3_router.register(r"import_files", ImportFileViewSet, basename="import_files")
+api_v3_router.register(r"inventory_groups", InventoryGroupViewSet, basename="inventory_groups")
+api_v3_router.register(r"inventory_group_mappings", InventoryGroupMappingViewSet, basename="inventory_group_mappings")
 api_v3_router.register(r"labels", LabelViewSet, basename="labels")
 api_v3_router.register(r"measures", MeasureViewSet, basename="measures")
 api_v3_router.register(r"organizations", OrganizationViewSet, basename="organizations")

@@ -61,6 +61,7 @@ from seed.models import (
     Cycle,
     DerivedColumn,
     InventoryDocument,
+    InventoryGroupMapping,
     Meter,
     Note,
     Organization,
@@ -569,6 +570,8 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         # Capture previous associated labels
         label_ids = list(old_view.labels.all().values_list("id", flat=True))
 
+        groupings = set(old_view.property.inventorygroupmapping_set.all().values_list("group_id", flat=True))
+
         notes = old_view.notes.all()
         for note in notes:
             note.property_view = None
@@ -655,6 +658,10 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             ids.append(note.id)
             # Correct the created and updated times to match the original note
             Note.objects.filter(id__in=ids).update(created=created, updated=updated)
+
+        for group in list(groupings):
+            InventoryGroupMapping(property=new_view1.property, group_id=group).save()
+            InventoryGroupMapping(property=new_view2.property, group_id=group).save()
 
         for paired_view_id in paired_view_ids:
             TaxLotProperty(primary=True, cycle_id=cycle_id, property_view_id=new_view1.id, taxlot_view_id=paired_view_id).save()
