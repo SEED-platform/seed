@@ -471,12 +471,12 @@ angular.module('SEED.controller.inventory_reports', []).controller('inventory_re
             $scope.scatterChart.options.scales.y.min = $scope.yAxisSelectedItem.axisMin;
             $scope.scatterChart.options.scales.y.type = $scope.chartData.chartData.every((d) => typeof d.y === 'number') ? 'linear' : 'category';
             if ($scope.chartData.chartData.every((d) => typeof d.x === 'number')) {
-              $scope.scatterChart.options.scales.x.type = 'linear'
+              $scope.scatterChart.options.scales.x.type = 'linear';
             } else {
               $scope.scatterChart.options.scales.x = {
                 type: 'category',
-                labels: Array.from([...new Set($scope.chartData.chartData.map(d => d.x))]).sort()
-              }
+                labels: Array.from([...new Set($scope.chartData.chartData.map((d) => d.x))]).sort()
+              };
             }
             $scope.scatterChart.data.datasets[0].data = $scope.chartData.chartData;
             // add the colors to the datapoints, need to create a hash map first
