@@ -26,45 +26,28 @@ class FilterGroup(models.Model):
 
     def views(self, views, columns=[]):
         if VIEW_LIST_INVENTORY_TYPE[self.inventory_type][1] == "Property":
-            return self._filtered_property_views(views, columns)
+            related_model = "property"
+            ViewClass = PropertyView
         elif VIEW_LIST_INVENTORY_TYPE[self.inventory_type][1] == "Tax Lot":
-            return self._filtered_taxlot_views(views, columns)
+            related_model = "taxlot"
+            ViewClass = TaxLotView
 
-    def _filtered_taxlot_views(self, views, columns=[]):
         if not views:
-            views = TaxLotView.objects.select_related("taxlot", "state").filter(taxlot__organization_id=self.organization_id)
+            views = ViewClass.objects.select_related(related_model, "state").filter(
+                **{f"{related_model}__organization_id": self.organization_id}
+            )
         if not columns:
-            columns = Column.retrieve_all(org_id=self.organization_id, inventory_type="taxlot", only_used=False, include_related=False)
+            columns = Column.retrieve_all(org_id=self.organization_id, inventory_type=related_model, only_used=False, include_related=False)
 
         if self.query_dict:
             qd = QueryDict(mutable=True)
             qd.update(self.query_dict)
 
-            filters, _annotations, _order_by = build_view_filters_and_sorts(qd, columns, "taxlot")
+            filters, _annotations, _order_by = build_view_filters_and_sorts(qd, columns, related_model)
             filtered_views = views.filter(filters)
         else:
             filtered_views = views
 
-        return self._filter_with_labels(filtered_views)
-
-    def _filtered_property_views(self, views, columns=[]):
-        if not views:
-            views = PropertyView.objects.select_related("property", "state").filter(property__organization_id=self.organization_id)
-        if not columns:
-            columns = Column.retrieve_all(org_id=self.organization_id, inventory_type="property", only_used=False, include_related=False)
-
-        if self.query_dict:
-            qd = QueryDict(mutable=True)
-            qd.update(self.query_dict)
-
-            filters, _annotations, _order_by = build_view_filters_and_sorts(qd, columns, "property")
-            filtered_views = views.filter(filters)
-        else:
-            filtered_views = views
-
-        return self._filter_with_labels(filtered_views)
-
-    def _filter_with_labels(self, filtered_views):
         and_labels = self.and_labels.all()
         or_labels = self.or_labels.all()
         exclude_labels = self.exclude_labels.all()
