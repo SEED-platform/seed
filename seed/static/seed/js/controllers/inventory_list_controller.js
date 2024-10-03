@@ -795,6 +795,11 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
         col.cellTemplate = '<div class="ui-grid-cell-contents" uib-tooltip="{{COL_FIELD CUSTOM_FILTERS}}" tooltip-append-to-body="true" tooltip-popup-delay="500">{{COL_FIELD CUSTOM_FILTERS}}</div>';
       }
 
+      // Modify headerCellClass
+      if (col.derived_column) {
+        col.headerCellClass = col.is_updating ? 'updating-derived-column-display-name' : 'derived-column-display-name';
+      }
+
       // Modify misc
       if (col.data_type === 'datetime') {
         options.cellFilter = "date:'yyyy-MM-dd h:mm a'";
@@ -1322,9 +1327,18 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
           taxlot_view_ids: () => ($scope.inventory_type === 'taxlots' ? selectedViewIds : [])
         }
       });
-      modalInstance.result.then(() => {
-        $state.reload();
-      });
+      modalInstance.result.then(
+        () => {}, // on close
+        () => { // on dismiss
+          $scope.gridOptions.columnDefs.forEach((col) => {
+            if (col.derived_column) {
+              col.is_updating = true;
+              col.headerCellClass = 'updating-derived-column-display-name';
+            }
+          });
+          $scope.gridApi.core.notifyDataChange(uiGridConstants.dataChange.COLUMN);
+        }
+      );
     };
 
     $scope.open_delete_modal = (selectedViewIds) => {

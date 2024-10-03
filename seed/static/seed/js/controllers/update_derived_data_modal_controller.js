@@ -4,6 +4,7 @@
  */
 angular.module('SEED.controller.update_derived_data_modal', []).controller('update_derived_data_modal_controller', [
   '$scope',
+  '$state',
   '$q',
   '$uibModalInstance',
   'inventory_service',
@@ -14,6 +15,7 @@ angular.module('SEED.controller.update_derived_data_modal', []).controller('upda
   // eslint-disable-next-line func-names
   function (
     $scope,
+    $state,
     $q,
     $uibModalInstance,
     inventory_service,
@@ -30,18 +32,20 @@ angular.module('SEED.controller.update_derived_data_modal', []).controller('upda
 
     $scope.begin_update = () => {
       inventory_service.update_derived_data($scope.property_view_ids, $scope.taxlot_view_ids).then((data) => {
+        Notification.primary('Updating derived columns. This may take a few minutes...');
         $scope.status = 'in progress';
 
         const resultHandler = (notification_type, message) => {
           $uibModalInstance.close();
           Notification[notification_type](message);
+          $state.reload();
         };
 
         uploader_service.check_progress_loop(
           data.progress_key,
           0,
           1,
-          () => resultHandler('success', 'Success'),
+          () => resultHandler('success', 'Derived columns updated'),
           () => resultHandler('error', 'Unexpected Error'),
           $scope.uploader
         );
