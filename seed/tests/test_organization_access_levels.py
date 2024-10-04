@@ -364,19 +364,19 @@ class TestOrganizationViews(AccessLevelBaseTestCase):
         )
         data = {"inventory_type": "property", "inventory_ids": [self.p1.id, self.p2.id, self.p3.id, self.p4.id, self.p5.id]}
 
-        result = self.client.put(url, data=json.dumps(data), content_type="application/json")
+        result = self.client.post(url, data=json.dumps(data), content_type="application/json")
         result = result.json()["data"]
         assert self.org.root.id == result["id"]
         assert self.org.root.name == result["name"]
 
         data["inventory_ids"] = [self.p2.id, self.p4.id, self.p5.id]
-        result = self.client.put(url, data=json.dumps(data), content_type="application/json")
+        result = self.client.post(url, data=json.dumps(data), content_type="application/json")
         result = result.json()["data"]
         assert self.child_level_instance.id == result["id"]
         assert self.child_level_instance.name == result["name"]
 
         data["inventory_ids"] = [self.p5.id]
-        result = self.client.put(url, data=json.dumps(data), content_type="application/json")
+        result = self.client.post(url, data=json.dumps(data), content_type="application/json")
         result = result.json()["data"]
         assert self.grand_child_b_level_instance.id == result["id"]
         assert self.grand_child_b_level_instance.name == result["name"]
@@ -400,17 +400,17 @@ class TestOrganizationViews(AccessLevelBaseTestCase):
             "inventory_type": "property",
             "inventory_ids": [self.p1a.id, self.p1b.id, self.p2a.id, self.p2b.id, self.p3a.id, self.p3b.id],
         }
-        result = self.client.put(url, data=json.dumps(data), content_type="application/json")
+        result = self.client.post(url, data=json.dumps(data), content_type="application/json")
         alis = result.json()["access_level_instance_ids"]
         assert len(alis) == 3
 
         data["inventory_ids"] = [self.p2a.id, self.p2b.id, self.p3a.id, self.p3b.id]
-        result = self.client.put(url, data=json.dumps(data), content_type="application/json")
+        result = self.client.post(url, data=json.dumps(data), content_type="application/json")
         alis = result.json()["access_level_instance_ids"]
         assert len(alis) == 2
 
         data["inventory_ids"] = [self.p3a.id, self.p3b.id]
-        result = self.client.put(url, data=json.dumps(data), content_type="application/json")
+        result = self.client.post(url, data=json.dumps(data), content_type="application/json")
         alis = result.json()["access_level_instance_ids"]
         assert len(alis) == 1
         assert alis == [self.sibling_level_instance.id]
