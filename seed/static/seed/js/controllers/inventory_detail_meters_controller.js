@@ -18,8 +18,8 @@ angular.module('SEED.controller.inventory_detail_meters', []).controller('invent
   'property_meter_usage',
   'spinner_utility',
   'urls',
-  // 'user_service',
   'organization_payload',
+  'group',
   // eslint-disable-next-line func-names
   function (
     $state,
@@ -37,12 +37,17 @@ angular.module('SEED.controller.inventory_detail_meters', []).controller('invent
     property_meter_usage,
     spinner_utility,
     urls,
-    // user_service,
-    organization_payload
+    organization_payload,
+    group
   ) {
     spinner_utility.show();
-    $scope.item_state = inventory_payload.state;
     $scope.inventory_type = $stateParams.inventory_type;
+    if (inventory_payload) {
+      $scope.item_state = inventory_payload.state;
+    } else if (group) {
+      $scope.group = group;
+      $scope.group_id = group.id;
+    }
     $scope.organization = organization_payload.organization;
     $scope.filler_cycle = cycles.cycles[0].id;
 
@@ -268,7 +273,11 @@ angular.module('SEED.controller.inventory_detail_meters', []).controller('invent
       });
     };
 
-    $scope.inventory_display_name = organization_service.get_inventory_display_value($scope.organization, $scope.inventory_type === 'properties' ? 'property' : 'taxlot', $scope.item_state);
+    if (inventory_payload) {
+      $scope.inventory_display_name = organization_service.get_inventory_display_value($scope.organization, $scope.inventory_type === 'properties' ? 'property' : 'taxlot', $scope.item_state);
+    } else if (group) {
+      $scope.inventory_display_name = group.name;
+    }
 
     $scope.updateHeight = () => {
       let height = 0;

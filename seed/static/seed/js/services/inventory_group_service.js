@@ -11,7 +11,7 @@ angular.module('SEED.service.inventory_group', []).factory('inventory_group_serv
     const group_factory = {};
 
     function map_group(group) {
-      if (group.member_list.length) {
+      if (group.views_list.length) {
         group.has_members = true;
       } else {
         group.has_members = false;
@@ -54,6 +54,15 @@ angular.module('SEED.service.inventory_group', []).factory('inventory_group_serv
       return groups;
     });
 
+    group_factory.get_group = (organization_id, group_id) => $http.get(`/api/v3/inventory_groups/${group_id}/`, {
+      params: {
+        organization_id
+      }
+    }).then((response) => {
+      const group = response.data.data;
+      return group;
+    });
+
     group_factory.new_group = (data) => $http.post('/api/v3/inventory_groups/', data, {
       params: {
         organization_id: user_service.get_organization().id
@@ -94,6 +103,25 @@ angular.module('SEED.service.inventory_group', []).factory('inventory_group_serv
         organization_id: user_service.get_organization().id
       }
     }).then((response) => response.data);
+
+    group_factory.get_meters_for_group = (id) => $http
+      .get(
+        `/api/v3/inventory_groups/${id}/meters/`,
+        {
+          params: { organization_id: user_service.get_organization().id }
+        }
+      ).then((response) => response.data.data);
+
+    group_factory.get_meter_usage = (id, interval) => $http
+      .post(
+        `/api/v3/inventory_groups/${id}/meter_usage/`,
+        {
+          interval
+        },
+        {
+          params: { organization_id: user_service.get_organization().id }
+        }
+      ).then((response) => response.data.data);
 
     return group_factory;
   }]);

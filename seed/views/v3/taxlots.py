@@ -283,7 +283,7 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
         for note in notes:
             note.taxlot_view = None
 
-        groupings = set(old_view.taxlot.inventorygroupmapping_set.all().values_list("group_id", flat=True))
+        groupings = set(old_view.taxlot.group_mappings.all().values_list("group_id", flat=True))
 
         merged_state = old_view.state
         if merged_state.data_state != DATA_STATE_MATCHING or merged_state.merge_state != MERGE_STATE_MERGED:

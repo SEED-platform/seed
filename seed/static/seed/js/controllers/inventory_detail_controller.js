@@ -142,6 +142,7 @@ angular.module('SEED.controller.inventory_detail', []).controller('inventory_det
     $scope.historical_items = inventory_payload.history;
     $scope.item_state = inventory_payload.state;
     $scope.inventory_docs = $scope.inventory_type === 'properties' ? inventory_payload.property.inventory_documents : null;
+    $scope.group_mappings = $scope.inventory_type === 'properties' ? inventory_payload.property.group_mappings : inventory_payload.taxlot.group_mappings;
     const ali = $scope.inventory_type === 'properties' ?
       inventory_payload.property.access_level_instance :
       inventory_payload.taxlot.access_level_instance;
@@ -566,15 +567,16 @@ angular.module('SEED.controller.inventory_detail', []).controller('inventory_det
       const modalInstance = $uibModal.open({
         templateUrl: `${urls.static_url}seed/partials/update_inventory_groups_modal.html`,
         controller: 'update_inventory_groups_modal_controller',
+        size: 'lg',
         resolve: {
-          inventory_ids: () => [$scope.inventory.view_id],
+          view_ids: () => [$scope.inventory.view_id],
           inventory_type: () => $scope.inventory_type,
           org_id: () => $scope.organization.id,
           cycle: () => $scope.cycle.id
         }
       });
       modalInstance.result.then(() => {
-        // do nothing
+        $state.reload();
       });
     };
 

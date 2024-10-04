@@ -1,19 +1,26 @@
 # !/usr/bin/env python
+from django.core.exceptions import ValidationError
 from rest_framework import serializers
 
-from seed.models import VIEW_LIST_INVENTORY_TYPE, InventoryGroup, InventoryGroupMapping
+from seed.models import VIEW_LIST_INVENTORY_TYPE, InventoryGroup, InventoryGroupMapping, PropertyView, TaxLotView
+from seed.serializers.access_level_instances import AccessLevelInstanceSerializer
 from seed.serializers.base import ChoiceField
 
 
 class InventoryGroupMappingSerializer(serializers.ModelSerializer):
+    group_name = serializers.SerializerMethodField()
+
     class Meta:
-        fields = ("id", "property_id", "tax_lot_id", "group_id")
+        fields = ("id", "property_id", "taxlot_id", "group_id", "group_name")
         model = InventoryGroupMapping
+
+    def get_group_name(self, obj):
+        return obj.group.name
 
 
 class InventoryGroupSerializer(serializers.ModelSerializer):
     inventory_type = ChoiceField(choices=VIEW_LIST_INVENTORY_TYPE)
-    member_list = serializers.SerializerMethodField()
+    access_level_instance_data = AccessLevelInstanceSerializer(source="access_level_instance", many=False, read_only=True)
 
     def __init__(self, *args, **kwargs):
         if "inventory" not in kwargs:
@@ -26,24 +33,23 @@ class InventoryGroupSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = InventoryGroup
-        fields = ("id", "name", "inventory_type", "access_level_instance", "organization", "member_list")
+        fields = ("id", "name", "inventory_type", "access_level_instance", "access_level_instance_data", "organization")
+
+    def to_representation(self, obj):
+        result = super().to_representation(obj)
+        inventory_list, views_list = self.get_member_list(obj)
+        result["inventory_list"] = inventory_list
+        result["views_list"] = views_list
+        return result
 
     def get_member_list(self, obj):
-        filtered_result = []
-        if hasattr(self, "inventory"):
-            if self.inventory_type == 0:
-                filtered_result = (
-                    InventoryGroupMapping.objects.filter(group=self.group_id)
-                    .filter(property__in=self.inventory)
-                    .values_list("property", flat=True)
-                )
-            elif self.inventory_type == 1:
-                filtered_result = (
-                    InventoryGroupMapping.objects.filter(group=self.group_id)
-                    .filter(tax_lot__in=self.inventory)
-                    .values_list("tax_lot", flat=True)
-                )
-        return filtered_result
+        inventory_lookup = {0: ("property", PropertyView), 1: ("taxlot", TaxLotView)}
+        inventory_type, view_class = inventory_lookup[obj.inventory_type]
+
+        inventory = obj.group_mappings.all().values_list(inventory_type, flat=True)
+        views = view_class.objects.filter(**{f"{inventory_type}__in": inventory}).values_list("id", flat=True)
+
+        return list(inventory), list(views)
 
     def update(self, instance, validated_data):
         instance.__dict__.update(**validated_data)
@@ -55,3 +61,8 @@ class InventoryGroupSerializer(serializers.ModelSerializer):
         q = InventoryGroup.objects.create(**validated_data)
         q.save()
         return q
+
+    def validate(self, data):
+        if InventoryGroup.objects.filter(organization=data["organization"], name=data["name"]):
+            raise ValidationError("Inventory Group Name must be unique.")
+        return data

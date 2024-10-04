@@ -1,19 +1,33 @@
-<div id="update-property-labels-modal">
+<div id="update-property-labels-modal" class="modal-content">
   <div class="modal-header">
     <h4 class="modal-title" id="manageGroupsModalGroup" translate>Add/Remove Groups</h4>
   </div>
   <div class="modal-body">
     <div class="newLabelInput" style="margin-top: 0">
       <form name="newGroupForm" class="form-inline" role="form" ng-submit="submitNewGroupForm(newGroupForm)" novalidate>
-        <div class="form-group" ng-class="{'has-error': newGroupForm.name.$invalid && newGroupForm.name.$dirty }">
-          <label class="control-group sectionGroup" style="padding-right: 20px" translate>Create new group</label>
-          <div class="input-group" style="padding-right: 20px">
+        <div class="form-group" id="group-add-container" ng-class="{'has-error': newGroupForm.name.$invalid && newGroupForm.name.$dirty }">
+          <div>
+            <label class="control-group sectionGroup" style="padding-right: 20px" translate>Create new group</label>
+            <!-- <div class="input-group" style="padding-right: 20px"> -->
             <input id="newGroupName" type="text" name="name" class="form-control" ng-model="new_group.name" placeholder="{$:: 'Group Name' | translate $}" sd-check-label-exists="groups" required />
+            <!-- </div> -->
           </div>
-          <button type="submit" class="btn btn-primary" ng-disabled="newGroupForm.$invalid || disabled" translate>Create group</button>
-          <div class="help-block">
-            <span class="has-error" ng-show="newGroupForm.name.$error.sdCheckGroupExists" translate>This group name is already taken.</span>
+          <button
+            type="submit"
+            class="btn btn-primary"
+            ng-disabled="newGroupForm.$invalid || disabled || inventory_access_level_instance_count !== 1"
+            style="height: 40px; margin-top: 20px"
+            ng-disabled=""
+            translate
+          >
+            Create group
+          </button>
+        </div>
+        <div class="help-block">
+          <div class="alert alert-warning" ng-show="inventory_access_level_instance_count !== 1">
+            All properties within a group must be in the same access level instance. Modify selection and try again.
           </div>
+          <div class="alert alert-danger" ng-show="error">{$ error $}</div>
         </div>
       </form>
     </div>
@@ -31,41 +45,55 @@
       </div>
 
       <table ng-show="inventory_groups.length" class="table table-striped" style="margin-bottom: 0">
-        <tr ng-repeat="inventory_group in inventory_groups">
-          <td class="inventory_group_column" style="vertical-align: middle">
-            <span class="inventory_group inventory_group-{$ inventory_group.inventory_group $}">{$ inventory_group.name $}</span>
-          </td>
-          <td align="right">
-            <button
-              type="button"
-              uib-btn-checkbox
-              ng-model="inventory_group.is_checked_remove"
-              ng-show="inventory_group.member_list.length"
-              btn-checkbox-true="true"
-              btn-checkbox-false="false"
-              class="btn btn-sm btn-default action_link"
-              ng-class="{'btn-danger':inventory_group.is_checked_remove}"
-              ng-click="toggle_remove(inventory_group)"
-              translate
-            >
-              Remove
-            </button>
-            <button
-              type="button"
-              uib-btn-checkbox
-              ng-model="inventory_group.is_checked_add"
-              btn-checkbox-true="true"
-              btn-checkbox-false="false"
-              class="btn btn-sm btn-default action_link"
-              ng-class="{'btn-primary':inventory_group.is_checked_add}"
-              ng-disabled="inventory_ids.length === 1 && inventory_group.member_list.length"
-              ng-click="toggle_add(inventory_group)"
-              translate
-            >
-              Add
-            </button>
-          </td>
-        </tr>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Access Level Instance</th>
+            <th>Inventory Count</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr ng-repeat="inventory_group in inventory_groups">
+            <td class="inventory_group_column" style="vertical-align: middle">
+              <span class="inventory_group inventory_group-{$ inventory_group.inventory_group $}">{$ inventory_group.name $}</span>
+            </td>
+            <td>{$ inventory_group.access_level_instance_data.name $}</td>
+            <td>{$ inventory_group.inventory_list.length || inventory_group.views_list.length $}</td>
+            <td align="right">
+              <button
+                type="button"
+                uib-btn-checkbox
+                ng-model="inventory_group.is_checked_remove"
+                ng-show="inventory_group.has_views"
+                btn-checkbox-true="true"
+                btn-checkbox-false="false"
+                class="btn btn-sm btn-default action_link"
+                ng-class="{'btn-danger':inventory_group.is_checked_remove}"
+                ng-click="toggle_remove(inventory_group)"
+                translate
+              >
+                Remove
+              </button>
+              <button
+                type="button"
+                uib-btn-checkbox
+                ng-model="inventory_group.is_checked_add"
+                btn-checkbox-true="true"
+                btn-checkbox-false="false"
+                class="btn btn-sm btn-default action_link"
+                ng-class="{'btn-primary':inventory_group.is_checked_add}"
+                ng-disabled="!add_permission(inventory_group)"
+                ng-click="toggle_add(inventory_group)"
+                uib-tooltip="Access level mismatch."
+                tooltip-enable="!inventory_group.ali_match"
+                translate
+              >
+                Add
+              </button>
+            </td>
+          </tr>
+        </tbody>
       </table>
     </div>
     <div ng-show="inventory_group.length">

@@ -1,8 +1,9 @@
 <div class="section_action_container left-wide" id="inventory-detail-header">
   <span>
     <h2>
-      <span ng-if="::inventory_type==='properties'"> <i class="fa-regular fa-building"></i><span translate>Property</span> : </span>
+      <span ng-if="::inventory_type==='properties' && !group_id"> <i class="fa-regular fa-building"></i><span translate>Property</span> : </span>
       <span ng-if="::inventory_type==='taxlots'"> <i class="fa-regular fa-map"></i><span translate>Tax Lot</span> : </span>
+      <span ng-if="::inventory_type==='properties' && group_id"> <i class="fa-regular fa-map"></i><span translate>Group</span> : </span>
       <span ng-style="!inventory_display_name && {'opacity': 0.7}">
         {$ (inventory_display_name || ('Unknown' | translate)) $}
         <i ng-if="!inventory_display_name" class="glyphicon glyphicon-question-sign" uib-tooltip="The display field can be changed from the organization settings page."></i>
