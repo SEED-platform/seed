@@ -4,15 +4,23 @@
  *
  * run_jasmine.js: runs the jasmine JS test runner
  */
+const isPortReachable = require('is-port-reachable');
 const puppeteer = require('puppeteer');
 
 (async () => {
   // Launch a headless browser
-  const browser = await puppeteer.launch();
+  const browser = await puppeteer.launch({ headless: 'shell' });
   const page = await browser.newPage();
 
   // Navigate to the Jasmine SpecRunner
-  await page.goto('http://localhost:80/angular_js_tests/');
+  if (await isPortReachable(80)) {
+    await page.goto('http://localhost:80/angular_js_tests/');
+  } else if (await isPortReachable(8000)) {
+    await page.goto('http://localhost:8000/angular_js_tests/');
+  } else {
+    console.error('SEED is not running - unable to run Jasmine tests');
+    process.exit(1);
+  }
 
   // Wait for Jasmine to finish running the tests
   await page.waitForFunction('window.jasmine.getEnv().currentRunner().queue.running === false');

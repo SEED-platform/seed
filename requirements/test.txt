@@ -17,7 +17,7 @@ urllib3==1.26.20  # TODO update after vcrpy supports v2
 
 # static code analysis
 pre-commit==3.8.0
-ruff==0.6.8
+ruff==0.6.9
 
 # documentation and spelling
 Sphinx==7.4.7  # TODO update after python 3.9
