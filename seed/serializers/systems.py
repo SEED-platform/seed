@@ -1,0 +1,96 @@
+# !/usr/bin/env python
+"""
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
+"""
+
+from rest_framework import serializers
+
+from seed.models import BatterySystem, DESSystem, EVSESystem, Service, System
+from seed.serializers.base import ChoiceField
+
+
+class ServiceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Service
+        fields = ["id", "name"]
+
+
+class SystemSerializer(serializers.ModelSerializer):
+    services = ServiceSerializer(many=True, read_only=True)
+    type = serializers.ReadOnlyField(default="unknown")
+    group_id = serializers.IntegerField(write_only=True)
+
+    def to_representation(self, instance):
+        if isinstance(instance, DESSystem):
+            data = DESSystemSerializer(instance=instance).data
+        elif isinstance(instance, EVSESystem):
+            data = EVSESystemSerializer(instance=instance).data
+        elif isinstance(instance, BatterySystem):
+            data = BatterySystemSerializer(instance=instance).data
+        else:
+            raise ValueError
+
+        data["id"] = instance.id
+        data["name"] = instance.name
+        data["services"] = ServiceSerializer(instance.services, many=True).data
+
+        return data
+
+    class Meta:
+        model = System
+        fields = ["id", "name", "services", "type", "group_id"]
+
+
+class DESSystemSerializer(SystemSerializer):
+    DES_type = ChoiceField(source="type", choices=DESSystem.DES_TYPES)
+    capacity = serializers.IntegerField()
+    count = serializers.IntegerField()
+
+    class Meta:
+        model = DESSystem
+        fields = [*SystemSerializer.Meta.fields, "DES_type", "capacity", "count"]
+
+    def to_representation(self, obj):
+        return {
+            "type": "DES",
+            "DES_type": obj.type,
+            "capacity": obj.capacity,
+            "count": obj.count,
+        }
+
+
+class EVSESystemSerializer(SystemSerializer):
+    EVSE_type = ChoiceField(source="type", choices=EVSESystem.EVSE_TYPES)
+    power = serializers.IntegerField()
+    count = serializers.IntegerField()
+
+    class Meta:
+        model = EVSESystem
+        fields = [*SystemSerializer.Meta.fields, "EVSE_type", "power", "count"]
+
+    def to_representation(self, obj):
+        return {
+            "type": "EVSE",
+            "EVSE_type": obj.type,
+            "power": obj.power,
+            "count": obj.count,
+        }
+
+
+class BatterySystemSerializer(SystemSerializer):
+    efficiency = serializers.IntegerField()
+    capacity = serializers.IntegerField()
+    voltage = serializers.IntegerField()
+
+    class Meta:
+        model = BatterySystem
+        fields = [*SystemSerializer.Meta.fields, "efficiency", "capacity", "voltage"]
+
+    def to_representation(self, obj):
+        return {
+            "type": "Battery",
+            "efficiency": obj.efficiency,
+            "capacity": obj.capacity,
+            "voltage": obj.voltage,
+        }

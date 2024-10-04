@@ -15,7 +15,4 @@ angular.module('SEED.controller.inventory_group_detail', [])
     ) {
       $scope.inventory_type = $stateParams.inventory_type;
       $scope.group_id = $stateParams.group_id;
-
-      console.log($stateParams);
-      $scope.message = 'yo';
     }]);
