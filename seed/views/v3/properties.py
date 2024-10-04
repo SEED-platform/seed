@@ -570,7 +570,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         # Capture previous associated labels
         label_ids = list(old_view.labels.all().values_list("id", flat=True))
 
-        groupings = set(old_view.property.inventorygroupmapping_set.all().values_list("group_id", flat=True))
+        groupings = set(old_view.property.group_mappings.all().values_list("group_id", flat=True))
 
         notes = old_view.notes.all()
         for note in notes:

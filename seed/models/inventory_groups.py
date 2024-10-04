@@ -22,6 +22,9 @@ class InventoryGroup(models.Model):
 
     class Meta:
         ordering = ["name"]
+        constraints = [
+            models.UniqueConstraint(fields=["name", "organization"], name="unique_group_name_for_organization"),
+        ]
 
 
 @receiver(pre_save, sender=InventoryGroup)
@@ -31,9 +34,9 @@ def presave_inventory_group(sender, instance, **kwargs):
 
 
 class InventoryGroupMapping(models.Model):
-    property = models.ForeignKey(Property, on_delete=models.CASCADE, blank=True, null=True)
-    taxlot = models.ForeignKey(TaxLot, on_delete=models.CASCADE, blank=True, null=True)
-    group = models.ForeignKey(InventoryGroup, on_delete=models.CASCADE)
+    property = models.ForeignKey(Property, on_delete=models.CASCADE, blank=True, null=True, related_name="group_mappings")
+    taxlot = models.ForeignKey(TaxLot, on_delete=models.CASCADE, blank=True, null=True, related_name="group_mappings")
+    group = models.ForeignKey(InventoryGroup, on_delete=models.CASCADE, related_name="group_mappings")
 
 
 @receiver(pre_save, sender=InventoryGroupMapping)
@@ -47,6 +50,11 @@ def presave_inventory_group_mapping(sender, instance, **kwargs):
         raise IntegrityError("instance of InventoryGroupMapping has both property and taxlot")
     if not property and not taxlot:
         raise IntegrityError("instance of InventoryGroupMapping has neither property nor taxlot")
+
+    # inventory must have same ALI as group
+    inventory = property or taxlot
+    if inventory.access_level_instance != group.access_level_instance:
+        raise IntegrityError("Access Level mismatch between group and inventory.")
 
     # must be right type of group
     if property and group.inventory_type == VIEW_LIST_TAXLOT:

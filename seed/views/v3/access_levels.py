@@ -21,6 +21,7 @@ from seed.decorators import ajax_request_class
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.lib.superperms.orgs.models import AccessLevelInstance, Organization, OrganizationUser
 from seed.models import Analysis, Property, PropertyState, TaxLot, TaxLotState
+from seed.serializers.access_level_instances import AccessLevelInstanceSerializer
 from seed.utils.api import api_endpoint_class
 from seed.utils.api_schema import AutoSchemaHelper
 from seed.views.v3.uploads import get_upload_path
@@ -491,3 +492,63 @@ class AccessLevelViewSet(viewsets.ViewSet):
         instance.delete()
 
         return JsonResponse({"status": "success"}, status=status.HTTP_204_NO_CONTENT)
+
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class("requires_viewer")
+    @action(detail=False, methods=["POST"])
+    def lowest_common_ancestor(self, request, organization_pk=None):
+        """
+        * THIS IS NOT IN USE, but could be useful in future development
+
+
+        Given a list of inventory, find the least common ancestor between multiple properties within a group
+
+        Example ALI tree:
+             A
+           /   \
+          B     C
+         /\
+        D  E
+
+        least common ancestor:
+        if A and D -> A
+        if B and C -> A
+        if B and D -> B
+        if D and E -> B
+        """
+        inventory_type = request.data.get("inventory_type")
+        inventory_ids = request.data.get("inventory_ids")
+        if not inventory_ids:
+            return JsonResponse({"status": "success", "data": None})
+
+        inventory_type, InventoryClass = ("taxlot", TaxLot) if inventory_type == 1 else ("property", Property)
+        inventory = InventoryClass.objects.filter(id__in=inventory_ids)
+        alis = [i.access_level_instance for i in list(inventory)]
+
+        left_most = min([ali.lft for ali in alis])
+        right_most = max([ali.lft for ali in alis])
+        shared_ancestors = AccessLevelInstance.objects.filter(lft__lte=left_most, rgt__gte=right_most)
+        lowest_common = shared_ancestors.order_by("depth").last()
+
+        serialized_ali = AccessLevelInstanceSerializer(lowest_common).data
+        return JsonResponse({"status": "success", "data": serialized_ali})
+
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class("requires_viewer")
+    @action(detail=False, methods=["POST"])
+    def filter_by_inventory(self, request, organization_pk=None):
+        """
+        Return a distinct list of access_level_instance_ids for a group of inventory_ids
+        """
+        inventory_type = request.data.get("inventory_type", 0)
+        inventory_ids = request.data.get("inventory_ids")
+        if not inventory_ids:
+            return JsonResponse({"status": "success", "access_level_instance_ids": []})
+
+        inventory_type, InventoryClass = ("taxlot", TaxLot) if inventory_type == 1 else ("property", Property)
+        inventory_ids = InventoryClass.objects.filter(id__in=inventory_ids).values_list("id", flat=True)
+        access_level_instance_ids = AccessLevelInstance.objects.filter(properties__in=inventory_ids).distinct().values_list("id", flat=True)
+
+        return JsonResponse({"status": "success", "access_level_instance_ids": list(access_level_instance_ids)})

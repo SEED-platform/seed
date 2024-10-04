@@ -19,6 +19,7 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
   'user_service',
   'inventory_group_service',
   'Notification',
+  'access_level_tree',
   'cycles',
   'profiles',
   'current_profile',
@@ -55,6 +56,7 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
     user_service,
     inventory_group_service,
     Notification,
+    access_level_tree,
     cycles,
     profiles,
     current_profile,
@@ -85,7 +87,6 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
 
     $scope.inventory_type = $stateParams.inventory_type;
     $scope.group_id = $stateParams.group_id;
-    console.log($scope.group_id);
     $scope.data = [];
     const lastCycleId = inventory_service.get_last_cycle();
     $scope.cycle = {
@@ -656,14 +657,17 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
       const modalInstance = $uibModal.open({
         templateUrl: `${urls.static_url}seed/partials/update_inventory_groups_modal.html`,
         controller: 'update_inventory_groups_modal_controller',
+        size: 'lg',
         resolve: {
-          inventory_ids: () => selectedViewIds,
+          access_level_tree: () => access_level_tree,
+          view_ids: () => selectedViewIds,
           inventory_type: () => $scope.inventory_type,
           org_id: () => $scope.organization.id
         }
       });
       modalInstance.result.then(() => {
         // dialog was closed with 'Done' button.
+        $state.reload();
         get_inventory_groups();
       });
     };
@@ -1209,15 +1213,16 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
       }
 
       if ($scope.group_id) {
-        const group_ids = _.filter($scope.inventory_groups, { id: $scope.group_id })[0].member_list;
-        if (typeof include_ids !== 'undefined' && group_ids.length && include_ids[0] !== 0) { // if there's a sort
-          include_ids = _.intersection(include_ids, group_ids);
-        } else if (!group_ids.length) {
+        const group_view_ids = _.filter($scope.inventory_groups, { id: $scope.group_id })[0].views_list;
+        if (typeof include_ids !== 'undefined' && group_view_ids.length && include_ids[0] !== 0) { // if there's a sort
+          include_ids = _.intersection(include_ids, group_view_ids);
+        } else if (!group_view_ids.length) {
           include_ids = [0];
-        } else if (typeof include_ids === 'undefined') { // if there's no sort & there are group_ids
-          include_ids = group_ids;
+        } else if (typeof include_ids === 'undefined') { // if there's no sort & there are group_view_ids
+          include_ids = group_view_ids;
         }
       }
+
       return fn(
         page,
         chunk,

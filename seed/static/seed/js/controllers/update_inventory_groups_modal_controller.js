@@ -3,17 +3,41 @@ angular.module('SEED.controller.update_inventory_groups_modal', [])
     '$scope',
     '$log',
     '$uibModalInstance',
+    'ah_service',
     'inventory_group_service',
-    'inventory_ids',
+    'organization_service',
+    'user_service',
+    'view_ids',
     'inventory_type',
     'org_id',
-    'user_service',
     'Notification',
     // eslint-disable-next-line func-names
-    function ($scope, $log, $uibModalInstance, inventory_group_service, inventory_ids, inventory_type, org_id, user_service, notification) {
-      $scope.inventory_ids = inventory_ids;
+    function (
+      $scope,
+      $log,
+      $uibModalInstance,
+      ah_service,
+      inventory_group_service,
+      organization_service,
+      user_service,
+      view_ids,
+      inventory_type,
+      org_id,
+      Notification
+    ) {
+      $scope.view_ids = view_ids;
       $scope.inventory_type = inventory_type;
       $scope.org_id = org_id;
+
+      organization_service.filter_access_levels_by_inventory(org_id, inventory_type, view_ids).then((response) => {
+        $scope.inventory_access_level_instance_ids = response.access_level_instance_ids;
+        $scope.inventory_access_level_instance_count = $scope.inventory_access_level_instance_ids.length;
+
+        if ($scope.inventory_access_level_instance_ids.length === 1) {
+          $scope.new_group.access_level_instance = $scope.inventory_access_level_instance_ids[0];
+        }
+      });
+
       // keep track of status of service call
       $scope.loading = false;
 
@@ -43,7 +67,8 @@ angular.module('SEED.controller.update_inventory_groups_modal', [])
           (data) => {
             // promise completed successfully
             const createdGroup = data.data;
-            createdGroup.is_checked_add = false;
+            createdGroup.is_checked_add = true;
+            createdGroup.views_list = $scope.view_ids;
             $scope.newGroupForm.$setPristine();
             $scope.inventory_groups.unshift(createdGroup);
             $scope.initialize_new_group();
@@ -51,12 +76,27 @@ angular.module('SEED.controller.update_inventory_groups_modal', [])
           (data) => {
             // reject promise
             // group name already exists
-            if (data.message === 'group already exists') {
-              alert('group already exists');
+            if (data.data.message) {
+              Notification.error(Object.values(data.data.message)[0]);
             } else {
-              alert('error creating new group');
+              Notification.error('Error creating Group');
             }
           }
+        );
+      };
+
+      $scope.create_permission = () => $scope.inventory_access_level_instance_count === 1;
+
+      $scope.add_permission = (group) => {
+        // Wait for ali information to populate
+        if (!$scope.inventory_access_level_instance_count) {
+          return true;
+        }
+        group.ali_match = group.access_level_instance === $scope.inventory_access_level_instance_ids[0];
+        return (
+          !group.has_views &&
+          $scope.inventory_access_level_instance_count === 1 &&
+          group.ali_match
         );
       };
 
@@ -84,26 +124,28 @@ angular.module('SEED.controller.update_inventory_groups_modal', [])
           .sort();
 
         if (inventory_type === 'properties') {
-          inventory_group_service.update_inventory_groups(addGroupIDs, removeGroupIDs, inventory_ids, 'property').then((data) => {
+          inventory_group_service.update_inventory_groups(addGroupIDs, removeGroupIDs, view_ids, 'property').then((data) => {
             if (data.num_updated === 1) {
-              notification.primary(`${data.num_updated} property updated.`);
+              Notification.primary(`${data.num_updated} property updated.`);
             } else {
-              notification.primary(`${data.num_updated} properties updated.`);
+              Notification.primary(`${data.num_updated} properties updated.`);
             }
             $uibModalInstance.close();
-          }, (data, status) => {
-            $log.error('error:', data, status);
+          }, (data) => {
+            $scope.error = data.data.message;
+            $log.error('error:', $scope.error);
           });
         } else if (inventory_type === 'taxlots') {
-          inventory_group_service.update_inventory_groups(addGroupIDs, removeGroupIDs, inventory_ids, 'tax_lot').then((data) => {
+          inventory_group_service.update_inventory_groups(addGroupIDs, removeGroupIDs, view_ids, 'tax_lot').then((data) => {
             if (data.num_updated === 1) {
-              notification.primary(`${data.num_updated} tax lot updated.`);
+              Notification.primary(`${data.num_updated} tax lot updated.`);
             } else {
-              notification.primary(`${data.num_updated} tax lots updated.`);
+              Notification.primary(`${data.num_updated} tax lots updated.`);
             }
             $uibModalInstance.close();
-          }, (data, status) => {
-            $log.error('error:', data, status);
+          }, (data) => {
+            $scope.error = data.data.message;
+            $log.error('error:', $scope.error);
           });
         }
       };
@@ -117,11 +159,12 @@ angular.module('SEED.controller.update_inventory_groups_modal', [])
       const init = () => {
         $scope.initialize_new_group();
         $scope.loading = true;
-        inventory_group_service.get_groups_for_inventory(inventory_type, inventory_ids).then((groups) => {
+        inventory_group_service.get_groups(inventory_type).then((groups) => {
           $scope.inventory_groups = [];
           groups.forEach((group) => {
             if (group.organization === $scope.org_id &&
                 group.inventory_type === ($scope.inventory_type === 'properties' ? 'Property' : 'Tax Lot')) {
+              group.has_views = group.views_list.some((view) => view_ids.includes(view));
               $scope.inventory_groups.push(group);
             }
           });
