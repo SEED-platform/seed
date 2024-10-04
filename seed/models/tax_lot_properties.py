@@ -53,9 +53,9 @@ class TaxLotProperty(models.Model):
             "taxlot_view",
         )
         indexes = [
-            models.Index(fields=["cycle", "property_view"]),
-            models.Index(fields=["cycle", "taxlot_view"]),
-            models.Index(fields=["property_view", "taxlot_view"]),
+            models.Index(fields=["cycle", "property_view"], name="taxlotprop_cycle_prop_view_idx"),
+            models.Index(fields=["cycle", "taxlot_view"], name="taxlotprop_cycle_view_idx"),
+            models.Index(fields=["property_view", "taxlot_view"], name="taxlotprop_views_idx"),
         ]
 
     @classmethod

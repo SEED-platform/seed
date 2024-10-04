@@ -257,17 +257,15 @@ class Migration(migrations.Migration):
             name="measures",
             field=models.ManyToManyField(through="seed.PropertyMeasure", to="seed.Measure"),
         ),
-        migrations.AlterIndexTogether(
-            name="propertystate",
-            index_together={
-                ("import_file", "data_state"),
-                ("analysis_state", "organization"),
-                ("import_file", "data_state", "merge_state"),
-            },
+        migrations.AddIndex(
+            model_name="propertystate",
+            index=models.Index(
+                fields=["analysis_state", "organization"], name="seed_propertystate_analysis_state_organization_id_1ab3e0ba_idx"
+            ),
         ),
-        migrations.AlterIndexTogether(
-            name="timeseries",
-            index_together={("begin_time", "end_time")},
+        migrations.AddIndex(
+            model_name="timeseries",
+            index=models.Index(fields=["begin_time", "end_time"], name="seed_timeseries_begin_time_end_time_e0f9ef86_idx"),
         ),
         migrations.AddField(
             model_name="scenario",
@@ -310,9 +308,11 @@ class Migration(migrations.Migration):
             name="propertymeasure",
             unique_together={("property_state", "measure", "application_scale", "implementation_status")},
         ),
-        migrations.AlterIndexTogether(
-            name="propertymeasure",
-            index_together={("property_measure_name", "property_state")},
+        migrations.AddIndex(
+            model_name="propertymeasure",
+            index=models.Index(
+                fields=["property_measure_name", "property_state"], name="seed_propertymeasure_property_measure_name_pr_9b18b47b_idx"
+            ),
         ),
         migrations.AlterUniqueTogether(
             name="measure",

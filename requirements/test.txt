@@ -4,7 +4,7 @@
 # general
 coverage==7.6.1
 coveralls==4.0.1
-tox==4.20.0  # Keep this in sync with ci.yml
+tox==4.21.2  # Keep this in sync with ci.yml
 psutil==6.0.0
 
 # python testing

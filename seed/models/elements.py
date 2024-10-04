@@ -34,8 +34,6 @@ class Element(TimeStampedModel):
     # - annualized_lifecycle
 
     class Meta:
-        indexes = [
-            GinIndex(fields=["extra_data"], name="extra_data_gin_idx"),
-        ]
+        indexes = [GinIndex(fields=["extra_data"], name="element_extra_data_gin_idx")]
         ordering = ["-installation_date", "description"]
         unique_together = ["organization", "element_id"]

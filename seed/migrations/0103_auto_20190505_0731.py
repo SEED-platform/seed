@@ -22,9 +22,9 @@ class Migration(migrations.Migration):
                 ("conversion_factor", models.FloatField(blank=True, null=True)),
             ],
         ),
-        migrations.AlterIndexTogether(
-            name="timeseries",
-            index_together=set(),
+        migrations.RemoveIndex(
+            model_name="timeseries",
+            name="seed_timeseries_begin_time_end_time_e0f9ef86_idx",
         ),
         migrations.RemoveField(
             model_name="timeseries",

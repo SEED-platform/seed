@@ -52,7 +52,7 @@ class Note(models.Model):
 
     class Meta:
         ordering = ["-created"]
-        indexes = [models.Index(fields=["organization", "note_type"])]
+        indexes = [models.Index(fields=["organization", "note_type"], name="note_org_note_type_idx")]
 
     @classmethod
     def create_from_edit(cls, user_id, view, new_values, previous_values):

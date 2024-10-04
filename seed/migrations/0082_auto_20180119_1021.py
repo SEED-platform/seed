@@ -46,8 +46,8 @@ class Migration(migrations.Migration):
                 "ordering": ["-created"],
             },
         ),
-        migrations.AlterIndexTogether(
-            name="note",
-            index_together={("organization", "note_type")},
+        migrations.AddIndex(
+            model_name="note",
+            index=models.Index(fields=["organization", "note_type"], name="seed_note_organization_id_note_type_d0ac832e_idx"),
         ),
     ]

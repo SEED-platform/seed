@@ -30,21 +30,16 @@ class Migration(migrations.Migration):
             model_name="propertystate",
             name="confidence",
         ),
-        migrations.AlterIndexTogether(
-            name="propertystate",
-            index_together={
-                ("import_file", "data_state"),
-                ("hash_object",),
-                ("analysis_state", "organization"),
-                ("import_file", "data_state", "merge_state"),
-            },
+        migrations.AddIndex(
+            model_name="propertystate",
+            index=models.Index(fields=["hash_object"], name="seed_propertystate_hash_object_506634f0_idx"),
         ),
         migrations.RemoveField(
             model_name="taxlotstate",
             name="confidence",
         ),
-        migrations.AlterIndexTogether(
-            name="taxlotstate",
-            index_together={("import_file", "data_state"), ("hash_object",), ("import_file", "data_state", "merge_state")},
+        migrations.AddIndex(
+            model_name="taxlotstate",
+            index=models.Index(fields=["hash_object"], name="seed_taxlotstate_hash_object_274336bb_idx"),
         ),
     ]

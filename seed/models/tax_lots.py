@@ -108,9 +108,9 @@ class TaxLotState(models.Model):
 
     class Meta:
         indexes = [
-            models.Index(fields=["hash_object"]),
-            models.Index(fields=["import_file", "data_state"]),
-            models.Index(fields=["import_file", "data_state", "merge_state"]),
+            models.Index(fields=["hash_object"], name="taxlot_state_hash_object_idx"),
+            models.Index(fields=["import_file", "data_state"], name="taxlot_state_imp_data_idx"),
+            models.Index(fields=["import_file", "data_state", "merge_state"], name="taxlot_state_imp_data_mrg_idx"),
         ]
 
     def __str__(self):
@@ -428,7 +428,7 @@ class TaxLotView(models.Model):
             "taxlot",
             "cycle",
         )
-        indexes = [models.Index(fields=["state", "cycle"])]
+        indexes = [models.Index(fields=["state", "cycle"], name="taxlot_view_state_cycle_idx")]
 
     def __init__(self, *args, **kwargs):
         self._import_filename = kwargs.pop("import_filename", None)
@@ -514,7 +514,10 @@ class TaxLotAuditLog(models.Model):
     created = models.DateTimeField(auto_now_add=True, null=True)
 
     class Meta:
-        indexes = [models.Index(fields=["state", "name"]), models.Index(fields=["parent_state1", "parent_state2"])]
+        indexes = [
+            models.Index(fields=["state", "name"], name="taxlot_auditlog_state_name_idx"),
+            models.Index(fields=["parent_state1", "parent_state2"], name="taxlot_auditlog_parents_idx"),
+        ]
 
 
 @receiver(pre_save, sender=TaxLotState)

@@ -339,10 +339,10 @@ class PropertyState(models.Model):
 
     class Meta:
         indexes = [
-            models.Index(fields=["hash_object"]),
-            models.Index(fields=["import_file", "data_state"]),
-            models.Index(fields=["import_file", "data_state", "merge_state"]),
-            models.Index(fields=["import_file", "data_state", "source_type"]),
+            models.Index(fields=["hash_object"], name="prop_state_hash_object_idx"),
+            models.Index(fields=["import_file", "data_state"], name="prop_state_file_data_idx"),
+            models.Index(fields=["import_file", "data_state", "merge_state"], name="prop_state_file_data_merge_idx"),
+            models.Index(fields=["import_file", "data_state", "source_type"], name="prop_state_file_data_src_idx"),
         ]
 
     def promote(self, cycle, property_id=None):
@@ -889,7 +889,7 @@ class PropertyView(models.Model):
             "property",
             "cycle",
         )
-        indexes = [models.Index(fields=["state", "cycle"])]
+        indexes = [models.Index(fields=["state", "cycle"], name="prop_view_state_cycle_idx")]
 
     def __init__(self, *args, **kwargs):
         self._import_filename = kwargs.pop("import_filename", None)
@@ -981,7 +981,10 @@ class PropertyAuditLog(models.Model):
     created = models.DateTimeField(auto_now_add=True, null=True)
 
     class Meta:
-        indexes = [models.Index(fields=["state", "name"]), models.Index(fields=["parent_state1", "parent_state2"])]
+        indexes = [
+            models.Index(fields=["state", "name"], name="prop_auditlog_state_name_idx"),
+            models.Index(fields=["parent_state1", "parent_state2"], name="prop_auditlog_parents_idx"),
+        ]
 
 
 @receiver(pre_save, sender=PropertyState)

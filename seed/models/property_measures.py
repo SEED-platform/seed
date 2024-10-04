@@ -145,7 +145,7 @@ class PropertyMeasure(models.Model):
 
     class Meta:
         unique_together = ("property_measure_name", "property_state", "measure", "application_scale", "implementation_status")
-        indexes = [models.Index(fields=["property_measure_name", "property_state"])]
+        indexes = [models.Index(fields=["property_measure_name", "property_state"], name="prop_measure_name_state_idx")]
 
     @classmethod
     def str_to_impl_status(cls, impl_status):

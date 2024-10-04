@@ -31,9 +31,7 @@ class EeejCejst(models.Model):
     share_neighbors_disadvantaged = models.IntegerField(null=True)
 
     class Meta:
-        indexes = [
-            models.Index(fields=["census_tract_geoid", "dac"]),
-        ]
+        indexes = [models.Index(fields=["census_tract_geoid", "dac"], name="eeej_cejst_geoid_dac_idx")]
 
 
 class EeejHud(models.Model):
@@ -45,6 +43,4 @@ class EeejHud(models.Model):
     name = models.CharField(max_length=150)
 
     class Meta:
-        indexes = [
-            models.Index(fields=["census_tract_geoid"]),
-        ]
+        indexes = [models.Index(fields=["census_tract_geoid"], name="eeej_hud_geoid_idx")]

@@ -55,14 +55,9 @@ class Migration(migrations.Migration):
             model_name="scenario",
             name="analysis_state_message",
         ),
-        migrations.AlterIndexTogether(
-            name="propertystate",
-            index_together={
-                ("import_file", "data_state", "merge_state"),
-                ("import_file", "data_state", "source_type"),
-                ("hash_object",),
-                ("import_file", "data_state"),
-            },
+        migrations.RemoveIndex(
+            model_name="propertystate",
+            name="seed_propertystate_analysis_state_organization_id_1ab3e0ba_idx",
         ),
         migrations.RemoveField(
             model_name="propertystate",
