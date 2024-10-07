@@ -20,9 +20,9 @@ pre-commit==3.8.0
 ruff==0.6.9
 
 # documentation and spelling
-Sphinx==7.4.7  # TODO update after python 3.9
+Sphinx==8.0.2
 sphinxcontrib-spelling==8.0.0
-sphinx_rtd_theme==2.0.0
+sphinx_rtd_theme==3.0.0
 docutils==0.20.1
 
 # property-based testing

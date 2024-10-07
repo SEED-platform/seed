@@ -61,9 +61,13 @@ with open("../../.cspell.txt", "w", encoding="utf-8") as cspell_txt, open("../..
 spelling_word_list_filename = "../../.cspell.txt"
 
 # The suffix(es) of source filenames.
-# You can specify multiple suffix as a list of string:
-# source_suffix = ['.rst', '.md']
-source_suffix = ".rst"
+# source_suffix = {
+#     ".rst": "restructuredtext",
+#     ".md": "markdown",
+# }
+source_suffix = {
+    ".rst": "restructuredtext",
+}
 
 # The encoding of source files.
 # source_encoding = 'utf-8-sig'
