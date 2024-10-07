@@ -33,4 +33,14 @@ angular.module('SEED.controller.inventory_group_detail_systems', [])
           organization_payload: () => organization_payload,
         }
       });
+
+      $scope.open_create_service_modal = (system) => $uibModal.open({
+        templateUrl: `${urls.static_url}seed/partials/create_service_modal.html`,
+        controller: 'create_service_modal_controller',
+        resolve: {
+          group_id: () => $stateParams.group_id,
+          system: () => system,
+          organization_payload: () => organization_payload,
+        }
+      });
     }]);

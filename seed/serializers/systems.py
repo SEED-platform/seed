@@ -11,9 +11,11 @@ from seed.serializers.base import ChoiceField
 
 
 class ServiceSerializer(serializers.ModelSerializer):
+    system_id = serializers.IntegerField(write_only=True)
+
     class Meta:
         model = Service
-        fields = ["id", "name"]
+        fields = ["id", "name", "emission_factor", "system_id"]
 
 
 class SystemSerializer(serializers.ModelSerializer):
