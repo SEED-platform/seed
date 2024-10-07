@@ -943,8 +943,9 @@ class OrganizationViewSet(viewsets.ViewSet):
         report_data = self.setup_report_data(pk, ali, cycles, params["x_var"], params["y_var"], filter_group_id)
         data = self.get_raw_report_data(pk, cycles, report_data["all_property_views"], report_data["field_data"])
         axis_data = self.get_axis_data(
-            pk, ali, params["x_var"], params["y_var"], report_data["all_property_views"], report_data["field_data"]
+            pk, ali, cycles, params["x_var"], params["y_var"], report_data["all_property_views"], report_data["field_data"]
         )
+
         data = {
             "chart_data": functools.reduce(operator.iadd, [d["chart_data"] for d in data], []),
             "property_counts": [d["property_counts"] for d in data],
@@ -1196,11 +1197,11 @@ class OrganizationViewSet(viewsets.ViewSet):
 
         return response
 
-    def get_axis_stats(self, organization, axis, axis_var, views, ali, fields):
+    def get_axis_stats(self, organization, cycle, axis, axis_var, views, ali):
         """returns axis_name, access_level_instance name, sum, mean, min, max, 5%, 25%, 50%, 75%, 99%"""
 
         filtered_properties = views.filter(
-            property__access_level_instance__lft__gte=ali.lft, property__access_level_instance__rgt__lte=ali.rgt
+            property__access_level_instance__lft__gte=ali.lft, property__access_level_instance__rgt__lte=ali.rgt, cycle_id=cycle.id
         )
 
         data = [
@@ -1214,7 +1215,7 @@ class OrganizationViewSet(viewsets.ViewSet):
         else:
             return [axis_var, ali.name, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
-    def get_axis_data(self, organization_id, access_level_instance, x_var, y_var, all_property_views, fields):
+    def get_axis_data(self, organization_id, access_level_instance, cycles, x_var, y_var, all_property_views, fields):
         axis_data = []
         axes = {"x": x_var, "y": y_var}
         organization = Organization.objects.get(pk=organization_id)
@@ -1231,11 +1232,13 @@ class OrganizationViewSet(viewsets.ViewSet):
                 # Get column label
                 serialized_column = ColumnSerializer(column).data
                 add_pint_unit_suffix(organization, serialized_column)
-                stats = self.get_axis_stats(organization, axis, axes[axis], all_property_views, access_level_instance, fields)
-                axis_data.append(self.clean_axis_data(serialized_column["display_name"], data_type, stats))
-                for child_ali in access_level_instance.get_children():
-                    stats = self.get_axis_stats(organization, axis, axes[axis], all_property_views, child_ali, fields)
-                    axis_data.append(self.clean_axis_data(serialized_column["display_name"], data_type, stats))
+                for cycle in cycles:
+                    axis_name = serialized_column["display_name"] + f" ({cycle.name})"
+                    stats = self.get_axis_stats(organization, cycle, axis, axes[axis], all_property_views, access_level_instance)
+                    axis_data.append(self.clean_axis_data(axis_name, data_type, stats))
+                    for child_ali in access_level_instance.get_children():
+                        stats = self.get_axis_stats(organization, cycle, axis, axes[axis], all_property_views, child_ali)
+                        axis_data.append(self.clean_axis_data(axis_name, data_type, stats))
         return axis_data
 
     def clean_axis_data(self, column_name, data_type, data):
