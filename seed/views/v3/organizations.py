@@ -1210,7 +1210,9 @@ class OrganizationViewSet(viewsets.ViewSet):
         ]
 
         if len(data) > 0:
-            return [axis_var, ali.name, sum(data), np.mean(data), np.amin(data), np.amax(data), *(np.percentile(data, [5, 25, 50, 75, 95]))]
+            percentiles = np.percentile(data, [5, 25, 50, 75, 95])
+            # order the cols: sum, min, 5%, 25%, mean, median (50%), 75, 95, max
+            return [axis_var, ali.name, sum(data), np.amin(data), percentiles[0], percentiles[1], np.mean(data), percentiles[2], percentiles[3], percentiles[4], np.amax(data)]
         else:
             return [axis_var, ali.name, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
