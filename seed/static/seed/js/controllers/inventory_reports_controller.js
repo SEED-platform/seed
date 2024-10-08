@@ -141,8 +141,8 @@ angular.module('SEED.controller.inventory_reports', []).controller('inventory_re
         axisLabel: 'Count'
       },
       ..._.map(organization_payload.organization.default_reports_y_axis_options, (column) => ({
-        name: $translate.instant(column.display_name != "" ? column.display_name: column.column_name), // short name for variable, used in pulldown
-        label: $translate.instant(column.display_name != "" ? column.display_name: column.column_name), // full name for variable
+        name: $translate.instant(column.display_name !== '' ? column.display_name : column.column_name), // short name for variable, used in pulldown
+        label: $translate.instant(column.display_name !== '' ? column.display_name : column.column_name), // full name for variable
         varName: column.column_name, // name of variable, to be sent to server
         axisLabel: parse_axis_label(column) // label to be used in charts, should include units
       // axisType: 'Measure', //DimpleJS property for axis type
@@ -151,8 +151,8 @@ angular.module('SEED.controller.inventory_reports', []).controller('inventory_re
     ];
 
     $scope.xAxisVars = _.map(organization_payload.organization.default_reports_x_axis_options, (column) => ({
-      name: $translate.instant(column.display_name != "" ? column.display_name: column.column_name), // short name for variable, used in pulldown
-      label: $translate.instant(column.display_name != "" ? column.display_name: column.column_name), // full name for variable
+      name: $translate.instant(column.display_name !== '' ? column.display_name : column.column_name), // short name for variable, used in pulldown
+      label: $translate.instant(column.display_name !== '' ? column.display_name : column.column_name), // full name for variable
       varName: column.column_name, // name of variable, to be sent to server
       axisLabel: parse_axis_label(column) // label to be used in charts, should include units
       // axisType: 'Measure', //DimpleJS property for axis type
