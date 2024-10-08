@@ -178,6 +178,30 @@
       </div>
       <!-- ./ col-md-6 -->
     </div>
+    <div class="col-md-12">
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th translate>Axis</th>
+            <th translate>Access Level Instance</th>
+            <th translate>Sum</th>
+            <th translate>Min</th>
+            <th translate>5th Percentile</th>
+            <th translate>25th Percentile</th>
+            <th translate>Mean</th>
+            <th translate>Median</th>
+            <th translate>75 Percentile</th>
+            <th translate>95th Percentile</th>
+            <th translate>Max</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr ng-repeat="row in axisData track by $index">
+            <td ng-repeat="item in row track by $index">{$ item $}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
     <!-- ./ content_block row -->
   </div>
   <!-- ./section_content -->

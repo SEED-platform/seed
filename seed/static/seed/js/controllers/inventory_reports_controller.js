@@ -420,7 +420,8 @@ angular.module('SEED.controller.inventory_reports', []).controller('inventory_re
             yVar: $scope.chartData.yAxisVarName,
             yLabel: $scope.chartData.yAxisTitle
           }),
-          cycles: () => $scope.selected_cycles
+          cycles: () => $scope.selected_cycles,
+          filter_group_id: () => $scope.filter_group_id
         }
       });
       modalInstance.result.finally(spinner_utility.hide);
@@ -472,6 +473,7 @@ angular.module('SEED.controller.inventory_reports', []).controller('inventory_re
             // new chartJS chart data
             $scope.scatterChart.options.scales.y.min = $scope.yAxisSelectedItem.axisMin;
             $scope.scatterChart.options.scales.y.type = $scope.chartData.chartData.every((d) => typeof d.y === 'number') ? 'linear' : 'category';
+
             if ($scope.chartData.chartData.every((d) => typeof d.x === 'number')) {
               $scope.scatterChart.options.scales.x.type = 'linear';
             } else {
@@ -487,6 +489,9 @@ angular.module('SEED.controller.inventory_reports', []).controller('inventory_re
               $scope.pointBackgroundColors.push(colorMap.get($scope.scatterChart.data.datasets[0].data[i].yr_e));
             }
             $scope.scatterChart.update();
+
+            // Axis data table
+            $scope.axisData = data.axis_data;
 
             if ($scope.chartData.chartData && $scope.chartData.chartData.length > 0) {
               $scope.chartStatusMessage = '';
