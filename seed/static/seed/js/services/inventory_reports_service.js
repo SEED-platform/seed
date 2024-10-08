@@ -34,7 +34,7 @@ angular.module('SEED.service.inventory_reports', []).factory('inventory_reports_
          ]
      }
      */
-    const get_report_data = (xVar, yVar, cycle_ids, access_level_instance_id) => {
+    const get_report_data = (xVar, yVar, cycle_ids, access_level_instance_id, filter_group_id) => {
       // Error checks
       if (_.some([xVar, yVar, cycle_ids], _.isNil)) {
         $log.error('#inventory_reports_service.get_report_data(): null parameter');
@@ -48,7 +48,8 @@ angular.module('SEED.service.inventory_reports', []).factory('inventory_reports_
             x_var: xVar,
             y_var: yVar,
             access_level_instance_id,
-            cycle_ids
+            cycle_ids,
+            filter_group_id
           }
         })
         .then((response) => response.data)
@@ -83,7 +84,7 @@ angular.module('SEED.service.inventory_reports', []).factory('inventory_reports_
        }
      }
      */
-    const get_aggregated_report_data = (xVar, yVar, cycle_ids, access_level_instance_id) => {
+    const get_aggregated_report_data = (xVar, yVar, cycle_ids, access_level_instance_id, filter_group_id) => {
       // Error checks
       if ([xVar, yVar, cycle_ids].includes(null)) {
         $log.error('#inventory_reports_service.get_aggregated_report_data(): null parameter');
@@ -97,14 +98,15 @@ angular.module('SEED.service.inventory_reports', []).factory('inventory_reports_
             x_var: xVar,
             y_var: yVar,
             cycle_ids,
-            access_level_instance_id
+            access_level_instance_id,
+            filter_group_id
           }
         })
         .then((response) => response.data)
         .catch(() => {});
     };
 
-    const export_reports_data = (axes_data, cycle_ids) => {
+    const export_reports_data = (axes_data, cycle_ids, filter_group_id) => {
       const {
         xVar, xLabel, yVar, yLabel
       } = axes_data;
@@ -122,7 +124,8 @@ angular.module('SEED.service.inventory_reports', []).factory('inventory_reports_
             x_label: xLabel,
             y_var: yVar,
             y_label: yLabel,
-            cycle_ids
+            cycle_ids,
+            filter_group_id
           },
           responseType: 'arraybuffer'
         })

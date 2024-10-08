@@ -638,6 +638,7 @@
               }
             ],
             cycles: ['cycle_service', (cycle_service) => cycle_service.get_cycles()],
+            filter_groups: ['filter_groups_service', (filter_service) => filter_service.get_filter_groups('Property')],
             organization_payload: [
               'organization_service',
               'user_service',
