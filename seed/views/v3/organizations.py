@@ -45,6 +45,7 @@ from seed.models import (
     SEED_DATA_SOURCES,
     Column,
     Cycle,
+    FilterGroup,
     Property,
     PropertyAuditLog,
     PropertyState,
@@ -58,7 +59,7 @@ from seed.models import StatusLabel as Label
 from seed.serializers.column_mappings import SaveColumnMappingsRequestPayloadSerializer
 from seed.serializers.columns import ColumnSerializer
 from seed.serializers.organizations import SaveSettingsSerializer, SharedFieldsReturnSerializer
-from seed.serializers.pint import apply_display_unit_preferences
+from seed.serializers.pint import add_pint_unit_suffix, apply_display_unit_preferences
 from seed.utils.api import api_endpoint_class
 from seed.utils.api_schema import AutoSchemaHelper
 from seed.utils.encrypt import decrypt, encrypt
@@ -837,8 +838,7 @@ class OrganizationViewSet(viewsets.ViewSet):
         except AttributeError:
             return None
 
-    def get_raw_report_data(self, organization_id, access_level_instance, cycles, x_var, y_var, additional_columns=[]):
-        organization = Organization.objects.get(pk=organization_id)
+    def setup_report_data(self, organization_id, access_level_instance, cycles, x_var, y_var, filter_group_id=None, additional_columns=[]):
         all_property_views = (
             PropertyView.objects.select_related("property", "state")
             .filter(
@@ -849,6 +849,10 @@ class OrganizationViewSet(viewsets.ViewSet):
             )
             .order_by("id")
         )
+
+        if filter_group_id:
+            filter_group = FilterGroup.objects.get(pk=filter_group_id)
+            all_property_views = filter_group.views(all_property_views)
 
         # annotate properties with fields
         fields = {
@@ -864,6 +868,10 @@ class OrganizationViewSet(viewsets.ViewSet):
         for k, v in fields.items():
             all_property_views = all_property_views.annotate(**{k: v})
 
+        return {"all_property_views": all_property_views, "field_data": fields}
+
+    def get_raw_report_data(self, organization_id, cycles, all_property_views, fields):
+        organization = Organization.objects.get(pk=organization_id)
         # get data for each cycle
         results = []
         for cycle in cycles:
@@ -911,6 +919,7 @@ class OrganizationViewSet(viewsets.ViewSet):
         }
 
         user_ali = AccessLevelInstance.objects.get(pk=self.request.access_level_instance_id)
+        filter_group_id = request.query_params.get("filter_group_id", None)
         if params["access_level_instance_id"] is None:
             ali = user_ali
         else:
@@ -931,10 +940,16 @@ class OrganizationViewSet(viewsets.ViewSet):
             )
 
         cycles = Cycle.objects.filter(id__in=params["cycle_ids"])
-        data = self.get_raw_report_data(pk, ali, cycles, params["x_var"], params["y_var"])
+        report_data = self.setup_report_data(pk, ali, cycles, params["x_var"], params["y_var"], filter_group_id)
+        data = self.get_raw_report_data(pk, cycles, report_data["all_property_views"], report_data["field_data"])
+        axis_data = self.get_axis_data(
+            pk, ali, cycles, params["x_var"], params["y_var"], report_data["all_property_views"], report_data["field_data"]
+        )
+
         data = {
             "chart_data": functools.reduce(operator.iadd, [d["chart_data"] for d in data], []),
             "property_counts": [d["property_counts"] for d in data],
+            "axis_data": axis_data,
         }
 
         return Response({"status": "success", "data": data}, status=status.HTTP_200_OK)
@@ -966,7 +981,7 @@ class OrganizationViewSet(viewsets.ViewSet):
             "cycle_ids": request.query_params.getlist("cycle_ids", None),
             "access_level_instance_id": request.query_params.get("access_level_instance_id", None),
         }
-
+        filter_group_id = request.query_params.get("filter_group_id", None)
         user_ali = AccessLevelInstance.objects.get(pk=self.request.access_level_instance_id)
         if params["access_level_instance_id"] is None:
             ali = user_ali
@@ -989,7 +1004,8 @@ class OrganizationViewSet(viewsets.ViewSet):
 
         # get data
         cycles = Cycle.objects.filter(id__in=params["cycle_ids"])
-        data = self.get_raw_report_data(pk, ali, cycles, params["x_var"], params["y_var"])
+        report_data = self.setup_report_data(pk, ali, cycles, params["x_var"], params["y_var"], filter_group_id)
+        data = self.get_raw_report_data(pk, cycles, report_data["all_property_views"], report_data["field_data"])
         chart_data = []
         property_counts = []
 
@@ -1079,6 +1095,7 @@ class OrganizationViewSet(viewsets.ViewSet):
             "y_label": request.query_params.get("y_label", None),
             "cycle_ids": request.query_params.getlist("cycle_ids", None),
         }
+        filter_group_id = request.query_params.get("filter_group_id", None)
 
         # error if missing
         excepted_params = ["x_var", "x_label", "y_var", "y_label", "cycle_ids"]
@@ -1117,7 +1134,10 @@ class OrganizationViewSet(viewsets.ViewSet):
         # Gather base data
         cycles = Cycle.objects.filter(id__in=params["cycle_ids"])
         matching_columns = Column.objects.filter(organization_id=pk, is_matching_criteria=True, table_name="PropertyState")
-        data = self.get_raw_report_data(pk, access_level_instance, cycles, params["x_var"], params["y_var"], matching_columns)
+        report_data = self.setup_report_data(
+            pk, access_level_instance, cycles, params["x_var"], params["y_var"], filter_group_id, additional_columns=matching_columns
+        )
+        data = self.get_raw_report_data(pk, cycles, report_data["all_property_views"], report_data["field_data"])
 
         base_sheet.write(data_row_start, data_col_start, "ID", bold)
 
@@ -1176,6 +1196,70 @@ class OrganizationViewSet(viewsets.ViewSet):
         response.write(xlsx_data)
 
         return response
+
+    def get_axis_stats(self, organization, cycle, axis, axis_var, views, ali):
+        """returns axis_name, access_level_instance name, sum, mean, min, max, 5%, 25%, 50%, 75%, 99%"""
+
+        filtered_properties = views.filter(
+            property__access_level_instance__lft__gte=ali.lft, property__access_level_instance__rgt__lte=ali.rgt, cycle_id=cycle.id
+        )
+
+        data = [
+            d[axis]
+            for d in [apply_display_unit_preferences(organization, d) for d in filtered_properties.values(axis)]
+            if axis in d and d[axis] is not None
+        ]
+
+        if len(data) > 0:
+            percentiles = np.percentile(data, [5, 25, 50, 75, 95])
+            # order the cols: sum, min, 5%, 25%, mean, median (50%), 75, 95, max
+            return [
+                axis_var,
+                ali.name,
+                sum(data),
+                np.amin(data),
+                percentiles[0],
+                percentiles[1],
+                np.mean(data),
+                percentiles[2],
+                percentiles[3],
+                percentiles[4],
+                np.amax(data),
+            ]
+        else:
+            return [axis_var, ali.name, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+
+    def get_axis_data(self, organization_id, access_level_instance, cycles, x_var, y_var, all_property_views, fields):
+        axis_data = []
+        axes = {"x": x_var, "y": y_var}
+        organization = Organization.objects.get(pk=organization_id)
+
+        for axis in axes:
+            if axes[axis] != "Count":
+                columns = Column.objects.filter(organization_id=1, column_name=axes[axis])
+                if not columns:
+                    return []
+
+                column = columns[0]
+                data_type = Column.DB_TYPES[column.data_type]
+
+                # Get column label
+                serialized_column = ColumnSerializer(column).data
+                add_pint_unit_suffix(organization, serialized_column)
+                for cycle in cycles:
+                    axis_name = serialized_column["display_name"] + f" ({cycle.name})"
+                    stats = self.get_axis_stats(organization, cycle, axis, axes[axis], all_property_views, access_level_instance)
+                    axis_data.append(self.clean_axis_data(axis_name, data_type, stats))
+                    for child_ali in access_level_instance.get_children():
+                        stats = self.get_axis_stats(organization, cycle, axis, axes[axis], all_property_views, child_ali)
+                        axis_data.append(self.clean_axis_data(axis_name, data_type, stats))
+        return axis_data
+
+    def clean_axis_data(self, column_name, data_type, data):
+        if data_type == "float":
+            return [column_name] + data[1:3] + np.round(data[3:], decimals=2).tolist()
+        elif data_type == "integer":
+            return [column_name] + data[1:3] + np.round(data[3:]).tolist()
 
     @has_perm_class("requires_member")
     @ajax_request_class

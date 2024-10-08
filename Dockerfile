@@ -4,7 +4,7 @@ ARG NGINX_LISTEN_OPTS
 # DESCRIPTION:      Image with seed platform and dependencies running in development mode
 # TO_BUILD_AND_RUN: docker compose build && docker compose up
 
-FROM node:20-alpine AS node
+FROM node:20-alpine3.16 AS node
 
 FROM alpine:3.14
 
