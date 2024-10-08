@@ -1250,7 +1250,9 @@ class OrganizationViewSet(viewsets.ViewSet):
                 serialized_column = ColumnSerializer(column).data
                 add_pint_unit_suffix(organization, serialized_column)
                 for cycle in cycles:
-                    name_to_display = serialized_column["display_name"] if serialized_column["display_name"] != '' else serialized_column["column_name"]
+                    name_to_display = (
+                        serialized_column["display_name"] if serialized_column["display_name"] != "" else serialized_column["column_name"]
+                    )
                     axis_name = name_to_display + f" ({cycle.name})"
                     stats = self.get_axis_stats(organization, cycle, axis, axes[axis], all_property_views, access_level_instance)
                     axis_data.append(self.clean_axis_data(axis_name, data_type, stats))
