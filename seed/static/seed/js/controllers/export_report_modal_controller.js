@@ -9,8 +9,9 @@ angular.module('SEED.controller.export_report_modal', []).controller('export_rep
   'axes_data',
   'cycles',
   'inventory_reports_service',
+  'filter_group_id',
   // eslint-disable-next-line func-names
-  function ($scope, $uibModalInstance, spinner_utility, axes_data, cycles, inventory_reports_service) {
+  function ($scope, $uibModalInstance, spinner_utility, axes_data, cycles, inventory_reports_service, filter_group_id) {
     $scope.export_name = '';
 
     $scope.export_selected = () => {
@@ -22,7 +23,7 @@ angular.module('SEED.controller.export_report_modal', []).controller('export_rep
       if (!filename.endsWith(ext)) filename += ext;
 
       spinner_utility.show();
-      inventory_reports_service.export_reports_data(axes_data, cycles).then((response) => {
+      inventory_reports_service.export_reports_data(axes_data, cycles, filter_group_id).then((response) => {
         const blob_type = response.headers()['content-type'];
 
         const blob = new Blob([response.data], { type: blob_type });
