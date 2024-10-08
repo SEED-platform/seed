@@ -3811,6 +3811,17 @@ $pairedCellWidth: 60px;
     width: 20px;
   }
 }
+.groups-indicator {
+  height:100%;
+  display: flex;
+  align-items: center;
+
+  i.fa {
+    width: 100%;
+    font-size: 17px;
+    text-align: center;
+  }
+}
 
 .merged-indicator {
   padding-top: 6px;
