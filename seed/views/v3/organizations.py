@@ -1241,7 +1241,10 @@ class OrganizationViewSet(viewsets.ViewSet):
                     return []
 
                 column = columns[0]
-                data_type = Column.DB_TYPES[column.data_type]
+                if not column.data_type:
+                    data_type = "float"
+                else:
+                    data_type = Column.DB_TYPES[column.data_type]
 
                 # Get column label
                 serialized_column = ColumnSerializer(column).data
