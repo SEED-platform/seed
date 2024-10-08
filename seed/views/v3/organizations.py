@@ -1241,7 +1241,7 @@ class OrganizationViewSet(viewsets.ViewSet):
                     return []
 
                 column = columns[0]
-                if not column.data_type:
+                if not column.data_type or column.data_type == "None":
                     data_type = "float"
                 else:
                     data_type = Column.DB_TYPES[column.data_type]
