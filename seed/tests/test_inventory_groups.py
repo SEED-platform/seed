@@ -172,7 +172,7 @@ class InventoryGroupViewTests(AccessLevelBaseTestCase):
         url = reverse_lazy("api:v3:properties-merge") + f"?organization_id={self.org.pk}"
         data = {"property_view_ids": [self.view1.pk, view.pk]}
         self.client.post(url, data=json.dumps(data), content_type="application/json")
-        
+
         new_property = Property.objects.last()
         assert new_property.group_mappings.count() == 1
 
@@ -184,13 +184,13 @@ class InventoryGroupViewTests(AccessLevelBaseTestCase):
         # test group history preserved if first view has groups, second has none
         data = {"property_view_ids": [self.view1.pk, view4.pk]}
         self.client.post(url, data=json.dumps(data), content_type="application/json")
-        
+
         new_property = Property.objects.last()
         assert new_property.group_mappings.count() == 1
 
         # test group history preserved if second has groups, first has none
         data = {"property_view_ids": [view5.pk, self.view1.pk]}
         self.client.post(url, data=json.dumps(data), content_type="application/json")
-        
+
         new_property = Property.objects.last()
         assert new_property.group_mappings.count() == 1
