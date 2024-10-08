@@ -1135,7 +1135,7 @@ class OrganizationViewSet(viewsets.ViewSet):
         cycles = Cycle.objects.filter(id__in=params["cycle_ids"])
         matching_columns = Column.objects.filter(organization_id=pk, is_matching_criteria=True, table_name="PropertyState")
         report_data = self.setup_report_data(
-            pk, access_level_instance, cycles, params["x_var"], params["y_var"], filter_group_id, additional_columns=[]
+            pk, access_level_instance, cycles, params["x_var"], params["y_var"], filter_group_id, additional_columns=matching_columns
         )
         data = self.get_raw_report_data(pk, cycles, report_data["all_property_views"], report_data["field_data"])
 
@@ -1213,7 +1213,19 @@ class OrganizationViewSet(viewsets.ViewSet):
         if len(data) > 0:
             percentiles = np.percentile(data, [5, 25, 50, 75, 95])
             # order the cols: sum, min, 5%, 25%, mean, median (50%), 75, 95, max
-            return [axis_var, ali.name, sum(data), np.amin(data), percentiles[0], percentiles[1], np.mean(data), percentiles[2], percentiles[3], percentiles[4], np.amax(data)]
+            return [
+                axis_var,
+                ali.name,
+                sum(data),
+                np.amin(data),
+                percentiles[0],
+                percentiles[1],
+                np.mean(data),
+                percentiles[2],
+                percentiles[3],
+                percentiles[4],
+                np.amax(data),
+            ]
         else:
             return [axis_var, ali.name, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
