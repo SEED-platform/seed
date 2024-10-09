@@ -28,6 +28,13 @@
     <ul>
       <li ng-repeat="service in system.services">
         {$ service.name $}
+        <ul>
+          <li ng-repeat="(property, meters) in service.properties">{$ property $}
+            <ul>
+              <li ng-repeat="meter in meters">{$ meter.alias $}</li>
+            </ul>
+          </li>
+        </ul>
       </li>
     </ul>
   </ul>
