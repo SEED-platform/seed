@@ -66,16 +66,11 @@ class InventoryGroupViewTests(AccessLevelBaseTestCase):
         self.view1 = self.property_view_factory.get_property_view()
         self.view2 = self.property_view_factory.get_property_view()
         self.view3 = self.property_view_factory.get_property_view()
+        self.cycle2 = self.cycle_factory.get_cycle()
+        # create 2nd cycle for properties in 2 cycles
 
         # add properties to group
-        url = reverse_lazy("api:v3:inventory_group_mappings-put") + f"?organization_id={self.org.id}"
-        data = {
-            "inventory_ids": [self.view1.id, self.view2.id],
-            "add_group_ids": [self.property_group.id],
-            "remove_group_ids": [],
-            "inventory_type": "property",
-        }
-        self.client.put(url, data=json.dumps(data), content_type="application/json")
+        self._put_group_mappings([self.property_group.id], [self.view1.id, self.view2.id], "property")
 
         # helper functions to create meters and readings
         def create_meter_entry(property_view_id, source_id):
@@ -88,6 +83,16 @@ class InventoryGroupViewTests(AccessLevelBaseTestCase):
         self.meter1_id = create_meter_entry(self.view1.id, 101)
         self.meter2_id = create_meter_entry(self.view2.id, 201)
         self.meter3_id = create_meter_entry(self.view3.id, 301)
+
+    def _put_group_mappings(self, group_ids, view_ids, inventory_type):
+        url = reverse_lazy("api:v3:inventory_group_mappings-put") + f"?organization_id={self.org.id}"
+        data = {
+            "inventory_ids": view_ids,
+            "add_group_ids": group_ids,
+            "remove_group_ids": [],
+            "inventory_type": inventory_type,
+        }
+        return self.client.put(url, data=json.dumps(data), content_type="application/json")
 
     def test_group_constraints(self):
         url = reverse_lazy("api:v3:inventory_groups-list")
@@ -120,20 +125,11 @@ class InventoryGroupViewTests(AccessLevelBaseTestCase):
         self.view1b = self.view_factory.get_property_view(prprty=self.p1b)
         self.view2a = self.view_factory.get_property_view(prprty=self.p2a)
 
-        url = reverse_lazy("api:v3:inventory_group_mappings-put") + f"?organization_id={self.org.id}"
-        data = {
-            "inventory_ids": [self.view1a.id, self.view1b.id, self.view2a.id],
-            "add_group_ids": [self.property_group.id],
-            "remove_group_ids": [],
-            "inventory_type": "property",
-        }
-
-        response = self.client.put(url, data=json.dumps(data), content_type="application/json")
+        response = self._put_group_mappings([self.property_group.id], [self.view1a.id, self.view1b.id, self.view2a.id], "property")
         assert response.status_code == 400
         assert response.json()["message"] == "Access Level mismatch between group and inventory."
 
-        data["inventory_ids"] = [self.view1a.id]
-        response = self.client.put(url, data=json.dumps(data), content_type="application/json")
+        response = self._put_group_mappings([self.property_group.id], [self.view1a.id], "property")
         assert response.status_code == 200
 
     def test_group_meters(self):
@@ -158,15 +154,7 @@ class InventoryGroupViewTests(AccessLevelBaseTestCase):
 
     def test_merge_group_duplicates(self):
         view = self.property_view_factory.get_property_view()
-
-        url = reverse_lazy("api:v3:inventory_group_mappings-put") + f"?organization_id={self.org.id}"
-        data = {
-            "inventory_ids": [view.id],
-            "add_group_ids": [self.property_group.id],
-            "remove_group_ids": [],
-            "inventory_type": "property",
-        }
-        self.client.put(url, data=json.dumps(data), content_type="application/json")
+        self._put_group_mappings([self.property_group.id], [view.id], "property")
 
         # Merge the properties
         url = reverse_lazy("api:v3:properties-merge") + f"?organization_id={self.org.pk}"
@@ -194,3 +182,21 @@ class InventoryGroupViewTests(AccessLevelBaseTestCase):
 
         new_property = Property.objects.last()
         assert new_property.group_mappings.count() == 1
+
+    def test_clean_group(self):
+        assert self.property_group.group_mappings.count() == 2
+        view4 = self.property_view_factory.get_property_view()
+        view5 = self.property_view_factory.get_property_view()
+        # add a view with a shared property to a different cycle
+        self.property_view_factory.get_property_view(prprty=view4.property, cycle=self.cycle2)
+        # add properties to groups
+        self._put_group_mappings([self.property_group.id], [view4.id, view5.id], "property")
+        assert self.property_group.group_mappings.count() == 4
+
+        # bulk delete those groups
+        url = reverse_lazy("api:v3:properties-batch-delete") + f"?organization_id={self.org.pk}"
+        params = json.dumps({"property_view_ids": [view4.id, view5.id]})
+        self.client.delete(url, params, content_type="application/json")
+
+        # only view5 mapping should be removed as view4a exists in cycle2
+        assert self.property_group.group_mappings.count() == 3

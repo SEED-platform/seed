@@ -507,6 +507,7 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
         ali = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
 
         taxlot_view_ids = request.data.get("taxlot_view_ids", [])
+        group_mapping_ids = list(InventoryGroupMapping.objects.filter(taxlot__views__in=taxlot_view_ids).values_list("id", flat=True))
         taxlot_state_ids = TaxLotView.objects.filter(
             id__in=taxlot_view_ids,
             taxlot__access_level_instance__lft__gte=ali.lft,
@@ -517,6 +518,9 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
 
         if resp[0] == 0:
             return JsonResponse({"status": "warning", "message": "No action was taken"})
+
+        # Delete orphaned mappings
+        InventoryGroupMapping.objects.filter(id__in=group_mapping_ids, taxlot__views__isnull=True).delete()
 
         return JsonResponse({"status": "success", "taxlots": resp[1]["seed.TaxLotState"]})
 
