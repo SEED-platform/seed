@@ -62,7 +62,7 @@ class InventoryGroupViewTests(AccessLevelBaseTestCase):
             name="test2", organization=self.org, inventory_type=VIEW_LIST_TAXLOT, access_level_instance=self.org.root
         )
 
-        # setup: create 3 properties with 2 meters each. Each mmeter has 2 readings
+        # create 3 properties with 2 meters each. Each mmeter has 2 readings
         self.view1 = self.property_view_factory.get_property_view()
         self.view2 = self.property_view_factory.get_property_view()
         self.view3 = self.property_view_factory.get_property_view()
@@ -193,7 +193,7 @@ class InventoryGroupViewTests(AccessLevelBaseTestCase):
         self._put_group_mappings([self.property_group.id], [view4.id, view5.id], "property")
         assert self.property_group.group_mappings.count() == 4
 
-        # bulk delete those groups
+        # bulk delete views
         url = reverse_lazy("api:v3:properties-batch-delete") + f"?organization_id={self.org.pk}"
         params = json.dumps({"property_view_ids": [view4.id, view5.id]})
         self.client.delete(url, params, content_type="application/json")
