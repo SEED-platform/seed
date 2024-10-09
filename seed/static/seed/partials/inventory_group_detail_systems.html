@@ -16,6 +16,19 @@
   <div class="section_nav" ng-include="::urls.static_url + 'seed/partials/inventory_group_detail_nav.html'"></div>
 </div>
 
-<div>
-  <div style="display: flex; justify-content: center; margin: 100px; font-style: italics">SYSTEMS & SERVICES IN DEVELOPMENT...</div>
-</div>
+<button ng-show="menu.user.organization.user_role !== 'viewer'" type="button" class="col-sm-2 btn btn-info"
+  ng-click="open_create_system_modal()"> New System </button>
+<ul>
+  <ul ng-repeat="system in systems">
+    <div style="display:flex; gap:1rem">
+      <p>{$ system.type | translate $} - {$ system.name $}</p>
+      <button ng-show="menu.user.organization.user_role !== 'viewer'" type="button" class="col-sm-2 btn btn-info"
+        ng-click="open_create_service_modal(system)"> New Service </button>
+    </div>
+    <ul>
+      <li ng-repeat="service in system.services">
+        {$ service.name $}
+      </li>
+    </ul>
+  </ul>
+</ul>
