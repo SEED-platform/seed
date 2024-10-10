@@ -2329,14 +2329,19 @@
         })
         .state({
           name: 'inventory_group_detail_systems',
-          url: '/{inventory_type:properties|taxlots}/groups/{group_id:int}',
+          url: '/{inventory_type:properties|taxlots}/groups/{group_id:int}/systems',
           templateUrl: `${static_url}seed/partials/inventory_group_detail_systems.html`,
           controller: 'inventory_group_detail_systems_controller',
           resolve: {
-            systems: ['$stateParams', 'system_service', 'user_service', ($stateParams, system_service, user_service) => {
+            systems_old: ['$stateParams', 'system_service', 'user_service', ($stateParams, system_service, user_service) => {
               const organization_id = user_service.get_organization().id;
               const { group_id } = $stateParams;
               return system_service.get_systems(organization_id, group_id);
+            }],
+            systems: ['$stateParams', 'system_service', 'user_service', ($stateParams, system_service, user_service) => {
+              const organization_id = user_service.get_organization().id;
+              const { group_id } = $stateParams;
+              return system_service.get_systems_by_type(organization_id, group_id);
             }],
             organization_payload: [
               'user_service',

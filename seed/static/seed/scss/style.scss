@@ -5733,3 +5733,34 @@ tags-input .tags .tag-item {
   white-space: normal;
   min-width: 350px;
 }
+
+.systems-container {
+  margin: 15px;
+
+  .system-table-container{
+    .system-type {
+      font-size: 16px;
+      font-weight: bold;
+    }
+    
+    .system-table{
+
+      td, th {
+        border-left: 1px solid #f2f2f2;
+      }
+      .accordion-button{
+        border: none;
+        background: none;
+      }
+      .accordion-button[aria-expanded='true'] {
+        transform: rotate(90deg);
+        transition: transform 0.5s;
+      }
+      
+      .accordion-button[aria-expanded='false'] {
+        transform: rotate(0);
+        transition: transform 0.5s;
+      }
+    }
+  }
+}

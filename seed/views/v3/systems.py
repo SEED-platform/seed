@@ -9,6 +9,7 @@ from django.db import IntegrityError
 from django.http import JsonResponse
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
+from collections import defaultdict
 
 from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm_class
 from seed.models import BatterySystem, DESSystem, EVSESystem, System
@@ -48,6 +49,24 @@ class SystemViewSet(viewsets.ViewSet, OrgMixin):
             {"status": "success", "data": SystemSerializer(systems, many=True).data},
             status=status.HTTP_200_OK,
         )
+    
+    @has_perm_class("requires_viewer")
+    @has_hierarchy_access(inventory_group_id_kwarg="inventory_group_pk")
+    @action(detail=False, methods=["GET"])
+    def systems_by_type(self, request, inventory_group_pk):
+        """returns dictionary of systems grouped by type"""
+        systems = System.objects.filter(group_id=inventory_group_pk).select_subclasses()
+        typed_systems = defaultdict(list)
+        systems_data = SystemSerializer(systems, many=True).data
+
+        for system in systems_data:
+            typed_systems[system["type"]].append(system)
+
+        return JsonResponse(
+            {"status": "success", "data": typed_systems},
+            status=status.HTTP_200_OK,
+        )
+    
 
     @has_perm_class("can_modify_data")
     @has_hierarchy_access(inventory_group_id_kwarg="inventory_group_pk")

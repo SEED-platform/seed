@@ -11,6 +11,11 @@ angular.module('SEED.service.system', []).factory('system_service', [
         params: { organization_id }
       }).then(({ data }) => data),
 
+    get_systems_by_type: (organization_id, group_id) => $http
+      .get(`/api/v3/inventory_groups/${group_id}/systems/systems_by_type`, {
+        params: { organization_id },
+      }).then((data) => data.data),
+
     // Create a system for a given group
     create_system: (organization_id, group_id, data) => $http
       .post(`/api/v3/inventory_groups/${group_id}/systems/`,

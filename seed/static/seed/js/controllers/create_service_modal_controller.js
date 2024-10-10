@@ -24,8 +24,7 @@ angular.module('SEED.controller.create_service_modal', []).controller('create_se
         (data) => {
           $scope.waiting_for_server = false;
           Notification.primary('Created Analysis');
-          form.$setPristine();
-          $scope.$close(data);
+          $uibModalInstance.close();
         },
         (response) => {
           $scope.waiting_for_server = false;
@@ -36,6 +35,7 @@ angular.module('SEED.controller.create_service_modal', []).controller('create_se
       );
     }
 
+    $scope.cancel = () => $uibModalInstance.dismiss();
 
   }
 ]);
