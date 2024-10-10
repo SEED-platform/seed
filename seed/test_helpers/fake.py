@@ -990,7 +990,7 @@ class FakeSystemFactory(BaseFake):
         group_id = self.inventory_group_factory.get_inventory_group() if not group else group.pk
         if system_type == 'Battery':
             system_details = {
-                "name": name if name else f"battery system - {self.fake.text()}",
+                "name": name if name else f"battery system - {self.fake.random.randint(1, 999)}",
                 "group_id": group_id,
                 "efficiency": efficiency if efficiency else 1,
                 "capacity": capacity if capacity else 1,
@@ -1000,7 +1000,7 @@ class FakeSystemFactory(BaseFake):
             system, _ = BatterySystem.objects.get_or_create(**system_details)
         elif system_type == 'EVSE':
             system_details = {
-                "name": name if name else f"evse system - {self.fake.text()}",
+                "name": name if name else f"evse system - {self.fake.random.randint(1, 999)}",
                 "group_id": group_id,
                 "type": evse_type if evse_type else 0,
                 "power": power if power else 1,
@@ -1010,7 +1010,7 @@ class FakeSystemFactory(BaseFake):
             system, _ = EVSESystem.objects.get_or_create(**system_details)
         else:
             system_details = {
-                "name": name if name else f"des system - {self.fake.text()}",
+                "name": name if name else f"des system - {self.fake.random.randint(1, 999)}",
                 "group_id": group_id,
                 "type": des_type if des_type else 0,
                 "capacity": capacity if capacity else 1,
