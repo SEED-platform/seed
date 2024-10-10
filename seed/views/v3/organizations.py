@@ -1210,7 +1210,6 @@ class OrganizationViewSet(viewsets.ViewSet):
             if axis in d and d[axis] is not None and isinstance(d[axis], (int, float))
         ]
 
-        logging.error(f"Data: {data}")
         if len(data) > 0:
             percentiles = np.percentile(data, [5, 25, 50, 75, 95])
             # order the cols: sum, min, 5%, 25%, mean, median (50%), 75, 95, max
