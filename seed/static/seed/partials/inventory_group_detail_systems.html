@@ -39,6 +39,28 @@
           {$ service.name $}
         </li>
       </ul>
+HANNAH
+<button ng-show="menu.user.organization.user_role !== 'viewer'" type="button" class="col-sm-2 btn btn-info"
+  ng-click="open_create_system_modal()"> New System </button>
+<ul>
+  <ul ng-repeat="system in systems">
+    <div style="display:flex; gap:1rem">
+      <p>{$ system.type | translate $} - {$ system.name $}</p>
+      <button ng-show="menu.user.organization.user_role !== 'viewer'" type="button" class="col-sm-2 btn btn-info"
+        ng-click="open_create_service_modal(system)"> New Service </button>
+    </div>
+    <ul>
+      <li ng-repeat="service in system.services">
+        {$ service.name $}
+        <ul>
+          <li ng-repeat="(property, meters) in service.properties">{$ property $}
+            <ul>
+              <li ng-repeat="meter in meters">{$ meter.alias $}</li>
+            </ul>
+          </li>
+        </ul>
+      </li>
+      HANNAH
     </ul>
   </ul> -->
   

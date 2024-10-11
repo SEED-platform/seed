@@ -4,18 +4,35 @@ SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and othe
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
+from collections import defaultdict
+
 from rest_framework import serializers
 
+from seed.data_importer.utils import usage_point_id
 from seed.models import BatterySystem, DESSystem, EVSESystem, Service, System
 from seed.serializers.base import ChoiceField
 
 
 class ServiceSerializer(serializers.ModelSerializer):
     system_id = serializers.IntegerField(write_only=True)
+    properties = serializers.SerializerMethodField()
 
     class Meta:
         model = Service
-        fields = ["id", "name", "emission_factor", "system_id"]
+        fields = ["id", "name", "emission_factor", "system_id", "properties"]
+
+    def get_properties(self, obj):
+        meters_by_property = defaultdict(list)
+        for meter in obj.meters.all():
+            meters_by_property[meter.property_id].append(
+                {
+                    "alias": meter.alias
+                    if meter.alias
+                    else f"{meter.get_type_display()} - {meter.get_source_display()} - {usage_point_id(meter.source_id)}"
+                }
+            )
+
+        return meters_by_property
 
 
 class SystemSerializer(serializers.ModelSerializer):

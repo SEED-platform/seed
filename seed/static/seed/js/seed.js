@@ -2304,8 +2304,8 @@
         .state({
           name: 'inventory_group_detail_meters',
           url: '/{inventory_type:properties|taxlots}/groups/{group_id:int}/meters',
-          templateUrl: `${static_url}seed/partials/inventory_detail_meters.html`,
-          controller: 'inventory_detail_meters_controller',
+          templateUrl: `${static_url}seed/partials/inventory_group_detail_meters.html`,
+          controller: 'inventory_group_detail_meters_controller',
           resolve: {
             inventory_payload: () => null,
             property_meter_usage: [
