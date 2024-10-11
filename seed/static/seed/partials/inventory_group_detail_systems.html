@@ -15,32 +15,47 @@
 <div class="section_nav_container">
   <div class="section_nav" ng-include="::urls.static_url + 'seed/partials/inventory_group_detail_nav.html'"></div>
 </div>
-
-<button ng-show="menu.user.organization.user_role !== 'viewer'" type="button" class="col-sm-2 btn btn-info"
-  ng-click="open_create_system_modal()"> New System </button>
-<ul>
-  <ul ng-repeat="system in systems_old">
-    <div style="display:flex; gap:1rem">
-      <p>{$ system.type | translate $} - {$ system.name $}</p>
-      <button ng-show="menu.user.organization.user_role !== 'viewer'" type="button" class="col-sm-2 btn btn-info"
-        ng-click="open_create_service_modal(system)"> New Service </button>
-    </div>
-    <ul>
-      <li ng-repeat="service in system.services">
-        {$ service.name $}
-      </li>
-    </ul>
-  </ul>
-</ul>
-
-
-<div class="systems-container">
-  <div ng-repeat="table in system_tables" id="{$ table.system_key $}-systems-table">
-    <div
-      ng-include="::urls.static_url + 'seed/partials/systems_table.html'"
-      ng-init="system_key=table.system_key; fields=table.fields"
-    >
-    </div>
+<div class="section_content systems-list">
+  <div class="create-container">
+    
+    <button 
+      ng-show="menu.user.organization.user_role !== 'viewer'" 
+      type="button" 
+      class="btn btn-primary"
+      ng-click="open_system_modal('create')"
+      >
+        Create System 
+    </button>
   </div>
+  <!-- <ul>
+    <ul ng-repeat="system in systems_old">
+      <div style="display:flex; gap:1rem">
+        <p>{$ system.type | translate $} - {$ system.name $}</p>
+        <button ng-show="menu.user.organization.user_role !== 'viewer'" type="button" class="col-sm-2 btn btn-info"
+          ng-click="open_create_service_modal(system)"> New Service </button>
+      </div>
+      <ul>
+        <li ng-repeat="service in system.services">
+          {$ service.name $}
+        </li>
+      </ul>
+    </ul>
+  </ul> -->
   
+  
+  <div class="systems-container">
+    <div ng-repeat="table in system_tables" id="{$ table.system_key $}-systems-table">
+      <div
+        ng-include="::urls.static_url + 'seed/partials/systems_table.html'"
+        ng-init="
+          system_key=table.system_key;
+          headers=table.headers;
+          fields=table.fields;
+        "
+      >
+      </div>
+    </div>
+    
+  </div>
+
 </div>

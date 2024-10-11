@@ -56,7 +56,7 @@ class DESSystemSerializer(SystemSerializer):
     def to_representation(self, obj):
         return {
             "type": "DES",
-            "DES_type": obj.type,
+            "des_type": obj.get_type_display(),
             "capacity": obj.capacity,
             "count": obj.count,
         }
@@ -74,7 +74,7 @@ class EVSESystemSerializer(SystemSerializer):
     def to_representation(self, obj):
         return {
             "type": "EVSE",
-            "EVSE_type": obj.type,
+            "evse_type": obj.get_type_display(),
             "power": obj.power,
             "count": obj.count,
         }

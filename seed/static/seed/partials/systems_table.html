@@ -5,7 +5,8 @@
         <thead>
             <tr>
                 <th style="width:90px;"></th>
-                <th ng-repeat="header in fields">{$ header $}</th>
+                <th ng-repeat="header in headers">{$ header $}</th>
+                <th style="width: 110px;">Actions</th>
             </tr>
         </thead>
         <tbody>
@@ -19,10 +20,16 @@
                     </div>
                 </td>
                 <td ng-repeat="attribute in fields">{$ system[attribute.toLowerCase()] $}</td>
+                <td>
+                    <div ng-if="menu.user.organization.user_role !== 'viewer'">
+                        <button class="btn btn-default btn-rowform" ng-click="edit_system(system.id)" translate>edit</button>
+                        <button class="btn btn-danger btn-rowform" ng-click="remove_system(system.id)">X</button>
+                    </div>
+                </td>
             </tr>
-            <tr id="collapse-{$ system.id $}" class="collapse" ng-repeat-end="system in systems[system_key]">
+            <tr id="collapse-{$ system.id $}" class="collapse services-table" ng-repeat-end="system in systems[system_key]">
                 <td></td>
-                <td colspan="{$ fields.length $}">
+                <td colspan="{$ fields.length + 1 $}">
                     <div ui-grid="gridOptionsBySystemId[system.id]"></div>
                 </td>
             </tr>

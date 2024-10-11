@@ -9,6 +9,7 @@ angular.module('SEED.controller.inventory_group_detail_systems', [])
     '$stateParams',
     '$uibModal',
     'urls',
+    'Notification',
     'systems_old',
     'systems',
     'organization_payload',
@@ -19,6 +20,7 @@ angular.module('SEED.controller.inventory_group_detail_systems', [])
       $stateParams,
       $uibModal,
       urls,
+      Notification,
       systems_old,
       systems,
       organization_payload
@@ -26,21 +28,46 @@ angular.module('SEED.controller.inventory_group_detail_systems', [])
       $scope.inventory_type = $stateParams.inventory_type;
       $scope.group_id = $stateParams.group_id;
       $scope.systems = systems.data;
+      const all_systems = [...$scope.systems.DES, ...$scope.systems.EVSE, ...$scope.systems.Battery]
       $scope.systems_old = systems_old.data; // rp - testing
 
       $scope.system_tables = [
-        { system_key: 'DES', fields: ['Name', 'Type', 'Capacity', 'Count'] },
-        { system_key: 'EVSE', fields: ['Name', 'Type', 'Power', 'Count'] },
-        { system_key: 'Battery', fields: ['Name', 'Type', 'Capacity', 'Voltage'] }
+        { 
+          system_key: 'DES', 
+          headers: ['Name', 'DES Type', 'Capacity', 'Count'], 
+          fields: ['name', 'DES_type', 'capacity', 'count']
+        },
+        { 
+          system_key: 'EVSE', 
+          headers: ['Name', 'EVSE Type', 'Power', 'Count'], 
+          fields: ['name', 'EVSE_type', 'power', 'count']
+        },
+        { 
+          system_key: 'Battery', 
+          headers: ['Name', 'Efficiency', 'Capacity', 'Voltage'], 
+          fields: ['name', 'efficiency', 'capacity', 'voltage']
+        }
       ]
 
-      $scope.open_create_system_modal = () => {
+      $scope.create_system = () => {
+        $scope.open_system_modal('create', {});
+      }
+
+      $scope.remove_system = (system_id) => {
+        const system = all_systems.find((s) => s.id === system_id)
+        $scope.open_system_modal('remove', system)
+
+      }
+
+      $scope.open_system_modal = (action, system) => {
           const modalInstance = $uibModal.open({
-            templateUrl: `${urls.static_url}seed/partials/create_system_modal.html`,
-            controller: 'create_system_modal_controller',
+            templateUrl: `${urls.static_url}seed/partials/system_modal.html`,
+            controller: 'system_modal_controller',
             resolve: {
+              action: () => action,
               group_id: () => $stateParams.group_id,
               organization_payload: () => organization_payload,
+              system: () => system,
             }
           });
 

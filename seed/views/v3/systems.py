@@ -5,8 +5,10 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 import logging
 
+from django.core.exceptions import ObjectDoesNotExist
 from django.db import IntegrityError
 from django.http import JsonResponse
+from django.utils.decorators import method_decorator
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from collections import defaultdict
@@ -50,6 +52,21 @@ class SystemViewSet(viewsets.ViewSet, OrgMixin):
             status=status.HTTP_200_OK,
         )
     
+    @swagger_auto_schema_org_query_param
+    @has_perm_class("requires_member")
+    @has_hierarchy_access(inventory_group_id_kwarg="inventory_group_pk")
+    def destroy(self, request, inventory_group_pk, pk):
+        org_id = self.get_organization(request)
+        try:
+            system = System.objects.get(pk=pk, group=inventory_group_pk, group__organization=org_id)
+        except ObjectDoesNotExist:
+            return JsonResponse({
+                "status": "error", "message": "No such resource."
+            }, status=status.HTTP_404_NOT_FOUND)
+
+        system.delete()
+        return JsonResponse({}, status=status.HTTP_204_NO_CONTENT)
+    
     @has_perm_class("requires_viewer")
     @has_hierarchy_access(inventory_group_id_kwarg="inventory_group_pk")
     @action(detail=False, methods=["GET"])
@@ -86,6 +103,7 @@ class SystemViewSet(viewsets.ViewSet, OrgMixin):
             )
 
         # validate with concrete class's serializer
+
         SerializerClass = serializer_by_class[Type]
         serializer = SerializerClass(data=request.data)
         if not serializer.is_valid():
@@ -108,7 +126,7 @@ class SystemViewSet(viewsets.ViewSet, OrgMixin):
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
-
+        
         return JsonResponse({"status": "success", "data": serializer.data}, status=status.HTTP_201_CREATED)
 
     @has_perm_class("can_modify_data")

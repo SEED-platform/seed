@@ -5744,6 +5744,8 @@ tags-input .tags .tag-item {
     }
     
     .system-table{
+      table-layout: fixed;
+      width:100%;
 
       td, th {
         border-left: 1px solid #f2f2f2;
@@ -5761,6 +5763,22 @@ tags-input .tags .tag-item {
         transform: rotate(0);
         transition: transform 0.5s;
       }
+      .services-table {
+        td {
+          padding: 0 0 8px 0;
+        }
+      }
     }
+  }
+}
+
+.systems-list {
+  margin: 15px;
+  display: relative;
+
+  .create-container {
+    margin: 10px;
+    display: flex;
+    justify-content: end;
   }
 }

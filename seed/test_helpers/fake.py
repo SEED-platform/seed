@@ -987,7 +987,7 @@ class FakeSystemFactory(BaseFake):
         voltage=None,
         **kwargs
     ):
-        group_id = self.inventory_group_factory.get_inventory_group() if not group else group.pk
+        group_id = self.inventory_group_factory.get_inventory_group().id if not group else group.pk
         if system_type == 'Battery':
             system_details = {
                 "name": name if name else f"battery system - {self.fake.random.randint(1, 999)}",

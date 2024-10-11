@@ -2,6 +2,7 @@ from django.urls import reverse_lazy
 
 from seed.test_helpers.fake import FakeInventoryGroupFactory, FakeSystemFactory
 from seed.tests.util import AccessLevelBaseTestCase
+from seed.models import System
 
 
 class SystemViewTests(AccessLevelBaseTestCase):
@@ -33,3 +34,12 @@ class SystemViewTests(AccessLevelBaseTestCase):
         assert len(data["DES"]) == 2
         assert len(data["EVSE"]) == 2
         assert len(data["Battery"]) == 2
+
+    def test_delete_system(self):
+        system = self.system_factory.get_system(group=self.group1)
+
+        assert System.objects.count() == 10
+        url = reverse_lazy("api:v3:inventory_group-systems-detail", args=[self.group1.id, system.id]) + f"?organization_id={self.org.id}"
+        response = self.client.delete(url, content_type="application/json")
+        assert response.status_code == 204        
+        assert System.objects.count() == 9
