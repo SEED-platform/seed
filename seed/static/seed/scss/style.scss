@@ -5752,12 +5752,12 @@ tags-input .tags .tag-item {
         border: none;
         background: none;
       }
-      .accordion-button[aria-expanded='true'] {
+      .accordion-button[aria-expanded='true'] i {
         transform: rotate(90deg);
         transition: transform 0.5s;
       }
       
-      .accordion-button[aria-expanded='false'] {
+      .accordion-button[aria-expanded='false'] i {
         transform: rotate(0);
         transition: transform 0.5s;
       }

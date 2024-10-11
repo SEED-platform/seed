@@ -28,6 +28,12 @@ angular.module('SEED.controller.inventory_group_detail_systems', [])
       $scope.systems = systems.data;
       $scope.systems_old = systems_old.data; // rp - testing
 
+      $scope.system_tables = [
+        { system_key: 'DES', fields: ['Name', 'Type', 'Capacity', 'Count'] },
+        { system_key: 'EVSE', fields: ['Name', 'Type', 'Power', 'Count'] },
+        { system_key: 'Battery', fields: ['Name', 'Type', 'Capacity', 'Voltage'] }
+      ]
+
       $scope.open_create_system_modal = () => {
           const modalInstance = $uibModal.open({
             templateUrl: `${urls.static_url}seed/partials/create_system_modal.html`,
