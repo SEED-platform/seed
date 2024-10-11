@@ -35,12 +35,12 @@ angular.module('SEED.controller.inventory_group_detail_systems', [])
         { 
           system_key: 'DES', 
           headers: ['Name', 'DES Type', 'Capacity', 'Count'], 
-          fields: ['name', 'DES_type', 'capacity', 'count']
+          fields: ['name', 'des_type', 'capacity', 'count']
         },
         { 
           system_key: 'EVSE', 
           headers: ['Name', 'EVSE Type', 'Power', 'Count'], 
-          fields: ['name', 'EVSE_type', 'power', 'count']
+          fields: ['name', 'evse_type', 'power', 'count']
         },
         { 
           system_key: 'Battery', 
@@ -49,6 +49,8 @@ angular.module('SEED.controller.inventory_group_detail_systems', [])
         }
       ]
 
+      $scope.service_table_config = {headers: ['Name', "Emission Factor"], fields: ['name', 'emission_factor']}
+
       $scope.create_system = () => {
         $scope.open_system_modal('create', {});
       }
@@ -56,7 +58,11 @@ angular.module('SEED.controller.inventory_group_detail_systems', [])
       $scope.remove_system = (system_id) => {
         const system = all_systems.find((s) => s.id === system_id)
         $scope.open_system_modal('remove', system)
+      }
 
+      $scope.edit_system = (system_id) => {
+        const system = all_systems.find((s) => s.id === system_id)
+        $scope.open_system_modal('edit', system)
       }
 
       $scope.open_system_modal = (action, system) => {
@@ -91,36 +97,5 @@ angular.module('SEED.controller.inventory_group_detail_systems', [])
           $state.reload();
         });
       }
-
-      const setSystemGridOptions = () => {
-        $scope.gridOptionsBySystemId = {}
-        $scope.gridApiBySystemId = {}
-        $scope.show_uigrid = {}
-
-        const systems_combined = [...systems.data.DES, ...systems.data.EVSE, ...systems.data.Battery]
-        systems_combined.forEach((system) => {
-          const systemGridOptions = {
-            data: system.services,
-            enableColumnMenus: false,
-            minRowsToShow: system.services.length,
-            flatEntityAccess: true,
-            fastWatch: true,
-            onRegisterApi(gridApi) {
-              $scope.gridApiBySystemId[system.id] = gridApi;
-            }
-          }
-          $scope.gridOptionsBySystemId[system.id] = systemGridOptions;
-        })
-      }
-
-      // without resizing, ui-grids appear blank
-      $scope.collapse = (system_id) => {
-        const gridApi = $scope.gridApiBySystemId[system_id];
-        gridApi.grid.refresh();
-        setTimeout(gridApi.core.handleWindowResize, 50);
-      }
-
-      // initialize system ui-grids
-      setSystemGridOptions();
     
     }]);

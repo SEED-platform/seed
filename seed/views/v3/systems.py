@@ -67,6 +67,35 @@ class SystemViewSet(viewsets.ViewSet, OrgMixin):
         system.delete()
         return JsonResponse({}, status=status.HTTP_204_NO_CONTENT)
     
+        
+    @swagger_auto_schema_org_query_param
+    @has_perm_class("requires_member")
+    @has_hierarchy_access(inventory_group_id_kwarg="inventory_group_pk")
+    def update(self, request, inventory_group_pk, pk):
+        org_id = self.get_organization(request)
+        SystemClass = class_by_type.get(request.data.get("type"))
+        try:
+            system = SystemClass.objects.get(pk=pk, group=inventory_group_pk, group__organization=org_id)
+        except ObjectDoesNotExist:
+            return JsonResponse({
+                "status": "error", "message": "No such resource."
+            }, status=status.HTTP_404_NOT_FOUND)
+        
+        SerializerClass = serializer_by_class[SystemClass]
+        serializer = SerializerClass(system, request.data, partial=True)
+        if not serializer.is_valid():
+            return JsonResponse(
+                {
+                    "status": "error",
+                    "errors": serializer.errors,
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        serializer.save()
+
+        return JsonResponse(serializer.data)
+    
     @has_perm_class("requires_viewer")
     @has_hierarchy_access(inventory_group_id_kwarg="inventory_group_pk")
     @action(detail=False, methods=["GET"])

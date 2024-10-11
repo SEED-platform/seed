@@ -26,16 +26,14 @@ angular.module('SEED.controller.system_modal', []).controller('system_modal_cont
     organization_payload,
     system,
     ) {
-    $scope.DES_types = ["Boiler", "Chiller", "CHP"];
-    $scope.EVSE_types = ["Level1-120V", "Level2-240V", "Level3-DC Fast"];
+    $scope.des_types = ["Boiler", "Chiller", "CHP"];
+    $scope.evse_types = ["Level1-120V", "Level2-240V", "Level3-DC Fast"];
     $scope.action = action;
     const org = organization_payload.organization
     console.log('action', action)
 
 
-    if (action == 'create') {
-      $scope.system = { "type": null };
-    }
+    $scope.system = system ? system : {type: null}
 
     $scope.capitalize = (str) => {
       return str.charAt(0).toUpperCase() + str.slice(1);

@@ -1,8 +1,10 @@
+import json
 from django.urls import reverse_lazy
 
 from seed.test_helpers.fake import FakeInventoryGroupFactory, FakeSystemFactory
 from seed.tests.util import AccessLevelBaseTestCase
 from seed.models import System
+from seed.serializers.systems import SystemSerializer
 
 
 class SystemViewTests(AccessLevelBaseTestCase):
@@ -43,3 +45,21 @@ class SystemViewTests(AccessLevelBaseTestCase):
         response = self.client.delete(url, content_type="application/json")
         assert response.status_code == 204        
         assert System.objects.count() == 9
+
+    def test_update_system(self):
+        system = self.system_factory.get_system(group=self.group1, name="name 1", system_type="DES", count=10)
+
+        url = reverse_lazy("api:v3:inventory_group-systems-detail", args=[self.group1.id, system.id]) + f"?organization_id={self.org.id}"
+        data = SystemSerializer(system).data
+        data['name'] = "name 2"
+        data['type'] = "DES"
+
+        response = self.client.put(url, data=json.dumps(data), content_type="application/json")
+        data = response.json()
+
+        breakpoint()
+        assert data["name"]
+
+
+        assert True
+

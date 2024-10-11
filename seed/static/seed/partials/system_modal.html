@@ -6,7 +6,7 @@
 <div class="modal-body" ng-switch="::action">
   
   <form id="systemForm" name="systemForm" role="form" ng-submit="submitSystemForm(systemForm)" novalidate>
-      <div ng-switch-when="create">
+      <div ng-if="action !== 'remove'">
       <!-- Name input -->
       <div class="form-group">
         <label class="control-label sectionLabel" translate>Name</label>
@@ -27,8 +27,8 @@
       <!-- DES -->
       <div class="form-group" ng-if="system.type == 'DES'">
         <label class="control-label sectionLabel">DES Type</label>
-        <select class="form-control" ng-model="system.DES_type" ng-dropdown required>
-          <option ng-repeat="DES_type in DES_types" selected="selected" ng-value="DES_type">{$:: DES_type $}</option>
+        <select class="form-control" ng-model="system.des_type" ng-dropdown required>
+          <option ng-repeat="des_type in des_types" selected="selected" ng-value="des_type">{$:: des_type $}</option>
         </select>
         <label class="control-label sectionLabel" translate>capacity</label>
         <input id="capacity" type="number" name="capacity" class="form-control" ng-model="system.capacity"
@@ -41,8 +41,8 @@
       <!-- EVSE -->
       <div class="form-group" ng-if="system.type == 'EVSE'">
         <label class="control-label sectionLabel">EVSE Type</label>
-        <select class="form-control" ng-model="system.EVSE_type" ng-dropdown required>
-          <option ng-repeat="EVSE_type in EVSE_types" selected="selected" ng-value="EVSE_type">{$:: EVSE_type $}</option>
+        <select class="form-control" ng-model="system.evse_type" ng-dropdown required>
+          <option ng-repeat="evse_type in evse_types" selected="selected" ng-value="evse_type">{$:: evse_type $}</option>
         </select>
         <label class="control-label sectionLabel" translate>power</label>
         <input id="power" type="number" name="power" class="form-control" ng-model="system.power"
