@@ -1,4 +1,4 @@
-# !/usr/bin/env python
+# # !/usr/bin/env python
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
@@ -52,6 +52,7 @@ class SystemSerializer(serializers.ModelSerializer):
 
         data["id"] = instance.id
         data["name"] = instance.name
+        data["group_id"] = instance.group.id
         data["services"] = ServiceSerializer(instance.services, many=True).data
 
         return data
@@ -62,13 +63,13 @@ class SystemSerializer(serializers.ModelSerializer):
 
 
 class DESSystemSerializer(SystemSerializer):
-    DES_type = ChoiceField(source="type", choices=DESSystem.DES_TYPES)
+    des_type = ChoiceField(source="type", choices=DESSystem.DES_TYPES)
     capacity = serializers.IntegerField()
     count = serializers.IntegerField()
 
     class Meta:
         model = DESSystem
-        fields = [*SystemSerializer.Meta.fields, "DES_type", "capacity", "count"]
+        fields = [*SystemSerializer.Meta.fields, "des_type", "capacity", "count"]
 
     def to_representation(self, obj):
         return {
@@ -80,13 +81,13 @@ class DESSystemSerializer(SystemSerializer):
 
 
 class EVSESystemSerializer(SystemSerializer):
-    EVSE_type = ChoiceField(source="type", choices=EVSESystem.EVSE_TYPES)
+    evse_type = ChoiceField(source="type", choices=EVSESystem.EVSE_TYPES)
     power = serializers.IntegerField()
     count = serializers.IntegerField()
 
     class Meta:
         model = EVSESystem
-        fields = [*SystemSerializer.Meta.fields, "EVSE_type", "power", "count"]
+        fields = [*SystemSerializer.Meta.fields, "evse_type", "power", "count"]
 
     def to_representation(self, obj):
         return {

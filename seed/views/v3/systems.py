@@ -83,6 +83,7 @@ class SystemViewSet(viewsets.ViewSet, OrgMixin):
         
         SerializerClass = serializer_by_class[SystemClass]
         serializer = SerializerClass(system, request.data, partial=True)
+
         if not serializer.is_valid():
             return JsonResponse(
                 {
@@ -92,27 +93,10 @@ class SystemViewSet(viewsets.ViewSet, OrgMixin):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        serializer.save()
+        system = serializer.save()
+        data = SystemSerializer(system).data
+        return JsonResponse(data)
 
-        return JsonResponse(serializer.data)
-    
-    @has_perm_class("requires_viewer")
-    @has_hierarchy_access(inventory_group_id_kwarg="inventory_group_pk")
-    @action(detail=False, methods=["GET"])
-    def systems_by_type(self, request, inventory_group_pk):
-        """returns dictionary of systems grouped by type"""
-        systems = System.objects.filter(group_id=inventory_group_pk).select_subclasses()
-        typed_systems = defaultdict(list)
-        systems_data = SystemSerializer(systems, many=True).data
-
-        for system in systems_data:
-            typed_systems[system["type"]].append(system)
-
-        return JsonResponse(
-            {"status": "success", "data": typed_systems},
-            status=status.HTTP_200_OK,
-        )
-    
 
     @has_perm_class("can_modify_data")
     @has_hierarchy_access(inventory_group_id_kwarg="inventory_group_pk")
@@ -132,7 +116,6 @@ class SystemViewSet(viewsets.ViewSet, OrgMixin):
             )
 
         # validate with concrete class's serializer
-
         SerializerClass = serializer_by_class[Type]
         serializer = SerializerClass(data=request.data)
         if not serializer.is_valid():
@@ -146,7 +129,7 @@ class SystemViewSet(viewsets.ViewSet, OrgMixin):
 
         # create system
         try:
-            serializer.save()
+            system = serializer.save()
         except IntegrityError as e:
             return JsonResponse(
                 {
@@ -155,8 +138,8 @@ class SystemViewSet(viewsets.ViewSet, OrgMixin):
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        
-        return JsonResponse({"status": "success", "data": serializer.data}, status=status.HTTP_201_CREATED)
+        data = SystemSerializer(system).data
+        return JsonResponse({"status": "success", "data": data}, status=status.HTTP_201_CREATED)
 
     @has_perm_class("can_modify_data")
     @has_hierarchy_access(inventory_group_id_kwarg="inventory_group_pk")
@@ -185,3 +168,20 @@ class SystemViewSet(viewsets.ViewSet, OrgMixin):
             )
 
         return JsonResponse({"status": "success", "data": serializer.data}, status=status.HTTP_201_CREATED)
+
+    @has_perm_class("requires_viewer")
+    @has_hierarchy_access(inventory_group_id_kwarg="inventory_group_pk")
+    @action(detail=False, methods=["GET"])
+    def systems_by_type(self, request, inventory_group_pk):
+        """returns dictionary of systems grouped by type"""
+        systems = System.objects.filter(group_id=inventory_group_pk).select_subclasses()
+        typed_systems = defaultdict(list)
+        systems_data = SystemSerializer(systems, many=True).data
+
+        for system in systems_data:
+            typed_systems[system["type"]].append(system)
+
+        return JsonResponse(
+            {"status": "success", "data": typed_systems},
+            status=status.HTTP_200_OK,
+        )
