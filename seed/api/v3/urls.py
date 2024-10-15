@@ -62,6 +62,7 @@ from seed.views.v3.public import PublicCycleViewSet, PublicOrganizationViewSet
 from seed.views.v3.salesforce_configs import SalesforceConfigViewSet
 from seed.views.v3.salesforce_mappings import SalesforceMappingViewSet
 from seed.views.v3.sensors import SensorViewSet
+from seed.views.v3.services import ServiceViewSet
 from seed.views.v3.systems import SystemViewSet
 from seed.views.v3.tax_lot_properties import TaxLotPropertyViewSet
 from seed.views.v3.taxlot_views import TaxlotViewViewSet
@@ -149,6 +150,9 @@ properties_router.register(r"sensors", SensorViewSet, basename="property-sensors
 inventory_group_router = nested_routers.NestedSimpleRouter(api_v3_router, r"inventory_groups", lookup="inventory_group")
 inventory_group_router.register(r"systems", SystemViewSet, basename="inventory_group-systems")
 
+system_router = nested_routers.NestedSimpleRouter(inventory_group_router, r"systems", lookup="system")
+system_router.register(r"services", ServiceViewSet, basename="system-services")
+
 # This is a third level router, so we need to register it with the second level router
 meters_router = nested_routers.NestedSimpleRouter(properties_router, r"meters", lookup="meter")
 meters_router.register(r"readings", MeterReadingViewSet, basename="property-meter-readings")
@@ -192,6 +196,7 @@ urlpatterns = [
     re_path(r"^", include(property_measures_router.urls)),
     re_path(r"^", include(taxlots_router.urls)),
     re_path(r"^", include(inventory_group_router.urls)),
+    re_path(r"^", include(system_router.urls)),
     re_path(r"^", include(public_organizations_router.urls)),
     re_path(r"^", include(public_cycles_router.urls)),
     re_path(r"^celery_queue/$", celery_queue, name="celery_queue"),

@@ -7,15 +7,16 @@ angular.module('SEED.controller.inventory_group_detail_meters', [])
     '$scope',
     '$state',
     '$stateParams',
+    '$uibModal',
     '$window',
     'spinner_utility',
+    'dataset_service',
     'inventory_service',
-    'group',
-    'organization_payload',
+    'meter_service',
     'cycles',
     'meters',
+    'inventory_payload',
     'property_meter_usage',
-    'spinner_utility',
     'urls',
     'organization_payload',
     'group',
@@ -24,15 +25,16 @@ angular.module('SEED.controller.inventory_group_detail_meters', [])
       $scope,
       $state,
       $stateParams,
+      $uibModal,
       $window,
       spinner_utility,
+      dataset_service,
       inventory_service,
-      group,
-      organization_payload,
+      meter_service,
       cycles,
       meters,
+      inventory_payload,
       property_meter_usage,
-      spinner_utility,
       urls,
       organization_payload,
       group
@@ -43,7 +45,7 @@ angular.module('SEED.controller.inventory_group_detail_meters', [])
         options: ['Exact', 'Month', 'Year'],
         selected: 'Exact'
       };
-
+      $scope.inventory_payload = inventory_payload;
       $scope.inventory_type = $stateParams.inventory_type;
       $scope.group_id = $stateParams.group_id;
 
@@ -81,7 +83,7 @@ angular.module('SEED.controller.inventory_group_detail_meters', [])
 
       $scope.serviceLink = (entity) => {
         if (entity.service_name === null) return;
-        return '<a id="inventory-summary" ui-sref="inventory_list(::{inventory_type: inventory_type})" ui-sref-active="active">' + entity.service_name + '</a>';
+        return `<a id="inventory-summary" ui-sref="inventory_list(::{inventory_type: inventory_type})" ui-sref-active="active">${entity.service_name}</a>`;
       };
 
       $scope.meterGridOptions = {
@@ -94,7 +96,7 @@ angular.module('SEED.controller.inventory_group_detail_meters', [])
           { field: 'source_id' },
           { field: 'scenario_id' },
           { field: 'connection_type' },
-          { field: 'service_name', displayName: "Connection", cellTemplate: '<a id="inventory-summary" ui-sref="inventory_group_detail_systems(::{inventory_type: grid.appScope.inventory_type, group_id: row.entity.service_group})" ui-sref-active="active">{$ row.entity.service_name $}</a>' },
+          { field: 'service_name', displayName: 'Connection', cellTemplate: '<a id="inventory-summary" ui-sref="inventory_group_detail_systems(::{inventory_type: grid.appScope.inventory_type, group_id: row.entity.service_group})" ui-sref-active="active">{$ row.entity.service_name $}</a>' },
           { field: 'is_virtual' },
           { field: 'scenario_name' },
           { field: 'actions', cellTemplate: buttons }
@@ -177,6 +179,7 @@ angular.module('SEED.controller.inventory_group_detail_meters', [])
 
       $scope.open_meter_connection_edit_modal = (meter) => {
         // TODO
+        console.log(meter);
       };
 
       $scope.apply_column_settings = () => {
@@ -292,7 +295,6 @@ angular.module('SEED.controller.inventory_group_detail_meters', [])
           }
         });
       };
-
 
       $scope.inventory_display_name = group.name;
 

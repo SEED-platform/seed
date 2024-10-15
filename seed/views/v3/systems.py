@@ -4,18 +4,17 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
 import logging
+from collections import defaultdict
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import IntegrityError
 from django.http import JsonResponse
-from django.utils.decorators import method_decorator
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
-from collections import defaultdict
 
 from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm_class
 from seed.models import BatterySystem, DESSystem, EVSESystem, System
-from seed.serializers.systems import BatterySystemSerializer, DESSystemSerializer, EVSESystemSerializer, ServiceSerializer, SystemSerializer
+from seed.serializers.systems import BatterySystemSerializer, DESSystemSerializer, EVSESystemSerializer, SystemSerializer
 from seed.utils.api import OrgMixin
 from seed.utils.api_schema import swagger_auto_schema_org_query_param
 
@@ -51,7 +50,7 @@ class SystemViewSet(viewsets.ViewSet, OrgMixin):
             {"status": "success", "data": SystemSerializer(systems, many=True).data},
             status=status.HTTP_200_OK,
         )
-    
+
     @swagger_auto_schema_org_query_param
     @has_perm_class("requires_member")
     @has_hierarchy_access(inventory_group_id_kwarg="inventory_group_pk")
@@ -60,14 +59,11 @@ class SystemViewSet(viewsets.ViewSet, OrgMixin):
         try:
             system = System.objects.get(pk=pk, group=inventory_group_pk, group__organization=org_id)
         except ObjectDoesNotExist:
-            return JsonResponse({
-                "status": "error", "message": "No such resource."
-            }, status=status.HTTP_404_NOT_FOUND)
+            return JsonResponse({"status": "error", "message": "No such resource."}, status=status.HTTP_404_NOT_FOUND)
 
         system.delete()
         return JsonResponse({}, status=status.HTTP_204_NO_CONTENT)
-    
-        
+
     @swagger_auto_schema_org_query_param
     @has_perm_class("requires_member")
     @has_hierarchy_access(inventory_group_id_kwarg="inventory_group_pk")
@@ -77,10 +73,8 @@ class SystemViewSet(viewsets.ViewSet, OrgMixin):
         try:
             system = SystemClass.objects.get(pk=pk, group=inventory_group_pk, group__organization=org_id)
         except ObjectDoesNotExist:
-            return JsonResponse({
-                "status": "error", "message": "No such resource."
-            }, status=status.HTTP_404_NOT_FOUND)
-        
+            return JsonResponse({"status": "error", "message": "No such resource."}, status=status.HTTP_404_NOT_FOUND)
+
         SerializerClass = serializer_by_class[SystemClass]
         serializer = SerializerClass(system, request.data, partial=True)
 
@@ -96,7 +90,6 @@ class SystemViewSet(viewsets.ViewSet, OrgMixin):
         system = serializer.save()
         data = SystemSerializer(system).data
         return JsonResponse(data)
-
 
     @has_perm_class("can_modify_data")
     @has_hierarchy_access(inventory_group_id_kwarg="inventory_group_pk")
@@ -141,33 +134,33 @@ class SystemViewSet(viewsets.ViewSet, OrgMixin):
         data = SystemSerializer(system).data
         return JsonResponse({"status": "success", "data": data}, status=status.HTTP_201_CREATED)
 
-    @has_perm_class("can_modify_data")
-    @has_hierarchy_access(inventory_group_id_kwarg="inventory_group_pk")
-    @action(detail=True, methods=["POST"])
-    def services(self, request, inventory_group_pk, pk):
-        serializer = ServiceSerializer(data={**request.data, "system_id": pk})
-        if not serializer.is_valid():
-            return JsonResponse(
-                {
-                    "status": "error",
-                    "errors": serializer.errors,
-                },
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+    # @has_perm_class("can_modify_data")
+    # @has_hierarchy_access(inventory_group_id_kwarg="inventory_group_pk")
+    # @action(detail=True, methods=["POST"])
+    # def services(self, request, inventory_group_pk, pk):
+    #     serializer = ServiceSerializer(data={**request.data, "system_id": pk})
+    #     if not serializer.is_valid():
+    #         return JsonResponse(
+    #             {
+    #                 "status": "error",
+    #                 "errors": serializer.errors,
+    #             },
+    #             status=status.HTTP_400_BAD_REQUEST,
+    #         )
 
-        # create system
-        try:
-            serializer.save()
-        except IntegrityError as e:
-            return JsonResponse(
-                {
-                    "status": "error",
-                    "errors": str(e),
-                },
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+    #     # create system
+    #     try:
+    #         serializer.save()
+    #     except IntegrityError as e:
+    #         return JsonResponse(
+    #             {
+    #                 "status": "error",
+    #                 "errors": str(e),
+    #             },
+    #             status=status.HTTP_400_BAD_REQUEST,
+    #         )
 
-        return JsonResponse({"status": "success", "data": serializer.data}, status=status.HTTP_201_CREATED)
+    #     return JsonResponse({"status": "success", "data": serializer.data}, status=status.HTTP_201_CREATED)
 
     @has_perm_class("requires_viewer")
     @has_hierarchy_access(inventory_group_id_kwarg="inventory_group_pk")

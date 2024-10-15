@@ -21,8 +21,7 @@
     <div class="column">
       <div class="row">
         <label>{$:: 'Interval' | translate $}:</label>
-        <select class="form-control" ng-model="interval.selected" ng-change="refresh_readings()"
-          ng-options="option for option in interval.options"></select>
+        <select class="form-control" ng-model="interval.selected" ng-change="refresh_readings()" ng-options="option for option in interval.options"></select>
       </div>
     </div>
 

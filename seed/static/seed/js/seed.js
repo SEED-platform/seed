@@ -45,7 +45,7 @@
     'SEED.controller.column_settings',
     'SEED.controller.confirm_column_settings_modal',
     'SEED.controller.create_column_modal',
-    'SEED.controller.create_service_modal',
+    'SEED.controller.service_modal',
     'SEED.controller.system_modal',
     'SEED.controller.create_organization_modal',
     'SEED.controller.create_sub_organization_modal',
@@ -197,7 +197,6 @@
     'SEED.service.dataset',
     'SEED.service.derived_columns',
     'SEED.service.element',
-    'SEED.service.system',
     'SEED.service.espm',
     'SEED.service.event',
     'SEED.service.filter_groups',
@@ -226,6 +225,8 @@
     'SEED.service.scenario',
     'SEED.service.search',
     'SEED.service.sensor',
+    'SEED.service.service',
+    'SEED.service.system',
     'SEED.service.simple_modal',
     'SEED.service.two_factor',
     'SEED.service.ubid',
@@ -2333,11 +2334,6 @@
           templateUrl: `${static_url}seed/partials/inventory_group_detail_systems.html`,
           controller: 'inventory_group_detail_systems_controller',
           resolve: {
-            systems_old: ['$stateParams', 'system_service', 'user_service', ($stateParams, system_service, user_service) => {
-              const organization_id = user_service.get_organization().id;
-              const { group_id } = $stateParams;
-              return system_service.get_systems(organization_id, group_id);
-            }],
             systems: ['$stateParams', 'system_service', 'user_service', ($stateParams, system_service, user_service) => {
               const organization_id = user_service.get_organization().id;
               const { group_id } = $stateParams;
@@ -2602,23 +2598,23 @@
           templateUrl: `${static_url}seed/partials/inventory_detail_meters.html`,
           controller: 'inventory_detail_meters_controller',
           resolve: {
-            inventory_payload: [
-              '$state',
-              '$stateParams',
-              'inventory_service',
-              ($state, $stateParams, inventory_service) => {
-                // load `get_building` before page is loaded to avoid page flicker.
-                const { view_id } = $stateParams;
-                const promise = inventory_service.get_property(view_id);
-                promise.catch((err) => {
-                  if (err.message.match(/^(?:property|taxlot) view with id \d+ does not exist$/)) {
-                    // Inventory item not found for current organization, redirecting
-                    $state.go('inventory_list', { inventory_type: $stateParams.inventory_type });
-                  }
-                });
-                return promise;
-              }
-            ],
+            // inventory_payload: [
+            //   '$state',
+            //   '$stateParams',
+            //   'inventory_service',
+            //   ($state, $stateParams, inventory_service) => {
+            //     // load `get_building` before page is loaded to avoid page flicker.
+            //     const { view_id } = $stateParams;
+            //     const promise = inventory_service.get_property(view_id);
+            //     promise.catch((err) => {
+            //       if (err.message.match(/^(?:property|taxlot) view with id \d+ does not exist$/)) {
+            //         // Inventory item not found for current organization, redirecting
+            //         $state.go('inventory_list', { inventory_type: $stateParams.inventory_type });
+            //       }
+            //     });
+            //     return promise;
+            //   }
+            // ],
             property_meter_usage: [
               '$stateParams',
               'user_service',

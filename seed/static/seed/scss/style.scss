@@ -5737,28 +5737,31 @@ tags-input .tags .tag-item {
 .systems-container {
   margin: 15px;
 
-  .system-table-container{
+  .system-table-container {
     .system-type {
       font-size: 16px;
       font-weight: bold;
     }
-    
-    .system-table{
-      table-layout: fixed;
-      width:100%;
 
-      td, th {
+    .system-table {
+      table-layout: fixed;
+      width: 100%;
+
+      td,
+      th {
         border-left: 1px solid #f2f2f2;
       }
-      .accordion-button{
+
+      .accordion-button {
         border: none;
         background: none;
       }
+
       .accordion-button[aria-expanded='true'] i {
         transform: rotate(90deg);
         transition: transform 0.5s;
       }
-      
+
       .accordion-button[aria-expanded='false'] i {
         transform: rotate(0);
         transition: transform 0.5s;

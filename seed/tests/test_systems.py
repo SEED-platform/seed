@@ -1,10 +1,11 @@
 import json
+
 from django.urls import reverse_lazy
 
-from seed.test_helpers.fake import FakeInventoryGroupFactory, FakeSystemFactory
-from seed.tests.util import AccessLevelBaseTestCase
 from seed.models import System
 from seed.serializers.systems import SystemSerializer
+from seed.test_helpers.fake import FakeInventoryGroupFactory, FakeSystemFactory
+from seed.tests.util import AccessLevelBaseTestCase
 
 
 class SystemViewTests(AccessLevelBaseTestCase):
@@ -18,7 +19,7 @@ class SystemViewTests(AccessLevelBaseTestCase):
 
         # create systems for group1 and group2
         self.des1 = self.system_factory.get_system(group=self.group1, system_type="DES")
-        self.des1 = self.system_factory.get_system(group=self.group1, system_type="DES")
+        self.des2 = self.system_factory.get_system(group=self.group1, system_type="DES")
         self.des3 = self.system_factory.get_system(group=self.group2)
         self.evse1 = self.system_factory.get_system(group=self.group1, system_type="EVSE")
         self.evse2 = self.system_factory.get_system(group=self.group1, system_type="EVSE")
@@ -43,54 +44,54 @@ class SystemViewTests(AccessLevelBaseTestCase):
         assert System.objects.count() == 10
         url = reverse_lazy("api:v3:inventory_group-systems-detail", args=[self.group1.id, system.id]) + f"?organization_id={self.org.id}"
         response = self.client.delete(url, content_type="application/json")
-        assert response.status_code == 204        
+        assert response.status_code == 204
         assert System.objects.count() == 9
 
     def test_system_create(self):
         assert System.objects.count() == 9
         # DES
         data = {
-                "name": "des new",
-                "group_id": self.group1.id,
-                "des_type": "Chiller",
-                "type": "DES",
-                "capacity": 1,
-                "count": 2,
+            "name": "des new",
+            "group_id": self.group1.id,
+            "des_type": "Chiller",
+            "type": "DES",
+            "capacity": 1,
+            "count": 2,
         }
         url = reverse_lazy("api:v3:inventory_group-systems-list", args=[self.group1.id]) + f"?organization_id={self.org.id}"
         response = self.client.post(url, data=json.dumps(data), content_type="application/json")
-        data = response.json()['data']
-        assert sorted(list(data.keys())) == ['capacity', 'count', 'des_type', 'group_id', 'id', 'name', 'services', 'type']
+        data = response.json()["data"]
+        assert sorted(data.keys()) == ["capacity", "count", "des_type", "group_id", "id", "name", "services", "type"]
         assert System.objects.count() == 10
 
         # # EVSE
         data = {
-                "name": "evse new",
-                "group_id": self.group1.id,
-                "evse_type": "Level1-120V",
-                "type": "EVSE",
-                "power": 1,
-                "count": 2,
+            "name": "evse new",
+            "group_id": self.group1.id,
+            "evse_type": "Level1-120V",
+            "type": "EVSE",
+            "power": 1,
+            "count": 2,
         }
         url = reverse_lazy("api:v3:inventory_group-systems-list", args=[self.group1.id]) + f"?organization_id={self.org.id}"
         response = self.client.post(url, data=json.dumps(data), content_type="application/json")
-        data = response.json()['data']
-        assert sorted(list(data.keys())) == ['count', 'evse_type', 'group_id', 'id', 'name', 'power', 'services', 'type']
+        data = response.json()["data"]
+        assert sorted(data.keys()) == ["count", "evse_type", "group_id", "id", "name", "power", "services", "type"]
         assert System.objects.count() == 11
 
         # BATTERY
         data = {
-                "name": "battery new",
-                "group_id": self.group1.id,
-                "type": "Battery",
-                "efficiency": 1,
-                "capacity": 2,
-                "voltage": 3,
+            "name": "battery new",
+            "group_id": self.group1.id,
+            "type": "Battery",
+            "efficiency": 1,
+            "capacity": 2,
+            "voltage": 3,
         }
         url = reverse_lazy("api:v3:inventory_group-systems-list", args=[self.group1.id]) + f"?organization_id={self.org.id}"
         response = self.client.post(url, data=json.dumps(data), content_type="application/json")
-        data = response.json()['data']
-        assert sorted(list(data.keys())) == ['capacity', 'efficiency', 'group_id', 'id', 'name', 'services', 'type', 'voltage']
+        data = response.json()["data"]
+        assert sorted(data.keys()) == ["capacity", "efficiency", "group_id", "id", "name", "services", "type", "voltage"]
         assert System.objects.count() == 12
 
     def test_system_update(self):
@@ -101,29 +102,29 @@ class SystemViewTests(AccessLevelBaseTestCase):
         # DES
         url = reverse_lazy("api:v3:inventory_group-systems-detail", args=[self.group1.id, des.id]) + f"?organization_id={self.org.id}"
         data = SystemSerializer(des).data
-        data['capacity'] = 101
+        data["capacity"] = 101
 
         response = self.client.put(url, data=json.dumps(data), content_type="application/json")
         data = response.json()
-        assert sorted(list(data.keys())) == ['capacity', 'count', 'des_type', 'group_id', 'id', 'name', 'services', 'type']
+        assert sorted(data.keys()) == ["capacity", "count", "des_type", "group_id", "id", "name", "services", "type"]
         assert data["capacity"] == 101
 
         # EVSE
         url = reverse_lazy("api:v3:inventory_group-systems-detail", args=[self.group1.id, evse.id]) + f"?organization_id={self.org.id}"
         data = SystemSerializer(evse).data
-        data['power'] = 102
+        data["power"] = 102
 
         response = self.client.put(url, data=json.dumps(data), content_type="application/json")
         data = response.json()
-        assert sorted(list(data.keys())) == ['count', 'evse_type', 'group_id', 'id', 'name', 'power', 'services', 'type']
+        assert sorted(data.keys()) == ["count", "evse_type", "group_id", "id", "name", "power", "services", "type"]
         assert data["power"] == 102
 
         # BATTERY
         url = reverse_lazy("api:v3:inventory_group-systems-detail", args=[self.group1.id, battery.id]) + f"?organization_id={self.org.id}"
         data = SystemSerializer(battery).data
-        data['voltage'] = 103
+        data["voltage"] = 103
 
         response = self.client.put(url, data=json.dumps(data), content_type="application/json")
         data = response.json()
-        assert sorted(list(data.keys())) == ['capacity', 'efficiency', 'group_id', 'id', 'name', 'services', 'type', 'voltage']
+        assert sorted(data.keys()) == ["capacity", "efficiency", "group_id", "id", "name", "services", "type", "voltage"]
         assert data["voltage"] == 103
