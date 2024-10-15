@@ -9,6 +9,8 @@ angular.module('SEED.controller.inventory_group_detail_systems', [])
     '$stateParams',
     '$uibModal',
     'urls',
+    'dataset_service',
+    'cycles',
     'systems',
     'organization_payload',
     // eslint-disable-next-line func-names
@@ -18,12 +20,15 @@ angular.module('SEED.controller.inventory_group_detail_systems', [])
       $stateParams,
       $uibModal,
       urls,
+      dataset_service,
+      cycles,
       systems,
       organization_payload
     ) {
       $scope.inventory_type = $stateParams.inventory_type;
       $scope.group_id = $stateParams.group_id;
       $scope.systems = systems.data;
+      $scope.filler_cycle = cycles.cycles[0].id;
 
       $scope.open_create_system_modal = () => $uibModal.open({
         templateUrl: `${urls.static_url}seed/partials/create_system_modal.html`,
@@ -43,4 +48,18 @@ angular.module('SEED.controller.inventory_group_detail_systems', [])
           organization_payload: () => organization_payload,
         }
       });
+
+      $scope.open_green_button_upload_modal = (system) => {
+        $uibModal.open({
+          templateUrl: `${urls.static_url}seed/partials/green_button_upload_modal.html`,
+          controller: 'green_button_upload_modal_controller',
+          resolve: {
+            filler_cycle: () => $scope.filler_cycle,
+            organization_id: () => organization_payload.organization.id,
+            view_id: () => null,
+            system_id: () => system.id,
+            datasets: () => dataset_service.get_datasets().then((result) => result.datasets)
+          }
+        });
+      };
     }]);

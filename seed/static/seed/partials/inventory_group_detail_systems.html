@@ -24,6 +24,10 @@
       <p>{$ system.type | translate $} - {$ system.name $}</p>
       <button ng-show="menu.user.organization.user_role !== 'viewer'" type="button" class="col-sm-2 btn btn-info"
         ng-click="open_create_service_modal(system)"> New Service </button>
+      <div class="row" ng-show="menu.user.organization.user_role !== 'viewer'">
+        <button type="button" ng-click="open_green_button_upload_modal(system)" class="btn btn-primary"
+          translate>UPLOAD_GB_DATA_BUTTON</button>
+      </div>
     </div>
     <ul>
       <li ng-repeat="service in system.services">

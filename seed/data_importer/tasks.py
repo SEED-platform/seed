@@ -915,6 +915,7 @@ def _save_greenbutton_data_create_tasks(file_pk, progress_key):
     import_file = ImportFile.objects.get(pk=file_pk)
     org_id = import_file.cycle.organization.id
     property_id = import_file.matching_results_data["property_id"]
+    system_id = import_file.matching_results_data["system_id"]
 
     # matching_results_data gets cleared out since the field wasn't meant for this
     import_file.matching_results_data = {}
@@ -923,7 +924,7 @@ def _save_greenbutton_data_create_tasks(file_pk, progress_key):
     parser = reader.GreenButtonParser(import_file.local_file)
     raw_meter_data = list(parser.data)
 
-    meters_parser = MetersParser(org_id, raw_meter_data, source_type=Meter.GREENBUTTON, property_id=property_id)
+    meters_parser = MetersParser(org_id, raw_meter_data, source_type=Meter.GREENBUTTON, property_id=property_id, system_id=system_id)
     meter_readings = meters_parser.meter_and_reading_objs[0]  # there should only be one meter (1 property, 1 type/unit)
 
     readings = meter_readings["readings"]

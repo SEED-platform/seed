@@ -286,6 +286,7 @@ angular.module('SEED.controller.inventory_detail_meters', []).controller('invent
           filler_cycle: () => $scope.filler_cycle,
           organization_id: () => $scope.organization.id,
           view_id: () => $scope.inventory.view_id,
+          system_id: () => null,
           datasets: () => dataset_service.get_datasets().then((result) => result.datasets)
         }
       });
