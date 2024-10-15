@@ -96,7 +96,9 @@ angular.module('SEED.controller.inventory_group_detail_meters', [])
           { field: 'source_id' },
           { field: 'scenario_id' },
           { field: 'connection_type' },
-          { field: 'service_name', displayName: 'Connection', cellTemplate: '<a id="inventory-summary" ui-sref="inventory_group_detail_systems(::{inventory_type: grid.appScope.inventory_type, group_id: row.entity.service_group})" ui-sref-active="active">{$ row.entity.service_name $}</a>' },
+          { field: 'property_id' },
+          { field: 'system_name' },
+          { field: 'service_name', displayName: "Connection", cellTemplate: '<a id="inventory-summary" ui-sref="inventory_group_detail_systems(::{inventory_type: grid.appScope.inventory_type, group_id: row.entity.service_group})" ui-sref-active="active">{$ row.entity.service_name $}</a>' },
           { field: 'is_virtual' },
           { field: 'scenario_name' },
           { field: 'actions', cellTemplate: buttons }

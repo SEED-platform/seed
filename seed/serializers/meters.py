@@ -19,7 +19,9 @@ class MeterSerializer(serializers.ModelSerializer, OrgMixin):
     alias = serializers.CharField(required=False, allow_blank=True)
     source = ChoiceField(choices=Meter.SOURCES)
     source_id = serializers.CharField(required=False, allow_blank=True)
-    scenario_id = serializers.IntegerField(required=False, allow_null=True)
+    property_id = serializers.IntegerField(required=False, allow_null=True)
+    system_id = serializers.IntegerField(required=False, allow_null=True)
+    system_name = serializers.CharField(source="system.name", required=False, allow_null=True)
 
     class Meta:
         model = Meter

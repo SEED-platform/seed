@@ -19,7 +19,6 @@
   <div class="create-container">
     <button ng-show="menu.user.organization.user_role !== 'viewer'" type="button" class="btn btn-primary" ng-click="open_system_modal('create')">Create System</button>
   </div>
-
   <div class="systems-container">
     <div ng-repeat="table in system_tables" id="{$ table.system_key $}-systems-table">
       <div

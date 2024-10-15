@@ -56,7 +56,7 @@ class MetersParser:
 
     _tz = timezone(TIME_ZONE)
 
-    def __init__(self, org_id, meters_and_readings_details, source_type=Meter.PORTFOLIO_MANAGER, property_id=None):
+    def __init__(self, org_id, meters_and_readings_details, source_type=Meter.PORTFOLIO_MANAGER, property_id=None, system_id=None):
         # defaulted to None to show it hasn't been cached yet
         self._cache_meter_and_reading_objs = None
         self._cache_org_country = None
@@ -66,30 +66,32 @@ class MetersParser:
         self._meters_and_readings_details = meters_and_readings_details
         self._org_id = org_id
         self._property_id = property_id
+        self._system_id = system_id
         self._source_type = source_type
         self._unique_meters = {}
 
         self._source_to_property_ids = {}  # tracked to reduce the number of database queries
 
         # The following are only relevant/used if property_id isn't explicitly specified
-        if property_id is None:
+        if property_id is None and system_id is None:
             self._property_link = "Portfolio Manager ID"
             self._unlinkable_pm_ids = set()  # to avoid duplicates
 
     @classmethod
-    def factory(cls, meters_file, org_id, source_type=Meter.PORTFOLIO_MANAGER, property_id=None):
+    def factory(cls, meters_file, org_id, source_type=Meter.PORTFOLIO_MANAGER, property_id=None, system_id=None):
         """Factory function for MetersParser
 
         :param meters_file: File
         :param org_id: int
         :param source_type: int, type of meter data
         :param property_id: int, id of property - required if meter data is for a specific property (e.g., GreenButton)
+        :param property_id: int, id of system - required if meter data is for a specific system (e.g., GreenButton)
         :return: MetersParser
         """
         if source_type == Meter.GREENBUTTON:
             parser = reader.GreenButtonParser(meters_file)
             raw_meter_data = list(parser.data)
-            return cls(org_id, raw_meter_data, source_type=Meter.GREENBUTTON, property_id=property_id)
+            return cls(org_id, raw_meter_data, source_type=Meter.GREENBUTTON, property_id=property_id, system_id=system_id)
 
         try:
             # try to parse the file as if it came from "Download your entire portfolio"
@@ -207,6 +209,7 @@ class MetersParser:
                     "type": Meter.ENERGY_TYPE_BY_METER_TYPE[meter["type"]],
                     "incoming": len(meter.get("readings")),
                     "property_id": meter["property_id"],
+                    "system_id": meter["system_id"],
                 }
 
                 id = meter.get("source_id")
@@ -283,7 +286,7 @@ class MetersParser:
 
             # If Cost field is present and value is available, create Cost Meter and MeterReading
             if successful_parse and raw_details.get("Cost ($)", "Not Available") != "Not Available":
-                carry_overs = ["property_ids", "source", "source_id", "type"]
+                carry_overs = ["property_ids", "system_ids", "source", "source_id", "type"]
                 meter_details_copy = {k: meter_details[k] for k in carry_overs}
                 self._parse_cost_meter_reading(raw_details, meter_details_copy, start_time, end_time)
 
@@ -301,7 +304,8 @@ class MetersParser:
             meter_details = {
                 "source": self._source_type,
                 "source_id": raw_details["source_id"],
-                "property_ids": [self._property_id],
+                "property_ids": [self._property_id] if self._property_id is not None else None,
+                "system_ids": [self._system_id] if self._system_id is not None else None,
             }
 
             # Define start_time and end_time
@@ -400,21 +404,37 @@ class MetersParser:
         in a list. If a meter was previously parsed and has readings already,
         any new readings are appended to that list.
         """
-        for property_id in meter_details.get("property_ids", []):
+        property_ids = meter_details.get("property_ids")
+        system_ids = meter_details.get("system_ids")
+
+        # choose property or systems]
+        if property_ids is not None and system_ids is not None:
+            raise ValueError("must have `property_ids` or `systems_ids`, not both")
+        elif property_ids is not None:
+            id_name = "property_id"
+            ids = property_ids
+        elif system_ids is not None:
+            id_name = "system_id"
+            ids = system_ids
+        else:
+            raise ValueError("must have either `property_ids` or `systems_ids`")
+
+        for id_ in ids:
             meter_details_copy = meter_details.copy()
+
             del meter_details_copy["property_ids"]
-            meter_details_copy["property_id"] = property_id
+            del meter_details_copy["system_ids"]
+            meter_details_copy["property_id"] = id_ if id_name == "property_id" else None
+            meter_details_copy["system_id"] = id_ if id_name == "system_id" else None
 
             meter_identifier = "-".join([str(meter_details_copy[k]) for k in sorted(meter_details_copy)])
+            existing_meter = self._unique_meters.get(meter_identifier, None)
 
-            existing_property_meter = self._unique_meters.get(meter_identifier, None)
-
-            if existing_property_meter is None:
+            if existing_meter is None:
                 meter_details_copy["readings"] = [meter_reading]
-
                 self._unique_meters[meter_identifier] = meter_details_copy
             else:
-                existing_property_meter["readings"].append(meter_reading)
+                existing_meter["readings"].append(meter_reading)
 
     def validated_type_units(self):
         """
