@@ -5,7 +5,7 @@
       <tr>
         <th style="width: 90px"></th>
         <th ng-repeat="header in headers">{$ header $}</th>
-        <th style="width: 200px">Actions</th>
+        <th style="width: 275px">Actions</th>
       </tr>
     </thead>
     <tbody>
@@ -21,6 +21,7 @@
         <td>
           <div ng-if="menu.user.organization.user_role !== 'viewer'">
             <button class="btn btn-default btn-rowform" ng-click="create_service(system.id)" translate>+ service</button>
+            <button class="btn btn-default btn-rowform" ng-click="open_green_button_upload_modal(system)" translate>+ meters</button>
             <button class="btn btn-default btn-rowform" ng-click="edit_system(system.id)" translate>edit</button>
             <button class="btn btn-danger btn-rowform" ng-click="remove_system(system.id)">X</button>
           </div>
