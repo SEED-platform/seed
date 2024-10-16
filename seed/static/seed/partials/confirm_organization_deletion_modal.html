@@ -1,0 +1,49 @@
+<div class="modal-header">
+  <h4 class="modal-title">Delete Organization {$ org.name $}</h4>
+</div>
+
+  <div class="modal-body row">
+    <div class="container-fluid">
+      <div style="margin: 5px">
+        <p>Deleteing this organization will also remove all Properties and Tax Lots affiliated with the organization.</p>
+        <p>Depending on how much inventory is attached to this organization, the delete process may take some time.</p>
+      </div>
+    </div>
+  </div>
+
+
+<div class="modal-footer container-fluid">
+  <div ng-switch="state">
+    <div class="col-sm-12">
+
+      <div ng-switch-when="pending">
+        <uib-progressbar class="progress-striped active" value="100" type="info"></uib-progressbar>
+        <p translate>WAIT_TEXT_1</p>
+      </div>
+      <div ng-switch-when="evaluating">
+        <uib-progressbar class="progress-striped active" value="100" type="info"></uib-progressbar>
+        <p translate>WAIT_TEXT_2</p>
+      </div>
+      <div ng-switch-when="running">
+        <uib-progressbar class="progress-striped active" value="progressBar.progress" type="success"><span class="status-text">{$ progressBar.status_message $}</span></uib-progressbar>
+        <table class="time-table">
+          <tr>
+            <td translate>Elapsed:</td>
+            <td>{$ elapsed $}</td>
+          </tr>
+          <tr>
+            <td>Estimated Completion:</td>
+            <td>{$ eta $}</td>
+          </tr>
+        </table>
+      </div>
+      <div ng-switch-when="done">{$ result $}</div>
+    </div>
+
+    <div class="modal-footer" ng-if="state !== 'pending' && state !== 'running' && state !== 'evaluating'">
+      <button type="button" class="btn btn-default" ng-click="cancel()" ng-if="state !== 'done'" ng-disabled="state === 'running'">Cancel</button>
+      <button type="button" class="btn btn-info" ng-click="confirm_and_delete_org()" ng-if="state !== 'done'" ng-disabled="state === 'running'" autofocus>Confirm</button>
+      <button type="button" class="btn btn-info" ng-click="refresh()" ng-if="state === 'done'" autofocus>Refresh</button>
+    </div>
+  </div>
+</div>

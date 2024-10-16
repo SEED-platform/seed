@@ -17,6 +17,7 @@ angular.module('SEED.controller.admin', []).controller('admin_controller', [
   'users_payload',
   'Notification',
   '$window',
+  'urls',
   '$translate',
   // eslint-disable-next-line func-names
   function (
@@ -34,6 +35,7 @@ angular.module('SEED.controller.admin', []).controller('admin_controller', [
     users_payload,
     Notification,
     $window,
+    urls,
     $translate
   ) {
     $scope.is_superuser = auth_payload.auth.requires_superuser;
@@ -286,31 +288,33 @@ angular.module('SEED.controller.admin', []).controller('admin_controller', [
       }
     };
 
-    $scope.delete_org = (org) => {
-      org.progress = 0;
-      organization_service.delete_organization(org.org_id).then((data) => {
-        uploader_service.check_progress_loop(
-          data.progress_key,
-          0,
-          1,
-          () => {
-            org.remove_message = 'success';
-            if (parseInt(org.id, 10) === parseInt(user_service.get_organization().id, 10)) {
-              // Reload page if deleting current org.
-              $window.location.reload();
-            } else {
-              get_organizations().then(() => {
-                $scope.$emit('organization_list_updated');
-              });
-            }
-          },
-          () => {
-            // Do nothing
-          },
-          org
-        );
+
+    $scope.confirm_delete_org = (org) => {
+      const modal_instance = $uibModal.open({
+        templateUrl: `${urls.static_url}seed/partials/confirm_organization_deletion_modal.html`,
+        controller: 'confirm_organization_deletion_modal_controller',
+        size: 'md',
+        resolve: {
+          org: () => org,
+        }
       });
-    };
+
+      modal_instance.result
+        .then((data) => {
+          org.remove_message = 'success';
+          if (parseInt(org.id, 10) === parseInt(user_service.get_organization().id, 10)) {
+            // Reload page if deleting current org.
+            $window.location.reload();
+          } else {
+            get_organizations().then(() => {
+              $scope.$emit('organization_list_updated');
+            });
+          }
+        })
+        .catch(() => {
+
+        });
+    }
 
     process_organizations(organizations_payload);
   }
