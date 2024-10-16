@@ -2598,23 +2598,23 @@
           templateUrl: `${static_url}seed/partials/inventory_detail_meters.html`,
           controller: 'inventory_detail_meters_controller',
           resolve: {
-            // inventory_payload: [
-            //   '$state',
-            //   '$stateParams',
-            //   'inventory_service',
-            //   ($state, $stateParams, inventory_service) => {
-            //     // load `get_building` before page is loaded to avoid page flicker.
-            //     const { view_id } = $stateParams;
-            //     const promise = inventory_service.get_property(view_id);
-            //     promise.catch((err) => {
-            //       if (err.message.match(/^(?:property|taxlot) view with id \d+ does not exist$/)) {
-            //         // Inventory item not found for current organization, redirecting
-            //         $state.go('inventory_list', { inventory_type: $stateParams.inventory_type });
-            //       }
-            //     });
-            //     return promise;
-            //   }
-            // ],
+            inventory_payload: [
+              '$state',
+              '$stateParams',
+              'inventory_service',
+              ($state, $stateParams, inventory_service) => {
+                // load `get_building` before page is loaded to avoid page flicker.
+                const { view_id } = $stateParams;
+                const promise = inventory_service.get_property(view_id);
+                promise.catch((err) => {
+                  if (err.message.match(/^(?:property|taxlot) view with id \d+ does not exist$/)) {
+                    // Inventory item not found for current organization, redirecting
+                    $state.go('inventory_list', { inventory_type: $stateParams.inventory_type });
+                  }
+                });
+                return promise;
+              }
+            ],
             property_meter_usage: [
               '$stateParams',
               'user_service',

@@ -134,34 +134,6 @@ class SystemViewSet(viewsets.ViewSet, OrgMixin):
         data = SystemSerializer(system).data
         return JsonResponse({"status": "success", "data": data}, status=status.HTTP_201_CREATED)
 
-    # @has_perm_class("can_modify_data")
-    # @has_hierarchy_access(inventory_group_id_kwarg="inventory_group_pk")
-    # @action(detail=True, methods=["POST"])
-    # def services(self, request, inventory_group_pk, pk):
-    #     serializer = ServiceSerializer(data={**request.data, "system_id": pk})
-    #     if not serializer.is_valid():
-    #         return JsonResponse(
-    #             {
-    #                 "status": "error",
-    #                 "errors": serializer.errors,
-    #             },
-    #             status=status.HTTP_400_BAD_REQUEST,
-    #         )
-
-    #     # create system
-    #     try:
-    #         serializer.save()
-    #     except IntegrityError as e:
-    #         return JsonResponse(
-    #             {
-    #                 "status": "error",
-    #                 "errors": str(e),
-    #             },
-    #             status=status.HTTP_400_BAD_REQUEST,
-    #         )
-
-    #     return JsonResponse({"status": "success", "data": serializer.data}, status=status.HTTP_201_CREATED)
-
     @has_perm_class("requires_viewer")
     @has_hierarchy_access(inventory_group_id_kwarg="inventory_group_pk")
     @action(detail=False, methods=["GET"])

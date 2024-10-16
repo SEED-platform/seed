@@ -15,8 +15,18 @@ logger = logging.getLogger()
 
 class ServiceViewSet(ModelViewSetWithoutPatch, OrgMixin):
     serializer_class = ServiceSerializer
-    # queryset = Service.objects.all()
 
     def get_queryset(self):
-        # this needs to consider ALI - list will return all regardless of ali
-        return Service.objects.filter(system__group__organization=self.get_organization(self.request))
+        group_pk = self.kwargs.get('inventory_group_pk')
+        system_pk = self.kwargs.get('system_pk')
+        return Service.objects.filter(
+            system=system_pk,
+            system__group=group_pk,
+            system__group__organization=self.get_organization(self.request)
+        )
+    
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context["group_pk"] = self.kwargs.get('inventory_group_pk')
+        context["system_pk"] = self.kwargs.get('system_pk')
+        return context
