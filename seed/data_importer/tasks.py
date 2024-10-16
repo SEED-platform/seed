@@ -914,8 +914,8 @@ def _save_greenbutton_data_create_tasks(file_pk, progress_key):
 
     import_file = ImportFile.objects.get(pk=file_pk)
     org_id = import_file.cycle.organization.id
-    property_id = import_file.matching_results_data["property_id"]
-    system_id = import_file.matching_results_data["system_id"]
+    property_id = import_file.matching_results_data.get("property_id")
+    system_id = import_file.matching_results_data.get("system_id")
 
     # matching_results_data gets cleared out since the field wasn't meant for this
     import_file.matching_results_data = {}

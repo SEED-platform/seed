@@ -286,7 +286,7 @@ class MetersParser:
 
             # If Cost field is present and value is available, create Cost Meter and MeterReading
             if successful_parse and raw_details.get("Cost ($)", "Not Available") != "Not Available":
-                carry_overs = ["property_ids", "system_ids", "source", "source_id", "type"]
+                carry_overs = ["property_ids", "source", "source_id", "type"]
                 meter_details_copy = {k: meter_details[k] for k in carry_overs}
                 self._parse_cost_meter_reading(raw_details, meter_details_copy, start_time, end_time)
 
@@ -422,8 +422,8 @@ class MetersParser:
         for id_ in ids:
             meter_details_copy = meter_details.copy()
 
-            del meter_details_copy["property_ids"]
-            del meter_details_copy["system_ids"]
+            meter_details_copy.pop("property_ids", None)
+            meter_details_copy.pop("system_ids", None)
             meter_details_copy["property_id"] = id_ if id_name == "property_id" else None
             meter_details_copy["system_id"] = id_ if id_name == "system_id" else None
 

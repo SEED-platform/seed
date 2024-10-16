@@ -22,7 +22,7 @@ from seed.decorators import ajax_request_class
 from seed.lib.mappings import mapper as simple_mapper
 from seed.lib.mcm import mapper, reader
 from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm_class
-from seed.lib.superperms.orgs.models import OrganizationUser
+from seed.lib.superperms.orgs.models import AccessLevelInstance, OrganizationUser
 from seed.lib.xml_mapping import mapper as xml_mapper
 from seed.models import (
     ASSESSED_RAW,
@@ -924,7 +924,6 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
     )
     @ajax_request_class
     @has_perm_class("requires_member")
-    # @has_hierarchy_access(param_property_view_id="view_id")
     @action(detail=True, methods=["GET"])
     def greenbutton_meters_preview(self, request, pk):
         """
@@ -933,6 +932,7 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
         org_id = self.get_organization(request)
         view_id = request.query_params.get("view_id")
         system_id = request.query_params.get("system_id")
+        access_level_instance = AccessLevelInstance.objects.get(pk=self.request.access_level_instance_id)
 
         try:
             import_file = ImportFile.objects.get(pk=pk, import_record__super_organization_id=org_id)
@@ -947,14 +947,23 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
             )
         elif view_id is not None:
             try:
-                property_id = PropertyView.objects.get(pk=view_id, cycle__organization_id=org_id).property_id
+                property_id = PropertyView.objects.get(
+                    pk=view_id,
+                    cycle__organization_id=org_id,
+                    property__access_level_instance__lft__gte=access_level_instance.lft,
+                    property__access_level_instance__rgt__lte=access_level_instance.rgt,
+                ).property_id
             except PropertyView.DoesNotExist:
                 return JsonResponse(
-                    {"status": "error", "message": "Could not find property with pk=" + str(view_id)}, status=status.HTTP_400_BAD_REQUEST
+                    {"status": "error", "message": "Could not find property with pk=" + str(view_id)}, status=status.HTTP_404_NOT_FOUND
                 )
         elif system_id is not None:
             try:
-                system_id = System.objects.get(pk=system_id).id
+                system_id = System.objects.get(
+                    pk=system_id,
+                    group__access_level_instance__lft__gte=access_level_instance.lft,
+                    group__access_level_instance__rgt__lte=access_level_instance.rgt,
+                ).id
             except System.DoesNotExist:
                 return JsonResponse(
                     {"status": "error", "message": "Could not find system with pk=" + str(view_id)}, status=status.HTTP_400_BAD_REQUEST

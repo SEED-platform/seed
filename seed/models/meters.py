@@ -167,43 +167,6 @@ class Meter(models.Model):
     service = models.ForeignKey("Service", on_delete=models.SET_NULL, related_name="meters", null=True, blank=True)
     connection_type = models.IntegerField(choices=CONNECTION_TYPES, default=FROM_OUTSIDE, null=False)
 
-
-@receiver(pre_save, sender=Meter)
-def presave_meter(sender, instance, **kwargs):
-    property = instance.property
-    system = instance.system
-    connection_type = instance.connection_type
-    service = instance.service
-
-    # must be connected to either a system or a property
-    if property is not None and system is not None:
-        raise IntegrityError(f"Meter {instance.id} has both a property and a system. It must only have one.")
-
-    # Only systems have connection type "total"
-    system_connections = connection_type in [Meter.TOTAL_FROM_PATRON, Meter.TOTAL_TO_PATRON]
-    if system_connections and instance.system is None:
-        raise IntegrityError(f"Meter {instance.id} has connection_type {connection_type}, but is not connected to a system")
-
-    outside_connection = connection_type in [Meter.FROM_OUTSIDE, Meter.TO_OUTSIDE]
-    if outside_connection:
-        # outside connections don't have services
-        if instance.service is not None:
-            raise IntegrityError(f"Meter {instance.id} has connection_type {connection_type}, but also is connected to a service")
-    else:
-        # inside connections _do_ have services
-        if service is None:
-            raise IntegrityError(f"Meter {instance.id} has connection_type {connection_type}, but is not connected to a service")
-
-        # inside connections must be within the group
-        if property is not None:
-            meter_groups = InventoryGroupMapping.objects.filter(property=property).values_list("group_id", flat=True)
-        else:
-            meter_groups = [system.group]
-        if service is not None and service.system.group.id not in meter_groups:
-            raise IntegrityError(
-                f"Meter {instance.id} on property {property.id} and has service {service.id}, but meter is not in the services group"
-            )
-
     def copy_readings(self, source_meter, overlaps_possible=True):
         """
         Copies MeterReadings of another Meter. By default, overlapping readings
@@ -241,6 +204,43 @@ def presave_meter(sender, instance, **kwargs):
             }
 
             MeterReading.objects.bulk_create(readings)
+
+
+@receiver(pre_save, sender=Meter)
+def presave_meter(sender, instance, **kwargs):
+    property = instance.property
+    system = instance.system
+    connection_type = instance.connection_type
+    service = instance.service
+
+    # must be connected to either a system or a property
+    if property is not None and system is not None:
+        raise IntegrityError(f"Meter {instance.id} has both a property and a system. It must only have one.")
+
+    # Only systems have connection type "total"
+    system_connections = connection_type in [Meter.TOTAL_FROM_PATRON, Meter.TOTAL_TO_PATRON]
+    if system_connections and instance.system is None:
+        raise IntegrityError(f"Meter {instance.id} has connection_type {connection_type}, but is not connected to a system")
+
+    outside_connection = connection_type in [Meter.FROM_OUTSIDE, Meter.TO_OUTSIDE]
+    if outside_connection:
+        # outside connections don't have services
+        if instance.service is not None:
+            raise IntegrityError(f"Meter {instance.id} has connection_type {connection_type}, but also is connected to a service")
+    else:
+        # inside connections _do_ have services
+        if service is None:
+            raise IntegrityError(f"Meter {instance.id} has connection_type {connection_type}, but is not connected to a service")
+
+        # inside connections must be within the group
+        if property is not None:
+            meter_groups = InventoryGroupMapping.objects.filter(property=property).values_list("group_id", flat=True)
+        else:
+            meter_groups = [system.group]
+        if service is not None and service.system.group.id not in meter_groups:
+            raise IntegrityError(
+                f"Meter {instance.id} on property {property.id} and has service {service.id}, but meter is not in the services group"
+            )
 
 
 class MeterReading(models.Model):
