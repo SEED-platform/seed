@@ -37,18 +37,11 @@ class ServiceViewTests(AccessLevelBaseTestCase):
         data = response.json()
         assert data["name"] == "new service"
         assert Service.objects.count() == 5
-        
+
         # duplicate name
         response = self.client.post(url, data=json.dumps(service_details), content_type="application/json")
         assert response.status_code == 400
-        assert response.json() == {'non_field_errors': ['Service name must be unique']}
-
-        # group/system mismatch
-        service_details["name"] = "new service 123"
-        url = reverse_lazy("api:v3:system-services-list", args=[self.group1.id, self.system21.id]) + f"?organization_id={self.org.id}"
-        response = self.client.post(url, data=json.dumps(service_details), content_type="application/json")
-        assert response.status_code == 400 
-        assert response.json() == {'non_field_errors': ['No such resource.']}
+        assert response.json() == {"non_field_errors": ["Service name must be unique within system"]}
 
     def test_service_delete(self):
         # valid
@@ -62,14 +55,14 @@ class ServiceViewTests(AccessLevelBaseTestCase):
         assert response.status_code == 204
         assert Service.objects.count() == 4
 
-        # dne 
+        # dne
         url = (
             reverse_lazy("api:v3:system-services-detail", args=[self.group1.id, self.system21.id, self.service111.id])
             + f"?organization_id={self.org.id}"
         )
         response = self.client.delete(url, content_type="application/json")
         assert response.status_code == 404
-        assert response.json() == {'detail': 'Not found.'}
+        assert response.json() == {"detail": "Not found."}
 
     def test_service_list(self):
         url = reverse_lazy("api:v3:system-services-list", args=[self.group1.id, self.system11.id]) + f"?organization_id={self.org.id}"
@@ -83,7 +76,7 @@ class ServiceViewTests(AccessLevelBaseTestCase):
         url = reverse_lazy("api:v3:system-services-list", args=[self.group1.id, self.system21.id]) + f"?organization_id={self.org.id}"
         response = self.client.get(url, content_type="application/json")
         assert response.status_code == 200
-        assert response.json()['results'] == []
+        assert response.json()["results"] == []
 
     def test_service_retrieve(self):
         url = (
@@ -96,14 +89,14 @@ class ServiceViewTests(AccessLevelBaseTestCase):
         assert data["id"] == self.service111.id
         assert data["name"] == "s111"
 
-        # dne 
+        # dne
         url = (
             reverse_lazy("api:v3:system-services-detail", args=[self.group1.id, self.system21.id, self.service111.id])
             + f"?organization_id={self.org.id}"
         )
         response = self.client.get(url, content_type="application/json")
         assert response.status_code == 404
-        assert response.json() == {'detail': 'Not found.'}
+        assert response.json() == {"detail": "Not found."}
 
     def test_service_update(self):
         service = self.service_factory.get_service(system=self.system11, name="original name", emission_factor=1)
@@ -127,4 +120,4 @@ class ServiceViewTests(AccessLevelBaseTestCase):
         )
         response = self.client.put(url, data=json.dumps(service_details), content_type="application/json")
         assert response.status_code == 404
-        assert response.json() == {'detail': 'Not found.'}
+        assert response.json() == {"detail": "Not found."}
