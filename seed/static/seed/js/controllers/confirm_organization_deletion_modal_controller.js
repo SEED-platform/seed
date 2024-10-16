@@ -37,7 +37,6 @@ angular.module('SEED.controller.confirm_organization_deletion_modal', []).contro
       $scope.step.number = step;
     };
 
-
     $scope.confirm_and_delete_org = () => {
       $scope.state = 'pending';
       organization_service.delete_organization(org.org_id)
@@ -55,7 +54,7 @@ angular.module('SEED.controller.confirm_organization_deletion_modal', []).contro
             result.progress_key,
             0,
             1,
-            (response) => {
+            () => {
               $scope.result = `Completed in ${$scope.elapsed}`;
               $scope.state = 'done';
               $interval.cancel($scope.interval);
@@ -131,9 +130,7 @@ angular.module('SEED.controller.confirm_organization_deletion_modal', []).contro
       $window.location.reload();
     };
 
-    $scope.org_name = () => {
-      return $scope.org.name;
-    }
+    $scope.org_name = () => $scope.org.name;
   }
 
 ]);

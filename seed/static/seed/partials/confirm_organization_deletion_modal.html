@@ -2,20 +2,18 @@
   <h4 class="modal-title">Delete Organization {$ org.name $}</h4>
 </div>
 
-  <div class="modal-body row">
-    <div class="container-fluid">
-      <div style="margin: 5px">
-        <p>Deleteing this organization will also remove all Properties and Tax Lots affiliated with the organization.</p>
-        <p>Depending on how much inventory is attached to this organization, the delete process may take some time.</p>
-      </div>
+<div class="modal-body row">
+  <div class="container-fluid">
+    <div style="margin: 5px">
+      <p>Deleteing this organization will also remove all Properties and Tax Lots affiliated with the organization.</p>
+      <p>Depending on how much inventory is attached to this organization, the delete process may take some time.</p>
     </div>
   </div>
-
+</div>
 
 <div class="modal-footer container-fluid">
   <div ng-switch="state">
     <div class="col-sm-12">
-
       <div ng-switch-when="pending">
         <uib-progressbar class="progress-striped active" value="100" type="info"></uib-progressbar>
         <p translate>WAIT_TEXT_1</p>

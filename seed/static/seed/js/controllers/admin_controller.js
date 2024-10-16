@@ -288,19 +288,18 @@ angular.module('SEED.controller.admin', []).controller('admin_controller', [
       }
     };
 
-
     $scope.confirm_delete_org = (org) => {
       const modal_instance = $uibModal.open({
         templateUrl: `${urls.static_url}seed/partials/confirm_organization_deletion_modal.html`,
         controller: 'confirm_organization_deletion_modal_controller',
         size: 'md',
         resolve: {
-          org: () => org,
+          org: () => org
         }
       });
 
       modal_instance.result
-        .then((data) => {
+        .then(() => {
           org.remove_message = 'success';
           if (parseInt(org.id, 10) === parseInt(user_service.get_organization().id, 10)) {
             // Reload page if deleting current org.
@@ -314,7 +313,7 @@ angular.module('SEED.controller.admin', []).controller('admin_controller', [
         .catch(() => {
 
         });
-    }
+    };
 
     process_organizations(organizations_payload);
   }
