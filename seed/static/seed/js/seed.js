@@ -45,6 +45,8 @@
     'SEED.controller.column_settings',
     'SEED.controller.confirm_column_settings_modal',
     'SEED.controller.create_column_modal',
+    'SEED.controller.create_service_modal',
+    'SEED.controller.create_system_modal',
     'SEED.controller.create_organization_modal',
     'SEED.controller.create_sub_organization_modal',
     'SEED.controller.cycle_admin',
@@ -195,6 +197,7 @@
     'SEED.service.dataset',
     'SEED.service.derived_columns',
     'SEED.service.element',
+    'SEED.service.system',
     'SEED.service.espm',
     'SEED.service.event',
     'SEED.service.filter_groups',
@@ -2301,8 +2304,8 @@
         .state({
           name: 'inventory_group_detail_meters',
           url: '/{inventory_type:properties|taxlots}/groups/{group_id:int}/meters',
-          templateUrl: `${static_url}seed/partials/inventory_detail_meters.html`,
-          controller: 'inventory_detail_meters_controller',
+          templateUrl: `${static_url}seed/partials/inventory_group_detail_meters.html`,
+          controller: 'inventory_group_detail_meters_controller',
           resolve: {
             inventory_payload: () => null,
             property_meter_usage: [
@@ -2329,7 +2332,19 @@
           url: '/{inventory_type:properties|taxlots}/groups/{group_id:int}',
           templateUrl: `${static_url}seed/partials/inventory_group_detail_systems.html`,
           controller: 'inventory_group_detail_systems_controller',
-          resolve: {}
+          resolve: {
+            systems: ['$stateParams', 'system_service', 'user_service', ($stateParams, system_service, user_service) => {
+              const organization_id = user_service.get_organization().id;
+              const { group_id } = $stateParams;
+              return system_service.get_systems(organization_id, group_id);
+            }],
+            organization_payload: [
+              'user_service',
+              'organization_service',
+              (user_service, organization_service) => organization_service.get_organization(user_service.get_organization().id)
+            ],
+            cycles: ['cycle_service', (cycle_service) => cycle_service.get_cycles()],
+          }
         })
         .state({
           name: 'inventory_detail',

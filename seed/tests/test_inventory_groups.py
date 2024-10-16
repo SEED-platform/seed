@@ -113,7 +113,7 @@ class PropertyViewTestsPermissions(AccessLevelBaseTestCase):
 
         # helper functions to create meters and readings
         def create_meter_entry(property_view_id, source_id):
-            payload = {"type": "Electric", "source": "Manual Entry", "source_id": source_id}
+            payload = {"type": "Electric", "source": "Manual Entry", "source_id": source_id, "connection_type": "From Outside"}
             url = reverse_lazy("api:v3:property-meters-list", kwargs={"property_pk": property_view_id}) + f"?organization_id={self.org.id}"
             response = self.client.post(url, data=json.dumps(payload), content_type="application/json")
             return response.json()["id"]
@@ -161,7 +161,7 @@ class GroupMeterTests(AccessLevelBaseTestCase):
 
         # helper functions to create meters and readings
         def create_meter_entry(property_view_id, source_id):
-            payload = {"type": "Electric", "source": "Manual Entry", "source_id": source_id}
+            payload = {"type": "Electric", "source": "Manual Entry", "source_id": source_id, "connection_type": "From Outside"}
             url = reverse_lazy("api:v3:property-meters-list", kwargs={"property_pk": property_view_id}) + f"?organization_id={self.org.id}"
             response = self.client.post(url, data=json.dumps(payload), content_type="application/json")
             return response.json()["id"]

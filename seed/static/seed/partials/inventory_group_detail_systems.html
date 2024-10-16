@@ -16,6 +16,30 @@
   <div class="section_nav" ng-include="::urls.static_url + 'seed/partials/inventory_group_detail_nav.html'"></div>
 </div>
 
-<div>
-  <div style="display: flex; justify-content: center; margin: 100px; font-style: italics">SYSTEMS & SERVICES IN DEVELOPMENT...</div>
-</div>
+<button ng-show="menu.user.organization.user_role !== 'viewer'" type="button" class="col-sm-2 btn btn-info"
+  ng-click="open_create_system_modal()"> New System </button>
+<ul>
+  <ul ng-repeat="system in systems">
+    <div style="display:flex; gap:1rem">
+      <p>{$ system.type | translate $} - {$ system.name $}</p>
+      <button ng-show="menu.user.organization.user_role !== 'viewer'" type="button" class="col-sm-2 btn btn-info"
+        ng-click="open_create_service_modal(system)"> New Service </button>
+      <div class="row" ng-show="menu.user.organization.user_role !== 'viewer'">
+        <button type="button" ng-click="open_green_button_upload_modal(system)" class="btn btn-primary"
+          translate>UPLOAD_GB_DATA_BUTTON</button>
+      </div>
+    </div>
+    <ul>
+      <li ng-repeat="service in system.services">
+        {$ service.name $}
+        <ul>
+          <li ng-repeat="(property, meters) in service.properties">{$ property $}
+            <ul>
+              <li ng-repeat="meter in meters">{$ meter.alias $}</li>
+            </ul>
+          </li>
+        </ul>
+      </li>
+    </ul>
+  </ul>
+</ul>
