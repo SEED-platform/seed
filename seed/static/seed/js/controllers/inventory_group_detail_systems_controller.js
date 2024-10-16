@@ -77,7 +77,7 @@ angular.module('SEED.controller.inventory_group_detail_systems', [])
           }
         });
 
-        modalInstance.result.then(() => {
+        modalInstance.result.finally(() => {
           $state.reload();
         });
       };
@@ -112,7 +112,7 @@ angular.module('SEED.controller.inventory_group_detail_systems', [])
           }
         });
 
-        modalInstance.result.then(() => {
+        modalInstance.result.finally(() => {
           $state.reload().then(() => {
             $timeout(() => {
               expand_service(system);
