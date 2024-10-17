@@ -53,7 +53,8 @@ angular.module('SEED.controller.system_modal', []).controller('system_modal_cont
           $uibModalInstance.close();
         },
         (response) => {
-          Notification.error(`Failed to create Analysis: ${response.data.message}`);
+          const errors = Object.values(response.data.errors)
+          Notification.error(`${errors}`);
           $uibModalInstance.dismiss('cancel');
         }
       );
@@ -74,10 +75,17 @@ angular.module('SEED.controller.system_modal', []).controller('system_modal_cont
 
     const update_system = () => {
       system_service.update_system(org_id, group_id, system)
-        .then(() => {
-          Notification.primary('Updated Sytem');
-          $uibModalInstance.close();
-        });
+        .then(
+          () => {
+            Notification.primary('Updated Sytem');
+            $uibModalInstance.close();
+          },
+          (response) => {
+            const errors = Object.values(response.data.errors)
+            Notification.error(`${errors}`);
+            $uibModalInstance.dismiss('cancel');
+          }
+        );
     };
 
     $scope.cancel = () => $uibModalInstance.dismiss();

@@ -35,14 +35,12 @@ class ServiceSerializer(serializers.ModelSerializer):
         return meters_by_property
 
     def validate(self, data):
-        group_pk = self.context.get("group_pk")
-        system_pk = self.context.get("system_pk")
-        if not System.objects.filter(pk=system_pk, group=group_pk):
-            raise serializers.ValidationError("No such resource.")
-        if Service.objects.filter(name=data.get("name"), system=data.get("system_id")).count():
-            raise serializers.ValidationError("Service name must be unique")
-        return data
+        system_pk = data.get("system_id")
+        id = self.instance.id if self.instance else None
 
+        if Service.objects.filter(name=data.get("name"), system=system_pk).exclude(id=id).exists():
+            raise serializers.ValidationError("Service name must be unique within system")
+        return data
 
 class SystemSerializer(serializers.ModelSerializer):
     services = ServiceSerializer(many=True, read_only=True)
@@ -69,6 +67,14 @@ class SystemSerializer(serializers.ModelSerializer):
     class Meta:
         model = System
         fields = ["id", "name", "services", "type", "group_id"]
+
+    def validate(self, data):
+        SystemClass = self.Meta.model
+        id = self.instance.id if self.instance else None
+
+        if SystemClass.objects.filter(name=data.get("name"), group=data.get("group_id")).exclude(id=id).exists():
+            raise serializers.ValidationError("System name must be unique within group")
+        return data
 
 
 class DESSystemSerializer(SystemSerializer):

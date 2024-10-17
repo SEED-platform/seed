@@ -40,8 +40,17 @@ class SystemViewTests(AccessLevelBaseTestCase):
 
     def test_system_delete(self):
         system = self.system_factory.get_system(group=self.group1)
-
         assert System.objects.count() == 10
+
+        # group/system mismatch
+        url = reverse_lazy("api:v3:inventory_group-systems-detail", args=[self.group2.id, system.id]) + f"?organization_id={self.org.id}"
+        response = self.client.delete(url, content_type="application/json")
+
+        assert response.status_code == 404
+        assert response.json() == {"status": "error", "message": "No such resource."}
+        assert System.objects.count() == 10
+
+        # valid
         url = reverse_lazy("api:v3:inventory_group-systems-detail", args=[self.group1.id, system.id]) + f"?organization_id={self.org.id}"
         response = self.client.delete(url, content_type="application/json")
         assert response.status_code == 204
@@ -60,9 +69,17 @@ class SystemViewTests(AccessLevelBaseTestCase):
         }
         url = reverse_lazy("api:v3:inventory_group-systems-list", args=[self.group1.id]) + f"?organization_id={self.org.id}"
         response = self.client.post(url, data=json.dumps(data), content_type="application/json")
+        assert response.status_code == 201
         data = response.json()["data"]
         assert sorted(data.keys()) == ["capacity", "count", "des_type", "group_id", "id", "name", "services", "type"]
         assert System.objects.count() == 10
+
+        # name constraint
+        url = reverse_lazy("api:v3:inventory_group-systems-list", args=[self.group1.id]) + f"?organization_id={self.org.id}"
+        response = self.client.post(url, data=json.dumps(data), content_type="application/json")
+        assert response.status_code == 400
+        data = response.json()
+        assert data["errors"] == {"non_field_errors": ["System name must be unique within group"]}
 
         # # EVSE
         data = {
@@ -103,17 +120,27 @@ class SystemViewTests(AccessLevelBaseTestCase):
         url = reverse_lazy("api:v3:inventory_group-systems-detail", args=[self.group1.id, des.id]) + f"?organization_id={self.org.id}"
         data = SystemSerializer(des).data
         data["capacity"] = 101
-
         response = self.client.put(url, data=json.dumps(data), content_type="application/json")
+        assert response.status_code == 200
         data = response.json()
         assert sorted(data.keys()) == ["capacity", "count", "des_type", "group_id", "id", "name", "services", "type"]
         assert data["capacity"] == 101
 
+        # name constraint
+        data = SystemSerializer(des).data
+        data["name"] = self.des1.name
+        response = self.client.put(url, data=json.dumps(data), content_type="application/json")
+
+        # invalid
+        url = reverse_lazy("api:v3:inventory_group-systems-detail", args=[self.group2.id, des.id]) + f"?organization_id={self.org.id}"
+        data = SystemSerializer(des).data
+        response = self.client.put(url, data=json.dumps(data), content_type="application/json")
+        assert response.status_code == 404
+        assert response.json() == {"status": "error", "message": "No such resource."}
         # EVSE
         url = reverse_lazy("api:v3:inventory_group-systems-detail", args=[self.group1.id, evse.id]) + f"?organization_id={self.org.id}"
         data = SystemSerializer(evse).data
         data["power"] = 102
-
         response = self.client.put(url, data=json.dumps(data), content_type="application/json")
         data = response.json()
         assert sorted(data.keys()) == ["count", "evse_type", "group_id", "id", "name", "power", "services", "type"]
@@ -123,7 +150,6 @@ class SystemViewTests(AccessLevelBaseTestCase):
         url = reverse_lazy("api:v3:inventory_group-systems-detail", args=[self.group1.id, battery.id]) + f"?organization_id={self.org.id}"
         data = SystemSerializer(battery).data
         data["voltage"] = 103
-
         response = self.client.put(url, data=json.dumps(data), content_type="application/json")
         data = response.json()
         assert sorted(data.keys()) == ["capacity", "efficiency", "group_id", "id", "name", "services", "type", "voltage"]

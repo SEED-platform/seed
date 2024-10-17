@@ -51,7 +51,8 @@ angular.module('SEED.controller.service_modal', []).controller('service_modal_co
           $uibModalInstance.close();
         },
         (response) => {
-          Notification.error(`Failed to create Service: ${response.data.message}`);
+          const errors = Object.values(response.data)
+          Notification.error(`${errors}`);
           $uibModalInstance.dismiss('cancel');
         }
       );
@@ -65,7 +66,8 @@ angular.module('SEED.controller.service_modal', []).controller('service_modal_co
           $uibModalInstance.close();
         },
         (response) => {
-          Notification.error(`Failed to update Service: ${response.data.message}`);
+          const errors = Object.values(response.data)
+          Notification.error(`${errors}`);
           $uibModalInstance.dismiss('cancel');
         }
       );

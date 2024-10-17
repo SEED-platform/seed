@@ -41,14 +41,7 @@ class ServiceViewTests(AccessLevelBaseTestCase):
         # duplicate name
         response = self.client.post(url, data=json.dumps(service_details), content_type="application/json")
         assert response.status_code == 400
-        assert response.json() == {"non_field_errors": ["Service name must be unique"]}
-
-        # group/system mismatch
-        service_details["name"] = "new service 123"
-        url = reverse_lazy("api:v3:system-services-list", args=[self.group1.id, self.system21.id]) + f"?organization_id={self.org.id}"
-        response = self.client.post(url, data=json.dumps(service_details), content_type="application/json")
-        assert response.status_code == 400
-        assert response.json() == {"non_field_errors": ["No such resource."]}
+        assert response.json() == {"non_field_errors": ["Service name must be unique within system"]}
 
     def test_service_delete(self):
         # valid
