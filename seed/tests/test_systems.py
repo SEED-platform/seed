@@ -4,7 +4,7 @@ from django.urls import reverse_lazy
 
 from seed.models import System
 from seed.serializers.systems import SystemSerializer
-from seed.test_helpers.fake import FakeInventoryGroupFactory, FakeSystemFactory, FakeServiceFactory
+from seed.test_helpers.fake import FakeInventoryGroupFactory, FakeSystemFactory
 from seed.tests.util import AccessLevelBaseTestCase
 
 
