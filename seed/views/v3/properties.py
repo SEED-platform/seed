@@ -817,6 +817,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         ali = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
 
         property_view_ids = request.data.get("property_view_ids", [])
+        group_mapping_ids = list(InventoryGroupMapping.objects.filter(property__views__in=property_view_ids).values_list("id", flat=True))
         property_state_ids = PropertyView.objects.filter(
             id__in=property_view_ids,
             property__access_level_instance__lft__gte=ali.lft,
@@ -827,6 +828,9 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
 
         if resp[0] == 0:
             return JsonResponse({"status": "warning", "message": "No action was taken"})
+
+        # Delete orphaned mappings
+        InventoryGroupMapping.objects.filter(id__in=group_mapping_ids, property__views__isnull=True).delete()
 
         return JsonResponse({"status": "success", "properties": resp[1]["seed.PropertyState"]})
 
