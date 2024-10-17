@@ -2344,7 +2344,7 @@
               'organization_service',
               (user_service, organization_service) => organization_service.get_organization(user_service.get_organization().id)
             ],
-            cycles: ['cycle_service', (cycle_service) => cycle_service.get_cycles()],
+            cycles: ['cycle_service', (cycle_service) => cycle_service.get_cycles()]
           }
         })
         .state({
