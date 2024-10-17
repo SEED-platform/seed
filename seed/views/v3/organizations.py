@@ -1207,7 +1207,7 @@ class OrganizationViewSet(viewsets.ViewSet):
         data = [
             d[axis]
             for d in [apply_display_unit_preferences(organization, d) for d in filtered_properties.values(axis)]
-            if axis in d and d[axis] is not None
+            if axis in d and d[axis] is not None and isinstance(d[axis], (int, float))
         ]
 
         if len(data) > 0:
