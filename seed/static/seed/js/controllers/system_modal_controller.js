@@ -53,7 +53,7 @@ angular.module('SEED.controller.system_modal', []).controller('system_modal_cont
           $uibModalInstance.close();
         },
         (response) => {
-          const errors = Object.values(response.data.errors)
+          const errors = Object.values(response.data.errors);
           Notification.error(`${errors}`);
           $uibModalInstance.dismiss('cancel');
         }
@@ -81,7 +81,7 @@ angular.module('SEED.controller.system_modal', []).controller('system_modal_cont
             $uibModalInstance.close();
           },
           (response) => {
-            const errors = Object.values(response.data.errors)
+            const errors = Object.values(response.data.errors);
             Notification.error(`${errors}`);
             $uibModalInstance.dismiss('cancel');
           }

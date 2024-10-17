@@ -159,6 +159,7 @@ class MeterUtilTests(TestCase):
         expected = [
             {
                 "property_id": self.property.id,
+                "system_id": None,
                 "source": Meter.PORTFOLIO_MANAGER,
                 "source_id": "123-PMMeterID",
                 "type": Meter.ELECTRICITY_GRID,
@@ -174,6 +175,7 @@ class MeterUtilTests(TestCase):
             },
             {
                 "property_id": self.property.id,
+                "system_id": None,
                 "source": Meter.PORTFOLIO_MANAGER,
                 "source_id": "123-PMMeterID",
                 "type": Meter.NATURAL_GAS,
@@ -231,6 +233,7 @@ class MeterUtilTests(TestCase):
         expected = [
             {
                 "property_id": self.property.id,
+                "system_id": None,
                 "source": Meter.PORTFOLIO_MANAGER,
                 "source_id": "123-PMMeterID",
                 "type": Meter.ELECTRICITY_GRID,
@@ -246,6 +249,7 @@ class MeterUtilTests(TestCase):
             },
             {
                 "property_id": property_2.id,
+                "system_id": None,
                 "source": Meter.PORTFOLIO_MANAGER,
                 "source_id": "123-PMMeterID",
                 "type": Meter.ELECTRICITY_GRID,
@@ -261,6 +265,7 @@ class MeterUtilTests(TestCase):
             },
             {
                 "property_id": self.property.id,
+                "system_id": None,
                 "source": Meter.PORTFOLIO_MANAGER,
                 "source_id": "123-PMMeterID",
                 "type": Meter.NATURAL_GAS,
@@ -276,6 +281,7 @@ class MeterUtilTests(TestCase):
             },
             {
                 "property_id": property_2.id,
+                "system_id": None,
                 "source": Meter.PORTFOLIO_MANAGER,
                 "source_id": "123-PMMeterID",
                 "type": Meter.NATURAL_GAS,
@@ -322,6 +328,7 @@ class MeterUtilTests(TestCase):
         expected = [
             {
                 "property_id": self.property.id,
+                "system_id": None,
                 "source": Meter.PORTFOLIO_MANAGER,
                 "source_id": "123-PMMeterID-el",
                 "type": Meter.ELECTRICITY_GRID,
@@ -337,6 +344,7 @@ class MeterUtilTests(TestCase):
             },
             {
                 "property_id": self.property.id,
+                "system_id": None,
                 "source": Meter.PORTFOLIO_MANAGER,
                 "source_id": "123-PMMeterID-el",
                 "type": Meter.COST,
@@ -352,6 +360,7 @@ class MeterUtilTests(TestCase):
             },
             {
                 "property_id": self.property.id,
+                "system_id": None,
                 "source": Meter.PORTFOLIO_MANAGER,
                 "source_id": "123-PMMeterID-gas",
                 "type": Meter.NATURAL_GAS,
@@ -367,6 +376,7 @@ class MeterUtilTests(TestCase):
             },
             {
                 "property_id": self.property.id,
+                "system_id": None,
                 "source": Meter.PORTFOLIO_MANAGER,
                 "source_id": "123-PMMeterID-gas",
                 "type": Meter.COST,
@@ -406,6 +416,7 @@ class MeterUtilTests(TestCase):
         expected = [
             {
                 "property_id": self.property.id,
+                "system_id": None,
                 "source": Meter.PORTFOLIO_MANAGER,
                 "source_id": "123-PMMeterID-gas",
                 "type": Meter.NATURAL_GAS,
@@ -421,6 +432,7 @@ class MeterUtilTests(TestCase):
             },
             {
                 "property_id": self.property.id,
+                "system_id": None,
                 "source": Meter.PORTFOLIO_MANAGER,
                 "source_id": "123-PMMeterID-gas",
                 "type": Meter.COST,
@@ -487,6 +499,7 @@ class MeterUtilTests(TestCase):
         expected = [
             {
                 "property_id": self.property.id,
+                "system_id": None,
                 "source": Meter.PORTFOLIO_MANAGER,
                 "source_id": "123-PMMeterID",
                 "type": Meter.ELECTRICITY_GRID,
@@ -509,6 +522,7 @@ class MeterUtilTests(TestCase):
             },
             {
                 "property_id": self.property.id,
+                "system_id": None,
                 "source": Meter.PORTFOLIO_MANAGER,
                 "source_id": "123-PMMeterID",
                 "type": Meter.NATURAL_GAS,
@@ -640,6 +654,7 @@ class MeterUtilTests(TestCase):
         expected = [
             {
                 "property_id": self.property.id,
+                "system_id": None,
                 "source": Meter.GREENBUTTON,
                 "source_id": "ABCDEF",
                 "type": Meter.NATURAL_GAS,
@@ -693,6 +708,7 @@ class MeterUtilTests(TestCase):
         expected = [
             {
                 "property_id": self.property.id,
+                "system_id": None,
                 "source": Meter.PORTFOLIO_MANAGER,
                 "source_id": "123-PMMeterID",
                 "type": Meter.ELECTRICITY_GRID,
@@ -708,6 +724,7 @@ class MeterUtilTests(TestCase):
             },
             {
                 "property_id": self.property.id,
+                "system_id": None,
                 "source": Meter.PORTFOLIO_MANAGER,
                 "source_id": "123-PMMeterID",
                 "type": Meter.NATURAL_GAS,
@@ -743,6 +760,7 @@ class MeterUtilTests(TestCase):
         expected = [
             {
                 "property_id": self.property.id,
+                "system_id": None,
                 "source": Meter.PORTFOLIO_MANAGER,
                 "source_id": "123-PMMeterID",
                 "type": Meter.ELECTRICITY_GRID,
@@ -778,6 +796,7 @@ class MeterUtilTests(TestCase):
         expected = [
             {
                 "property_id": self.property.id,
+                "system_id": None,
                 "source": Meter.PORTFOLIO_MANAGER,
                 "source_id": "123-PMMeterID",
                 "type": Meter.ELECTRICITY_GRID,

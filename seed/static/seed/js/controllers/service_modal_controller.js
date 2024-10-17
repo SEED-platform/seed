@@ -51,7 +51,7 @@ angular.module('SEED.controller.service_modal', []).controller('service_modal_co
           $uibModalInstance.close();
         },
         (response) => {
-          const errors = Object.values(response.data)
+          const errors = Object.values(response.data);
           Notification.error(`${errors}`);
           $uibModalInstance.dismiss('cancel');
         }
@@ -66,7 +66,7 @@ angular.module('SEED.controller.service_modal', []).controller('service_modal_co
           $uibModalInstance.close();
         },
         (response) => {
-          const errors = Object.values(response.data)
+          const errors = Object.values(response.data);
           Notification.error(`${errors}`);
           $uibModalInstance.dismiss('cancel');
         }

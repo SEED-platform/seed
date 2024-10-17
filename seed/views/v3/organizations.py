@@ -1236,18 +1236,24 @@ class OrganizationViewSet(viewsets.ViewSet):
 
         for axis in axes:
             if axes[axis] != "Count":
-                columns = Column.objects.filter(organization_id=1, column_name=axes[axis])
+                columns = Column.objects.filter(organization_id=organization_id, column_name=axes[axis])
                 if not columns:
                     return []
 
                 column = columns[0]
-                data_type = Column.DB_TYPES[column.data_type]
+                if not column.data_type or column.data_type == "None":
+                    data_type = "float"
+                else:
+                    data_type = Column.DB_TYPES[column.data_type]
 
                 # Get column label
                 serialized_column = ColumnSerializer(column).data
                 add_pint_unit_suffix(organization, serialized_column)
                 for cycle in cycles:
-                    axis_name = serialized_column["display_name"] + f" ({cycle.name})"
+                    name_to_display = (
+                        serialized_column["display_name"] if serialized_column["display_name"] != "" else serialized_column["column_name"]
+                    )
+                    axis_name = name_to_display + f" ({cycle.name})"
                     stats = self.get_axis_stats(organization, cycle, axis, axes[axis], all_property_views, access_level_instance)
                     axis_data.append(self.clean_axis_data(axis_name, data_type, stats))
                     for child_ali in access_level_instance.get_children():

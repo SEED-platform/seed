@@ -14,11 +14,14 @@ from seed.utils.api import OrgMixin
 class MeterSerializer(serializers.ModelSerializer, OrgMixin):
     type = ChoiceField(choices=Meter.ENERGY_TYPES, required=True)
     connection_type = ChoiceField(choices=Meter.CONNECTION_TYPES, required=True)
-    service_name = serializers.CharField(source="service.name", allow_null=True)
-    service_group = serializers.IntegerField(source="service.system.group_id", allow_null=True)
+    service_name = serializers.CharField(source="service.name", allow_null=True, read_only=True)
+    service_group = serializers.IntegerField(source="service.system.group_id", allow_null=True, read_only=True)
     alias = serializers.CharField(required=False, allow_blank=True)
     source = ChoiceField(choices=Meter.SOURCES)
     source_id = serializers.CharField(required=False, allow_blank=True)
+    property_id = serializers.IntegerField(required=False, allow_null=True)
+    system_id = serializers.IntegerField(required=False, allow_null=True)
+    system_name = serializers.CharField(source="system.name", required=False, allow_null=True)
     scenario_id = serializers.IntegerField(required=False, allow_null=True)
 
     class Meta:
@@ -26,6 +29,8 @@ class MeterSerializer(serializers.ModelSerializer, OrgMixin):
         exclude = (
             "property",
             "scenario",
+            "system",
+            "service",
         )
 
     def validate_scenario_id(self, scenario_id):
