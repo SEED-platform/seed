@@ -42,6 +42,7 @@ class ServiceSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Service name must be unique within system")
         return data
 
+
 class SystemSerializer(serializers.ModelSerializer):
     services = ServiceSerializer(many=True, read_only=True)
     type = serializers.ReadOnlyField(default="unknown")
