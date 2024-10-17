@@ -23,7 +23,7 @@ from seed.lib.superperms.orgs.models import AccessLevelInstance, Organization, O
 from seed.models import Analysis, Property, PropertyState, TaxLot, TaxLotState
 from seed.serializers.access_level_instances import AccessLevelInstanceSerializer
 from seed.utils.api import api_endpoint_class
-from seed.utils.api_schema import AutoSchemaHelper
+from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema_org_query_param
 from seed.views.v3.uploads import get_upload_path
 
 _log = logging.getLogger(__name__)
@@ -67,6 +67,41 @@ class AccessLevelViewSet(viewsets.ViewSet):
         return Response(
             {
                 "access_level_names": org.access_level_names,
+                "access_level_tree": access_level_tree,
+            },
+            status=status.HTTP_200_OK,
+        )
+
+    @swagger_auto_schema_org_query_param
+    @api_endpoint_class
+    @has_perm_class("requires_viewer")
+    @action(detail=False, methods=["GET"])
+    def descendant_tree(self, request, organization_pk=None):
+        """
+        Retrieve Access Level Tree data for a Access Level Instance and its descendants.
+        """
+        try:
+            org = Organization.objects.get(pk=organization_pk)
+            user_ali = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
+        except ObjectDoesNotExist:
+            return JsonResponse(
+                {"status": "error", "message": "No such resource."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        access_level_tree = org.get_access_tree(from_ali=user_ali)
+        # find level names for current node and descendants
+        descendants = user_ali.get_descendants()
+        if descendants:
+            end_depth = max(descendant.get_depth() for descendant in descendants)
+        else:
+            end_depth = user_ali.get_depth()
+        start_depth = user_ali.get_depth() - 1
+        level_names = org.access_level_names[start_depth:end_depth]
+
+        return Response(
+            {
+                "access_level_names": level_names,
                 "access_level_tree": access_level_tree,
             },
             status=status.HTTP_200_OK,

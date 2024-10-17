@@ -23,6 +23,7 @@ class TestOrganizationViews(AccessLevelBaseTestCase):
             "api:v3:organization-access_levels-tree",
             args=[self.org.id],
         )
+        url_descendant = reverse_lazy("api:v3:organization-access_levels-descendant-tree", args=[self.org.id])
         sibling = self.org.add_new_access_level_instance(self.org.root.id, "sibling")
         child_dict = {
             "id": self.child_level_instance.pk,
@@ -44,9 +45,15 @@ class TestOrganizationViews(AccessLevelBaseTestCase):
             "path": {"root": "root"},
         }
 
-        # get tree
+        # get tree & descendant tree
         self.login_as_root_member()
         raw_result = self.client.get(url)
+        result = json.loads(raw_result.content)
+        assert result == {
+            "access_level_names": ["root", "child"],
+            "access_level_tree": [{**root_dict, "children": [child_dict, sibling_dict]}],
+        }
+        raw_result = self.client.get(url_descendant)
         result = json.loads(raw_result.content)
         assert result == {
             "access_level_names": ["root", "child"],
@@ -59,6 +66,12 @@ class TestOrganizationViews(AccessLevelBaseTestCase):
         assert result == {
             "access_level_names": ["root", "child"],
             "access_level_tree": [{**root_dict, "children": [child_dict]}],
+        }
+        raw_result = self.client.get(url_descendant)
+        result = json.loads(raw_result.content)
+        assert result == {
+            "access_level_names": ["child"],
+            "access_level_tree": [child_dict],
         }
 
     def test_edit_access_level_names(self):
