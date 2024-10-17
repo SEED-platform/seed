@@ -983,6 +983,27 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
           width: 30
         },
         {
+          name: 'groups_indicator',
+          displayName: '',
+          headerCellTemplate: '<span></span>',
+          cellTemplate:
+            '<div class="ui-grid-row-header-link">' +
+            '<div class="groups-indicator" title="Group Member">' +
+                '<i class="fa fa-circle-nodes text-info" ng-if="row.entity.groups_indicator" ></i>' +
+              '</div>' +
+            '</div>',
+          enableColumnMenu: false,
+          enableColumnMoving: false,
+          enableColumnResizing: false,
+          enableFiltering: false,
+          enableHiding: false,
+          enableSorting: false,
+          exporterSuppressExport: true,
+          pinnedLeft: true,
+          visible: true,
+          width: 30
+        },
+        {
           name: 'labels',
           displayName: '',
           headerCellTemplate: '<i ng-click="grid.appScope.toggle_labels()" class="ui-grid-cell-contents fas fa-chevron-circle-right" id="label-header-icon" style="margin:2px; float:right;"></i>',
@@ -1081,6 +1102,27 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
           width: 30
         },
         {
+          name: 'groups_indicator',
+          displayName: '',
+          headerCellTemplate: '<span></span>',
+          cellTemplate:
+            '<div class="ui-grid-row-header-link">' +
+            '<div class="groups-indicator" title="Group Member">' +
+            '<i class="fa fa-circle-nodes text-info" ng-if="row.entity.groups_indicator" ></i>' +
+            '</div>' +
+            '</div>',
+          enableColumnMenu: false,
+          enableColumnMoving: false,
+          enableColumnResizing: false,
+          enableFiltering: false,
+          enableHiding: false,
+          enableSorting: false,
+          exporterSuppressExport: true,
+          pinnedLeft: true,
+          visible: true,
+          width: 30
+        },
+        {
           name: 'labels',
           displayName: '',
           headerCellTemplate: '<i ng-click="grid.appScope.toggle_labels()" class="ui-grid-cell-contents fas fa-chevron-circle-right" id="label-header-icon" style="margin:2px; float:right;"></i>',
@@ -1124,7 +1166,7 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
       if (_.isUndefined(data)) data = $scope.data;
       const visibleColumns = [
         ..._.map($scope.columns, 'name'),
-        ...['$$treeLevel', 'notes_count', 'meters_exist_indicator', 'merged_indicator', 'id', 'property_state_id', 'property_view_id', 'taxlot_state_id', 'taxlot_view_id'],
+        ...['$$treeLevel', 'notes_count', 'meters_exist_indicator', 'grous_exist', 'merged_indicator', 'id', 'property_state_id', 'property_view_id', 'taxlot_state_id', 'taxlot_view_id'],
         ...$scope.organization.access_level_names
       ];
 
@@ -1768,7 +1810,7 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
       // Save all columns except first 3 and Access Level Instances
       let gridCols = _.filter(
         $scope.gridApi.grid.columns,
-        (col) => !_.includes(['treeBaseRowHeaderCol', 'selectionRowHeaderCol', 'notes_count', 'meters_exist_indicator', 'merged_indicator', 'id', 'labels'], col.name) &&
+        (col) => !_.includes(['treeBaseRowHeaderCol', 'selectionRowHeaderCol', 'notes_count', 'meters_exist_indicator', 'merged_indicator', 'groups_indicator', 'id', 'labels'], col.name) &&
           col.visible &&
           !col.colDef.is_derived_column &&
           col.colDef.group !== 'access_level_instance'
@@ -2081,6 +2123,12 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
             col = $scope.gridApi.grid.columns[staticColIndex];
             $scope.gridApi.grid.columns.splice(staticColIndex, 1);
             $scope.gridApi.grid.columns.splice(5, 0, col);
+          }
+          staticColIndex = _.findIndex($scope.gridApi.grid.columns, { name: 'groups_indicator' });
+          if (staticColIndex !== 6) {
+            col = $scope.gridApi.grid.columns[staticColIndex];
+            $scope.gridApi.grid.columns.splice(staticColIndex, 1);
+            $scope.gridApi.grid.columns.splice(6, 0, col);
           }
           saveSettings();
         });

@@ -45,6 +45,11 @@ angular.module('SEED.controller.inventory_group_modal', [])
         $scope.potential_level_instances = access_level_instances_by_depth[new_level_instance_depth];
       };
 
+      // prepopulate with first ali on lowest node
+      $scope.access_level.level_name_index = $scope.level_names.at(-1).index;
+      $scope.change_selected_level_index();
+      $scope.access_level.access_level_instance = $scope.potential_level_instances.at(0).id;
+
       $scope.edit_inventory_group = () => {
         if (!$scope.disabled()) {
           const id = $scope.data.id;

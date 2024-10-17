@@ -32,6 +32,7 @@ from seed.models import (
     ColumnMapping,
     Cycle,
     DerivedColumn,
+    InventoryGroup,
     Property,
     PropertyState,
     PropertyView,
@@ -215,8 +216,9 @@ def delete_organization_inventory(org_pk, prog_key=None, chunk_size=100, *args, 
     property_state_ids = list(PropertyState.objects.filter(organization_id=org_pk).values_list("id", flat=True))
     taxlot_ids = list(TaxLot.objects.filter(organization_id=org_pk).values_list("id", flat=True))
     taxlot_state_ids = list(TaxLotState.objects.filter(organization_id=org_pk).values_list("id", flat=True))
+    group_ids = list(InventoryGroup.objects.filter(organization_id=org_pk).values_list("id", flat=True))
 
-    total = len(property_ids) + len(property_state_ids) + len(taxlot_ids) + len(taxlot_state_ids)
+    total = len(property_ids) + len(property_state_ids) + len(taxlot_ids) + len(taxlot_state_ids) + len(group_ids)
 
     if total == 0:
         return progress_data.finish_with_success("No inventory data to remove for organization")
@@ -235,6 +237,9 @@ def delete_organization_inventory(org_pk, prog_key=None, chunk_size=100, *args, 
         tasks.append(_delete_organization_taxlot_chunk.subtask((del_ids, progress_data.key, org_pk)))
     for del_ids in batch(taxlot_state_ids, chunk_size):
         tasks.append(_delete_organization_taxlot_state_chunk.subtask((del_ids, progress_data.key, org_pk)))
+    for del_ids in batch(group_ids, chunk_size):
+        tasks.append(_delete_organization_group_chunk.subtask((del_ids, progress_data.key, org_pk)))
+
     chord(tasks, interval=15)(_finish_delete.subtask([org_pk, progress_data.key]))
 
     return progress_data.result()
@@ -477,6 +482,14 @@ def _delete_organization_taxlot_chunk(del_ids, prog_key, org_pk, *args, **kwargs
 def _delete_organization_taxlot_state_chunk(del_ids, prog_key, org_pk, *args, **kwargs):
     """deletes a list of ``del_ids`` and increments the cache"""
     TaxLotState.objects.filter(organization_id=org_pk, pk__in=del_ids).delete()
+    progress_data = ProgressData.from_key(prog_key)
+    progress_data.step()
+
+
+@shared_task
+def _delete_organization_group_chunk(del_ids, prog_key, org_pk, *args, **kwargs):
+    """deletes a list of ``del_ids`` and increments the cache"""
+    InventoryGroup.objects.filter(organization_id=org_pk, pk__in=del_ids).delete()
     progress_data = ProgressData.from_key(prog_key)
     progress_data.step()
 

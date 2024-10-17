@@ -1926,7 +1926,7 @@
               'organization_service', 'user_service',
               (organization_service, user_service) => {
                 const organization_id = user_service.get_organization().id;
-                return organization_service.get_organization_access_level_tree(organization_id);
+                return organization_service.get_descendant_access_level_tree(organization_id);
               }
             ],
             inventory_groups: ['$stateParams', 'inventory_group_service', ($stateParams, inventory_group_service) => {
@@ -2875,7 +2875,7 @@
               'organization_service',
               (organization_payload, organization_service) => {
                 const organization_id = organization_payload.organization.id;
-                return organization_service.get_organization_access_level_tree(organization_id);
+                return organization_service.get_descendant_access_level_tree(organization_id);
               }
             ],
             auth_payload: [
