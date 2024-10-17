@@ -9,7 +9,7 @@ import sys
 from datetime import datetime
 
 import pytz
-from celery import chain, chord, shared_task
+from celery import chord, shared_task
 from celery.utils.log import get_task_logger
 from django.conf import settings
 from django.core.mail import send_mail
@@ -157,40 +157,62 @@ def send_salesforce_error_log(org_pk, errors):
         send_mail(subject, email_body, settings.SERVER_EMAIL, [sf_conf.logging_email])
 
 
-def delete_organization(org_pk):
-    """delete_organization_buildings"""
-    progress_data = ProgressData(func_name="delete_organization", unique_id=org_pk)
-
-    chain(
-        delete_organization_inventory.si(org_pk, progress_data.key),
-        _delete_organization_related_data.si(org_pk, progress_data.key),
-        _finish_delete.si(None, org_pk, progress_data.key),
-    )()
-
-    return progress_data.result()
-
-
 @shared_task
 @lock_and_track
-def _delete_organization_related_data(org_pk, prog_key):
-    # Derived columns use protected foreign keys, they must be deleted first
-    DerivedColumn.objects.filter(organization_id=org_pk).delete()
-    Organization.objects.get(pk=org_pk).delete()
+def delete_organization_and_inventory(org_pk, prog_key=None):
+    """Deletes all associated inventory and the containing org"""
 
-    # TODO: Delete measures in BRICR branch
-
-    progress_data = ProgressData.from_key(prog_key)
+    progress_data = (
+        ProgressData.from_key(prog_key) if prog_key else ProgressData(func_name="delete_organization_and_inventory", unique_id=org_pk)
+    )
+    _evaluate_delete_organization_and_inventory.subtask((progress_data.key, org_pk, True)).apply_async()
     return progress_data.result()
 
 
 @shared_task
-def _finish_delete(results, org_pk, prog_key):
-    sys.setrecursionlimit(1000)
+def _evaluate_delete_organization_and_inventory(prog_key, org_pk, delete_org=False):
+    "check for inventory, delete it if it exists, then pass to finish function to delete the organization"
+    chunk_size = 100
 
     progress_data = ProgressData.from_key(prog_key)
-    return progress_data.finish_with_success()
+
+    property_ids = list(Property.objects.filter(organization_id=org_pk).values_list("id", flat=True))
+    property_state_ids = list(PropertyState.objects.filter(organization_id=org_pk).values_list("id", flat=True))
+    taxlot_ids = list(TaxLot.objects.filter(organization_id=org_pk).values_list("id", flat=True))
+    taxlot_state_ids = list(TaxLotState.objects.filter(organization_id=org_pk).values_list("id", flat=True))
+
+    total = len(property_ids) + len(property_state_ids) + len(taxlot_ids) + len(taxlot_state_ids)
+    progress_data.total = total / float(chunk_size) + 1
+    progress_data.data["completed_records"] = 0
+    progress_data.data["total_records"] = total
+    progress_data.save()
+
+    if total > 0:
+        for chunk_ids in batch(property_ids, chunk_size):
+            _delete_organization_children(chunk_ids, Property, progress_data.key)
+        for chunk_ids in batch(property_state_ids, chunk_size):
+            _delete_organization_children(chunk_ids, PropertyState, progress_data.key)
+        for chunk_ids in batch(taxlot_ids, chunk_size):
+            _delete_organization_children(chunk_ids, TaxLot, progress_data.key)
+        for chunk_ids in batch(taxlot_state_ids, chunk_size):
+            _delete_organization_children(chunk_ids, TaxLotState, progress_data.key)
+    else:
+        progress_data.step()
+
+    if delete_org:
+        DerivedColumn.objects.filter(organization_id=org_pk).delete()
+        Organization.objects.get(pk=org_pk).delete()
+        # TODO: Delete measures in BRICR branch
 
 
+@shared_task
+def _delete_organization_children(chunk_ids, class_name, prog_key):
+    class_name.objects.filter(id__in=chunk_ids).delete()
+    progress_data = ProgressData.from_key(prog_key)
+    progress_data.step_with_counter()
+
+
+@shared_task
 def _finish_delete_column(column_id, prog_key):
     # Delete all mappings from raw column names to the mapped column, then delete the mapped column
     column = Column.objects.get(id=column_id)
@@ -206,37 +228,11 @@ def _finish_delete_column(column_id, prog_key):
 def delete_organization_inventory(org_pk, prog_key=None, chunk_size=100, *args, **kwargs):
     """Deletes all properties & taxlots within an organization."""
     sys.setrecursionlimit(5000)  # default is 1000
-
     progress_data = (
         ProgressData.from_key(prog_key) if prog_key else ProgressData(func_name="delete_organization_inventory", unique_id=org_pk)
     )
-
-    property_ids = list(Property.objects.filter(organization_id=org_pk).values_list("id", flat=True))
-    property_state_ids = list(PropertyState.objects.filter(organization_id=org_pk).values_list("id", flat=True))
-    taxlot_ids = list(TaxLot.objects.filter(organization_id=org_pk).values_list("id", flat=True))
-    taxlot_state_ids = list(TaxLotState.objects.filter(organization_id=org_pk).values_list("id", flat=True))
-
-    total = len(property_ids) + len(property_state_ids) + len(taxlot_ids) + len(taxlot_state_ids)
-
-    if total == 0:
-        return progress_data.finish_with_success("No inventory data to remove for organization")
-
-    # total steps is the total number of properties divided by the chunk size
-    progress_data.total = total / float(chunk_size)
-    progress_data.save()
-
-    tasks = []
-    # we could also use .s instead of .subtask and not wrap the *args
-    for del_ids in batch(property_ids, chunk_size):
-        tasks.append(_delete_organization_property_chunk.subtask((del_ids, progress_data.key, org_pk)))
-    for del_ids in batch(property_state_ids, chunk_size):
-        tasks.append(_delete_organization_property_state_chunk.subtask((del_ids, progress_data.key, org_pk)))
-    for del_ids in batch(taxlot_ids, chunk_size):
-        tasks.append(_delete_organization_taxlot_chunk.subtask((del_ids, progress_data.key, org_pk)))
-    for del_ids in batch(taxlot_state_ids, chunk_size):
-        tasks.append(_delete_organization_taxlot_state_chunk.subtask((del_ids, progress_data.key, org_pk)))
-    chord(tasks, interval=15)(_finish_delete.subtask([org_pk, progress_data.key]))
-
+    _evaluate_delete_organization_and_inventory.subtask((progress_data.key, org_pk, False)).apply_async()
+    sys.setrecursionlimit(1000)  # default is 1000
     return progress_data.result()
 
 
