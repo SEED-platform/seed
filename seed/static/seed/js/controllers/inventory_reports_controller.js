@@ -476,11 +476,29 @@ angular.module('SEED.controller.inventory_reports', []).controller('inventory_re
 
             if ($scope.chartData.chartData.every((d) => typeof d.x === 'number')) {
               $scope.scatterChart.options.scales.x.type = 'linear';
+
+              // Set the min / max for the axis to be the min/max values -/+ 0.5 percent
+              $scope.scatterChart.options.scales.x.min = Math.min(...$scope.chartData.chartData.map(d => d.x));
+              $scope.scatterChart.options.scales.x.min = $scope.scatterChart.options.scales.x.min - Math.round(Math.abs($scope.scatterChart.options.scales.x.min * 0.005));
+
+              $scope.scatterChart.options.scales.x.max = Math.max(...$scope.chartData.chartData.map(d => d.x));
+              $scope.scatterChart.options.scales.x.max = $scope.scatterChart.options.scales.x.max + Math.round(Math.abs($scope.scatterChart.options.scales.x.max * 0.005));
+
+              if ($scope.xAxisSelectedItem.varName === 'year_built') {
+                $scope.scatterChart.options.scales.x.ticks.callback = (value, index, ticks) => {
+                  return String(value);
+                }
+              }
             } else {
               $scope.scatterChart.options.scales.x = {
                 type: 'category',
                 labels: Array.from([...new Set($scope.chartData.chartData.map((d) => d.x))]).sort()
               };
+            }
+            if ($scope.yAxisSelectedItem.varName === 'year_built') {
+              $scope.scatterChart.options.scales.y.ticks.callback = (value, index, ticks) => {
+                return String(value);
+              }
             }
             $scope.scatterChart.data.datasets[0].data = $scope.chartData.chartData;
             // add the colors to the datapoints, need to create a hash map first
