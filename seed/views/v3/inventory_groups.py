@@ -1,6 +1,7 @@
 # !/usr/bin/env python
 
 from django.core.exceptions import ObjectDoesNotExist
+from django.db.models import Q
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
 from rest_framework import response, status
@@ -90,7 +91,6 @@ class InventoryGroupViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
         try:
             group = InventoryGroup.objects.get(pk=pk)
             group = InventoryGroupSerializer(group).data
-            ali = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
         except ObjectDoesNotExist:
             return [], JsonResponse({"status": "erorr", "message": "No such resource."})
 
@@ -99,9 +99,7 @@ class InventoryGroupViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
             return [], JsonResponse({"stauts": "success", "data": []})
 
         meters = Meter.objects.filter(
-            property_id__in=group["inventory_list"],
-            property__access_level_instance__lft__gte=ali.lft,
-            property__access_level_instance__rgt__lte=ali.rgt,
+            Q(property_id__in=group["inventory_list"]) | Q(system__group_id=pk),
         )
         data = MeterSerializer(meters, many=True).data
         return JsonResponse({"status": "success", "data": data})

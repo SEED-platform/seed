@@ -16,7 +16,7 @@ from rest_framework import status
 from seed.data_importer.models import ImportFile, ImportRecord
 from seed.lib.superperms.orgs.models import ROLE_MEMBER, ROLE_OWNER, ROLE_VIEWER, AccessLevelInstance, Organization, OrganizationUser
 from seed.lib.superperms.orgs.permissions import get_org_id
-from seed.models import Analysis, DataLogger, Goal, Property, PropertyView, TaxLotView, UbidModel
+from seed.models import Analysis, DataLogger, Goal, InventoryGroup, Property, PropertyView, TaxLotView, UbidModel
 
 # Allow Super Users to ignore permissions.
 ALLOW_SUPER_USER_PERMS = getattr(settings, "ALLOW_SUPER_USER_PERMS", True)
@@ -235,6 +235,7 @@ def assert_hierarchy_access(
     param_import_record_id=None,
     goal_id_kwarg=None,
     data_logger_id_kwarg=None,
+    inventory_group_id_kwarg=None,
     *args,
     **kwargs,
 ):
@@ -325,6 +326,10 @@ def assert_hierarchy_access(
             data_logger = DataLogger.objects.get(pk=kwargs[data_logger_id_kwarg])
             requests_ali = data_logger.property.access_level_instance
 
+        elif inventory_group_id_kwarg and inventory_group_id_kwarg in kwargs:
+            group = InventoryGroup.objects.get(pk=kwargs[inventory_group_id_kwarg])
+            requests_ali = group.access_level_instance
+
         else:
             property_view = PropertyView.objects.get(pk=request.GET["property_view_id"])
             requests_ali = property_view.property.access_level_instance
@@ -356,6 +361,7 @@ def has_hierarchy_access(
     param_import_record_id=None,
     goal_id_kwarg=None,
     data_logger_id_kwarg=None,
+    inventory_group_id_kwarg=None,
 ):
     """Must be called after has_perm_class"""
 
@@ -385,6 +391,7 @@ def has_hierarchy_access(
                     param_import_record_id,
                     goal_id_kwarg,
                     data_logger_id_kwarg,
+                    inventory_group_id_kwarg,
                     *args,
                     **kwargs,
                 ) or fn(self, request, *args, **kwargs)
