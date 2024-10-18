@@ -74,7 +74,7 @@ class InventoryGroupViewTests(AccessLevelBaseTestCase):
 
         # helper functions to create meters and readings
         def create_meter_entry(property_view_id, source_id):
-            payload = {"type": "Electric", "source": "Manual Entry", "source_id": source_id}
+            payload = {"type": "Electric", "source": "Manual Entry", "source_id": source_id, "connection_type": "From Outside"}
             url = reverse_lazy("api:v3:property-meters-list", kwargs={"property_pk": property_view_id}) + f"?organization_id={self.org.id}"
             response = self.client.post(url, data=json.dumps(payload), content_type="application/json")
             return response.json()["id"]
@@ -131,6 +131,55 @@ class InventoryGroupViewTests(AccessLevelBaseTestCase):
 
         response = self._put_group_mappings([self.property_group.id], [self.view1a.id], "property")
         assert response.status_code == 200
+
+    def test_merge_group_duplicates(self):
+        view = self.property_view_factory.get_property_view()
+        self._put_group_mappings([self.property_group.id], [view.id], "property")
+
+        # Merge the properties
+        url = reverse_lazy("api:v3:properties-merge") + f"?organization_id={self.org.pk}"
+        data = {"property_view_ids": [self.view1.pk, view.pk]}
+        self.client.post(url, data=json.dumps(data), content_type="application/json")
+
+        new_property = Property.objects.last()
+        assert new_property.group_mappings.count() == 1
+
+    def test_merge_group_order(self):
+        view4 = self.property_view_factory.get_property_view()
+        view5 = self.property_view_factory.get_property_view()
+        url = reverse_lazy("api:v3:properties-merge") + f"?organization_id={self.org.pk}"
+
+        # test group history preserved if first view has groups, second has none
+        data = {"property_view_ids": [self.view1.pk, view4.pk]}
+        self.client.post(url, data=json.dumps(data), content_type="application/json")
+
+        new_property = Property.objects.last()
+        assert new_property.group_mappings.count() == 1
+
+        # test group history preserved if second has groups, first has none
+        data = {"property_view_ids": [view5.pk, self.view1.pk]}
+        self.client.post(url, data=json.dumps(data), content_type="application/json")
+
+        new_property = Property.objects.last()
+        assert new_property.group_mappings.count() == 1
+
+    def test_clean_group(self):
+        assert self.property_group.group_mappings.count() == 2
+        view4 = self.property_view_factory.get_property_view()
+        view5 = self.property_view_factory.get_property_view()
+        # add a view with a shared property to a different cycle
+        self.property_view_factory.get_property_view(prprty=view4.property, cycle=self.cycle2)
+        # add properties to groups
+        self._put_group_mappings([self.property_group.id], [view4.id, view5.id], "property")
+        assert self.property_group.group_mappings.count() == 4
+
+        # bulk delete views
+        url = reverse_lazy("api:v3:properties-batch-delete") + f"?organization_id={self.org.pk}"
+        params = json.dumps({"property_view_ids": [view4.id, view5.id]})
+        self.client.delete(url, params, content_type="application/json")
+
+        # only view5 mapping should be removed as view4a exists in cycle2
+        assert self.property_group.group_mappings.count() == 3
 
 
 class GroupMeterTests(AccessLevelBaseTestCase):
@@ -192,52 +241,3 @@ class GroupMeterTests(AccessLevelBaseTestCase):
         assert list(data.keys()) == ["column_defs", "readings"]
         # assert 4 columns: start, end, meter 1, meter 2
         assert len(data["column_defs"]) == 4
-
-    def test_merge_group_duplicates(self):
-        view = self.property_view_factory.get_property_view()
-        self._put_group_mappings([self.property_group.id], [view.id], "property")
-
-        # Merge the properties
-        url = reverse_lazy("api:v3:properties-merge") + f"?organization_id={self.org.pk}"
-        data = {"property_view_ids": [self.view1.pk, view.pk]}
-        self.client.post(url, data=json.dumps(data), content_type="application/json")
-
-        new_property = Property.objects.last()
-        assert new_property.group_mappings.count() == 1
-
-    def test_merge_group_order(self):
-        view4 = self.property_view_factory.get_property_view()
-        view5 = self.property_view_factory.get_property_view()
-        url = reverse_lazy("api:v3:properties-merge") + f"?organization_id={self.org.pk}"
-
-        # test group history preserved if first view has groups, second has none
-        data = {"property_view_ids": [self.view1.pk, view4.pk]}
-        self.client.post(url, data=json.dumps(data), content_type="application/json")
-
-        new_property = Property.objects.last()
-        assert new_property.group_mappings.count() == 1
-
-        # test group history preserved if second has groups, first has none
-        data = {"property_view_ids": [view5.pk, self.view1.pk]}
-        self.client.post(url, data=json.dumps(data), content_type="application/json")
-
-        new_property = Property.objects.last()
-        assert new_property.group_mappings.count() == 1
-
-    def test_clean_group(self):
-        assert self.property_group.group_mappings.count() == 2
-        view4 = self.property_view_factory.get_property_view()
-        view5 = self.property_view_factory.get_property_view()
-        # add a view with a shared property to a different cycle
-        self.property_view_factory.get_property_view(prprty=view4.property, cycle=self.cycle2)
-        # add properties to groups
-        self._put_group_mappings([self.property_group.id], [view4.id, view5.id], "property")
-        assert self.property_group.group_mappings.count() == 4
-
-        # bulk delete views
-        url = reverse_lazy("api:v3:properties-batch-delete") + f"?organization_id={self.org.pk}"
-        params = json.dumps({"property_view_ids": [view4.id, view5.id]})
-        self.client.delete(url, params, content_type="application/json")
-
-        # only view5 mapping should be removed as view4a exists in cycle2
-        assert self.property_group.group_mappings.count() == 3
