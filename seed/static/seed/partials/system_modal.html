@@ -1,0 +1,68 @@
+<div class="modal-header" ng-switch="::action">
+  <h4 class="modal-title" ng-switch-when="create" translate>Create System</h4>
+  <h4 class="modal-title" ng-switch-when="edit" translate>Edit System</h4>
+  <h4 class="modal-title" ng-switch-when="remove" translate>Remove System</h4>
+</div>
+<div class="modal-body" ng-switch="::action">
+  <form id="systemForm" name="systemForm" role="form" ng-submit="submitSystemForm(systemForm)" novalidate>
+    <div ng-if="action !== 'remove'">
+      <!-- Name input -->
+      <div class="form-group">
+        <label class="control-label sectionLabel" translate>Name</label>
+        <input id="name" type="text" name="name" class="form-control" ng-minlength="1" ng-maxlength="100" ng-model="system.name" placeholder="{$:: 'System Name' | translate $}" required />
+      </div>
+
+      <!-- system selection -->
+      <div class="form-group">
+        <label class="control-label sectionLabel">System Type</label>
+        <select class="form-control" ng-model="system.type" ng-dropdown ng-change="initializeSystem()" required>
+          <option ng-option value="DES" selected="selected">DES</option>
+          <option ng-option value="EVSE" selected="selected">EVSE</option>
+          <option ng-option value="Battery" selected="selected">Battery</option>
+        </select>
+      </div>
+
+      <!-- DES -->
+      <div class="form-group" ng-if="system.type == 'DES'">
+        <label class="control-label sectionLabel">DES Type</label>
+        <select class="form-control" ng-model="system.des_type" ng-dropdown required>
+          <option ng-repeat="des_type in des_types" selected="selected" ng-value="des_type">{$:: des_type $}</option>
+        </select>
+        <label class="control-label sectionLabel" translate>capacity</label>
+        <input id="capacity" type="number" name="capacity" class="form-control" ng-model="system.capacity" placeholder="{$:: 'capacity' | translate $}" required />
+        <label class="control-label sectionLabel" translate>count</label>
+        <input id="count" type="number" name="count" class="form-control" ng-model="system.count" placeholder="{$:: 'count' | translate $}" required />
+      </div>
+
+      <!-- EVSE -->
+      <div class="form-group" ng-if="system.type == 'EVSE'">
+        <label class="control-label sectionLabel">EVSE Type</label>
+        <select class="form-control" ng-model="system.evse_type" ng-dropdown required>
+          <option ng-repeat="evse_type in evse_types" selected="selected" ng-value="evse_type">{$:: evse_type $}</option>
+        </select>
+        <label class="control-label sectionLabel" translate>power</label>
+        <input id="power" type="number" name="power" class="form-control" ng-model="system.power" placeholder="{$:: 'power' | translate $}" required />
+        <label class="control-label sectionLabel" translate>count</label>
+        <input id="count" type="number" name="count" class="form-control" ng-model="system.count" placeholder="{$:: 'count' | translate $}" required />
+      </div>
+
+      <!-- Battery -->
+      <div class="form-group" ng-if="system.type == 'Battery'">
+        <label class="control-label sectionLabel" translate>efficiency</label>
+        <input id="efficiency" type="number" name="efficiency" class="form-control" ng-model="system.efficiency" placeholder="{$:: 'efficiency' | translate $}" required />
+        <label class="control-label sectionLabel" translate>capacity</label>
+        <input id="capacity" type="number" name="capacity" class="form-control" ng-model="system.capacity" placeholder="{$:: 'capacity' | translate $}" required />
+        <label class="control-label sectionLabel" translate>voltage</label>
+        <input id="voltage" type="number" name="voltage" class="form-control" ng-model="system.voltage" placeholder="{$:: 'voltage' | translate $}" required />
+      </div>
+    </div>
+
+    <div style="padding-bottom: 15px" ng-switch-when="remove">{$:: 'Are you sure you want to delete the system' | translate $}, <strong>{$:: system.name $}</strong>?</div>
+  </form>
+
+  <div class="modal-footer">
+    <button type="button" class="btn btn-default" style="min-width: 90px" ng-click="cancel()" translate>Cancel</button>
+    <input type="submit" id="hidden_submit" form="systemForm" hidden ng-disabled="systemForm.$invalid || waiting_for_server" />
+    <button type="submit" class="btn btn-primary" form="systemForm" ng-disabled="systemForm.$invalid || waiting_for_server">{$ capitalize(action) $} System</button>
+  </div>
+</div>

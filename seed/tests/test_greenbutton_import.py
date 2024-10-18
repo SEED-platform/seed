@@ -196,6 +196,7 @@ class GreenButtonImportTest(DataMappingBaseTestCase):
             {
                 "source_id": "409483",
                 "property_id": self.property_1.id,
+                "system_id": None,
                 "incoming": 2,
                 "type": "Electric - Grid",
                 "successfully_imported": 2,
@@ -227,6 +228,7 @@ class GreenButtonImportTest(DataMappingBaseTestCase):
             {
                 "source_id": "409483",
                 "property_id": self.property_1.id,
+                "system_id": None,
                 "type": "Electric - Grid",
                 "incoming": 1002,
                 "successfully_imported": 1000,
