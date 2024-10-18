@@ -574,7 +574,7 @@ angular.module('SEED.controller.portfolio_summary', [])
             field: 'goal_note.resolution',
             displayName: 'Resolution',
             enableFiltering: false,
-            enableSorting: false,
+            enableSorting: true,
             enableCellEdit: !$scope.viewer,
             cellClass: !$scope.viewer && 'cell-edit',
             width: 300
@@ -583,7 +583,7 @@ angular.module('SEED.controller.portfolio_summary', [])
             field: 'historical_note.text',
             displayName: 'Historical Notes',
             enableFiltering: false,
-            enableSorting: false,
+            enableSorting: true,
             enableCellEdit: !$scope.viewer,
             cellClass: !$scope.viewer && 'cell-edit',
             width: 300
@@ -592,7 +592,7 @@ angular.module('SEED.controller.portfolio_summary', [])
             field: 'goal_note.passed_checks',
             displayName: 'Passed Checks',
             enableFiltering: false,
-            enableSorting: false,
+            enableSorting: true,
             editableCellTemplate: 'ui-grid/dropdownEditor',
             editDropdownOptionsArray: [{ id: 1, value: true }, { id: 2, value: false }],
             editDropdownIdLabel: 'value',
@@ -791,9 +791,15 @@ angular.module('SEED.controller.portfolio_summary', [])
         // parse the filters and sorts
         for (const column of formatted_columns) {
           // format column if cycle specific
-          const { name, filters, sort } = column;
-          // remove the column id at the end of the name
-          const column_name = name.split('_').slice(0, -1).join('_');
+          let { name, filters, sort } = column;
+          // if it is a related column use name, otherwise remove the column id at the end of the name ('pm_property_id_123')
+          let column_name
+          if (name.includes('.')) {
+            name = 'property__' + name.replace('.', '__')
+            column_name = name
+          } else {
+            column_name = name.split('_').slice(0, -1).join('_');
+          }
 
           for (const filter of filters) {
             if (_.isEmpty(filter)) {
@@ -820,7 +826,13 @@ angular.module('SEED.controller.portfolio_summary', [])
 
           if (sort.direction) {
             // remove the column id at the end of the name
-            const column_name = name.split('_').slice(0, -1).join('_');
+            let column_name
+            if (name.includes('.')) {
+              name = 'property__' + name.replace('.', '__')
+              column_name = name
+            } else {
+              column_name = name.split('_').slice(0, -1).join('_');
+            }
             const display = [$scope.columnDisplayByName[name], sort.direction].join(' ');
             $scope.column_sorts = [{
               name,
