@@ -553,7 +553,7 @@ angular.module('SEED.controller.portfolio_summary', [])
             field: 'goal_note.question',
             displayName: 'Question',
             enableFiltering: false,
-            enableSorting: false,
+            enableSorting: true,
             editableCellTemplate: 'ui-grid/dropdownEditor',
             editDropdownOptionsArray: $scope.question_options,
             editDropdownIdLabel: 'value',
@@ -791,15 +791,10 @@ angular.module('SEED.controller.portfolio_summary', [])
         // parse the filters and sorts
         for (const column of formatted_columns) {
           // format column if cycle specific
-          let { name, filters, sort } = column;
-          // if it is a related column use name, otherwise remove the column id at the end of the name ('pm_property_id_123')
-          let column_name
-          if (name.includes('.')) {
-            name = 'property__' + name.replace('.', '__')
-            column_name = name
-          } else {
-            column_name = name.split('_').slice(0, -1).join('_');
-          }
+          let { name } = column;
+          const { filters, sort } = column;
+          // remove the column id at the end of the name
+          const column_name = name.split('_').slice(0, -1).join('_');
 
           for (const filter of filters) {
             if (_.isEmpty(filter)) {
@@ -826,10 +821,10 @@ angular.module('SEED.controller.portfolio_summary', [])
 
           if (sort.direction) {
             // remove the column id at the end of the name
-            let column_name
+            let column_name;
             if (name.includes('.')) {
-              name = 'property__' + name.replace('.', '__')
-              column_name = name
+              name = `property__${name.replace('.', '__')}`;
+              column_name = name;
             } else {
               column_name = name.split('_').slice(0, -1).join('_');
             }
