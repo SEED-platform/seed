@@ -822,7 +822,7 @@ angular.module('SEED.controller.portfolio_summary', [])
           if (sort.direction) {
             // remove the column id at the end of the name
             let column_name;
-            if (name.includes('.')) {
+            if (name.includes('historical_note.', 'goal_note.')) {
               name = `property__${name.replace('.', '__')}`;
               column_name = name;
             } else {
