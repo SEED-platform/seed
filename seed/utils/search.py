@@ -13,7 +13,7 @@ from functools import reduce
 from typing import Any, Union
 
 from django.db import models
-from django.db.models import Q
+from django.db.models import Case, IntegerField, Q, Value, When
 from django.db.models.fields.json import KeyTextTransform
 from django.db.models.functions import Cast, Coalesce, Collate, Replace
 from django.http.request import QueryDict
@@ -507,3 +507,38 @@ def build_view_filters_and_sorts(
             annotations.update(parsed_annotations)
 
     return new_filters, annotations, order_by
+
+
+def build_related_model_filters_and_sorts(
+    filters: QueryDict, columns: list[dict], inventory_type: str, access_level_names: list[str] = []
+) -> tuple[Q, AnnotationDict, list[str]]:
+    order_by = []
+    annotations = {}
+    columns_by_name = {}
+    for column in columns:
+        if column["related"]:
+            continue
+        columns_by_name[column["name"]] = column
+
+    column_name = filters.get("order_by")
+    direction = "-" if column_name.startswith("-") else ""
+    column_name = column_name.lstrip("-")
+
+    if "goal_note" in column_name:
+        column_name = column_name.replace("goal_note", "goalnote")
+
+    boolean_column = column_name == "property__goalnote__passed_checks"
+    if boolean_column:
+        target = False
+    else:
+        target = ""
+
+    related_model = Case(When(**{column_name: target}, then=Value(1)), default=Value(0), output_field=IntegerField())
+    parsed_annotations = {"related_model": related_model}
+    parsed_sort = [direction + "related_model", direction + column_name]
+
+    if parsed_sort is not None:
+        order_by.extend(parsed_sort)
+        annotations.update(parsed_annotations)
+
+    return Q(), annotations, order_by
