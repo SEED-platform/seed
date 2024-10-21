@@ -855,13 +855,18 @@ class OrganizationViewSet(viewsets.ViewSet):
             all_property_views = filter_group.views(all_property_views)
 
         # annotate properties with fields
+        def get_column_model_field(column):
+            if column.is_extra_data:
+                return F("state__extra_data__" + column.column_name)
+            elif column.derived_column:
+                return F("state__derived_data__" + column.column_name)
+            else:
+                return F("state__" + column.column_name)
+
         fields = {
-            **{
-                column.column_name: F("state__" + (column.column_name if not column.is_extra_data else f"extra_data__{column.column_name}"))
-                for column in additional_columns
-            },
-            "x": F("state__" + (x_var if x_var in dir(PropertyState) else f"extra_data__{x_var}")),
-            "y": F("state__" + (y_var if y_var in dir(PropertyState) else f"extra_data__{y_var}")),
+            **{column.column_name: get_column_model_field(column) for column in additional_columns},
+            "x": get_column_model_field(x_var),
+            "y": get_column_model_field(y_var),
         }
         if x_var == "Count":
             fields["x"] = Value(1)
@@ -940,7 +945,9 @@ class OrganizationViewSet(viewsets.ViewSet):
             )
 
         cycles = Cycle.objects.filter(id__in=params["cycle_ids"])
-        report_data = self.setup_report_data(pk, ali, cycles, params["x_var"], params["y_var"], filter_group_id)
+        x_var = Column.objects.get(column_name=params["x_var"], organization=pk, table_name="PropertyState")
+        y_var = Column.objects.get(column_name=params["y_var"], organization=pk, table_name="PropertyState")
+        report_data = self.setup_report_data(pk, ali, cycles, x_var, y_var, filter_group_id)
         data = self.get_raw_report_data(pk, cycles, report_data["all_property_views"], report_data["field_data"])
         axis_data = self.get_axis_data(
             pk, ali, cycles, params["x_var"], params["y_var"], report_data["all_property_views"], report_data["field_data"]
@@ -1004,7 +1011,9 @@ class OrganizationViewSet(viewsets.ViewSet):
 
         # get data
         cycles = Cycle.objects.filter(id__in=params["cycle_ids"])
-        report_data = self.setup_report_data(pk, ali, cycles, params["x_var"], params["y_var"], filter_group_id)
+        x_var = Column.objects.get(column_name=params["x_var"], organization=pk, table_name="PropertyState")
+        y_var = Column.objects.get(column_name=params["y_var"], organization=pk, table_name="PropertyState")
+        report_data = self.setup_report_data(pk, ali, cycles, x_var, y_var, filter_group_id)
         data = self.get_raw_report_data(pk, cycles, report_data["all_property_views"], report_data["field_data"])
         chart_data = []
         property_counts = []
@@ -1134,8 +1143,10 @@ class OrganizationViewSet(viewsets.ViewSet):
         # Gather base data
         cycles = Cycle.objects.filter(id__in=params["cycle_ids"])
         matching_columns = Column.objects.filter(organization_id=pk, is_matching_criteria=True, table_name="PropertyState")
+        x_var = Column.objects.get(column_name=params["x_var"], organization=pk, table_name="PropertyState")
+        y_var = Column.objects.get(column_name=params["y_var"], organization=pk, table_name="PropertyState")
         report_data = self.setup_report_data(
-            pk, access_level_instance, cycles, params["x_var"], params["y_var"], filter_group_id, additional_columns=matching_columns
+            pk, access_level_instance, cycles, x_var, y_var, filter_group_id, additional_columns=matching_columns
         )
         data = self.get_raw_report_data(pk, cycles, report_data["all_property_views"], report_data["field_data"])
 
