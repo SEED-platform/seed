@@ -46,6 +46,8 @@
     'SEED.controller.confirm_column_settings_modal',
     'SEED.controller.confirm_organization_deletion_modal',
     'SEED.controller.create_column_modal',
+    'SEED.controller.service_modal',
+    'SEED.controller.system_modal',
     'SEED.controller.create_organization_modal',
     'SEED.controller.create_sub_organization_modal',
     'SEED.controller.cycle_admin',
@@ -226,6 +228,8 @@
     'SEED.service.scenario',
     'SEED.service.search',
     'SEED.service.sensor',
+    'SEED.service.service',
+    'SEED.service.system',
     'SEED.service.simple_modal',
     'SEED.service.two_factor',
     'SEED.service.ubid',
@@ -2305,8 +2309,8 @@
         .state({
           name: 'inventory_group_detail_meters',
           url: '/{inventory_type:properties|taxlots}/groups/{group_id:int}/meters',
-          templateUrl: `${static_url}seed/partials/inventory_detail_meters.html`,
-          controller: 'inventory_detail_meters_controller',
+          templateUrl: `${static_url}seed/partials/inventory_group_detail_meters.html`,
+          controller: 'inventory_group_detail_meters_controller',
           resolve: {
             inventory_payload: () => null,
             property_meter_usage: [
@@ -2330,10 +2334,22 @@
         })
         .state({
           name: 'inventory_group_detail_systems',
-          url: '/{inventory_type:properties|taxlots}/groups/{group_id:int}',
+          url: '/{inventory_type:properties|taxlots}/groups/{group_id:int}/systems',
           templateUrl: `${static_url}seed/partials/inventory_group_detail_systems.html`,
           controller: 'inventory_group_detail_systems_controller',
-          resolve: {}
+          resolve: {
+            systems: ['$stateParams', 'system_service', 'user_service', ($stateParams, system_service, user_service) => {
+              const organization_id = user_service.get_organization().id;
+              const { group_id } = $stateParams;
+              return system_service.get_systems_by_type(organization_id, group_id);
+            }],
+            organization_payload: [
+              'user_service',
+              'organization_service',
+              (user_service, organization_service) => organization_service.get_organization(user_service.get_organization().id)
+            ],
+            cycles: ['cycle_service', (cycle_service) => cycle_service.get_cycles()]
+          }
         })
         .state({
           name: 'inventory_detail',

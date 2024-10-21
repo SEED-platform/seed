@@ -1980,6 +1980,9 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
         expectation = [
             {
                 "id": electric_meter.id,
+                "property_id": self.property_view_1.property_id,
+                "system_id": None,
+                "system_name": None,
                 "type": "Electric - Grid",
                 "source": "Portfolio Manager",
                 "source_id": "5766973-0",
@@ -1987,9 +1990,15 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
                 "scenario_name": None,
                 "is_virtual": False,
                 "alias": "Electric - Grid - Portfolio Manager - 5766973-0",
+                "connection_type": "From Outside",
+                "service_name": None,
+                "service_group": None,
             },
             {
                 "id": gas_meter.id,
+                "property_id": self.property_view_1.property_id,
+                "system_id": None,
+                "system_name": None,
                 "type": "Natural Gas",
                 "source": "Portfolio Manager",
                 "source_id": "5766973-1",
@@ -1997,9 +2006,15 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
                 "scenario_name": None,
                 "is_virtual": False,
                 "alias": "Natural Gas - Portfolio Manager - 5766973-1",
+                "connection_type": "From Outside",
+                "service_name": None,
+                "service_group": None,
             },
             {
                 "id": gb_gas_meter.id,
+                "property_id": self.property_view_1.property_id,
+                "system_id": None,
+                "system_name": None,
                 "type": "Natural Gas",
                 "source": "GreenButton",
                 "source_id": "123fakeID",
@@ -2007,6 +2022,9 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
                 "scenario_name": None,
                 "is_virtual": False,
                 "alias": "Natural Gas - GreenButton - 123fakeID",
+                "connection_type": "From Outside",
+                "service_name": None,
+                "service_group": None,
             },
         ]
 
