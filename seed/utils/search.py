@@ -509,9 +509,7 @@ def build_view_filters_and_sorts(
     return new_filters, annotations, order_by
 
 
-def build_related_model_filters_and_sorts(
-    filters: QueryDict, columns: list[dict], inventory_type: str, access_level_names: list[str] = []
-) -> tuple[Q, AnnotationDict, list[str]]:
+def build_related_model_filters_and_sorts(filters: QueryDict, columns: list[dict]) -> tuple[Q, AnnotationDict, list[str]]:
     order_by = []
     annotations = {}
     columns_by_name = {}
@@ -521,6 +519,9 @@ def build_related_model_filters_and_sorts(
         columns_by_name[column["name"]] = column
 
     column_name = filters.get("order_by")
+    if not column_name:
+        return Q(), {}, ["id"]
+
     direction = "-" if column_name.startswith("-") else ""
     column_name = column_name.lstrip("-")
 
