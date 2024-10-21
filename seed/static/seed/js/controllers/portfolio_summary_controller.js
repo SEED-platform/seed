@@ -282,7 +282,7 @@ angular.module('SEED.controller.portfolio_summary', [])
           access_level_instance_id,
           include_property_ids,
           $scope.goal.id, // optional param to retrieve goal note details
-          $scope.related_model_sort // optional param to retrieve goal note details
+          $scope.related_model_sort // optional param to sort on related models
         );
       };
 
