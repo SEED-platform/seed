@@ -1,5 +1,7 @@
 # !/usr/bin/env python
 
+import logging
+
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
 from django.http import JsonResponse
@@ -16,6 +18,8 @@ from seed.utils.api_schema import swagger_auto_schema_org_query_param
 from seed.utils.meters import PropertyMeterReadingsExporter
 from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
 
+logger = logging.getLogger()
+
 
 @method_decorator(name="list", decorator=[swagger_auto_schema_org_query_param, has_perm_class("requires_viewer")])
 @method_decorator(name="create", decorator=[swagger_auto_schema_org_query_param, has_perm_class("requires_member")])
@@ -28,12 +32,17 @@ class InventoryGroupViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
 
     def get_queryset(self):
         groups = InventoryGroup.objects.filter(organization=self.get_organization(self.request))
+
         access_level_instance_id = getattr(self.request, "access_level_instance_id", None)
         if access_level_instance_id:
             access_level_instance = AccessLevelInstance.objects.get(pk=access_level_instance_id)
             groups = groups.filter(
                 access_level_instance__lft__gte=access_level_instance.lft, access_level_instance__rgt__lte=access_level_instance.rgt
             )
+
+        selected = self.request.data.get("selected")
+        if selected:
+            groups = groups.filter(group_mappings__property_id__in=selected).distinct()
 
         return groups.order_by("name").distinct()
 
@@ -45,7 +54,10 @@ class InventoryGroupViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
 
     def _get_property_groups(self, request):
         qs = self.get_queryset()  # ALL groups from org
-        results = [InventoryGroupSerializer(q).data for q in qs]
+        serializer_kwargs = {"instance": qs, "many": True}
+        serializer_kwargs["include_systems"] = self.request.query_params.get("include_systems", False)
+
+        results = InventoryGroupSerializer(**serializer_kwargs).data
         status_code = status.HTTP_200_OK
         return response.Response(results, status=status_code)
 

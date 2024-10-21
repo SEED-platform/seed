@@ -1,0 +1,31 @@
+<div class="modal-header">
+</div>
+
+<div class="modal-body row" style="padding-bottom: 0">
+  <div class="form-group">
+    <label class="control-label col-sm-3" for="group" translate>group:</label>
+    <div class="col-sm-8">
+      <select class="form-control" id="selectedGroup" ng-model="selectedGroup" ng-change="selectGroup()"
+        ng-options="group as group.name for group in potentialGroups"></select>
+    </div>
+    <label class="control-label col-sm-3" for="group" translate>system:</label>
+    <div class="col-sm-8">
+      <select class="form-control" id="selectedSystem" ng-model="selectedSystem" ng-change="selectSystem()"
+        ng-options="system as system.name for system in potentialSystems"></select>
+    </div>
+    <label class="control-label col-sm-3" for="group" translate>service:</label>
+    <div class="col-sm-8">
+      <select class="form-control" id="selectedService" ng-model="selectedService"
+        ng-options="service as service.name for service in potentialServices"></select>
+    </div>
+  </div>
+</div>
+
+<div class="modal-footer">
+  <div class="row text-center">
+    <button type="button" class="btn btn-primary col-sm-6 center-block" ng-click="update_meter()" translate>Confirm</button>
+  </div>
+  <div class="row text-center">
+    <button type="button" class="btn btn-default col-sm-6 center-block" ng-click="cancel()" translate>Dismiss</button>
+  </div>
+</div>

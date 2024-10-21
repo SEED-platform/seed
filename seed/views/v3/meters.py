@@ -3,13 +3,16 @@ SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and othe
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
+from django.http import JsonResponse
 from django.utils.decorators import method_decorator
 from drf_yasg.utils import swagger_auto_schema
+from rest_framework import status
+from rest_framework.decorators import action
 from rest_framework.parsers import FormParser, JSONParser
 from rest_framework.renderers import JSONRenderer
 
 from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm_class
-from seed.models import Meter, PropertyView
+from seed.models import Meter, PropertyView, Service
 from seed.serializers.meters import MeterSerializer
 from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema_org_query_param
 from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
@@ -111,3 +114,21 @@ class MeterViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
             serializer.save(property_id=self.property_pk)
         else:
             raise Exception("No property_pk (property view id) provided in URL to create the meter")
+
+    @action(detail=True, methods=["PUT"])
+    @has_perm_class("can_modify_data")
+    @has_hierarchy_access(property_view_id_kwarg="property_pk")
+    def update_connection(self, request, property_pk, pk):
+        meter = self.get_queryset().filter(pk=pk).first()
+        new_service_id = request.data.get("service_id")
+
+        new_service = None if new_service_id is None else Service.objects.get(pk=new_service_id)
+        meter.service = new_service
+        if new_service is None:
+            meter.connection_type = Meter.FROM_OUTSIDE
+        else:
+            meter.connection_type = Meter.FROM_SERVICE_TO_PATRON
+
+        meter.save()
+
+        return JsonResponse({}, status=status.HTTP_200_OK)
