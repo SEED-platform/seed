@@ -180,7 +180,7 @@ angular.module('SEED.service.uploader', []).factory('uploader_service', [
 
     uploader_factory.pm_meters_preview = (file_id, org_id) => $http.get(`/api/v3/import_files/${file_id}/pm_meters_preview/`, { params: { organization_id: org_id } }).then((response) => response.data);
 
-    uploader_factory.greenbutton_meters_preview = (file_id, org_id, view_id) => $http.get(`/api/v3/import_files/${file_id}/greenbutton_meters_preview/`, { params: { organization_id: org_id, view_id } }).then((response) => response.data);
+    uploader_factory.greenbutton_meters_preview = (file_id, org_id, view_id, system_id) => $http.get(`/api/v3/import_files/${file_id}/greenbutton_meters_preview/`, { params: { organization_id: org_id, view_id, system_id } }).then((response) => response.data);
 
     uploader_factory.sensors_preview = (file_id, org_id, view_id, data_logger_id) => $http.get(`/api/v3/import_files/${file_id}/sensors_preview/`, { params: { organization_id: org_id, view_id, data_logger_id } }).then((response) => response.data);
 

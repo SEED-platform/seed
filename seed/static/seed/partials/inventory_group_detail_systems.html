@@ -15,7 +15,20 @@
 <div class="section_nav_container">
   <div class="section_nav" ng-include="::urls.static_url + 'seed/partials/inventory_group_detail_nav.html'"></div>
 </div>
-
-<div>
-  <div style="display: flex; justify-content: center; margin: 100px; font-style: italics">SYSTEMS & SERVICES IN DEVELOPMENT...</div>
+<div class="section_content systems-list">
+  <div class="create-container">
+    <button ng-show="menu.user.organization.user_role !== 'viewer'" type="button" class="btn btn-primary" ng-click="open_system_modal('create')">Create System</button>
+  </div>
+  <div class="systems-container">
+    <div ng-repeat="table in system_tables" id="{$ table.system_key $}-systems-table">
+      <div
+        ng-include="::urls.static_url + 'seed/partials/systems_table.html'"
+        ng-init="
+          system_key=table.system_key;
+          headers=table.headers;
+          fields=table.fields;
+        "
+      ></div>
+    </div>
+  </div>
 </div>

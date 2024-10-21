@@ -27,16 +27,20 @@ from seed.models import (
     VIEW_LIST_PROPERTY,
     Analysis,
     AnalysisPropertyView,
+    BatterySystem,
     Column,
     ColumnListProfile,
     ColumnListProfileColumn,
     Cycle,
     DerivedColumn,
+    DESSystem,
     Element,
+    EVSESystem,
     Goal,
     GreenAssessment,
     GreenAssessmentProperty,
     GreenAssessmentURL,
+    InventoryGroup,
     Measure,
     Note,
     Property,
@@ -44,6 +48,7 @@ from seed.models import (
     PropertyMeasure,
     PropertyState,
     PropertyView,
+    Service,
     StatusLabel,
     TaxLot,
     TaxLotAuditLog,
@@ -920,6 +925,127 @@ class FakeElementFactory(BaseFake):
         element_details.update(kw)
         element, _ = Element.objects.get_or_create(**element_details)
         return element
+
+
+class FakeInventoryGroupFactory(BaseFake):
+    def __init__(self, access_level_instance=None, inventory_type=None, name=None, organization=None):
+        self.access_level_instance = access_level_instance
+        self.name = name
+        self.inventory_type = inventory_type
+        self.organization = organization
+        super().__init__()
+
+    def get_inventory_group(self, access_level_instance=None, inventory_type=None, name=None, organization=None, **kwargs):
+        group_details = {
+            "access_level_instance_id": self.organization.root.pk if not access_level_instance else access_level_instance.pk,
+            "inventory_type": inventory_type if inventory_type else 0,
+            "name": name if name else f"group - {self.fake.text()}",
+            "organization_id": self.organization.pk if not organization else organization.pk,
+        }
+        group_details.update(kwargs)
+        inventory_group, _ = InventoryGroup.objects.get_or_create(**group_details)
+        return inventory_group
+
+
+class FakeSystemFactory(BaseFake):
+    def __init__(
+        self,
+        capacity=None,
+        count=None,
+        des_type=None,
+        efficiency=None,
+        evse_type=None,
+        group=None,
+        name=None,
+        organization=None,
+        power=None,
+        system_type=None,
+        voltage=None,
+    ):
+        self.capacity = capacity
+        self.count = count
+        self.des_type = des_type
+        self.efficiency = efficiency
+        self.evse_type = evse_type
+        self.group = group
+        self.inventory_group_factory = FakeInventoryGroupFactory(organization=organization)
+        self.name = name
+        self.power = power
+        self.system_type = system_type
+        self.voltage = voltage
+        super().__init__()
+
+    def get_system(
+        self,
+        capacity=None,
+        count=None,
+        des_type=None,
+        efficiency=None,
+        evse_type=None,
+        group=None,
+        name=None,
+        power=None,
+        system_type=None,
+        voltage=None,
+        **kwargs,
+    ):
+        group_id = self.inventory_group_factory.get_inventory_group().id if not group else group.pk
+        if system_type == "Battery":
+            system_details = {
+                "name": name if name else f"battery system - {self.fake.random.randint(1, 999)}",
+                "group_id": group_id,
+                "efficiency": efficiency if efficiency else 1,
+                "capacity": capacity if capacity else 1,
+                "voltage": voltage if voltage else 1,
+            }
+            system_details.update(kwargs)
+            system, _ = BatterySystem.objects.get_or_create(**system_details)
+        elif system_type == "EVSE":
+            system_details = {
+                "name": name if name else f"evse system - {self.fake.random.randint(1, 999)}",
+                "group_id": group_id,
+                "type": evse_type if evse_type else 0,
+                "power": power if power else 1,
+                "count": count if count else 1,
+            }
+            system_details.update(kwargs)
+            system, _ = EVSESystem.objects.get_or_create(**system_details)
+        else:
+            system_details = {
+                "name": name if name else f"des system - {self.fake.random.randint(1, 999)}",
+                "group_id": group_id,
+                "type": des_type if des_type else 0,
+                "capacity": capacity if capacity else 1,
+                "count": count if count else 1,
+            }
+            system_details.update(kwargs)
+            system, _ = DESSystem.objects.get_or_create(**system_details)
+
+        return system
+
+
+class FakeServiceFactory(BaseFake):
+    def __init__(
+        self,
+        emission_factor=None,
+        name=None,
+        system=None,
+    ):
+        self.emission_factor = emission_factor
+        self.name = name
+        self.system = system
+        super().__init__()
+
+    def get_service(self, emission_factor=None, name=None, system=None, **kwargs):
+        system_id = self.system_factory.get_system().id if not system else system.pk
+
+        service_details = {
+            "name": name if name else f"service - {self.fake.random.randint(1, 999)}",
+            "emission_factor": emission_factor if emission_factor else 1,
+            "system_id": system_id,
+        }
+        service, _ = Service.objects.get_or_create(**service_details)
+        return service
 
 
 def mock_queryset_factory(model, flatten=False, **kwargs):

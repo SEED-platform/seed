@@ -68,7 +68,17 @@ angular.module('SEED.controller.inventory_detail_meters', []).controller('invent
 
     resetSelections();
 
-    const deleteButton = '<button type="button" ng-show="grid.appScope.menu.user.organization.user_role !== \'viewer\'" class="btn-primary" style="border-radius: 4px;" ng-click="grid.appScope.open_meter_deletion_modal(row.entity)" translate>Delete</button>';
+    const buttons = (
+      '<div style="display: flex; flex-direction=column">' +
+      ' <button type="button" ng-show="grid.appScope.menu.user.organization.user_role !== \'viewer\'" class="btn-primary" style="border-radius: 4px;" ng-click="grid.appScope.open_meter_deletion_modal(row.entity)" translate>Delete</button>' +
+      ' <button type="button" ng-show="grid.appScope.menu.user.organization.user_role !== \'viewer\'" class="btn-primary" style="border-radius: 4px;" ng-click="grid.appScope.open_meter_connection_edit_modal(row.entity)" translate>Edit Connection</button>' +
+      '</div>'
+    );
+
+    $scope.serviceLink = (entity) => {
+      if (entity.service_name === null) return;
+      return `<a id="inventory-summary" ui-sref="inventory_list(::{inventory_type: inventory_type})" ui-sref-active="active">${entity.service_name}</a>`;
+    };
 
     $scope.meterGridOptions = {
       data: 'sorted_meters',
@@ -79,9 +89,11 @@ angular.module('SEED.controller.inventory_detail_meters', []).controller('invent
         { field: 'source' },
         { field: 'source_id' },
         { field: 'scenario_id' },
+        { field: 'connection_type' },
+        { field: 'service_name', displayName: 'Connection', cellTemplate: '<a id="inventory-summary" ui-sref="inventory_group_detail_systems(::{inventory_type: grid.appScope.inventory_type, group_id: row.entity.service_group})" ui-sref-active="active">{$ row.entity.service_name $}</a>' },
         { field: 'is_virtual' },
         { field: 'scenario_name' },
-        { field: 'actions', cellTemplate: deleteButton }
+        { field: 'actions', cellTemplate: buttons }
       ],
       enableGridMenu: true,
       enableSelectAll: true,
@@ -157,6 +169,11 @@ angular.module('SEED.controller.inventory_detail_meters', []).controller('invent
           refresh_meters_and_readings: () => $scope.refresh_meters_and_readings
         }
       });
+    };
+
+    $scope.open_meter_connection_edit_modal = (meter) => {
+      // TODO
+      console.log(meter);
     };
 
     $scope.apply_column_settings = () => {
@@ -268,6 +285,7 @@ angular.module('SEED.controller.inventory_detail_meters', []).controller('invent
           filler_cycle: () => $scope.filler_cycle,
           organization_id: () => $scope.organization.id,
           view_id: () => $scope.inventory.view_id,
+          system_id: () => null,
           datasets: () => dataset_service.get_datasets().then((result) => result.datasets)
         }
       });
