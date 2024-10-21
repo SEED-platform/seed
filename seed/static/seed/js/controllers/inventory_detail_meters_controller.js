@@ -172,8 +172,17 @@ angular.module('SEED.controller.inventory_detail_meters', []).controller('invent
     };
 
     $scope.open_meter_connection_edit_modal = (meter) => {
-      // TODO
-      console.log(meter);
+      $uibModal.open({
+        templateUrl: `${urls.static_url}seed/partials/meter_edit_modal.html`,
+        controller: 'meter_edit_modal_controller',
+        resolve: {
+          organization_id: () => $scope.organization.id,
+          meter: () => meter,
+          property_id: () => inventory_payload.property.id,
+          view_id: () => $scope.inventory.view_id,
+          refresh_meters_and_readings: () => $scope.refresh_meters_and_readings
+        }
+      });
     };
 
     $scope.apply_column_settings = () => {

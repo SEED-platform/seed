@@ -1,10 +1,15 @@
 # !/usr/bin/env python
+import logging
+
 from django.core.exceptions import ValidationError
 from rest_framework import serializers
 
 from seed.models import VIEW_LIST_INVENTORY_TYPE, InventoryGroup, InventoryGroupMapping, PropertyView, TaxLotView
 from seed.serializers.access_level_instances import AccessLevelInstanceSerializer
 from seed.serializers.base import ChoiceField
+from seed.serializers.systems import SystemSerializer
+
+logger = logging.getLogger()
 
 
 class InventoryGroupMappingSerializer(serializers.ModelSerializer):
@@ -21,8 +26,16 @@ class InventoryGroupMappingSerializer(serializers.ModelSerializer):
 class InventoryGroupSerializer(serializers.ModelSerializer):
     inventory_type = ChoiceField(choices=VIEW_LIST_INVENTORY_TYPE)
     access_level_instance_data = AccessLevelInstanceSerializer(source="access_level_instance", many=False, read_only=True)
+    systems = serializers.SerializerMethodField()
+
+    def get_systems(self, obj):
+        return SystemSerializer(obj.systems.all().select_subclasses(), many=True).data
 
     def __init__(self, *args, **kwargs):
+        include_systems = kwargs.pop("include_systems", False)
+        if not include_systems:
+            self.fields.pop("systems")
+
         if "inventory" not in kwargs:
             super().__init__(*args, **kwargs)
             return
@@ -33,7 +46,7 @@ class InventoryGroupSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = InventoryGroup
-        fields = ("id", "name", "inventory_type", "access_level_instance", "access_level_instance_data", "organization")
+        fields = ("id", "name", "inventory_type", "access_level_instance", "access_level_instance_data", "organization", "systems")
 
     def to_representation(self, obj):
         result = super().to_representation(obj)
