@@ -529,6 +529,7 @@ def build_related_model_filters_and_sorts(filters: QueryDict, columns: list[dict
         column_name = column_name.replace("goal_note", "goalnote")
 
     boolean_column = column_name == "property__goalnote__passed_checks"
+    target: Union[bool, str]
     if boolean_column:
         target = False
     else:
