@@ -109,7 +109,7 @@ jobs:
       - name: Install deps
         run: |
           pip install --upgrade pip
-          pip install tox==4.21.2
+          pip install tox==4.23.2
           sudo apt update
           sudo apt install gdal-bin
       - name: Setup config

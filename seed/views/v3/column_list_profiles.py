@@ -55,7 +55,7 @@ class ColumnListProfileViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelV
 
     create:
         Create a new list profile. The list of columns is an array of column primary keys. If using Swagger, then
-        this will be enters as a list with returns between each primary key.
+        this will be entered as a list with returns between each primary key.
 
         JSON POST Example:
 

@@ -2,9 +2,9 @@
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+from __future__ import annotations
 
 import os
-from distutils.util import strtobool
 
 from django.utils.translation import gettext_lazy as _
 from kombu.serialization import register
@@ -217,6 +217,7 @@ register(
 )
 CELERY_WORKER_MAX_TASKS_PER_CHILD = 1
 CELERY_ACCEPT_CONTENT = ["seed_json", "pickle"]
+CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
 CELERY_TASK_SERIALIZER = "seed_json"
 CELERY_RESULT_SERIALIZER = "seed_json"
 CELERY_RESULT_EXPIRES = 86400  # 24 hours
@@ -302,10 +303,16 @@ SWAGGER_SETTINGS = {
     "LOGOUT_URL": "/accounts/logout",
 }
 
-try:
-    EEEJ_LOAD_SMALL_TEST_DATASET = bool(strtobool(os.environ.get("EEEJ_LOAD_SMALL_TEST_DATASET", "False")))
-except Exception:
-    EEEJ_LOAD_SMALL_TEST_DATASET = False
+
+def yn(s: bool | str) -> bool:
+    if isinstance(s, bool):
+        return s
+    if isinstance(s, str):
+        return s.lower() in ["y", "yes", "t", "true", "on", "1"]
+    return False
+
+
+EEEJ_LOAD_SMALL_TEST_DATASET = yn(os.environ.get("EEEJ_LOAD_SMALL_TEST_DATASET", "False"))
 
 BSYNCR_SERVER_HOST = os.environ.get("BSYNCR_SERVER_HOST")
 BSYNCR_SERVER_PORT = os.environ.get("BSYNCR_SERVER_PORT", "80")

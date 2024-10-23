@@ -7,7 +7,6 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 import importlib.util
 import logging
 import os
-from distutils.util import strtobool
 
 from celery.utils import LOG_LEVELS
 
@@ -85,7 +84,4 @@ if "SF_INSTANCE" not in vars():
     SF_SECURITY_TOKEN = os.environ.get("SF_SECURITY_TOKEN", "")
 
 # load small EEEJ dataset for testing
-try:
-    EEEJ_LOAD_SMALL_TEST_DATASET = bool(strtobool(os.environ.get("EEEJ_LOAD_SMALL_TEST_DATASET", "True")))
-except Exception:
-    EEEJ_LOAD_SMALL_TEST_DATASET = True
+EEEJ_LOAD_SMALL_TEST_DATASET = yn(os.environ.get("EEEJ_LOAD_SMALL_TEST_DATASET", "True"))
