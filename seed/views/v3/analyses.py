@@ -6,8 +6,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 import json
 import logging
 
-from django.db import connection
-from django.db.models import Count, F
+from django.db.models import F
 from django.http import JsonResponse
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import serializers, status, viewsets
@@ -315,33 +314,14 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
             property__access_level_instance__lft__gte=access_level_instance.lft,
             property__access_level_instance__rgt__lte=access_level_instance.rgt,
         ).values_list("state_id", flat=True)
-        states = PropertyState.objects.filter(id__in=state_ids)
         columns = (
             Column.objects.filter(organization_id=org_id, derived_column=None, table_name="PropertyState")
             .exclude(column_name__in=EXCLUDED_API_FIELDS)
             .only("is_extra_data", "column_name")
         )
 
-        num_of_nonnulls_by_column_name = {c.column_name: 0 for c in columns}
-        canonical_columns = [c.column_name for c in columns if not c.is_extra_data]
         extra_data_columns = [c.column_name for c in columns if c.is_extra_data]
-
-        # add non-null counts for extra_data columns
-        with connection.cursor() as cursor:
-            non_null_extra_data_counts_query = (
-                f'SELECT key, COUNT(*)\n'
-                f'FROM seed_propertystate, LATERAL JSONB_EACH_TEXT(extra_data) AS each_entry(key, value)\n'
-                f'WHERE id IN ({", ".join(map(str, state_ids))})\n'
-                f'  AND value IS NOT NULL\n'
-                f'GROUP BY key;'
-            )
-            cursor.execute(non_null_extra_data_counts_query)
-            extra_data_counts = dict(cursor.fetchall())
-            num_of_nonnulls_by_column_name.update(extra_data_counts)
-
-        # add non-null counts for canonical columns
-        canonical_counts = states.aggregate(**{col: Count(col) for col in canonical_columns})
-        num_of_nonnulls_by_column_name.update(canonical_counts)
+        num_of_nonnulls_by_column_name = Column.get_num_of_nonnulls_by_column_name(state_ids, PropertyState, columns)
 
         return JsonResponse(
             {
@@ -376,30 +356,11 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
         ).values_list("state_id", flat=True)
 
         if state_ids:
-            states = PropertyState.objects.filter(id__in=state_ids)
-
             columns = Column.objects.filter(organization_id=org_id, derived_column=None, table_name="PropertyState").exclude(
                 column_name__in=EXCLUDED_API_FIELDS
             )
-            num_of_nonnulls_by_column_name = {c.column_name: 0 for c in columns}
-            canonical_columns = [c.column_name for c in columns if not c.is_extra_data]
 
-            # add non-null counts for extra_data columns
-            with connection.cursor() as cursor:
-                non_null_extra_data_counts_query = (
-                    f'SELECT key, COUNT(*)\n'
-                    f'FROM seed_propertystate, LATERAL JSONB_EACH_TEXT(extra_data) AS each_entry(key, value)\n'
-                    f'WHERE id IN ({", ".join(map(str, state_ids))})\n'
-                    f'  AND value IS NOT NULL\n'
-                    f'GROUP BY key;'
-                )
-                cursor.execute(non_null_extra_data_counts_query)
-                extra_data_counts = dict(cursor.fetchall())
-                num_of_nonnulls_by_column_name.update(extra_data_counts)
-
-            # add non-null counts for canonical columns
-            canonical_counts = states.aggregate(**{col: Count(col) for col in canonical_columns})
-            num_of_nonnulls_by_column_name.update(canonical_counts)
+            num_of_nonnulls_by_column_name = Column.get_num_of_nonnulls_by_column_name(state_ids, PropertyState, columns)
 
         # Taxlots
         tstate_ids = TaxLotView.objects.filter(
@@ -410,29 +371,10 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
 
         # add non-null counts for extra_data columns
         if tstate_ids:
-            tstates = TaxLotState.objects.filter(id__in=tstate_ids)
-
             tcolumns = Column.objects.filter(organization_id=org_id, derived_column=None, table_name="TaxLotState").exclude(
                 column_name__in=EXCLUDED_API_FIELDS
             )
-            tnum_of_nonnulls_by_column_name = {c.column_name: 0 for c in tcolumns}
-            tcanonical_columns = [c.column_name for c in tcolumns if not c.is_extra_data]
-
-            with connection.cursor() as cursor:
-                tnon_null_extra_data_counts_query = (
-                    f'SELECT key, COUNT(*)\n'
-                    f'FROM seed_taxlotstate, LATERAL JSONB_EACH_TEXT(extra_data) AS each_entry(key, value)\n'
-                    f'WHERE id IN ({", ".join(map(str, tstate_ids))})\n'
-                    f'  AND value IS NOT NULL\n'
-                    f'GROUP BY key;'
-                )
-                cursor.execute(tnon_null_extra_data_counts_query)
-                extra_data_counts = dict(cursor.fetchall())
-                tnum_of_nonnulls_by_column_name.update(extra_data_counts)
-
-            # add non-null counts for canonical columns
-            tcanonical_counts = tstates.aggregate(**{col: Count(col) for col in tcanonical_columns})
-            tnum_of_nonnulls_by_column_name.update(tcanonical_counts)
+            num_of_nonnulls_by_column_name = Column.get_num_of_nonnulls_by_column_name(state_ids, TaxLotState, columns)
 
         # properties and taxlots together
         num_of_nonnulls_by_column_name.update(tnum_of_nonnulls_by_column_name)
