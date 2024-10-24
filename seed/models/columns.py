@@ -14,8 +14,8 @@ from typing import Any, Callable, Literal, Optional
 
 from django.apps import apps
 from django.core.exceptions import ValidationError
-from django.db import IntegrityError, models, transaction
-from django.db.models import Q
+from django.db import IntegrityError, connection, models, transaction
+from django.db.models import Count, Q
 from django.db.models.signals import pre_save
 from django.utils.translation import gettext_lazy as _
 
@@ -1664,6 +1664,34 @@ class Column(models.Model):
             result.append((col["table_name"], col["column_name"]))
 
         return result
+
+    @staticmethod
+    def get_num_of_nonnulls_by_column_name(state_ids, inventory_class, columns):
+        states = inventory_class.objects.filter(id__in=state_ids)
+
+        # init dicts
+        num_of_nonnulls_by_column_name = {c.column_name: 0 for c in columns}
+        canonical_columns = [c.column_name for c in columns if not c.is_extra_data]
+
+        # add non-null counts for extra_data columns
+        with connection.cursor() as cursor:
+            table_name = "seed_propertystate" if inventory_class.__name__ == "PropertyState" else "seed_taxlotstate"
+            non_null_extra_data_counts_query = (
+                f'SELECT key, COUNT(*)\n'
+                f'FROM {table_name}, LATERAL JSONB_EACH_TEXT(extra_data) AS each_entry(key, value)\n'
+                f'WHERE id IN ({", ".join(map(str, state_ids))})\n'
+                f'  AND value IS NOT NULL\n'
+                f'GROUP BY key;'
+            )
+            cursor.execute(non_null_extra_data_counts_query)
+            extra_data_counts = dict(cursor.fetchall())
+            num_of_nonnulls_by_column_name.update(extra_data_counts)
+
+        # add non-null counts for canonical columns
+        canonical_counts = states.aggregate(**{col: Count(col) for col in canonical_columns})
+        num_of_nonnulls_by_column_name.update(canonical_counts)
+
+        return num_of_nonnulls_by_column_name
 
 
 def validate_model(sender, **kwargs):

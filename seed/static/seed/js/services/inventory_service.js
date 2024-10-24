@@ -1201,6 +1201,25 @@ angular.module('SEED.service.inventory', []).factory('inventory_service', [
         .then((response) => response.data.data);
     };
 
+    inventory_service.update_column_list_profile_to_show_populated = (id, cycle_id, inventory_type) => {
+      if (id === null) {
+        Notification.error('This settings profile is protected from modifications');
+        return $q.reject();
+      }
+      return $http
+        .put(`/api/v3/column_list_profiles/${id}/show_populated/`,
+          {
+            cycle_id,
+            inventory_type
+          },
+          {
+            params: {
+              organization_id: user_service.get_organization().id
+            }
+          }
+        ).then((response) => response.data.data);
+    };
+
     inventory_service.remove_column_list_profile = (id) => {
       if (id === null) {
         Notification.error('This settings profile is protected from modifications');
