@@ -989,7 +989,7 @@ class DataQualityCheck(models.Model):
                         return
                     value = baseline if cycle_key == "baseline" else current
                     if rule.condition == rule.RULE_RANGE:
-                        if value:
+                        if value is not None:
                             result = check_range()
                             results.append(result)
                             append_to_apply_labels()
