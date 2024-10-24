@@ -136,7 +136,8 @@ def get_portfolio_summary(org, goal):
             summary["total_passing"] = GoalNote.objects.filter(goal=goal, passed_checks=True).count()
             summary["total_new_or_acquired"] = GoalNote.objects.filter(goal=goal, new_or_acquired=True).count()
 
-        # Remaining Calcs are restricted to passing checks and not new/acquired
+        # Remaining calculations are restricted to passing check
+        # New builds in the baseline year will be excluded from calculations
         # use goal notes relation to properties to get valid properties views
         goal_notes = GoalNote.objects.filter(goal=goal)
         new_property_ids = goal_notes.filter(new_or_acquired=True).values_list("property__id", flat=True)
