@@ -138,10 +138,12 @@ def get_portfolio_summary(org, goal):
 
         # Remaining Calcs are restricted to passing checks and not new/acquired
         # use goal notes relation to properties to get valid properties views
-        valid_property_ids = GoalNote.objects.filter(goal=goal, passed_checks=True, new_or_acquired=False).values_list(
-            "property__id", flat=True
+        goal_notes = GoalNote.objects.filter(goal=goal)
+        new_property_ids = goal_notes.filter(new_or_acquired=True).values_list("property__id", flat=True)
+        valid_property_ids = goal_notes.filter(passed_checks=True).values_list("property__id", flat=True)
+        property_views = property_views.filter(property__id__in=valid_property_ids).exclude(
+            cycle=goal.baseline_cycle, property__id__in=new_property_ids
         )
-        property_views = property_views.filter(property__id__in=valid_property_ids)
 
         # Create annotations for kbtu calcs. "eui" is based on goal column priority
         property_views = property_views.annotate(
