@@ -6,7 +6,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 from rest_framework import serializers
 
 from seed.data_importer.utils import usage_point_id
-from seed.models import Meter, Scenario
+from seed.models import Meter, Scenario, System
 from seed.serializers.base import ChoiceField
 from seed.utils.api import OrgMixin
 
@@ -14,13 +14,14 @@ from seed.utils.api import OrgMixin
 class MeterSerializer(serializers.ModelSerializer, OrgMixin):
     type = ChoiceField(choices=Meter.ENERGY_TYPES, required=True)
     connection_type = ChoiceField(choices=Meter.CONNECTION_TYPES, required=True)
+    service_id = serializers.IntegerField(source="service.id", allow_null=True, read_only=True)
     service_name = serializers.CharField(source="service.name", allow_null=True, read_only=True)
     service_group = serializers.IntegerField(source="service.system.group_id", allow_null=True, read_only=True)
     alias = serializers.CharField(required=False, allow_blank=True)
     source = ChoiceField(choices=Meter.SOURCES)
     source_id = serializers.CharField(required=False, allow_blank=True)
     property_id = serializers.IntegerField(required=False, allow_null=True)
-    system_id = serializers.IntegerField(required=False, allow_null=True)
+    system_id = serializers.IntegerField(source="system.id", required=False, allow_null=True)
     system_name = serializers.CharField(source="system.name", required=False, allow_null=True)
     scenario_id = serializers.IntegerField(required=False, allow_null=True)
 

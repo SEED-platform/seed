@@ -74,10 +74,25 @@ angular.module('SEED.controller.inventory_group_detail_meters', [])
 
       resetSelections();
 
+      $scope.meter_type = (row) => {
+        console.log(row)
+        const property_meter = row.entity.property_id;
+        const system_meter = row.entity.system_id;
+        const viewer = $scope.menu.user.organization.user_role !== 'viewer'
+        if (viewer) {
+          return 'disabled'
+        } else if (property_meter) {
+          return 'property'
+        } else if (system_meter) {
+          return 'system'
+        }
+
+      }
+
       const buttons = (
-        '<div style="display: flex; flex-direction=column">' +
-        ' <button type="button" ng-show="grid.appScope.menu.user.organization.user_role !== \'viewer\'" class="btn-primary" style="border-radius: 4px;" ng-click="grid.appScope.open_meter_deletion_modal(row.entity)" translate>Delete</button>' +
-        ' <button type="button" ng-show="grid.appScope.menu.user.organization.user_role !== \'viewer\'" class="btn-primary" style="border-radius: 4px;" ng-click="grid.appScope.open_meter_connection_edit_modal(row.entity)" translate>Edit Connection</button>' +
+        '<div class="meters-table-actions" style="display: flex; flex-direction=column">' +
+        ' <button type="button" ng-show="grid.appScope.menu.user.organization.user_role !== \'viewer\'" class="btn-danger" style="border-radius: 4px;" ng-click="grid.appScope.open_meter_deletion_modal(row.entity)" title="Delete Meter"><i class="fa-solid fa-xmark"></i></button>' +
+        ' <button type="button" ng-show="grid.appScope.menu.user.organization.user_role !== \'viewer\'" class="btn-primary" style="border-radius: 4px;" ng-click="grid.appScope.open_meter_connection_edit_modal(row.entity)" title="Edit Meter Connection"><i class="fa-solid fa-pencil"></i></button>' +
         '</div>'
       );
 
@@ -180,8 +195,20 @@ angular.module('SEED.controller.inventory_group_detail_meters', [])
       };
 
       $scope.open_meter_connection_edit_modal = (meter) => {
-        // TODO
-        console.log(meter);
+        // get view if property_id
+        $uibModal.open({
+          templateUrl: `${urls.static_url}seed/partials/meter_edit_modal.html`,
+          controller: 'meter_edit_modal_controller',
+          resolve: {
+            organization_id: () => $scope.organization.id,
+            group_id: () => meter.group_id,
+            meter: () => meter,
+            property_id: () => meter.property_id,
+            system_id: () => meter.system_id,
+            view_id: () => null, // gonna need this.
+            refresh_meters_and_readings: () => $scope.refresh_meters_and_readings
+          }
+        });
       };
 
       $scope.apply_column_settings = () => {

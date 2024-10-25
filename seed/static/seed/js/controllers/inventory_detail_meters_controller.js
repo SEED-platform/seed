@@ -13,13 +13,13 @@ angular.module('SEED.controller.inventory_detail_meters', []).controller('invent
   'cycles',
   'dataset_service',
   'inventory_service',
+  'inventory_group_service',
   'inventory_payload',
   'meters',
   'property_meter_usage',
   'spinner_utility',
   'urls',
   'organization_payload',
-  'group',
   // eslint-disable-next-line func-names
   function (
     $state,
@@ -32,22 +32,24 @@ angular.module('SEED.controller.inventory_detail_meters', []).controller('invent
     cycles,
     dataset_service,
     inventory_service,
+    inventory_group_service,
     inventory_payload,
     meters,
     property_meter_usage,
     spinner_utility,
     urls,
     organization_payload,
-    group
   ) {
     spinner_utility.show();
     $scope.inventory_type = $stateParams.inventory_type;
-    if (inventory_payload) {
-      $scope.item_state = inventory_payload.state;
-    } else if (group) {
-      $scope.group = group;
-      $scope.group_id = group.id;
-    }
+    $scope.item_state = inventory_payload.state;
+    inventory_group_service.get_groups_for_inventory($stateParams.inventory_type, [])
+
+
+    inventory_group_service.get_groups_for_inventory("properties", [inventory_payload.property.id], include_systems=true).then((groups) => {
+      $scope.groups = groups;
+    });
+
     $scope.organization = organization_payload.organization;
     $scope.filler_cycle = cycles.cycles[0].id;
 
@@ -68,10 +70,12 @@ angular.module('SEED.controller.inventory_detail_meters', []).controller('invent
 
     resetSelections();
 
+    // dont show edit if disabled?
     const buttons = (
-      '<div style="display: flex; flex-direction=column">' +
-      ' <button type="button" ng-show="grid.appScope.menu.user.organization.user_role !== \'viewer\'" class="btn-primary" style="border-radius: 4px;" ng-click="grid.appScope.open_meter_deletion_modal(row.entity)" translate>Delete</button>' +
-      ' <button type="button" ng-show="grid.appScope.menu.user.organization.user_role !== \'viewer\'" class="btn-primary" style="border-radius: 4px;" ng-click="grid.appScope.open_meter_connection_edit_modal(row.entity)" translate>Edit Connection</button>' +
+      '<div class="meters-table-actions" style="display: flex; flex-direction=column">' +
+      ' <button type="button" ng-show="grid.appScope.menu.user.organization.user_role !== \'viewer\'" class="btn-danger" style="border-radius: 4px;" ng-click="grid.appScope.open_meter_deletion_modal(row.entity)" title="Delete Meter"><i class="fa-solid fa-xmark"></i></button>' +
+      ' <button type="button" ng-show="grid.appScope.menu.user.organization.user_role !== \'viewer\' && grid.appScope.groups.length" class="btn-primary" style="border-radius: 4px;" ng-click="grid.appScope.open_meter_connection_edit_modal(row.entity)" title="Edit Meter Connection"><i class="fa-solid fa-pencil"></i></button>' +
+      ' <button type="button" ng-show="grid.appScope.menu.user.organization.user_role !== \'viewer\' && !grid.appScope.groups.length" class="btn-gray" style="border-radius: 4px;" ng-click="grid.appScope.open_meter_connection_edit_modal(row.entity)" title="To Edit Connection, a meter must be part of an inventory group" ng-disabled="true"><i class="fa-solid fa-pencil"></i></button>' +
       '</div>'
     );
 
@@ -177,8 +181,10 @@ angular.module('SEED.controller.inventory_detail_meters', []).controller('invent
         controller: 'meter_edit_modal_controller',
         resolve: {
           organization_id: () => $scope.organization.id,
+          group_id: () => null,
           meter: () => meter,
           property_id: () => inventory_payload.property.id,
+          system_id: () => null,
           view_id: () => $scope.inventory.view_id,
           refresh_meters_and_readings: () => $scope.refresh_meters_and_readings
         }
@@ -300,11 +306,9 @@ angular.module('SEED.controller.inventory_detail_meters', []).controller('invent
       });
     };
 
-    if (inventory_payload) {
-      $scope.inventory_display_name = organization_service.get_inventory_display_value($scope.organization, $scope.inventory_type === 'properties' ? 'property' : 'taxlot', $scope.item_state);
-    } else if (group) {
-      $scope.inventory_display_name = group.name;
-    }
+
+    $scope.inventory_display_name = organization_service.get_inventory_display_value($scope.organization, $scope.inventory_type === 'properties' ? 'property' : 'taxlot', $scope.item_state);
+    
 
     $scope.updateHeight = () => {
       let height = 0;

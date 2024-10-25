@@ -120,14 +120,26 @@ class MeterViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
     @has_hierarchy_access(property_view_id_kwarg="property_pk")
     def update_connection(self, request, property_pk, pk):
         meter = self.get_queryset().filter(pk=pk).first()
-        new_service_id = request.data.get("service_id")
 
-        new_service = None if new_service_id is None else Service.objects.get(pk=new_service_id)
-        meter.service = new_service
-        if new_service is None:
-            meter.connection_type = Meter.FROM_OUTSIDE
-        else:
-            meter.connection_type = Meter.FROM_SERVICE_TO_PATRON
+        meter_config = request.data.get('meter_config')
+        service_id = meter_config.get('service_id')
+        if service_id:
+            service = Service.objects.get(pk=service_id)
+            # system = service.system
+            meter.service = service
+            # meter.system = system
+
+        direction = meter_config.get('direction')
+        use = meter_config.get('use', 'outside')
+        connection_lookup = {
+            'inflow using': Meter.FROM_SERVICE_TO_PATRON,
+            'inflow offering': Meter.TOTAL_FROM_PATRON,
+            'inflow outside': Meter.FROM_OUTSIDE,
+            'outflow using': Meter.FROM_PATRON_TO_SERVICE,
+            'outflow offering': Meter.TOTAL_TO_PATRON,
+            'outflow outside': Meter.TO_OUTSIDE
+        }
+        meter.connection_type = connection_lookup[f"{direction} {use}"]
 
         meter.save()
 

@@ -14,10 +14,10 @@ angular.module('SEED.service.meter', []).factory('meter_service', [
       .then((response) => response)
       .catch((response) => response);
 
-    meter_factory.update_meter_connection = (organization_id, property_view_id, meter_id, service_id) => $http
+    meter_factory.update_meter_connection = (organization_id, property_view_id, meter_id, meter_config) => $http
       .put(
         `/api/v3/properties/${property_view_id}/meters/${meter_id}/update_connection/?organization_id=${organization_id}`,
-        { service_id },
+        { meter_config },
       )
       .then((response) => response)
       .catch((response) => response);
