@@ -189,7 +189,7 @@ class MetersParser:
         if self._cache_proposed_imports is None:
             self._cache_proposed_imports = []
             # build cycle_names_by_property_id for the next part
-            all_property_ids = [property_id for property_ids in self._source_to_property_ids.values() for property_id in property_ids]
+            all_property_ids = {property_id for property_ids in self._source_to_property_ids.values() for property_id in property_ids}
             cycle_names_by_property_id = dict(
                 Property.objects.filter(id__in=all_property_ids)
                 .annotate(cycle_names=ArrayAgg("views__cycle__name"))
@@ -327,7 +327,7 @@ class MetersParser:
         Its a dict. The keys are all the "Portfolio Manager ID"s in self._meters_and_readings_details,
         the keys are a list of properties with that given pm_property_id.
         """
-        pm_property_ids = [str(raw_details["Portfolio Manager ID"]) for raw_details in self._meters_and_readings_details]
+        pm_property_ids = {str(raw_details["Portfolio Manager ID"]) for raw_details in self._meters_and_readings_details}
         relevant_views = PropertyView.objects.filter(state__pm_property_id__in=pm_property_ids)
         pm_property_id_and_property_id_pairs = relevant_views.values_list("state__pm_property_id", "property_id").distinct()
 
