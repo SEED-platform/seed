@@ -10,8 +10,8 @@ from rest_framework import response, status
 from rest_framework.decorators import action
 
 from seed.filters import ColumnListProfileFilterBackend
-from seed.lib.superperms.orgs.decorators import has_perm_class
-from seed.models import AccessLevelInstance, InventoryGroup, Meter, Organization, PropertyView
+from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm_class
+from seed.models import AccessLevelInstance, InventoryGroup, Meter, Organization, PropertyView, Service
 from seed.serializers.inventory_groups import InventoryGroupSerializer
 from seed.serializers.meters import MeterSerializer
 from seed.utils.api_schema import swagger_auto_schema_org_query_param
@@ -95,29 +95,6 @@ class InventoryGroupViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
 
     @swagger_auto_schema_org_query_param
     @has_perm_class("requires_viewer")
-    @action(detail=True, methods=["GET"])
-    def meters(self, request, pk):
-        """
-        Return meters for a group
-        """
-        try:
-            group = InventoryGroup.objects.get(pk=pk)
-            group = InventoryGroupSerializer(group).data
-        except ObjectDoesNotExist:
-            return [], JsonResponse({"status": "erorr", "message": "No such resource."})
-
-        # taxlots do not support meters
-        if group["inventory_type"] != "Property":
-            return [], JsonResponse({"stauts": "success", "data": []})
-
-        meters = Meter.objects.filter(
-            Q(property_id__in=group["inventory_list"]) | Q(system__group_id=pk),
-        )
-        data = MeterSerializer(meters, many=True).data
-        return JsonResponse({"status": "success", "data": data})
-
-    @swagger_auto_schema_org_query_param
-    @has_perm_class("requires_viewer")
     @action(detail=True, methods=["POST"])
     def meter_usage(self, request, pk):
         """
@@ -145,3 +122,57 @@ class InventoryGroupViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
         data["column_defs"] = [dict(t) for t in {tuple(d.items()) for d in data["column_defs"]}]
 
         return JsonResponse({"status": "success", "data": data})
+
+
+class InventoryGroupMetersViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
+    model = Meter
+    serializer_class = MeterSerializer
+
+    def get_queryset(self):
+        inventory_group_pk = self.kwargs.get("inventory_group_pk", None)
+
+        try:
+            group = InventoryGroup.objects.get(pk=inventory_group_pk)
+            group = InventoryGroupSerializer(group).data
+        except ObjectDoesNotExist:
+            return [], JsonResponse({"status": "erorr", "message": "No such resource."})
+
+        # taxlots do not support meters
+        if group["inventory_type"] != "Property":
+            return [], JsonResponse({"stauts": "success", "data": []})
+
+        return Meter.objects.filter(
+            Q(property_id__in=group["inventory_list"]) | Q(system__group_id=inventory_group_pk),
+        )
+
+    @swagger_auto_schema_org_query_param
+    @has_perm_class("requires_viewer")
+    @has_hierarchy_access(inventory_group_id_kwarg="inventory_group_pk")
+    def list(self, request, inventory_group_pk):
+        """
+        Return meters for a group
+        """
+        meters = self.get_queryset()
+        data = MeterSerializer(meters, many=True).data
+
+        return JsonResponse({"status": "success", "data": data})
+
+    @action(detail=True, methods=["PUT"])
+    @has_perm_class("can_modify_data")
+    @has_hierarchy_access(inventory_group_id_kwarg="inventory_group_pk")
+    def update_connection(self, request, inventory_group_pk, pk):
+        meter = self.get_queryset().filter(pk=pk).first()
+        new_service_id = request.data.get("service_id")
+
+        new_service = None if new_service_id is None else Service.objects.get(pk=new_service_id)
+        meter.service = new_service
+        if new_service is None:
+            meter.connection_type = Meter.FROM_OUTSIDE
+        elif new_service.system == meter.system:
+            meter.connection_type = Meter.TOTAL_TO_PATRON
+        else:
+            meter.connection_type = Meter.FROM_SERVICE_TO_PATRON
+
+        meter.save()
+
+        return JsonResponse({}, status=status.HTTP_200_OK)
