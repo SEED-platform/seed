@@ -265,6 +265,28 @@ class ColumnListProfilesView(DeleteModelsTestCase):
         columns = {c["column_name"] for c in result["data"]["columns"]}
         self.assertSetEqual(columns, {self.column_3.column_name, "updated", "created"})
 
+    def test_column_profile_show_populated_derived_data(self):
+        # Set Up
+        self.derived_column = DerivedColumn.objects.create(name="dc", expression="$a + 10", organization=self.org, inventory_type=0)
+        columnlistprofile = self.column_list_factory.get_columnlistprofile(columns=["address_line_1", "city"])
+        state = self.property_state_factory.get_property_state(
+            no_default_data=True, derived_data={self.derived_column.column.column_name: "20"}
+        )
+        self.property_view_factory.get_property_view(state=state)
+
+        # Action
+        response = self.client.put(
+            reverse("api:v3:column_list_profiles-show-populated", args=[columnlistprofile.id]) + f"?organization_id={self.org.id}",
+            data=json.dumps({"cycle_id": self.cycle.id, "inventory_type": "Property"}),
+            content_type="application/json",
+        )
+        result = json.loads(response.content)
+
+        # Assertion
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        columns = {c["column_name"] for c in result["data"]["columns"]}
+        self.assertSetEqual(columns, {self.derived_column.column.column_name, "updated", "created"})
+
 
 class ColumnsListProfileViewPermissionsTests(AccessLevelBaseTestCase, DeleteModelsTestCase):
     def setUp(self):

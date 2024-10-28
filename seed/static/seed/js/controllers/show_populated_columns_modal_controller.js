@@ -19,8 +19,8 @@ angular.module('SEED.controller.show_populated_columns_modal', []).controller('s
   function ($scope, $window, $uibModalInstance, Notification, inventory_service, modified_service, spinner_utility, columns, currentProfile, cycle, provided_inventory, inventory_type) {
     $scope.start = () => {
       $scope.state = 'running';
-      $scope.status = `Processing...`;
-      $scope.inventory_type = inventory_type == "properties" ? "Property": "Tax lot"
+      $scope.status = 'Processing...';
+      $scope.inventory_type = inventory_type === 'properties' ? 'Property' : 'Tax lot';
 
       inventory_service.update_column_list_profile_to_show_populated(currentProfile.id, cycle.id, $scope.inventory_type).then((/* updatedProfile */) => {
         modified_service.resetModified();

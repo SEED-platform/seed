@@ -1207,7 +1207,8 @@ angular.module('SEED.service.inventory', []).factory('inventory_service', [
         return $q.reject();
       }
       return $http
-        .put(`/api/v3/column_list_profiles/${id}/show_populated/`,
+        .put(
+          `/api/v3/column_list_profiles/${id}/show_populated/`,
           {
             cycle_id,
             inventory_type

@@ -1687,6 +1687,20 @@ class Column(models.Model):
             extra_data_counts = dict(cursor.fetchall())
             num_of_nonnulls_by_column_name.update(extra_data_counts)
 
+        # add non-null counts for derived_data columns
+        with connection.cursor() as cursor:
+            table_name = "seed_propertystate" if inventory_class.__name__ == "PropertyState" else "seed_taxlotstate"
+            non_null_derived_data_counts_query = (
+                f'SELECT key, COUNT(*)\n'
+                f'FROM {table_name}, LATERAL JSONB_EACH_TEXT(derived_data) AS each_entry(key, value)\n'
+                f'WHERE id IN ({", ".join(map(str, state_ids))})\n'
+                f'  AND value IS NOT NULL\n'
+                f'GROUP BY key;'
+            )
+            cursor.execute(non_null_derived_data_counts_query)
+            derived_data_counts = dict(cursor.fetchall())
+            num_of_nonnulls_by_column_name.update(derived_data_counts)
+
         # add non-null counts for canonical columns
         canonical_counts = states.aggregate(**{col: Count(col) for col in canonical_columns})
         num_of_nonnulls_by_column_name.update(canonical_counts)
