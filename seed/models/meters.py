@@ -237,7 +237,8 @@ def presave_meter(sender, instance, **kwargs):
             # Total connections must have a service owned by system
             if system.id != service.system_id:
                 raise IntegrityError(
-                    f"Meter {instance.id} on system {system.name} has connection_type '{connection_string}', but is also connected to service {service.name}, which is on a different system, {service.system.name}. Meters with connection_type '{connection_string}' must have a service on the system the meter is connected to"
+                    f"Meters with connection_type '{connection_string}' must have a service on the system the meter is connected to"
+                    # f"Meter {instance.id} on system {system.name} has connection_type '{connection_string}', but is also connected to service {service.name}, which is on a different system, {service.system.name}. Meters with connection_type '{connection_string}' must have a service on the system the meter is connected to"
                 )
 
             # Service should only have one meter of each "total" connection type

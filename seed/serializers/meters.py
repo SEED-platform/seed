@@ -56,4 +56,33 @@ class MeterSerializer(serializers.ModelSerializer, OrgMixin):
         if obj.alias is None or obj.alias == "":
             result["alias"] = f"{obj.get_type_display()} - {obj.get_source_display()} - {result['source_id']}"
 
+        self.set_config(obj, result)
+
         return result
+    
+    def set_config(self, obj, result):
+        # generate config for meter modal
+        connection_lookup = {
+            1: {"direction": "inflow", "use": "outside", "connection": "outside"},
+            2: {"direction": "outflow", "use": "outside", "connection": "outside"},
+            3: {"direction": "inflow", "use": "using", "connection": "service"},
+            4: {"direction": "outflow", "use": "using", "connection":  "service"},
+            5: {"direction": "inflow", "use": "offering", "connection": "service"},
+            6: {"direction": "outflow", "use": "offering", "connection": "service"},
+        }
+
+        group_id, system_id = None, None
+        if obj.service:
+            system = obj.service.system 
+            group_id, system_id = system.group.id, system.id
+        elif obj.system:
+            group_id, system_id = obj.system.group.id, obj.system.id
+
+        config = {
+            "group_id": group_id,
+            "system_id": system_id,
+            "service_id": obj.service_id,
+            **connection_lookup[obj.connection_type]
+        }
+        result["config"] = config
+

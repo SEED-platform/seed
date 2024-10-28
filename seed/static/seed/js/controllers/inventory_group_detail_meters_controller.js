@@ -201,7 +201,6 @@ angular.module('SEED.controller.inventory_group_detail_meters', [])
           controller: 'meter_edit_modal_controller',
           resolve: {
             organization_id: () => $scope.organization.id,
-            group_id: () => meter.group_id,
             meter: () => meter,
             property_id: () => meter.property_id,
             system_id: () => meter.system_id,
