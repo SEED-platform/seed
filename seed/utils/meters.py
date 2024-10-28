@@ -14,7 +14,7 @@ from pytz import timezone
 from config.settings.common import TIME_ZONE
 from seed.data_importer.utils import kbtu_thermal_conversion_factors, kgal_water_conversion_factors, usage_point_id
 from seed.lib.superperms.orgs.models import Organization
-from seed.models import Meter
+from seed.models import Meter, Service
 
 
 class PropertyMeterReadingsExporter:
@@ -308,3 +308,23 @@ class PropertyMeterReadingsExporter:
             running_max[i] = max(curr_max, running_max[i - 1])
 
         return running_max[n - 1]
+
+def update_meter_connection(meter, meter_config):
+    service_id = meter_config.get('service_id')
+    if service_id:
+        service = Service.objects.get(pk=service_id)
+        meter.service = service
+
+    connection_lookup = {
+        'inflow using': Meter.FROM_SERVICE_TO_PATRON,
+        'inflow offering': Meter.TOTAL_FROM_PATRON,
+        'inflow outside': Meter.FROM_OUTSIDE,
+        'outflow using': Meter.FROM_PATRON_TO_SERVICE,
+        'outflow offering': Meter.TOTAL_TO_PATRON,
+        'outflow outside': Meter.TO_OUTSIDE
+    }
+    direction = meter_config.get('direction')
+    use = meter_config.get('use', 'outside')
+    meter.connection_type = connection_lookup[f"{direction} {use}"]
+    
+    meter.save()

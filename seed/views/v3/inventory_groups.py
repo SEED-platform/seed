@@ -3,6 +3,7 @@
 import logging
 
 from django.core.exceptions import ObjectDoesNotExist
+from django.db import IntegrityError
 from django.db.models import Q
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
@@ -15,7 +16,7 @@ from seed.models import AccessLevelInstance, InventoryGroup, Meter, Organization
 from seed.serializers.inventory_groups import InventoryGroupSerializer
 from seed.serializers.meters import MeterSerializer
 from seed.utils.api_schema import swagger_auto_schema_org_query_param
-from seed.utils.meters import PropertyMeterReadingsExporter
+from seed.utils.meters import PropertyMeterReadingsExporter, update_meter_connection
 from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
 
 logger = logging.getLogger()
@@ -55,7 +56,6 @@ class InventoryGroupViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
     def _get_property_groups(self, request):
         qs = self.get_queryset()  # ALL groups from org
         serializer_kwargs = {"instance": qs, "many": True}
-        serializer_kwargs["include_systems"] = self.request.query_params.get("include_systems", False)
 
         results = InventoryGroupSerializer(**serializer_kwargs).data
         status_code = status.HTTP_200_OK
@@ -162,17 +162,11 @@ class InventoryGroupMetersViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
     @has_hierarchy_access(inventory_group_id_kwarg="inventory_group_pk")
     def update_connection(self, request, inventory_group_pk, pk):
         meter = self.get_queryset().filter(pk=pk).first()
-        new_service_id = request.data.get("service_id")
+        meter_config = request.data.get('meter_config')
 
-        new_service = None if new_service_id is None else Service.objects.get(pk=new_service_id)
-        meter.service = new_service
-        if new_service is None:
-            meter.connection_type = Meter.FROM_OUTSIDE
-        elif new_service.system == meter.system:
-            meter.connection_type = Meter.TOTAL_TO_PATRON
-        else:
-            meter.connection_type = Meter.FROM_SERVICE_TO_PATRON
-
-        meter.save()
+        try:
+            update_meter_connection(meter, meter_config)
+        except IntegrityError as e:
+            return JsonResponse({"status": "error", "message": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
         return JsonResponse({}, status=status.HTTP_200_OK)

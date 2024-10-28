@@ -212,6 +212,7 @@ def presave_meter(sender, instance, **kwargs):
     system = instance.system
     connection_type = instance.connection_type
     service = instance.service
+    connection_string = dict(Meter.CONNECTION_TYPES).get(connection_type)
 
     # must be connected to either a system or a property
     if property is not None and system is not None:
@@ -221,34 +222,34 @@ def presave_meter(sender, instance, **kwargs):
     if outside_connection:
         # outside connections don't have services
         if instance.service is not None:
-            raise IntegrityError(f"Meter {instance.id} has connection_type {connection_type}, but also is connected to a service")
+            raise IntegrityError(f"Meter {instance.id} has connection_type '{connection_string}', but also is connected to a service")
     else:
         # inside connections _do_ have services
         if service is None:
-            raise IntegrityError(f"Meter {instance.id} has connection_type {connection_type}, but is not connected to a service")
+            raise IntegrityError(f"Meter {instance.id} has connection_type '{connection_string}', but is not connected to a service")
 
         total_connections = connection_type in [Meter.TOTAL_FROM_PATRON, Meter.TOTAL_TO_PATRON]
         if total_connections:
             # Only systems have connection type "total"
             if system is None:
-                raise IntegrityError(f"Meter {instance.id} has connection_type {connection_type}, but is not connected to a system")
+                raise IntegrityError(f"Meter {instance.id} has connection_type '{connection_string}', but is not connected to a system")
 
             # Total connections must have a service owned by system
             if system.id != service.system_id:
                 raise IntegrityError(
-                    f"Meter {instance.id} on system {system.id} has connection_type {connection_type}, but is also connected to service {service.id}, which is on a different system, {service.system_id}. Meters with connection_type {connection_type} must have a service on the system the meter is connected to"
+                    f"Meter {instance.id} on system {system.name} has connection_type '{connection_string}', but is also connected to service {service.name}, which is on a different system, {service.system.name}. Meters with connection_type '{connection_string}' must have a service on the system the meter is connected to"
                 )
 
             # Service should only have one meter of each "total" connection type
             if Meter.objects.filter(service=service, connection_type=connection_type).exclude(pk=instance.pk).exists():
-                raise IntegrityError(f"Service {service.id} already has a meter with connection type {connection_type}")
+                raise IntegrityError(f"Service {service.id} already has a meter with connection type '{connection_string}'")
 
-        else:  # Meter.FROM_PATRON_TO_SERVICE and Meter.FROM_SERVICE_TO_PATRON
+        elif property:  # Meter.FROM_PATRON_TO_SERVICE and Meter.FROM_SERVICE_TO_PATRON
             # service must be within the meter's property's group
             property_groups = InventoryGroupMapping.objects.filter(property=property).values_list("group_id", flat=True)
             if service is not None and service.system.group.id not in property_groups:
                 raise IntegrityError(
-                    f"Meter {instance.id} on property {property.id} and has service {service.id}, but meter and property are not in the service's group"
+                    f"Meter {instance.id} on property {property.id} and has service {service.name}, but meter and property are not in the service's group"
                 )
 
 

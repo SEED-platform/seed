@@ -272,23 +272,8 @@ angular.module('SEED.controller.inventory_group_detail_meters', [])
       // refresh_readings make an API call to refresh the base readings data
       // according to the selected interval
       $scope.refresh_meters_and_readings = () => {
-        spinner_utility.show();
-        const get_meters_Promise = meter_service.get_meters($scope.inventory.view_id, $scope.organization.id);
-        const get_readings_Promise = meter_service.property_meter_usage(
-          $scope.inventory.view_id,
-          $scope.organization.id,
-          $scope.interval.selected,
-          [] // Not excluding any meters from the query
-        );
-        Promise.all([get_meters_Promise, get_readings_Promise]).then((data) => {
-          // update the base data and reset filters
-          [meters, property_meter_usage] = data;
-
-          resetSelections();
-          $scope.meterGridApi.core.refresh();
-          $scope.applyFilters();
-          spinner_utility.hide();
-        });
+        // RP - Why cant we just reload the state?
+        $state.reload()
       };
 
       // refresh_readings make an API call to refresh the base readings data

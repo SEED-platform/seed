@@ -32,10 +32,6 @@ class InventoryGroupSerializer(serializers.ModelSerializer):
         return SystemSerializer(obj.systems.all().select_subclasses(), many=True).data
 
     def __init__(self, *args, **kwargs):
-        include_systems = kwargs.pop("include_systems", False)
-        if not include_systems:
-            self.fields.pop("systems")
-
         if "inventory" not in kwargs:
             super().__init__(*args, **kwargs)
             return

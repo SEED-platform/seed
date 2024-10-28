@@ -5,8 +5,10 @@
 angular.module('SEED.controller.meter_edit_modal', []).controller('meter_edit_modal_controller', [
   '$scope',
   '$state',
+  '$stateParams',
   '$uibModalInstance',
   'inventory_group_service',
+  'inventory_service',
   'meter_service',
   'spinner_utility',
   'organization_id',
@@ -20,8 +22,10 @@ angular.module('SEED.controller.meter_edit_modal', []).controller('meter_edit_mo
   function (
     $scope,
     $state,
+    $stateParams,
     $uibModalInstance,
     inventory_group_service,
+    inventory_service,
     meter_service,
     spinner_utility,
     organization_id,
@@ -35,8 +39,13 @@ angular.module('SEED.controller.meter_edit_modal', []).controller('meter_edit_mo
     $scope.loading = true;
     $scope.meter_type = property_id ? "Property" : "System";
     $scope.config = {}
+    $scope.group_id = $stateParams.group_id
+    
+    const group_fn = property_id
+      ? inventory_group_service.get_groups_for_inventory.bind(null, "properties", [property_id])
+      : inventory_group_service.get_groups.bind(null, "properties")
 
-    inventory_group_service.get_groups_for_inventory("properties", [property_id], include_systems=true).then((groups) => {
+    group_fn().then((groups) => {
       $scope.potentialGroups = groups;
       $scope.group_options = groups;
       $scope.potentialSystems = groups.flatMap((group) => group.systems)
@@ -45,17 +54,30 @@ angular.module('SEED.controller.meter_edit_modal', []).controller('meter_edit_mo
       set_config()
     });
 
+    if ($scope.meter_type == 'Property' && !view_id) {
+      // if no view_id, get first.
+      inventory_service.get_property_views(organization_id, meter.property_id).then((response) => {
+        view_id = response.property_views[0].id
+      })
+    }
+
     $scope.update_meter = () => {
-      if ($scope.meter_type == 'Property') {
-        meter_service.update_meter_connection(organization_id, view_id, meter.id, $scope.config).then(() => {
-          refresh_meters_and_readings();
-          spinner_utility.show();
-          $uibModalInstance.dismiss('cancel');
+
+      meter_service.update_meter_connection(organization_id, meter.id, $scope.config, view_id, $scope.group_id).then((response) => {
+          if (response.status == 200) {
+            refresh_meters_and_readings();
+            spinner_utility.show();
+            $uibModalInstance.dismiss('cancel');
+          } else {
+            $scope.error = response.data.message
+          }
+        })
+        .catch((response) => {
+          console.log('b', response)
         });
-      }
     };
+
     const set_config = () => {
-      // const connection_type = meter.connection_type.toLowerCase()
       const outflow_options = ['To Outside', 'From Patron to Service', 'Total To Patron']
       // const inflow_options = ['From Outside', 'From Service to Patron', 'Total From Patron']
       let direction = 'inflow'
@@ -66,17 +88,19 @@ angular.module('SEED.controller.meter_edit_modal', []).controller('meter_edit_mo
       const connection = meter.connection_type.includes('Outside') ? 'outside' : 'service'
       const use = meter.property_id ? 'using' : 'offering'
       let system_id
-      if (meter.system_id) {
-        system = $scope.system_options.find(system => system.id == meter.system_id)
-        $scope.service_options = system.services
-      }
-
-      if (meter.service_id) {
-        const system = $scope.potentialSystems.find(
-          (system) => system.services.some((service) => service.id === meter.service_id)
-        )
-        $scope.service_options = system.services;
-        system_id = system.id;
+      if ($scope.potentialGroups.length) {
+        if (meter.system_id) {
+          system = $scope.system_options.find(system => system.id == meter.system_id)
+          $scope.service_options = system.services
+        }
+  
+        if (meter.service_id) {
+          const system = $scope.potentialSystems.find(
+            (system) => system.services.some((service) => service.id === meter.service_id)
+          )
+          $scope.service_options = system.services;
+          system_id = system.id;
+        }
       }
 
       $scope.config = {
@@ -115,17 +139,15 @@ angular.module('SEED.controller.meter_edit_modal', []).controller('meter_edit_mo
 
     // SELECTION LOGIC
     $scope.connection_selected = () => {
-      // if outside, user is done.
+      // if outside, form is complete.
       if ($scope.config.connection !== 'outside') {
-        // $scope.show_usage = true;
         // if a property meter, show all groups. otherwise system_id will dictate group_id
         if ($scope.meter_type == "Property") {
           $scope.config.use = 'using';
-          // $scope.show_groups = true;
           $scope.group_options = $scope.potentialGroups;
         }
       } else {
-        // reset values
+        // reset downstream values
         keys = ['use', 'group_id', 'system_id', 'service_id']
         keys.forEach(key => $scope.config[key] = null);
       }

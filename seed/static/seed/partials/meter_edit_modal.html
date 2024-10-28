@@ -53,10 +53,10 @@
       </div>
     </div>
   </div>
-
 </div>
 
 <div class="modal-footer">
+  <div class="alert-danger" style="padding: 5px; border-radius: 5px; align-content:center" ng-if="error">{$ error $}</div>
   <div class="row text-center">
     <button type="button" class="btn btn-primary col-sm-6 center-block" ng-click="update_meter()" ng-disabled="!form_valid" translate>Confirm</button>
   </div>

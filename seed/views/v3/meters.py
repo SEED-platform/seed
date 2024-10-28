@@ -4,6 +4,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
 from django.http import JsonResponse
+from django.db import IntegrityError
 from django.utils.decorators import method_decorator
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
@@ -16,6 +17,7 @@ from seed.models import Meter, PropertyView, Service
 from seed.serializers.meters import MeterSerializer
 from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema_org_query_param
 from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
+from seed.utils.meters import update_meter_connection
 
 
 @method_decorator(
@@ -117,30 +119,13 @@ class MeterViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
 
     @action(detail=True, methods=["PUT"])
     @has_perm_class("can_modify_data")
-    @has_hierarchy_access(property_view_id_kwarg="property_pk")
+    @has_hierarchy_access(property_view_id_kwarg="property_pk")  # if initiated from the groups page, this doesnt include a property_pk
     def update_connection(self, request, property_pk, pk):
         meter = self.get_queryset().filter(pk=pk).first()
-
         meter_config = request.data.get('meter_config')
-        service_id = meter_config.get('service_id')
-        if service_id:
-            service = Service.objects.get(pk=service_id)
-            # system = service.system
-            meter.service = service
-            # meter.system = system
-
-        direction = meter_config.get('direction')
-        use = meter_config.get('use', 'outside')
-        connection_lookup = {
-            'inflow using': Meter.FROM_SERVICE_TO_PATRON,
-            'inflow offering': Meter.TOTAL_FROM_PATRON,
-            'inflow outside': Meter.FROM_OUTSIDE,
-            'outflow using': Meter.FROM_PATRON_TO_SERVICE,
-            'outflow offering': Meter.TOTAL_TO_PATRON,
-            'outflow outside': Meter.TO_OUTSIDE
-        }
-        meter.connection_type = connection_lookup[f"{direction} {use}"]
-
-        meter.save()
+        try:
+            update_meter_connection(meter, meter_config)
+        except IntegrityError as e:
+            return JsonResponse({"status": "error", "message": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
         return JsonResponse({}, status=status.HTTP_200_OK)
