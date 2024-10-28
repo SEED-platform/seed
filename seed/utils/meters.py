@@ -309,24 +309,25 @@ class PropertyMeterReadingsExporter:
 
         return running_max[n - 1]
 
+
 def update_meter_connection(meter, meter_config):
-    service_id = meter_config.get('service_id')
+    service_id = meter_config.get("service_id")
     if service_id:
         service = Service.objects.get(pk=service_id)
         meter.service = service
 
     connection_lookup = {
-        'inflow using': Meter.FROM_SERVICE_TO_PATRON,
-        'inflow offering': Meter.TOTAL_FROM_PATRON,
-        'inflow outside': Meter.FROM_OUTSIDE,
-        'outflow using': Meter.FROM_PATRON_TO_SERVICE,
-        'outflow offering': Meter.TOTAL_TO_PATRON,
-        'outflow outside': Meter.TO_OUTSIDE
+        "inflow using": Meter.FROM_SERVICE_TO_PATRON,
+        "inflow offering": Meter.TOTAL_FROM_PATRON,
+        "inflow outside": Meter.FROM_OUTSIDE,
+        "outflow using": Meter.FROM_PATRON_TO_SERVICE,
+        "outflow offering": Meter.TOTAL_TO_PATRON,
+        "outflow outside": Meter.TO_OUTSIDE,
     }
-    direction = meter_config.get('direction')
-    use = meter_config.get('use') or 'outside'
-    if use == 'outside':
+    direction = meter_config.get("direction")
+    use = meter_config.get("use") or "outside"
+    if use == "outside":
         meter.service = None
     meter.connection_type = connection_lookup[f"{direction} {use}"]
-    
+
     meter.save()

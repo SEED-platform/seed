@@ -12,7 +12,7 @@ from rest_framework.decorators import action
 
 from seed.filters import ColumnListProfileFilterBackend
 from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm_class
-from seed.models import AccessLevelInstance, InventoryGroup, Meter, Organization, PropertyView, Service
+from seed.models import AccessLevelInstance, InventoryGroup, Meter, Organization, PropertyView
 from seed.serializers.inventory_groups import InventoryGroupSerializer
 from seed.serializers.meters import MeterSerializer
 from seed.utils.api_schema import swagger_auto_schema_org_query_param
@@ -162,7 +162,7 @@ class InventoryGroupMetersViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
     @has_hierarchy_access(inventory_group_id_kwarg="inventory_group_pk")
     def update_connection(self, request, inventory_group_pk, pk):
         meter = self.get_queryset().filter(pk=pk).first()
-        meter_config = request.data.get('meter_config')
+        meter_config = request.data.get("meter_config")
 
         try:
             update_meter_connection(meter, meter_config)

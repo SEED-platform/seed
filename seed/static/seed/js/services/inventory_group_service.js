@@ -25,17 +25,16 @@ angular.module('SEED.service.inventory_group', []).factory('inventory_group_serv
 
     /* Passing an inventory type will return all groups & corresponding inv type they're applied to
       Passing inventory type & filter_ids will return all groups, limited to only selected props/taxlots */
-    group_factory.get_groups_for_inventory = (inventory_type, filter_ids, include_systems=false) => {
+    group_factory.get_groups_for_inventory = (inventory_type, filter_ids, include_systems = false) => {
       const params = {
         organization_id: user_service.get_organization().id,
-        include_systems,
+        include_systems
       };
       let body = null;
       if (inventory_type === 'properties') {
         params.inventory_type = 'property';
       } else if (inventory_type === 'taxlots') {
         params.inventory_type = 'tax_lot';
-
       }
       body = { selected: filter_ids };
 

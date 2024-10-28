@@ -2326,7 +2326,7 @@
               '$stateParams', 'inventory_group_service', 'user_service',
               ($stateParams, inventory_group_service, user_service) => inventory_group_service.get_group(user_service.get_organization().id, $stateParams.group_id).then((group) => group)
             ],
-            groups: () => null,
+            groups: () => null
           }
         })
         .state({
@@ -2642,7 +2642,7 @@
               '$stateParams',
               'inventory_group_service',
               ($stateParams, inventory_group_service) => inventory_group_service.get_groups_for_inventory($stateParams.inventory_type, [])
-            ],
+            ]
           }
         })
         .state({

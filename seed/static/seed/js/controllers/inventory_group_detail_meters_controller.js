@@ -75,19 +75,18 @@ angular.module('SEED.controller.inventory_group_detail_meters', [])
       resetSelections();
 
       $scope.meter_type = (row) => {
-        console.log(row)
+        console.log(row);
         const property_meter = row.entity.property_id;
         const system_meter = row.entity.system_id;
-        const viewer = $scope.menu.user.organization.user_role !== 'viewer'
+        const viewer = $scope.menu.user.organization.user_role !== 'viewer';
         if (viewer) {
-          return 'disabled'
-        } else if (property_meter) {
-          return 'property'
-        } else if (system_meter) {
-          return 'system'
+          return 'disabled';
+        } if (property_meter) {
+          return 'property';
+        } if (system_meter) {
+          return 'system';
         }
-
-      }
+      };
 
       const buttons = (
         '<div class="meters-table-actions" style="display: flex; flex-direction=column">' +
@@ -272,7 +271,7 @@ angular.module('SEED.controller.inventory_group_detail_meters', [])
       // according to the selected interval
       $scope.refresh_meters_and_readings = () => {
         // RP - Why cant we just reload the state?
-        $state.reload()
+        $state.reload();
       };
 
       // refresh_readings make an API call to refresh the base readings data

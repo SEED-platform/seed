@@ -38,15 +38,14 @@ angular.module('SEED.controller.inventory_detail_meters', []).controller('invent
     property_meter_usage,
     spinner_utility,
     urls,
-    organization_payload,
+    organization_payload
   ) {
     spinner_utility.show();
     $scope.inventory_type = $stateParams.inventory_type;
     $scope.item_state = inventory_payload.state;
-    inventory_group_service.get_groups_for_inventory($stateParams.inventory_type, [])
+    inventory_group_service.get_groups_for_inventory($stateParams.inventory_type, []);
 
-
-    inventory_group_service.get_groups_for_inventory("properties", [inventory_payload.property.id], include_systems=true).then((groups) => {
+    inventory_group_service.get_groups_for_inventory('properties', [inventory_payload.property.id]).then((groups) => {
       $scope.groups = groups;
     });
 
@@ -305,9 +304,7 @@ angular.module('SEED.controller.inventory_detail_meters', []).controller('invent
       });
     };
 
-
     $scope.inventory_display_name = organization_service.get_inventory_display_value($scope.organization, $scope.inventory_type === 'properties' ? 'property' : 'taxlot', $scope.item_state);
-    
 
     $scope.updateHeight = () => {
       let height = 0;
