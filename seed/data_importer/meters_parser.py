@@ -328,7 +328,7 @@ class MetersParser:
         the keys are a list of properties with that given pm_property_id.
         """
         pm_property_ids = {str(raw_details["Portfolio Manager ID"]) for raw_details in self._meters_and_readings_details}
-        relevant_views = PropertyView.objects.filter(state__pm_property_id__in=pm_property_ids)
+        relevant_views = PropertyView.objects.filter(property__organization_id=self._org_id, state__pm_property_id__in=pm_property_ids)
         pm_property_id_and_property_id_pairs = relevant_views.values_list("state__pm_property_id", "property_id").distinct()
 
         self._source_to_property_ids = defaultdict(list)
