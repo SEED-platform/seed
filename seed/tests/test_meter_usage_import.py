@@ -428,7 +428,7 @@ class MeterUsageImportTest(TestCase):
         new_cycle_factory = FakeCycleFactory(organization=new_org, user=self.user)
         new_cycle = new_cycle_factory.get_cycle(start=datetime(2010, 10, 10, tzinfo=get_current_timezone()))
 
-        new_property = self.property_factory.get_property()
+        new_property = self.property_factory.get_property(organization=new_org)
 
         PropertyView.objects.create(property=new_property, cycle=new_cycle, state=new_property_state)
 
