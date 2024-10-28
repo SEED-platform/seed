@@ -11,8 +11,7 @@ import os
 import shutil
 import tempfile
 import time
-from collections import namedtuple
-from itertools import groupby
+from collections import defaultdict, namedtuple
 from pathlib import Path
 
 import pandas as pd
@@ -21,7 +20,7 @@ from django.conf import settings
 from django.core.files.base import ContentFile
 from django.core.files.storage import FileSystemStorage
 from django.db import transaction
-from django.db.models import Exists, OuterRef, Q, Subquery
+from django.db.models import Exists, F, OuterRef, Q, Subquery
 from django.http import HttpResponse, JsonResponse
 from django_filters import CharFilter, DateFilter
 from django_filters import rest_framework as filters
@@ -1908,16 +1907,26 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             property__access_level_instance__rgt__lte=access_level_instance.rgt,
         ).select_related("state")
         model_views = model_views.annotate(
-            has_electric_meters=Exists(Meter.objects.filter(type=Meter.ELECTRICITY, property=OuterRef("property")))
+            has_electric_meters=Exists(Meter.objects.filter(type=Meter.ELECTRICITY, property=OuterRef("property"))),
+            has_water_meters=Exists(
+                Meter.objects.filter(
+                    type__in=[Meter.POTABLE_INDOOR, Meter.POTABLE_OUTDOOR, Meter.POTABLE_MIXED], property=OuterRef("property")
+                )
+            ),
+            installation=F("property__access_level_instance__path__Installation"),
         )
 
         # fill each row
-        for i, (k, views) in enumerate(groupby(list(model_views), lambda v: v.state.extra_data.get("Installation Code"))):
+        views_by_installation_code = defaultdict(list)
+        for v in model_views:
+            installation_code = v.state.extra_data.get("Installation Code")
+            views_by_installation_code[installation_code].append(v)
+
+        for i, views in enumerate(views_by_installation_code.values()):
             output_df.loc[3 + i] = _row_from_views(list(views))
 
         # write back out
         output_df.columns = old_columns
-        logger.error(output_df)
         sf = StyleFrame.read_excel_as_template(BLANK_CTS_FILE_PATH, df=output_df, sheet_name="Facility Upload Template")
 
         # build response
@@ -1941,37 +1950,46 @@ def _row_from_views(views):
         else:
             m = pd.Series([v.state.extra_data.get(field) for v in views]).mode()
 
-        logger.error("+++++")
-        logger.error(views[0].state.extra_data)
-        logger.error(m)
         return None if len(m) < 1 else m[0]
 
     # Facility Status
-    data["Facility Status"] = "C"
+    data["Facility Status"] = mode("Covered Building (75% Energy Usage)", extra_data=True)
     # Sub-agency Acronym
+    data["Sub-agency Acronym"] = mode("Sub-agency Acronym", extra_data=True)
     # Agency Designated Covered Facility ID
     data["Agency Designated Covered Facility ID"] = mode("Installation Code", extra_data=True)
     # Government Owned Facility
+    data["Government Owned Facility"] = mode("Government Owned", extra_data=True)
     # Energy Management System Status
+    energy_status_string = mode("Energy Management System at Building's Installation", extra_data=True)
+    data["Energy Management System Status"] = {
+        "Energy Management System Not in Place": 0,
+        "Energy Management System in Place": 1,
+        "50001Ready": 2,
+        "ISO 50001 Certified": 3,
+    }.get(energy_status_string, 0)
     # Facility Name
-    data["Facility Name"] = mode("Installation", extra_data=True)
+    installation_mode = pd.Series([v.installation for v in views]).mode()
+    data["Facility Name"] = None if len(installation_mode) < 1 else installation_mode[0]
     # City
-    data["City"] = mode("city")
+    data["City"] = mode("Installation City", extra_data=True)
     # State
-    data["State"] = mode("state")
+    data["State"] = mode("Installation State", extra_data=True)
     # Zip Code
-    data["Zip Code"] = mode("postal_code")
+    data["Zip Code"] = mode("Installation Postal Code", extra_data=True)
     # Fiscal Year
-    logger.error(list(views))
-    data["Fiscal Year"] = next(iter(views)).cycle.name
+    data["Fiscal Year"] = next(iter(views)).cycle.end.year
     # Gross Square Footage
-    data["Gross Square Footage"] = sum([v.state.gross_floor_area for v in views if v.state.gross_floor_area is not None])
+    data["Gross Square Footage"] = sum([v.state.gross_floor_area.magnitude for v in views if v.state.gross_floor_area is not None]) / 1000
     # Number of Buildings Metered for Electricity
     data["Number of Buildings Metered for Electricity"] = sum([v.has_electric_meters for v in views])
     # Number of Buildings Metered for Water
+    data["Number of Buildings Metered for Water"] = sum([v.has_water_meters for v in views])
     # Annual Facility Energy Use
-    data["Annual Facility Energy Use"] = sum([v.state.extra_data.get("Sum of Modeled/MDMS Total Energy Usage", 0) for v in views])
+    data["Annual Facility Energy Use"] = sum([v.state.extra_data.get("Total of Modeled/MDMS Total Energy Usage", 0) for v in views])
     # Annual Facility Water Use
+    data["Annual Facility Energy Use"] = sum([v.state.extra_data.get("Sum of Modeled/MDMS Total Water Usage", 0) for v in views])
+
     return pd.Series(data)
 
 

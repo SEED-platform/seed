@@ -4,12 +4,20 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
 import json
+from datetime import datetime
 
+import pytz
 from django.test import TransactionTestCase
 from django.urls import reverse
 
 from seed.landing.models import SEEDUser as User
-from seed.models import FilterGroup, StatusLabel
+from seed.models import Column, FilterGroup, PropertyView, StatusLabel
+from seed.test_helpers.fake import (
+    FakeCycleFactory,
+    FakePropertyFactory,
+    FakePropertyStateFactory,
+    FakePropertyViewFactory,
+)
 from seed.tests.util import AccessLevelBaseTestCase
 from seed.utils.organizations import create_organization
 
@@ -457,3 +465,50 @@ class FilterGroupsPermissionsTests(AccessLevelBaseTestCase, TransactionTestCase)
         self.login_as_child_member()
         response = self.client.put(url, params, content_type="application/json")
         assert response.status_code == 403
+
+
+class FilterGroupsViewTests(AccessLevelBaseTestCase, TransactionTestCase):
+    def setUp(self):
+        super().setUp()
+        self.cycle1 = FakeCycleFactory(organization=self.org, user=self.superuser).get_cycle(
+            name="Cycle A", end=datetime(2022, 1, 1, tzinfo=pytz.UTC)
+        )
+
+        # generate columns
+        self.property_factory = FakePropertyFactory(organization=self.org)
+        self.property_state_factory = FakePropertyStateFactory(organization=self.org)
+        self.property_view_factory = FakePropertyViewFactory(organization=self.org)
+
+        # generate two different types of properties
+        self.office1 = self.property_factory.get_property(access_level_instance=self.child_level_instance)
+        self.office2 = self.property_factory.get_property(access_level_instance=self.root_level_instance)
+
+        # generate property states that are either 'Office' or 'Retail' for filter groups
+        # generate property views that are attached to a property and a property-state
+        self.state10 = self.property_state_factory.get_property_state(property_name="state10", property_type="office", site_eui=0)
+        self.state11 = self.property_state_factory.get_property_state(property_name="state11", property_type="office", site_eui=12)
+
+        self.view10 = PropertyView.objects.create(property=self.office1, cycle=self.cycle1, state=self.state10)
+        self.view11 = PropertyView.objects.create(property=self.office2, cycle=self.cycle1, state=self.state11)
+
+        property_type_id = Column.objects.get(table_name="PropertyState", column_name="property_type", organization_id=self.org.id).id
+        self.office_filter_group = FilterGroup.objects.create(
+            name="office",
+            organization_id=self.org.id,
+            inventory_type=0,  # Property
+            query_dict={f"property_type_{property_type_id}__exact": "office"},
+        )
+        self.office_filter_group.save()
+
+    def test_filter_returns_all_views_without_ali(self):
+        base_views = PropertyView.objects.select_related("property", "state").filter(property__organization_id=self.org.id)
+        pv = self.office_filter_group.views(base_views)
+
+        self.assertEqual(len(pv), 2)
+
+    def test_filter_with_child_ali_returns_only_child_property_views(self):
+        self.office_filter_group.query_dict["child__icontains"] = "child"
+        base_views = PropertyView.objects.select_related("property", "state").filter(property__organization_id=self.org.id)
+        pv = self.office_filter_group.views(base_views)
+
+        self.assertEqual(len(pv), 1)

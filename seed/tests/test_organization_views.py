@@ -4,14 +4,23 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
 import json
+from datetime import datetime
 
+import pytz
 from django.urls import reverse
 from xlrd import open_workbook
 
 from seed.data_importer.models import ImportFile, ImportRecord
 from seed.landing.models import SEEDUser as User
 from seed.lib.mcm.reader import ROW_DELIMITER
-from seed.models import Cycle
+from seed.models import Column, Cycle, FilterGroup, PropertyView
+from seed.models import StatusLabel as Label
+from seed.test_helpers.fake import (
+    FakeCycleFactory,
+    FakePropertyFactory,
+    FakePropertyStateFactory,
+    FakePropertyViewFactory,
+)
 from seed.tests.util import AccessLevelBaseTestCase, DataMappingBaseTestCase
 from seed.utils.organizations import create_organization
 
@@ -210,3 +219,68 @@ class TestOrganizationPermissions(AccessLevelBaseTestCase):
         resp = self.client.get(url, content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
         wb = open_workbook(file_contents=resp.content)
         assert wb.sheet_by_index(0).cell(1, 2).value == 1.0
+
+
+class TestOrganizationViewsWithFilters(AccessLevelBaseTestCase):
+    """
+    Test DataView model's ability to return property views based on filter groups
+    """
+
+    def setUp(self):
+        user_details = {
+            "username": "test_user@demo.com",
+            "password": "test_pass",
+            "email": "test_user@demo.com",
+            "first_name": "Johnny",
+            "last_name": "Energy",
+        }
+        self.superuser = User.objects.create_superuser(**user_details)
+        self.org, _, _ = create_organization(self.superuser, "test-organization-a")
+        self.client.login(**user_details)
+        self.cycle1 = FakeCycleFactory(organization=self.org, user=self.superuser).get_cycle(
+            name="Cycle A", end=datetime(2022, 1, 1, tzinfo=pytz.UTC)
+        )
+
+        self.label1 = Label.objects.create(name="label1", super_organization=self.org, color="red")
+        self.label2 = Label.objects.create(name="label2", super_organization=self.org, color="blue")
+
+        # generate columns
+        self.site_eui = Column.objects.get(column_name="site_eui")
+
+        self.property_factory = FakePropertyFactory(organization=self.org)
+        self.property_state_factory = FakePropertyStateFactory(organization=self.org)
+        self.property_view_factory = FakePropertyViewFactory(organization=self.org)
+
+        # generate two different types of properties
+        self.office1 = self.property_factory.get_property()
+        self.office2 = self.property_factory.get_property()
+
+        # generate property states that are either 'Office' or 'Retail' for filter groups
+        # generate property views that are attached to a property and a property-state
+        self.state10 = self.property_state_factory.get_property_state(property_name="state10", property_type="office", site_eui=0)
+        self.state11 = self.property_state_factory.get_property_state(property_name="state11", property_type="office", site_eui=12)
+
+        self.view10 = PropertyView.objects.create(property=self.office1, cycle=self.cycle1, state=self.state10)
+        self.view11 = PropertyView.objects.create(property=self.office2, cycle=self.cycle1, state=self.state11)
+
+        site_eui_id = Column.objects.get(table_name="PropertyState", column_name="site_eui").id
+        property_type_id = Column.objects.get(table_name="PropertyState", column_name="property_type").id
+        self.office_filter_group = FilterGroup.objects.create(
+            name="office",
+            organization_id=self.org.id,
+            inventory_type=0,  # Property
+            query_dict={f"property_type_{property_type_id}__exact": "office", f"site_eui_{site_eui_id}__gt": 1},
+        )
+        self.office_filter_group.save()
+
+    def test_filtered_report(self):
+        url = reverse("api:v3:organizations-report", args=[self.org.pk])
+        url += f"?x_var=building_count&y_var=gross_floor_area&cycle_ids={self.cycle1.id}"
+
+        # Unfiltered report
+        resp = self.client.get(url, content_type="application/json")
+        assert resp.json()["data"]["property_counts"][0]["num_properties"] == 2
+
+        url += f"&filter_group_id={self.office_filter_group.id}"
+        resp = self.client.get(url, content_type="application/json")
+        assert resp.json()["data"]["property_counts"][0]["num_properties"] == 1
