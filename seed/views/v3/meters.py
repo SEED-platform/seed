@@ -119,7 +119,7 @@ class MeterViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
 
     @action(detail=True, methods=["PUT"])
     @has_perm_class("can_modify_data")
-    @has_hierarchy_access(property_view_id_kwarg="property_pk")  # if initiated from the groups page, this doesnt include a property_pk
+    @has_hierarchy_access(property_view_id_kwarg="property_pk")
     def update_connection(self, request, property_pk, pk):
         meter = self.get_queryset().filter(pk=pk).first()
         meter_config = request.data.get("meter_config")

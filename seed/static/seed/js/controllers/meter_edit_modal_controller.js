@@ -33,7 +33,6 @@ angular.module('SEED.controller.meter_edit_modal', []).controller('meter_edit_mo
     refresh_meters_and_readings
   ) {
     $scope.loading = true;
-    $scope.meter_type = property_id ? 'Property' : 'System';
     $scope.meter_parent = property_id ? `Property ${property_id}` : meter.system_name;
     $scope.config = {};
     $scope.group_id = $stateParams.group_id;
@@ -51,7 +50,7 @@ angular.module('SEED.controller.meter_edit_modal', []).controller('meter_edit_mo
       set_config();
     });
 
-    if ($scope.meter_type === 'Property' && !view_id) {
+    if (property_id && !view_id) {
       // if no view_id, get first.
       inventory_service.get_property_views(organization_id, meter.property_id).then((response) => {
         view_id = response.property_views[0].id;
@@ -105,7 +104,7 @@ angular.module('SEED.controller.meter_edit_modal', []).controller('meter_edit_mo
       // if outside, form is complete.
       if ($scope.config.connection !== 'outside') {
         // if a property meter, show all groups. otherwise system_id will dictate group_id
-        if ($scope.meter_type === 'Property') {
+        if (property_id) {
           $scope.config.use = 'using';
           $scope.group_options = $scope.potentialGroups;
         }
