@@ -32,6 +32,7 @@ angular.module('SEED.controller.show_populated_columns_modal', []).controller('s
 
     $scope.refresh = () => {
       spinner_utility.show();
+      $uibModalInstance.close();
       $window.location.reload();
     };
 
