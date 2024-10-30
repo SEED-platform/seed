@@ -4,18 +4,17 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('seed', '0235_meter_systems'),
+        ("seed", "0235_meter_systems"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='service',
-            options={'ordering': ['name']},
+            name="service",
+            options={"ordering": ["name"]},
         ),
         migrations.AlterModelOptions(
-            name='system',
-            options={'ordering': ['name']},
+            name="system",
+            options={"ordering": ["name"]},
         ),
     ]
