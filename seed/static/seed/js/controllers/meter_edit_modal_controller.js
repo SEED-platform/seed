@@ -70,10 +70,9 @@ angular.module('SEED.controller.meter_edit_modal', []).controller('meter_edit_mo
     };
 
     const set_config = () => {
-      $scope.config = meter.config;
+      $scope.config = { ...meter.config };
       if ($scope.potentialGroups.length && meter.config.system_id) {
-        const system = $scope.system_options.find((system) => system.id === meter.config.system_id);
-        $scope.service_options = system.services;
+        $scope.service_options = $scope.system_options.find((system) => system.id === meter.config.system_id).services;
       }
       $scope.loading = false;
     };
@@ -117,10 +116,13 @@ angular.module('SEED.controller.meter_edit_modal', []).controller('meter_edit_mo
 
     $scope.group_selected = () => {
       $scope.system_options = $scope.potentialGroups.find((group) => group.id === $scope.config.group_id).systems;
+      $scope.service_options = [];
     };
 
     $scope.system_selected = () => {
-      $scope.service_options = $scope.system_options.find((system) => system.id === $scope.config.system_id).services;
+      if ($scope.system_options.length) {
+        $scope.service_options = $scope.system_options.find((system) => system.id === $scope.config.system_id).services;
+      }
     };
 
     $scope.cancel = () => {
