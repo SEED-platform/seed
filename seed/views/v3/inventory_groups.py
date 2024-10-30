@@ -109,7 +109,10 @@ class InventoryGroupViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
             number_of_view_missing_site_eui=Count("id", filter=Q(state__site_eui__isnull=True)),
             number_of_view_missing_gross_floor_area=Count("id", filter=Q(state__gross_floor_area__isnull=True)),
         )
-        data["gross_floor_area"] = data["gross_floor_area"].to_base_units().magnitude
+        if type(data["gross_floor_area"]).__name__ == "Quantity":
+            data["gross_floor_area"] = int(data["gross_floor_area"].to_base_units().magnitude)
+        if type(data["site_eui"]).__name__ == "Quantity":
+            data["site_eui"] = int(data["site_eui"].to_base_units().magnitude)
 
         # add meter based info
         systems = System.objects.filter(group_id=pk)
@@ -148,7 +151,14 @@ class InventoryGroupViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
         )
         data["service export totals"] = list(service_total_meter_readings)
 
-        return JsonResponse({"status": "success", "data": data})
+        readable_data = {
+            "Gross Floor Area": data["gross_floor_area"],
+            "Site EUI": data["site_eui"],
+            "Views Count": data["number_of_view"],
+            "Views Missing Site EUI": data["number_of_view_missing_site_eui"],
+            "Views Missing Gross Floor Area": data["number_of_view_missing_gross_floor_area"],
+        }
+        return JsonResponse({"status": "success", "data": readable_data})
 
     @swagger_auto_schema_org_query_param
     @has_perm_class("requires_viewer")

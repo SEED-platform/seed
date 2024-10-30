@@ -48,7 +48,7 @@ angular.module('SEED.controller.inventory_group_detail_meters', [])
       $scope.inventory_payload = inventory_payload;
       $scope.inventory_type = $stateParams.inventory_type;
       $scope.group_id = $stateParams.group_id;
-      $scope.inventory_display_name = group.name
+      $scope.inventory_display_name = group.name;
 
       spinner_utility.show();
       $scope.inventory_type = $stateParams.inventory_type;

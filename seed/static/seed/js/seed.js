@@ -2036,7 +2036,7 @@
                 return -1;
               }
             ],
-            group: () => null,
+            group: () => null
           }
         })
         .state({
@@ -2140,7 +2140,7 @@
             group: [
               '$stateParams', 'inventory_group_service', 'user_service',
               ($stateParams, inventory_group_service, user_service) => inventory_group_service.get_group(user_service.get_organization().id, $stateParams.group_id)
-            ],
+            ]
           }
         })
         .state({
@@ -2311,7 +2311,7 @@
             group: [
               '$stateParams', 'inventory_group_service', 'user_service',
               ($stateParams, inventory_group_service, user_service) => inventory_group_service.get_group(user_service.get_organization().id, $stateParams.group_id)
-            ],
+            ]
           }
         })
         .state({
@@ -2360,7 +2360,7 @@
             group: [
               '$stateParams', 'inventory_group_service', 'user_service',
               ($stateParams, inventory_group_service, user_service) => inventory_group_service.get_group(user_service.get_organization().id, $stateParams.group_id)
-            ],
+            ]
           }
         })
         .state({
@@ -2651,8 +2651,7 @@
               }
             ],
             cycles: ['cycle_service', (cycle_service) => cycle_service.get_cycles()],
-            organization_payload: ['user_service', 'organization_service', (user_service, organization_service) => organization_service.get_organization(user_service.get_organization().id)],
-            group: () => null,
+            organization_payload: ['user_service', 'organization_service', (user_service, organization_service) => organization_service.get_organization(user_service.get_organization().id)]
           }
         })
         .state({

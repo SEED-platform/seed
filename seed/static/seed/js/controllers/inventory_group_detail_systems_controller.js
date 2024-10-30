@@ -33,7 +33,7 @@ angular.module('SEED.controller.inventory_group_detail_systems', [])
     ) {
       $scope.inventory_type = $stateParams.inventory_type;
       $scope.group_id = $stateParams.group_id;
-      $scope.inventory_display_name = group.name
+      $scope.inventory_display_name = group.name;
       $scope.systems = systems.data;
       const all_systems = [...$scope.systems.DES ?? [], ...$scope.systems.EVSE ?? [], ...$scope.systems.Battery ?? []];
       const org_id = organization_payload.organization.id;

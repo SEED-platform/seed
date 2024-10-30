@@ -5811,9 +5811,10 @@ tags-input .tags .tag-item {
   #group-dashboard-table-container {
     width: 400px;
     margin: 20px;
-    border: 1px solid rgb(214, 214, 214);
+    border: 1px solid rgb(214 214 214);
+    border-top: none;
 
-    table{
+    table {
       margin-bottom: 0;
     }
   }
