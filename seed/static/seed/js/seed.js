@@ -2301,7 +2301,9 @@
           url: '/{inventory_type:properties|taxlots}/groups/{group_id:int}',
           templateUrl: `${static_url}seed/partials/inventory_group_detail_dashboard.html`,
           controller: 'inventory_group_detail_dashboard_controller',
-          resolve: {}
+          resolve: {
+            cycles: ['cycle_service', (cycle_service) => cycle_service.get_cycles()],
+          }
         })
         .state({
           name: 'inventory_group_detail_meters',

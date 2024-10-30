@@ -15,7 +15,19 @@
 <div class="section_nav_container">
   <div class="section_nav" ng-include="::urls.static_url + 'seed/partials/inventory_group_detail_nav.html'"></div>
 </div>
+<div class="ellipsis">
+  <span style="display: flex; align-items: baseline; gap: 1rem">
+    <strong>{$:: 'Cycle' | translate $}:</strong>
+    <select class="form-control" style="width: auto" ng-model="selectedCycle" ng-change="changeCycle()">
+      <option ng-repeat="cycle in cycles" ng-value="cycle">{$ cycle.name $}</option>
+    </select>
+  </span>
+</div>
 
 <div>
-  <div style="display: flex; justify-content: center; margin: 100px; font-style: italics">DASHBOARD IN DEVELOPMENT...</div>
+  <div style="display: flex; flex-direction:column">
+    <div ng-repeat="(key, item) in data">
+      <div>{$ key $}: {$ item $}</div>
+    </div>
+  </div>
 </div>
