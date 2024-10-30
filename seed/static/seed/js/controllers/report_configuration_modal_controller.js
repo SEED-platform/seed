@@ -8,9 +8,8 @@ angular.module('SEED.controller.report_configuration_modal', []).controller('rep
   'report_configurations_service',
   'action',
   'data',
-  '$log',
   // eslint-disable-next-line func-names
-  function ($scope, $uibModalInstance, report_configurations_service, action, data, $log) {
+  function ($scope, $uibModalInstance, report_configurations_service, action, data) {
     $scope.action = action;
     $scope.data = data;
 
@@ -51,7 +50,7 @@ angular.module('SEED.controller.report_configuration_modal', []).controller('rep
             access_level_instance_id: $scope.data.access_level_instance_id,
             access_level_depth: $scope.data.access_level_depth,
             cycles: $scope.data.cycles,
-            filter_group_id: $scope.data.filter_group_id,
+            filter_group_id: $scope.data.filter_group_id
           })
           .then((result) => {
             $uibModalInstance.close(result);

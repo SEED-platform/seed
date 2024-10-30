@@ -23,48 +23,48 @@
               <label>{$:: 'Report Configuration' | translate $}:</label>
             </div>
             <div class="col-md-3 pad-top-10 pad-bottom-10">
-                <select id="select-report-config" class="form-control input-sm" ng-model="selected_report_config_id" ng-change="change_report_config()">
-                  <option ng-repeat="config in report_configurations track by config.id" ng-value="config.id">{$ config.name $}</option>
-                </select>
+              <select id="select-report-config" class="form-control input-sm" ng-model="selected_report_config_id" ng-change="change_report_config()">
+                <option ng-repeat="config in report_configurations track by config.id" ng-value="config.id">{$ config.name $}</option>
+              </select>
             </div>
             <div class="col-md-3 pad-top-10 pad-botom-10">
-                <div class="btn-group" ng-if="menu.user.is_ali_root">
-                  <button
-                    class="btn btn-success"
-                    type="button"
-                    ng-click="save_report_config()"
-                    ng-disabled="!currentReportConfig.id || !reportModified || currentReportConfig.id === -1"
-                    tooltip-placement="bottom"
-                    uib-tooltip="Save"
-                  >
-                    <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
-                  </button>
-                  <button
-                    class="btn btn-primary"
-                    type="button"
-                    ng-click="rename_report_configuration()"
-                    ng-disabled="!currentReportConfig || currentReportConfig.id === -1"
-                    tooltip-placement="bottom"
-                    uib-tooltip="Rename"
-                  >
-                    <span class="glyphicon glyphicon-erase" aria-hidden="true"></span>
-                  </button>
-                  <button
-                    class="btn btn-danger"
-                    type="button"
-                    ng-click="remove_report_configuration()"
-                    ng-model="currentReportConfig"
-                    ng-change="check_for_report_configuration_changes(currentReportConfig, {$currentReportConfig$})"
-                    ng-disabled="!currentReportConfig || currentReportConfig.id === -1"
-                    tooltip-placement="bottom"
-                    uib-tooltip="Delete"
-                  >
-                    <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
-                  </button>
-                  <button class="btn btn-info" type="button" ng-click="new_report_configuration()" tooltip-placement="bottom" uib-tooltip="New">
-                    <span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>
-                  </button>
-                </div>
+              <div class="btn-group" ng-if="menu.user.is_ali_root">
+                <button
+                  class="btn btn-success"
+                  type="button"
+                  ng-click="save_report_config()"
+                  ng-disabled="!currentReportConfig.id || !reportModified || currentReportConfig.id === -1"
+                  tooltip-placement="bottom"
+                  uib-tooltip="Save"
+                >
+                  <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
+                </button>
+                <button
+                  class="btn btn-primary"
+                  type="button"
+                  ng-click="rename_report_configuration()"
+                  ng-disabled="!currentReportConfig || currentReportConfig.id === -1"
+                  tooltip-placement="bottom"
+                  uib-tooltip="Rename"
+                >
+                  <span class="glyphicon glyphicon-erase" aria-hidden="true"></span>
+                </button>
+                <button
+                  class="btn btn-danger"
+                  type="button"
+                  ng-click="remove_report_configuration()"
+                  ng-model="currentReportConfig"
+                  ng-change="check_for_report_configuration_changes(currentReportConfig, {$currentReportConfig$})"
+                  ng-disabled="!currentReportConfig || currentReportConfig.id === -1"
+                  tooltip-placement="bottom"
+                  uib-tooltip="Delete"
+                >
+                  <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+                </button>
+                <button class="btn btn-info" type="button" ng-click="new_report_configuration()" tooltip-placement="bottom" uib-tooltip="New">
+                  <span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>
+                </button>
+              </div>
             </div>
           </div>
         </div>

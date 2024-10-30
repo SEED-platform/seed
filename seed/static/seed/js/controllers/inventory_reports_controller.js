@@ -80,8 +80,6 @@ angular.module('SEED.controller.inventory_reports', []).controller('inventory_re
     $scope.reportModified = false;
 
     $scope.new_report_configuration = () => {
-
-
       const modalInstance = $uibModal.open({
         templateUrl: `${urls.static_url}seed/partials/report_configuration_modal.html`,
         controller: 'report_configuration_modal_controller',
@@ -116,7 +114,7 @@ angular.module('SEED.controller.inventory_reports', []).controller('inventory_re
 
       modalInstance.result.then((newName) => {
         $scope.currentReportConfig.name = newName;
-        Notification.primary(`Renamed ${currentReportConfig.name} to ${newName}`);
+        Notification.primary(`Renamed ${oldReportConfiguration.name} to ${newName}`);
         _.find($scope.report_configurations, { id: $scope.currentReportConfig.id }).name = newName;
       });
     };
@@ -261,7 +259,6 @@ angular.module('SEED.controller.inventory_reports', []).controller('inventory_re
       const new_level_instance_depth = parseInt($scope.level_name_index, 10) + parseInt(users_depth, 10);
       $scope.potential_level_instances = access_level_instances_by_depth[new_level_instance_depth];
       $scope.access_level_instance_id = JSON.parse(localStorage.getItem(localStorageALIID)) || parseInt($scope.users_access_level_instance_id, 10);
-
     }
     // Chart data
     $scope.chartData = [];
@@ -403,7 +400,7 @@ angular.module('SEED.controller.inventory_reports', []).controller('inventory_re
 
     $scope.select_filter_group = () => {
       $scope.setModified();
-    }
+    };
 
     /* END NEW CHART STUFF */
 
@@ -705,33 +702,30 @@ angular.module('SEED.controller.inventory_reports', []).controller('inventory_re
       return colorsArr;
     }
 
-    $scope.check_for_report_configuration_changes = () => {
-      return false;
-    }
+    $scope.check_for_report_configuration_changes = () => false;
 
     $scope.change_report_config = () => {
-      if (($scope.currentReportConfig === null) || ($scope.currentReportConfig != null && $scope.currentReportConfig.id != $scope.selected_report_config_id)) {
+      if (($scope.currentReportConfig === null) || ($scope.currentReportConfig !== null && $scope.currentReportConfig.id !== $scope.selected_report_config_id)) {
         $scope.currentReportConfig = $scope.report_configurations.find((config) => config.id === $scope.selected_report_config_id);
         $scope.selected_cycles = [];
         $scope.currentReportConfig.cycles.forEach((cycle) => {
           $scope.cycle_selection = cycle;
           $scope.select_cycle();
-
         });
         $scope.xAxisSelectedItem = $scope.xAxisVars.find((x) => x.varName === $scope.currentReportConfig.x_column);
         $scope.yAxisSelectedItem = $scope.yAxisVars.find((y) => y.varName === $scope.currentReportConfig.y_column);
         $scope.level_name_index = `${$scope.currentReportConfig.access_level_depth}`;
-        $scope.change_selected_level_index()
+        $scope.change_selected_level_index();
         $scope.access_level_instance_id = $scope.currentReportConfig.access_level_instance_id;
         $scope.filter_group_id = $scope.currentReportConfig.filter_group_id;
         $scope.reportModified = false;
         $scope.updateChartData();
       }
-    }
+    };
 
     $scope.setModified = () => {
       $scope.reportModified = true;
-    }
+    };
 
     $scope.save_report_config = () => {
       if ($scope.xAxisSelectedItem) {
@@ -750,13 +744,13 @@ angular.module('SEED.controller.inventory_reports', []).controller('inventory_re
       $scope.currentReportConfig.filter_group_id = $scope.filter_group_id;
 
       reports_configuration_service.update_report_configuration($scope.currentReportConfig.id, $scope.currentReportConfig)
-      .then(
-        (data) => {
-          Notification.primary(`Saved ${$scope.currentReportConfig.name}`);
-          $scope.reportModified = false;
-        }
-      );
-    }
+        .then(
+          () => {
+            Notification.primary(`Saved ${$scope.currentReportConfig.name}`);
+            $scope.reportModified = false;
+          }
+        );
+    };
 
     const localStorageSelectedCycles = `${base_storage_key}.SelectedCycles`;
 

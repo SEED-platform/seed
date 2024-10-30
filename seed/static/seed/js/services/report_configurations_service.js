@@ -42,7 +42,7 @@ angular.module('SEED.service.report_configurations', []).factory('report_configu
       })
       .then((response) => response.data.data);
 
-      report_configurations_factory.new_report_configuration = (data) => $http
+    report_configurations_factory.new_report_configuration = (data) => $http
       .post('/api/v3/report_configurations/', data, {
         params: {
           organization_id: user_service.get_organization().id
@@ -50,7 +50,7 @@ angular.module('SEED.service.report_configurations', []).factory('report_configu
       })
       .then((response) => response.data.data);
 
-      report_configurations_factory.update_report_configuration = (id, data) => {
+    report_configurations_factory.update_report_configuration = (id, data) => {
       if (id === null) {
         Notification.error('This report configuration is protected from modifications');
         return $q.reject();
