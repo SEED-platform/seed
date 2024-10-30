@@ -38,6 +38,7 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
   'organization_payload',
   'gridUtil',
   'uiGridGridMenuService',
+  'group',
   // eslint-disable-next-line func-names
   function (
     $scope,
@@ -74,7 +75,8 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
     i18nService,
     organization_payload,
     gridUtil,
-    uiGridGridMenuService
+    uiGridGridMenuService,
+    group
   ) {
     spinner_utility.show();
     $scope.selectedCount = 0;
@@ -86,7 +88,11 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
     }
 
     $scope.inventory_type = $stateParams.inventory_type;
-    $scope.group_id = $stateParams.group_id;
+    if ($stateParams.group_id) {
+      $scope.group_id = $stateParams.group_id;
+      $scope.group = group;
+      $scope.inventory_display_name = group.name;
+    }
     $scope.data = [];
     const lastCycleId = inventory_service.get_last_cycle();
     $scope.cycle = {

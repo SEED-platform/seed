@@ -20,6 +20,7 @@ angular.module('SEED.controller.inventory_detail_meters', []).controller('invent
   'spinner_utility',
   'urls',
   'organization_payload',
+  'group',
   // eslint-disable-next-line func-names
   function (
     $state,
@@ -38,12 +39,12 @@ angular.module('SEED.controller.inventory_detail_meters', []).controller('invent
     property_meter_usage,
     spinner_utility,
     urls,
-    organization_payload
+    organization_payload,
+    group
   ) {
     spinner_utility.show();
     $scope.inventory_type = $stateParams.inventory_type;
     $scope.item_state = inventory_payload.state;
-    inventory_group_service.get_groups_for_inventory($stateParams.inventory_type, []);
 
     inventory_group_service.get_groups_for_inventory('properties', [inventory_payload.property.id]).then((groups) => {
       $scope.groups = groups;

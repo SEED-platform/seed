@@ -5806,3 +5806,15 @@ tags-input .tags .tag-item {
     margin: 0 2px;
   }
 }
+
+.group-dashboard {
+  #group-dashboard-table-container {
+    width: 400px;
+    margin: 20px;
+    border: 1px solid rgb(214, 214, 214);
+
+    table{
+      margin-bottom: 0;
+    }
+  }
+}

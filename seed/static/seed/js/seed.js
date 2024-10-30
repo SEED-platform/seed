@@ -2035,7 +2035,8 @@
                 inventory_service.save_last_inventory_group(-1);
                 return -1;
               }
-            ]
+            ],
+            group: () => null,
           }
         })
         .state({
@@ -2135,7 +2136,11 @@
                 inventory_service.save_last_inventory_group(-1);
                 return -1;
               }
-            ]
+            ],
+            group: [
+              '$stateParams', 'inventory_group_service', 'user_service',
+              ($stateParams, inventory_group_service, user_service) => inventory_group_service.get_group(user_service.get_organization().id, $stateParams.group_id)
+            ],
           }
         })
         .state({
@@ -2167,7 +2172,7 @@
             ],
             group: [
               '$stateParams', 'inventory_group_service', 'user_service',
-              ($stateParams, inventory_group_service, user_service) => inventory_group_service.get_group(user_service.get_organization().id, $stateParams.group_id).then((group) => group)
+              ($stateParams, inventory_group_service, user_service) => inventory_group_service.get_group(user_service.get_organization().id, $stateParams.group_id)
             ]
           }
         })
@@ -2303,6 +2308,10 @@
           controller: 'inventory_group_detail_dashboard_controller',
           resolve: {
             cycles: ['cycle_service', (cycle_service) => cycle_service.get_cycles()],
+            group: [
+              '$stateParams', 'inventory_group_service', 'user_service',
+              ($stateParams, inventory_group_service, user_service) => inventory_group_service.get_group(user_service.get_organization().id, $stateParams.group_id)
+            ],
           }
         })
         .state({
@@ -2326,7 +2335,7 @@
             organization_payload: ['user_service', 'organization_service', (user_service, organization_service) => organization_service.get_organization(user_service.get_organization().id)],
             group: [
               '$stateParams', 'inventory_group_service', 'user_service',
-              ($stateParams, inventory_group_service, user_service) => inventory_group_service.get_group(user_service.get_organization().id, $stateParams.group_id).then((group) => group)
+              ($stateParams, inventory_group_service, user_service) => inventory_group_service.get_group(user_service.get_organization().id, $stateParams.group_id)
             ],
             groups: () => null
           }
@@ -2347,7 +2356,11 @@
               'organization_service',
               (user_service, organization_service) => organization_service.get_organization(user_service.get_organization().id)
             ],
-            cycles: ['cycle_service', (cycle_service) => cycle_service.get_cycles()]
+            cycles: ['cycle_service', (cycle_service) => cycle_service.get_cycles()],
+            group: [
+              '$stateParams', 'inventory_group_service', 'user_service',
+              ($stateParams, inventory_group_service, user_service) => inventory_group_service.get_group(user_service.get_organization().id, $stateParams.group_id)
+            ],
           }
         })
         .state({
@@ -2640,11 +2653,6 @@
             cycles: ['cycle_service', (cycle_service) => cycle_service.get_cycles()],
             organization_payload: ['user_service', 'organization_service', (user_service, organization_service) => organization_service.get_organization(user_service.get_organization().id)],
             group: () => null,
-            groups: [
-              '$stateParams',
-              'inventory_group_service',
-              ($stateParams, inventory_group_service) => inventory_group_service.get_groups_for_inventory($stateParams.inventory_type, [])
-            ]
           }
         })
         .state({

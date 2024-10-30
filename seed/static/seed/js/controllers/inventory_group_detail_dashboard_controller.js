@@ -8,6 +8,7 @@ angular.module('SEED.controller.inventory_group_detail_dashboard', [])
     '$state',
     '$stateParams',
     'cycles',
+    'group',
     'inventory_group_service',
     // eslint-disable-next-line func-names
     function (
@@ -15,8 +16,10 @@ angular.module('SEED.controller.inventory_group_detail_dashboard', [])
       $state,
       $stateParams,
       cycles,
+      group,
       inventory_group_service,
     ) {
+      $scope.inventory_display_name = group.name;
       $scope.inventory_type = $stateParams.inventory_type;
       $scope.group_id = $stateParams.group_id;
       $scope.cycles = cycles.cycles;
