@@ -116,6 +116,7 @@
     'SEED.controller.menu',
     'SEED.controller.merge_modal',
     'SEED.controller.meter_deletion_modal',
+    'SEED.controller.meter_edit_modal',
     'SEED.controller.modified_modal',
     'SEED.controller.move_inventory_modal',
     'SEED.controller.new_member_modal',
@@ -2300,7 +2301,9 @@
           url: '/{inventory_type:properties|taxlots}/groups/{group_id:int}',
           templateUrl: `${static_url}seed/partials/inventory_group_detail_dashboard.html`,
           controller: 'inventory_group_detail_dashboard_controller',
-          resolve: {}
+          resolve: {
+            cycles: ['cycle_service', (cycle_service) => cycle_service.get_cycles()],
+          }
         })
         .state({
           name: 'inventory_group_detail_meters',

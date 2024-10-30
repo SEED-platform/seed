@@ -223,7 +223,7 @@ class GroupMeterTests(AccessLevelBaseTestCase):
         self.meter3_id = create_meter_entry(view3.id, 301)
 
     def test_group_meters(self):
-        url = reverse_lazy("api:v3:inventory_groups-meters", args=[self.property_group.id]) + f"?organization_id={self.org.id}"
+        url = reverse_lazy("api:v3:inventory_group-meters-list", args=[self.property_group.id]) + f"?organization_id={self.org.id}"
         response = self.client.get(url, content_type="application/json")
 
         data = response.json()["data"]
