@@ -3,7 +3,7 @@
 import logging
 
 from django.core.exceptions import ObjectDoesNotExist
-from django.db.models import Q
+from django.db.models import Case, Count, F, Q, Sum, Value, When
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
 from rest_framework import response, status
@@ -11,7 +11,7 @@ from rest_framework.decorators import action
 
 from seed.filters import ColumnListProfileFilterBackend
 from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm_class
-from seed.models import AccessLevelInstance, InventoryGroup, Meter, Organization, PropertyView, Service
+from seed.models import AccessLevelInstance, Cycle, InventoryGroup, Meter, MeterReading, Organization, PropertyView, Service, System
 from seed.serializers.inventory_groups import InventoryGroupSerializer
 from seed.serializers.meters import MeterSerializer
 from seed.utils.api_schema import swagger_auto_schema_org_query_param
@@ -92,6 +92,63 @@ class InventoryGroupViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
                 "data": data,
             }
         )
+
+    @swagger_auto_schema_org_query_param
+    @has_perm_class("requires_viewer")
+    @action(detail=True, methods=["GET"])
+    @has_hierarchy_access(inventory_group_id_kwarg="pk")
+    def dashboard(self, request, pk):
+        cycle = Cycle.objects.get(pk=request.query_params.get("cycle_id"))
+
+        # add view based info
+        views = PropertyView.objects.filter(property__group_mappings__group=pk, cycle_id=cycle.id)
+        data = views.aggregate(
+            gross_floor_area=Sum("state__gross_floor_area"),
+            site_eui=Sum("state__site_eui"),
+            number_of_view=Count("id"),
+            number_of_view_missing_site_eui=Count("id", filter=Q(state__site_eui__isnull=True)),
+            number_of_view_missing_gross_floor_area=Count("id", filter=Q(state__gross_floor_area__isnull=True)),
+        )
+        data["gross_floor_area"] = data["gross_floor_area"].to_base_units().magnitude
+
+        # add meter based info
+        systems = System.objects.filter(group_id=pk)
+        system_import_meters = Meter.objects.filter(system__in=systems, connection_type=Meter.FROM_OUTSIDE)
+        system_import_meters_readings_in_cycle = MeterReading.objects.filter(
+            meter__in=system_import_meters, start_time__gte=cycle.start, end_time__lte=cycle.end
+        )
+        total_import_by_system_type_for_cycle = (
+            system_import_meters_readings_in_cycle.annotate(
+                type=Case(
+                    When(meter__system__evsesystem__isnull=False, then=Value("evsesystem")),
+                    When(meter__system__batterysystem__isnull=False, then=Value("batterysystem")),
+                    When(meter__system__dessystem__isnull=False, then=Value("dessystem")),
+                    default=Value("none"),
+                )
+            )
+            .annotate(total_import=Sum("reading"))
+            .values_list("type", "total_import")
+        )
+        data["total_import_by_system_type"] = dict(total_import_by_system_type_for_cycle)
+
+        # add service based info
+        services = Service.objects.filter(system__in=systems)
+        service_total_meters = Meter.objects.filter(service__in=services, connection_type=Meter.TOTAL_TO_PATRON)
+        service_total_meter_readings = MeterReading.objects.filter(
+            meter__in=service_total_meters, start_time__gte=cycle.start, end_time__lte=cycle.end
+        )
+        service_total_meter_readings = (
+            service_total_meter_readings.values("meter_id")
+            .annotate(
+                service_name=F("meter__service__name"),
+                meter_alias=F("meter__alias"),
+                total_service_export=Sum("reading"),
+            )
+            .values("service_name", "meter_id", "meter_alias", "total_service_export")
+        )
+        data["service export totals"] = list(service_total_meter_readings)
+
+        return JsonResponse({"status": "success", "data": data})
 
     @swagger_auto_schema_org_query_param
     @has_perm_class("requires_viewer")

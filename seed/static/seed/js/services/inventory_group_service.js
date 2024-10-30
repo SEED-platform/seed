@@ -83,6 +83,17 @@ angular.module('SEED.service.inventory_group', []).factory('inventory_group_serv
       }).then((response) => response.data.data);
     };
 
+    group_factory.get_dashboard_info = (id, cycle_id) => {
+      return $http.get(`/api/v3/inventory_groups/${id}/dashboard/`,
+        {
+          params: {
+            organization_id: user_service.get_organization().id,
+            cycle_id: cycle_id
+          }
+        }
+      ).then((response) => response.data.data);
+    };
+
     group_factory.remove_group = (id) => {
       if (id === null) {
         Notification.error('This group is protected from modifications');
