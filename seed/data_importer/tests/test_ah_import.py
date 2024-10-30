@@ -733,7 +733,7 @@ class TestAHImportMatchExistingDifferentCycle(TestAHImportFile):
         # city changed in the correct view
         assert PropertyView.objects.count() == 2
         view_info = PropertyView.objects.values("property_id", "cycle_id", "state__city")
-        assert list(view_info) == [
+        assert set(view_info) == {
             {
                 "property_id": self.existing_property.id,
                 "cycle_id": self.other_cycle.id,
@@ -744,7 +744,7 @@ class TestAHImportMatchExistingDifferentCycle(TestAHImportFile):
                 "cycle_id": self.cycle.id,
                 "state__city": "Denver",
             },
-        ]
+        }
 
     def test_no_ali_merges_and_links(self):
         # Set Up - create view for merge
