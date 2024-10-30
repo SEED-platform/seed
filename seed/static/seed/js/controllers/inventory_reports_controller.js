@@ -758,6 +758,7 @@ angular.module('SEED.controller.inventory_reports', []).controller('inventory_re
        with the values set in the scope */
     const init = () => {
       // Initialize pulldowns
+      $scope.report_config_editable = $scope.menu.user.organization.user_role === 'owner';
       $scope.selected_cycles = JSON.parse(localStorage.getItem(localStorageSelectedCycles)) || [];
       if ($scope.selected_report_config_id) {
         $scope.change_report_config();

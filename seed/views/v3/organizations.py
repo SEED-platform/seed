@@ -1459,7 +1459,7 @@ class OrganizationViewSet(viewsets.ViewSet):
         return JsonResponse(feed, json_dumps_params={"indent": 4}, status=status.HTTP_200_OK)
 
     @ajax_request_class
-    @has_perm_class("requires_member")
+    @has_perm_class("requires_viewer")
     @action(detail=True, methods=["GET"])
     def report_configurations(self, request, pk):
         configs = ReportConfiguration.objects.filter(organization_id=pk)
