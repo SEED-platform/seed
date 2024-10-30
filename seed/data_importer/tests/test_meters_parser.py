@@ -293,6 +293,7 @@ class MeterUtilTests(TestCase):
 
         meters_parser = MetersParser(self.org.id, raw_meters)
 
+        meters_parser.meter_and_reading_objs.sort(key=lambda x: (x["readings"][0]["reading"], x["property_id"]))
         self.assertEqual(meters_parser.meter_and_reading_objs, expected)
 
     def test_parse_meter_details_splits_monthly_info_including_cost_into_meter_data_and_readings(self):
