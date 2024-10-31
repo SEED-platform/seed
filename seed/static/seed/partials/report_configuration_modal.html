@@ -1,0 +1,35 @@
+<div class="modal-header" ng-switch="::action">
+  <h4 class="modal-title" ng-switch-when="rename" translate>Rename your Report Configuration</h4>
+  <h4 class="modal-title" ng-switch-when="remove" translate>Delete your Report Configuration</h4>
+  <h4 class="modal-title" ng-switch-when="new" translate>Create Report Configuration</h4>
+</div>
+<div class="modal-body no_bottom_padding row form-horizontal" ng-switch="::action">
+  <div class="form-group" ng-switch-when="rename">
+    <label class="control-label col-lg-3 col-sm-3" for="inputRename" translate>Report Configuration Name</label>
+    <div class="col-lg-8 col-sm-8">
+      <input type="text" class="form-control" id="inputRename" ng-model="$parent.newName" autofocus placeholder="{$:: data.name $}" sd-enter="rename_filter_group()" required />
+    </div>
+  </div>
+  <div class="col-sm-12" style="padding-bottom: 15px" ng-switch-when="remove">{$:: 'Are you sure you want to delete the report configuration' | translate $}, <strong>{$:: data.name $}</strong>?</div>
+  <div class="form-group" ng-switch-when="new">
+    <label class="control-label col-lg-3 col-sm-3" for="inputNew" translate>Filter Group Name</label>
+    <div class="col-lg-8 col-sm-8">
+      <input
+        type="text"
+        class="form-control"
+        id="inputNew"
+        ng-model="$parent.newName"
+        autofocus
+        placeholder="{$:: 'your report configuration name' | translate $}"
+        sd-enter="new_filter_group()"
+        required
+      />
+    </div>
+  </div>
+</div>
+<div class="modal-footer" ng-switch="::action">
+  <button type="button" class="btn btn-default" ng-click="cancel()" translate>Cancel</button>
+  <button type="button" ng-switch-when="rename" class="btn btn-primary" ng-click="rename_report_configuration()" ng-disabled="disabled()" translate>Rename Report Configuration</button>
+  <button type="button" ng-switch-when="remove" class="btn btn-danger" ng-click="remove_report_configuration()" autofocus translate>Yes, Remove Report Configuration</button>
+  <button type="button" ng-switch-when="new" class="btn btn-info" ng-click="new_report_configuration()" ng-disabled="disabled()" translate>Create Report Configuration</button>
+</div>
