@@ -1462,5 +1462,10 @@ class OrganizationViewSet(viewsets.ViewSet):
     @has_perm_class("requires_viewer")
     @action(detail=True, methods=["GET"])
     def report_configurations(self, request, pk):
-        configs = ReportConfiguration.objects.filter(organization_id=pk)
+        user_ali = AccessLevelInstance.objects.get(pk=self.request.access_level_instance_id)
+        configs = ReportConfiguration.objects.filter(
+            organization_id=pk,
+            access_level_instance__lft__gte=user_ali.lft,
+            access_level_instance__rgt__lte=user_ali.rgt,
+        )
         return JsonResponse({"data": ReportConfigurationSerializer(configs, many=True).data}, status=status.HTTP_200_OK)
