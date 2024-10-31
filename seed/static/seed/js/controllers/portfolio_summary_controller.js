@@ -612,7 +612,7 @@ angular.module('SEED.controller.portfolio_summary', [])
             field: 'goal_note.new_or_acquired',
             displayName: 'New Build or Acquired',
             enableFiltering: false,
-            enableSorting: false,
+            enableSorting: true,
             editableCellTemplate: 'ui-grid/dropdownEditor',
             editDropdownOptionsArray: [{ id: 1, value: true }, { id: 2, value: false }],
             editDropdownIdLabel: 'value',

@@ -510,6 +510,7 @@ def build_view_filters_and_sorts(
 
 
 def build_related_model_filters_and_sorts(filters: QueryDict, columns: list[dict]) -> tuple[Q, AnnotationDict, list[str]]:
+    """Primarily used for sorting the Portfolio Summary on related columns like goal_notes and historical_notes"""
     order_by = []
     annotations = {}
     columns_by_name = {}
@@ -528,7 +529,7 @@ def build_related_model_filters_and_sorts(filters: QueryDict, columns: list[dict
     if "goal_note" in column_name:
         column_name = column_name.replace("goal_note", "goalnote")
 
-    boolean_column = column_name == "property__goalnote__passed_checks"
+    boolean_column = column_name in ["property__goalnote__passed_checks", "property__goalnote__new_or_acquired"]
     target: Union[bool, str]
     if boolean_column:
         target = False
