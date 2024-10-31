@@ -283,7 +283,7 @@
                 <option ng-repeat="col in all_columns" selected="selected" ng-value="col.id">{$:: col.displayName $}</option>
               </select>
               <label class="control-label sectionLabel pad-top-10" translate>Total EUI Threshold </label>
-              <input ng-model="new_analysis.configuration.total_eui_goal" type="number"  ng-init="new_analysis.configuration.total_eui_goal=40" class="form-control" />
+              <input ng-model="new_analysis.configuration.total_eui_goal" type="number" ng-init="new_analysis.configuration.total_eui_goal=40" class="form-control" />
               <div class="analysis-help-text">
                 <small class="form-text text-muted" translate>TOTAL_EUI_HELP</small>
               </div>
@@ -296,10 +296,20 @@
               <div class="analysis-help-text"><small class="form-text text-muted" translate>YEAR_BUILT_THRESHOLD_HELP</small></div>
 
               <label class="control-label sectionLabel" translate>Fair Actual to Benchmark EUI Ratio</label>
-              <input ng-model="new_analysis.configuration.fair_actual_to_benchmark_eui_ratio" type="number" class="form-control" ng-init="new_analysis.configuration.fair_actual_to_benchmark_eui_ratio=1.2" />
+              <input
+                ng-model="new_analysis.configuration.fair_actual_to_benchmark_eui_ratio"
+                type="number"
+                class="form-control"
+                ng-init="new_analysis.configuration.fair_actual_to_benchmark_eui_ratio=1.2"
+              />
               <div class="analysis-help-text"><small class="form-text text-muted" translate>FAIR_BENCHMARK_RATIO_HELP</small></div>
               <label class="control-label sectionLabel" translate>Poor Actual to Benchmark EUI Ratio</label>
-              <input ng-model="new_analysis.configuration.poor_actual_to_benchmark_eui_ratio" ng-init="new_analysis.configuration.poor_actual_to_benchmark_eui_ratio=1.3" type="number" class="form-control" />
+              <input
+                ng-model="new_analysis.configuration.poor_actual_to_benchmark_eui_ratio"
+                ng-init="new_analysis.configuration.poor_actual_to_benchmark_eui_ratio=1.3"
+                type="number"
+                class="form-control"
+              />
               <div class="analysis-help-text"><small class="form-text text-muted" translate>POOR_BENCHMARK_RATIO_HELP</small></div>
               <label class="control-label sectionLabel" translate>Building Square Footage Threshold</label>
               <input ng-model="new_analysis.configuration.building_sqft_threshold" ng-init="new_analysis.configuration.building_sqft_threshold=10000" type="number" class="form-control" />
@@ -308,7 +318,12 @@
               <input ng-model="new_analysis.configuration.condition_index_threshold" ng-init="new_analysis.configuration.condition_index_threshold=90" type="number" class="form-control" />
               <div class="analysis-help-text"><small class="form-text text-muted" translate>CONDITION_INDEX_THRESHOLD_HELP</small></div>
               <label class="control-label sectionLabel" translate>Fossil Fuel-Fired Equipment RSL Threshold</label>
-              <input ng-model="new_analysis.configuration.ff_fired_equipment_rsl_threshold" ng-init="new_analysis.configuration.ff_fired_equipment_rsl_threshold=15" type="number" class="form-control" />
+              <input
+                ng-model="new_analysis.configuration.ff_fired_equipment_rsl_threshold"
+                ng-init="new_analysis.configuration.ff_fired_equipment_rsl_threshold=15"
+                type="number"
+                class="form-control"
+              />
               <div class="analysis-help-text"><small class="form-text text-muted" translate>FF_RSL_THRESHOLD_HELP</small></div>
             </div>
           </div>
