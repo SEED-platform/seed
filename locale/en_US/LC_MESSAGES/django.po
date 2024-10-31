@@ -1556,7 +1556,7 @@ msgid "FILE_TYPES_SUPPORTED"
 msgstr "File types supported: <strong>.csv</strong>, <strong>.xls</strong>, <strong>.xlsx</strong>, <strong>.xml</strong>, <strong>.zip</strong>, <strong>.geojson</strong>, and <strong>.json</strong>."
 
 msgid "FOSSIL_FUEL_EUI_HELP"
-msgstr "Fossil Fuel EUI Goal for the building (includes Gas, Etc.)"
+msgstr "Fossil Fuel EUI Threshold for the building (includes Gas, Etc.)"
 
 msgid "Failed to delete inventory"
 msgstr "Failed to delete inventory"
@@ -1653,8 +1653,8 @@ msgstr "For direct help on a specific problem, please fill out a request on the 
 msgid "Forgot password?"
 msgstr "Forgot password?"
 
-msgid "Fossil Fuel EUI Goal"
-msgstr "Fossil Fuel EUI Goal"
+msgid "Fossil Fuel EUI Threshold"
+msgstr "Fossil Fuel EUI Threshold"
 
 msgid "Fossil Fuel-Fired Equipment RSL Threshold"
 msgstr "Fossil Fuel-Fired Equipment RSL Threshold"
@@ -3755,7 +3755,7 @@ msgid "THERMAL_CONV_ASSUMPTION_TITLE"
 msgstr "Thermal Conversion Assumption"
 
 msgid "TOTAL_EUI_HELP"
-msgstr "Total EUI Goal for the building (includes Electricity, Gas, etc.)"
+msgstr "Total EUI Threshold for the building (includes Electricity, Gas, etc.)"
 
 msgid "TWO_FACTOR_DISABLED_TEXT"
 msgstr "Choosing this option will disable two-factor authentication for your account, making it less secure."
@@ -4034,8 +4034,8 @@ msgstr "Token Generator"
 msgid "Total EUI Field"
 msgstr "Total EUI Field"
 
-msgid "Total EUI Goal"
-msgstr "Total EUI Goal"
+msgid "Total EUI Threshold"
+msgstr "Total EUI Threshold"
 
 msgid "Total Properties"
 msgstr "Total Properties"
@@ -4424,7 +4424,7 @@ msgid "X_VERSUS_Y"
 msgstr "{x_axis_label} vs. {y_axis_label}"
 
 msgid "X_VERSUS_Y_AGGREGATED"
-msgstr "{x_axis_label} vs. {y_axis_label} (Aggregated)"
+msgstr "{x_axis_label} vs. {y_axis_label} (Averaged)"
 
 msgid "Y Axis"
 msgstr "Y Axis"

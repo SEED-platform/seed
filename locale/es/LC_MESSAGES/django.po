@@ -5,7 +5,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: lokalise.com\n"
 "Project-Id-Version: SEED Platform\n"
-"PO-Revision-Date: 2024-09-26 20:00\n"
+"PO-Revision-Date: 2024-10-31 19:47\n"
 "Last-Translator: lokalise.com\n"
 "Language-Team: lokalise.com\n\n"
 "Language: es\n"
@@ -2036,9 +2036,8 @@ msgstr "Nombres de campo para la correspondencia"
 msgid "FILE_TYPES_SUPPORTED"
 msgstr "Tipos de archivo admitidos: <strong>.csv</strong>, <strong>.xls</strong>, <strong>.xlsx</strong>, <strong>.xml</strong>, <strong>.zip</strong>, <strong>.geojson</strong>y <strong>.json</strong>."
 
-#, fuzzy
 msgid "FOSSIL_FUEL_EUI_HELP"
-msgstr "Objetivo EUI de combustibles fósiles para el edificio (incluye gas, etc.)"
+msgstr "Umbral EUI de combustibles fósiles para el edificio (incluye gas, etc.)"
 
 #, fuzzy
 msgid "Failed to delete inventory"
@@ -2162,9 +2161,8 @@ msgstr "Para obtener ayuda directa sobre un problema concreto, rellene una solic
 msgid "Forgot password?"
 msgstr "¿Ha olvidado su contraseña?"
 
-#, fuzzy
-msgid "Fossil Fuel EUI Goal"
-msgstr "Objetivo EUI de combustibles fósiles"
+msgid "Fossil Fuel EUI Threshold"
+msgstr "Umbral EUI de combustibles fósiles"
 
 #, fuzzy
 msgid "Fossil Fuel-Fired Equipment RSL Threshold"
@@ -4925,9 +4923,8 @@ msgstr "Se requiere al menos uno de los siguientes campos de Lote fiscal"
 msgid "THERMAL_CONV_ASSUMPTION_TITLE"
 msgstr "Hipótesis de conversión térmica"
 
-#, fuzzy
 msgid "TOTAL_EUI_HELP"
-msgstr "Objetivo EUI total del edificio (incluye electricidad, gas, etc.)"
+msgstr "Umbral EUI total del edificio (incluye electricidad, gas, etc.)"
 
 #, fuzzy
 msgid "TWO_FACTOR_DISABLED_TEXT"
@@ -5289,9 +5286,8 @@ msgstr "Generador de fichas"
 msgid "Total EUI Field"
 msgstr "Total EUI Campo"
 
-#, fuzzy
-msgid "Total EUI Goal"
-msgstr "Objetivo EUI total"
+msgid "Total EUI Threshold"
+msgstr "Umbral EUI total"
 
 #, fuzzy
 msgid "Total Properties"
