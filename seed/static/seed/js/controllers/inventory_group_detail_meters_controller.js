@@ -182,13 +182,24 @@ angular.module('SEED.controller.inventory_group_detail_meters', [])
       };
 
       $scope.open_meter_deletion_modal = (meter) => {
+        if (meter.property_id) {
+          inventory_service.get_property_views($scope.organization.id, meter.property_id)
+            .then((response) => open_meter_deletion_modal(meter, response.property_views[0].id));
+        } else {
+          open_meter_deletion_modal(meter, null);
+        }
+      };
+
+      const open_meter_deletion_modal = (meter, view_id) => {
+        console.log('open_meter_deletion_modal');
         $uibModal.open({
           templateUrl: `${urls.static_url}seed/partials/meter_deletion_modal.html`,
           controller: 'meter_deletion_modal_controller',
           resolve: {
             organization_id: () => $scope.organization.id,
+            group_id: () => meter.service_group,
             meter: () => meter,
-            view_id: () => $scope.inventory.view_id,
+            view_id: () => view_id,
             refresh_meters_and_readings: () => $scope.refresh_meters_and_readings
           }
         });

@@ -9,8 +9,21 @@ angular.module('SEED.service.meter', []).factory('meter_service', [
 
     meter_factory.get_meters = (property_view_id, organization_id) => $http.get(`/api/v3/properties/${property_view_id}/meters/`, { params: { organization_id } }).then((response) => response.data);
 
-    meter_factory.delete_meter = (organization_id, property_view_id, meter_id) => $http
+    meter_factory.delete_meter = (organization_id, meter_id, property_view_id, group_id) => {
+      if (property_view_id) {
+        return meter_factory.delete_property_meter(organization_id, meter_id, property_view_id);
+      } if (group_id) {
+        return meter_factory.delete_group_meter(organization_id, meter_id, group_id);
+      }
+    };
+
+    meter_factory.delete_property_meter = (organization_id, meter_id, property_view_id) => $http
       .delete(`/api/v3/properties/${property_view_id}/meters/${meter_id}/?organization_id=${organization_id}`)
+      .then((response) => response)
+      .catch((response) => response);
+
+    meter_factory.delete_group_meter = (organization_id, meter_id, group_id) => $http
+      .delete(`/api/v3/inventory_groups/${group_id}/meters/${meter_id}/?organization_id=${organization_id}`)
       .then((response) => response)
       .catch((response) => response);
 

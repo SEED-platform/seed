@@ -166,6 +166,7 @@ angular.module('SEED.controller.inventory_detail_meters', []).controller('invent
         controller: 'meter_deletion_modal_controller',
         resolve: {
           organization_id: () => $scope.organization.id,
+          group_id: () => null,
           meter: () => meter,
           view_id: () => $scope.inventory.view_id,
           refresh_meters_and_readings: () => $scope.refresh_meters_and_readings
