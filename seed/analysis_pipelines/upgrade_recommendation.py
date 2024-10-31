@@ -68,19 +68,13 @@ def _finish_preparation(self, analysis_view_ids_by_property_view_id, analysis_id
 
 def _get_views_upgrade_recommendation_category(property_view, config):
     column_params = config.get("column_params", {})
-    print(f" column params: {column_params}")
     columns_by_id = {
         c.id: {"name": c.column_name, "is_extra_data": c.is_extra_data} for c in Column.objects.filter(id__in=column_params.values())
     }
 
     def get_value(name):
-        print("@@@@@@@@@@@@@@@@@@@@@@@@")
-        print(f" getting value for: {name}")
         column_id = column_params.get(name)
-        print(f" id: {id}")
         column = columns_by_id[column_id]
-        print(f" column: {column}")
-        print(f" STATE DATA extradata: {property_view.state.extra_data}")
         if column["is_extra_data"]:
             val = None
             if column["name"] in property_view.state.extra_data:
@@ -90,9 +84,9 @@ def _get_views_upgrade_recommendation_category(property_view, config):
             return getattr(property_view.state, column["name"])
 
     total_eui = get_value("total_eui")
-    print(f" total EUI: {total_eui}")
+    # print(f" total EUI: {total_eui}")
     gas_eui = get_value("gas_eui")
-    print(f" gas EUI: {gas_eui}")
+    # print(f" gas EUI: {gas_eui}")
     electric_eui = get_value("electric_eui")
     target_gas_eui = get_value("target_gas_eui")
     target_electric_eui = get_value("target_electric_eui")
