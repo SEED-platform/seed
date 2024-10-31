@@ -92,12 +92,28 @@ angular.module('SEED.controller.inventory_reports', []).controller('inventory_re
     $scope.reportModified = false;
 
     $scope.new_report_configuration = () => {
+      const rc = {};
+      if ($scope.xAxisSelectedItem) {
+        rc.x_column = $scope.xAxisSelectedItem.varName;
+      } else {
+        rc.x_column = null;
+      }
+      if ($scope.yAxisSelectedItem) {
+        rc.y_column = $scope.yAxisSelectedItem.varName;
+      } else {
+        rc.y_column = null;
+      }
+      rc.access_level_instance_id = $scope.access_level_instance_id;
+      rc.access_level_depth = $scope.level_name_index;
+      rc.cycles = $scope.selected_cycles;
+      rc.filter_group_id = $scope.filter_group_id;
+
       const modalInstance = $uibModal.open({
         templateUrl: `${urls.static_url}seed/partials/report_configuration_modal.html`,
         controller: 'report_configuration_modal_controller',
         resolve: {
           action: () => 'new',
-          data: () => $scope.currentReportConfig
+          data: () => rc
         }
       });
 
@@ -260,7 +276,8 @@ angular.module('SEED.controller.inventory_reports', []).controller('inventory_re
     const localStorageReportConfigID = `${base_storage_key}.RCID`;
 
     // Check local storage for a saved report config - if there is one, use that, otherwise look for saved settings, if none, default to first options.
-    if (JSON.parse(localStorage.getItem(localStorageReportConfigID))) {
+
+    if (JSON.parse(localStorage.getItem(localStorageReportConfigID)) && ($scope.report_configurations.find((rc) => rc.id === JSON.parse(localStorage.getItem(localStorageReportConfigID))))) {
       $scope.selected_report_config_id = JSON.parse(localStorage.getItem(localStorageReportConfigID));
     } else {
       // Currently selected x and y variables - check local storage first, otherwise initialize to first choice
@@ -717,7 +734,7 @@ angular.module('SEED.controller.inventory_reports', []).controller('inventory_re
     $scope.check_for_report_configuration_changes = () => false;
 
     $scope.change_report_config = () => {
-      if (($scope.currentReportConfig === null) || ($scope.currentReportConfig !== null && $scope.currentReportConfig.id !== $scope.selected_report_config_id)) {
+      if (($scope.currentReportConfig === null && $scope.selected_report_config_id) || ($scope.currentReportConfig !== null && $scope.currentReportConfig.id !== $scope.selected_report_config_id)) {
         $scope.currentReportConfig = $scope.report_configurations.find((config) => config.id === $scope.selected_report_config_id);
         $scope.selected_cycles = [];
         $scope.currentReportConfig.cycles.forEach((cycle) => {
