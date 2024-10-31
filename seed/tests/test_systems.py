@@ -33,7 +33,7 @@ class SystemViewTests(AccessLevelBaseTestCase):
         response = self.client.get(url, content_type="application/json")
         assert response.status_code == 200
         data = response.json()["data"]
-        assert list(data.keys()) == ["DES", "EVSE", "Battery"]
+        assert list(data.keys()) == ["Battery", "DES", "EVSE"]
         assert len(data["DES"]) == 2
         assert len(data["EVSE"]) == 2
         assert len(data["Battery"]) == 2
