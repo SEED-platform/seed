@@ -238,13 +238,13 @@ angular.module('SEED.controller.portfolio_summary', [])
         // order of cycle property filter is dynamic based on column_sorts
         const cycle_priority = baseline_first ? [baseline_cycle, current_cycle] : [current_cycle, baseline_cycle];
 
-        get_paginated_properties(page, per_page, cycle_priority[0], access_level_instance_id, true, null, $scope.goal.id).then((result0) => {
+        get_paginated_properties(page, per_page, cycle_priority[0], access_level_instance_id, true, null).then((result0) => {
           $scope.inventory_pagination = result0.pagination;
           let properties = result0.results;
           combined_result[cycle_priority[0].id] = properties;
           const property_ids = properties.map((p) => p.id);
 
-          get_paginated_properties(page, per_page, cycle_priority[1], access_level_instance_id, false, property_ids, $scope.goal.id).then((result1) => {
+          get_paginated_properties(page, per_page, cycle_priority[1], access_level_instance_id, false, property_ids).then((result1) => {
             properties = result1.results;
             // if result0 returns fewer properties than result1, use result1 for ui-grid config
             if (result1.pagination.num_pages > $scope.inventory_pagination.num_pages) {
@@ -261,7 +261,7 @@ angular.module('SEED.controller.portfolio_summary', [])
         });
       };
 
-      const get_paginated_properties = (page, chunk, cycle, access_level_instance_id, include_filters_sorts, include_property_ids = null, goal_id = null) => {
+      const get_paginated_properties = (page, chunk, cycle, access_level_instance_id, include_filters_sorts, include_property_ids = null) => {
         const fn = inventory_service.get_properties;
         const [filters, sorts] = include_filters_sorts ? [$scope.column_filters, $scope.column_sorts] : [[], []];
 
@@ -281,7 +281,8 @@ angular.module('SEED.controller.portfolio_summary', [])
           table_column_ids.join(),
           access_level_instance_id,
           include_property_ids,
-          goal_id // optional param to retrieve goal note details
+          $scope.goal.id, // optional param to retrieve goal note details
+          $scope.related_model_sort // optional param to sort on related models
         );
       };
 
@@ -553,7 +554,7 @@ angular.module('SEED.controller.portfolio_summary', [])
             field: 'goal_note.question',
             displayName: 'Question',
             enableFiltering: false,
-            enableSorting: false,
+            enableSorting: true,
             editableCellTemplate: 'ui-grid/dropdownEditor',
             editDropdownOptionsArray: $scope.question_options,
             editDropdownIdLabel: 'value',
@@ -574,7 +575,7 @@ angular.module('SEED.controller.portfolio_summary', [])
             field: 'goal_note.resolution',
             displayName: 'Resolution',
             enableFiltering: false,
-            enableSorting: false,
+            enableSorting: true,
             enableCellEdit: !$scope.viewer,
             cellClass: !$scope.viewer && 'cell-edit',
             width: 300
@@ -583,7 +584,7 @@ angular.module('SEED.controller.portfolio_summary', [])
             field: 'historical_note.text',
             displayName: 'Historical Notes',
             enableFiltering: false,
-            enableSorting: false,
+            enableSorting: true,
             enableCellEdit: !$scope.viewer,
             cellClass: !$scope.viewer && 'cell-edit',
             width: 300
@@ -592,7 +593,7 @@ angular.module('SEED.controller.portfolio_summary', [])
             field: 'goal_note.passed_checks',
             displayName: 'Passed Checks',
             enableFiltering: false,
-            enableSorting: false,
+            enableSorting: true,
             editableCellTemplate: 'ui-grid/dropdownEditor',
             editDropdownOptionsArray: [{ id: 1, value: true }, { id: 2, value: false }],
             editDropdownIdLabel: 'value',
@@ -611,7 +612,7 @@ angular.module('SEED.controller.portfolio_summary', [])
             field: 'goal_note.new_or_acquired',
             displayName: 'New Build or Acquired',
             enableFiltering: false,
-            enableSorting: false,
+            enableSorting: true,
             editableCellTemplate: 'ui-grid/dropdownEditor',
             editDropdownOptionsArray: [{ id: 1, value: true }, { id: 2, value: false }],
             editDropdownIdLabel: 'value',
@@ -791,7 +792,8 @@ angular.module('SEED.controller.portfolio_summary', [])
         // parse the filters and sorts
         for (const column of formatted_columns) {
           // format column if cycle specific
-          const { name, filters, sort } = column;
+          let { name } = column;
+          const { filters, sort } = column;
           // remove the column id at the end of the name
           const column_name = name.split('_').slice(0, -1).join('_');
 
@@ -818,9 +820,17 @@ angular.module('SEED.controller.portfolio_summary', [])
             }
           }
 
+          $scope.related_model_sort = false;
           if (sort.direction) {
             // remove the column id at the end of the name
-            const column_name = name.split('_').slice(0, -1).join('_');
+            let column_name;
+            $scope.related_model_sort = ['historical_note.', 'goal_note.'].some((value) => name.includes(value));
+            if ($scope.related_model_sort) {
+              name = `property__${name.replace('.', '__')}`;
+              column_name = name;
+            } else {
+              column_name = name.split('_').slice(0, -1).join('_');
+            }
             const display = [$scope.columnDisplayByName[name], sort.direction].join(' ');
             $scope.column_sorts = [{
               name,
