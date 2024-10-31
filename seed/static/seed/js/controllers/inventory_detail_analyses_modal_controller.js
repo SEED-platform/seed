@@ -26,6 +26,7 @@ angular.module('SEED.controller.inventory_detail_analyses_modal', []).controller
     $scope.cycles = cycles;
     $scope.user = user;
     $scope.all_columns = all_columns;
+    $scope.eui_columns = $scope.all_columns.filter((o) => o.data_type === 'eui');
 
     $scope.new_analysis = {
       name: null,
