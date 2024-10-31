@@ -384,6 +384,20 @@ angular.module('SEED.controller.inventory_reports', []).controller('inventory_re
                   `${$scope.yAxisSelectedItem.label}: ${type === 'bar' ? ctx.raw : ctx.parsed.y}`
                 ]
               }
+            },
+            zoom: {
+              pan: {
+                enabled: true
+              },
+              zoom: {
+                wheel: {
+                  enabled: true
+                },
+                pinch: {
+                  enabled: true
+                },
+                mode: 'xy'
+              }
             }
           }
         }
@@ -478,6 +492,14 @@ angular.module('SEED.controller.inventory_reports', []).controller('inventory_re
     /* The directive will call this, so we can update our flag for the state of the chart. */
     $scope.aggChartRendered = () => {
       $scope.aggChartIsLoading = false;
+    };
+
+    $scope.reset_scatter_chart_zoom = () => {
+      $scope.scatterChart.resetZoom();
+    };
+
+    $scope.reset_agg_chart_zoom = () => {
+      $scope.barChart.resetZoom();
     };
 
     /* PRIVATE FUNCTIONS (so to speak) */
