@@ -91,7 +91,7 @@ class GoalViewTests(AccessLevelBaseTestCase):
         self.view11 = self.property_view_factory.get_property_view(prprty=self.property1, state=self.state_11, cycle=self.cycle1)
         self.view13 = self.property_view_factory.get_property_view(prprty=self.property1, state=self.state_13, cycle=self.cycle3)
         self.view2 = self.property_view_factory.get_property_view(prprty=self.property2, state=self.state_2, cycle=self.cycle2)
-        self.view21 = self.property_view_factory.get_property_view(prprty=self.property3, state=self.state_31, cycle=self.cycle1)
+        self.view31 = self.property_view_factory.get_property_view(prprty=self.property3, state=self.state_31, cycle=self.cycle1)
         self.view33 = self.property_view_factory.get_property_view(prprty=self.property3, state=self.state_33, cycle=self.cycle3)
         self.view41 = self.property_view_factory.get_property_view(prprty=self.property4, state=self.state_41, cycle=self.cycle1)
 
@@ -486,3 +486,32 @@ class GoalViewTests(AccessLevelBaseTestCase):
         }
 
         assert summary == exp_summary
+
+    def test_goal_data(self):
+        self.login_as_root_member()
+        url = reverse_lazy("api:v3:goals-data", args=[self.root_goal.id]) + "?organization_id=" + str(self.org.id)
+        data = {
+            "goal_id": self.root_goal.id,
+            "page": 1,
+            "per_page": 50,
+            "baseline_first": True,
+            "access_level_instance_id": self.org.root.id,
+            "related_model_sort": False,
+        }
+        response = self.client.put(url, data=json.dumps(data), content_type="application/json")
+        assert response.status_code == 200
+        data = response.json()
+        assert list(data.keys()) == ["pagination", "properties", "property_lookup"]
+
+        data = {
+            "goal_id": self.root_goal.id,
+            "page": 2,
+            "per_page": 1,
+            "baseline_first": True,
+            "access_level_instance_id": self.org.root.id,
+            "related_model_sort": False,
+        }
+        response = self.client.put(url, data=json.dumps(data), content_type="application/json")
+        data = response.json()
+        assert len(data["properties"]) == 1
+        assert data["property_lookup"] == {str(self.view31.id): self.property3.id, str(self.view33.id): self.property3.id}
