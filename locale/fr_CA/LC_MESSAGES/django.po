@@ -1855,6 +1855,9 @@ msgstr "Bonjour% (first_name) s,"
 msgid "Hexagonal Bins"
 msgstr "Bacs Hexagonaux"
 
+msgid "Hide All Labels"
+msgstr "Masquer toutes les étiquettes"
+
 msgid "Highlights of SEED Platform™"
 msgstr "Points forts de la Plate-Forme SEED™"
 
@@ -3666,6 +3669,9 @@ msgstr "Partage de vos données"
 
 msgid "Show All"
 msgstr "Montrer tout"
+
+msgid "Show All Labels"
+msgstr "Afficher toutes les étiquettes"
 
 msgid "Show Matched"
 msgstr "Montrer Appariés"

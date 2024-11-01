@@ -156,7 +156,6 @@ angular.module('SEED.controller.label_admin', []).controller('label_admin_contro
     }
 
     const check_show_in_list = () => {
-      $scope.label_ids = $scope.labels.map((label) => label.id);
       $scope.all_showing = $scope.labels.every((label) => label.show_in_list);
       $scope.toggle_text = !$scope.all_showing ? 'Show' : 'Hide';
     };
@@ -164,6 +163,7 @@ angular.module('SEED.controller.label_admin', []).controller('label_admin_contro
 
     $scope.toggle_show_all_labels = () => {
       check_show_in_list();
+      $scope.label_ids = $scope.labels.map((label) => label.id);
       const data = { show_in_list: !$scope.all_showing };
       bulk_update_labels($scope.label_ids, data);
     };

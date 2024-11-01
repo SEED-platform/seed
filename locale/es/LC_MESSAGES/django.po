@@ -5,7 +5,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: lokalise.com\n"
 "Project-Id-Version: SEED Platform\n"
-"PO-Revision-Date: 2024-10-31 19:47\n"
+"PO-Revision-Date: 2024-11-01 21:34\n"
 "Last-Translator: lokalise.com\n"
 "Language-Team: lokalise.com\n\n"
 "Language: es\n"
@@ -2404,6 +2404,9 @@ msgstr "Hola %(first_name)s, "
 msgid "Hexagonal Bins"
 msgstr "Cubos hexagonales"
 
+msgid "Hide All Labels"
+msgstr "Ocultar todas las etiquetas"
+
 #, fuzzy
 msgid "Highlights of SEED Platform™"
 msgstr "Aspectos destacados de la Plataforma SEED"
@@ -4766,6 +4769,9 @@ msgstr "Compartir sus datos"
 #, fuzzy
 msgid "Show All"
 msgstr "Mostrar todo"
+
+msgid "Show All Labels"
+msgstr "Mostrar todas las etiquetas"
 
 #, fuzzy
 msgid "Show Matched"
