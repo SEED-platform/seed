@@ -85,11 +85,13 @@ angular.module('SEED.controller.portfolio_summary', [])
       // Can only sort based on baseline or current, not both. In the event of a conflict, use the more recent.
       let baseline_first = false;
 
-      const sort_goals = (goals) => goals.sort((a, b) => (a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 1));
+      // RP - do sorting in backend - meta - ordering
+      // const sort_goals = (goals) => goals.sort((a, b) => (a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 1));
       // optionally pass a goal name to be set as $scope.goal - used on modal close
       const get_goals = (goal_name = false) => {
         goal_service.get_goals().then((result) => {
-          $scope.goals = _.isEmpty(result.goals) ? [] : sort_goals(result.goals);
+          console.log(result)
+          $scope.goals = result.goals;
           $scope.goal = goal_name ?
             $scope.goals.find((goal) => goal.name === goal_name) :
             $scope.goals[0];
@@ -118,31 +120,28 @@ angular.module('SEED.controller.portfolio_summary', [])
       // selected goal details
       const format_goal_details = () => {
         $scope.change_selected_level_index();
-        const get_column_name = (column_id) => $scope.columns.find((col) => col.id === column_id).displayName;
-        const get_cycle_name = (cycle_id) => $scope.cycles.find((col) => col.id === cycle_id).name;
-        const level_name = $scope.level_names[$scope.goal.level_name_index];
         const access_level_instance = $scope.potential_level_instances.find((level) => level.id === $scope.goal.access_level_instance).name;
 
-        const commitment_sqft = $scope.goal.commitment_sqft ? $scope.goal.commitment_sqft.toLocaleString() : 'n/a';
+        const commitment_sqft = $scope.goal.commitment_sqft?.toLocaleString() || 'n/a';
         $scope.goal_details = [
           { // column 1
-            'Baseline Cycle': get_cycle_name($scope.goal.baseline_cycle),
-            'Current Cycle': get_cycle_name($scope.goal.current_cycle),
-            [level_name]: access_level_instance,
+            'Baseline Cycle': $scope.goal.baseline_cycle_name,
+            'Current Cycle': $scope.goal.current_cycle_name,
+            [$scope.goal.level_name]: access_level_instance,
             'Total Properties': null,
             'Commitment Sq. Ft': commitment_sqft
           },
           { // column 2
             'Portfolio Target': `${$scope.goal.target_percentage} %`,
-            'Area Column': get_column_name($scope.goal.area_column),
-            'Primary EUI': get_column_name($scope.goal.eui_column1)
+            'Area Column': $scope.goal.area_column_name,
+            'Primary EUI': $scope.goal.eui_column1_name
           }
         ];
         if ($scope.goal.eui_column2) {
-          $scope.goal_details[1]['Secondary EUI'] = get_column_name($scope.goal.eui_column2);
+          $scope.goal_details[1]['Secondary EUI'] = $scope.goal.eui_column2_name;
         }
         if ($scope.goal.eui_column3) {
-          $scope.goal_details[1]['Tertiary EUI'] = get_column_name($scope.goal.eui_column3);
+          $scope.goal_details[1]['Tertiary EUI'] = $scope.goal.eui_column3_name;
         }
       };
 
@@ -1124,6 +1123,7 @@ angular.module('SEED.controller.portfolio_summary', [])
         };
       };
 
+      // --- DATA QUALITY ---
       $scope.run_data_quality_check = () => {
         spinner_utility.show();
         data_quality_service.start_data_quality_checks([], [], $scope.goal.id)
