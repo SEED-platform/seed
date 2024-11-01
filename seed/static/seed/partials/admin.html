@@ -230,7 +230,7 @@
                   <td style="width: 470px">
                     <div>
                       <button class="btn btn-default" ng-click="confirm_inventory_delete(org)" ng-disabled="org.progress > -1" translate>Remove Inventory</button>
-                      <button class="btn btn-danger" type="button" style="margin-left: 10px" ng-click="delete_org(org)" ng-disabled="org.progress > -1">
+                      <button class="btn btn-danger" type="button" style="margin-left: 10px" ng-click="confirm_delete_org(org)" ng-disabled="org.progress > -1">
                         <i class="fa-solid fa-triangle-exclamation"></i>
                         <span ng-if="org.is_parent" translate>Delete Organization</span>
                         <span ng-if="!org.is_parent" translate>Delete Sub-Organization</span>

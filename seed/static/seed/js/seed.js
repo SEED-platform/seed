@@ -44,6 +44,7 @@
     'SEED.controller.column_mappings',
     'SEED.controller.column_settings',
     'SEED.controller.confirm_column_settings_modal',
+    'SEED.controller.confirm_organization_deletion_modal',
     'SEED.controller.create_column_modal',
     'SEED.controller.create_organization_modal',
     'SEED.controller.create_sub_organization_modal',
