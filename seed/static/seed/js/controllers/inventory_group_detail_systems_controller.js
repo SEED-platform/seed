@@ -15,6 +15,7 @@ angular.module('SEED.controller.inventory_group_detail_systems', [])
     'cycles',
     'systems',
     'organization_payload',
+    'group',
     // eslint-disable-next-line func-names
     function (
       $scope,
@@ -27,10 +28,12 @@ angular.module('SEED.controller.inventory_group_detail_systems', [])
       dataset_service,
       cycles,
       systems,
-      organization_payload
+      organization_payload,
+      group
     ) {
       $scope.inventory_type = $stateParams.inventory_type;
       $scope.group_id = $stateParams.group_id;
+      $scope.inventory_display_name = group.name;
       $scope.systems = systems.data;
       const all_systems = [...$scope.systems.DES ?? [], ...$scope.systems.EVSE ?? [], ...$scope.systems.Battery ?? []];
       const org_id = organization_payload.organization.id;

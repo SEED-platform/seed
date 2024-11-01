@@ -48,6 +48,7 @@ angular.module('SEED.controller.inventory_group_detail_meters', [])
       $scope.inventory_payload = inventory_payload;
       $scope.inventory_type = $stateParams.inventory_type;
       $scope.group_id = $stateParams.group_id;
+      $scope.inventory_display_name = group.name;
 
       spinner_utility.show();
       $scope.inventory_type = $stateParams.inventory_type;
@@ -74,10 +75,24 @@ angular.module('SEED.controller.inventory_group_detail_meters', [])
 
       resetSelections();
 
+      $scope.meter_type = (row) => {
+        console.log(row);
+        const property_meter = row.entity.property_id;
+        const system_meter = row.entity.system_id;
+        const viewer = $scope.menu.user.organization.user_role !== 'viewer';
+        if (viewer) {
+          return 'disabled';
+        } if (property_meter) {
+          return 'property';
+        } if (system_meter) {
+          return 'system';
+        }
+      };
+
       const buttons = (
-        '<div style="display: flex; flex-direction=column">' +
-        ' <button type="button" ng-show="grid.appScope.menu.user.organization.user_role !== \'viewer\'" class="btn-primary" style="border-radius: 4px;" ng-click="grid.appScope.open_meter_deletion_modal(row.entity)" translate>Delete</button>' +
-        ' <button type="button" ng-show="grid.appScope.menu.user.organization.user_role !== \'viewer\'" class="btn-primary" style="border-radius: 4px;" ng-click="grid.appScope.open_meter_connection_edit_modal(row.entity)" translate>Edit Connection</button>' +
+        '<div class="meters-table-actions" style="display: flex; flex-direction=column">' +
+        ' <button type="button" ng-show="grid.appScope.menu.user.organization.user_role !== \'viewer\'" class="btn-danger" style="border-radius: 4px;" ng-click="grid.appScope.open_meter_deletion_modal(row.entity)" title="Delete Meter"><i class="fa-solid fa-xmark"></i></button>' +
+        ' <button type="button" ng-show="grid.appScope.menu.user.organization.user_role !== \'viewer\'" class="btn-primary" style="border-radius: 4px;" ng-click="grid.appScope.open_meter_connection_edit_modal(row.entity)" title="Edit Meter Connection"><i class="fa-solid fa-pencil"></i></button>' +
         '</div>'
       );
 
@@ -167,21 +182,43 @@ angular.module('SEED.controller.inventory_group_detail_meters', [])
       };
 
       $scope.open_meter_deletion_modal = (meter) => {
+        if (meter.property_id) {
+          inventory_service.get_property_views($scope.organization.id, meter.property_id)
+            .then((response) => open_meter_deletion_modal(meter, response.property_views[0].id));
+        } else {
+          open_meter_deletion_modal(meter, null);
+        }
+      };
+
+      const open_meter_deletion_modal = (meter, view_id) => {
+        console.log('open_meter_deletion_modal');
         $uibModal.open({
           templateUrl: `${urls.static_url}seed/partials/meter_deletion_modal.html`,
           controller: 'meter_deletion_modal_controller',
           resolve: {
             organization_id: () => $scope.organization.id,
+            group_id: () => meter.service_group,
             meter: () => meter,
-            view_id: () => $scope.inventory.view_id,
+            view_id: () => view_id,
             refresh_meters_and_readings: () => $scope.refresh_meters_and_readings
           }
         });
       };
 
       $scope.open_meter_connection_edit_modal = (meter) => {
-        // TODO
-        console.log(meter);
+        // get view if property_id
+        $uibModal.open({
+          templateUrl: `${urls.static_url}seed/partials/meter_edit_modal.html`,
+          controller: 'meter_edit_modal_controller',
+          resolve: {
+            organization_id: () => $scope.organization.id,
+            meter: () => meter,
+            property_id: () => meter.property_id,
+            system_id: () => meter.system_id,
+            view_id: () => null, // gonna need this.
+            refresh_meters_and_readings: () => $scope.refresh_meters_and_readings
+          }
+        });
       };
 
       $scope.apply_column_settings = () => {
@@ -245,23 +282,8 @@ angular.module('SEED.controller.inventory_group_detail_meters', [])
       // refresh_readings make an API call to refresh the base readings data
       // according to the selected interval
       $scope.refresh_meters_and_readings = () => {
-        spinner_utility.show();
-        const get_meters_Promise = meter_service.get_meters($scope.inventory.view_id, $scope.organization.id);
-        const get_readings_Promise = meter_service.property_meter_usage(
-          $scope.inventory.view_id,
-          $scope.organization.id,
-          $scope.interval.selected,
-          [] // Not excluding any meters from the query
-        );
-        Promise.all([get_meters_Promise, get_readings_Promise]).then((data) => {
-          // update the base data and reset filters
-          [meters, property_meter_usage] = data;
-
-          resetSelections();
-          $scope.meterGridApi.core.refresh();
-          $scope.applyFilters();
-          spinner_utility.hide();
-        });
+        // RP - Why cant we just reload the state?
+        $state.reload();
       };
 
       // refresh_readings make an API call to refresh the base readings data

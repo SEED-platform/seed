@@ -7,7 +7,7 @@
       </a>
     </div>
     <div class="page_title">
-      <h1>{$:: 'Group Detail' | translate $}</h1>
+      <h1>{$:: 'Group - Dashboard' | translate $}</h1>
     </div>
     <div class="right page_action_container"></div>
   </div>
@@ -15,7 +15,32 @@
 <div class="section_nav_container">
   <div class="section_nav" ng-include="::urls.static_url + 'seed/partials/inventory_group_detail_nav.html'"></div>
 </div>
+<div class="section_header_container">
+  <div class="section_header fixed_height_short has_no_padding">
+    <div ng-include="::urls.static_url + 'seed/partials/inventory_detail_header.html'"></div>
+  </div>
+</div>
+<div class="section" style="margin: 10px">
+  <div class="ellipsis">
+    <span style="display: flex; align-items: baseline; gap: 1rem">
+      <strong>{$:: 'Cycle' | translate $}:</strong>
+      <select class="form-control" style="width: auto" ng-model="selectedCycle" ng-change="changeCycle()">
+        <option ng-repeat="cycle in cycles" ng-value="cycle">{$ cycle.name $}</option>
+      </select>
+    </span>
+  </div>
 
-<div>
-  <div style="display: flex; justify-content: center; margin: 100px; font-style: italics">DASHBOARD IN DEVELOPMENT...</div>
+  <div class="group-dashboard">
+    <div id="group-dashboard-table-container">
+      <table class="table table-striped table_highlight_first system-table">
+        <thead></thead>
+        <tbody>
+          <tr ng-repeat="(key, value) in data">
+            <td>{$ key $}</td>
+            <td>{$ value $}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
 </div>

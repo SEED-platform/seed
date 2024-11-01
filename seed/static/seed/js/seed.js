@@ -116,6 +116,7 @@
     'SEED.controller.menu',
     'SEED.controller.merge_modal',
     'SEED.controller.meter_deletion_modal',
+    'SEED.controller.meter_edit_modal',
     'SEED.controller.modified_modal',
     'SEED.controller.move_inventory_modal',
     'SEED.controller.new_member_modal',
@@ -2034,7 +2035,8 @@
                 inventory_service.save_last_inventory_group(-1);
                 return -1;
               }
-            ]
+            ],
+            group: () => null
           }
         })
         .state({
@@ -2134,6 +2136,10 @@
                 inventory_service.save_last_inventory_group(-1);
                 return -1;
               }
+            ],
+            group: [
+              '$stateParams', 'inventory_group_service', 'user_service',
+              ($stateParams, inventory_group_service, user_service) => inventory_group_service.get_group(user_service.get_organization().id, $stateParams.group_id)
             ]
           }
         })
@@ -2166,7 +2172,7 @@
             ],
             group: [
               '$stateParams', 'inventory_group_service', 'user_service',
-              ($stateParams, inventory_group_service, user_service) => inventory_group_service.get_group(user_service.get_organization().id, $stateParams.group_id).then((group) => group)
+              ($stateParams, inventory_group_service, user_service) => inventory_group_service.get_group(user_service.get_organization().id, $stateParams.group_id)
             ]
           }
         })
@@ -2300,7 +2306,13 @@
           url: '/{inventory_type:properties|taxlots}/groups/{group_id:int}',
           templateUrl: `${static_url}seed/partials/inventory_group_detail_dashboard.html`,
           controller: 'inventory_group_detail_dashboard_controller',
-          resolve: {}
+          resolve: {
+            cycles: ['cycle_service', (cycle_service) => cycle_service.get_cycles()],
+            group: [
+              '$stateParams', 'inventory_group_service', 'user_service',
+              ($stateParams, inventory_group_service, user_service) => inventory_group_service.get_group(user_service.get_organization().id, $stateParams.group_id)
+            ]
+          }
         })
         .state({
           name: 'inventory_group_detail_meters',
@@ -2314,7 +2326,6 @@
               'inventory_group_service',
               ($stateParams, inventory_group_service) => inventory_group_service.get_meter_usage($stateParams.group_id, 'Exact')
             ],
-            // rp
             meters: [
               '$stateParams',
               'inventory_group_service',
@@ -2324,8 +2335,9 @@
             organization_payload: ['user_service', 'organization_service', (user_service, organization_service) => organization_service.get_organization(user_service.get_organization().id)],
             group: [
               '$stateParams', 'inventory_group_service', 'user_service',
-              ($stateParams, inventory_group_service, user_service) => inventory_group_service.get_group(user_service.get_organization().id, $stateParams.group_id).then((group) => group)
-            ]
+              ($stateParams, inventory_group_service, user_service) => inventory_group_service.get_group(user_service.get_organization().id, $stateParams.group_id)
+            ],
+            groups: () => null
           }
         })
         .state({
@@ -2344,7 +2356,11 @@
               'organization_service',
               (user_service, organization_service) => organization_service.get_organization(user_service.get_organization().id)
             ],
-            cycles: ['cycle_service', (cycle_service) => cycle_service.get_cycles()]
+            cycles: ['cycle_service', (cycle_service) => cycle_service.get_cycles()],
+            group: [
+              '$stateParams', 'inventory_group_service', 'user_service',
+              ($stateParams, inventory_group_service, user_service) => inventory_group_service.get_group(user_service.get_organization().id, $stateParams.group_id)
+            ]
           }
         })
         .state({
@@ -2635,8 +2651,7 @@
               }
             ],
             cycles: ['cycle_service', (cycle_service) => cycle_service.get_cycles()],
-            organization_payload: ['user_service', 'organization_service', (user_service, organization_service) => organization_service.get_organization(user_service.get_organization().id)],
-            group: () => null
+            organization_payload: ['user_service', 'organization_service', (user_service, organization_service) => organization_service.get_organization(user_service.get_organization().id)]
           }
         })
         .state({

@@ -212,35 +212,46 @@ def presave_meter(sender, instance, **kwargs):
     system = instance.system
     connection_type = instance.connection_type
     service = instance.service
+    connection_string = dict(Meter.CONNECTION_TYPES).get(connection_type)
 
     # must be connected to either a system or a property
     if property is not None and system is not None:
         raise IntegrityError(f"Meter {instance.id} has both a property and a system. It must only have one.")
 
-    # Only systems have connection type "total"
-    system_connections = connection_type in [Meter.TOTAL_FROM_PATRON, Meter.TOTAL_TO_PATRON]
-    if system_connections and instance.system is None:
-        raise IntegrityError(f"Meter {instance.id} has connection_type {connection_type}, but is not connected to a system")
-
     outside_connection = connection_type in [Meter.FROM_OUTSIDE, Meter.TO_OUTSIDE]
     if outside_connection:
         # outside connections don't have services
         if instance.service is not None:
-            raise IntegrityError(f"Meter {instance.id} has connection_type {connection_type}, but also is connected to a service")
+            raise IntegrityError(f"Meter {instance.id} has connection_type '{connection_string}', but also is connected to a service")
     else:
         # inside connections _do_ have services
         if service is None:
-            raise IntegrityError(f"Meter {instance.id} has connection_type {connection_type}, but is not connected to a service")
+            raise IntegrityError(f"Meter {instance.id} has connection_type '{connection_string}', but is not connected to a service")
 
-        # inside connections must be within the group
-        if property is not None:
-            meter_groups = InventoryGroupMapping.objects.filter(property=property).values_list("group_id", flat=True)
-        else:
-            meter_groups = [system.group]
-        if service is not None and service.system.group.id not in meter_groups:
-            raise IntegrityError(
-                f"Meter {instance.id} on property {property.id} and has service {service.id}, but meter is not in the services group"
-            )
+        total_connections = connection_type in [Meter.TOTAL_FROM_PATRON, Meter.TOTAL_TO_PATRON]
+        if total_connections:
+            # Only systems have connection type "total"
+            if system is None:
+                raise IntegrityError(f"Meter {instance.id} has connection_type '{connection_string}', but is not connected to a system")
+
+            # Total connections must have a service owned by system
+            if system.id != service.system_id:
+                raise IntegrityError(
+                    f"Meters with connection_type '{connection_string}' must have a service on the system the meter is connected to"
+                    # f"Meter {instance.id} on system {system.name} has connection_type '{connection_string}', but is also connected to service {service.name}, which is on a different system, {service.system.name}. Meters with connection_type '{connection_string}' must have a service on the system the meter is connected to"
+                )
+
+            # Service should only have one meter of each "total" connection type
+            if Meter.objects.filter(service=service, connection_type=connection_type).exclude(pk=instance.pk).exists():
+                raise IntegrityError(f"Service {service.id} already has a meter with connection type '{connection_string}'")
+
+        elif property:  # Meter.FROM_PATRON_TO_SERVICE and Meter.FROM_SERVICE_TO_PATRON
+            # service must be within the meter's property's group
+            property_groups = InventoryGroupMapping.objects.filter(property=property).values_list("group_id", flat=True)
+            if service is not None and service.system.group.id not in property_groups:
+                raise IntegrityError(
+                    f"Meter {instance.id} on property {property.id} and has service {service.name}, but meter and property are not in the service's group"
+                )
 
 
 class MeterReading(models.Model):

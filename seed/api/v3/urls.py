@@ -40,7 +40,7 @@ from seed.views.v3.green_assessments import GreenAssessmentViewSet
 from seed.views.v3.historical_notes import HistoricalNoteViewSet
 from seed.views.v3.import_files import ImportFileViewSet
 from seed.views.v3.inventory_group_mappings import InventoryGroupMappingViewSet
-from seed.views.v3.inventory_groups import InventoryGroupViewSet
+from seed.views.v3.inventory_groups import InventoryGroupMetersViewSet, InventoryGroupViewSet
 from seed.views.v3.label_inventories import LabelInventoryViewSet
 from seed.views.v3.labels import LabelViewSet
 from seed.views.v3.measures import MeasureViewSet
@@ -149,6 +149,7 @@ properties_router.register(r"sensors", SensorViewSet, basename="property-sensors
 
 inventory_group_router = nested_routers.NestedSimpleRouter(api_v3_router, r"inventory_groups", lookup="inventory_group")
 inventory_group_router.register(r"systems", SystemViewSet, basename="inventory_group-systems")
+inventory_group_router.register(r"meters", InventoryGroupMetersViewSet, basename="inventory_group-meters")
 
 system_router = nested_routers.NestedSimpleRouter(inventory_group_router, r"systems", lookup="system")
 system_router.register(r"services", ServiceViewSet, basename="system-services")

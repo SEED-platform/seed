@@ -5792,3 +5792,30 @@ tags-input .tags .tag-item {
     justify-content: end;
   }
 }
+
+.meter-config-container {
+  .meter-config-selection-container {
+    margin: 10px;
+  }
+}
+
+.meters-table-actions {
+  button {
+    width: 30px;
+    height: 25px;
+    margin: 0 2px;
+  }
+}
+
+.group-dashboard {
+  #group-dashboard-table-container {
+    width: 400px;
+    margin: 20px;
+    border: 1px solid rgb(214 214 214);
+    border-top: none;
+
+    table {
+      margin-bottom: 0;
+    }
+  }
+}
