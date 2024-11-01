@@ -130,6 +130,7 @@
     'SEED.controller.qr_code_scan_modal',
     'SEED.controller.record_match_merge_link_modal',
     'SEED.controller.rename_column_modal',
+    'SEED.controller.report_configuration_modal',
     'SEED.controller.reset_modal',
     'SEED.controller.sample_data_modal',
     'SEED.controller.security',
@@ -211,6 +212,7 @@
     'SEED.service.pairing',
     'SEED.service.postoffice',
     'SEED.service.property_measure',
+    'SEED.service.report_configurations',
     'SEED.service.salesforce_config',
     'SEED.service.salesforce_mapping',
     'SEED.service.scenario',
@@ -632,6 +634,7 @@
             ],
             cycles: ['cycle_service', (cycle_service) => cycle_service.get_cycles()],
             filter_groups: ['filter_groups_service', (filter_service) => filter_service.get_filter_groups('Property')],
+            report_configurations: ['report_configurations_service', (report_configurations_service) => report_configurations_service.get_report_configurations()],
             organization_payload: [
               'organization_service',
               'user_service',

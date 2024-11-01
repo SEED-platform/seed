@@ -50,6 +50,7 @@ from seed.models import (
     PropertyAuditLog,
     PropertyState,
     PropertyView,
+    ReportConfiguration,
     TaxLot,
     TaxLotAuditLog,
     TaxLotState,
@@ -60,6 +61,7 @@ from seed.serializers.column_mappings import SaveColumnMappingsRequestPayloadSer
 from seed.serializers.columns import ColumnSerializer
 from seed.serializers.organizations import SaveSettingsSerializer, SharedFieldsReturnSerializer
 from seed.serializers.pint import add_pint_unit_suffix, apply_display_unit_preferences
+from seed.serializers.report_configurations import ReportConfigurationSerializer
 from seed.utils.api import api_endpoint_class
 from seed.utils.api_schema import AutoSchemaHelper
 from seed.utils.encrypt import decrypt, encrypt
@@ -1466,3 +1468,15 @@ class OrganizationViewSet(viewsets.ViewSet):
         feed = public_feed(org, request)
 
         return JsonResponse(feed, json_dumps_params={"indent": 4}, status=status.HTTP_200_OK)
+
+    @ajax_request_class
+    @has_perm_class("requires_viewer")
+    @action(detail=True, methods=["GET"])
+    def report_configurations(self, request, pk):
+        user_ali = AccessLevelInstance.objects.get(pk=self.request.access_level_instance_id)
+        configs = ReportConfiguration.objects.filter(
+            organization_id=pk,
+            access_level_instance__lft__gte=user_ali.lft,
+            access_level_instance__rgt__lte=user_ali.rgt,
+        )
+        return JsonResponse({"data": ReportConfigurationSerializer(configs, many=True).data}, status=status.HTTP_200_OK)
