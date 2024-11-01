@@ -718,6 +718,18 @@ angular.module('SEED.controller.inventory_reports', []).controller('inventory_re
         });
     }
 
+    $scope.downloadChart = () => {
+      const a = document.createElement('a');
+      a.href = $scope.barChart.toBase64Image();
+      a.download = 'default_report_bar.png';
+      a.click();
+
+      const b = document.createElement('a');
+      b.href = $scope.scatterChart.toBase64Image();
+      b.download = 'default_report_scatter.png';
+      b.click();
+    };
+
     function updateStorage() {
       // Save axis and cycle selections
       localStorage.setItem(localStorageXAxisKey, JSON.stringify($scope.xAxisSelectedItem ?? ''));
