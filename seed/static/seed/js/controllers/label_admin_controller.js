@@ -4,6 +4,7 @@
  */
 angular.module('SEED.controller.label_admin', []).controller('label_admin_controller', [
   '$scope',
+  '$state',
   '$log',
   'urls',
   'organization_payload',
@@ -15,7 +16,7 @@ angular.module('SEED.controller.label_admin', []).controller('label_admin_contro
   '$translate',
   '$sce',
   // eslint-disable-next-line func-names
-  function ($scope, $log, urls, organization_payload, labels_payload, auth_payload, label_service, simple_modal_service, notification, $translate, $sce) {
+  function ($scope, $state, $log, urls, organization_payload, labels_payload, auth_payload, label_service, simple_modal_service, notification, $translate, $sce) {
     $scope.org = organization_payload.organization;
     $scope.auth = auth_payload.auth;
 
@@ -153,6 +154,23 @@ angular.module('SEED.controller.label_admin', []).controller('label_admin_contro
         $scope.labels = data;
       });
     }
+
+    const check_show_in_list = () => {
+      $scope.label_ids = $scope.labels.map((label) => label.id);
+      $scope.all_showing = $scope.labels.every((label) => label.show_in_list);
+      $scope.toggle_text = !$scope.all_showing ? 'Show' : 'Hide';
+    };
+    check_show_in_list();
+
+    $scope.toggle_show_all_labels = () => {
+      check_show_in_list();
+      const data = { show_in_list: !$scope.all_showing };
+      bulk_update_labels($scope.label_ids, data);
+    };
+
+    const bulk_update_labels = (label_ids, data) => {
+      label_service.bulk_update_labels($scope.org.id, label_ids, data).then(() => $state.reload());
+    };
 
     function getTruncatedName(name) {
       if (name && name.length > 20) {

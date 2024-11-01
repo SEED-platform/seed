@@ -56,10 +56,11 @@
         </form>
       </div>
 
-      <div style="padding-left: 10px" class="sectionLabel">
+      <div style="padding: 10px; display: flex; justify-content: space-between" class="sectionLabel">
         <p>
           <strong><i class="fa-solid fa-tags"></i>&nbsp;&nbsp;{$:: 'Existing Labels' | translate $}</strong>
         </p>
+        <button class="btn btn-default" ng-click="toggle_show_all_labels()">{$ toggle_text $} All Labels</button>
       </div>
 
       <div class="table_list_container">

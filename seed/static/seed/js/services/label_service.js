@@ -282,14 +282,21 @@ angular.module('SEED.service.label', []).factory('label_service', [
     ];
 
     const get_property_view_labels_by_goal = (org_id, goal_id, cycle) => $http.get(
-      '/api/v3/property_view_labels/list_by_goal/',
       { params: { organization_id: org_id, goal_id, cycle } }
     )
       .then(map_labels);
 
+    const bulk_update_labels = (org_id, label_ids, data) => $http
+      .put(
+        '/api/v3/labels/bulk_update/',
+        { label_ids, data },
+        { params: { organization_id: org_id } }
+      ).then((response) => response);
+
     return {
       get_labels,
       get_labels_for_org,
+      bulk_update_labels,
       create_label,
       create_label_for_org,
       update_label,

@@ -5,8 +5,12 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 :author 'Piper Merriam <pmerriam@quickleft.com>'
 """
 
+from django.db import transaction
+from django.http import JsonResponse
 from django.utils.decorators import method_decorator
 from drf_yasg.utils import swagger_auto_schema
+from rest_framework import status
+from rest_framework.decorators import action
 from rest_framework.parsers import FormParser, JSONParser
 from rest_framework.renderers import JSONRenderer
 
@@ -14,7 +18,7 @@ from seed.filters import LabelFilterBackend
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.models import StatusLabel as Label
 from seed.serializers.labels import LabelSerializer
-from seed.utils.api_schema import AutoSchemaHelper
+from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema_org_query_param
 from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
 
 
@@ -76,25 +80,22 @@ from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
     name="update",
     decorator=[
         has_perm_class("requires_root_member_access"),
-    ],
-)
-@method_decorator(
-    name="update",
-    decorator=swagger_auto_schema(
-        manual_parameters=[
-            AutoSchemaHelper.query_org_id_field(
-                required=False, description="Optional org id which overrides the users (default) current org id"
-            )
-        ],
-        request_body=AutoSchemaHelper.schema_factory(
-            {
-                "name": "string",
-                "color": "string",
-            },
-            required=["name"],
-            description="An object containing meta data for updating a label",
+        swagger_auto_schema(
+            manual_parameters=[
+                AutoSchemaHelper.query_org_id_field(
+                    required=False, description="Optional org id which overrides the users (default) current org id"
+                )
+            ],
+            request_body=AutoSchemaHelper.schema_factory(
+                {
+                    "name": "string",
+                    "color": "string",
+                },
+                required=["name"],
+                description="An object containing meta data for updating a label",
+            ),
         ),
-    ),
+    ],
 )
 class LabelViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
     """
@@ -129,3 +130,21 @@ class LabelViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
     def get_serializer(self, *args, **kwargs):
         kwargs["super_organization"] = self.get_organization(self.request)
         return super().get_serializer(*args, **kwargs)
+
+    @swagger_auto_schema_org_query_param
+    @has_perm_class("requires_root_member_access")
+    @action(detail=False, methods=["PUT"])
+    def bulk_update(self, request):
+        organization_id = self.get_parent_org(self.request)
+        label_ids = request.data.get("label_ids")
+        data = request.data.get("data")
+        if not organization_id or not label_ids or not data:
+            return JsonResponse({"status": "error", "message": "Missing required arguments"}, status=status.HTTP_400_BAD_REQUETS)
+
+        labels = Label.objects.filter(id__in=label_ids, super_organization=organization_id)
+        try:
+            with transaction.atomic():
+                labels.update(**data)
+                return JsonResponse({})
+        except Exception as e:
+            return JsonResponse({"status": "error", "message": str(e)}, status=status.HTTP_400_BAD_REQUETS)
