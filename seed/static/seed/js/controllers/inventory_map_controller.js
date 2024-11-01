@@ -21,6 +21,9 @@ angular.module('SEED.controller.inventory_map', []).controller('inventory_map_co
   function ($scope, $stateParams, $state, $log, $uibModal, cycles, inventory_service, map_service, user_service, organization_service, labels, group, urls) {
     $scope.inventory_type = $stateParams.inventory_type;
     const isPropertiesTab = $scope.inventory_type === 'properties';
+    if ($stateParams.group_id) {
+      $scope.inventory_display_name = group.name;
+    }
 
     $scope.data = [];
     $scope.geocoded_data = [];

@@ -9,6 +9,7 @@ angular.module('SEED.controller.meter_deletion_modal', []).controller('meter_del
   'meter_service',
   'spinner_utility',
   'organization_id',
+  'group_id',
   'meter',
   'view_id',
   'refresh_meters_and_readings',
@@ -20,6 +21,7 @@ angular.module('SEED.controller.meter_deletion_modal', []).controller('meter_del
     meter_service,
     spinner_utility,
     organization_id,
+    group_id,
     meter,
     view_id,
     refresh_meters_and_readings
@@ -28,7 +30,7 @@ angular.module('SEED.controller.meter_deletion_modal', []).controller('meter_del
 
     $scope.delete_meter = () => {
       spinner_utility.show();
-      meter_service.delete_meter(organization_id, view_id, meter.id).then(() => {
+      meter_service.delete_meter(organization_id, meter.id, view_id, group_id).then(() => {
         refresh_meters_and_readings();
         spinner_utility.show();
         $uibModalInstance.dismiss('cancel');

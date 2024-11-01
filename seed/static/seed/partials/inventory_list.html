@@ -24,6 +24,11 @@
   <div ng-show="group_id == null" class="section_nav" ng-include="::urls.static_url + 'seed/partials/inventory_nav.html'"></div>
   <div ng-show="group_id != null" class="section_nav" ng-include="::urls.static_url + 'seed/partials/inventory_group_detail_nav.html'"></div>
 </div>
+<div class="section_header_container" ng-if="group_id">
+  <div class="section_header fixed_height_short has_no_padding">
+    <div ng-include="::urls.static_url + 'seed/partials/inventory_detail_header.html'"></div>
+  </div>
+</div>
 
 <div class="inventory-list-controls columns">
   <div class="column no-shrink">

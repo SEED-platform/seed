@@ -15,6 +15,7 @@ class System(models.Model):
     objects = InheritanceManager()
 
     class Meta:
+        ordering = ["name"]
         constraints = [
             models.UniqueConstraint(fields=["group", "name"], name="unique_name_for_group"),
         ]
@@ -64,6 +65,7 @@ class Service(models.Model):
     objects = InheritanceManager()
 
     class Meta:
+        ordering = ["name"]
         constraints = [
             models.UniqueConstraint(fields=["system", "name"], name="unique_name_for_system"),
         ]
