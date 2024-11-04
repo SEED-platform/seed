@@ -8,14 +8,17 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 Unit tests for seed/views/labels.py
 """
 
+import json
+
 import pytest
 from django.db import IntegrityError, transaction
+from django.urls import reverse_lazy
 
 from seed.models import ASSESSED_RAW, Property, PropertyView, TaxLot, TaxLotView
 from seed.models import StatusLabel as Label
 from seed.models.data_quality import DataQualityCheck, Rule
 from seed.test_helpers.fake import FakePropertyStateFactory, FakeTaxLotStateFactory
-from seed.tests.util import DataMappingBaseTestCase
+from seed.tests.util import AccessLevelBaseTestCase, DataMappingBaseTestCase
 from seed.utils.organizations import create_organization
 from seed.views.v3.label_inventories import LabelInventoryViewSet
 
@@ -98,3 +101,25 @@ class TestLabelIntegrityChecks(DataMappingBaseTestCase):
             )
 
         self.assertFalse(TaxLotView.objects.get(pk=org_1_taxlotview.id).labels.all().exists())
+
+
+class TestLabelViewSet(AccessLevelBaseTestCase):
+    def setUp(self):
+        super().setUp()
+
+    def test_label_bulk_update(self):
+        labels = Label.objects.all()
+        show_in_list_count = labels.filter(show_in_list=True).count()
+        assert show_in_list_count == 0
+
+        label_ids = list(labels.values_list("id", flat=True))
+        url = reverse_lazy("api:v3:labels-bulk-update") + "?organization_id=" + str(self.org.id)
+        data = {"label_ids": label_ids, "data": {"show_in_list": True}}
+        self.client.put(url, data=json.dumps(data), content_type="application/json")
+        show_in_list_count = Label.objects.filter(show_in_list=True).count()
+        assert show_in_list_count == Label.objects.count()
+
+        data["data"]["show_in_list"] = False
+        self.client.put(url, data=json.dumps(data), content_type="application/json")
+        show_in_list_count = Label.objects.filter(show_in_list=True).count()
+        assert show_in_list_count == 0

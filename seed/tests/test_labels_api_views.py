@@ -182,7 +182,7 @@ class TestLabelsViewSet(DeleteModelsTestCase):
         data = response_a.json()
         for label in data:
             if label.get("name") == "test_label-a":
-                self.assertListEqual(label.get("is_applied"), [p_view_1.id, p_view_2.id])
+                self.assertListEqual(sorted(label.get("is_applied")), sorted([p_view_1.id, p_view_2.id]))
             elif label.get("name") == "test_label-b":
                 self.assertCountEqual(label.get("is_applied"), [p_view_2.id])
             else:

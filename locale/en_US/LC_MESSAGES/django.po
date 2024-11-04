@@ -1839,6 +1839,9 @@ msgstr "Hello %(first_name)s, "
 msgid "Hexagonal Bins"
 msgstr "Hexagonal Bins"
 
+msgid "Hide All Labels"
+msgstr "Hide All Labels"
+
 msgid "Highlights of SEED Platform™"
 msgstr "Highlights of SEED Platform™"
 
@@ -3636,6 +3639,9 @@ msgstr "Sharing Your Data"
 
 msgid "Show All"
 msgstr "Show All"
+
+msgid "Show All Labels"
+msgstr "Show All Labels"
 
 msgid "Show Matched"
 msgstr "Show Matched"
