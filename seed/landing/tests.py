@@ -1,4 +1,3 @@
-# !/usr/bin/env python
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
@@ -20,5 +19,6 @@ class UserLoginTest(TestCase):
         """
         Happy path login
         """
-        self.client.post(self.login_url, self.user_details, secure=True)
-        self.assertTrue("_auth_user_id" in self.client.session)
+        response = self.client.post(self.login_url, self.user_details, secure=True)
+        self.assertTrue(response.status_code == 302)
+        self.assertTrue(response.url == "/account/login/")

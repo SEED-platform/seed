@@ -4,25 +4,20 @@
  */
 describe('controller: create_sub_organization_modal_controller', () => {
   // globals set up and used in each test scenario
-  let mock_organization_service; let
-    modal_state;
-  let controller; let
-    ctrl_scope;
+  let mock_organization_service;
+  let controller;
+  let ctrl_scope;
   beforeEach(() => {
-    module('BE.seed');
+    module('SEED');
     inject((_$httpBackend_) => {
-      $httpBackend = _$httpBackend_;
-      $httpBackend.whenGET(/^\/static\/seed\/locales\/.*\.json/).respond(200, {});
+      _$httpBackend_.whenGET(/^\/static\/seed\/locales\/.*\.json/).respond(200, {});
     });
     inject(($controller, $rootScope, $uibModal, $q, organization_service) => {
       controller = $controller;
       ctrl_scope = $rootScope.$new();
-      modal_state = '';
 
       mock_organization_service = organization_service;
-      spyOn(mock_organization_service, 'create_sub_org').andCallFake(() =>
-        // return $q.reject for error scenario
-        $q.resolve({ status: 'success' }));
+      spyOn(mock_organization_service, 'create_sub_org').andCallFake(() => $q.resolve({ status: 'success' }));
     });
   });
 
@@ -30,14 +25,7 @@ describe('controller: create_sub_organization_modal_controller', () => {
   function create_sub_organization_modal_controller() {
     controller('create_sub_organization_modal_controller', {
       $scope: ctrl_scope,
-      $uibModalInstance: {
-        close: function () {
-          modal_state = 'close';
-        },
-        dismiss: function () {
-          modal_state = 'dismiss';
-        }
-      },
+      $uibModalInstance: {},
       organization: { organization_id: 1 }
     });
   }

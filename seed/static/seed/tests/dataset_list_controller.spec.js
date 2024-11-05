@@ -4,18 +4,17 @@
  */
 describe('controller: dataset_list_controller', () => {
   // globals set up and used in each test scenario
-  let controller; let
-    $state;
+  let controller;
+  let $state;
   let dataset_list_controller_scope;
   let mock_uploader_service;
 
   // make the seed app available for each test
   // 'config.seed' is created in TestFilters.html
   beforeEach(() => {
-    module('BE.seed');
+    module('SEED');
     inject((_$httpBackend_) => {
-      $httpBackend = _$httpBackend_;
-      $httpBackend.whenGET(/^\/static\/seed\/locales\/.*\.json/).respond(200, {});
+      _$httpBackend_.whenGET(/^\/static\/seed\/locales\/.*\.json/).respond(200, {});
     });
     inject(($controller, $rootScope, $uibModal, urls, $q, uploader_service, _$state_) => {
       controller = $controller;
@@ -26,7 +25,6 @@ describe('controller: dataset_list_controller', () => {
       // and return their promises
       mock_uploader_service = uploader_service;
       spyOn(mock_uploader_service, 'create_dataset').andCallFake((dataset_name) => {
-        // return $q.reject for error scenario
         if (dataset_name !== 'fail') {
           return $q.resolve({
             status: 'success',
@@ -104,7 +102,7 @@ describe('controller: dataset_list_controller', () => {
     expect(disabled).toEqual(true);
   });
 
-  it('should enable the mapping button if the dataset has at least one' + ' Assessor file', () => {
+  it('should enable the mapping button if the dataset has at least one Assessor file', () => {
     // arrange
     const dataset = {
       importfiles: [
@@ -125,7 +123,7 @@ describe('controller: dataset_list_controller', () => {
     // assertions
     expect(disabled).toEqual(false);
   });
-  it('should disable the matching button if the dataset has no' + ' Portfolio Manger files', () => {
+  it('should disable the matching button if the dataset has no Portfolio Manger files', () => {
     // arrange
     const dataset = {
       importfiles: [
@@ -146,7 +144,7 @@ describe('controller: dataset_list_controller', () => {
     // assertions
     expect(disabled).toEqual(true);
   });
-  it('should enable the matching button if the dataset has at least one' + ' Portfolio Manger file', () => {
+  it('should enable the matching button if the dataset has at least one Portfolio Manger file', () => {
     // arrange
     const dataset = {
       importfiles: [

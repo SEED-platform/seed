@@ -53,17 +53,13 @@ jobs:
           docker exec --env DJANGO_LOG_LEVEL seed_web ./manage.py create_default_user --username=demo@example.com --password=demo123
           docker exec --env DJANGO_LOG_LEVEL seed_web /bin/bash -c 'echo "y" | ./manage.py make_superuser --user demo@example.com'
       - uses: actions/setup-node@v4
+        with:
+          node-version: 20
       - name: Install dependencies
         run: |
           npm install
           sudo apt update
           sudo apt install -y xvfb
-          # Available chrome-driver versions: https://chromedriver.storage.googleapis.com/
-          # Available google-chrome versions: https://www.ubuntuupdates.org/package/google_chrome/stable/main/base/google-chrome-stable?id=202706
-          # Lock to 114.0.5735.90
-          wget --no-verbose -O /tmp/chrome.deb https://dl.google.com/linux/chrome/deb/pool/main/g/google-chrome-stable/google-chrome-stable_114.0.5735.90-1_amd64.deb
-          sudo apt install -y --allow-downgrades /tmp/chrome.deb
-          google-chrome --version
       - name: Test Django
         if: ${{ matrix.test_env == 'django' }}
         env:
@@ -89,11 +85,8 @@ jobs:
         env:
           DISPLAY: ':99'
         run: |
-          CHROME_VERSION=$(google-chrome --version | awk '{ print $NF }')
-          echo "Getting webdriver for chrome version ${CHROME_VERSION}"
-          npx webdriver-manager update --versions.chrome=${CHROME_VERSION} --gecko=false
           Xvfb :99 &
-          npx protractor seed/static/seed/tests/protractor-tests/protractorConfig.js
+          npm test
       - name: Test API
         if: ${{ matrix.test_env == 'api' }}
         run: |

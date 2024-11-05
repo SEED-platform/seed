@@ -2,7 +2,7 @@
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
  * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
-angular.module('BE.seed.controller.members', []).controller('members_controller', [
+angular.module('SEED.controller.members', []).controller('members_controller', [
   '$scope',
   '$uibModal',
   'users_payload',
@@ -33,7 +33,7 @@ angular.module('BE.seed.controller.members', []).controller('members_controller'
       if (tree === undefined) return;
       if (access_level_instances_by_depth[depth] === undefined) access_level_instances_by_depth[depth] = [];
       for (const ali of tree) {
-        access_level_instances_by_depth[depth].push({ id: ali.id, name: ali.data.name });
+        access_level_instances_by_depth[depth].push({ id: ali.id, name: ali.name });
         calculate_access_level_instances_by_depth(ali.children, depth + 1);
       }
     };

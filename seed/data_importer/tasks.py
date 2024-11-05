@@ -1,4 +1,3 @@
-# !/usr/bin/env python
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
@@ -19,6 +18,7 @@ from collections import defaultdict, namedtuple
 from datetime import date, datetime
 from itertools import chain
 from math import ceil
+from typing import Optional, Union
 
 from _csv import Error
 from celery import chain as celery_chain
@@ -33,7 +33,6 @@ from django.db.models import Q
 from django.db.utils import ProgrammingError
 from django.utils import timezone as tz
 from django.utils.timezone import make_naive
-from past.builtins import basestring
 
 from seed.building_sync import validation_client
 from seed.building_sync.building_sync import BuildingSync
@@ -72,6 +71,7 @@ from seed.models import (
     ColumnMapping,
     Cycle,
     DataLogger,
+    Goal,
     Meter,
     PropertyAuditLog,
     PropertyState,
@@ -86,6 +86,7 @@ from seed.models.auditlog import AUDIT_IMPORT
 from seed.models.data_quality import DataQualityCheck, Rule
 from seed.utils.buildings import get_source_type
 from seed.utils.geocode import MapQuestAPIKeyError, create_geocoded_additional_columns, geocode_buildings
+from seed.utils.goals import get_state_pairs
 from seed.utils.match import update_sub_progress_total
 from seed.utils.ubid import decode_unique_ids
 
@@ -95,17 +96,26 @@ STR_TO_CLASS = {"TaxLotState": TaxLotState, "PropertyState": PropertyState}
 
 
 @shared_task(ignore_result=True)
-def check_data_chunk(model, ids, dq_id):
+def check_data_chunk(org_id, model, ids, dq_id, goal_id=None):
+    try:
+        organization = Organization.objects.get(id=org_id)
+        super_organization = organization.get_parent()
+    except Organization.DoesNotExist:
+        return
+
     if model == "PropertyState":
         qs = PropertyState.objects.filter(id__in=ids)
     elif model == "TaxLotState":
         qs = TaxLotState.objects.filter(id__in=ids)
-    else:
-        qs = None
-    organization = qs.first().organization
-    super_organization = organization.get_parent()
+    elif model == "Property" and goal_id:
+        # return a list of dicts with property, basseline_state, and current_state
+        state_pairs = get_state_pairs(ids, goal_id)
+
     d = DataQualityCheck.retrieve(super_organization.id)
-    d.check_data(model, qs.iterator())
+    if not goal_id:
+        d.check_data(model, qs.iterator())
+    else:
+        d.check_data_cross_cycle(goal_id, state_pairs)
     d.save_to_cache(dq_id, organization.id)
 
 
@@ -122,13 +132,14 @@ def finish_checking(progress_key):
     return progress_data.result()
 
 
-def do_checks(org_id, propertystate_ids, taxlotstate_ids, import_file_id=None):
+def do_checks(org_id, propertystate_ids, taxlotstate_ids, goal_id, import_file_id=None):
     """
     Run the dq checks on the data
 
     :param org_id:
     :param propertystate_ids:
     :param taxlotstate_ids:
+    :param goal_id:
     :param import_file_id: int, if present, find the data to check by the import file id
     :return:
     """
@@ -151,7 +162,7 @@ def do_checks(org_id, propertystate_ids, taxlotstate_ids, import_file_id=None):
             .values_list("id", flat=True)
         )
 
-    tasks = _data_quality_check_create_tasks(org_id, propertystate_ids, taxlotstate_ids, dq_id)
+    tasks = _data_quality_check_create_tasks(org_id, propertystate_ids, taxlotstate_ids, goal_id, dq_id)
     progress_data.total = len(tasks)
     progress_data.save()
     if tasks:
@@ -589,7 +600,7 @@ def _map_data_create_tasks(import_file_id, progress_key):
     return tasks
 
 
-def _data_quality_check_create_tasks(org_id, property_state_ids, taxlot_state_ids, dq_id):
+def _data_quality_check_create_tasks(org_id, property_state_ids, taxlot_state_ids, goal_id, dq_id):
     """
     Entry point into running data quality checks.
 
@@ -612,12 +623,23 @@ def _data_quality_check_create_tasks(org_id, property_state_ids, taxlot_state_id
     if property_state_ids:
         id_chunks = [list(chunk) for chunk in batch(property_state_ids, 100)]
         for ids in id_chunks:
-            tasks.append(check_data_chunk.s("PropertyState", ids, dq_id))
+            tasks.append(check_data_chunk.s(org_id, "PropertyState", ids, dq_id))
 
     if taxlot_state_ids:
         id_chunks_tl = [list(chunk) for chunk in batch(taxlot_state_ids, 100)]
         for ids in id_chunks_tl:
-            tasks.append(check_data_chunk.s("TaxLotState", ids, dq_id))
+            tasks.append(check_data_chunk.s(org_id, "TaxLotState", ids, dq_id))
+
+    if goal_id:
+        # If goal_id is passed, treat as a cross cycle data quality check.
+        try:
+            goal = Goal.objects.get(id=goal_id)
+            property_ids = goal.properties().values_list("id", flat=True)
+            id_chunks = [list(chunk) for chunk in batch(property_ids, 100)]
+            for ids in id_chunks:
+                tasks.append(check_data_chunk.s(org_id, "Property", ids, dq_id, goal.id))
+        except Goal.DoesNotExist:
+            pass
 
     return tasks
 
@@ -769,7 +791,7 @@ def _save_raw_data_chunk(chunk, file_pk, progress_key):
                         raw_property.bounding_box = v
                     elif key == "_source_filename":  # grab source filename (for BSync)
                         source_filename = v
-                    elif isinstance(v, basestring):
+                    elif isinstance(v, str):
                         new_chunk[key] = normalize_unicode_and_characters(v)
                     elif isinstance(v, (datetime, date)):
                         raise TypeError("Datetime class not supported in Extra Data. Needs to be a string.")
@@ -1681,33 +1703,29 @@ def finish_matching(result, import_file_id, progress_key):
     return progress_data.finish_with_success()
 
 
-def hash_state_object(obj, include_extra_data=True):
-    def add_dictionary_repr_to_hash(hash_obj, dict_obj):
-        if not isinstance(dict_obj, dict):
-            raise ValueError("Only dictionaries can be hashed")
+def add_dictionary_repr_to_hash(hash_obj, dict_obj: dict):
+    if not isinstance(dict_obj, dict):
+        raise ValueError("Only dictionaries can be hashed")
 
-        for key, value in sorted(dict_obj.items(), key=lambda x_y: x_y[0]):
-            if isinstance(value, dict):
-                add_dictionary_repr_to_hash(hash_obj, value)
-            else:
-                # TODO: Do we need to normalize_unicode_and_characters (formerly unidecode) here?
-                hash_obj.update(str(normalize_unicode_and_characters(key)).encode("utf-8"))
-                if isinstance(value, basestring):
-                    hash_obj.update(normalize_unicode_and_characters(value).encode("utf-8"))
-                else:
-                    hash_obj.update(str(value).encode("utf-8"))
-        return hash_obj
-
-    def _get_field_from_obj(field_obj, field):
-        if not hasattr(field_obj, field):
-            return "FOO"  # Return a random value so we can distinguish between this and None.
+    for key, value in sorted(dict_obj.items(), key=lambda x_y: x_y[0]):
+        if isinstance(value, dict):
+            add_dictionary_repr_to_hash(hash_obj, value)
         else:
-            return getattr(field_obj, field)
+            # TODO: Do we need to normalize_unicode_and_characters (formerly unidecode) here?
+            hash_obj.update(str(normalize_unicode_and_characters(key)).encode("utf-8"))
+            if isinstance(value, str):
+                hash_obj.update(normalize_unicode_and_characters(value).encode("utf-8"))
+            else:
+                hash_obj.update(str(value).encode("utf-8"))
+    return hash_obj
 
+
+def hash_state_object(obj: Union[PropertyState, TaxLotState], include_extra_data=True, prefetched_columns: Optional[list[str]] = None):
     m = hashlib.md5()  # noqa: S324
-    for f in Column.retrieve_db_field_name_for_hash_comparison():
-        obj_val = _get_field_from_obj(obj, f)
-        m.update(f.encode("utf-8"))
+    for field in prefetched_columns or Column.retrieve_db_field_name_for_hash_comparison(type(obj), obj.organization_id):
+        # Default to a random value so we can distinguish between this and None.
+        obj_val = getattr(obj, field, "FOO")
+        m.update(field.encode("utf-8"))
         if isinstance(obj_val, datetime):
             # if this is a datetime, then make sure to save the string as a naive datetime.
             # Somehow, somewhere the data are being saved in mapping with a timezone,
@@ -1800,10 +1818,6 @@ def pair_new_states(merged_property_views, merged_taxlot_views, sub_progress_key
     sub_progress_data.delete()
     sub_progress_data.total = 12
     sub_progress_data.save()
-
-    # Not sure what the below cycle code does.
-    # Commented out during Python3 upgrade.
-    # cycle = chain(merged_property_views, merged_taxlot_views).next().cycle
 
     tax_cmp_fmt = [
         ("jurisdiction_tax_lot_id", "custom_id_1"),

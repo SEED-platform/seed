@@ -2,7 +2,7 @@
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
  * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
-angular.module('BE.seed.service.columns', []).factory('columns_service', [
+angular.module('SEED.service.columns', []).factory('columns_service', [
   '$http',
   'user_service',
   ($http, user_service) => {
@@ -24,6 +24,13 @@ angular.module('BE.seed.service.columns', []).factory('columns_service', [
         }
       })
       .then((response) => response.data);
+
+    columns_service.update_and_rehash_columns_for_org = (org_id, table_name, data) => $http
+      .post('/api/v3/columns/update_multiple/', {
+        organization_id: org_id,
+        table_name,
+        changes: data
+      });
 
     columns_service.rename_column = (column_id, column_name, overwrite_preference) => columns_service
       .rename_column_for_org(user_service.get_organization().id, column_id, column_name, overwrite_preference);

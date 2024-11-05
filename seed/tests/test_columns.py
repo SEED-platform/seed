@@ -1,4 +1,3 @@
-# !/usr/bin/env python
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
@@ -186,6 +185,16 @@ class TestColumns(TestCase):
 
         test_mapping, _ = ColumnMapping.get_column_mappings(self.fake_org)
         self.assertCountEqual(expected, test_mapping)
+
+    def test_save_column_mapping_by_file_with_datatypes(self):
+        self.mapping_import_file = os.path.abspath("./seed/tests/data/test_datatype_mapping.csv")
+        Column.create_mappings_from_file(self.mapping_import_file, self.fake_org, self.fake_user)
+        c_note_field = Column.objects.filter(column_name="new_note_field")[0]
+        self.assertTrue(c_note_field.is_extra_data)
+        self.assertEqual(c_note_field.data_type, "string")
+        c_city_field = Column.objects.filter(column_name="city", table_name="PropertyState")[0]
+        self.assertFalse(c_city_field.is_extra_data)
+        self.assertEqual(c_city_field.data_type, "string")
 
     def test_column_cant_be_both_extra_data_and_matching_criteria(self):
         extra_data_column = Column.objects.create(
@@ -755,6 +764,8 @@ class TestColumnsByInventory(TestCase):
             "recognize_empty": False,
             "comstock_mapping": None,
             "derived_column": None,
+            "is_excluded_from_hash": False,
+            "is_updating": False,
         }
         self.assertIn(c, columns)
 
@@ -776,6 +787,8 @@ class TestColumnsByInventory(TestCase):
             "recognize_empty": False,
             "comstock_mapping": None,
             "derived_column": None,
+            "is_excluded_from_hash": False,
+            "is_updating": False,
         }
         self.assertIn(c, columns)
 
@@ -797,6 +810,8 @@ class TestColumnsByInventory(TestCase):
             "recognize_empty": False,
             "comstock_mapping": None,
             "derived_column": None,
+            "is_excluded_from_hash": False,
+            "is_updating": False,
         }
         self.assertIn(c, columns)
 
@@ -819,6 +834,8 @@ class TestColumnsByInventory(TestCase):
             "recognize_empty": False,
             "comstock_mapping": None,
             "derived_column": None,
+            "is_excluded_from_hash": False,
+            "is_updating": False,
         }
         self.assertIn(c, columns)
 
@@ -840,6 +857,8 @@ class TestColumnsByInventory(TestCase):
             "recognize_empty": False,
             "comstock_mapping": None,
             "derived_column": None,
+            "is_excluded_from_hash": False,
+            "is_updating": False,
         }
         self.assertIn(c, columns)
 
@@ -860,6 +879,8 @@ class TestColumnsByInventory(TestCase):
             "recognize_empty": False,
             "comstock_mapping": None,
             "derived_column": None,
+            "is_excluded_from_hash": False,
+            "is_updating": False,
         }
         self.assertIn(c, columns)
 
@@ -891,6 +912,8 @@ class TestColumnsByInventory(TestCase):
             "recognize_empty": False,
             "comstock_mapping": None,
             "derived_column": None,
+            "is_excluded_from_hash": False,
+            "is_updating": False,
         }
         self.assertIn(c, columns)
 
@@ -930,6 +953,8 @@ class TestColumnsByInventory(TestCase):
                 "geocoding_confidence": "string",
                 "gross_floor_area": "float",
                 "home_energy_score_id": "string",
+                "indoor_water_use": "float",
+                "indoor_wui": "float",
                 "jurisdiction_property_id": "string",
                 "jurisdiction_tax_lot_id": "string",
                 "latitude": "float",
@@ -938,6 +963,7 @@ class TestColumnsByInventory(TestCase):
                 "normalized_address": "string",
                 "number_properties": "integer",
                 "occupied_floor_area": "float",
+                "outdoor_water_use": "float",
                 "owner": "string",
                 "owner_address": "string",
                 "owner_city_state": "string",
@@ -970,6 +996,8 @@ class TestColumnsByInventory(TestCase):
                 "ubid": "string",
                 "updated": "datetime",
                 "use_description": "string",
+                "water_use": "float",
+                "wui": "float",
                 "year_ending": "date",
                 "year_built": "integer",
             }
@@ -1000,6 +1028,8 @@ class TestColumnsByInventory(TestCase):
             "geocoding_confidence",
             "gross_floor_area",
             "home_energy_score_id",
+            "indoor_water_use",
+            "indoor_wui",
             "jurisdiction_property_id",
             "jurisdiction_tax_lot_id",
             "latitude",
@@ -1008,6 +1038,7 @@ class TestColumnsByInventory(TestCase):
             "normalized_address",
             "number_properties",
             "occupied_floor_area",
+            "outdoor_water_use",
             "owner",
             "owner_address",
             "owner_city_state",
@@ -1040,6 +1071,8 @@ class TestColumnsByInventory(TestCase):
             "ubid",
             "updated",
             "use_description",
+            "water_use",
+            "wui",
             "year_built",
             "year_ending",
         ]
@@ -1052,26 +1085,25 @@ class TestColumnsByInventory(TestCase):
             "address_line_1",
             "address_line_2",
             "audit_template_building_id",
-            "block_number",
             "building_certification",
             "building_count",
             "city",
             "conditioned_floor_area",
             "custom_id_1",
-            "district",
             "egrid_subregion_code",
             "energy_alerts",
             "energy_score",
             "generation_date",
             "gross_floor_area",
             "home_energy_score_id",
+            "indoor_water_use",
+            "indoor_wui",
             "jurisdiction_property_id",
-            "jurisdiction_tax_lot_id",
             "latitude",
             "longitude",
             "lot_number",
-            "number_properties",
             "occupied_floor_area",
+            "outdoor_water_use",
             "owner",
             "owner_address",
             "owner_city_state",
@@ -1096,18 +1128,19 @@ class TestColumnsByInventory(TestCase):
             "source_eui_weather_normalized",
             "space_alerts",
             "state",
-            "taxlot_footprint",
             "total_ghg_emissions",
             "total_ghg_emissions_intensity",
             "total_marginal_ghg_emissions",
             "total_marginal_ghg_emissions_intensity",
             "ubid",
             "use_description",
+            "water_use",
+            "wui",
             "year_built",
             "year_ending",
         ]
 
-        method_columns = Column.retrieve_db_field_name_for_hash_comparison()
+        method_columns = Column.retrieve_db_field_name_for_hash_comparison(PropertyState, self.fake_org.id)
         self.assertListEqual(method_columns, expected)
 
     def test_retrieve_db_field_table_and_names_from_db_tables(self):

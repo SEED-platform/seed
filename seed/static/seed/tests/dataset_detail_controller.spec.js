@@ -4,18 +4,17 @@
  */
 describe('controller: dataset_detail_controller', () => {
   // globals set up and used in each test scenario
-  let controller; let
-    delete_called;
-  let mock_dataset_service; let
-    dataset_detail_controller_scope;
+  let controller;
+  let delete_called;
+  let mock_dataset_service;
+  let dataset_detail_controller_scope;
 
   // make the seed app available for each test
   // 'config.seed' is created in TestFilters.html
   beforeEach(() => {
-    module('BE.seed');
+    module('SEED');
     inject((_$httpBackend_) => {
-      $httpBackend = _$httpBackend_;
-      $httpBackend.whenGET(/^\/static\/seed\/locales\/.*\.json/).respond(200, {});
+      _$httpBackend_.whenGET(/^\/static\/seed\/locales\/.*\.json/).respond(200, {});
     });
     inject(($controller, $rootScope, $uibModal, urls, $q, dataset_service) => {
       controller = $controller;
@@ -26,7 +25,6 @@ describe('controller: dataset_detail_controller', () => {
       // and return their promises
       mock_dataset_service = dataset_service;
       spyOn(mock_dataset_service, 'get_dataset').andCallFake(() => {
-        // return $q.reject for error scenario
         const fake_importfiles = [
           {
             name: 'DC_CoveredBuildings_50k.csv',

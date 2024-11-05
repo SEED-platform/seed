@@ -2,7 +2,7 @@
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
  * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
-angular.module('BE.seed.controller.inventory_detail_sensors', []).controller('inventory_detail_sensors_controller', [
+angular.module('SEED.controller.inventory_detail_sensors', []).controller('inventory_detail_sensors_controller', [
   '$scope',
   '$stateParams',
   '$uibModal',
@@ -10,6 +10,7 @@ angular.module('BE.seed.controller.inventory_detail_sensors', []).controller('in
   'cycles',
   'dataset_service',
   'inventory_service',
+  'organization_service',
   'inventory_payload',
   'sensors',
   'data_loggers',
@@ -27,6 +28,7 @@ angular.module('BE.seed.controller.inventory_detail_sensors', []).controller('in
     cycles,
     dataset_service,
     inventory_service,
+    organization_service,
     inventory_payload,
     sensors,
     data_loggers,
@@ -214,7 +216,7 @@ angular.module('BE.seed.controller.inventory_detail_sensors', []).controller('in
       enableFiltering: true,
       flatEntityAccess: true,
       fastWatch: true,
-      exporterCsvFilename: `${window.BE.initial_org_name + ($scope.inventory_type === 'taxlots' ? ' Tax Lot ' : ' Property ')}sensors.csv`,
+      exporterCsvFilename: `${window.SEED.initial_org_name + ($scope.inventory_type === 'taxlots' ? ' Tax Lot ' : ' Property ')}sensors.csv`,
       enableGridMenu: true,
       exporterMenuPdf: false,
       exporterMenuExcel: false,
@@ -227,7 +229,7 @@ angular.module('BE.seed.controller.inventory_detail_sensors', []).controller('in
       enableColumnResizing: true,
       flatEntityAccess: true,
       fastWatch: true,
-      exporterCsvFilename: `${window.BE.initial_org_name + ($scope.inventory_type === 'taxlots' ? ' Tax Lot ' : ' Property ')}sensor readings.csv`,
+      exporterCsvFilename: `${window.SEED.initial_org_name + ($scope.inventory_type === 'taxlots' ? ' Tax Lot ' : ' Property ')}sensor readings.csv`,
       enableGridMenu: true,
       exporterMenuPdf: false,
       exporterMenuExcel: false,
@@ -425,19 +427,6 @@ angular.module('BE.seed.controller.inventory_detail_sensors', []).controller('in
       });
     };
 
-    $scope.inventory_display_name = (property_type) => {
-      let error = '';
-      let field = property_type === 'property' ? $scope.organization.property_display_field : $scope.organization.taxlot_display_field;
-      if (!(field in $scope.item_state)) {
-        error = `${field} does not exist`;
-        field = 'address_line_1';
-      }
-      if (!$scope.item_state[field]) {
-        error += `${(error === '' ? '' : ' and default ') + field} is blank`;
-      }
-      $scope.inventory_name = $scope.item_state[field] ?
-        $scope.item_state[field] :
-        `(${error}) <i class="glyphicon glyphicon-question-sign" title="This can be changed from the organization settings page."></i>`;
-    };
+    $scope.inventory_display_name = organization_service.get_inventory_display_value($scope.organization, $scope.inventory_type === 'properties' ? 'property' : 'taxlot', $scope.item_state);
   }
 ]);

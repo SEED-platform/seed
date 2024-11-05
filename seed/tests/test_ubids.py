@@ -1,4 +1,3 @@
-# !/usr/bin/env python
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
@@ -25,7 +24,7 @@ from seed.test_helpers.fake import (
 from seed.tests.util import AccessLevelBaseTestCase, DeleteModelsTestCase
 from seed.utils.geocode import bounding_box_wkt, wkt_to_polygon
 from seed.utils.organizations import create_organization
-from seed.utils.ubid import centroid_wkt, get_jaccard_index, validate_ubid
+from seed.utils.ubid import centroid_wkt
 
 
 class UbidViewTests(TestCase):
@@ -659,51 +658,29 @@ class UbidModelSignalCreationTests(TestCase):
         taxlot3.save()
         self.assertEqual(4, UbidModel.objects.count())
 
+    def test_creates_multiple_ubids_if_semicolon_separated(self):
+        self.assertEqual(0, UbidModel.objects.count())
+        property_details = self.property_state_factory.get_details()
+        property_details["organization_id"] = self.org.id
+        property_details["ubid"] = "A+A-1-1-1-1;A+A-2-2-2-2; A+A-3-3-3-3"
+        property1 = PropertyState(**property_details)
+        property1.save()
+        self.assertEqual(3, property1.ubidmodel_set.count())
+        self.assertEqual("A+A-1-1-1-1", property1.ubid)
+        ubids = property1.ubidmodel_set.all()
+        for ubid in ubids:
+            if ubid.ubid == "A+A-1-1-1-1":
+                self.assertTrue(ubid.preferred)
+            else:
+                self.assertFalse(ubid.preferred)
 
-class UbidSqlTests(TestCase):
-    def test_jaccard(self):
-        # nrel cafe
-        ubid_cafe = "85FPPRR9+3C-0-0-0-0"
-        ubid_cafe_larger = "85FPPRR9+3C-1-1-1-1"
-        ubid_cafe_north = "85FPPRR9+4C-0-0-1-0"
-
-        # nrel FTLB
-        ubid_ftlb = "85FPPRR9+38-0-0-0-0"
-        ubid_ftlb_west = "85FPPRR9+38-0-0-0-2"
-        ubid_ftlb_south = "85FPPRR9+28-1-0-0-1"
-
-        # exact
-        jaccard = get_jaccard_index(ubid_cafe, ubid_cafe)
-        self.assertEqual(1.0, float(jaccard))
-        jaccard = get_jaccard_index(ubid_ftlb, ubid_ftlb)
-        self.assertEqual(1.0, float(jaccard))
-
-        # partial
-        jaccard = get_jaccard_index(ubid_cafe, ubid_cafe_larger)
-        self.assertEqual((1 / 9), float(jaccard))
-        jaccard = get_jaccard_index(ubid_cafe, ubid_cafe_north)
-        self.assertEqual(0.5, float(jaccard))
-
-        jaccard = get_jaccard_index(ubid_ftlb, ubid_ftlb_west)
-        self.assertEqual((1 / 3), float(jaccard))
-        jaccard = get_jaccard_index(ubid_ftlb, ubid_ftlb_south)
-        self.assertEqual(0.25, float(jaccard))
-
-        # different
-        jaccard = get_jaccard_index(ubid_cafe, ubid_ftlb)
-        self.assertEqual(0, float(jaccard))
-
-        # invalid ubid
-        invalid = "invalid"
-        validity = validate_ubid(invalid)
-        self.assertFalse(validity)
-        validity = validate_ubid(ubid_cafe)
-        self.assertTrue(validity)
-
-        jaccard = get_jaccard_index(ubid_cafe, invalid)
-        self.assertEqual(0, float(jaccard))
-        jaccard = get_jaccard_index(invalid, invalid)
-        self.assertEqual(1.0, float(jaccard))
+        # non semicolon separated ubids will be treated as an entire ubid
+        property_details["ubid"] = "A+A-1-1-1-1,A+A-2-2-2-2"
+        property2 = PropertyState(**property_details)
+        property2.save()
+        self.assertEqual(1, property2.ubidmodel_set.count())
+        self.assertEqual("A+A-1-1-1-1,A+A-2-2-2-2", property2.ubid)
+        self.assertTrue(property2.ubidmodel_set.first().preferred)
 
 
 class UbidViewPermissionTests(AccessLevelBaseTestCase, DeleteModelsTestCase):

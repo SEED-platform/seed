@@ -19,7 +19,7 @@
         <h2><i class="fa-solid fa-gears"></i> {$:: 'Settings' | translate $}</h2>
       </div>
       <div class="section_action_container right section_action_btn">
-        <button type="button" class="pull-right btn btn-primary" ng-click="save_settings()">
+        <button type="button" class="pull-right btn btn-primary" ng-click="save_settings()" ng-disabled="invalid_ubid_threshold">
           {$:: 'Save Changes' | translate $}
           <i class="fa-solid fa-check" ng-show="settings_updated"></i>
         </button>
@@ -68,6 +68,51 @@
           </form>
         </div>
       </div>
+
+      <div class="section_content_container">
+        <div class="section_content with_padding">
+          <h3 translate>Enable Public Endpoints</h3>
+          <p>
+            <span translate>PUBLIC_FEED_HELP</span> <a ui-sref="organization_sharing(::{organization_id: org.id})">{$:: 'Organization Sharing' | translate $}</a>.
+            <span translate>For more information about the</span> <code>/v3/public</code> <span translate>endpoints see the</span> <a href="/api/swagger" translate>API Documentation</a>
+          </p>
+          <form class="form-horizontal" role="form">
+            <div class="form-group">
+              <div class="col-sm-4">
+                <input type="checkbox" class="form-control" style="width: 34px" ng-model="org.public_feed_enabled" ng-disabled="::!auth.requires_owner" />
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div class="section_content_container" ng-if="org.public_feed_enabled">
+        <div class="section_content with_padding">
+          <h3 translate>Enable Labels in Public Feed</h3>
+          <p><span translate>PUBLIC_FEED_LABELS</span></p>
+          <form class="form-horizontal" role="form">
+            <div class="form-group">
+              <div class="col-sm-4">
+                <input type="checkbox" class="form-control" style="width: 34px" ng-model="org.public_feed_labels" ng-disabled="::!auth.requires_owner" />
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div class="section_content_container" ng-if="org.public_feed_enabled">
+        <div class="section_content with_padding">
+          <h3 translate>Enable Public GeoJSON</h3>
+          <p translate>PUBLIC_GEOJSON</p>
+          <form class="form-horizontal" role="form">
+            <div class="form-group">
+              <div class="col-sm-4">
+                <input type="checkbox" class="form-control" style="width: 34px" ng-model="org.public_geojson_enabled" ng-disabled="::!auth.requires_owner" />
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
     </uib-tab>
 
     <uib-tab index="1" heading="{$:: 'API Key' | translate $}">
@@ -89,22 +134,24 @@
           <h3 translate>BETTER Analysis API Key</h3>
           <form class="form-horizontal" role="form">
             <div class="form-group">
-              <div class="col-sm-4">
-                <p><span translate translate-values="{ link: org.better_host_url }">BETTER_TOKEN_TEXT</span> {$:: org.better_host_url $}.</p>
+              <div class="col-sm-6">
+                <p>
+                  An API key will be assigned to your account upon creation of a BETTER account at <br />
+                  <a href="{$ org.better_host_url $}/accounts/signup/" target="_blank">{$ org.better_host_url $}/accounts/signup/</a>
+                </p>
                 <button
                   type="button"
                   class="btn btn-primary"
                   ng-class="{'btn-danger': token_validity.status == 'invalid', 'btn-success': token_validity.status == 'valid'}"
                   ng-click="verify_token()"
                   style="margin-bottom: 10px"
-                  ng-disabled="token_validity.status"
                 >
                   {$ token_validity.message $}
                   <i class="fa-solid fa-check" ng-show="token_validity.status == 'valid'"></i>
                   <i class="fa-solid fa-xmark" ng-show="token_validity.status == 'invalid'"></i>
                 </button>
-                <i class="ui-grid-icon-info-circled" style="position: absolute; margin-top: 0" ng-if="token_validity.status" uib-tooltip-html="'Save Settings to verify BETTER token'"></i>
                 <input type="text" class="form-control" ng-model="org.better_analysis_api_key" ng-disabled="::!auth.requires_owner" />
+                <p ng-if="error" class="alert alert-danger" style="margin-top: 10px" ng-bind-html="error"></p>
               </div>
             </div>
           </form>
@@ -115,10 +162,15 @@
     <uib-tab index="2" heading="Audit Template">
       <div class="section_content_container">
         <div class="section_content with_padding">
+          <p class="settings-header" translate>AT_SETTINGS_TEXT</p>
+        </div>
+      </div>
+      <div class="section_content_container">
+        <div class="section_content with_padding">
           <h3 translate>Audit Template Organization Token</h3>
           <form class="form-horizontal" role="form">
             <div class="form-group">
-              <div class="col-sm-4">
+              <div class="col-sm-5">
                 <p translate="AT_TOKEN_TEXT" translate-values="{ link: org.at_host_url }"></p>
                 <input type="text" class="form-control" ng-model="org.at_organization_token" ng-disabled="::!auth.requires_owner" />
               </div>
@@ -132,7 +184,7 @@
           <h3 translate>Audit Template Email</h3>
           <form class="form-horizontal" role="form">
             <div class="form-group">
-              <div class="col-sm-4">
+              <div class="col-sm-5">
                 <p translate="AT_EMAIL_TEXT" translate-values="{ link: org.at_host_url }"></p>
                 <input type="text" class="form-control" ng-model="org.audit_template_user" ng-disabled="::!auth.requires_owner" />
               </div>
@@ -146,7 +198,7 @@
           <h3 translate>Audit Template Password</h3>
           <form class="form-horizontal" role="form">
             <div class="form-group">
-              <div class="col-sm-4">
+              <div class="col-sm-5">
                 <p translate="AT_PASS_TEXT" translate-values="{ link: org.at_host_url }"></p>
                 <div class="input-group">
                   <input type="{$ secrets['pwd'] $}" class="form-control" ng-model="org.audit_template_password" ng-disabled="::!auth.requires_owner" />
@@ -162,13 +214,135 @@
 
       <div class="section_content_container">
         <div class="section_content with_padding">
-          <h3 translate>Audit Template Report Type</h3>
+          <h3 translate>Audit Template City ID</h3>
+          <form class="form-horizontal" role="form">
+            <div class="form-group">
+              <div class="col-sm-5">
+                <p translate>AT_CITY_ID</p>
+                <input type="number" class="form-control" ng-model="org.audit_template_city_id" ng-disabled="::!auth.requires_owner" />
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div class="section_content_container">
+        <div class="section_content with_padding">
+          <h3 translate>Audit Template Submission Status</h3>
+          <form class="form-horizontal" role="form">
+            <div class="form-group">
+              <div class="col-sm-5">
+                <p translate>AT_SUBMISSION_STATUS</p>
+                <div class="multi-select-container">
+                  <div
+                    ng-repeat="status in ['Complies', 'Pending', 'Received', 'Rejected']"
+                    class="option"
+                    ng-class="{'option-selected': at_status_types[status]}"
+                    ng-click="toggle_at_status_type(status)"
+                  >
+                    <i class="option-indicator" ng-class="at_status_types[status] ? 'fa-solid fa-check' : 'fa-regular fa-square'"></i>
+                    {$ status $}
+                  </div>
+                </div>
+                <div ng-show="!org.audit_template_status_types" class="alert alert-warning" style="width: fit-content; margin: 10px">Select at least one status type</div>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div class="section_content_container">
+        <div class="section_content with_padding">
+          <h3 translate>Conditional Import</h3>
+          <form class="form-horizontal" role="form">
+            <div class="form-group">
+              <div class="col-sm-5">
+                <p translate>AT_CONDITION_INDEX</p>
+                <input type="checkbox" class="form-control" style="width: 34px" ng-model="org.audit_template_conditional_import" ng-disabled="::!auth.requires_owner" />
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div class="section_content_container">
+        <div class="section_content with_padding">
+          <button class="btn btn-info" style="margin-top: 20px" type="button" ng-click="get_city_submission_data()" translate>Import Submissions</button>
+        </div>
+      </div>
+
+      <div class="section_header_container has_btm_margin r-margin-top-10">
+        <div class="section_header">
+          <h2><i class="fa-solid fa-clock"></i> {$ 'Schedule Weekly Update' | translate $}</h2>
+        </div>
+      </div>
+
+      <div class="section_content_container">
+        <div class="section_content with_padding">
+          <h3 translate>Enable Audit Template Auto Sync</h3>
           <form class="form-horizontal" role="form">
             <div class="form-group">
               <div class="col-sm-4">
-                <p translate>SEED Properties will be exported to Audit Template with the Organization Report Type</p>
+                <input type="checkbox" class="form-control" style="width: 34px" ng-model="org.audit_template_sync_enabled" ng-disabled="::!auth.requires_owner" />
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div class="section_content_container" ng-if="org.audit_template_sync_enabled">
+        <div class="section_content with_padding">
+          <form class="form-horizontal" role="form">
+            <div class="form-group">
+              <div class="col-sm-5">
+                <div translate>AT_AUTO_SYNC</div>
+                <div style="margin: 10px; color: gray"><i>timezone: {$ timezone $}</i></div>
+                <table class="time-table">
+                  <thead>
+                    <tr>
+                      <th>Day</th>
+                      <th style="white-space: nowrap; padding: 10px">Hour (24)</th>
+                      <th></th>
+                      <th style="padding: 10px">Minute</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <th style="padding-right: 10px">
+                        <select ng-model="at_conf.update_at_day" ng-disabled="::!auth.requires_owner" class="settings-dropdown" style="width: 100px">
+                          <option value="">Select a day</option>
+                          <option ng-repeat="(idx, day) in days_of_week" ng-value="idx">{$ day[idx] $}</option>
+                        </select>
+                      </th>
+                      <th>
+                        <input type="number" class="form-control" id="ah_update_at_hour" ng-model="at_conf.update_at_hour" ng-disabled="::!auth.requires_owner" min="0" max="23" />
+                      </th>
+                      <th>:</th>
+                      <th>
+                        <input type="number" class="form-control" id="ah_update_at_minute" ng-model="at_conf.update_at_minute" ng-disabled="::!auth.requires_owner" min="0" max="59" />
+                      </th>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+      <div class="section_header_container has_btm_margin">
+        <div class="section_header">
+          <h2><i class="fa-solid fa-clock"></i> {$ 'Advanced Settings' | translate $}</h2>
+        </div>
+      </div>
+      <div class="section_content_container">
+        <div class="section_content with_padding">
+          <h3 translate>Audit Template Report Type</h3>
+          <form class="form-horizontal" role="form">
+            <div class="form-group">
+              <div class="col-sm-5">
+                <p translate>AT_REPORT_TYPE</p>
                 <select ng-model="org.audit_template_report_type" ng-disabled="::!auth.requires_owner" class="settings-dropdown">
-                  <option ng-repeat="report_type in audit_template_report_types" value="{$ report_type $}">{$ report_type$}</option>
+                  <option ng-repeat="report_type in audit_template_report_types">{$ report_type$}</option>
                 </select>
               </div>
             </div>
@@ -200,6 +374,48 @@
             <div class="form-group">
               <div class="col-sm-4">
                 <select class="form-control" ng-options="column.column_name as column.display_name for column in taxlot_column_names" ng-model="org.taxlot_display_field"></select>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div class="section_content_container">
+        <div class="section_content with_padding">
+          <h3 translate>Columns to Include in Reports x axis options</h3>
+          <form class="form-horizontal" role="form">
+            <div class="form-group">
+              <div class="col-sm-4">
+                <ul ng-if="selected_x_columns.length">
+                  <li ng-repeat="id in selected_x_columns" class="r-row r-row-centered">
+                    <span class="r-grow">{$:: get_column_display(id) $}</span>
+                    <i class="fa-solid fa-xmark r-margin-left-5" ng-click="remove_x_column(id)"></i>
+                  </li>
+                </ul>
+                <select class="form-control" ng-change="add_x_column(x_column_selection); x_column_selection = null" ng-model="x_column_selection" ng-disabled="::!auth.requires_owner">
+                  <option ng-repeat="x_columns in available_x_columns()" ng-value="x_columns.id">{$:: x_columns.displayName $}</option>
+                </select>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div class="section_content_container">
+        <div class="section_content with_padding">
+          <h3 translate>Columns to Include in Reports y axis options</h3>
+          <form class="form-horizontal" role="form">
+            <div class="form-group">
+              <div class="col-sm-4">
+                <ul ng-if="selected_y_columns.length">
+                  <li ng-repeat="id in selected_y_columns" class="r-row r-row-centered">
+                    <span class="r-grow">{$:: get_column_display(id) $}</span>
+                    <i class="fa-solid fa-xmark r-margin-left-5" ng-click="remove_y_column(id)"></i>
+                  </li>
+                </ul>
+                <select class="form-control" ng-change="add_y_column(y_column_selection); y_column_selection = null" ng-model="y_column_selection" ng-disabled="::!auth.requires_owner">
+                  <option ng-repeat="y_columns in available_y_columns()" ng-value="y_columns.id">{$:: y_columns.displayName $}</option>
+                </select>
               </div>
             </div>
           </form>
@@ -887,7 +1103,26 @@
       </div>
     </uib-tab>
 
-    <uib-tab index="7" heading="UBID">
+    <uib-tab index="7" heading="{$:: 'Two-Factor Authentication' | translate $}">
+      <div class="section_content_container">
+        <div class="section_content with_padding">
+          <h3 translate>Require two-factor authentication</h3>
+          <p>
+            Checking this box requires all organization users to use Two-Factor Authentication (2FA). If a user does not already have a 2FA method configured, an email-based authentication method will
+            be set as the default.
+          </p>
+          <form class="form-horizontal" role="form">
+            <div class="form-group">
+              <div class="col-sm-4">
+                <input type="checkbox" class="form-control" style="width: 34px" ng-model="org.require_2fa" ng-disabled="::!auth.requires_owner" />
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </uib-tab>
+
+    <uib-tab index="8" heading="UBID">
       <div class="section_content_container">
         <div class="section_content with_padding">
           <h3 translate>Set UBID Threshold</h3>
@@ -899,7 +1134,7 @@
             The UBID Threshold defines the minimum Jaccard Index value required for a UBID Comparison to be considered acceptable. When the threshold is satisfied, the incoming property can be merged
             with the existing property.
           </p>
-          <p translate>UBID thresholds are between 0.0 and 1.0</p>
+          <p translate>UBID thresholds must be greater than 0 and up to 1.0</p>
           <form class="form-horizontal" role="form" lang="en-US">
             <div class="form-group">
               <label class="control-label col-md-1" style="width: fit-content" for="ubid-threshold-form" translate>UBID Threshold</label>
@@ -908,7 +1143,7 @@
                   id="ubid-threshold-form"
                   class="form-control"
                   type="number"
-                  min="0"
+                  min="0.0001"
                   max="1"
                   ng-model="org.ubid_threshold"
                   ng-change="ubid_threshold_change()"
@@ -918,13 +1153,13 @@
             </div>
           </form>
           <div style="margin-top: 30px">
-            <span class="alert alert-danger" ng-show="invalid_ubid_threshold" translate> UBID Threshold must be between 0.0 and 1.0 </span>
+            <span class="alert alert-danger" ng-show="invalid_ubid_threshold" translate> UBID Threshold must be between 0.0001 and 1.0 </span>
           </div>
         </div>
       </div>
     </uib-tab>
 
-    <uib-tab index="8" heading="{$:: 'Units' | translate $}">
+    <uib-tab index="9" heading="{$:: 'Units' | translate $}">
       <div class="section_content_container">
         <div class="section_content with_padding">
           <h3 translate>Measurement unit display for energy use intensities (EUI)</h3>
@@ -966,6 +1201,32 @@
 
       <div class="section_content_container">
         <div class="section_content with_padding">
+          <h3 translate>ORGANIZATION_WATER_USE_DISPLAY_UNITS</h3>
+          <form class="form-horizontal" role="form">
+            <div class="form-group">
+              <div class="col-sm-4">
+                <select class="form-control" ng-options="o.value as o.label for o in unit_options_water_use" ng-model="org.display_units_water_use"></select>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div class="section_content_container">
+        <div class="section_content with_padding">
+          <h3 translate>ORGANIZATION_WUI_DISPLAY_UNITS</h3>
+          <form class="form-horizontal" role="form">
+            <div class="form-group">
+              <div class="col-sm-4">
+                <select class="form-control" ng-options="o.value as o.label for o in unit_options_wui" ng-model="org.display_units_wui"></select>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div class="section_content_container">
+        <div class="section_content with_padding">
           <h3 translate>METER_DISPLAY_SETTINGS_TITLE</h3>
           <form class="form-horizontal" role="form">
             <div class="form-group">
@@ -982,6 +1243,33 @@
                   ng-disabled="chosen_type_unit.type === null"
                   ng-options="unit as unit for unit in energy_unit_options[chosen_type_unit.type]"
                   ng-model="chosen_type_unit.unit"
+                >
+                  <option value="" translate>ENERGY_UNIT_DISPLAY_CHOICE_PLACEHOLDER</option>
+                </select>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div class="section_content_container">
+        <div class="section_content with_padding">
+          <h3 translate>METER_WATER_DISPLAY_SETTINGS_TITLE</h3>
+          <form class="form-horizontal" role="form">
+            <div class="form-group">
+              <div class="col-sm-4">
+                <select class="form-control" ng-change="get_valid_water_units_for_type()" ng-options="type.value as type.label for type in water_type_options" ng-model="chosen_water_type_unit.type">
+                  <option value="" translate>WATER_TYPE_DISPLAY_CHOICE_PLACEHOLDER</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <div class="col-sm-4">
+                <select
+                  class="form-control"
+                  ng-disabled="chosen_water_type_unit.type === null"
+                  ng-options="unit as unit for unit in water_unit_options[chosen_water_type_unit.type]"
+                  ng-model="chosen_water_type_unit.unit"
                 >
                   <option value="" translate>ENERGY_UNIT_DISPLAY_CHOICE_PLACEHOLDER</option>
                 </select>

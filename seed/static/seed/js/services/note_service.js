@@ -2,7 +2,7 @@
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
  * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
-angular.module('BE.seed.service.note', []).factory('note_service', [
+angular.module('SEED.service.note', []).factory('note_service', [
   '$http',
   '$uibModal',
   'urls',
@@ -10,7 +10,7 @@ angular.module('BE.seed.service.note', []).factory('note_service', [
     const note_factory = {};
 
     /*
-      Return a list of notes for a giving property or taxlot
+      Return a list of notes for a given property or taxlot
 
       {
         "created": "2018-01-11T21:00:16.178317Z",
@@ -57,7 +57,7 @@ angular.module('BE.seed.service.note', []).factory('note_service', [
       return $http.put(`/api/v3/${inventory_type}/${view_id}/notes/${note_id}/`, payload).then((response) => response.data);
     };
 
-    note_factory.delete_note = (inventory_type, view_id, note_id) => $http.delete(`/api/v3/${inventory_type}/${view_id}/notes/${note_id}/`, {}).then((response) => response.data);
+    note_factory.delete_note = (org_id, inventory_type, view_id, note_id) => $http.delete(`/api/v3/${inventory_type}/${view_id}/notes/${note_id}/?organization=${org_id}`).then((response) => response.data);
 
     note_factory.inventory_display_name = (property_type, organization, item_state) => {
       let error = '';

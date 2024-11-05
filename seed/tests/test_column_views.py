@@ -1,4 +1,3 @@
-# !/usr/bin/env python
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
@@ -151,9 +150,11 @@ class DefaultColumnsViewTests(DeleteModelsTestCase):
             "unit_name": None,
             "unit_type": None,
             "is_matching_criteria": True,
+            "is_updating": False,
             "recognize_empty": False,
             "comstock_mapping": None,
             "derived_column": None,
+            "is_excluded_from_hash": False,
         }
         # randomly check a column
         self.assertIn(expected, data)
@@ -319,7 +320,6 @@ class ColumnsViewPermissionsTests(AccessLevelBaseTestCase, DeleteModelsTestCase)
     def setUp(self):
         super().setUp()
         self.column = Column.objects.create(column_name="test", organization=self.org, table_name="PropertyState", is_extra_data=True)
-        self.column.save()
 
     def test_column_create_permissions(self):
         url = reverse_lazy("api:v3:columns-list") + "?organization_id=" + str(self.org.id)

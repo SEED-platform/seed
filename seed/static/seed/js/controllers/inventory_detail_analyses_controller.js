@@ -2,16 +2,14 @@
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
  * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
-angular.module('BE.seed.controller.inventory_detail_analyses', []).controller('inventory_detail_analyses_controller', [
+angular.module('SEED.controller.inventory_detail_analyses', []).controller('inventory_detail_analyses_controller', [
   '$state',
   '$scope',
   '$stateParams',
   '$uibModal',
-  '$window',
-  'inventory_service',
+  'organization_service',
   'inventory_payload',
   'analyses_payload',
-  // 'users_payload',
   'organization_payload',
   'views_payload',
   'urls',
@@ -26,11 +24,9 @@ angular.module('BE.seed.controller.inventory_detail_analyses', []).controller('i
     $scope,
     $stateParams,
     $uibModal,
-    $window,
-    inventory_service,
+    organization_service,
     inventory_payload,
     analyses_payload,
-    // users_payload,
     organization_payload,
     views_payload,
     urls,
@@ -45,7 +41,7 @@ angular.module('BE.seed.controller.inventory_detail_analyses', []).controller('i
     $scope.view_id = $stateParams.view_id;
     $scope.cycle = inventory_payload.cycle;
     // WARNING: $scope.org is used by "child" controller - analysis_details_controller
-    $scope.org = organization_payload.organization;
+    $scope.organization = organization_payload.organization;
     // $scope.users = users_payload.users;
     $scope.analyses = analyses_payload.analyses;
     $scope.inventory = {
@@ -134,20 +130,7 @@ angular.module('BE.seed.controller.inventory_detail_analyses', []).controller('i
       });
     };
 
-    $scope.inventory_display_name = (property_type) => {
-      let error = '';
-      let field = property_type === 'property' ? $scope.org.property_display_field : $scope.org.taxlot_display_field;
-      if (!(field in $scope.item_state)) {
-        error = `${field} does not exist`;
-        field = 'address_line_1';
-      }
-      if (!$scope.item_state[field]) {
-        error += `${(error === '' ? '' : ' and default ') + field} is blank`;
-      }
-      $scope.inventory_name = $scope.item_state[field] ?
-        $scope.item_state[field] :
-        `(${error}) <i class="glyphicon glyphicon-question-sign" title="This can be changed from the organization settings page."></i>`;
-    };
+    $scope.inventory_display_name = organization_service.get_inventory_display_value($scope.organization, $scope.inventory_type === 'properties' ? 'property' : 'taxlot', $scope.item_state);
 
     $scope.open_analysis_modal = () => {
       $uibModal
@@ -157,7 +140,8 @@ angular.module('BE.seed.controller.inventory_detail_analyses', []).controller('i
           resolve: {
             inventory_ids: () => [$scope.inventory.view_id],
             cycles: () => cycle_service.get_cycles().then((result) => result.cycles),
-            current_cycle: () => $scope.cycle
+            current_cycle: () => $scope.cycle,
+            user: () => $scope.menu.user
           }
         })
         .result.then((data) => {

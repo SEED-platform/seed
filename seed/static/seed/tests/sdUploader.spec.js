@@ -2,37 +2,33 @@
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
  * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
-// taken from the angularjs testing page
-// http://docs.angularjs.org/guide/dev_guide.unit-testing
-
 // create dummy angularJS app to attach filter(s)
-const mySDUploaderDirectiveApp = angular.module('mySDUploaderDirectiveApp', ['sdUploader']);
+angular.module('mySDUploaderDirectiveApp', ['sdUploader']);
 
 describe('The sdUploader directive', () => {
-  let g_message; let g_file; let
-    g_progress;
+  let g_message;
+  let g_file;
+  let g_progress;
   let $compile;
   let $rootScope;
   let $scope;
   const sdUploaderFineUploader = window.sdUploaderFineUploader;
-  const uploader_html =
-    '<div sd-uploader sourcetype="assessor" importrecord="5" buttontext="Upload your building list .csv file" eventfunc="uploaderfunc(message, filename, progress)" ng-hide="uploader.in_progress"></div>';
+  const uploader_html = '<div sd-uploader sourcetype="assessor" importrecord="5" buttontext="Upload your building list .csv file" eventfunc="uploaderfunc(message, filename, progress)" ng-hide="uploader.in_progress"></div>';
   beforeEach(() => {
     module('mySDUploaderDirectiveApp');
     inject((_$compile_, _$rootScope_) => {
-      // The injector unwraps the underscores (_) from around the parameter names when matching
       $compile = _$compile_;
       $rootScope = _$rootScope_;
       $scope = $rootScope.$new();
       // Set up parent with cycle information
       $rootScope.selectedCycle = { id: 1 };
-      $scope.eventfunc = function (fine_object) {
+      $scope.eventfunc = (fine_object) => {
         // console.log({fin: fine_object});
         g_message = fine_object.message;
         g_file = fine_object.file;
         g_progress = fine_object.progress;
       };
-      window.BE = window.BE || {};
+      window.SEED = window.SEED || {};
     });
   });
 

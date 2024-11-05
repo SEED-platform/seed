@@ -2,7 +2,7 @@
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
  * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
-angular.module('BE.seed.controller.column_settings', []).controller('column_settings_controller', [
+angular.module('SEED.controller.column_settings', []).controller('column_settings_controller', [
   '$scope',
   '$q',
   '$state',
@@ -68,7 +68,9 @@ angular.module('BE.seed.controller.column_settings', []).controller('column_sett
       { id: 'eui', label: $translate.instant('EUI') },
       { id: 'geometry', label: $translate.instant('Geometry') },
       { id: 'ghg', label: $translate.instant('GHG') },
-      { id: 'ghg_intensity', label: $translate.instant('GHG Intensity') }
+      { id: 'ghg_intensity', label: $translate.instant('GHG Intensity') },
+      { id: 'wui', label: $translate.instant('WUI') },
+      { id: 'water_use', label: $translate.instant('Water Use') }
     ];
 
     $scope.comstock_types = [
@@ -126,8 +128,27 @@ angular.module('BE.seed.controller.column_settings', []).controller('column_sett
       return 'eligible';
     };
 
+    $scope.column_can_be_excluded = (column) => {
+      if ($scope.matching_status(column) === 'locked') {
+        return false;
+      }
+      if (($scope.matching_status(column) === 'eligible') && (!column.is_matching_criteria)) {
+        return true;
+      }
+      if ($scope.matching_status(column) === 'ineligible' && column.is_extra_data) {
+        return true;
+      }
+      return false;
+    };
+
     $scope.change_recognize_empty = (column) => {
       column.recognize_empty = !column.recognize_empty;
+      $scope.setModified();
+    };
+
+    $scope.change_is_excluded_state = (column) => {
+      if (!$scope.column_can_be_excluded(column)) return false;
+      column.is_excluded_from_hash = !column.is_excluded_from_hash;
       $scope.setModified();
     };
 
@@ -349,21 +370,8 @@ angular.module('BE.seed.controller.column_settings', []).controller('column_sett
 
       const modal_instance = $scope.open_confirm_column_settings_modal();
       modal_instance.result
-        .then(() => {
-          // User confirmed
-          const promises = [];
-          _.forOwn(diff, (delta, column_id) => {
-            column_id = Number(column_id);
-            const col = angular.copy(_.find($scope.columns, { id: column_id }));
-            col.display_name = col.displayName; // Add display_name for backend
-            delete col.displayName;
-            promises.push(columns_service.update_column_for_org($scope.org.id, column_id, col));
-          });
-
-          spinner_utility.show();
-          $q.all(promises).then(column_update_complete, (data) => {
-            $scope.$emit('app_error', data);
-          });
+        .then((data) => {
+          column_update_complete(data);
         })
         .catch(() => {
           // User cancelled
@@ -376,7 +384,7 @@ angular.module('BE.seed.controller.column_settings', []).controller('column_sett
       // size: 'lg',
       resolve: {
         org_id: $scope.org.id,
-        table_name: () => ($scope.inventory_type === 'properties' ? 'PropertyState' : 'TaxlotState'),
+        table_name: () => ($scope.inventory_type === 'properties' ? 'PropertyState' : 'TaxLotState'),
         black_listed_names: () => ['', ...$scope.columns.map((c) => c.column_name)]
       }
     });
@@ -390,7 +398,11 @@ angular.module('BE.seed.controller.column_settings', []).controller('column_sett
         all_columns: () => all_columns,
         columns: () => $scope.columns,
         inventory_type: () => $scope.inventory_type,
-        org_id: () => $scope.org.id
+        org_id: () => $scope.org.id,
+        columns_service: () => columns_service,
+        spinner_utility: () => spinner_utility,
+        table_name: () => ($scope.inventory_type === 'properties' ? 'PropertyState' : 'TaxLotState'),
+        $q: () => $q
       }
     });
 

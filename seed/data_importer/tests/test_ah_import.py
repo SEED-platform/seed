@@ -1,4 +1,3 @@
-# !/usr/bin/env python
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
@@ -10,10 +9,10 @@ from seed.data_importer.match import match_and_link_incoming_properties_and_taxl
 from seed.lib.progress_data.progress_data import ProgressData
 from seed.models import ASSESSED_RAW, DATA_STATE_MAPPING, DATA_STATE_MATCHING, Property, PropertyState, PropertyView
 from seed.test_helpers.fake import FakeCycleFactory, FakePropertyFactory, FakePropertyStateFactory, FakePropertyViewFactory
-from seed.tests.util import DataMappingBaseTestCase
+from seed.tests.util import AssertDictSubsetMixin, DataMappingBaseTestCase
 
 
-class TestAHImportFile(DataMappingBaseTestCase):
+class TestAHImportFile(AssertDictSubsetMixin, DataMappingBaseTestCase):
     def setUp(self):
         selfvars = self.set_up(ASSESSED_RAW)
         self.user, self.org, self.import_file, self.import_record, self.cycle = selfvars
@@ -111,7 +110,7 @@ class TestAHImportDuplicateIncoming(TestAHImportFile):
         super().setUp()
 
         # this causes all the states to be duplicates
-        self.base_details["ubid"] = "86HJPCWQ+2VV-1-3-2-3"
+        self.base_details["custom_id_1"] = "ABC123"
         self.base_details["no_default_data"] = False
 
     def test_duplicate_both_good(self):
@@ -253,7 +252,7 @@ class TestAHImportMatchIncoming(TestAHImportFile):
         super().setUp()
 
         # this causes all the states to match
-        self.base_details["ubid"] = "86HJPCWQ+2VV-1-3-2-3"
+        self.base_details["custom_id_1"] = "ABC123"
         self.base_details["no_default_data"] = False
 
     def test_match_both_good(self):
@@ -533,7 +532,7 @@ class TestAHImportMatchExisting(TestAHImportFile):
         super().setUp()
 
         # this causes all the states to match
-        self.base_details["ubid"] = "86HJPCWQ+2VV-1-3-2-3"
+        self.base_details["custom_id_1"] = "ABC123"
         self.base_details["no_default_data"] = False
 
         self.state = self.property_state_factory.get_property_state(**self.base_details)
@@ -692,7 +691,7 @@ class TestAHImportMatchExistingDifferentCycle(TestAHImportFile):
         self.property_view_factory = FakePropertyViewFactory(organization=self.org)
 
         # this causes all the states to match
-        self.base_details["ubid"] = "86HJPCWQ+2VV-1-3-2-3"
+        self.base_details["custom_id_1"] = "ABC123"
         self.base_details["no_default_data"] = False
 
         self.state = self.property_state_factory.get_property_state(**self.base_details)
@@ -704,7 +703,9 @@ class TestAHImportMatchExistingDifferentCycle(TestAHImportFile):
 
     def test_has_ali_merges_and_links(self):
         # Set Up - create view for merge
-        self.property_view_factory.get_property_view(prprty=self.existing_property, cycle=self.cycle)
+        self.property_view_factory.get_property_view(
+            prprty=self.existing_property, cycle=self.cycle, custom_id_1=self.base_details["custom_id_1"]
+        )
 
         # Set Up - update new state info
         self.base_details["raw_access_level_instance_id"] = self.me_ali.id
@@ -747,7 +748,9 @@ class TestAHImportMatchExistingDifferentCycle(TestAHImportFile):
 
     def test_no_ali_merges_and_links(self):
         # Set Up - create view for merge
-        self.property_view_factory.get_property_view(prprty=self.existing_property, cycle=self.cycle)
+        self.property_view_factory.get_property_view(
+            prprty=self.existing_property, cycle=self.cycle, custom_id_1=self.base_details["custom_id_1"]
+        )
 
         # Set Up - update new state info
         self.base_details["raw_access_level_instance_error"] = "uh oh"

@@ -1,4 +1,3 @@
-# !/usr/bin/env python
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
@@ -12,6 +11,7 @@ import dateutil.parser
 from celery import chain, shared_task
 from django.core.files.base import ContentFile
 from django.db.models import Count
+from django.utils.timezone import make_aware
 
 from seed.analysis_pipelines.better.buildingsync import SEED_TO_BSYNC_RESOURCE_TYPE, _build_better_input
 from seed.analysis_pipelines.better.client import BETTERClient
@@ -88,8 +88,8 @@ class BETTERPipeline(AnalysisPipeline):
 
         # ping BETTER to verify the token is valid
         client = BETTERClient(organization.better_analysis_api_key)
-        if not client.token_is_valid():
-            message = "Failed to communicate with BETTER. Please verify organization token is valid and try again."
+        validity, message = client.token_is_valid()
+        if not validity:
             self.fail(message, logger)
             raise AnalysisPipelineError(message)
 
@@ -159,8 +159,8 @@ def get_meter_readings(property_id, preprocess_meters, config):
             value2 = value2 + timedelta(days=1)
         elif config.get("select_meters") == "select_cycle":
             cycle = Cycle.objects.get(pk=config["cycle_id"])
-            value1 = dateutil.parser.parse(cycle.start.isoformat())
-            value2 = dateutil.parser.parse(cycle.end.isoformat()) + timedelta(days=1)
+            value1 = make_aware(dateutil.parser.parse(cycle.start.isoformat()))
+            value2 = make_aware(dateutil.parser.parse(cycle.end.isoformat())) + timedelta(days=1)
 
     except Exception as err:
         raise AnalysisPipelineError(f"Analysis configuration error: invalid dates selected for meter readings: {err}")
@@ -208,7 +208,6 @@ def get_meter_readings(property_id, preprocess_meters, config):
                         "readings": readings,
                     }
                 )
-
     return selected_meters_and_readings
 
 
@@ -295,7 +294,6 @@ def _start_analysis(self, analysis_id):
     pipeline = BETTERPipeline(analysis_id)
     progress_data = pipeline.set_analysis_status_to_running()
     progress_data.step("Sending requests to BETTER service")
-
     analysis = Analysis.objects.get(id=analysis_id)
     client = BETTERClient(analysis.organization.better_analysis_api_key)
     context = BETTERPipelineContext(analysis, progress_data, client)
@@ -310,9 +308,7 @@ def _start_analysis(self, analysis_id):
                 context,
                 fail_on_error=True,
             )
-
     better_building_analyses, better_portfolio_building_analyses = _create_better_buildings(better_portfolio_id, context)
-
     if better_portfolio_id is not None:
         better_portfolio_building_analyses = _run_better_portfolio_analysis(
             better_portfolio_id,
@@ -350,38 +346,44 @@ def _process_results(self, analysis_id):
     """Store results from the analysis in the original PropertyState"""
     pipeline = BETTERPipeline(analysis_id)
     analysis = Analysis.objects.get(id=analysis_id)
-
     progress_data = pipeline.get_progress_data(analysis)
     progress_data.step("Processing results")
 
-    # store all measure recommendations
-    #
-    # Updated measure list 10/21/2023. There were several added and 4 removed/renamed which include removal of:
-    #   'Check Fossil Baseload', 'Decrease Ventilation', 'Eliminate Electric Heating', 'Upgrade Windows',
-    # The data will still exist in the database for historic reason, but new runs will not include those.
+    # store all (LEVEL 1) measure recommendations
+
+    # Updated measure list 05/20/2024 - BETTER workflow has changed in v1.7: The json data returned from the BA and PBA
+    # endpoints used to have a ee_measures key in the "assessments" dictionary with a dictionary of true / false values
+    # for every measure. Now, that same ee_measures key points to a list with the tokens for each measure that applies.
+    # There is no need to check for true or false...if the measure is in the list, it applies.
+
+    # switch to a list of "Level 1 measure" tokens here. Tokens can be found here (grab the top level "token" in each dictionary):
+    # https://better-lbnl-development.herokuapp.com/api/v1/measures/
+    # updating this list to a list of dictionary to keep the column names as close to the existing ones as possible
     ee_measure_names = [
-        "Add/Fix Economizers",
-        "Add Wall/Ceiling/Roof Insulation",
-        "Decrease Heating Setpoints",
-        "Decrease Infiltration",
-        "Ensure Adequate Ventilation Rate",
-        "Increase Cooling Setpoints",
-        "Increase Cooling System Efficiency",
-        "Increase Heating System Efficiency",
-        "Reduce Equipment Schedules",
-        "Reduce Lighting Load",
-        "Reduce Plug Loads",
-        "Upgrade Windows to Improve Thermal Efficiency",
-        "Upgrade Windows to Reduce Solar Heat Gain",
-        "Upgrade to Sustainable Resources for Water Heating",
-        "Use High Efficiency Heat Pump for Heating",
+        {"token": "REDUCE_EQUIPMENT_SCHEDULES", "name": "Reduce Equipment Schedules"},
+        {"token": "REDUCE_LIGHTING_LOAD", "name": "Reduce Lighting Load"},
+        {"token": "REDUCE_PLUG_LOADS", "name": "Reduce Plug Loads"},
+        {"token": "INCREASE_COOLING_SYSTEM_EFFICIENCY", "name": "Increase Cooling System Efficiency"},
+        {"token": "DECREASE_HEATING_SETPOINTS", "name": "Decrease Heating Setpoints"},
+        {"token": "ENSURE_ADEQUATE_VENTILATION_RATE", "name": "Ensure Adequate Ventilation Rate"},
+        {"token": "DECREASE_INFILTRATION", "name": "Decrease Infiltration"},
+        {"token": "INCREASE_HEATING_SYSTEM_EFFICIENCY", "name": "Increase Heating System Efficiency"},
+        {"token": "ADD_WALL_CEILING_ROOF_INSULATION", "name": "Add Wall/Ceiling/Roof Insulation"},
+        {"token": "UPGRADE_TO_SUSTAINABLE_RESOURCES_FOR_WATER_HEATING", "name": "Upgrade to Sustainable Resources for Water Heating"},
+        {"token": "UPGRADE_WINDOWS_TO_REDUCE_SOLAR_HEAT_GAIN", "name": "Upgrade Windows to Reduce Solar Heat Gain"},
+        {"token": "USE_HIGH_EFFICIENCY_HEAT_PUMP_FOR_HEATING", "name": "Use High Efficiency Heat Pump for Heating"},
+        {"token": "INCREASE_COOLING_SETPOINTS", "name": "Increase Cooling Setpoints"},
+        {"token": "ADD_FIX_ECONOMIZERS", "name": "Add/Fix Economizers"},
+        {"token": "UPGRADE_WINDOWS_TO_IMPROVE_THERMAL_EFFICIENCY", "name": "Upgrade Windows to Improve Thermal Efficiency"},
+        {"token": "OTHER_AREAS", "name": "Other Areas"},
     ]
+
     ee_measure_column_data_paths = [
         ExtraDataColumnPath(
-            f'better_recommendation_{ee_measure_name.lower().replace(" ", "_")}',
-            f"BETTER Recommendation: {ee_measure_name}",
+            f'better_recommendation_{ee_measure_name["name"].lower().replace(" ", "_")}',
+            f'BETTER Recommendation: {ee_measure_name["name"]}',
             1,
-            f"assessment.ee_measures.{ee_measure_name}",
+            f'assessment.ee_measures.{ee_measure_name["token"]}',
         )
         for ee_measure_name in ee_measure_names
     ]
@@ -393,64 +395,71 @@ def _process_results(self, analysis_id):
     # if user is at root level and has role member or owner, columns can be created
     # otherwise set the 'missing_columns' flag for later
     missing_columns = False
-
     column_data_paths = [
         # Combined Savings
         ExtraDataColumnPath(
             "better_cost_savings_combined",
             "BETTER Potential Cost Savings (USD)",
             1,
-            "assessment.assessment_energy_use.cost_savings_combined",
+            "assessment.assessment_results.assessment_energy_use.cost_savings_combined",
         ),
         ExtraDataColumnPath(
             "better_energy_savings_combined",
             "BETTER Potential Energy Savings (kWh)",
             1,
-            "assessment.assessment_energy_use.energy_savings_combined",
+            "assessment.assessment_results.assessment_energy_use.energy_savings_combined",
         ),
         ExtraDataColumnPath(
             "better_ghg_reductions_combined",
             "BETTER Potential GHG Emissions Reduction (MtCO2e)",
             0.001,
-            "assessment.assessment_energy_use.ghg_reductions_combined",
+            "assessment.assessment_results.assessment_energy_use.ghg_reductions_combined",
         ),
         # Energy-specific Savings
         ExtraDataColumnPath(
-            BETTER_VALID_MODEL_E_COL, "BETTER Valid Electricity Model", 1, "assessment.assessment_energy_use.valid_model_e"
+            BETTER_VALID_MODEL_E_COL,
+            "BETTER Valid Electricity Model",
+            1,
+            "assessment.assessment_results.assessment_energy_use.valid_model_e",
         ),
-        ExtraDataColumnPath(BETTER_VALID_MODEL_F_COL, "BETTER Valid Fuel Model", 1, "assessment.assessment_energy_use.valid_model_f"),
+        ExtraDataColumnPath(
+            BETTER_VALID_MODEL_F_COL, "BETTER Valid Fuel Model", 1, "assessment.assessment_results.assessment_energy_use.valid_model_f"
+        ),
         ExtraDataColumnPath(
             "better_cost_savings_electricity",
             "BETTER Potential Electricity Cost Savings (USD)",
             1,
-            "assessment.assessment_energy_use.cost_savings_e",
+            "assessment.assessment_results.assessment_energy_use.cost_savings_e",
         ),
         ExtraDataColumnPath(
-            "better_cost_savings_fuel", "BETTER Potential Fuel Cost Savings (USD)", 1, "assessment.assessment_energy_use.cost_savings_f"
+            "better_cost_savings_fuel",
+            "BETTER Potential Fuel Cost Savings (USD)",
+            1,
+            "assessment.assessment_results.assessment_energy_use.cost_savings_f",
         ),
         ExtraDataColumnPath(
             "better_energy_savings_electricity",
             "BETTER Potential Electricity Energy Savings (kWh)",
             1,
-            "assessment.assessment_energy_use.energy_savings_e",
+            "assessment.assessment_results.assessment_energy_use.energy_savings_e",
         ),
         ExtraDataColumnPath(
             "better_energy_savings_fuel",
             "BETTER Potential Fuel Energy Savings (kWh)",
             1,
-            "assessment.assessment_energy_use.energy_savings_f",
+            "assessment.assessment_results.assessment_energy_use.energy_savings_f",
         ),
         ExtraDataColumnPath(
             "better_ghg_reductions_electricity",
             "BETTER Potential Electricity GHG Emissions Reduction (MtCO2e)",
             0.001,
-            "assessment.assessment_energy_use.ghg_reductions_e",
+            "assessment.assessment_results.assessment_energy_use.ghg_reductions_e",
         ),
         ExtraDataColumnPath(
             "better_ghg_reductions_fuel",
             "BETTER Potential Fuel GHG Emissions Reduction (MtCO2e)",
             0.001,
-            "assessment.assessment_energy_use.ghg_reductions_f",
+            "assessment.assessment_results.assessment_energy_use.ghg_reductions_f",
         ),
         ExtraDataColumnPath(
             # we will manually add this to the data later (it's not part of BETTER's results)
@@ -492,15 +501,14 @@ def _process_results(self, analysis_id):
             )
         except Exception:
             if analysis.can_create():
-                column, _created = Column.objects.create(
+                Column.objects.create(
                     is_extra_data=True,
                     column_name=column_data_path.column_name,
                     organization=analysis.organization,
                     table_name="PropertyState",
+                    display_name=column_data_path.column_display_name,
+                    column_description=column_data_path.column_display_name,
                 )
-                column.display_name = column_data_path.column_display_name
-                column.column_description = column_data_path.column_display_name
-                column.save()
             else:
                 missing_columns = True
 

@@ -10,11 +10,10 @@ describe('controller: data_quality_admin_controller', () => {
   // make the seed app available for each test
   // 'config.seed' is created in TestFilters.html
   beforeEach(() => {
-    module('BE.seed');
+    module('SEED');
     inject((_$httpBackend_) => {
-      $httpBackend = _$httpBackend_;
-      $httpBackend.whenGET(/^\/static\/seed\/locales\/.*\.json/).respond(200, {});
-      $httpBackend.whenGET(/^\/static\/seed\/partials\/modified_modal\.html/).respond(200, {});
+      _$httpBackend_.whenGET(/^\/static\/seed\/locales\/.*\.json/).respond(200, {});
+      _$httpBackend_.whenGET(/^\/static\/seed\/partials\/modified_modal\.html/).respond(200, {});
     });
     inject(($controller, $rootScope /* , $q */) => {
       controller = $controller;
@@ -92,7 +91,7 @@ describe('controller: data_quality_admin_controller', () => {
       }
     };
     data_quality_admin_controller_scope.ruleGroups = ruleGroups;
-    data_quality_admin_controller_scope.inventory_type = 'properties';
+    data_quality_admin_controller_scope.rule_type = 'properties';
     // act
     data_quality_admin_controller_scope.change_field(ruleGroups.properties.address_line_1[0], 'address_line_1', 0);
     data_quality_admin_controller_scope.change_data_type(ruleGroups.properties.address_line_1[0], 'string');

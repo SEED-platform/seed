@@ -23,6 +23,8 @@ from seed.models import (
     MERGE_STATE_DELETE,
     MERGE_STATE_MERGED,
     MERGE_STATE_NEW,
+    Column,
+    DerivedColumn,
     Note,
     PropertyView,
     StatusLabel,
@@ -34,6 +36,7 @@ from seed.models import (
 )
 from seed.serializers.properties import PropertyViewSerializer
 from seed.serializers.taxlots import TaxLotSerializer, TaxLotStateSerializer, TaxLotViewSerializer, UpdateTaxLotPayloadSerializer
+from seed.tasks import update_state_derived_data
 from seed.utils.api import OrgMixin, ProfileIdMixin, api_endpoint_class
 from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema_org_query_param
 from seed.utils.inventory_filter import get_filtered_results
@@ -230,14 +233,14 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
             with transaction.atomic():
                 merged_state = merge_taxlots(taxlot_state_ids, organization_id, "Manual Match")
                 view = merged_state.taxlotview_set.first()
-                merge_count, link_count, _view_id = match_merge_link(
-                    merged_state.id, "TaxLotState", view.taxlot.access_level_instance, view.cycle
-                )
+                merge_count, link_count, _view = match_merge_link(merged_state, view.taxlot.access_level_instance, view.cycle)
 
         except MergeLinkPairError:
             return JsonResponse(
                 {"status": "error", "message": "These two taxlots have different alis."}, status=status.HTTP_400_BAD_REQUEST
             )
+
+        update_derived_data([view.state.id], organization_id)
 
         return {
             "status": "success",
@@ -418,8 +421,8 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
         taxlot_view = TaxLotView.objects.get(pk=pk, cycle__organization_id=org_id)
         try:
             with transaction.atomic():
-                merge_count, link_count, view_id = match_merge_link(
-                    taxlot_view.state.pk, "TaxLotState", taxlot_view.taxlot.access_level_instance, taxlot_view.cycle
+                merge_count, link_count, view = match_merge_link(
+                    taxlot_view.state, taxlot_view.taxlot.access_level_instance, taxlot_view.cycle
                 )
 
         except MergeLinkPairError:
@@ -431,8 +434,10 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+        update_derived_data([view.state.id], org_id)
+
         result = {
-            "view_id": view_id,
+            "view_id": view.id,
             "match_merged_count": merge_count,
             "match_link_count": link_count,
         }
@@ -681,8 +686,8 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
 
                         try:
                             with transaction.atomic():
-                                merge_count, link_count, view_id = match_merge_link(
-                                    taxlot_view.state_id, "TaxLotState", taxlot_view.taxlot.access_level_instance, taxlot_view.cycle
+                                merge_count, link_count, view = match_merge_link(
+                                    taxlot_view.state, taxlot_view.taxlot.access_level_instance, taxlot_view.cycle
                                 )
 
                         except MergeLinkPairError:
@@ -696,11 +701,12 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
 
                         result.update(
                             {
-                                "view_id": view_id,
+                                "view_id": view.id,
                                 "match_merged_count": merge_count,
                                 "match_link_count": link_count,
                             }
                         )
+                        update_derived_data([view.state.id], log.organization)
 
                         return JsonResponse(result, status=status.HTTP_200_OK)
                     else:
@@ -713,3 +719,10 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
                     return JsonResponse(result, status=status.HTTP_204_NO_CONTENT)
         else:
             return JsonResponse(result, status=status.HTTP_404_NOT_FOUND)
+
+
+def update_derived_data(state_ids, org_id):
+    derived_columns = DerivedColumn.objects.filter(organization_id=org_id)
+    Column.objects.filter(derived_column__in=derived_columns).update(is_updating=True)
+    derived_column_ids = list(derived_columns.values_list("id", flat=True))
+    update_state_derived_data(taxlot_state_ids=state_ids, derived_column_ids=derived_column_ids)

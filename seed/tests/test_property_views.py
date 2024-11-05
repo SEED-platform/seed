@@ -1,4 +1,3 @@
-# !/usr/bin/env python
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
@@ -847,7 +846,7 @@ class PropertyViewTestsPermissions(AccessLevelBaseTestCase):
         self.property_2 = self.property_factory.get_property()
         self.view_2 = PropertyView.objects.create(property=self.property_2, cycle=self.cycle, state=self.state_2)
         merged_state = merge_properties([self.view.state.pk, self.state_2.pk], self.org.pk, "Manual Match")
-        _, _, view_id = match_merge_link(merged_state.id, "PropertyState", self.org.root, self.cycle)
+        match_merge_link(merged_state, self.org.root, self.cycle)
         view_id = PropertyView.objects.first().id
         url = reverse("api:v3:properties-unmerge", args=[view_id]) + f"?organization_id={self.org.pk}"
 
@@ -1099,6 +1098,36 @@ class PropertyViewTestsPermissions(AccessLevelBaseTestCase):
                 content_type=MULTIPART_CONTENT,
             )
             assert resp.status_code == 404
+
+    def test_properties_can_move_between_alis(self):
+        self.property.access_level_instance = self.child_level_instance
+        self.property.save()
+
+        url = reverse("api:v3:properties-move-properties-to") + f"?organization_id={self.org.pk}"
+        post_params = json.dumps(
+            {"property_view_ids": [self.property.views.first().id], "access_level_instance_id": self.root_level_instance.id}
+        )
+
+        response = self.client.post(url, post_params, content_type="application/json")
+
+        assert response.status_code == 200
+        p = Property.objects.get(pk=self.property.pk)
+        assert p.access_level_instance == self.root_level_instance
+
+    def test_properties_cannot_move_between_alis_without_perms(self):
+        self.property.access_level_instance = self.child_level_instance
+        self.property.save()
+
+        url = (
+            reverse("api:v3:properties-move-properties-to")
+            + f"?organization_id={self.org.pk}&access_level_instance_id={self.root_level_instance.id}"
+        )
+        post_params = json.dumps({"property_view_ids": [self.property.views.first().id]})
+
+        self.login_as_child_member()
+        response = self.client.post(url, post_params, content_type="application/json")
+
+        assert response.status_code == 404
 
 
 class PropertyUpdateCausesMergesAndLinkTests(AccessLevelBaseTestCase):

@@ -6,23 +6,18 @@ describe('controller: new_member_modal_controller', () => {
   // globals set up and used in each test scenario
   let mock_user_service;
   let controller;
-  let modal_state;
   let ctrl_scope;
   beforeEach(() => {
-    module('BE.seed');
+    module('SEED');
     inject((_$httpBackend_) => {
-      $httpBackend = _$httpBackend_;
-      $httpBackend.whenGET(/^\/static\/seed\/locales\/.*\.json/).respond(200, {});
+      _$httpBackend_.whenGET(/^\/static\/seed\/locales\/.*\.json/).respond(200, {});
     });
     inject(($controller, $rootScope, $uibModal, $q, user_service) => {
       controller = $controller;
       ctrl_scope = $rootScope.$new();
-      modal_state = '';
 
       mock_user_service = user_service;
-      spyOn(mock_user_service, 'add').andCallFake(() =>
-        // return $q.reject for error scenario
-        $q.resolve({ status: 'success' }));
+      spyOn(mock_user_service, 'add').andCallFake(() => $q.resolve({ status: 'success' }));
     });
   });
 
@@ -30,14 +25,7 @@ describe('controller: new_member_modal_controller', () => {
   function create_new_member_controller() {
     controller = controller('new_member_modal_controller', {
       $scope: ctrl_scope,
-      $uibModalInstance: {
-        close: () => {
-          modal_state = 'close';
-        },
-        dismiss: () => {
-          modal_state = 'dismiss';
-        }
-      },
+      $uibModalInstance: {},
       organization: { organization_id: 1 },
       access_level_tree: [{
         id: '1',

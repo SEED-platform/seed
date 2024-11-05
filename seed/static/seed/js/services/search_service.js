@@ -32,7 +32,7 @@
  *       // $scope.buildings will be auto-updates as will the pagination
  *     });
  */
-angular.module('BE.seed.service.search', []).factory('search_service', [
+angular.module('SEED.service.search', []).factory('search_service', [
   '$http',
   'spinner_utility',
   ($http, spinner_utility) => {

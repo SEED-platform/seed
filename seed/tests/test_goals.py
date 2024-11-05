@@ -1,4 +1,3 @@
-# !/usr/bin/env python
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
@@ -159,7 +158,9 @@ class GoalViewTests(AccessLevelBaseTestCase):
         url = reverse_lazy("api:v3:goals-detail", args=[self.child_goal.id]) + "?organization_id=" + str(self.org.id)
         response = self.client.get(url, content_type="application/json")
         assert response.status_code == 200
-        assert response.json()["id"] == self.child_goal.id
+        goal = response.json()["goal"]
+        assert goal["id"] == self.child_goal.id
+        assert goal["current_cycle_property_view_ids"] == [self.view13.id, self.view33.id]
 
         url = reverse_lazy("api:v3:goals-detail", args=[999]) + "?organization_id=" + str(self.org.id)
         response = self.client.get(url, content_type="application/json")
@@ -242,14 +243,14 @@ class GoalViewTests(AccessLevelBaseTestCase):
 
         # invalid data
         goal_data["access_level_instance"] = self.child_ali.id
-        goal_data["baseline_cycle"] = 999
-        goal_data["eui_column1"] = 998
+        goal_data["baseline_cycle"] = 9999
+        goal_data["eui_column1"] = 9998
         response = self.client.post(url, data=json.dumps(goal_data), content_type="application/json")
         assert response.status_code == 400
         errors = response.json()
         assert errors["name"] == ["goal with this name already exists."]
-        assert errors["baseline_cycle"] == ['Invalid pk "999" - object does not exist.']
-        assert errors["eui_column1"] == ['Invalid pk "998" - object does not exist.']
+        assert errors["baseline_cycle"] == ['Invalid pk "9999" - object does not exist.']
+        assert errors["eui_column1"] == ['Invalid pk "9998" - object does not exist.']
         assert Goal.objects.count() == goal_count
 
         # cycles must be unique
@@ -426,16 +427,48 @@ class GoalViewTests(AccessLevelBaseTestCase):
         url = reverse_lazy("api:v3:goals-portfolio-summary", args=[self.child_goal.id]) + "?organization_id=" + str(self.org.id)
         response = self.client.get(url, content_type="application/json")
         summary = response.json()
+        # only properties with passed_checks and not new_or_acquired are included in calc
+        exp_summary = {
+            "baseline": {"cycle_name": "2001 Annual", "total_sqft": None, "total_kbtu": None, "weighted_eui": None},
+            "current": {"cycle_name": "2003 Annual", "total_sqft": None, "total_kbtu": None, "weighted_eui": None},
+            "eui_change": None,
+            "passing_committed": None,
+            "passing_shared": None,
+            "shared_sqft": 15,
+            "sqft_change": None,
+            "total_new_or_acquired": 0,
+            "total_passing": 0,
+            "total_properties": 2,
+        }
+        assert summary == exp_summary
+
+        for goalnote in self.child_goal.goalnote_set.all():
+            goalnote.passed_checks = True
+            goalnote.save()
+
+        response = self.client.get(url, content_type="application/json")
+        summary = response.json()
+
         exp_summary = {
             "baseline": {"cycle_name": "2001 Annual", "total_kbtu": 44, "total_sqft": 9, "weighted_eui": 4},
             "current": {"cycle_name": "2003 Annual", "total_kbtu": 110, "total_sqft": 15, "weighted_eui": 7},
             "eui_change": -75,
+            "passing_committed": None,
+            "passing_shared": 100,
+            "shared_sqft": 15,
             "sqft_change": 40,
+            "total_new_or_acquired": 0,
+            "total_passing": 2,
+            "total_properties": 2,
         }
 
         assert summary == exp_summary
 
         # with extra data
+        for goalnote in self.child_goal_extra.goalnote_set.all():
+            goalnote.passed_checks = True
+            goalnote.save()
+
         url = reverse_lazy("api:v3:goals-portfolio-summary", args=[self.child_goal_extra.id]) + "?organization_id=" + str(self.org.id)
         response = self.client.get(url, content_type="application/json")
         summary = response.json()
@@ -443,7 +476,13 @@ class GoalViewTests(AccessLevelBaseTestCase):
             "baseline": {"cycle_name": "2001 Annual", "total_kbtu": 200, "total_sqft": 20, "weighted_eui": 10},
             "current": {"cycle_name": "2003 Annual", "total_kbtu": 5000, "total_sqft": 150, "weighted_eui": 33},
             "eui_change": -229,
+            "passing_committed": None,
+            "passing_shared": 100,
+            "shared_sqft": 150.0,
             "sqft_change": 86,
+            "total_new_or_acquired": 0,
+            "total_passing": 2,
+            "total_properties": 2,
         }
 
         assert summary == exp_summary

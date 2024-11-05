@@ -4,17 +4,23 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
 import contextlib
+import io
 import json
 import logging
 import os
+import shutil
+import tempfile
 import time
-from collections import namedtuple
+from collections import defaultdict, namedtuple
+from pathlib import Path
 
+import pandas as pd
+from buildingsync_asset_extractor.cts import building_sync_to_cts
 from django.conf import settings
 from django.core.files.base import ContentFile
 from django.core.files.storage import FileSystemStorage
 from django.db import transaction
-from django.db.models import Q, Subquery
+from django.db.models import Exists, F, OuterRef, Q, Subquery
 from django.http import HttpResponse, JsonResponse
 from django_filters import CharFilter, DateFilter
 from django_filters import rest_framework as filters
@@ -23,6 +29,7 @@ from rest_framework import generics, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.parsers import JSONParser, MultiPartParser
 from rest_framework.renderers import JSONRenderer
+from styleframe import StyleFrame
 
 from seed.building_sync.building_sync import BuildingSync
 from seed.data_importer import tasks
@@ -30,7 +37,7 @@ from seed.data_importer.match import save_state_match
 from seed.data_importer.meters_parser import MetersParser
 from seed.data_importer.models import ImportFile, ImportRecord
 from seed.data_importer.tasks import _save_pm_meter_usage_data_task
-from seed.data_importer.utils import kbtu_thermal_conversion_factors
+from seed.data_importer.utils import kbtu_thermal_conversion_factors, kgal_water_conversion_factors
 from seed.decorators import ajax_request_class
 from seed.hpxml.hpxml import HPXML
 from seed.lib.progress_data.progress_data import ProgressData
@@ -51,6 +58,7 @@ from seed.models import (
     Column,
     ColumnMappingProfile,
     Cycle,
+    DerivedColumn,
     InventoryDocument,
     Meter,
     Note,
@@ -76,6 +84,7 @@ from seed.serializers.properties import (
     UpdatePropertyPayloadSerializer,
 )
 from seed.serializers.taxlots import TaxLotViewSerializer
+from seed.tasks import update_state_derived_data
 from seed.utils.api import OrgMixin, ProfileIdMixin, api_endpoint_class
 from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema_org_query_param
 from seed.utils.inventory_filter import get_filtered_results
@@ -300,13 +309,14 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
     @has_hierarchy_access(property_id_kwarg="pk")
     def analyses(self, request, pk):
         organization_id = self.get_organization(request)
+        cycle_id = request.query_params.get("cycle_id")
 
-        analyses_queryset = (
-            Analysis.objects.filter(organization=organization_id, analysispropertyview__property=pk).distinct().order_by("-id")
-        )
+        analyses_queryset = Analysis.objects.filter(organization=organization_id, analysispropertyview__property=pk)
+        if cycle_id is not None:
+            analyses_queryset = analyses_queryset.filter(analysispropertyview__cycle_id=cycle_id)
 
         analyses = []
-        for analysis in analyses_queryset:
+        for analysis in analyses_queryset.distinct().order_by("-id"):
             serialized_analysis = AnalysisSerializer(analysis).data
             serialized_analysis.update(analysis.get_property_view_info(pk))
             serialized_analysis.update({"highlights": analysis.get_highlights(pk)})
@@ -463,7 +473,11 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         the two.
         (https://portfoliomanager.energystar.gov/pdf/reference/Thermal%20Conversions.pdf)
         """
-        return {type: list(units.keys()) for type, units in kbtu_thermal_conversion_factors("US").items()}
+        types_and_units = {
+            "energy": {type: list(units.keys()) for type, units in kbtu_thermal_conversion_factors("US").items()},
+            "water": {type: list(units.keys()) for type, units in kgal_water_conversion_factors("US").items()},
+        }
+        return types_and_units
 
     @swagger_auto_schema(
         manual_parameters=[AutoSchemaHelper.query_org_id_field()],
@@ -508,14 +522,14 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             with transaction.atomic():
                 merged_state = merge_properties(property_state_ids, organization_id, "Manual Match")
                 view = merged_state.propertyview_set.first()
-                merge_count, link_count, _view_id = match_merge_link(
-                    merged_state.id, "PropertyState", view.property.access_level_instance, view.cycle
-                )
+                merge_count, link_count, _view = match_merge_link(merged_state, view.property.access_level_instance, view.cycle)
 
         except MergeLinkPairError:
             return JsonResponse(
                 {"status": "error", "message": "These two properties have different alis."}, status=status.HTTP_400_BAD_REQUEST
             )
+
+        update_derived_data([_view.state.id], organization_id)
 
         return {
             "status": "success",
@@ -704,8 +718,8 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         property_view = PropertyView.objects.get(pk=pk, cycle__organization_id=org_id)
         try:
             with transaction.atomic():
-                merge_count, link_count, view_id = match_merge_link(
-                    property_view.state.id, "PropertyState", property_view.property.access_level_instance, property_view.cycle
+                merge_count, link_count, view = match_merge_link(
+                    property_view.state, property_view.property.access_level_instance, property_view.cycle
                 )
 
         except MergeLinkPairError:
@@ -718,10 +732,13 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             )
 
         result = {
-            "view_id": view_id,
+            "view_id": view.id,
             "match_merged_count": merge_count,
             "match_link_count": link_count,
         }
+
+        if merge_count > 0:
+            update_derived_data([view.state.id], org_id)
 
         return JsonResponse(result)
 
@@ -1186,9 +1203,8 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
 
                         try:
                             with transaction.atomic():
-                                merge_count, link_count, view_id = match_merge_link(
-                                    property_view.state.id,
-                                    "PropertyState",
+                                merge_count, link_count, view = match_merge_link(
+                                    property_view.state,
                                     property_view.property.access_level_instance,
                                     property_view.cycle,
                                 )
@@ -1203,11 +1219,13 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
 
                         result.update(
                             {
-                                "view_id": view_id,
+                                "view_id": view.id,
                                 "match_merged_count": merge_count,
                                 "match_link_count": link_count,
                             }
                         )
+
+                        update_derived_data([view.state.id], log.organization_id)
 
                         return JsonResponse(result, encoder=PintJSONEncoder, status=status.HTTP_200_OK)
                     else:
@@ -1349,26 +1367,44 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
 
         return self._update_with_building_sync(the_file, file_type, organization_id, cycle_id, pk)
 
-    def batch_update_with_building_sync(self, properties, org_id, cycle_id, progress_key):
+    def batch_update_with_building_sync(self, properties, org_id, cycle_id, progress_key, finish=True):
         """
         Update a list of PropertyViews with a building file. Currently only supports BuildingSync.
+        The optional :param finish: is set to False when updating in cycle batches through AuditTemplate._batch_get_city_submission_xml
         """
         progress_data = ProgressData.from_key(progress_key)
-        if not Cycle.objects.filter(pk=cycle_id):
+        cycle = Cycle.objects.filter(pk=cycle_id, organization=org_id).first()
+        if not cycle:
             logging.warning(f"Cycle {cycle_id} does not exist")
             return progress_data.finish_with_error(f"Cycle {cycle_id} does not exist")
 
-        results = {"success": 0, "failure": 0}
+        results = {"success": 0, "failure": 0, "data": []}
         for property in properties:
             formatted_time = time.strftime("%Y%m%d_%H%M%S", time.localtime(time.time()))
-            blob = ContentFile(property["xml"], name=f'at_{property["audit_template_building_id"]}_{formatted_time}.xml')
+            blob = ContentFile(property["xml"], name=f'at_{property["matching_field"]}_{formatted_time}.xml')
             response = self._update_with_building_sync(blob, 1, org_id, cycle_id, property["property_view"], property["updated_at"])
             response = json.loads(response.content)
             results["success" if response["success"] else "failure"] += 1
-
+            try:
+                view = response["data"]["property_view"]
+                view_id = view["id"]
+                custom_id_1 = view["state"]["custom_id_1"]
+                results["data"].append(
+                    {
+                        "custom_id_1": custom_id_1,
+                        "cycle_id": cycle.id,
+                        "cycle_name": cycle.name,
+                        "view_id": view_id,
+                    }
+                )
+            except KeyError:
+                pass
             progress_data.step("Updating Properties...")
 
-        progress_data.finish_with_success(results)
+        if finish:
+            progress_data.finish_with_success(results)
+        else:
+            return results
 
     def _update_with_building_sync(self, the_file, file_type, organization_id, cycle_id, view_id, at_updated=False):
         try:
@@ -1411,6 +1447,8 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
                     organization=cycle.organization,
                     table_name="PropertyState",
                 )
+
+            update_derived_data([new_pv_view.state.id], organization_id)
 
             return JsonResponse(
                 {
@@ -1586,6 +1624,8 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         progress_data.delete()
 
         if merged_state:
+            update_derived_data([property_view.state.id], org_id)
+
             return JsonResponse(
                 {
                     "success": True,
@@ -1731,6 +1771,228 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         doc_file.delete()
         return JsonResponse({"status": "success"})
 
+    @swagger_auto_schema(
+        manual_parameters=[
+            AutoSchemaHelper.query_org_id_field(),
+            AutoSchemaHelper.query_integer_field(
+                name="access_leevl_instance_id", required=True, description="Access Level Instance to move properties to"
+            ),
+        ],
+        request_body=AutoSchemaHelper.schema_factory(
+            {"property_view_ids": ["integer"]},
+            required=["property_view_ids"],
+            description="A list of property view ids to move between alis",
+        ),
+    )
+    @api_endpoint_class
+    @ajax_request_class
+    @action(detail=False, methods=["POST"])
+    @has_perm_class("can_modify_data")
+    @has_hierarchy_access(body_ali_id="access_level_instance_id")
+    def move_properties_to(self, request):
+        """
+        Move properties to a different ali
+        """
+        org_id = self.get_organization(request)
+        ids = request.data.get("property_view_ids", [])
+        ali_id = request.data.get("access_level_instance_id", None)
+
+        if not ali_id:
+            return JsonResponse({"status": "error", "message": "Target ALI not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        # filter ids based on request user's ali
+        ali = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
+        target_ali = AccessLevelInstance.objects.get(pk=ali_id)
+        if not target_ali:
+            return JsonResponse({"status": "error", "message": "Target ALI not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        checked_ids = PropertyView.objects.filter(
+            property__organization_id=org_id,
+            pk__in=ids,
+            property__access_level_instance__lft__gte=ali.lft,
+            property__access_level_instance__rgt__lte=ali.rgt,
+        ).values_list("property_id", flat=True)
+
+        if not checked_ids:
+            # no eligible IDs for this ali
+            return JsonResponse({"status": "error", "message": "ID not found"}, status=status.HTTP_404_NOT_FOUND)
+        if not target_ali:
+            return JsonResponse({"status": "error", "message": "Target ALI not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        Property.objects.filter(pk__in=checked_ids).update(access_level_instance_id=target_ali.pk)
+
+        return JsonResponse(
+            {
+                "success": True,
+                "status": "success",
+                "message": f"{len(checked_ids)} {'properties' if len(checked_ids) > 1 else 'property'} moved",
+            }
+        )
+
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class("requires_member")
+    @action(detail=False, methods=["POST"])
+    def evaluation_export_to_cts(self, request):
+        """
+        Download CTS Comprehensive Evaluation Upload Template
+        which uses the BAE/BuildingSync workflow
+        """
+        org_id = self.get_organization(request)
+        access_level_instance = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
+        property_view_ids = request.data.get("property_view_ids", [])
+
+        state_ids = PropertyView.objects.filter(
+            property__organization_id=org_id,
+            pk__in=property_view_ids,
+            property__access_level_instance__lft__gte=access_level_instance.lft,
+            property__access_level_instance__rgt__lte=access_level_instance.rgt,
+        ).values_list("state_id", flat=True)
+        building_files = (
+            BuildingFile.objects.filter(property_state_id__in=state_ids)
+            .order_by("-property_state")
+            .distinct("property_state")
+            .values_list("file", flat=True)
+        )
+
+        filename = request.data.get("filename", "ExportedData.xlsx")
+        response = HttpResponse(content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+        response["Content-Disposition"] = f'attachment; filename="{filename}"'
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            # Since `building_sync_to_cts` takes a filename and not a file object we can't create the temp file inside a `with` context
+            # This is because of how Windows handles file locking
+            output_file = tempfile.NamedTemporaryFile(delete=False)
+            output_filename = Path(output_file.name)
+            # Close the temp file to release the lock
+            output_file.close()
+
+            bsync_files = []
+            for i, f in enumerate(building_files):
+                new_file = f"{tmpdir}/{i}.xml"
+                shutil.copyfile(f"{settings.MEDIA_ROOT}/{f}", new_file)
+                bsync_files.append(Path(new_file))
+
+            building_sync_to_cts(bsync_files, output_filename)
+            with open(output_filename, "rb") as file:
+                xlsx_data = file.read()
+            response.write(xlsx_data)
+
+            # Explicitly delete the temp file
+            os.remove(output_filename)
+
+        return response
+
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class("requires_member")
+    @action(detail=False, methods=["POST"])
+    def facility_bps_export_to_cts(self, request):
+        """
+        Download the CTS Facility Upload Template for Federal BPS
+        which uses the SEED-based workflow (not buildingsync)
+        """
+        # import blank template
+        BLANK_CTS_FILE_PATH = Path(__file__).parents[2] / "utils" / "CTS Facility Upload Template.xlsx"
+        output_df = pd.read_excel(BLANK_CTS_FILE_PATH, sheet_name="Facility Upload Template")
+        old_columns = output_df.columns
+        output_df.columns = output_df.loc[0]
+
+        # get relevant property views by view id
+        org_id = self.get_organization(request)
+        access_level_instance = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
+        model_views = PropertyView.objects.filter(
+            id__in=request.data.get("property_view_ids", []),
+            property__organization_id=org_id,
+            property__access_level_instance__lft__gte=access_level_instance.lft,
+            property__access_level_instance__rgt__lte=access_level_instance.rgt,
+        ).select_related("state")
+        model_views = model_views.annotate(
+            has_electric_meters=Exists(Meter.objects.filter(type=Meter.ELECTRICITY, property=OuterRef("property"))),
+            has_water_meters=Exists(
+                Meter.objects.filter(
+                    type__in=[Meter.POTABLE_INDOOR, Meter.POTABLE_OUTDOOR, Meter.POTABLE_MIXED], property=OuterRef("property")
+                )
+            ),
+            installation=F("property__access_level_instance__path__Installation"),
+        )
+
+        # fill each row
+        views_by_installation_code = defaultdict(list)
+        for v in model_views:
+            installation_code = v.state.extra_data.get("Installation Code")
+            views_by_installation_code[installation_code].append(v)
+
+        for i, views in enumerate(views_by_installation_code.values()):
+            output_df.loc[3 + i] = _row_from_views(list(views))
+
+        # write back out
+        output_df.columns = old_columns
+        sf = StyleFrame.read_excel_as_template(BLANK_CTS_FILE_PATH, df=output_df, sheet_name="Facility Upload Template")
+
+        # build response
+        response = HttpResponse(content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+        response["Content-Disposition"] = 'attachment; filename="output.xlsx"'
+        output = io.BytesIO()
+        writer = sf.to_excel(pd.ExcelWriter(output, engine="openpyxl"), row_to_add_filters=1)
+        writer.close()
+        xlsx_data = output.getvalue()
+        response.write(xlsx_data)
+
+        return response
+
+
+def _row_from_views(views):
+    data = pd.Series()
+
+    def mode(field, extra_data=False):
+        if not extra_data:
+            m = pd.Series([getattr(v.state, field) for v in views]).mode()
+        else:
+            m = pd.Series([v.state.extra_data.get(field) for v in views]).mode()
+
+        return None if len(m) < 1 else m[0]
+
+    # Facility Status
+    data["Facility Status"] = mode("Covered Building (75% Energy Usage)", extra_data=True)
+    # Sub-agency Acronym
+    data["Sub-agency Acronym"] = mode("Sub-agency Acronym", extra_data=True)
+    # Agency Designated Covered Facility ID
+    data["Agency Designated Covered Facility ID"] = mode("Installation Code", extra_data=True)
+    # Government Owned Facility
+    data["Government Owned Facility"] = mode("Government Owned", extra_data=True)
+    # Energy Management System Status
+    energy_status_string = mode("Energy Management System at Building's Installation", extra_data=True)
+    data["Energy Management System Status"] = {
+        "Energy Management System Not in Place": 0,
+        "Energy Management System in Place": 1,
+        "50001Ready": 2,
+        "ISO 50001 Certified": 3,
+    }.get(energy_status_string, 0)
+    # Facility Name
+    installation_mode = pd.Series([v.installation for v in views]).mode()
+    data["Facility Name"] = None if len(installation_mode) < 1 else installation_mode[0]
+    # City
+    data["City"] = mode("Installation City", extra_data=True)
+    # State
+    data["State"] = mode("Installation State", extra_data=True)
+    # Zip Code
+    data["Zip Code"] = mode("Installation Postal Code", extra_data=True)
+    # Fiscal Year
+    data["Fiscal Year"] = next(iter(views)).cycle.end.year
+    # Gross Square Footage
+    data["Gross Square Footage"] = sum([v.state.gross_floor_area.magnitude for v in views if v.state.gross_floor_area is not None]) / 1000
+    # Number of Buildings Metered for Electricity
+    data["Number of Buildings Metered for Electricity"] = sum([v.has_electric_meters for v in views])
+    # Number of Buildings Metered for Water
+    data["Number of Buildings Metered for Water"] = sum([v.has_water_meters for v in views])
+    # Annual Facility Energy Use
+    data["Annual Facility Energy Use"] = sum([v.state.extra_data.get("Total of Modeled/MDMS Total Energy Usage", 0) for v in views])
+    # Annual Facility Water Use
+    data["Annual Facility Energy Use"] = sum([v.state.extra_data.get("Sum of Modeled/MDMS Total Water Usage", 0) for v in views])
+
+    return pd.Series(data)
+
 
 def diffupdate(old, new):
     """Returns lists of fields changed"""
@@ -1743,3 +2005,10 @@ def diffupdate(old, new):
         changed_fields.remove("extra_data")
         changed_extra_data, _ = diffupdate(old["extra_data"], new["extra_data"])
     return changed_fields, changed_extra_data
+
+
+def update_derived_data(state_ids, org_id):
+    derived_columns = DerivedColumn.objects.filter(organization_id=org_id)
+    Column.objects.filter(derived_column__in=derived_columns).update(is_updating=True)
+    derived_column_ids = list(derived_columns.values_list("id", flat=True))
+    update_state_derived_data(property_state_ids=state_ids, derived_column_ids=derived_column_ids)

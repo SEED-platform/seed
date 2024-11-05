@@ -1,4 +1,3 @@
-# !/usr/bin/env python
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
@@ -72,12 +71,15 @@ class StateFieldsTest(TestCase):
             ("geocoding_confidence", "geocoding_confidence"),
             ("gross_floor_area", "gross_floor_area"),
             ("home_energy_score_id", "home_energy_score_id"),
+            ("indoor_water_use", "indoor_water_use"),
+            ("indoor_wui", "indoor_wui"),
             ("jurisdiction_property_id", "jurisdiction_property_id"),
             ("latitude", "latitude"),
             ("long_lat", "long_lat"),
             ("longitude", "longitude"),
             ("lot_number", "lot_number"),
             ("occupied_floor_area", "occupied_floor_area"),
+            ("outdoor_water_use", "outdoor_water_use"),
             ("owner", "owner"),
             ("owner_address", "owner_address"),
             ("owner_city_state", "owner_city_state"),
@@ -108,6 +110,8 @@ class StateFieldsTest(TestCase):
             ("total_marginal_ghg_emissions_intensity", "total_marginal_ghg_emissions_intensity"),
             ("ubid", "ubid"),
             ("use_description", "use_description"),
+            ("water_use", "water_use"),
+            ("wui", "wui"),
             ("year_built", "year_built"),
             ("year_ending", "year_ending"),
         )

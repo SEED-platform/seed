@@ -1,11 +1,10 @@
-# !/usr/bin/env python
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
 from django.conf import settings
-from django.contrib.auth.views import PasswordChangeDoneView, PasswordChangeView, logout_then_login
+from django.contrib.auth.views import LogoutView, PasswordChangeDoneView, PasswordChangeView
 from django.urls import re_path
 
 from seed.landing.views import (
@@ -22,7 +21,7 @@ from seed.landing.views import (
 urlpatterns = [
     re_path(r"^$", landing_page, name="landing_page"),
     re_path(r"^accounts/login/$", landing_page, name="login"),
-    re_path(r"^accounts/logout/$", logout_then_login, name="logout"),
+    re_path(r"^accounts/logout/$", LogoutView.as_view(next_page="/"), name="logout"),
     re_path(r"^accounts/password/reset/$", password_reset, name="password_reset"),
     re_path(r"^accounts/password/reset/done/$", password_reset_done, name="password_reset_done"),
     re_path(
@@ -30,7 +29,7 @@ urlpatterns = [
         password_reset_complete,
         name="password_reset_complete",
     ),
-    re_path((r"^accounts/setup/(?P<uidb64>[0-9A-Za-z_\-]+)/" "(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,32})/$"), signup, name="signup"),
+    re_path(r"^accounts/setup/(?P<uidb64>[0-9A-Za-z_\-]+)/" "(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,32})/$", signup, name="signup"),
     re_path(
         r"^password_change/$", PasswordChangeView.as_view(), {"template_name": "landing/password_change_form.html"}, name="password_change"
     ),

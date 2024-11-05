@@ -1,4 +1,3 @@
-# !/usr/bin/env python
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
@@ -11,7 +10,6 @@ import re
 from datetime import date, datetime
 
 from django.apps import apps
-from past.builtins import basestring
 
 from seed.lib.mappings.mapping_columns import MappingColumns
 
@@ -197,10 +195,10 @@ def expand_and_normalize_field(field, return_list=False):
 
     :param field: str, value to parse
 
-    :return: list of individual values after after delimiting
+    :return: list of individual values after delimiting
     """
 
-    if isinstance(field, basestring):
+    if isinstance(field, str):
         field = field.rstrip(";:,")
         data = [_normalize_expanded_field(r) for r in re.split(",|;|:", field)]
         if return_list:

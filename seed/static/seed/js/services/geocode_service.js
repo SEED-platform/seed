@@ -2,7 +2,7 @@
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
  * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
-angular.module('BE.seed.service.geocode', []).factory('geocode_service', [
+angular.module('SEED.service.geocode', []).factory('geocode_service', [
   '$http',
   'user_service',
   ($http, user_service) => {

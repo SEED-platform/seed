@@ -2,7 +2,7 @@
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
  * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
-angular.module('BE.seed.controller.menu', []).controller('menu_controller', [
+angular.module('SEED.controller.menu', []).controller('menu_controller', [
   '$rootScope',
   '$scope',
   '$location',
@@ -43,7 +43,7 @@ angular.module('BE.seed.controller.menu', []).controller('menu_controller', [
     $scope.collapsed_controller = false;
     $scope.narrow_controller = false;
     $scope.wide_controller = false;
-    $scope.username = window.BE.username;
+    $scope.username = window.SEED.username;
     $scope.logged_in = $scope.username.length > 0;
     $scope.urls = urls;
     $scope.datasets_count = 0;
@@ -210,9 +210,10 @@ angular.module('BE.seed.controller.menu', []).controller('menu_controller', [
       $scope.show_org_id = false;
     };
     $scope.track_mouse = (e) => {
-      const xpos = `${e.view.window.innerWidth - e.clientX - 105}px`;
-      const ypos = `${e.clientY - 25}px`;
-      $scope.hover_style = `right: ${xpos}; top: ${ypos};`;
+      $scope.hover_style = {
+        right: `${e.view.window.innerWidth - e.clientX - 105}px`,
+        top: `${e.clientY - 25}px`
+      };
     };
 
     // DMcQ: Set up watch statements to keep nav updated with latest datasets_count, etc.

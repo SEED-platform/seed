@@ -2,7 +2,7 @@
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
  * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
-angular.module('BE.seed.controller.portfolio_summary', [])
+angular.module('SEED.controller.portfolio_summary', [])
   .controller('portfolio_summary_controller', [
     '$scope',
     '$state',
@@ -11,9 +11,11 @@ angular.module('BE.seed.controller.portfolio_summary', [])
     '$window',
     'urls',
     'ah_service',
+    'data_quality_service',
     'inventory_service',
     'label_service',
     'goal_service',
+    'Notification',
     'cycles',
     'organization_payload',
     'access_level_tree',
@@ -31,9 +33,11 @@ angular.module('BE.seed.controller.portfolio_summary', [])
       $window,
       urls,
       ah_service,
+      data_quality_service,
       inventory_service,
       label_service,
       goal_service,
+      Notification,
       cycles,
       organization_payload,
       access_level_tree,
@@ -44,8 +48,8 @@ angular.module('BE.seed.controller.portfolio_summary', [])
       spinner_utility
     ) {
       $scope.organization = organization_payload.organization;
-      const viewer = $scope.menu.user.organization.user_role === 'viewer';
-      $scope.write_permission = ($scope.menu.user.is_ali_root || !$scope.menu.user.is_ali_leaf) && !viewer;
+      $scope.viewer = $scope.menu.user.organization.user_role === 'viewer';
+      $scope.write_permission = ($scope.menu.user.is_ali_root || !$scope.menu.user.is_ali_leaf) && !$scope.viewer;
       // Ii there a better way to convert string units to displayUnits?
       const area_units = $scope.organization.display_units_area.replace('**2', '²');
       const eui_units = $scope.organization.display_units_eui.replace('**2', '²');
@@ -59,6 +63,8 @@ angular.module('BE.seed.controller.portfolio_summary', [])
       $scope.eui_columns = [];
       const matching_column_names = [];
       const table_column_ids = [];
+      $scope.selected_count = 0;
+      $scope.selected_option = 'none';
 
       const initialize_columns = () => {
         $scope.columns.forEach((col) => {
@@ -94,7 +100,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
       const reset_data = () => {
         $scope.valid = true;
         format_goal_details();
-        $scope.refresh_data();
+        refresh_data();
       };
 
       // If goal changes, reset grid filters and repopulate ui-grids
@@ -117,20 +123,47 @@ angular.module('BE.seed.controller.portfolio_summary', [])
         const level_name = $scope.level_names[$scope.goal.level_name_index];
         const access_level_instance = $scope.potential_level_instances.find((level) => level.id === $scope.goal.access_level_instance).name;
 
+        const commitment_sqft = $scope.goal.commitment_sqft ? $scope.goal.commitment_sqft.toLocaleString() : 'n/a';
         $scope.goal_details = [
-          ['Baseline Cycle', get_cycle_name($scope.goal.baseline_cycle)],
-          ['Current Cycle', get_cycle_name($scope.goal.current_cycle)],
-          [level_name, access_level_instance],
-          ['Portfolio Target', `${$scope.goal.target_percentage} %`],
-          ['Area Column', get_column_name($scope.goal.area_column)],
-          ['Primary EUI', get_column_name($scope.goal.eui_column1)]
+          { // column 1
+            'Baseline Cycle': get_cycle_name($scope.goal.baseline_cycle),
+            'Current Cycle': get_cycle_name($scope.goal.current_cycle),
+            [level_name]: access_level_instance,
+            'Total Properties': null,
+            'Commitment Sq. Ft': commitment_sqft
+          },
+          { // column 2
+            'Portfolio Target': `${$scope.goal.target_percentage} %`,
+            'Area Column': get_column_name($scope.goal.area_column),
+            'Primary EUI': get_column_name($scope.goal.eui_column1)
+          }
         ];
         if ($scope.goal.eui_column2) {
-          $scope.goal_details.push(['Secondary EUI', get_column_name($scope.goal.eui_column2)]);
+          $scope.goal_details[1]['Secondary EUI'] = get_column_name($scope.goal.eui_column2);
         }
         if ($scope.goal.eui_column3) {
-          $scope.goal_details.push(['Tertiary EUI', get_column_name($scope.goal.eui_column3)]);
+          $scope.goal_details[1]['Tertiary EUI'] = get_column_name($scope.goal.eui_column3);
         }
+      };
+
+      $scope.toggle_help = (bool) => {
+        $scope.show_help = bool;
+        _.delay($scope.updateHeight, 150);
+      };
+
+      const get_goal_stats = (summary) => {
+        const passing_sqft = summary.current ? summary.current.total_sqft : null;
+        // show help text if less than {50}% of properties are passing checks
+        $scope.show_help = summary.total_passing <= summary.total_properties * 0.5;
+        $scope.goal_stats = [
+          { name: 'Commitment (Sq. Ft)', value: $scope.goal.commitment_sqft },
+          { name: 'Shared (Sq. Ft)', value: summary.shared_sqft },
+          { name: 'Passing Checks (Sq. Ft)', value: passing_sqft },
+          { name: 'Passing Checks (% of committed)', value: summary.passing_committed },
+          { name: 'Passing Checks (% of shared)', value: summary.passing_shared },
+          { name: 'Total Passing Checks', value: summary.total_passing },
+          { name: 'Total New or Acquired', value: summary.total_new_or_acquired }
+        ];
       };
 
       // from inventory_list_controller
@@ -171,13 +204,13 @@ angular.module('BE.seed.controller.portfolio_summary', [])
         });
       };
 
-      $scope.refresh_data = () => {
-        $scope.summary_loading = true;
+      const refresh_data = () => {
         load_summary();
-        $scope.load_inventory(1);
+        load_inventory(1);
       };
 
       const load_summary = () => {
+        $scope.summary_loading = true;
         $scope.show_access_level_instances = true;
         $scope.summary_valid = false;
 
@@ -192,9 +225,9 @@ angular.module('BE.seed.controller.portfolio_summary', [])
 
       $scope.page_change = (page) => {
         spinner_utility.show();
-        $scope.load_inventory(page);
+        load_inventory(page);
       };
-      $scope.load_inventory = (page) => {
+      const load_inventory = (page) => {
         $scope.data_loading = true;
 
         const access_level_instance_id = $scope.goal.access_level_instance;
@@ -205,13 +238,13 @@ angular.module('BE.seed.controller.portfolio_summary', [])
         // order of cycle property filter is dynamic based on column_sorts
         const cycle_priority = baseline_first ? [baseline_cycle, current_cycle] : [current_cycle, baseline_cycle];
 
-        get_paginated_properties(page, per_page, cycle_priority[0], access_level_instance_id, true, null, $scope.goal.id).then((result0) => {
+        get_paginated_properties(page, per_page, cycle_priority[0], access_level_instance_id, true, null).then((result0) => {
           $scope.inventory_pagination = result0.pagination;
           let properties = result0.results;
           combined_result[cycle_priority[0].id] = properties;
           const property_ids = properties.map((p) => p.id);
 
-          get_paginated_properties(page, per_page, cycle_priority[1], access_level_instance_id, false, property_ids, $scope.goal.id).then((result1) => {
+          get_paginated_properties(page, per_page, cycle_priority[1], access_level_instance_id, false, property_ids).then((result1) => {
             properties = result1.results;
             // if result0 returns fewer properties than result1, use result1 for ui-grid config
             if (result1.pagination.num_pages > $scope.inventory_pagination.num_pages) {
@@ -228,7 +261,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
         });
       };
 
-      const get_paginated_properties = (page, chunk, cycle, access_level_instance_id, include_filters_sorts, include_property_ids = null, goal_id = null) => {
+      const get_paginated_properties = (page, chunk, cycle, access_level_instance_id, include_filters_sorts, include_property_ids = null) => {
         const fn = inventory_service.get_properties;
         const [filters, sorts] = include_filters_sorts ? [$scope.column_filters, $scope.column_sorts] : [[], []];
 
@@ -248,7 +281,8 @@ angular.module('BE.seed.controller.portfolio_summary', [])
           table_column_ids.join(),
           access_level_instance_id,
           include_property_ids,
-          goal_id // optional param to retrieve goal note details
+          $scope.goal.id, // optional param to retrieve goal note details
+          $scope.related_model_sort // optional param to sort on related models
         );
       };
 
@@ -262,11 +296,11 @@ angular.module('BE.seed.controller.portfolio_summary', [])
 
       $scope.max_label_width = 750;
       $scope.get_label_column_width = (labels_col, key) => {
-        if (!$scope.show_full_labels[key]) {
+        const renderContainer = document.body.getElementsByClassName('ui-grid-render-container-body')[1];
+        if (!$scope.show_full_labels[key] || !renderContainer) {
           return 31;
         }
         let maxWidth = 0;
-        const renderContainer = document.body.getElementsByClassName('ui-grid-render-container-body')[1];
         const col = $scope.gridApi.grid.getColumn(labels_col);
         const cells = renderContainer.querySelectorAll(`.${uiGridConstants.COL_CLASS_PREFIX}${col.uid} .ui-grid-cell-contents`);
         Array.prototype.forEach.call(cells, (cell) => {
@@ -296,17 +330,9 @@ angular.module('BE.seed.controller.portfolio_summary', [])
         }, 0);
       };
 
-      // retrieve labels for cycle
+      // retrieve labels, key = 'baseline' or 'current'
       const get_labels = (key) => {
-        const cycle = key === 'baseline' ? $scope.goal.baseline_cycle : $scope.goal.current_cycle;
-
-        label_service.get_labels('properties', undefined, cycle).then((current_labels) => {
-          const labels = _.filter(current_labels, (label) => !_.isEmpty(label.is_applied));
-
-          // load saved label filter
-          // const ids = inventory_service.loadSelectedLabels('grid.properties.labels');
-          // $scope.selected_labels = _.filter(labels, (label) => _.includes(ids, label.id));
-
+        label_service.get_property_view_labels_by_goal($scope.organization.id, $scope.goal.id, key).then((labels) => {
           if (key === 'baseline') {
             $scope.baseline_labels = labels;
             $scope.build_labels(key, $scope.baseline_labels);
@@ -316,6 +342,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
           }
         });
       };
+
       const get_all_labels = () => {
         get_labels('baseline');
         get_labels('current');
@@ -327,16 +354,11 @@ angular.module('BE.seed.controller.portfolio_summary', [])
         $scope.show_labels_by_inventory_id[key] = {};
         for (const n in labels) {
           const label = labels[n];
-          if (label.show_in_list) {
-            for (const m in label.is_applied) {
-              const id = label.is_applied[m];
-              const property_id = $scope.property_lookup[id];
-              if (!$scope.show_labels_by_inventory_id[key][property_id]) {
-                $scope.show_labels_by_inventory_id[key][property_id] = [];
-              }
-              $scope.show_labels_by_inventory_id[key][property_id].push(label);
-            }
+          const property_id = $scope.property_lookup[label.propertyview];
+          if (!$scope.show_labels_by_inventory_id[key][property_id]) {
+            $scope.show_labels_by_inventory_id[key][property_id] = [];
           }
+          $scope.show_labels_by_inventory_id[key][property_id].push(label);
         }
       };
 
@@ -437,6 +459,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
           if (current) {
             property.current_cycle = current_cycle_name;
             property.current_sqft = current[area.name];
+            property.current_view_id = current.property_view_id;
           }
           // comparison stats
           property.sqft_change = percentage(property.current_sqft, property.baseline_sqft);
@@ -486,6 +509,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
         const default_baseline = { headerCellClass: 'portfolio-summary-baseline-header', cellClass: 'portfolio-summary-baseline-cell' };
         const default_current = { headerCellClass: 'portfolio-summary-current-header', cellClass: 'portfolio-summary-current-cell' };
         const default_styles = { headerCellFilter: 'translate', minWidth: 75, width: 150 };
+        const default_no_edit = { enableCellEdit: false };
 
         const baseline_cols = [
           { field: 'baseline_cycle', displayName: 'Cycle' },
@@ -530,7 +554,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
             field: 'goal_note.question',
             displayName: 'Question',
             enableFiltering: false,
-            enableSorting: false,
+            enableSorting: true,
             editableCellTemplate: 'ui-grid/dropdownEditor',
             editDropdownOptionsArray: $scope.question_options,
             editDropdownIdLabel: 'value',
@@ -551,25 +575,25 @@ angular.module('BE.seed.controller.portfolio_summary', [])
             field: 'goal_note.resolution',
             displayName: 'Resolution',
             enableFiltering: false,
-            enableSorting: false,
-            enableCellEdit: !viewer,
-            cellClass: !viewer && 'cell-edit',
+            enableSorting: true,
+            enableCellEdit: !$scope.viewer,
+            cellClass: !$scope.viewer && 'cell-edit',
             width: 300
           },
           {
             field: 'historical_note.text',
             displayName: 'Historical Notes',
             enableFiltering: false,
-            enableSorting: false,
-            enableCellEdit: !viewer,
-            cellClass: !viewer && 'cell-edit',
+            enableSorting: true,
+            enableCellEdit: !$scope.viewer,
+            cellClass: !$scope.viewer && 'cell-edit',
             width: 300
           },
           {
             field: 'goal_note.passed_checks',
             displayName: 'Passed Checks',
             enableFiltering: false,
-            enableSorting: false,
+            enableSorting: true,
             editableCellTemplate: 'ui-grid/dropdownEditor',
             editDropdownOptionsArray: [{ id: 1, value: true }, { id: 2, value: false }],
             editDropdownIdLabel: 'value',
@@ -588,7 +612,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
             field: 'goal_note.new_or_acquired',
             displayName: 'New Build or Acquired',
             enableFiltering: false,
-            enableSorting: false,
+            enableSorting: true,
             editableCellTemplate: 'ui-grid/dropdownEditor',
             editDropdownOptionsArray: [{ id: 1, value: true }, { id: 2, value: false }],
             editDropdownIdLabel: 'value',
@@ -596,7 +620,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
             cellClass: () => $scope.write_permission && 'cell-edit',
             // if user has write permission show a dropdown indicator
             cellTemplate: `
-              <div class='ui-grid-cell-contents' ng-class="row.entity.goal_note.new_or_acquired && 'cell-pass'">
+              <div class='ui-grid-cell-contents' ng-class="row.entity.goal_note.new_or_acquired && 'cell-fail'">
                 <span ng-class="grid.appScope.write_permission && 'cell-dropdown-indicator'">{{row.entity.goal_note.new_or_acquired}}
                   <i ng-if='grid.appScope.write_permission' class='fa-solid fa-chevron-down' ></i>
                 </span>
@@ -608,7 +632,9 @@ angular.module('BE.seed.controller.portfolio_summary', [])
 
         apply_defaults(baseline_cols, default_baseline);
         apply_defaults(current_cols, default_current);
-        cols = [...cols, ...baseline_cols, ...current_cols, ...summary_cols, ...goal_note_cols];
+        cols = [...cols, ...baseline_cols, ...current_cols, ...summary_cols];
+        apply_defaults(cols, default_no_edit);
+        cols = [...cols, ...goal_note_cols];
 
         // Apply filters
         // from inventory_list_controller
@@ -686,7 +712,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
         $scope.gridApi.grid.refresh();
       };
 
-      $scope.toggle_access_level_instances = () => {
+      $scope.toggle_show_access_level_instances = () => {
         $scope.show_access_level_instances = !$scope.show_access_level_instances;
         $scope.gridOptions.columnDefs.forEach((col) => {
           if (col.group === 'access_level_instance') {
@@ -766,7 +792,8 @@ angular.module('BE.seed.controller.portfolio_summary', [])
         // parse the filters and sorts
         for (const column of formatted_columns) {
           // format column if cycle specific
-          const { name, filters, sort } = column;
+          let { name } = column;
+          const { filters, sort } = column;
           // remove the column id at the end of the name
           const column_name = name.split('_').slice(0, -1).join('_');
 
@@ -793,9 +820,17 @@ angular.module('BE.seed.controller.portfolio_summary', [])
             }
           }
 
+          $scope.related_model_sort = false;
           if (sort.direction) {
             // remove the column id at the end of the name
-            const column_name = name.split('_').slice(0, -1).join('_');
+            let column_name;
+            $scope.related_model_sort = ['historical_note.', 'goal_note.'].some((value) => name.includes(value));
+            if ($scope.related_model_sort) {
+              name = `property__${name.replace('.', '__')}`;
+              column_name = name;
+            } else {
+              column_name = name.split('_').slice(0, -1).join('_');
+            }
             const display = [$scope.columnDisplayByName[name], sort.direction].join(' ');
             $scope.column_sorts = [{
               name,
@@ -871,6 +906,8 @@ angular.module('BE.seed.controller.portfolio_summary', [])
       };
 
       const set_grid_options = (result) => {
+        $scope.show_full_labels = { baseline: false, current: false };
+        $scope.selected_ids = [];
         $scope.data = format_properties(result);
         spinner_utility.hide();
         $scope.gridOptions = {
@@ -903,15 +940,22 @@ angular.module('BE.seed.controller.portfolio_summary', [])
               spinner_utility.show();
               _.debounce(() => {
                 updateColumnFilterSort();
-                $scope.load_inventory(1);
+                load_inventory(1);
               }, 500)();
             });
 
             gridApi.core.on.filterChanged($scope, _.debounce(() => {
               spinner_utility.show();
               updateColumnFilterSort();
-              $scope.load_inventory(1);
+              load_inventory(1);
             }, 2000));
+
+            const selectionChanged = () => {
+              $scope.selected_ids = gridApi.selection.getSelectedRows().map((row) => row.current_view_id);
+              $scope.selected_count = $scope.selected_ids.length;
+            };
+            gridApi.selection.on.rowSelectionChanged($scope, selectionChanged);
+            gridApi.selection.on.rowSelectionChangedBatch($scope, selectionChanged);
 
             gridApi.edit.on.afterCellEdit($scope, (rowEntity, colDef, newValue) => {
               const [model, field] = colDef.field.split('.');
@@ -920,6 +964,10 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                 goal_service.update_historical_note(rowEntity.id, rowEntity.historical_note.id, { [field]: newValue });
               } else if (model === 'goal_note') {
                 goal_service.update_goal_note(rowEntity.id, rowEntity.goal_note.id, { [field]: newValue });
+              }
+              if (['passed_checks', 'new_or_acquired'].includes(field)) {
+                // load_stats
+                load_summary();
               }
             });
           }
@@ -937,6 +985,72 @@ angular.module('BE.seed.controller.portfolio_summary', [])
       $scope.reset_filters = () => {
         $scope.column_filters = [];
         $scope.gridApi.grid.clearAllFilters();
+      };
+
+      $scope.select_all = () => {
+        // select all rows to visibly support everything has been selected
+        $scope.gridApi.selection.selectAllRows();
+        $scope.selected_count = $scope.inventory_pagination.total;
+        goal_service.get_goal($scope.goal.id).then((response) => {
+          const goal = response.data.goal;
+          if (goal) {
+            $scope.selected_ids = goal.current_cycle_property_view_ids;
+          }
+        });
+      };
+
+      $scope.select_none = () => {
+        $scope.gridApi.selection.clearSelectedRows();
+        $scope.selected_count = 0;
+      };
+
+      /**
+      Opens the update building labels modal.
+      All further actions for labels happen with that modal and its related controller,
+      including creating a new label or applying to/removing from a building.
+      When the modal is closed, and refresh labels.
+      */
+      $scope.open_update_labels_modal = () => {
+        const modalInstance = $uibModal.open({
+          templateUrl: `${urls.static_url}seed/partials/update_item_labels_modal.html`,
+          controller: 'update_item_labels_modal_controller',
+          resolve: {
+            inventory_ids: () => $scope.selected_ids,
+            inventory_type: () => 'properties',
+            is_ali_root: () => $scope.menu.user.is_ali_root
+          }
+        });
+        modalInstance.result.then(() => {
+          // dialog was closed with 'Done' button.
+          $scope.selected_option = 'none';
+          $scope.selected_count = 0;
+          $scope.gridApi.selection.clearSelectedRows();
+          load_inventory();
+        });
+      };
+
+      /**
+       Opens a modal to batch edit goal notes
+       */
+      $scope.open_bulk_edit_goalnotes_modal = () => {
+        const modalInstance = $uibModal.open({
+          templateUrl: `${urls.static_url}seed/partials/bulk_edit_goalnotes_modal.html`,
+          controller: 'bulk_edit_goalnotes_modal_controller',
+          resolve: {
+            property_view_ids: () => $scope.selected_ids,
+            goal: () => $scope.goal,
+            question_options: () => $scope.question_options,
+            write_permission: () => $scope.write_permission
+          }
+        });
+        modalInstance.result.then(() => {
+          // dialog was closed with 'Done' button.
+          $scope.selected_option = 'none';
+          $scope.selected_count = 0;
+          $scope.gridApi.selection.clearSelectedRows();
+          load_summary();
+          load_inventory();
+        });
       };
 
       // -------- SUMMARY LOGIC ------------
@@ -977,6 +1091,8 @@ angular.module('BE.seed.controller.portfolio_summary', [])
       };
 
       const format_summary = (summary) => {
+        $scope.goal_details[0]['Total Properties'] = summary.total_properties.toLocaleString();
+        get_goal_stats(summary);
         const baseline = summary.baseline;
         const current = summary.current;
         return [{
@@ -1006,5 +1122,37 @@ angular.module('BE.seed.controller.portfolio_summary', [])
             $scope.summaryGridApi = gridApi;
           }
         };
+      };
+
+      $scope.run_data_quality_check = () => {
+        spinner_utility.show();
+        data_quality_service.start_data_quality_checks([], [], $scope.goal.id)
+          .then((response) => {
+            data_quality_service.data_quality_checks_status(response.progress_key)
+              .then((result) => {
+                data_quality_service.get_data_quality_results($scope.organization.id, result.unique_id)
+                  .then((dq_result) => {
+                    $uibModal.open({
+                      templateUrl: `${urls.static_url}seed/partials/data_quality_modal.html`,
+                      controller: 'data_quality_modal_controller',
+                      size: 'lg',
+                      resolve: {
+                        dataQualityResults: () => dq_result,
+                        name: () => null,
+                        uploaded: () => null,
+                        run_id: () => result.unique_id,
+                        orgId: () => $scope.organization.id
+                      }
+                    });
+                    spinner_utility.hide();
+                    load_summary();
+                    load_inventory();
+                  });
+              });
+          })
+          .catch(() => {
+            spinner_utility.hide();
+            Notification.erorr('Unexpected Error');
+          });
       };
     }]);

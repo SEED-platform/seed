@@ -8,14 +8,13 @@ describe('controller: inventory_detail_controller', () => {
   // globals set up and used in each test scenario
   let controller;
   let inventory_detail_controller_scope;
-  let mock_building_service; let
-    mock_building;
+  let mock_building_service;
+  let mock_building;
 
   beforeEach(() => {
-    module('BE.seed');
+    module('SEED');
     inject((_$httpBackend_) => {
-      $httpBackend = _$httpBackend_;
-      $httpBackend.whenGET(/^\/static\/seed\/locales\/.*\.json/).respond(200, {});
+      _$httpBackend_.whenGET(/^\/static\/seed\/locales\/.*\.json/).respond(200, {});
     });
     inject(($controller, $rootScope, $uibModal, urls, $q, inventory_service) => {
       controller = $controller;
@@ -193,9 +192,9 @@ describe('controller: inventory_detail_controller', () => {
       analyses_payload: {
         analyses: []
       },
-      users_payload: {
-        users: []
-      },
+      elements_payload: [],
+      tkbl_payload: [],
+      uniformat_payload: {},
       views_payload: {
         status: 'success',
         property_views: []

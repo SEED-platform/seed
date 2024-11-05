@@ -2,7 +2,7 @@
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
  * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
-angular.module('BE.seed.controller.ubid_editor_modal', []).controller('ubid_editor_modal_controller', [
+angular.module('SEED.controller.ubid_editor_modal', []).controller('ubid_editor_modal_controller', [
   '$scope',
   '$uibModalInstance',
   'ubid',
@@ -64,7 +64,7 @@ angular.module('BE.seed.controller.ubid_editor_modal', []).controller('ubid_edit
         preferred_ubids.forEach((ubid) => {
           ubid.preferred = false;
         });
-        ubidsToUpdate = [...ubidsToUpdate, ...preferred_ubids];
+        ubidsToUpdate = [...preferred_ubids, ...ubidsToUpdate];
       }
 
       const promises = ubidsToUpdate.map((ubid) => ubid_service.update_ubid(ubid));

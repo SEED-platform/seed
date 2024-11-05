@@ -2,7 +2,7 @@
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
  * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
-angular.module('BE.seed.controller.goal_editor_modal', [])
+angular.module('SEED.controller.goal_editor_modal', [])
   .controller('goal_editor_modal_controller', [
     '$scope',
     '$state',
@@ -104,7 +104,11 @@ angular.module('BE.seed.controller.goal_editor_modal', [])
               $scope.errors = $scope.errors.push(result_errors);
             }
           }
-        });
+        })
+          .catch((response) => {
+            const message = response.data.message || 'Unexpected Error';
+            Notification.error(message);
+          });
       };
 
       $scope.delete_goal = (goal_id) => {

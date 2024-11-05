@@ -3,7 +3,7 @@
  * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
 
-angular.module('BE.seed.controller.analysis_details', []).controller('analysis_details_controller', [
+angular.module('SEED.controller.analysis_details', []).controller('analysis_details_controller', [
   '$scope',
   '$state',
   'analyses_service',
@@ -22,7 +22,7 @@ angular.module('BE.seed.controller.analysis_details', []).controller('analysis_d
     });
 
     // update analysis in scope
-    const refresh_analysis = (analysis_id) => analyses_service.get_analysis_for_org(analysis_id, $scope.org.id).then((data) => {
+    const refresh_analysis = (analysis_id) => analyses_service.get_analysis_for_org(analysis_id, $scope.organization.id).then((data) => {
       $scope.analysis = data.analysis;
       return data.analysis;
     });

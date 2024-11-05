@@ -2,32 +2,14 @@
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
  * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
-// taken from the angularjs testing page
-// http://docs.angularjs.org/guide/dev_guide.unit-testing
-
-// create dummy angularJS app to attach filter(s)
-const mySDLabelDirectiveApp = angular.module(
-  'mySDLabelDirectiveApp',
-  ['sdLabel'],
-  [
-    '$interpolateProvider',
-    '$qProvider',
-    function ($interpolateProvider, $qProvider) {
-      $interpolateProvider.startSymbol('{$');
-      $interpolateProvider.endSymbol('$}');
-      $qProvider.errorOnUnhandledRejections(false);
-    }
-  ]
-);
-
 describe('The sdLabel directive', () => {
   let $compile;
   let $rootScope;
   beforeEach(() => {
-    module('mySDLabelDirectiveApp');
-    inject((_$compile_, _$rootScope_) => {
-      // The injector unwraps the underscores (_) from around the parameter names when matching
+    module('SEED');
+    inject((_$compile_, _$httpBackend_, _$rootScope_) => {
       $compile = _$compile_;
+      _$httpBackend_.whenGET(/^\/static\/seed\/locales\/.*\.json/).respond(200, {});
       $rootScope = _$rootScope_;
     });
   });

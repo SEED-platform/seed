@@ -10,30 +10,28 @@ module.exports = {
     jquery: true
   },
   globals: {
-    _: true,
     $filter: true,
     $route: true,
+    Chart: true,
+    SEED: true,
+    Spinner: true,
+    Terraformer: true,
+    UniqueBuildingIdentification: true,
+    _: true,
     angular: true,
     angularDragula: true,
-    BE: true,
-    Chart: true,
     dimple: true,
     inject: true,
     module: true,
     moment: true,
     ol: true,
     pluralize: true,
-    protractor: true,
     qq: true,
-    saveAs: true,
-    Spinner: true,
-    Terraformer: true,
-    UniqueBuildingIdentification: true
+    saveAs: true
   },
   plugins: [
     'angular',
-    'prefer-arrow',
-    'protractor'
+    'prefer-arrow'
   ],
   rules: {
     'arrow-parens': [

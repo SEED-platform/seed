@@ -1,4 +1,3 @@
-# !/usr/bin/env python
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
@@ -65,7 +64,7 @@ class GBRPropertyViewSet(SEEDOrgCreateUpdateModelViewSet):
             )
 
         else:
-            return PropertyModel.objects.filter(pk=-1)
+            return PropertyModel.objects.none()
 
     def create(self, request, *args, **kwargs):
         org_id = self.get_organization(self.request)

@@ -52,11 +52,9 @@ class AccessLevelViewSet(viewsets.ViewSet):
             curr.append(
                 {
                     "id": a.pk,
-                    "data": {
-                        "name": a.name,
-                        "organization": org.id,
-                        "path": a.path,
-                    },
+                    "name": a.name,
+                    "organization": org.id,
+                    "path": a.path,
                     "children": [],
                 }
             )

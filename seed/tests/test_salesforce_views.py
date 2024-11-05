@@ -1,4 +1,3 @@
-# !/usr/bin/env python
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
@@ -186,7 +185,6 @@ class SalesforceViewTests(DataMappingBaseTestCase):
     def test_salesforce_connection_fails(self):
         # test error when connection to salesforce fails due to no connection params
 
-        # enable sf
         self.org.salesforce_enabled = True
         self.org.save()
 
@@ -236,7 +234,7 @@ class SalesforceViewTests(DataMappingBaseTestCase):
         state = self.property_state_factory.get_property_state()
 
         # this ID should be valid for the test salesforce sandbox
-        state.extra_data["Salesforce Benchmark ID"] = "a0156000004sfsE"
+        state.extra_data["Salesforce Benchmark ID"] = "a01Ea00000VqqMf"
         # add other Instance specific mappings for testing
         state.extra_data["Property GFA - Calculated (Buildings and Parking) (ft2)"] = state.gross_floor_area
         state.save()
@@ -454,7 +452,7 @@ class SalesforceViewTestPermissions(AccessLevelBaseTestCase):
         state = self.property_state_factory.get_property_state()
 
         # this ID should be valid for the test salesforce sandbox
-        state.extra_data["Salesforce Benchmark ID"] = "a0156000004sfsE"
+        state.extra_data["Salesforce Benchmark ID"] = "a01Ea00000VqqMf"
         # add other Instance specific mappings for testing
         state.extra_data["Property GFA - Calculated (Buildings and Parking) (ft2)"] = state.gross_floor_area
         state.save()

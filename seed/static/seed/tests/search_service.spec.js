@@ -3,11 +3,11 @@
  * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
 // create dummy angularJS app to attach filter(s)
-const searchTestApp = angular.module('searchTestApp', ['BE.seed.service.search', 'BE.seed.utilities']);
+angular.module('searchTestApp', ['SEED.service.search', 'SEED.utilities']);
 
 describe('The search_service service', () => {
-  let saas; let
-    httpBackend;
+  let saas;
+  let httpBackend;
   let test_url = '';
   let mock_spinner_utility;
 
@@ -90,7 +90,7 @@ describe('The search_service service', () => {
     expect(saas.search_buildings).toHaveBeenCalled();
   });
 
-  it('search_buildings function will default to its query if' + ' no query is passed as an argument', () => {
+  it('search_buildings function will default to its query if no query is passed as an argument', () => {
     saas.query = 'hotels';
     saas.search_buildings();
 
@@ -566,19 +566,14 @@ describe('The search_service service', () => {
   });
   it('should call update_results after a successful search', () => {
     // arrange
-    let select_or_deselect_all_buildings_time; let
-      load_state_from_selected_buildings_time;
+    let select_or_deselect_all_buildings_time;
+    let load_state_from_selected_buildings_time;
     spyOn(saas, 'update_results').andCallThrough();
     spyOn(saas, 'select_or_deselect_all_buildings').andCallFake(() => {
       select_or_deselect_all_buildings_time = new Date();
     });
     spyOn(saas, 'load_state_from_selected_buildings').andCallFake(() => {
-      // wait for a sec, otherwise both have the same timestamp
-      for (let y = 0; y < 100000; y++) {
-        let x = new Date();
-        x += y;
-      }
-      load_state_from_selected_buildings_time = new Date();
+      load_state_from_selected_buildings_time = new Date(select_or_deselect_all_buildings_time.getTime() + 1);
     });
     test_url = 'https://mytest.com';
     saas.url = test_url;
@@ -631,9 +626,7 @@ describe('The search_service service', () => {
   });
   it('should generate columns', () => {
     // arrange
-    let all_columns; let column_headers; let
-      columns;
-    all_columns = [
+    const all_columns = [
       {
         sort_column: 'name'
       },
@@ -641,11 +634,11 @@ describe('The search_service service', () => {
         sort_column: 'id'
       }
     ];
-    column_headers = ['id'];
+    const column_headers = ['id'];
     saas.sort_column = 'something else';
     saas.update_results({});
     // act
-    columns = saas.generate_columns(all_columns, column_headers, saas.column_prototype);
+    const columns = saas.generate_columns(all_columns, column_headers, saas.column_prototype);
 
     // assert that columns are extended off the prototype and only have
     // "id"

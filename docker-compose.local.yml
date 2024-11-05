@@ -1,3 +1,4 @@
+---
 # Docker Compose for deployment using a local registry.
 # Must set the following environment variables
 #   POSTGRES_DB
@@ -9,7 +10,6 @@
 #   SEED_ADMIN_ORG
 #   SECRET_KEY
 
-version: "3.4"
 services:
   db-postgres:
     container_name: seed_postgres
@@ -68,6 +68,7 @@ services:
       - SEED_ADMIN_PASSWORD
       - SEED_ADMIN_ORG
       - SECRET_KEY
+      - COOKIE_EXPIRATION
       # Pass the Sentry config to the containers
       - SENTRY_RAVEN_DSN
       - SENTRY_JS_DSN

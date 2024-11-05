@@ -1,4 +1,3 @@
-# !/usr/bin/env python
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
@@ -13,13 +12,16 @@ method multiple times will always return the same sequence of results
 """
 
 import datetime
+import random
 import re
 import string
+import uuid
 from collections import namedtuple
 
 from django.utils import timezone
 from faker import Factory
 
+from seed.lib.uniformat.uniformat import uniformat_codes
 from seed.models import (
     VIEW_LIST,
     VIEW_LIST_PROPERTY,
@@ -30,6 +32,8 @@ from seed.models import (
     ColumnListProfileColumn,
     Cycle,
     DerivedColumn,
+    Element,
+    Goal,
     GreenAssessment,
     GreenAssessmentProperty,
     GreenAssessmentURL,
@@ -46,6 +50,7 @@ from seed.models import (
     TaxLotProperty,
     TaxLotState,
     TaxLotView,
+    Uniformat,
 )
 from seed.models.auditlog import AUDIT_IMPORT, AUDIT_USER_CREATE
 from seed.utils.strings import titlecase
@@ -828,6 +833,93 @@ class FakeDerivedColumnFactory(BaseFake):
         config = {"expression": expression, "name": name, "organization": organization, "inventory_type": inventory_type}
 
         return DerivedColumn.objects.create(**config)
+
+
+class FakeGoalFactory(BaseFake):
+    def __init__(
+        self,
+        organization=None,
+        baseline_cycle=None,
+        current_cycle=None,
+        access_level_instance=None,
+        eui_column1=None,
+        area_column=None,
+        target_percentage=None,
+        name=None,
+    ):
+        super().__init__()
+        self.organization = organization
+        self.baseline_cycle = baseline_cycle
+        self.current_cycle = current_cycle
+        self.access_level_instance = access_level_instance
+        self.eui_column1 = eui_column1
+        self.area_column = area_column
+        self.target_percentage = target_percentage
+        self.name = name
+
+    def get_goal(
+        self,
+        organization=None,
+        baseline_cycle=None,
+        current_cycle=None,
+        access_level_instance=None,
+        eui_column1=None,
+        area_column=None,
+        target_percentage=None,
+        name=None,
+    ):
+        organization = organization if organization is not None else self.organization
+        baseline_cycle = baseline_cycle if baseline_cycle is not None else self.baseline_cycle
+        current_cycle = current_cycle if current_cycle is not None else self.current_cycle
+        access_level_instance = access_level_instance if access_level_instance is not None else self.access_level_instance
+        eui_column1 = eui_column1 if eui_column1 is not None else self.eui_column1
+        target_percentage = target_percentage if target_percentage is not None else self.target_percentage
+        name = name if name is not None else self.name
+
+        config = {
+            "organization": organization,
+            "baseline_cycle": baseline_cycle,
+            "current_cycle": current_cycle,
+            "access_level_instance": access_level_instance,
+            "eui_column1": eui_column1,
+            "area_column": area_column,
+            "target_percentage": target_percentage,
+            "name": name,
+        }
+        return Goal.objects.create(**config)
+
+
+class FakeElementFactory(BaseFake):
+    """
+    Factory Class for producing Element instances.
+    """
+
+    def __init__(self, organization=None, property=None):  # noqa: A002
+        self.organization = organization
+        self.property = property
+        super().__init__()
+
+    def get_element(self, organization=None, property=None, **kw):  # noqa: A002
+        uniformat_code = random.choice(uniformat_codes)
+        formatted_date = datetime.date.today().strftime("%Y-%m-%d")
+        element_details = {
+            "organization_id": organization.pk if organization else self.organization.pk,
+            "property_id": property.pk if property else self.property.pk,
+            "element_id": str(uuid.uuid4()),
+            "code": Uniformat.objects.get(code=uniformat_code),
+            "description": "Building element",
+            "installation_date": formatted_date,
+            "condition_index": 90.5,
+            "remaining_service_life": 12.1,
+            "replacement_cost": 1000,
+            "manufacturing_date": formatted_date,
+            "extra_data": {
+                "additional": "info",
+            },
+        }
+        element_details.update(kw)
+        element, _ = Element.objects.get_or_create(**element_details)
+        return element
 
 
 def mock_queryset_factory(model, flatten=False, **kwargs):

@@ -1,4 +1,3 @@
-# !/usr/bin/env python
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
@@ -41,7 +40,7 @@ class BuildingFileViewSet(SEEDOrgReadOnlyModelViewSet):
             )
 
         else:
-            return BuildingFile.objects.filter(pk=-1)
+            return BuildingFile.objects.none()
 
     def get_serializer_class(self):
         if self.action == "create":

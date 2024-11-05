@@ -38,12 +38,13 @@
       <label>{$:: 'Actions' | translate $}:</label>
       <select id="select-actions" class="form-control input-sm grow" ng-model="model_actions" ng-change="run_action()">
         <option value="none" selected="selected"></option>
-        <option value="select_all" ng-disabled="selectedCount === inventory_pagination.total">{$:: 'Select All' | translate $} ({$ inventory_pagination.total $})</option>
+        <option value="select_all" ng-disabled="selectedCount === inventory_pagination.total">{$:: 'Select All' | translate $} ({$ inventory_pagination.total | number:0 $})</option>
         <option value="select_none" ng-disabled="selectedCount < 1">{$:: 'Select None' | translate $}</option>
         <optgroup label="{$:: 'Selected ' + (inventory_type === 'properties' ? 'Properties' : 'Taxlots') | translate $} ({$ selected_display $})">
           <option ng-show="menu.user.organization.user_role !== 'viewer'" value="open_merge_modal" ng-disabled="selectedParentCount < 2" translate>Merge</option>
           <option ng-show="menu.user.organization.user_role !== 'viewer'" value="open_delete_modal" ng-disabled="selectedCount === 0" translate>Delete</option>
           <option ng-show="menu.user.organization.user_role !== 'viewer'" value="open_export_modal" ng-disabled="selectedCount === 0" translate>Export</option>
+          <option ng-show="menu.user.organization.user_role !== 'viewer'" value="update_derived_columns" ng-disabled="selectedCount === 0" translate>Update Derived Data</option>
           <option
             ng-show="menu.user.organization.user_role !== 'viewer'"
             value="open_export_to_audit_template_modal"
@@ -53,6 +54,10 @@
           >
             Export to Audit Template
           </option>
+          <option ng-show="menu.user.organization.user_role !== 'viewer'" value="open_export_cts_modal" ng-if="::inventory_type === 'properties'" ng-disabled="selectedCount === 0" translate>
+            FEMP CTS Reporting Export
+          </option>
+          <option ng-show="menu.user.organization.user_role !== 'viewer'" value="open_at_submission_import_modal" ng-disabled="selectedCount === 0" translate>Update with Audit Template</option>
           <option ng-show="menu.user.organization.user_role !== 'viewer'" value="open_update_labels_modal" ng-disabled="selectedCount === 0" translate>Add/Remove Labels</option>
           <option ng-show="menu.user.organization.user_role !== 'viewer'" value="run_data_quality_check" ng-disabled="selectedCount === 0" translate>Data Quality Check</option>
           <option ng-show="menu.user.organization.user_role !== 'viewer'" value="open_postoffice_modal" ng-disabled="selectedCount === 0" translate>Email</option>
@@ -65,6 +70,7 @@
           <option ng-show="menu.user.organization.user_role !== 'viewer'" value="update_salesforce" ng-disabled="!organization.salesforce_enabled || selectedCount === 0" translate>
             Update Salesforce
           </option>
+          <option ng-show="menu.user.organization.user_role !== 'viewer'" value="open_move_inventory_modal" ng-disabled="selectedCount === 0" translate>Change Inventory Access Level</option>
         </optgroup>
         <optgroup label="{$:: 'Options' | translate $}">
           <option ng-show="menu.user.organization.user_role !== 'viewer'" value="open_show_populated_columns_modal" ng-if="menu.user.is_ali_root" ng-disabled="data.length === 0" translate>
@@ -119,7 +125,7 @@
           on-tag-added="filterUsingLabels()"
           on-tag-removed="filterUsingLabels()"
           min-length="1"
-          placeholder="{$:: 'Add a label' | translate $}"
+          placeholder="{$:: 'Must include all selected labels (AND)' | translate $}"
           replace-spaces-with-dashes="false"
           add-from-autocomplete-only="true"
           ng-disabled="!labels.length"
@@ -140,7 +146,7 @@
           on-tag-added="filterUsingLabels()"
           on-tag-removed="filterUsingLabels()"
           min-length="1"
-          placeholder="{$:: 'Add a label' | translate $}"
+          placeholder="{$:: 'Must include at least one selected label (OR)' | translate $}"
           replace-spaces-with-dashes="false"
           add-from-autocomplete-only="true"
           ng-disabled="!labels.length"
@@ -161,7 +167,7 @@
           on-tag-added="filterUsingLabels()"
           on-tag-removed="filterUsingLabels()"
           min-length="1"
-          placeholder="{$:: 'Add a label' | translate $}"
+          placeholder="{$:: 'Exclude all selected labels' | translate $}"
           replace-spaces-with-dashes="false"
           add-from-autocomplete-only="true"
           ng-disabled="!labels.length"
@@ -226,7 +232,7 @@
     </li>
   </ul>
   <div class="item-count">
-    {$ inventory_pagination.start $}-{$ inventory_pagination.end $}<span ng-if="inventory_pagination.num_pages > 1"> of {$ inventory_pagination.total $}</span>
+    {$ inventory_pagination.start $}-{$ inventory_pagination.end $}<span ng-if="inventory_pagination.num_pages > 1"> of {$ inventory_pagination.total | number:0 $}</span>
     <i ng-if="selectedCount > 0">
       <span>({$ selected_display $}</span><span ng-if="selectedCount < inventory_pagination.total"> - <a ng-click="select_all()" translate>Select All</a></span
       ><span ng-if="selectedCount === inventory_pagination.total"> - <a ng-click="select_none()" translate>Select None</a></span

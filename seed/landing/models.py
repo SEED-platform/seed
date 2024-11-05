@@ -1,4 +1,3 @@
-# !/usr/bin/env python
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
@@ -41,12 +40,12 @@ class SEEDUser(AbstractBaseUser, PermissionsMixin):
     last_name = models.CharField(_("last name"), max_length=30, blank=True)
     email = models.EmailField(_("email address"), blank=True)
     is_staff = models.BooleanField(
-        _("staff status"), default=False, help_text=_("Designates whether the user can log into this admin " "site.")
+        _("staff status"), default=False, help_text=_("Designates whether the user can log into this admin site.")
     )
     is_active = models.BooleanField(
         _("active"),
         default=True,
-        help_text=_("Designates whether this user should be treated as " "active. Unselect this instead of deleting accounts."),
+        help_text=_("Designates whether this user should be treated as active. Unselect this instead of deleting accounts."),
     )
     date_joined = models.DateTimeField(_("date joined"), default=timezone.now)
 
@@ -55,6 +54,7 @@ class SEEDUser(AbstractBaseUser, PermissionsMixin):
     show_shared_buildings = models.BooleanField(_("active"), default=False, help_text=_("shows shared buildings within search results"))
     default_organization = models.ForeignKey(Organization, on_delete=models.SET_NULL, blank=True, null=True, related_name="default_users")
     api_key = models.CharField(_("api key"), max_length=128, blank=True, default="", db_index=True)
+    prompt_2fa = models.BooleanField(default=True)
 
     objects = UserManager()
 
@@ -81,25 +81,24 @@ class SEEDUser(AbstractBaseUser, PermissionsMixin):
         if not auth_header:
             return None
 
-        if not auth_header.startswith("Bearer") or not getattr(request, "user", None):
-            try:
-                if not auth_header.startswith("Basic"):
-                    raise exceptions.AuthenticationFailed("Only Basic HTTP_AUTHORIZATION is supported")
+        try:
+            if not auth_header.startswith("Basic"):
+                raise exceptions.AuthenticationFailed("Only Basic HTTP_AUTHORIZATION is supported")
 
-                auth_header = auth_header.split()[1]
-                auth_header = base64.urlsafe_b64decode(auth_header).decode("utf-8")
-                username, api_key = auth_header.split(":")
+            auth_header = auth_header.split()[1]
+            auth_header = base64.urlsafe_b64decode(auth_header).decode("utf-8")
+            username, api_key = auth_header.split(":")
 
-                valid_api_key = re.search("^[a-f0-9]{40}$", api_key)
-                if not valid_api_key:
-                    raise exceptions.AuthenticationFailed("Invalid API key")
-
-                user = SEEDUser.objects.get(api_key=api_key, username=username)
-                return user
-            except ValueError:
-                raise exceptions.AuthenticationFailed("Invalid HTTP_AUTHORIZATION Header")
-            except SEEDUser.DoesNotExist:
+            valid_api_key = re.search("^[a-f0-9]{40}$", api_key)
+            if not valid_api_key:
                 raise exceptions.AuthenticationFailed("Invalid API key")
+
+            user = SEEDUser.objects.get(api_key=api_key, username=username)
+            return user
+        except ValueError:
+            raise exceptions.AuthenticationFailed("Invalid HTTP_AUTHORIZATION Header")
+        except SEEDUser.DoesNotExist:
+            raise exceptions.AuthenticationFailed("Invalid API key")
 
     def get_absolute_url(self):
         return f"/users/{urlquote(self.username)}/"
@@ -144,8 +143,8 @@ class SEEDUser(AbstractBaseUser, PermissionsMixin):
         Ensure that email and username are synced.
         """
 
-        # NL: Why are we setting the email to the user name, don't we need the
-        # email? It seems that the username is then suppose to be the email,
+        # NL: Why are we setting the email to the username, don't we need the
+        # email? It seems that the username is then supposed to be the email,
         # correct? Regardless, this code seems problematic
         if self.email.lower() != self.username:
             self.email = self.username

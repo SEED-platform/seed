@@ -1,4 +1,3 @@
-# !/usr/bin/env python
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
@@ -17,6 +16,7 @@ class AutoSchemaHelper(SwaggerAutoSchema):
         "integer": openapi.TYPE_INTEGER,
         "object": openapi.TYPE_OBJECT,
         "number": openapi.TYPE_NUMBER,
+        "datetime": openapi.TYPE_STRING,
     }
 
     @classmethod
@@ -57,6 +57,10 @@ class AutoSchemaHelper(SwaggerAutoSchema):
         return openapi.Parameter(name, openapi.IN_QUERY, description=description, required=required, type=openapi.TYPE_BOOLEAN)
 
     @staticmethod
+    def query_enum_field(name, description, enum):
+        return openapi.Parameter(name, openapi.IN_QUERY, description=description, required=True, type=openapi.TYPE_STRING, enum=enum)
+
+    @staticmethod
     def form_string_field(name, required, description):
         return openapi.Parameter(name, openapi.IN_FORM, description=description, required=required, type=openapi.TYPE_STRING)
 
@@ -71,6 +75,10 @@ class AutoSchemaHelper(SwaggerAutoSchema):
     @staticmethod
     def path_id_field(description):
         return openapi.Parameter("id", openapi.IN_PATH, description=description, required=True, type=openapi.TYPE_INTEGER)
+
+    @staticmethod
+    def path_enum_field(name, description, enum):
+        return openapi.Parameter(name, openapi.IN_PATH, description=description, required=True, type=openapi.TYPE_STRING, enum=enum)
 
     @classmethod
     def body_field(cls, required, description, name="body", params_to_formats={}):
@@ -101,6 +109,8 @@ class AutoSchemaHelper(SwaggerAutoSchema):
 
         if isinstance(obj, str):
             openapi_type = cls._openapi_type(obj)
+            if obj == "datetime":
+                return openapi.Schema(type=openapi_type, format=openapi.FORMAT_DATETIME, **kwargs)
             return openapi.Schema(type=openapi_type, **kwargs)
 
         if isinstance(obj, list):

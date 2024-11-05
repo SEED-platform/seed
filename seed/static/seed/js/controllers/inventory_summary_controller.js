@@ -2,7 +2,7 @@
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
  * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
-angular.module('BE.seed.controller.inventory_summary', []).controller('inventory_summary_controller', [
+angular.module('SEED.controller.inventory_summary', []).controller('inventory_summary_controller', [
   '$scope',
   '$stateParams',
   '$uibModal',
@@ -25,7 +25,7 @@ angular.module('BE.seed.controller.inventory_summary', []).controller('inventory
       data: [],
       columnDefs: [
         { field: 'Summary' },
-        { field: 'Count' }
+        { field: 'Count', cellFilter: 'number' }
       ],
       onRegisterApi: (gridApi) => {
         $scope.summaryGridOptions = gridApi;
@@ -39,7 +39,7 @@ angular.module('BE.seed.controller.inventory_summary', []).controller('inventory
       enableFiltering: true,
       columnDefs: [
         { field: 'Field' },
-        { field: 'Count' }
+        { field: 'Count', cellFilter: 'number' }
       ],
 
       onRegisterApi: (gridApi) => {

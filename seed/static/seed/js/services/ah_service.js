@@ -2,7 +2,7 @@
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
  * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
-angular.module('BE.seed.service.ah', []).factory('ah_service', [
+angular.module('SEED.service.ah', []).factory('ah_service', [
   () => {
     const { compare } = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
 
@@ -10,7 +10,7 @@ angular.module('BE.seed.service.ah', []).factory('ah_service', [
       if (!tree) return;
       if (!access_level_instances_by_depth[depth]) access_level_instances_by_depth[depth] = [];
       for (const ali of tree) {
-        access_level_instances_by_depth[depth].push({ id: ali.id, name: ali.data.name });
+        access_level_instances_by_depth[depth].push({ id: ali.id, name: ali.name, path: ali.path });
         recurse_access_levels(ali.children, access_level_instances_by_depth, depth + 1);
       }
     };

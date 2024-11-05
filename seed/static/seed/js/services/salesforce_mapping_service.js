@@ -2,7 +2,7 @@
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
  * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
-angular.module('BE.seed.service.salesforce_mapping', []).factory('salesforce_mapping_service', [
+angular.module('SEED.service.salesforce_mapping', []).factory('salesforce_mapping_service', [
   '$http',
   '$log',
   ($http, $log) => {

@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
@@ -13,7 +12,6 @@ parser_classes, authentication_classes, and pagination_classes attributes.
 
 from typing import Any
 
-from oauth2_provider.contrib.rest_framework import OAuth2Authentication
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.mixins import CreateModelMixin, DestroyModelMixin, ListModelMixin, RetrieveModelMixin, UpdateModelMixin
 from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
@@ -28,7 +26,6 @@ from seed.utils.api import OrgCreateUpdateMixin, OrgQuerySetMixin
 
 # Constants
 AUTHENTICATION_CLASSES = (
-    OAuth2Authentication,
     SessionAuthentication,
     SEEDAuthentication,
 )
@@ -92,7 +89,7 @@ class SEEDOrgReadOnlyModelViewSet(
 
 
 class SEEDOrgCreateUpdateModelViewSet(OrgCreateUpdateMixin, SEEDOrgModelViewSet):
-    """Extends SEEDModelViewset to add perform_create method to attach org.
+    """Extends SEEDOrgModelViewSet to add perform_create method to attach org.
 
     Provides the perform_create and update_create methods to save the
     Organization foreignkey relationship for models that have linked via an
@@ -100,7 +97,7 @@ class SEEDOrgCreateUpdateModelViewSet(OrgCreateUpdateMixin, SEEDOrgModelViewSet)
 
     This viewset is not suitable for models using 'super_organization' or
     having additional foreign key relationships, such as user. Any such models
-    should instead extend SEEDOrgModelViewset and create perform_create
+    should instead extend SEEDOrgModelViewSet and create perform_create
     and/or perform_update overrides appropriate to the model's needs.
     """
 

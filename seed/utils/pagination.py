@@ -1,4 +1,3 @@
-# !/usr/bin/env python
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
@@ -30,3 +29,25 @@ class ResultsListPagination(PageNumberPagination):
                 ]
             )
         )
+
+    # TODO this won't work until drf-yasg is updated to v1.21.7
+    def get_paginated_response_schema(self, schema):
+        return {
+            "type": "object",
+            "properties": {
+                "status": {"type": "string", "example": "success"},
+                "data": schema,
+                "pagination": {
+                    "type": "object",
+                    "properties": {
+                        "page": {"type": "integer", "example": 123},
+                        "start": {"type": "integer", "example": 123},
+                        "end": {"type": "integer", "example": 123},
+                        "num_pages": {"type": "integer", "example": 123},
+                        "has_next": {"type": "boolean", "example": True},
+                        "has_previous": {"type": "boolean", "example": False},
+                        "total": {"type": "integer", "example": 123},
+                    },
+                },
+            },
+        }

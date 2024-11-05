@@ -23,7 +23,7 @@ const makeFileSystemUploader = (scope, element, allowed_extensions) => {
       paramsInBody: true,
       forceMultipart: true,
       customHeaders: {
-        'X-CSRFToken': BE.csrftoken
+        'X-CSRFToken': SEED.csrftoken
       }
     },
     validation: {
@@ -60,7 +60,7 @@ const makeFileSystemUploader = (scope, element, allowed_extensions) => {
           }
         });
         const params = {
-          csrf_token: BE.csrftoken,
+          csrf_token: SEED.csrftoken,
           csrf_name: 'csrfmiddlewaretoken',
           csrf_xname: 'X-CSRFToken',
           import_record: scope.importrecord,
@@ -170,7 +170,7 @@ const makeAccessLevelInstanceUploader = (scope, element, allowed_extensions) => 
       paramsInBody: true,
       forceMultipart: true,
       customHeaders: {
-        'X-CSRFToken': BE.csrftoken
+        'X-CSRFToken': SEED.csrftoken
       }
     },
     validation: {
@@ -207,7 +207,7 @@ const makeAccessLevelInstanceUploader = (scope, element, allowed_extensions) => 
           }
         });
         const params = {
-          csrf_token: BE.csrftoken,
+          csrf_token: SEED.csrftoken,
           csrf_name: 'csrfmiddlewaretoken',
           csrf_xname: 'X-CSRFToken',
           organization_id: scope.organizationId
@@ -309,7 +309,7 @@ const makeBuildingSyncUpdater = (scope, element, allowed_extensions) => {
       paramsInBody: true,
       forceMultipart: true,
       customHeaders: {
-        'X-CSRFToken': BE.csrftoken
+        'X-CSRFToken': SEED.csrftoken
       },
       params: {
         file_type: 1
@@ -349,7 +349,7 @@ const makeBuildingSyncUpdater = (scope, element, allowed_extensions) => {
           }
         });
         const params = {
-          csrf_token: BE.csrftoken,
+          csrf_token: SEED.csrftoken,
           csrf_name: 'csrfmiddlewaretoken',
           csrf_xname: 'X-CSRFToken',
           file_type: 1,
@@ -451,7 +451,7 @@ const makeESPMUpdater = (scope, element, allowed_extensions) => {
       paramsInBody: true,
       forceMultipart: true,
       customHeaders: {
-        'X-CSRFToken': BE.csrftoken
+        'X-CSRFToken': SEED.csrftoken
       },
       params: {}
     },
@@ -489,7 +489,7 @@ const makeESPMUpdater = (scope, element, allowed_extensions) => {
           }
         });
         const params = {
-          csrf_token: BE.csrftoken,
+          csrf_token: SEED.csrftoken,
           csrf_name: 'csrfmiddlewaretoken',
           csrf_xname: 'X-CSRFToken',
           file_type: 1,
@@ -592,7 +592,7 @@ const makeDocumentUploader = (scope, element, allowed_extensions) => {
       paramsInBody: true,
       forceMultipart: true,
       customHeaders: {
-        'X-CSRFToken': BE.csrftoken
+        'X-CSRFToken': SEED.csrftoken
       },
       params: {
         file_type: 1
@@ -633,7 +633,7 @@ const makeDocumentUploader = (scope, element, allowed_extensions) => {
         });
         const extracted_filetype = fileName.split('.').pop();
         const params = {
-          csrf_token: BE.csrftoken,
+          csrf_token: SEED.csrftoken,
           csrf_name: 'csrfmiddlewaretoken',
           csrf_xname: 'X-CSRFToken',
           file_type: extracted_filetype,

@@ -2,7 +2,7 @@
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
  * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
-angular.module('BE.seed.controller.organization_add_access_level_modal', [])
+angular.module('SEED.controller.organization_add_access_level_modal', [])
   .controller('organization_add_access_level_modal_controller', [
     '$scope',
     '$state',
@@ -37,7 +37,7 @@ angular.module('BE.seed.controller.organization_add_access_level_modal', [])
         if (!tree) return;
         if (!access_level_instances_by_depth[depth]) access_level_instances_by_depth[depth] = [];
         tree.forEach((ali) => {
-          access_level_instances_by_depth[depth].push({ id: ali.id, name: ali.data.name });
+          access_level_instances_by_depth[depth].push({ id: ali.id, name: ali.name });
           calculate_access_level_instances_by_depth(ali.children, depth + 1);
         });
       };

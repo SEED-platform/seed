@@ -2,12 +2,13 @@
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
  * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
-angular.module('BE.seed.service.uploader', []).factory('uploader_service', [
+angular.module('SEED.service.uploader', []).factory('uploader_service', [
+  '$rootScope',
   '$http',
   '$q',
   '$timeout',
   'user_service',
-  ($http, $q, $timeout, user_service) => {
+  ($rootScope, $http, $q, $timeout, user_service) => {
     const uploader_factory = {};
 
     /**
@@ -169,6 +170,11 @@ angular.module('BE.seed.service.uploader', []).factory('uploader_service', [
 
       Promise.all(progress_list).then((values) => {
         check_and_update_progress(values);
+      }).catch((response) => {
+        // process in next digest cycle
+        $rootScope.$applyAsync(() => {
+          failure_fn(response);
+        });
       });
     };
 

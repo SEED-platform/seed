@@ -1,4 +1,3 @@
-# !/usr/bin/env python
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
@@ -4737,6 +4736,8 @@ uniformat_data: list[UniformatEntry] = [
         "metric_units": "LS",
     },
 ]
+
+uniformat_codes = [element["code"] for element in uniformat_data]
 
 
 def import_uniformat() -> None:

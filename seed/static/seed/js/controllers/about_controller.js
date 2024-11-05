@@ -2,7 +2,7 @@
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
  * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
-angular.module('BE.seed.controller.about', []).controller('about_controller', [
+angular.module('SEED.controller.about', []).controller('about_controller', [
   '$scope',
   'version_payload',
   // eslint-disable-next-line func-names

@@ -4,8 +4,11 @@
  */
 describe('controller: update_item_labels_modal_controller', () => {
   // globals set up and used in each test scenario
-  let mock_label_service; let scope; let controller; let modal_state; let mock_notification; let
-    mock_new_label_form;
+  let mock_label_service;
+  let scope;
+  let controller;
+  let mock_notification;
+  let mock_new_label_form;
   let update_controller_scope;
 
   const available_colors = [
@@ -88,10 +91,9 @@ describe('controller: update_item_labels_modal_controller', () => {
   // make the seed app available for each test
   // 'config.seed' is created in TestFilters.html
   beforeEach(() => {
-    module('BE.seed');
+    module('SEED');
     inject((_$httpBackend_) => {
-      $httpBackend = _$httpBackend_;
-      $httpBackend.whenGET(/^\/static\/seed\/locales\/.*\.json/).respond(200, {});
+      _$httpBackend_.whenGET(/^\/static\/seed\/locales\/.*\.json/).respond(200, {});
     });
     inject(($controller, $rootScope, $uibModal, $q, label_service, Notification) => {
       controller = $controller;
@@ -102,12 +104,8 @@ describe('controller: update_item_labels_modal_controller', () => {
       // and return their promises (if necessary).
       mock_label_service = label_service;
 
-      spyOn(mock_label_service, 'get_labels').andCallFake(() =>
-        // return $q.reject for error scenario
-        $q.resolve(all_available_labels));
-      spyOn(mock_label_service, 'create_label').andCallFake(() =>
-        // return $q.reject for error scenario
-        $q.resolve(return_obj_for_create_label));
+      spyOn(mock_label_service, 'get_labels').andCallFake(() => $q.resolve(all_available_labels));
+      spyOn(mock_label_service, 'create_label').andCallFake(() => $q.resolve(return_obj_for_create_label));
       spyOn(mock_label_service, 'get_available_colors').andCallFake(() => available_colors);
 
       // mock the notification service
@@ -130,14 +128,7 @@ describe('controller: update_item_labels_modal_controller', () => {
   function create_update_item_labels_modal_controller() {
     controller('update_item_labels_modal_controller', {
       $scope: update_controller_scope,
-      $uibModalInstance: {
-        close: function () {
-          modal_state = 'close';
-        },
-        dismiss: function () {
-          modal_state = 'dismiss';
-        }
-      },
+      $uibModalInstance: {},
       label_service: mock_label_service,
       inventory_ids: [],
       inventory_type: 'properties',

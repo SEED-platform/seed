@@ -10,10 +10,9 @@ describe('controller: organization_settings_controller', () => {
   let mock_meters_service;
 
   beforeEach(() => {
-    module('BE.seed');
+    module('SEED');
     inject((_$httpBackend_) => {
-      $httpBackend = _$httpBackend_;
-      $httpBackend.whenGET(/^\/static\/seed\/locales\/.*\.json/).respond(200, {});
+      _$httpBackend_.whenGET(/^\/static\/seed\/locales\/.*\.json/).respond(200, {});
     });
     inject(($controller, $rootScope, $uibModal, $q, organization_service, meters_service) => {
       controller = $controller;
@@ -22,17 +21,9 @@ describe('controller: organization_settings_controller', () => {
       mock_organization_service = organization_service;
       mock_meters_service = meters_service;
 
-      spyOn(mock_organization_service, 'save_org_settings').andCallFake(() =>
-        // return $q.reject for error scenario
-        $q.resolve({
-          status: 'success'
-        }));
+      spyOn(mock_organization_service, 'save_org_settings').andCallFake(() => $q.resolve({ status: 'success' }));
 
-      spyOn(mock_meters_service, 'valid_energy_types_units').andCallFake(() =>
-        // return $q.reject for error scenario
-        $q.resolve({
-          status: 'success'
-        }));
+      spyOn(mock_meters_service, 'valid_energy_types_units').andCallFake(() => $q.resolve({ status: 'success' }));
     });
   });
 
@@ -48,7 +39,9 @@ describe('controller: organization_settings_controller', () => {
         ]
       },
       organization_payload: {
-        organization: { name: 'my org', id: 4 }
+        organization: {
+          name: 'my org', id: 4, default_reports_x_axis_options: [], default_reports_y_axis_options: []
+        }
       },
       query_threshold_payload: {
         query_threshold: 10
@@ -88,8 +81,25 @@ describe('controller: organization_settings_controller', () => {
           unique_benchmark_id_fieldname: 'Salesforce_Benchmark_ID__c'
         }
       ],
+      audit_template_configs_payload: [],
       property_column_names: { column_name: 'test', display_name: 'test' },
-      taxlot_column_names: { column_name: 'test', display_name: 'test' }
+      taxlot_column_names: { column_name: 'test', display_name: 'test' },
+      property_columns: [
+        {
+          id: 500,
+          name: 'test',
+          organization_id: 4,
+          table_name: 'TaxLotState',
+          column_name: 'test'
+        },
+        {
+          id: 501,
+          name: 'test',
+          organization_id: 4,
+          table_name: 'PropertyState',
+          column_name: 'test'
+        }
+      ]
     });
   }
 
@@ -109,7 +119,9 @@ describe('controller: organization_settings_controller', () => {
     // assertions
     expect(ctrl_scope.org).toEqual({
       name: 'my org',
-      id: 4
+      id: 4,
+      default_reports_x_axis_options: [],
+      default_reports_y_axis_options: []
       // query_threshold: 10
     });
     expect(mock_organization_service.save_org_settings).toHaveBeenCalledWith(ctrl_scope.org);
