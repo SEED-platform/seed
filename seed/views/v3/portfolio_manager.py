@@ -284,6 +284,9 @@ class PortfolioManagerImport:
 
         self.DOWNLOAD_SINGLE_PROPERTY_REPORT_URL = "https://portfoliomanager.energystar.gov/pm/property"
 
+        # The url for custom downloads, useful for downloading meter data
+        self.DOWNLOAD_CUSTOM_REPORT_URL = "https://portfoliomanager.energystar.gov/pm/property/createCustomDownloadSubmit/"
+
     def login_and_set_cookie_header(self):
         """This method calls out to ESPM to perform a login operation and get a session authentication token.  This token
         is then stored in the proper form to allow authenticated calls into ESPM.
@@ -587,6 +590,86 @@ class PortfolioManagerImport:
 
         except requests.exceptions.SSLError:
             raise PMError("SSL Error in Portfolio Manager Query; check VPN/Network/Proxy.")
+
+    def generate_and_download_meter_data(self, property_ids, download_format="XML"):
+        """
+        This method calls out to ESPM to trigger generation of a custom download of energy and water meter data for the supplied list of property ids.  The process requires
+        calling out to the createCustomDownloadSubmit/ endpoint on ESPM, followed by a waiting period for the custom download status to be
+        updated to complete.  Once complete, a download URL allows download of the meter data in XML or EXCEL format.
+
+        This response content can be enormous, so ...
+        TODO: Evaluate whether we should just download this XML to file here.  It would require re-reading the file
+        TODO: afterwards, but it would 1) be downloaded and available for inspection/debugging, and 2) reduce the size
+        TODO: of data coming through in memory during these calls, which seems to have been problematic at times
+
+        :param property_ids: list of property ids to include in custom download
+        :return: Full XML data report from ESPM custom download generation and download process
+        """
+
+        # login if needed
+        if not self.authenticated_headers:
+            self.login_and_set_cookie_header()
+
+        # We should then trigger generation of the custom download for the selected property ids
+        generation_url = "https://portfoliomanager.energystar.gov/pm/property/createCustomDownloadSubmit/"
+        try:
+            response = requests.post(generation_url, headers=self.authenticated_headers, timeout=300)
+        except requests.exceptions.SSLError:
+            raise PMError("SSL Error in Portfolio Manager Query; check VPN/Network/Proxy.")
+        if not response.status_code == status.HTTP_200_OK:
+            raise PMError("Unsuccessful response from POST to trigger report generation; aborting.")
+        _log.debug(f"Triggered report generation,\n status code={response.status_code}\n response headers={response.headers!s}")
+
+        # Now we need to wait while the report is being generated
+        attempt_count = 0
+        report_generation_complete = False
+        while attempt_count < 90:
+            attempt_count += 1
+
+            # get the report data
+            try:
+                json_authenticated_headers = self.authenticated_headers.copy()
+                json_authenticated_headers["Accept"] = "application/json"
+                json_authenticated_headers["Content-Type"] = "application/json"
+                response = requests.get(self.REPORT_URL, headers=json_authenticated_headers, timeout=300)
+            except requests.exceptions.SSLError:
+                raise PMError("SSL Error in Portfolio Manager Query; check VPN/Network/Proxy.")
+            if not response.status_code == status.HTTP_200_OK:
+                raise PMError("Unsuccessful response from report template rows query; aborting.")
+
+            template_objects = response.json()["reportTabData"]
+            for t in template_objects:
+                if "id" in t and t["id"] == template_report_id:
+                    this_matched_template = t
+                    break
+            else:
+                this_matched_template = None
+            if not this_matched_template:
+                raise PMError("Could not find a match for this report template id... odd at this point")
+            if this_matched_template["pending"] == 1:
+                time.sleep(2)
+                continue
+            else:
+                report_generation_complete = True
+                break
+
+        if report_generation_complete:
+            _log.debug("Report appears to have been generated successfully (attempt_count=" + str(attempt_count) + ")")
+        else:
+            raise PMError("Template report not generated successfully; aborting.")
+
+        # Finally we can download the generated report
+        try:
+            response = requests.get(self.download_url(template_report_id, report_format), headers=self.authenticated_headers, timeout=300)
+        except requests.exceptions.SSLError:
+            raise PMError("SSL Error in Portfolio Manager Query; check VPN/Network/Proxy.")
+        if response.status_code != status.HTTP_200_OK:
+            error_message = "Unsuccessful response from GET trying to download generated report;"
+            error_message += f' Generated report name: {matched_template["name"]};'
+            error_message += f"Tried to download report from URL: {self.download_url(template_report_id)};"
+            error_message += f"Returned with a status code = {response.status_code};"
+            raise PMError(error_message)
+        return response.content
 
     def _parse_properties_v1(self, xml):
         """Parse the XML (in dict format) response from the ESPM API and return a list of
