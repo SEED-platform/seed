@@ -23,6 +23,7 @@ class SaveSettingsOrganizationSerializer(serializers.Serializer):
     display_units_ghg_intensity = serializers.ChoiceField(choices=Organization.MEASUREMENT_CHOICES_GHG_INTENSITY)
     display_decimal_places = serializers.IntegerField(min_value=0)
     display_meter_units = serializers.JSONField()
+    display_meter_water_units = serializers.JSONField()
     thermal_conversion_assumption = serializers.ChoiceField(choices=Organization.THERMAL_CONVERSION_ASSUMPTION_CHOICES)
     mapquest_api_key = serializers.CharField()
     geocoding_enabled = serializers.BooleanField()
@@ -36,6 +37,7 @@ class SaveSettingsOrganizationSerializer(serializers.Serializer):
     audit_template_user = serializers.CharField(max_length=128)
     audit_template_password = serializers.CharField(max_length=128)
     salesforce_enabled = serializers.BooleanField()
+    ubid_threshold = serializers.FloatField(min_value=0.0001, max_value=1)
 
 
 class SaveSettingsSerializer(serializers.Serializer):

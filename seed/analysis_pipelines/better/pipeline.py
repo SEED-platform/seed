@@ -1,4 +1,3 @@
-# !/usr/bin/env python
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
@@ -89,8 +88,8 @@ class BETTERPipeline(AnalysisPipeline):
 
         # ping BETTER to verify the token is valid
         client = BETTERClient(organization.better_analysis_api_key)
-        if not client.token_is_valid():
-            message = "Failed to communicate with BETTER. Please verify organization token is valid and try again."
+        validity, message = client.token_is_valid()
+        if not validity:
             self.fail(message, logger)
             raise AnalysisPipelineError(message)
 

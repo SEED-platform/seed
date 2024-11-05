@@ -1,4 +1,3 @@
-# !/usr/bin/env python
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
@@ -28,7 +27,7 @@ class RuleViewTests(DataMappingBaseTestCase):
         response = self.client.get(url)
         rules = json.loads(response.content)
 
-        self.assertEqual(len(rules), 22)
+        self.assertEqual(len(rules), 32)
 
         property_count = 0
         taxlot_count = 0
@@ -66,7 +65,7 @@ class RuleViewTests(DataMappingBaseTestCase):
         response = self.client.put(url)
         rules = json.loads(response.content)
 
-        self.assertEqual(len(rules), 22)
+        self.assertEqual(len(rules), 32)
 
         property_count = 0
         taxlot_count = 0
@@ -129,6 +128,13 @@ class RuleViewTests(DataMappingBaseTestCase):
         res = self.client.post(url, content_type="application/json", data=json.dumps(base_rule_info))
 
         expected_message = "Label must be assigned when using 'Valid' Data Severity. Rule must not include or exclude an empty string. "
+        self.assertTrue(expected_message in json.loads(res.content)["message"])
+
+        # Disallow creation of new Goal Rules. Limit to the original hard coded list
+        base_rule_info["table_name"] = "Goal"
+        res = self.client.post(url, content_type="application/json", data=json.dumps(base_rule_info))
+
+        expected_message = "Creating new Goal Rules has been disabled"
         self.assertTrue(expected_message in json.loads(res.content)["message"])
 
     def test_update_rule_status_label_validation(self):

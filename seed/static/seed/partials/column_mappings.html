@@ -43,7 +43,7 @@
         ng-click="save_profile()"
         ng-disabled="!changes_possible || header_duplicates_present() || empty_units_present() || !profile_action_ok('update')"
         tooltip-placement="bottom"
-        uib-tooltip="Save"
+        uib-tooltip="{$ save_button_tooltip() $}"
       >
         <i class="fa-solid fa-check"></i>
       </button>
@@ -110,7 +110,7 @@
         <table class="table table-striped">
           <thead>
             <tr>
-              <th colspan="3" class="source_data">SEED</th>
+              <th colspan="4" class="source_data">SEED</th>
               <th colspan="6" class="source_data">{$ current_profile.name $}</th>
             </tr>
           </thead>
@@ -123,12 +123,13 @@
                 </span>
               </td>
               <td style="border-right: 0 none"><h3 translate>Mapped Fields</h3></td>
-              <td style="max-width: 128px; width: 128px"></td>
+              <td colspan="2" style="max-width: 128px; width: 128px"></td>
               <td colspan="6"></td>
             </tr>
           </tbody>
           <thead>
             <tr>
+              <th><translate>Is Omitted</translate></th>
               <th><translate>Inventory Type</translate></th>
               <th class="mapping_field ellipsis-resizable" ng-click="sort_by('seed')" sd-resizable>
                 <span><translate>SEED Header</translate><i class="fa-solid {$ get_sort_icon('seed') $} pad-left-5"></i></span>
@@ -153,6 +154,9 @@
           </thead>
           <tbody id="mapped-table">
             <tr ng-repeat="(index, col) in dropdown_selected_profile.mappings">
+              <td style="text-align: center; width: min-content" ng-attr-id="mapped-row-is_omitted-{$:: $index $}">
+                <input type="checkbox" ng-model="col.is_omitted" ng-disabled="import_file.matching_done" ng-change="flag_change(col)" />
+              </td>
               <td style="text-align: right" ng-attr-id="mapped-row-type-{$:: $index $}">
                 <select ng-model="col.to_table_name" ng-change="updateSingleInventoryTypeDropdown()">
                   <option value="PropertyState" translate>Property</option>
@@ -173,27 +177,37 @@
                   ng-disabled="!profile_action_ok('change_to_field')"
                 />
               </td>
-              <td ng-class="{'danger': col.from_units === null && (is_area_column(col) || is_eui_column(col))}">
-                <select ng-model="col.from_units" ng-change="flag_change()" ng-if="is_area_column(col)" ng-disabled="!profile_action_ok('change_from_units')">
+              <td ng-class="{'danger': col.from_units === null && is_pint_column(col)}">
+                <select ng-model="col.from_units" ng-change="flag_change()" ng-if="is_data_type_column('area', col)" ng-disabled="!profile_action_ok('change_from_units')">
                   <option value="ft**2" translate>square feet</option>
                   <option value="m**2" translate>square metres</option>
                 </select>
-                <select ng-model="col.from_units" ng-change="flag_change()" ng-if="is_eui_column(col)" ng-disabled="!profile_action_ok('change_from_units')">
-                  <option value="kBtu/ft**2/year" translate>kBtu/sq. ft./year</option>
+                <select ng-model="col.from_units" ng-change="flag_change()" ng-if="is_data_type_column('eui', col)" ng-disabled="!profile_action_ok('change_from_units')">
+                  <option value="kBtu/ft**2/year" translate>kBtu/ft²/year</option>
                   <option value="kWh/m**2/year" translate>kWh/m²/year</option>
                   <option value="GJ/m**2/year" translate>GJ/m²/year</option>
                   <option value="MJ/m**2/year" translate>MJ/m²/year</option>
                   <option value="kBtu/m**2/year" translate>kBtu/m²/year</option>
                 </select>
-                <select ng-model="col.from_units" ng-change="flag_change()" ng-if="is_ghg_column(col)">
+                <select ng-model="col.from_units" ng-change="flag_change()" ng-if="is_data_type_column('ghg', col)">
                   <option value="MtCO2e/year" translate>MtCO2e/year</option>
                   <option value="kgCO2e/year" translate>kgCO2e/year</option>
                 </select>
-                <select ng-model="col.from_units" ng-change="flag_change()" ng-if="is_ghg_intensity_column(col)">
-                  <option value="MtCO2e/ft**2/year" translate>MtCO2e/ft**2/year</option>
-                  <option value="kgCO2e/ft**2/year" translate>kgCO2e/ft**2/year</option>
-                  <option value="MtCO2e/m**2/year" translate>MtCO2e/m**2/year</option>
-                  <option value="kgCO2e/m**2/year" translate>kgCO2e/m**2/year</option>
+                <select ng-model="col.from_units" ng-change="flag_change()" ng-if="is_data_type_column('ghg_intensity', col)">
+                  <option value="MtCO2e/ft**2/year" translate>MtCO2e/ft²/year</option>
+                  <option value="kgCO2e/ft**2/year" translate>kgCO2e/ft²/year</option>
+                  <option value="MtCO2e/m**2/year" translate>MtCO2e/m²/year</option>
+                  <option value="kgCO2e/m**2/year" translate>kgCO2e/m²/year</option>
+                </select>
+                <select ng-model="col.from_units" ng-change="flag_change()" ng-if="is_data_type_column('water_use', col)">
+                  <option value="kgal/year" trnaslate>kgal/year</option>
+                  <option value="gal/year" trnaslate>gal/year</option>
+                  <option value="L/year" trnaslate>L/year</option>
+                </select>
+                <select ng-model="col.from_units" ng-change="flag_change()" ng-if="is_data_type_column('wui', col)">
+                  <option value="kgal/ft**2/year" trnaslate>kgal/ft²/year</option>
+                  <option value="gal/ft**2/year" trnaslate>gal/ft²/year</option>
+                  <option value="L/m**2/year" trnaslate>L/m²/year</option>
                 </select>
               </td>
               <td ng-class="{'danger': is_file_header_duplicate(col)}">

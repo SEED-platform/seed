@@ -23,6 +23,8 @@ from seed.models import (
     MERGE_STATE_DELETE,
     MERGE_STATE_MERGED,
     MERGE_STATE_NEW,
+    Column,
+    DerivedColumn,
     Note,
     PropertyView,
     StatusLabel,
@@ -34,6 +36,7 @@ from seed.models import (
 )
 from seed.serializers.properties import PropertyViewSerializer
 from seed.serializers.taxlots import TaxLotSerializer, TaxLotStateSerializer, TaxLotViewSerializer, UpdateTaxLotPayloadSerializer
+from seed.tasks import update_state_derived_data
 from seed.utils.api import OrgMixin, ProfileIdMixin, api_endpoint_class
 from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema_org_query_param
 from seed.utils.inventory_filter import get_filtered_results
@@ -237,6 +240,8 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
                 {"status": "error", "message": "These two taxlots have different alis."}, status=status.HTTP_400_BAD_REQUEST
             )
 
+        update_derived_data([view.state.id], organization_id)
+
         return {
             "status": "success",
             "match_merged_count": merge_count,
@@ -292,20 +297,13 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
 
         # Clone the taxlot record twice
         old_taxlot = old_view.taxlot
-        new_taxlot = old_taxlot
-        new_taxlot.id = None
-        new_taxlot.save()
 
-        new_taxlot_2 = TaxLot.objects.get(pk=new_taxlot.pk)
+        new_taxlot_2 = TaxLot.objects.get(pk=old_taxlot.pk)
         new_taxlot_2.id = None
         new_taxlot_2.save()
 
-        # If the canonical TaxLot is NOT associated to another -View
-        if not TaxLotView.objects.filter(taxlot_id=old_view.taxlot_id).exclude(pk=old_view.id).exists():
-            TaxLot.objects.get(pk=old_view.taxlot_id).delete()
-
         # Create the views
-        new_view1 = TaxLotView(cycle_id=cycle_id, taxlot_id=new_taxlot.id, state=state1)
+        new_view1 = TaxLotView(cycle_id=cycle_id, taxlot_id=old_taxlot.id, state=state1)
         new_view2 = TaxLotView(cycle_id=cycle_id, taxlot_id=new_taxlot_2.id, state=state2)
 
         # Mark the merged state as deleted
@@ -356,6 +354,15 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
             ids.append(note.id)
             # Correct the created and updated times to match the original note
             Note.objects.filter(id__in=ids).update(created=created, updated=updated)
+
+        Note.objects.create(
+            organization=old_taxlot.organization,
+            note_type=Note.LOG,
+            name="Unmerged Taxlot",
+            text=f"This TaxLotView was unmerged from TaxLotView id {new_view1.id}",
+            user=request.user,
+            taxlot_view=new_view2,
+        )
 
         for paired_view_id in paired_view_ids:
             TaxLotProperty(primary=True, cycle_id=cycle_id, taxlot_view_id=new_view1.id, property_view_id=paired_view_id).save()
@@ -426,6 +433,8 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
+
+        update_derived_data([view.state.id], org_id)
 
         result = {
             "view_id": view.id,
@@ -697,6 +706,7 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
                                 "match_link_count": link_count,
                             }
                         )
+                        update_derived_data([view.state.id], log.organization)
 
                         return JsonResponse(result, status=status.HTTP_200_OK)
                     else:
@@ -709,3 +719,10 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
                     return JsonResponse(result, status=status.HTTP_204_NO_CONTENT)
         else:
             return JsonResponse(result, status=status.HTTP_404_NOT_FOUND)
+
+
+def update_derived_data(state_ids, org_id):
+    derived_columns = DerivedColumn.objects.filter(organization_id=org_id)
+    Column.objects.filter(derived_column__in=derived_columns).update(is_updating=True)
+    derived_column_ids = list(derived_columns.values_list("id", flat=True))
+    update_state_derived_data(taxlot_state_ids=state_ids, derived_column_ids=derived_column_ids)

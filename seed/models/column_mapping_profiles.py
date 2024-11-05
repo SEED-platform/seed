@@ -1,4 +1,3 @@
-# !/usr/bin/env python
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
@@ -82,6 +81,10 @@ class ColumnMappingProfile(models.Model):
                         "to_table_name": row[2],
                         "to_field": row[3],
                     }
+                    try:
+                        data["is_omitted"] = "True" if row[4].lower().strip() == "true" else "False"
+                    except IndexError:
+                        data["is_omitted"] = "False"
                     mappings.append(data)
         else:
             raise Exception(f"Mapping file does not exist: {filename}")

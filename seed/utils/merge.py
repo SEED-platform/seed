@@ -1,4 +1,3 @@
-# !/usr/bin/env python
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
@@ -208,7 +207,7 @@ def _copy_propertyview_relationships(view_ids, new_view):
         Note.objects.filter(id=n.id).update(created=note["created"], updated=note["updated"])
 
     # Associate labels
-    PropertyViewLabels = apps.get_model("seed", "PropertyView_labels")
+    PropertyViewLabels = apps.get_model("seed", "PropertyViewLabel")
     label_ids = list(PropertyViewLabels.objects.filter(propertyview_id__in=view_ids).values_list("statuslabel_id", flat=True))
     new_view.labels.set(StatusLabel.objects.filter(pk__in=label_ids))
 

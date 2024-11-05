@@ -53,6 +53,8 @@ jobs:
           docker exec --env DJANGO_LOG_LEVEL seed_web ./manage.py create_default_user --username=demo@example.com --password=demo123
           docker exec --env DJANGO_LOG_LEVEL seed_web /bin/bash -c 'echo "y" | ./manage.py make_superuser --user demo@example.com'
       - uses: actions/setup-node@v4
+        with:
+          node-version: 20
       - name: Install dependencies
         run: |
           npm install

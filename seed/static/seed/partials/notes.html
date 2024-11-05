@@ -1,14 +1,6 @@
 <div class="section_header_container">
   <div class="section_header fixed_height_short has_no_padding">
-    <div class="section_action_container">
-      <span>
-        <h2>
-          <span ng-if="::inventory_type==='properties'"> <i class="fa-regular fa-building"></i><span translate>Property</span> : </span>
-          <span ng-if="::inventory_type==='taxlots'"> <i class="fa-regular fa-map"></i><span translate>Tax Lot</span> : </span>
-          <span ng-bind-html="inventory_name"></span>
-        </h2>
-      </span>
-    </div>
+    <div ng-include="::urls.static_url + 'seed/partials/inventory_detail_header.html'"></div>
   </div>
 </div>
 
@@ -34,12 +26,13 @@
         <td style="white-space: nowrap">{$:: note.name $}</td>
 
         <td ng-if="note.note_type == 'Note'" class="text-wrap">{$ note.text $}</td>
-        <td ng-if="note.note_type == 'Log'">
+        <td ng-if="note.note_type == 'Log' && note.name != 'Unmerged Property'">
           <div>Edit(s):</div>
           <ul>
             <li ng-repeat="log in note.log_data"><strong>{$:: log.field $}</strong> updated from "{$:: log.previous_value $}" to "{$:: log.new_value $}"</li>
           </ul>
         </td>
+        <td ng-if="note.name == 'Unmerged Property'">{$ note.text $}</td>
 
         <td>
           <button

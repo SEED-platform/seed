@@ -1,4 +1,3 @@
-# !/usr/bin/env python
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
@@ -538,3 +537,7 @@ class PortfolioManagerReportParsingTest(TestCase):
             self.assertEqual(properties[0]["portfolioManagerPropertyId"], "22178843")
             self.assertIsNone(properties[0]["parentPropertyId"])
             self.assertEqual(properties[0]["propertyFloorAreaBuildingsAndParking"], "89250.0")
+
+    def test_hannah(self):
+        pm = PortfolioManagerImport()
+        pm.generate_and_download_meter_data([])

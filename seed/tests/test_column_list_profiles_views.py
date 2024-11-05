@@ -1,4 +1,3 @@
-# !/usr/bin/env python
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
@@ -10,9 +9,16 @@ from django.urls import reverse, reverse_lazy
 from rest_framework import status
 
 from seed.landing.models import SEEDUser as User
-from seed.models import Column
+from seed.models import VIEW_LIST_TAXLOT, Column
 from seed.models.derived_columns import DerivedColumn
-from seed.test_helpers.fake import FakeColumnListProfileFactory
+from seed.test_helpers.fake import (
+    FakeColumnListProfileFactory,
+    FakeCycleFactory,
+    FakePropertyStateFactory,
+    FakePropertyViewFactory,
+    FakeTaxLotStateFactory,
+    FakeTaxLotViewFactory,
+)
 from seed.tests.util import AccessLevelBaseTestCase, DeleteModelsTestCase
 from seed.utils.organizations import create_organization
 
@@ -26,6 +32,15 @@ class ColumnListProfilesView(DeleteModelsTestCase):
         user_details = {"username": "test_user@demo.com", "password": "test_pass", "email": "test_user@demo.com"}
         self.user = User.objects.create_superuser(**user_details)
         self.org, _, _ = create_organization(self.user, "test-organization-a")
+
+        self.cycle_factory = FakeCycleFactory(organization=self.org, user=self.user)
+        self.cycle = self.cycle_factory.get_cycle()
+
+        self.column_list_factory = FakeColumnListProfileFactory(organization=self.org)
+        self.property_view_factory = FakePropertyViewFactory(organization=self.org, cycle=self.cycle)
+        self.property_state_factory = FakePropertyStateFactory(organization=self.org)
+        self.taxlot_view_factory = FakeTaxLotViewFactory(organization=self.org, cycle=self.cycle)
+        self.taxlot_state_factory = FakeTaxLotStateFactory(organization=self.org)
 
         self.column_1 = Column.objects.get(organization=self.org, table_name="PropertyState", column_name="address_line_1")
         self.column_2 = Column.objects.get(organization=self.org, table_name="PropertyState", column_name="city")
@@ -193,6 +208,84 @@ class ColumnListProfilesView(DeleteModelsTestCase):
         self.assertEqual(len(result["data"]["columns"]), 1)
         self.assertEqual(result["data"]["columns"][0]["order"], 999)
         self.assertEqual(result["data"]["columns"][0]["pinned"], True)
+
+    def test_column_profile_show_populated(self):
+        # Set Up
+        columnlistprofile = self.column_list_factory.get_columnlistprofile(columns=["address_line_1", "city"])
+        state = self.property_state_factory.get_property_state(no_default_data=True, city="Denver")
+        self.property_view_factory.get_property_view(state=state)
+
+        # Action
+        response = self.client.put(
+            reverse("api:v3:column_list_profiles-show-populated", args=[columnlistprofile.id]) + f"?organization_id={self.org.id}",
+            data=json.dumps({"cycle_id": self.cycle.id, "inventory_type": "Property"}),
+            content_type="application/json",
+        )
+        result = json.loads(response.content)
+
+        # Assertion
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        columns = {c["column_name"] for c in result["data"]["columns"]}
+        self.assertSetEqual(columns, {"city", "updated", "created"})
+
+    def test_column_profile_show_populated_taxlots(self):
+        columnlistprofile = self.column_list_factory.get_columnlistprofile(
+            columns=["address_line_1", "city"], inventory_type=VIEW_LIST_TAXLOT
+        )
+        state = self.taxlot_state_factory.get_taxlot_state(no_default_data=True, longitude=12345)
+        self.taxlot_view_factory.get_taxlot_view(state=state)
+
+        response = self.client.put(
+            reverse("api:v3:column_list_profiles-show-populated", args=[columnlistprofile.id]) + f"?organization_id={self.org.id}",
+            data=json.dumps({"cycle_id": self.cycle.id, "inventory_type": "Tax Lot"}),
+            content_type="application/json",
+        )
+        result = json.loads(response.content)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        columns = {c["column_name"] for c in result["data"]["columns"]}
+        self.assertSetEqual(columns, {"updated", "longitude", "created"})
+
+    def test_column_profile_show_populated_extra_data(self):
+        # Set Up
+        columnlistprofile = self.column_list_factory.get_columnlistprofile(columns=["address_line_1", "city"])
+        state = self.property_state_factory.get_property_state(no_default_data=True, extra_data={self.column_3.column_name: "Denver"})
+        self.property_view_factory.get_property_view(state=state)
+
+        # Action
+        response = self.client.put(
+            reverse("api:v3:column_list_profiles-show-populated", args=[columnlistprofile.id]) + f"?organization_id={self.org.id}",
+            data=json.dumps({"cycle_id": self.cycle.id, "inventory_type": "Property"}),
+            content_type="application/json",
+        )
+        result = json.loads(response.content)
+
+        # Assertion
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        columns = {c["column_name"] for c in result["data"]["columns"]}
+        self.assertSetEqual(columns, {self.column_3.column_name, "updated", "created"})
+
+    def test_column_profile_show_populated_derived_data(self):
+        # Set Up
+        self.derived_column = DerivedColumn.objects.create(name="dc", expression="$a + 10", organization=self.org, inventory_type=0)
+        columnlistprofile = self.column_list_factory.get_columnlistprofile(columns=["address_line_1", "city"])
+        state = self.property_state_factory.get_property_state(
+            no_default_data=True, derived_data={self.derived_column.column.column_name: "20"}
+        )
+        self.property_view_factory.get_property_view(state=state)
+
+        # Action
+        response = self.client.put(
+            reverse("api:v3:column_list_profiles-show-populated", args=[columnlistprofile.id]) + f"?organization_id={self.org.id}",
+            data=json.dumps({"cycle_id": self.cycle.id, "inventory_type": "Property"}),
+            content_type="application/json",
+        )
+        result = json.loads(response.content)
+
+        # Assertion
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        columns = {c["column_name"] for c in result["data"]["columns"]}
+        self.assertSetEqual(columns, {self.derived_column.column.column_name, "updated", "created"})
 
 
 class ColumnsListProfileViewPermissionsTests(AccessLevelBaseTestCase, DeleteModelsTestCase):

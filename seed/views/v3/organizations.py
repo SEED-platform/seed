@@ -31,6 +31,7 @@ from rest_framework.response import Response
 from xlsxwriter import Workbook
 
 from seed import tasks
+from seed.audit_template.audit_template import toggle_audit_template_sync
 from seed.data_importer.models import ImportFile, ImportRecord
 from seed.data_importer.tasks import save_raw_data
 from seed.decorators import ajax_request_class
@@ -44,10 +45,12 @@ from seed.models import (
     SEED_DATA_SOURCES,
     Column,
     Cycle,
+    FilterGroup,
     Property,
     PropertyAuditLog,
     PropertyState,
     PropertyView,
+    ReportConfiguration,
     TaxLot,
     TaxLotAuditLog,
     TaxLotState,
@@ -57,14 +60,15 @@ from seed.models import StatusLabel as Label
 from seed.serializers.column_mappings import SaveColumnMappingsRequestPayloadSerializer
 from seed.serializers.columns import ColumnSerializer
 from seed.serializers.organizations import SaveSettingsSerializer, SharedFieldsReturnSerializer
-from seed.serializers.pint import apply_display_unit_preferences
+from seed.serializers.pint import add_pint_unit_suffix, apply_display_unit_preferences
+from seed.serializers.report_configurations import ReportConfigurationSerializer
 from seed.utils.api import api_endpoint_class
 from seed.utils.api_schema import AutoSchemaHelper
 from seed.utils.encrypt import decrypt, encrypt
 from seed.utils.geocode import geocode_buildings
 from seed.utils.match import match_merge_link
 from seed.utils.merge import merge_properties
-from seed.utils.organizations import create_organization, create_suborganization
+from seed.utils.organizations import create_organization, create_suborganization, set_default_2fa_method
 from seed.utils.properties import pair_unpair_property_taxlot
 from seed.utils.public import public_feed
 from seed.utils.salesforce import toggle_salesforce_sync
@@ -124,6 +128,8 @@ def _dict_org(request, organizations):
             "display_units_eui": o.display_units_eui,
             "display_units_ghg": o.display_units_ghg,
             "display_units_ghg_intensity": o.display_units_ghg_intensity,
+            "display_units_water_use": o.display_units_water_use,
+            "display_units_wui": o.display_units_wui,
             "display_units_area": o.display_units_area,
             "display_decimal_places": o.display_decimal_places,
             "cycles": cycles,
@@ -135,6 +141,7 @@ def _dict_org(request, organizations):
             "property_display_field": o.property_display_field,
             "taxlot_display_field": o.taxlot_display_field,
             "display_meter_units": dict(sorted(o.display_meter_units.items(), key=lambda item: (item[0], item[1]))),
+            "display_meter_water_units": dict(sorted(o.display_meter_water_units.items(), key=lambda item: (item[0], item[1]))),
             "thermal_conversion_assumption": o.thermal_conversion_assumption,
             "comstock_enabled": o.comstock_enabled,
             "new_user_email_from": o.new_user_email_from,
@@ -142,10 +149,14 @@ def _dict_org(request, organizations):
             "new_user_email_content": o.new_user_email_content,
             "new_user_email_signature": o.new_user_email_signature,
             "at_organization_token": o.at_organization_token,
+            "at_host_url": settings.AUDIT_TEMPLATE_HOST,
             "audit_template_user": o.audit_template_user,
             "audit_template_password": decrypt(o.audit_template_password)[0] if o.audit_template_password else "",
-            "at_host_url": settings.AUDIT_TEMPLATE_HOST,
+            "audit_template_city_id": o.audit_template_city_id,
+            "audit_template_conditional_import": o.audit_template_conditional_import,
             "audit_template_report_type": o.audit_template_report_type,
+            "audit_template_status_types": o.audit_template_status_types,
+            "audit_template_sync_enabled": o.audit_template_sync_enabled,
             "salesforce_enabled": o.salesforce_enabled,
             "ubid_threshold": o.ubid_threshold,
             "inventory_count": o.property_set.count() + o.taxlot_set.count(),
@@ -159,6 +170,7 @@ def _dict_org(request, organizations):
             "default_reports_y_axis_options": ColumnSerializer(
                 Column.objects.filter(organization=o, table_name="PropertyState", is_option_for_reports_y_axis=True), many=True
             ).data,
+            "require_2fa": o.require_2fa,
         }
         orgs.append(org)
 
@@ -190,6 +202,7 @@ def _dict_org_brief(request, organizations):
             "display_decimal_places": o.display_decimal_places,
             "salesforce_enabled": o.salesforce_enabled,
             "access_level_names": o.access_level_names,
+            "audit_template_conditional_import": o.audit_template_conditional_import,
         }
         orgs.append(org)
 
@@ -486,6 +499,18 @@ class OrganizationViewSet(viewsets.ViewSet):
         else:
             warn_bad_pint_spec("ghg_intensity", desired_display_units_ghg_intensity)
 
+        desired_display_units_water_use = posted_org.get("display_units_water_use")
+        if is_valid_choice(Organization.MEASUREMENT_CHOICES_WATER_USE, desired_display_units_water_use):
+            org.display_units_water_use = desired_display_units_water_use
+        else:
+            warn_bad_pint_spec("water_use", desired_display_units_water_use)
+
+        desired_display_units_wui = posted_org.get("display_units_wui")
+        if is_valid_choice(Organization.MEASUREMENT_CHOICES_WUI, desired_display_units_wui):
+            org.display_units_wui = desired_display_units_wui
+        else:
+            warn_bad_pint_spec("wui", desired_display_units_wui)
+
         desired_display_units_area = posted_org.get("display_units_area")
         if is_valid_choice(Organization.MEASUREMENT_CHOICES_AREA, desired_display_units_area):
             org.display_units_area = desired_display_units_area
@@ -501,6 +526,10 @@ class OrganizationViewSet(viewsets.ViewSet):
         desired_display_meter_units = posted_org.get("display_meter_units")
         if desired_display_meter_units:
             org.display_meter_units = desired_display_meter_units
+
+        desired_display_meter_water_units = posted_org.get("display_meter_water_units")
+        if desired_display_meter_water_units:
+            org.display_meter_water_units = desired_display_meter_water_units
 
         desired_thermal_conversion_assumption = posted_org.get("thermal_conversion_assumption")
         if is_valid_choice(Organization.THERMAL_CONVERSION_ASSUMPTION_CHOICES, desired_thermal_conversion_assumption):
@@ -618,11 +647,35 @@ class OrganizationViewSet(viewsets.ViewSet):
         if audit_template_report_type != org.audit_template_report_type:
             org.audit_template_report_type = audit_template_report_type
 
+        audit_template_status_types = posted_org.get("audit_template_status_types", False)
+        if audit_template_status_types != org.audit_template_status_types:
+            org.audit_template_status_types = audit_template_status_types
+
+        audit_template_city_id = posted_org.get("audit_template_city_id", False)
+        if audit_template_city_id != org.audit_template_city_id:
+            org.audit_template_city_id = audit_template_city_id
+
+        audit_template_conditional_import = posted_org.get("audit_template_conditional_import", False)
+        if audit_template_conditional_import != org.audit_template_conditional_import:
+            org.audit_template_conditional_import = audit_template_conditional_import
+
+        audit_template_sync_enabled = posted_org.get("audit_template_sync_enabled", False)
+        if audit_template_sync_enabled != org.audit_template_sync_enabled:
+            org.audit_template_sync_enabled = audit_template_sync_enabled
+            # if audit_template_sync_enabled was toggled, must start/stop auto sync functionality
+            toggle_audit_template_sync(audit_template_sync_enabled, org.id)
+
         salesforce_enabled = posted_org.get("salesforce_enabled", False)
         if salesforce_enabled != org.salesforce_enabled:
             org.salesforce_enabled = salesforce_enabled
             # if salesforce_enabled was toggled, must start/stop auto sync functionality
             toggle_salesforce_sync(salesforce_enabled, org.id)
+
+        require_2fa = posted_org.get("require_2fa", False)
+        if require_2fa != org.require_2fa:
+            org.require_2fa = require_2fa
+            if require_2fa:
+                set_default_2fa_method(org)
 
         # update the ubid threshold option
         ubid_threshold = posted_org.get("ubid_threshold")
@@ -787,8 +840,7 @@ class OrganizationViewSet(viewsets.ViewSet):
         except AttributeError:
             return None
 
-    def get_raw_report_data(self, organization_id, access_level_instance, cycles, x_var, y_var, additional_columns=[]):
-        organization = Organization.objects.get(pk=organization_id)
+    def setup_report_data(self, organization_id, access_level_instance, cycles, x_var, y_var, filter_group_id=None, additional_columns=[]):
         all_property_views = (
             PropertyView.objects.select_related("property", "state")
             .filter(
@@ -800,20 +852,33 @@ class OrganizationViewSet(viewsets.ViewSet):
             .order_by("id")
         )
 
+        if filter_group_id:
+            filter_group = FilterGroup.objects.get(pk=filter_group_id)
+            all_property_views = filter_group.views(all_property_views)
+
         # annotate properties with fields
+        def get_column_model_field(column):
+            if column.is_extra_data:
+                return F("state__extra_data__" + column.column_name)
+            elif column.derived_column:
+                return F("state__derived_data__" + column.column_name)
+            else:
+                return F("state__" + column.column_name)
+
         fields = {
-            **{
-                column.column_name: F("state__" + (column.column_name if not column.is_extra_data else f"extra_data__{column.column_name}"))
-                for column in additional_columns
-            },
-            "x": F("state__" + (x_var if x_var in dir(PropertyState) else f"extra_data__{x_var}")),
-            "y": F("state__" + (y_var if y_var in dir(PropertyState) else f"extra_data__{y_var}")),
+            **{column.column_name: get_column_model_field(column) for column in additional_columns},
+            "x": get_column_model_field(x_var),
+            "y": get_column_model_field(y_var),
         }
         if x_var == "Count":
             fields["x"] = Value(1)
         for k, v in fields.items():
             all_property_views = all_property_views.annotate(**{k: v})
 
+        return {"all_property_views": all_property_views, "field_data": fields}
+
+    def get_raw_report_data(self, organization_id, cycles, all_property_views, fields):
+        organization = Organization.objects.get(pk=organization_id)
         # get data for each cycle
         results = []
         for cycle in cycles:
@@ -861,6 +926,7 @@ class OrganizationViewSet(viewsets.ViewSet):
         }
 
         user_ali = AccessLevelInstance.objects.get(pk=self.request.access_level_instance_id)
+        filter_group_id = request.query_params.get("filter_group_id", None)
         if params["access_level_instance_id"] is None:
             ali = user_ali
         else:
@@ -881,10 +947,18 @@ class OrganizationViewSet(viewsets.ViewSet):
             )
 
         cycles = Cycle.objects.filter(id__in=params["cycle_ids"])
-        data = self.get_raw_report_data(pk, ali, cycles, params["x_var"], params["y_var"])
+        x_var = Column.objects.get(column_name=params["x_var"], organization=pk, table_name="PropertyState")
+        y_var = Column.objects.get(column_name=params["y_var"], organization=pk, table_name="PropertyState")
+        report_data = self.setup_report_data(pk, ali, cycles, x_var, y_var, filter_group_id)
+        data = self.get_raw_report_data(pk, cycles, report_data["all_property_views"], report_data["field_data"])
+        axis_data = self.get_axis_data(
+            pk, ali, cycles, params["x_var"], params["y_var"], report_data["all_property_views"], report_data["field_data"]
+        )
+
         data = {
             "chart_data": functools.reduce(operator.iadd, [d["chart_data"] for d in data], []),
             "property_counts": [d["property_counts"] for d in data],
+            "axis_data": axis_data,
         }
 
         return Response({"status": "success", "data": data}, status=status.HTTP_200_OK)
@@ -916,7 +990,7 @@ class OrganizationViewSet(viewsets.ViewSet):
             "cycle_ids": request.query_params.getlist("cycle_ids", None),
             "access_level_instance_id": request.query_params.get("access_level_instance_id", None),
         }
-
+        filter_group_id = request.query_params.get("filter_group_id", None)
         user_ali = AccessLevelInstance.objects.get(pk=self.request.access_level_instance_id)
         if params["access_level_instance_id"] is None:
             ali = user_ali
@@ -939,7 +1013,10 @@ class OrganizationViewSet(viewsets.ViewSet):
 
         # get data
         cycles = Cycle.objects.filter(id__in=params["cycle_ids"])
-        data = self.get_raw_report_data(pk, ali, cycles, params["x_var"], params["y_var"])
+        x_var = Column.objects.get(column_name=params["x_var"], organization=pk, table_name="PropertyState")
+        y_var = Column.objects.get(column_name=params["y_var"], organization=pk, table_name="PropertyState")
+        report_data = self.setup_report_data(pk, ali, cycles, x_var, y_var, filter_group_id)
+        data = self.get_raw_report_data(pk, cycles, report_data["all_property_views"], report_data["field_data"])
         chart_data = []
         property_counts = []
 
@@ -973,7 +1050,7 @@ class OrganizationViewSet(viewsets.ViewSet):
 
         results = []
         for i in range(len(bins) - 1):
-            bin = f"{bins[i]} - {bins[i+1]}"
+            bin = f"{round(bins[i], 2)} - {round(bins[i+1], 2)}"
             values = np.array(xs)[np.where(binplace == i + 1)]
             x = sum(values) if count else np.average(values).item()
             results.append({"y": bin, "x": None if np.isnan(x) else x, "yr_e": yr_e})
@@ -1029,6 +1106,7 @@ class OrganizationViewSet(viewsets.ViewSet):
             "y_label": request.query_params.get("y_label", None),
             "cycle_ids": request.query_params.getlist("cycle_ids", None),
         }
+        filter_group_id = request.query_params.get("filter_group_id", None)
 
         # error if missing
         excepted_params = ["x_var", "x_label", "y_var", "y_label", "cycle_ids"]
@@ -1067,14 +1145,19 @@ class OrganizationViewSet(viewsets.ViewSet):
         # Gather base data
         cycles = Cycle.objects.filter(id__in=params["cycle_ids"])
         matching_columns = Column.objects.filter(organization_id=pk, is_matching_criteria=True, table_name="PropertyState")
-        data = self.get_raw_report_data(pk, access_level_instance, cycles, params["x_var"], params["y_var"], matching_columns)
+        x_var = Column.objects.get(column_name=params["x_var"], organization=pk, table_name="PropertyState")
+        y_var = Column.objects.get(column_name=params["y_var"], organization=pk, table_name="PropertyState")
+        report_data = self.setup_report_data(
+            pk, access_level_instance, cycles, x_var, y_var, filter_group_id, additional_columns=matching_columns
+        )
+        data = self.get_raw_report_data(pk, cycles, report_data["all_property_views"], report_data["field_data"])
 
         base_sheet.write(data_row_start, data_col_start, "ID", bold)
 
         for i, matching_column in enumerate(matching_columns):
             base_sheet.write(data_row_start, data_col_start + i, matching_column.display_name, bold)
-        base_sheet.write(data_row_start, data_col_start + len(matching_columns) + 0, request.query_params.get("x_label"), bold)
-        base_sheet.write(data_row_start, data_col_start + len(matching_columns) + 1, request.query_params.get("y_label"), bold)
+        base_sheet.write(data_row_start, data_col_start + len(matching_columns) + 0, params["x_label"], bold)
+        base_sheet.write(data_row_start, data_col_start + len(matching_columns) + 1, params["y_label"], bold)
         base_sheet.write(data_row_start, data_col_start + len(matching_columns) + 2, "Year Ending", bold)
 
         base_row = data_row_start + 1
@@ -1126,6 +1209,76 @@ class OrganizationViewSet(viewsets.ViewSet):
         response.write(xlsx_data)
 
         return response
+
+    def get_axis_stats(self, organization, cycle, axis, axis_var, views, ali):
+        """returns axis_name, access_level_instance name, sum, mean, min, max, 5%, 25%, 50%, 75%, 99%"""
+
+        filtered_properties = views.filter(
+            property__access_level_instance__lft__gte=ali.lft, property__access_level_instance__rgt__lte=ali.rgt, cycle_id=cycle.id
+        )
+
+        data = [
+            d[axis]
+            for d in [apply_display_unit_preferences(organization, d) for d in filtered_properties.values(axis)]
+            if axis in d and d[axis] is not None and isinstance(d[axis], (int, float))
+        ]
+
+        if len(data) > 0:
+            percentiles = np.percentile(data, [5, 25, 50, 75, 95])
+            # order the cols: sum, min, 5%, 25%, mean, median (50%), 75, 95, max
+            return [
+                axis_var,
+                ali.name,
+                sum(data),
+                np.amin(data),
+                percentiles[0],
+                percentiles[1],
+                np.mean(data),
+                percentiles[2],
+                percentiles[3],
+                percentiles[4],
+                np.amax(data),
+            ]
+        else:
+            return [axis_var, ali.name, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+
+    def get_axis_data(self, organization_id, access_level_instance, cycles, x_var, y_var, all_property_views, fields):
+        axis_data = []
+        axes = {"x": x_var, "y": y_var}
+        organization = Organization.objects.get(pk=organization_id)
+
+        for axis in axes:
+            if axes[axis] != "Count":
+                columns = Column.objects.filter(organization_id=organization_id, column_name=axes[axis])
+                if not columns:
+                    return []
+
+                column = columns[0]
+                if not column.data_type or column.data_type == "None":
+                    data_type = "float"
+                else:
+                    data_type = Column.DB_TYPES[column.data_type]
+
+                # Get column label
+                serialized_column = ColumnSerializer(column).data
+                add_pint_unit_suffix(organization, serialized_column)
+                for cycle in cycles:
+                    name_to_display = (
+                        serialized_column["display_name"] if serialized_column["display_name"] != "" else serialized_column["column_name"]
+                    )
+                    axis_name = name_to_display + f" ({cycle.name})"
+                    stats = self.get_axis_stats(organization, cycle, axis, axes[axis], all_property_views, access_level_instance)
+                    axis_data.append(self.clean_axis_data(axis_name, data_type, stats))
+                    for child_ali in access_level_instance.get_children():
+                        stats = self.get_axis_stats(organization, cycle, axis, axes[axis], all_property_views, child_ali)
+                        axis_data.append(self.clean_axis_data(axis_name, data_type, stats))
+        return axis_data
+
+    def clean_axis_data(self, column_name, data_type, data):
+        if data_type == "float":
+            return [column_name] + data[1:3] + np.round(data[3:], decimals=2).tolist()
+        elif data_type == "integer":
+            return [column_name] + data[1:3] + np.round(data[3:]).tolist()
 
     @has_perm_class("requires_member")
     @ajax_request_class
@@ -1315,3 +1468,15 @@ class OrganizationViewSet(viewsets.ViewSet):
         feed = public_feed(org, request)
 
         return JsonResponse(feed, json_dumps_params={"indent": 4}, status=status.HTTP_200_OK)
+
+    @ajax_request_class
+    @has_perm_class("requires_viewer")
+    @action(detail=True, methods=["GET"])
+    def report_configurations(self, request, pk):
+        user_ali = AccessLevelInstance.objects.get(pk=self.request.access_level_instance_id)
+        configs = ReportConfiguration.objects.filter(
+            organization_id=pk,
+            access_level_instance__lft__gte=user_ali.lft,
+            access_level_instance__rgt__lte=user_ali.rgt,
+        )
+        return JsonResponse({"data": ReportConfigurationSerializer(configs, many=True).data}, status=status.HTTP_200_OK)

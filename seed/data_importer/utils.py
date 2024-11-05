@@ -1,4 +1,3 @@
-# !/usr/bin/env python
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
@@ -384,6 +383,60 @@ def kbtu_thermal_conversion_factors(country):
         factors["Wood"]["MBtu/MMBtu (million Btu)"] = 1000.00
         factors["Wood"]["Tonnes (metric)"] = 17060.71
         factors["Wood"]["Tons"] = 15477.50
+
+    return factors
+
+
+def kgal_water_conversion_factors(coutry):
+    """
+    Returns water conversion factor provided by Portfolio Manager.
+    Conversion factors taken from: https://www.kylesconverter.com/volume/kilogallons
+
+    # should country be considered?
+    """
+    factors = defaultdict(dict)
+
+    meter_types = [
+        "Default",
+        "Potable Indoor",
+        "Potable: Mixed Indoor/Outdoor",
+        "Potable Outdoor",
+    ]
+    # SHOULD THESE BE INCLUDED?
+    # other_types = [
+    #     "Other: Mixed Indoor/Outdoor",
+    #     "Other Indoor",
+    #     "Other Outdoor",
+    #     "Reclaimed: Mixed Indoor/Outdoor"
+    #     "Reclaimed: Indoor"
+    #     "Reclaimed: Outdoor"
+    #     "Well Water: Mixed Indoor/Outdoor"
+    #     "Well Water: Indoor"
+    #     "Well Water: Outdoor"
+    # ]
+
+    unit_conversion = {
+        "ccf (hundred cubic feet)": 0.748,
+        "cf (cubic feet)": 0.00748,
+        "cGal (hundred gallons) (US)": 0.1,
+        "cGal (hundred gallons) (UK)": 0.12,
+        "cm (cubic meters)": 0.264172,
+        "Gallons (US)": 0.001,
+        "Gallons (UK)": 0.0012,
+        "kcf (thousand cubic feet)": 7.48,
+        "kcm (thousand cubit meters)": 264.172,
+        "kGal (thousand gallons) (US)": 1.00,
+        "kGal (thousand gallons) (UK)": 1.2,
+        "Liters": 0.000264172,
+        "Mcf (million cubic feed)": 7480.52,
+        "MGal (million gallons) (UK)": 1000,
+        "MGal (million gallons) (US)": 1200,
+    }
+
+    # Create dict of pattern {meter_type: {unit: conversion}, ...}
+    for meter_type in meter_types:
+        for unit, conversion in unit_conversion.items():
+            factors[meter_type][unit] = conversion
 
     return factors
 

@@ -1,4 +1,3 @@
-# !/usr/bin/env python
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
@@ -7,17 +6,18 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 import logging
 import re
 from calendar import monthrange
+from collections import defaultdict
 from datetime import datetime, timedelta
 
-from django.db.models import Subquery
+from django.contrib.postgres.aggregates.general import ArrayAgg
 from django.utils.timezone import make_aware
 from pytz import AmbiguousTimeError, NonExistentTimeError, timezone
 
 from config.settings.common import TIME_ZONE
-from seed.data_importer.utils import kbtu_thermal_conversion_factors, usage_point_id
+from seed.data_importer.utils import kbtu_thermal_conversion_factors, kgal_water_conversion_factors, usage_point_id
 from seed.lib.mcm import reader
 from seed.lib.superperms.orgs.models import Organization
-from seed.models import Meter, PropertyState, PropertyView
+from seed.models import Meter, Property, PropertyView
 
 _log = logging.getLogger(__name__)
 
@@ -62,6 +62,7 @@ class MetersParser:
         self._cache_meter_and_reading_objs = None
         self._cache_org_country = None
         self._cache_kbtu_thermal_conversion_factors = None
+        self._cache_kgal_water_conversion_factors = None
 
         self._meters_and_readings_details = meters_and_readings_details
         self._org_id = org_id
@@ -109,6 +110,13 @@ class MetersParser:
             self._cache_kbtu_thermal_conversion_factors = kbtu_thermal_conversion_factors(self._org_country)
 
         return self._cache_kbtu_thermal_conversion_factors
+
+    @property
+    def _kgal_water_conversion_factors(self):
+        if self._cache_kgal_water_conversion_factors is None:
+            self._cache_kgal_water_conversion_factors = kgal_water_conversion_factors(self._org_country)
+
+        return self._cache_kgal_water_conversion_factors
 
     @property
     def _org_country(self):
@@ -180,19 +188,22 @@ class MetersParser:
 
         if self._cache_proposed_imports is None:
             self._cache_proposed_imports = []
+            # build cycle_names_by_property_id for the next part
+            all_property_ids = {property_id for property_ids in self._source_to_property_ids.values() for property_id in property_ids}
+            cycle_names_by_property_id = dict(
+                Property.objects.filter(id__in=all_property_ids)
+                .annotate(cycle_names=ArrayAgg("views__cycle__name"))
+                .values_list("id", "cycle_names")
+            )
+
             # Gather info based on property_id - cycles (query) and related pm_property_ids (parsed in different method)
             property_ids_info = {}
             for pm_property_id, property_ids in self._source_to_property_ids.items():
                 for property_id in property_ids:
-                    property_ids_info[property_id] = {"pm_id": pm_property_id}
-
-                    cycle_names = list(
-                        PropertyView.objects.select_related("cycle")
-                        .order_by("cycle__end")
-                        .filter(property_id=property_id)
-                        .values_list("cycle__name", flat=True)
-                    )
-                    property_ids_info[property_id]["cycles"] = ", ".join(cycle_names)
+                    property_ids_info[property_id] = {
+                        "pm_id": pm_property_id,
+                        "cycles": ", ".join(cycle_names_by_property_id[property_id]),
+                    }
 
             # Put summaries together based on source type
             for meter in self.meter_and_reading_objs:
@@ -227,12 +238,14 @@ class MetersParser:
         start and end times are read. Also, PM meters have the possibility of
         having cost associated to individual raw details.
         """
-        for raw_details in self._meters_and_readings_details:
-            meter_details = {"source": self._source_type, "source_id": str(raw_details["Portfolio Manager Meter ID"])}
+        # build out _source_to_property_ids, if we haven't yet
+        if len(self._source_to_property_ids) == 0:
+            self._build_out_source_to_property_ids_and_unlinkable_pm_ids()
 
+        for raw_details in self._meters_and_readings_details:
             # Continue/skip, if no property is found.
             given_property_id = str(raw_details["Portfolio Manager ID"])
-            if not self._get_property_id(given_property_id, meter_details):
+            if given_property_id not in self._source_to_property_ids:
                 continue
 
             # Define start_time and end_time
@@ -272,6 +285,11 @@ class MetersParser:
                 # Handle timestamp that doesn't exist due to "springing forward" to dst
                 end_time = make_aware(unaware_end, timezone=self._tz, is_dst=True)
 
+            meter_details = {
+                "source": self._source_type,
+                "source_id": str(raw_details["Portfolio Manager Meter ID"]),
+                "property_ids": self._source_to_property_ids.get(given_property_id),
+            }
             successful_parse = self._parse_meter_readings(raw_details, meter_details, start_time, end_time)
 
             # If Cost field is present and value is available, create Cost Meter and MeterReading
@@ -303,41 +321,21 @@ class MetersParser:
 
             self._parse_meter_readings(raw_details, meter_details, start_time, end_time)
 
-    def _get_property_id(self, source_id, shared_details):
+    def _build_out_source_to_property_ids_and_unlinkable_pm_ids(self):
+        """Populates self._source_to_property_ids
+
+        Its a dict. The keys are all the "Portfolio Manager ID"s in self._meters_and_readings_details,
+        the keys are a list of properties with that given pm_property_id.
         """
-        Using pm_property_id, find and cache property_ids to avoid querying for
-        the same property_id more than once. Return True when a property_id is
-        found.
+        pm_property_ids = {str(raw_details["Portfolio Manager ID"]) for raw_details in self._meters_and_readings_details}
+        relevant_views = PropertyView.objects.filter(property__organization_id=self._org_id, state__pm_property_id__in=pm_property_ids)
+        pm_property_id_and_property_id_pairs = relevant_views.values_list("state__pm_property_id", "property_id").distinct()
 
-        If no PropertyStates (and subsequent Properties) are found, flag the
-        PM ID as unlinkable, and False is returned.
-        """
-        # If the PM ID has been previously found to be unlinkable, return False
-        if source_id in self._unlinkable_pm_ids:
-            return False
+        self._source_to_property_ids = defaultdict(list)
+        for pm_property_id, property_id in pm_property_id_and_property_id_pairs:
+            self._source_to_property_ids[pm_property_id].append(property_id)
 
-        # Check cached property_ids
-        target_property_ids = self._source_to_property_ids.get(source_id, None)
-        if target_property_ids is not None:
-            shared_details["property_ids"] = target_property_ids
-            return True
-
-        # Start looking for possible matches - if some are found, capture all property_ids
-        possible_matches = PropertyState.objects.filter(pm_property_id=source_id, organization_id=self._org_id)
-        if possible_matches.count() == 0:
-            self._unlinkable_pm_ids.add(source_id)
-            return False
-        else:
-            target_property_ids = list(
-                PropertyView.objects.filter(state_id__in=Subquery(possible_matches.values("pk")))
-                .distinct("property_id")
-                .values_list("property_id", flat=True)
-            )
-
-            shared_details["property_ids"] = target_property_ids
-            self._source_to_property_ids[source_id] = target_property_ids
-
-            return True
+        self._unlinkable_pm_ids = [str(pm_p_id) for pm_p_id in set(pm_property_ids) - set(self._source_to_property_ids.keys())]
 
     def _parse_meter_readings(self, raw_details, meter_details, start_time, end_time):
         """
@@ -347,9 +345,11 @@ class MetersParser:
         # Parse the conversion factor else return False
         type_name = raw_details["Meter Type"]
         unit = raw_details["Usage Units"]
-        conversion_factor = self._kbtu_thermal_conversion_factors.get(type_name, {}).get(unit, None)
-        if conversion_factor is None:
+        thermal_conversion_factor = self._kbtu_thermal_conversion_factors.get(type_name, {}).get(unit, None)
+        water_conversion_factor = self._kgal_water_conversion_factors.get(type_name, {}).get(unit, None)
+        if thermal_conversion_factor is None and water_conversion_factor is None:
             return False
+        conversion_factor = thermal_conversion_factor or water_conversion_factor
 
         meter_details["type"] = Meter.type_lookup[type_name]
 

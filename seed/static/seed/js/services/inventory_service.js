@@ -65,7 +65,8 @@ angular.module('SEED.service.inventory', []).factory('inventory_service', [
       shown_column_ids = null,
       access_level_instance_id = null,
       include_property_ids = null,
-      goal_id = null
+      goal_id = null,
+      related_model_sort = null
     ) => {
       organization_id = organization_id ?? user_service.get_organization().id;
 
@@ -100,15 +101,13 @@ angular.module('SEED.service.inventory', []).factory('inventory_service', [
         exclude_view_ids,
         include_property_ids,
         // Pass the current profile (if one exists) to limit the column data that is returned
-        profile_id
+        profile_id,
+        // conditionally add optional params
+        ...(access_level_instance_id && { access_level_instance_id }),
+        ...(goal_id && { goal_id }),
+        ...(related_model_sort && { related_model_sort })
       };
       // add access_level_instance if it exists
-      if (access_level_instance_id) {
-        data.access_level_instance_id = access_level_instance_id;
-      }
-      if (goal_id) {
-        data.goal_id = goal_id;
-      }
 
       return $http
         .post(
@@ -361,6 +360,27 @@ angular.module('SEED.service.inventory', []).factory('inventory_service', [
           '/api/v3/properties/update_salesforce/',
           {
             property_view_ids
+          },
+          {
+            params: {
+              organization_id: user_service.get_organization().id
+            }
+          }
+        )
+        .then((response) => response.data)
+        .finally(() => {
+          spinner_utility.hide();
+        });
+    };
+
+    inventory_service.move_properties = (access_level_instance_id, property_view_ids) => {
+      spinner_utility.show();
+      return $http
+        .post(
+          '/api/v3/properties/move_properties_to/',
+          {
+            property_view_ids,
+            access_level_instance_id
           },
           {
             params: {
@@ -1180,6 +1200,26 @@ angular.module('SEED.service.inventory', []).factory('inventory_service', [
         .then((response) => response.data.data);
     };
 
+    inventory_service.update_column_list_profile_to_show_populated = (id, cycle_id, inventory_type) => {
+      if (id === null) {
+        Notification.error('This settings profile is protected from modifications');
+        return $q.reject();
+      }
+      return $http
+        .put(
+          `/api/v3/column_list_profiles/${id}/show_populated/`,
+          {
+            cycle_id,
+            inventory_type
+          },
+          {
+            params: {
+              organization_id: user_service.get_organization().id
+            }
+          }
+        ).then((response) => response.data.data);
+    };
+
     inventory_service.remove_column_list_profile = (id) => {
       if (id === null) {
         Notification.error('This settings profile is protected from modifications');
@@ -1205,10 +1245,45 @@ angular.module('SEED.service.inventory', []).factory('inventory_service', [
       }
     });
 
+    inventory_service.set_update_to_now = (property_views, taxlot_views, progress_key) => $http.post('/api/v3/tax_lot_properties/set_update_to_now/', {
+      property_views,
+      taxlot_views,
+      progress_key,
+      organization_id: user_service.get_organization().id
+    });
+
+    // this is the CTS Comprehensive Evaluation Upload Template
+    // which uses the BAE/BuildingSync workflow
+    inventory_service.evaluation_export_to_cts = (property_view_ids, filename = 'test.xlsx') => $http.post(
+      `/api/v3/properties/evaluation_export_to_cts/?organization_id=${user_service.get_organization().id}`,
+      {
+        filename,
+        property_view_ids
+      },
+      {
+        responseType: 'arraybuffer'
+      }
+    );
+
+    // this is the CTS Facility Upload Template for Federal BPS
+    // which uses the SEED-based workflow (not buildingsync)
+    inventory_service.facility_bps_export_to_cts = (org_id, property_view_ids) => $http
+      .post(
+        `/api/v3/properties/facility_bps_export_to_cts/?organization_id=${org_id}`,
+        property_view_ids,
+        { responseType: 'arraybuffer' }
+      );
+
     inventory_service.filter_by_property = (cycle_id, property_ids) => $http.post('/api/v3/properties/filter_by_property/', {
       organization_id: user_service.get_organization().id,
       cycle: cycle_id,
       property_ids
+    }).then((response) => response.data);
+
+    inventory_service.update_derived_data = (property_view_ids, taxlot_view_ids) => $http.post('/api/v3/tax_lot_properties/update_derived_data/', {
+      organization_id: user_service.get_organization().id,
+      property_view_ids,
+      taxlot_view_ids
     }).then((response) => response.data);
 
     return inventory_service;

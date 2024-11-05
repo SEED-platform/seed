@@ -1,4 +1,3 @@
-# !/usr/bin/env python
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
@@ -1100,6 +1099,36 @@ class PropertyViewTestsPermissions(AccessLevelBaseTestCase):
             )
             assert resp.status_code == 404
 
+    def test_properties_can_move_between_alis(self):
+        self.property.access_level_instance = self.child_level_instance
+        self.property.save()
+
+        url = reverse("api:v3:properties-move-properties-to") + f"?organization_id={self.org.pk}"
+        post_params = json.dumps(
+            {"property_view_ids": [self.property.views.first().id], "access_level_instance_id": self.root_level_instance.id}
+        )
+
+        response = self.client.post(url, post_params, content_type="application/json")
+
+        assert response.status_code == 200
+        p = Property.objects.get(pk=self.property.pk)
+        assert p.access_level_instance == self.root_level_instance
+
+    def test_properties_cannot_move_between_alis_without_perms(self):
+        self.property.access_level_instance = self.child_level_instance
+        self.property.save()
+
+        url = (
+            reverse("api:v3:properties-move-properties-to")
+            + f"?organization_id={self.org.pk}&access_level_instance_id={self.root_level_instance.id}"
+        )
+        post_params = json.dumps({"property_view_ids": [self.property.views.first().id]})
+
+        self.login_as_child_member()
+        response = self.client.post(url, post_params, content_type="application/json")
+
+        assert response.status_code == 404
+
 
 class PropertyUpdateCausesMergesAndLinkTests(AccessLevelBaseTestCase):
     def setUp(self):
@@ -1709,21 +1738,6 @@ class PropertyUnmergeViewTests(DataMappingBaseTestCase):
             label_names = list(new_view.labels.values_list("name", flat=True))
             self.assertCountEqual(label_names, [label_1.name, label_2.name])
 
-    def test_unmerging_assigns_new_canonical_records_to_each_resulting_records(self):
-        # Capture old property_ids
-        view = PropertyView.objects.first()  # There's only one PropertyView
-        existing_property_ids = [
-            view.property_id,
-            self.property_1.id,
-            self.property_2.id,
-        ]
-
-        # Unmerge the properties
-        url = reverse("api:v3:properties-unmerge", args=[view.id]) + f"?organization_id={self.org.pk}"
-        self.client.put(url, content_type="application/json")
-
-        self.assertFalse(PropertyView.objects.filter(property_id__in=existing_property_ids).exists())
-
     def test_unmerging_two_properties_with_meters_gives_meters_to_both_of_the_resulting_records(self):
         # Unmerge the properties
         view_id = PropertyView.objects.first().id  # There's only one PropertyView
@@ -1753,6 +1767,23 @@ class PropertyUnmergeViewTests(DataMappingBaseTestCase):
 
         self.assertEqual(reading_sets[0], reading_sets[1])
 
+    def test_unmerging_two_properties_with_notes(self):
+        view = PropertyView.objects.first()  # There's only one PropertyView
+
+        # add note
+        note_factory = FakeNoteFactory(organization=self.org, user=self.user)
+        note1 = note_factory.get_note(name="non_default_name_1")
+        view.notes.add(note1)
+
+        # Unmerge the properties
+        url = reverse("api:v3:properties-unmerge", args=[view.id]) + f"?organization_id={self.org.pk}"
+        self.client.put(url, content_type="application/json")
+        view_1, view_2 = PropertyView.objects.all()
+
+        assert view_1.notes.count() == 1
+        assert view_2.notes.count() == 2
+        assert view_2.notes.first().text == f"This PropertyView was unmerged from PropertyView id {view_1.id}"
+
     def test_unmerge_results_in_the_use_of_new_canonical_records_and_deletion_of_old_canonical_state_if_unrelated_to_any_views(self):
         # Capture "old" property_id - there's only one PropertyView
         view = PropertyView.objects.first()
@@ -1762,7 +1793,7 @@ class PropertyUnmergeViewTests(DataMappingBaseTestCase):
         url = reverse("api:v3:properties-unmerge", args=[view.id]) + f"?organization_id={self.org.pk}"
         self.client.put(url, content_type="application/json")
 
-        self.assertFalse(Property.objects.filter(pk=property_id).exists())
+        self.assertTrue(Property.objects.filter(pk=property_id).exists())
         self.assertEqual(Property.objects.count(), 2)
 
     def test_unmerge_results_in_the_persistence_of_old_canonical_state_if_related_to_any_views(self):
@@ -1779,7 +1810,7 @@ class PropertyUnmergeViewTests(DataMappingBaseTestCase):
         self.client.put(url, content_type="application/json")
 
         self.assertTrue(Property.objects.filter(pk=view.property_id).exists())
-        self.assertEqual(Property.objects.count(), 3)
+        self.assertEqual(Property.objects.count(), 2)
 
 
 class PropertyViewExportTests(DataMappingBaseTestCase):

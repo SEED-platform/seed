@@ -1,4 +1,3 @@
-# !/usr/bin/env python
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
@@ -12,7 +11,7 @@ from datetime import datetime
 from django.urls import reverse
 from django.utils import timezone as tz
 
-from seed.data_importer.utils import kbtu_thermal_conversion_factors as conversion_factors
+from seed.data_importer.utils import kbtu_thermal_conversion_factors, kgal_water_conversion_factors
 from seed.landing.models import SEEDUser as User
 from seed.models import Meter, MeterReading, Property
 from seed.models.scenarios import Scenario
@@ -39,8 +38,10 @@ class TestMeterValidTypesUnits(DeleteModelsTestCase):
         result = self.client.get(url)
         result_dict = ast.literal_eval(result.content.decode("utf-8"))
 
-        expectation = {type: list(units.keys()) for type, units in conversion_factors("US").items()}
-
+        expectation = {
+            "energy": {type: list(units.keys()) for type, units in kbtu_thermal_conversion_factors("US").items()},
+            "water": {type: list(units.keys()) for type, units in kgal_water_conversion_factors("US").items()},
+        }
         self.assertEqual(result_dict, expectation)
 
 

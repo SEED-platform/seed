@@ -23,14 +23,12 @@ angular.module('SEED.controller.inventory_detail', []).controller('inventory_det
   'inventory_service',
   'matching_service',
   'pairing_service',
-  'derived_columns_service',
   'organization_service',
   'dataset_service',
   'inventory_payload',
   'views_payload',
   'analyses_payload',
   'columns',
-  'derived_columns_payload',
   'profiles',
   'current_profile',
   'labels_payload',
@@ -64,14 +62,12 @@ angular.module('SEED.controller.inventory_detail', []).controller('inventory_det
     inventory_service,
     matching_service,
     pairing_service,
-    derived_columns_service,
     organization_service,
     dataset_service,
     inventory_payload,
     views_payload,
     analyses_payload,
     columns,
-    derived_columns_payload,
     profiles,
     current_profile,
     labels_payload,
@@ -139,7 +135,7 @@ angular.module('SEED.controller.inventory_detail', []).controller('inventory_det
     };
 
     $scope.labels = _.filter(labels_payload, (label) => !_.isEmpty(label.is_applied));
-    $scope.audit_template_building_id = inventory_payload.state.audit_template_building_id;
+    $scope.custom_id_1 = inventory_payload.state.custom_id_1;
     $scope.pm_property_id = inventory_payload.state.pm_property_id;
 
     /** See service for structure of returned payload */
@@ -165,9 +161,6 @@ angular.module('SEED.controller.inventory_detail', []).controller('inventory_det
     };
     $scope.order_historical_items_with_scenarios();
     $scope.format_epoch = (epoch) => moment(epoch).format('YYYY-MM-DD');
-
-    // stores derived column values -- updated later once we fetch the data
-    $scope.item_derived_values = {};
 
     $scope.inventory_display_name = organization_service.get_inventory_display_value($scope.organization, $scope.inventory_type === 'properties' ? 'property' : 'taxlot', $scope.item_state);
 
@@ -266,7 +259,7 @@ angular.module('SEED.controller.inventory_detail', []).controller('inventory_det
         resolve: {
           columns: () => columns,
           currentProfile: () => $scope.currentProfile,
-          cycle: () => null,
+          cycle: () => $scope.cycle,
           inventory_type: () => $stateParams.inventory_type,
           provided_inventory() {
             const provided_inventory = [];
@@ -612,7 +605,7 @@ angular.module('SEED.controller.inventory_detail', []).controller('inventory_det
         templateUrl: `${urls.static_url}seed/partials/data_upload_audit_template_modal.html`,
         controller: 'data_upload_audit_template_modal_controller',
         resolve: {
-          audit_template_building_id: () => $scope.audit_template_building_id,
+          custom_id_1: () => $scope.custom_id_1,
           organization: () => $scope.organization,
           cycle_id: () => $scope.cycle.id,
           upload_from_file: () => $scope.uploaderfunc,
@@ -858,29 +851,6 @@ angular.module('SEED.controller.inventory_detail', []).controller('inventory_det
       return value;
     };
 
-    // evaluate all derived columns and store the results
-    const evaluate_derived_columns = () => {
-      const visible_columns_with_derived_columns = $scope.columns.filter((col) => col.derived_column);
-      const derived_column_ids = visible_columns_with_derived_columns.map((col) => col.derived_column);
-      const attached_derived_columns = derived_columns_payload.derived_columns.filter((col) => derived_column_ids.includes(col.id));
-      const column_name_lookup = {};
-      visible_columns_with_derived_columns.forEach((col) => {
-        column_name_lookup[col.column_name] = col.name;
-      });
-
-      const all_evaluation_results = attached_derived_columns.map((col) => derived_columns_service.evaluate($scope.organization.id, col.id, $scope.cycle.id, [$scope.item_parent.id]).then((res) => ({
-        derived_column_id: col.id,
-        value: _.round(res.results[0].value, $scope.organization.display_decimal_places)
-      })));
-
-      $q.all(all_evaluation_results).then((results) => {
-        results.forEach((result) => {
-          const col_id = $scope.columns.find((col) => col.derived_column === result.derived_column_id).id;
-          $scope.item_derived_values[col_id] = result.value;
-        });
-      });
-    };
-
     $scope.delete_scenario = (scenario_id, scenario_name) => {
       const property_view_id = $stateParams.view_id;
 
@@ -1042,7 +1012,6 @@ angular.module('SEED.controller.inventory_detail', []).controller('inventory_det
         $scope.format_date_values($scope.item_state, inventory_service.taxlot_state_date_columns);
       }
 
-      evaluate_derived_columns();
       setMeasureGridOptions();
     };
 

@@ -13,6 +13,14 @@ angular.module('SEED.controller.confirm_column_settings_modal', []).controller('
   'org_id',
   'organization_service',
   'proposed_changes',
+  'columns_service',
+  'spinner_utility',
+  '$q',
+  '$interval',
+  'uploader_service',
+  'table_name',
+  '$window',
+  '$log',
   // eslint-disable-next-line func-names
   function (
     $scope,
@@ -24,14 +32,27 @@ angular.module('SEED.controller.confirm_column_settings_modal', []).controller('
     inventory_type,
     org_id,
     organization_service,
-    proposed_changes
+    proposed_changes,
+    columns_service,
+    spinner_utility,
+    $q,
+    $interval,
+    uploader_service,
+    table_name,
+    $window,
+    $log
   ) {
     $scope.inventory_type = inventory_type;
     $scope.org_id = org_id;
     $scope.columns = columns;
+    $scope.table_name = table_name;
 
     $scope.step = {
       number: 1
+    };
+
+    $scope.progressBar = {
+      progress: 0
     };
 
     $scope.goto_step = (step) => {
@@ -41,6 +62,9 @@ angular.module('SEED.controller.confirm_column_settings_modal', []).controller('
     cycle_service.get_cycles_for_org($scope.org_id).then((cycles) => {
       $scope.cycles = cycles.cycles;
     });
+    const rehash = _.find(proposed_changes, { is_excluded_from_hash: true }) !== undefined ||
+                   _.find(proposed_changes, { is_excluded_from_hash: false }) !== undefined;
+    $scope.rehash_required = rehash;
 
     // parse proposed changes to create change summary to be presented to user
     let all_changed_settings = ['column_name']; // add column_name to describe each row
@@ -80,6 +104,10 @@ angular.module('SEED.controller.confirm_column_settings_modal', []).controller('
       {
         field: 'displayName',
         displayName: 'Display Name Change'
+      },
+      {
+        field: 'column_description',
+        displayName: 'Column Description Change'
       },
       {
         field: 'geocoding_order',
@@ -127,6 +155,14 @@ angular.module('SEED.controller.confirm_column_settings_modal', []).controller('
         displayName: 'ComStock Mapping Change',
         cellTemplate:
           '<div class="ui-grid-cell-contents">{$ row.entity.comstock_mapping === undefined ? "" : row.entity.comstock_mapping === null ? "(removed)" : "comstock." + row.entity.comstock_mapping | translate $}</div>'
+      },
+      {
+        field: 'is_excluded_from_hash',
+        displayName: 'Exclude From Uniqueness',
+        cellTemplate:
+          '<div class="ui-grid-cell-contents text-center">' +
+          '<input type="checkbox" class="no-click" ng-hide="{$ row.entity.is_excluded_from_hash === undefined $}" ng-checked="{$ row.entity.is_excluded_from_hash === true $}" style="margin: 0;">' +
+          '</div>'
       }
     ];
 
@@ -158,12 +194,106 @@ angular.module('SEED.controller.confirm_column_settings_modal', []).controller('
       organization_service.matching_criteria_columns($scope.org_id);
     }
 
-    $scope.confirm = () => {
-      $uibModalInstance.close();
+    $scope.confirm_changes_and_rehash = () => {
+      const api_ready_proposed_changes = Object.keys(proposed_changes).reduce((acc, col_id) => {
+        const col = proposed_changes[col_id];
+        col.display_name = col.displayName; // Add display_name for backend
+        delete col.displayName;
+        return { ...acc, [col_id]: col };
+      }, {});
+
+      $scope.state = 'pending';
+      columns_service
+        .update_and_rehash_columns_for_org($scope.org_id, $scope.table_name, api_ready_proposed_changes)
+        .then((result) => {
+          $scope.state = 'evaluating';
+          $scope.interval = $interval(() => {
+            if ($scope.state === 'running') {
+              $scope.updateTime();
+            } else {
+              $scope.setRunningState();
+            }
+          }, 1000);
+          $scope.updateTime();
+          uploader_service.check_progress_loop(
+            result.data.progress_key,
+            0,
+            1,
+            (response) => {
+              $scope.result = `${response.message} in ${$scope.elapsed}`;
+              $scope.state = 'done';
+              $interval.cancel($scope.interval);
+            },
+            () => {
+              // Do nothing
+            },
+            $scope.progressBar
+          );
+        })
+        .catch((err) => {
+          $log.error(err);
+          $scope.result = 'Failed to update column(s)';
+          $scope.state = 'done';
+          $interval.cancel($scope.interval);
+        });
     };
 
     $scope.cancel = () => {
       $uibModalInstance.dismiss();
     };
+
+    $scope.elapsedFn = () => {
+      const diff = moment().diff($scope.startTime);
+      return $scope.formatTime(moment.duration(diff));
+    };
+
+    $scope.etaFn = () => {
+      if ($scope.progressBar.completed_records) {
+        if (!$scope.initialCompleted) {
+          $scope.initialCompleted = $scope.progressBar.completed_records;
+        }
+        const diff = moment().diff($scope.startTime);
+        const progress = ($scope.progressBar.completed_records - $scope.initialCompleted) / ($scope.progressBar.total_records - $scope.initialCompleted);
+        if (progress) {
+          return $scope.formatTime(moment.duration(diff / progress - diff));
+        }
+      }
+    };
+
+    $scope.setRunningState = () => {
+      $scope.eta = $scope.etaFn();
+      if ($scope.eta) {
+        $scope.state = 'running';
+        $scope.startTime = moment();
+      }
+    };
+
+    $scope.updateTime = () => {
+      $scope.elapsed = $scope.elapsedFn();
+      $scope.eta = $scope.etaFn();
+    };
+
+    $scope.formatTime = (duration) => {
+      const h = Math.floor(duration.asHours());
+      const m = duration.minutes();
+      const s = duration.seconds();
+
+      if (h > 0) {
+        const mPadded = m.toString().padStart(2, '0');
+        const sPadded = s.toString().padStart(2, '0');
+        return `${h}:${mPadded}:${sPadded}`;
+      }
+      if (m > 0) {
+        const sPadded = s.toString().padStart(2, '0');
+        return `${m}:${sPadded}`;
+      }
+      return `${s}s`;
+    };
+
+    $scope.refresh = () => {
+      $window.onbeforeunload = null;
+      $window.location.reload();
+    };
   }
+
 ]);

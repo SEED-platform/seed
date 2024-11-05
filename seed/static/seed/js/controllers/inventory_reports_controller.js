@@ -25,6 +25,10 @@ angular.module('SEED.controller.inventory_reports', []).controller('inventory_re
   'ah_service',
   'access_level_tree',
   'user_service',
+  'filter_groups',
+  'report_configurations',
+  'report_configurations_service',
+  'Notification',
   // eslint-disable-next-line func-names
   function (
     $scope,
@@ -43,27 +47,125 @@ angular.module('SEED.controller.inventory_reports', []).controller('inventory_re
     $uibModal,
     ah_service,
     access_level_tree,
-    user_service
+    user_service,
+    filter_groups,
+    report_configurations,
+    reports_configuration_service,
+    Notification
   ) {
     const org_id = organization_payload.organization.id;
     const base_storage_key = `report.${org_id}`;
-
+    $scope.org_id = org_id;
     $scope.access_level_tree = access_level_tree.access_level_tree;
     $scope.level_names = access_level_tree.access_level_names;
     $scope.level_name_index = null;
     $scope.potential_level_instances = [];
     $scope.access_level_instance_id = null;
     $scope.users_access_level_instance_id = user_service.get_access_level_instance().id;
-
+    $scope.filter_groups = filter_groups;
+    $scope.report_configurations = report_configurations;
+    $scope.filter_group_id = null;
+    function path_to_string(path) {
+      const orderedPath = [];
+      for (const i in $scope.level_names) {
+        if (Object.prototype.hasOwnProperty.call(path, $scope.level_names[i])) {
+          orderedPath.push(path[$scope.level_names[i]]);
+        }
+      }
+      return orderedPath.join(' : ');
+    }
     const access_level_instances_by_depth = ah_service.calculate_access_level_instances_by_depth($scope.access_level_tree);
     // cannot select parents alis
     const [users_depth] = Object.entries(access_level_instances_by_depth).find(([, x]) => x.length === 1 && x[0].id === parseInt($scope.users_access_level_instance_id, 10));
     $scope.level_names = access_level_tree.access_level_names.slice(users_depth - 1);
-
     $scope.change_selected_level_index = () => {
       const new_level_instance_depth = parseInt($scope.level_name_index, 10) + parseInt(users_depth, 10);
       $scope.potential_level_instances = access_level_instances_by_depth[new_level_instance_depth];
+      for (const key in $scope.potential_level_instances) {
+        $scope.potential_level_instances[key].name = path_to_string($scope.potential_level_instances[key].path);
+      }
       $scope.access_level_instance_id = null;
+      $scope.setModified();
+    };
+    $scope.selected_report_config_id = 0;
+    $scope.currentReportConfig = null;
+    $scope.reportModified = false;
+
+    $scope.new_report_configuration = () => {
+      const rc = {};
+      if ($scope.xAxisSelectedItem) {
+        rc.x_column = $scope.xAxisSelectedItem.varName;
+      } else {
+        rc.x_column = null;
+      }
+      if ($scope.yAxisSelectedItem) {
+        rc.y_column = $scope.yAxisSelectedItem.varName;
+      } else {
+        rc.y_column = null;
+      }
+      rc.access_level_instance_id = $scope.access_level_instance_id;
+      rc.access_level_depth = $scope.level_name_index;
+      rc.cycles = $scope.selected_cycles;
+      rc.filter_group_id = $scope.filter_group_id;
+
+      const modalInstance = $uibModal.open({
+        templateUrl: `${urls.static_url}seed/partials/report_configuration_modal.html`,
+        controller: 'report_configuration_modal_controller',
+        resolve: {
+          action: () => 'new',
+          data: () => rc
+        }
+      });
+
+      modalInstance.result.then((new_report_configuration) => {
+        $scope.report_configurations.push(new_report_configuration);
+        $scope.reportModified = false;
+        $scope.selected_report_config_id = new_report_configuration.id;
+        $scope.currentReportConfig = null;
+        $scope.change_report_config();
+
+        Notification.primary(`Created ${$scope.currentFilterGroup.name}`);
+      });
+    };
+
+    $scope.rename_report_configuration = () => {
+      const oldReportConfiguration = angular.copy($scope.currentReportConfig);
+
+      const modalInstance = $uibModal.open({
+        templateUrl: `${urls.static_url}seed/partials/report_configuration_modal.html`,
+        controller: 'report_configuration_modal_controller',
+        resolve: {
+          action: () => 'rename',
+          data: () => $scope.currentReportConfig
+        }
+      });
+
+      modalInstance.result.then((newName) => {
+        $scope.currentReportConfig.name = newName;
+        Notification.primary(`Renamed ${oldReportConfiguration.name} to ${newName}`);
+        _.find($scope.report_configurations, { id: $scope.currentReportConfig.id }).name = newName;
+      });
+    };
+
+    $scope.remove_report_configuration = () => {
+      const oldReportConfigName = $scope.currentReportConfig.name;
+
+      const modalInstance = $uibModal.open({
+        templateUrl: `${urls.static_url}seed/partials/report_configuration_modal.html`,
+        controller: 'report_configuration_modal_controller',
+        resolve: {
+          action: () => 'remove',
+          data: () => $scope.currentReportConfig
+        }
+      });
+
+      modalInstance.result.then(() => {
+        _.remove($scope.report_configurations, $scope.currentReportConfig);
+        $scope.Modified = false;
+        $scope.selected_report_config_id = _.first($scope.report_configurations).id;
+        $scope.change_report_config();
+        Notification.primary(`Removed ${oldReportConfigName}`);
+      });
     };
 
     const pretty_unit = (pint_spec) => {
@@ -137,9 +239,9 @@ angular.module('SEED.controller.inventory_reports', []).controller('inventory_re
         varName: 'Count',
         axisLabel: 'Count'
       },
-      ..._.map(organization_payload.organization.default_reports_x_axis_options, (column) => ({
-        name: $translate.instant(column.display_name), // short name for variable, used in pulldown
-        label: $translate.instant(column.display_name), // full name for variable
+      ..._.map(organization_payload.organization.default_reports_y_axis_options, (column) => ({
+        name: $translate.instant(column.display_name !== '' ? column.display_name : column.column_name), // short name for variable, used in pulldown
+        label: $translate.instant(column.display_name !== '' ? column.display_name : column.column_name), // full name for variable
         varName: column.column_name, // name of variable, to be sent to server
         axisLabel: parse_axis_label(column) // label to be used in charts, should include units
       // axisType: 'Measure', //DimpleJS property for axis type
@@ -147,9 +249,9 @@ angular.module('SEED.controller.inventory_reports', []).controller('inventory_re
       }))
     ];
 
-    $scope.xAxisVars = _.map(organization_payload.organization.default_reports_y_axis_options, (column) => ({
-      name: $translate.instant(column.display_name), // short name for variable, used in pulldown
-      label: $translate.instant(column.display_name), // full name for variable
+    $scope.xAxisVars = _.map(organization_payload.organization.default_reports_x_axis_options, (column) => ({
+      name: $translate.instant(column.display_name !== '' ? column.display_name : column.column_name), // short name for variable, used in pulldown
+      label: $translate.instant(column.display_name !== '' ? column.display_name : column.column_name), // full name for variable
       varName: column.column_name, // name of variable, to be sent to server
       axisLabel: parse_axis_label(column) // label to be used in charts, should include units
       // axisType: 'Measure', //DimpleJS property for axis type
@@ -171,16 +273,22 @@ angular.module('SEED.controller.inventory_reports', []).controller('inventory_re
     const localStorageYAxisKey = `${base_storage_key}.yaxis`;
     const localStorageALIndex = `${base_storage_key}.ALIndex`;
     const localStorageALIID = `${base_storage_key}.ALIID`;
+    const localStorageReportConfigID = `${base_storage_key}.RCID`;
 
-    // Currently selected x and y variables - check local storage first, otherwise initialize to first choice
-    $scope.yAxisSelectedItem = JSON.parse(localStorage.getItem(localStorageYAxisKey)) || $scope.yAxisVars[0];
-    $scope.xAxisSelectedItem = JSON.parse(localStorage.getItem(localStorageXAxisKey)) || $scope.xAxisVars[0];
+    // Check local storage for a saved report config - if there is one, use that, otherwise look for saved settings, if none, default to first options.
 
-    $scope.level_name_index = JSON.parse(localStorage.getItem(localStorageALIndex)) || '0';
-    const new_level_instance_depth = parseInt($scope.level_name_index, 10) + parseInt(users_depth, 10);
-    $scope.potential_level_instances = access_level_instances_by_depth[new_level_instance_depth];
-    $scope.access_level_instance_id = JSON.parse(localStorage.getItem(localStorageALIID)) || parseInt($scope.users_access_level_instance_id, 10);
+    if (JSON.parse(localStorage.getItem(localStorageReportConfigID)) && ($scope.report_configurations.find((rc) => rc.id === JSON.parse(localStorage.getItem(localStorageReportConfigID))))) {
+      $scope.selected_report_config_id = JSON.parse(localStorage.getItem(localStorageReportConfigID));
+    } else {
+      // Currently selected x and y variables - check local storage first, otherwise initialize to first choice
+      $scope.yAxisSelectedItem = JSON.parse(localStorage.getItem(localStorageYAxisKey)) || $scope.yAxisVars[0];
+      $scope.xAxisSelectedItem = JSON.parse(localStorage.getItem(localStorageXAxisKey)) || $scope.xAxisVars[0];
 
+      $scope.level_name_index = JSON.parse(localStorage.getItem(localStorageALIndex)) || '0';
+      const new_level_instance_depth = parseInt($scope.level_name_index, 10) + parseInt(users_depth, 10);
+      $scope.potential_level_instances = access_level_instances_by_depth[new_level_instance_depth];
+      $scope.access_level_instance_id = JSON.parse(localStorage.getItem(localStorageALIID)) || parseInt($scope.users_access_level_instance_id, 10);
+    }
     // Chart data
     $scope.chartData = [];
     $scope.aggChartData = [];
@@ -272,9 +380,23 @@ angular.module('SEED.controller.inventory_reports', []).controller('inventory_re
                   return ctx[0]?.raw.display_name;
                 },
                 label: (ctx) => [
-                  `${$scope.xAxisSelectedItem.label}: ${type === 'bar' ? ctx.raw : ctx.parsed.y}`,
-                  `${$scope.yAxisSelectedItem.label}: ${type === 'bar' ? ctx.label : ctx.parsed.x}`
+                  `${$scope.xAxisSelectedItem.label}: ${type === 'bar' ? ctx.label : ctx.parsed.x}`,
+                  `${$scope.yAxisSelectedItem.label}: ${type === 'bar' ? ctx.raw : ctx.parsed.y}`
                 ]
+              }
+            },
+            zoom: {
+              pan: {
+                enabled: true
+              },
+              zoom: {
+                wheel: {
+                  enabled: true
+                },
+                pinch: {
+                  enabled: true
+                },
+                mode: 'xy'
               }
             }
           }
@@ -304,6 +426,7 @@ angular.module('SEED.controller.inventory_reports', []).controller('inventory_re
         $scope.selected_cycles = [];
       }
       $scope.selected_cycles.push(selection);
+      $scope.setModified();
     };
 
     $scope.get_cycle_display = (id) => {
@@ -315,6 +438,11 @@ angular.module('SEED.controller.inventory_reports', []).controller('inventory_re
 
     $scope.click_remove_cycle = (id) => {
       $scope.selected_cycles = $scope.selected_cycles.filter((item) => item !== id);
+      $scope.setModified();
+    };
+
+    $scope.select_filter_group = () => {
+      $scope.setModified();
     };
 
     /* END NEW CHART STUFF */
@@ -364,6 +492,14 @@ angular.module('SEED.controller.inventory_reports', []).controller('inventory_re
     /* The directive will call this, so we can update our flag for the state of the chart. */
     $scope.aggChartRendered = () => {
       $scope.aggChartIsLoading = false;
+    };
+
+    $scope.reset_scatter_chart_zoom = () => {
+      $scope.scatterChart.resetZoom();
+    };
+
+    $scope.reset_agg_chart_zoom = () => {
+      $scope.barChart.resetZoom();
     };
 
     /* PRIVATE FUNCTIONS (so to speak) */
@@ -417,7 +553,8 @@ angular.module('SEED.controller.inventory_reports', []).controller('inventory_re
             yVar: $scope.chartData.yAxisVarName,
             yLabel: $scope.chartData.yAxisTitle
           }),
-          cycles: () => $scope.selected_cycles
+          cycles: () => $scope.selected_cycles,
+          filter_group_id: () => $scope.filter_group_id
         }
       });
       modalInstance.result.finally(spinner_utility.hide);
@@ -446,7 +583,7 @@ angular.module('SEED.controller.inventory_reports', []).controller('inventory_re
       $scope.chartIsLoading = true;
 
       inventory_reports_service
-        .get_report_data(xVar, yVar, $scope.selected_cycles, $scope.access_level_instance_id)
+        .get_report_data(xVar, yVar, $scope.selected_cycles, $scope.access_level_instance_id, $scope.filter_group_id)
         .then(
           (data) => {
             data = data.data;
@@ -456,9 +593,9 @@ angular.module('SEED.controller.inventory_reports', []).controller('inventory_re
             $scope.chartData = {
               series: $scope.chartSeries,
               chartData: data.chart_data,
-              xAxisTitle: $scope.xAxisSelectedItem.axisLabel,
+              xAxisTitle: $scope.xAxisSelectedItem.label,
               xAxisVarName: $scope.xAxisSelectedItem.varName,
-              yAxisTitle: $scope.yAxisSelectedItem.axisLabel,
+              yAxisTitle: $scope.yAxisSelectedItem.label,
               yAxisVarName: $scope.yAxisSelectedItem.varName,
               yAxisType: $scope.yAxisSelectedItem.axisType,
               yAxisMin: $scope.yAxisSelectedItem.axisMin,
@@ -469,6 +606,29 @@ angular.module('SEED.controller.inventory_reports', []).controller('inventory_re
             // new chartJS chart data
             $scope.scatterChart.options.scales.y.min = $scope.yAxisSelectedItem.axisMin;
             $scope.scatterChart.options.scales.y.type = $scope.chartData.chartData.every((d) => typeof d.y === 'number') ? 'linear' : 'category';
+
+            if ($scope.chartData.chartData.every((d) => typeof d.x === 'number')) {
+              $scope.scatterChart.options.scales.x.type = 'linear';
+
+              // Set the min / max for the axis to be the min/max values -/+ 0.5 percent
+              $scope.scatterChart.options.scales.x.min = Math.min(...$scope.chartData.chartData.map((d) => d.x));
+              $scope.scatterChart.options.scales.x.min -= Math.round(Math.abs($scope.scatterChart.options.scales.x.min * 0.005));
+
+              $scope.scatterChart.options.scales.x.max = Math.max(...$scope.chartData.chartData.map((d) => d.x));
+              $scope.scatterChart.options.scales.x.max += Math.round(Math.abs($scope.scatterChart.options.scales.x.max * 0.005));
+
+              if ($scope.xAxisSelectedItem.varName === 'year_built') {
+                $scope.scatterChart.options.scales.x.ticks.callback = (value) => String(value);
+              }
+            } else {
+              $scope.scatterChart.options.scales.x = {
+                type: 'category',
+                labels: Array.from([...new Set($scope.chartData.chartData.map((d) => d.x))]).sort()
+              };
+            }
+            if ($scope.yAxisSelectedItem.varName === 'year_built') {
+              $scope.scatterChart.options.scales.y.ticks.callback = (value) => String(value);
+            }
             $scope.scatterChart.data.datasets[0].data = $scope.chartData.chartData;
             // add the colors to the datapoints, need to create a hash map first
             const colorMap = new Map(colorsArr.map((object) => [object.seriesName, object.color]));
@@ -476,6 +636,9 @@ angular.module('SEED.controller.inventory_reports', []).controller('inventory_re
               $scope.pointBackgroundColors.push(colorMap.get($scope.scatterChart.data.datasets[0].data[i].yr_e));
             }
             $scope.scatterChart.update();
+
+            // Axis data table
+            $scope.axisData = data.axis_data;
 
             if ($scope.chartData.chartData && $scope.chartData.chartData.length > 0) {
               $scope.chartStatusMessage = '';
@@ -515,7 +678,7 @@ angular.module('SEED.controller.inventory_reports', []).controller('inventory_re
 
       $scope.aggChartIsLoading = true;
       inventory_reports_service
-        .get_aggregated_report_data(xVar, yVar, $scope.selected_cycles, $scope.access_level_instance_id)
+        .get_aggregated_report_data(xVar, yVar, $scope.selected_cycles, $scope.access_level_instance_id, $scope.filter_group_id)
         .then(
           (data) => {
             data = data.aggregated_data;
@@ -529,7 +692,7 @@ angular.module('SEED.controller.inventory_reports', []).controller('inventory_re
             };
 
             // new agg chart
-            const the_data = _.orderBy($scope.aggChartData.chartData, ['y'], ['desc']);
+            const the_data = _.orderBy($scope.aggChartData.chartData, ['y'], ['acs']);
             $scope.barChart.data.labels = the_data.map((a) => a.y);
             $scope.barChart.data.datasets[0].data = the_data.map((a) => a.x);
             // add the colors to the datapoints, need to create a hash map first
@@ -555,6 +718,18 @@ angular.module('SEED.controller.inventory_reports', []).controller('inventory_re
         });
     }
 
+    $scope.downloadChart = () => {
+      const a = document.createElement('a');
+      a.href = $scope.barChart.toBase64Image();
+      a.download = 'default_report_bar.png';
+      a.click();
+
+      const b = document.createElement('a');
+      b.href = $scope.scatterChart.toBase64Image();
+      b.download = 'default_report_scatter.png';
+      b.click();
+    };
+
     function updateStorage() {
       // Save axis and cycle selections
       localStorage.setItem(localStorageXAxisKey, JSON.stringify($scope.xAxisSelectedItem ?? ''));
@@ -562,6 +737,7 @@ angular.module('SEED.controller.inventory_reports', []).controller('inventory_re
       localStorage.setItem(localStorageSelectedCycles, JSON.stringify($scope.selected_cycles));
       localStorage.setItem(localStorageALIndex, JSON.stringify($scope.level_name_index));
       localStorage.setItem(localStorageALIID, JSON.stringify($scope.access_level_instance_id));
+      localStorage.setItem(localStorageReportConfigID, JSON.stringify($scope.selected_report_config_id));
     }
 
     /*  Generate an array of color objects to be used as part of chart configuration
@@ -589,14 +765,67 @@ angular.module('SEED.controller.inventory_reports', []).controller('inventory_re
       return colorsArr;
     }
 
+    $scope.check_for_report_configuration_changes = () => false;
+
+    $scope.change_report_config = () => {
+      if (($scope.currentReportConfig === null && $scope.selected_report_config_id) || ($scope.currentReportConfig !== null && $scope.currentReportConfig.id !== $scope.selected_report_config_id)) {
+        $scope.currentReportConfig = $scope.report_configurations.find((config) => config.id === $scope.selected_report_config_id);
+        $scope.selected_cycles = [];
+        $scope.currentReportConfig.cycles.forEach((cycle) => {
+          $scope.cycle_selection = cycle;
+          $scope.select_cycle();
+        });
+        $scope.xAxisSelectedItem = $scope.xAxisVars.find((x) => x.varName === $scope.currentReportConfig.x_column);
+        $scope.yAxisSelectedItem = $scope.yAxisVars.find((y) => y.varName === $scope.currentReportConfig.y_column);
+        $scope.level_name_index = `${$scope.currentReportConfig.access_level_depth - (users_depth - 1)}`;
+        $scope.change_selected_level_index();
+        $scope.access_level_instance_id = $scope.currentReportConfig.access_level_instance_id;
+        $scope.filter_group_id = $scope.currentReportConfig.filter_group_id;
+        $scope.reportModified = false;
+        $scope.updateChartData();
+      }
+    };
+
+    $scope.setModified = () => {
+      $scope.reportModified = true;
+    };
+
+    $scope.save_report_config = () => {
+      if ($scope.xAxisSelectedItem) {
+        $scope.currentReportConfig.x_column = $scope.xAxisSelectedItem.varName;
+      } else {
+        $scope.currentReportConfig.x_column = null;
+      }
+      if ($scope.yAxisSelectedItem) {
+        $scope.currentReportConfig.y_column = $scope.yAxisSelectedItem.varName;
+      } else {
+        $scope.currentReportConfig.y_column = null;
+      }
+      $scope.currentReportConfig.access_level_instance_id = $scope.access_level_instance_id;
+      $scope.currentReportConfig.access_level_depth = $scope.level_name_index;
+      $scope.currentReportConfig.cycles = $scope.selected_cycles;
+      $scope.currentReportConfig.filter_group_id = $scope.filter_group_id;
+
+      reports_configuration_service.update_report_configuration($scope.currentReportConfig.id, $scope.currentReportConfig)
+        .then(
+          () => {
+            Notification.primary(`Saved ${$scope.currentReportConfig.name}`);
+            $scope.reportModified = false;
+          }
+        );
+    };
+
     const localStorageSelectedCycles = `${base_storage_key}.SelectedCycles`;
 
     /* Call the update method so the page initializes
        with the values set in the scope */
     const init = () => {
       // Initialize pulldowns
+      $scope.report_config_editable = $scope.menu.user.organization.user_role === 'owner';
       $scope.selected_cycles = JSON.parse(localStorage.getItem(localStorageSelectedCycles)) || [];
-
+      if ($scope.selected_report_config_id) {
+        $scope.change_report_config();
+      }
       // Attempt to load selections
       $scope.updateChartData();
     };

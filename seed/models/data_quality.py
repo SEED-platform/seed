@@ -1,4 +1,3 @@
-# !/usr/bin/env python
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
@@ -7,6 +6,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 import json
 import logging
 import re
+from collections import defaultdict
 from datetime import date, datetime
 from random import randint
 
@@ -14,14 +14,14 @@ import pytz
 from django.apps import apps
 from django.db import IntegrityError, models
 from django.utils.timezone import get_current_timezone, make_aware, make_naive
-from past.builtins import basestring
 from pint.errors import DimensionalityError
 from quantityfield.units import ureg
 
 from seed.lib.superperms.orgs.models import Organization
-from seed.models import Column, DerivedColumn, PropertyView, StatusLabel, TaxLotView, obj_to_dict
+from seed.models import Column, DerivedColumn, GoalNote, PropertyView, PropertyViewLabel, StatusLabel, TaxLotView, obj_to_dict
 from seed.serializers.pint import pretty_units
 from seed.utils.cache import get_cache_raw, set_cache_raw
+from seed.utils.goals import get_area_value, get_eui_value, percentage_difference
 from seed.utils.time import convert_datestr
 
 _log = logging.getLogger(__name__)
@@ -332,14 +332,117 @@ class Rule(models.Model):
             "severity": SEVERITY_ERROR,
             "condition": RULE_RANGE,
         },
+        {
+            "table_name": "Goal",
+            "name": "High EUI % Change",
+            "field": "eui",
+            "data_type": TYPE_EUI,
+            "rule_type": RULE_TYPE_DEFAULT,
+            "severity": SEVERITY_ERROR,
+            "condition": RULE_RANGE,
+            "max": 40,
+            "cross_cycle": True,
+        },
+        {
+            "table_name": "Goal",
+            "name": "Low EUI % Change",
+            "field": "eui",
+            "data_type": TYPE_EUI,
+            "rule_type": RULE_TYPE_DEFAULT,
+            "severity": SEVERITY_ERROR,
+            "condition": RULE_RANGE,
+            "min": -40,
+            "cross_cycle": True,
+        },
+        {
+            "table_name": "Goal",
+            "name": "High Area % Change",
+            "field": "area",
+            "data_type": TYPE_AREA,
+            "rule_type": RULE_TYPE_DEFAULT,
+            "severity": SEVERITY_ERROR,
+            "condition": RULE_RANGE,
+            "max": 5,
+            "cross_cycle": True,
+        },
+        {
+            "table_name": "Goal",
+            "name": "Low Area % Change",
+            "field": "area",
+            "data_type": TYPE_AREA,
+            "rule_type": RULE_TYPE_DEFAULT,
+            "severity": SEVERITY_ERROR,
+            "condition": RULE_RANGE,
+            "min": -5,
+            "cross_cycle": True,
+        },
+        {
+            "table_name": "Goal",
+            "name": "High EUI",
+            "field": "eui",
+            "data_type": TYPE_EUI,
+            "rule_type": RULE_TYPE_DEFAULT,
+            "severity": SEVERITY_ERROR,
+            "condition": RULE_RANGE,
+            "max": 1000,
+        },
+        {
+            "table_name": "Goal",
+            "name": "Low EUI",
+            "field": "eui",
+            "data_type": TYPE_EUI,
+            "rule_type": RULE_TYPE_DEFAULT,
+            "severity": SEVERITY_ERROR,
+            "condition": RULE_RANGE,
+            "min": 40,
+        },
+        {
+            "table_name": "Goal",
+            "name": "High Area",
+            "field": "area",
+            "data_type": TYPE_AREA,
+            "rule_type": RULE_TYPE_DEFAULT,
+            "severity": SEVERITY_ERROR,
+            "condition": RULE_RANGE,
+            "max": 1000000,
+        },
+        {
+            "table_name": "Goal",
+            "name": "Low Area",
+            "field": "area",
+            "data_type": TYPE_AREA,
+            "rule_type": RULE_TYPE_DEFAULT,
+            "severity": SEVERITY_ERROR,
+            "condition": RULE_RANGE,
+            "min": 1000,
+        },
+        {
+            "table_name": "Goal",
+            "name": "Missing EUI",
+            "field": "eui",
+            "data_type": TYPE_EUI,
+            "rule_type": RULE_TYPE_DEFAULT,
+            "severity": SEVERITY_ERROR,
+            "condition": RULE_NOT_NULL,
+        },
+        {
+            "table_name": "Goal",
+            "name": "Missing Area",
+            "field": "area",
+            "data_type": TYPE_AREA,
+            "rule_type": RULE_TYPE_DEFAULT,
+            "severity": SEVERITY_ERROR,
+            "condition": RULE_NOT_NULL,
+        },
     ]
 
     name = models.CharField(max_length=255, blank=True)
+    cross_cycle = models.BooleanField(default=False)
     description = models.CharField(max_length=1000, blank=True)
     data_quality_check = models.ForeignKey("DataQualityCheck", on_delete=models.CASCADE, related_name="rules", null=True)
     status_label = models.ForeignKey(StatusLabel, on_delete=models.DO_NOTHING, null=True)
     table_name = models.CharField(max_length=200, default="PropertyState", blank=True)
-    field = models.CharField(max_length=200)
+    field = models.CharField(max_length=200, null=True, blank=True)
     # If for_derived_column is True, `Rule.field` is a derived column name
     # If False, `Rule.field` is a *State field or extra_data key
     for_derived_column = models.BooleanField(default=False)
@@ -365,7 +468,7 @@ class Rule(models.Model):
         :param value: Value to validate rule against
         :return: bool, True is valid, False if the value does not match
         """
-        if self.data_type == self.TYPE_STRING and isinstance(value, basestring):
+        if self.data_type == self.TYPE_STRING and isinstance(value, str):
             if self.text_match is None or self.text_match == "":
                 return True
             elif self.condition == Rule.RULE_INCLUDE:
@@ -397,7 +500,7 @@ class Rule(models.Model):
                 rule_min = int(rule_min)
             elif isinstance(value, ureg.Quantity):
                 rule_min = rule_min * ureg(self.units)
-            elif isinstance(value, basestring):
+            elif isinstance(value, str):
                 # try to convert to float
                 try:
                     value = float(value)
@@ -436,7 +539,7 @@ class Rule(models.Model):
                 rule_max = int(rule_max)
             elif isinstance(value, ureg.Quantity):
                 rule_max = rule_max * ureg(self.units)
-            elif isinstance(value, basestring):
+            elif isinstance(value, str):
                 # try to convert to float
                 try:
                     value = float(value)
@@ -463,7 +566,7 @@ class Rule(models.Model):
         :return: typed value
         """
 
-        if isinstance(value, basestring):
+        if isinstance(value, str):
             # check if we can type cast the value
             try:
                 # strip the string of any leading/trailing spaces
@@ -524,7 +627,7 @@ class Rule(models.Model):
                 f_max = str(self.max)
         elif isinstance(value, ureg.Quantity):
             f_value, f_min, f_max = format_pint_violation(self, value)
-        elif isinstance(value, basestring):
+        elif isinstance(value, str):
             f_value = str(value)
             f_min = str(self.min)
             f_max = str(self.max)
@@ -646,16 +749,51 @@ class DataQualityCheck(models.Model):
         for row in rows:
             # Initialize the ID if it does not exist yet. Add in the other
             # fields that are of interest to the GUI
-            if row.id not in self.results:
-                self.results[row.id] = {}
-                for field in fields:
-                    self.results[row.id][field] = getattr(row, field)
-                self.results[row.id]["data_quality_results"] = []
+            self.init_result(record_type, row, fields)
 
             # Run the checks
             self._check(rules, row, derived_columns_by_name)
 
         # Prune the results will remove any entries that have zero data_quality_results
+        self.prune_results()
+
+    def check_data_cross_cycle(self, goal_id, state_pairs):
+        """
+        Send in data as properties and their goal state pairs. Update GoalNote.passed_checks with data quality check return
+        :param goal:
+        :param state_pairs: [{property: Property, baseline: PropertyState, current: PropertyState}, {}, ...]
+        """
+        rules = self.rules.filter(enabled=True, table_name="Goal")
+        goal_notes = GoalNote.objects.filter(goal=goal_id)
+        goal_notes = {note.property.id: note for note in goal_notes}
+        goal_notes_to_update = []
+        fields = self.get_fieldnames("PropertyState")
+        for row in state_pairs:
+            for cycle_key in ["baseline", "current"]:
+                self.init_result("PropertyState", row[cycle_key], fields)
+
+            goal_note = self._check_cross_cycle(rules, row, goal_notes)
+            if goal_note:
+                goal_notes_to_update.append(goal_note)
+
+        self.prune_results()
+
+        GoalNote.objects.bulk_update(goal_notes_to_update, ["passed_checks"])
+
+    def init_result(self, record_type, row, fields):
+        # Initialize the ID if it does not exist yet. Add in the other
+        # fields that are of interest to the GUI
+        if row and row.id not in self.results:
+            self.results[row.id] = {}
+            for field in fields:
+                self.results[row.id][field] = getattr(row, field)
+                view = row.taxlotview_set.first() if record_type == "TaxLotState" else row.propertyview_set.first()
+                if view:
+                    self.results[row.id]["cycle"] = view.cycle.name
+            self.results[row.id]["data_quality_results"] = []
+
+    def prune_results(self):
+        # prune_results will remove any entries that have zero data_quality_results
         for k, v in self.results.copy().items():
             if not v["data_quality_results"]:
                 del self.results[k]
@@ -681,7 +819,7 @@ class DataQualityCheck(models.Model):
         # check if the row has any rules applied to it
         model_labels = {"linked_id": None, "label_ids": []}
         if row.__class__.__name__ == "PropertyState":
-            label = apps.get_model("seed", "PropertyView_labels")
+            label = apps.get_model("seed", "PropertyViewLabel")
             if PropertyView.objects.filter(state=row).exists():
                 model_labels["linked_id"] = PropertyView.objects.get(state=row).id
                 model_labels["label_ids"] = list(
@@ -793,6 +931,108 @@ class DataQualityCheck(models.Model):
             if not label_applied and rule.status_label_id in model_labels["label_ids"]:
                 self.remove_status_label(label, rule, linked_id)
 
+    def _check_cross_cycle(self, rules, row, goal_notes):
+        """
+        Check if property percent changes are within tolerance. Update GoalNote.passed_checks with result
+        :param rules: list, rules to run from database objects
+        :param row: { property: Property, baseline: PropertyState, current PropertyState }
+        :goal_notes: dictionary of { property_id: GoalNote, ... }
+        """
+        apply_labels = {"baseline": defaultdict(list), "current": defaultdict(list)}
+        results = []
+        property_id = row["property"].id
+        goal_note = goal_notes.get(property_id)
+        if not goal_note or not row["current"]:
+            # NEED TO MAKE SURE MISSING DATA IS APPLIED
+            return
+        goal = goal_note.goal
+        baseline_view = row["baseline"].propertyview_set.first() if row["baseline"] else None
+        current_view = row["current"].propertyview_set.first() if row["current"] else None
+
+        def check_range():
+            return (rule.min is None or value > rule.min) and (rule.max is None or value < rule.max)
+
+        def append_to_apply_labels():
+            if rule.status_label:
+                apply_labels[cycle_key][rule.status_label.id].append(result)
+
+        for rule in rules:
+            result = None
+            data_type = rule.DATA_TYPES[rule.data_type][1]
+            baseline = self.get_value(row, data_type, goal, "baseline")
+            current = self.get_value(row, data_type, goal, "current")
+            # EUI is inverese as a drop in EUI is an improvement
+            cycle_values = [baseline, current] if data_type == "eui" else [current, baseline]
+
+            if rule.cross_cycle:
+                cycle_key = "current"
+                value = percentage_difference(*cycle_values)
+                if value is None:
+                    continue
+                if rule.condition == Rule.RULE_RANGE:
+                    result = check_range()
+                    results.append(result)
+                    append_to_apply_labels()
+                    if not result:
+                        self.add_result_range_error(row["current"].id, rule, data_type, value)
+                        self.update_status_label(PropertyViewLabel, rule, current_view.id, row["current"].id)
+
+                # other rule condition types
+                else:
+                    logging.error(">>> OTHER")
+
+            else:  # Within Cycle
+                for cycle_key in ["baseline", "current"]:
+                    state = row["baseline"] if cycle_key == "baseline" else row["current"]
+                    view = baseline_view if cycle_key == "baseline" else current_view
+                    if not state:
+                        return
+                    value = baseline if cycle_key == "baseline" else current
+                    if rule.condition == rule.RULE_RANGE:
+                        if value is not None:
+                            result = check_range()
+                            results.append(result)
+                            append_to_apply_labels()
+                            if not result:
+                                self.add_result_range_error(state.id, rule, data_type, value)
+                                self.update_status_label(PropertyViewLabel, rule, view.id, state.id)
+
+                    elif rule.condition == rule.RULE_NOT_NULL:
+                        result = value is not None
+                        results.append(result)
+                        append_to_apply_labels()
+                        if not result:
+                            self.add_result_is_null(state.id, rule, data_type, value)
+                            self.update_status_label(PropertyViewLabel, rule, view.id, state.id)
+
+                    # other rule condition types.
+                    else:
+                        logging.error(">>> OTHER")
+
+            goal_note.passed_checks = all(results)
+
+        # if there are multiple rules with the same label, determine if they are all passing to add or remove the label
+        for cycle_key in ["baseline", "current"]:
+            view = baseline_view if cycle_key == "baseline" else current_view
+
+            for id, results in apply_labels[cycle_key].items():
+                label = StatusLabel.objects.get(id=id)
+                property_view_label = PropertyViewLabel.objects.filter(propertyview=view, statuslabel=label, goal=goal)
+                if all(results):
+                    property_view_label.delete()
+                elif not property_view_label:
+                    PropertyViewLabel.objects.create(propertyview=view, statuslabel=label, goal=goal)
+
+        return goal_note
+
+    def get_value(self, property_obj, data_type, goal, cycle_key):
+        if not property_obj[cycle_key]:
+            return None
+        if data_type == "area":
+            return get_area_value(property_obj[cycle_key], goal)
+        elif data_type == "eui":
+            return get_eui_value(property_obj[cycle_key], goal)
+
     def save_to_cache(self, identifier, organization_id):
         """
         Save the results to the cache database. The data in the cache are
@@ -823,7 +1063,22 @@ class DataQualityCheck(models.Model):
         :return: None
         """
         for rule in Rule.DEFAULT_RULES:
-            self.rules.add(Rule.objects.create(**rule))
+            rule_instance = Rule.objects.create(**rule)
+            self.rules.add(rule_instance)
+            self.add_goal_rule_labels(rule_instance)
+
+    def add_goal_rule_labels(self, rule):
+        # Add labels to default portfolio/goal rules
+        if rule:
+            org = rule.data_quality_check.organization
+            try:
+                if "Missing" in rule.name:
+                    rule.status_label = StatusLabel.objects.get(name="Missing Data", super_organization=org)
+                else:
+                    rule.status_label = StatusLabel.objects.get(name=rule.name, super_organization=org)
+                rule.save()
+            except StatusLabel.DoesNotExist:
+                pass
 
     def remove_all_rules(self):
         """
@@ -923,6 +1178,20 @@ class DataQualityCheck(models.Model):
                 "table_name": rule.table_name,
                 "message": display_name + " out of range",
                 "detailed_message": display_name + " [" + value + "] > " + rule_max,
+                "severity": rule.get_severity_display(),
+                "condition": rule.condition,
+            }
+        )
+
+    def add_result_range_error(self, row_id, rule, display_name, value):
+        self.results[row_id]["data_quality_results"].append(
+            {
+                "field": rule.field,
+                "formatted_field": display_name,
+                "value": value,
+                "table_name": rule.table_name,
+                "message": f"{display_name} out of range",
+                "detailed_message": f"{display_name}  [ {value} ] outside range {rule.min} to {rule.max}",
                 "severity": rule.get_severity_display(),
                 "condition": rule.condition,
             }
@@ -1054,7 +1323,7 @@ class DataQualityCheck(models.Model):
                         f"Label with super_organization_id={label_org_id} cannot be applied to a record with parent "
                         f"organization_id={property_parent_org_id}."
                     )
-            else:
+            elif rule.table_name == "TaxLotState":
                 taxlot_parent_org_id = TaxLotView.objects.get(pk=linked_id).taxlot.organization.get_parent().id
                 if taxlot_parent_org_id == label_org_id:
                     label_class.objects.get_or_create(taxlotview_id=linked_id, statuslabel_id=rule.status_label_id)

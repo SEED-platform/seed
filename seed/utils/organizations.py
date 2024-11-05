@@ -1,4 +1,3 @@
-# !/usr/bin/env python
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
@@ -6,6 +5,9 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 import locale
 from json import load
+
+from django_otp import devices_for_user
+from django_otp.plugins.otp_email.models import EmailDevice
 
 from seed.lib.superperms.orgs.exceptions import TooManyNestedOrgsError
 from seed.lib.superperms.orgs.models import ROLE_MEMBER, Organization, OrganizationUser
@@ -34,6 +36,22 @@ def default_pm_mappings():
         "GJ/m**2/year",
         "MJ/m**2/year",
         "kBtu/m**2/year",
+        # ghg units
+        "kgCO2e/year",
+        "MtCO2e/year",
+        # ghg_i units
+        "kgCO2e/ft**2/year",
+        "MtCO2e/ft**2/year",
+        "kgCO2e/m**2/year",
+        "MtCO2e/m**2/year",
+        # wui units
+        "kgal/ft**2/year",
+        "gal/ft**2/year",
+        "L/m**2/year",
+        # water_user units
+        "kgal/year",
+        "gal/year",
+        "L/year",
     ]
 
     formatted_mappings = []
@@ -73,7 +91,6 @@ def _create_default_columns(organization_id):
             "custom_id_1",
             "pm_property_id",
             "jurisdiction_tax_lot_id",
-            "ubid",
         ]
 
         # Default fields and order are those used before customization was enabled
@@ -173,3 +190,10 @@ def create_suborganization(user, current_org, suborg_name="", user_role=ROLE_MEM
         return False, "Tried to create child of a child organization.", None
 
     return True, sub_org, ou
+
+
+def set_default_2fa_method(org):
+    for user in org.users.iterator():
+        devices = list(devices_for_user(user))
+        if not devices:
+            EmailDevice.objects.create(user=user, name="default", email=user.username)

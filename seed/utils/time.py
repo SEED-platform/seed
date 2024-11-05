@@ -1,4 +1,3 @@
-# !/usr/bin/env python
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
@@ -10,7 +9,6 @@ import datetime
 import dateutil
 import pytz
 from django.utils.timezone import make_aware
-from past.builtins import basestring
 
 
 def convert_datestr(datestr, make_tz_aware=False):
@@ -45,7 +43,7 @@ def parse_datetime(maybe_datetime):
     """
     if isinstance(maybe_datetime, (int, float)):
         return datetime.datetime.fromtimestamp(maybe_datetime / 1000)
-    elif isinstance(maybe_datetime, basestring):
+    elif isinstance(maybe_datetime, str):
         return dateutil.parser.parse(maybe_datetime)
     else:
         return None

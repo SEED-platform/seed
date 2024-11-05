@@ -1,6 +1,6 @@
 {
   "name": "seed",
-  "version": "3.0.0",
+  "version": "3.2.0",
   "description": "Standard Energy Efficiency Data (SEED) Platform™",
   "license": "SEE LICENSE IN LICENSE.md",
   "directories": {
@@ -27,7 +27,7 @@
     "npm-run-all": "^4.1.5",
     "prettier": "^3.3.3",
     "puppeteer": "^22.13.0",
-    "sass": "^1.77.8",
+    "sass": "1.79.4",
     "stylelint": "^16.7.0",
     "stylelint-config-standard-scss": "^13.1.0"
   },

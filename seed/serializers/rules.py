@@ -1,4 +1,3 @@
-# !/usr/bin/env python
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
@@ -17,9 +16,11 @@ class RuleSerializer(serializers.ModelSerializer):
         model = Rule
         fields = [
             "condition",
+            "cross_cycle",
             "data_type",
             "enabled",
             "field",
+            "for_derived_column",
             "id",
             "max",
             "min",
@@ -31,7 +32,6 @@ class RuleSerializer(serializers.ModelSerializer):
             "table_name",
             "text_match",
             "units",
-            "for_derived_column",
         ]
 
     def create(self, validated_data):
@@ -78,6 +78,9 @@ class RuleSerializer(serializers.ModelSerializer):
             # Rule is new
             severity_is_valid = False
             label_is_not_associated = False
+            if data.get("table_name") == "Goal":
+                # prevent new Goal type rules from being created
+                raise serializers.ValidationError({"message": "Creating new Goal Rules has been disabled"})
         else:
             severity_is_valid = self.instance.severity == Rule.SEVERITY_VALID
             label_is_not_associated = self.instance.status_label is None

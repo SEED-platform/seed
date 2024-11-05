@@ -1,4 +1,3 @@
-# !/usr/bin/env python
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
@@ -235,6 +234,7 @@ class TestUpdateInventoryLabelsAPIView(DeleteModelsTestCase):
             flatten=True,
             propertyview_id=self.propertyview_ids,
             statuslabel_id=[self.label_1.id] * 3 + [self.label_2.id] * 3 + [self.label_3.id] * 2 + [self.label_4.id] * 2,
+            goal_id=[None] * 10,
         )
 
     def test_get_label_desc(self):

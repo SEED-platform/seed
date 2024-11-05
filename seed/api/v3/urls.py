@@ -1,4 +1,3 @@
-# !/usr/bin/env python
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
@@ -14,6 +13,7 @@ from seed.views.v3.analyses import AnalysisViewSet
 from seed.views.v3.analysis_messages import AnalysisMessageViewSet
 from seed.views.v3.analysis_views import AnalysisPropertyViewViewSet
 from seed.views.v3.audit_template import AuditTemplateViewSet
+from seed.views.v3.audit_template_configs import AuditTemplateConfigViewSet
 from seed.views.v3.building_files import BuildingFileViewSet
 from seed.views.v3.column_list_profiles import ColumnListProfileViewSet
 from seed.views.v3.column_mapping_profiles import ColumnMappingProfileViewSet
@@ -54,14 +54,17 @@ from seed.views.v3.progress import ProgressViewSet
 from seed.views.v3.properties import PropertyViewSet
 from seed.views.v3.property_measures import PropertyMeasureViewSet
 from seed.views.v3.property_scenarios import PropertyScenarioViewSet
+from seed.views.v3.property_view_labels import PropertyViewLabelViewSet
 from seed.views.v3.property_views import PropertyViewViewSet
 from seed.views.v3.public import PublicCycleViewSet, PublicOrganizationViewSet
+from seed.views.v3.report_configurations import ReportConfigurationViewSet
 from seed.views.v3.salesforce_configs import SalesforceConfigViewSet
 from seed.views.v3.salesforce_mappings import SalesforceMappingViewSet
 from seed.views.v3.sensors import SensorViewSet
 from seed.views.v3.tax_lot_properties import TaxLotPropertyViewSet
 from seed.views.v3.taxlot_views import TaxlotViewViewSet
 from seed.views.v3.taxlots import TaxlotViewSet
+from seed.views.v3.two_factor_views import TwoFactorViewSet
 from seed.views.v3.ubid import UbidViewSet
 from seed.views.v3.uniformat import UniformatViewSet
 from seed.views.v3.uploads import UploadViewSet
@@ -70,6 +73,7 @@ from seed.views.v3.users import UserViewSet
 api_v3_router = routers.DefaultRouter()
 api_v3_router.register(r"analyses", AnalysisViewSet, basename="analyses")
 api_v3_router.register(r"audit_template", AuditTemplateViewSet, basename="audit_template")
+api_v3_router.register(r"audit_template_configs", AuditTemplateConfigViewSet, basename="audit_template_configs")
 api_v3_router.register(r"building_files", BuildingFileViewSet, basename="building_files")
 api_v3_router.register(r"column_list_profiles", ColumnListProfileViewSet, basename="column_list_profiles")
 api_v3_router.register(r"column_mapping_profiles", ColumnMappingProfileViewSet, basename="column_mapping_profiles")
@@ -99,12 +103,15 @@ api_v3_router.register(r"postoffice", PostOfficeViewSet, basename="postoffice")
 api_v3_router.register(r"postoffice_email", PostOfficeEmailViewSet, basename="postoffice_email")
 api_v3_router.register(r"progress", ProgressViewSet, basename="progress")
 api_v3_router.register(r"properties", PropertyViewSet, basename="properties")
+api_v3_router.register(r"property_view_labels", PropertyViewLabelViewSet, basename="property_view_labels")
 api_v3_router.register(r"property_views", PropertyViewViewSet, basename="property_views")
+api_v3_router.register(r"report_configurations", ReportConfigurationViewSet, basename="report_configurations")
 api_v3_router.register(r"salesforce_configs", SalesforceConfigViewSet, basename="salesforce_configs")
 api_v3_router.register(r"salesforce_mappings", SalesforceMappingViewSet, basename="salesforce_mappings")
 api_v3_router.register(r"tax_lot_properties", TaxLotPropertyViewSet, basename="tax_lot_properties")
 api_v3_router.register(r"taxlot_views", TaxlotViewViewSet, basename="taxlot_views")
 api_v3_router.register(r"taxlots", TaxlotViewSet, basename="taxlots")
+api_v3_router.register(r"two_factor", TwoFactorViewSet, basename="two_factor")
 api_v3_router.register(r"ubid", UbidViewSet, basename="ubid")
 api_v3_router.register(r"uniformat", UniformatViewSet, basename="uniformat")
 api_v3_router.register(r"upload", UploadViewSet, basename="upload")

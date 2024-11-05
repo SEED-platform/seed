@@ -1,4 +1,3 @@
-# !/usr/bin/env python
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
@@ -13,17 +12,14 @@ from django.conf import settings
 from django.contrib.gis.db import models as geomodels
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError, models, transaction
-from django.db.models import Case, Value, When
+from django.db.models import UniqueConstraint
 from django.db.models.signals import m2m_changed, post_save, pre_delete, pre_save
 from django.dispatch import receiver
 from django.forms.models import model_to_dict
-from past.builtins import basestring
 from quantityfield.fields import QuantityField
 from quantityfield.units import ureg
 
 from seed.data_importer.models import ImportFile
-
-# from seed.utils.cprofile import cprofile
 from seed.lib.mcm.cleaners import date_cleaner
 from seed.lib.superperms.orgs.models import AccessLevelInstance, Organization
 from seed.models.cycles import Cycle
@@ -40,7 +36,7 @@ from seed.models.tax_lot_properties import TaxLotProperty
 from seed.utils.address import normalize_address_str
 from seed.utils.generic import compare_orgs_between_label_and_target, obj_to_dict, split_model_fields
 from seed.utils.time import convert_datestr, convert_to_js_timestamp
-from seed.utils.ubid import decode_unique_ids
+from seed.utils.ubid import generate_ubidmodels_for_state
 
 from .auditlog import AUDIT_IMPORT, DATA_UPDATE_TYPE
 
@@ -78,7 +74,7 @@ class Property(models.Model):
         verbose_name_plural = "properties"
 
     def __str__(self):
-        return "Property - %s" % (self.pk)
+        return f"Property - {self.pk}"
 
     def copy_meters(self, source_property_id, source_persists=True):
         """
@@ -327,8 +323,14 @@ class PropertyState(models.Model):
     total_marginal_ghg_emissions = QuantityField("MtCO2e/year", null=True, blank=True)
     total_ghg_emissions_intensity = QuantityField("kgCO2e/ft**2/year", null=True, blank=True)
     total_marginal_ghg_emissions_intensity = QuantityField("kgCO2e/ft**2/year", null=True, blank=True)
+    water_use = QuantityField("kgal/year", null=True, blank=True)
+    indoor_water_use = QuantityField("kgal/year", null=True, blank=True)
+    outdoor_water_use = QuantityField("kgal/year", null=True, blank=True)
+    wui = QuantityField("gal/ft**2/year", null=True, blank=True)
+    indoor_wui = QuantityField("gal/ft**2/year", null=True, blank=True)
 
     extra_data = models.JSONField(default=dict, blank=True)
+    derived_data = models.JSONField(default=dict, blank=True)
     hash_object = models.CharField(max_length=32, null=True, blank=True, default=None)
     measures = models.ManyToManyField("Measure", through="PropertyMeasure")
 
@@ -412,7 +414,7 @@ class PropertyState(models.Model):
         date_field_names = ("year_ending", "generation_date", "release_date", "recent_sale_date")
         for field in date_field_names:
             value = getattr(self, field)
-            if value and isinstance(value, basestring):
+            if value and isinstance(value, str):
                 _log.info("Saving %s which is a date time" % field)
                 _log.info(convert_datestr(value))
                 _log.info(date_cleaner(value))
@@ -663,6 +665,11 @@ class PropertyState(models.Model):
                     ps.space_alerts,
                     ps.building_certification,
                     ps.egrid_subregion_code,
+                    ps.water_use,
+                    ps.indoor_water_use,
+                    ps.outdoor_water_use,
+                    ps.wui,
+                    ps.indoor_wui,
                     ps.extra_data,
                     NULL
                 FROM seed_propertystate ps, audit_id aid
@@ -724,6 +731,11 @@ class PropertyState(models.Model):
             "energy_alerts",
             "space_alerts",
             "building_certification",
+            "water_use",
+            "indoor_water_use",
+            "outdoor_water_use",
+            "wui",
+            "indoor_wui",
             "extra_data",
         ]
         coparents = [{key: getattr(c, key) for key in keep_fields} for c in coparents]
@@ -849,30 +861,7 @@ def post_save_property_state(sender, **kwargs):
     Generate UbidModels for a PropertyState if the ubid field is present
     """
     state: PropertyState = kwargs.get("instance")
-
-    ubid = getattr(state, "ubid")
-    if not ubid:
-        state.ubidmodel_set.filter(preferred=True).update(preferred=False)
-        return
-
-    ubid_model = state.ubidmodel_set.filter(ubid=ubid)
-    if not ubid_model.exists():
-        # First set all others to non-preferred without calling save
-        state.ubidmodel_set.filter(preferred=True).update(preferred=False)
-        # Add UBID and set as preferred
-        ubid_model = state.ubidmodel_set.create(
-            preferred=True,
-            ubid=ubid,
-        )
-        # Update lat/long/centroid
-        decode_unique_ids(state)
-    elif ubid_model.filter(preferred=False).exists():
-        state.ubidmodel_set.update(
-            preferred=Case(
-                When(ubid=ubid, then=Value(True)),
-                default=Value(False),
-            )
-        )
+    generate_ubidmodels_for_state(state)
 
 
 class PropertyView(models.Model):
@@ -881,7 +870,6 @@ class PropertyView(models.Model):
 
     A PropertyView contains a reference to a property (which should not change) and to a
     cycle (time period), and a state (characteristics).
-
     """
 
     # different property views can be associated with each other (2012, 2013)
@@ -889,12 +877,12 @@ class PropertyView(models.Model):
     cycle = models.ForeignKey(Cycle, on_delete=models.PROTECT)
     state = models.ForeignKey(PropertyState, on_delete=models.CASCADE)
 
-    labels = models.ManyToManyField(StatusLabel)
+    labels = models.ManyToManyField(StatusLabel, through="PropertyViewLabel", through_fields=("propertyview", "statuslabel"))
 
     # notes has a relationship here -- PropertyViews have notes, not the state, and not the property.
 
     def __str__(self):
-        return "Property View - %s" % self.pk
+        return f"Property View - {self.pk}"
 
     class Meta:
         unique_together = (
@@ -956,6 +944,15 @@ def post_save_property_view(sender, **kwargs):
     """
     if kwargs["instance"].property:
         kwargs["instance"].property.save()
+
+
+class PropertyViewLabel(models.Model):
+    propertyview = models.ForeignKey(PropertyView, on_delete=models.CASCADE)
+    statuslabel = models.ForeignKey(StatusLabel, on_delete=models.CASCADE)
+    goal = models.ForeignKey("seed.Goal", on_delete=models.CASCADE, null=True)
+
+    class Meta:
+        constraints = [UniqueConstraint(fields=["propertyview", "statuslabel", "goal"], name="unique_propertyview_statuslabel_goal")]
 
 
 class PropertyAuditLog(models.Model):

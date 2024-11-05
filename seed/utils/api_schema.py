@@ -1,4 +1,3 @@
-# !/usr/bin/env python
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
@@ -56,6 +55,10 @@ class AutoSchemaHelper(SwaggerAutoSchema):
     @staticmethod
     def query_boolean_field(name, required, description):
         return openapi.Parameter(name, openapi.IN_QUERY, description=description, required=required, type=openapi.TYPE_BOOLEAN)
+
+    @staticmethod
+    def query_enum_field(name, description, enum):
+        return openapi.Parameter(name, openapi.IN_QUERY, description=description, required=True, type=openapi.TYPE_STRING, enum=enum)
 
     @staticmethod
     def form_string_field(name, required, description):

@@ -1,0 +1,6353 @@
+msgid ""
+msgstr ""
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: lokalise.com\n"
+"Project-Id-Version: SEED Platform\n"
+"PO-Revision-Date: 2024-11-05 06:02\n"
+"Last-Translator: lokalise.com\n"
+"Language-Team: lokalise.com\n\n"
+"Language: es\n"
+
+#, fuzzy
+msgid "# Of Files"
+msgstr "# De archivos"
+
+#, fuzzy
+msgid "# of Buildings"
+msgstr "# Número de edificios"
+
+#, fuzzy
+msgid "# of Records"
+msgstr "# Número de registros"
+
+#, fuzzy
+msgid "(field must contain this text)"
+msgstr "(el campo debe contener este texto)"
+
+#, fuzzy
+msgid "(from table below)"
+msgstr "(del cuadro siguiente)"
+
+#, fuzzy
+msgid "(no address 1)"
+msgstr "(sin dirección 1)"
+
+#, fuzzy
+msgid "(no labels applied)"
+msgstr "(sin etiquetas)"
+
+#, fuzzy
+msgid "(no maximum)"
+msgstr "(sin máximo)"
+
+#, fuzzy
+msgid "(no minimum)"
+msgstr "(sin mínimo)"
+
+#, fuzzy
+msgid "A 'Remove' button is shown for tags that are already applied to one or more properties in the current selection"
+msgstr "Se muestra un botón \"Eliminar\" para las etiquetas que ya están aplicadas a una o varias propiedades de la selección actual"
+
+#, fuzzy
+msgid "A Custom Report allows you to look at aggregated data across your inventories and cycles.  This is useful to see how specific metrics change over time. doesn't exist"
+msgstr "Un informe personalizado le permite ver los datos agregados de sus inventarios y ciclos.  Esto es útil para ver cómo cambian las métricas específicas con el tiempo. no existe"
+
+#, fuzzy
+msgid "A Custom Report allows you to look at aggregated data across your inventories and cycles. This is useful to see how specific metrics change over time."
+msgstr "Un informe personalizado le permite ver los datos agregados de sus inventarios y ciclos. Esto es útil para ver cómo cambian las métricas específicas con el tiempo."
+
+#, fuzzy
+msgid "A list of your imported headers."
+msgstr "Una lista de las cabeceras importadas."
+
+#, fuzzy
+msgid "A preview of your concatenated data will appear in the box below."
+msgstr "En el cuadro siguiente aparecerá una vista previa de los datos concatenados."
+
+msgid "ABOUT_SEED"
+msgstr "La Plataforma de Datos Estándar de Eficiencia Energética (SEED)™ es una aplicación informática que ayuda a las organizaciones a gestionar fácilmente los datos sobre el rendimiento energético de grandes grupos de edificios. Los usuarios pueden combinar datos de múltiples fuentes, limpiarlos y validarlos, y compartir la información con otros. La aplicación de software proporciona un método fácil, flexible y rentable para mejorar la calidad y la disponibilidad de los datos para ayudar a demostrar los beneficios económicos y ambientales de la eficiencia energética, para implementar programas y para orientar la actividad de inversión."
+
+#, fuzzy
+msgid "ACCESS_LEVEL_DELETE_AREYOUSURE"
+msgstr "¿Está seguro de que desea eliminar esta instancia de nivel de acceso? La operación borrará también todas las Instancias de Nivel de Acceso por debajo de ésta."
+
+#, fuzzy
+msgid "ACCESS_LEVEL_DESCRIPTION"
+msgstr " Defina niveles de acceso para estructurar el contenido de su organización. Una organización puede tener uno o varios niveles de acceso. Todas las organizaciones tienen al menos un nivel (nivel 1), que por defecto se denomina con el nombre de la organización. Todos los nombres de niveles de acceso son personalizables."
+
+#, fuzzy
+msgid "ACCESS_LEVEL_FILENAME_UPLOADED"
+msgstr "Se ha cargado el archivo de instancias de nivel de acceso"
+
+#, fuzzy
+msgid "ACCESS_LEVEL_INSTANCE_DESCRIPTION"
+msgstr "Las instancias de nivel de acceso son subgrupos personalizados que pueden definirse dentro de cada nivel de acceso. Estas ALI se utilizan para asociar contenidos y restringir el acceso de los usuarios a los datos. Hay un único ALI en el nivel 1 de la jerarquía, la raíz del árbol. Se denomina \"raíz\" por defecto, pero puede personalizarse. Todos los demás niveles pueden contener uno o más ALI."
+
+#, fuzzy
+msgid "ACCESS_LEVEL_ORG_OWNER"
+msgstr "Como propietario de una organización, puede establecer la estructura de su árbol de niveles de acceso utilizando los botones que aparecen a continuación. Este proceso debe realizarse antes de importar datos y añadir usuarios a su organización."
+
+#, fuzzy
+msgid "ACCESS_LEVEL_OWNER_END"
+msgstr "Una vez que haya configurado el árbol de niveles de acceso de su organización, estará listo para añadir usuarios y propiedades a los distintos niveles del árbol."
+
+#, fuzzy
+msgid "ACCESS_LEVEL_OWNER_STEP1"
+msgstr "Configure el número y el nombre de sus niveles de acceso utilizando el botón Editar/Agregar niveles de acceso."
+
+#, fuzzy
+msgid "ACCESS_LEVEL_OWNER_STEP2"
+msgstr "Cargue una hoja de cálculo de instancias de nivel de acceso. La hoja de cálculo debe tener una columna para cada nivel de acceso, con un encabezado que coincida con el nombre del nivel personalizado. Las instancias de nivel de acceso forman las filas de la hoja de cálculo. Asegúrese de definir completamente la ruta de cada instancia de nivel de acceso. También puede seleccionar el nivel, la instancia de nivel de acceso principal y configurar el nombre de una nueva instancia de nivel de acceso utilizando el botón Añadir instancia de nivel de acceso."
+
+#, fuzzy
+msgid "ACCESS_LEVEL_ROOT_TEXT"
+msgstr "Sólo se permite una instancia de nivel de acceso en la raíz del árbol (nivel 1). Haga clic en el icono del lápiz si desea cambiarle el nombre."
+
+#, fuzzy
+msgid "ACCESS_LEVEL_STRUCTURE_UPLOAD_TEXT"
+msgstr "Cargue su estructura organizativa en forma de hoja de cálculo. El archivo debe incluir una columna para cada nivel de acceso con un encabezado igual al nombre del nivel de acceso personalizado. Cada fila debe contener una instancia de nivel de acceso, con su ascendencia completamente definida (nombre del nodo padre, nombre del nodo abuelo, etc.)"
+
+#, fuzzy
+msgid "ACCESS_LEVEL_TREE_HELP_1"
+msgstr "Esta página le permite ver la estructura del contenido de su organización. La estructura se compone de niveles jerárquicos que definen un árbol; se denominan niveles de acceso. Cada nivel contiene uno o varios nodos, denominados instancias de nivel de acceso. Los permisos se gestionan asociando contenidos y usuarios a una instancia de nivel de acceso determinada, agrupando y restringiendo así el acceso a los contenidos. El número de niveles de acceso en su estructura, los nombres de los niveles y los nombres de las instancias de nivel de acceso son personalizables."
+
+#, fuzzy
+msgid "ACCESS_LEVEL_UPLOAD_PROGRESS_MSG"
+msgstr "Guardando instancias de nivel de acceso en curso... Este proceso depende del tamaño del archivo y puede durar varios minutos."
+
+#, fuzzy
+msgid "ADD_FILES_TO"
+msgstr "Añadir archivos a {dataset_name}."
+
+#, fuzzy
+msgid "ADD_REMOVE_LABELS_FROM_PROPERTIES"
+msgstr "Añadir o eliminar etiquetas de {num, plural, one{1 propiedad seleccionada} other{# propiedades seleccionadas}}"
+
+#, fuzzy
+msgid "ADD_REMOVE_LABELS_FROM_TAXLOTS"
+msgstr "Añadir o quitar etiquetas de {num, plural, one{1 lote de impuestos seleccionado} other{# lotes de impuestos seleccionados}}"
+
+#, fuzzy
+msgid "AH_FILE_TYPES_SUPPORTED"
+msgstr "Tipos de archivo admitidos: .csv, .xls y .xlsx."
+
+#, fuzzy
+msgid "ALL DATA"
+msgstr "TODOS LOS DATOS"
+
+#, fuzzy
+msgid "ALSO_DELETE_ANALYSES"
+msgstr "Borre también {num,plural, one{1 análisis} other{# análisis}}."
+
+#, fuzzy
+msgid "ALSO_DELETE_BATCH_ANALYSES"
+msgstr "Borre también {num,plural, one{1 análisis de lotes asociados} other{# análisis de lotes asociados}}."
+
+#, fuzzy
+msgid "ANALYSIS_DESCRIPTION_BETTER"
+msgstr "El análisis BETTER aprovecha better.lbl.gov para calcular el ahorro de energía, costes y emisiones de GEI comparando el modelo de puntos de cambio del inmueble con un modelo de referencia. Los resultados incluyen el potencial de ahorro y una lista de medidas de conservación de energía de alto nivel recomendadas."
+
+#, fuzzy
+msgid "ANALYSIS_DESCRIPTION_BSyncr"
+msgstr "El análisis BSyncr aprovecha el análisis de consumo energético medido normalizado (NMEC) para calcular un modelo de punto de cambio. Los datos se transmiten al análisis mediante BuildingSync. El resultado del análisis son los coeficientes del modelo de punto de cambio."
+
+#, fuzzy
+msgid "ANALYSIS_DESCRIPTION_BuildingUpgradeRecommendation"
+msgstr "El análisis de recomendaciones de mejora de edificios implementa un flujo de trabajo para identificar los edificios que pueden necesitar una profunda modernización energética, la sustitución de equipos o una nueva puesta a punto basada en atributos del edificio como el uso de la energía, el año de construcción y los metros cuadrados."
+
+#, fuzzy
+msgid "ANALYSIS_DESCRIPTION_CO2"
+msgstr "Este análisis calcula las emisiones medias anuales de CO2 para los datos de los contadores de la propiedad. El análisis requiere que se defina una subregión eGRID para determinar con precisión los índices de emisión."
+
+#, fuzzy
+msgid "ANALYSIS_DESCRIPTION_EEEJ"
+msgstr "El análisis EEEJ utiliza la dirección de cada propiedad para identificar la sección censal de 2010. Basándose en la zona censal, la clasificación de comunidad desfavorecida y la información sobre la carga energética pueden recuperarse del conjunto de datos CEJST. El número de ubicaciones de viviendas asequibles se recupera de los conjuntos de datos del HUD. La ubicación se utiliza para generar un enlace para ver un informe EJScreen que proporciona más indicadores demográficos."
+
+#, fuzzy
+msgid "ANALYSIS_DESCRIPTION_EUI"
+msgstr "El análisis EUI sumará las lecturas de los contadores de la propiedad de los últimos doce meses para calcular el consumo de energía por metro cuadrado al año. Si faltan lecturas de contadores, el análisis devolverá una cobertura inferior al 100% para alertar al usuario de que falta una lectura de contador."
+
+#, fuzzy
+msgid "ANALYSIS_DESCRIPTION_ElementStatistics"
+msgstr "El análisis de estadísticas de elementos examina los datos de los elementos de una propiedad (si los hay) para contar el número de elementos de tipo \"Panel de control D.D.C.\" y guarda esa cantidad en la propiedad"
+
+#, fuzzy
+msgid "AND"
+msgstr "Y"
+
+#, fuzzy
+msgid "API Documentation"
+msgstr "Documentación API"
+
+#, fuzzy
+msgid "API Key"
+msgstr "Clave API"
+
+#, fuzzy
+msgid "AT_ALL_DATA"
+msgstr "Los envíos de Plantillas de Auditoría se importarán independientemente de la fecha de envío. Puede configurar esta opción en la página de configuración de su organización de SEED."
+
+#, fuzzy
+msgid "AT_AUTO_SYNC"
+msgstr "Si desea actualizar automáticamente su organización SEED con los datos de envío de la plantilla de auditoría para el ID de ciudad de la plantilla de auditoría seleccionada, configure los campos siguientes para programar su actualización semanal."
+
+#, fuzzy
+msgid "AT_CITY_ID"
+msgstr "Especifique el ID de ciudad de su plantilla de auditoría. Este número aparece en la URL de la plantilla de auditoría cuando se accede a la pestaña \"CIUDADES\". SEED importará los datos de envío sólo para la ciudad especificada."
+
+#, fuzzy
+msgid "AT_CONDITION_INDEX"
+msgstr "Cuando esta casilla está marcada, SEED sólo importará los envíos de Plantillas de Auditoría que hayan sido enviados más recientemente que la actualización más reciente de los registros de SEED. Si no está marcada, se importarán todos los envíos de Plantillas de Auditoría independientemente de la fecha de envío."
+
+#, fuzzy
+msgid "AT_EMAIL_TEXT"
+msgstr "Utilice el correo electrónico asociado a su cuenta de <a href=\"{link}/\" target=\"_blank\" rel=\"noopener noreferrer\">Sitio web de Building Energy Score</a>."
+
+#, fuzzy
+msgid "AT_MOST_RECENT_ONLY"
+msgstr "Sólo se importarán los envíos de Plantillas de Auditoría que hayan sido enviados más recientemente que la actualización más reciente del inventario de SEED. Puede configurar esta opción en la página de configuración de su organización de SEED."
+
+#, fuzzy
+msgid "AT_PASS_TEXT"
+msgstr "Utilice la contraseña asociada a su cuenta de <a href=\"{link}/\" target=\"_blank\" rel=\"noopener noreferrer\">Sitio web de la Puntuación Energética del Edificio</a>."
+
+#, fuzzy
+msgid "AT_REPORT_TYPE"
+msgstr "Si desea generar informes de Plantilla de Auditoría de talones a partir de los datos de SEED, seleccione qué Tipo de Informe de Plantilla de Auditoría debe generar SEED."
+
+#, fuzzy
+msgid "AT_SETTINGS_TEXT"
+msgstr "Si su organización ha configurado un formulario de informe personalizado en la Plantilla de Auditoría, complete la configuración a continuación para habilitar la importación de los envíos de la Plantilla de Auditoría en su organización de SEED."
+
+#, fuzzy
+msgid "AT_SUBMISSION_STATUS"
+msgstr "SEED importará datos para envíos con los siguientes estados en Plantilla de Auditoría."
+
+#. Helper text for the Audit Template token in organization settings.
+#, fuzzy
+msgid "AT_TOKEN_TEXT"
+msgstr "El token de API de su organización debe estar visible en la página de su cuenta en la plantilla de auditoría. Consulte la <a href=\"{link}/reports/api/\" target=\"_blank\" rel=\"noopener noreferrer\">Documentación de la plantilla de auditoría</a> para saber cómo obtener una clave de API. Tenga en cuenta que no debe anteponer el prefijo \"Token \" al token, solo debe incluir el propio token."
+
+#, fuzzy
+msgid "About"
+msgstr "Acerca de"
+
+#, fuzzy
+msgid "About SEED Platform™"
+msgstr "Acerca de la Plataforma SEED"
+
+#: src/django-tos-master/tos/templates/tos/tos_check.html:19
+#, fuzzy
+msgid "Accept"
+msgstr "Acepte"
+
+#: src/django-tos-master/tos/templates/tos/tos_check.html:11
+#, fuzzy
+msgid "Accept Terms of Service?"
+msgstr "¿Acepta las condiciones del servicio?"
+
+#, fuzzy
+msgid "Access Level"
+msgstr "Nivel de acceso"
+
+#, fuzzy
+msgid "Access Level Instance"
+msgstr "Nivel de acceso Instancia"
+
+#, fuzzy
+msgid "Access Level Instance Information"
+msgstr "Nivel de acceso Información de la instancia"
+
+#, fuzzy
+msgid "Access Level Instance Tree"
+msgstr "Árbol de instancias de nivel de acceso"
+
+msgid "Access Level Instance:"
+msgstr "Instancia de nivel de acceso:"
+
+#, fuzzy
+msgid "Access Level Instances Errors"
+msgstr "Instancias de nivel de acceso Errores"
+
+#, fuzzy
+msgid "Access Level Tree"
+msgstr "Nivel de acceso Árbol"
+
+msgid "Access Level:"
+msgstr "Nivel de acceso:"
+
+#, fuzzy
+msgid "Access Levels"
+msgstr "Niveles de acceso"
+
+#, fuzzy
+msgid "Access Levels (AL)"
+msgstr "Niveles de acceso (AL)"
+
+#, fuzzy
+msgid "Access Levels Instances (ALI)"
+msgstr "Instancias de nivel de acceso (ALI)"
+
+#, fuzzy
+msgid "Acknowledge"
+msgstr "Acuse recibo"
+
+#, fuzzy
+msgid "Actions"
+msgstr "Acciones"
+
+#: seed/models/projects.py:24
+#, fuzzy
+msgid "Active"
+msgstr "Activo"
+
+#, fuzzy
+msgid "Actual > Target"
+msgstr "Real > Objetivo"
+
+#, fuzzy
+msgid "Actual Column"
+msgstr "Columna real"
+
+#, fuzzy
+msgid "Actual Field"
+msgstr "Campo real"
+
+#, fuzzy
+msgid "Add"
+msgstr "Añadir"
+
+#, fuzzy
+msgid "Add Access Level"
+msgstr "Añadir nivel de acceso"
+
+msgid "Add Access Level Instance"
+msgstr "Añadir instancia de nivel de acceso"
+
+#, fuzzy
+msgid "Add Column"
+msgstr "Añadir columna"
+
+#, fuzzy
+msgid "Add Data Files"
+msgstr "Añadir archivos de datos"
+
+#, fuzzy
+msgid "Add Label"
+msgstr "Añadir etiqueta"
+
+#, fuzzy
+msgid "Add Level Instance (Node) to the Organizational Structure"
+msgstr "Añadir Instancia de Nivel (Nodo) a la Estructura Organizativa"
+
+#, fuzzy
+msgid "Add Levels to the Organizational Structure Tree"
+msgstr "Añadir niveles al árbol de estructura organizativa"
+
+#, fuzzy
+msgid "Add Mapping"
+msgstr "Añadir cartografía"
+
+#, fuzzy
+msgid "Add Shared Properties"
+msgstr "Añadir propiedades compartidas"
+
+#, fuzzy
+msgid "Add Shared Tax Lots"
+msgstr "Añadir lotes fiscales compartidos"
+
+msgid "Add a Document"
+msgstr "Añadir un documento"
+
+#, fuzzy
+msgid "Add a label"
+msgstr "Añadir una etiqueta"
+
+#, fuzzy
+msgid "Add another file"
+msgstr "Añadir otro archivo"
+
+#, fuzzy
+msgid "Add compliance information"
+msgstr "Añadir información sobre el cumplimiento"
+
+#, fuzzy
+msgid "Add files to"
+msgstr "Añadir archivos a"
+
+#, fuzzy
+msgid "Add more data files"
+msgstr "Añadir más archivos de datos"
+
+#, fuzzy
+msgid "Add program information."
+msgstr "Añada información sobre el programa."
+
+#, fuzzy
+msgid "Add user"
+msgstr "Añadir usuario"
+
+#, fuzzy
+msgid "Add user to organization"
+msgstr "Añadir usuario a la organización"
+
+#, fuzzy
+msgid "Add user to organization:"
+msgstr "Añadir usuario a la organización:"
+
+#, fuzzy
+msgid "Add/Remove Labels"
+msgstr "Añadir/quitar etiquetas"
+
+#, fuzzy
+msgid "Add/Remove a user to an organization"
+msgstr "Añadir/eliminar un usuario de una organización"
+
+#, fuzzy
+msgid "Add/Update UBID"
+msgstr "Añadir/Actualizar UBID"
+
+#, fuzzy
+msgid "Adding buildings to project"
+msgstr "Añadir edificios al proyecto"
+
+#, fuzzy
+msgid "Address Line 1"
+msgstr "Dirección Línea 1"
+
+#, fuzzy
+msgid "Address Line 1 (Property)"
+msgstr "Dirección Línea 1 (Propiedad)"
+
+#, fuzzy
+msgid "Address Line 1 (Tax Lot)"
+msgstr "Dirección Línea 1 (Parcela fiscal)"
+
+#, fuzzy
+msgid "Address Line 1, City, Gross Floor Area, Postal Code, Property Name, State, Year Built"
+msgstr "Dirección Línea 1, Ciudad, Superficie Bruta, Código Postal, Nombre de la Propiedad, Estado, Año de Construcción"
+
+#, fuzzy
+msgid "Address Line 2 (Property)"
+msgstr "Dirección Línea 2 (Propiedad)"
+
+#, fuzzy
+msgid "Address Line 2 (Tax Lot)"
+msgstr "Dirección Línea 2 (Parcela fiscal)"
+
+#, fuzzy
+msgid "Admin"
+msgstr "Admin"
+
+#, fuzzy
+msgid "Advanced Settings"
+msgstr "Configuración avanzada"
+
+#, fuzzy
+msgid "An Audit Template organization token, user email and password are required"
+msgstr "Se requiere un token de organización de Plantilla de Auditoría, un correo electrónico de usuario y una contraseña"
+
+#, fuzzy
+msgid "An error occurred while processing the file. Please ensure that your file meets the required specifications."
+msgstr "Se ha producido un error al procesar el archivo. Asegúrese de que su archivo cumple las especificaciones requeridas."
+
+#, fuzzy
+msgid "Analyses"
+msgstr "Análisis"
+
+#, fuzzy
+msgid "Analysis"
+msgstr "Análisis"
+
+#, fuzzy
+msgid "Analysis Name"
+msgstr "Análisis Nombre"
+
+#, fuzzy
+msgid "Analysis Name (User Defined)"
+msgstr "Nombre del análisis (definido por el usuario)"
+
+#, fuzzy
+msgid "Analysis State"
+msgstr "Análisis Estado"
+
+#, fuzzy
+msgid "Apply Profile"
+msgstr "Aplicar perfil"
+
+#, fuzzy
+msgid "Are you absolutely sure you want to delete the organization"
+msgstr "¿Está seguro de que desea eliminar la organización?"
+
+#, fuzzy
+msgid "Are you absolutely sure you want to delete the sub-organization"
+msgstr "¿Está seguro de que desea eliminar la suborganización?"
+
+#, fuzzy
+msgid "Are you sure you want to delete"
+msgstr "¿Estás seguro de que quieres borrar"
+
+#, fuzzy
+msgid "Are you sure you want to delete the data file"
+msgstr "¿Está seguro de que desea eliminar el archivo de datos"
+
+#, fuzzy
+msgid "Are you sure you want to delete the data set"
+msgstr "¿Está seguro de que desea eliminar el conjunto de datos"
+
+#, fuzzy
+msgid "Are you sure you want to delete the filter group"
+msgstr "¿Está seguro de que desea eliminar el grupo de filtros?"
+
+#, fuzzy
+msgid "Are you sure you want to unmerge these properties and then merge with the selected properties?"
+msgstr "¿Está seguro de que desea deshacer la fusión de estas propiedades y, a continuación, fusionarlas con las propiedades seleccionadas?"
+
+#, fuzzy
+msgid "Are you sure you want to unmerge these tax lots and then merge with the selected tax lots?"
+msgstr "¿Está seguro de que desea deshacer la fusión de estos lotes fiscales y, a continuación, fusionarlos con los lotes fiscales seleccionados?"
+
+#, fuzzy
+msgid "Area"
+msgstr "Zona"
+
+#, fuzzy
+msgid "Area Column"
+msgstr "Columna de área"
+
+#, fuzzy
+msgid "Area Target Column"
+msgstr "Área Columna objetivo"
+
+#, fuzzy
+msgid "As the admin of your SEED instance you can control what data is shared throughout your organization and between your sub-organizations as well as what data is shared externally with the public-at-large. The subset of data you choose to share with the public can be different than the subset shared between your sub-organizations."
+msgstr "Como administrador de su instancia de SEED, usted puede controlar qué datos se comparten en toda su organización y entre sus suborganizaciones, así como qué datos se comparten externamente con el público en general. El subconjunto de datos que elija compartir con el público puede ser diferente del subconjunto compartido entre sus suborganizaciones."
+
+#, fuzzy
+msgid "Associated Building Tax Lot ID"
+msgstr "Número de identificación fiscal del edificio asociado"
+
+#, fuzzy
+msgid "Associated Tax Lot ID"
+msgstr "ID de parcela fiscal asociada"
+
+#, fuzzy
+msgid "Associated Tax Lot IDs"
+msgstr "CIF asociados"
+
+#, fuzzy
+msgid "Audit Template Building ID"
+msgstr "Plantilla de auditoría ID del edificio"
+
+#, fuzzy
+msgid "Audit Template Email"
+msgstr "Plantilla de auditoría por correo electrónico"
+
+#, fuzzy
+msgid "Audit Template Organization Token"
+msgstr "Plantilla de auditoría Token de organización"
+
+#, fuzzy
+msgid "Audit Template Password"
+msgstr "Contraseña de la plantilla de auditoría"
+
+#, fuzzy
+msgid "Audit Template Report Type"
+msgstr "Plantilla de auditoría Tipo de informe"
+
+#, fuzzy
+msgid "Audit Template Submission Status"
+msgstr "Estado de presentación de la plantilla de auditoría"
+
+#, fuzzy
+msgid "Audit Template Upload Results"
+msgstr "Resultados de la carga de plantillas de auditoría"
+
+#: seed/models/models.py:136
+#, fuzzy
+msgid "Auditing"
+msgstr "Auditoría"
+
+#, fuzzy
+msgid "Auditor Recommended Measures"
+msgstr "Medidas recomendadas por el auditor"
+
+#, fuzzy
+msgid "Auto Matching"
+msgstr "Auto Matching"
+
+msgid "Auto-Populate Sample Data"
+msgstr "Rellenar automáticamente los datos de la muestra"
+
+msgid "Available BuildingSync Measures"
+msgstr "Medidas BuildingSync disponibles"
+
+msgid "Available Templates"
+msgstr "Plantillas disponibles"
+
+#, fuzzy
+msgid "BEFORE_GEOCODING"
+msgstr "Antes de la geocodificación"
+
+#, fuzzy
+msgid "BETTER_TOKEN_TEXT"
+msgstr "Consulte la <a href=\"{link}/docs/api/\" target=\"_blank\" rel=\"noopener noreferrer\">Documentación de BETTER</a> para saber cómo obtener una clave API. Nota, no anteponga el token con \"Token \", sólo incluya el propio token. BETTER host está configurado para ser"
+
+#, fuzzy
+msgid "BUILDING ENERGY DATA EXCHANGE SPECIFICATION (BEDES)"
+msgstr "ESPECIFICACIÓN DE INTERCAMBIO DE DATOS SOBRE LA ENERGÍA DE LOS EDIFICIOS (BEDES)"
+
+#: seed/landing/templates/landing/thank_you.html:17
+#, fuzzy
+msgid "Back"
+msgstr "Volver"
+
+#: seed/landing/templates/landing/password_reset_done.html:17
+#, fuzzy
+msgid "Back to Home"
+msgstr "Volver al inicio"
+
+#, fuzzy
+msgid "Back to List"
+msgstr "Volver a la lista"
+
+#, fuzzy
+msgid "Back to Mapping"
+msgstr "Volver a Cartografía"
+
+#, fuzzy
+msgid "Baseline Cycle"
+msgstr "Ciclo de referencia"
+
+#, fuzzy
+msgid "Begin Update"
+msgstr "Iniciar actualización"
+
+#: seed/models/models.py:135
+#, fuzzy
+msgid "Benchmarking"
+msgstr "Evaluación comparativa"
+
+#, fuzzy
+msgid "Block Number"
+msgstr "Número de bloque"
+
+#, fuzzy
+msgid "Body"
+msgstr "Cuerpo"
+
+#, fuzzy
+msgid "Boolean"
+msgstr "Booleano"
+
+#, fuzzy
+msgid "Both"
+msgstr "Ambos"
+
+#, fuzzy
+msgid "Building Certification"
+msgstr "Certificación de edificios"
+
+#, fuzzy
+msgid "Building Count"
+msgstr "Recuento de edificios"
+
+msgid "Building Files (Main State Only)"
+msgstr "Ficheros de edificios (sólo estado principal)"
+
+#, fuzzy
+msgid "Building Filters"
+msgstr "Filtros para edificios"
+
+#, fuzzy
+msgid "Building Performance Standard (BPS) Compliance Pathway Support"
+msgstr "Apoyo para el cumplimiento de las normas de rendimiento de edificios (BPS)"
+
+#, fuzzy
+msgid "Building Square Footage Threshold"
+msgstr "Umbral de metros cuadrados del edificio"
+
+#, fuzzy
+msgid "BuildingSync Recommended Measures"
+msgstr "BuildingSync Medidas recomendadas"
+
+#, fuzzy
+msgid "Buildings"
+msgstr "Edificios"
+
+#, fuzzy
+msgid "By clicking the Log In button you accept the NREL Data Terms."
+msgstr "Al hacer clic en el botón Iniciar sesión, acepta las Condiciones de datos del NREL."
+
+#, fuzzy
+msgid "CLICK_LEGEND"
+msgstr "Haga clic en una etiqueta para mostrarla u ocultarla en el gráfico"
+
+#, fuzzy
+msgid "COLUMN_NAME_DUPLICATE_ERROR"
+msgstr "Error: El nuevo nombre de columna no coincide con el anterior."
+
+#, fuzzy
+msgid "COLUMN_NAME_EXISTS_WARNING"
+msgstr "Advertencia: El nombre de la columna ya existe."
+
+#, fuzzy
+msgid "COL_CHANGE_DESCRIPTION"
+msgstr "Proporciona una descripción de la columna para ayudar a recordar su significado. Por defecto, se utiliza el nombre de la pantalla si está disponible; de lo contrario, se utiliza el nombre de la columna."
+
+#, fuzzy
+msgid "COL_CHANGE_DISPLAY"
+msgstr "Cambia el nombre de visualización (que aparece en todo el programa) de una columna. Está definido por el usuario y puede ser cualquier valor (?)"
+
+#, fuzzy
+msgid "COL_CHANGE_NAME"
+msgstr "Especifica el nombre de campo subyacente representado por el Nombre para mostrar. Estos nombres de campo no están definidos por el usuario, sino que se generan a partir de archivos de usuario importados, así como de campos definidos por el programa."
+
+#, fuzzy
+msgid "COL_CHANGE_NAME_EXT"
+msgstr "Si un nombre tiene una etiqueta de \"datos extra\" después de él, estos son campos que han sido importados a SEED por el usuario desde archivos importados. Estos campos no se pueden utilizar como campos coincidentes en la sección Criterios de coincidencia."
+
+#, fuzzy
+msgid "COL_EXCLUDE_FROM_HASH"
+msgstr "Al marcar esta casilla para un campo se eliminará el campo del hash que representa unívocamente cada registro. Los datos entrantes no se importarán a SEED si los únicos campos modificados están marcados como excluidos de los cálculos de unicidad. En su lugar, se calculará que los datos entrantes son un duplicado de los datos existentes y, por lo tanto, se ignorarán."
+
+#, fuzzy
+msgid "COL_GEOCODING_TOGGLE"
+msgstr "Compruebe los campos adecuados, así como su orden para que el programa concatene una dirección completa, que SEED utilizará para generar los valores de latitud y longitud de cada registro"
+
+#, fuzzy
+msgid "COL_GEOCODING_TOGGLE_EXT"
+msgstr "Tenga en cuenta que la geocodificación requiere que se utilice y rellene al menos 1 columna para construir direcciones completas."
+
+#, fuzzy
+msgid "COL_MAP_PROFILE_IMPORT_ADVICE"
+msgstr "Los Perfiles de Mapeo de Columnas pueden utilizarse para ayudarle a mapear sus datos de manera fácil y consistente. Tenga en cuenta que las columnas de encabezado de archivo definidas en el perfil deben coincidir exactamente (espacios, minúsculas, mayúsculas, etc.) para que se utilice la información de columna de SEED correspondiente."
+
+#, fuzzy
+msgid "COL_MAP_PROFILE_INTRO"
+msgstr "Los perfiles de asignación de columnas pueden ayudarle a estandarizar y simplificar el proceso de asignación de importación de archivos."
+
+#, fuzzy
+msgid "COL_MAP_PROFILE_MAPPING_CSV_BUTTON_ADVICE"
+msgstr "Puede crear líneas de asignación para un perfil añadiéndolas individualmente o copiando los valores de cabecera del Fichero de Datos en una lista delimitada por comas utilizando el cuadro de entrada de la derecha."
+
+#, fuzzy
+msgid "COL_MAP_PROFILE_MAPPING_DIRECT_COPY_ADVICE"
+msgstr "Además, puede copiar los valores de cabecera del Archivo de Datos directamente a las cabeceras de SEED mediante el botón de abajo."
+
+#, fuzzy
+msgid "COL_MAP_PROFILE_MAPPING_EXACT_MATCH_ADVICE"
+msgstr "Cuando se utiliza un perfil para un archivo entrante, los valores de cabecera del archivo de datos deben coincidir exactamente para que se rellenen previamente las asignaciones."
+
+#, fuzzy
+msgid "COL_MAP_PROFILE_MAPPING_INTRO"
+msgstr "Crear mapeos a valores específicos de encabezados de Archivos de Datos - mapeo de encabezados SEED, Tipos de Inventario, y si aplica, Unidades de Medición."
+
+#, fuzzy
+msgid "COL_MAP_PROFILE_MAPPING_SUGGESTION_ADVICE"
+msgstr "Alternativamente, puede obtener sugerencias de cabecera de SEED basadas en nombres de columnas existentes utilizando el otro botón de abajo."
+
+#, fuzzy
+msgid "COL_MAP_PROFILE_MAPPING_TYPING"
+msgstr "Los valores de los encabezados de SEED pueden escribirse manualmente. A medida que escriba, aparecerá una lista de sugerencias si el valor es similar a una columna que SEED ya reconoce."
+
+#, fuzzy
+msgid "COL_MATCHING_CRITERIA_TOGGLE"
+msgstr "Si marca esta casilla para un campo, podrá utilizarlo como campo coincidente."
+
+#, fuzzy
+msgid "COL_MERGE_PROTECTION_TOGGLE"
+msgstr "Normalmente, cuando un registro importado se combina con otro, el valor más reciente sobrescribe al más antiguo. La protección contra la fusión evita esto, y es especialmente útil para columnas en las que se han editado manualmente valores que se desea que persistan incluso después de importar y fusionar nuevos datos."
+
+#, fuzzy
+msgid "COMPLETE_AND_REFRESH"
+msgstr "Completar y actualizar la página"
+
+#, fuzzy
+msgid "CONDITION_INDEX_THRESHOLD_HELP"
+msgstr "El índice de condición que se utilizará como umbral de comparación en los cálculos."
+
+#, fuzzy
+msgid "CONFIGURE_CYCLES"
+msgstr "Seleccione uno o varios ciclos del menú desplegable para visualizarlos en los gráficos siguientes."
+
+#, fuzzy
+msgid "CONFIGURE_PROGRAM"
+msgstr "¿Necesita configurar su Programa?"
+
+#, fuzzy
+msgid "CONFIGURE_XY_AXES"
+msgstr "para configurar el conjunto de columnas seleccionables como ejes X e Y. Se pueden configurar en la pestaña Campos de visualización por defecto."
+
+#, fuzzy
+msgid "CONFIRMING_DELETE_PROFILE"
+msgstr "¿Está seguro de que desea eliminar el perfil"
+
+#, fuzzy
+msgid "CONFIRM_ACCESS_LEVEL_DELETE"
+msgstr "¿Está seguro de que desea eliminar este nivel de acceso? Esta acción también eliminará las instancias de nivel de acceso de {num_access_levels}."
+
+#, fuzzy
+msgid "CONFIRM_AND_START_MATCHING"
+msgstr "Confirmar correspondencias & iniciar correspondencia"
+
+msgid "CONTACT_GITHUB"
+msgstr "El código de fuente abierta está disponible en la organización GitHub de seed-platform y contiene varios repositorios para los distintos componentes de la plataforma, como la aplicación principal de SEED, un cliente Python para comunicarse con la API de SEED y varios conjuntos de datos de ejemplo."
+
+#, fuzzy
+msgid "CONTINUE"
+msgstr "Continúe en"
+
+#, fuzzy
+msgid "CONTINUE_QUESTION"
+msgstr "¿Seguro que quieres continuar?"
+
+#, fuzzy
+msgid "CREATED_LABEL_NAMED"
+msgstr "Etiqueta creada {label_name}"
+
+#, fuzzy
+msgid "CREATED_NEW_CYCLE"
+msgstr "Nuevo ciclo creado {cycle_name}"
+
+#, fuzzy
+msgid "CREATE_DATA_LOGGER"
+msgstr "Crear un registrador de datos"
+
+#, fuzzy
+msgid "CURRENTLY_GEOCODING"
+msgstr "Geocodificación actual"
+
+#, fuzzy
+msgid "Campus"
+msgstr "Campus"
+
+#: seed/landing/templates/landing/home.html:28
+#: seed/landing/templates/landing/password_reset_confirm.html:80
+#: seed/landing/templates/landing/signup.html:79
+#, fuzzy
+msgid "Cancel"
+msgstr "Cancelar"
+
+#: seed/exception_handler.py:45
+#, fuzzy
+msgid "Cannot delete protected objects while related objects still exist"
+msgstr "No se pueden eliminar objetos protegidos mientras sigan existiendo objetos relacionados"
+
+#, fuzzy
+msgid "Cannot delete this access level instance."
+msgstr "No se puede eliminar esta instancia de nivel de acceso."
+
+#, fuzzy
+msgid "Change Inventory Access Level"
+msgstr "Cambiar el nivel de acceso al inventario"
+
+#, fuzzy
+msgid "Change Merged Property"
+msgstr "Cambiar propiedad fusionada"
+
+#, fuzzy
+msgid "Change Merged Tax Lot"
+msgstr "Cambio Lote fiscal fusionado"
+
+#, fuzzy
+msgid "Change Password"
+msgstr "Cambiar contraseña"
+
+#: seed/landing/templates/landing/password_reset_confirm.html:29
+#, fuzzy
+msgid "Change Your Password"
+msgstr "Cambiar la contraseña"
+
+#: seed/landing/templates/landing/password_reset_confirm.html:79
+#, fuzzy
+msgid "Change my password"
+msgstr "Cambiar mi contraseña"
+
+#, fuzzy
+msgid "Changed By"
+msgstr "Cambiado por"
+
+#, fuzzy
+msgid "Chart Legend"
+msgstr "Leyenda del gráfico"
+
+#, fuzzy
+msgid "Chart Options"
+msgstr "Opciones de gráficos"
+
+#, fuzzy
+msgid "Choose Existing Organization:"
+msgstr "Seleccione Organización existente:"
+
+#, fuzzy
+msgid "Choose the year ending month for report period."
+msgstr "Seleccione el mes de final de año para el período del informe."
+
+#, fuzzy
+msgid "City"
+msgstr "Ciudad"
+
+#, fuzzy
+msgid "City (Property)"
+msgstr "Ciudad (Propiedad)"
+
+#, fuzzy
+msgid "City (Tax Lot)"
+msgstr "Ciudad (Lote fiscal)"
+
+#, fuzzy
+msgid "Classification Type"
+msgstr "Tipo de clasificación"
+
+#, fuzzy
+msgid "Clear Filters"
+msgstr "Limpiar filtros"
+
+#, fuzzy
+msgid "Clear Labels"
+msgstr "Etiquetas transparentes"
+
+#, fuzzy
+msgid "Close"
+msgstr "Cerrar"
+
+#, fuzzy
+msgid "Close Preview"
+msgstr "Cerrar Vista previa"
+
+#, fuzzy
+msgid "Collapse Tabs"
+msgstr "Contraer pestañas"
+
+#, fuzzy
+msgid "Column"
+msgstr "Columna"
+
+#, fuzzy
+msgid "Column Description"
+msgstr "Descripción de la columna"
+
+#, fuzzy
+msgid "Column List Profile"
+msgstr "Perfil de Column List"
+
+#, fuzzy
+msgid "Column List Profiles"
+msgstr "Perfiles de listas de columnas"
+
+#, fuzzy
+msgid "Column Mapping Profile"
+msgstr "Perfil de asignación de columnas"
+
+#, fuzzy
+msgid "Column Mappings"
+msgstr "Asignación de columnas"
+
+#, fuzzy
+msgid "Column Name"
+msgstr "Nombre de la columna"
+
+#, fuzzy
+msgid "Column Order/Visibility"
+msgstr "Orden/Visibilidad de las columnas"
+
+#, fuzzy
+msgid "Column Settings"
+msgstr "Ajustes de columna"
+
+msgid "Columns to Include in Reports x axis options"
+msgstr "Columnas a incluir en los informes Opciones del eje x"
+
+msgid "Columns to Include in Reports y axis options"
+msgstr "Columnas a incluir en los informes opciones del eje y"
+
+#, fuzzy
+msgid "ComStock Mapping"
+msgstr "Cartografía ComStock"
+
+#, fuzzy
+msgid "Commercial"
+msgstr "Comercial"
+
+#, fuzzy
+msgid "Commitment"
+msgstr "Compromiso"
+
+#, fuzzy
+msgid "Commitment (Sq Ft)"
+msgstr "Compromiso (m2)"
+
+#, fuzzy
+msgid "Committed Area"
+msgstr "Superficie comprometida"
+
+#, fuzzy
+msgid "Compare UBIDs"
+msgstr "Comparar UBIDs"
+
+#, fuzzy
+msgid "Comparing UBIDs Complete"
+msgstr "Comparación de UBIDs Completa"
+
+#, fuzzy
+msgid "Complete"
+msgstr "Complete"
+
+#, fuzzy
+msgid "Compliance"
+msgstr "Conformidad"
+
+#, fuzzy
+msgid "Compliance Information"
+msgstr "Información sobre el cumplimiento"
+
+#, fuzzy
+msgid "Compliance Label"
+msgstr "Etiqueta de conformidad"
+
+#, fuzzy
+msgid "Compliance Period"
+msgstr "Período de cumplimiento"
+
+#, fuzzy
+msgid "Compliance Period (years)"
+msgstr "Periodo de cumplimiento (años)"
+
+#, fuzzy
+msgid "Compliant"
+msgstr "Conforme"
+
+#, fuzzy
+msgid "Concatenate Headers (Columns of Data)"
+msgstr "Concatenar cabeceras (columnas de datos)"
+
+#, fuzzy
+msgid "Condition Check"
+msgstr "Comprobación del estado"
+
+#, fuzzy
+msgid "Condition Index"
+msgstr "Índice de condiciones"
+
+#, fuzzy
+msgid "Condition Index Field"
+msgstr "Campo de índice de condición"
+
+#, fuzzy
+msgid "Condition Index Threshold"
+msgstr "Umbral del índice de condición"
+
+msgid "Conditional Import"
+msgstr "Importación condicional"
+
+#, fuzzy
+msgid "Conditioned Floor Area"
+msgstr "Superficie acondicionada"
+
+#, fuzzy
+msgid "Configuration"
+msgstr "Configuración"
+
+#, fuzzy
+msgid "Configure Goals"
+msgstr "Configurar objetivos"
+
+#: seed/landing/templates/landing/password_reset_confirm.html:64
+#: seed/landing/templates/landing/signup.html:63
+#, fuzzy
+msgid "Confirm"
+msgstr "Confirme"
+
+#, fuzzy
+msgid "Confirm Audit Template Building Import?"
+msgstr "¿Confirmar la importación de plantillas de auditoría?"
+
+#, fuzzy
+msgid "Confirm Save Mappings?"
+msgstr "¿Confirmar guardar asignaciones?"
+
+#, fuzzy
+msgid "Confirm delete"
+msgstr "Confirmar eliminación"
+
+#, fuzzy
+msgid "Confirm new password"
+msgstr "Confirmar nueva contraseña"
+
+#, fuzzy
+msgid "Connection"
+msgstr "Conexión"
+
+#, fuzzy
+msgid "Contact"
+msgstr "Póngase en contacto con"
+
+#, fuzzy
+msgid "Contact Account Name Column"
+msgstr "Columna Nombre de la cuenta de contacto"
+
+#, fuzzy
+msgid "Contact Benchmark Field"
+msgstr "Póngase en contacto con Benchmark Field"
+
+#, fuzzy
+msgid "Contacts and Accounts"
+msgstr "Contactos y cuentas"
+
+msgid "Content"
+msgstr "Contenido"
+
+#, fuzzy
+msgid "Continue to data mapping"
+msgstr "Continuar con el mapeo de datos"
+
+#, fuzzy
+msgid "Continue to data matching"
+msgstr "Continuar con el cotejo de datos"
+
+#, fuzzy
+msgid "Copy Buildings"
+msgstr "Copiar edificios"
+
+#, fuzzy
+msgid "Copy Data File Headers directly to SEED Headers"
+msgstr "Copiar cabeceras de archivos de datos directamente en cabeceras de SEED"
+
+#, fuzzy
+msgid "Copy into Data File Headers"
+msgstr "Copiar en cabeceras de ficheros de datos"
+
+#, fuzzy
+msgid "Count #"
+msgstr "Cuenta #"
+
+#, fuzzy
+msgid "Create"
+msgstr "Cree"
+
+#, fuzzy
+msgid "Create Analysis"
+msgstr "Crear análisis"
+
+msgid "Create Column"
+msgstr "Crear columna"
+
+#, fuzzy
+msgid "Create Cycle"
+msgstr "Crear ciclo"
+
+#, fuzzy
+msgid "Create Data Set"
+msgstr "Crear conjunto de datos"
+
+#, fuzzy
+msgid "Create Filter Group"
+msgstr "Crear grupo de filtros"
+
+#, fuzzy
+msgid "Create New Sub-Organization"
+msgstr "Crear nueva suborganización"
+
+#, fuzzy
+msgid "Create Profile"
+msgstr "Crear perfil"
+
+#, fuzzy
+msgid "Create Project"
+msgstr "Crear proyecto"
+
+#, fuzzy
+msgid "Create UBID"
+msgstr "Crear UBID"
+
+#: seed/landing/templates/landing/signup.html:29
+#, fuzzy
+msgid "Create Your Account"
+msgstr "Cree su cuenta"
+
+msgid "Create a Custom Report to get started!"
+msgstr "Cree un informe personalizado para empezar"
+
+#, fuzzy
+msgid "Create a New Data Set."
+msgstr "Crear un nuevo conjunto de datos."
+
+#, fuzzy
+msgid "Create a New Project"
+msgstr "Crear un nuevo proyecto"
+
+#, fuzzy
+msgid "Create a New Sub-Organization"
+msgstr "Crear una nueva suborganización"
+
+#, fuzzy
+msgid "Create a Program to get started!"
+msgstr "Cree un programa para empezar"
+
+#, fuzzy
+msgid "Create a new rule"
+msgstr "Crear una nueva regla"
+
+#, fuzzy
+msgid "Create a new sub-organization"
+msgstr "Crear una nueva suborganización"
+
+#, fuzzy
+msgid "Create a new..."
+msgstr "Crear un nuevo..."
+
+#, fuzzy
+msgid "Create a user"
+msgstr "Crear un usuario"
+
+#, fuzzy
+msgid "Create an Organization to continue"
+msgstr "Crear una organización para continuar"
+
+#, fuzzy
+msgid "Create an organization"
+msgstr "Crear una organización"
+
+#, fuzzy
+msgid "Create label"
+msgstr "Crear etiqueta"
+
+#: seed/landing/templates/landing/signup.html:78
+#, fuzzy
+msgid "Create my account"
+msgstr "Crear mi cuenta"
+
+#, fuzzy
+msgid "Create new cycle"
+msgstr "Crear un nuevo ciclo"
+
+#, fuzzy
+msgid "Create new data set"
+msgstr "Crear un nuevo conjunto de datos"
+
+#, fuzzy
+msgid "Create new label"
+msgstr "Crear nueva etiqueta"
+
+#, fuzzy
+msgid "Create new sub-organization"
+msgstr "Crear una nueva suborganización"
+
+#, fuzzy
+msgid "Created"
+msgstr "Creado"
+
+#, fuzzy
+msgid "Cross-Cycles"
+msgstr "Ciclos cruzados"
+
+#, fuzzy
+msgid "Current Column Mapping Profile"
+msgstr "Perfil actual de asignación de columnas"
+
+#, fuzzy
+msgid "Current Cycle"
+msgstr "Ciclo actual"
+
+#, fuzzy
+msgid "Current Cycle will be measured against Baseline Cycle"
+msgstr "El ciclo actual se comparará con el ciclo de referencia"
+
+#, fuzzy
+msgid "Current Filters"
+msgstr "Filtros actuales"
+
+#, fuzzy
+msgid "Current Method"
+msgstr "Método actual"
+
+#, fuzzy
+msgid "Current Name"
+msgstr "Nombre actual"
+
+#, fuzzy
+msgid "Current password"
+msgstr "Contraseña actual"
+
+#, fuzzy
+msgid "Custom ID 1"
+msgstr "ID personalizado 1"
+
+#, fuzzy
+msgid "Custom ID 1 (Property)"
+msgstr "ID personalizado 1 (Propiedad)"
+
+#, fuzzy
+msgid "Custom ID 1 (Tax Lot)"
+msgstr "Custom ID 1 (Lote fiscal)"
+
+#, fuzzy
+msgid "Custom Name for Level"
+msgstr "Nombre personalizado para el nivel"
+
+#, fuzzy
+msgid "Custom Reports"
+msgstr "Informes personalizados"
+
+#, fuzzy
+msgid "Custom Reports require filter groups. Filter groups are created and configured on the"
+msgstr "Los informes personalizados requieren grupos de filtros. Los grupos de filtros se crean y configuran en el"
+
+#, fuzzy
+msgid "Custom emails can be sent to Building Owners using the templates defined below. The email will be sent to the SEED record's Owner Email address and is currently not configurable. The email 'from' address is the same as the server email address which is also used to email users their account information."
+msgstr "Se pueden enviar correos electrónicos personalizados a los Propietarios de Edificios utilizando las plantillas definidas a continuación. El correo electrónico se enviará a la dirección de correo electrónico del propietario del registro de SEED y actualmente no es configurable. La dirección de correo electrónico \"de\" es la misma que la dirección de correo electrónico del servidor que también se utiliza para enviar a los usuarios la información de su cuenta."
+
+#, fuzzy
+msgid "Cycle"
+msgstr "Ciclo"
+
+#, fuzzy
+msgid "Cycle Name"
+msgstr "Nombre del ciclo"
+
+#, fuzzy
+msgid "Cycle Selection"
+msgstr "Selección de ciclos"
+
+msgid "Cycle selection and goal details can be customized by clicking the Configure Goals button below."
+msgstr "La selección del ciclo y los detalles del objetivo se pueden personalizar haciendo clic en el botón Configurar objetivos que aparece a continuación."
+
+#, fuzzy
+msgid "Cycle updated."
+msgstr "Ciclo actualizado."
+
+#, fuzzy
+msgid "Cycle:"
+msgstr "Ciclo:"
+
+#, fuzzy
+msgid "Cycles"
+msgstr "Ciclos"
+
+msgid "Cycles to Include"
+msgstr "Ciclos a incluir"
+
+#, fuzzy
+msgid "Cycles to Include in Compliance Period"
+msgstr "Ciclos a incluir en el periodo de cumplimiento"
+
+#, fuzzy
+msgid "DATASET_FILENAME_UPLOADED_TO"
+msgstr "<strong>{dataset_filename}</strong> se ha cargado en <strong>{dataset_name}</strong>, en ciclo <strong>{cycle_name}</strong>."
+
+#, fuzzy
+msgid "DATASET_FILENAME_UPLOADED_TO_MULTIPLE_CYCLE"
+msgstr "<strong>{dataset_filename}</strong> se ha cargado en <strong>{dataset_name}</strong>en varios ciclos. El ciclo por defecto es <strong>{cycle_name}</strong>."
+
+#, fuzzy
+msgid "DATASET_NAME_ALREADY_EXISTS"
+msgstr "El conjunto de datos <strong>nombre \"{dataset_name}\" ya existe</strong>. Por favor, seleccione uno nuevo."
+
+#, fuzzy
+msgid "DATA_FILE_HEADER_DUP_WARNING"
+msgstr "Revise los encabezados de los archivos de fechas.  No se permiten valores duplicados o vacíos."
+
+#, fuzzy
+msgid "DATA_LOGGERS"
+msgstr "Registradores de datos"
+
+#, fuzzy
+msgid "DATA_MAPPING_AND_VALIDATION"
+msgstr "Mapeo y validación de datos ({filename})"
+
+#, fuzzy
+msgid "DELETED_LABEL_NAMED"
+msgstr "Etiqueta borrada {label_name}"
+
+#, fuzzy
+msgid "DELETE_LABEL_AND_REMOVE"
+msgstr "¿Suprimir la etiqueta \"{nombre_etiqueta}\" y eliminarla de todos los edificios a los que se haya aplicado?"
+
+#, fuzzy
+msgid "DELETE_ORG_WARNING"
+msgstr "Esta acción no se puede deshacer. Esto eliminará permanentemente esta organización y todas las sub-organizaciones, cargas asociadas, propiedades, taxlots, ciclos, reglas de calidad de datos, y eliminará todas las asociaciones de miembros."
+
+#, fuzzy
+msgid "DELETE_SUB_ORG_WARNING"
+msgstr "Esta acción no se puede deshacer. Esto eliminará permanentemente esta organización y todas las cargas asociadas, propiedades, lotes fiscales, ciclos, reglas de calidad de datos, suborganizaciones, y eliminará todas las asociaciones de miembros."
+
+msgid "DEVELOPERS_FORUM"
+msgstr "El Foro de Desarrolladores de SEED contiene varios temas y unirse a él le permite conectar con otros desarrolladores. Se recomienda unirse a este foro para enviar preguntas de desarrolladores, solicitudes de características y reportar problemas según sea necesario. También se recomienda enviar problemas a GitHub."
+
+#, fuzzy
+msgid "DID_YOU_REVIEW_YOUR_MAPPINGS"
+msgstr "¿Has revisado tus asignaciones? Es una buena idea volver a revisar sus asignaciones. Una vez que SEED hace coincidir sus propiedades y lotes fiscales, no puede deshacer o editar estas asignaciones."
+
+#, fuzzy
+msgid "DIRECTIONS_FOR_UPDATING_MQ_API_KEY"
+msgstr "Si desea geocodificar sus datos utilizando el servicio MapQuest, proporcione una clave API válida en la configuración de su organización."
+
+#, fuzzy
+msgid "Data"
+msgstr "Datos"
+
+#, fuzzy
+msgid "Data Administrator Account Name Column"
+msgstr "Columna Nombre de cuenta del administrador de datos"
+
+#, fuzzy
+msgid "Data Administrator Contact Field"
+msgstr "Campo de contacto del administrador de datos"
+
+#, fuzzy
+msgid "Data Administrator Contact Settings"
+msgstr "Configuración del contacto del administrador de datos"
+
+#, fuzzy
+msgid "Data File Header"
+msgstr "Cabecera del fichero de datos"
+
+#, fuzzy
+msgid "Data Files"
+msgstr "Ficheros de datos"
+
+#, fuzzy
+msgid "Data Load Error"
+msgstr "Error de carga de datos"
+
+#, fuzzy
+msgid "Data Mapping"
+msgstr "Cartografía de datos"
+
+#, fuzzy
+msgid "Data Mapping and Validation"
+msgstr "Mapeo y validación de datos"
+
+#, fuzzy
+msgid "Data Matching"
+msgstr "Correspondencia de datos"
+
+#, fuzzy
+msgid "Data Pairing"
+msgstr "Emparejamiento de datos"
+
+#, fuzzy
+msgid "Data Quality"
+msgstr "Calidad de los datos"
+
+#, fuzzy
+msgid "Data Quality Check"
+msgstr "Comprobación de la calidad de los datos"
+
+#, fuzzy
+msgid "Data Quality Results"
+msgstr "Resultados sobre la calidad de los datos"
+
+#, fuzzy
+msgid "Data Set"
+msgstr "Conjunto de datos"
+
+#, fuzzy
+msgid "Data Set Name"
+msgstr "Nombre del conjunto de datos"
+
+#, fuzzy
+msgid "Data Sets"
+msgstr "Conjuntos de datos"
+
+#, fuzzy
+msgid "Data Type"
+msgstr "Tipo de datos"
+
+#, fuzzy
+msgid "Date"
+msgstr "Fecha"
+
+#, fuzzy
+msgid "Date Imported"
+msgstr "Fecha de importación"
+
+#, fuzzy
+msgid "Date Uploaded"
+msgstr "Fecha de carga"
+
+#, fuzzy
+msgid "Datetime"
+msgstr "Fecha y hora"
+
+#, fuzzy
+msgid "Deadline"
+msgstr "Plazo"
+
+#, fuzzy
+msgid "Deadline:"
+msgstr "Fecha límite:"
+
+#, fuzzy
+msgid "Decode UBID"
+msgstr "Descodificar UBID"
+
+#, fuzzy
+msgid "Decode UBID for Selected"
+msgstr "Decodificar UBID para Seleccionado"
+
+#, fuzzy
+msgid "Default Contact Account Name"
+msgstr "Nombre de la cuenta de contacto por defecto"
+
+#, fuzzy
+msgid "Default Data Administrator Account Name"
+msgstr "Nombre de cuenta del administrador de datos por defecto"
+
+#, fuzzy
+msgid "Default Display Fields"
+msgstr "Campos de visualización por defecto"
+
+msgid "Default Reports"
+msgstr "Informes por defecto"
+
+#, fuzzy
+msgid "Delete"
+msgstr "Borrar"
+
+#, fuzzy
+msgid "Delete Access Level Instance"
+msgstr "Borrar instancia de nivel de acceso"
+
+#, fuzzy
+msgid "Delete All Mappings"
+msgstr "Borrar todas las asignaciones"
+
+#, fuzzy
+msgid "Delete Indication Label After Successful Salesforce Update"
+msgstr "Eliminar etiqueta de indicación tras una actualización correcta de Salesforce"
+
+#, fuzzy
+msgid "Delete Organization"
+msgstr "Borrar organización"
+
+#, fuzzy
+msgid "Delete Selected"
+msgstr "Borrar seleccionados"
+
+#, fuzzy
+msgid "Delete Sub-Organization"
+msgstr "Suprimir suborganización"
+
+#, fuzzy
+msgid "Delete User?"
+msgstr "¿Borrar usuario?"
+
+#, fuzzy
+msgid "Delete your Data File"
+msgstr "Borrar el archivo de datos"
+
+#, fuzzy
+msgid "Delete your Data Set"
+msgstr "Borrar su conjunto de datos"
+
+#, fuzzy
+msgid "Delete your Filter Group"
+msgstr "Eliminar el grupo de filtros"
+
+#, fuzzy
+msgid "Delete your Inventory"
+msgstr "Borrar su inventario"
+
+#, fuzzy
+msgid "Delete your Profile"
+msgstr "Borrar su perfil"
+
+#, fuzzy
+msgid "Deleting in progress..."
+msgstr "Borrado en curso..."
+
+#, fuzzy
+msgid "Derived Columns"
+msgstr "Columnas derivadas"
+
+#, fuzzy
+msgid "Description"
+msgstr "Descripción"
+
+#: seed/landing/models.py:48
+#, fuzzy
+msgid "Designates whether the user can log into this admin site."
+msgstr "Indica si el usuario puede iniciar sesión en este sitio de administración."
+
+#: seed/landing/models.py:52
+#, fuzzy
+msgid "Designates whether this user should be treated as active. Unselect this instead of deleting accounts."
+msgstr "Designa si este usuario debe ser tratado como activo. Deseleccione esta opción en lugar de eliminar cuentas."
+
+#, fuzzy
+msgid "Desired Name"
+msgstr "Nombre deseado"
+
+#, fuzzy
+msgid "Detail Column List Profile"
+msgstr "Perfil detallado de la lista de columnas"
+
+#, fuzzy
+msgid "Determine Time Period from Field:"
+msgstr "Determinar el periodo de tiempo a partir del campo:"
+
+#, fuzzy
+msgid "Developer"
+msgstr "Desarrollador"
+
+#, fuzzy
+msgid "Development Team"
+msgstr "Equipo de desarrollo"
+
+#, fuzzy
+msgid "Dismiss"
+msgstr "Desestimar"
+
+#, fuzzy
+msgid "Display Name"
+msgstr "Mostrar nombre"
+
+#, fuzzy
+msgid "Distance to Target"
+msgstr "Distancia al objetivo"
+
+#, fuzzy
+msgid "District"
+msgstr "Distrito"
+
+#, fuzzy
+msgid "Documentation"
+msgstr "Documentación"
+
+#, fuzzy
+msgid "Domain"
+msgstr "Dominio"
+
+#, fuzzy
+msgid "Done"
+msgstr "Hecho"
+
+#, fuzzy
+msgid "Download Sample Data"
+msgstr "Descargar datos de muestra"
+
+#, fuzzy
+msgid "Drag Property here to pair with this Tax Lot"
+msgstr "Arrastre la Propiedad aquí para emparejarla con este Lote Fiscal"
+
+#, fuzzy
+msgid "Drag Tax Lot here to pair with this Property"
+msgstr "Arrastre lote fiscal aquí para emparejarlo con esta propiedad"
+
+#, fuzzy
+msgid "Drag from here"
+msgstr "Arrastrar desde aquí"
+
+#, fuzzy
+msgid "Drag headers from your list on the left into the area below to combine them."
+msgstr "Arrastre las cabeceras de la lista de la izquierda al área inferior para combinarlas."
+
+#, fuzzy
+msgid "Drag the columns below to change the order that they appear in the table."
+msgstr "Arrastre las columnas de abajo para cambiar el orden en que aparecen en la tabla."
+
+#, fuzzy
+msgid "Drag the columns below to change the order that they appear in your Buildings List table."
+msgstr "Arrastre las columnas de abajo para cambiar el orden en que aparecen en su tabla de Lista de edificios."
+
+#, fuzzy
+msgid "Drag to here"
+msgstr "Arrastrar hasta aquí"
+
+#, fuzzy
+msgid "Duplicate"
+msgstr "Duplicar"
+
+#, fuzzy
+msgid "Duplicates"
+msgstr "Duplicados"
+
+#, fuzzy
+msgid "EDIT_GOAL_NOTES"
+msgstr "Editar campos para las propiedades seleccionadas"
+
+msgid "EMAIL_TEMPLATE_EXAMPLE"
+msgstr "\"¡La latitud y longitud de tu edificio es \\{\\{latitud\\}\\}, \\{\\{longitud\\}\\}!\""
+
+msgid "EMAIL_TEMPLATE_INSTRUCTIONS_1"
+msgstr "Se pueden enviar correos electrónicos personalizados a los Propietarios de Edificios utilizando las plantillas definidas a continuación. El correo electrónico se enviará a la dirección de correo electrónico del propietario del registro de SEED y actualmente no es configurable. La dirección de correo electrónico \"de\" es la misma que la dirección de correo electrónico del servidor que también se utiliza para enviar a los usuarios la información de su cuenta."
+
+msgid "EMAIL_TEMPLATE_INSTRUCTIONS_2"
+msgstr "El correo electrónico admite plantillas de corchetes para extraer datos del registro de propiedades de SEED. Por ejemplo, el siguiente fragmento reemplazará la latitud y longitud del registro de SEED. Se pueden añadir otros campos, pero asegúrese de utilizar el nombre del campo SEED y no el nombre para mostrar."
+
+#, fuzzy
+msgid "ENABLED"
+msgstr "ACTIVADO"
+
+#, fuzzy
+msgid "ENABLE_PUBLIC_FEED"
+msgstr "para activar o desactivar la funcionalidad de Public Feed"
+
+#, fuzzy
+msgid "ENERGY STAR Score"
+msgstr "Puntuación ENERGY STAR"
+
+#, fuzzy
+msgid "ENERGY_TYPE_DISPLAY_CHOICE_PLACEHOLDER"
+msgstr "----Elija el tipo de energía----"
+
+#, fuzzy
+msgid "ENERGY_UNIT_DISPLAY_CHOICE_PLACEHOLDER"
+msgstr "----Cambiar unidad de visualización----"
+
+#, fuzzy
+msgid "ESPM Password"
+msgstr "Contraseña ESPM"
+
+#, fuzzy
+msgid "ESPM Property ID"
+msgstr "ID de propiedad ESPM"
+
+#, fuzzy
+msgid "ESPM Username"
+msgstr "Nombre de usuario ESPM"
+
+#, fuzzy
+msgid "ESPM_FILE_UPLOAD"
+msgstr "Cargar hoja de cálculo ESPM (xlsx). La hoja de cálculo debe contener una sola propiedad."
+
+#, fuzzy
+msgid "ESPM_IMPORT_TEXT"
+msgstr "A continuación, elija un método de importación de datos de EnergyStar Portfolio Manager (ESPM): puede cargar una hoja de cálculo de la propiedad descargada previamente de ESPM o puede conectarse directamente a ESPM para acceder a los datos."
+
+#, fuzzy
+msgid "ESTCP Report"
+msgstr "Informe ESTCP"
+
+#, fuzzy
+msgid "ETA:"
+msgstr "Finalización estimada:"
+
+#, fuzzy
+msgid "EUI"
+msgstr "EUI"
+
+#, fuzzy
+msgid "EUI Target Columns"
+msgstr "EUI Columnas objetivo"
+
+#, fuzzy
+msgid "EXCLUDE"
+msgstr "EXCLUIR"
+
+#, fuzzy
+msgid "EXTRA_DATA_COL_TYPE_CHANGE"
+msgstr "Para los campos de \"datos adicionales\", esto permite al usuario establecer el tipo, como Texto, Número, Fecha, etc."
+
+#, fuzzy
+msgid "Edit"
+msgstr "Editar"
+
+#, fuzzy
+msgid "Edit Access Level Instance Name"
+msgstr "Editar nivel de acceso Nombre de instancia"
+
+#, fuzzy
+msgid "Edit Fields for Selected"
+msgstr "Editar campos para seleccionados"
+
+#, fuzzy
+msgid "Edit Name"
+msgstr "Editar nombre"
+
+#, fuzzy
+msgid "Edit UBIDs"
+msgstr "Editar UBIDs"
+
+msgid "Edit/Add Access Levels"
+msgstr "Editar/Agregar niveles de acceso"
+
+#, fuzzy
+msgid "Elapsed:"
+msgstr "Transcurrido:"
+
+#, fuzzy
+msgid "Electric EUI Field"
+msgstr "Campo eléctrico EUI"
+
+#: seed/landing/forms.py:13
+#, fuzzy
+msgid "Email"
+msgstr "Correo electrónico"
+
+#: seed/landing/forms.py:16
+#, fuzzy
+msgid "Email Address"
+msgstr "Dirección de correo electrónico"
+
+#, fuzzy
+msgid "Email Address:"
+msgstr "Dirección de correo electrónico:"
+
+#, fuzzy
+msgid "Email Templates"
+msgstr "Plantillas de correo electrónico"
+
+#, fuzzy
+msgid "Emission Metric"
+msgstr "Emisión Métrica"
+
+#, fuzzy
+msgid "Enable Audit Template Auto Sync"
+msgstr "Activar la sincronización automática de plantillas de auditoría"
+
+#, fuzzy
+msgid "Enable ComStock Functionality"
+msgstr "Activar la funcionalidad ComStock"
+
+#, fuzzy
+msgid "Enable Geocoding"
+msgstr "Activar la geocodificación"
+
+#, fuzzy
+msgid "Enable Labels in Public Feed"
+msgstr "Habilitar etiquetas en el feed público"
+
+#, fuzzy
+msgid "Enable Public Endpoints"
+msgstr "Habilitar puntos finales públicos"
+
+#, fuzzy
+msgid "Enable Public GeoJSON"
+msgstr "Activar GeoJSON público"
+
+#, fuzzy
+msgid "Enable Salesforce Integration"
+msgstr "Activar la integración de Salesforce"
+
+#, fuzzy
+msgid "Energy"
+msgstr "Energía"
+
+#, fuzzy
+msgid "Energy Alerts"
+msgstr "Alertas de energía"
+
+#, fuzzy
+msgid "Energy Metric"
+msgstr "Métrica energética"
+
+#, fuzzy
+msgid "Energy data file"
+msgstr "Fichero de datos sobre energía"
+
+#: config/settings/common.py:214
+#, fuzzy
+msgid "English"
+msgstr "Inglés"
+
+#, fuzzy
+msgid "Enter Email Address"
+msgstr "Introduzca la dirección de correo electrónico"
+
+#, fuzzy
+msgid "Enter a Name for the new Access Level Instance"
+msgstr "Introduzca un Nombre para la nueva Instancia de Nivel de Acceso"
+
+#, fuzzy
+msgid "Enter a valid email address."
+msgstr "Introduzca una dirección de correo electrónico válida."
+
+#, fuzzy
+msgid "Enter email address"
+msgstr "Introduzca la dirección de correo electrónico"
+
+#, fuzzy
+msgid "Enter first name"
+msgstr "Introduzca el nombre"
+
+#, fuzzy
+msgid "Enter last name"
+msgstr "Introduzca el apellido"
+
+#, fuzzy
+msgid "Enter sub-organization name"
+msgstr "Introduzca el nombre de la suborganización"
+
+#, fuzzy
+msgid "Enter the minimum square footage for report period."
+msgstr "Introduzca los metros cuadrados mínimos para el periodo del informe."
+
+#, fuzzy
+msgid "Enter the minimum threshold count of buildings that can be returned in a shared query. The building count threshold is important for allowing other organizations to perform statistical analysis on your data without revealing information about individual buildings."
+msgstr "Introduzca el umbral mínimo de recuento de edificios que puede devolverse en una consulta compartida. El umbral de recuento de edificios es importante para permitir que otras organizaciones realicen análisis estadísticos de sus datos sin revelar información sobre edificios individuales."
+
+#, fuzzy
+msgid "Error"
+msgstr "Error"
+
+#, fuzzy
+msgid "Error Processing Data"
+msgstr "Datos de procesamiento de errores"
+
+#, fuzzy
+msgid "Example Access Level Tree"
+msgstr "Ejemplo de árbol de niveles de acceso"
+
+#, fuzzy
+msgid "Example Usage"
+msgstr "Ejemplo de uso"
+
+#, fuzzy
+msgid "Exclude"
+msgstr "Excluir"
+
+#, fuzzy
+msgid "Exclude From Uniqueness"
+msgstr "Excluir de la singularidad"
+
+#, fuzzy
+msgid "Exclude all selected labels"
+msgstr "Excluir todas las etiquetas seleccionadas"
+
+#, fuzzy
+msgid "Existing Audit Template Properties (skipped)"
+msgstr "Propiedades de la plantilla de auditoría existente (omitida)"
+
+#, fuzzy
+msgid "Existing Cycles"
+msgstr "Ciclos existentes"
+
+#, fuzzy
+msgid "Existing Labels"
+msgstr "Etiquetas existentes"
+
+#, fuzzy
+msgid "Existing Properties"
+msgstr "Propiedades existentes"
+
+#, fuzzy
+msgid "Existing Tax Lots"
+msgstr "Lotes fiscales existentes"
+
+#, fuzzy
+msgid "Export"
+msgstr "Exportar"
+
+#, fuzzy
+msgid "Export BuildingSync"
+msgstr "Exportar BuildingSync"
+
+#, fuzzy
+msgid "Export BuildingSync in Excel format"
+msgstr "Exportar BuildingSync en formato Excel"
+
+#, fuzzy
+msgid "Export Buildings"
+msgstr "Exportación de edificios"
+
+#, fuzzy
+msgid "Export CSV"
+msgstr "Exportar CSV"
+
+msgid "Export Data"
+msgstr "Exportar datos"
+
+#, fuzzy
+msgid "Export File Name"
+msgstr "Nombre del archivo de exportación"
+
+#, fuzzy
+msgid "Export GeoJSON"
+msgstr "Exportar GeoJSON"
+
+#, fuzzy
+msgid "Export Name"
+msgstr "Nombre de exportación"
+
+#, fuzzy
+msgid "Export Results"
+msgstr "Exportar resultados"
+
+#, fuzzy
+msgid "Export Selected"
+msgstr "Exportación seleccionada"
+
+#, fuzzy
+msgid "Export Spreadsheet"
+msgstr "Exportar hoja de cálculo"
+
+#, fuzzy
+msgid "Export properties to your Audit Template account"
+msgstr "Exportar propiedades a su cuenta de Plantilla de Auditoría"
+
+#, fuzzy
+msgid "Export to Audit Template"
+msgstr "Exportar a plantilla de auditoría"
+
+#, fuzzy
+msgid "Export your Properties and Tax Lots"
+msgstr "Exporte sus propiedades y lotes fiscales"
+
+#, fuzzy
+msgid "Exporting properties to your Audit Template account"
+msgstr "Exportación de propiedades a su cuenta de Plantilla de Auditoría"
+
+#, fuzzy
+msgid "Exporting selected properties..."
+msgstr "Exportar propiedades seleccionadas..."
+
+#, fuzzy
+msgid "FAILED_GEOCODE_INVALID_MAPQUEST_API_KEY"
+msgstr "Error de geocodificación - Su clave API de MapQuest no es válida. Actualice su clave API de MapQuest o desactive la geocodificación en los ajustes de la organización."
+
+#, fuzzy
+msgid "FAILED_GEOCODE_MAPQUEST_API_KEY_ERROR"
+msgstr "Error de geocodificación - Su clave API de MapQuest no es válida o está al límite. Actualice su clave API de MapQuest o desactive la geocodificación en la configuración de la organización."
+
+#, fuzzy
+msgid "FAIR_BENCHMARK_RATIO_HELP"
+msgstr "La relación justa entre el valor EUI total y el valor EUI total de referencia que debe utilizarse. Ratio = EUI total EUI de referencia"
+
+#, fuzzy
+msgid "FEMP CTS Reporting Export"
+msgstr "Exportación de informes CTS del FEMP"
+
+#, fuzzy
+msgid "FF_RSL_THRESHOLD_HELP"
+msgstr "El valor de vida útil restante que se utilizará para su equipo alimentado por combustibles fósiles como umbral de comparación en los cálculos. Por ejemplo, puede que su umbral de vida útil restante sea de 0 años y su caldera de gas tenga una vida útil restante de -1 año, por lo que no cumple el umbral."
+
+#, fuzzy
+msgid "FIELDS NEEDED TO MAKE MATCHES:"
+msgstr "CAMPOS NECESARIOS PARA HACER PARTIDOS:"
+
+#, fuzzy
+msgid "FIELD_NAMES_FOR_GEOCODING_PROPERTIES"
+msgstr "Nombres de campo para las propiedades de geocodificación"
+
+#, fuzzy
+msgid "FIELD_NAMES_FOR_GEOCODING_TAXLOTS"
+msgstr "Nombres de campo para la geocodificación de lotes fiscales"
+
+#, fuzzy
+msgid "FIELD_NAMES_FOR_MATCHING"
+msgstr "Nombres de campo para la correspondencia"
+
+#, fuzzy
+msgid "FILE_TYPES_SUPPORTED"
+msgstr "Tipos de archivo admitidos: <strong>.csv</strong>, <strong>.xls</strong>, <strong>.xlsx</strong>, <strong>.xml</strong>, <strong>.zip</strong>, <strong>.geojson</strong>y <strong>.json</strong>."
+
+msgid "FOSSIL_FUEL_EUI_HELP"
+msgstr "Umbral EUI de combustibles fósiles para el edificio (incluye gas, etc.)"
+
+#, fuzzy
+msgid "Failed to delete inventory"
+msgstr "Error al borrar inventario"
+
+#, fuzzy
+msgid "Fair Actual to Benchmark EUI Ratio"
+msgstr "Ratio EUI justo real/de referencia"
+
+msgid "Federal BPS Prescriptive Measures"
+msgstr "Medidas prescriptivas federales BPS"
+
+#, fuzzy
+msgid "Federal BPS Recommended Measures"
+msgstr "Medidas federales recomendadas por el BPS"
+
+#, fuzzy
+msgid "Fetching your buildings from Audit Template..."
+msgstr "Obtención de sus edificios de la plantilla de auditoría..."
+
+#, fuzzy
+msgid "Field"
+msgstr "Campo"
+
+#, fuzzy
+msgid "Field Name"
+msgstr "Nombre del campo"
+
+#, fuzzy
+msgid "Fields that have a \"Must Contain\" or \"Must Not Contain\" Condition Check rule cannot have a \"Range\" Condition Check rule."
+msgstr "Los campos que tienen una regla de comprobación de condición \"Debe contener\" o \"No debe contener\" no pueden tener una regla de comprobación de condición \"Rango\"."
+
+#, fuzzy
+msgid "File Name"
+msgstr "Nombre del archivo"
+
+#, fuzzy
+msgid "File Source:"
+msgstr "Fuente del archivo:"
+
+#, fuzzy
+msgid "Files (Main State Only)"
+msgstr "Ficheros (sólo estado principal)"
+
+#, fuzzy
+msgid "Filter By Label"
+msgstr "Filtrar por etiqueta"
+
+#, fuzzy
+msgid "Filter Group"
+msgstr "Grupo de filtros"
+
+#, fuzzy
+msgid "Filter Group Name"
+msgstr "Nombre del grupo de filtros"
+
+#, fuzzy
+msgid "Filter Groups"
+msgstr "Filtrar grupos"
+
+#, fuzzy
+msgid "Filter by label"
+msgstr "Filtrar por etiqueta"
+
+#, fuzzy
+msgid "Filter by label:"
+msgstr "Filtrar por etiqueta:"
+
+#, fuzzy
+msgid "Finding inventory matches for"
+msgstr "Encontrar coincidencias de inventario para"
+
+#, fuzzy
+msgid "Finding inventory matches."
+msgstr "Encontrar coincidencias de inventario."
+
+#, fuzzy
+msgid "First Name"
+msgstr "Nombre"
+
+#, fuzzy
+msgid "First Name:"
+msgstr "Nombre de pila:"
+
+#, fuzzy
+msgid "First name is required."
+msgstr "El nombre es obligatorio."
+
+#, fuzzy
+msgid "Float"
+msgstr "Flotador"
+
+#, fuzzy
+msgid "For Portfolio Manager files, SEED has a default set of field names which can be used without extra user editing unless desired."
+msgstr "Para los archivos de Portfolio Manager, SEED tiene un conjunto predeterminado de nombres de campo que se pueden utilizar sin edición adicional por parte del usuario, a menos que se desee."
+
+msgid "For SEED Platform™ Developers"
+msgstr "Para desarrolladores de SEED Platform™"
+
+msgid "For SEED Platform™ Users"
+msgstr "Para usuarios de la SEED Platform™"
+
+#, fuzzy
+msgid "For SEED-Platform Developers"
+msgstr "Para desarrolladores de plataformas SEED"
+
+#, fuzzy
+msgid "For SEED-Platform Users"
+msgstr "Para usuarios de la plataforma SEED"
+
+#, fuzzy
+msgid "For direct help on a specific problem, please email:"
+msgstr "Para obtener ayuda directa sobre un problema concreto, envíe un correo electrónico:"
+
+msgid "For direct help on a specific problem, please fill out a request on the building data tools website help desk:"
+msgstr "Para obtener ayuda directa sobre un problema concreto, rellene una solicitud en el servicio de ayuda del sitio web de herramientas de datos del edificio:"
+
+#: seed/landing/templates/landing/home.html:29
+#: seed/landing/templates/landing/login.html:31
+#, fuzzy
+msgid "Forgot password?"
+msgstr "¿Ha olvidado su contraseña?"
+
+msgid "Fossil Fuel EUI Threshold"
+msgstr "Umbral EUI de combustibles fósiles"
+
+#, fuzzy
+msgid "Fossil Fuel-Fired Equipment RSL Threshold"
+msgstr "Equipos alimentados con combustibles fósiles Umbral RSL"
+
+#: config/settings/common.py:215
+#, fuzzy
+msgid "French (Canadian)"
+msgstr "Francés (canadiense)"
+
+#, fuzzy
+msgid "From Date"
+msgstr "De Fecha"
+
+#, fuzzy
+msgid "From Email"
+msgstr "Del correo electrónico"
+
+#, fuzzy
+msgid "From date"
+msgstr "De fecha"
+
+#, fuzzy
+msgid "From first date of"
+msgstr "Desde la primera fecha de"
+
+#, fuzzy
+msgid "From the list below, select the fields that you want to: 1) share internally within your organization, and 2) share publicly with users outside your organization."
+msgstr "En la siguiente lista, seleccione los campos que desea: 1) compartir internamente dentro de su organización, y 2) compartir públicamente con usuarios fuera de su organización."
+
+#, fuzzy
+msgid "From the table below, select the rules that you want to: 1) enable/disable within your organization, 2) modify the minimum/maximum values to validate against on file upload, and 3) optionally assign or remove a label if the condition is not met."
+msgstr "En la tabla siguiente, seleccione las reglas que desea: 1) activar/desactivar dentro de su organización, 2) modificar los valores mínimos/máximos para validar contra en la carga de archivos, y 3) opcionalmente asignar o eliminar una etiqueta si no se cumple la condición."
+
+#, fuzzy
+msgid "Funding from"
+msgstr "Financiación de"
+
+#, fuzzy
+msgid "GEOCODED_MANUALLY"
+msgstr "geocodificado manualmente"
+
+#, fuzzy
+msgid "GEOCODED_WITH_HIGH_CONFIDENCE"
+msgstr "éxito con una gran confianza en el resultado"
+
+#, fuzzy
+msgid "GEOCODED_WITH_LOW_CONFIDENCE"
+msgstr "infructuoso debido a una baja confianza en la geocodificación del resultado"
+
+#, fuzzy
+msgid "GEOCODE_ATTEMPTED_PREVIOUSLY"
+msgstr "Geocodificación intentada anteriormente"
+
+#, fuzzy
+msgid "GEOCODE_INVENTORY_BASE_TITLE"
+msgstr "Inventario geocodificado"
+
+#, fuzzy
+msgid "GEOCODE_UNSUCCESSFUL_MISSING_FIELDS"
+msgstr "fallido debido a la falta de campos de dirección"
+
+#, fuzzy
+msgid "GEOCODING_COL_COUNT_REQUIREMENT"
+msgstr "Se requiere al menos 1 columna de geocodificación para este tipo de edificio con el fin de intentar la geocodificación."
+
+#, fuzzy
+msgid "GEOCODING_FULL_ADDRESS_ADVICE"
+msgstr "Los campos del fichero de datos asignados a estas columnas tendrán sus valores correspondientes concatenados en el orden indicado para formar una dirección completa. Esta dirección completa se crea para cada registro y se utiliza para la geocodificación."
+
+#, fuzzy
+msgid "GEOCODING_INVENTORY_COMPLETE"
+msgstr "Geocodificación completa"
+
+#, fuzzy
+msgid "GEOCODING_INVENTORY_INCOMPLETE"
+msgstr "Geocodificación incompleta"
+
+#, fuzzy
+msgid "GEOCODING_NEEDS_THREE_COLS"
+msgstr "Tenga en cuenta que la geocodificación requiere que se utilice y rellene al menos 1 columna para construir direcciones completas."
+
+#, fuzzy
+msgid "GEOCODING_NOW"
+msgstr "Geocodificación ahora..."
+
+msgid "GHG"
+msgstr "GHG"
+
+msgid "GHG Intensity"
+msgstr "Intensidad de GHG"
+
+#, fuzzy
+msgid "GJ/m²/year"
+msgstr "GJ/m²/año"
+
+#, fuzzy
+msgid "GOAL"
+msgstr "META"
+
+#, fuzzy
+msgid "GOAL_CONFIG_TEXT"
+msgstr "Configure a continuación uno o varios objetivos de reducción de la Intensidad de Uso de la Energía (EUI) de la cartera."
+
+#, fuzzy
+msgid "GOAL_SELECT_ALI"
+msgstr "Indique el nivel en su árbol de niveles de acceso al que se aplica este objetivo"
+
+#, fuzzy
+msgid "GOAL_SELECT_CYCLES"
+msgstr "Seleccione un ciclo de referencia y un ciclo actual para la comparación"
+
+#, fuzzy
+msgid "GOAL_SELECT_EUI_FIELDS"
+msgstr "Indique qué campos de sus datos deben utilizarse para la información sobre el IUE y la superficie útil"
+
+#, fuzzy
+msgid "GOAL_SELECT_PERCENTAGE"
+msgstr "Especificar un objetivo porcentual de mejora del EUI"
+
+#, fuzzy
+msgid "GOAL_SETUP_TEXT"
+msgstr "Configure a continuación uno o varios objetivos de reducción de la Intensidad de Uso de la Energía (EUI) de su cartera. Seleccione un ciclo de referencia y un ciclo actual para la comparación, indique el nivel en su árbol de niveles de acceso al que se aplica este objetivo, especifique un objetivo de porcentaje de mejora de EUI e indique qué campos de sus datos deben utilizarse para la información de EUI y pies cuadrados."
+
+#, fuzzy
+msgid "GREENBUTTON_CONTENTS_TITLE"
+msgstr "Confirmar contenido del archivo GreenButton"
+
+#, fuzzy
+msgid "GSA SFTool Guidance"
+msgstr "Guía SFTool de la GSA"
+
+#, fuzzy
+msgid "Gas EUI Field"
+msgstr "Gas EUI Campo"
+
+#, fuzzy
+msgid "Generate Token"
+msgstr "Generar token"
+
+#, fuzzy
+msgid "Geocode"
+msgstr "Geocódigo"
+
+#, fuzzy
+msgid "Geocode Selected"
+msgstr "Geocódigo seleccionado"
+
+#, fuzzy
+msgid "Geocoding Confidence"
+msgstr "Geocodificación Confianza"
+
+#, fuzzy
+msgid "Geocoding Order"
+msgstr "Orden de geocodificación"
+
+#, fuzzy
+msgid "Geocoding has been disabled for this organization."
+msgstr "Se ha desactivado la geocodificación para esta organización."
+
+#, fuzzy
+msgid "Geometry"
+msgstr "Geometría"
+
+#, fuzzy
+msgid "Get a New API Key"
+msgstr "Obtener una nueva clave API"
+
+#: seed/landing/templates/landing/_marketing_bullets.html:7
+#, fuzzy
+msgid "Get started using SEED Platform by uploading your buildings list (city tax assessor data) and then your EPA Portfolio Manager data."
+msgstr "Empiece a utilizar la Plataforma SEED cargando su lista de edificios (datos del asesor fiscal de la ciudad) y luego sus datos de EPA Portfolio Manager."
+
+#, fuzzy
+msgid "Getting Started"
+msgstr "Primeros pasos"
+
+#, fuzzy
+msgid "Getting Started Guide"
+msgstr "Guía de iniciación"
+
+#, fuzzy
+msgid "Go to Detail Page"
+msgstr "Ir a la página detallada"
+
+#, fuzzy
+msgid "Go to Meters"
+msgstr "Ir a Contadores"
+
+#, fuzzy
+msgid "Go to Notes"
+msgstr "Ir a Notas"
+
+msgid "Goal"
+msgstr "Objetivo"
+
+#, fuzzy
+msgid "Goal Setup"
+msgstr "Configuración de la meta"
+
+#, fuzzy
+msgid "Gross Floor Area"
+msgstr "Superficie bruta"
+
+#, fuzzy
+msgid "HOW THE SYSTEM AUTO-MATCHES YOUR PROPERTIES AND TAX LOTS:"
+msgstr "CÓMO EL SISTEMA EMPAREJA AUTOMÁTICAMENTE SUS PROPIEDADES Y LOTES FISCALES:"
+
+#, fuzzy
+msgid "HOW TO MANUALLY MATCH YOUR PROPERTIES AND TAX LOTS:"
+msgstr "CÓMO EMPAREJAR MANUALMENTE SUS PROPIEDADES Y LOTES FISCALES:"
+
+#, fuzzy
+msgid "HOW_SYSTEM_AUTO_MATCHES_EXPLANATION"
+msgstr "Su(s) archivo(s) de datos de origen se presentan en la tabla de la izquierda. Todas las propiedades/lotes fiscales en los que existe una posible coincidencia de datos se presentan en una tabla a la derecha. El sistema intenta hacer coincidir automáticamente los registros utilizando identificadores únicos compartidos como: ID de propiedad PM, ID de lote fiscal de jurisdicción e ID personalizados, así como información de dirección. Cuando el sistema cree que existe una coincidencia entre un registro de su archivo de origen y un registro existente, marcará automáticamente la casilla \"coincidencia\" <i class=\"fa fa-check-square-o\"></i>&mdash; haciendo coincidir estos registros."
+
+#, fuzzy
+msgid "HTTP Error! Status Code: 404. The requested URL was not found."
+msgstr "Error HTTP Código de estado: 404. No se ha encontrado la URL solicitada."
+
+#, fuzzy
+msgid "HTTP Error! Status Code: 500. Internal Server Error."
+msgstr "Error HTTP Código de estado: 500. Error interno del servidor."
+
+#, fuzzy
+msgid "Have your organization owner update the column's data type to \"Area\""
+msgstr "Haga que el propietario de su organización actualice el tipo de datos de la columna a \"Área\""
+
+#, fuzzy
+msgid "Have your organization owner update the data type of the column to \"EUI\""
+msgstr "Haga que el propietario de su organización actualice el tipo de datos de la columna a \"EUI\""
+
+#: seed/templates/seed/account_create_email.html:2
+#, fuzzy
+msgid "Hello %(first_name)s, "
+msgstr "Hola %(first_name)s, "
+
+#, fuzzy
+msgid "Hexagonal Bins"
+msgstr "Cubos hexagonales"
+
+msgid "Hide All Labels"
+msgstr "Ocultar todas las etiquetas"
+
+#, fuzzy
+msgid "Highlights of SEED Platform™"
+msgstr "Aspectos destacados de la Plataforma SEED"
+
+#, fuzzy
+msgid "Historical Note"
+msgstr "Nota histórica"
+
+#, fuzzy
+msgid "Home Energy Score ID"
+msgstr "ID de puntuación energética de la vivienda"
+
+#, fuzzy
+msgid "Hour"
+msgstr "Hora"
+
+#, fuzzy
+msgid "ID"
+msgstr "ID"
+
+#, fuzzy
+msgid "IF_MARKED_AS_DUPLICATE_ADVICE"
+msgstr "<label class=\"label label-danger\">Duplicados</label> -- si los campos se marcan como duplicados, deben resolverse para que tengan nombres diferentes."
+
+#, fuzzy
+msgid "IMPORT_ANOTHER_QUESTION"
+msgstr "¿Desea añadir otro archivo?"
+
+#, fuzzy
+msgid "INCLUDE_SHARED_PROPERTIES"
+msgstr "Incluya en su Lista de propiedades todas las propiedades compartidas con usted."
+
+#, fuzzy
+msgid "INCLUDE_SHARED_TAXLOTS"
+msgstr "Incluya en su lista de lotes fiscales todos los lotes fiscales compartidos con usted."
+
+#, fuzzy
+msgid "INDIVIDUAL_MATCH_MERGE_ROUND_ALERT"
+msgstr "Esta acción iniciará una ronda de coincidencias y fusiones para el registro resultante. Los valores de este registro tendrán prioridad en caso de que se produzcan fusiones. Los registros coincidentes múltiples se fusionan de antemano, dando prioridad a los registros importados más recientemente."
+
+#, fuzzy
+msgid "INSIGHTS_HELP_TEXT"
+msgstr "Utilice los controles siguientes para mostrar un subconjunto de propiedades en el gráfico. La leyenda del gráfico también puede utilizarse para mostrar u ocultar propiedades en función del estado de cumplimiento. El botón \"Actualizar etiquetas de propiedades\" permite editar las etiquetas aplicadas a las propiedades visibles en el gráfico."
+
+#, fuzzy
+msgid "INTERNAL"
+msgstr "INTERIOR"
+
+#, fuzzy
+msgid "INVALID_CSV_EXTENSION_ALERT"
+msgstr "<strong>Lo sentimos</strong> SEED no admite actualmente ese formato de archivo. Sólo <strong>.csv</strong> son compatibles."
+
+#, fuzzy
+msgid "INVALID_DOC_FILE_EXTENSION_ALERT"
+msgstr "Tipo de documento seleccionado no válido. Los tipos de archivo aceptados son .dxf, .pdf, .idf y .osm"
+
+#, fuzzy
+msgid "INVALID_EXTENSION_ALERT"
+msgstr "<strong>Lo sentimos</strong> SEED no admite actualmente ese formato de archivo. Sólo <strong>.csv</strong>, <strong>.xls</strong>, <strong>.xlsx</strong>y <strong>.xml</strong> son compatibles."
+
+#, fuzzy
+msgid "INVALID_GEOJSON_EXTENSION_ALERT"
+msgstr "<strong>Lo sentimos</strong> SEED no admite actualmente ese formato de archivo. Sólo <strong>.geojson</strong> y <strong>.json</strong> son compatibles."
+
+#, fuzzy
+msgid "INVALID_XLSX_EXTENSION_ALERT"
+msgstr "<strong>Lo sentimos</strong> SEED no admite actualmente ese formato de archivo. Sólo <strong>.xlsx</strong> son compatibles."
+
+#, fuzzy
+msgid "INVALID_XML_EXTENSION_ALERT"
+msgstr "<strong>Lo sentimos</strong> SEED no admite actualmente ese formato de archivo. Sólo <strong>.xml</strong> son compatibles."
+
+#, fuzzy
+msgid "INVALID_XML_ZIP_EXTENSION_ALERT"
+msgstr "<strong>Lo sentimos</strong> SEED no admite actualmente ese formato de archivo. Sólo <strong>.xml</strong> y <strong>.zip</strong> son compatibles."
+
+#, fuzzy
+msgid "IRREVERSIBLE_OPERATION_WARNING"
+msgstr "Esta operación es irreversible."
+
+#, fuzzy
+msgid "ITEMS_WILL_NOT_CHANGE"
+msgstr "estos no cambiarán"
+
+#, fuzzy
+msgid "Ignored duplicates of existing properties"
+msgstr "Duplicados ignorados de propiedades existentes"
+
+#, fuzzy
+msgid "Ignored duplicates of existing tax lots"
+msgstr "Duplicados ignorados de lotes fiscales existentes"
+
+#, fuzzy
+msgid "Ignored property duplicates within the import file"
+msgstr "Duplicados de propiedades ignorados en el archivo de importación"
+
+#, fuzzy
+msgid "Ignored tax lot duplicates within the import file"
+msgstr "Duplicados de lotes fiscales ignorados en el fichero de importación"
+
+#, fuzzy
+msgid "Import"
+msgstr "Importar"
+
+#, fuzzy
+msgid "Import Access Level Instances"
+msgstr "Importar instancias de nivel de acceso"
+
+#, fuzzy
+msgid "Import Audit Template Buildings"
+msgstr "Importar plantillas de auditoría de edificios"
+
+#, fuzzy
+msgid "Import Portfolio Manager Data"
+msgstr "Importar datos de Portfolio Manager"
+
+#, fuzzy
+msgid "Import Submissions"
+msgstr "Importar envíos"
+
+#, fuzzy
+msgid "Import directly from ESPM"
+msgstr "Importar directamente desde ESPM"
+
+#, fuzzy
+msgid "Import from Audit Template"
+msgstr "Importar desde plantilla de auditoría"
+
+#, fuzzy
+msgid "Import setting:"
+msgstr "Ajuste de importación:"
+
+#, fuzzy
+msgid "In addition, you need to specify where the field should be associated with Tax Lot data or Property data. This will affect how the data is matched and merged, as well as how it is displayed in the Inventory view."
+msgstr "Además, debe especificar dónde debe asociarse el campo con los datos del Lote fiscal o con los datos de la Propiedad. Esto afectará a la forma en que los datos se comparan y combinan, así como a la forma en que se muestran en la vista Inventario."
+
+#: seed/models/projects.py:23
+#, fuzzy
+msgid "Inactive"
+msgstr "Inactivo"
+
+#, fuzzy
+msgid "Include Any"
+msgstr "Incluir cualquier"
+
+#, fuzzy
+msgid "Include CSV Label Header"
+msgstr "Incluir encabezado de etiqueta CSV"
+
+#, fuzzy
+msgid "Include Notes"
+msgstr "Incluir notas"
+
+msgid "Includes Elements with Scope 1 Emissions Only"
+msgstr "Incluye sólo elementos con emisiones de Alcance 1"
+
+#, fuzzy
+msgid "Indication Label"
+msgstr "Indicación Etiqueta"
+
+#, fuzzy
+msgid "Ineligible"
+msgstr "No subvencionable"
+
+#, fuzzy
+msgid "Insights"
+msgstr "Perspectivas"
+
+#, fuzzy
+msgid "Installation Date"
+msgstr "Fecha de instalación"
+
+#, fuzzy
+msgid "Integer"
+msgstr "Entero"
+
+#, fuzzy
+msgid "Interval"
+msgstr "Intervalo"
+
+#, fuzzy
+msgid "Invalid UBID"
+msgstr "UBID no válido"
+
+#, fuzzy
+msgid "Inventory"
+msgstr "Inventario"
+
+msgid "Inventory Documents"
+msgstr "Documentos de inventario"
+
+msgid "Inventory List"
+msgstr "Lista de inventario"
+
+#, fuzzy
+msgid "Inventory Reports"
+msgstr "Informes de inventario"
+
+#, fuzzy
+msgid "Inventory Type"
+msgstr "Tipo de inventario"
+
+#, fuzzy
+msgid "Inventory list file"
+msgstr "Archivo de la lista de inventario"
+
+#, fuzzy
+msgid "Invite a New Member"
+msgstr "Invitar a un nuevo miembro"
+
+#, fuzzy
+msgid "Invite a new member"
+msgstr "Invitar a un nuevo miembro"
+
+#, fuzzy
+msgid "Invite an Owner"
+msgstr "Invitar a un propietario"
+
+msgid "Is Omitted"
+msgstr "Se omite"
+
+#, fuzzy
+msgid "It is necessary to map your field names to SEED field names. You can select from the list that appears as you start to type, which is based on the Building Energy Data Exchange Specification (BEDES), or you can type in your own name, as well as typing in the field name from the original datafile."
+msgstr "Es necesario asignar sus nombres de campo a los nombres de campo de SEED. Puede seleccionar de la lista que aparece al empezar a escribir, que se basa en la Especificación de Intercambio de Datos Energéticos de Edificios (BEDES), o puede escribir su propio nombre, así como escribir el nombre de campo del archivo de datos original."
+
+#, fuzzy
+msgid "JACCARD_EXPLANATION"
+msgstr "La comparación se basa en el índice de Jaccard, que oscila entre 0,0 (sin solapamiento) y 1,0 (coincidencia perfecta)."
+
+#, fuzzy
+msgid "Jurisdiction Property ID"
+msgstr "Jurisdicción ID de propiedad"
+
+#, fuzzy
+msgid "Jurisdiction Tax Lot ID"
+msgstr "Jurisdicción Número de identificación fiscal del lote"
+
+#, fuzzy
+msgid "LINK_OUT_CYCLE_MATCHES"
+msgstr "Los partidos fuera de este ciclo serán enlazados."
+
+#, fuzzy
+msgid "LISTING_ORG_MATCHING_CRITERIA"
+msgstr "Para esta organización, los registros coinciden si coinciden los siguientes campos:"
+
+#, fuzzy
+msgid "LIST_GUIDANCE_PROPERTIES"
+msgstr "Seleccione columnas de la siguiente lista para que aparezcan en su tabla Lista de propiedades. Arrastre las filas para cambiar el orden en que aparecen. Fije las filas para que aparezcan fijadas a la izquierda en la vista de lista."
+
+#, fuzzy
+msgid "LIST_GUIDANCE_PROPERTIES_NO_PIN"
+msgstr "Seleccione las columnas de la siguiente lista para que aparezcan en la tabla Detalle de propiedades. Arrastre las filas para cambiar el orden en que aparecen."
+
+#, fuzzy
+msgid "LIST_GUIDANCE_TAXLOTS"
+msgstr "Seleccione columnas de la siguiente lista para que aparezcan en su tabla de Lista de lotes fiscales. Arrastre las filas para cambiar el orden en que aparecen. Fije las filas para que aparezcan fijadas a la izquierda en la vista de lista."
+
+#, fuzzy
+msgid "LIST_GUIDANCE_TAXLOTS_NO_PIN"
+msgstr "Seleccione columnas de la siguiente lista para que aparezcan en la tabla Detalle de lotes fiscales. Arrastre las filas para cambiar el orden en que aparecen."
+
+#, fuzzy
+msgid "LONG_OPERATION_WARNING"
+msgstr "Esta operación puede tardar un poco."
+
+#, fuzzy
+msgid "LONG_OP_CONFIRM_TEXT"
+msgstr "Esta operación puede tardar mucho tiempo en completarse. ¿Está seguro de que desea continuar?"
+
+#, fuzzy
+msgid "Label"
+msgstr "Etiqueta"
+
+#, fuzzy
+msgid "Label Name"
+msgstr "Nombre de la etiqueta"
+
+#, fuzzy
+msgid "Label must be assigned when using Valid Data Severity."
+msgstr "Se debe asignar una etiqueta cuando se utiliza la Severidad de Datos Válidos."
+
+#, fuzzy
+msgid "Label updated."
+msgstr "Etiqueta actualizada"
+
+#, fuzzy
+msgid "Labels"
+msgstr "Etiquetas"
+
+#, fuzzy
+msgid "Last Changed"
+msgstr "Última modificación"
+
+#, fuzzy
+msgid "Last Name"
+msgstr "Apellido"
+
+#, fuzzy
+msgid "Last Name:"
+msgstr "Apellido:"
+
+#, fuzzy
+msgid "Last Salesforce Update"
+msgstr "Última actualización de Salesforce"
+
+#, fuzzy
+msgid "Last name is required."
+msgstr "El apellido es obligatorio."
+
+msgid "Latest Messages"
+msgstr "Últimos mensajes"
+
+#, fuzzy
+msgid "Latitude"
+msgstr "Latitud"
+
+msgid "Lawrence Berkeley National Laboratory"
+msgstr "Lawrence Berkeley National Laboratory"
+
+#, fuzzy
+msgid "Left Axis"
+msgstr "Eje izquierdo"
+
+#, fuzzy
+msgid "Left Half"
+msgstr "Mitad izquierda"
+
+#, fuzzy
+msgid "Level"
+msgstr "Nivel"
+
+#, fuzzy
+msgid "Level Instance"
+msgstr "Nivel Instancia"
+
+#, fuzzy
+msgid "Loading Summary Data..."
+msgstr "Cargando datos de resumen..."
+
+#, fuzzy
+msgid "Loading data..."
+msgstr "Cargando datos..."
+
+#, fuzzy
+msgid "Loading labels..."
+msgstr "Cargando etiquetas..."
+
+#, fuzzy
+msgid "Loading..."
+msgstr "Cargando..."
+
+#: seed/landing/templates/landing/home.html:27
+#: seed/landing/templates/landing/login.html:29
+#, fuzzy
+msgid "Log In"
+msgstr "Iniciar sesión"
+
+#: seed/landing/templates/landing/login.html:23
+#, fuzzy
+msgid "Log in"
+msgstr "Conectarse"
+
+#: seed/landing/templates/landing/home.html:16
+#, fuzzy
+msgid "Log in to SEED Platform"
+msgstr "Iniciar sesión en la Plataforma SEED"
+
+#, fuzzy
+msgid "Logging Email"
+msgstr "Correo electrónico de registro"
+
+#, fuzzy
+msgid "Logout"
+msgstr "Cierre de sesión"
+
+#, fuzzy
+msgid "Longitude"
+msgstr "Longitud"
+
+#, fuzzy
+msgid "MAPPING YOUR DATA TO SEED"
+msgstr "ASIGNAR SUS DATOS A LAS SEMILLAS"
+
+#, fuzzy
+msgid "MAPPING_BUILDINGS_FOR"
+msgstr "Cartografía de edificios para <strong>{filename}</strong>"
+
+#, fuzzy
+msgid "MAPPING_STEP_2_ADVICE"
+msgstr "Después de hacer clic en el botón <span class=\"label label-primary\">Asignar sus datos</span> verá una vista con los campos asignados y sus datos en una cuadrícula, para que pueda comprobar que la asignación es la que desea. Si necesita cambiar la asignación, haga clic en el botón <span class=\"label label-primary\">Volver a la asignación</span> y edite la asignación de campos. Asegúrese de que las asignaciones son correctas en este paso. Una vez que haya hecho clic en el botón <span class=\"label label-primary\">Guardar asignaciones</span> no podrá cambiar las asignaciones de campos."
+
+#, fuzzy
+msgid "MARKETING_BULLET_1"
+msgstr "Comience a utilizar SEED Platform™ cargando su lista de edificios (datos del asesor fiscal de la ciudad) y luego sus datos de EPA Portfolio Manager. Asegúrese de que estos archivos estén en formato .csv, .xls, .xlsx o .xml. La Plataforma SEED le ayudará a mapear y validar sus datos en el proceso de carga."
+
+#, fuzzy
+msgid "MARKETING_BULLET_2"
+msgstr "Empareje su lista de edificios con el conjunto de datos de Portfolio Manager para unir los registros de los edificios. La plataforma SEED le ayudará a emparejar automáticamente los emparejamientos de alta confianza y, a continuación, le proporcionará herramientas para emparejar el resto de su conjunto de datos."
+
+#: seed/landing/templates/landing/_marketing_bullets.html:23
+#, fuzzy
+msgid "MARKETING_BULLET_3"
+msgstr "Utilice el sistema de etiquetado flexible y fácil de usar de la Plataforma SEED y las agrupaciones de inventario para realizar un seguimiento del estado de presentación, revisión y cumplimiento de los datos."
+
+#, fuzzy
+msgid "MATCHING_ADVICE"
+msgstr "Si hay campos en el fichero de datos asignados a estos nombres, el programa intentará hacerlos coincidir con los valores correspondientes en los registros existentes. Todos estos campos deben tener los mismos valores entre los registros para que éstos coincidan."
+
+#, fuzzy
+msgid "MATCHING_COLUMN_SORT_PRIORITY"
+msgstr "Columnas coincidentes con mayor prioridad de ordenación*"
+
+#, fuzzy
+msgid "MATCHING_CRITERIA_PREVIEW_WARNING"
+msgstr "Advertencia: Si se proponen cambios en los criterios de correspondencia, se cargará una vista previa. Los tiempos de carga de esta vista previa dependen del número de registros que pertenezcan a esta organización y de cuántos de esos registros se fusionarían dados los nuevos criterios de correspondencia."
+
+#, fuzzy
+msgid "MATCHING_RESULTS_FOR_FILE"
+msgstr "Resultados del archivo {dataset_filename}"
+
+#, fuzzy
+msgid "MERGE_IN_CYCLE_MATCHES"
+msgstr "Los partidos de este ciclo se fusionarán."
+
+#, fuzzy
+msgid "MERGE_LINK_ADVICE"
+msgstr "Las coincidencias dentro del mismo ciclo se fusionarán, mientras que las coincidencias en ciclos diferentes se asociarán para el análisis entre ciclos."
+
+#, fuzzy
+msgid "MERGE_MULTIPLE_IN_CYCLE_MATCHES"
+msgstr "En caso de que se obtengan varias coincidencias de un mismo ciclo, éstas se fusionarán."
+
+#, fuzzy
+msgid "MERGE_PROTECTION_EXPLANATION"
+msgstr "Normalmente, cuando un registro importado se combina con otro, el valor más reciente sobrescribe al más antiguo. La protección contra la fusión evita esto, y es especialmente útil para columnas en las que se han editado manualmente valores que se desea que persistan incluso después de importar y fusionar nuevos datos."
+
+#, fuzzy
+msgid "METER_DISPLAY_SETTINGS_TITLE"
+msgstr "Unidades de visualización de la energía del contador (cambiar de una en una)"
+
+#, fuzzy
+msgid "METER_READING_COUNTS_TITLE"
+msgstr "Recuento de lecturas de contadores"
+
+#, fuzzy
+msgid "METER_WATER_DISPLAY_SETTINGS_TITLE"
+msgstr "Unidades de visualización del contador de agua (cambiar de una en una)"
+
+#, fuzzy
+msgid "MJ/m²/year"
+msgstr "MJ/m²/año"
+
+#, fuzzy
+msgid "MODIFYING_COLUMN_SETTINGS"
+msgstr "Modificación de la configuración de las columnas"
+
+#, fuzzy
+msgid "MORE RECENT DATA"
+msgstr "DATOS MÁS RECIENTES"
+
+#, fuzzy
+msgid "MOVE_INVENTORY_ALI_TXT"
+msgstr "Por favor, seleccione un Nivel de Acceso y una Instancia de Nivel de Acceso para mover {num} {label} a"
+
+#, fuzzy
+msgid "MULTIPLE_COL_MOD_OPTIONS"
+msgstr "A partir de la tabla siguiente, puede modificar las columnas de las siguientes maneras: "
+
+#, fuzzy
+msgid "MULTI_FILE_EXCEL_NOT_SUPPORTED"
+msgstr "<strong>Nota:</strong> sólo se importará la primera hoja de los archivos Excel de varias hojas."
+
+#, fuzzy
+msgid "Main"
+msgstr "Principal"
+
+#, fuzzy
+msgid "Main Contact Settings"
+msgstr "Configuración del contacto principal"
+
+#, fuzzy
+msgid "Maintenance"
+msgstr "Mantenimiento"
+
+#, fuzzy
+msgid "Maintenance Actions"
+msgstr "Acciones de mantenimiento"
+
+#, fuzzy
+msgid "Make this a snapshot project."
+msgstr "Que sea un proyecto instantáneo."
+
+#, fuzzy
+msgid "Manage Your API Key"
+msgstr "Gestione su clave API"
+
+#, fuzzy
+msgid "Manage available cycles."
+msgstr "Gestionar los ciclos disponibles."
+
+#, fuzzy
+msgid "Manage compliance"
+msgstr "Gestionar el cumplimiento"
+
+#, fuzzy
+msgid "Managed by"
+msgstr "Gestionado por"
+
+#, fuzzy
+msgid "Managing the Access Level Tree"
+msgstr "Gestión del árbol de niveles de acceso"
+
+#, fuzzy
+msgid "Manual Matching"
+msgstr "Ajuste manual"
+
+#, fuzzy
+msgid "Manufacturing Date"
+msgstr "Fecha de fabricación"
+
+#, fuzzy
+msgid "Map"
+msgstr "Mapa"
+
+#, fuzzy
+msgid "Map SEED fields to imported file fields"
+msgstr "Asignación de campos SEED a campos de archivos importados"
+
+#, fuzzy
+msgid "Map Your Data"
+msgstr "Mapee sus datos"
+
+#, fuzzy
+msgid "Map features are provided by"
+msgstr "Las características del mapa son proporcionadas por"
+
+#, fuzzy
+msgid "MapQuest API Key"
+msgstr "Clave API de MapQuest"
+
+#, fuzzy
+msgid "Mapped Fields"
+msgstr "Campos mapeados"
+
+#, fuzzy
+msgid "Match"
+msgstr "Partido"
+
+#, fuzzy
+msgid "Match Criteria"
+msgstr "Criterios de concordancia"
+
+#, fuzzy
+msgid "Match Properties"
+msgstr "Propiedades de los partidos"
+
+#, fuzzy
+msgid "Match Tax Lots"
+msgstr "Match Lotes fiscales"
+
+#, fuzzy
+msgid "Match your data"
+msgstr "Haga coincidir sus datos"
+
+#: seed/landing/templates/landing/_marketing_bullets.html:15
+#, fuzzy
+msgid "Match-up your buildings list with the Portfolio Manager dataset to tie building records together."
+msgstr "Coteje su lista de edificios con el conjunto de datos de Portfolio Manager para relacionar los registros de edificios."
+
+#, fuzzy
+msgid "Matched Properties"
+msgstr "Propiedades coincidentes"
+
+#, fuzzy
+msgid "Matched Tax Lots"
+msgstr "Lotes fiscales coincidentes"
+
+#, fuzzy
+msgid "Matched!"
+msgstr "¡Emparejado!"
+
+#, fuzzy
+msgid "Matching Column List Profiles"
+msgstr "Perfiles de listas de columnas coincidentes"
+
+#, fuzzy
+msgid "Matching Criteria Preview"
+msgstr "Vista previa de los criterios de concordancia"
+
+#, fuzzy
+msgid "Matching Detail"
+msgstr "Detalle a juego"
+
+#, fuzzy
+msgid "Matching Detail Settings"
+msgstr "Ajustes detallados de coincidencia"
+
+#, fuzzy
+msgid "Matching List"
+msgstr "Lista de correspondencias"
+
+#, fuzzy
+msgid "Matching Results for file"
+msgstr "Resultados del archivo"
+
+#, fuzzy
+msgid "Max"
+msgstr "Max"
+
+#, fuzzy
+msgid "Maximum"
+msgstr "Máximo"
+
+#, fuzzy
+msgid "Measurement Units"
+msgstr "Unidades de medida"
+
+#, fuzzy
+msgid "Measurement unit display for areas"
+msgstr "Visualización de la unidad de medida por áreas"
+
+#, fuzzy
+msgid "Measurement unit display for energy use intensities (EUI)"
+msgstr "Visualización de la unidad de medida de las intensidades de uso de la energía (EUI)"
+
+#, fuzzy
+msgid "Member"
+msgstr "Miembro"
+
+msgid "Member Access Level"
+msgstr "Nivel de acceso"
+
+msgid "Member Access Level Instance"
+msgstr "Miembro Nivel de acceso Instancia"
+
+#, fuzzy
+msgid "Member Email"
+msgstr "Correo electrónico del miembro"
+
+#, fuzzy
+msgid "Member Name"
+msgstr "Nombre del miembro"
+
+#, fuzzy
+msgid "Member Role"
+msgstr "Función de los miembros"
+
+#, fuzzy
+msgid "Members"
+msgstr "Miembros"
+
+#, fuzzy
+msgid "Merge"
+msgstr "Fusión"
+
+#, fuzzy
+msgid "Merge Protection"
+msgstr "Protección contra la fusión"
+
+#, fuzzy
+msgid "Merged Records"
+msgstr "Registros fusionados"
+
+#, fuzzy
+msgid "Merged properties"
+msgstr "Propiedades fusionadas"
+
+#, fuzzy
+msgid "Merged properties against existing records"
+msgstr "Propiedades fusionadas con registros existentes"
+
+#, fuzzy
+msgid "Merged properties between existing records"
+msgstr "Fusión de propiedades entre registros existentes"
+
+#, fuzzy
+msgid "Merged properties within import file"
+msgstr "Fusión de propiedades en el archivo de importación"
+
+#, fuzzy
+msgid "Merged tax lots"
+msgstr "Lotes fiscales fusionados"
+
+#, fuzzy
+msgid "Merged tax lots against existing records"
+msgstr "Fusión de lotes fiscales con los registros existentes"
+
+#, fuzzy
+msgid "Merged tax lots between existing records"
+msgstr "Fusión de lotes fiscales entre registros existentes"
+
+#, fuzzy
+msgid "Merged tax lots within import file"
+msgstr "Fusión de lotes fiscales en el fichero de importación"
+
+#, fuzzy
+msgid "Meter Data"
+msgstr "Datos del contador"
+
+#, fuzzy
+msgid "Meters"
+msgstr "Metros"
+
+#, fuzzy
+msgid "Metric"
+msgstr "Métrica"
+
+#, fuzzy
+msgid "Metric Actual Column"
+msgstr "Columna métrica real"
+
+#, fuzzy
+msgid "Metric Name"
+msgstr "Nombre de la métrica"
+
+#, fuzzy
+msgid "Metric Target Column"
+msgstr "Columna de objetivos métricos"
+
+#, fuzzy
+msgid "Metric Type"
+msgstr "Tipo métrico"
+
+#, fuzzy
+msgid "Metric Type Settings"
+msgstr "Ajustes del tipo métrico"
+
+#, fuzzy
+msgid "Min"
+msgstr "Min"
+
+#, fuzzy
+msgid "Min Sq/Ft"
+msgstr "Superficie mínima"
+
+#, fuzzy
+msgid "Minimum"
+msgstr "Mínimo"
+
+#, fuzzy
+msgid "Minimum Sq Ft"
+msgstr "Superficie mínima"
+
+#, fuzzy
+msgid "Minute"
+msgstr "Minuto"
+
+#, fuzzy
+msgid "Modifying Data Quality Rules"
+msgstr "Modificación de las normas de calidad de datos"
+
+#, fuzzy
+msgid "More details"
+msgstr "Saber más"
+
+#, fuzzy
+msgid "Move Buildings"
+msgstr "Trasladar edificios"
+
+#, fuzzy
+msgid "Move Inventory to a Different Access Level Instance"
+msgstr "Mover Inventario a una Instancia de Nivel de Acceso Diferente"
+
+#, fuzzy
+msgid "Move Properties"
+msgstr "Mover propiedades"
+
+#, fuzzy
+msgid "Move/copy buildings to another project"
+msgstr "Mover/copiar edificios a otro proyecto"
+
+#, fuzzy
+msgid "Must Include"
+msgstr "Debe incluir"
+
+#, fuzzy
+msgid "Must include all selected labels (AND)"
+msgstr "Debe incluir todas las etiquetas seleccionadas (AND)"
+
+#, fuzzy
+msgid "Must include at least one selected label (OR)"
+msgstr "Debe incluir al menos una etiqueta seleccionada (OR)"
+
+#, fuzzy
+msgid "NEW_COLUMN_REPLACE_DATA_WARNING"
+msgstr "Se creará una nueva columna y/o se podrán sustituir los datos existentes."
+
+#, fuzzy
+msgid "NON_UNIQUE_DATA_LOGGER_DISPLAY_NAME"
+msgstr "El nombre para mostrar debe ser único."
+
+#, fuzzy
+msgid "NOT_GEOCODED_PREVIOUSLY"
+msgstr "No geocodificado previamente"
+
+#, fuzzy
+msgid "NO_DATA_LOGGER_DISPLAY_NAME"
+msgstr "Introduzca un nombre para mostrar."
+
+#, fuzzy
+msgid "NO_MAPQUEST_API_KEY_FOR_ORG"
+msgstr "No hay ninguna clave API de MapQuest asociada a su organización."
+
+#, fuzzy
+msgid "NUMBER_COLUMNS_AVAILABLE"
+msgstr "Dispone de {count} columnas de datos."
+
+#, fuzzy
+msgid "NUMBER_OF_DATASETS"
+msgstr "{num,plural,one{1 Conjunto de datos} other{# Conjuntos de datos}}"
+
+#, fuzzy
+msgid "NUMBER_OF_PROPERTIES"
+msgstr "{num, plural, one{1 propiedad} other{# propiedades}}"
+
+#, fuzzy
+msgid "NUMBER_OF_TAXLOTS"
+msgstr "{num, plural, one{1 lote fiscal} other{# lotes fiscales}}"
+
+#, fuzzy
+msgid "NUM_PROPERTIES_AND_TAXLOTS_DELETED"
+msgstr "{num_properties,plural,=0{sin propiedades} one{<strong>1</strong> propiedad} other{<strong>#</strong> propiedades}} y {num_taxlots,plural,=0{no tax lots} one{<strong>1</strong> lote fiscal} other{<strong>#</strong> se han suprimido los lotes fiscales}} "
+
+#, fuzzy
+msgid "NUM_PROPERTY_TAXLOT_COLUMNS_AVAILABLE"
+msgstr "Tiene a su disposición {num_property_columns} columnas de propiedades y { num_taxlot_columns } columnas de lotes fiscales."
+
+#, fuzzy
+msgid "Name"
+msgstr "Nombre"
+
+#, fuzzy
+msgid "National Renewable Energy Laboratory"
+msgstr "Laboratorio Nacional de Energías Renovables"
+
+#, fuzzy
+msgid "New Analysis"
+msgstr "Nuevo análisis"
+
+#, fuzzy
+msgid "New Build or Acquisition"
+msgstr "Nueva construcción o adquisición"
+
+#, fuzzy
+msgid "New Goal"
+msgstr "Nuevo Objetivo"
+
+#, fuzzy
+msgid "New Note"
+msgstr "Nueva Nota"
+
+#, fuzzy
+msgid "New User Email"
+msgstr "Correo electrónico de nuevo usuario"
+
+#: seed/landing/templates/landing/password_reset_confirm.html:50
+#: seed/landing/templates/landing/signup.html:49
+#, fuzzy
+msgid "New password"
+msgstr "Nueva contraseña"
+
+#, fuzzy
+msgid "New properties"
+msgstr "Nuevas propiedades"
+
+#, fuzzy
+msgid "New tax lots"
+msgstr "Nuevos lotes fiscales"
+
+#, fuzzy
+msgid "Next"
+msgstr "Siguiente"
+
+#, fuzzy
+msgid "No"
+msgstr "No"
+
+msgid "No Axis"
+msgstr "Sin eje"
+
+msgid "No Custom Reports Created"
+msgstr "No se han creado informes personalizados"
+
+#, fuzzy
+msgid "No Custom Reports Selected"
+msgstr "No se han seleccionado informes personalizados"
+
+#, fuzzy
+msgid "No Data"
+msgstr "Sin datos"
+
+#, fuzzy
+msgid "No UBIDs For Property"
+msgstr "Sin UBIDs para la propiedad"
+
+#, fuzzy
+msgid "No UBIDs For Tax Lot"
+msgstr "No UBIDs Para Lote Fiscal"
+
+#, fuzzy
+msgid "No action was taken"
+msgstr "No se adoptó ninguna medida"
+
+#, fuzzy
+msgid "No filters added."
+msgstr "No se han añadido filtros."
+
+#, fuzzy
+msgid "No labels available. Add a label above to get started."
+msgstr "No hay etiquetas disponibles. Añade una etiqueta arriba para empezar."
+
+#, fuzzy
+msgid "No program created"
+msgstr "No se ha creado ningún programa"
+
+#, fuzzy
+msgid "No program selected"
+msgstr "Ningún programa seleccionado"
+
+#, fuzzy
+msgid "No warnings/errors"
+msgstr "Sin advertencias/errores"
+
+#, fuzzy
+msgid "None"
+msgstr "Ninguno"
+
+#, fuzzy
+msgid "Not Compliant"
+msgstr "No conforme"
+
+#, fuzzy
+msgid "Not Null"
+msgstr "No nulo"
+
+#, fuzzy
+msgid "Not all inventory items were successfully deleted"
+msgstr "No se han eliminado correctamente todos los artículos del inventario"
+
+#, fuzzy
+msgid "Not seeing your column?"
+msgstr "¿No ves tu columna?"
+
+#, fuzzy
+msgid "Note:"
+msgstr "Nota:"
+
+#, fuzzy
+msgid "Note:  Meters are labeled with the following format:  \"Type - Source - Source ID\""
+msgstr "Nota: Los contadores se etiquetan con el siguiente formato:  \"Tipo - Fuente - ID de fuente\""
+
+#, fuzzy
+msgid "Note: Parent organization members are not automatically made members of sub-organizations."
+msgstr "Nota: Los miembros de la organización matriz no se convierten automáticamente en miembros de las suborganizaciones."
+
+#: seed/landing/templates/landing/_password_note.html:1
+#, fuzzy
+msgid "Note: Passwords must be 8 or more characters, and must contain at least 1 uppercase character, 1 lowercase character, and 1 digit."
+msgstr "Nota: Las contraseñas deben tener 8 o más caracteres y deben contener al menos 1 carácter en mayúscula, 1 carácter en minúscula y 1 dígito."
+
+#, fuzzy
+msgid "Notes"
+msgstr "Notas"
+
+#, fuzzy
+msgid "Number"
+msgstr "Número"
+
+#, fuzzy
+msgid "Number Properties"
+msgstr "Número Propiedades"
+
+#, fuzzy
+msgid "Number of Properties"
+msgstr "Número de inmuebles"
+
+#, fuzzy
+msgid "Number of Tax Lots"
+msgstr "Número de parcelas fiscales"
+
+#, fuzzy
+msgid "Number of decimal places to display"
+msgstr "Número de decimales a mostrar"
+
+#, fuzzy
+msgid "OK_TO_DELETE_NUM_PROPERTIES_AND_TAXLOTS"
+msgstr "¿Está seguro de que desea eliminar {num_properties,plural, one{<strong>1</strong> propiedad} other{<strong>#</strong> propiedades}} y {num_taxlots,plural,one{<strong>1</strong> lote fiscal} other{<strong>#</strong> lotes fiscales}}?"
+
+#, fuzzy
+msgid "OR"
+msgstr "O"
+
+#, fuzzy
+msgid "ORGANIZATION_WATER_USE_DISPLAY_UNITS"
+msgstr "Visualización de la unidad de medida del consumo de agua"
+
+#, fuzzy
+msgid "ORGANIZATION_WUI_DISPLAY_UNITS"
+msgstr "Visualización de la unidad de medida para la intensidad de uso del agua (WUI)"
+
+#, fuzzy
+msgid "ORG_MATCH_MERGE_LINK_WARNING"
+msgstr "ADVERTENCIA: Ha modificado los criterios con los que se compararán y combinarán los datos de su organización. Una vez que se ha añadido una columna a los criterios de correspondencia de una organización, no se puede eliminar mientras la organización tenga inventario."
+
+#, fuzzy
+msgid "OVERWRITE_COLUMN_DATA_QUESTION"
+msgstr "¿Sobreescribir datos?"
+
+#, fuzzy
+msgid "Occupied Floor Area"
+msgstr "Superficie ocupada"
+
+#, fuzzy
+msgid "Only Show Populated Columns"
+msgstr "Mostrar sólo columnas rellenas"
+
+#: src/django-tos-master/tos/models.py:34
+#, fuzzy
+msgid "Only one terms of service is allowed to be active"
+msgstr "Sólo se permite que esté activa una condición de servicio"
+
+#, fuzzy
+msgid "Options"
+msgstr "Opciones"
+
+#, fuzzy
+msgid "Or Create New (With User as Head):"
+msgstr "O Crear Nuevo (Con Usuario como Cabecera):"
+
+#, fuzzy
+msgid "Organization"
+msgstr "Organización"
+
+#, fuzzy
+msgid "Organization Name"
+msgstr "Nombre de la organización"
+
+#, fuzzy
+msgid "Organization Name:"
+msgstr "Nombre de la organización:"
+
+#, fuzzy
+msgid "Organization Owner(s)"
+msgstr "Organización Propietario(s)"
+
+#, fuzzy
+msgid "Organization Settings"
+msgstr "Configuración de la organización"
+
+msgid "Organization Sharing"
+msgstr "Organización Compartida"
+
+#, fuzzy
+msgid "Organizations"
+msgstr "Organizaciones"
+
+#, fuzzy
+msgid "Organizations I Belong To"
+msgstr "Organizaciones a las que pertenezco"
+
+#, fuzzy
+msgid "Organizations I Manage"
+msgstr "Organizaciones que gestiono"
+
+#, fuzzy
+msgid "Organizations:"
+msgstr "Organizaciones:"
+
+#, fuzzy
+msgid "Other fields can be manually updated on Audit Template following the export. Properties with Audit Template Building IDs will be skipped"
+msgstr "Los demás campos pueden actualizarse manualmente en la plantilla de auditoría tras la exportación. Las propiedades con ID de edificio de plantilla de auditoría se omitirán"
+
+msgid "Output Files"
+msgstr "Archivos de salida"
+
+#, fuzzy
+msgid "Owner"
+msgstr "Propietario"
+
+#, fuzzy
+msgid "Owner Address"
+msgstr "Dirección del propietario"
+
+#, fuzzy
+msgid "Owner City/State"
+msgstr "Propietario Ciudad/Estado"
+
+#, fuzzy
+msgid "Owner Email"
+msgstr "Correo electrónico del propietario"
+
+#, fuzzy
+msgid "Owner Name"
+msgstr "Nombre del propietario"
+
+#, fuzzy
+msgid "Owner Postal Code"
+msgstr "Propietario Código postal"
+
+#, fuzzy
+msgid "Owner Telephone"
+msgstr "Teléfono del propietario"
+
+#, fuzzy
+msgid "PARSED_ENERGY_TYPES_AND_UNITS_TITLE"
+msgstr "Tipos y unidades de energía analizados"
+
+#, fuzzy
+msgid "PERCENT_COMPLETE"
+msgstr "{progress}% Completo"
+
+#, fuzzy
+msgid "PM Generation Date"
+msgstr "Fecha de generación PM"
+
+#, fuzzy
+msgid "PM Parent Property ID"
+msgstr "PM ID de propiedad principal"
+
+#, fuzzy
+msgid "PM Property ID"
+msgstr "PM ID de propiedad"
+
+#, fuzzy
+msgid "PM Release Date"
+msgstr "PM Fecha de publicación"
+
+#, fuzzy
+msgid "PM_METER_IMPORT_BUTTON"
+msgstr "Cargar el uso del contador de Portfolio Manager"
+
+#, fuzzy
+msgid "PM_METER_IMPORT_NO_ASSOCIATION"
+msgstr "Imposible importar - No hay asociaciones con propiedades importadas previamente"
+
+#, fuzzy
+msgid "PM_METER_IMPORT_RESULTS"
+msgstr "Resultados de la importación de contadores de Portfolio Manager"
+
+#, fuzzy
+msgid "PM_PROPERTY_ID_MATCHING_CRITERIA_WARNING"
+msgstr "La eliminación del ID de propiedad PM de los criterios de coincidencia puede causar problemas inesperados en las importaciones de contadores de Portfolio Manager."
+
+#, fuzzy
+msgid "POOR_BENCHMARK_RATIO_HELP"
+msgstr "La relación entre el EUI total y el EUI total de referencia que debe utilizarse. Ratio = Total EUI/Benchmark EUI"
+
+#, fuzzy
+msgid "PORTFOLIO_SUMMARY_HEADER_TEXT"
+msgstr "La página de resumen de la cartera compara dos ciclos para calcular el progreso hacia una meta de reducción de la intensidad del uso de energía. La selección del ciclo y los detalles de la meta se pueden personalizar haciendo clic en el botón Configurar metas que aparece a continuación."
+
+#, fuzzy
+msgid "POST_GEOCODING_COUNTS"
+msgstr "Recuentos actualizados tras la geocodificación"
+
+msgid "PROGRAM_SETUP_METRICS"
+msgstr "La métrica global puede estar compuesta por una métrica energética, una métrica de emisiones o ambas. Se requiere al menos un tipo de métrica y, si se definen dos, deben cumplirse ambas para la conformidad."
+
+#, fuzzy
+msgid "PROPERTY_MATCHING_FIELDS_REQUIREMENT"
+msgstr "Se requiere al menos uno de los siguientes campos de Propiedad"
+
+#, fuzzy
+msgid "PUBLIC"
+msgstr "PÚBLICO"
+
+#, fuzzy
+msgid "PUBLIC_FEED_HELP"
+msgstr "Marque la casilla de abajo para activar la funcionalidad de Public Feed. Los campos de datos pueden habilitarse individualmente para el Public Feed desde"
+
+#, fuzzy
+msgid "PUBLIC_FEED_LABELS"
+msgstr "Marque la casilla de abajo para permitir que las etiquetas se devuelvan en la fuente pública y para poder filtrar la fuente pública por una etiqueta específica."
+
+#, fuzzy
+msgid "PUBLIC_GEOJSON"
+msgstr "Devuelve un GeoJSON con los campos definidos en las selecciones de Compartir Organización"
+
+#, fuzzy
+msgid "PUBLIC_GEOJSON_TEXT_1"
+msgstr "Su URL HTML pública"
+
+#, fuzzy
+msgid "PUBLIC_GEOJSON_TEXT_2"
+msgstr "Deberá sustituir \"CYCLE_ID\" en la URL por el ID del ciclo que desea recuperar. Puede acceder a los ID de ciclo en la página Ciclos."
+
+#, fuzzy
+msgid "PUBLIC_HTML"
+msgstr "Su URL HTML pública es"
+
+#, fuzzy
+msgid "PUBLIC_JSON"
+msgstr "Su URL pública de alimentación JSON es"
+
+#, fuzzy
+msgid "PUBLIC_SHARE"
+msgstr "Si la funcionalidad de Public Feed está activada, esta página se puede utilizar para configurar qué datos se comparten externamente con el público en general."
+
+#, fuzzy
+msgid "Pair Properties to Tax Lots"
+msgstr "Emparejar propiedades a lotes fiscales"
+
+#, fuzzy
+msgid "Pair Tax Lots to Properties"
+msgstr "Emparejar lotes fiscales con propiedades"
+
+#, fuzzy
+msgid "Paired"
+msgstr "Emparejado"
+
+#, fuzzy
+msgid "Paired Tax Lots"
+msgstr "Lotes fiscales emparejados"
+
+#, fuzzy
+msgid "Pairing"
+msgstr "Emparejamiento"
+
+#, fuzzy
+msgid "Pairing Settings"
+msgstr "Ajustes de emparejamiento"
+
+#, fuzzy
+msgid "Parent ID"
+msgstr "Identificación de los padres"
+
+#, fuzzy
+msgid "Passed Checks"
+msgstr "Cheques aprobados"
+
+#: seed/landing/forms.py:20
+#, fuzzy
+msgid "Password"
+msgstr "Contraseña"
+
+#: seed/landing/templates/landing/password_reset_confirm.html:11
+#: seed/landing/templates/landing/signup.html:11
+#, fuzzy
+msgid "Password again"
+msgstr "Contraseña de nuevo"
+
+#: seed/landing/templates/landing/password_reset_confirm.html:42
+#, fuzzy
+msgid "Password reset"
+msgstr "Restablecer contraseña"
+
+#: seed/landing/templates/landing/password_reset_subject.txt:1
+#, fuzzy
+msgid "Password reset on SEED"
+msgstr "Restablecer contraseña en SEED"
+
+#: seed/landing/templates/landing/password_set.html:6
+#, fuzzy
+msgid "Password set"
+msgstr "Contraseña"
+
+#: seed/landing/templates/landing/password_set.html:12
+#, fuzzy
+msgid "Password set unsuccessful"
+msgstr "Contraseña incorrecta"
+
+#, fuzzy
+msgid "Percentage (%)"
+msgstr "Porcentaje (%)"
+
+#, fuzzy
+msgid "Permanently delete extra_data columns and all associated data"
+msgstr "Eliminar permanentemente las columnas extra_data y todos los datos asociados"
+
+#: seed/landing/templates/landing/password_set.html:16
+#, fuzzy
+msgid "Please enter your new password twice so we can verify you typed it in correctly."
+msgstr "Por favor, introduzca su nueva contraseña dos veces para que podamos verificar que la ha escrito correctamente."
+
+#: seed/landing/templates/landing/password_reset_email.html:5
+#, fuzzy
+msgid "Please go to the following page and choose a new password:"
+msgstr "Vaya a la página siguiente y elija una nueva contraseña:"
+
+#: seed/templates/seed/account_create_email.html:8
+#, fuzzy
+msgid "Please go to the following page and setup your account:"
+msgstr "Vaya a la siguiente página y cree su cuenta:"
+
+#, fuzzy
+msgid "Please join the SEED-Platform Dev forum where you can connect with other developers."
+msgstr "Únete al foro de desarrolladores de SEED-Platform, donde podrás ponerte en contacto con otros desarrolladores."
+
+#, fuzzy
+msgid "Please review SEED column names or the column names of the file being imported. Column names that match an existing Derived Column name are not allowed."
+msgstr "Por favor, revise los nombres de columna de SEED o los nombres de columna del archivo que se está importando. No se permiten nombres de columnas que coincidan con un nombre de columna derivada existente."
+
+#, fuzzy
+msgid "Please review SEED column names or the column names of the file being imported. Duplicate values are not allowed in either case."
+msgstr "Por favor, revise los nombres de las columnas de SEED o los nombres de las columnas del archivo que se está importando. Los valores duplicados no están permitidos en ninguno de los casos."
+
+#, fuzzy
+msgid "Please review SEED headers.  Empty values are not allowed."
+msgstr "Revise las cabeceras SEED.  No se permiten valores vacíos."
+
+#, fuzzy
+msgid "Please visit our User Support website for tutorials and documentation to help you learn how to use SEED-Platform."
+msgstr "Visite nuestro sitio web de Soporte al Usuario para obtener tutoriales y documentación que le ayudarán a aprender a utilizar la Plataforma SEED."
+
+msgid "Please visit our website for information, tutorials, and documentation to help you learn how to use SEED."
+msgstr "Visite nuestro sitio web para obtener información, tutoriales y documentación que le ayudarán a aprender a utilizar SEED."
+
+#, fuzzy
+msgid "Please wait while your data is loaded..."
+msgstr "Por favor, espere mientras se cargan sus datos..."
+
+#, fuzzy
+msgid "Poor Actual to Benchmark EUI Ratio"
+msgstr "Ratio EUI deficiente entre real y de referencia"
+
+#, fuzzy
+msgid "Populate SEED Headers with best known matches"
+msgstr "Rellenar las cabeceras de SEED con las coincidencias más conocidas"
+
+#, fuzzy
+msgid "Portfolio Summary"
+msgstr "Resumen de la cartera"
+
+#, fuzzy
+msgid "Portfolio Summary will only include properties belonging to this Access Level Instance."
+msgstr "El Resumen de Cartera sólo incluirá propiedades pertenecientes a esta Instancia de Nivel de Acceso."
+
+#, fuzzy
+msgid "Portfolio Target"
+msgstr "Objetivo de cartera"
+
+#, fuzzy
+msgid "Postal Code"
+msgstr "Código postal"
+
+#, fuzzy
+msgid "Postal Code (Property)"
+msgstr "Código postal (propiedad)"
+
+#, fuzzy
+msgid "Postal Code (Tax Lot)"
+msgstr "Código postal (lote fiscal)"
+
+#, fuzzy
+msgid "Potential Matches from Source"
+msgstr "Posibles coincidencias de origen"
+
+#, fuzzy
+msgid "Preferred"
+msgstr "Preferido"
+
+#, fuzzy
+msgid "Preparing your inventory for deletion"
+msgstr "Preparar su inventario para la eliminación"
+
+#, fuzzy
+msgid "Preview"
+msgstr "Vista previa"
+
+#, fuzzy
+msgid "Preview Loading"
+msgstr "Carga previa"
+
+#, fuzzy
+msgid "Previous"
+msgstr "Anterior"
+
+#, fuzzy
+msgid "Primary Column"
+msgstr "Columna principal"
+
+#, fuzzy
+msgid "Primary Tax Lot ID"
+msgstr "Número de identificación fiscal del lote primario"
+
+#, fuzzy
+msgid "Primary/Secondary"
+msgstr "Primaria/Secundaria"
+
+#, fuzzy
+msgid "Profile Info"
+msgstr "Perfil"
+
+#, fuzzy
+msgid "Profile Information"
+msgstr "Información sobre el perfil"
+
+#, fuzzy
+msgid "Profile Name"
+msgstr "Nombre del perfil"
+
+#, fuzzy
+msgid "Program"
+msgstr "Programa"
+
+#, fuzzy
+msgid "Program Configuration page"
+msgstr "Página de configuración del programa"
+
+#, fuzzy
+msgid "Program Definition"
+msgstr "Definición del programa"
+
+#, fuzzy
+msgid "Program Metric"
+msgstr "Métrica del programa"
+
+#, fuzzy
+msgid "Program Metric Configuration"
+msgstr "Configuración de la métrica del programa"
+
+#, fuzzy
+msgid "Program Overview"
+msgstr "Resumen del programa"
+
+#, fuzzy
+msgid "Program Setup"
+msgstr "Configuración del programa"
+
+#: seed/models/models.py:239
+#, fuzzy
+msgid "Project"
+msgstr "Proyecto"
+
+#, fuzzy
+msgid "Project Actions"
+msgstr "Acciones del proyecto"
+
+#, fuzzy
+msgid "Project Building Column List Profiles"
+msgstr "Perfiles de la lista de columnas de construcción de proyectos"
+
+#, fuzzy
+msgid "Project Buildings"
+msgstr "Edificios de proyectos"
+
+#, fuzzy
+msgid "Project Information"
+msgstr "Información sobre el proyecto"
+
+#, fuzzy
+msgid "Project Name"
+msgstr "Nombre del proyecto"
+
+#, fuzzy
+msgid "Projects"
+msgstr "Proyectos"
+
+#, fuzzy
+msgid "Properties"
+msgstr "Propiedades"
+
+#, fuzzy
+msgid "Properties List"
+msgstr "Lista de propiedades"
+
+#, fuzzy
+msgid "Properties List (legacy)"
+msgstr "Lista de propiedades (legado)"
+
+#, fuzzy
+msgid "Properties failed to update:"
+msgstr "No se han podido actualizar las propiedades:"
+
+#, fuzzy
+msgid "Properties updated:"
+msgstr "Propiedades actualizadas:"
+
+#, fuzzy
+msgid "Properties with Data"
+msgstr "Propiedades con datos"
+
+#, fuzzy
+msgid "Property"
+msgstr "Propiedad"
+
+#, fuzzy
+msgid "Property Classification"
+msgstr "Clasificación de la propiedad"
+
+#, fuzzy
+msgid "Property Column List Profiles"
+msgstr "Perfiles de la lista de columnas de propiedades"
+
+#, fuzzy
+msgid "Property Count"
+msgstr "Recuento de propiedades"
+
+#, fuzzy
+msgid "Property Detail"
+msgstr "Detalle de la propiedad"
+
+#, fuzzy
+msgid "Property Detail Settings"
+msgstr "Configuración detallada de la propiedad"
+
+#, fuzzy
+msgid "Property Display Field"
+msgstr "Propiedad Campo de visualización"
+
+#, fuzzy
+msgid "Property Elements"
+msgstr "Elementos de propiedad"
+
+#, fuzzy
+msgid "Property Footprint"
+msgstr "Huella de la propiedad"
+
+#, fuzzy
+msgid "Property Insights"
+msgstr "Información inmobiliaria"
+
+#, fuzzy
+msgid "Property Name"
+msgstr "Nombre de la propiedad"
+
+#, fuzzy
+msgid "Property Notes"
+msgstr "Notas sobre la propiedad"
+
+#, fuzzy
+msgid "Property Points"
+msgstr "Puntos de propiedad"
+
+#, fuzzy
+msgid "Property Reports"
+msgstr "Informes sobre la propiedad"
+
+#, fuzzy
+msgid "Property Type"
+msgstr "Tipo de propiedad"
+
+#, fuzzy
+msgid "Property UBID Centroids"
+msgstr "Propiedad UBID Centroides"
+
+#, fuzzy
+msgid "Property UBIDs"
+msgstr "UBID de la propiedad"
+
+#, fuzzy
+msgid "Property Visibility"
+msgstr "Visibilidad de la propiedad"
+
+#, fuzzy
+msgid "Property and Tax Lot Data"
+msgstr "Datos sobre propiedades y lotes fiscales"
+
+#, fuzzy
+msgid "Public Disclosure - Sharing Your Data"
+msgstr "Divulgación pública - Compartir sus datos"
+
+#, fuzzy
+msgid "Question"
+msgstr "Pregunta"
+
+#, fuzzy
+msgid "RECOGNIZE_EMPTY_EXPLANATION"
+msgstr "Marcar esta casilla para un campo afectará a cómo se tratan los valores vacíos o en blanco durante las fusiones. En concreto, los valores vacíos podrán sustituir a los no vacíos según la configuración de \"Protección de fusión\"."
+
+#, fuzzy
+msgid "RECOGNIZE_EMPTY_IMPORT_WARNING"
+msgstr "Advertencia: Cuando se marca esta opción para un campo y ese campo no se asigna durante la importación, los registros entrantes se leerán como si tuvieran valores vacíos para ese campo. Cualquier fusión resultante tendrá valores vacíos para este campo."
+
+#, fuzzy
+msgid "REHASH_TEXT"
+msgstr "El cambio de las exclusiones de unicidad provocará el recálculo de los hashes que representan unívocamente cada registro. "
+
+#, fuzzy
+msgid "RENAME_COLUMN_TITLE"
+msgstr "Renombrar columna"
+
+#, fuzzy
+msgid "RENAME_SYS_LEVEL_COL"
+msgstr "Renombrar permite a los usuarios cambiar el nombre del campo subyacente mostrado en Nombre de columna / Nombre de campo. Cambiar el nombre de un campo significa que ese campo se cambiará en todos los datos de la organización."
+
+#, fuzzy
+msgid "REVIEW YOUR DATA MAPPINGS"
+msgstr "REVISE SUS ASIGNACIONES DE DATOS"
+
+#, fuzzy
+msgid "REVIEW_MATCHING_CRITERIA"
+msgstr "Revise sus criterios de correspondencia en la página Configuración de columna antes de importar datos por primera vez. No podrá eliminar campos de los criterios de correspondencia después de añadir los datos a su organización."
+
+#, fuzzy
+msgid "Read more here."
+msgstr "Más información aquí."
+
+#, fuzzy
+msgid "Really reset all passwords?  This will sign you out of SEED."
+msgstr "¿Realmente restablecer todas las contraseñas?  Esto te sacará de SEED."
+
+#, fuzzy
+msgid "Recent Sale Date"
+msgstr "Fecha de venta reciente"
+
+#, fuzzy
+msgid "Recognize Empty"
+msgstr "Reconocer el vacío"
+
+#, fuzzy
+msgid "Record from Source"
+msgstr "Registro de origen"
+
+#, fuzzy
+msgid "Refresh Metadata"
+msgstr "Actualizar metadatos"
+
+#, fuzzy
+msgid "Refresh Metadata of Selected Properties and Tax Lots"
+msgstr "Actualizar metadatos de propiedades y lotes fiscales seleccionados"
+
+#: src/django-tos-master/tos/templates/tos/tos_check.html:18
+#, fuzzy
+msgid "Reject"
+msgstr "Rechazar"
+
+#, fuzzy
+msgid "Related Properties"
+msgstr "Propiedades relacionadas"
+
+#, fuzzy
+msgid "Related Tax Lots"
+msgstr "Lotes fiscales relacionados"
+
+#, fuzzy
+msgid "Remaining Service Life"
+msgstr "Vida útil restante"
+
+#, fuzzy
+msgid "Remove"
+msgstr "Eliminar"
+
+#, fuzzy
+msgid "Remove Access Level"
+msgstr "Eliminar nivel de acceso"
+
+#, fuzzy
+msgid "Remove Column Mappings"
+msgstr "Eliminar asignaciones de columnas"
+
+#, fuzzy
+msgid "Remove From Project"
+msgstr "Eliminar del proyecto"
+
+#, fuzzy
+msgid "Remove Inventory"
+msgstr "Eliminar inventario"
+
+#, fuzzy
+msgid "Remove User"
+msgstr "Eliminar usuario"
+
+#, fuzzy
+msgid "Remove buildings from project"
+msgstr "Retirar edificios del proyecto"
+
+#, fuzzy
+msgid "Remove inventory and organizations"
+msgstr "Eliminar inventario y organizaciones"
+
+#, fuzzy
+msgid "Removing buildings from project"
+msgstr "Retirada de edificios del proyecto"
+
+#, fuzzy
+msgid "Rename"
+msgstr "Cambie el nombre de"
+
+#, fuzzy
+msgid "Rename Filter Group"
+msgstr "Renombrar grupo de filtros"
+
+#, fuzzy
+msgid "Rename Profile"
+msgstr "Renombrar perfil"
+
+#, fuzzy
+msgid "Rename your Filter Group"
+msgstr "Cambiar el nombre del grupo de filtros"
+
+#, fuzzy
+msgid "Rename your Profile"
+msgstr "Cambie el nombre de su perfil"
+
+#, fuzzy
+msgid "Reorder Columns"
+msgstr "Reordenar columnas"
+
+#, fuzzy
+msgid "Replacement Cost"
+msgstr "Costo de Reemplazo"
+
+#, fuzzy
+msgid "Replacing Existing Columns"
+msgstr "Sustitución de columnas existentes"
+
+#, fuzzy
+msgid "Reporting Deadline"
+msgstr "Plazo de presentación de informes"
+
+#, fuzzy
+msgid "Reports"
+msgstr "Informes"
+
+msgid "Require two-factor authentication"
+msgstr "Exigir autenticación de dos factores"
+
+#, fuzzy
+msgid "Required"
+msgstr "Requerido"
+
+#, fuzzy
+msgid "Reset"
+msgstr "Restablecer"
+
+#, fuzzy
+msgid "Reset All Rules"
+msgstr "Restablecer todas las reglas"
+
+#, fuzzy
+msgid "Reset Defaults"
+msgstr "Restablecer valores predeterminados"
+
+msgid "Reset all passwords"
+msgstr "Restablecer todas las contraseñas"
+
+#, fuzzy
+msgid "Residential"
+msgstr "Residencial"
+
+#, fuzzy
+msgid "Resolution"
+msgstr "Resolución"
+
+#, fuzzy
+msgid "Restore Default Rules"
+msgstr "Restaurar reglas por defecto"
+
+#, fuzzy
+msgid "Results"
+msgstr "Resultados"
+
+#: seed/models/models.py:137
+#, fuzzy
+msgid "Retro Commissioning"
+msgstr "Puesta en servicio a posteriori"
+
+#, fuzzy
+msgid "Retry"
+msgstr "Reintentar"
+
+#, fuzzy
+msgid "Review Changes"
+msgstr "Revisar los cambios"
+
+#, fuzzy
+msgid "Review Mapped Data"
+msgstr "Revisar datos cartográficos"
+
+#, fuzzy
+msgid "Review matches"
+msgstr "Partidos de revisión"
+
+#, fuzzy
+msgid "Right Axis"
+msgstr "Eje derecho"
+
+#, fuzzy
+msgid "Right Half"
+msgstr "Mitad derecha"
+
+#, fuzzy
+msgid "Role:"
+msgstr "Papel:"
+
+#, fuzzy
+msgid "Row 1"
+msgstr "Fila 1"
+
+#, fuzzy
+msgid "Row 2"
+msgstr "Fila 2"
+
+#, fuzzy
+msgid "Row 3"
+msgstr "Fila 3"
+
+#, fuzzy
+msgid "Row 4"
+msgstr "Fila 4"
+
+#, fuzzy
+msgid "Row 5"
+msgstr "Fila 5"
+
+#, fuzzy
+msgid "Rules for a single field must have the same Data Type. Note that some Data Types are not available to certain Condition Checks."
+msgstr "Las reglas para un mismo campo deben tener el mismo tipo de datos. Tenga en cuenta que algunos tipos de datos no están disponibles para determinadas comprobaciones de condiciones."
+
+#, fuzzy
+msgid "Run Analysis"
+msgstr "Análisis de carrera"
+
+#, fuzzy
+msgid "Run Author"
+msgstr "Ejecutar Autor"
+
+msgid "Run Cycle"
+msgstr "Ciclo de ejecución"
+
+#, fuzzy
+msgid "Run Date"
+msgstr "Fecha de ejecución"
+
+#, fuzzy
+msgid "Run Duration"
+msgstr "Duración de la carrera"
+
+msgid "Run ID"
+msgstr "ID de ejecución"
+
+#, fuzzy
+msgid "Run Id"
+msgstr "Ejecutar Id"
+
+#, fuzzy
+msgid "Run Status"
+msgstr "Estado de ejecución"
+
+#, fuzzy
+msgid "SEED Field Name"
+msgstr "Nombre del campo SEED"
+
+#, fuzzy
+msgid "SEED Header"
+msgstr "SEED Cabecera"
+
+msgid "SEED Home"
+msgstr "Página de inicio de SEED"
+
+#: seed/landing/templates/landing/base.html:9
+#, fuzzy
+msgid "SEED Platform"
+msgstr "Plataforma SEED"
+
+#: seed/templates/seed/base.html:7
+#, fuzzy
+msgid "SEED Platform™"
+msgstr "Plataforma SEED"
+
+#, fuzzy
+msgid "SEED Unique Benchmark ID Fieldname"
+msgstr "SEED ID único de referencia Nombre del campo"
+
+#, fuzzy
+msgid "SEED doesn't currently support that file format"
+msgstr "SEED no admite actualmente ese formato de archivo"
+
+#: seed/templates/seed/account_create_email.html:6
+#, fuzzy
+msgid "SEED is easy, flexible, and cost effective software designed to help organizations clean, manage and share information about large portfolios of buildings. SEED is a free, open source web application that you can use privately.  While SEED was originally designed to help cities and States implement benchmarking programs for public or private buildings, it has the potential to be useful for many other activities by public entities, efficiency programs and private companies."
+msgstr "SEED es un software fácil, flexible y rentable diseñado para ayudar a las organizaciones a limpiar, gestionar y compartir información sobre grandes carteras de edificios. SEED es una aplicación web gratuita y de código abierto que se puede utilizar de forma privada.  Aunque SEED se diseñó originalmente para ayudar a ciudades y Estados a implantar programas de evaluación comparativa de edificios públicos o privados, tiene el potencial de ser útil para muchas otras actividades de entidades públicas, programas de eficiencia y empresas privadas."
+
+msgid "SEED_SUMMARY"
+msgstr "El DOE desarrolló la Standard Energy Efficiency Data (SEED) Platform™ como una herramienta de software gratuita que proporciona un formato estandarizado para recopilar, almacenar y analizar información sobre el rendimiento energético de los edificios acerca de grandes carteras."
+
+#, fuzzy
+msgid "SELECT_DATA_SET_TITLE"
+msgstr "Seleccionar conjunto de datos"
+
+#, fuzzy
+msgid "SELECT_DOC_UPLOAD_TITLE"
+msgstr "Seleccione un documento para cargar"
+
+#, fuzzy
+msgid "SELECT_THE_TYPE_OF_FILE_TO_ADD_TO_DATASET"
+msgstr "Seleccione el tipo de archivo(s) que desea añadir a {dataset_name}."
+
+#, fuzzy
+msgid "SENSORS"
+msgstr "Sensores"
+
+#, fuzzy
+msgid "SENSOR_CONTENTS_TITLE"
+msgstr "Confirmar contenido del archivo"
+
+#, fuzzy
+msgid "SENSOR_READINGS"
+msgstr "Lecturas de los sensores"
+
+#, fuzzy
+msgid "SENSOR_READING_COUNTS_TITLE"
+msgstr "Recuento de lecturas del sensor"
+
+#, fuzzy
+msgid "SF_ACCOUNT_NAME_FIELDNAME_TEXT"
+msgstr "Seleccione el campo SEED que contiene el nombre de cuenta para el registro de contacto que se creará en Salesforce. Ej: 'Organización'"
+
+#, fuzzy
+msgid "SF_ACCOUNT_RECORD_TYPE_TEXT"
+msgstr "Si su instancia de Salesforce tiene varios tipos de cuenta, proporcione el ID de tipo de registro del tipo de cuenta que se utilizará cuando las cuentas se creen automáticamente desde SEED"
+
+#, fuzzy
+msgid "SF_BENCHMARK_CONTACT_FIELDNAME_TEXT"
+msgstr "Si su registro de referencia de Salesforce almacena una relación de contacto de Salesforce, indique aquí el nombre del campo de Salesforce, por ejemplo: Contact_Name__c"
+
+#, fuzzy
+msgid "SF_BENCHMARK_ID_FIELDNAME_TEXT"
+msgstr "Nombre de campo del campo de Salesforce que se utiliza para identificar de forma exclusiva los registros de Benchmark. Ejemplo: 'Salesforce_Benchmark_ID__c'"
+
+#, fuzzy
+msgid "SF_COMPLIANCE_LABEL_TEXT"
+msgstr "Etiqueta utilizada para designar que una propiedad SEED es conforme. Ejemplo: \"Cumple\""
+
+#, fuzzy
+msgid "SF_CONFIGURATION_TEXT"
+msgstr "Configure algunos parámetros necesarios para la transferencia de datos a Salesforce"
+
+#, fuzzy
+msgid "SF_CONNECTION_TEXT"
+msgstr "Introduzca los detalles de su instancia de Salesforce y asegúrese de que la conexión se realiza correctamente"
+
+#, fuzzy
+msgid "SF_CONTACTS_AND_ACCOUNTS_TEXT"
+msgstr "Configure la información de contacto utilizada para las notificaciones de estado de Benchmark en Salesforce. Una vez configurada, esta función creará o actualizará registros de contacto en Salesforce y los vinculará al objeto de referencia"
+
+#, fuzzy
+msgid "SF_CONTACT_EMAIL_FIELDNAME_TEXT"
+msgstr "Seleccione el campo SEED que contiene el correo electrónico de contacto para el registro de referencia. Ej: 'Email'"
+
+#, fuzzy
+msgid "SF_CONTACT_HEADER_TEXT"
+msgstr "Los siguientes campos se utilizarán para recuperar o crear un contacto principal para asociar con el objeto Benchmark en Salesforce. Déjelo en blanco si su instancia no utiliza esta funcionalidad."
+
+#, fuzzy
+msgid "SF_CONTACT_NAME_FIELDNAME_TEXT"
+msgstr "Seleccione el campo SEED que contiene el nombre del contacto para el registro de referencia. Ej: 'En nombre de'"
+
+#, fuzzy
+msgid "SF_CONTACT_RECORD_TYPE_TEXT"
+msgstr "Si su instancia de Salesforce tiene varios tipos de contacto, proporcione el ID de tipo de registro del tipo que se utilizará cuando los contactos se creen automáticamente desde SEED"
+
+#, fuzzy
+msgid "SF_CYCLE_FIELDNAME_TEXT"
+msgstr "Si su registro de referencia de Salesforce almacena el nombre del ciclo, introduzca aquí el nombre del campo de Salesforce, por ejemplo: Cycle__c"
+
+#, fuzzy
+msgid "SF_DATA_ADMIN_ACCOUNT_NAME_FIELDNAME_TEXT"
+msgstr "Seleccione el campo SEED que contiene el nombre de cuenta para el registro de contacto del administrador de datos que se creará en Salesforce. Ej: 'Organización"
+
+#, fuzzy
+msgid "SF_DATA_ADMIN_CONTACT_FIELDNAME_TEXT"
+msgstr "Si su registro de referencia de Salesforce almacena una relación de contacto de Salesforce para un administrador de datos de la propiedad, proporcione aquí el nombre del campo de Salesforce, por ejemplo: Property_Data_Administrator__c"
+
+#, fuzzy
+msgid "SF_DATA_ADMIN_EMAIL_FIELDNAME_TEXT"
+msgstr "Seleccione el campo SEED que contiene el correo electrónico del administrador de datos de la propiedad para el registro de referencia. Ej: 'Administrador de datos de la propiedad - Email'"
+
+#, fuzzy
+msgid "SF_DATA_ADMIN_HEADER_TEXT"
+msgstr "Los siguientes campos se utilizarán para recuperar o crear un contacto de administrador de datos de propiedad para asociar con el objeto Benchmark en Salesforce. Déjelo en blanco si su instancia no utiliza esta funcionalidad."
+
+#, fuzzy
+msgid "SF_DATA_ADMIN_NAME_FIELDNAME_TEXT"
+msgstr "Seleccione el campo SEED que contiene el nombre del administrador de datos de la propiedad para el registro de referencia. Ej: 'Administrador de Datos de la Propiedad'"
+
+#, fuzzy
+msgid "SF_DEFAULT_ACCOUNT_NAME_TEXT"
+msgstr "Proporcione un nombre de cuenta predeterminado para que Salesforce lo utilice cuando no haya datos válidos en la columna Nombre de cuenta de contacto especificada anteriormente.  Deje este campo en blanco para informar de un error y abortar la sincronización cuando la columna Nombre de cuenta de contacto esté vacía."
+
+#, fuzzy
+msgid "SF_DEFAULT_DATA_ADMIN_ACCOUNT_NAME_TEXT"
+msgstr "Proporcione un nombre de cuenta predeterminado para que Salesforce lo utilice cuando no haya datos válidos en la columna Nombre de cuenta de administrador de datos especificada anteriormente.  Deje este campo en blanco para informar de un error y abortar la sincronización cuando la columna Nombre de cuenta de administrador de datos esté vacía."
+
+#, fuzzy
+msgid "SF_DELETE_LABEL_AFTER_SYNC_TEXT"
+msgstr "Marque esta casilla de verificación para eliminar automáticamente la Etiqueta de indicación de las propiedades que se actualizaron correctamente en Salesforce con el fin de evitar futuras actualizaciones automáticas."
+
+#, fuzzy
+msgid "SF_DOMAIN_TEXT"
+msgstr "Si su instancia de Salesforce es un sandbox, establezca este campo con el valor 'test'; de lo contrario, déjelo en blanco."
+
+#, fuzzy
+msgid "SF_INDICATION_LABEL_TEXT"
+msgstr "Etiqueta utilizada para designar que una propiedad de SEED debe actualizarse en Salesforce. Ejemplo: 'Añadir a Salesforce'"
+
+#, fuzzy
+msgid "SF_INTEGRATION_TEXT"
+msgstr "Marque esta casilla si desea sincronizar los datos entre SEED y una instancia de Salesforce"
+
+#, fuzzy
+msgid "SF_LABELS_FIELDNAME_TEXT"
+msgstr "Si su registro de referencia de Salesforce almacena una cadena de todas las etiquetas de SEED aplicadas, introduzca aquí el nombre del campo de Salesforce, por ejemplo: SEED_Labels__c"
+
+#, fuzzy
+msgid "SF_LOGGING_EMAIL_TEXT"
+msgstr "Introduzca la dirección de correo electrónico que se utilizará para notificar errores durante el proceso de actualización de Salesforce"
+
+#, fuzzy
+msgid "SF_MAPPINGS_TEXT"
+msgstr "Asigne los campos de su objeto de referencia de Salesforce a columnas en SEED. Utilice el Administrador de Objetos en Salesforce para recuperar los nombres de campo (no las etiquetas de campo), ej: Cycle__c (no Cycle). Estos campos sólo se enviarán a Salesforce cuando una propiedad tenga aplicada la etiqueta correspondiente."
+
+#, fuzzy
+msgid "SF_SCHEDULED_UPDATE_TEXT"
+msgstr "Si desea actualizar automáticamente Salesforce a diario, configure los siguientes campos"
+
+#, fuzzy
+msgid "SF_SECURITY_TOKEN_TEXT"
+msgstr "Token de seguridad establecido en Salesforce"
+
+#, fuzzy
+msgid "SF_SEED_BENCHMARK_ID_FIELDNAME_TEXT"
+msgstr "Nombre de campo del campo SEED que se utiliza para identificar de forma exclusiva los registros de Benchmark. Ejemplo: 'Salesforce Benchmark ID'"
+
+#, fuzzy
+msgid "SF_STATUS_FIELDNAME_TEXT"
+msgstr "Si su registro de referencia de Salesforce almacena un valor de etiqueta de estado (por ejemplo: infracción o conforme), introduzca aquí el nombre del campo de Salesforce, por ejemplo: Status__c"
+
+#, fuzzy
+msgid "SF_UPDATE_HOUR_TEXT"
+msgstr "Introduzca la hora a la que debe ejecutarse la actualización diaria (0-23)"
+
+#, fuzzy
+msgid "SF_UPDATE_MINUTE_TEXT"
+msgstr "Introduzca el minuto después de la hora en que debe ejecutarse la actualización diaria (0-59)"
+
+#, fuzzy
+msgid "SF_VIOLATION_LABEL_TEXT"
+msgstr "Etiqueta utilizada para designar que una propiedad SEED tiene una violación.  Ejemplo: 'Violación - Datos insuficientes'"
+
+#, fuzzy
+msgid "SHARE DATA WITH"
+msgstr "COMPARTIR DATOS CON"
+
+#, fuzzy
+msgid "SHARING_CYCLES"
+msgstr "Lista de identificadores de ciclos separados por comas. Los resultados incluyen el inventario de los ciclos de la lista. Por defecto son todos los ciclos."
+
+#, fuzzy
+msgid "SHARING_LABELS"
+msgstr "Lista separada por comas de nombres de etiquetas que distinguen mayúsculas de minúsculas. Los resultados incluirán el inventario que tenga cualquiera de las etiquetas de la lista. Por defecto es todo el inventario."
+
+#, fuzzy
+msgid "SHARING_PAGE"
+msgstr "Número de la página de resultados a devolver. Por defecto es 1."
+
+#, fuzzy
+msgid "SHARING_PER_PAGE"
+msgstr "Número de resultados por página. Por defecto es 100."
+
+#, fuzzy
+msgid "SHARING_PROPERTIES"
+msgstr "Booleano Verdadero/Falso para devolver inventario de tipo 'Propiedad'. Por defecto es True."
+
+#, fuzzy
+msgid "SHARING_QUERY_PARAMS"
+msgstr "Se pueden añadir parámetros de consulta a la URL para filtrar los datos devueltos"
+
+#, fuzzy
+msgid "SHARING_TAXLOTS"
+msgstr "Booleano Verdadero/Falso para devolver inventario de tipo 'Lote Fiscal'. Por defecto es True."
+
+#, fuzzy
+msgid "SHOWING_AVAILABLE_MATCHES"
+msgstr "Mostrando {start} a {end} de {total} coincidencias disponibles"
+
+#, fuzzy
+msgid "SHOWING_FILTERED_PROPERTIES"
+msgstr "Mostrando {start} a {end} de {total} propiedades (filtradas)"
+
+#, fuzzy
+msgid "SHOWING_FILTERED_TAXLOTS"
+msgstr "Mostrando {start} a {end} de {total} (filtrado) lotes fiscales"
+
+#, fuzzy
+msgid "SHOWING_PAIRED_UNPAIRED_PROPERTIES"
+msgstr "Mostrando {paired_count} {paired_count,plural,one{ Propiedad} other{Propiedades}} ({unpaired_count} sin emparejar)"
+
+#, fuzzy
+msgid "SHOWING_PAIRED_UNPAIRED_TAXLOTS"
+msgstr "Mostrando {paired_count} {paired_count,plural,one{ Parcela fiscal} other{Parcelas fiscales}} ({unpaired_count} sin emparejar)"
+
+#, fuzzy
+msgid "SHOWING_UNFILTERED_PROPERTIES"
+msgstr "Mostrando {start} a {end} de {total} propiedades"
+
+#, fuzzy
+msgid "SHOWING_UNFILTERED_TAXLOTS"
+msgstr "Mostrando {start} a {end} de {total} lotes fiscales"
+
+#, fuzzy
+msgid "SQUARE_FOOTAGE_THRESHOLD_HELP"
+msgstr "Los metros cuadrados brutos que se utilizarán como umbral de comparación en los cálculos"
+
+#, fuzzy
+msgid "STEP 1: Map Your Data"
+msgstr "PASO 1: Mapee sus datos"
+
+#, fuzzy
+msgid "STEP 2: Review Your Data Mappings"
+msgstr "PASO 2: Revise sus asignaciones de datos"
+
+#, fuzzy
+msgid "SUB_ORG_DEPRECATION"
+msgstr "La función de suborganización ya no se recomienda y pronto quedará obsoleta. Visite la página Árbol de niveles de acceso para definir los niveles de acceso para estructurar el contenido de su organización."
+
+#, fuzzy
+msgid "SUGGEST_TO_VERIFY"
+msgstr "Compruébelo antes de continuar."
+
+#, fuzzy
+msgid "SUGGEST_UPDATE_GEOCODE_COLS"
+msgstr "Actualice la configuración de la columna de geocodificación en la página de configuración de columnas de su organización."
+
+#, fuzzy
+msgid "Salesforce"
+msgstr "Salesforce"
+
+#, fuzzy
+msgid "Salesforce Account Object Record Type"
+msgstr "Tipo de registro de objeto de cuenta de Salesforce"
+
+#, fuzzy
+msgid "Salesforce Connection Parameters"
+msgstr "Parámetros de conexión de Salesforce"
+
+#, fuzzy
+msgid "Salesforce Contact Object Record Type"
+msgstr "Tipo de registro de objeto de contacto de Salesforce"
+
+#, fuzzy
+msgid "Salesforce Field Mappings"
+msgstr "Asignaciones de campos de Salesforce"
+
+#, fuzzy
+msgid "Salesforce Field Name"
+msgstr "Nombre de campo de Salesforce"
+
+#, fuzzy
+msgid "Salesforce Instance URL"
+msgstr "URL de Salesforce"
+
+msgid "Salesforce Integration"
+msgstr "Integración con Salesforce"
+
+#, fuzzy
+msgid "Salesforce Unique Benchmark ID Fieldname"
+msgstr "ID único de referencia de Salesforce Nombre de campo"
+
+#, fuzzy
+msgid "Save"
+msgstr "Guardar"
+
+#, fuzzy
+msgid "Save Changes"
+msgstr "Guardar cambios"
+
+#, fuzzy
+msgid "Save Concatenation"
+msgstr "Guardar concatenación"
+
+#, fuzzy
+msgid "Save Mappings"
+msgstr "Guardar asignaciones"
+
+#, fuzzy
+msgid "Save Settings"
+msgstr "Guardar configuración"
+
+#, fuzzy
+msgid "Schedule Weekly Update"
+msgstr "Programar la actualización semanal"
+
+#, fuzzy
+msgid "Scheduled Daily Update"
+msgstr "Actualización diaria programada"
+
+#, fuzzy
+msgid "Search column name"
+msgstr "Nombre de la columna de búsqueda"
+
+#, fuzzy
+msgid "Search display name"
+msgstr "Buscar nombre para mostrar"
+
+#, fuzzy
+msgid "Search field name"
+msgstr "Nombre del campo de búsqueda"
+
+#, fuzzy
+msgid "Search table name"
+msgstr "Buscar nombre de tabla"
+
+#, fuzzy
+msgid "Secondary (optional)"
+msgstr "Secundaria (opcional)"
+
+#, fuzzy
+msgid "Security"
+msgstr "Seguridad"
+
+#, fuzzy
+msgid "Security Token"
+msgstr "Ficha de seguridad"
+
+#, fuzzy
+msgid "See API Documentation for more information about the /v3/public endpoints"
+msgstr "para obtener más información sobre el"
+
+#: seed/models/columns.py:688 seed/models/models.py:195
+#: seed/models/models.py:256 seed/models/projects.py:42
+#, fuzzy
+msgid "SeedOrg"
+msgstr "SeedOrg"
+
+#, fuzzy
+msgid "Select All"
+msgstr "Seleccionar todo"
+
+#, fuzzy
+msgid "Select All Columns"
+msgstr "Seleccionar todas las columnas"
+
+#, fuzzy
+msgid "Select None"
+msgstr "Seleccione Ninguno"
+
+#, fuzzy
+msgid "Select Properties to Update"
+msgstr "Seleccione las propiedades que desea actualizar"
+
+#, fuzzy
+msgid "Select a Custom Report to get started!"
+msgstr "Seleccione un informe personalizado para empezar"
+
+#, fuzzy
+msgid "Select a Program to get started!"
+msgstr "Seleccione un programa para empezar"
+
+#, fuzzy
+msgid "Select a column to show data on this axis.  Only columns with one of these data types will be listed:"
+msgstr "Seleccione una columna para mostrar los datos en este eje.  Sólo se mostrarán las columnas con uno de estos tipos de datos:"
+
+msgid "Select a column to show data on this axis. Only columns with one of these data types will be listed:"
+msgstr "Seleccione una columna para mostrar los datos en este eje. Sólo se mostrarán las columnas con uno de estos tipos de datos:"
+
+#, fuzzy
+msgid "Select columns from the list below to make them appear in your Buildings List table."
+msgstr "Seleccione columnas de la siguiente lista para que aparezcan en su tabla de Lista de edificios."
+
+#, fuzzy
+msgid "Select columns from the list below to make them appear in your Properties Detail table. Drag the rows to change the order in which they appear."
+msgstr "Seleccione las columnas de la siguiente lista para que aparezcan en la tabla Detalle de propiedades. Arrastre las filas para cambiar el orden en que aparecen."
+
+#, fuzzy
+msgid "Select columns from the list below to make them appear in your Tax Lots Detail table. Drag the rows to change the order in which they appear."
+msgstr "Seleccione columnas de la siguiente lista para que aparezcan en la tabla Detalle de lotes fiscales. Arrastre las filas para cambiar el orden en que aparecen."
+
+#, fuzzy
+msgid "Select columns from the lists below to make them appear on the left or right halves of your Matching List table. Drag the rows to change the order in which they appear."
+msgstr "Seleccione columnas de las listas siguientes para que aparezcan en las mitades izquierda o derecha de su tabla de Lista de correspondencias. Arrastre las filas para cambiar el orden en que aparecen."
+
+msgid "Select one or more cycles to populate the horizontal axis."
+msgstr "Seleccione uno o varios ciclos para rellenar el eje horizontal."
+
+#, fuzzy
+msgid "Select one or more filter groups to load your inventory."
+msgstr "Seleccione uno o varios grupos de filtros para cargar su inventario."
+
+#, fuzzy
+msgid "Select the Level at which you want to add the new Instance"
+msgstr "Seleccione el Nivel en el que desea añadir la nueva Instancia"
+
+#, fuzzy
+msgid "Select the new Instance's Parent Access Level Instance"
+msgstr "Seleccione el Nivel de Acceso Padre de la nueva Instancia Instancia"
+
+#, fuzzy
+msgid "Select the type of file(s) you would like to add to"
+msgstr "Seleccione el tipo de archivo(s) que desea añadir a"
+
+#, fuzzy
+msgid "Select which columns to include in the list:"
+msgstr "Seleccione las columnas que desea incluir en la lista:"
+
+#, fuzzy
+msgid "Selected Properties"
+msgstr "Propiedades seleccionadas"
+
+#, fuzzy
+msgid "Selected Taxlots"
+msgstr "Parcelas fiscales seleccionadas"
+
+#, fuzzy
+msgid "Selecting Fields to Share"
+msgstr "Seleccionar campos para compartir"
+
+#, fuzzy
+msgid "Selections:"
+msgstr "Selecciones:"
+
+#, fuzzy
+msgid "Send Invite"
+msgstr "Enviar invitación"
+
+#, fuzzy
+msgid "Sends the reset password email to all users."
+msgstr "Envía el correo electrónico de restablecimiento de contraseña a todos los usuarios"
+
+#, fuzzy
+msgid "Sensors"
+msgstr "Sensores"
+
+#, fuzzy
+msgid "Set UBID Threshold"
+msgstr "Establecer umbral UBID"
+
+msgid "Set Update Time to Now"
+msgstr "Fijar la hora de actualización en Ahora"
+
+#, fuzzy
+msgid "Set a Query Threshold"
+msgstr "Establecer un umbral de consulta"
+
+#, fuzzy
+msgid "Set all fields to"
+msgstr "Establezca todos los campos en"
+
+#: seed/landing/templates/landing/password_set.html:18
+#, fuzzy
+msgid "Set password"
+msgstr "Establecer contraseña"
+
+#: seed/landing/templates/landing/password_set.html:10
+#, fuzzy
+msgid "Set your password"
+msgstr "Establezca su contraseña"
+
+#, fuzzy
+msgid "Settings"
+msgstr "Ajustes"
+
+#, fuzzy
+msgid "Severity"
+msgstr "Gravedad"
+
+#, fuzzy
+msgid "Severity Level"
+msgstr "Nivel de gravedad"
+
+#, fuzzy
+msgid "Sharing"
+msgstr "Compartir"
+
+#, fuzzy
+msgid "Sharing Your Data"
+msgstr "Compartir sus datos"
+
+#, fuzzy
+msgid "Show All"
+msgstr "Mostrar todo"
+
+msgid "Show All Labels"
+msgstr "Mostrar todas las etiquetas"
+
+#, fuzzy
+msgid "Show Matched"
+msgstr "Mostrar emparejados"
+
+#, fuzzy
+msgid "Show Paired"
+msgstr "Mostrar emparejados"
+
+#, fuzzy
+msgid "Show Unmatched"
+msgstr "Mostrar sin igual"
+
+#, fuzzy
+msgid "Show Unpaired"
+msgstr "Mostrar sin emparejar"
+
+#, fuzzy
+msgid "Show in List"
+msgstr "Mostrar en lista"
+
+#, fuzzy
+msgid "Show only mapped fields"
+msgstr "Mostrar sólo los campos asignados"
+
+#, fuzzy
+msgid "Show/Hide Columns"
+msgstr "Mostrar/Ocultar columnas"
+
+#, fuzzy
+msgid "Signature"
+msgstr "Firma"
+
+#, fuzzy
+msgid "Site EUI"
+msgstr "EUI del emplazamiento"
+
+#, fuzzy
+msgid "Site EUI Weather Normalized"
+msgstr "EUI normalizado por condiciones meteorológicas"
+
+#, fuzzy
+msgid "Site Energy Use Intensity"
+msgstr "Intensidad del uso de energía"
+
+#, fuzzy
+msgid "Snapshot Timestamp"
+msgstr "Hora de la instantánea"
+
+#, fuzzy
+msgid "Snapshot projects are useful when you want to freeze the building data at a moment in time."
+msgstr "Los proyectos de instantáneas son útiles cuando se desea congelar los datos del edificio en un momento determinado."
+
+#, fuzzy
+msgid "Sorry!"
+msgstr "¡Lo siento!"
+
+#, fuzzy
+msgid "Sorting By (in order)"
+msgstr "Clasificación por (en orden)"
+
+#, fuzzy
+msgid "Source EUI"
+msgstr "Fuente EUI"
+
+#, fuzzy
+msgid "Source EUI Weather Normalized"
+msgstr "Fuente EUI Tiempo Normalizado"
+
+#, fuzzy
+msgid "Source Energy Use Intensity"
+msgstr "Fuente Intensidad de uso de la energía"
+
+#, fuzzy
+msgid "Space Alerts"
+msgstr "Alertas espaciales"
+
+#, fuzzy
+msgid "State"
+msgstr "Estado"
+
+#, fuzzy
+msgid "State (Property)"
+msgstr "Estado (Propiedad)"
+
+#, fuzzy
+msgid "State (Tax Lot)"
+msgstr "Estado (Lote fiscal)"
+
+#, fuzzy
+msgid "Step 1: Add Access Levels"
+msgstr "Paso 1: Añadir niveles de acceso"
+
+#, fuzzy
+msgid "Step 2: Upload Access Level Instances"
+msgstr "Paso 2: Cargar instancias de nivel de acceso"
+
+#, fuzzy
+msgid "Sub-Org Name"
+msgstr "Sub-Org Name"
+
+#, fuzzy
+msgid "Sub-Org name is required."
+msgstr "El nombre de la sub-organización es obligatorio."
+
+#, fuzzy
+msgid "Sub-Organization Name"
+msgstr "Nombre de la suborganización"
+
+#, fuzzy
+msgid "Sub-Organizations"
+msgstr "Suborganizaciones"
+
+#, fuzzy
+msgid "Subject"
+msgstr "Asunto"
+
+#, fuzzy
+msgid "Submittal Type"
+msgstr "Tipo de presentación"
+
+#, fuzzy
+msgid "Success"
+msgstr "Éxito"
+
+#, fuzzy
+msgid "Success!"
+msgstr "¡Éxito!"
+
+#, fuzzy
+msgid "Successful Exports"
+msgstr "Exportaciones con éxito"
+
+#, fuzzy
+msgid "Successful upload!"
+msgstr "Carga correcta."
+
+#, fuzzy
+msgid "Successfully Uploaded"
+msgstr "Cargado correctamente"
+
+#, fuzzy
+msgid "Summary"
+msgstr "Resumen"
+
+#, fuzzy
+msgid "Switch Profiles"
+msgstr "Perfiles de los interruptores"
+
+#, fuzzy
+msgid "TAXLOT_MATCHING_FIELDS_REQUIREMENT"
+msgstr "Se requiere al menos uno de los siguientes campos de Lote fiscal"
+
+#, fuzzy
+msgid "THERMAL_CONV_ASSUMPTION_TITLE"
+msgstr "Hipótesis de conversión térmica"
+
+msgid "TOTAL_EUI_HELP"
+msgstr "Umbral EUI total del edificio (incluye electricidad, gas, etc.)"
+
+#, fuzzy
+msgid "TWO_FACTOR_DISABLED_TEXT"
+msgstr "Si eliges esta opción, se desactivará la autenticación de dos factores para tu cuenta, lo que la hará menos segura."
+
+#, fuzzy
+msgid "TWO_FACTOR_EMAIL_SELECTED_TEXT"
+msgstr "Al seleccionar esta opción se habilitará la autenticación de dos factores por correo electrónico ({email}). Recibirá un código de verificación a través de su dirección de correo electrónico registrada cada vez que inicie sesión."
+
+#, fuzzy
+msgid "TWO_FACTOR_ENABLE"
+msgstr "Active la autenticación de dos factores para su cuenta"
+
+#, fuzzy
+msgid "TWO_FACTOR_REQUIRED"
+msgstr "La autenticación de dos factores ha sido requerida por un administrador de la organización en:"
+
+#, fuzzy
+msgid "TWO_FACTOR_SELECT"
+msgstr "Elija uno de los siguientes métodos para aplicar la autenticación de dos factores a su cuenta de SEED"
+
+#, fuzzy
+msgid "TWO_FACTOR_TOKEN_SELECTED_TEXT"
+msgstr "Al seleccionar esta opción, se habilitará la autenticación de dos factores mediante la aplicación generadora de tokens que elijas, como Google Authenticator, Microsoft Authenticator o Authy. Tendrás que escanear un código QR para configurar la aplicación."
+
+#, fuzzy
+msgid "TYPE_TO_CONFIRM"
+msgstr "Escriba a máquina <strong>{org}</strong> para confirmar."
+
+#, fuzzy
+msgid "Table Name"
+msgstr "Nombre de la tabla"
+
+#, fuzzy
+msgid "Target <= Actual for Compliance"
+msgstr "Objetivo <= Real para el cumplimiento"
+
+#, fuzzy
+msgid "Target > Actual"
+msgstr "Objetivo > Real"
+
+#, fuzzy
+msgid "Target >= Actual for Compliance"
+msgstr "Objetivo >= Real para el cumplimiento"
+
+#, fuzzy
+msgid "Target Column"
+msgstr "Columna de destino"
+
+#, fuzzy
+msgid "Target Electric EUI Field"
+msgstr "Objetivo Campo eléctrico EUI"
+
+#, fuzzy
+msgid "Target Field"
+msgstr "Campo de tiro"
+
+#, fuzzy
+msgid "Target Gas EUI Field"
+msgstr "Gas objetivo Campo EUI"
+
+#, fuzzy
+msgid "Target to quantify Portfolio EUI improvement. Must be between 0 and 100."
+msgstr "Objetivo para cuantificar la mejora del EUI de la cartera. Debe estar comprendido entre 0 y 100."
+
+#, fuzzy
+msgid "Tax Lot"
+msgstr "Lote fiscal"
+
+#, fuzzy
+msgid "Tax Lot Count"
+msgstr "Recuento de parcelas fiscales"
+
+#, fuzzy
+msgid "Tax Lot Detail"
+msgstr "Detalle de la parcela fiscal"
+
+#, fuzzy
+msgid "Tax Lot Detail Settings"
+msgstr "Configuración detallada del lote fiscal"
+
+#, fuzzy
+msgid "Tax Lot ID"
+msgstr "Número de identificación fiscal"
+
+#, fuzzy
+msgid "Tax Lot Points"
+msgstr "Puntos de lotes fiscales"
+
+#, fuzzy
+msgid "Tax Lot UBID Centroids"
+msgstr "Lote fiscal UBID Centroides"
+
+#, fuzzy
+msgid "Tax Lot UBIDs"
+msgstr "UBID de lotes fiscales"
+
+#, fuzzy
+msgid "Tax Lot Visibility"
+msgstr "Visibilidad de la parcela fiscal"
+
+#, fuzzy
+msgid "Tax Lots"
+msgstr "Lotes fiscales"
+
+#, fuzzy
+msgid "Tax Lots List"
+msgstr "Lista de parcelas fiscales"
+
+#, fuzzy
+msgid "Tax Lots List (legacy)"
+msgstr "Lista de parcelas fiscales (legado)"
+
+#, fuzzy
+msgid "Taxlot Display Field"
+msgstr "Campo de visualización Taxlot"
+
+#: src/django-tos-master/tos/models.py:43
+#: src/django-tos-master/tos/models.py:44
+#, fuzzy
+msgid "Terms of Service"
+msgstr "Condiciones de uso"
+
+#: src/django-tos-master/tos/templates/tos/tos.html:3
+#: src/django-tos-master/tos/templates/tos/tos_check.html:6
+#, fuzzy
+msgid "Terms of Service as of %(tos.created|date:\"SHORT_DATE_FORMAT\")s"
+msgstr "Condiciones de servicio a partir de %(tos.created|date: \"SHORT_DATE_FORMAT\")s"
+
+#, fuzzy
+msgid "Tertiary (optional)"
+msgstr "Terciario (opcional)"
+
+#, fuzzy
+msgid "Test Connection"
+msgstr "Conexión de prueba"
+
+#, fuzzy
+msgid "Text"
+msgstr "Texto"
+
+#: seed/landing/templates/landing/password_reset_done.html:12
+#, fuzzy
+msgid "Thank you"
+msgstr "Gracias"
+
+#: seed/landing/templates/landing/home.html:18
+#, fuzzy
+msgid "Thank you for creating your account! Please sign in below."
+msgstr "Gracias por crear su cuenta. Inicie sesión a continuación."
+
+#: seed/landing/templates/landing/thank_you.html:16
+#, fuzzy
+msgid "Thank you for your interest in joining the Buildings Performance Database. Our site is in beta and your request is being reviewed for access."
+msgstr "Gracias por su interés en formar parte de la base de datos de rendimiento de edificios. Nuestro sitio está en fase beta y su solicitud está siendo revisada para el acceso."
+
+#: seed/landing/templates/landing/thank_you.html:13
+#, fuzzy
+msgid "Thank you!"
+msgstr "Gracias."
+
+#, fuzzy
+msgid "The Building Energy Data Exchange Specification (BEDES, pronounced \"beads\" or /bi:ds/) is designed to support analysis of the measured energy performance of commercial, multifamily, and residential buildings, by providing a common data format, definitions, and an exchange protocol for building characteristics, efficiency measures, and energy use."
+msgstr "La Especificación de Intercambio de Datos Energéticos de Edificios (BEDES, pronunciado \"beads\" o /bi:ds/) está diseñada para apoyar el análisis del rendimiento energético medido de edificios comerciales, multifamiliares y residenciales, proporcionando un formato de datos común, definiciones y un protocolo de intercambio para las características de los edificios, las medidas de eficiencia y el uso de la energía."
+
+#, fuzzy
+msgid "The GeoJSON will expose all populated property and taxlot columns"
+msgstr "El GeoJSON expondrá todas las columnas de propiedades y taxlots rellenadas"
+
+#, fuzzy
+msgid "The Open Source code is available on the Github organization SEED-Platform:"
+msgstr "El código fuente abierto está disponible en la organización Github SEED-Platform:"
+
+msgid "The Public Feed functionality is currently"
+msgstr "La funcionalidad de Public Feed está actualmente"
+
+msgid "The SEED Platform™"
+msgstr "La Plataforma SEED™"
+
+#: seed/templates/seed/account_create_email.html:13
+#, fuzzy
+msgid "The SEED Team"
+msgstr "El equipo de SEED"
+
+msgid "The SEED Users Forum is where you can review user announcements, workflow questions, and join to connect with other users."
+msgstr "El Foro de Usuarios de SEED es donde puede revisar los anuncios de los usuarios, las preguntas sobre el flujo de trabajo y unirse para conectar con otros usuarios."
+
+#: seed/landing/templates/landing/password_reset_email.html:11
+#, fuzzy
+msgid "The SEED team"
+msgstr "El equipo de SEED"
+
+#, fuzzy
+msgid "The Standard Energy Efficiency Data (SEED)™ Platform is a software application that helps organizations easily manage data on the energy performance of large groups of buildings. Users can combine data from multiple sources, clean and validate it, and share the information with others. The software application provides an easy, flexible, and cost-effective method to improve the quality and availability of data to help demonstrate the economic and environmental benefits of energy efficiency, to implement programs, and to target investment activity."
+msgstr "La Plataforma de Datos Estándar de Eficiencia Energética (SEED)™ es una aplicación informática que ayuda a las organizaciones a gestionar fácilmente los datos sobre el rendimiento energético de grandes grupos de edificios. Los usuarios pueden combinar datos de múltiples fuentes, limpiarlos y validarlos, y compartir la información con otros. La aplicación de software proporciona un método fácil, flexible y rentable para mejorar la calidad y disponibilidad de los datos para ayudar a demostrar los beneficios económicos y ambientales de la eficiencia energética, para implementar programas y para orientar la actividad de inversión."
+
+#, fuzzy
+msgid "The UBID Threshold defines the minimum Jaccard Index value required for a UBID Comparison to be considered acceptable. When the threshold is satisfied, the incoming property can be merged with the existing property."
+msgstr "El Umbral UBID define el valor mínimo del Índice de Jaccard necesario para que una Comparación UBID se considere aceptable. Cuando se cumple el umbral, la propiedad entrante puede fusionarse con la propiedad existente."
+
+#, fuzzy
+msgid "The comparison relies on the Jaccard Index, which ranges from 0.0 (no match) to 1.0 (perfect match)."
+msgstr "La comparación se basa en el índice de Jaccard, que oscila entre 0,0 (sin solapamiento) y 1,0 (coincidencia perfecta)."
+
+#, fuzzy
+msgid "The email supports brace templating to pull in data from the SEED property record. For example, the snippet below will replace the latitude and longitude from the SEED record. Other fields can be added, but make sure to use the SEED field name not the display name."
+msgstr "El correo electrónico admite plantillas de corchetes para extraer datos del registro de propiedades de SEED. Por ejemplo, el siguiente fragmento reemplazará la latitud y longitud del registro de SEED. Se pueden añadir otros campos, pero asegúrese de utilizar el nombre del campo SEED y no el nombre para mostrar."
+
+#, fuzzy
+msgid "The following Property fields are required."
+msgstr "Los siguientes campos de Propiedad son obligatorios."
+
+#, fuzzy
+msgid "The following actions have destructive effects, please read all warnings after clicking an option."
+msgstr "Las siguientes acciones tienen efectos destructivos, por favor lea todas las advertencias después de hacer clic en una opción."
+
+#, fuzzy
+msgid "The following is a list of the fields we use to match up properties/tax lots between different imported files. The more data you have in these four fields the better our"
+"                            system will auto-match your records."
+msgstr "La siguiente es una lista de los campos que utilizamos para cotejar propiedades/lotes fiscales entre diferentes ficheros importados. Cuantos más datos tenga en estos cuatro campos, mejor\n                            sistema auto-coincidirá con sus registros."
+
+#, fuzzy
+msgid "The following is a list of the fields we use to match up properties/tax lots between different imported files. The more data you have in these four fields the better our system will auto-match your records."
+msgstr "La siguiente es una lista de los campos que utilizamos para cotejar propiedades/lotes fiscales entre diferentes archivos importados. Cuantos más datos tenga en estos cuatro campos, mejor coincidirán automáticamente sus registros."
+
+#: seed/landing/templates/landing/signup.html:41
+#, fuzzy
+msgid "The invite link was invalid, possibly because it has already been used.  Please request a new invitation."
+msgstr "El enlace de invitación no es válido, posiblemente porque ya se ha utilizado.  Por favor, solicite una nueva invitación."
+
+#, fuzzy
+msgid "The overall metric can be made up of an energy metric, an emission metric, or both. At least one type of metric is required and if two are defined, then both metrics must be met for compliance."
+msgstr "La métrica global puede estar compuesta por una métrica energética, una métrica de emisiones o ambas. Se requiere al menos un tipo de métrica y, si se definen dos, deben cumplirse ambas para la conformidad."
+
+#: seed/landing/templates/landing/password_reset_confirm.html:41
+#, fuzzy
+msgid "The password link was invalid, possibly because it has already been used.  Please request a new password reset."
+msgstr "El enlace de la contraseña no es válido, posiblemente porque ya se ha utilizado.  Por favor, solicite un nuevo restablecimiento de contraseña."
+
+msgid "The portfolio summary page compares 2 cycles to calculate progress toward an Energy Use Intensity reduction goal."
+msgstr "La página de resumen de la cartera compara 2 ciclos para calcular el progreso hacia un objetivo de reducción de la Intensidad de Uso de la Energía."
+
+#, fuzzy
+msgid "There is also a link to the SEED-Platform Users forum, where you can connect with other users."
+msgstr "También hay un enlace al foro de usuarios de la plataforma SEED, donde puedes ponerte en contacto con otros usuarios."
+
+#, fuzzy
+msgid "There was an error loading the page"
+msgstr "Se ha producido un error al cargar la página"
+
+#, fuzzy
+msgid "This action replaces any of your current columns with the comma-delimited columns you provided. Would you like to continue?"
+msgstr "Esta acción sustituye cualquiera de sus columnas actuales por las columnas delimitadas por comas que ha proporcionado. ¿Desea continuar?"
+
+#, fuzzy
+msgid "This action updates properties within the selected cycle with data from the Audit Template account associated with this organization. Only Properties with Audit Template Building IDs corresponding to those saved in Audit Template will be updated."
+msgstr "Esta acción actualiza las propiedades dentro del ciclo seleccionado con datos de la cuenta de Plantilla de auditoría asociada a esta organización. Sólo se actualizarán las Propiedades con ID de Edificio de Plantilla de Auditoría correspondientes a los guardados en Plantilla de Auditoría."
+
+#, fuzzy
+msgid "This cycle name is already taken."
+msgstr "El nombre de este ciclo ya está ocupado."
+
+#, fuzzy
+msgid "This email link is invalid."
+msgstr "Este enlace de correo electrónico no es válido."
+
+#, fuzzy
+msgid "This label name is already taken."
+msgstr "Este nombre de etiqueta ya está ocupado."
+
+#: seed/validators.py:17
+#, fuzzy
+msgid "This password must contain at least %(quantity)d %(type)s characters."
+msgstr "Esta contraseña debe contener al menos %(quantity)d %(type)s caracteres."
+
+#, fuzzy
+msgid "This will reset your visible columns and column order to only columns that contain data. Are you sure you want to continue?"
+msgstr "Esto restablecerá las columnas visibles y el orden de las columnas a sólo las columnas que contengan datos. ¿Está seguro de que desea continuar?"
+
+#, fuzzy
+msgid "Time Period"
+msgstr "Periodo de tiempo"
+
+#, fuzzy
+msgid "Timeline"
+msgstr "Cronología"
+
+#, fuzzy
+msgid "To Date"
+msgstr "Hasta la fecha"
+
+#: seed/landing/templates/landing/password_reset_confirm.html:37
+#, fuzzy
+msgid "To change your password, enter your requested password twice."
+msgstr "Para cambiar la contraseña, introduzca dos veces la contraseña solicitada."
+
+#, fuzzy
+msgid "To date"
+msgstr "Hasta la fecha"
+
+#: seed/landing/templates/landing/signup.html:37
+#, fuzzy
+msgid "To set up your account, enter your password twice in the form below."
+msgstr "Para crear su cuenta, introduzca dos veces su contraseña en el formulario siguiente."
+
+#, fuzzy
+msgid "Toggle Dropdown"
+msgstr "Desplegable"
+
+#, fuzzy
+msgid "Toggle Hexagonal Bins"
+msgstr "Cubos hexagonales basculantes"
+
+#, fuzzy
+msgid "Toggle Hexbins"
+msgstr "Cubos hexagonales basculantes"
+
+#, fuzzy
+msgid "Toggle Points"
+msgstr "Alternar puntos de propiedad"
+
+#, fuzzy
+msgid "Toggle Property Points"
+msgstr "Alternar puntos de propiedad"
+
+#, fuzzy
+msgid "Toggle Property UBID Bounding Boxes"
+msgstr "Conmutar los cuadros delimitadores UBID de la propiedad"
+
+#, fuzzy
+msgid "Toggle Property UBID Centroids"
+msgstr "Toggle Property UBID Centroids"
+
+#, fuzzy
+msgid "Toggle Tax Lot Points"
+msgstr "Conmutar puntos de lotes fiscales"
+
+#, fuzzy
+msgid "Toggle Tax Lot UBID Bounding Boxes"
+msgstr "Conmutar los recuadros de delimitación UBID del lote fiscal"
+
+#, fuzzy
+msgid "Toggle Tax Lot UBID Centroids"
+msgstr "Alternar centroides UBID de lotes fiscales"
+
+#, fuzzy
+msgid "Toggle Taxlot UBID Bounding Boxes"
+msgstr "Conmutar los cuadros delimitadores de Taxlot UBID"
+
+#, fuzzy
+msgid "Toggle Taxlot UBID Centroids"
+msgstr "Toggle Taxlot UBID Centroids"
+
+#, fuzzy
+msgid "Token Generator"
+msgstr "Generador de fichas"
+
+#, fuzzy
+msgid "Total EUI Field"
+msgstr "Total EUI Campo"
+
+msgid "Total EUI Threshold"
+msgstr "Umbral EUI total"
+
+#, fuzzy
+msgid "Total Properties"
+msgstr "Total Propiedades"
+
+#, fuzzy
+msgid "Total rows in the import file"
+msgstr "Total de filas del fichero de importación"
+
+msgid "Two Factor Profile"
+msgstr "Perfil de dos factores"
+
+#, fuzzy
+msgid "Two UBIDs are required for comparison. Click Custom UBIDs to continue."
+msgstr "Se necesitan dos UBIDs para la comparación. Haga clic en UBIDs personalizadas para continuar."
+
+#, fuzzy
+msgid "Two-Factor Authentication"
+msgstr "Autenticación de dos factores"
+
+#, fuzzy
+msgid "Type"
+msgstr "Tipo"
+
+#, fuzzy
+msgid "Type of Submittal"
+msgstr "Tipo de presentación"
+
+#, fuzzy
+msgid "Type of Submittal:"
+msgstr "Tipo de presentación:"
+
+#, fuzzy
+msgid "U.S."
+"                        Department of Energy"
+msgstr "Departamento de Energía de EE.UU."
+
+#, fuzzy
+msgid "U.S. Department of Energy"
+msgstr "Departamento de Energía de EE.UU."
+
+#, fuzzy
+msgid "UBID"
+msgstr "UBID"
+
+#, fuzzy
+msgid "UBID Threshold"
+msgstr "Umbral UBID"
+
+#, fuzzy
+msgid "UBID Threshold must be between 0.0 and 1.0"
+msgstr "UBID El umbral debe estar entre 0,0 y 1,0"
+
+msgid "UBID Threshold must be between 0.0001 and 1.0"
+msgstr "El umbral UBID debe estar entre 0,0001 y 1,0"
+
+#, fuzzy
+msgid "UBID already exists"
+msgstr "El UBID ya existe"
+
+#, fuzzy
+msgid "UBID comparison result:"
+msgstr "Resultado de la comparación de UBID:"
+
+#, fuzzy
+msgid "UBID thresholds are between 0.0 and 1.0"
+msgstr "Los umbrales UBID se sitúan entre 0,0 y 1,0"
+
+#, fuzzy
+msgid "UPDATE_DERIVED_DATA_TEXT_1"
+msgstr "Pulse el botón \"Iniciar actualización\" para iniciar el proceso de recálculo de los datos almacenados en las columnas derivadas para las propiedades y lotes fiscales seleccionados. Las columnas derivadas aparecerán en amarillo para indicar que la actualización está en curso."
+
+#, fuzzy
+msgid "UPDATE_DERIVED_DATA_TEXT_2"
+msgstr "Tenga en cuenta que mientras las columnas estén en amarillo, los datos pueden no estar actualizados. Actualice la página para actualizar el estado de las columnas."
+
+#, fuzzy
+msgid "UPDATE_MANUALLY_GEOCODED_INSTRUCTIONS"
+msgstr "Si las propiedades se han geocodificado manualmente, no se actualizarán. Para actualizar la geocodificación, elimine la lat/long."
+
+#, fuzzy
+msgid "UPLOADING_DOCUMENT_TITLE"
+msgstr "Cargar documento..."
+
+#, fuzzy
+msgid "UPLOADING_FILE_TITLE"
+msgstr "Carga de archivos"
+
+#, fuzzy
+msgid "UPLOADING_PROGRESS"
+msgstr "Cargar <strong>{dataset_filename}</strong> al ciclo <strong>{cycle_name}</strong>"
+
+#, fuzzy
+msgid "UPLOADING_PROGRESS_MULTIPLE_CYCLE"
+msgstr "Cargar <strong>{dataset_filename}</strong> a varios ciclos. El ciclo por defecto es <strong>{cycle_name}</strong>"
+
+#, fuzzy
+msgid "UPLOADING_PROGRESS_NO_CYCLE"
+msgstr "Cargar <strong>{dataset_filename}</strong>"
+
+#, fuzzy
+msgid "UPLOAD_COMPLETE_TITLE"
+msgstr "Carga completa"
+
+#, fuzzy
+msgid "UPLOAD_DATA_LOGGER_BUTTON"
+msgstr "Crear registrador de datos"
+
+#, fuzzy
+msgid "UPLOAD_DOC_ACCEPTED_FILE_TYPES"
+msgstr "Tipos de archivo aceptados: .dxf, .pdf, .idf y .osm"
+
+#, fuzzy
+msgid "UPLOAD_FILE"
+msgstr "Cargar archivo"
+
+#, fuzzy
+msgid "UPLOAD_GB_DATA_BUTTON"
+msgstr "Cargar datos de GreenButton"
+
+#. Upload file incomplete
+#, fuzzy
+msgid "UPLOAD_INCOMPLETE_TITLE"
+msgstr "Cargar Incompleto"
+
+#, fuzzy
+msgid "UPLOAD_PM_READINGS_MODAL_TITLE"
+msgstr "Cargar lecturas del contador de Portfolio Manager"
+
+#, fuzzy
+msgid "UPLOAD_SENSORS_BUTTON"
+msgstr "Subir sensores"
+
+#, fuzzy
+msgid "UPLOAD_SENSOR_BUTTON"
+msgstr "Subir sensor"
+
+#, fuzzy
+msgid "UPLOAD_SENSOR_READINGS_BUTTON"
+msgstr "Cargar lecturas del sensor"
+
+#, fuzzy
+msgid "URL_OPTIONS"
+msgstr "Opciones de URL"
+
+#, fuzzy
+msgid "USING_DEFAULT_UNITS_WARNING"
+msgstr "Para las columnas con configuración de unidades, se utilizarán las unidades por defecto para las conversiones."
+
+#, fuzzy
+msgid "Uniformat Category"
+msgstr "Categoría Uniformat"
+
+#, fuzzy
+msgid "Units"
+msgstr "Unidades"
+
+#, fuzzy
+msgid "Unknown"
+msgstr "Desconocido"
+
+msgid "Unmerge Last"
+msgstr "Fusión final"
+
+#, fuzzy
+msgid "Unsuccessful Exports"
+msgstr "Exportaciones fallidas"
+
+#, fuzzy
+msgid "Until last date of"
+msgstr "Hasta la última fecha de"
+
+#, fuzzy
+msgid "Update Charts"
+msgstr "Actualizar gráficos"
+
+#, fuzzy
+msgid "Update Derived Data"
+msgstr "Actualizar datos derivados"
+
+#, fuzzy
+msgid "Update Filters"
+msgstr "Actualizar filtros"
+
+#, fuzzy
+msgid "Update Property Labels"
+msgstr "Actualizar etiquetas de propiedad"
+
+#, fuzzy
+msgid "Update Salesforce"
+msgstr "Actualizar Salesforce"
+
+#, fuzzy
+msgid "Update UBID"
+msgstr "Actualizar UBID"
+
+#, fuzzy
+msgid "Update from Audit Template"
+msgstr "Actualización de la plantilla de auditoría"
+
+#, fuzzy
+msgid "Update inventory with Audit Template Submissions"
+msgstr "Actualizar el inventario con los envíos de plantillas de auditoría"
+
+#, fuzzy
+msgid "Update the data type of the column to \"Area\" in"
+msgstr "Actualice el tipo de datos de la columna a \"Área\" en"
+
+#, fuzzy
+msgid "Update the data type of the column to \"EUI\" in"
+msgstr "Actualice el tipo de datos de la columna a \"EUI\" en"
+
+#, fuzzy
+msgid "Update with Audit Template"
+msgstr "Actualizar con plantilla de auditoría"
+
+#, fuzzy
+msgid "Update with BuildingSync"
+msgstr "Actualizar con BuildingSync"
+
+#, fuzzy
+msgid "Update with ESPM"
+msgstr "Actualización con ESPM"
+
+#, fuzzy
+msgid "Updated"
+msgstr "Actualizado"
+
+#, fuzzy
+msgid "Updating selected properties..."
+msgstr "Actualización de las propiedades seleccionadas..."
+
+#, fuzzy
+msgid "Upload Access Level Instances"
+msgstr "Cargar instancias de nivel de acceso"
+
+#, fuzzy
+msgid "Upload Audit Template XML"
+msgstr "Cargar plantilla de auditoría XML"
+
+#, fuzzy
+msgid "Upload BuildingSync Data"
+msgstr "Cargar datos de BuildingSync"
+
+#, fuzzy
+msgid "Upload Green Button Data"
+msgstr "Cargar datos del Botón Verde"
+
+#, fuzzy
+msgid "Upload Portfolio Manager Data"
+msgstr "Cargar datos de Portfolio Manager"
+
+#, fuzzy
+msgid "Upload Single ESPM Property"
+msgstr "Cargar propiedad ESPM"
+
+#, fuzzy
+msgid "Upload a Spreadsheet"
+msgstr "Cargar una hoja de cálculo"
+
+#, fuzzy
+msgid "Upload another energy data file"
+msgstr "Cargar otro archivo de datos de energía"
+
+msgid "Upload your Buildings List"
+msgstr "Cargue su lista de edificios"
+
+#, fuzzy
+msgid "Upload your buildings list"
+msgstr "Cargue su lista de edificios"
+
+#, fuzzy
+msgid "Upload your data"
+msgstr "Cargue sus datos"
+
+#, fuzzy
+msgid "Upload your data."
+msgstr "Cargue sus datos."
+
+#, fuzzy
+msgid "Upload your energy data file(s)"
+msgstr "Sube tu(s) archivo(s) de datos energéticos"
+
+#, fuzzy
+msgid "Upload your energy data."
+msgstr "Carga tus datos energéticos."
+
+#, fuzzy
+msgid "Uploading your data"
+msgstr "Cargar sus datos"
+
+#, fuzzy
+msgid "Uploading your data."
+msgstr "Carga de datos."
+
+#, fuzzy
+msgid "Use Description"
+msgstr "Uso Descripción"
+
+#: seed/models/projects.py:35 seed/models/projects.py:109
+#: seed/models/projects.py:137 seed/models/projects.py:162
+#, fuzzy
+msgid "User"
+msgstr "Usuario"
+
+#, fuzzy
+msgid "User Count"
+msgstr "Recuento de usuarios"
+
+#, fuzzy
+msgid "User E-mail:"
+msgstr "Correo electrónico del usuario:"
+
+#, fuzzy
+msgid "User Email"
+msgstr "Correo electrónico del usuario"
+
+#, fuzzy
+msgid "User Email:"
+msgstr "Correo electrónico del usuario:"
+
+#, fuzzy
+msgid "User First Name:"
+msgstr "Nombre de usuario:"
+
+#, fuzzy
+msgid "User Last Name:"
+msgstr "Apellido del usuario:"
+
+#: seed/landing/models.py:42
+#, fuzzy
+msgid "User's email address.  Used for auth as well."
+msgstr "Dirección de correo electrónico del usuario.  También se utiliza para la autenticación."
+
+#, fuzzy
+msgid "Username"
+msgstr "Nombre de usuario"
+
+#: seed/landing/templates/landing/_browser_supported.html:5
+#, fuzzy
+msgid "Using your current browser will prevent you from accessing features on our website. Use the links below to download a new browser or upgrade your existing browser."
+msgstr "El uso de su navegador actual le impedirá acceder a las funciones de nuestro sitio web. Utilice los enlaces siguientes para descargar un nuevo navegador o actualizar el que ya tiene."
+
+#, fuzzy
+msgid "Valid"
+msgstr "Válido"
+
+#, fuzzy
+msgid "Version"
+msgstr "Versión"
+
+#, fuzzy
+msgid "View Compliance Tracking"
+msgstr "Ver el seguimiento del cumplimiento"
+
+#, fuzzy
+msgid "View Project"
+msgstr "Ver proyecto"
+
+#, fuzzy
+msgid "View by Property"
+msgstr "Ver por propiedad"
+
+#, fuzzy
+msgid "View by Tax Lot"
+msgstr "Ver por lote fiscal"
+
+#, fuzzy
+msgid "View my properties"
+msgstr "Ver mis propiedades"
+
+#, fuzzy
+msgid "View/Hide Terms"
+msgstr "Ver/Ocultar términos"
+
+#, fuzzy
+msgid "Viewer"
+msgstr "Visor"
+
+#, fuzzy
+msgid "Violation Label"
+msgstr "Etiqueta de infracción"
+
+#, fuzzy
+msgid "Visit"
+msgstr "Visite"
+
+#, fuzzy
+msgid "Visit the BETTER website to run a portfolio analysis"
+msgstr "Visite el sitio web de BETTER para realizar un análisis de cartera"
+
+#, fuzzy
+msgid "Visualization Settings"
+msgstr "Ajustes de visualización"
+
+#, fuzzy
+msgid "WAIT_TEXT_1"
+msgstr "Por favor espere, buscando registros afectados..."
+
+#, fuzzy
+msgid "WAIT_TEXT_2"
+msgstr "Por favor, espere, evaluando los registros afectados. Esto puede tardar varios minutos..."
+
+#, fuzzy
+msgid "WATER_TYPE_DISPLAY_CHOICE_PLACEHOLDER"
+msgstr "----Elija el tipo de agua----"
+
+#, fuzzy
+msgid "WHEN_YOU_CLICK_MAP_YOUR_DATA"
+msgstr "Cuando haga clic en el botón <span class=\"label label-primary\">Asignar sus datos</span> el programa mostrará una cuadrícula con los nuevos nombres de campo como encabezados de columna y sus datos en las filas. En esa vista, puede volver a la pantalla inicial de asignación y cambiar la asignación de campos."
+
+msgid "WUI"
+msgstr "WUI"
+
+#, fuzzy
+msgid "Warning"
+msgstr "Advertencia"
+
+msgid "Water Use"
+msgstr "Uso del agua"
+
+#: seed/landing/templates/landing/_browser_supported.html:4
+#, fuzzy
+msgid "We've detected an outdated browser."
+msgstr "Hemos detectado un navegador obsoleto."
+
+#: seed/landing/templates/landing/password_reset_done.html:15
+#, fuzzy
+msgid "We've e-mailed instructions for resetting your password."
+msgstr "Te hemos enviado por correo electrónico instrucciones para restablecer tu contraseña."
+
+#, fuzzy
+msgid "We've sent a sign in link to your email to access your account."
+msgstr "Te hemos enviado un enlace a tu correo electrónico para acceder a tu cuenta."
+
+#, fuzzy
+msgid "Weather Norm. Site EUI"
+msgstr "Norma meteorológica. Lugar EUI"
+
+#, fuzzy
+msgid "Weather Norm. Source EUI"
+msgstr "Norma meteorológica. Fuente EUI"
+
+#, fuzzy
+msgid "Weather Normalized Site Energy Use Intensity"
+msgstr "Intensidad de uso de energía normalizada según las condiciones meteorológicas"
+
+#, fuzzy
+msgid "Weather Normalized Source Energy Use Intensity"
+msgstr "Intensidad de uso de energía de la fuente normalizada según las condiciones meteorológicas"
+
+#: seed/landing/templates/landing/_marketing_bullets.html:3
+#, fuzzy
+msgid "Welcome to SEED Platform™"
+msgstr "Bienvenido a la Plataforma SEED"
+
+#: seed/landing/templates/landing/password_set.html:16
+#, fuzzy
+msgid "Welcome to SEED!"
+msgstr "¡Bienvenido a SEED!"
+
+#, fuzzy
+msgid "What is a Custom Report?"
+msgstr "¿Qué es un informe personalizado?"
+
+#, fuzzy
+msgid "What type of file would you like to upload?"
+msgstr "¿Qué tipo de archivo desea cargar?"
+
+#, fuzzy
+msgid "When checked, properties/taxlots will be matched to existing cycles based on the 'year_ending' column or the default cycle if there is no match"
+msgstr "Si se selecciona esta opción, las propiedades/parcelas fiscales se ajustarán a los ciclos existentes en función de la columna \"year_ending\" o al ciclo predeterminado si no hay ninguna coincidencia"
+
+#, fuzzy
+msgid "Where would you like to move these buildings?"
+msgstr "¿Dónde le gustaría trasladar estos edificios?"
+
+#, fuzzy
+msgid "X Axis"
+msgstr "Eje X"
+
+#, fuzzy
+msgid "X Axis Column Selections:"
+msgstr "Selecciones de columna del eje X:"
+
+#, fuzzy
+msgid "X Axis Column Types for Plotting:"
+msgstr "Tipos de columnas del eje X para plotear:"
+
+#, fuzzy
+msgid "X-Axis Columns"
+msgstr "Columnas del eje X"
+
+#, fuzzy
+msgid "X-Axis Field Options"
+msgstr "Opciones de campo del eje X"
+
+#. Using this string to test if the translation machinery is escaping/sanitizing correctly.
+#, fuzzy
+msgid "XSS_TEST"
+msgstr "Texto acentuado. <script>alert(\"XSS FAIL IN BASE TRANSLATION STRING\");</script>{injectedText}"
+
+#, fuzzy
+msgid "X_VERSUS_Y"
+msgstr "{x_axis_label} vs. {y_axis_label}"
+
+#, fuzzy
+msgid "X_VERSUS_Y_AGGREGATED"
+msgstr "{x_axis_label} vs. {y_axis_label} (Agregado)"
+
+#, fuzzy
+msgid "Y Axis"
+msgstr "Eje Y"
+
+#, fuzzy
+msgid "YEAR_BUILT_THRESHOLD_HELP"
+msgstr "El año construido que se utilizará como umbral de comparación en los cálculos"
+
+#, fuzzy
+msgid "Year"
+msgstr "Año"
+
+#, fuzzy
+msgid "Year Built"
+msgstr "Año de construcción"
+
+#, fuzzy
+msgid "Year Built Threshold"
+msgstr "Año de construcción Umbral"
+
+#, fuzzy
+msgid "Year Ending"
+msgstr "Fin de año"
+
+#, fuzzy
+msgid "Year Ending Date"
+msgstr "Fecha de fin de año"
+
+#, fuzzy
+msgid "Year Ending:"
+msgstr "Año que termina:"
+
+#, fuzzy
+msgid "Yes"
+msgstr "Sí"
+
+#, fuzzy
+msgid "Yes, Delete Data File"
+msgstr "Sí, borrar archivo de datos"
+
+#, fuzzy
+msgid "Yes, Delete Data Set"
+msgstr "Sí, borrar conjunto de datos"
+
+#, fuzzy
+msgid "Yes, Delete Inventory"
+msgstr "Sí, eliminar inventario"
+
+#, fuzzy
+msgid "Yes, Delete Organization"
+msgstr "Sí, suprimir organización"
+
+#, fuzzy
+msgid "Yes, Delete Sub-Organization"
+msgstr "Sí, suprimir suborganización"
+
+#, fuzzy
+msgid "Yes, Delete User"
+msgstr "Sí, Borrar usuario"
+
+#, fuzzy
+msgid "Yes, Remove Filter Group"
+msgstr "Sí, eliminar grupo de filtros"
+
+#, fuzzy
+msgid "You can review and edit each individual match by clicking one of the linked IDs in the table. This will open a new table that shows the source data for the individual record you are attempting to match. Underneath this record is a searchable list of all potential existing matches. Use this table to explore all your records and to select single or multiple records to match your source data to."
+msgstr "Puede revisar y editar cada coincidencia individual haciendo clic en uno de los ID vinculados de la tabla. Se abrirá una nueva tabla que muestra los datos de origen del registro individual con el que está intentando establecer una correspondencia. Debajo de este registro hay una lista de búsqueda de todas las posibles coincidencias existentes. Utilice esta tabla para explorar todos sus registros y seleccionar uno o varios registros con los que cotejar sus datos de origen."
+
+#: src/django-tos-master/tos/views.py:72
+#, fuzzy
+msgid "You cannot login without agreeing to the terms of this site."
+msgstr "No puede iniciar sesión sin aceptar las condiciones de este sitio."
+
+#: seed/landing/templates/landing/home.html:21
+#, fuzzy
+msgid "You have successfully logged out. You may log in again below."
+msgstr "Se ha desconectado correctamente. Puede volver a conectarse a continuación."
+
+#, fuzzy
+msgid "You have unsaved changes"
+msgstr "Tienes cambios sin guardar"
+
+#: seed/landing/templates/landing/password_reset_done.html:15
+#, fuzzy
+msgid "You should be receiving it shortly."
+msgstr "Debería recibirlo en breve."
+
+#, fuzzy
+msgid "You successfully created the project"
+msgstr "Ha creado correctamente el proyecto"
+
+#, fuzzy
+msgid "You will lose your unsaved changes if you switch profiles without saving. Would you like to continue?"
+msgstr "Perderás los cambios que no hayas guardado si cambias de perfil sin guardar. ¿Desea continuar?"
+
+#: seed/landing/templates/landing/password_reset_email.html:2
+#, fuzzy
+msgid "You're receiving this e-mail because you requested a password reset"
+msgstr "Está recibiendo este correo electrónico porque ha solicitado un restablecimiento de contraseña"
+
+#: seed/templates/seed/account_create_email.html:4
+#, fuzzy
+msgid "You're receiving this e-mail because you've been registered for a SEED account."
+msgstr "Está recibiendo este correo electrónico porque se ha registrado para obtener una cuenta de SEED."
+
+#, fuzzy
+msgid "You're receiving this email because your password was reset"
+msgstr "Está recibiendo este correo electrónico porque se ha restablecido su contraseña"
+
+#, fuzzy
+msgid "Your Role"
+msgstr "Su papel"
+
+#, fuzzy
+msgid "Your SEED account is not associated with any organizations.  Please contact a SEED administrator."
+msgstr "Su cuenta de SEED no está asociada a ninguna organización. Póngase en contacto con un administrador de SEED."
+
+#, fuzzy
+msgid "Your inventory is already synced with your Audit Template account"
+msgstr "Su inventario ya está sincronizado con su cuenta de Plantilla de Auditoría"
+
+#, fuzzy
+msgid "Your page could not be located!"
+msgstr "Su página no ha podido ser localizada"
+
+#: seed/validators.py:24
+#, fuzzy
+msgid "Your password must contain at least %(quantity)d %(type)s characters."
+msgstr "Su contraseña debe contener al menos %(quantity)d %(type)s caracteres."
+
+#: seed/landing/templates/landing/password_reset_email.html:9
+#, fuzzy
+msgid "Your username, in case you've forgotten:"
+msgstr "Tu nombre de usuario, por si lo has olvidado:"
+
+msgid "access level"
+msgstr "nivel de acceso"
+
+msgid "access level instance name"
+msgstr "nivel de acceso nombre de instancia"
+
+#: seed/landing/models.py:51 seed/landing/models.py:59
+#: src/django-tos-master/tos/models.py:32
+#, fuzzy
+msgid "active"
+msgstr "activo"
+
+#, fuzzy
+msgid "and"
+msgstr "y"
+
+#: seed/landing/models.py:69
+#, fuzzy
+msgid "api key"
+msgstr "clave api"
+
+#: seed/models/projects.py:107 seed/models/projects.py:134
+#: seed/models/projects.py:159
+#, fuzzy
+msgid "approved_date"
+msgstr "fecha_aprobada"
+
+#, fuzzy
+msgid "auto-mapping energy data"
+msgstr "cartografía automática de los datos energéticos"
+
+#, fuzzy
+msgid "auto-matching energy data"
+msgstr "datos energéticos de coincidencia automática"
+
+#: seed/models/models.py:178
+#, fuzzy
+msgid "blue"
+msgstr "azul"
+
+#, fuzzy
+msgid "cancel"
+msgstr "cancelar"
+
+#: seed/models/models.py:188 seed/models/models.py:231
+#, fuzzy
+msgid "compliance_type"
+msgstr "tipo_cumplimiento"
+
+#, fuzzy
+msgid "comstock.aspect_ratio"
+msgstr "Relación de aspecto"
+
+#, fuzzy
+msgid "comstock.building_shape"
+msgstr "Forma del edificio"
+
+#, fuzzy
+msgid "comstock.building_type"
+msgstr "Tipo de edificio"
+
+#, fuzzy
+msgid "comstock.built_code"
+msgstr "Código de construcción"
+
+#, fuzzy
+msgid "comstock.climate_zone"
+msgstr "Zona climática"
+
+#, fuzzy
+msgid "comstock.county"
+msgstr "Condado"
+
+#, fuzzy
+msgid "comstock.division"
+msgstr "División"
+
+#, fuzzy
+msgid "comstock.hvac_system_type"
+msgstr "Tipo de sistema HVAC"
+
+#, fuzzy
+msgid "comstock.number_of_stories"
+msgstr "Número de pisos"
+
+#, fuzzy
+msgid "comstock.rentable_area"
+msgstr "Superficie alquilable"
+
+#, fuzzy
+msgid "comstock.rotation"
+msgstr "Rotación"
+
+#, fuzzy
+msgid "comstock.state"
+msgstr "Estado"
+
+#, fuzzy
+msgid "comstock.weekday_duration"
+msgstr "Día de la semana Duración"
+
+#, fuzzy
+msgid "comstock.weekday_start_time"
+msgstr "Hora de inicio entre semana"
+
+#, fuzzy
+msgid "comstock.weekend_duration"
+msgstr "Fin de semana Duración"
+
+#, fuzzy
+msgid "comstock.weekend_start_time"
+msgstr "Hora de inicio del fin de semana"
+
+#, fuzzy
+msgid "comstock.year_built"
+msgstr "Año de construcción"
+
+#: src/django-tos-master/tos/models.py:37
+#, fuzzy
+msgid "content"
+msgstr "contenido"
+
+#, fuzzy
+msgid "created"
+msgstr "creado"
+
+#: seed/landing/models.py:54
+#, fuzzy
+msgid "date joined"
+msgstr "fecha de incorporación"
+
+#: seed/models/models.py:238
+#, fuzzy
+msgid "deadline_date"
+msgstr "fecha_límite"
+
+#, fuzzy
+msgid "default"
+msgstr "por defecto"
+
+#, fuzzy
+msgid "default_cycle"
+msgstr "Ciclo por defecto"
+
+#: seed/models/projects.py:47
+#, fuzzy
+msgid "description"
+msgstr "descripción"
+
+#, fuzzy
+msgid "duplicate"
+msgstr "duplicado"
+
+#, fuzzy
+msgid "edit"
+msgstr "editar"
+
+#: seed/landing/models.py:45
+#, fuzzy
+msgid "email address"
+msgstr "dirección de correo electrónico"
+
+#: seed/models/models.py:237
+#, fuzzy
+msgid "end_date"
+msgstr "fecha_final"
+
+#, fuzzy
+msgid "endpoints see the"
+msgstr "consulte los puntos finales"
+
+#: seed/landing/forms.py:14
+#, fuzzy
+msgid "ex: joe@company.com"
+msgstr "ej: joe@company.com"
+
+#: seed/landing/models.py:43
+#, fuzzy
+msgid "first name"
+msgstr "Nombre de pila"
+
+#: seed/landing/templates/landing/password_reset_email.html:3
+#, fuzzy
+msgid "for your SEED Platform user account"
+msgstr "para su cuenta de usuario de la Plataforma SEED"
+
+#, fuzzy
+msgid "goal"
+msgstr "Objetivo"
+
+#: seed/models/models.py:183
+#, fuzzy
+msgid "gray"
+msgstr "gris"
+
+#: seed/models/models.py:180
+#, fuzzy
+msgid "green"
+msgstr "verde"
+
+#, fuzzy
+msgid "has been uploaded to"
+msgstr "se ha cargado en"
+
+#, fuzzy
+msgid "header"
+msgstr "cabecera"
+
+#, fuzzy
+msgid "kBtu/m²/year"
+msgstr "kBtu/m²/año"
+
+#, fuzzy
+msgid "kBtu/sq. ft./year"
+msgstr "kBtu/pie cuadrado/año"
+
+#, fuzzy
+msgid "kWh/m²/year"
+msgstr "kWh/m²/año"
+
+#: seed/landing/models.py:44
+#, fuzzy
+msgid "last name"
+msgstr "apellido"
+
+#: seed/models/models.py:179
+#, fuzzy
+msgid "light blue"
+msgstr "azul claro"
+
+#, fuzzy
+msgid "member email"
+msgstr "correo electrónico del miembro"
+
+#, fuzzy
+msgid "member name"
+msgstr "nombre del miembro"
+
+#, fuzzy
+msgid "member role"
+msgstr "función de miembro"
+
+#, fuzzy
+msgid "multi-sheet Excel files are not currently supported"
+msgstr "actualmente no se admiten archivos Excel de varias hojas"
+
+#: seed/models/models.py:186 seed/models/projects.py:30
+#, fuzzy
+msgid "name"
+msgstr "nombre"
+
+#, fuzzy
+msgid "name already in use"
+msgstr "nombre ya en uso"
+
+#, fuzzy
+msgid "not authorized"
+msgstr "no autorizado"
+
+#: seed/models/models.py:182
+#, fuzzy
+msgid "orange"
+msgstr "naranja"
+
+#, fuzzy
+msgid "owner"
+msgstr "propietario"
+
+msgid "program overview"
+msgstr "resumen del programa"
+
+#: seed/models/projects.py:115
+#, fuzzy
+msgid "project building"
+msgstr "proyecto de construcción"
+
+#: seed/models/projects.py:116
+#, fuzzy
+msgid "project buildings"
+msgstr "edificios del proyecto"
+
+#: seed/models/projects.py:143
+#, fuzzy
+msgid "project property view"
+msgstr "vista de propiedades del proyecto"
+
+#: seed/models/projects.py:144
+#, fuzzy
+msgid "project property views"
+msgstr "vistas de la propiedad del proyecto"
+
+#: seed/models/projects.py:168
+#, fuzzy
+msgid "project taxlot view"
+msgstr "proyecto taxlot view"
+
+#: seed/models/projects.py:169
+#, fuzzy
+msgid "project taxlot views"
+msgstr "vistas de las parcelas del proyecto"
+
+#, fuzzy
+msgid "property"
+msgstr "propiedad"
+
+msgid "property insights"
+msgstr "información inmobiliaria"
+
+#: seed/models/models.py:177
+#, fuzzy
+msgid "red"
+msgstr "rojo"
+
+#, fuzzy
+msgid "save"
+msgstr "guardar"
+
+#, fuzzy
+msgid "saving complete"
+msgstr "guardado completo"
+
+#, fuzzy
+msgid "saving data"
+msgstr "guardar datos"
+
+#, fuzzy
+msgid "saving energy data"
+msgstr "ahorro de energía datos"
+
+#, fuzzy
+msgid "selected"
+msgstr "seleccionado"
+
+#: seed/landing/models.py:60
+#, fuzzy
+msgid "shows shared buildings within search results"
+msgstr "muestra los edificios compartidos en los resultados de búsqueda"
+
+#: seed/models/projects.py:32
+#, fuzzy
+msgid "slug"
+msgstr "babosa"
+
+#, fuzzy
+msgid "sq. ft."
+msgstr "pies cuadrados"
+
+#, fuzzy
+msgid "square feet"
+msgstr "pies cuadrados"
+
+#, fuzzy
+msgid "square metres"
+msgstr "metros cuadrados"
+
+#: seed/landing/models.py:47
+#, fuzzy
+msgid "staff status"
+msgstr "estatuto del personal"
+
+#: seed/models/models.py:236
+#, fuzzy
+msgid "start_date"
+msgstr "fecha_inicio"
+
+#: seed/models/projects.py:49
+#, fuzzy
+msgid "status"
+msgstr "estado"
+
+#, fuzzy
+msgid "tax lot"
+msgstr "lote fiscal"
+
+msgid "to enable or disable Public Feed functionality"
+msgstr "para activar o desactivar la funcionalidad de Public Feed"
+
+#, fuzzy
+msgid "true"
+msgstr "verdadero"
+
+#, fuzzy
+msgid "upload complete"
+msgstr "carga completa"
+
+#, fuzzy
+msgid "uploading file"
+msgstr "cargar archivo"
+
+#: seed/landing/models.py:82
+#, fuzzy
+msgid "user"
+msgstr "usuario"
+
+#: seed/landing/models.py:41
+#, fuzzy
+msgid "username (email)"
+msgstr "nombre de usuario (correo electrónico)"
+
+#: seed/landing/models.py:83
+#, fuzzy
+msgid "users"
+msgstr "usuarios"
+
+#: seed/models/models.py:181
+#, fuzzy
+msgid "white"
+msgstr "blanco"
+
+#, fuzzy
+msgid "your data set name"
+msgstr "el nombre de su conjunto de datos"

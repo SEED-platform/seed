@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
@@ -37,11 +36,13 @@ class ColumnSerializer(serializers.ModelSerializer):
             "display_name",
             "data_type",
             "is_matching_criteria",
+            "is_updating",
             "geocoding_order",
             "recognize_empty",
             "comstock_mapping",
             "column_description",
             "derived_column",
+            "is_excluded_from_hash",
         )
 
     def concat_name(self, obj):
