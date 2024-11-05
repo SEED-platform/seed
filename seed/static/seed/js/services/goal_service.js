@@ -78,6 +78,15 @@ angular.module('SEED.service.goal', []).factory('goal_service', [
       .then((response) => response)
       .catch((response) => response);
 
+    goal_service.formatted_grid_data = (data) => {
+      return $http.put(
+      `/api/v3/goals/${data.goal_id}/formatted_grid_data/`,
+      data,
+      { params: {organization_id: user_service.get_organization().id } }
+    )
+      .then((response) => response)
+      .catch((response) => response)}
+
     return goal_service;
   }
 ]);

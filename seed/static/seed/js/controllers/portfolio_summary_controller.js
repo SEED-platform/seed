@@ -117,6 +117,7 @@ angular.module('SEED.controller.portfolio_summary', [])
         }
       });
 
+      // RP - backend - new endpoint for details table
       // selected goal details
       const format_goal_details = () => {
         $scope.change_selected_level_index();
@@ -150,6 +151,7 @@ angular.module('SEED.controller.portfolio_summary', [])
         _.delay($scope.updateHeight, 150);
       };
 
+      // RP - good
       const get_goal_stats = (summary) => {
         const passing_sqft = summary.current ? summary.current.total_sqft : null;
         // show help text if less than {50}% of properties are passing checks
@@ -208,6 +210,7 @@ angular.module('SEED.controller.portfolio_summary', [])
         load_inventory(1);
       };
 
+      // RP - good
       const load_summary = () => {
         $scope.summary_loading = true;
         $scope.show_access_level_instances = true;
@@ -226,6 +229,7 @@ angular.module('SEED.controller.portfolio_summary', [])
         spinner_utility.show();
         load_inventory(page);
       };
+      // RP - one endpoint to fetch both groups of paginated properties
       const load_inventory = (page) => {
         $scope.data_loading = true;
 
@@ -419,6 +423,7 @@ angular.module('SEED.controller.portfolio_summary', [])
         property.eui_change = percentage(property.baseline_eui, property.current_eui);
       };
 
+      // RP - backend - include in the same endpoint that fetches paginated data
       const format_properties = (properties) => {
         const area = $scope.columns.find((c) => c.id === $scope.goal.area_column);
         const preferred_columns = [$scope.columns.find((c) => c.id === $scope.goal.eui_column1)];
@@ -458,7 +463,7 @@ angular.module('SEED.controller.portfolio_summary', [])
           if (current) {
             property.current_cycle = current_cycle_name;
             property.current_sqft = current[area.name];
-            property.current_view_id = current.property_view_id;
+            property.current_view_id = current.property_view_id;  // RP WHY?
           }
           // comparison stats
           property.sqft_change = percentage(property.current_sqft, property.baseline_sqft);
@@ -468,6 +473,7 @@ angular.module('SEED.controller.portfolio_summary', [])
         return combined_properties;
       };
 
+      // RP - included in above
       const combine_properties = (current, baseline) => {
         // Given 2 properties, find non-null values and combine into a single property (favoring baseline if baseline_first)
         const [a, b] = baseline_first ? [baseline, current] : [current, baseline];
@@ -502,6 +508,7 @@ angular.module('SEED.controller.portfolio_summary', [])
         { id: 4, value: 'Are these values correct?' },
         { id: 5, value: 'Other or multiple flags; explain in Additional Notes field' }
       ];
+      // RP - include in backend endpoint? the html is a little weird
       // handle cycle specific columns
       const selected_columns = () => {
         let cols = property_column_names.map((name) => $scope.columns.find((col) => col.column_name === name));
@@ -904,10 +911,28 @@ angular.module('SEED.controller.portfolio_summary', [])
         }
       };
 
+      const formatted_grid_data = (page) => {
+        const per_page = 50;
+        
+        data = {
+          goal_id: $scope.goal.id,
+          page: page,
+          per_page: per_page,
+          baseline_first: baseline_first,
+          access_level_instance_id: $scope.goal.access_level_instance,
+          filters: $scope.column_filters || [],
+          sorts: $scope.column_sorts || [],
+          related_model_sort: $scope.related_model_sort
+        }
+        goal_service.formatted_grid_data(data)
+
+      }
+
       const set_grid_options = (result) => {
         $scope.show_full_labels = { baseline: false, current: false };
         $scope.selected_ids = [];
         $scope.data = format_properties(result);
+        const x = formatted_grid_data(1)
         spinner_utility.hide();
         $scope.gridOptions = {
           data: 'data',
