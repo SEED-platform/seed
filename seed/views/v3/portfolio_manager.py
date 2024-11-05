@@ -612,8 +612,43 @@ class PortfolioManagerImport:
 
         # We should then trigger generation of the custom download for the selected property ids
         generation_url = "https://portfoliomanager.energystar.gov/pm/property/createCustomDownloadSubmit/"
+        payload = (
+            "_aggregateMeter=on&"
+            + "_basicPropertyInfo=on&"
+            + "_designData=on&"
+            + "_designTargetsDesignData=on&"
+            + "_designUseDesignData=on&"
+            + "_designUseDetailDesignData=on&"
+            + "_energyDesignData=on&"
+            + "_energyMeter=on&"
+            + "_energyMeterEntries=on&"
+            + "_energyProjects=on&"
+            + "_itEnergyMeter=on&"
+            + "_itEnergyMeterEntries=on&"
+            + "_meterEntries=on&"
+            + "_meterType=on&"
+            + "_offsitePurchase=on&"
+            + "_onsiteRecOwnership=on&"
+            + "_plantFlowMeter=on&"
+            + "_plantFlowMeterEntries=on&"
+            + "_propertyIds=on&"
+            + "_propertyUseDetails=on&"
+            + "_propertyUses=on&"
+            + "_targetAndBaseline=on&"
+            + "_wasteMeter=on&"
+            + "_wasteMeterEntries=on&"
+            + "_waterMeter=on&"
+            + "_waterMeterEntries=on&"
+            + "basicPropertyInfoCount=0&"
+            + "energyMeter=true&"
+            + "selectedPropertyIdsAsString=5834384&"
+            + "selectionType=MULTIPLE&"
+            + "waterMeter=true"
+        )
+
         try:
-            response = requests.post(generation_url, headers=self.authenticated_headers, timeout=300)
+            response = requests.post(generation_url, headers=self.authenticated_headers, timeout=300, data=payload)
+            print(response.status_code)
         except requests.exceptions.SSLError:
             raise PMError("SSL Error in Portfolio Manager Query; check VPN/Network/Proxy.")
         if not response.status_code == status.HTTP_200_OK:
