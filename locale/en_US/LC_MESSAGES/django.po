@@ -390,6 +390,9 @@ msgstr "Are you sure you want to unmerge these properties and then merge with th
 msgid "Are you sure you want to unmerge these tax lots and then merge with the selected tax lots?"
 msgstr "Are you sure you want to unmerge these tax lots and then merge with the selected tax lots?"
 
+msgid "Are you sure you want to unmerge these tax lots?"
+msgstr "Are you sure you want to unmerge these tax lots?"
+
 msgid "Area"
 msgstr "Area"
 
@@ -2962,6 +2965,9 @@ msgstr "Properties updated:"
 msgid "Properties with Data"
 msgstr "Properties with Data"
 
+msgid "Properties with elements cannot be unmerged."
+msgstr "Properties with elements cannot be unmerged."
+
 msgid "Property"
 msgstr "Property"
 
@@ -4094,6 +4100,9 @@ msgstr "UBID comparison result:"
 
 msgid "UBID thresholds are between 0.0 and 1.0"
 msgstr "UBID thresholds are between 0.0 and 1.0"
+
+msgid "UNMERGE_PROPERTIES_MODAL"
+msgstr "Are you sure you want to unmerge these properties? The unmerge action will keep meter data on both properties. Review meter data on both properties once they are unmerged."
 
 msgid "UPDATE_DERIVED_DATA_TEXT_1"
 msgstr "Press the 'Begin Update' button below to begin the process of recalculating the data stored in derived columns for the selected properties and tax lots. The derived columns will appear yellow to indicate that the update is in progress."

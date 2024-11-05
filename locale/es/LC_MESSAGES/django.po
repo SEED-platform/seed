@@ -5,7 +5,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: lokalise.com\n"
 "Project-Id-Version: SEED Platform\n"
-"PO-Revision-Date: 2024-11-05 06:02\n"
+"PO-Revision-Date: 2024-11-05 20:24\n"
 "Last-Translator: lokalise.com\n"
 "Language-Team: lokalise.com\n\n"
 "Language: es\n"
@@ -508,6 +508,9 @@ msgstr "¿Está seguro de que desea deshacer la fusión de estas propiedades y, 
 #, fuzzy
 msgid "Are you sure you want to unmerge these tax lots and then merge with the selected tax lots?"
 msgstr "¿Está seguro de que desea deshacer la fusión de estos lotes fiscales y, a continuación, fusionarlos con los lotes fiscales seleccionados?"
+
+msgid "Are you sure you want to unmerge these tax lots?"
+msgstr "¿Está seguro de que desea separar estos lotes de impuestos?"
 
 #, fuzzy
 msgid "Area"
@@ -3879,6 +3882,9 @@ msgstr "Propiedades actualizadas:"
 msgid "Properties with Data"
 msgstr "Propiedades con datos"
 
+msgid "Properties with elements cannot be unmerged."
+msgstr "Las propiedades con elementos no se pueden separar."
+
 #, fuzzy
 msgid "Property"
 msgstr "Propiedad"
@@ -5361,6 +5367,9 @@ msgstr "Resultado de la comparación de UBID:"
 #, fuzzy
 msgid "UBID thresholds are between 0.0 and 1.0"
 msgstr "Los umbrales UBID se sitúan entre 0,0 y 1,0"
+
+msgid "UNMERGE_PROPERTIES_MODAL"
+msgstr "¿Está seguro de que desea desvincular estas propiedades? La acción de desvincular conservará los datos del medidor en ambas propiedades. Revise los datos del medidor en ambas propiedades una vez que se hayan desvinculado."
 
 #, fuzzy
 msgid "UPDATE_DERIVED_DATA_TEXT_1"

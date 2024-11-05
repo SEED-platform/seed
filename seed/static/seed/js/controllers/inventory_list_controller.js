@@ -1327,15 +1327,18 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
           taxlot_view_ids: () => ($scope.inventory_type === 'taxlots' ? selectedViewIds : [])
         }
       });
-      modalInstance.result.then(() => {
-        $scope.gridOptions.columnDefs.forEach((col) => {
-          if (col.derived_column) {
-            col.is_updating = true;
-            col.headerCellClass = 'updating-derived-column-display-name';
-          }
-        });
-        $scope.gridApi.core.notifyDataChange(uiGridConstants.dataChange.COLUMN);
-      });
+      modalInstance.result.then(
+        () => {}, // on close
+        () => { // on dismiss
+          $scope.gridOptions.columnDefs.forEach((col) => {
+            if (col.derived_column) {
+              col.is_updating = true;
+              col.headerCellClass = 'updating-derived-column-display-name';
+            }
+          });
+          $scope.gridApi.core.notifyDataChange(uiGridConstants.dataChange.COLUMN);
+        }
+      );
     };
 
     $scope.open_delete_modal = (selectedViewIds) => {
