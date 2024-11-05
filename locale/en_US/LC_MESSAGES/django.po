@@ -1839,6 +1839,9 @@ msgstr "Hello %(first_name)s, "
 msgid "Hexagonal Bins"
 msgstr "Hexagonal Bins"
 
+msgid "Hide All Labels"
+msgstr "Hide All Labels"
+
 msgid "Highlights of SEED Platform™"
 msgstr "Highlights of SEED Platform™"
 
@@ -3637,6 +3640,9 @@ msgstr "Sharing Your Data"
 msgid "Show All"
 msgstr "Show All"
 
+msgid "Show All Labels"
+msgstr "Show All Labels"
+
 msgid "Show Matched"
 msgstr "Show Matched"
 
@@ -3970,7 +3976,7 @@ msgid "This password must contain at least %(quantity)d %(type)s characters."
 msgstr "This password must contain at least %(quantity)d %(type)s characters."
 
 msgid "This will reset your visible columns and column order to only columns that contain data. Are you sure you want to continue?"
-msgstr "This will reset your visible columns and column order to only non-derived columns that contain data. Are you sure you want to continue?"
+msgstr "This will reset your visible columns and column order to show only columns that contain data. Are you sure you want to continue?"
 
 msgid "Time Period"
 msgstr "Time Period"
