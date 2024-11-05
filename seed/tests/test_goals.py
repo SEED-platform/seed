@@ -501,5 +501,6 @@ class GoalViewTests(AccessLevelBaseTestCase):
             "related_model_sort": False
         }
         response = self.client.put(url, data=json.dumps(data), content_type="application/json")
-        assert True
-        # assert response.status_code == 404
+        assert response.status_code == 200 
+        data = response.json()["data"]
+        assert sorted(list(data.keys())) == ["properties", "property_lookup"]

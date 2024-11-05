@@ -20,6 +20,8 @@ from seed.utils.viewsets import ModelViewSetWithoutPatch
 from seed.utils.search import FilterError, build_related_model_filters_and_sorts, build_view_filters_and_sorts
 from django.http import QueryDict
 from pint import Quantity
+from seed.serializers.pint import apply_display_unit_preferences
+
 
 
 @method_decorator(
@@ -232,9 +234,17 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
 
         properties1 = TaxLotProperty.serialize(views1, show_columns, columns_from_database, False, pk)
         properties2 = TaxLotProperty.serialize(views2, show_columns, columns_from_database, False, pk)
+        # collapse pint Qunatity units to their magnitudes
+        properties1 = [apply_display_unit_preferences(org, x) for x in properties1]
+        properties2 = [apply_display_unit_preferences(org, x) for x in properties2]
 
         area_name = f"{goal.area_column.column_name}_{goal.area_column.id}"
         eui_columns = [f"{col.column_name}_{col.id}" for col in goal.eui_columns()]
+
+        # lookup for pv.id to p.id
+        property_lookup = {}
+        for p in properties1 + properties2:
+            property_lookup[p["property_view_id"]] = p["id"]
 
 
         properties = []
@@ -261,8 +271,15 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
         # UNIT ERRORS, need to convert quantity to number
         # not mine, but others. check taxlot property serialize unit conversion.
         # SHOULD REALLY HAVE A SHORT LIST OF COLUMNS
-        breakpoint()
-        return JsonResponse({"status": "success", "data": properties})
+
+        results = {
+            "properties": properties,
+            "property_lookup": property_lookup
+        }
+
+        # PAGINATION
+
+        return JsonResponse({"status": "success", "data": results})
     
 def combine_properties(p1, p2):
     if not p2:
