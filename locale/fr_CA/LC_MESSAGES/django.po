@@ -1855,6 +1855,9 @@ msgstr "Bonjour% (first_name) s,"
 msgid "Hexagonal Bins"
 msgstr "Bacs Hexagonaux"
 
+msgid "Hide All Labels"
+msgstr "Masquer toutes les étiquettes"
+
 msgid "Highlights of SEED Platform™"
 msgstr "Points forts de la Plate-Forme SEED™"
 
@@ -3667,6 +3670,9 @@ msgstr "Partage de vos données"
 msgid "Show All"
 msgstr "Montrer tout"
 
+msgid "Show All Labels"
+msgstr "Afficher toutes les étiquettes"
+
 msgid "Show Matched"
 msgstr "Montrer Appariés"
 
@@ -4001,8 +4007,9 @@ msgstr "Ce nom d'étiquette est déjà pris."
 msgid "This password must contain at least %(quantity)d %(type)s characters."
 msgstr "Ce mot de passe doit contenir au moins% (quantité) d% (type) s caractères."
 
+#, fuzzy
 msgid "This will reset your visible columns and column order to only columns that contain data. Are you sure you want to continue?"
-msgstr "Cela réinitialisera vos colonnes visibles et l'ordre des colonnes aux seules colonnes non dérivées contenant des données. Es-tu sur de vouloir continuer?"
+msgstr "Cela réinitialisera vos colonnes visibles et l'ordre des colonnes à seulement celles contenant des données. Êtes-vous sur de vouloir continuer?"
 
 msgid "Time Period"
 msgstr "Période de temps"
