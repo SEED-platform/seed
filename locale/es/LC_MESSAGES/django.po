@@ -5,7 +5,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: lokalise.com\n"
 "Project-Id-Version: SEED Platform\n"
-"PO-Revision-Date: 2024-09-26 20:00\n"
+"PO-Revision-Date: 2024-11-05 06:02\n"
 "Last-Translator: lokalise.com\n"
 "Language-Team: lokalise.com\n\n"
 "Language: es\n"
@@ -2036,9 +2036,8 @@ msgstr "Nombres de campo para la correspondencia"
 msgid "FILE_TYPES_SUPPORTED"
 msgstr "Tipos de archivo admitidos: <strong>.csv</strong>, <strong>.xls</strong>, <strong>.xlsx</strong>, <strong>.xml</strong>, <strong>.zip</strong>, <strong>.geojson</strong>y <strong>.json</strong>."
 
-#, fuzzy
 msgid "FOSSIL_FUEL_EUI_HELP"
-msgstr "Objetivo EUI de combustibles fósiles para el edificio (incluye gas, etc.)"
+msgstr "Umbral EUI de combustibles fósiles para el edificio (incluye gas, etc.)"
 
 #, fuzzy
 msgid "Failed to delete inventory"
@@ -2162,9 +2161,8 @@ msgstr "Para obtener ayuda directa sobre un problema concreto, rellene una solic
 msgid "Forgot password?"
 msgstr "¿Ha olvidado su contraseña?"
 
-#, fuzzy
-msgid "Fossil Fuel EUI Goal"
-msgstr "Objetivo EUI de combustibles fósiles"
+msgid "Fossil Fuel EUI Threshold"
+msgstr "Umbral EUI de combustibles fósiles"
 
 #, fuzzy
 msgid "Fossil Fuel-Fired Equipment RSL Threshold"
@@ -2405,6 +2403,9 @@ msgstr "Hola %(first_name)s, "
 #, fuzzy
 msgid "Hexagonal Bins"
 msgstr "Cubos hexagonales"
+
+msgid "Hide All Labels"
+msgstr "Ocultar todas las etiquetas"
 
 #, fuzzy
 msgid "Highlights of SEED Platform™"
@@ -4769,6 +4770,9 @@ msgstr "Compartir sus datos"
 msgid "Show All"
 msgstr "Mostrar todo"
 
+msgid "Show All Labels"
+msgstr "Mostrar todas las etiquetas"
+
 #, fuzzy
 msgid "Show Matched"
 msgstr "Mostrar emparejados"
@@ -4925,9 +4929,8 @@ msgstr "Se requiere al menos uno de los siguientes campos de Lote fiscal"
 msgid "THERMAL_CONV_ASSUMPTION_TITLE"
 msgstr "Hipótesis de conversión térmica"
 
-#, fuzzy
 msgid "TOTAL_EUI_HELP"
-msgstr "Objetivo EUI total del edificio (incluye electricidad, gas, etc.)"
+msgstr "Umbral EUI total del edificio (incluye electricidad, gas, etc.)"
 
 #, fuzzy
 msgid "TWO_FACTOR_DISABLED_TEXT"
@@ -5205,7 +5208,7 @@ msgstr "Esta contraseña debe contener al menos %(quantity)d %(type)s caracteres
 
 #, fuzzy
 msgid "This will reset your visible columns and column order to only columns that contain data. Are you sure you want to continue?"
-msgstr "Esto restablecerá las columnas visibles y el orden de las columnas a sólo las columnas no derivadas que contengan datos. ¿Está seguro de que desea continuar?"
+msgstr "Esto restablecerá las columnas visibles y el orden de las columnas a sólo las columnas que contengan datos. ¿Está seguro de que desea continuar?"
 
 #, fuzzy
 msgid "Time Period"
@@ -5289,9 +5292,8 @@ msgstr "Generador de fichas"
 msgid "Total EUI Field"
 msgstr "Total EUI Campo"
 
-#, fuzzy
-msgid "Total EUI Goal"
-msgstr "Objetivo EUI total"
+msgid "Total EUI Threshold"
+msgstr "Umbral EUI total"
 
 #, fuzzy
 msgid "Total Properties"

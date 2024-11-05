@@ -259,7 +259,7 @@ angular.module('SEED.controller.inventory_detail', []).controller('inventory_det
         resolve: {
           columns: () => columns,
           currentProfile: () => $scope.currentProfile,
-          cycle: () => null,
+          cycle: () => $scope.cycle,
           inventory_type: () => $stateParams.inventory_type,
           provided_inventory() {
             const provided_inventory = [];

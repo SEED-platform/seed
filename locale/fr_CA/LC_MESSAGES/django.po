@@ -1570,7 +1570,7 @@ msgid "FILE_TYPES_SUPPORTED"
 msgstr "Types de fichiers pris en charge: <strong>.csv</strong>, <strong>.xls</strong>, <strong>.xlsx</strong>, <strong>.xml</strong>, <strong>.zip</strong>, <strong>.geojson</strong>, et <strong>.json</strong>."
 
 msgid "FOSSIL_FUEL_EUI_HELP"
-msgstr "Objectif d'IEC en matière de combustibles fossiles pour le bâtiment (y compris le gaz, etc.)"
+msgstr "Le seuil d'IEC en matière de combustibles fossiles pour le bâtiment (y compris le gaz, etc.)"
 
 msgid "Failed to delete inventory"
 msgstr "Échec de la suppression de l'inventaire"
@@ -1668,8 +1668,8 @@ msgstr "Pour obtenir une aide directe sur un problème spécifique, veuillez rem
 msgid "Forgot password?"
 msgstr "mot de passe oublié?"
 
-msgid "Fossil Fuel EUI Goal"
-msgstr "Objectif de l'UEI sur les combustibles fossiles"
+msgid "Fossil Fuel EUI Threshold"
+msgstr "Le seuil de l'UEI sur les combustibles fossiles"
 
 msgid "Fossil Fuel-Fired Equipment RSL Threshold"
 msgstr "Seuil RSL pour les équipements alimentés aux combustibles fossiles"
@@ -1854,6 +1854,9 @@ msgstr "Bonjour% (first_name) s,"
 
 msgid "Hexagonal Bins"
 msgstr "Bacs Hexagonaux"
+
+msgid "Hide All Labels"
+msgstr "Masquer toutes les étiquettes"
 
 msgid "Highlights of SEED Platform™"
 msgstr "Points forts de la Plate-Forme SEED™"
@@ -3667,6 +3670,9 @@ msgstr "Partage de vos données"
 msgid "Show All"
 msgstr "Montrer tout"
 
+msgid "Show All Labels"
+msgstr "Afficher toutes les étiquettes"
+
 msgid "Show Matched"
 msgstr "Montrer Appariés"
 
@@ -3785,7 +3791,7 @@ msgid "THERMAL_CONV_ASSUMPTION_TITLE"
 msgstr "Choix de Conversion Thermique"
 
 msgid "TOTAL_EUI_HELP"
-msgstr "Objectif EUI total pour le bâtiment (comprend l'électricité, le gaz, etc.)"
+msgstr "Le seuil EUI total pour le bâtiment (comprend l'électricité, le gaz, etc.)"
 
 msgid "TWO_FACTOR_DISABLED_TEXT"
 msgstr "Choisir cette option désactivera l’authentification à deux facteurs pour votre compte, le rendant moins sécurisé."
@@ -4001,8 +4007,9 @@ msgstr "Ce nom d'étiquette est déjà pris."
 msgid "This password must contain at least %(quantity)d %(type)s characters."
 msgstr "Ce mot de passe doit contenir au moins% (quantité) d% (type) s caractères."
 
+#, fuzzy
 msgid "This will reset your visible columns and column order to only columns that contain data. Are you sure you want to continue?"
-msgstr "Cela réinitialisera vos colonnes visibles et l'ordre des colonnes aux seules colonnes non dérivées contenant des données. Es-tu sur de vouloir continuer?"
+msgstr "Cela réinitialisera vos colonnes visibles et l'ordre des colonnes à seulement celles contenant des données. Êtes-vous sur de vouloir continuer?"
 
 msgid "Time Period"
 msgstr "Période de temps"
@@ -4066,8 +4073,8 @@ msgstr "Générateur de jetons"
 msgid "Total EUI Field"
 msgstr "Champ de l'UEI totale"
 
-msgid "Total EUI Goal"
-msgstr "Objectif total de l'UEI"
+msgid "Total EUI Threshold"
+msgstr "Le seuil total de l'UEI"
 
 msgid "Total Properties"
 msgstr "Total des propriétés"
@@ -4459,6 +4466,7 @@ msgstr "Texte accentée. <script>alert(\"XSS FAIL IN BASE TRANSLATION STRING\");
 msgid "X_VERSUS_Y"
 msgstr "{x_axis_label} contre {y_axis_label}"
 
+#, fuzzy
 msgid "X_VERSUS_Y_AGGREGATED"
 msgstr "{x_axis_label} contre {y_axis_label} (agrégé)"
 
