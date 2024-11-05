@@ -612,43 +612,16 @@ class PortfolioManagerImport:
 
         # We should then trigger generation of the custom download for the selected property ids
         generation_url = "https://portfoliomanager.energystar.gov/pm/property/createCustomDownloadSubmit/"
-        payload = (
-            "_aggregateMeter=on&"
-            + "_basicPropertyInfo=on&"
-            + "_designData=on&"
-            + "_designTargetsDesignData=on&"
-            + "_designUseDesignData=on&"
-            + "_designUseDetailDesignData=on&"
-            + "_energyDesignData=on&"
-            + "_energyMeter=on&"
-            + "_energyMeterEntries=on&"
-            + "_energyProjects=on&"
-            + "_itEnergyMeter=on&"
-            + "_itEnergyMeterEntries=on&"
-            + "_meterEntries=on&"
-            + "_meterType=on&"
-            + "_offsitePurchase=on&"
-            + "_onsiteRecOwnership=on&"
-            + "_plantFlowMeter=on&"
-            + "_plantFlowMeterEntries=on&"
-            + "_propertyIds=on&"
-            + "_propertyUseDetails=on&"
-            + "_propertyUses=on&"
-            + "_targetAndBaseline=on&"
-            + "_wasteMeter=on&"
-            + "_wasteMeterEntries=on&"
-            + "_waterMeter=on&"
-            + "_waterMeterEntries=on&"
-            + "basicPropertyInfoCount=0&"
-            + "energyMeter=true&"
-            + "selectedPropertyIdsAsString=5834384&"
-            + "selectionType=MULTIPLE&"
-            + "waterMeter=true"
-        )
+        payload = "proID=&numberOfPropertiesWithinLimit=true&basicPropertyInfoCount=0&propertyIdentifierCount=0&propertyUseCount=0&propertyUseDetailCount=0&meterCount=0&meterDataCount=29403&onsiteCount=0&offsiteCount=0&energyProjectsCount=0&designDataCount=0&targetAndBaselineCount=0&maxPropertiesCountAsyncDownload=12000&selectionType=MULTIPLE&_basicPropertyInfo=on&_propertyIds=on&_propertyUses=on&_propertyUseDetails=on&_meterType=on&_energyMeter=on&_waterMeter=on&_wasteMeter=on&_itEnergyMeter=on&_plantFlowMeter=on&_aggregateMeter=on&meterEntries=true&_meterEntries=on&energyMeterEntries=true&_energyMeterEntries=on&waterMeterEntries=true&_waterMeterEntries=on&_wasteMeterEntries=on&_itEnergyMeterEntries=on&_plantFlowMeterEntries=on&customDownloadStartDate=01%2F01%2F2007&customDownloadEndDate=12%2F31%2F2023&includeInactiveMeters=true&includeUnassociatedMeters=false&_onsiteRecOwnership=on&_offsitePurchase=on&_energyProjects=on&_designData=on&_designUseDesignData=on&_designUseDetailDesignData=on&_energyDesignData=on&_designTargetsDesignData=on&_targetAndBaseline=on"
+        payload += "&selectedPropertyIdsAsString=" + "%".join([str(p_id) for p_id in property_ids])
 
         try:
-            response = requests.post(generation_url, headers=self.authenticated_headers, timeout=300, data=payload)
-            print(response.status_code)
+            response = requests.post(
+                generation_url,
+                headers={**self.authenticated_headers, "Content-Type": "application/x-www-form-urlencoded"},
+                timeout=300,
+                data=payload,
+            )
         except requests.exceptions.SSLError:
             raise PMError("SSL Error in Portfolio Manager Query; check VPN/Network/Proxy.")
         if not response.status_code == status.HTTP_200_OK:
@@ -657,53 +630,38 @@ class PortfolioManagerImport:
 
         # Now we need to wait while the report is being generated
         attempt_count = 0
-        report_generation_complete = False
         while attempt_count < 90:
             attempt_count += 1
 
             # get the report data
+            notifications_url = "https://portfoliomanager.energystar.gov/pm/notifications.json"
+            notifications_json = '{"page":1,"pageSize":100,"sort":{"column":"CREATE_DATE","ascending":true},"type":"Notices"}'
+
             try:
                 json_authenticated_headers = self.authenticated_headers.copy()
                 json_authenticated_headers["Accept"] = "application/json"
                 json_authenticated_headers["Content-Type"] = "application/json"
-                response = requests.get(self.REPORT_URL, headers=json_authenticated_headers, timeout=300)
+                response = requests.post(notifications_url, headers=json_authenticated_headers, timeout=300, data=notifications_json)
             except requests.exceptions.SSLError:
                 raise PMError("SSL Error in Portfolio Manager Query; check VPN/Network/Proxy.")
             if not response.status_code == status.HTTP_200_OK:
                 raise PMError("Unsuccessful response from report template rows query; aborting.")
 
-            template_objects = response.json()["reportTabData"]
-            for t in template_objects:
-                if "id" in t and t["id"] == template_report_id:
-                    this_matched_template = t
-                    break
-            else:
-                this_matched_template = None
-            if not this_matched_template:
-                raise PMError("Could not find a match for this report template id... odd at this point")
-            if this_matched_template["pending"] == 1:
+            notifications = response.json()["result"]["items"]
+            if len(notifications) == 0:
                 time.sleep(2)
                 continue
-            else:
-                report_generation_complete = True
+
+            latest_notification = notifications[-1]
+            if latest_notification["notificationTypeCode"]["code"] == "CUSTOMPORTFOLIODOWNLOAD":
                 break
 
-        if report_generation_complete:
-            _log.debug("Report appears to have been generated successfully (attempt_count=" + str(attempt_count) + ")")
-        else:
-            raise PMError("Template report not generated successfully; aborting.")
+            else:
+                time.sleep(2)
+                continue
 
-        # Finally we can download the generated report
-        try:
-            response = requests.get(self.download_url(template_report_id, report_format), headers=self.authenticated_headers, timeout=300)
-        except requests.exceptions.SSLError:
-            raise PMError("SSL Error in Portfolio Manager Query; check VPN/Network/Proxy.")
-        if response.status_code != status.HTTP_200_OK:
-            error_message = "Unsuccessful response from GET trying to download generated report;"
-            error_message += f' Generated report name: {matched_template["name"]};'
-            error_message += f"Tried to download report from URL: {self.download_url(template_report_id)};"
-            error_message += f"Returned with a status code = {response.status_code};"
-            raise PMError(error_message)
+        custom_download_url = "https://portfoliomanager.energystar.gov/pm" + latest_notification["notificationParameters"][1]["url"]
+        response = requests.request("GET", custom_download_url, headers=json_authenticated_headers)
         return response.content
 
     def _parse_properties_v1(self, xml):
