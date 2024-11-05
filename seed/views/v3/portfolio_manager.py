@@ -613,44 +613,51 @@ class PortfolioManagerImport:
         if not self.authenticated_headers:
             self.login_and_set_cookie_header()
 
+        selectedPropertyIdsAsString = "%2C".join([str(x) for x in property_ids])
+
         # We should then trigger generation of the custom download for the selected property ids
         generation_url = "https://portfoliomanager.energystar.gov/pm/property/createCustomDownloadSubmit/"
-        payload = (
-            "_aggregateMeter=on&"
-            + "_basicPropertyInfo=on&"
-            + "_designData=on&"
-            + "_designTargetsDesignData=on&"
-            + "_designUseDesignData=on&"
-            + "_designUseDetailDesignData=on&"
-            + "_energyDesignData=on&"
-            + "_energyMeter=on&"
-            + "_energyMeterEntries=on&"
-            + "_energyProjects=on&"
-            + "_itEnergyMeter=on&"
-            + "_itEnergyMeterEntries=on&"
-            + "_meterEntries=on&"
-            + "_meterType=on&"
-            + "_offsitePurchase=on&"
-            + "_onsiteRecOwnership=on&"
-            + "_plantFlowMeter=on&"
-            + "_plantFlowMeterEntries=on&"
-            + "_propertyIds=on&"
-            + "_propertyUseDetails=on&"
-            + "_propertyUses=on&"
-            + "_targetAndBaseline=on&"
-            + "_wasteMeter=on&"
-            + "_wasteMeterEntries=on&"
-            + "_waterMeter=on&"
-            + "_waterMeterEntries=on&"
-            + "basicPropertyInfoCount=0&"
-            + "energyMeter=true&"
-            + "selectedPropertyIdsAsString=5834384&"
-            + "selectionType=MULTIPLE&"
-            + "waterMeter=true"
-        )
+
+        payload = '_aggregateMeter=on&_basicPropertyInfo=on&_designData=on&_designTargetsDesignData=on&_designUseDesignData=on&_designUseDetailDesignData=on&_energyDesignData=on&_energyMeter=on&_energyMeterEntries=on&_energyProjects=on&_itEnergyMeter=on&_itEnergyMeterEntries=on&_meterEntries=on&_meterType=on&_offsitePurchase=on&_onsiteRecOwnership=on&_plantFlowMeter=on&_plantFlowMeterEntries=on&_propertyIds=on&_propertyUseDetails=on&_propertyUses=on&_targetAndBaseline=on&_wasteMeter=on&_wasteMeterEntries=on&_waterMeter=on&_waterMeterEntries=on&basicPropertyInfoCount=0&customDownloadEndDate=12%2F31%2F2023&customDownloadStartDate=01%2F01%2F2007&designDataCount=0&energyMeterEntries=true&energyProjectsCount=0&includeInactiveMeters=true&includeUnassociatedMeters=false&maxPropertiesCountAsyncDownload=12000&meterCount=0&meterDataCount=29403&meterEntries=true&numberOfPropertiesWithinLimit=true&offsiteCount=0&onsiteCount=0&proID=&propertyIdentifierCount=0&propertyUseCount=0&propertyUseDetailCount=0&selectedPropertyIdsAsString=' + selectedPropertyIdsAsString + '&selectionType=MULTIPLE&targetAndBaselineCount=0&waterMeterEntries=true'
+
+        response = requests.request("POST", url, headers=headers, data=payload)
+
+        # payload = (
+        #     "_aggregateMeter=on&"
+        #     + "_basicPropertyInfo=on&"
+        #     + "_designData=on&"
+        #     + "_designTargetsDesignData=on&"
+        #     + "_designUseDesignData=on&"
+        #     + "_designUseDetailDesignData=on&"
+        #     + "_energyDesignData=on&"
+        #     + "_energyMeter=on&"
+        #     + "_energyMeterEntries=on&"
+        #     + "_energyProjects=on&"
+        #     + "_itEnergyMeter=on&"
+        #     + "_itEnergyMeterEntries=on&"
+        #     + "_meterEntries=on&"
+        #     + "_meterType=on&"
+        #     + "_offsitePurchase=on&"
+        #     + "_onsiteRecOwnership=on&"
+        #     + "_plantFlowMeter=on&"
+        #     + "_plantFlowMeterEntries=on&"
+        #     + "_propertyIds=on&"
+        #     + "_propertyUseDetails=on&"
+        #     + "_propertyUses=on&"
+        #     + "_targetAndBaseline=on&"
+        #     + "_wasteMeter=on&"
+        #     + "_wasteMeterEntries=on&"
+        #     + "_waterMeter=on&"
+        #     + "_waterMeterEntries=on&"
+        #     + "basicPropertyInfoCount=0&"
+        #     + "energyMeter=true&"
+        #     + "selectedPropertyIdsAsString=5834384&"
+        #     + "selectionType=MULTIPLE&"
+        #     + "waterMeter=true"
+        # )
 
         try:
-            response = requests.post(generation_url, headers=self.authenticated_headers, timeout=300, data=payload)
+            response = requests.request("POST", generation_url, headers=self.authenticated_headers, data=payload)
             print(response.status_code)
         except requests.exceptions.SSLError:
             raise PMError("SSL Error in Portfolio Manager Query; check VPN/Network/Proxy.")
