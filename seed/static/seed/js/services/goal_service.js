@@ -78,11 +78,43 @@ angular.module('SEED.service.goal', []).factory('goal_service', [
       .then((response) => response)
       .catch((response) => response);
 
-    goal_service.formatted_grid_data = (data) => {
+
+
+    const format_column_filters = (column_filters) => {
+      if (!column_filters) {
+        return {};
+      }
+      const filters = {};
+      for (const { name, operator, value } of column_filters) {
+        filters[`${name}__${operator}`] = value;
+      }
+      return filters;
+    };
+
+    const format_column_sorts = (column_sorts) => {
+      if (!column_sorts) {
+        return [];
+      }
+
+      const result = [];
+      for (const { name, direction } of column_sorts) {
+        const direction_operator = direction === 'desc' ? '-' : '';
+        result.push(`${direction_operator}${name}`);
+      }
+
+      return {order_by: result};
+    };
+
+    goal_service.load_data = (data, filters, sorts) => {
+      const params = {
+        organization_id: user_service.get_organization().id,
+        ...format_column_filters(filters),
+        ...format_column_sorts(sorts)
+      }
       return $http.put(
-      `/api/v3/goals/${data.goal_id}/formatted_grid_data/`,
+      `/api/v3/goals/${data.goal_id}/data/`,
       data,
-      { params: {organization_id: user_service.get_organization().id } }
+      { params }
     )
       .then((response) => response)
       .catch((response) => response)}
