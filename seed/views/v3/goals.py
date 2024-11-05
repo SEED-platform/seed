@@ -278,6 +278,7 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
         }
 
         # PAGINATION
+        # FILTERS
 
         return JsonResponse({"status": "success", "data": results})
     
