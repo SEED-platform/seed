@@ -395,6 +395,9 @@ msgstr "Êtes-vous sûr de vouloir annuler la fusion de ces propriétés et fusi
 msgid "Are you sure you want to unmerge these tax lots and then merge with the selected tax lots?"
 msgstr "Êtes-vous sûr de vouloir annuler la fusion de ces lots fiscaux pour ensuite fusionner avec les lots d'impôt sélectionnés?"
 
+msgid "Are you sure you want to unmerge these tax lots?"
+msgstr "Êtes-vous sûr de vouloir dissocier ces lots fiscaux ?"
+
 msgid "Area"
 msgstr "Superficie"
 
@@ -2982,6 +2985,9 @@ msgstr "Propriétés mises à jour :"
 msgid "Properties with Data"
 msgstr "Propriétés avec données"
 
+msgid "Properties with elements cannot be unmerged."
+msgstr "Les propriétés avec des éléments ne peuvent pas être dissociées."
+
 msgid "Property"
 msgstr "Propriété"
 
@@ -4127,6 +4133,9 @@ msgstr "Résultat de la comparaison UBID :"
 
 msgid "UBID thresholds are between 0.0 and 1.0"
 msgstr "Les seuils UBID sont compris entre 0,0 et 1,0"
+
+msgid "UNMERGE_PROPERTIES_MODAL"
+msgstr "Êtes-vous sûr de vouloir dissocier ces propriétés? L'action de dissociation conservera les données de compteur sur les deux propriétés. Vérifiez les données de compteur sur les deux propriétés une fois qu'elles sont dissociées."
 
 msgid "UPDATE_DERIVED_DATA_TEXT_1"
 msgstr "Appuyez sur le bouton « Démarrer la mise à jour » ci-dessous pour commencer le processus de recalcul des données stockées dans les colonnes dérivées pour les propriétés et les lots fiscaux sélectionnés. Les colonnes dérivées apparaîtront en jaune pour indiquer que la mise à jour est en cours."
