@@ -6,7 +6,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 from rest_framework import serializers
 
 from seed.data_importer.utils import usage_point_id
-from seed.models import Meter, Scenario
+from seed.models import Meter, Scenario, Property
 from seed.serializers.base import ChoiceField
 from seed.utils.api import OrgMixin
 
@@ -47,15 +47,12 @@ class MeterSerializer(serializers.ModelSerializer, OrgMixin):
 
     def to_representation(self, obj):
         result = super().to_representation(obj)
-
         if obj.source == Meter.GREENBUTTON:
             result["source_id"] = usage_point_id(obj.source_id)
-
         result["scenario_name"] = obj.scenario.name if obj.scenario else None
-
         if obj.alias is None or obj.alias == "":
             result["alias"] = f"{obj.get_type_display()} - {obj.get_source_display()} - {result['source_id']}"
-
+        self.get_property_display_name(obj, result)
         self.set_config(obj, result)
 
         return result
@@ -80,3 +77,8 @@ class MeterSerializer(serializers.ModelSerializer, OrgMixin):
 
         config = {"group_id": group_id, "system_id": system_id, "service_id": obj.service_id, **connection_lookup[obj.connection_type]}
         result["config"] = config
+
+    def get_property_display_name(self, obj, result):
+        state = obj.property.views.first().state
+        property_display_field = state.organization.property_display_field
+        result["property_display_field"] = getattr(state, property_display_field, 'Unknown')
