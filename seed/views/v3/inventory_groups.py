@@ -116,7 +116,7 @@ class InventoryGroupViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
 
         # add meter based info
         systems = System.objects.filter(group_id=pk)
-        system_import_meters = Meter.objects.filter(system__in=systems, connection_type=Meter.FROM_OUTSIDE)
+        system_import_meters = Meter.objects.filter(system__in=systems, connection_type=Meter.IMPORTED)
         system_import_meters_readings_in_cycle = MeterReading.objects.filter(
             meter__in=system_import_meters, start_time__gte=cycle.start, end_time__lte=cycle.end
         )
@@ -136,7 +136,7 @@ class InventoryGroupViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
 
         # add service based info
         services = Service.objects.filter(system__in=systems)
-        service_total_meters = Meter.objects.filter(service__in=services, connection_type=Meter.TOTAL_TO_PATRON)
+        service_total_meters = Meter.objects.filter(service__in=services, connection_type=Meter.TOTAL_TO_USERS)
         service_total_meter_readings = MeterReading.objects.filter(
             meter__in=service_total_meters, start_time__gte=cycle.start, end_time__lte=cycle.end
         )

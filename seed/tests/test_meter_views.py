@@ -73,7 +73,7 @@ class TestMeterCRUD(AssertDictSubsetMixin, DeleteModelsTestCase):
             "type": "Electric - Grid",
             "source": "GreenButton",
             "source_id": "1234567890",
-            "connection_type": "From Outside",
+            "connection_type": "Imported",
         }
 
         response = self.client.post(url, data=json.dumps(payload), content_type="application/json")
@@ -84,7 +84,7 @@ class TestMeterCRUD(AssertDictSubsetMixin, DeleteModelsTestCase):
             "type": "Electric - Grid",
             "source": "GreenButton",
             "source_id": "/v1/User/000/UsagePoint/123fakeID/MeterReading/000",
-            "connection_type": "From Outside",
+            "connection_type": "Imported",
         }
 
         response = self.client.post(url, data=json.dumps(payload), content_type="application/json")
@@ -98,7 +98,7 @@ class TestMeterCRUD(AssertDictSubsetMixin, DeleteModelsTestCase):
             "source": "Portfolio Manager",
             "source_id": "A Custom Source ID",
             "is_virtual": True,
-            "connection_type": "From Outside",
+            "connection_type": "Imported",
         }
 
         response = self.client.post(url, data=json.dumps(payload), content_type="application/json")
@@ -120,7 +120,7 @@ class TestMeterCRUD(AssertDictSubsetMixin, DeleteModelsTestCase):
             "source": "GreenButton",
             "source_id": "1234567890",
             "scenario_id": scenario.pk,
-            "connection_type": "From Outside",
+            "connection_type": "Imported",
         }
 
         response = self.client.post(url, data=json.dumps(payload), content_type="application/json")
@@ -150,7 +150,7 @@ class TestMeterCRUD(AssertDictSubsetMixin, DeleteModelsTestCase):
             "source": "GreenButton",
             "source_id": "1234567890",
             "scenario_id": their_scenario.pk,
-            "connection_type": "From Outside",
+            "connection_type": "Imported",
         }
         response = self.client.post(url, data=json.dumps(payload), content_type="application/json")
         self.assertEqual(response.status_code, 400)
@@ -166,7 +166,7 @@ class TestMeterCRUD(AssertDictSubsetMixin, DeleteModelsTestCase):
             "source": "Portfolio Manager",
             "source_id": "A Custom Source ID",
             "is_virtual": True,
-            "connection_type": "From Outside",
+            "connection_type": "Imported",
         }
         response = self.client.post(url, data=json.dumps(payload), content_type="application/json")
         self.assertEqual(response.status_code, 201)
@@ -198,7 +198,7 @@ class TestMeterCRUD(AssertDictSubsetMixin, DeleteModelsTestCase):
             "source": "Portfolio Manager",
             "source_id": "A Custom Source ID",
             "is_virtual": False,
-            "connection_type": "From Outside",
+            "connection_type": "Imported",
         }
         response = self.client.post(url, data=json.dumps(payload), content_type="application/json")
         self.assertEqual(response.status_code, 201)
@@ -281,7 +281,7 @@ class TestMetersPermissions(AccessLevelBaseTestCase, DeleteModelsTestCase):
 
     def test_create_meter_permissions(self):
         url = reverse("api:v3:property-meters-list", kwargs={"property_pk": self.property_view.id}) + f"?organization_id={self.org.id}"
-        payload = {"type": "Electric", "source": "Manual Entry", "source_id": "1234567890", "connection_type": "From Outside"}
+        payload = {"type": "Electric", "source": "Manual Entry", "source_id": "1234567890", "connection_type": "Imported"}
 
         # root users can create meters in root
         self.login_as_root_member()
@@ -298,7 +298,7 @@ class TestMetersPermissions(AccessLevelBaseTestCase, DeleteModelsTestCase):
             reverse("api:v3:property-meters-detail", kwargs={"property_pk": self.property_view.id, "pk": self.meter.id})
             + f"?organization_id={self.org.id}"
         )
-        payload = {"type": "Electric", "source": "Manual Entry", "source_id": "boo", "connection_type": "From Outside"}
+        payload = {"type": "Electric", "source": "Manual Entry", "source_id": "boo", "connection_type": "Imported"}
 
         # root users can see meters in root
         self.login_as_root_member()
@@ -461,7 +461,7 @@ class TestMeterReadingCRUD(DeleteModelsTestCase):
             "type": "Electric",
             "source": "Manual Entry",
             "source_id": "1234567890",
-            "connection_type": "From Outside",
+            "connection_type": "Imported",
         }
 
         response = self.client.post(url, data=json.dumps(payload), content_type="application/json")
@@ -507,7 +507,7 @@ class TestMeterReadingCRUD(DeleteModelsTestCase):
             "type": "Electric",
             "source": "Manual Entry",
             "source_id": "1234567890",
-            "connection_type": "From Outside",
+            "connection_type": "Imported",
         }
         response = self.client.post(url_meters, data=json.dumps(payload), content_type="application/json")
         meter_pk_1 = response.json()["id"]
@@ -516,7 +516,7 @@ class TestMeterReadingCRUD(DeleteModelsTestCase):
             "type": "Natural Gas",
             "source": "Manual Entry",
             "source_id": "9876543210",
-            "connection_type": "From Outside",
+            "connection_type": "Imported",
         }
         response = self.client.post(url_meters, data=json.dumps(payload), content_type="application/json")
         meter_pk_2 = response.json()["id"]
@@ -572,7 +572,7 @@ class TestMeterReadingCRUD(DeleteModelsTestCase):
             "type": "Electric",
             "source": "Manual Entry",
             "source_id": "1234567890",
-            "connection_type": "From Outside",
+            "connection_type": "Imported",
         }
         response = self.client.post(url_meters, data=json.dumps(payload), content_type="application/json")
         meter_pk_1 = response.json()["id"]
@@ -581,7 +581,7 @@ class TestMeterReadingCRUD(DeleteModelsTestCase):
             "type": "Natural Gas",
             "source": "Manual Entry",
             "source_id": "9876543210",
-            "connection_type": "From Outside",
+            "connection_type": "Imported",
         }
         response = self.client.post(url_meters, data=json.dumps(payload), content_type="application/json")
         meter_pk_2 = response.json()["id"]
@@ -644,7 +644,7 @@ class TestMeterReadingCRUD(DeleteModelsTestCase):
             "type": "Electric",
             "source": "Manual Entry",
             "source_id": "1234567890",
-            "connection_type": "From Outside",
+            "connection_type": "Imported",
         }
 
         response = self.client.post(url, data=json.dumps(payload), content_type="application/json")
@@ -694,7 +694,7 @@ class TestMeterReadingCRUD(DeleteModelsTestCase):
             "type": "Electric",
             "source": "Manual Entry",
             "source_id": "1234567890",
-            "connection_type": "From Outside",
+            "connection_type": "Imported",
         }
 
         response = self.client.post(url, data=json.dumps(payload), content_type="application/json")
@@ -744,7 +744,7 @@ class TestMeterReadingCRUD(DeleteModelsTestCase):
             "type": "Electric",
             "source": "Manual Entry",
             "source_id": "1234567890",
-            "connection_type": "From Outside",
+            "connection_type": "Imported",
         }
 
         response = self.client.post(url, data=json.dumps(payload), content_type="application/json")
@@ -788,7 +788,7 @@ class TestMeterReadingCRUD(DeleteModelsTestCase):
             "type": "Natural Gas",
             "source": "Manual Entry",
             "source_id": "9876543210",
-            "connection_type": "From Outside",
+            "connection_type": "Imported",
         }
 
         response = self.client.post(url, data=json.dumps(payload), content_type="application/json")
@@ -875,7 +875,7 @@ class TestMeterReadingPermission(AccessLevelBaseTestCase):
             reverse("api:v3:property-meters-detail", kwargs={"property_pk": self.view.id, "pk": self.meter.id})
             + f"?organization_id={self.org.id}"
         )
-        param = json.dumps({"type": "Electric", "source": "Manual Entry", "source_id": "boo", "connection_type": "From Outside"})
+        param = json.dumps({"type": "Electric", "source": "Manual Entry", "source_id": "boo", "connection_type": "Imported"})
 
         # root member can
         self.login_as_root_member()
@@ -889,7 +889,7 @@ class TestMeterReadingPermission(AccessLevelBaseTestCase):
 
     def test_meter_readings_create(self):
         url = reverse("api:v3:property-meters-list", kwargs={"property_pk": self.view.id}) + f"?organization_id={self.org.id}"
-        param = json.dumps({"type": "Electric", "source": "Manual Entry", "source_id": "boo", "connection_type": "From Outside"})
+        param = json.dumps({"type": "Electric", "source": "Manual Entry", "source_id": "boo", "connection_type": "Imported"})
 
         # root member can
         self.login_as_root_member()

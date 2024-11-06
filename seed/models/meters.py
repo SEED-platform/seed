@@ -15,24 +15,24 @@ from seed.models.inventory_groups import InventoryGroupMapping
 class Meter(models.Model):
     ## CONNECTION TYPES
     # These connection types do not require services. May be on a property or system
-    FROM_OUTSIDE = 1  # tracks what is received via an unknown source
-    TO_OUTSIDE = 2  # tracks what is expelled via an unknown source
+    IMPORTED = 1  # tracks what is received via an unknown source
+    EXPORTED = 2  # tracks what is expelled via an unknown source
 
     # These connection types require services. May be on a property or system
-    FROM_SERVICE_TO_PATRON = 3  # tracks what is received via my service
-    FROM_PATRON_TO_SERVICE = 4  # tracks what is expelled via my service
+    RECEIVING_SERVICE = 3  # tracks what is received via my service
+    RETURNING_TO_SERVICE = 4  # tracks what is expelled via my service
 
     # These connection types require services and may only be on Systems
-    TOTAL_FROM_PATRON = 5  # tracks everything that this system expelled via my service
-    TOTAL_TO_PATRON = 6  # tracks everything that this system received via my service
+    TOTAL_FROM_USERS = 5  # tracks everything that this system expelled via my service
+    TOTAL_TO_USERS = 6  # tracks everything that this system received via my service
 
     CONNECTION_TYPES = (
-        (FROM_OUTSIDE, "From Outside"),
-        (TO_OUTSIDE, "To Outside"),
-        (FROM_SERVICE_TO_PATRON, "From Service To Patron"),
-        (FROM_PATRON_TO_SERVICE, "From Patron To Service"),
-        (TOTAL_FROM_PATRON, "Total From Patron"),
-        (TOTAL_TO_PATRON, "Total To Patron"),
+        (IMPORTED, "Imported"),
+        (EXPORTED, "Exported"),
+        (RECEIVING_SERVICE, "Receiving Service"),
+        (RETURNING_TO_SERVICE, "Returning To Service"),
+        (TOTAL_FROM_USERS, "Total From Users"),
+        (TOTAL_TO_USERS, "Total To Users"),
     )
 
     COAL_ANTHRACITE = 1
@@ -165,7 +165,7 @@ class Meter(models.Model):
     type = models.IntegerField(choices=ENERGY_TYPES, default=None, null=True)
 
     service = models.ForeignKey("Service", on_delete=models.SET_NULL, related_name="meters", null=True, blank=True)
-    connection_type = models.IntegerField(choices=CONNECTION_TYPES, default=FROM_OUTSIDE, null=False)
+    connection_type = models.IntegerField(choices=CONNECTION_TYPES, default=IMPORTED, null=False)
 
     def copy_readings(self, source_meter, overlaps_possible=True):
         """
@@ -218,7 +218,7 @@ def presave_meter(sender, instance, **kwargs):
     if property is not None and system is not None:
         raise IntegrityError(f"Meter {instance.id} has both a property and a system. It must only have one.")
 
-    outside_connection = connection_type in [Meter.FROM_OUTSIDE, Meter.TO_OUTSIDE]
+    outside_connection = connection_type in [Meter.IMPORTED, Meter.EXPORTED]
     if outside_connection:
         # outside connections don't have services
         if instance.service is not None:
@@ -228,7 +228,7 @@ def presave_meter(sender, instance, **kwargs):
         if service is None:
             raise IntegrityError(f"Meter {instance.id} has connection_type '{connection_string}', but is not connected to a service")
 
-        total_connections = connection_type in [Meter.TOTAL_FROM_PATRON, Meter.TOTAL_TO_PATRON]
+        total_connections = connection_type in [Meter.TOTAL_FROM_USERS, Meter.TOTAL_TO_USERS]
         if total_connections:
             # Only systems have connection type "total"
             if system is None:
@@ -245,7 +245,7 @@ def presave_meter(sender, instance, **kwargs):
             if Meter.objects.filter(service=service, connection_type=connection_type).exclude(pk=instance.pk).exists():
                 raise IntegrityError(f"Service {service.id} already has a meter with connection type '{connection_string}'")
 
-        elif property:  # Meter.FROM_PATRON_TO_SERVICE and Meter.FROM_SERVICE_TO_PATRON
+        elif property:  # Meter.RETURNING_TO_SERVICE and Meter.RECEIVING_SERVICE
             # service must be within the meter's property's group
             property_groups = InventoryGroupMapping.objects.filter(property=property).values_list("group_id", flat=True)
             if service is not None and service.system.group.id not in property_groups:
