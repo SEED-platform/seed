@@ -71,9 +71,9 @@ angular.module('SEED.controller.inventory_detail_meters', []).controller('invent
     // dont show edit if disabled?
     const buttons = (
       '<div class="meters-table-actions" style="display: flex; flex-direction=column">' +
-      ' <button type="button" ng-show="grid.appScope.menu.user.organization.user_role !== \'viewer\'" class="btn-danger" style="border-radius: 4px;" ng-click="grid.appScope.open_meter_deletion_modal(row.entity)" title="Delete Meter"><i class="fa-solid fa-xmark"></i></button>' +
       ' <button type="button" ng-show="grid.appScope.menu.user.organization.user_role !== \'viewer\' && grid.appScope.groups.length" class="btn-primary" style="border-radius: 4px;" ng-click="grid.appScope.open_meter_connection_edit_modal(row.entity)" title="Edit Meter Connection"><i class="fa-solid fa-pencil"></i></button>' +
-      ' <button type="button" ng-show="grid.appScope.menu.user.organization.user_role !== \'viewer\' && !grid.appScope.groups.length" class="btn-gray" style="border-radius: 4px;" ng-click="grid.appScope.open_meter_connection_edit_modal(row.entity)" title="To Edit Connection, a meter must be part of an inventory group" ng-disabled="true"><i class="fa-solid fa-pencil"></i></button>' +
+      // ' <button type="button" ng-show="grid.appScope.menu.user.organization.user_role !== \'viewer\' && !grid.appScope.groups.length" class="btn-gray" style="border-radius: 4px;" ng-click="grid.appScope.open_meter_connection_edit_modal(row.entity)" title="To Edit Connection, a meter must be part of an inventory group" ng-disabled="true"><i class="fa-solid fa-pencil"></i></button>' +
+      ' <button type="button" ng-show="grid.appScope.menu.user.organization.user_role !== \'viewer\'" class="btn-danger" style="border-radius: 4px;" ng-click="grid.appScope.open_meter_deletion_modal(row.entity)" title="Delete Meter"><i class="fa-solid fa-xmark"></i></button>' +
       '</div>'
     );
 

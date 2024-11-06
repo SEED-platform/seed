@@ -52,7 +52,7 @@ class EVSESystem(System):
 
 
 class BatterySystem(System):
-    efficiency = models.IntegerField(null=False)
+    efficiency = models.FloatField(null=False)
     capacity = models.IntegerField(null=False)
     voltage = models.IntegerField(null=False)
 
@@ -60,7 +60,7 @@ class BatterySystem(System):
 class Service(models.Model):
     system = models.ForeignKey(System, on_delete=models.CASCADE, related_name="services")
     name = models.CharField(max_length=255)
-    emission_factor = models.IntegerField(null=True)
+    emission_factor = models.FloatField(null=True)
 
     objects = InheritanceManager()
 

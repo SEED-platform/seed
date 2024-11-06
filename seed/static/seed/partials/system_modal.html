@@ -15,7 +15,7 @@
       <!-- system selection -->
       <div class="form-group">
         <label class="control-label sectionLabel">System Type</label>
-        <select class="form-control" ng-model="system.type" ng-dropdown ng-change="initializeSystem()" required>
+        <select class="form-control" ng-model="system.type" ng-dropdown ng-change="initializeSystem()" ng-disabled="system.id" required>
           <option ng-option value="DES" selected="selected">DES</option>
           <option ng-option value="EVSE" selected="selected">EVSE</option>
           <option ng-option value="Battery" selected="selected">Battery</option>
@@ -28,9 +28,9 @@
         <select class="form-control" ng-model="system.des_type" ng-dropdown required>
           <option ng-repeat="des_type in des_types" selected="selected" ng-value="des_type">{$:: des_type $}</option>
         </select>
-        <label class="control-label sectionLabel" translate>capacity</label>
+        <label class="control-label sectionLabel" translate>Capacity</label>
         <input id="capacity" type="number" name="capacity" class="form-control" ng-model="system.capacity" placeholder="{$:: 'capacity' | translate $}" required />
-        <label class="control-label sectionLabel" translate>count</label>
+        <label class="control-label sectionLabel" translate>Count</label>
         <input id="count" type="number" name="count" class="form-control" ng-model="system.count" placeholder="{$:: 'count' | translate $}" required />
       </div>
 
@@ -40,19 +40,19 @@
         <select class="form-control" ng-model="system.evse_type" ng-dropdown required>
           <option ng-repeat="evse_type in evse_types" selected="selected" ng-value="evse_type">{$:: evse_type $}</option>
         </select>
-        <label class="control-label sectionLabel" translate>power</label>
+        <label class="control-label sectionLabel" translate>Power</label>
         <input id="power" type="number" name="power" class="form-control" ng-model="system.power" placeholder="{$:: 'power' | translate $}" required />
-        <label class="control-label sectionLabel" translate>count</label>
+        <label class="control-label sectionLabel" translate>Count</label>
         <input id="count" type="number" name="count" class="form-control" ng-model="system.count" placeholder="{$:: 'count' | translate $}" required />
       </div>
 
       <!-- Battery -->
       <div class="form-group" ng-if="system.type == 'Battery'">
-        <label class="control-label sectionLabel" translate>efficiency</label>
+        <label class="control-label sectionLabel" translate>Efficiency</label>
         <input id="efficiency" type="number" name="efficiency" class="form-control" ng-model="system.efficiency" placeholder="{$:: 'efficiency' | translate $}" required />
-        <label class="control-label sectionLabel" translate>capacity</label>
+        <label class="control-label sectionLabel" translate>Capacity</label>
         <input id="capacity" type="number" name="capacity" class="form-control" ng-model="system.capacity" placeholder="{$:: 'capacity' | translate $}" required />
-        <label class="control-label sectionLabel" translate>voltage</label>
+        <label class="control-label sectionLabel" translate>Voltage</label>
         <input id="voltage" type="number" name="voltage" class="form-control" ng-model="system.voltage" placeholder="{$:: 'voltage' | translate $}" required />
       </div>
     </div>

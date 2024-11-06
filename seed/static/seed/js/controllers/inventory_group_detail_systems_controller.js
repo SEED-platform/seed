@@ -120,12 +120,17 @@ angular.module('SEED.controller.inventory_group_detail_systems', [])
           }
         });
 
-        modalInstance.result.finally(() => {
-          $state.reload().then(() => {
-            $timeout(() => {
-              expand_service(system);
-            }, 0);
-          });
+        modalInstance.result.then(
+          () => {
+            $state.reload().then(() => {
+              $timeout(() => {
+                expand_service(system);
+              }, 0);
+            });
+          },
+        () => {
+          console.log('here')
+          // do nothing
         });
       };
 
