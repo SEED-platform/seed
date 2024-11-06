@@ -86,7 +86,7 @@ angular.module('SEED.controller.portfolio_summary', [])
       let baseline_first = false;
 
       const load_data = (page) => {
-        $scope.loading_data = true;
+        $scope.data_loading = true;
         const per_page = 50;
         data = {
           goal_id: $scope.goal.id,
@@ -106,7 +106,7 @@ angular.module('SEED.controller.portfolio_summary', [])
           get_all_labels();
           set_grid_options();
           $scope.data_valid = Boolean(data.properties);
-          $scope.loading_data = false;
+          $scope.data_loading = false;
         })
       }
 
