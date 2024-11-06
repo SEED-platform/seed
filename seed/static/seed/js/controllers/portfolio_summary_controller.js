@@ -86,8 +86,8 @@ angular.module('SEED.controller.portfolio_summary', [])
       let baseline_first = false;
 
       const load_data = (page) => {
+        $scope.loading_data = true;
         const per_page = 50;
-
         data = {
           goal_id: $scope.goal.id,
           page: page,
@@ -103,17 +103,16 @@ angular.module('SEED.controller.portfolio_summary', [])
           $scope.inventory_pagination = data.pagination;
           $scope.property_lookup = data.property_lookup;
           $scope.data = data.properties;
+          get_all_labels();
+          set_grid_options();
           $scope.data_valid = Boolean(data.properties);
-          set_grid_options()
+          $scope.loading_data = false;
         })
       }
 
-      // RP - do sorting in backend - meta - ordering
-      // const sort_goals = (goals) => goals.sort((a, b) => (a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 1));
       // optionally pass a goal name to be set as $scope.goal - used on modal close
       const get_goals = (goal_name = false) => {
         goal_service.get_goals().then((result) => {
-          console.log(result)
           $scope.goals = result.goals;
           $scope.goal = goal_name ?
             $scope.goals.find((goal) => goal.name === goal_name) :
@@ -177,6 +176,7 @@ angular.module('SEED.controller.portfolio_summary', [])
         _.delay($scope.updateHeight, 150);
       };
 
+      // RP - backend - could use the existing summary endpoint
       const get_goal_stats = (summary) => {
         const passing_sqft = summary.current ? summary.current.total_sqft : null;
         // show help text if less than {50}% of properties are passing checks
@@ -253,7 +253,7 @@ angular.module('SEED.controller.portfolio_summary', [])
         spinner_utility.show();
         load_data(page)
       };
-     
+
 
       // -------------- LABEL LOGIC -------------
 

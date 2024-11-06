@@ -496,13 +496,12 @@ class GoalViewTests(AccessLevelBaseTestCase):
             "per_page": 50,
             "baseline_first": True,
             "access_level_instance_id": self.org.root.id,
-            "related_model_sort": False
+            "related_model_sort": False,
         }
         response = self.client.put(url, data=json.dumps(data), content_type="application/json")
-        assert response.status_code == 200 
+        assert response.status_code == 200
         data = response.json()
-        assert sorted(list(data.keys())) == ["pagination", "properties", "property_lookup"]
-
+        assert list(data.keys()) == ["pagination", "properties", "property_lookup"]
 
         data = {
             "goal_id": self.root_goal.id,
@@ -510,9 +509,9 @@ class GoalViewTests(AccessLevelBaseTestCase):
             "per_page": 1,
             "baseline_first": True,
             "access_level_instance_id": self.org.root.id,
-            "related_model_sort": False
-        }        
+            "related_model_sort": False,
+        }
         response = self.client.put(url, data=json.dumps(data), content_type="application/json")
         data = response.json()
-        assert len(data["properties"]) == 1 
+        assert len(data["properties"]) == 1
         assert data["property_lookup"] == {str(self.view31.id): self.property3.id, str(self.view33.id): self.property3.id}

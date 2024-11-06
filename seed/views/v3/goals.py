@@ -2,29 +2,28 @@
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
-import logging
 
+import math
+
+from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
+from django.db.utils import DataError
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
+from pint import Quantity
 from rest_framework import status
-from django.db.utils import DataError
-from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from rest_framework.decorators import action
 
 from seed.decorators import ajax_request_class
 from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm_class
-from seed.models import AccessLevelInstance, Goal, GoalNote, HistoricalNote, Organization, Property, Column, TaxLotProperty
+from seed.models import AccessLevelInstance, Column, Goal, GoalNote, HistoricalNote, Organization, Property, TaxLotProperty
 from seed.serializers.goals import GoalSerializer
+from seed.serializers.pint import apply_display_unit_preferences
 from seed.utils.api import OrgMixin
 from seed.utils.api_schema import swagger_auto_schema_org_query_param
 from seed.utils.goal_notes import get_permission_data
 from seed.utils.goals import get_or_create_goal_notes, get_portfolio_summary
-from seed.utils.viewsets import ModelViewSetWithoutPatch
 from seed.utils.search import FilterError, build_related_model_filters_and_sorts, build_view_filters_and_sorts
-from django.http import QueryDict
-from pint import Quantity
-from seed.serializers.pint import apply_display_unit_preferences
-
+from seed.utils.viewsets import ModelViewSetWithoutPatch
 
 
 @method_decorator(
@@ -191,7 +190,7 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
         # need metric 2
         show_columns = list(Column.objects.filter(organization_id=org_id).values_list("id", flat=True))
         key1, key2 = ("baseline", "current") if baseline_first else ("current", "baseline")
-        
+
         cycle1 = getattr(goal, f"{key1}_cycle")
         cycle2 = getattr(goal, f"{key2}_cycle")
         views1 = cycle1.propertyview_set.filter(
@@ -199,7 +198,7 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
             property__access_level_instance__rgt__lte=access_level_instance.rgt,
         )
         try:
-        # Sorts initiated from Portfolio Summary that contain related model names (goal_note, historical_note) require custom handling
+            # Sorts initiated from Portfolio Summary that contain related model names (goal_note, historical_note) require custom handling
             if related_model_sort:
                 filters, annotations, order_by = build_related_model_filters_and_sorts(request.query_params, columns_from_database)
             else:
@@ -213,7 +212,7 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
             views1 = views1.annotate(**annotations).filter(filters).order_by(*order_by)
         except ValueError as e:
             return JsonResponse({"status": "error", "message": f"Error filtering: {e!s}"}, status=status.HTTP_400_BAD_REQUEST)
-        
+
         # Paginate results
         paginator = Paginator(views1, per_page)
         try:
@@ -237,7 +236,7 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
             return JsonResponse(
                 {"status": "error", "message": f"Error filtering - Clear filters and try again: {e!s}"}, status=status.HTTP_400_BAD_REQUEST
             )
-        
+
         property_ids = [v.property_id for v in views1]
         # fetch cycle 2 properties
         views2 = cycle2.propertyview_set.filter(
@@ -260,17 +259,16 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
         for p in properties1 + properties2:
             property_lookup[p["property_view_id"]] = p["id"]
 
-
         properties = []
         for p1 in properties1:
             p2 = next((p for p in properties2 if p["id"] == p1["id"]), None)
             property = combine_properties(p1, p2)
 
             sqft1 = p1.get(area_name)
-            sqft2 = p2.get(area_name) if p2 else None 
-            
+            sqft2 = p2.get(area_name) if p2 else None
+
             # add cycle specific and aggregated goal stats
-            property[f"{key1}_cycle"] = cycle1.name 
+            property[f"{key1}_cycle"] = cycle1.name
             property[f"{key2}_cycle"] = cycle2.name
             property[f"{key1}_sqft"] = convert_quantity(sqft1)
             property[f"{key2}_sqft"] = convert_quantity(sqft2)
@@ -289,34 +287,39 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
         # PAGINATION
         # FILTERS
 
-        return JsonResponse({
-            "pagination": {             
-                "page": page,
-                "start": paginator.page(page).start_index(),
-                "end": paginator.page(page).end_index(),
-                "num_pages": paginator.num_pages,
-                "has_next": paginator.page(page).has_next(),
-                "has_previous": paginator.page(page).has_previous(),
-                "total": paginator.count,
-            },
-            "properties": properties,
-            "property_lookup": property_lookup
-        })
-    
+        return JsonResponse(
+            {
+                "pagination": {
+                    "page": page,
+                    "start": paginator.page(page).start_index(),
+                    "end": paginator.page(page).end_index(),
+                    "num_pages": paginator.num_pages,
+                    "has_next": paginator.page(page).has_next(),
+                    "has_previous": paginator.page(page).has_previous(),
+                    "total": paginator.count,
+                },
+                "properties": properties,
+                "property_lookup": property_lookup,
+            }
+        )
+
+
 def combine_properties(p1, p2):
     if not p2:
         return p1
     combined = p1.copy()
     for key, value in p2.items():
         if value is not None:
-            combined[key] = value 
+            combined[key] = value
     return combined
+
 
 def percentage(a, b):
     if not a or b is None:
         return None
     value = round(((a - b) / a) * 100)
-    return None if value != value else value  # value != value to check for NaN
+    return None if math.isnan(value) else value
+
 
 def get_preferred(p, columns):
     if not p:
@@ -324,13 +327,13 @@ def get_preferred(p, columns):
     for col in columns:
         return convert_quantity(p[col])
 
-        
+
 def convert_quantity(value):
     if isinstance(value, Quantity):
         value = value.m
     return value
 
 
-def get_kbtu(property, key):
-    if property[f"{key}_sqft"] is not None and property[f"{key}_eui"] is not None:
-        return round(property[f"{key}_sqft"] * property[f"{key}_eui"])
+def get_kbtu(prop, key):
+    if prop[f"{key}_sqft"] is not None and prop[f"{key}_eui"] is not None:
+        return round(prop[f"{key}_sqft"] * prop[f"{key}_eui"])

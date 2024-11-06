@@ -4,14 +4,13 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('seed', '0232_reportconfiguration'),
+        ("seed", "0232_reportconfiguration"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='goal',
-            options={'ordering': ['name']},
+            name="goal",
+            options={"ordering": ["name"]},
         ),
     ]
