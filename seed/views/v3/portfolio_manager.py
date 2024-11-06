@@ -31,7 +31,7 @@ class PortfolioManagerSerializer(serializers.Serializer):
 
 class PortfolioManagerViewSet(GenericViewSet):
     """
-    This ViewSet contains two API views: /template_list/ and /report/ that are used to interface SEED with ESPM
+    This ViewSet contains four API views: /template_list/, /report/, /download/, and /custom_download/ that are used to interface SEED with ESPM
     """
 
     serializer_class = PortfolioManagerSerializer
@@ -258,6 +258,86 @@ class PortfolioManagerViewSet(GenericViewSet):
             _log.debug(f"{pme!s}: PM Property ID {pk}")
             return JsonResponse({"status": "error", "message": str(pme)}, status=status.HTTP_400_BAD_REQUEST)
 
+    @swagger_auto_schema(
+        request_body=AutoSchemaHelper.schema_factory(
+            {
+                "username": "string",
+                "password": "string",
+                "property_ids": "string",
+            },
+            description="ESPM account credentials.",
+            required=["username", "password", "property_ids"],
+        ),
+        responses={
+            200: AutoSchemaHelper.schema_factory(
+                {
+                    "status": "string",
+                    "content": [
+                        {"filename": "string"},
+                    ],
+                    "message": "string",
+                }
+            ),
+        },
+    )
+    @action(detail=False, methods=["POST"])
+    def custom_download(self, request):
+        """
+        This API view makes a request to ESPM to generate and download a custom download for the selected property IDs.
+        ---
+        This API responds with a JSON object with two keys: status, which will be a string -
+        either error or success.  If successful, a second key, properties, will hold the list of properties found in
+        this generated report.  If not successful, a second key, message, will include an error description that can be
+        presented on the UI.
+        """
+
+        if "username" not in request.data:
+            _log.debug("Invalid call to PM worker: missing username for PM account: %s" % str(request.data))
+            return JsonResponse(
+                {"status": "error", "message": "Invalid call to PM worker: missing username for PM account"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if "password" not in request.data:
+            _log.debug("Invalid call to PM worker: missing password for PM account: %s" % str(request.data))
+            return JsonResponse(
+                {"status": "error", "message": "Invalid call to PM worker: missing password for PM account"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if "property_ids" not in request.data:
+            _log.debug("Invalid call to PM worker: missing property ids for PM account: %s" % str(request.data))
+            return JsonResponse(
+                {"status": "error", "message": "Invalid call to PM worker: missing property ids for PM account"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        username = request.data["username"]
+        password = request.data["password"]
+        property_ids = request.data["property_ids"]
+
+        pm = PortfolioManagerImport(username, password)
+        try:
+            try:
+                content = pm.generate_and_download_meter_data(property_ids)
+            except PMError as pme:
+                _log.debug(f"{pme!s}: {property_ids!s}")
+                return JsonResponse({"status": "error", "message": str(pme)}, status=status.HTTP_400_BAD_REQUEST)
+
+            try:
+                # return the Excel file
+                filename = "pm_report_export.xlsx"
+                response = HttpResponse(content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                response["Content-Disposition"] = f'attachment; filename="{filename}"'
+                response.write(content)
+                return response
+
+            except Exception as e:
+                _log.debug("ERROR downloading EXCEL report: %s" % str(e))
+                return JsonResponse(
+                    {"status": "error", "message": "Malformed XML from template download"}, status=status.HTTP_400_BAD_REQUEST
+                )
+        except Exception as e:
+            _log.error("Unexpected error: %s" % str(e))
+            return JsonResponse({"status": "error", "message": "An unexpected error occurred"}, status=500)
 
 # TODO: Move this object to /seed/utils/portfolio_manager.py
 class PortfolioManagerImport:
@@ -603,6 +683,7 @@ class PortfolioManagerImport:
         TODO: of data coming through in memory during these calls, which seems to have been problematic at times
 
         :param property_ids: list of property ids to include in custom download
+        TODO: Add start and end date parameters
         :return: Full XML data report from ESPM custom download generation and download process
         """
 
