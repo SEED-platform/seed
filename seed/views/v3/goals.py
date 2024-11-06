@@ -209,7 +209,14 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
             return JsonResponse({"status": "error", "message": f"Error filtering: {e!s}"}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
+            import logging
+            logging.error(">>> v1a %s", views1.count())
+            logging.error(">>> v1a %s", views1)
+            logging.error(">>> filters %s", filters)
+            logging.error(">>> annotations %s", annotations)
+            logging.error(">>> order_by %s", order_by)
             views1 = views1.annotate(**annotations).filter(filters).order_by(*order_by)
+            logging.error(">>> v1b %s", views1.count())
         except ValueError as e:
             return JsonResponse({"status": "error", "message": f"Error filtering: {e!s}"}, status=status.HTTP_400_BAD_REQUEST)
 
