@@ -79,6 +79,7 @@ class MeterSerializer(serializers.ModelSerializer, OrgMixin):
         result["config"] = config
 
     def get_property_display_name(self, obj, result):
-        state = obj.property.views.first().state
-        property_display_field = state.organization.property_display_field
-        result["property_display_field"] = getattr(state, property_display_field, 'Unknown')
+        if obj.property:
+            state = obj.property.views.first().state
+            property_display_field = state.organization.property_display_field
+            result["property_display_field"] = getattr(state, property_display_field, 'Unknown')
