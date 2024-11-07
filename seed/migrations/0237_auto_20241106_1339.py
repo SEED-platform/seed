@@ -4,25 +4,34 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('seed', '0236_auto_20241030_1434'),
+        ("seed", "0236_auto_20241030_1434"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='batterysystem',
-            name='efficiency',
+            model_name="batterysystem",
+            name="efficiency",
             field=models.FloatField(),
         ),
         migrations.AlterField(
-            model_name='meter',
-            name='connection_type',
-            field=models.IntegerField(choices=[(1, 'Imported'), (2, 'Exported'), (3, 'Receiving Service'), (4, 'Returning To Service'), (5, 'Total From Users'), (6, 'Total To Users')], default=1),
+            model_name="meter",
+            name="connection_type",
+            field=models.IntegerField(
+                choices=[
+                    (1, "Imported"),
+                    (2, "Exported"),
+                    (3, "Receiving Service"),
+                    (4, "Returning To Service"),
+                    (5, "Total From Users"),
+                    (6, "Total To Users"),
+                ],
+                default=1,
+            ),
         ),
         migrations.AlterField(
-            model_name='service',
-            name='emission_factor',
+            model_name="service",
+            name="emission_factor",
             field=models.FloatField(null=True),
         ),
     ]

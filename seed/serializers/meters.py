@@ -6,7 +6,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 from rest_framework import serializers
 
 from seed.data_importer.utils import usage_point_id
-from seed.models import Meter, Scenario, Property
+from seed.models import Meter, Scenario
 from seed.serializers.base import ChoiceField
 from seed.utils.api import OrgMixin
 
@@ -82,4 +82,4 @@ class MeterSerializer(serializers.ModelSerializer, OrgMixin):
         if obj.property:
             state = obj.property.views.first().state
             property_display_field = state.organization.property_display_field
-            result["property_display_field"] = getattr(state, property_display_field, 'Unknown')
+            result["property_display_field"] = getattr(state, property_display_field, "Unknown")

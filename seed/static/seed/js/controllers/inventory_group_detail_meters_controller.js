@@ -39,7 +39,7 @@ angular.module('SEED.controller.inventory_group_detail_meters', [])
       urls,
       organization_payload,
       group,
-      columns,
+      columns
     ) {
       // Ideally, these should be translatable, but the "selected" property
       // should always be in English as this gets sent to BE.
@@ -60,7 +60,7 @@ angular.module('SEED.controller.inventory_group_detail_meters', [])
       $scope.organization = organization_payload.organization;
       $scope.filler_cycle = cycles.cycles[0].id;
 
-      const property_display_name = columns.find(col => col.column_name == $scope.organization.property_display_field).display_name;
+      const property_display_name = columns.find((col) => col.column_name === $scope.organization.property_display_field).display_name;
 
       $scope.inventory = {
         view_id: $stateParams.view_id
@@ -115,7 +115,7 @@ angular.module('SEED.controller.inventory_group_detail_meters', [])
           { field: 'source_id' },
           { field: 'scenario_id' },
           { field: 'connection_type' },
-          { field: 'property_display_field', displayName: property_display_name},
+          { field: 'property_display_field', displayName: property_display_name },
           { field: 'system_name' },
           { field: 'service_name', displayName: 'Connection', cellTemplate: '<a id="inventory-summary" ui-sref="inventory_group_detail_systems(::{inventory_type: grid.appScope.inventory_type, group_id: row.entity.service_group})" ui-sref-active="active">{$ row.entity.service_name $}</a>' },
           { field: 'is_virtual' },

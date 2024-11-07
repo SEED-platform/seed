@@ -128,10 +128,11 @@ angular.module('SEED.controller.inventory_group_detail_systems', [])
               }, 0);
             });
           },
-        () => {
-          console.log('here')
+          () => {
+            console.log('here');
           // do nothing
-        });
+          }
+        );
       };
 
       const expand_service = (system) => {

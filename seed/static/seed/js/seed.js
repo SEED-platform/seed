@@ -2343,9 +2343,9 @@
               'user_service',
               ($stateParams, inventory_service, user_service) => {
                 const org_id = user_service.get_organization().id;
-                return inventory_service.get_property_column_names_for_org(org_id)
+                return inventory_service.get_property_column_names_for_org(org_id);
               }
-            ],
+            ]
           }
         })
         .state({

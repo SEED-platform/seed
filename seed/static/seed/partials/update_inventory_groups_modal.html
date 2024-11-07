@@ -3,7 +3,6 @@
     <h4 class="modal-title" id="manageGroupsModalGroup" translate>Add/Remove Groups</h4>
   </div>
   <div class="modal-body">
-
     <div ng-if="inventory_type === 'properties'" class="edit_text" translate="ADD_REMOVE_GROUPS_FROM_PROPERTIES" translate-values="{ num: (view_ids.length | number: 0) }"></div>
     <div ng-if="inventory_type === 'taxlots'" class="edit_text" translate="ADD_REMOVE_GROUPS_FROM_TAXLOTS" translate-values="{ num: (view_ids.length | number: 0) }"></div>
     <div class="table-list-container">
@@ -72,20 +71,23 @@
       <p class="tip-subtle" translate>A 'Remove' button is shown for tags that are already applied to one or more properties in the current selection</p>
     </div>
 
-    <div class="newLabelInput" style="margin: 0; border-radius: 0;">
+    <div class="newLabelInput" style="margin: 0; border-radius: 0">
       <form name="newGroupForm" class="form-inline" role="form" ng-submit="submitNewGroupForm(newGroupForm)" novalidate>
-        <div class="form-group" id="group-add-container"
-          ng-class="{'has-error': newGroupForm.name.$invalid && newGroupForm.name.$dirty }">
+        <div class="form-group" id="group-add-container" ng-class="{'has-error': newGroupForm.name.$invalid && newGroupForm.name.$dirty }">
           <div>
             <label class="control-group sectionGroup" style="padding-right: 20px" translate>Create new group</label>
             <!-- <div class="input-group" style="padding-right: 20px"> -->
-            <input id="newGroupName" type="text" name="name" class="form-control" ng-model="new_group.name"
-              placeholder="{$:: 'Group Name' | translate $}" sd-check-label-exists="groups" required />
+            <input id="newGroupName" type="text" name="name" class="form-control" ng-model="new_group.name" placeholder="{$:: 'Group Name' | translate $}" sd-check-label-exists="groups" required />
             <!-- </div> -->
           </div>
-          <button type="submit" class="btn btn-primary"
+          <button
+            type="submit"
+            class="btn btn-primary"
             ng-disabled="newGroupForm.$invalid || disabled || inventory_access_level_instance_count !== 1"
-            style="height: 40px; margin-top: 20px" ng-disabled="" translate>
+            style="height: 40px; margin-top: 20px"
+            ng-disabled=""
+            translate
+          >
             Create group
           </button>
         </div>
@@ -97,7 +99,6 @@
         </div>
       </form>
     </div>
-
   </div>
 
   <div class="modal-footer">
