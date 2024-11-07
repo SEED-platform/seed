@@ -1027,7 +1027,7 @@ class OrganizationViewSet(viewsets.ViewSet):
 
             # special case for year built: make bins integers
             # year built is in x axis, but it shows up in y_var variable
-            if params['y_var'] == 'year_built':
+            if params["y_var"] == "year_built":
                 bins = bins.astype(int)
 
             aggregate_data = self.continuous_aggregate_data
@@ -1273,21 +1273,19 @@ class OrganizationViewSet(viewsets.ViewSet):
                 serialized_column = ColumnSerializer(column).data
                 add_pint_unit_suffix(organization, serialized_column)
                 for cycle in cycles:
-
                     name_to_display = (
                         serialized_column["display_name"] if serialized_column["display_name"] != "" else serialized_column["column_name"]
                     )
-                    axis_name = name_to_display #+ f" ({cycle.name})"
                     axis_data[cycle.name][name_to_display] = {}
                     stats = self.get_axis_stats(organization, cycle, axis, axes[axis], all_property_views, access_level_instance)
-                    axis_data[cycle.name][name_to_display]['values'] = self.clean_axis_data(data_type, stats)
+                    axis_data[cycle.name][name_to_display]["values"] = self.clean_axis_data(data_type, stats)
 
                     children = access_level_instance.get_children()
                     if len(children):
-                        axis_data[cycle.name][name_to_display]['children'] = {}
+                        axis_data[cycle.name][name_to_display]["children"] = {}
                         for child_ali in children:
                             stats = self.get_axis_stats(organization, cycle, axis, axes[axis], all_property_views, child_ali)
-                            axis_data[cycle.name][name_to_display]['children'][child_ali.name] = self.clean_axis_data(data_type, stats)
+                            axis_data[cycle.name][name_to_display]["children"][child_ali.name] = self.clean_axis_data(data_type, stats)
 
         return axis_data
 
