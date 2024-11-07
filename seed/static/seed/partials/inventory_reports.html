@@ -236,28 +236,78 @@
       <!-- ./ col-md-6 -->
     </div>
     <div class="col-md-12">
-      <table class="table table-striped">
-        <thead>
-          <tr>
-            <th translate>Axis</th>
-            <th translate>Access Level Instance</th>
-            <th translate>Sum</th>
-            <th translate>Min</th>
-            <th translate>5th Percentile</th>
-            <th translate>25th Percentile</th>
-            <th translate>Mean</th>
-            <th translate>Median</th>
-            <th translate>75 Percentile</th>
-            <th translate>95th Percentile</th>
-            <th translate>Max</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr ng-repeat="row in axisData track by $index">
-            <td ng-repeat="item in row track by $index">{$ item $}</td>
-          </tr>
-        </tbody>
-      </table>
+      <h4 class="chartTitle">Statistics</h4>
+
+      <div ng-repeat="(cycle, vals) in axisData track by $index" ng-init="parentIndex = $index" class="pad-bottom-10">
+        <button
+          id="collapse-button-{$ $index $}"
+          type="button"
+          class="accordion-header"
+          data-toggle="collapse"
+          aria-expanded="true"
+          aria-controls="cycles-{$ $index $}"
+          data-target="#cycle-{$ $index $}"
+        >
+          {$ cycle $} &nbsp; <i class="fa-solid fa-chevron-right"></i>
+        </button>
+        <div id="cycle-{$ $index $}" class="collapse in">
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th translate width="20%">Axis</th>
+                <th translate width="20%">Access Level Instance</th>
+                <th translate width="5%">Sum</th>
+                <th translate width="5%">Min</th>
+                <th translate width="5%">5th Percentile</th>
+                <th translate width="5%">25th Percentile</th>
+                <th translate width="5%">Mean</th>
+                <th translate width="5%">Median</th>
+                <th translate width="5%">75 Percentile</th>
+                <th translate width="5%">95th Percentile</th>
+                <th translate width="5%">Max</th>
+              </tr>
+            </thead>
+            <tbody ng-repeat="(key, values) in vals track by $index" ng-init="childIndex = $index">
+              <tr>
+                <td style="font-weight: bold">{$ key $}</td>
+                <td style="font-weight: bold" ng-repeat="item in values['values'] track by $index" ngInit="colIndex = $index">
+                  <span ng-if="key === 'Year Built'"> {$ item $} </span>
+                  <span ng-if="key != 'Year Built'"> {$ item | tolerantNumber:2 $} </span>
+                  <span ng-if="$index === 0">
+                    <!-- && values['children'].length > 0 -->
+                    <button
+                      id="collapse-{$ parentIndex $}-{$ $index $}"
+                      type="button"
+                      class="accordion-header"
+                      data-toggle="collapse"
+                      aria-expanded="false"
+                      aria-description="toggle children elements"
+                      aria-controls="children{$ parentIndex $}-{$ childIndex $}"
+                      data-target="#children-{$ parentIndex $}-{$ childIndex $}"
+                    >
+                      <i class="fa-solid fa-chevron-right"></i>
+                    </button>
+                  </span>
+                </td>
+              </tr>
+              <tr *ngIf="'children' in values && values['children']" id="children-{$ parentIndex $}-{$ childIndex $}" class="collapse">
+                <td colspan="11" class="no-lr-pad">
+                  <table class="table table-striped">
+                    <tr ng-repeat="(key2, values2) in values['children']">
+                      <td width="20%">&nbsp;</td>
+                      <td width="20%">{$ key2 $}</td>
+                      <td width="5%" ng-repeat="item in values2 track by $index" ng-if="$index > 0">
+                        <span ng-if="key === 'Year Built'"> {$ item $} </span>
+                        <span ng-if="key != 'Year Built'"> {$ item | tolerantNumber:2 $} </span>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
     <!-- ./ content_block row -->
   </div>
