@@ -145,18 +145,4 @@ angular.module('SEED.controller.inventory_group_detail_systems', [])
           $(element).collapse('show');
         }
       };
-
-      $scope.open_green_button_upload_modal = (system) => {
-        $uibModal.open({
-          templateUrl: `${urls.static_url}seed/partials/green_button_upload_modal.html`,
-          controller: 'green_button_upload_modal_controller',
-          resolve: {
-            filler_cycle: () => $scope.filler_cycle,
-            organization_id: () => organization_payload.organization.id,
-            view_id: () => null,
-            system_id: () => system.id,
-            datasets: () => dataset_service.get_datasets().then((result) => result.datasets)
-          }
-        });
-      };
     }]);
