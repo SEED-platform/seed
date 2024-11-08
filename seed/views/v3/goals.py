@@ -22,7 +22,7 @@ from seed.utils.api import OrgMixin
 from seed.utils.api_schema import swagger_auto_schema_org_query_param
 from seed.utils.goal_notes import get_permission_data
 from seed.utils.goals import get_or_create_goal_notes, get_portfolio_summary
-from seed.utils.search import FilterError, build_related_model_filters_and_sorts, build_view_filters_and_sorts
+from seed.utils.search import FilterError, build_view_filters_and_sorts, filter_views_on_related
 from seed.utils.viewsets import ModelViewSetWithoutPatch
 
 
@@ -186,8 +186,6 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
             only_used=False,
             include_related=False,
         )
-        # need metric 1
-        # need metric 2
         show_columns = list(Column.objects.filter(organization_id=org_id).values_list("id", flat=True))
         key1, key2 = ("baseline", "current") if baseline_first else ("current", "baseline")
 
@@ -196,27 +194,19 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
         views1 = cycle1.propertyview_set.filter(
             property__access_level_instance__lft__gte=access_level_instance.lft,
             property__access_level_instance__rgt__lte=access_level_instance.rgt,
-        )
+        ).select_related("property")
+
         try:
             # Sorts initiated from Portfolio Summary that contain related model names (goal_note, historical_note) require custom handling
             if related_model_sort:
-                filters, annotations, order_by = build_related_model_filters_and_sorts(request.query_params, columns_from_database)
+                views1 = filter_views_on_related(views1, goal, request.query_params, cycle1)
             else:
                 filters, annotations, order_by = build_view_filters_and_sorts(
                     request.query_params, columns_from_database, inventory_type, org.access_level_names
                 )
+                views1 = views1.annotate(**annotations).filter(filters).order_by(*order_by)
         except FilterError as e:
             return JsonResponse({"status": "error", "message": f"Error filtering: {e!s}"}, status=status.HTTP_400_BAD_REQUEST)
-
-        try:
-            import logging
-            logging.error(">>> v1a %s", views1.count())
-            logging.error(">>> v1a %s", views1)
-            logging.error(">>> filters %s", filters)
-            logging.error(">>> annotations %s", annotations)
-            logging.error(">>> order_by %s", order_by)
-            views1 = views1.annotate(**annotations).filter(filters).order_by(*order_by)
-            logging.error(">>> v1b %s", views1.count())
         except ValueError as e:
             return JsonResponse({"status": "error", "message": f"Error filtering: {e!s}"}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -287,12 +277,6 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
             property["eui_change"] = percentage(property["baseline_eui"], property["current_eui"])
 
             properties.append(property)
-        # UNIT ERRORS, need to convert quantity to number
-        # not mine, but others. check taxlot property serialize unit conversion.
-        # SHOULD REALLY HAVE A SHORT LIST OF COLUMNS
-
-        # PAGINATION
-        # FILTERS
 
         return JsonResponse(
             {

@@ -78,8 +78,6 @@ angular.module('SEED.service.goal', []).factory('goal_service', [
       .then((response) => response)
       .catch((response) => response);
 
-
-
     const format_column_filters = (column_filters) => {
       if (!column_filters) {
         return {};
@@ -102,7 +100,7 @@ angular.module('SEED.service.goal', []).factory('goal_service', [
         result.push(`${direction_operator}${name}`);
       }
 
-      return {order_by: result};
+      return { order_by: result };
     };
 
     goal_service.load_data = (data, filters, sorts) => {
@@ -110,14 +108,15 @@ angular.module('SEED.service.goal', []).factory('goal_service', [
         organization_id: user_service.get_organization().id,
         ...format_column_filters(filters),
         ...format_column_sorts(sorts)
-      }
+      };
       return $http.put(
-      `/api/v3/goals/${data.goal_id}/data/`,
-      data,
-      { params }
-    )
-      .then((response) => response)
-      .catch((response) => response)}
+        `/api/v3/goals/${data.goal_id}/data/`,
+        data,
+        { params }
+      )
+        .then((response) => response)
+        .catch((response) => response);
+    };
 
     return goal_service;
   }
