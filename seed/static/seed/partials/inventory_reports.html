@@ -267,14 +267,13 @@
                 <th translate width="5%">Max</th>
               </tr>
             </thead>
-            <tbody ng-repeat="(key, values) in vals track by $index" ng-init="childIndex = $index">
+            <tbody ng-repeat="(key, values) in vals track by $index" ng-init="childIndex = $index;">
               <tr>
                 <td style="font-weight: bold">{$ key $}</td>
                 <td style="font-weight: bold" ng-repeat="item in values['values'] track by $index" ngInit="colIndex = $index">
                   <span ng-if="key === 'Year Built'"> {$ item $} </span>
                   <span ng-if="key != 'Year Built'"> {$ item | tolerantNumber:2 $} </span>
-                  <span ng-if="$index === 0">
-                    <!-- && values['children'].length > 0 -->
+                  <span ng-if="$index === 0 && has_children(values)">
                     <button
                       id="collapse-{$ parentIndex $}-{$ $index $}"
                       type="button"
