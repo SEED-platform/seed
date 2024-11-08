@@ -65,6 +65,16 @@ angular.module('SEED.controller.inventory_reports', []).controller('inventory_re
     $scope.filter_groups = filter_groups;
     $scope.report_configurations = report_configurations;
     $scope.filter_group_id = null;
+
+    $scope.has_children = (obj) => {
+      // check if the access level selected has children levels for stats table
+      let children = false;
+      if ('children' in obj && Object.keys(obj.children).length > 0) {
+        children = true;
+      }
+      return children;
+    };
+
     function path_to_string(path) {
       const orderedPath = [];
       for (const i in $scope.level_names) {
