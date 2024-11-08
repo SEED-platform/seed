@@ -117,6 +117,7 @@
     'SEED.controller.merge_modal',
     'SEED.controller.meter_deletion_modal',
     'SEED.controller.meter_edit_modal',
+    'SEED.controller.system_meter_readings_upload_modal',
     'SEED.controller.group_meter_creation_modal',
     'SEED.controller.modified_modal',
     'SEED.controller.move_inventory_modal',

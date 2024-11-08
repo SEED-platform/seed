@@ -18,6 +18,7 @@ from seed.data_importer.sensor_readings_parser import SensorsReadingsParser
 from seed.data_importer.tasks import do_checks, geocode_and_match_buildings_task, map_data
 from seed.data_importer.tasks import save_raw_data as task_save_raw
 from seed.data_importer.tasks import validate_use_cases as task_validate_use_cases
+from seed.data_importer.utils import kbtu_thermal_conversion_factors, kgal_water_conversion_factors
 from seed.decorators import ajax_request_class
 from seed.lib.mappings import mapper as simple_mapper
 from seed.lib.mcm import mapper, reader
@@ -38,6 +39,7 @@ from seed.models import (
     Cycle,
     ImportFile,
     Meter,
+    MeterReading,
     Organization,
     PropertyAuditLog,
     PropertyState,
@@ -1074,3 +1076,49 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
         result["unlinkable_pm_ids"] = meters_parser.unlinkable_pm_ids
 
         return result
+
+    @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_org_id_field()])
+    @ajax_request_class
+    @has_perm_class("requires_member")
+    @has_hierarchy_access(import_file_id_kwarg="pk")
+    @action(detail=True, methods=["POST"])
+    def system_meter_upload(self, request, pk):
+        org_id = self.get_organization(request)
+        org = Organization.objects.get(pk=org_id)
+        meter_id = request.data.get("meter_id")
+        meter = Meter.objects.get(pk=meter_id)
+
+        import_file = ImportFile.objects.get(pk=pk, import_record__super_organization_id=org_id)
+        parser = reader.MCMParser(import_file.local_file)
+
+        _kbtu_thermal_conversion_factors = kbtu_thermal_conversion_factors(org.get_thermal_conversion_assumption_display())
+        _kgal_water_conversion_factors = kgal_water_conversion_factors(org.get_thermal_conversion_assumption_display())
+
+        for raw_reading in parser.data:
+            conversion_factor = get_conversion_factor(
+                Meter.ENERGY_TYPE_BY_METER_TYPE[meter.type],
+                raw_reading["Usage Units"],
+                _kbtu_thermal_conversion_factors,
+                _kgal_water_conversion_factors,
+            )
+
+            MeterReading.objects.update_or_create(
+                start_time=raw_reading["Start Date"],
+                end_time=raw_reading["End Date"],
+                reading=float(raw_reading["Reading"]) * conversion_factor,
+                meter_id=meter.id,
+                conversion_factor=conversion_factor,
+            )
+
+        return JsonResponse({"status": "success", "message": f"{len(raw_reading)} readings created"}, status=status.HTTP_200_OK)
+
+
+def get_conversion_factor(type_name, unit, _kbtu_thermal_conversion_factors, _kgal_water_conversion_factors):
+    _log.error(type_name + ", " + unit)
+
+    thermal_conversion_factor = _kbtu_thermal_conversion_factors.get(type_name, {}).get(unit, None)
+    water_conversion_factor = _kgal_water_conversion_factors.get(type_name, {}).get(unit, None)
+    if thermal_conversion_factor is None and water_conversion_factor is None:
+        raise Exception
+
+    return thermal_conversion_factor or water_conversion_factor
