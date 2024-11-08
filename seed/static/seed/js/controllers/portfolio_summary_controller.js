@@ -88,18 +88,18 @@ angular.module('SEED.controller.portfolio_summary', [])
       const load_data = (page) => {
         $scope.data_loading = true;
         const per_page = 50;
-        data = {
+        const data = {
           goal_id: $scope.goal.id,
-          page: page,
-          per_page: per_page,
-          baseline_first: baseline_first,
+          page,
+          per_page,
+          baseline_first,
           access_level_instance_id: $scope.goal.access_level_instance,
           related_model_sort: $scope.related_model_sort
-        }
-        const column_filters = $scope.column_filters
-        const order_by = $scope.column_sorts
+        };
+        const column_filters = $scope.column_filters;
+        const order_by = $scope.column_sorts;
         goal_service.load_data(data, column_filters, order_by).then((response) => {
-          const data = response.data
+          const data = response.data;
           $scope.inventory_pagination = data.pagination;
           $scope.property_lookup = data.property_lookup;
           $scope.data = data.properties;
@@ -107,8 +107,8 @@ angular.module('SEED.controller.portfolio_summary', [])
           set_grid_options();
           $scope.data_valid = Boolean(data.properties);
           $scope.data_loading = false;
-        })
-      }
+        });
+      };
 
       // optionally pass a goal name to be set as $scope.goal - used on modal close
       const get_goals = (goal_name = false) => {
@@ -137,7 +137,7 @@ angular.module('SEED.controller.portfolio_summary', [])
         if (_.isEmpty($scope.goal)) {
           $scope.valid = false;
           $scope.summary_valid = false;
-        } else if (old.id) {  // prevent duplicate request on page load
+        } else if (old.id) { // prevent duplicate request on page load
           reset_data();
         }
       });
@@ -251,9 +251,8 @@ angular.module('SEED.controller.portfolio_summary', [])
 
       $scope.page_change = (page) => {
         spinner_utility.show();
-        load_data(page)
+        load_data(page);
       };
-
 
       // -------------- LABEL LOGIC -------------
 
@@ -1005,7 +1004,7 @@ angular.module('SEED.controller.portfolio_summary', [])
           enableSorting: false,
           minRowsToShow: 1,
           onRegisterApi: (gridApi) => {
-            console.log('registerd')
+            console.log('registerd');
             $scope.summaryGridApi = gridApi;
           }
         };
