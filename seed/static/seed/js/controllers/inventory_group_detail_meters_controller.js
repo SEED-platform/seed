@@ -311,15 +311,15 @@ angular.module('SEED.controller.inventory_group_detail_meters', [])
           });
       };
 
-      $scope.open_green_button_upload_modal = () => {
+      $scope.open_group_meter_create_modal = () => {
         $uibModal.open({
-          templateUrl: `${urls.static_url}seed/partials/green_button_upload_modal.html`,
-          controller: 'green_button_upload_modal_controller',
+          templateUrl: `${urls.static_url}seed/partials/group_meter_creation_modal.html`,
+          controller: 'group_meter_creation_modal_controller',
           resolve: {
-            filler_cycle: () => $scope.filler_cycle,
             organization_id: () => $scope.organization.id,
-            view_id: () => $scope.inventory.view_id,
-            datasets: () => dataset_service.get_datasets().then((result) => result.datasets)
+            systems: () => $scope.group.systems,
+            group_id: () => $scope.group.id,
+            refresh_meters_and_readings: () => $scope.refresh_meters_and_readings
           }
         });
       };

@@ -1,0 +1,36 @@
+<div class="modal-header">
+  <h4>Configure {$ meter_parent $} Meter Details</h4>
+</div>
+
+<div class="modal-body">
+  <div class="meter-config-selection-container">
+    <label class="control-label" for="on_system" tooltip-placement="right" uib-tooltip="Is the meter using a service, or offering a service?">
+      What systems is this meter on?: <i class="ui-grid-icon-info-circled"></i>
+    </label>
+    <select class="form-control" id="on_system" ng-model="meter.system_id" ng-options="system.id as system.name for system in systems"></select>
+  </div>
+
+  <div class="meter-config-selection-container">
+    <label class="control-label" for="on_system" tooltip-placement="right" uib-tooltip="Is the meter using a service, or offering a service?">
+      Type: <i class="ui-grid-icon-info-circled"></i>
+    </label>
+    <select class="form-control" id="on_system" ng-model="meter.type" ng-options="type for type in types"></select>
+  </div>
+
+  <div class="meter-config-selection-container">
+    <label class="control-label" for="on_system" tooltip-placement="right" uib-tooltip="Is the meter using a service, or offering a service?">
+      Alias: <i class="ui-grid-icon-info-circled"></i>
+    </label>
+    <input type="text" class="form-control" ng-model="meter.alias" />
+  </div>
+</div>
+
+<div class="modal-footer">
+  <div class="alert-danger" style="padding: 15px; border-radius: 5px; text-align: center" ng-if="error">{$ error $}</div>
+  <div class="row text-center">
+    <button type="button" class="btn btn-primary col-sm-6 center-block" ng-click="create_meter()" ng-disabled="!form_valid" translate>Confirm</button>
+  </div>
+  <div class="row text-center">
+    <button type="button" class="btn btn-default col-sm-6 center-block" ng-click="cancel()" translate>Dismiss</button>
+  </div>
+</div>

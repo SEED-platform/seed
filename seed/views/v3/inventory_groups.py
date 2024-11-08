@@ -237,3 +237,28 @@ class InventoryGroupMetersViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
             return JsonResponse({"status": "error", "message": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
         return JsonResponse({}, status=status.HTTP_200_OK)
+
+    @swagger_auto_schema_org_query_param
+    @has_perm_class("requires_viewer")
+    @has_hierarchy_access(inventory_group_id_kwarg="inventory_group_pk")
+    def create(self, request, inventory_group_pk):
+        meter_serializer = MeterSerializer(
+            data={
+                **request.data,
+                "connection_type": "From Outside",
+                "source": "Manual Entry",
+            }
+        )
+
+        if not meter_serializer.is_valid():
+            return JsonResponse(
+                {
+                    "status": "error",
+                    "errors": meter_serializer.errors,
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        meter = meter_serializer.save()
+        data = MeterSerializer(meter).data
+        return JsonResponse(data)
