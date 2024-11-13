@@ -315,12 +315,12 @@ def update_meter_connection(meter, meter_config):
     meter.service = Service.objects.get(pk=service_id) if service_id else None
 
     connection_lookup = {
-        "inflow using": Meter.RECEIVING_SERVICE,
-        "inflow offering": Meter.TOTAL_FROM_USERS,
-        "inflow outside": Meter.IMPORTED,
-        "outflow using": Meter.RETURNING_TO_SERVICE,
-        "outflow offering": Meter.TOTAL_TO_USERS,
-        "outflow outside": Meter.EXPORTED,
+        "imported using": Meter.RECEIVING_SERVICE,
+        "imported offering": Meter.TOTAL_FROM_USERS,
+        "imported outside": Meter.IMPORTED,
+        "exported using": Meter.RETURNING_TO_SERVICE,
+        "exported offering": Meter.TOTAL_TO_USERS,
+        "exported outside": Meter.EXPORTED,
     }
     direction = meter_config.get("direction")
     use = meter_config.get("use") or "outside"

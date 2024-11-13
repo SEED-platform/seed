@@ -10,7 +10,6 @@ angular.module('SEED.controller.inventory_group_detail_systems', [])
     '$timeout',
     '$uibModal',
     'urls',
-    'Notification',
     'dataset_service',
     'cycles',
     'systems',
@@ -24,7 +23,6 @@ angular.module('SEED.controller.inventory_group_detail_systems', [])
       $timeout,
       $uibModal,
       urls,
-      Notification,
       dataset_service,
       cycles,
       systems,
@@ -35,25 +33,31 @@ angular.module('SEED.controller.inventory_group_detail_systems', [])
       $scope.group_id = $stateParams.group_id;
       $scope.inventory_display_name = group.name;
       $scope.systems = systems.data;
-      const all_systems = [...$scope.systems.DES ?? [], ...$scope.systems.EVSE ?? [], ...$scope.systems.Battery ?? []];
+      const system_types = ['DES - Cooling', 'DES - Heating', 'EVSE', 'Battery']
+      const all_systems = system_types.flatMap(type => $scope.systems[type] ?? [])
       const org_id = organization_payload.organization.id;
       $scope.filler_cycle = cycles.cycles[0].id;
 
       $scope.system_tables = [
         {
-          system_key: 'DES',
-          headers: ['Name', 'DES Type', 'Capacity', 'Count'],
-          fields: ['name', 'des_type', 'capacity', 'count']
+          system_key: 'DES - Cooling',
+          headers: ['Name', 'DES Type', 'Capacity (Ton)', 'Count'],
+          fields: ['name', 'des_type', 'cooling_capacity', 'count']
+        },
+        {
+          system_key: 'DES - Heating',
+          headers: ['Name', 'DES Type', 'Capacity (MMBtu)', 'Count'],
+          fields: ['name', 'des_type', 'heating_capacity', 'count']
         },
         {
           system_key: 'EVSE',
-          headers: ['Name', 'EVSE Type', 'Power', 'Count'],
-          fields: ['name', 'evse_type', 'power', 'count']
+          headers: ['Name', 'EVSE Type', 'Power (kW)', 'Voltage (V)', 'Count'],
+          fields: ['name', 'evse_type', 'power', 'voltage', 'count']
         },
         {
           system_key: 'Battery',
-          headers: ['Name', 'Efficiency', 'Capacity', 'Voltage'],
-          fields: ['name', 'efficiency', 'capacity', 'voltage']
+          headers: ['Name', 'Efficiency (%)', 'Energy Capacity (kWh)', 'Power Capacity (kW)', 'Voltage (V)'],
+          fields: ['name', 'efficiency', 'energy_capacity', 'power_capacity', 'voltage']
         }
       ];
 

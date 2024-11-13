@@ -1990,7 +1990,7 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
                 "alias": "Electric - Grid - Portfolio Manager - 5766973-0",
                 "config": {
                     "connection": "outside",
-                    "direction": "inflow",
+                    "direction": "imported",
                     "group_id": None,
                     "service_id": None,
                     "system_id": None,
@@ -2015,7 +2015,7 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
                 "alias": "Natural Gas - Portfolio Manager - 5766973-1",
                 "config": {
                     "connection": "outside",
-                    "direction": "inflow",
+                    "direction": "imported",
                     "group_id": None,
                     "service_id": None,
                     "system_id": None,
@@ -2040,7 +2040,7 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
                 "alias": "Natural Gas - GreenButton - 123fakeID",
                 "config": {
                     "connection": "outside",
-                    "direction": "inflow",
+                    "direction": "imported",
                     "group_id": None,
                     "service_id": None,
                     "system_id": None,

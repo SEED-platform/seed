@@ -36,6 +36,17 @@ angular.module('SEED.controller.system_modal', []).controller('system_modal_cont
 
     $scope.capitalize = (str) => str.charAt(0).toUpperCase() + str.slice(1);
 
+    $scope.change_des_type = () => {
+      if ($scope.system.des_type === 'Boiler') {
+        $scope.system.cooling_capacity = null;
+      } else {
+        $scope.system_heating_capacity = null;
+      }
+    }
+    if ($scope.system.type === 'des') {
+      $scope.change_des_type();
+    }
+
     $scope.submitSystemForm = () => {
       if (action === 'create') {
         create_system();
@@ -53,9 +64,11 @@ angular.module('SEED.controller.system_modal', []).controller('system_modal_cont
           $uibModalInstance.close();
         },
         (response) => {
-          const errors = Object.values(response.data.errors);
+          let errors = response.data.errors;
+          if (typeof(errors) !== 'string') {
+            errors = Object.values(errors)
+          }
           Notification.error(`${errors}`);
-          $uibModalInstance.dismiss('cancel');
         }
       );
     };

@@ -144,7 +144,11 @@ class SystemViewSet(viewsets.ViewSet, OrgMixin):
         systems_data = SystemSerializer(systems, many=True).data
 
         for system in systems_data:
-            typed_systems[system["type"]].append(system)
+            key = system["type"]
+            if mode := system.get("mode"):
+                key = f"{key} - {mode}"
+
+            typed_systems[key].append(system)
 
         return JsonResponse(
             {"status": "success", "data": typed_systems},

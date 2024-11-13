@@ -60,12 +60,12 @@ class MeterSerializer(serializers.ModelSerializer, OrgMixin):
     def set_config(self, obj, result):
         # generate config for meter modal
         connection_lookup = {
-            1: {"direction": "inflow", "use": "outside", "connection": "outside"},
-            2: {"direction": "outflow", "use": "outside", "connection": "outside"},
-            3: {"direction": "inflow", "use": "using", "connection": "service"},
-            4: {"direction": "outflow", "use": "using", "connection": "service"},
-            5: {"direction": "inflow", "use": "offering", "connection": "service"},
-            6: {"direction": "outflow", "use": "offering", "connection": "service"},
+            1: {"direction": "imported", "use": "outside", "connection": "outside"},
+            2: {"direction": "exported", "use": "outside", "connection": "outside"},
+            3: {"direction": "imported", "use": "using", "connection": "service"},
+            4: {"direction": "exported", "use": "using", "connection": "service"},
+            5: {"direction": "imported", "use": "offering", "connection": "service"},
+            6: {"direction": "exported", "use": "offering", "connection": "service"},
         }
 
         group_id, system_id = None, None
