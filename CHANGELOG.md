@@ -1,3 +1,39 @@
+# SEED Version 3.2.1
+
+<!-- Release notes generated using configuration in .github/release.yml at 3.2.1-release-prep -->
+
+## What's Changed
+### New Features 🎉
+* Updates to portfolio summary by @perryr16 in https://github.com/SEED-platform/seed/pull/4862
+* Add export charts to default reports by @haneslinger in https://github.com/SEED-platform/seed/pull/4869
+* Add progress bar to derived data update by @perryr16 in https://github.com/SEED-platform/seed/pull/4825
+### Improvements 📈
+* Add filter groups to default reports page by @crutan in https://github.com/SEED-platform/seed/pull/4812
+* Speed up ESPM meters preview by @haneslinger in https://github.com/SEED-platform/seed/pull/4867
+* Add derived columns to default reports by @haneslinger in https://github.com/SEED-platform/seed/pull/4864
+* Create a mechanism to save report configurations to a named slots by @crutan in https://github.com/SEED-platform/seed/pull/4871
+* Update building upgrade recommendation modal by @kflemin in https://github.com/SEED-platform/seed/pull/4873
+* Add zoom/pan capability to report charting, add reset zoom buttons by @crutan in https://github.com/SEED-platform/seed/pull/4872
+* Move `Only Show Populated` functionality to backend by @haneslinger in https://github.com/SEED-platform/seed/pull/4866
+* Update aggregation table with pivot functionality by @kflemin in https://github.com/SEED-platform/seed/pull/4878
+### Bug Fixes 🐛
+* Fix Element Statistics KeyError by @haneslinger in https://github.com/SEED-platform/seed/pull/4824
+* Fix update display name by @haneslinger in https://github.com/SEED-platform/seed/pull/4827
+* Fix scatter plot for non-numeric x-axis by @crutan in https://github.com/SEED-platform/seed/pull/4828
+* Fix CTS export by @haneslinger in https://github.com/SEED-platform/seed/pull/4829
+* Fix reports axis display names by @haneslinger in https://github.com/SEED-platform/seed/pull/4832
+* Fix rollup table by @crutan in https://github.com/SEED-platform/seed/pull/4835
+* More CTS fixes by @haneslinger in https://github.com/SEED-platform/seed/pull/4830
+* Lock sass dependency and enforce Node v20 by @crutan in https://github.com/SEED-platform/seed/pull/4855
+* Recheck for only numeric data in the rollup table by @crutan in https://github.com/SEED-platform/seed/pull/4845
+* Include organization `access_level_names` in filter construction by @crutan in https://github.com/SEED-platform/seed/pull/4839
+* Ensure `year_built` labels do not have commas, adjust width of scatterchart by @crutan in https://github.com/SEED-platform/seed/pull/4859
+* Use old cycles during unmerge by @haneslinger in https://github.com/SEED-platform/seed/pull/4452
+* Fix stats table for various  ali layouts by @kflemin in https://github.com/SEED-platform/seed/pull/4880
+
+
+**Full Changelog**: https://github.com/SEED-platform/seed/compare/v3.2.0...v3.2.1
+
 # SEED Version 3.2.0
 
 <!-- Release notes generated using configuration in .github/release.yml at 3.2-release-prep -->
