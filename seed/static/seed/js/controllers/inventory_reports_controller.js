@@ -91,9 +91,9 @@ angular.module('SEED.controller.inventory_reports', []).controller('inventory_re
     $scope.change_selected_level_index = () => {
       const new_level_instance_depth = parseInt($scope.level_name_index, 10) + parseInt(users_depth, 10);
       $scope.potential_level_instances = access_level_instances_by_depth[new_level_instance_depth];
-      for (const key in $scope.potential_level_instances) {
-        $scope.potential_level_instances[key].name = path_to_string($scope.potential_level_instances[key].path);
-      }
+      // for (const key in $scope.potential_level_instances) {
+      //   $scope.potential_level_instances[key].name = path_to_string($scope.potential_level_instances[key].path);
+      // }
       $scope.access_level_instance_id = null;
       $scope.setModified();
     };
