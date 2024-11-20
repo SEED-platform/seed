@@ -1259,7 +1259,7 @@ class OrganizationViewSet(viewsets.ViewSet):
 
         for axis in axes:
             if axes[axis] != "Count":
-                columns = Column.objects.filter(organization_id=organization_id, column_name=axes[axis], table_name='PropertyState')
+                columns = Column.objects.filter(organization_id=organization_id, column_name=axes[axis], table_name="PropertyState")
                 if not columns:
                     return {}
 
