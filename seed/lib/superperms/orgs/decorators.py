@@ -16,7 +16,7 @@ from rest_framework import status
 from seed.data_importer.models import ImportFile, ImportRecord
 from seed.lib.superperms.orgs.models import ROLE_MEMBER, ROLE_OWNER, ROLE_VIEWER, AccessLevelInstance, Organization, OrganizationUser
 from seed.lib.superperms.orgs.permissions import get_org_id
-from seed.models import Analysis, DataLogger, Goal, Property, PropertyView, TaxLotView, UbidModel
+from seed.models import Analysis, DataLogger, DataReport, Property, PropertyView, TaxLotView, UbidModel
 
 # Allow Super Users to ignore permissions.
 ALLOW_SUPER_USER_PERMS = getattr(settings, "ALLOW_SUPER_USER_PERMS", True)
@@ -233,7 +233,7 @@ def assert_hierarchy_access(
     body_property_state_id=None,
     body_taxlot_state_id=None,
     param_import_record_id=None,
-    goal_id_kwarg=None,
+    data_report_id_kwarg=None,
     data_logger_id_kwarg=None,
     *args,
     **kwargs,
@@ -312,14 +312,14 @@ def assert_hierarchy_access(
             else:
                 requests_ali = ubid.taxlot.taxlotview_set.first().taxlot.access_level_instance
 
-        elif goal_id_kwarg and goal_id_kwarg in kwargs:
-            goal = Goal.objects.get(pk=kwargs[goal_id_kwarg])
+        elif data_report_id_kwarg and data_report_id_kwarg in kwargs:
+            data_report = DataReport.objects.get(pk=kwargs[data_report_id_kwarg])
             body_ali_id = body.get("access_level_instance")
             if body_ali_id:
                 body_ali = AccessLevelInstance.objects.get(pk=body_ali_id)
-                requests_ali = body_ali if body_ali.depth < goal.access_level_instance.depth else goal.access_level_instance
+                requests_ali = body_ali if body_ali.depth < data_report.access_level_instance.depth else data_report.access_level_instance
             else:
-                requests_ali = goal.access_level_instance
+                requests_ali = data_report.access_level_instance
 
         elif data_logger_id_kwarg and data_logger_id_kwarg in kwargs:
             data_logger = DataLogger.objects.get(pk=kwargs[data_logger_id_kwarg])
@@ -354,7 +354,7 @@ def has_hierarchy_access(
     body_property_state_id=None,
     body_taxlot_state_id=None,
     param_import_record_id=None,
-    goal_id_kwarg=None,
+    data_report_id_kwarg=None,
     data_logger_id_kwarg=None,
 ):
     """Must be called after has_perm_class"""
@@ -383,7 +383,7 @@ def has_hierarchy_access(
                     body_property_state_id,
                     body_taxlot_state_id,
                     param_import_record_id,
-                    goal_id_kwarg,
+                    data_report_id_kwarg,
                     data_logger_id_kwarg,
                     *args,
                     **kwargs,
@@ -410,7 +410,7 @@ def has_hierarchy_access(
                     body_property_state_id,
                     body_taxlot_state_id,
                     param_import_record_id,
-                    goal_id_kwarg,
+                    data_report_id_kwarg,
                     data_logger_id_kwarg,
                     *args,
                     **kwargs,

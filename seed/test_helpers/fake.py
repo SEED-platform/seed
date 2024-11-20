@@ -31,9 +31,12 @@ from seed.models import (
     ColumnListProfile,
     ColumnListProfileColumn,
     Cycle,
+    DataReport,
     DerivedColumn,
     Element,
     Goal,
+    GoalStandard,
+    GoalTransaction,
     GreenAssessment,
     GreenAssessmentProperty,
     GreenAssessmentURL,
@@ -835,58 +838,128 @@ class FakeDerivedColumnFactory(BaseFake):
         return DerivedColumn.objects.create(**config)
 
 
-class FakeGoalFactory(BaseFake):
+# class FakeGoalFactory(BaseFake):
+#     def __init__(self,):
+#         super().__init__()
+
+
+#     def get_goal(
+#         self,
+#         data_report=None,
+#         eui_column1=None,
+#         area_column=None,
+#         transaction_column=None,
+#         name=None,
+#     ):
+#         data_report = data_report if data_report is not None else self.data_report
+#         eui_column1 = eui_column1 if eui_column1 is not None else self.eui_column1
+#         transaction_column = transaction_column if transaction_column is not None else self.transaction_column
+#         name = name if name is not None else self.name
+
+#         config = {
+#             "organization": organization,
+#             "baseline_cycle": baseline_cycle,
+#             "current_cycle": current_cycle,
+#             "access_level_instance": access_level_instance,
+#             "eui_column1": eui_column1,
+#             "area_column": area_column,
+#             "target_percentage": target_percentage,
+#             "name": name,
+#         }
+#         return Goal.objects.create(**config)
+    
+
+class FakeDataReportFactory(BaseFake):
     def __init__(
-        self,
-        organization=None,
-        baseline_cycle=None,
-        current_cycle=None,
-        access_level_instance=None,
-        eui_column1=None,
-        area_column=None,
-        target_percentage=None,
-        name=None,
-    ):
+            self,
+            organization=None,
+            baseline_cycle=None,
+            current_cycle=None,
+            access_level_instance=None,
+        ):
         super().__init__()
         self.organization = organization
         self.baseline_cycle = baseline_cycle
         self.current_cycle = current_cycle
         self.access_level_instance = access_level_instance
-        self.eui_column1 = eui_column1
-        self.area_column = area_column
-        self.target_percentage = target_percentage
-        self.name = name
 
-    def get_goal(
+
+    def get_data_report(
         self,
         organization=None,
         baseline_cycle=None,
         current_cycle=None,
         access_level_instance=None,
-        eui_column1=None,
-        area_column=None,
-        target_percentage=None,
         name=None,
+        target_percentage=20,
+        type="standard"
     ):
-        organization = organization if organization is not None else self.organization
-        baseline_cycle = baseline_cycle if baseline_cycle is not None else self.baseline_cycle
-        current_cycle = current_cycle if current_cycle is not None else self.current_cycle
-        access_level_instance = access_level_instance if access_level_instance is not None else self.access_level_instance
-        eui_column1 = eui_column1 if eui_column1 is not None else self.eui_column1
-        target_percentage = target_percentage if target_percentage is not None else self.target_percentage
-        name = name if name is not None else self.name
+        organization = organization or self.organization
+        baseline_cycle = baseline_cycle or self.baseline_cycle
+        current_cycle = current_cycle or self.current_cycle
+        access_level_instance = access_level_instance or self.access_level_instance
+        name = name or f"Data Report {type} {self.fake.random.randint(1, 100)}"
 
         config = {
             "organization": organization,
             "baseline_cycle": baseline_cycle,
             "current_cycle": current_cycle,
             "access_level_instance": access_level_instance,
-            "eui_column1": eui_column1,
-            "area_column": area_column,
             "target_percentage": target_percentage,
             "name": name,
+            "type": type,
         }
-        return Goal.objects.create(**config)
+        return DataReport.objects.create(**config)
+    
+class FakeGoalFactory(BaseFake):
+    def __init__(
+            self,
+            data_report=None,
+            type=None,
+    ):
+        super().__init__()
+        self.data_report = data_report
+        self.type = type
+
+    def get_goal(
+            self,
+            data_report=None,
+            type="standard",
+            name=None,
+            eui_column1=None,
+            eui_column2=None,
+            eui_column3=None,
+            area_column=None,
+            transaction_column=None
+    ):
+        data_report = data_report or self.data_report
+        type = type if type else type
+        default_eui = Column.objects.filter(column_name="site_eui").first()
+        default_area = Column.objects.filter(column_name="gross_floor_area").first()
+        next_id = Goal.objects.all().order_by('id').last().id + 1 if Goal.objects.count() else 1
+        if type == "standard":
+            config = {
+                "data_report": data_report,
+                "name": name or f"Goal Standard {next_id}",
+                "eui_column1": eui_column1 or default_eui,
+                "eui_column2": eui_column2,
+                "eui_column3": eui_column3,
+                "area_column": area_column or default_area,
+            }
+            goal_model = GoalStandard
+        elif type == "transaction":
+            config = {
+                "data_report": data_report,
+                "name": name or f"Goal Transaction {next_id}",
+                "eui_column1": eui_column1 or default_eui,
+                "eui_column2": eui_column2,
+                "eui_column3": eui_column3,
+                "area_column": area_column or default_area,
+                "transaction_column": transaction_column
+            }
+            goal_model = GoalTransaction 
+        
+        return goal_model.objects.create(**config)
 
 
 class FakeElementFactory(BaseFake):

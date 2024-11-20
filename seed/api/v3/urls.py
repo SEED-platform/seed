@@ -23,6 +23,7 @@ from seed.views.v3.cycles import CycleViewSet
 from seed.views.v3.data_logger import DataLoggerViewSet
 from seed.views.v3.data_quality_check_rules import DataQualityCheckRuleViewSet
 from seed.views.v3.data_quality_checks import DataQualityCheckViewSet
+from seed.views.v3.data_reports import DataReportViewSet
 from seed.views.v3.data_views import DataViewViewSet
 from seed.views.v3.datasets import DatasetViewSet
 from seed.views.v3.derived_columns import DerivedColumnViewSet
@@ -82,6 +83,7 @@ api_v3_router.register(r"compliance_metrics", ComplianceMetricViewSet, basename=
 api_v3_router.register(r"cycles", CycleViewSet, basename="cycles")
 api_v3_router.register(r"data_loggers", DataLoggerViewSet, basename="data_logger")
 api_v3_router.register(r"data_quality_checks", DataQualityCheckViewSet, basename="data_quality_checks")
+api_v3_router.register(r"data_reports", DataReportViewSet, basename="data_reports")
 api_v3_router.register(r"data_views", DataViewViewSet, basename="data_views")
 api_v3_router.register(r"datasets", DatasetViewSet, basename="datasets")
 api_v3_router.register(r"derived_columns", DerivedColumnViewSet, basename="derived_columns")
@@ -89,7 +91,7 @@ api_v3_router.register(r"eeej", EEEJViewSet, basename="eeej")
 api_v3_router.register(r"elements", OrgElementViewSet, basename="elements")
 api_v3_router.register(r"filter_groups", FilterGroupViewSet, basename="filter_groups")
 api_v3_router.register(r"gbr_properties", GBRPropertyViewSet, basename="gbr_properties")
-api_v3_router.register(r"goals", GoalViewSet, basename="goals")
+# api_v3_router.register(r"goals", GoalViewSet, basename="goals")
 api_v3_router.register(r"geocode", GeocodeViewSet, basename="geocode")
 api_v3_router.register(r"green_assessment_properties", GreenAssessmentPropertyViewSet, basename="green_assessment_properties")
 api_v3_router.register(r"green_assessment_urls", GreenAssessmentURLViewSet, basename="green_assessment_urls")
@@ -164,6 +166,9 @@ public_organizations_router.register(
 public_cycles_router = nested_routers.NestedSimpleRouter(public_organizations_router, r"public/organizations", lookup="organization")
 public_cycles_router.register(r"cycles", PublicCycleViewSet, basename="public-organizations-cycles")
 
+data_reports_router = nested_routers.NestedSimpleRouter(api_v3_router, r"data_reports", lookup="data_report")
+data_reports_router.register(r"goals", GoalViewSet, basename="goals")
+
 urlpatterns = [
     re_path(r"^", include(api_v3_router.urls)),
     re_path(r"^", include(data_quality_checks_router.urls)),
@@ -187,6 +192,7 @@ urlpatterns = [
     re_path(r"^", include(taxlots_router.urls)),
     re_path(r"^", include(public_organizations_router.urls)),
     re_path(r"^", include(public_cycles_router.urls)),
+    re_path(r"^", include(data_reports_router.urls)),
     re_path(r"^celery_queue/$", celery_queue, name="celery_queue"),
     re_path(r"media/(?P<filepath>.*)$", MediaViewSet.as_view()),
 ]

@@ -6,6 +6,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 import math
 
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
+from django.db.models import Q
 from django.db.utils import DataError
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
@@ -15,8 +16,8 @@ from rest_framework.decorators import action
 
 from seed.decorators import ajax_request_class
 from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm_class
-from seed.models import AccessLevelInstance, Column, Goal, GoalNote, HistoricalNote, Organization, Property, TaxLotProperty
-from seed.serializers.goals import GoalSerializer
+from seed.models import AccessLevelInstance, Column, DataReport, Goal, GoalStandard, GoalTransaction, GoalNote, HistoricalNote, Organization, Property, TaxLotProperty
+from seed.serializers.goals import GoalSerializer, GoalStandardSerializer, GoalTransactionSerializer
 from seed.serializers.pint import apply_display_unit_preferences
 from seed.utils.api import OrgMixin
 from seed.utils.api_schema import swagger_auto_schema_org_query_param
@@ -32,16 +33,7 @@ from seed.utils.viewsets import ModelViewSetWithoutPatch
         swagger_auto_schema_org_query_param,
         has_perm_class("requires_member"),
         has_perm_class("requires_non_leaf_access"),
-        has_hierarchy_access(goal_id_kwarg="pk"),
-    ],
-)
-@method_decorator(
-    name="create",
-    decorator=[
-        swagger_auto_schema_org_query_param,
-        has_perm_class("requires_member"),
-        has_perm_class("requires_non_leaf_access"),
-        has_hierarchy_access(body_ali_id="access_level_instance"),
+        has_hierarchy_access(data_report_id_kwarg="data_report_pk"),
     ],
 )
 class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
@@ -50,70 +42,89 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
 
     @swagger_auto_schema_org_query_param
     @has_perm_class("requires_viewer")
-    def list(self, request):
-        organization_id = self.get_organization(request)
-        access_level_instance = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
+    def list(self, request, data_report_pk):
+        try:
+            data_report = DataReport.objects.get(id=data_report_pk)
+        except DataReport.DoesNotExist:
+            return JsonResponse({"message": "No such resource."}, status=status.HTTP_404_NOT_FOUOND)
 
-        goals = Goal.objects.filter(
-            organization=organization_id,
-            access_level_instance__lft__gte=access_level_instance.lft,
-            access_level_instance__rgt__lte=access_level_instance.rgt,
-        )
-        return JsonResponse({"status": "success", "goals": self.serializer_class(goals, many=True).data})
+        goals = data_report.goals()
+        data = self.serializer_class(goals, many=True).data
+        return JsonResponse(data, safe=False)
 
     @swagger_auto_schema_org_query_param
     @has_perm_class("requires_viewer")
-    def retrieve(self, request, pk):
-        organization_id = self.get_organization(request)
-        access_level_instance = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
-
+    @has_hierarchy_access(data_report_id_kwarg="data_report_pk")
+    def retrieve(self, request, data_report_pk, pk):
         try:
-            goal = Goal.objects.select_related("current_cycle").get(
-                pk=pk,
-                organization=organization_id,
-                access_level_instance__lft__gte=access_level_instance.lft,
-                access_level_instance__rgt__lte=access_level_instance.rgt,
+            goal = Goal.objects.get(
+                Q(goalstandard__data_report=data_report_pk) | Q(goaltransaction__data_report=data_report_pk),
+                pk=pk
             )
         except Goal.DoesNotExist:
-            return JsonResponse({"status": "error", "message": "No such resource."}, status=404)
+            return JsonResponse({"message": "No such resource."}, status=status.HTTP_404_NOT_FOUND)
 
-        goal_data = self.serializer_class(goal).data
-        property_view_ids = goal.current_cycle.propertyview_set.all().values_list("id", flat=True)
-        goal_data["current_cycle_property_view_ids"] = list(property_view_ids)
 
-        return JsonResponse({"status": "success", "goal": goal_data})
+        serializer = GoalSerializer(goal)
+        return JsonResponse(serializer.data)
+
 
     @swagger_auto_schema_org_query_param
     @has_perm_class("requires_member")
     @has_perm_class("requires_non_leaf_access")
-    @has_hierarchy_access(goal_id_kwarg="pk")
-    def update(self, request, pk):
+    @has_hierarchy_access(data_report_id_kwarg="data_report_pk")
+    def update(self, request, data_report_pk, pk):
         try:
-            goal = Goal.objects.get(pk=pk)
-        except Goal.DoesNotExist:
-            return JsonResponse({"status": "error", "message": "No such resource."})
-
-        serializer = GoalSerializer(goal, data=request.data, partial=True)
-
-        if not serializer.is_valid():
-            return JsonResponse(
-                {
-                    "status": "error",
-                    "errors": serializer.errors,
-                },
-                status=status.HTTP_400_BAD_REQUEST,
+            goal = Goal.objects.get(
+                Q(goalstandard__data_report=data_report_pk) | Q(goaltransaction__data_report=data_report_pk),
+                pk=pk
             )
+        except Goal.DoesNotExist:
+            return JsonResponse({"message": "No such resource."}, status=status.HTTP_404_NOT_FOUOND)
+
+        goal_serializers = {
+            GoalStandard: GoalStandardSerializer,
+            GoalTransaction: GoalTransactionSerializer
+        }
+        serializer = goal_serializers[goal.__class__](goal, data=request.data, partial=True)
+        if not serializer.is_valid():
+            return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer.save()
+        return JsonResponse(serializer.data)
+    
+    @swagger_auto_schema_org_query_param
+    @has_perm_class("requires_member")
+    @has_perm_class("requires_non_leaf_access")
+    @has_hierarchy_access(data_report_id_kwarg="data_report_pk")
+    def create(self, request, data_report_pk):
+        org_id = int(self.get_organization(request))
+        try:
+            DataReport.objects.get(pk=data_report_pk, organization=org_id)
+        except DataReport.DoesNotExist:
+            return JsonResponse({"message": "No such resource."}, status=status.HTTP_404_NOT_FOUOND)
+
+        data = request.data
+        data["data_report"] = data_report_pk
+        goal_serializers = {
+            "standard": GoalStandardSerializer,
+            "transaction": GoalTransactionSerializer
+        }
+        serializer = goal_serializers[data["type"]](data=data)
+        if not serializer.is_valid():
+            return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         serializer.save()
 
-        return JsonResponse(serializer.data)
+        return JsonResponse(serializer.data, status=status.HTTP_201_CREATED)
+
 
     @ajax_request_class
     @swagger_auto_schema_org_query_param
     @has_perm_class("requires_viewer")
-    @has_hierarchy_access(goal_id_kwarg="pk")
+    @has_hierarchy_access(data_report_id_kwarg="data_report_pk")
     @action(detail=True, methods=["GET"])
-    def portfolio_summary(self, request, pk):
+    def portfolio_summary(self, request, data_report_pk, pk):
         """
         Gets a Portfolio Summary dictionary given a goal
         """
@@ -132,7 +143,7 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
 
     @has_perm_class("requires_member")
     @action(detail=True, methods=["PUT"])
-    def bulk_update_goal_notes(self, request, pk):
+    def bulk_update_goal_notes(self, request, data_report_pk, pk):
         """Bulk updates Goal-related fields for a given goal and property view ids"""
         org_id = self.get_organization(request)
         try:
@@ -160,9 +171,9 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
     @ajax_request_class
     @swagger_auto_schema_org_query_param
     @has_perm_class("requires_viewer")
-    @has_hierarchy_access(goal_id_kwarg="pk")
+    @has_hierarchy_access(data_report_id_kwarg="data_report_pk")
     @action(detail=True, methods=["PUT"])
-    def data(self, request, pk):
+    def data(self, request, data_report_pk, pk):
         """
         Gets goal data for the main grid
         """

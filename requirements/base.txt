@@ -81,3 +81,5 @@ pyotp==2.9.0
 importlib_metadata==8.4.0
 
 tkbl==0.6
+
+django-polymorphic==3.1.0

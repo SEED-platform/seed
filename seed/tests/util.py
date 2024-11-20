@@ -8,6 +8,7 @@ from datetime import date
 from typing import Any, Dict
 
 from django.test import TestCase
+from datetime import datetime
 
 from seed.data_importer.models import ImportFile, ImportRecord
 from seed.landing.models import SEEDUser as User
@@ -19,8 +20,10 @@ from seed.models import (
     Column,
     ColumnMapping,
     Cycle,
+    DataReport,
     DataLogger,
     DerivedColumn,
+    GoalStandard,
     GreenAssessment,
     GreenAssessmentProperty,
     GreenAssessmentURL,
@@ -279,3 +282,142 @@ class AssertDictSubsetMixin:
         # source: https://stackoverflow.com/a/59777678
         # Note that this only works in Python >= 3.9
         self.assertEqual(dictionary, dictionary | subset)
+
+class GoalStandardTestCase(AccessLevelBaseTestCase):
+    def setUp(self):
+        super().setUp()
+        self.cycle_factory = FakeCycleFactory(organization=self.org, user=self.root_owner_user)
+        self.column_factory = FakeColumnFactory(organization=self.org)
+        self.property_factory = FakePropertyFactory(organization=self.org)
+        self.property_view_factory = FakePropertyViewFactory(organization=self.org)
+        self.property_state_factory = FakePropertyStateFactory(organization=self.org)
+
+        # cycles
+        self.cycle1 = self.cycle_factory.get_cycle(start=datetime(2001, 1, 1), end=datetime(2002, 1, 1))
+        self.cycle2 = self.cycle_factory.get_cycle(start=datetime(2002, 1, 1), end=datetime(2003, 1, 1))
+        self.cycle3 = self.cycle_factory.get_cycle(start=datetime(2003, 1, 1), end=datetime(2004, 1, 1))
+
+        self.root_ali = self.org.root
+        self.child_ali = self.org.root.get_children().first()
+
+        # columns
+        self.eui_column1 = Column.objects.get(organization=self.org.id, column_name="source_eui_weather_normalized")
+        self.eui_column2 = Column.objects.get(organization=self.org.id, column_name="source_eui")
+        self.eui_column3 = Column.objects.get(organization=self.org.id, column_name="site_eui")
+        self.area_column = Column.objects.get(organization=self.org.id, column_name="gross_floor_area")
+        
+        extra_eui = Column.objects.create(
+            table_name="PropertyState",
+            column_name="extra_eui",
+            organization=self.org,
+            is_extra_data=True,
+        )
+        extra_area = Column.objects.create(
+            table_name="PropertyState",
+            column_name="extra_area",
+            organization=self.org,
+            is_extra_data=True,
+        )
+        self.transaction_column = Column.objects.create(
+            table_name="PropertyState",
+            column_name="transaction_column",
+            organization=self.org,
+            is_extra_data=True,
+        )
+
+
+        # properties
+        # property_details_{property}{cycle}
+        property_details_11 = self.property_state_factory.get_details()
+        property_details_11["source_eui"] = 1
+        property_details_11["gross_floor_area"] = 2
+        property_details_11["extra_data"] = {"extra_eui": "10", "extra_area": "20"}
+
+        property_details_13 = self.property_state_factory.get_details()
+        property_details_13["source_eui"] = 3
+        property_details_13["source_eui_weather_normalized"] = 4
+        property_details_13["gross_floor_area"] = 5
+        property_details_13["extra_data"] = {"extra_eui": 20, "extra_area": 50}
+
+        property_details_31 = self.property_state_factory.get_details()
+        property_details_31["source_eui"] = 6
+        property_details_31["gross_floor_area"] = 7
+        property_details_31["extra_data"] = {"extra_eui": "abcd", "extra_area": "xyz"}
+
+        property_details_33 = self.property_state_factory.get_details()
+        property_details_33["source_eui"] = 8
+        property_details_33["source_eui_weather_normalized"] = 9
+        property_details_33["gross_floor_area"] = 10
+        property_details_33["extra_data"] = {"extra_eui": 40, "extra_area": 100}
+
+        self.property1 = self.property_factory.get_property(access_level_instance=self.child_ali)
+        self.property2 = self.property_factory.get_property(access_level_instance=self.child_ali)
+        self.property3 = self.property_factory.get_property(access_level_instance=self.child_ali)
+        self.property4 = self.property_factory.get_property(access_level_instance=self.root_ali)
+
+        self.state_11 = self.property_state_factory.get_property_state(**property_details_11)
+        self.state_13 = self.property_state_factory.get_property_state(**property_details_13)
+        self.state_2 = self.property_state_factory.get_property_state(**property_details_11)
+        self.state_31 = self.property_state_factory.get_property_state(**property_details_31)
+        self.state_33 = self.property_state_factory.get_property_state(**property_details_33)
+        self.state_41 = self.property_state_factory.get_property_state(**property_details_33)
+
+        self.view11 = self.property_view_factory.get_property_view(prprty=self.property1, state=self.state_11, cycle=self.cycle1)
+        self.view13 = self.property_view_factory.get_property_view(prprty=self.property1, state=self.state_13, cycle=self.cycle3)
+        self.view2 = self.property_view_factory.get_property_view(prprty=self.property2, state=self.state_2, cycle=self.cycle2)
+        self.view31 = self.property_view_factory.get_property_view(prprty=self.property3, state=self.state_31, cycle=self.cycle1)
+        self.view33 = self.property_view_factory.get_property_view(prprty=self.property3, state=self.state_33, cycle=self.cycle3)
+        self.view41 = self.property_view_factory.get_property_view(prprty=self.property4, state=self.state_41, cycle=self.cycle1)
+
+
+        self.root_data_report = DataReport.objects.create(
+            name="root_data_report",
+            organization=self.org,
+            baseline_cycle=self.cycle1,
+            current_cycle=self.cycle3,
+            access_level_instance=self.root_ali,
+            target_percentage=20,
+        )
+        self.root_goal = GoalStandard.objects.create(
+            name="root_goal",
+            data_report=self.root_data_report,
+            eui_column1=self.eui_column1,
+            eui_column2=self.eui_column2,
+            eui_column3=self.eui_column3,
+            area_column=self.area_column,
+        )
+
+        self.child_data_report = DataReport.objects.create(
+            name="child_data_report",
+            organization=self.org,
+            baseline_cycle=self.cycle1,
+            current_cycle=self.cycle3,
+            access_level_instance=self.child_ali,
+            target_percentage=20,
+
+        )
+        self.child_goal = GoalStandard.objects.create(
+            name="child_goal",
+            data_report=self.child_data_report,
+            eui_column1=self.eui_column1,
+            eui_column2=self.eui_column2,
+            eui_column3=None,
+            area_column=self.area_column,
+        )
+
+        self.child_goal_extra = GoalStandard.objects.create(
+            name="child_goal_extra",
+            data_report=self.child_data_report,
+            eui_column1=extra_eui,
+            eui_column2=None,
+            eui_column3=None,
+            area_column=extra_area,
+        )
+
+        user2_details = {
+            "username": "test_user2@demo.com",
+            "password": "test_pass2",
+            "email": "test_user2@demo.com",
+        }
+        self.user2 = User.objects.create_superuser(**user2_details)
+        self.org2, _, _ = create_organization(self.user2, "org2")

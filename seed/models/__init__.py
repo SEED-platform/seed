@@ -45,6 +45,7 @@ from .elements import *
 from .goals import *
 from .goal_notes import *
 from .audit_template_configs import *
+from .data_reports import *
 
 from .certification import GreenAssessment, GreenAssessmentProperty, GreenAssessmentURL
 from .report_configurations import *
