@@ -314,7 +314,7 @@ angular.module('SEED.controller.organization_settings', []).controller('organiza
     const acceptable_column_types = ['area', 'eui', 'float', 'integer', 'number'];
     // filtered columns should include derived columns
     const filtered_columns = _.filter($scope.columns, (column) => column.derived_column || _.includes(acceptable_column_types, column.data_type));
-    
+
     $scope.selected_x_columns = $scope.org.default_reports_x_axis_options.map((c) => c.id);
     $scope.available_x_columns = () => $scope.columns.filter(({ id }) => !$scope.selected_x_columns.includes(id));
     $scope.add_x_column = (x_column_id) => {
