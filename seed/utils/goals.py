@@ -118,14 +118,14 @@ def get_portfolio_summary(org, goal):
     Gets a Portfolio Summary dictionary given a goal
     """
     summary = {}
-
-    for current, cycle in enumerate([goal.baseline_cycle, goal.current_cycle]):
+    data_report = goal.data_report
+    for current, cycle in enumerate([data_report.baseline_cycle, data_report.current_cycle]):
         # Return all properties
         property_views = PropertyView.objects.select_related("property", "state").filter(
             property__organization_id=org.id,
             cycle_id=cycle.id,
-            property__access_level_instance__lft__gte=goal.access_level_instance.lft,
-            property__access_level_instance__rgt__lte=goal.access_level_instance.rgt,
+            property__access_level_instance__lft__gte=data_report.access_level_instance.lft,
+            property__access_level_instance__rgt__lte=data_report.access_level_instance.rgt,
             property__goalnote__goal__id=goal.id,
         )
         # Shared area is area of all properties regardless of valid status
@@ -143,7 +143,7 @@ def get_portfolio_summary(org, goal):
         new_property_ids = goal_notes.filter(new_or_acquired=True).values_list("property__id", flat=True)
         valid_property_ids = goal_notes.filter(passed_checks=True).values_list("property__id", flat=True)
         property_views = property_views.filter(property__id__in=valid_property_ids).exclude(
-            cycle=goal.baseline_cycle, property__id__in=new_property_ids
+            cycle=data_report.baseline_cycle, property__id__in=new_property_ids
         )
 
         # Create annotations for kbtu calcs. "eui" is based on goal column priority
@@ -156,7 +156,7 @@ def get_portfolio_summary(org, goal):
         total_sqft = aggregated_data["total_sqft"]  # shared sqft
 
         if current:
-            summary["passing_committed"] = percentage(goal.commitment_sqft, total_sqft)
+            summary["passing_committed"] = percentage(data_report.commitment_sqft, total_sqft)
             summary["passing_shared"] = percentage(summary["shared_sqft"], total_sqft)
 
         if total_kbtu:

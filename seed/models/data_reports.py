@@ -5,7 +5,6 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
-from seed.serializers.base import ChoiceField
 from seed.models import AccessLevelInstance, Cycle, Organization
 
 
@@ -19,7 +18,7 @@ DATA_REPORT_TYPES = (
 )
 
 class DataReport(models.Model):
-    name = models.CharField(max_length=255, unique=True)
+    name = models.CharField(max_length=255, unique=True) # needs to be within org, not unique everywhere.
     type = models.CharField(max_length=50, choices=DATA_REPORT_TYPES, default="standard")
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
     baseline_cycle = models.ForeignKey(Cycle, on_delete=models.CASCADE, related_name="goal_baseline_cycles")
@@ -35,6 +34,16 @@ class DataReport(models.Model):
             list(self.goalstandard_set.all()) + 
             list(self.goaltransaction_set.all())
         )
+    
+    def get_goal(self, goal_id):
+        from seed.models import Goal
+
+        if (goal:= self.goalstandard_set.filter(id=goal_id).first()):
+            return goal
+        elif (goal:= self.goaltransaction_set.filter(id=goal_id).first()):
+            return goal
+        else:
+            raise Goal.DoesNotExist()
 
 
     """

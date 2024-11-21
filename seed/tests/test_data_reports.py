@@ -207,3 +207,69 @@ class DataReportViewTests(GoalStandardTestCase):
         # add edge cases
         # unexpected fields
         # invalid data
+
+
+    def test_portfolio_summary(self):
+            self.login_as_child_member()
+            url = reverse_lazy("api:v3:data_reports-portfolio-summary", args=[self.root_data_report.id]) + "?organization_id=" + str(self.org.id)
+            response = self.client.get(url, content_type="application/json")
+            assert response.status_code == 404
+            assert response.json()["message"] == "No such resource."
+
+            url = reverse_lazy("api:v3:data_reports-portfolio-summary", args=[self.child_data_report.id]) + "?organization_id=" + str(self.org.id)
+            response = self.client.get(url, content_type="application/json")
+            summaries = response.json()
+            # only properties with passed_checks and not new_or_acquired are included in calc
+
+            assert list(summaries.keys()) == [str(self.child_goal.id), str(self.child_goal_extra.id)]
+            g1 = summaries[str(self.child_goal.id)]
+            g2 = summaries[str(self.child_goal_extra.id)]
+            exp_keys = ['baseline', 'total_properties', 'shared_sqft', 'total_passing', 'total_new_or_acquired', 'passing_committed', 'passing_shared', 'current', 'sqft_change', 'eui_change']
+            assert list(g1.keys()) == exp_keys
+            assert list(g2.keys()) == exp_keys
+            assert g1["shared_sqft"] == 15
+            assert g2["shared_sqft"] == 150
+
+            for goalnote in self.child_goal.goalnote_set.all():
+                goalnote.passed_checks = True
+                goalnote.save()
+
+            response = self.client.get(url, content_type="application/json")
+            summaries = response.json()
+
+            exp_summary = {
+                "baseline": {"cycle_name": "2001 Annual", "total_kbtu": 44, "total_sqft": 9, "weighted_eui": 4},
+                "current": {"cycle_name": "2003 Annual", "total_kbtu": 110, "total_sqft": 15, "weighted_eui": 7},
+                "eui_change": -75,
+                "passing_committed": None,
+                "passing_shared": 100,
+                "shared_sqft": 15,
+                "sqft_change": 40,
+                "total_new_or_acquired": 0,
+                "total_passing": 2,
+                "total_properties": 2,
+            }
+            assert summaries[str(self.child_goal.id)] == exp_summary
+
+            # with extra data
+            for goalnote in self.child_goal_extra.goalnote_set.all():
+                goalnote.passed_checks = True
+                goalnote.save()
+
+            url = reverse_lazy("api:v3:data_reports-portfolio-summary", args=[self.child_data_report.id]) + "?organization_id=" + str(self.org.id)
+            response = self.client.get(url, content_type="application/json")
+            summaries = response.json()
+            exp_summary = {
+                "baseline": {"cycle_name": "2001 Annual", "total_kbtu": 200, "total_sqft": 20, "weighted_eui": 10},
+                "current": {"cycle_name": "2003 Annual", "total_kbtu": 5000, "total_sqft": 150, "weighted_eui": 33},
+                "eui_change": -229,
+                "passing_committed": None,
+                "passing_shared": 100,
+                "shared_sqft": 150.0,
+                "sqft_change": 86,
+                "total_new_or_acquired": 0,
+                "total_passing": 2,
+                "total_properties": 2,
+            }
+
+            assert summaries[str(self.child_goal_extra.id)] == exp_summary

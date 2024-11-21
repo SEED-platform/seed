@@ -145,3 +145,27 @@ class DataReportViewSet(ModelViewSetWithoutPatch, OrgMixin):
                 errors.append("Error Updating Goal")
 
         return JsonResponse({"status": "success", "erorrs": errors, "data": serializer.data})
+
+    @ajax_request_class
+    @swagger_auto_schema_org_query_param
+    @has_perm_class("requires_viewer")
+    @has_hierarchy_access(data_report_id_kwarg="pk")
+    @action(detail=True, methods=["GET"])
+    def portfolio_summary(self, request, pk):
+        """
+        Gets a Portfolio Summary dictionaries for goals in a data report
+        """
+        org_id = int(self.get_organization(request))
+        try:
+            org = Organization.objects.get(pk=org_id)
+            data_report = DataReport.objects.get(pk=pk)
+            # goal = Goal.objects.get(pk=pk)
+        except (Organization.DoesNotExist, DataReport.DoesNotExist):
+            return JsonResponse({"status": "error", "message": "No such resource."})
+        
+        summaries = {}
+        for goal in data_report.goals():
+            # If new properties heave been uploaded, create goal_notes
+            get_or_create_goal_notes(goal)
+            summaries[goal.id] = get_portfolio_summary(org, goal)
+        return JsonResponse(summaries, safe=False)

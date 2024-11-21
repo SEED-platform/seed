@@ -43,8 +43,9 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
     @swagger_auto_schema_org_query_param
     @has_perm_class("requires_viewer")
     def list(self, request, data_report_pk):
+        org_id = self.get_organization(request)
         try:
-            data_report = DataReport.objects.get(id=data_report_pk)
+            data_report = DataReport.objects.get(id=data_report_pk, organization=org_id)
         except DataReport.DoesNotExist:
             return JsonResponse({"message": "No such resource."}, status=status.HTTP_404_NOT_FOUOND)
 
@@ -56,12 +57,11 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
     @has_perm_class("requires_viewer")
     @has_hierarchy_access(data_report_id_kwarg="data_report_pk")
     def retrieve(self, request, data_report_pk, pk):
+        org_id = self.get_organization(request)
         try:
-            goal = Goal.objects.get(
-                Q(goalstandard__data_report=data_report_pk) | Q(goaltransaction__data_report=data_report_pk),
-                pk=pk
-            )
-        except Goal.DoesNotExist:
+            data_report = DataReport.objects.get(pk=data_report_pk, organization=org_id)
+            goal = data_report.get_goal(pk)
+        except (DataReport.DoesNotExist, Goal.DoesNotExist):
             return JsonResponse({"message": "No such resource."}, status=status.HTTP_404_NOT_FOUND)
 
 
@@ -74,13 +74,12 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
     @has_perm_class("requires_non_leaf_access")
     @has_hierarchy_access(data_report_id_kwarg="data_report_pk")
     def update(self, request, data_report_pk, pk):
+        org_id = self.get_organization(request)
         try:
-            goal = Goal.objects.get(
-                Q(goalstandard__data_report=data_report_pk) | Q(goaltransaction__data_report=data_report_pk),
-                pk=pk
-            )
-        except Goal.DoesNotExist:
-            return JsonResponse({"message": "No such resource."}, status=status.HTTP_404_NOT_FOUOND)
+            data_report = DataReport.objects.get(pk=data_report_pk, organization=org_id)
+            goal = data_report.get_goal(pk)
+        except (DataReport.DoesNotExist, Goal.DoesNotExist):
+            return JsonResponse({"message": "No such resource."}, status=status.HTTP_404_NOT_FOUND)
 
         goal_serializers = {
             GoalStandard: GoalStandardSerializer,
@@ -118,38 +117,16 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
 
         return JsonResponse(serializer.data, status=status.HTTP_201_CREATED)
 
-
-    @ajax_request_class
-    @swagger_auto_schema_org_query_param
-    @has_perm_class("requires_viewer")
-    @has_hierarchy_access(data_report_id_kwarg="data_report_pk")
-    @action(detail=True, methods=["GET"])
-    def portfolio_summary(self, request, data_report_pk, pk):
-        """
-        Gets a Portfolio Summary dictionary given a goal
-        """
-        org_id = int(self.get_organization(request))
-        try:
-            org = Organization.objects.get(pk=org_id)
-            goal = Goal.objects.get(pk=pk)
-        except (Organization.DoesNotExist, Goal.DoesNotExist):
-            return JsonResponse({"status": "error", "message": "No such resource."})
-
-        # If new properties heave been uploaded, create goal_notes
-        get_or_create_goal_notes(goal)
-
-        summary = get_portfolio_summary(org, goal)
-        return JsonResponse(summary)
-
     @has_perm_class("requires_member")
     @action(detail=True, methods=["PUT"])
     def bulk_update_goal_notes(self, request, data_report_pk, pk):
         """Bulk updates Goal-related fields for a given goal and property view ids"""
         org_id = self.get_organization(request)
         try:
-            goal = Goal.objects.get(pk=pk, organization=org_id)
-        except Goal.DoesNotExist:
-            return JsonResponse({"status": "error", "message": "No such resource."}, status=404)
+            data_report = DataReport.objects.get(pk=data_report_pk, organization=org_id)
+            goal = data_report.get_goal(pk)
+        except (DataReport.DoesNotExist, Goal.DoesNotExist):
+            return JsonResponse({"message": "No such resource."}, status=status.HTTP_404_NOT_FOUND)
 
         property_view_ids = request.data.get("property_view_ids", [])
         properties = Property.objects.filter(views__in=property_view_ids).select_related("historical_notes")
@@ -176,14 +153,15 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
     def data(self, request, data_report_pk, pk):
         """
         Gets goal data for the main grid
-        """
-        # Init a bunch of values
+            """
         org_id = int(self.get_organization(request))
         try:
             org = Organization.objects.get(pk=org_id)
-            goal = Goal.objects.get(pk=pk)
-        except (Organization.DoesNotExist, Goal.DoesNotExist):
+            data_report = DataReport.objects.get(pk=data_report_pk, organization=org_id)
+            goal = data_report.get_goal(pk)
+        except (DataReport.DoesNotExist, Goal.DoesNotExist, Organization.DoesNotExist):
             return JsonResponse({"status": "error", "message": "No such resource."})
+        # Init a bunch of values
         page = request.data.get("page")
         per_page = request.data.get("per_page")
         baseline_first = request.data.get("baseline_first")
@@ -202,8 +180,8 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
         show_columns = list(Column.objects.filter(organization_id=org_id).values_list("id", flat=True))
         key1, key2 = ("baseline", "current") if baseline_first else ("current", "baseline")
 
-        cycle1 = getattr(goal, f"{key1}_cycle")
-        cycle2 = getattr(goal, f"{key2}_cycle")
+        cycle1 = getattr(data_report, f"{key1}_cycle")
+        cycle2 = getattr(data_report, f"{key2}_cycle")
         views1 = cycle1.propertyview_set.filter(
             property__access_level_instance__lft__gte=access_level_instance.lft,
             property__access_level_instance__rgt__lte=access_level_instance.rgt,
