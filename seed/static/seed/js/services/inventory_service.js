@@ -65,8 +65,6 @@ angular.module('SEED.service.inventory', []).factory('inventory_service', [
       shown_column_ids = null,
       access_level_instance_id = null,
       include_property_ids = null,
-      goal_id = null,
-      related_model_sort = null
     ) => {
       organization_id = organization_id ?? user_service.get_organization().id;
 
@@ -104,8 +102,6 @@ angular.module('SEED.service.inventory', []).factory('inventory_service', [
         profile_id,
         // conditionally add optional params
         ...(access_level_instance_id && { access_level_instance_id }),
-        ...(goal_id && { goal_id }),
-        ...(related_model_sort && { related_model_sort })
       };
       // add access_level_instance if it exists
 
