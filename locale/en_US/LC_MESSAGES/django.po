@@ -120,7 +120,7 @@ msgid "ANALYSIS_DESCRIPTION_BSyncr"
 msgstr "The BSyncr analysis leverages the Normalized Metered Energy Consumption (NMEC) analysis to calculate a change point model. The data are passed to the analysis using BuildingSync. The result of the analysis are the coefficients of the change point model."
 
 msgid "ANALYSIS_DESCRIPTION_BuildingUpgradeRecommendation"
-msgstr "The Building Upgrade Recommendation analysis implements a workflow to identify buildings that may need a deep energy retrofit, equipment replaced or re-tuning based on building attributes such as energy use, year built, and square footage."
+msgstr "The Building Upgrade Recommendation analysis implements a workflow to identify buildings that may need a deep energy retrofit, equipment replaced or re-tuning based on building attributes such as energy use, year built, and square footage. If your organization contains elements, the Element Statistics Analysis should be run prior to running this analysis."
 
 msgid "ANALYSIS_DESCRIPTION_CO2"
 msgstr "This analysis calculates the average annual CO2 emissions for the property's meter data. The analysis requires an eGRID Subregion to be defined in order to accurately determine the emission rates."
@@ -132,7 +132,7 @@ msgid "ANALYSIS_DESCRIPTION_EUI"
 msgstr "The EUI analysis will sum the property's meter readings for the last twelve months to calculate the energy use per square footage per year. If there are missing meter readings, then the analysis will return a less that 100% coverage to alert the user that there is a missing meter reading."
 
 msgid "ANALYSIS_DESCRIPTION_ElementStatistics"
-msgstr "The Element Statistics analysis looks through a property's element data (if any) to count the number of elements of type 'D.D.C. Control Panel' and saves that quantity to the property"
+msgstr "The Element Statistics analysis looks through a property's element data (if any) to count the number of elements of type 'D.D.C. Control Panel'. It also generates the aggregated (average) condition index values for scope 1 emission elements and saves those quantities to the property."
 
 msgid "AND"
 msgstr "AND"

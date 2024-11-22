@@ -5,7 +5,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: lokalise.com\n"
 "Project-Id-Version: SEED Platform\n"
-"PO-Revision-Date: 2024-11-05 20:24\n"
+"PO-Revision-Date: 2024-11-22 22:56\n"
 "Last-Translator: lokalise.com\n"
 "Language-Team: lokalise.com\n\n"
 "Language: es\n"
@@ -153,9 +153,8 @@ msgstr "El análisis BETTER aprovecha better.lbl.gov para calcular el ahorro de 
 msgid "ANALYSIS_DESCRIPTION_BSyncr"
 msgstr "El análisis BSyncr aprovecha el análisis de consumo energético medido normalizado (NMEC) para calcular un modelo de punto de cambio. Los datos se transmiten al análisis mediante BuildingSync. El resultado del análisis son los coeficientes del modelo de punto de cambio."
 
-#, fuzzy
 msgid "ANALYSIS_DESCRIPTION_BuildingUpgradeRecommendation"
-msgstr "El análisis de recomendaciones de mejora de edificios implementa un flujo de trabajo para identificar los edificios que pueden necesitar una profunda modernización energética, la sustitución de equipos o una nueva puesta a punto basada en atributos del edificio como el uso de la energía, el año de construcción y los metros cuadrados."
+msgstr "El análisis de recomendación de mejora de edificios implementa un flujo de trabajo para identificar los edificios que pueden necesitar una renovación energética profunda, el reemplazo o la puesta a punto de equipos en función de los atributos del edificio, como el uso de energía, el año de construcción y la superficie en metros cuadrados. Si su organización contiene elementos, se debe ejecutar el análisis de estadísticas de elementos antes de ejecutar este análisis."
 
 #, fuzzy
 msgid "ANALYSIS_DESCRIPTION_CO2"
@@ -169,9 +168,8 @@ msgstr "El análisis EEEJ utiliza la dirección de cada propiedad para identific
 msgid "ANALYSIS_DESCRIPTION_EUI"
 msgstr "El análisis EUI sumará las lecturas de los contadores de la propiedad de los últimos doce meses para calcular el consumo de energía por metro cuadrado al año. Si faltan lecturas de contadores, el análisis devolverá una cobertura inferior al 100% para alertar al usuario de que falta una lectura de contador."
 
-#, fuzzy
 msgid "ANALYSIS_DESCRIPTION_ElementStatistics"
-msgstr "El análisis de estadísticas de elementos examina los datos de los elementos de una propiedad (si los hay) para contar el número de elementos de tipo \"Panel de control D.D.C.\" y guarda esa cantidad en la propiedad"
+msgstr "El análisis de estadísticas de elementos analiza los datos de elementos de una propiedad (si los hay) para contar la cantidad de elementos del tipo \"Panel de control DDC\". También genera los valores de índice de condición agregados (promedio) para los elementos de emisión de alcance 1 y guarda esas cantidades en la propiedad."
 
 #, fuzzy
 msgid "AND"
