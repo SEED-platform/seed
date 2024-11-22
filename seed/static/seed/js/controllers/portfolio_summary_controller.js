@@ -142,7 +142,6 @@ angular.module('SEED.controller.portfolio_summary', [])
         }
       });
 
-      // RP - backend - new endpoint for details table
       // selected goal details
       const format_goal_details = () => {
         $scope.change_selected_level_index();
@@ -176,7 +175,6 @@ angular.module('SEED.controller.portfolio_summary', [])
         _.delay($scope.updateHeight, 150);
       };
 
-      // RP - backend - could use the existing summary endpoint
       const get_goal_stats = (summary) => {
         const passing_sqft = summary.current ? summary.current.total_sqft : null;
         // show help text if less than {50}% of properties are passing checks
@@ -388,7 +386,6 @@ angular.module('SEED.controller.portfolio_summary', [])
         { id: 4, value: 'Are these values correct?' },
         { id: 5, value: 'Other or multiple flags; explain in Additional Notes field' }
       ];
-      // RP - include in backend endpoint? the html is a little weird
       // handle cycle specific columns
       const selected_columns = () => {
         let cols = property_column_names.map((name) => $scope.columns.find((col) => col.column_name === name));
