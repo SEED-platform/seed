@@ -631,9 +631,14 @@ angular.module('SEED.controller.inventory_reports', []).controller('inventory_re
                 $scope.scatterChart.options.scales.x.ticks.callback = (value) => String(value);
               }
             } else {
+              // restore title text as this syntax overwrites it
               $scope.scatterChart.options.scales.x = {
                 type: 'category',
-                labels: Array.from([...new Set($scope.chartData.chartData.map((d) => d.x))]).sort()
+                labels: Array.from([...new Set($scope.chartData.chartData.map((d) => d.x))]).sort(),
+                title: {
+                  display: true,
+                  text: $scope.xAxisSelectedItem.label,
+                }
               };
             }
             if ($scope.yAxisSelectedItem.varName === 'year_built') {
