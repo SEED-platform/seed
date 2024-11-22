@@ -6,22 +6,33 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 import math
 
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
-from django.db.models import Q
 from django.db.utils import DataError
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
+from pint import Quantity
 from rest_framework import status
 from rest_framework.decorators import action
 
 from seed.decorators import ajax_request_class
 from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm_class
-from seed.models import AccessLevelInstance, Column, DataReport, Goal, GoalStandard, GoalTransaction, GoalNote, HistoricalNote, Organization, Property, TaxLotProperty
+from seed.models import (
+    AccessLevelInstance,
+    Column,
+    DataReport,
+    Goal,
+    GoalNote,
+    GoalStandard,
+    GoalTransaction,
+    HistoricalNote,
+    Organization,
+    Property,
+    TaxLotProperty,
+)
 from seed.serializers.goals import GoalSerializer, GoalStandardSerializer, GoalTransactionSerializer
 from seed.serializers.pint import apply_display_unit_preferences
 from seed.utils.api import OrgMixin
 from seed.utils.api_schema import swagger_auto_schema_org_query_param
 from seed.utils.goal_notes import get_permission_data
-from seed.utils.goals import get_or_create_goal_notes, get_portfolio_summary, combine_properties, percentage, get_preferred, convert_quantity, get_kbtu
 from seed.utils.search import FilterError, build_view_filters_and_sorts, filter_views_on_related
 from seed.utils.viewsets import ModelViewSetWithoutPatch
 
@@ -63,10 +74,8 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
         except (DataReport.DoesNotExist, Goal.DoesNotExist):
             return JsonResponse({"message": "No such resource."}, status=status.HTTP_404_NOT_FOUND)
 
-
         serializer = GoalSerializer(goal)
         return JsonResponse(serializer.data)
-
 
     @swagger_auto_schema_org_query_param
     @has_perm_class("requires_member")
@@ -80,17 +89,14 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
         except (DataReport.DoesNotExist, Goal.DoesNotExist):
             return JsonResponse({"message": "No such resource."}, status=status.HTTP_404_NOT_FOUND)
 
-        goal_serializers = {
-            GoalStandard: GoalStandardSerializer,
-            GoalTransaction: GoalTransactionSerializer
-        }
+        goal_serializers = {GoalStandard: GoalStandardSerializer, GoalTransaction: GoalTransactionSerializer}
         serializer = goal_serializers[goal.__class__](goal, data=request.data, partial=True)
         if not serializer.is_valid():
             return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         serializer.save()
         return JsonResponse(serializer.data)
-    
+
     @swagger_auto_schema_org_query_param
     @has_perm_class("requires_member")
     @has_perm_class("requires_non_leaf_access")
@@ -104,10 +110,7 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
 
         data = request.data
         data["data_report"] = data_report_pk
-        goal_serializers = {
-            "standard": GoalStandardSerializer,
-            "transaction": GoalTransactionSerializer
-        }
+        goal_serializers = {"standard": GoalStandardSerializer, "transaction": GoalTransactionSerializer}
         serializer = goal_serializers[data["type"]](data=data)
         if not serializer.is_valid():
             return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -152,7 +155,7 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
     def data(self, request, data_report_pk, pk):
         """
         Gets goal data for the main grid
-            """
+        """
         org_id = int(self.get_organization(request))
         try:
             org = Organization.objects.get(pk=org_id)
@@ -282,3 +285,37 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
             }
         )
 
+
+def combine_properties(p1, p2):
+    if not p2:
+        return p1
+    combined = p1.copy()
+    for key, value in p2.items():
+        if value is not None:
+            combined[key] = value
+    return combined
+
+
+def percentage(a, b):
+    if not a or b is None:
+        return None
+    value = round(((a - b) / a) * 100)
+    return None if math.isnan(value) else value
+
+
+def get_preferred(p, columns):
+    if not p:
+        return
+    for col in columns:
+        return convert_quantity(p[col])
+
+
+def convert_quantity(value):
+    if isinstance(value, Quantity):
+        value = value.m
+    return value
+
+
+def get_kbtu(prop, key):
+    if prop[f"{key}_sqft"] is not None and prop[f"{key}_eui"] is not None:
+        return round(prop[f"{key}_sqft"] * prop[f"{key}_eui"])

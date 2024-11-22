@@ -3,27 +3,19 @@ SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and othe
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
-import math
-
-from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
-from django.db.utils import DataError
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
-from pint import Quantity
 from rest_framework import status
 from rest_framework.decorators import action
 
 from seed.decorators import ajax_request_class
 from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm_class
-from seed.models import AccessLevelInstance, Column, DataReport, Goal, GoalStandard, GoalTransaction, GoalNote, HistoricalNote, Organization, Property, TaxLotProperty
+from seed.models import AccessLevelInstance, DataReport, Goal, GoalStandard, GoalTransaction, Organization
 from seed.serializers.data_reports import DataReportSerializer
-from seed.serializers.goals import GoalSerializer, GoalStandardSerializer, GoalTransactionSerializer
-from seed.serializers.pint import apply_display_unit_preferences
+from seed.serializers.goals import GoalStandardSerializer, GoalTransactionSerializer
 from seed.utils.api import OrgMixin
 from seed.utils.api_schema import swagger_auto_schema_org_query_param
-from seed.utils.goal_notes import get_permission_data
 from seed.utils.goals import get_or_create_goal_notes, get_portfolio_summary
-from seed.utils.search import FilterError, build_view_filters_and_sorts, filter_views_on_related
 from seed.utils.viewsets import ModelViewSetWithoutPatch
 
 
@@ -80,7 +72,7 @@ class DataReportViewSet(ModelViewSetWithoutPatch, OrgMixin):
 
         data_report_data = self.serializer_class(data_report).data
         return JsonResponse({"status": "success", "data_report": data_report_data})
-    
+
     @swagger_auto_schema_org_query_param
     @has_perm_class("requires_member")
     @has_perm_class("requires_non_leaf_access")
@@ -92,10 +84,7 @@ class DataReportViewSet(ModelViewSetWithoutPatch, OrgMixin):
         if not serializer.is_valid():
             return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         data_report = serializer.save()
-        goal_serializers = {
-            "standard": GoalStandardSerializer,
-            "transaction": GoalTransactionSerializer
-        }
+        goal_serializers = {"standard": GoalStandardSerializer, "transaction": GoalTransactionSerializer}
         errors = []
         # create_goals
         for goal_data in goals_data:
@@ -106,9 +95,8 @@ class DataReportViewSet(ModelViewSetWithoutPatch, OrgMixin):
             else:
                 errors.append("Error creating goal")
 
-
         return JsonResponse({"status": "success", "errors": errors, "data": serializer.data}, status=status.HTTP_201_CREATED)
-    
+
     @swagger_auto_schema_org_query_param
     @has_perm_class("requires_member")
     @has_perm_class("requires_non_leaf_access")
@@ -118,7 +106,7 @@ class DataReportViewSet(ModelViewSetWithoutPatch, OrgMixin):
             data_report = DataReport.objects.get(pk=pk)
         except DataReport.DoesNotExist:
             return JsonResponse({"status": "error", "message": "No such resource."})
-        
+
         data = request.data
         goals_data = data.pop("goals_data")
         serializer = DataReportSerializer(data_report, data=data, partial=True)
@@ -131,10 +119,7 @@ class DataReportViewSet(ModelViewSetWithoutPatch, OrgMixin):
                 status=status.HTTP_400_BAD_REQUEST,
             )
         data_report = serializer.save()
-        goal_serializers = {
-            GoalStandard: GoalStandardSerializer,
-            GoalTransaction: GoalTransactionSerializer
-        }
+        goal_serializers = {GoalStandard: GoalStandardSerializer, GoalTransaction: GoalTransactionSerializer}
         errors = []
         for goal_data in goals_data:
             goal = Goal.objects.get(id=goal_data["id"])
@@ -162,7 +147,7 @@ class DataReportViewSet(ModelViewSetWithoutPatch, OrgMixin):
             # goal = Goal.objects.get(pk=pk)
         except (Organization.DoesNotExist, DataReport.DoesNotExist):
             return JsonResponse({"status": "error", "message": "No such resource."})
-        
+
         summaries = {}
         for goal in data_report.goals():
             # If new properties heave been uploaded, create goal_notes

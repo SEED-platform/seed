@@ -9,6 +9,7 @@ from rest_framework import serializers
 from seed.models import DataReport
 from seed.serializers.goals import GoalSerializer
 
+
 class DataReportSerializer(serializers.ModelSerializer):
     goals = serializers.SerializerMethodField()
 
@@ -18,12 +19,12 @@ class DataReportSerializer(serializers.ModelSerializer):
 
     def get_goals(self, obj):
         goals = []
-        for goalset in ['goalstandard_set', 'goaltransaction_set']:
+        for goalset in ["goalstandard_set", "goaltransaction_set"]:
             goals.extend(getattr(obj, goalset).all())
 
         data = GoalSerializer(goals, many=True).data
         return data
-    
+
     def to_representation(self, obj):
         result = super().to_representation(obj)
         level_index = obj.access_level_instance.depth - 1
@@ -35,7 +36,7 @@ class DataReportSerializer(serializers.ModelSerializer):
         }
         result.update(details)
         return result
-    
+
     def validate(self, data):
         # partial update allows a cycle or ali to be blank
         baseline_cycle = data.get("baseline_cycle") or self.instance.baseline_cycle

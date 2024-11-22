@@ -4,24 +4,15 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
 import json
-from datetime import datetime
 
 from django.urls import reverse_lazy
 
-from seed.landing.models import SEEDUser as User
-from seed.models import Column, Goal, GoalStandard, GoalTransaction, GoalNote, HistoricalNote, DataReport
+from seed.models import DataReport, Goal, GoalNote
 from seed.test_helpers.fake import (
-    FakeColumnFactory,
-    FakeCycleFactory,
-    FakePropertyFactory,
-    FakePropertyStateFactory,
-    FakePropertyViewFactory,
     FakeDataReportFactory,
-    FakeGoalFactory
+    FakeGoalFactory,
 )
-from seed.tests.util import AccessLevelBaseTestCase, GoalStandardTestCase
-from seed.utils.organizations import create_organization
-from seed.serializers.data_reports import DataReportSerializer
+from seed.tests.util import GoalStandardTestCase
 
 
 class DataReportViewTests(GoalStandardTestCase):
@@ -40,7 +31,6 @@ class DataReportViewTests(GoalStandardTestCase):
         response = self.client.get(url, content_type="application/json")
         assert response.status_code == 200
         assert len(response.json()["data_reports"]) == 1
-
 
     def test_data_report_retrieve(self):
         self.login_as_child_member()
@@ -61,7 +51,7 @@ class DataReportViewTests(GoalStandardTestCase):
         assert response.status_code == 404
         assert response.json()["message"] == "No such resource."
 
-    def test_data_report_destroy(self):        
+    def test_data_report_destroy(self):
         data_report_count = DataReport.objects.count()
 
         # invalid permission
@@ -90,7 +80,7 @@ class DataReportViewTests(GoalStandardTestCase):
         goal_count = Goal.objects.count()
         goal_note_count = GoalNote.objects.count()
 
-        def reset_data_report_data(name, type, goals_data=[]):
+        def reset_data_report_data(name, report_type, goals_data=[]):
             return {
                 "organization": self.org.id,
                 "baseline_cycle": self.cycle1.id,
@@ -98,10 +88,10 @@ class DataReportViewTests(GoalStandardTestCase):
                 "access_level_instance": self.child_ali.id,
                 "target_percentage": 20,
                 "name": name,
-                "type": type,
-                "goals_data": goals_data
+                "type": report_type,
+                "goals_data": goals_data,
             }
-        
+
         data_report_data = reset_data_report_data("data report 1", "standard")
 
         # leaves have invalid permissions
@@ -146,7 +136,7 @@ class DataReportViewTests(GoalStandardTestCase):
                 "eui_column3": None,
                 "area_column": self.area_column.id,
                 "transaction_column": self.transaction_column.id,
-            }
+            },
         ]
         data_report_data = reset_data_report_data("data report 2", "standard", goals_data)
         response = self.client.post(url, data=json.dumps(data_report_data), content_type="application/json")
@@ -154,7 +144,7 @@ class DataReportViewTests(GoalStandardTestCase):
         assert DataReport.objects.count() == data_report_count + 2
         assert Goal.objects.count() == goal_count + 3
         # 2 properties per goal => 6 new goal notes
-        assert GoalNote.objects.count() == goal_note_count + 6 
+        assert GoalNote.objects.count() == goal_note_count + 6
 
         # incorrect org
         data_report_data = reset_data_report_data("wrong org data_report", "standard")
@@ -171,9 +161,9 @@ class DataReportViewTests(GoalStandardTestCase):
         )
         data_report = data_report_factory.get_data_report(name="original name")
         goal_factory = FakeGoalFactory(data_report=data_report)
-        goal1 = goal_factory.get_goal(type="standard", name="g1")
-        goal2 = goal_factory.get_goal(type="standard", name="g2")
-        goal3 = goal_factory.get_goal(type="transaction", name="g3", transaction_column=self.transaction_column)
+        goal1 = goal_factory.get_goal(goal_type="standard", name="g1")
+        goal2 = goal_factory.get_goal(goal_type="standard", name="g2")
+        goal_factory.get_goal(goal_type="transaction", name="g3", transaction_column=self.transaction_column)
 
         # invalid permission
         self.login_as_child_member()
@@ -182,10 +172,7 @@ class DataReportViewTests(GoalStandardTestCase):
             "name": "new name",
             "baseline_cycle": self.cycle2.id,
             "target_percentage": 99,
-            "goals_data": [
-                {"id": goal1.id, "name": "g1 new", "eui_column1": self.eui_column3.id},
-                {"id": goal2.id, "name": "g2 new"}
-            ]
+            "goals_data": [{"id": goal1.id, "name": "g1 new", "eui_column1": self.eui_column3.id}, {"id": goal2.id, "name": "g2 new"}],
         }
         response = self.client.put(url, data=json.dumps(data_report_data), content_type="application/json")
         assert response.status_code == 403
@@ -208,68 +195,85 @@ class DataReportViewTests(GoalStandardTestCase):
         # unexpected fields
         # invalid data
 
-
     def test_portfolio_summary(self):
-            self.login_as_child_member()
-            url = reverse_lazy("api:v3:data_reports-portfolio-summary", args=[self.root_data_report.id]) + "?organization_id=" + str(self.org.id)
-            response = self.client.get(url, content_type="application/json")
-            assert response.status_code == 404
-            assert response.json()["message"] == "No such resource."
+        self.login_as_child_member()
+        url = (
+            reverse_lazy("api:v3:data_reports-portfolio-summary", args=[self.root_data_report.id]) + "?organization_id=" + str(self.org.id)
+        )
+        response = self.client.get(url, content_type="application/json")
+        assert response.status_code == 404
+        assert response.json()["message"] == "No such resource."
 
-            url = reverse_lazy("api:v3:data_reports-portfolio-summary", args=[self.child_data_report.id]) + "?organization_id=" + str(self.org.id)
-            response = self.client.get(url, content_type="application/json")
-            summaries = response.json()
-            # only properties with passed_checks and not new_or_acquired are included in calc
+        url = (
+            reverse_lazy("api:v3:data_reports-portfolio-summary", args=[self.child_data_report.id]) + "?organization_id=" + str(self.org.id)
+        )
+        response = self.client.get(url, content_type="application/json")
+        summaries = response.json()
+        # only properties with passed_checks and not new_or_acquired are included in calc
 
-            assert list(summaries.keys()) == [str(self.child_goal.id), str(self.child_goal_extra.id)]
-            g1 = summaries[str(self.child_goal.id)]
-            g2 = summaries[str(self.child_goal_extra.id)]
-            exp_keys = ['baseline', 'total_properties', 'shared_sqft', 'total_passing', 'total_new_or_acquired', 'passing_committed', 'passing_shared', 'current', 'sqft_change', 'eui_change']
-            assert list(g1.keys()) == exp_keys
-            assert list(g2.keys()) == exp_keys
-            assert g1["shared_sqft"] == 15
-            assert g2["shared_sqft"] == 150
+        assert list(summaries.keys()) == [str(self.child_goal.id), str(self.child_goal_extra.id)]
+        g1 = summaries[str(self.child_goal.id)]
+        g2 = summaries[str(self.child_goal_extra.id)]
+        exp_keys = [
+            "baseline",
+            "total_properties",
+            "shared_sqft",
+            "total_passing",
+            "total_new_or_acquired",
+            "passing_committed",
+            "passing_shared",
+            "current",
+            "sqft_change",
+            "eui_change",
+        ]
+        assert list(g1.keys()) == exp_keys
+        assert list(g2.keys()) == exp_keys
+        assert g1["shared_sqft"] == 15
+        assert g2["shared_sqft"] == 150
 
-            for goalnote in self.child_goal.goalnote_set.all():
-                goalnote.passed_checks = True
-                goalnote.save()
+        for goalnote in self.child_goal.goalnote_set.all():
+            goalnote.passed_checks = True
+            goalnote.save()
 
-            response = self.client.get(url, content_type="application/json")
-            summaries = response.json()
+        response = self.client.get(url, content_type="application/json")
+        summaries = response.json()
 
-            exp_summary = {
-                "baseline": {"cycle_name": "2001 Annual", "total_kbtu": 44, "total_sqft": 9, "weighted_eui": 4},
-                "current": {"cycle_name": "2003 Annual", "total_kbtu": 110, "total_sqft": 15, "weighted_eui": 7},
-                "eui_change": -75,
-                "passing_committed": None,
-                "passing_shared": 100,
-                "shared_sqft": 15,
-                "sqft_change": 40,
-                "total_new_or_acquired": 0,
-                "total_passing": 2,
-                "total_properties": 2,
-            }
-            assert summaries[str(self.child_goal.id)] == exp_summary
+        exp_summary = {
+            "baseline": {"cycle_name": "2001 Annual", "total_kbtu": 44, "total_sqft": 9, "weighted_eui": 4},
+            "current": {"cycle_name": "2003 Annual", "total_kbtu": 110, "total_sqft": 15, "weighted_eui": 7},
+            "eui_change": -75,
+            "passing_committed": None,
+            "passing_shared": 100,
+            "shared_sqft": 15,
+            "sqft_change": 40,
+            "total_new_or_acquired": 0,
+            "total_passing": 2,
+            "total_properties": 2,
+        }
 
-            # with extra data
-            for goalnote in self.child_goal_extra.goalnote_set.all():
-                goalnote.passed_checks = True
-                goalnote.save()
+        assert summaries[str(self.child_goal.id)] == exp_summary
 
-            url = reverse_lazy("api:v3:data_reports-portfolio-summary", args=[self.child_data_report.id]) + "?organization_id=" + str(self.org.id)
-            response = self.client.get(url, content_type="application/json")
-            summaries = response.json()
-            exp_summary = {
-                "baseline": {"cycle_name": "2001 Annual", "total_kbtu": 200, "total_sqft": 20, "weighted_eui": 10},
-                "current": {"cycle_name": "2003 Annual", "total_kbtu": 5000, "total_sqft": 150, "weighted_eui": 33},
-                "eui_change": -229,
-                "passing_committed": None,
-                "passing_shared": 100,
-                "shared_sqft": 150.0,
-                "sqft_change": 86,
-                "total_new_or_acquired": 0,
-                "total_passing": 2,
-                "total_properties": 2,
-            }
+        # with extra data
+        for goalnote in self.child_goal_extra.goalnote_set.all():
+            goalnote.passed_checks = True
+            goalnote.save()
 
-            assert summaries[str(self.child_goal_extra.id)] == exp_summary
+        url = (
+            reverse_lazy("api:v3:data_reports-portfolio-summary", args=[self.child_data_report.id]) + "?organization_id=" + str(self.org.id)
+        )
+        response = self.client.get(url, content_type="application/json")
+        summaries = response.json()
+        exp_summary = {
+            "baseline": {"cycle_name": "2001 Annual", "total_kbtu": 200, "total_sqft": 20, "weighted_eui": 10},
+            "current": {"cycle_name": "2003 Annual", "total_kbtu": 5000, "total_sqft": 150, "weighted_eui": 33},
+            "eui_change": -229,
+            "passing_committed": None,
+            "passing_shared": 100,
+            "shared_sqft": 150.0,
+            "sqft_change": 86,
+            "total_new_or_acquired": 0,
+            "total_passing": 2,
+            "total_properties": 2,
+        }
+
+        assert summaries[str(self.child_goal_extra.id)] == exp_summary

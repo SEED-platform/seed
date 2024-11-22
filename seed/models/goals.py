@@ -3,14 +3,13 @@ SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and othe
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
-from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.db.models import Q
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from polymorphic.models import PolymorphicModel
 
-from seed.models import Column, Property, PropertyView
+from seed.models import Column, Property
 from seed.models.data_reports import DataReport
 
 
@@ -36,6 +35,7 @@ class Goal(PolymorphicModel):
         view_ids = self.data_report.current_cycle.propertyview_set.all().values_list("id", flat=True)
         return list(view_ids)
 
+
 class GoalStandard(Goal):
     name = models.CharField(max_length=255)
     data_report = models.ForeignKey(DataReport, on_delete=models.CASCADE)
@@ -46,6 +46,7 @@ class GoalStandard(Goal):
 
     class Meta:
         ordering = ["name"]
+
 
 class GoalTransaction(Goal):
     name = models.CharField(max_length=255)
@@ -59,6 +60,7 @@ class GoalTransaction(Goal):
 
     class Meta:
         ordering = ["name"]
+
 
 @receiver(post_save, sender=Goal)
 @receiver(post_save, sender=GoalStandard)

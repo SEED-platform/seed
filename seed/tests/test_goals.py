@@ -4,21 +4,11 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
 import json
-from datetime import datetime
 
 from django.urls import reverse_lazy
 
-from seed.landing.models import SEEDUser as User
-from seed.models import Column, Goal, GoalStandard, GoalNote, HistoricalNote, DataReport
-from seed.test_helpers.fake import (
-    FakeColumnFactory,
-    FakeCycleFactory,
-    FakePropertyFactory,
-    FakePropertyStateFactory,
-    FakePropertyViewFactory,
-)
-from seed.tests.util import AccessLevelBaseTestCase, GoalStandardTestCase
-from seed.utils.organizations import create_organization
+from seed.models import Column, Goal, GoalNote, HistoricalNote
+from seed.tests.util import GoalStandardTestCase
 
 
 class GoalViewTests(GoalStandardTestCase):
@@ -40,7 +30,11 @@ class GoalViewTests(GoalStandardTestCase):
 
     def test_goal_retrieve(self):
         self.login_as_child_member()
-        url = reverse_lazy("api:v3:goals-detail", args=[self.child_data_report.id, self.child_goal.id]) + "?organization_id=" + str(self.org.id)
+        url = (
+            reverse_lazy("api:v3:goals-detail", args=[self.child_data_report.id, self.child_goal.id])
+            + "?organization_id="
+            + str(self.org.id)
+        )
         response = self.client.get(url, content_type="application/json")
         assert response.status_code == 200
         goal = response.json()
@@ -52,41 +46,59 @@ class GoalViewTests(GoalStandardTestCase):
         assert response.status_code == 404
         assert response.json()["message"] == "No such resource."
 
-        url = reverse_lazy("api:v3:goals-detail", args=[self.root_data_report.id, self.root_goal.id]) + "?organization_id=" + str(self.org.id)
+        url = (
+            reverse_lazy("api:v3:goals-detail", args=[self.root_data_report.id, self.root_goal.id]) + "?organization_id=" + str(self.org.id)
+        )
         response = self.client.get(url, content_type="application/json")
         assert response.status_code == 404
         assert response.json()["message"] == "No such resource."
 
-        url = reverse_lazy("api:v3:goals-detail", args=[self.child_data_report.id, self.child_goal.id]) + "?organization_id=" + str(self.org2.id)
+        url = (
+            reverse_lazy("api:v3:goals-detail", args=[self.child_data_report.id, self.child_goal.id])
+            + "?organization_id="
+            + str(self.org2.id)
+        )
         response = self.client.get(url, content_type="application/json")
         assert response.status_code == 403
         assert response.json()["message"] == "No relationship to organization"
-
 
     def test_goal_destroy(self):
         goal_count = Goal.objects.count()
 
         # invalid permission
         self.login_as_child_member()
-        url = reverse_lazy("api:v3:goals-detail", args=[self.root_data_report.id, self.root_goal.id]) + "?organization_id=" + str(self.org.id)
+        url = (
+            reverse_lazy("api:v3:goals-detail", args=[self.root_data_report.id, self.root_goal.id]) + "?organization_id=" + str(self.org.id)
+        )
         response = self.client.delete(url, content_type="application/json")
         assert response.status_code == 403
         assert Goal.objects.count() == goal_count
 
-        url = reverse_lazy("api:v3:goals-detail", args=[self.child_data_report.id, self.child_goal.id]) + "?organization_id=" + str(self.org.id)
+        url = (
+            reverse_lazy("api:v3:goals-detail", args=[self.child_data_report.id, self.child_goal.id])
+            + "?organization_id="
+            + str(self.org.id)
+        )
         response = self.client.delete(url, content_type="application/json")
         assert response.status_code == 403
         assert Goal.objects.count() == goal_count
 
-
-        url = reverse_lazy("api:v3:goals-detail", args=[self.root_data_report.id, self.child_goal.id]) + "?organization_id=" + str(self.org.id)
+        url = (
+            reverse_lazy("api:v3:goals-detail", args=[self.root_data_report.id, self.child_goal.id])
+            + "?organization_id="
+            + str(self.org.id)
+        )
         response = self.client.delete(url, content_type="application/json")
         assert response.status_code == 403
         assert Goal.objects.count() == goal_count
 
         # valid
         self.login_as_root_member()
-        url = reverse_lazy("api:v3:goals-detail", args=[self.child_data_report.id, self.child_goal.id]) + "?organization_id=" + str(self.org.id)
+        url = (
+            reverse_lazy("api:v3:goals-detail", args=[self.child_data_report.id, self.child_goal.id])
+            + "?organization_id="
+            + str(self.org.id)
+        )
         response = self.client.delete(url, content_type="application/json")
         assert response.status_code == 204
         assert Goal.objects.count() == goal_count - 1
@@ -139,7 +151,7 @@ class GoalViewTests(GoalStandardTestCase):
         response = self.client.post(url, data=json.dumps(goal_data), content_type="application/json")
         assert response.status_code == 400
         errors = response.json()
-        assert errors == {'eui_column1': ['Invalid pk "9998" - object does not exist.']}
+        assert errors == {"eui_column1": ['Invalid pk "9998" - object does not exist.']}
         assert Goal.objects.count() == goal_count
 
         # columns must be unique
@@ -167,16 +179,14 @@ class GoalViewTests(GoalStandardTestCase):
         assert response.json()["message"] == "No relationship to organization"
 
     def test_goal_update(self):
-        original_goal = Goal.objects.get(id=self.child_goal.id)
-        goal_note_count = GoalNote.objects.count()
-
         # invalid permission
         self.login_as_child_member()
-        url = reverse_lazy("api:v3:goals-detail", args=[self.child_data_report.id, self.child_goal.id]) + "?organization_id=" + str(self.org.id)
-        goal_data = {
-            "name": "new name",
-            "eui_column1": self.eui_column3.id
-        }
+        url = (
+            reverse_lazy("api:v3:goals-detail", args=[self.child_data_report.id, self.child_goal.id])
+            + "?organization_id="
+            + str(self.org.id)
+        )
+        goal_data = {"name": "new name", "eui_column1": self.eui_column3.id}
         response = self.client.put(url, data=json.dumps(goal_data), content_type="application/json")
         assert response.status_code == 403
 
@@ -270,7 +280,6 @@ class GoalViewTests(GoalStandardTestCase):
         assert response.status_code == 200
         assert response.json()["text"] == "updated text"
         assert HistoricalNote.objects.get(property=self.property1).text == "updated text"
-
 
     def test_goal_data(self):
         self.login_as_root_member()

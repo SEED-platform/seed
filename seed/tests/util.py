@@ -4,11 +4,10 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
 import json
-from datetime import date
+from datetime import date, datetime
 from typing import Any, Dict
 
 from django.test import TestCase
-from datetime import datetime
 
 from seed.data_importer.models import ImportFile, ImportRecord
 from seed.landing.models import SEEDUser as User
@@ -20,8 +19,8 @@ from seed.models import (
     Column,
     ColumnMapping,
     Cycle,
-    DataReport,
     DataLogger,
+    DataReport,
     DerivedColumn,
     GoalStandard,
     GreenAssessment,
@@ -283,6 +282,7 @@ class AssertDictSubsetMixin:
         # Note that this only works in Python >= 3.9
         self.assertEqual(dictionary, dictionary | subset)
 
+
 class GoalStandardTestCase(AccessLevelBaseTestCase):
     def setUp(self):
         super().setUp()
@@ -305,7 +305,7 @@ class GoalStandardTestCase(AccessLevelBaseTestCase):
         self.eui_column2 = Column.objects.get(organization=self.org.id, column_name="source_eui")
         self.eui_column3 = Column.objects.get(organization=self.org.id, column_name="site_eui")
         self.area_column = Column.objects.get(organization=self.org.id, column_name="gross_floor_area")
-        
+
         extra_eui = Column.objects.create(
             table_name="PropertyState",
             column_name="extra_eui",
@@ -324,7 +324,6 @@ class GoalStandardTestCase(AccessLevelBaseTestCase):
             organization=self.org,
             is_extra_data=True,
         )
-
 
         # properties
         # property_details_{property}{cycle}
@@ -369,7 +368,6 @@ class GoalStandardTestCase(AccessLevelBaseTestCase):
         self.view33 = self.property_view_factory.get_property_view(prprty=self.property3, state=self.state_33, cycle=self.cycle3)
         self.view41 = self.property_view_factory.get_property_view(prprty=self.property4, state=self.state_41, cycle=self.cycle1)
 
-
         self.root_data_report = DataReport.objects.create(
             name="root_data_report",
             organization=self.org,
@@ -394,7 +392,6 @@ class GoalStandardTestCase(AccessLevelBaseTestCase):
             current_cycle=self.cycle3,
             access_level_instance=self.child_ali,
             target_percentage=20,
-
         )
         self.child_goal = GoalStandard.objects.create(
             name="child_goal",
