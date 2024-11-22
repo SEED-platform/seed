@@ -25,7 +25,7 @@
       <!-- DES -->
       <div class="form-group system-container" ng-if="system.type == 'DES'">
         <label class="control-label sectionLabel">DES Type</label>
-        <select class="form-control" ng-model="system.des_type" ng-dropdown  ng-change="change_des_type()" required>
+        <select class="form-control" ng-model="system.des_type" ng-dropdown ng-change="change_des_type()" required>
           <option ng-repeat="des_type in des_types" selected="selected" ng-value="des_type">{$:: des_type $}</option>
         </select>
         <div ng-if="system.des_type && system.des_type !== 'Chiller'">

@@ -33,8 +33,8 @@ angular.module('SEED.controller.inventory_group_detail_systems', [])
       $scope.group_id = $stateParams.group_id;
       $scope.inventory_display_name = group.name;
       $scope.systems = systems.data;
-      const system_types = ['DES - Cooling', 'DES - Heating', 'EVSE', 'Battery']
-      const all_systems = system_types.flatMap(type => $scope.systems[type] ?? [])
+      const system_types = ['DES - Cooling', 'DES - Heating', 'EVSE', 'Battery'];
+      const all_systems = system_types.flatMap((type) => $scope.systems[type] ?? []);
       const org_id = organization_payload.organization.id;
       $scope.filler_cycle = cycles.cycles[0].id;
 

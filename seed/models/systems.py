@@ -14,6 +14,7 @@ from seed.models import InventoryGroup
 ureg.define("MMBtu = 1e6 * Btu")
 ureg.define("Ton = 12000 * Btu / hour")
 
+
 class System(models.Model):
     name = models.CharField(max_length=255)
     group = models.ForeignKey(InventoryGroup, on_delete=models.CASCADE, related_name="systems")
@@ -44,10 +45,10 @@ class DESSystem(System):
     class Meta:
         constraints = [
             models.CheckConstraint(
-                check=Q(heating_capacity__isnull=False) | Q(cooling_capacity__isnull=False),
-                name="heating_or_cooling_capacity_required"
+                check=Q(heating_capacity__isnull=False) | Q(cooling_capacity__isnull=False), name="heating_or_cooling_capacity_required"
             )
         ]
+
 
 class EVSESystem(System):
     LEVEL1 = 0
@@ -63,7 +64,6 @@ class EVSESystem(System):
     power = QuantityField("kW", null=False)
     voltage = QuantityField("V", null=False)
     count = models.IntegerField(default=1, null=False)
-
 
 
 class BatterySystem(System):

@@ -42,7 +42,7 @@ angular.module('SEED.controller.system_modal', []).controller('system_modal_cont
       } else {
         $scope.system_heating_capacity = null;
       }
-    }
+    };
     if ($scope.system.type === 'des') {
       $scope.change_des_type();
     }
@@ -65,8 +65,8 @@ angular.module('SEED.controller.system_modal', []).controller('system_modal_cont
         },
         (response) => {
           let errors = response.data.errors;
-          if (typeof(errors) !== 'string') {
-            errors = Object.values(errors)
+          if (typeof (errors) !== 'string') {
+            errors = Object.values(errors);
           }
           Notification.error(`${errors}`);
         }

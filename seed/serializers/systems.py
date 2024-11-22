@@ -94,7 +94,7 @@ class DESSystemSerializer(SystemSerializer):
             "cooling_capacity": collapse_unit(org, obj.cooling_capacity),
             "count": obj.count,
             "heating_capacity": collapse_unit(org, obj.heating_capacity),
-            "mode": mode
+            "mode": mode,
         }
 
 

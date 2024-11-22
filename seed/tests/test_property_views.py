@@ -2000,6 +2000,7 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
                 "service_name": None,
                 "service_group": None,
                 "service_id": None,
+                "property_display_field": self.property_view_1.state.address_line_1,
             },
             {
                 "id": gas_meter.id,
@@ -2025,6 +2026,7 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
                 "service_name": None,
                 "service_group": None,
                 "service_id": None,
+                "property_display_field": self.property_view_1.state.address_line_1,
             },
             {
                 "id": gb_gas_meter.id,
@@ -2050,6 +2052,7 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
                 "service_name": None,
                 "service_group": None,
                 "service_id": None,
+                "property_display_field": self.property_view_1.state.address_line_1,
             },
         ]
 
