@@ -1024,6 +1024,12 @@ class OrganizationViewSet(viewsets.ViewSet):
         ys = [building["y"] for datum in data for building in datum["chart_data"] if building["y"] is not None]
         if ys and isinstance(ys[0], Number):
             bins = np.histogram_bin_edges(ys, bins=5)
+
+            # special case for year built: make bins integers
+            # year built is in x axis, but it shows up in y_var variable
+            if params["y_var"] == "year_built":
+                bins = bins.astype(int)
+
             aggregate_data = self.continuous_aggregate_data
         else:
             bins = list(set(ys))
@@ -1243,15 +1249,19 @@ class OrganizationViewSet(viewsets.ViewSet):
             return [axis_var, ali.name, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
     def get_axis_data(self, organization_id, access_level_instance, cycles, x_var, y_var, all_property_views, fields):
-        axis_data = []
+        axis_data = {}
         axes = {"x": x_var, "y": y_var}
         organization = Organization.objects.get(pk=organization_id)
 
+        # initialize
+        for cycle in cycles:
+            axis_data[cycle.name] = {}
+
         for axis in axes:
             if axes[axis] != "Count":
-                columns = Column.objects.filter(organization_id=organization_id, column_name=axes[axis])
+                columns = Column.objects.filter(organization_id=organization_id, column_name=axes[axis], table_name="PropertyState")
                 if not columns:
-                    return []
+                    return {}
 
                 column = columns[0]
                 if not column.data_type or column.data_type == "None":
@@ -1266,19 +1276,24 @@ class OrganizationViewSet(viewsets.ViewSet):
                     name_to_display = (
                         serialized_column["display_name"] if serialized_column["display_name"] != "" else serialized_column["column_name"]
                     )
-                    axis_name = name_to_display + f" ({cycle.name})"
+                    axis_data[cycle.name][name_to_display] = {}
                     stats = self.get_axis_stats(organization, cycle, axis, axes[axis], all_property_views, access_level_instance)
-                    axis_data.append(self.clean_axis_data(axis_name, data_type, stats))
-                    for child_ali in access_level_instance.get_children():
-                        stats = self.get_axis_stats(organization, cycle, axis, axes[axis], all_property_views, child_ali)
-                        axis_data.append(self.clean_axis_data(axis_name, data_type, stats))
+                    axis_data[cycle.name][name_to_display]["values"] = self.clean_axis_data(data_type, stats)
+
+                    children = access_level_instance.get_children()
+                    if len(children):
+                        axis_data[cycle.name][name_to_display]["children"] = {}
+                        for child_ali in children:
+                            stats = self.get_axis_stats(organization, cycle, axis, axes[axis], all_property_views, child_ali)
+                            axis_data[cycle.name][name_to_display]["children"][child_ali.name] = self.clean_axis_data(data_type, stats)
+
         return axis_data
 
-    def clean_axis_data(self, column_name, data_type, data):
+    def clean_axis_data(self, data_type, data):
         if data_type == "float":
-            return [column_name] + data[1:3] + np.round(data[3:], decimals=2).tolist()
+            return data[1:3] + np.round(data[3:], decimals=2).tolist()
         elif data_type == "integer":
-            return [column_name] + data[1:3] + np.round(data[3:]).tolist()
+            return data[1:3] + np.round(data[3:]).tolist()
 
     @has_perm_class("requires_member")
     @ajax_request_class

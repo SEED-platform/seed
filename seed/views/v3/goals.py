@@ -175,8 +175,6 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
             only_used=False,
             include_related=False,
         )
-        # need metric 1
-        # need metric 2
         show_columns = list(Column.objects.filter(organization_id=org_id).values_list("id", flat=True))
         key1, key2 = ("baseline", "current") if baseline_first else ("current", "baseline")
 
@@ -268,12 +266,6 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
             property["eui_change"] = percentage(property["baseline_eui"], property["current_eui"])
 
             properties.append(property)
-        # UNIT ERRORS, need to convert quantity to number
-        # not mine, but others. check taxlot property serialize unit conversion.
-        # SHOULD REALLY HAVE A SHORT LIST OF COLUMNS
-
-        # PAGINATION
-        # FILTERS
 
         return JsonResponse(
             {
