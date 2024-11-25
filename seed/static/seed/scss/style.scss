@@ -5136,32 +5136,32 @@ ul.r-list {
     min-width: 900px;
   }
 
-  .goals-header-text {
+  .data-reports-header-text {
     min-height: 30px;
     padding: 10px 10px 0;
   }
 
-  .goal-header-wrapper {
+  .data-report-header-wrapper {
     display: flex;
     justify-content: space-between;
     margin-right: 24px;
 
-    .goal-header-column {
+    .data-report-header-column {
       div {
         margin: 0 10px;
       }
 
-      .goal-select-wrapper {
+      .data-report-select-wrapper {
         display: flex;
         min-height: 30px;
         margin: 15px;
 
-        .goal-select-label {
+        .data-report-select-label {
           margin-top: auto;
         }
 
-        .goal-selection {
-          #goal-select {
+        .data-report-selection {
+          #data-report-select {
             width: 30vw;
             max-width: 512px;
             background: #f5f5f5;
@@ -5311,7 +5311,7 @@ ul.r-list {
     justify-content: space-between;
     display: flex;
 
-    .goal-actions-dropdown {
+    .data-report-actions-dropdown {
       .actions-toggle {
         width: 200px;
         border: 1px solid #d3d3d3;
@@ -5328,7 +5328,7 @@ ul.r-list {
       }
 
       .dropdown-menu {
-        .goal-action {
+        .data-report-action {
           padding: 4px;
           width: 200px;
 
@@ -5341,7 +5341,7 @@ ul.r-list {
     }
   }
 
-  .goal-details-container {
+  .data-report-details-container {
     padding: 10px;
     display: flex;
     border: 1px solid rgb(197 197 197);
@@ -5350,17 +5350,17 @@ ul.r-list {
     width: fit-content;
     margin: 0 24px;
 
-    .goal-details-column {
-      .goal-detail {
+    .data-report-details-column {
+      .data-report-detail {
         display: flex;
 
-        .goal-detail-key {
+        .data-report-detail-key {
           text-align: right;
           width: 120px;
           padding-right: 10px;
         }
 
-        .goal-detail-value {
+        .data-report-detail-value {
           font-weight: bold;
           white-space: nowrap;
           text-overflow: ellipsis;
@@ -5372,33 +5372,33 @@ ul.r-list {
   }
 }
 
-.goals-text {
+.data-reports-text {
   padding: 5px 100px 10px 10px;
   font-size: 1.1em;
 }
 
-#goal-details {
+#data-report-details {
   max-height: 70vh;
   overflow: scroll;
 
   // display: flex;
   // column-gap: 10px;
 
-  .goal-label {
+  .data-report-label {
     width: 150px;
   }
 
-  .goal-form-control {
+  .data-report-form-control {
     height: unset;
     padding: 0;
   }
 }
 
-#goal-list {
+#data-report-list {
   max-height: 485px;
 }
 
-#goal-messages {
+#data-report-messages {
   margin: 10px;
   padding: 10px;
   border-radius: 10px;
@@ -5493,7 +5493,7 @@ tags-input .tags .tag-item {
   }
 }
 
-.goal-name {
+.data-report-name {
   overflow: hidden;
   text-overflow: ellipsis;
 }

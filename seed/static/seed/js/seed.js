@@ -186,6 +186,7 @@
     'SEED.service.compliance_metric',
     'SEED.service.cycle',
     'SEED.service.data_quality',
+    'SEED.service.data_report',
     'SEED.service.data_view',
     'SEED.service.dataset',
     'SEED.service.derived_columns',

@@ -31,13 +31,14 @@ class PropertyViewLabelViewSet(ModelViewSetWithoutPatch, OrgMixin):
         goal_id = request.GET.get("goal_id")
         try:
             goal = Goal.objects.get(id=goal_id)
+            data_report = goal.data_report
         except Goal.DoesNotExist:
             return JsonResponse({"status": "error", "message": "Goal does not exist"})
         cycle = request.GET.get("cycle")
         if cycle == "baseline":
-            cycle = goal.baseline_cycle
+            cycle = data_report.baseline_cycle
         elif cycle == "current":
-            cycle = goal.current_cycle
+            cycle = data_report.current_cycle
         else:
             return JsonResponse({"stutus": "error", "message": "invalid cycle, must be 'baseline' or 'current'"})
         pvls = PropertyViewLabel.objects.filter(Q(propertyview__cycle=cycle) & (Q(goal=goal_id) | Q(goal__isnull=True)))

@@ -12,6 +12,7 @@ angular.module('SEED.controller.portfolio_summary', [])
     'urls',
     'ah_service',
     'data_quality_service',
+    'data_report_service',
     'inventory_service',
     'label_service',
     'goal_service',
@@ -34,6 +35,7 @@ angular.module('SEED.controller.portfolio_summary', [])
       urls,
       ah_service,
       data_quality_service,
+      data_report_service,
       inventory_service,
       label_service,
       goal_service,
@@ -56,7 +58,8 @@ angular.module('SEED.controller.portfolio_summary', [])
       $scope.cycles = cycles.cycles;
       $scope.access_level_tree = access_level_tree.access_level_tree;
       $scope.level_names = access_level_tree.access_level_names;
-      $scope.goal = {};
+      $scope.goal = {}; //rp
+      $scope.data_report = {}
       $scope.columns = property_columns;
       $scope.cycle_columns = [];
       $scope.area_columns = [];
@@ -90,10 +93,11 @@ angular.module('SEED.controller.portfolio_summary', [])
         const per_page = 50;
         const data = {
           goal_id: $scope.goal.id,
+          data_report_id: $scope.data_report.id,
           page,
           per_page,
           baseline_first,
-          access_level_instance_id: $scope.goal.access_level_instance,
+          access_level_instance_id: $scope.data_report.access_level_instance,
           related_model_sort: $scope.related_model_sort
         };
         const column_filters = $scope.column_filters;
@@ -111,22 +115,25 @@ angular.module('SEED.controller.portfolio_summary', [])
       };
 
       // optionally pass a goal name to be set as $scope.goal - used on modal close
-      const get_goals = (goal_name = false) => {
-        goal_service.get_goals().then((result) => {
-          $scope.goals = result.goals;
-          $scope.goal = goal_name ?
-            $scope.goals.find((goal) => goal.name === goal_name) :
-            $scope.goals[0];
-          format_goal_details();
+      const get_data_reports = (data_report_name = false) => {
+        data_report_service.get_data_reports().then((result) => {
+          $scope.data_reports = result.data_reports;
+          $scope.data_report = data_report_name ?
+            $scope.data_reports.find((data_report) => data_report.name === data_report_name) :
+            $scope.data_reports[0];
+          console.log($scope.data_report)
+          $scope.goals = $scope.data_report.goals
+          $scope.goal = $scope.goals[0] // RP TEMP
+          format_data_report_details();
           load_summary();
           load_data(1);
         });
       };
-      get_goals();
+      get_data_reports();
 
       const reset_data = () => {
         $scope.valid = true;
-        format_goal_details();
+        format_data_report_details();
         refresh_data();
       };
 
@@ -143,21 +150,21 @@ angular.module('SEED.controller.portfolio_summary', [])
       });
 
       // selected goal details
-      const format_goal_details = () => {
+      const format_data_report_details = () => {
         $scope.change_selected_level_index();
-        const access_level_instance = $scope.potential_level_instances.find((level) => level.id === $scope.goal.access_level_instance).name;
+        const access_level_instance = $scope.potential_level_instances.find((level) => level.id === $scope.data_report.access_level_instance).name;
 
-        const commitment_sqft = $scope.goal.commitment_sqft?.toLocaleString() || 'n/a';
-        $scope.goal_details = [
+        const commitment_sqft = $scope.data_report.commitment_sqft?.toLocaleString() || 'n/a';
+        $scope.data_report_details = [
           { // column 1
-            'Baseline Cycle': $scope.goal.baseline_cycle_name,
-            'Current Cycle': $scope.goal.current_cycle_name,
-            [$scope.goal.level_name]: access_level_instance,
-            'Total Properties': null,
+            'Baseline Cycle': $scope.data_report.baseline_cycle_name,
+            'Current Cycle': $scope.data_report.current_cycle_name,
+            [$scope.data_report.level_name]: access_level_instance,
+            'Total Properties': $scope.goal.current_cycle_property_view_ids.length,  // RP TEMP
             'Commitment Sq. Ft': commitment_sqft
           },
           { // column 2
-            'Portfolio Target': `${$scope.goal.target_percentage} %`,
+            'Portfolio Target': `${$scope.data_report.target_percentage} %`,
             'Area Column': $scope.goal.area_column_name,
             'Primary EUI': $scope.goal.eui_column1_name
           }
@@ -175,12 +182,12 @@ angular.module('SEED.controller.portfolio_summary', [])
         _.delay($scope.updateHeight, 150);
       };
 
-      const get_goal_stats = (summary) => {
+      const get_data_report_stats = (summary) => {
         const passing_sqft = summary.current ? summary.current.total_sqft : null;
         // show help text if less than {50}% of properties are passing checks
         $scope.show_help = summary.total_passing <= summary.total_properties * 0.5;
-        $scope.goal_stats = [
-          { name: 'Commitment (Sq. Ft)', value: $scope.goal.commitment_sqft },
+        $scope.data_report_stats = [
+          { name: 'Commitment (Sq. Ft)', value: $scope.data_report.commitment_sqft },
           { name: 'Shared (Sq. Ft)', value: summary.shared_sqft },
           { name: 'Passing Checks (Sq. Ft)', value: passing_sqft },
           { name: 'Passing Checks (% of committed)', value: summary.passing_committed },
@@ -199,7 +206,7 @@ angular.module('SEED.controller.portfolio_summary', [])
       const access_level_instances_by_depth = ah_service.calculate_access_level_instances_by_depth($scope.access_level_tree);
 
       $scope.change_selected_level_index = () => {
-        const new_level_instance_depth = parseInt($scope.goal.level_name_index, 10) + 1;
+        const new_level_instance_depth = parseInt($scope.data_report.level_name_index, 10) + 1;
         $scope.potential_level_instances = access_level_instances_by_depth[new_level_instance_depth];
       };
 
@@ -224,7 +231,7 @@ angular.module('SEED.controller.portfolio_summary', [])
 
         // on modal close
         modalInstance.result.then((goal_name) => {
-          get_goals(goal_name);
+          get_data_reports(goal_name);
         });
       };
 
@@ -238,8 +245,11 @@ angular.module('SEED.controller.portfolio_summary', [])
         $scope.show_access_level_instances = true;
         $scope.summary_valid = false;
 
-        goal_service.get_portfolio_summary($scope.goal.id).then((result) => {
-          const summary = result.data;
+        data_report_service.get_portfolio_summary($scope.data_report.id).then((result) => {
+          // summary is a dict with summaries for each of the goals, keyed on goal id.
+          let summary = result.data;
+          // RP TEMP
+          summary = summary[$scope.goal.id.toString()]
           set_summary_grid_options(summary);
         }).then(() => {
           $scope.summary_loading = false;
@@ -973,8 +983,8 @@ angular.module('SEED.controller.portfolio_summary', [])
       };
 
       const format_summary = (summary) => {
-        $scope.goal_details[0]['Total Properties'] = summary.total_properties.toLocaleString();
-        get_goal_stats(summary);
+        $scope.data_report_details[0]['Total Properties'] = summary.total_properties.toLocaleString();
+        get_data_report_stats(summary);
         const baseline = summary.baseline;
         const current = summary.current;
         return [{

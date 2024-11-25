@@ -11,6 +11,7 @@ angular.module('SEED.service.goal', []).factory('goal_service', [
   ) => {
     const goal_service = {};
 
+      // RP - Many of these are now unused.
     goal_service.create_goal = (goal) => $http.post('/api/v3/goals/', goal)
       .then((response) => response)
       .catch((response) => response);
@@ -43,13 +44,13 @@ angular.module('SEED.service.goal', []).factory('goal_service', [
       .then((response) => response)
       .catch((response) => response);
 
-    goal_service.get_portfolio_summary = (goal_id) => $http.get(`/api/v3/goals/${goal_id}/portfolio_summary/`, {
-      params: {
-        organization_id: user_service.get_organization().id
-      }
-    })
-      .then((response) => response)
-      .catch((response) => response);
+    // goal_service.get_portfolio_summary = (goal_id) => $http.get(`/api/v3/goals/${goal_id}/portfolio_summary/`, {
+    //   params: {
+    //     organization_id: user_service.get_organization().id
+    //   }
+    // })
+    //   .then((response) => response)
+    //   .catch((response) => response);
 
     goal_service.update_historical_note = (property, historical_note, data) => {
       data.property = property;
@@ -110,7 +111,7 @@ angular.module('SEED.service.goal', []).factory('goal_service', [
         ...format_column_sorts(sorts)
       };
       return $http.put(
-        `/api/v3/goals/${data.goal_id}/data/`,
+        `/api/v3/data_reports/${data.data_report_id}/goals/${data.goal_id}/data/`,
         data,
         { params }
       )

@@ -12,40 +12,42 @@
   <div class="section_nav" ng-include="::urls.static_url + 'seed/partials/insights_nav.html'"></div>
 </div>
 <div class="portfolio-summary-wrapper">
-  <div class="goals-header-text">
+  <div class="data-reports-header-text">
     {$:: 'The portfolio summary page compares 2 cycles to calculate progress toward an Energy Use Intensity reduction goal.' | translate $}
     <span ng-if="write_permission">{$:: 'Cycle selection and goal details can be customized by clicking the Configure Goals button below.' | translate $}</span>
   </div>
-  <div class="goal-header-wrapper">
-    <div class="goal-header-column">
-      <div class="goal-select-wrapper">
-        <label class="goal-select-label" for="goal-select" ng-show="goal" translate>GOAL</label>
-        <div class="goal-selection" ng-show="goal">
-          <select name="goal-select" id="goal-select" ng-options="goal as goal.name for goal in goals" ng-model="goal"></select>
+  <div class="data-report-header-wrapper">
+    <div class="data-report-header-column">
+      <div class="data-report-select-wrapper">
+        <label class="data-report-select-label" for="data-report-select" ng-show="data_report" translate>DATA REPORT</label>
+        <div class="data-report-selection" ng-show="data_report">
+          <select name="data-report-select" id="data-report-select" ng-options="data_report as data_report.name for data_report in data_reports" ng-model="data_report"></select>
         </div>
         <button class="btn btn-primary portfolio-summary-btn" type="submit" ng-click="open_goal_editor_modal()" ng-if="write_permission">{$:: 'Configure Goals' | translate $}</button>
       </div>
-      <!-- GOAL DETAILS -->
-      <div class="goal-details-container" ng-if="valid">
-        <div class="goal-details-column" style="margin-left: 10px">
-          <div ng-repeat="(k, v) in goal_details[0]" class="goal-detail">
-            <div class="goal-detail-key" style="width: 120px">{$ k $}:</div>
-            <div class="goal-detail-value" uib-tooltip="{$ (v.length > 25) ? v : '' $}">{$ v $}</div>
+      <!-- DATA REPORT DETAILS -->
+      <div class="data-report-details-container">
+      <!-- <div class="data-report-details-container" ng-if="valid"> -->
+        <div class="data-report-details-column" style="margin-left: 10px">
+          <div ng-repeat="(k, v) in data_report_details[0]" class="data-report-detail">
+            <div class="data-report-detail-key" style="width: 120px">{$ k $}:</div>
+            <div class="data-report-detail-value" uib-tooltip="{$ (v.length > 25) ? v : '' $}">{$ v $}</div>
           </div>
         </div>
-        <div class="goal-details-column">
-          <div ng-repeat="(k, v) in goal_details[1]" class="goal-detail">
-            <div class="goal-detail-key">{$ k $}:</div>
-            <div class="goal-detail-value" uib-tooltip="{$ (v.length > 25) ? v : '' $}">{$ v $}</div>
+        <div class="data-report-details-column">
+          <div ng-repeat="(k, v) in data_report_details[1]" class="data-report-detail">
+            <div class="data-report-detail-key">{$ k $}:</div>
+            <div class="data-report-detail-value" uib-tooltip="{$ (v.length > 25) ? v : '' $}">{$ v $}</div>
           </div>
         </div>
       </div>
     </div>
 
-    <div class="goal-header-column" ng-if="valid">
+    <div class="data-report-header-column">
+    <!-- <div class="data-report-header-column" ng-if="valid"> -->
       <table class="table table-striped table-bordered">
         <tbody>
-          <tr ng-repeat="stat in goal_stats">
+          <tr ng-repeat="stat in data_report_stats">
             <td>{$ stat.name $}</td>
             <td>{$ stat.value $}</td>
           </tr>
@@ -88,7 +90,7 @@
   <div class="portfolio-summary-item-count wide-900" ng-if="data_valid">
     <div ng-if="data_valid">
       <div style="display: flex">
-        <div uib-dropdown class="goal-actions-dropdown" ng-if="!viewer">
+        <div uib-dropdown class="data-report-actions-dropdown" ng-if="!viewer">
           <button id="btnCreateNew" type="button" class="btn actions-toggle" uib-dropdown-toggle>
             <span translate>Actions</span>
             <i class="fa-solid fa-chevron-down"></i>
