@@ -184,8 +184,8 @@ class Analysis(models.Model):
         # Element Statistics
         elif self.service == self.ELEMENTSTATISTICS:
             res = []
-            for k,v in results.items():
-                if type(v) is str:
+            for k, v in results.items():
+                if isinstance(v, str):
                     res.append({"name": k, "value": v})
                 else:
                     res.append({"name": k, "value": round(v, 2)})

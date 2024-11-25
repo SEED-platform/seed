@@ -8,7 +8,7 @@ from collections import defaultdict
 
 from celery import chain, shared_task
 from django.db import connection
-from django.db.models import Count, Q, BooleanField
+from django.db.models import BooleanField, Count, Q
 
 from seed.analysis_pipelines.pipeline import (
     AnalysisPipeline,
@@ -116,7 +116,7 @@ def _run_analysis(self, analysis_property_view_ids, analysis_id):
         if ddc_count_column:
             ddc_count = ddc_count_by_property_id.get(property_view.property_id, 0)
             # convert to true/false
-            has_ddc = True if ddc_count > 0 else False
+            has_ddc = bool(ddc_count > 0)
             property_view.state.extra_data[ddc_count_column.column_name] = has_ddc
             analysis_property_view.parsed_results[ddc_count_column.column_name] = has_ddc
 
@@ -185,7 +185,7 @@ def _create_ddc_count_column(analysis):
                 column_name="Has D.D.C Control Panels",
                 organization=analysis.organization,
                 table_name="PropertyState",
-                data_type=BooleanField
+                data_type=BooleanField,
             )
             column.display_name = "Has D.D.C Control Panels"
             column.column_description = "Has D.D.C Control Panels"

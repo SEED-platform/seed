@@ -7,7 +7,6 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 import logging
 
 from celery import chain, shared_task
-from django.db.models import Count, Q
 from pint import Quantity
 
 from seed.analysis_pipelines.pipeline import (

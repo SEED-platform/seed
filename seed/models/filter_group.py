@@ -42,9 +42,7 @@ class FilterGroup(models.Model):
             qd = QueryDict(mutable=True)
             qd.update(self.query_dict)
 
-            filters, annotations, _order_by = build_view_filters_and_sorts(
-                qd, columns, related_model, self.organization.access_level_names
-            )
+            filters, annotations, _order_by = build_view_filters_and_sorts(qd, columns, related_model, self.organization.access_level_names)
 
             filtered_views = views.annotate(**annotations).filter(filters)
         else:
