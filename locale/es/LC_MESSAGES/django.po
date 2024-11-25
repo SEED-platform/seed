@@ -5,7 +5,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: lokalise.com\n"
 "Project-Id-Version: SEED Platform\n"
-"PO-Revision-Date: 2024-11-22 22:56\n"
+"PO-Revision-Date: 2024-11-25 06:30\n"
 "Last-Translator: lokalise.com\n"
 "Language-Team: lokalise.com\n\n"
 "Language: es\n"
@@ -669,6 +669,9 @@ msgstr "Apoyo para el cumplimiento de las normas de rendimiento de edificios (BP
 #, fuzzy
 msgid "Building Square Footage Threshold"
 msgstr "Umbral de metros cuadrados del edificio"
+
+msgid "Building has BAS field"
+msgstr "El edificio tiene campo BAS"
 
 #, fuzzy
 msgid "BuildingSync Recommended Measures"
@@ -2367,6 +2370,9 @@ msgstr "Configuración de la meta"
 #, fuzzy
 msgid "Gross Floor Area"
 msgstr "Superficie bruta"
+
+msgid "HAS_BAS_HELP"
+msgstr "Seleccione el campo que indica si el edificio tiene o no un sistema de automatización de edificios (BAS). Este análisis espera un campo booleano."
 
 #, fuzzy
 msgid "HOW THE SYSTEM AUTO-MATCHES YOUR PROPERTIES AND TAX LOTS:"

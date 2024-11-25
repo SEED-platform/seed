@@ -183,7 +183,13 @@ class Analysis(models.Model):
 
         # Element Statistics
         elif self.service == self.ELEMENTSTATISTICS:
-            return [{"name": k, "value": round(v, 2)} for k, v in results.items()]
+            res = []
+            for k,v in results.items():
+                if type(v) is str:
+                    res.append({"name": k, "value": v})
+                else:
+                    res.append({"name": k, "value": round(v, 2)})
+            return res
         # Building Upgrade Recommendation
         elif self.service == self.UPGRADERECOMMENDATION:
             recommendation = results.get("Building Upgrade Recommendation")

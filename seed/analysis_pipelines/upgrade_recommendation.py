@@ -91,6 +91,7 @@ def _get_views_upgrade_recommendation_category(property_view, config):
     target_gas_eui = get_value("target_gas_eui")
     target_electric_eui = get_value("target_electric_eui")
     condition_index = get_value("condition_index")
+    has_bas = get_value("has_bas")
     year_built = property_view.state.year_built
     gross_floor_area = property_view.state.gross_floor_area
     elements = Element.objects.filter(property=property_view.property_id)
@@ -124,16 +125,17 @@ def _get_views_upgrade_recommendation_category(property_view, config):
     # if young building:
     retrofit_threshold_year = config.get("year_built_threshold")
     if year_built > retrofit_threshold_year:
+        # comment this out: switched to a boolean field instead of a count
         # if has BAS and actual to benchmark eui ratio is "fair"
-        ddc_control_panel_count = elements.annotate(
-            ddc_control_panel_count=Count("id", filter=Q(extra_data__Component_SubType="D.D.C. Control Panel"))
-        )
-        has_bas = False
-        if ddc_control_panel_count:
-            has_bas = ddc_control_panel_count.order_by("ddc_control_panel_count").first().ddc_control_panel_count > 0
+        # ddc_control_panel_count = elements.annotate(
+        #     ddc_control_panel_count=Count("id", filter=Q(extra_data__Component_SubType="D.D.C. Control Panel"))
+        # )
+        # has_bas = False
+        # if ddc_control_panel_count:
+        #     has_bas = ddc_control_panel_count.order_by("ddc_control_panel_count").first().ddc_control_panel_count > 0
 
         fair_actual_to_benchmark_eui_ratio = config.get("fair_actual_to_benchmark_eui_ratio")
-        if ((eui / benchmark) > fair_actual_to_benchmark_eui_ratio) and has_bas:
+        if ((eui / benchmark) > fair_actual_to_benchmark_eui_ratio) and has_bas is True:
             return "Re-tuning"
         else:
             return "NO DER project recommended"

@@ -517,6 +517,9 @@ msgstr "Building Performance Standard (BPS) Compliance Pathway Support"
 msgid "Building Square Footage Threshold"
 msgstr "Building Square Footage Threshold"
 
+msgid "Building has BAS field"
+msgstr "Building has BAS field"
+
 msgid "BuildingSync Recommended Measures"
 msgstr "BuildingSync Recommended Measures"
 
@@ -1813,6 +1816,9 @@ msgstr "Goal Setup"
 
 msgid "Gross Floor Area"
 msgstr "Gross Floor Area"
+
+msgid "HAS_BAS_HELP"
+msgstr "Select the field that indicates whether or not the building has a Building Automation System (BAS). This analysis expects a boolean field."
 
 msgid "HOW THE SYSTEM AUTO-MATCHES YOUR PROPERTIES AND TAX LOTS:"
 msgstr "HOW THE SYSTEM AUTO-MATCHES YOUR PROPERTIES AND TAX LOTS:"

@@ -125,7 +125,8 @@ angular.module('SEED.controller.inventory_detail_analyses_modal', []).controller
               electric_eui: null,
               target_gas_eui: null,
               target_electric_eui: null,
-              condition_index: null
+              condition_index: null,
+              has_bas: null
             },
             total_eui_goal: null,
             ff_eui_goal: null,

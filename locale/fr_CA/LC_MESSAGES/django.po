@@ -522,6 +522,9 @@ msgstr "Assistance au parcours de conformité aux normes de performance des bât
 msgid "Building Square Footage Threshold"
 msgstr "Seuil de superficie en pieds carrés du bâtiment"
 
+msgid "Building has BAS field"
+msgstr "Le bâtiment dispose d'un champ SAB"
+
 msgid "BuildingSync Recommended Measures"
 msgstr "Mesures recommandées par BuildingSync"
 
@@ -1828,6 +1831,9 @@ msgstr "Configuration des objectifs"
 
 msgid "Gross Floor Area"
 msgstr "Surface brute"
+
+msgid "HAS_BAS_HELP"
+msgstr "Sélectionnez le champ qui indique si le bâtiment est équipé ou non d'un système d'automatisation de bâtiment (SAB). Cette analyse attend un champ booléen."
 
 msgid "HOW THE SYSTEM AUTO-MATCHES YOUR PROPERTIES AND TAX LOTS:"
 msgstr "COMMENT LE SYSTÈME ADAPTE AUTOMATIQUEMENT VOS PROPRIETES ET LOTS D'IMPÔT:"

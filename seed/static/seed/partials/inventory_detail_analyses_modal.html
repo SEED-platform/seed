@@ -282,6 +282,12 @@
               <select class="form-control" ng-model="new_analysis.configuration.column_params.condition_index" ng-dropdown required>
                 <option ng-repeat="col in all_columns" selected="selected" ng-value="col.id">{$:: col.displayName $}</option>
               </select>
+              <label class="control-label sectionLabel pad-top-10" translate>Building has BAS field</label>
+              <select class="form-control" ng-model="new_analysis.configuration.column_params.has_bas" ng-dropdown required>
+                <option ng-repeat="col in all_columns" selected="selected" ng-value="col.id">{$:: col.displayName $}</option>
+              </select>
+              <div class="analysis-help-text"><small class="form-text text-muted" translate>HAS_BAS_HELP</small></div>
+            </div>
               <label class="control-label sectionLabel pad-top-10" translate>Total EUI Threshold </label>
               <input ng-model="new_analysis.configuration.total_eui_goal" type="number" ng-init="new_analysis.configuration.total_eui_goal=40" class="form-control" />
               <div class="analysis-help-text">
@@ -325,7 +331,6 @@
                 class="form-control"
               />
               <div class="analysis-help-text"><small class="form-text text-muted" translate>FF_RSL_THRESHOLD_HELP</small></div>
-            </div>
           </div>
         </div>
       </form>
