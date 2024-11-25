@@ -1094,6 +1094,8 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
         _kbtu_thermal_conversion_factors = kbtu_thermal_conversion_factors(org.get_thermal_conversion_assumption_display())
         _kgal_water_conversion_factors = kgal_water_conversion_factors(org.get_thermal_conversion_assumption_display())
 
+        num_total_readings = 0
+        num_readings_created = 0
         for raw_reading in parser.data:
             conversion_factor = get_conversion_factor(
                 Meter.ENERGY_TYPE_BY_METER_TYPE[meter.type],
@@ -1102,15 +1104,24 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
                 _kgal_water_conversion_factors,
             )
 
-            MeterReading.objects.update_or_create(
+            _, created = MeterReading.objects.get_or_create(
                 start_time=raw_reading["Start Date"],
                 end_time=raw_reading["End Date"],
-                reading=float(raw_reading["Reading"]) * conversion_factor,
                 meter_id=meter.id,
-                conversion_factor=conversion_factor,
+                defaults={
+                    "reading": float(raw_reading["Reading"]) * conversion_factor,
+                    "conversion_factor": conversion_factor,
+                },
             )
 
-        return JsonResponse({"status": "success", "message": f"{len(raw_reading)} readings created"}, status=status.HTTP_200_OK)
+            num_total_readings += 1
+            if created:
+                num_readings_created += 1
+
+        return JsonResponse(
+            {"status": "success", "message": f"{num_readings_created} new readings created from the {num_total_readings} readings found."},
+            status=status.HTTP_200_OK,
+        )
 
 
 def get_conversion_factor(type_name, unit, _kbtu_thermal_conversion_factors, _kgal_water_conversion_factors):
