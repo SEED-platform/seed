@@ -637,7 +637,7 @@ angular.module('SEED.controller.inventory_reports', []).controller('inventory_re
                 labels: Array.from([...new Set($scope.chartData.chartData.map((d) => d.x))]).sort(),
                 title: {
                   display: true,
-                  text: $scope.xAxisSelectedItem.label,
+                  text: $scope.xAxisSelectedItem.label
                 }
               };
             }
