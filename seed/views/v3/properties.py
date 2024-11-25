@@ -1987,7 +1987,7 @@ def _row_from_views(views):
     # Number of Buildings Metered for Water
     data["Number of Buildings Metered for Water"] = sum([v.has_water_meters for v in views])
     # Annual Facility Energy Use
-    data["Annual Facility Energy Use"] = sum([v.state.extra_data.get("Total of Modeled/MDMS Total Energy Usage", 0) for v in views])
+    data["Annual Facility Energy Use"] = sum([v.state.extra_data.get("Sum of Modeled/MDMS Total Energy Usage", 0) for v in views])
     # Annual Facility Water Use
     data["Annual Facility Energy Use"] = sum([v.state.extra_data.get("Sum of Modeled/MDMS Total Water Usage", 0) for v in views])
 
