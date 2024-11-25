@@ -195,6 +195,11 @@ class ComplianceMetric(models.Model):
         actual_col = self.actual_energy_column if metric_type == "energy" else self.actual_emission_column
         target_col = self.target_energy_column if metric_type == "energy" else self.target_emission_column
         actual_val = self._get_column_data(the_property, actual_col)
+        try:
+            actual_val = float(actual_val)
+        except ValueError:
+            return "u"
+
         if not isinstance(actual_val, numbers.Number):
             return "u"
 
@@ -202,6 +207,11 @@ class ComplianceMetric(models.Model):
             return "y" if bool(actual_val) else "n"
 
         target_val = self._get_column_data(the_property, target_col)
+        try:
+            target_val = float(target_val)
+        except ValueError:
+            return "u"
+
         if not isinstance(target_val, numbers.Number):
             return "u"
 
