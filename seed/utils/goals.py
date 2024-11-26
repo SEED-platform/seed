@@ -193,10 +193,11 @@ def get_state_pairs(property_ids, goal_id):
     # Prefetch PropertyView objects
     try:
         goal = Goal.objects.get(id=goal_id)
+        data_report = goal.data_report
     except Goal.DoesNotExist:
         return []
 
-    property_views = PropertyView.objects.filter(cycle__in=[goal.baseline_cycle, goal.current_cycle], property__in=property_ids)
+    property_views = PropertyView.objects.filter(cycle__in=[data_report.baseline_cycle, data_report.current_cycle], property__in=property_ids)
     prefetch = Prefetch("views", queryset=property_views, to_attr="prefetched_views")
 
     # Fetch properties and related PropertyView objects
@@ -205,8 +206,8 @@ def get_state_pairs(property_ids, goal_id):
     state_pairs = []
     for property in qs:
         # find related view from prefetched views
-        baseline_view = next((pv for pv in property.prefetched_views if pv.cycle == goal.baseline_cycle), None)
-        current_view = next((pv for pv in property.prefetched_views if pv.cycle == goal.current_cycle), None)
+        baseline_view = next((pv for pv in property.prefetched_views if pv.cycle == data_report.baseline_cycle), None)
+        current_view = next((pv for pv in property.prefetched_views if pv.cycle == data_report.current_cycle), None)
 
         baseline_state = baseline_view.state if baseline_view else None
         current_state = current_view.state if current_view else None
