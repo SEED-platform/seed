@@ -74,5 +74,5 @@
     <button class="btn btn-light" ng-click="toggle_help()" style="margin-top: 20px">Hide</button>
   </div>
   <!-- Summary & Data Table container -->
-  <div ng-include="::urls.static_url + 'seed/partials/goal_data_tables.html'"></div>
+  <div ng-include="::urls.static_url + 'seed/partials/goal_data_tables.html'" ng-repeat="goal in data_report.goals"></div>
 </div>

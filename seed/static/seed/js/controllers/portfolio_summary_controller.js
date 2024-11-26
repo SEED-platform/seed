@@ -243,9 +243,10 @@ angular.module('SEED.controller.portfolio_summary', [])
         data_report_service.get_portfolio_summary($scope.data_report.id).then((result) => {
           // summary is a dict with summaries for each of the goals, keyed on goal id.
             let goal = $scope.data_report.goals[0]
-            let summary = result.data[goal.id.toString()];
-            // RP TEMP - this needs to be dynamic to set multiple uigrids
+            // let summary = result.data[goal.id.toString()];
+            let summary = result.data
             set_summary_grid_options(summary);
+            // RP TEMP - this needs to be dynamic to set multiple uigrids
         }).then(() => {
           $scope.summary_loading = false;
           $scope.summary_valid = true;
@@ -595,7 +596,10 @@ angular.module('SEED.controller.portfolio_summary', [])
           height += element?.offsetHeight ?? 0;
         }
         angular.element('#goal-data-gridOptions-wrapper').css('height', `calc(100vh - ${height}px)`);
-        $scope.summaryGridApi.core.handleWindowResize();
+        for (const summary in $scope.gridApiByGoal) {
+          $scope.summaryGridApiByGoal.core.handleWindowResize();
+        }
+        // $scope.summaryGridApi.core.handleWindowResize();
         $scope.gridApi.core.handleWindowResize();
         $scope.gridApi.grid.refresh();
       };
@@ -996,19 +1000,29 @@ angular.module('SEED.controller.portfolio_summary', [])
         }];
       };
 
-      const set_summary_grid_options = (summary) => {
-        $scope.summary_data = format_summary(summary);
-        $scope.summaryGridOptions = {
-          data: 'summary_data',
-          columnDefs: summary_selected_columns(),
-          enableHorizontalScrollbar: uiGridConstants.scrollbars.WHEN_NEEDED,
-          enableVerticalScrollbar: uiGridConstants.scrollbars.NEVER,
-          enableSorting: false,
-          minRowsToShow: 1,
-          onRegisterApi: (gridApi) => {
-            $scope.summaryGridApi = gridApi;
+      const set_summary_grid_options = (summaries) => {
+        $scope.summaryGridOptionsByGoal = {}
+        $scope.summaryGridApiByGoal = {}
+        $scope.summary_data_by_goal = {}
+
+        for (const [goal_id, summary] of Object.entries(summaries)) {
+
+          $scope.summary_data_by_goal[goal_id] = format_summary(summary);
+          const summaryGridOptions = {
+            data: $scope.summary_data_by_goal[goal_id],
+            columnDefs: summary_selected_columns(),
+            enableHorizontalScrollbar: uiGridConstants.scrollbars.WHEN_NEEDED,
+            enableVerticalScrollbar: uiGridConstants.scrollbars.NEVER,
+            enableSorting: false,
+            minRowsToShow: 1,
+            onRegisterApi: (gridApi) => {
+              $scope.summaryGridApiByGoal[goal_id] = gridApi;
+            }
           }
-        };
+          $scope.summaryGridOptionsByGoal[goal_id] = summaryGridOptions;
+
+
+          };
       };
 
       // --- DATA QUALITY ---

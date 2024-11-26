@@ -6,7 +6,7 @@
             
         </div>
         
-        <div ng-if="summary_valid" ui-grid="summaryGridOptions" ui-grid-resize-columns style="margin-bottom: 30px">
+        <div ng-if="summary_valid" ui-grid="summaryGridOptionsByGoal[goal.id]" ui-grid-resize-columns style="margin-bottom: 30px">
         </div>
         <div class="goal-loading" ng-if="summary_loading">
             <h4>{$:: 'Loading Summary Data...' | translate $}</h4>
