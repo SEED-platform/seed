@@ -202,7 +202,7 @@ angular.module('SEED.controller.inventory_group_detail_meters', [])
           controller: 'meter_deletion_modal_controller',
           resolve: {
             organization_id: () => $scope.organization.id,
-            group_id: () => meter.service_group,
+            group_id: () => meter.config.group_id,
             meter: () => meter,
             view_id: () => view_id,
             refresh_meters_and_readings: () => $scope.refresh_meters_and_readings

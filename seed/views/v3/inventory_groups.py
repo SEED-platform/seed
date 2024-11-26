@@ -245,7 +245,7 @@ class InventoryGroupMetersViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
         meter_serializer = MeterSerializer(
             data={
                 **request.data,
-                "connection_type": "From Outside",
+                "connection_type": "Imported",
                 "source": "Manual Entry",
             }
         )
