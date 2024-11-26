@@ -1218,7 +1218,7 @@ class OrganizationViewSet(viewsets.ViewSet):
 
     def get_axis_stats(self, organization, cycle, axis, axis_var, views, ali):
         """returns axis_name, access_level_instance name, sum, mean, min, max, 5%, 25%, 50%, 75%, 99%
-            exclude categorical and boolean from stats
+        exclude categorical and boolean from stats
         """
 
         filtered_properties = views.filter(
