@@ -53,99 +53,26 @@
       </table>
     </div>
   </div>
-  <div id="portfolio-summary-selection-wrapper">
-    <!-- Summary Table-->
-    <div id="portfolio-summary" class="wide-900" ng-if="summary_loading || summary_valid">
-      <div style="display: flex">
-        <h3 translate>Portfolio Summary</h3>
-        <i class="ui-grid-icon-info-circled" ng-mouseenter="toggle_help(true)"></i>
-      </div>
-      <div class="alert alert-warning portfolio-summary-help-text" ng-show="show_help">
-        <h4>Unexpected Portfolio Summary Calculations?</h4>
-        <div>
-          Run "<a ng-click="run_data_quality_check()">Data Quality Check</a>" from the Actions dropdown to auto populate the "Passed Checks" column.<br /><br />
-          Portfolio Summary calculations only include properties that have "Passed Checks" and are not "New Build or Acquired" (see far right columns below).<br />
-          <div ng-if="::organization.is_parent && auth.requires_owner">
-            <i>Data Quality Checks can be configured in</i>
-            <a ui-sref="organization_data_quality(::{organization_id: organization.id, rule_type: 'goals'})" ng-class="::{active: state.name === 'organization_data_quality'}" translate
-              >Data Quality Settings </a
-            >.
-          </div>
-        </div>
-        <button class="btn btn-light" ng-click="toggle_help(false)" style="margin-top: 20px">Hide</button>
-      </div>
-      <div ng-if="summary_valid" ui-grid="summaryGridOptions" ui-grid-resize-columns style="margin-bottom: 30px"></div>
-      <div class="portfolio-summary-loading" ng-if="summary_loading">
-        <h4>{$:: 'Loading Summary Data...' | translate $}</h4>
-        <uib-progress class="progress-striped active">
-          <uib-bar value="100" type="info"></uib-bar>
-        </uib-progress>
-      </div>
-    </div>
-  </div>
-  <!-- Data Table container -->
-  <!-- Pagination -->
-  <div class="portfolio-summary-item-count wide-900" ng-if="data_valid">
-    <div ng-if="data_valid">
-      <div style="display: flex">
-        <div uib-dropdown class="data-report-actions-dropdown" ng-if="!viewer">
-          <button id="btnCreateNew" type="button" class="btn actions-toggle" uib-dropdown-toggle>
-            <span translate>Actions</span>
-            <i class="fa-solid fa-chevron-down"></i>
-          </button>
-          <ul uib-dropdown-menu class="dropdown-menu" role="menu">
-            <li class="drowndown-header goal-action">
-              <a ng-if="selected_count !== inventory_pagination.total" ng-click="select_all()" translate>Select All</a>
-              <span ng-if="selected_count === inventory_pagination.total" class="disabled-action" translate>Select All</span>
-            </li>
-            <li class="drowndown-header goal-action">
-              <a ng-if="!selected_count < 1" ng-click="select_none()" translate>Select None</a>
-              <span ng-if="selected_count < 1" class="disabled-action" translate>Select None</span>
-            </li>
-            <li class="drowndown-header goal-action">
-              <a ng-if="!selected_count < 1" ng-click="open_update_labels_modal()" translate>Add/Remove Labels</a>
-              <span ng-if="selected_count < 1" class="disabled-action" translate>Add/Remove Labels</span>
-            </li>
-            <li class="drowndown-header goal-action">
-              <a ng-if="!selected_count < 1" ng-click="open_bulk_edit_goalnotes_modal()" translate>Edit Fields for Selected</a>
-              <span ng-if="selected_count < 1" class="disabled-action" translate>Edit Fields for Selected</span>
-            </li>
-            <li class="drowndown-header goal-action">
-              <a ng-click="run_data_quality_check()">Data Quality Check</a>
-            </li>
-            <li class="drowndown-header goal-action">
-              <a ng-if="!level_names.count < 2" ng-click="toggle_show_access_level_instances()">{$ show_access_level_instances ? 'Hide': 'Show' $} Access Levels</a>
-              <span ng-if="level_names.count < 2" class="disabled-action">{$ show_access_level_instances ? 'Hide': 'Show' $} Access Levels</span>
-            </li>
-          </ul>
-        </div>
-      </div>
-    </div>
+
+  <button class="btn btn-default" ng-click="toggle_help()" style="margin: 3px 0 0 10px; height: 20px; padding: 3px 10px; height: 30px;">
+    Help
+  </button>
+  <div class="alert alert-warning portfolio-summary-help-text" ng-show="show_help">
+    <h4>Unexpected Portfolio Summary Calculations?</h4>
     <div>
-      {$ inventory_pagination.start $}-{$ inventory_pagination.end $}<span ng-if="inventory_pagination.num_pages > 1"> of {$ inventory_pagination.total $}</span>
-      <i ng-if="selected_count > 0">
-        <span>({$ selected_count $} selected</span><span ng-if="selected_count < inventory_pagination.total"> - <a ng-click="select_all()" translate>Select All</a></span
-        ><span ng-if="selected_count === inventory_pagination.total"> - <a ng-click="select_none()" translate>Select None</a></span
-        ><span>)</span>
-      </i>
-      <button ng-click="page_change(inventory_pagination.page - 1)" ng-disabled="!inventory_pagination.has_previous" class="btn btn-default btn-sm">
-        <i class="fa-solid fa-chevron-left"></i>
-      </button>
-      <button ng-click="page_change(inventory_pagination.page + 1)" ng-disabled="!inventory_pagination.has_next" class="btn btn-default btn-sm">
-        <i class="fa-solid fa-chevron-right"></i>
-      </button>
+      Run "<a ng-click="run_data_quality_check()">Data Quality Check</a>" from the Actions dropdown to auto
+      populate the "Passed Checks" column.<br /><br />
+      Portfolio Summary calculations only include properties that have "Passed Checks" and are not "New Build
+      or Acquired" (see far right columns below).<br />
+      <div ng-if="::organization.is_parent && auth.requires_owner">
+        <i>Data Quality Checks can be configured in</i>
+        <a ui-sref="organization_data_quality(::{organization_id: organization.id, rule_type: 'goals'})"
+          ng-class="::{active: state.name === 'organization_data_quality'}" translate>Data Quality
+          Settings </a>.
+      </div>
     </div>
+    <button class="btn btn-light" ng-click="toggle_help()" style="margin-top: 20px">Hide</button>
   </div>
-  <!-- Data Table -->
-  <div id="portfolio-summary-grid" ng-if="data_valid">
-    <div id="portfolioSummary-gridOptions-wrapper" class="wide-900">
-      <div ui-grid="gridOptions" ui-grid-save-state ui-grid-resize-columns ui-grid-exporter ui-grid-edit ui-grid-selection style="display: flex; width: 100%"></div>
-    </div>
-  </div>
-  <div class="portfolio-summary-loading" ng-if="data_loading && !data_valid" style="margin: 100px 20px">
-    <h4 translate>Loading data...</h4>
-    <uib-progress class="progress-striped active">
-      <uib-bar value="100" type="info"></uib-bar>
-    </uib-progress>
-  </div>
+  <!-- Summary & Data Table container -->
+  <div ng-include="::urls.static_url + 'seed/partials/goal_data_tables.html'"></div>
 </div>

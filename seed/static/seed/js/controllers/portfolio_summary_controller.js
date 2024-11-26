@@ -58,7 +58,7 @@ angular.module('SEED.controller.portfolio_summary', [])
       $scope.cycles = cycles.cycles;
       $scope.access_level_tree = access_level_tree.access_level_tree;
       $scope.level_names = access_level_tree.access_level_names;
-      $scope.goal = {}; //rp
+      $scope.goal = {}; // rp
       $scope.data_report = {}
       $scope.columns = property_columns;
       $scope.cycle_columns = [];
@@ -92,7 +92,7 @@ angular.module('SEED.controller.portfolio_summary', [])
         $scope.data_loading = true;
         const per_page = 50;
         const data = {
-          goal_id: $scope.goal.id,
+          goal_id: $scope.data_report.goals[0].id,
           data_report_id: $scope.data_report.id,
           page,
           per_page,
@@ -124,28 +124,27 @@ angular.module('SEED.controller.portfolio_summary', [])
           console.log($scope.data_report)
           $scope.goals = $scope.data_report.goals
           $scope.goal = $scope.goals[0] // RP TEMP
-          format_data_report_details();
-          load_summary();
-          load_data(1);
+          refresh_data();
         });
       };
       get_data_reports();
 
-      const reset_data = () => {
+      const refresh_data = () => {
         $scope.valid = true;
         format_data_report_details();
-        refresh_data();
+        load_summary();
+        load_data(1);
       };
 
-      // If goal changes, reset grid filters and repopulate ui-grids
+      // If data_report changes, reset grid filters and repopulate ui-grids
       $scope.$watch('data_report', (cur, old) => {
         if ($scope.gridApi) $scope.reset_sorts_filters();
         $scope.data_valid = false;
-        if (_.isEmpty($scope.goal)) {
+        if (_.isEmpty($scope.data_report)) {
           $scope.valid = false;
           $scope.summary_valid = false;
         } else if (old.id) { // prevent duplicate request on page load
-          reset_data();
+          refresh_data();
         }
       });
 
@@ -177,8 +176,8 @@ angular.module('SEED.controller.portfolio_summary', [])
         }
       };
 
-      $scope.toggle_help = (bool) => {
-        $scope.show_help = bool;
+      $scope.toggle_help = () => {
+        $scope.show_help = !$scope.show_help;
         _.delay($scope.updateHeight, 150);
       };
 
@@ -236,11 +235,6 @@ angular.module('SEED.controller.portfolio_summary', [])
         });
       };
 
-      const refresh_data = () => {
-        load_summary();
-        load_data(1);
-      };
-
       const load_summary = () => {
         $scope.summary_loading = true;
         $scope.show_access_level_instances = true;
@@ -248,11 +242,10 @@ angular.module('SEED.controller.portfolio_summary', [])
 
         data_report_service.get_portfolio_summary($scope.data_report.id).then((result) => {
           // summary is a dict with summaries for each of the goals, keyed on goal id.
-          $scope.data_report.goals.forEach((goal) => {
+            let goal = $scope.data_report.goals[0]
             let summary = result.data[goal.id.toString()];
             // RP TEMP - this needs to be dynamic to set multiple uigrids
             set_summary_grid_options(summary);
-          })
         }).then(() => {
           $scope.summary_loading = false;
           $scope.summary_valid = true;
@@ -597,11 +590,11 @@ angular.module('SEED.controller.portfolio_summary', [])
 
       $scope.updateHeight = () => {
         let height = 0;
-        for (const selector of ['.header', '.page_header_container', '.section_nav_container', '.goals-header-text', '.goal-actions-wrapper', '.goal-details-container', '#portfolio-summary-selection-wrapper', '.portfolio-summary-item-count']) {
+        for (const selector of ['.header', '.page_header_container', '.section_nav_container', '.goals-header-text', '.goal-actions-wrapper', '.goal-details-container', '#goal-summary-goal-container', '.goal-data-actions-header']) {
           const [element] = angular.element(selector);
           height += element?.offsetHeight ?? 0;
         }
-        angular.element('#portfolioSummary-gridOptions-wrapper').css('height', `calc(100vh - ${height}px)`);
+        angular.element('#goal-data-gridOptions-wrapper').css('height', `calc(100vh - ${height}px)`);
         $scope.summaryGridApi.core.handleWindowResize();
         $scope.gridApi.core.handleWindowResize();
         $scope.gridApi.grid.refresh();
