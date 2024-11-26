@@ -390,7 +390,7 @@ angular.module('SEED.controller.inventory_reports', []).controller('inventory_re
                   return ctx[0]?.raw.display_name;
                 },
                 label: (ctx) => [
-                  `${$scope.xAxisSelectedItem.label}: ${type === 'bar' ? ctx.label : ctx.parsed.x}`,
+                  `${$scope.xAxisSelectedItem.label}: ${type === 'bar' ? ctx.label : ctx.raw.x}`,
                   `${$scope.yAxisSelectedItem.label}: ${type === 'bar' ? ctx.raw : ctx.parsed.y}`
                 ]
               }
