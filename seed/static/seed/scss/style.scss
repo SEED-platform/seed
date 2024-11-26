@@ -5189,7 +5189,10 @@ ul.r-list {
       }
     }
   }
-
+  .portfolio-summary-help-text {
+    width: fit-content;
+    margin: 3px 0 0 10px;
+  }
   #goal-summary-container {
     padding: 20px 24px 0;
     display: flex;
@@ -5203,9 +5206,7 @@ ul.r-list {
         padding-bottom: 10px;
       }
 
-      .portfolio-summary-help-text {
-        width: fit-content;
-      }
+
     }
   }
 
@@ -5303,7 +5304,7 @@ ul.r-list {
       }
 
       .dropdown-menu {
-        .data-report-action {
+        .goal-action {
           padding: 4px;
           width: 200px;
 
