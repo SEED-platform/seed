@@ -1,0 +1,76 @@
+<div id="collapse-goal-{$ index $}" class="goal-details-container show collapse in">
+    <ul class="r-list off-white">
+        <!-- Name -->
+        <li class="r-row r-row-centered">
+            <label for="input-name" class="r-pad-right-5 data-report-label" translate>Name</label>
+            <input id="input-name" class="form-control data-report-form-control" type="text" ng-model="goal.name"
+                style="padding-left: 5px" required />
+        </li>
+        <!-- Report Type -->
+        <li class="r-row r-row-centered">
+            <label for="input-type" class="r-pad-right-5 data-report-label" translate>Goal Type</label>
+            <select id="select-type" class="form-control data-report-form-control"
+                ng-options="type.type as type.display_name for type in data_report_types" ng-change=""
+                ng-model="goal.type" required></select>
+        </li>
+    </ul>
+
+    <!---->
+    <ul class="r-list off-white">
+        <!-- Area Column -->
+        <li class="r-list-header r-list-subheader" translate>Area Target Column</li>
+        <li class="r-row r-row-centered">
+            <label for="select-area-column" class="r-pad-right-5 data-report-label" translate>Area Column</label>
+            <select id="select-area-column" class="form-control data-report-form-control"
+                ng-options="column.id as column.displayName for column in area_columns" ng-change=""
+                ng-model="goal.area_column" required></select>
+        </li>
+        <li class="r-info">
+            <i class="fa-solid fa-arrow-up r-pad-right-5"></i>
+            <span>{$:: 'Not seeing your column?' | translate $}
+                <span ng-if="auth.requires_owner">{$ 'Update the data type of the column to "Area" in' | translate $}
+                    <a ui-sref="organization_column_settings(::{organization_id: organization.id, inventory_type: 'properties'})"
+                        ng-click="$dismiss()">Column Settings</a>
+                </span>
+                <span ng-if="!auth.requires_owner" translate>Have your organization owner update the column's data type to "Area"</span>
+            </span>
+        </li>
+    </ul>
+
+    <!-- EUI COLUMNS -->
+    <ul class="r-list off-white">
+        <li class="r-list-header" translate>EUI Target Columns</li>
+        <!-- EUI Column1 -->
+        <li class="r-row r-row-centered">
+            <label for="select-eui-column1" class="r-pad-right-5 data-report-label" translate>Primary Column</label>
+            <select id="select-eui-column1" class="form-control data-report-form-control"
+                ng-options="column.id as column.displayName for column in eui_columns" ng-change=""
+                ng-model="goal.eui_column1" required></select>
+        </li>
+        <!-- EUI Column2 -->
+        <li class="r-row r-row-centered" ng-if="goal.eui_column1">
+            <label for="select-eui-column2" class="r-pad-right-5 data-report-label" translate>Secondary (optional)</label>
+            <select id="select-eui-column2" class="form-control data-report-form-control"
+                ng-options="column.id as column.displayName for column in eui_columns" ng-change=""
+                ng-model="goal.eui_column2" ng-disabled="!goal.eui_column1"></select>
+        </li>
+        <!-- EUI Column3 -->
+        <li class="r-row r-row-centered" ng-if="goal.eui_column2">
+            <label for="select-eui-column3" class="r-pad-right-5 data-report-label" translate>Tertiary (optional)</label>
+            <select id="select-eui-column3" class="form-control data-report-form-control"
+                ng-options="column.id as column.displayName for column in eui_columns" ng-change=""
+                ng-model="goal.eui_column3" ng-disabled="!goal.eui_column2"></select>
+        </li>
+        <li class="r-info">
+            <i class="fa-solid fa-arrow-up r-pad-right-5"></i>
+            <!-- <span> The calculation will default to the secondary column if the primary is missing, and to the tertiary column if both primary and secondary are unavailable.</span> -->
+            <span>{$:: 'Not seeing your column?' | translate $}
+                <span ng-if="auth.requires_owner">{$ 'Update the data type of the column to "EUI" in' | translate $}
+                    <a ui-sref="organization_column_settings(::{organization_id: organization.id, inventory_type: 'properties'})"
+                        ng-click="$dismiss()">Column Settings</a>
+                </span>
+                <span ng-if="!auth.requires_owner" translate>Have your organization owner update the column's data type to "EUI"</span>
+            </span>
+        </li>
+    </ul>
+</div>

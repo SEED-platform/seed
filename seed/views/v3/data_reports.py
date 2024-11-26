@@ -79,7 +79,7 @@ class DataReportViewSet(ModelViewSetWithoutPatch, OrgMixin):
     @has_hierarchy_access(body_ali_id="access_level_instance")
     def create(self, request):
         data = request.data
-        goals_data = data.pop("goals_data")
+        goals = data.pop("goals")
         serializer = DataReportSerializer(data=data)
         if not serializer.is_valid():
             return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -87,7 +87,7 @@ class DataReportViewSet(ModelViewSetWithoutPatch, OrgMixin):
         goal_serializers = {"standard": GoalStandardSerializer, "transaction": GoalTransactionSerializer}
         errors = []
         # create_goals
-        for goal_data in goals_data:
+        for goal_data in goals:
             goal_data["data_report"] = data_report.id
             goal_serializer = goal_serializers[data["type"]](data=goal_data)
             if goal_serializer.is_valid():
@@ -108,7 +108,7 @@ class DataReportViewSet(ModelViewSetWithoutPatch, OrgMixin):
             return JsonResponse({"status": "error", "message": "No such resource."})
 
         data = request.data
-        goals_data = data.pop("goals_data")
+        goals = data.pop("goals")
         serializer = DataReportSerializer(data_report, data=data, partial=True)
         if not serializer.is_valid():
             return JsonResponse(
@@ -121,7 +121,7 @@ class DataReportViewSet(ModelViewSetWithoutPatch, OrgMixin):
         data_report = serializer.save()
         goal_serializers = {GoalStandard: GoalStandardSerializer, GoalTransaction: GoalTransactionSerializer}
         errors = []
-        for goal_data in goals_data:
+        for goal_data in goals:
             goal = Goal.objects.get(id=goal_data["id"])
             goal_serializer = goal_serializers[goal.__class__](goal, data=goal_data, partial=True)
             if goal_serializer.is_valid():

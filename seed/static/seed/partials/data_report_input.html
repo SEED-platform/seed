@@ -1,0 +1,84 @@
+<div id="data_report-input-details" class="r-column table_list_container" style="width: 100%">
+    <!-- Name -->
+    <ul class="r-list off-white">
+        <li class="r-row r-row-centered">
+            <label for="input-name" class="r-pad-right-5 data-report-label" translate>Name</label>
+            <input id="input-name" class="form-control data-report-form-control" type="text" ng-model="data_report.name"
+                style="padding-left: 5px" required />
+        </li>
+        <!-- Report Type -->
+        <li class="r-row r-row-centered">
+            <label for="input-type" class="r-pad-right-5 data-report-label" translate>Report Type</label>
+            <select id="select-type" class="form-control data-report-form-control"
+                ng-options="type.type as type.display_name for type in data_report_types" ng-change=""
+                ng-model="data_report.type" required></select>
+        </li>
+    </ul>
+    <!-- Cycle Selection -->
+    <ul class="r-list off-white">
+        <li class="r-list-header" translate>Cycle Selection</li>
+        <!-- Baseline Cycle -->
+        <li class="r-row r-row-centered">
+            <label for="select-baseline-cycle" class="r-pad-right-5 data-report-label" translate>Baseline Cycle</label>
+            <select id="select-baseline-cycle" class="form-control data-report-form-control"
+                ng-options="cycle.id as cycle.name for cycle in cycles" ng-change=""
+                ng-model="data_report.baseline_cycle" required></select>
+        </li>
+        <!-- Current Cycle -->
+        <li class="r-row r-row-centered">
+            <label for="select-current-cycle" class="r-pad-right-5 data-report-label" translate>Current Cycle</label>
+            <select id="select-current-cycle" class="form-control data-report-form-control"
+                ng-options="cycle.id as cycle.name for cycle in cycles" ng-change=""
+                ng-model="data_report.current_cycle" required></select>
+        </li>
+        <li class="r-info"><i class="fa-solid fa-arrow-up r-pad-right-5"></i><span translate>Current Cycle will
+                be measured against Baseline Cycle</span></li>
+    </ul>
+    <!-- Access Level Selection -->
+    <ul class="r-list off-white">
+        <li class="r-list-header" translate>Access Level Instance</li>
+        <!-- Access Level Name -->
+        <li class="r-row r-row-centered">
+            <label for="select-level-name" class="r-pad-right-5 data-report-label" translate>Access Level</label>
+            <select id="select-level-name" class="form-control data-report-form-control"
+                ng-options="level.index as level.name for level in level_names"
+                ng-change="change_selected_level_index()" ng-model="data_report.level_name_index" required>
+                <!-- data_report.level_name can be found if an access level instance has been selected. not saved on data_report.-->
+            </select>
+        </li>
+        <!-- Access Level Instance -->
+        <li class="r-row r-row-centered">
+            <label for="select-level-instance" class="r-pad-right-5 data-report-label" translate>Level Instance</label>
+            <select id="select-level-instance" class="form-control data-report-form-control" ng-change=""
+                ng-options="potential_level_instance.id as potential_level_instance.name for potential_level_instance in potential_level_instances"
+                ng-model="data_report.access_level_instance" required></select>
+        </li>
+
+        <li class="r-info">
+            <i class="fa-solid fa-arrow-up r-pad-right-5"></i><span translate>Portfolio Summary will only
+                include properties belonging to this Access Level Instance.</span>
+        </li>
+    </ul>
+    <!-- Commitment Sq Ft -->
+    <ul class="r-list off-white">
+        <li class="r-list-header" translate>Commitment</li>
+        <li class="r-row r-row-centered">
+            <label for="input-target" class="r-pad-right-5 data-report-label" translate>Commitment (Sq Ft)</label>
+            <input id="input-target" class="form-control data-report-form-control" type="number"
+                ng-model="data_report.commitment_sqft" min="0" style="padding-left: 5px" />
+        </li>
+        <li class="r-info"><i class="fa-solid fa-arrow-up r-pad-right-5"></i><span translate>Committed Area</span></li>
+    </ul>
+    <!-- Target -->
+    <ul class="r-list off-white">
+        <li class="r-list-header" translate>Portfolio Target</li>
+        <li class="r-row r-row-centered">
+            <label for="input-target" class="r-pad-right-5 data-report-label" translate>Percentage (%)</label>
+            <input id="input-target" class="form-control data-report-form-control" type="number"
+                ng-model="data_report.target_percentage" min="0" max="100" style="padding-left: 5px" required />
+        </li>
+        <li class="r-info"><i class="fa-solid fa-arrow-up r-pad-right-5"></i><span translate>Target to quantify
+                Portfolio
+                EUI improvement. Must be between 0 and 100.</span></li>
+    </ul>
+</div>

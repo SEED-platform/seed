@@ -138,7 +138,7 @@ angular.module('SEED.controller.portfolio_summary', [])
       };
 
       // If goal changes, reset grid filters and repopulate ui-grids
-      $scope.$watch('goal', (cur, old) => {
+      $scope.$watch('data_report', (cur, old) => {
         if ($scope.gridApi) $scope.reset_sorts_filters();
         $scope.data_valid = false;
         if (_.isEmpty($scope.goal)) {
@@ -169,11 +169,11 @@ angular.module('SEED.controller.portfolio_summary', [])
             'Primary EUI': $scope.goal.eui_column1_name
           }
         ];
-        if ($scope.goal.eui_column2) {
-          $scope.goal_details[1]['Secondary EUI'] = $scope.goal.eui_column2_name;
+        if ($scope.data_report.eui_column2) {
+          $scope.data_report_details[1]['Secondary EUI'] = $scope.data_report.goal.eui_column2_name;
         }
-        if ($scope.goal.eui_column3) {
-          $scope.goal_details[1]['Tertiary EUI'] = $scope.goal.eui_column3_name;
+        if ($scope.data_report.eui_column3) {
+          $scope.data_report_details[1]['Tertiary EUI'] = $scope.data_report.goal.eui_column3_name;
         }
       };
 
@@ -210,28 +210,29 @@ angular.module('SEED.controller.portfolio_summary', [])
         $scope.potential_level_instances = access_level_instances_by_depth[new_level_instance_depth];
       };
 
-      // GOAL EDITOR MODAL
-      $scope.open_goal_editor_modal = () => {
+      // DATA REPORT EDITOR MODAL
+      $scope.open_data_report_editor_modal = () => {
         const modalInstance = $uibModal.open({
-          templateUrl: `${urls.static_url}seed/partials/goal_editor_modal.html`,
-          controller: 'goal_editor_modal_controller',
+          templateUrl: `${urls.static_url}seed/partials/data_report_editor_modal.html`,
+          controller: 'data_report_editor_modal_controller',
           size: 'lg',
           backdrop: 'static',
           resolve: {
             access_level_tree: () => access_level_tree,
             area_columns: () => $scope.area_columns,
             auth_payload: () => auth_payload,
+            data_report: () => $scope.data_report,
             cycles: () => $scope.cycles,
             eui_columns: () => $scope.eui_columns,
-            goal: () => $scope.goal,
+            goal: () => $scope.goal, // rp - necessary?
             organization: () => $scope.organization,
             write_permission: () => $scope.write_permission
           }
         });
 
         // on modal close
-        modalInstance.result.then((goal_name) => {
-          get_data_reports(goal_name);
+        modalInstance.result.then((data_report) => {
+          get_data_reports(data_report);
         });
       };
 
@@ -247,10 +248,11 @@ angular.module('SEED.controller.portfolio_summary', [])
 
         data_report_service.get_portfolio_summary($scope.data_report.id).then((result) => {
           // summary is a dict with summaries for each of the goals, keyed on goal id.
-          let summary = result.data;
-          // RP TEMP
-          summary = summary[$scope.goal.id.toString()]
-          set_summary_grid_options(summary);
+          $scope.data_report.goals.forEach((goal) => {
+            let summary = result.data[goal.id.toString()];
+            // RP TEMP - this needs to be dynamic to set multiple uigrids
+            set_summary_grid_options(summary);
+          })
         }).then(() => {
           $scope.summary_loading = false;
           $scope.summary_valid = true;
@@ -1011,7 +1013,6 @@ angular.module('SEED.controller.portfolio_summary', [])
           enableSorting: false,
           minRowsToShow: 1,
           onRegisterApi: (gridApi) => {
-            console.log('registerd');
             $scope.summaryGridApi = gridApi;
           }
         };

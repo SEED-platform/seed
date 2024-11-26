@@ -80,7 +80,7 @@ class DataReportViewTests(GoalStandardTestCase):
         goal_count = Goal.objects.count()
         goal_note_count = GoalNote.objects.count()
 
-        def reset_data_report_data(name, report_type, goals_data=[]):
+        def reset_data_report_data(name, report_type, goals=[]):
             return {
                 "organization": self.org.id,
                 "baseline_cycle": self.cycle1.id,
@@ -89,7 +89,7 @@ class DataReportViewTests(GoalStandardTestCase):
                 "target_percentage": 20,
                 "name": name,
                 "type": report_type,
-                "goals_data": goals_data,
+                "goals": goals,
             }
 
         data_report_data = reset_data_report_data("data report 1", "standard")
@@ -172,7 +172,7 @@ class DataReportViewTests(GoalStandardTestCase):
             "name": "new name",
             "baseline_cycle": self.cycle2.id,
             "target_percentage": 99,
-            "goals_data": [{"id": goal1.id, "name": "g1 new", "eui_column1": self.eui_column3.id}, {"id": goal2.id, "name": "g2 new"}],
+            "goals": [{"id": goal1.id, "name": "g1 new", "eui_column1": self.eui_column3.id}, {"id": goal2.id, "name": "g2 new"}],
         }
         response = self.client.put(url, data=json.dumps(data_report_data), content_type="application/json")
         assert response.status_code == 403

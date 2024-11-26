@@ -1,0 +1,113 @@
+<div class="modal-content">
+    <div class="modal-header section">
+        <div class="section_header_container" style="border: none">
+            <div class="section_header has_no_padding fixed_height_short">
+                <div class="section_action_container left">
+                    <h2><i class="fa-solid fa-gauge-high"></i>{$:: 'Data Report Setup' | translate $}</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-body">
+        <div class="section">
+            <div class="section_content_container rp-data-view">
+                <div class="data-reports-text">
+                    <span translate>GOAL_CONFIG_TEXT</span>
+                    <i class="ui-grid-icon-info-circled" ng-mouseenter="show_help = true" ng-mouseleave="show_help = false"></i>
+                    <div class="alert alert-info" ng-show="show_help"
+                        style="position: absolute; z-index: 1; font-weight: normal">
+                        <ul>
+                            <li translate>GOAL_SELECT_CYCLES</li>
+                            <li translate>GOAL_SELECT_ALI</li>
+                            <li translate>GOAL_SELECT_EUI_FIELDS</li>
+                            <li translate>GOAL_SELECT_PERCENTAGE</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section_content_container rp-data-view">
+                <div class="section_content r-columns rp-data-view-config">
+
+                    <!-- Data Report List -->
+                    <div class="r-column r-shrink r-panel" style="width: 400px">
+                        <ul class="r-list off-white">
+                            <li class="r-list-header" translate>Data Report</li>
+                            <li ng-show="data_report" class="r-selected r-row r-row-centered">
+                                <span class="r-grow" uib-tooltip="{$ data_report.name.length > 40 ? data_report.name : '' $}"
+                                    tooltip-class="tooltip-long" style="height: 18px">{$ data_report.name $} </span>
+                                <i class="fa-solid fa-xmark r-margin-left-5" ng-if="data_report.id && write_permission"
+                                    ng-click="delete_data_report(data_report.id)"></i>
+                            </li>
+                        </ul>
+                        <ul class="r-list r-scrollable" id="data-report-list">
+                            <li ng-repeat-start="data_report_option in data_reports" ng-repeat-end ng-show="data_report_option.id != data_report.id"
+                                class="r-row r-row-centered">
+                                <span class="r-grow"
+                                    uib-tooltip="{$ data_report_option.name.length > 40 ? data_report_option.name : '' $}"
+                                    tooltip-class="tooltip-long" style="cursor: pointer" ng-click="set_data_report(data_report_option)">{$
+                                    data_report_option.name $}</span>
+                                <i class="fa-solid fa-xmark r-margin-left-5" ng-if="write_permission"
+                                    ng-click="delete_data_report(data_report_option.id)"></i>
+                            </li>
+                        </ul>
+                        <ul class="r-list" ng-if="write_permission">
+                            <li>
+                                <button class="btn btn-success r-grow" ng-click="new_data_report()"><i
+                                        class="fa-solid fa-circle-plus r-pad-right-5"></i>{$:: 'New Data Report' | translate $}</button>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- New Data Report -->
+                    
+                    <div id="data-report-details" style="max-height: 62vh; overflow: scroll; width: 90%">
+                        <form name="data_report_form">
+                            <div class="data-report-input-container">
+                                <div class="accordion-header">
+                                    <div class="data-report-section-header accordion-button" type="button" id="collapse-data-report-button" data-toggle="collapse" data-target="#collapse-data-report" style="width: 100%" >
+                                        <i class="fa-solid fa-chevron-down accordion-indicator-default-open"></i>
+                                        Data Report
+                                    </div>
+                                </div>
+                                <div id="collapse-data-report" class="collapsable-section collapse in">
+                                    <div ng-include="::urls.static_url + 'seed/partials/data_report_input.html'"></div>
+                                </div>
+                            </div>
+
+                            <div class="data-report-input-container">
+                                <div ng-repeat="(index, goal) in data_report.goals track by $index" style="margin-bottom: 5px;">
+                                    <div class="accordion-header data-report-section-header" style="display:flex;">
+                                        <div class=" accordion-button" type="button" id="collapse-data-goal-{$ index $}" data-toggle="collapse" data-target="#collapse-goal-{$ index $}" style="width: 100%" >
+                                            <i class="fa-solid fa-chevron-down accordion-indicator-default-open"></i>
+                                            Goal - {$ goal.name $}
+                                        </div>
+                                        <i class="fa-solid fa-xmark" style="margin: auto;" ng-click="remove_goal(index)"></i>
+                                    </div>
+                                    <div id="collapse-goal-{$ index $}" class="collapsable-section collapse in">
+                                        <div ng-include="::urls.static_url + 'seed/partials/goal_input.html'" ng-init="goal=goal; index=index"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <button class="btn btn-default" ng-click="add_goal()">Add Goal</button> 
+
+                        </form>
+                    </div>
+
+                </div>
+            </div>        
+        </div>
+    </div>
+    <div class="modal-footer">
+        <div id="data-report-messages" class="alert-danger" ng-if="errors">
+            <div ng-repeat="error in errors">{$ error $}</div>
+        </div>
+        <div class="section_action_container right_40 section_action_btn pull-right">
+            <button class="btn btn-primary" ng-click="save_data_report()" ng-disabled="data_report_form.$invalid || !data_report_changed"
+                ng-if="write_permission" translate>
+                Save Changes<i class="fa-solid fa-check" ng-show="settings_updated"></i>
+            </button>
+            <button class="btn btn-default r-margin-right-5" ng-click="close()" translate>Dismiss</button>
+        </div>
+    </div>
+</div>

@@ -52,6 +52,7 @@
     'SEED.controller.data_quality_admin',
     'SEED.controller.data_quality_labels_modal',
     'SEED.controller.data_quality_modal',
+    'SEED.controller.data_report_editor_modal',
     'SEED.controller.data_upload_audit_template_modal',
     'SEED.controller.data_upload_espm_modal',
     'SEED.controller.data_upload_modal',
