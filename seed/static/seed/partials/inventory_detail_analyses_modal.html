@@ -280,11 +280,11 @@
               </select>
               <label class="control-label sectionLabel pad-top-10" translate>Condition Index Field</label>
               <select class="form-control" ng-model="new_analysis.configuration.column_params.condition_index" ng-dropdown required>
-                <option ng-repeat="col in all_columns" selected="selected" ng-value="col.id">{$:: col.displayName $}</option>
+                <option ng-repeat="col in property_columns" selected="selected" ng-value="col.id">{$:: col.displayName $}</option>
               </select>
               <label class="control-label sectionLabel pad-top-10" translate>Building has BAS field</label>
               <select class="form-control" ng-model="new_analysis.configuration.column_params.has_bas" ng-dropdown required>
-                <option ng-repeat="col in all_columns" selected="selected" ng-value="col.id">{$:: col.displayName $}</option>
+                <option ng-repeat="col in property_columns" selected="selected" ng-value="col.id">{$:: col.displayName $}</option>
               </select>
               <div class="analysis-help-text"><small class="form-text text-muted" translate>HAS_BAS_HELP</small></div>
             </div>
