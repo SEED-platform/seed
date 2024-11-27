@@ -950,41 +950,50 @@ class FakeInventoryGroupFactory(BaseFake):
 class FakeSystemFactory(BaseFake):
     def __init__(
         self,
-        capacity=None,
+        cooling_capacity=None,
         count=None,
         des_type=None,
         efficiency=None,
+        energy_capacity=None,
         evse_type=None,
         group=None,
+        heating_capacity=None,
         name=None,
         organization=None,
         power=None,
+        power_capacity=None,
         system_type=None,
         voltage=None,
     ):
-        self.capacity = capacity
+        self.cooling_capacity = cooling_capacity
         self.count = count
         self.des_type = des_type
         self.efficiency = efficiency
+        self.energy_capacity = energy_capacity
         self.evse_type = evse_type
         self.group = group
+        self.heating_capacity = heating_capacity
         self.inventory_group_factory = FakeInventoryGroupFactory(organization=organization)
         self.name = name
         self.power = power
+        self.power_capacity = power_capacity
         self.system_type = system_type
         self.voltage = voltage
         super().__init__()
 
     def get_system(
         self,
-        capacity=None,
+        cooling_capacity=None,
         count=None,
         des_type=None,
         efficiency=None,
+        energy_capacity=None,
         evse_type=None,
         group=None,
+        heating_capacity=None,
         name=None,
         power=None,
+        power_capacity=None,
         system_type=None,
         voltage=None,
         **kwargs,
@@ -995,7 +1004,8 @@ class FakeSystemFactory(BaseFake):
                 "name": name if name else f"battery system - {self.fake.random.randint(1, 999)}",
                 "group_id": group_id,
                 "efficiency": efficiency if efficiency else 1,
-                "capacity": capacity if capacity else 1,
+                "power_capacity": power_capacity if power_capacity else 1,
+                "energy_capacity": energy_capacity if energy_capacity else 1,
                 "voltage": voltage if voltage else 1,
             }
             system_details.update(kwargs)
@@ -1006,6 +1016,7 @@ class FakeSystemFactory(BaseFake):
                 "group_id": group_id,
                 "type": evse_type if evse_type else 0,
                 "power": power if power else 1,
+                "voltage": voltage if voltage else 1,
                 "count": count if count else 1,
             }
             system_details.update(kwargs)
@@ -1015,7 +1026,8 @@ class FakeSystemFactory(BaseFake):
                 "name": name if name else f"des system - {self.fake.random.randint(1, 999)}",
                 "group_id": group_id,
                 "type": des_type if des_type else 0,
-                "capacity": capacity if capacity else 1,
+                "heating_capacity": heating_capacity if heating_capacity else 1,
+                "cooling_capacity": cooling_capacity if heating_capacity else 1,
                 "count": count if count else 1,
             }
             system_details.update(kwargs)

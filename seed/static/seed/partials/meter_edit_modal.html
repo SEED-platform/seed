@@ -26,7 +26,7 @@
       <!-- USAGE -->
       <div ng-if="config.connection !== 'outside'" class="meter-config-selection-container">
         <label class="control-label" for="selected_use" tooltip-placement="right" uib-tooltip="Is the meter using a service, or offering a service?">
-          Meter Useage: <i class="ui-grid-icon-info-circled"></i>
+          Meter Usage: <i class="ui-grid-icon-info-circled"></i>
         </label>
         <select class="form-control" id="selected_use" ng-model="config.use" ng-change="use_selected()" ng-options="option.value as option.display for option in use_options"></select>
       </div>

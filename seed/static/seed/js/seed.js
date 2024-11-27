@@ -2337,7 +2337,15 @@
               '$stateParams', 'inventory_group_service', 'user_service',
               ($stateParams, inventory_group_service, user_service) => inventory_group_service.get_group(user_service.get_organization().id, $stateParams.group_id)
             ],
-            groups: () => null
+            columns: [
+              '$stateParams',
+              'inventory_service',
+              'user_service',
+              ($stateParams, inventory_service, user_service) => {
+                const org_id = user_service.get_organization().id;
+                return inventory_service.get_property_column_names_for_org(org_id);
+              }
+            ]
           }
         })
         .state({
