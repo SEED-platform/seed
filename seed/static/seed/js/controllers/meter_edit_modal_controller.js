@@ -36,6 +36,7 @@ angular.module('SEED.controller.meter_edit_modal', []).controller('meter_edit_mo
     $scope.meter_parent = property_id ? `Property ${property_id}` : meter.system_name;
     $scope.config = {};
     $scope.group_id = $stateParams.group_id;
+    $scope.property_id = property_id;
 
     const group_fn = property_id ?
       inventory_group_service.get_groups_for_inventory.bind(null, 'properties', [property_id]) :
@@ -43,7 +44,7 @@ angular.module('SEED.controller.meter_edit_modal', []).controller('meter_edit_mo
 
     group_fn().then((groups) => {
       $scope.potentialGroups = groups;
-      $scope.group_options = groups;
+      $scope.group_options = property_id ? groups: groups.filter(g => $scope.group_id == g.id);
       $scope.potentialSystems = groups.flatMap((group) => group.systems);
       $scope.system_options = $scope.potentialSystems;
     }).then(() => {
@@ -71,9 +72,6 @@ angular.module('SEED.controller.meter_edit_modal', []).controller('meter_edit_mo
 
     const set_config = () => {
       $scope.config = { ...meter.config };
-      if ($scope.potentialGroups.length && meter.config.system_id) {
-        $scope.service_options = $scope.system_options.find((system) => system.id === meter.config.system_id).services;
-      }
       $scope.loading = false;
     };
 
@@ -100,19 +98,42 @@ angular.module('SEED.controller.meter_edit_modal', []).controller('meter_edit_mo
 
     // SELECTION LOGIC
     $scope.connection_selected = () => {
+      // reset downstream values
+      const keys = ['use', 'group_id', 'system_id', 'service_id'];
+      keys.forEach((key) => { $scope.config[key] = null; });
+
       // if outside, form is complete.
-      if ($scope.config.connection !== 'outside') {
-        // if a property meter, show all groups. otherwise system_id will dictate group_id
-        if (property_id) {
-          $scope.config.use = 'using';
-          $scope.group_options = $scope.potentialGroups;
-        }
-      } else {
-        // reset downstream values
-        const keys = ['use', 'group_id', 'system_id', 'service_id'];
-        keys.forEach((key) => { $scope.config[key] = null; });
+      if ($scope.config.connection == 'outside') return
+
+      // if a property meter, show all groups. otherwise system_id will dictate group_id
+      if (property_id) {
+        $scope.config.use = 'using';
+        $scope.group_options = $scope.potentialGroups;
       }
     };
+
+    $scope.use_selected = () => {
+      // reset downstream values
+      const keys = ['group_id', 'system_id', 'service_id'];
+      keys.forEach((key) => { $scope.config[key] = null; });
+      $scope.service_options = [];
+
+      // if this is a *system* meter, we know the group already.
+      if (system_id){
+        group = $scope.potentialGroups.find(g => g.id == $scope.group_id);
+        $scope.group_options = [group];
+        $scope.config.group_id = $scope.group_id;
+        $scope.group_selected();
+      }
+
+      // if this meter is *offering*, we already know the group and system
+      if ($scope.config.use == "offering"){
+        system = group.systems.find(s => s.id == system_id)
+        $scope.system_options = [system];
+        $scope.config.system_id = system.id
+        $scope.system_selected();
+      }
+    }
 
     $scope.group_selected = () => {
       $scope.system_options = $scope.potentialGroups.find((group) => group.id === $scope.config.group_id).systems;
