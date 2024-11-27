@@ -76,7 +76,8 @@ def collapse_unit(org, x):
 
     if isinstance(x, ureg.Quantity):
         dimensionality = get_dimensionality(x)
-        pint_spec = pint_specs[dimensionality]
+        # default to quantity's units if not found
+        pint_spec = pint_specs.get(dimensionality, x.units)
         converted_value = x.to(pint_spec).magnitude
         return round(converted_value, org.display_decimal_places)
     elif isinstance(x, list):

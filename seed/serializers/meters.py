@@ -47,15 +47,12 @@ class MeterSerializer(serializers.ModelSerializer, OrgMixin):
 
     def to_representation(self, obj):
         result = super().to_representation(obj)
-
         if obj.source == Meter.GREENBUTTON:
             result["source_id"] = usage_point_id(obj.source_id)
-
         result["scenario_name"] = obj.scenario.name if obj.scenario else None
-
         if obj.alias is None or obj.alias == "":
             result["alias"] = f"{obj.get_type_display()} - {obj.get_source_display()} - {result['source_id']}"
-
+        self.get_property_display_name(obj, result)
         self.set_config(obj, result)
 
         return result
@@ -63,12 +60,12 @@ class MeterSerializer(serializers.ModelSerializer, OrgMixin):
     def set_config(self, obj, result):
         # generate config for meter modal
         connection_lookup = {
-            1: {"direction": "inflow", "use": "outside", "connection": "outside"},
-            2: {"direction": "outflow", "use": "outside", "connection": "outside"},
-            3: {"direction": "inflow", "use": "using", "connection": "service"},
-            4: {"direction": "outflow", "use": "using", "connection": "service"},
-            5: {"direction": "inflow", "use": "offering", "connection": "service"},
-            6: {"direction": "outflow", "use": "offering", "connection": "service"},
+            1: {"direction": "imported", "use": "outside", "connection": "outside"},
+            2: {"direction": "exported", "use": "outside", "connection": "outside"},
+            3: {"direction": "imported", "use": "using", "connection": "service"},
+            4: {"direction": "exported", "use": "using", "connection": "service"},
+            5: {"direction": "imported", "use": "offering", "connection": "service"},
+            6: {"direction": "exported", "use": "offering", "connection": "service"},
         }
 
         group_id, system_id = None, None
@@ -80,3 +77,9 @@ class MeterSerializer(serializers.ModelSerializer, OrgMixin):
 
         config = {"group_id": group_id, "system_id": system_id, "service_id": obj.service_id, **connection_lookup[obj.connection_type]}
         result["config"] = config
+
+    def get_property_display_name(self, obj, result):
+        if obj.property:
+            state = obj.property.views.first().state
+            property_display_field = state.organization.property_display_field
+            result["property_display_field"] = getattr(state, property_display_field, "Unknown")

@@ -87,8 +87,8 @@ angular.module('SEED.controller.meter_edit_modal', []).controller('meter_edit_mo
     });
 
     $scope.direction_options = [
-      { display: 'Flowing In', value: 'inflow' },
-      { display: 'Flowing Out', value: 'outflow' }
+      { display: 'Imported', value: 'imported' },
+      { display: 'Exported', value: 'exported' }
     ];
     $scope.connection_options = [
       { display: 'Connected to Outside', value: 'outside' },

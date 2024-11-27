@@ -33,8 +33,8 @@ class SystemViewTests(AccessLevelBaseTestCase):
         response = self.client.get(url, content_type="application/json")
         assert response.status_code == 200
         data = response.json()["data"]
-        assert list(data.keys()) == ["Battery", "DES", "EVSE"]
-        assert len(data["DES"]) == 2
+        assert list(data.keys()) == ["Battery", "DES - Cooling", "EVSE"]
+        assert len(data["DES - Cooling"]) == 2
         assert len(data["EVSE"]) == 2
         assert len(data["Battery"]) == 2
 
@@ -64,14 +64,25 @@ class SystemViewTests(AccessLevelBaseTestCase):
             "group_id": self.group1.id,
             "des_type": "Chiller",
             "type": "DES",
-            "capacity": 1,
+            "cooling_capacity": 1,
             "count": 2,
         }
         url = reverse_lazy("api:v3:inventory_group-systems-list", args=[self.group1.id]) + f"?organization_id={self.org.id}"
         response = self.client.post(url, data=json.dumps(data), content_type="application/json")
         assert response.status_code == 201
         data = response.json()["data"]
-        assert sorted(data.keys()) == ["capacity", "count", "des_type", "group_id", "id", "name", "services", "type"]
+        assert sorted(data.keys()) == [
+            "cooling_capacity",
+            "count",
+            "des_type",
+            "group_id",
+            "heating_capacity",
+            "id",
+            "mode",
+            "name",
+            "services",
+            "type",
+        ]
         assert System.objects.count() == 10
 
         # name constraint
@@ -88,12 +99,13 @@ class SystemViewTests(AccessLevelBaseTestCase):
             "evse_type": "Level1-120V",
             "type": "EVSE",
             "power": 1,
-            "count": 2,
+            "voltage": 2,
+            "count": 3,
         }
         url = reverse_lazy("api:v3:inventory_group-systems-list", args=[self.group1.id]) + f"?organization_id={self.org.id}"
         response = self.client.post(url, data=json.dumps(data), content_type="application/json")
         data = response.json()["data"]
-        assert sorted(data.keys()) == ["count", "evse_type", "group_id", "id", "name", "power", "services", "type"]
+        assert sorted(data.keys()) == ["count", "evse_type", "group_id", "id", "name", "power", "services", "type", "voltage"]
         assert System.objects.count() == 11
 
         # BATTERY
@@ -102,29 +114,51 @@ class SystemViewTests(AccessLevelBaseTestCase):
             "group_id": self.group1.id,
             "type": "Battery",
             "efficiency": 1,
-            "capacity": 2,
-            "voltage": 3,
+            "power_capacity": 2,
+            "energy_capacity": 3,
+            "voltage": 4,
         }
         url = reverse_lazy("api:v3:inventory_group-systems-list", args=[self.group1.id]) + f"?organization_id={self.org.id}"
         response = self.client.post(url, data=json.dumps(data), content_type="application/json")
         data = response.json()["data"]
-        assert sorted(data.keys()) == ["capacity", "efficiency", "group_id", "id", "name", "services", "type", "voltage"]
+        assert sorted(data.keys()) == [
+            "efficiency",
+            "energy_capacity",
+            "group_id",
+            "id",
+            "name",
+            "power_capacity",
+            "services",
+            "type",
+            "voltage",
+        ]
         assert System.objects.count() == 12
 
     def test_system_update(self):
-        des = self.system_factory.get_system(group=self.group1, name="des 1", system_type="DES", capacity=1)
+        des = self.system_factory.get_system(group=self.group1, name="des 1", system_type="DES", cooling_capacity=1)
         evse = self.system_factory.get_system(group=self.group1, name="evse 1", system_type="EVSE", power=2)
         battery = self.system_factory.get_system(group=self.group1, name="battery 1", system_type="Battery", voltage=3)
 
         # DES
         url = reverse_lazy("api:v3:inventory_group-systems-detail", args=[self.group1.id, des.id]) + f"?organization_id={self.org.id}"
         data = SystemSerializer(des).data
-        data["capacity"] = 101
+        data["cooling_capacity"] = 101
         response = self.client.put(url, data=json.dumps(data), content_type="application/json")
         assert response.status_code == 200
         data = response.json()
-        assert sorted(data.keys()) == ["capacity", "count", "des_type", "group_id", "id", "name", "services", "type"]
-        assert data["capacity"] == 101
+        assert sorted(data.keys()) == [
+            "cooling_capacity",
+            "count",
+            "des_type",
+            "group_id",
+            "heating_capacity",
+            "id",
+            "mode",
+            "name",
+            "services",
+            "type",
+        ]
+        assert data["cooling_capacity"] == 101
 
         # name constraint
         data = SystemSerializer(des).data
@@ -143,7 +177,7 @@ class SystemViewTests(AccessLevelBaseTestCase):
         data["power"] = 102
         response = self.client.put(url, data=json.dumps(data), content_type="application/json")
         data = response.json()
-        assert sorted(data.keys()) == ["count", "evse_type", "group_id", "id", "name", "power", "services", "type"]
+        assert sorted(data.keys()) == ["count", "evse_type", "group_id", "id", "name", "power", "services", "type", "voltage"]
         assert data["power"] == 102
 
         # BATTERY
@@ -152,5 +186,15 @@ class SystemViewTests(AccessLevelBaseTestCase):
         data["voltage"] = 103
         response = self.client.put(url, data=json.dumps(data), content_type="application/json")
         data = response.json()
-        assert sorted(data.keys()) == ["capacity", "efficiency", "group_id", "id", "name", "services", "type", "voltage"]
+        assert sorted(data.keys()) == [
+            "efficiency",
+            "energy_capacity",
+            "group_id",
+            "id",
+            "name",
+            "power_capacity",
+            "services",
+            "type",
+            "voltage",
+        ]
         assert data["voltage"] == 103

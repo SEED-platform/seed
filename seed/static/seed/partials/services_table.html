@@ -2,28 +2,16 @@
   <table class="table table-striped table_highlight_first system-table" style="border-bottom: 1px solid #dddddd">
     <thead>
       <tr>
-        <th style="width: 90px"></th>
         <th ng-repeat="header in service_table_config.headers">{$ header $}</th>
         <th style="width: 110px"></th>
       </tr>
     </thead>
     <tbody>
-      <tr ng-repeat-start="service in system.services">
-        <td>
-          <button type="button" class="accordion-button" data-toggle="collapse" data-target="#collapse-meters-{$ service.id $}" ng-click="collapse(system.id)">
-            Meters <i class="fa-solid fa-chevron-right accordion-indicator-default-closed"></i>
-          </button>
-        </td>
+      <tr ng-repeat="service in system.services">
         <td ng-repeat="field in service_table_config.fields">{$ service[field] $}</td>
         <td>
-          <button class="btn btn-default btn-rowform" ng-click="edit_service(system.id, service.id)" translate>edit</button>
+          <button class="btn btn-default btn-rowform" ng-click="edit_service(system.id, service.id)" translate><i class="fa-solid fa-pencil"></i></button>
           <button class="btn btn-danger btn-rowform" ng-click="remove_service(system.id, service.id)">X</button>
-        </td>
-      </tr>
-      <tr id="collapse-meters-{$ service.id $}" class="collapse services-table" ng-repeat-end>
-        <td></td>
-        <td colspan="{$ service_table_config.headers.length + 1 $}" style="padding: 0">
-          <div style="border-top: 1px solid #428bca">meters table?</div>
         </td>
       </tr>
     </tbody>

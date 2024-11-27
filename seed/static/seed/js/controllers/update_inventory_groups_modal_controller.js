@@ -26,6 +26,7 @@ angular.module('SEED.controller.update_inventory_groups_modal', [])
       Notification
     ) {
       $scope.view_ids = view_ids;
+      $scope.num = view_ids.length;
       $scope.inventory_type = inventory_type;
       $scope.org_id = org_id;
 

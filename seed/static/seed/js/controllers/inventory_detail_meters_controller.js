@@ -71,9 +71,9 @@ angular.module('SEED.controller.inventory_detail_meters', []).controller('invent
     // dont show edit if disabled?
     const buttons = (
       '<div class="meters-table-actions" style="display: flex; flex-direction=column">' +
-      ' <button type="button" ng-show="grid.appScope.menu.user.organization.user_role !== \'viewer\'" class="btn-danger" style="border-radius: 4px;" ng-click="grid.appScope.open_meter_deletion_modal(row.entity)" title="Delete Meter"><i class="fa-solid fa-xmark"></i></button>' +
       ' <button type="button" ng-show="grid.appScope.menu.user.organization.user_role !== \'viewer\' && grid.appScope.groups.length" class="btn-primary" style="border-radius: 4px;" ng-click="grid.appScope.open_meter_connection_edit_modal(row.entity)" title="Edit Meter Connection"><i class="fa-solid fa-pencil"></i></button>' +
-      ' <button type="button" ng-show="grid.appScope.menu.user.organization.user_role !== \'viewer\' && !grid.appScope.groups.length" class="btn-gray" style="border-radius: 4px;" ng-click="grid.appScope.open_meter_connection_edit_modal(row.entity)" title="To Edit Connection, a meter must be part of an inventory group" ng-disabled="true"><i class="fa-solid fa-pencil"></i></button>' +
+      // ' <button type="button" ng-show="grid.appScope.menu.user.organization.user_role !== \'viewer\' && !grid.appScope.groups.length" class="btn-gray" style="border-radius: 4px;" ng-click="grid.appScope.open_meter_connection_edit_modal(row.entity)" title="To Edit Connection, a meter must be part of an inventory group" ng-disabled="true"><i class="fa-solid fa-pencil"></i></button>' +
+      ' <button type="button" ng-show="grid.appScope.menu.user.organization.user_role !== \'viewer\'" class="btn-danger" style="border-radius: 4px;" ng-click="grid.appScope.open_meter_deletion_modal(row.entity)" title="Delete Meter"><i class="fa-solid fa-xmark"></i></button>' +
       '</div>'
     );
 
@@ -250,23 +250,8 @@ angular.module('SEED.controller.inventory_detail_meters', []).controller('invent
     // refresh_readings make an API call to refresh the base readings data
     // according to the selected interval
     $scope.refresh_meters_and_readings = () => {
-      spinner_utility.show();
-      const get_meters_Promise = meter_service.get_meters($scope.inventory.view_id, $scope.organization.id);
-      const get_readings_Promise = meter_service.property_meter_usage(
-        $scope.inventory.view_id,
-        $scope.organization.id,
-        $scope.interval.selected,
-        [] // Not excluding any meters from the query
-      );
-      Promise.all([get_meters_Promise, get_readings_Promise]).then((data) => {
-        // update the base data and reset filters
-        [meters, property_meter_usage] = data;
-
-        resetSelections();
-        $scope.meterGridApi.core.refresh();
-        $scope.applyFilters();
-        spinner_utility.hide();
-      });
+      // Any reason we can't just reload? Solves issues with null group_ids
+      $state.reload();
     };
 
     // refresh_readings make an API call to refresh the base readings data

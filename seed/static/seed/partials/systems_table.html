@@ -22,7 +22,7 @@
           <div ng-if="menu.user.organization.user_role !== 'viewer'">
             <button class="btn btn-default btn-rowform" ng-click="create_service(system.id)" translate>+ service</button>
             <button class="btn btn-default btn-rowform" ng-click="open_green_button_upload_modal(system)" translate>+ meters</button>
-            <button class="btn btn-default btn-rowform" ng-click="edit_system(system.id)" translate>edit</button>
+            <button class="btn btn-default btn-rowform" ng-click="edit_system(system.id)" translate><i class="fa-solid fa-pencil"></i></button>
             <button class="btn btn-danger btn-rowform" ng-click="remove_system(system.id)">X</button>
           </div>
         </td>

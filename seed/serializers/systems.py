@@ -11,6 +11,7 @@ from rest_framework import serializers
 from seed.data_importer.utils import usage_point_id
 from seed.models import BatterySystem, DESSystem, EVSESystem, Service, System
 from seed.serializers.base import ChoiceField
+from seed.serializers.pint import collapse_unit
 
 
 class ServiceSerializer(serializers.ModelSerializer):
@@ -70,63 +71,62 @@ class SystemSerializer(serializers.ModelSerializer):
         fields = ["id", "name", "services", "type", "group_id"]
 
     def validate(self, data):
-        SystemClass = self.Meta.model
         id = self.instance.id if self.instance else None
 
-        if SystemClass.objects.filter(name=data.get("name"), group=data.get("group_id")).exclude(id=id).exists():
+        if System.objects.filter(name=data.get("name"), group=data.get("group_id")).exclude(id=id).exists():
             raise serializers.ValidationError("System name must be unique within group")
         return data
 
 
 class DESSystemSerializer(SystemSerializer):
     des_type = ChoiceField(source="type", choices=DESSystem.DES_TYPES)
-    capacity = serializers.IntegerField()
-    count = serializers.IntegerField()
 
     class Meta:
         model = DESSystem
-        fields = [*SystemSerializer.Meta.fields, "des_type", "capacity", "count"]
+        fields = [*SystemSerializer.Meta.fields, "cooling_capacity", "count", "des_type", "heating_capacity"]
 
     def to_representation(self, obj):
+        org = obj.group.organization
+        mode = "Cooling" if obj.cooling_capacity else "Heating"
         return {
             "type": "DES",
             "des_type": obj.get_type_display(),
-            "capacity": obj.capacity,
+            "cooling_capacity": collapse_unit(org, obj.cooling_capacity),
             "count": obj.count,
+            "heating_capacity": collapse_unit(org, obj.heating_capacity),
+            "mode": mode,
         }
 
 
 class EVSESystemSerializer(SystemSerializer):
     evse_type = ChoiceField(source="type", choices=EVSESystem.EVSE_TYPES)
-    power = serializers.IntegerField()
-    count = serializers.IntegerField()
 
     class Meta:
         model = EVSESystem
-        fields = [*SystemSerializer.Meta.fields, "evse_type", "power", "count"]
+        fields = [*SystemSerializer.Meta.fields, "count", "evse_type", "power", "voltage"]
 
     def to_representation(self, obj):
+        org = obj.group.organization
         return {
             "type": "EVSE",
             "evse_type": obj.get_type_display(),
-            "power": obj.power,
-            "count": obj.count,
+            "power": collapse_unit(org, obj.power),
+            "voltage": collapse_unit(org, obj.voltage),
+            "count": collapse_unit(org, obj.count),
         }
 
 
 class BatterySystemSerializer(SystemSerializer):
-    efficiency = serializers.IntegerField()
-    capacity = serializers.IntegerField()
-    voltage = serializers.IntegerField()
-
     class Meta:
         model = BatterySystem
-        fields = [*SystemSerializer.Meta.fields, "efficiency", "capacity", "voltage"]
+        fields = [*SystemSerializer.Meta.fields, "energy_capacity", "power_capacity", "efficiency", "voltage"]
 
     def to_representation(self, obj):
+        org = obj.group.organization
         return {
             "type": "Battery",
             "efficiency": obj.efficiency,
-            "capacity": obj.capacity,
-            "voltage": obj.voltage,
+            "energy_capacity": collapse_unit(org, obj.energy_capacity),
+            "power_capacity": collapse_unit(org, obj.power_capacity),
+            "voltage": collapse_unit(org, obj.voltage),
         }
