@@ -886,10 +886,10 @@ class OrganizationViewSet(viewsets.ViewSet):
             data = [apply_display_unit_preferences(organization, d) for d in property_views.values("id", *fields.keys(), "yr_e")]
 
             # count before and after we prune the empty ones
+            # watch out not to prune boolean fields
             count_total = len(data)
-            data = [d for d in data if d["x"] and d["y"]]
+            data = [d for d in data if (d["x"] or d["x"] is False or d["x"] is True) and (d["y"] or d["y"] is False or d["y"] is True)]
             count_with_data = len(data)
-
             result = {
                 "cycle_id": cycle.pk,
                 "chart_data": data,
@@ -1020,9 +1020,9 @@ class OrganizationViewSet(viewsets.ViewSet):
         chart_data = []
         property_counts = []
 
-        # set bins and choose agg type
+        # set bins and choose agg type. treat booleans as discrete
         ys = [building["y"] for datum in data for building in datum["chart_data"] if building["y"] is not None]
-        if ys and isinstance(ys[0], Number):
+        if ys and isinstance(ys[0], Number) and ys[0] is not True and ys[0] is not False:
             bins = np.histogram_bin_edges(ys, bins=5)
 
             # special case for year built: make bins integers
@@ -1217,7 +1217,9 @@ class OrganizationViewSet(viewsets.ViewSet):
         return response
 
     def get_axis_stats(self, organization, cycle, axis, axis_var, views, ali):
-        """returns axis_name, access_level_instance name, sum, mean, min, max, 5%, 25%, 50%, 75%, 99%"""
+        """returns axis_name, access_level_instance name, sum, mean, min, max, 5%, 25%, 50%, 75%, 99%
+        exclude categorical and boolean from stats
+        """
 
         filtered_properties = views.filter(
             property__access_level_instance__lft__gte=ali.lft, property__access_level_instance__rgt__lte=ali.rgt, cycle_id=cycle.id
@@ -1226,7 +1228,7 @@ class OrganizationViewSet(viewsets.ViewSet):
         data = [
             d[axis]
             for d in [apply_display_unit_preferences(organization, d) for d in filtered_properties.values(axis)]
-            if axis in d and d[axis] is not None and isinstance(d[axis], (int, float))
+            if axis in d and d[axis] is not None and d[axis] is not True and d[axis] is not False and isinstance(d[axis], (int, float))
         ]
 
         if len(data) > 0:
