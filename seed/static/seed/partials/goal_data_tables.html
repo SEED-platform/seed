@@ -29,13 +29,13 @@
                 </button>
                 <ul uib-dropdown-menu class="dropdown-menu" role="menu">
                     <li class="drowndown-header goal-action">
-                        <a ng-if="selected_count !== inventory_pagination.total" ng-click="select_all()"
+                        <a ng-if="selected_count !== inventory_pagination.total" ng-click="select_all(goal.id)"
                             translate>Select All</a>
                         <span ng-if="selected_count === inventory_pagination.total" class="disabled-action"
                             translate>Select All</span>
                     </li>
                     <li class="drowndown-header goal-action">
-                        <a ng-if="!selected_count < 1" ng-click="select_none()" translate>Select None</a>
+                        <a ng-if="!selected_count < 1" ng-click="select_none(goal.id)" translate>Select None</a>
                         <span ng-if="selected_count < 1" class="disabled-action" translate>Select None</span>
                     </li>
                     <li class="drowndown-header goal-action">
@@ -83,13 +83,13 @@
 </div>
 
 <!-- Data Table -->
-<div id="goal-data-grid" ng-if="data_valid" >
+<div id="goal-data-grid" ng-if="data_valid_by_goal[goal.id]" >
     <div id="goal-data-gridOptions-wrapper" class="wide-900">
-        <div class="goal-grid-options" ui-grid="gridOptions" ui-grid-save-state ui-grid-resize-columns ui-grid-exporter ui-grid-edit
+        <div class="goal-grid-options" ui-grid="gridOptionsByGoal[goal.id]" ui-grid-save-state ui-grid-resize-columns ui-grid-exporter ui-grid-edit
             ui-grid-selection style="display: flex; width: 100%"></div>
     </div>
 </div>
-<div class="goal-loading" ng-if="data_loading && !data_valid">
+<div class="goal-loading" ng-if="data_loading_by_goal[goal.id] && !data_valid_by_goal[goal.id]">
     <h4 translate>Loading data...</h4>
     <uib-progress class="progress-striped active">
         <uib-bar value="100" type="info"></uib-bar>

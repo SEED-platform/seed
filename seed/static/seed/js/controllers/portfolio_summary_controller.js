@@ -16,6 +16,7 @@ angular.module('SEED.controller.portfolio_summary', [])
     'inventory_service',
     'label_service',
     'goal_service',
+    'goal_standard_service',
     'Notification',
     'cycles',
     'organization_payload',
@@ -39,6 +40,7 @@ angular.module('SEED.controller.portfolio_summary', [])
       inventory_service,
       label_service,
       goal_service,
+      goal_standard_service,
       Notification,
       cycles,
       organization_payload,
@@ -68,6 +70,14 @@ angular.module('SEED.controller.portfolio_summary', [])
       const table_column_ids = [];
       $scope.selected_count = 0;
       $scope.selected_option = 'none';
+      $scope.gridOptionsByGoal = {}
+      $scope.gridApiByGoal = {}
+      $scope.data_valid_by_goal = {} 
+      $scope.data_loading_by_goal = {} 
+      $scope.data_by_goal = {}
+
+      console.log(goal_standard_service.test())
+
 
       const initialize_columns = () => {
         $scope.columns.forEach((col) => {
@@ -91,39 +101,43 @@ angular.module('SEED.controller.portfolio_summary', [])
       const load_data = (page) => {
         $scope.data_loading = true;
         const per_page = 50;
-        const data = {
-          goal_id: $scope.data_report.goals[0].id,
-          data_report_id: $scope.data_report.id,
-          page,
-          per_page,
-          baseline_first,
-          access_level_instance_id: $scope.data_report.access_level_instance,
-          related_model_sort: $scope.related_model_sort
-        };
-        const column_filters = $scope.column_filters;
-        const order_by = $scope.column_sorts;
-        goal_service.load_data(data, column_filters, order_by).then((response) => {
-          const data = response.data;
-          $scope.inventory_pagination = data.pagination;
-          $scope.property_lookup = data.property_lookup;
-          $scope.data = data.properties;
-          get_all_labels();
-          set_grid_options();
-          $scope.data_valid = Boolean(data.properties);
-          $scope.data_loading = false;
-        });
+        for (const goal of $scope.data_report.goals) {
+          const goal_data = {
+            goal_id: goal.id,
+            data_report_id: $scope.data_report.id,
+            page,
+            per_page,
+            baseline_first,
+            access_level_instance_id: $scope.data_report.access_level_instance,
+            related_model_sort: $scope.related_model_sort
+          };
+          const column_filters = $scope.column_filters;
+          const order_by = $scope.column_sorts;
+          goal_service.load_data(goal_data, column_filters, order_by).then((response) => {
+            const data = response.data;
+            $scope.inventory_pagination = data.pagination;
+            $scope.property_lookup = data.property_lookup;
+            $scope.data_by_goal[goal.id] = data.properties;
+            get_all_labels();
+            set_grid_options(goal.id);
+            $scope.data_valid_by_goal[goal.id] = Boolean(data.properties);
+            $scope.data_loading_by_goal[goal.id] = false;
+            console.log(data_valid_by_goal)
+            console.log(data_loading_by_goal)
+
+          });
+        }
       };
 
-      // optionally pass a goal name to be set as $scope.goal - used on modal close
+      // optionally pass a data_report name to be set as $scope.data_report - used on modal close
       const get_data_reports = (data_report_name = false) => {
         data_report_service.get_data_reports().then((result) => {
           $scope.data_reports = result.data_reports;
           $scope.data_report = data_report_name ?
             $scope.data_reports.find((data_report) => data_report.name === data_report_name) :
             $scope.data_reports[0];
-          console.log($scope.data_report)
           $scope.goals = $scope.data_report.goals
-          $scope.goal = $scope.goals[0] // RP TEMP
+          $scope.goal0 = $scope.goals[0] // RP TEMP
           refresh_data();
         });
       };
@@ -138,7 +152,7 @@ angular.module('SEED.controller.portfolio_summary', [])
 
       // If data_report changes, reset grid filters and repopulate ui-grids
       $scope.$watch('data_report', (cur, old) => {
-        if ($scope.gridApi) $scope.reset_sorts_filters();
+        if ($scope.gridApiByGoal) $scope.reset_sorts_filters();
         $scope.data_valid = false;
         if (_.isEmpty($scope.data_report)) {
           $scope.valid = false;
@@ -151,49 +165,23 @@ angular.module('SEED.controller.portfolio_summary', [])
       // selected goal details
       const format_data_report_details = () => {
         $scope.change_selected_level_index();
-        const access_level_instance = $scope.potential_level_instances.find((level) => level.id === $scope.data_report.access_level_instance).name;
-
-        const commitment_sqft = $scope.data_report.commitment_sqft?.toLocaleString() || 'n/a';
-        $scope.data_report_details = [
-          { // column 1
-            'Baseline Cycle': $scope.data_report.baseline_cycle_name,
-            'Current Cycle': $scope.data_report.current_cycle_name,
-            [$scope.data_report.level_name]: access_level_instance,
-            'Total Properties': $scope.goal.current_cycle_property_view_ids.length,  // RP TEMP
-            'Commitment Sq. Ft': commitment_sqft
-          },
-          { // column 2
-            'Portfolio Target': `${$scope.data_report.target_percentage} %`,
-            'Area Column': $scope.goal.area_column_name,
-            'Primary EUI': $scope.goal.eui_column1_name
-          }
-        ];
-        if ($scope.data_report.eui_column2) {
-          $scope.data_report_details[1]['Secondary EUI'] = $scope.data_report.goal.eui_column2_name;
-        }
-        if ($scope.data_report.eui_column3) {
-          $scope.data_report_details[1]['Tertiary EUI'] = $scope.data_report.goal.eui_column3_name;
+        const ali = $scope.potential_level_instances.find((level) => level.id === $scope.data_report.access_level_instance).name;
+        if ($scope.data_report.type === "standard") {
+          $scope.data_report_details = goal_standard_service.data_report_details($scope.data_report, $scope.goal0, ali)
         }
       };
 
       $scope.toggle_help = () => {
         $scope.show_help = !$scope.show_help;
-        _.delay($scope.updateHeight, 150);
+        _.delay(() => $scope.updateHeight($scope.data_report.goals[0]), 150);
       };
 
       const get_data_report_stats = (summary) => {
-        const passing_sqft = summary.current ? summary.current.total_sqft : null;
-        // show help text if less than {50}% of properties are passing checks
         $scope.show_help = summary.total_passing <= summary.total_properties * 0.5;
-        $scope.data_report_stats = [
-          { name: 'Commitment (Sq. Ft)', value: $scope.data_report.commitment_sqft },
-          { name: 'Shared (Sq. Ft)', value: summary.shared_sqft },
-          { name: 'Passing Checks (Sq. Ft)', value: passing_sqft },
-          { name: 'Passing Checks (% of committed)', value: summary.passing_committed },
-          { name: 'Passing Checks (% of shared)', value: summary.passing_shared },
-          { name: 'Total Passing Checks', value: summary.total_passing },
-          { name: 'Total New or Acquired', value: summary.total_new_or_acquired }
-        ];
+
+        if ($scope.data_report.type === "standard") {
+          $scope.data_report_stats = goal_standard_service.data_report_stats(summary, $scope.data_report)
+        }
       };
 
       // from inventory_list_controller
@@ -223,7 +211,7 @@ angular.module('SEED.controller.portfolio_summary', [])
             data_report: () => $scope.data_report,
             cycles: () => $scope.cycles,
             eui_columns: () => $scope.eui_columns,
-            goal: () => $scope.goal, // rp - necessary?
+            // goal: () => $scope.goal, // rp - necessary?
             organization: () => $scope.organization,
             write_permission: () => $scope.write_permission
           }
@@ -242,11 +230,8 @@ angular.module('SEED.controller.portfolio_summary', [])
 
         data_report_service.get_portfolio_summary($scope.data_report.id).then((result) => {
           // summary is a dict with summaries for each of the goals, keyed on goal id.
-            let goal = $scope.data_report.goals[0]
-            // let summary = result.data[goal.id.toString()];
-            let summary = result.data
-            set_summary_grid_options(summary);
-            // RP TEMP - this needs to be dynamic to set multiple uigrids
+          let summary = result.data
+          set_summary_grid_options(summary);
         }).then(() => {
           $scope.summary_loading = false;
           $scope.summary_valid = true;
@@ -267,7 +252,7 @@ angular.module('SEED.controller.portfolio_summary', [])
           return 31;
         }
         let maxWidth = 0;
-        const col = $scope.gridApi.grid.getColumn(labels_col);
+        const col = $scope.gridApiByGoal[$scope.goal0.id].grid.getColumn(labels_col); // RP - tricky
         const cells = renderContainer.querySelectorAll(`.${uiGridConstants.COL_CLASS_PREFIX}${col.uid} .ui-grid-cell-contents`);
         Array.prototype.forEach.call(cells, (cell) => {
           gridUtil.fakeElement(cell, {}, (newElm) => {
@@ -288,17 +273,19 @@ angular.module('SEED.controller.portfolio_summary', [])
       $scope.toggle_labels = (labels_col, key) => {
         $scope.show_full_labels[key] = !$scope.show_full_labels[key];
         setTimeout(() => {
-          $scope.gridApi.grid.getColumn(labels_col).width = $scope.get_label_column_width(labels_col, key);
-          const icon = document.getElementById(`label-header-icon-${key}`);
-          icon.classList.add($scope.show_full_labels[key] ? 'fa-chevron-circle-left' : 'fa-chevron-circle-right');
-          icon.classList.remove($scope.show_full_labels[key] ? 'fa-chevron-circle-right' : 'fa-chevron-circle-left');
-          $scope.gridApi.grid.refresh();
+          for (const goal of $scope.data_report.goals) {
+            $scope.gridApiByGoal[goal.id].grid.getColumn(labels_col).width = $scope.get_label_column_width(labels_col, key, goal.id);
+            const icon = document.getElementById(`label-header-icon-${key}`);
+            icon.classList.add($scope.show_full_labels[key] ? 'fa-chevron-circle-left' : 'fa-chevron-circle-right');
+            icon.classList.remove($scope.show_full_labels[key] ? 'fa-chevron-circle-right' : 'fa-chevron-circle-left');
+            $scope.gridApiByGoal[goal.id].grid.refresh();
+          }
         }, 0);
       };
 
       // retrieve labels, key = 'baseline' or 'current'
       const get_labels = (key) => {
-        label_service.get_property_view_labels_by_goal($scope.organization.id, $scope.goal.id, key).then((labels) => {
+        label_service.get_property_view_labels_by_goal($scope.organization.id, $scope.goal0.id, key).then((labels) => {
           if (key === 'baseline') {
             $scope.baseline_labels = labels;
             $scope.build_labels(key, $scope.baseline_labels);
@@ -344,10 +331,12 @@ angular.module('SEED.controller.portfolio_summary', [])
       };
 
       // Build column defs for baseline or current labels
-      const build_label_col_def = (labels_col, key) => {
+      const build_label_col_def = (labels_col, key, goal) => {
         const header_cell_template = `<i ng-click="grid.appScope.toggle_labels('${labels_col}', '${key}')" class='ui-grid-cell-contents fas fa-chevron-circle-right' id='label-header-icon-${key}' style='margin:2px; float:right;'></i>`;
         const cell_template = `<div ng-click="grid.appScope.toggle_labels('${labels_col}', '${key}')" class='ui-grid-cell-contents' ng-bind-html="grid.appScope.display_labels(row.entity, '${key}')"></div>`;
-        const width_fn = $scope.gridApi ? $scope.get_label_column_width(labels_col, key) : 31;
+
+        const width_fn = $scope.gridApiByGoal[goal] ? $scope.get_label_column_width(labels_col, key) : 31;
+        
 
         return {
           name: labels_col,
@@ -393,7 +382,7 @@ angular.module('SEED.controller.portfolio_summary', [])
         { id: 5, value: 'Other or multiple flags; explain in Additional Notes field' }
       ];
       // handle cycle specific columns
-      const selected_columns = () => {
+      const selected_columns = (goal) => {
         let cols = property_column_names.map((name) => $scope.columns.find((col) => col.column_name === name));
         const default_baseline = { headerCellClass: 'portfolio-summary-baseline-header', cellClass: 'portfolio-summary-baseline-cell' };
         const default_current = { headerCellClass: 'portfolio-summary-current-header', cellClass: 'portfolio-summary-current-cell' };
@@ -413,7 +402,7 @@ angular.module('SEED.controller.portfolio_summary', [])
             enableSorting: false,
             headerCellClass: 'derived-column-display-name portfolio-summary-baseline-header'
           },
-          build_label_col_def('baseline-labels', 'baseline')
+          build_label_col_def('baseline-labels', 'baseline', goal)
         ];
         const current_cols = [
           { field: 'current_cycle', displayName: 'Cycle' },
@@ -427,7 +416,7 @@ angular.module('SEED.controller.portfolio_summary', [])
             enableSorting: false,
             headerCellClass: 'derived-column-display-name portfolio-summary-current-header'
           },
-          build_label_col_def('current-labels', 'current')
+          build_label_col_def('current-labels', 'current', goal)
         ];
         const summary_cols = [
           {
@@ -589,19 +578,18 @@ angular.module('SEED.controller.portfolio_summary', [])
         });
       };
 
-      $scope.updateHeight = () => {
+      $scope.updateHeight = (goal_id) => {
         let height = 0;
         for (const selector of ['.header', '.page_header_container', '.section_nav_container', '.goals-header-text', '.goal-actions-wrapper', '.goal-details-container', '#goal-summary-goal-container', '.goal-data-actions-header']) {
           const [element] = angular.element(selector);
           height += element?.offsetHeight ?? 0;
         }
         angular.element('#goal-data-gridOptions-wrapper').css('height', `calc(100vh - ${height}px)`);
-        for (const summary in $scope.gridApiByGoal) {
-          $scope.summaryGridApiByGoal.core.handleWindowResize();
-        }
-        // $scope.summaryGridApi.core.handleWindowResize();
-        $scope.gridApi.core.handleWindowResize();
-        $scope.gridApi.grid.refresh();
+
+        $scope.summaryGridApiByGoal[goal_id].core.handleWindowResize();
+        $scope.gridApiByGoal[goal_id].core.handleWindowResize();
+        $scope.gridApiByGoal[goal_id].grid.refresh();
+
       };
 
       $scope.toggle_show_access_level_instances = () => {
@@ -611,7 +599,9 @@ angular.module('SEED.controller.portfolio_summary', [])
             col.visible = $scope.show_access_level_instances;
           }
         });
-        $scope.gridApi.core.refresh();
+        for (const goal in $scope.data_report.goals) {
+          $scope.gridApiByGoal[goal].core.refresh();
+        }
       };
 
       const format_cycle_columns = (columns) => {
@@ -624,8 +614,8 @@ angular.module('SEED.controller.portfolio_summary', [])
         ** cant filter on cycle - cycle is not a column
         ** cant filter on kbtu, sqft_change, eui_change - not real columns. calc'ed from eui and sqft. (similar to derived columns)
         */
-        const eui_column = $scope.columns.find((col) => col.id === $scope.goal.eui_column1);
-        const area_column = $scope.columns.find((col) => col.id === $scope.goal.area_column);
+        const eui_column = $scope.columns.find((col) => col.id === $scope.goal0.eui_column1);
+        const area_column = $scope.columns.find((col) => col.id === $scope.goal0.area_column);
 
         const cycle_column_lookup = {
           baseline_eui: eui_column.name,
@@ -670,8 +660,8 @@ angular.module('SEED.controller.portfolio_summary', [])
       };
 
       // from inventory_list_controller
-      const updateColumnFilterSort = () => {
-        let grid_columns = _.filter($scope.gridApi.saveState.save().columns, (col) => _.keys(col.sort).filter((key) => key !== 'ignoreSort').length + (_.get(col, 'filters[0].term', '') || '').length > 0);
+      const updateColumnFilterSort = (goal_id) => {
+        let grid_columns = _.filter($scope.gridApiByGoal[goal_id].saveState.save().columns, (col) => _.keys(col.sort).filter((key) => key !== 'ignoreSort').length + (_.get(col, 'filters[0].term', '') || '').length > 0);
         // check filter/sort columns. Cannot filter on both baseline and current. choose the more recent filter/sort
         grid_columns = remove_conflict_columns(grid_columns);
         // convert cycle columns to canonical columns
@@ -699,7 +689,7 @@ angular.module('SEED.controller.portfolio_summary', [])
             const subFilters = _.map(_.split(filter.term, ','), _.trim);
             for (const subFilter of subFilters) {
               if (subFilter) {
-                const { string, operator, value } = parseFilter(subFilter);
+                const { string, operator, value } = inventory_service.parseFilter(subFilter);
                 const display = [$scope.columnDisplayByName[name], string, value].join(' ');
                 $scope.column_filters.push({
                   name,
@@ -737,73 +727,15 @@ angular.module('SEED.controller.portfolio_summary', [])
         // $scope.isModified();
       };
 
-      // from inventory_list_controller
-      // https://regexr.com/6cka2
-      const combinedRegex = /^(!?)=\s*(-?\d+(?:\.\d+)?)$|^(!?)=?\s*"((?:[^"]|\\")*)"$|^(<=?|>=?)\s*((-?\d+(?:\.\d+)?)|(\d{4}-\d{2}-\d{2}))$/;
-      const parseFilter = (expression) => {
-        // parses an expression string into an object containing operator and value
-        const filterData = expression.match(combinedRegex);
-        if (filterData) {
-          if (!_.isUndefined(filterData[2])) {
-            // Numeric Equality
-            const operator = filterData[1];
-            const value = Number(filterData[2].replace('\\.', '.'));
-            if (operator === '!') {
-              return { string: 'is not', operator: 'ne', value };
-            }
-            return { string: 'is', operator: 'exact', value };
-          }
-          if (!_.isUndefined(filterData[4])) {
-            // Text Equality
-            const operator = filterData[3];
-            const value = filterData[4];
-            if (operator === '!') {
-              return { string: 'is not', operator: 'ne', value };
-            }
-            return { string: 'is', operator: 'exact', value };
-          }
-          if (!_.isUndefined(filterData[7])) {
-            // Numeric Comparison
-            const operator = filterData[5];
-            const value = Number(filterData[6].replace('\\.', '.'));
-            switch (operator) {
-              case '<':
-                return { string: '<', operator: 'lt', value };
-              case '<=':
-                return { string: '<=', operator: 'lte', value };
-              case '>':
-                return { string: '>', operator: 'gt', value };
-              case '>=':
-                return { string: '>=', operator: 'gte', value };
-            }
-          } else {
-            // Date Comparison
-            const operator = filterData[5];
-            const value = filterData[8];
-            switch (operator) {
-              case '<':
-                return { string: '<', operator: 'lt', value };
-              case '<=':
-                return { string: '<=', operator: 'lte', value };
-              case '>':
-                return { string: '>', operator: 'gt', value };
-              case '>=':
-                return { string: '>=', operator: 'gte', value };
-            }
-          }
-        } else {
-          // Case-insensitive Contains
-          return { string: 'contains', operator: 'icontains', value: expression };
-        }
-      };
 
-      const set_grid_options = () => {
+      const set_grid_options = (goal) => {
         $scope.show_full_labels = { baseline: false, current: false };
         $scope.selected_ids = [];
         spinner_utility.hide();
-        $scope.gridOptions = {
-          data: 'data',
-          columnDefs: selected_columns(),
+
+        $scope.gridOptionsByGoal[goal] = {
+          data: $scope.data_by_goal[goal],
+          columnDefs: selected_columns(goal),
           enableFiltering: true,
           enableHorizontalScrollbar: uiGridConstants.scrollbars.WHEN_NEEDED,
           cellWidth: 200,
@@ -814,14 +746,14 @@ angular.module('SEED.controller.portfolio_summary', [])
           gridMenuShowHideColumns: false,
           gridMenuCustomItems: [{
             title: 'Export Page to CSV',
-            action: () => $scope.gridApi.exporter.csvExport('all', 'all')
+            action: () => $scope.gridApiByGoal[goal].exporter.csvExport('all', 'all')
           }],
           onRegisterApi: (gridApi) => {
-            $scope.gridApi = gridApi;
+            $scope.gridApiByGoal[goal] = gridApi;
 
-            _.delay($scope.updateHeight, 150);
+            _.delay(() => $scope.updateHeight(goal), 150);
 
-            const debouncedHeightUpdate = _.debounce($scope.updateHeight, 150);
+            const debouncedHeightUpdate = _.debounce(() => $scope.updateHeight(goal), 150);
             angular.element($window).on('resize', debouncedHeightUpdate);
             $scope.$on('$destroy', () => {
               angular.element($window).off('resize', debouncedHeightUpdate);
@@ -830,14 +762,14 @@ angular.module('SEED.controller.portfolio_summary', [])
             gridApi.core.on.sortChanged($scope, () => {
               spinner_utility.show();
               _.debounce(() => {
-                updateColumnFilterSort();
+                updateColumnFilterSort(goal);
                 load_data(1);
               }, 500)();
             });
 
             gridApi.core.on.filterChanged($scope, _.debounce(() => {
               spinner_utility.show();
-              updateColumnFilterSort();
+              updateColumnFilterSort(goal);
               load_data(1);
             }, 2000));
 
@@ -871,18 +803,22 @@ angular.module('SEED.controller.portfolio_summary', [])
       };
       $scope.reset_sorts = () => {
         $scope.column_sorts = [];
-        $scope.gridApi.core.refresh();
+        for (const goal in $scope.data_report.goals || []) {
+          $scope.gridApiByGoal[goal] && $scope.gridApiByGoal[goal].core.refresh();
+        }
       };
       $scope.reset_filters = () => {
         $scope.column_filters = [];
-        $scope.gridApi.grid.clearAllFilters();
+        for (const goal in $scope.data_report.goals || []) {
+          $scope.gridApiByGoal[goal] && $scope.gridApiByGoal[goal].grid.clearAllFilters();
+        }
       };
 
-      $scope.select_all = () => {
+      $scope.select_all = (goal_id) => {
         // select all rows to visibly support everything has been selected
-        $scope.gridApi.selection.selectAllRows();
+        $scope.gridApiByGoal[goal_id].selection.selectAllRows();
         $scope.selected_count = $scope.inventory_pagination.total;
-        goal_service.get_goal($scope.goal.id).then((response) => {
+        goal_service.get_goal($scope.goal0.id).then((response) => {
           const goal = response.data.goal;
           if (goal) {
             $scope.selected_ids = goal.current_cycle_property_view_ids;
@@ -890,8 +826,8 @@ angular.module('SEED.controller.portfolio_summary', [])
         });
       };
 
-      $scope.select_none = () => {
-        $scope.gridApi.selection.clearSelectedRows();
+      $scope.select_none = (goal_id) => {
+        $scope.gridApiByGoal[goal_id].selection.clearSelectedRows();
         $scope.selected_count = 0;
       };
 
@@ -915,7 +851,9 @@ angular.module('SEED.controller.portfolio_summary', [])
           // dialog was closed with 'Done' button.
           $scope.selected_option = 'none';
           $scope.selected_count = 0;
-          $scope.gridApi.selection.clearSelectedRows();
+          for (const goal of $scope.data_report.goals) {
+            $scope.gridApiByGoal[goal].selection.clearSelectedRows();
+          }
           load_data();
         });
       };
@@ -929,7 +867,7 @@ angular.module('SEED.controller.portfolio_summary', [])
           controller: 'bulk_edit_goalnotes_modal_controller',
           resolve: {
             property_view_ids: () => $scope.selected_ids,
-            goal: () => $scope.goal,
+            goal: () => $scope.goal0,
             question_options: () => $scope.question_options,
             write_permission: () => $scope.write_permission
           }
@@ -938,7 +876,9 @@ angular.module('SEED.controller.portfolio_summary', [])
           // dialog was closed with 'Done' button.
           $scope.selected_option = 'none';
           $scope.selected_count = 0;
-          $scope.gridApi.selection.clearSelectedRows();
+          for (const goal of $scope.data_report.goals) {
+            $scope.gridApiByGoal[goal].selection.clearSelectedRows();
+          }
           load_summary();
           load_data();
         });
@@ -946,71 +886,22 @@ angular.module('SEED.controller.portfolio_summary', [])
 
       // -------- SUMMARY LOGIC ------------
 
-      const summary_selected_columns = () => {
-        const default_baseline = { headerCellClass: 'portfolio-summary-baseline-header', cellClass: 'portfolio-summary-baseline-cell' };
-        const default_current = { headerCellClass: 'portfolio-summary-current-header', cellClass: 'portfolio-summary-current-cell' };
-        const default_styles = { headerCellFilter: 'translate' };
-
-        const baseline_cols = [
-          { field: 'baseline_cycle', displayName: 'Cycle' },
-          { field: 'baseline_total_sqft', displayName: `Total Area (${area_units})`, cellFilter: 'number' },
-          { field: 'baseline_total_kbtu', displayName: 'Total kBTU', cellFilter: 'number' },
-          { field: 'baseline_weighted_eui', displayName: `EUI (${eui_units})`, cellFilter: 'number' }
-        ];
-        const current_cols = [
-          { field: 'current_cycle', displayName: 'Cycle' },
-          { field: 'current_total_sqft', displayName: `Total Area (${area_units})`, cellFilter: 'number' },
-          { field: 'current_total_kbtu', displayName: 'Total kBTU', cellFilter: 'number' },
-          { field: 'current_weighted_eui', displayName: `EUI (${eui_units})`, cellFilter: 'number' }
-        ];
-        const calc_cols = [
-          { field: 'sqft_change', displayName: 'Area % Change' },
-          {
-            field: 'eui_change',
-            displayName: 'EUI % Improvement',
-            cellClass: (grid, row) => (row.entity.eui_change >= $scope.goal.target_percentage ? 'above-target' : 'below-target')
-          }
-        ];
-        apply_defaults(baseline_cols, default_baseline, default_styles);
-        apply_defaults(current_cols, default_current, default_styles);
-        apply_defaults(calc_cols);
-
-        return [...baseline_cols, ...current_cols, ...calc_cols].map((col) => ({
-          ...col,
-          minWidth: 50
-        }));
-      };
-
-      const format_summary = (summary) => {
-        $scope.data_report_details[0]['Total Properties'] = summary.total_properties.toLocaleString();
-        get_data_report_stats(summary);
-        const baseline = summary.baseline;
-        const current = summary.current;
-        return [{
-          baseline_cycle: baseline.cycle_name,
-          baseline_total_sqft: baseline.total_sqft,
-          baseline_total_kbtu: baseline.total_kbtu,
-          baseline_weighted_eui: baseline.weighted_eui,
-          current_cycle: current.cycle_name,
-          current_total_sqft: current.total_sqft,
-          current_total_kbtu: current.total_kbtu,
-          current_weighted_eui: current.weighted_eui,
-          sqft_change: summary.sqft_change,
-          eui_change: summary.eui_change
-        }];
-      };
-
       const set_summary_grid_options = (summaries) => {
         $scope.summaryGridOptionsByGoal = {}
         $scope.summaryGridApiByGoal = {}
         $scope.summary_data_by_goal = {}
-
+        
         for (const [goal_id, summary] of Object.entries(summaries)) {
+          get_data_report_stats(summary);
+          let column_defs;
+          if ($scope.data_report.type === "standard") {
+            $scope.summary_data_by_goal[goal_id] = goal_standard_service.format_summary(summary, $scope.data_report_details)
+            column_defs = goal_standard_service.summary_column_defs($scope.goal0, area_units, eui_units)
+          }
 
-          $scope.summary_data_by_goal[goal_id] = format_summary(summary);
           const summaryGridOptions = {
             data: $scope.summary_data_by_goal[goal_id],
-            columnDefs: summary_selected_columns(),
+            columnDefs: column_defs,
             enableHorizontalScrollbar: uiGridConstants.scrollbars.WHEN_NEEDED,
             enableVerticalScrollbar: uiGridConstants.scrollbars.NEVER,
             enableSorting: false,
@@ -1020,9 +911,7 @@ angular.module('SEED.controller.portfolio_summary', [])
             }
           }
           $scope.summaryGridOptionsByGoal[goal_id] = summaryGridOptions;
-
-
-          };
+        };
       };
 
       // --- DATA QUALITY ---

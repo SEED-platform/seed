@@ -1282,6 +1282,67 @@ angular.module('SEED.service.inventory', []).factory('inventory_service', [
       taxlot_view_ids
     }).then((response) => response.data);
 
+    inventory_service.parseFilter = (expression) => {
+      const combinedRegex = /^(!?)=\s*(-?\d+(?:\.\d+)?)$|^(!?)=?\s*"((?:[^"]|\\")*)"$|^(<=?|>=?)\s*((-?\d+(?:\.\d+)?)|(\d{4}-\d{2}-\d{2}))$/;
+      // parses an expression string into an object containing operator and value
+      const filterData = expression.match(combinedRegex);
+      if (filterData) {
+        if (!_.isUndefined(filterData[2])) {
+          // Numeric Equality
+          const operator = filterData[1];
+          const value = Number(filterData[2].replace('\\.', '.'));
+          if (operator === '!') {
+            return { string: 'is not', operator: 'ne', value };
+          }
+          return { string: 'is', operator: 'exact', value };
+        }
+        if (!_.isUndefined(filterData[4])) {
+          // Text Equality
+          const operator = filterData[3];
+          const value = filterData[4];
+          if (operator === '!') {
+            return { string: 'is not', operator: 'ne', value };
+          }
+          return { string: 'is', operator: 'exact', value };
+        }
+        if (!_.isUndefined(filterData[7])) {
+          // Numeric Comparison
+          const operator = filterData[5];
+          const value = Number(filterData[6].replace('\\.', '.'));
+          switch (operator) {
+            case '<':
+              return { string: '<', operator: 'lt', value };
+            case '<=':
+              return { string: '<=', operator: 'lte', value };
+            case '>':
+              return { string: '>', operator: 'gt', value };
+            case '>=':
+              return { string: '>=', operator: 'gte', value };
+          }
+        } else {
+          // Date Comparison
+          const operator = filterData[5];
+          const value = filterData[8];
+          switch (operator) {
+            case '<':
+              return { string: '<', operator: 'lt', value };
+            case '<=':
+              return { string: '<=', operator: 'lte', value };
+            case '>':
+              return { string: '>', operator: 'gt', value };
+            case '>=':
+              return { string: '>=', operator: 'gte', value };
+          }
+        }
+      } else {
+        // Case-insensitive Contains
+        return { string: 'contains', operator: 'icontains', value: expression };
+      }
+    };
+
+    
+    
+
     return inventory_service;
   }
 ]);

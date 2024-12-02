@@ -11,11 +11,6 @@ angular.module('SEED.service.goal', []).factory('goal_service', [
   ) => {
     const goal_service = {};
 
-      // RP - Many of these are now unused.
-    goal_service.create_goal = (goal) => $http.post('/api/v3/goals/', goal)
-      .then((response) => response)
-      .catch((response) => response);
-
     goal_service.update_goal = (goal) => $http.put(`/api/v3/goals/${goal.id}/`, goal)
       .then((response) => response)
       .catch((response) => response);
@@ -28,29 +23,6 @@ angular.module('SEED.service.goal', []).factory('goal_service', [
       .then((response) => response)
       .catch((response) => response);
 
-    goal_service.get_goals = () => $http.get('/api/v3/goals/', {
-      params: {
-        organization_id: user_service.get_organization().id
-      }
-    })
-      .then((response) => response.data)
-      .catch((response) => response);
-
-    goal_service.delete_goal = (goal_id) => $http.delete(`/api/v3/goals/${goal_id}`, {
-      params: {
-        organization_id: user_service.get_organization().id
-      }
-    })
-      .then((response) => response)
-      .catch((response) => response);
-
-    // goal_service.get_portfolio_summary = (goal_id) => $http.get(`/api/v3/goals/${goal_id}/portfolio_summary/`, {
-    //   params: {
-    //     organization_id: user_service.get_organization().id
-    //   }
-    // })
-    //   .then((response) => response)
-    //   .catch((response) => response);
 
     goal_service.update_historical_note = (property, historical_note, data) => {
       data.property = property;
@@ -71,7 +43,8 @@ angular.module('SEED.service.goal', []).factory('goal_service', [
       .then((response) => response)
       .catch((response) => response);
 
-    goal_service.bulk_update_goal_note = (property_view_ids, goal, data) => $http.put(
+    // should this be moved to data_report service?
+    goal_service.bulk_update_goal_note = (property_view_ids, goal, data) => $http.put( 
       `/api/v3/goals/${goal.id}/bulk_update_goal_notes/`,
       { data, property_view_ids },
       { params: { organization_id: user_service.get_organization().id } }
