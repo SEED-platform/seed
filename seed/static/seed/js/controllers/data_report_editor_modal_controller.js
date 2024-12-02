@@ -43,7 +43,7 @@ angular.module('SEED.controller.data_report_editor_modal', [])
             $scope.auth = auth_payload.auth;
             $scope.organization = organization;
             $scope.write_permission = write_permission;
-            $scope.data_report = data_report || {};
+            $scope.data_report = data_report || { goals: [] };
             $scope.access_level_tree = access_level_tree.access_level_tree;
             $scope.level_names = access_level_tree.access_level_names.map((level, i) => ({
                 index: i,
