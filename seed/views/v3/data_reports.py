@@ -122,8 +122,13 @@ class DataReportViewSet(ModelViewSetWithoutPatch, OrgMixin):
         goal_serializers = {GoalStandard: GoalStandardSerializer, GoalTransaction: GoalTransactionSerializer}
         errors = []
         for goal_data in goals:
-            goal = Goal.objects.get(id=goal_data["id"])
-            goal_serializer = goal_serializers[goal.__class__](goal, data=goal_data, partial=True)
+            try:
+                goal = Goal.objects.get(id=goal_data.get("id"))
+                goal_serializer = goal_serializers[goal.__class__](goal, data=goal_data, partial=True)
+            except Goal.DoesNotExist:
+                goal_data["data_report"] = data_report.id
+                goal_serializer = goal_serializers[goal.__class__](data=goal_data, partial=True)
+
             if goal_serializer.is_valid():
                 goal_serializer.save()
             else:
