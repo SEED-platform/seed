@@ -59,12 +59,17 @@
           <div id="goal-details" style="max-height: 62vh; overflow: scroll; width: 90%">
             <form name="goal_form">
               <div id="goal-details-col1" class="r-column table_list_container" style="width: 100%">
-                <!-- Name -->
                 <ul class="r-list">
                   <li class="r-list-header" translate>Goal</li>
+                  <!-- Name -->
                   <li class="r-row r-row-centered">
                     <label for="input-name" class="r-pad-right-5 goal-label" translate>Name</label>
                     <input id="input-name" class="form-control goal-form-control" type="text" ng-model="goal.name" style="padding-left: 5px" required />
+                  </li>
+                  <!-- Type -->
+                  <li class="r-row r-row-centered">
+                    <label for="input-name" class="r-pad-right-5 goal-label" translate>Type</label>
+                      <select id="goal-type" class="form-control goal-form-control" ng-options="type for type in goal_types" ng-model="goal.type" required></select>
                   </li>
                 </ul>
                 <!-- Cycle Selection -->
@@ -101,7 +106,7 @@
                   <li class="r-list-header" translate>Access Level Instance</li>
                   <!-- Access Level Name -->
                   <li class="r-row r-row-centered">
-                    <label for="select-level-name" class="r-pad-right-5 goal-label" translate>Access Level</label>
+                    <label for="select-level-name" class="r-pad-right-5 goal-label" translate>Access Level </label> 
                     <select
                       id="select-level-name"
                       class="form-control goal-form-control"
@@ -209,6 +214,22 @@
                         <a ui-sref="organization_column_settings(::{organization_id: organization.id, inventory_type: 'properties'})" ng-click="$dismiss()">Column Settings</a>
                       </span>
                       <span ng-if="!auth.requires_owner" translate>Have your organization owner update the column's data type to "EUI"</span>
+                    </span>
+                  </li>
+                </ul>
+                <!-- Transaction Column Selection -->
+                <ul class="r-list" ng-if="goal.type == 'transaction'">
+                  <li class="r-list-header" translate>Transactions Column</li>
+                  <!-- Transaction Column -->
+                  <li class="r-row r-row-centered">
+                    <label for="select-area-column" class="r-pad-right-5 goal-label" translate>Transactions</label>
+                    <select id="select-area-column" class="form-control goal-form-control"
+                      ng-options="column.id as column.displayName for column in columns" ng-change="" ng-model="goal.transaction_column"
+                      required></select>
+                  </li>
+                  <li class="r-info">
+                    <i class="fa-solid fa-arrow-up r-pad-right-5"></i>
+                      <span translate>Column representing number of transactions per property</span>
                     </span>
                   </li>
                 </ul>

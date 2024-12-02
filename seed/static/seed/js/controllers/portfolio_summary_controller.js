@@ -137,7 +137,7 @@ angular.module('SEED.controller.portfolio_summary', [])
         if (_.isEmpty($scope.goal)) {
           $scope.valid = false;
           $scope.summary_valid = false;
-        } else if (old.id) { // prevent duplicate request on page load
+        } else if (old?.id) { // prevent duplicate request on page load
           reset_data();
         }
       });
@@ -214,6 +214,7 @@ angular.module('SEED.controller.portfolio_summary', [])
             access_level_tree: () => access_level_tree,
             area_columns: () => $scope.area_columns,
             auth_payload: () => auth_payload,
+            columns: () => $scope.columns,
             cycles: () => $scope.cycles,
             eui_columns: () => $scope.eui_columns,
             goal: () => $scope.goal,
