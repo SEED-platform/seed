@@ -193,6 +193,7 @@ class InventoryGroupMetersViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
 
         return Meter.objects.filter(
             Q(property_id__in=group["inventory_list"]) | Q(system__group_id=inventory_group_pk),
+            Q(service__isnull=True) | Q(service__system__group_id=inventory_group_pk),
         )
 
     @swagger_auto_schema_org_query_param
