@@ -624,24 +624,22 @@ class TransactionGoalViewTests(AccessLevelBaseTestCase):
         # properties
         # property_details_{property}{cycle}
         property_details_11 = self.property_state_factory.get_details()
-        property_details_11["source_eui"] = 1
+        property_details_11["source_eui"] = 140
         property_details_11["gross_floor_area"] = 2
         property_details_11["extra_data"] = {"transactions": "10"}
 
         property_details_12 = self.property_state_factory.get_details()
-        property_details_12["source_eui"] = 3
-        property_details_12["source_eui_weather_normalized"] = 4
+        property_details_12["source_eui"] = 130
         property_details_12["gross_floor_area"] = 5
         property_details_12["extra_data"] = {"transactions": 20}
 
         property_details_21 = self.property_state_factory.get_details()
-        property_details_21["source_eui"] = 6
+        property_details_21["source_eui"] = 120
         property_details_21["gross_floor_area"] = 7
         property_details_21["extra_data"] = {"transactions": "abcd"}
 
         property_details_22 = self.property_state_factory.get_details()
-        property_details_22["source_eui"] = 8
-        property_details_22["source_eui_weather_normalized"] = 9
+        property_details_22["source_eui"] = 100
         property_details_22["gross_floor_area"] = 10
         property_details_22["extra_data"] = {"transactions": 40}
 
@@ -671,7 +669,7 @@ class TransactionGoalViewTests(AccessLevelBaseTestCase):
             target_percentage=20,
             name="transaction goal",
             type="transaction",
-            transaction_column=transactions
+            transactions_column=transactions
         )
 
         GoalNote.objects.all().update(passed_checks=True)
@@ -684,22 +682,22 @@ class TransactionGoalViewTests(AccessLevelBaseTestCase):
         exp_summary = {
             'baseline': {
                 'cycle_name': '2001 Annual',
-                'total_kbtu': 44,
+                'total_kbtu': 1120,
                 'total_sqft': 9,
                 'total_transactions': 10,
-                'weighted_eui': 4,
-                'weighted_eui_t': 4
+                'weighted_eui': 124,
+                'weighted_eui_t': 112
             },
             'current': {
                 'cycle_name': '2002 Annual',
-                'total_kbtu': 110,
+                'total_kbtu': 1650,
                 'total_sqft': 15,
                 'total_transactions': 60,
-                'weighted_eui': 7,
-                'weighted_eui_t': 2
+                'weighted_eui': 110,
+                'weighted_eui_t': 28
             },
-            'eui_change': -75,
-            'eui_t_change': 50,
+            'eui_change': 11,
+            'eui_t_change': 75,
             'passing_committed': None,
             'passing_shared': 100,
             'shared_sqft': 15,
@@ -707,9 +705,8 @@ class TransactionGoalViewTests(AccessLevelBaseTestCase):
             'total_new_or_acquired': 0,
             'total_passing': 2,
             'total_properties': 2,
-            'transactions_change': 83
-        }
-        
+            'transactions_change': 83} 
+
         assert summary == exp_summary
 
     def test_goal_data(self):
@@ -726,6 +723,21 @@ class TransactionGoalViewTests(AccessLevelBaseTestCase):
         assert response.status_code == 200
         data = response.json()
         assert list(data.keys()) == ["pagination", "properties", "property_lookup"]
-        breakpoint()
+        properties = data["properties"]
 
-       
+        assert properties[0]['baseline_eui_t'] == 28
+        assert properties[0]['baseline_transactions'] == 10
+        assert properties[0]['current_eui_t'] == 32
+        assert properties[0]['current_transactions'] == 20
+        assert properties[0]['eui_t_change'] == 12
+        assert properties[0]['transactions_change'] == 50
+
+        assert properties[1]['baseline_eui_t'] == None
+        assert properties[1]['baseline_transactions'] == None
+        assert properties[1]['current_eui_t'] == 25
+        assert properties[1]['current_transactions'] == 40
+        assert properties[1]['eui_t_change'] == None
+        assert properties[1]['transactions_change'] == None
+
+
+

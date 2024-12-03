@@ -21,7 +21,7 @@ from seed.serializers.pint import apply_display_unit_preferences
 from seed.utils.api import OrgMixin
 from seed.utils.api_schema import swagger_auto_schema_org_query_param
 from seed.utils.goal_notes import get_permission_data
-from seed.utils.goals import get_or_create_goal_notes, get_portfolio_summary
+from seed.utils.goals import get_or_create_goal_notes, get_portfolio_summary, set_transaction_data
 from seed.utils.search import FilterError, build_view_filters_and_sorts, filter_views_on_related
 from seed.utils.viewsets import ModelViewSetWithoutPatch
 
@@ -275,6 +275,9 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
             property["current_kbtu"] = get_kbtu(property, "current")
             property["sqft_change"] = percentage(property["current_sqft"], property["baseline_sqft"])
             property["eui_change"] = percentage(property["baseline_eui"], property["current_eui"])
+
+            if goal.type == "transaction":
+                set_transaction_data(goal, property, p1, p2, key1, key2)
 
             properties.append(property)
 

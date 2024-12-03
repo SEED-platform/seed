@@ -10,6 +10,8 @@ from quantityfield.units import ureg
 
 from seed.models import Goal, GoalNote, Property, PropertyView
 from seed.serializers.pint import collapse_unit
+from seed.utils.generic import get_int
+
 
 
 def get_eui_expression(goal):
@@ -104,7 +106,7 @@ def percentage_difference(a, b):
     """
     if not a or not b:
         return None
-    return int((a - b) / a * 100) or 0
+    return round((a - b) / a * 100) or 0
 
 
 def percentage(a, b):
@@ -198,26 +200,26 @@ def get_portfolio_summary(org, goal):
         }
 
         if transaction_goal:
-            set_transaction_cycle_data(property_views, summary[cycle_type], goal, total_kbtu)
+            set_transaction_summary_cycle_data(property_views, summary[cycle_type], goal, total_kbtu)
 
     summary["sqft_change"] = percentage_difference(summary["current"]["total_sqft"], summary["baseline"]["total_sqft"])
     summary["eui_change"] = percentage_difference(summary["baseline"]["weighted_eui"], summary["current"]["weighted_eui"])
 
     if transaction_goal:
-        set_transaction_data(summary)
+        set_transaction_summary_data(summary)
 
     return summary
 
 
-def set_transaction_cycle_data(property_views, summary, goal, total_kbtu):
-    property_views = property_views.annotate(transactions=get_column_expression(goal.transaction_column))
+def set_transaction_summary_cycle_data(property_views, summary, goal, total_kbtu):
+    property_views = property_views.annotate(transactions=get_column_expression(goal.transactions_column))
     total_transactions = property_views.aggregate(total_transactions=Sum("transactions"))["total_transactions"]
     summary["total_transactions"] = round(total_transactions)
     # hardcoded to always be kBtu/year
     summary['weighted_eui_t'] = round(total_kbtu / total_transactions) if total_transactions else None 
 
 
-def set_transaction_data(summary):
+def set_transaction_summary_data(summary):
     summary["transactions_change"] = percentage_difference(summary["current"]["total_transactions"], summary["baseline"]["total_transactions"])
     summary["eui_t_change"] = percentage_difference(summary["baseline"]["weighted_eui_t"], summary["current"]["weighted_eui_t"])
 
@@ -249,3 +251,17 @@ def get_state_pairs(property_ids, goal_id):
 
     return state_pairs
 
+
+def set_transaction_data(goal, prop, p1, p2, key1, key2):
+    transaction_column = f"{goal.transactions_column.column_name}_{goal.transactions_column.id}"
+    p1_transactions = get_int(p1.get(transaction_column))
+    p2_transactions = get_int(p2.get(transaction_column))
+
+    prop[f"{key1}_transactions"] = p1_transactions
+    prop[f"{key2}_transactions"] = p2_transactions
+    prop[f"{key1}_eui_t"] = round(prop.get(f"{key1}_kbtu") / p1_transactions) if p1_transactions else None
+    prop[f"{key2}_eui_t"] = round(prop.get(f"{key2}_kbtu") / p2_transactions) if p2_transactions else None
+    prop["transactions_change"] = percentage_difference(prop["current_transactions"], prop["baseline_transactions"])
+    prop["eui_t_change"] = percentage_difference(prop["current_eui_t"], prop["baseline_eui_t"])
+
+    return prop
