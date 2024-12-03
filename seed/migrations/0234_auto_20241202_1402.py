@@ -13,8 +13,8 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AddField(
             model_name='goal',
-            name='transaction_column',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='goal_transaction_columns', to='seed.column'),
+            name='transactions_column',
+            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='goal_transactions_columns', to='seed.column'),
         ),
         migrations.AddField(
             model_name='goal',
