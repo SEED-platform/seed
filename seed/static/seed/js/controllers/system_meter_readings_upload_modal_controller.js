@@ -32,14 +32,13 @@ angular.module('SEED.controller.system_meter_readings_upload_modal', []).control
     filler_cycle,
     refresh_meters_and_readings
   ) {
-    $scope.state = "upload";
+    $scope.state = 'upload';
     $scope.meter = meter;
     $scope.organization = organization;
     $scope.organization_id = organization.id;
     $scope.datasets = datasets;
     $scope.selectedDataset = datasets[0];
     $scope.selectedCycle = filler_cycle;
-
 
     $scope.uploader = {
       invalid_file_contents: false,
@@ -60,14 +59,12 @@ angular.module('SEED.controller.system_meter_readings_upload_modal', []).control
           break;
 
         case 'upload_complete':
-          $scope.state = "processing";
+          $scope.state = 'processing';
           uploader_service
             .system_meter_upload(file.file_id, $scope.organization.org_id, meter.id)
             .then((data) => {
-              console.log(data)
-              $scope.state = "confirmation";
-              $scope.confirmation_message = data.message
-
+              $scope.state = 'confirmation';
+              $scope.confirmation_message = data.message;
             })
             .catch((err) => present_meter_import_error(err));
           break;

@@ -178,13 +178,12 @@ angular.module('SEED.service.uploader', []).factory('uploader_service', [
       });
     };
 
-    uploader_factory.system_meter_upload = (file_id, org_id, meter_id) => {
-      return $http.post(`/api/v3/import_files/${file_id}/system_meter_upload/`,
-        { meter_id },
-        { params: { organization_id: org_id } },
-      )
-      .then((response) => response.data)
-    };
+    uploader_factory.system_meter_upload = (file_id, org_id, meter_id) => $http.post(
+      `/api/v3/import_files/${file_id}/system_meter_upload/`,
+      { meter_id },
+      { params: { organization_id: org_id } }
+    )
+      .then((response) => response.data);
 
     uploader_factory.pm_meters_preview = (file_id, org_id) => $http.get(`/api/v3/import_files/${file_id}/pm_meters_preview/`, { params: { organization_id: org_id } }).then((response) => response.data);
 

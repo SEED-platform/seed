@@ -28,19 +28,40 @@
         <label class="control-label" for="selected_use" tooltip-placement="right" uib-tooltip="Is the meter using a service, or offering a service?">
           Meter Usage: <i class="ui-grid-icon-info-circled"></i>
         </label>
-        <select class="form-control" id="selected_use" ng-model="config.use" ng-change="use_selected()" ng-disabled="property_id" ng-options="option.value as option.display for option in use_options"></select>
+        <select
+          class="form-control"
+          id="selected_use"
+          ng-model="config.use"
+          ng-change="use_selected()"
+          ng-disabled="property_id"
+          ng-options="option.value as option.display for option in use_options"
+        ></select>
       </div>
 
       <!-- GROUP -->
       <div ng-if="config.connection !== 'outside' && config.use !== null" class="meter-config-selection-container">
         <label class="control-label" for="selected_group">Group: </label>
-        <select class="form-control" id="selected_group" ng-model="config.group_id" ng-disabled="!property_id"  ng-change="group_selected()" ng-options="option.id as option.name for option in group_options"></select>
+        <select
+          class="form-control"
+          id="selected_group"
+          ng-model="config.group_id"
+          ng-disabled="!property_id"
+          ng-change="group_selected()"
+          ng-options="option.id as option.name for option in group_options"
+        ></select>
       </div>
 
       <!-- SYSTEM -->
       <div ng-if="config.connection !== 'outside' && config.group_id !== null" class="meter-config-selection-container">
         <label class="control-label" for="selected_system">System: </label>
-        <select class="form-control" id="selected_system" ng-model="config.system_id" ng-disabled="config.use == 'offering'"  ng-change="system_selected()" ng-options="option.id as option.name for option in system_options"></select>
+        <select
+          class="form-control"
+          id="selected_system"
+          ng-model="config.system_id"
+          ng-disabled="config.use == 'offering'"
+          ng-change="system_selected()"
+          ng-options="option.id as option.name for option in system_options"
+        ></select>
       </div>
 
       <!-- SERVICE -->

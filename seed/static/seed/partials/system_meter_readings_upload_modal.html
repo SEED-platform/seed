@@ -5,17 +5,24 @@
 <div ng-switch="state">
   <div class="modal-body" ng-switch-when="upload">
     <div class="data_upload_steps container-fluid">
-      <div class="alert alert-danger" ng-show="uploader.invalid_csv_extension_alert" style="margin-bottom: 18px"
-        translate="INVALID_CSV_EXTENSION_ALERT"></div>
+      <div class="alert alert-danger" ng-show="uploader.invalid_csv_extension_alert" style="margin-bottom: 18px" translate="INVALID_CSV_EXTENSION_ALERT"></div>
       <div class="alert alert-danger" ng-show="uploader.invalid_file_contents" style="margin-bottom: 18px" translate>
         An error occurred while processing the file. Please ensure that your file meets the required specifications.
       </div>
     </div>
 
     <div class="row text-center">
-      <button type="button" class="btn btn-primary col-sm-6 center-block" sd-uploader organization-id="organization_id"
-        sourcetype="MetersReadings" sourceprog="" sourcever="" importrecord="selectedDataset.id"
-        eventfunc="uploaderfunc(message, file, progress)">
+      <button
+        type="button"
+        class="btn btn-primary col-sm-6 center-block"
+        sd-uploader
+        organization-id="organization_id"
+        sourcetype="MetersReadings"
+        sourceprog=""
+        sourcever=""
+        importrecord="selectedDataset.id"
+        eventfunc="uploaderfunc(message, file, progress)"
+      >
         <span translate>UPLOAD_FILE</span>
       </button>
     </div>
@@ -29,5 +36,4 @@
     {$ confirmation_message $}
     <button type="button" class="btn btn-default" ng-click="dismiss()" translate>Dismiss</button>
   </div>
-
 </div>
