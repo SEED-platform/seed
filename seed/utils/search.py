@@ -509,39 +509,44 @@ def build_view_filters_and_sorts(
     return new_filters, annotations, order_by
 
 
-def build_related_model_filters_and_sorts(filters: QueryDict, columns: list[dict]) -> tuple[Q, AnnotationDict, list[str]]:
-    """Primarily used for sorting the Portfolio Summary on related columns like goal_notes and historical_notes"""
-    order_by = []
-    annotations = {}
-    columns_by_name = {}
-    for column in columns:
-        if column["related"]:
-            continue
-        columns_by_name[column["name"]] = column
+def filter_views_on_related(views1, goal, filters, cycle1):
+    p_ids = views1.values_list("property_id", flat=True)
+    order_by = filters.get("order_by").replace("property__", "")
+    direction = "-" if order_by.startswith("-") else ""
+    order_by = order_by.lstrip("-")
+    goal_note = "goal_note" in order_by
+    historical_note = "historical_note" in order_by
+    order_by = order_by.replace("goal_note__", "").replace("historical_note__", "")
+    boolean_column = order_by in ["passed_checks", "new_or_acquired"]
+    target = False if boolean_column else ""
+    blanks_last = Case(When(**{order_by: target}, then=Value(1)), default=Value(0), output_field=IntegerField())
 
-    column_name = filters.get("order_by")
-    if not column_name:
-        return Q(), {}, ["id"]
+    views = []
+    if goal_note:
+        goal_notes = (
+            goal.goalnote_set.filter(property__in=p_ids)
+            .annotate(custom_order=blanks_last)
+            .order_by(direction + "custom_order", direction + order_by)
+        )
+        for goal_note in goal_notes:
+            view = goal_note.property.views.filter(cycle=cycle1).first()
+            if view:
+                views.append(view)
 
-    direction = "-" if column_name.startswith("-") else ""
-    column_name = column_name.lstrip("-")
+    elif historical_note:
+        from seed.models.notes import HistoricalNote
 
-    if "goal_note" in column_name:
-        column_name = column_name.replace("goal_note", "goalnote")
+        historical_notes = (
+            HistoricalNote.objects.filter(property__in=p_ids)
+            .annotate(custom_order=blanks_last)
+            .order_by(direction + "custom_order", direction + order_by)
+        )
+        for historical_note in historical_notes:
+            view = historical_note.property.views.filter(cycle=cycle1).first()
+            if view:
+                views.append(view)
 
-    boolean_column = column_name in ["property__goalnote__passed_checks", "property__goalnote__new_or_acquired"]
-    target: Union[bool, str]
-    if boolean_column:
-        target = False
     else:
-        target = ""
+        views = views1
 
-    related_model = Case(When(**{column_name: target}, then=Value(1)), default=Value(0), output_field=IntegerField())
-    parsed_annotations = {"related_model": related_model}
-    parsed_sort = [direction + "related_model", direction + column_name]
-
-    if parsed_sort is not None:
-        order_by.extend(parsed_sort)
-        annotations.update(parsed_annotations)
-
-    return Q(), annotations, order_by
+    return views

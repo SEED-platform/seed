@@ -16,7 +16,20 @@ class GoalSerializer(serializers.ModelSerializer):
 
     def to_representation(self, obj):
         result = super().to_representation(obj)
-        result["level_name_index"] = obj.access_level_instance.depth - 1
+        level_index = obj.access_level_instance.depth - 1
+
+        details = {
+            "level_name_index": level_index,
+            "level_name": obj.organization.access_level_names[level_index],
+            "baseline_cycle_name": obj.baseline_cycle.name,
+            "current_cycle_name": obj.current_cycle.name,
+            "eui_column1_name": obj.eui_column1.display_name,
+            "eui_column2_name": obj.eui_column2.display_name if obj.eui_column2 else None,
+            "eui_column3_name": obj.eui_column3.display_name if obj.eui_column3 else None,
+            "area_column_name": obj.area_column.display_name,
+        }
+        result.update(details)
+
         return result
 
     def validate(self, data):

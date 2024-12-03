@@ -25,7 +25,7 @@ from seed.models import (
     TaxLotView,
 )
 from seed.serializers.pint import apply_display_unit_preferences
-from seed.utils.search import FilterError, build_related_model_filters_and_sorts, build_view_filters_and_sorts
+from seed.utils.search import FilterError, build_view_filters_and_sorts
 
 
 def get_filtered_results(request: Request, inventory_type: Literal["property", "taxlot"], profile_id: int) -> JsonResponse:
@@ -37,8 +37,6 @@ def get_filtered_results(request: Request, inventory_type: Literal["property", "
     # check if there is a query parameter for the profile_id. If so, then use that one
     profile_id = request.query_params.get("profile_id", profile_id)
     shown_column_ids = request.query_params.get("shown_column_ids")
-    goal_id = request.data.get("goal_id")
-    related_model_sort = request.data.get("related_model_sort")
 
     if not org_id:
         return JsonResponse(
@@ -103,15 +101,10 @@ def get_filtered_results(request: Request, inventory_type: Literal["property", "
         only_used=False,
         include_related=include_related,
     )
-
     try:
-        # Sorts initiated from Portfolio Summary that contain related model names (goal_note, historical_note) require custom handling
-        if related_model_sort:
-            filters, annotations, order_by = build_related_model_filters_and_sorts(request.query_params, columns_from_database)
-        else:
-            filters, annotations, order_by = build_view_filters_and_sorts(
-                request.query_params, columns_from_database, inventory_type, org.access_level_names
-            )
+        filters, annotations, order_by = build_view_filters_and_sorts(
+            request.query_params, columns_from_database, inventory_type, org.access_level_names
+        )
     except FilterError as e:
         return JsonResponse({"status": "error", "message": f"Error filtering: {e!s}"}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -238,7 +231,7 @@ def get_filtered_results(request: Request, inventory_type: Literal["property", "
             show_columns = None
 
     try:
-        related_results = TaxLotProperty.serialize(views, show_columns, columns_from_database, include_related, goal_id)
+        related_results = TaxLotProperty.serialize(views, show_columns, columns_from_database, include_related)
     except DataError as e:
         return JsonResponse(
             {
