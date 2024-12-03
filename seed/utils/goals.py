@@ -210,16 +210,16 @@ def get_portfolio_summary(org, goal):
 
 
 def set_transaction_cycle_data(property_views, summary, goal, total_kbtu):
-        property_views = property_views.annotate(transactions=get_column_expression(goal.transaction_column))
-        total_transactions = property_views.aggregate(total_transactions=Sum("transactions"))["total_transactions"]
-        summary["total_transactions"] = round(total_transactions)
-        # hardcoded to always be kBtu/year
-        summary['weighted_eui_t'] = round(total_kbtu / total_transactions) if total_transactions else None 
+    property_views = property_views.annotate(transactions=get_column_expression(goal.transaction_column))
+    total_transactions = property_views.aggregate(total_transactions=Sum("transactions"))["total_transactions"]
+    summary["total_transactions"] = round(total_transactions)
+    # hardcoded to always be kBtu/year
+    summary['weighted_eui_t'] = round(total_kbtu / total_transactions) if total_transactions else None 
 
 
 def set_transaction_data(summary):
-        summary["transactions_change"] = percentage_difference(summary["current"]["total_transactions"], summary["baseline"]["total_transactions"])
-        summary["eui_t_change"] = percentage_difference(summary["baseline"]["weighted_eui_t"], summary["current"]["weighted_eui_t"])
+    summary["transactions_change"] = percentage_difference(summary["current"]["total_transactions"], summary["baseline"]["total_transactions"])
+    summary["eui_t_change"] = percentage_difference(summary["baseline"]["weighted_eui_t"], summary["current"]["weighted_eui_t"])
 
 
 def get_state_pairs(property_ids, goal_id):

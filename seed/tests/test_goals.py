@@ -711,3 +711,21 @@ class TransactionGoalViewTests(AccessLevelBaseTestCase):
         }
         
         assert summary == exp_summary
+
+    def test_goal_data(self):
+        url = reverse_lazy("api:v3:goals-data", args=[self.goal.id]) + "?organization_id=" + str(self.org.id)
+        data = {
+            "goal_id": self.goal.id,
+            "page": 1,
+            "per_page": 50,
+            "baseline_first": True,
+            "access_level_instance_id": self.org.root.id,
+            "related_model_sort": False,
+        }
+        response = self.client.put(url, data=json.dumps(data), content_type="application/json")
+        assert response.status_code == 200
+        data = response.json()
+        assert list(data.keys()) == ["pagination", "properties", "property_lookup"]
+        breakpoint()
+
+       

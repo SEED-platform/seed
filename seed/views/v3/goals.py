@@ -312,11 +312,13 @@ def percentage(a, b):
     return None if math.isnan(value) else value
 
 
-def get_preferred(p, columns):
-    if not p:
+def get_preferred(prop, columns):
+    if not prop:
         return
     for col in columns:
-        return convert_quantity(p[col])
+        quantity = convert_quantity(prop[col])
+        if quantity is not None:
+            return quantity
 
 
 def convert_quantity(value):
