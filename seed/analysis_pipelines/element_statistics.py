@@ -8,7 +8,7 @@ from collections import defaultdict
 
 from celery import chain, shared_task
 from django.db import connection
-from django.db.models import Count, Q
+from django.db.models import BooleanField, Count, Q
 
 from seed.analysis_pipelines.pipeline import (
     AnalysisPipeline,
@@ -115,9 +115,10 @@ def _run_analysis(self, analysis_property_view_ids, analysis_id):
         # add ddc count by property id
         if ddc_count_column:
             ddc_count = ddc_count_by_property_id.get(property_view.property_id, 0)
-            property_view.state.extra_data[ddc_count_column.column_name] = ddc_count
-            if ddc_count:
-                analysis_property_view.parsed_results[ddc_count_column.column_name] = ddc_count
+            # convert to true/false
+            has_ddc = bool(ddc_count > 0)
+            property_view.state.extra_data[ddc_count_column.column_name] = has_ddc
+            analysis_property_view.parsed_results[ddc_count_column.column_name] = has_ddc
 
         # add mean condition index by code
         for code, col in existing_columns_names_by_code.items():
@@ -172,7 +173,7 @@ def _create_element_columns(analysis):
 def _create_ddc_count_column(analysis):
     try:
         return Column.objects.get(
-            column_name="Number of D.D.C Control Panels",
+            column_name="Has D.D.C Control Panels",
             organization=analysis.organization,
             table_name="PropertyState",
         )
@@ -181,12 +182,13 @@ def _create_ddc_count_column(analysis):
         if analysis.can_create():
             column = Column.objects.create(
                 is_extra_data=True,
-                column_name="Number of D.D.C Control Panels",
+                column_name="Has D.D.C Control Panels",
                 organization=analysis.organization,
                 table_name="PropertyState",
+                data_type=BooleanField,
             )
-            column.display_name = "Number of D.D.C Control Panels"
-            column.column_description = "Number of D.D.C Control Panels"
+            column.display_name = "Has D.D.C Control Panels"
+            column.column_description = "Has D.D.C Control Panels"
             column.save()
 
             return column
