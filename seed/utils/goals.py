@@ -51,6 +51,20 @@ def get_area_expression(goal):
         return extra_data_expression(goal.area_column, 0.0)
     else:
         return Cast(F(f"state__{goal.area_column.column_name}"), output_field=IntegerField())
+    
+def get_column_expression(column):
+    """
+    retrieves an expression to be used in annotation to return a specific columns value.
+
+    goal.area_column is designed to only accept columns of data_type=area (columns like gross_foor_area)
+    however the user may choose to use an extra_data column that has been typed on the frontend as 'area'.
+    This frontend change does not effect the db, and extra_data fields are stored as JSON objects
+    extra_data = {Name: value} where value can be any type.
+    """
+    if column.is_extra_data:
+        return extra_data_expression(column, 0.0)
+    else:
+        return Cast(F(f"state__{column.column_name}"), output_field=IntegerField())
 
 
 def get_eui_value(property_state, goal):
@@ -65,7 +79,7 @@ def get_area_value(property_state, goal):
     """
     Return the area valuef or a given property and goal
     """
-    property_view = PropertyView.objects.filter(state__id=property_state.id).annotate(area_value=get_area_expression(goal)).first()
+    property_view = PropertyView.objects.filter(state__id=property_state.id).annotate(area_value=get_column_expression(goal.area_column)).first()
     return property_view.area_value
 
 
@@ -118,6 +132,7 @@ def get_portfolio_summary(org, goal):
     Gets a Portfolio Summary dictionary given a goal
     """
     summary = {}
+    transaction_goal = goal.type == "transaction"
 
     for current, cycle in enumerate([goal.baseline_cycle, goal.current_cycle]):
         # Return all properties
@@ -129,7 +144,7 @@ def get_portfolio_summary(org, goal):
             property__goalnote__goal__id=goal.id,
         )
         # Shared area is area of all properties regardless of valid status
-        property_views = property_views.annotate(area=get_area_expression(goal))
+        property_views = property_views.annotate(area=get_column_expression(goal.area_column))
         if current:
             summary["total_properties"] = property_views.count()
             summary["shared_sqft"] = property_views.aggregate(shared_sqft=Sum("area"))["shared_sqft"]
@@ -182,10 +197,29 @@ def get_portfolio_summary(org, goal):
             "weighted_eui": weighted_eui,
         }
 
+        if transaction_goal:
+            set_transaction_cycle_data(property_views, summary[cycle_type], goal, total_kbtu)
+
     summary["sqft_change"] = percentage_difference(summary["current"]["total_sqft"], summary["baseline"]["total_sqft"])
     summary["eui_change"] = percentage_difference(summary["baseline"]["weighted_eui"], summary["current"]["weighted_eui"])
 
+    if transaction_goal:
+        set_transaction_data(summary)
+
     return summary
+
+
+def set_transaction_cycle_data(property_views, summary, goal, total_kbtu):
+        property_views = property_views.annotate(transactions=get_column_expression(goal.transaction_column))
+        total_transactions = property_views.aggregate(total_transactions=Sum("transactions"))["total_transactions"]
+        summary["total_transactions"] = round(total_transactions)
+        # hardcoded to always be kBtu/year
+        summary['weighted_eui_t'] = round(total_kbtu / total_transactions) if total_transactions else None 
+
+
+def set_transaction_data(summary):
+        summary["transactions_change"] = percentage_difference(summary["current"]["total_transactions"], summary["baseline"]["total_transactions"])
+        summary["eui_t_change"] = percentage_difference(summary["baseline"]["weighted_eui_t"], summary["current"]["weighted_eui_t"])
 
 
 def get_state_pairs(property_ids, goal_id):
@@ -214,3 +248,4 @@ def get_state_pairs(property_ids, goal_id):
         state_pairs.append({"property": property, "baseline": baseline_state, "current": current_state})
 
     return state_pairs
+

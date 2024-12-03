@@ -597,3 +597,117 @@ class GoalViewTests(AccessLevelBaseTestCase):
         response = response.json()
         passed_checks = [p["goal_note"]["passed_checks"] for p in response["properties"]]
         assert passed_checks == [False, True, True]
+
+class TransactionGoalViewTests(AccessLevelBaseTestCase):
+    def setUp(self):
+        super().setUp()
+        self.cycle_factory = FakeCycleFactory(organization=self.org, user=self.root_owner_user)
+        self.column_factory = FakeColumnFactory(organization=self.org)
+        self.property_factory = FakePropertyFactory(organization=self.org)
+        self.property_view_factory = FakePropertyViewFactory(organization=self.org)
+        self.property_state_factory = FakePropertyStateFactory(organization=self.org)
+
+        # cycles
+        self.cycle1 = self.cycle_factory.get_cycle(start=datetime(2001, 1, 1), end=datetime(2002, 1, 1))
+        self.cycle2 = self.cycle_factory.get_cycle(start=datetime(2002, 1, 1), end=datetime(2003, 1, 1))
+
+        self.root_ali = self.org.root
+
+        # columns
+        transactions = Column.objects.create(
+            table_name="PropertyState",
+            column_name="transactions",
+            organization=self.org,
+            is_extra_data=True,
+        )
+
+        # properties
+        # property_details_{property}{cycle}
+        property_details_11 = self.property_state_factory.get_details()
+        property_details_11["source_eui"] = 1
+        property_details_11["gross_floor_area"] = 2
+        property_details_11["extra_data"] = {"transactions": "10"}
+
+        property_details_12 = self.property_state_factory.get_details()
+        property_details_12["source_eui"] = 3
+        property_details_12["source_eui_weather_normalized"] = 4
+        property_details_12["gross_floor_area"] = 5
+        property_details_12["extra_data"] = {"transactions": 20}
+
+        property_details_21 = self.property_state_factory.get_details()
+        property_details_21["source_eui"] = 6
+        property_details_21["gross_floor_area"] = 7
+        property_details_21["extra_data"] = {"transactions": "abcd"}
+
+        property_details_22 = self.property_state_factory.get_details()
+        property_details_22["source_eui"] = 8
+        property_details_22["source_eui_weather_normalized"] = 9
+        property_details_22["gross_floor_area"] = 10
+        property_details_22["extra_data"] = {"transactions": 40}
+
+        self.property1 = self.property_factory.get_property(access_level_instance=self.root_ali)
+        self.property2 = self.property_factory.get_property(access_level_instance=self.root_ali)
+
+        self.state_11 = self.property_state_factory.get_property_state(**property_details_11)
+        self.state_12 = self.property_state_factory.get_property_state(**property_details_12)
+        self.state_21 = self.property_state_factory.get_property_state(**property_details_21)
+        self.state_22 = self.property_state_factory.get_property_state(**property_details_22)
+
+        self.view11 = self.property_view_factory.get_property_view(prprty=self.property1, state=self.state_11, cycle=self.cycle1)
+        self.view12 = self.property_view_factory.get_property_view(prprty=self.property1, state=self.state_12, cycle=self.cycle2)
+        self.view21 = self.property_view_factory.get_property_view(prprty=self.property2, state=self.state_21, cycle=self.cycle1)
+        self.view22 = self.property_view_factory.get_property_view(prprty=self.property2, state=self.state_22, cycle=self.cycle2)
+
+
+        self.goal = Goal.objects.create(
+            organization=self.org,
+            baseline_cycle=self.cycle1,
+            current_cycle=self.cycle2,
+            access_level_instance=self.root_ali,
+            eui_column1=Column.objects.get(organization=self.org.id, column_name="source_eui_weather_normalized"),
+            eui_column2=Column.objects.get(organization=self.org.id, column_name="source_eui"),
+            eui_column3=Column.objects.get(organization=self.org.id, column_name="site_eui"),
+            area_column=Column.objects.get(organization=self.org.id, column_name="gross_floor_area"),
+            target_percentage=20,
+            name="transaction goal",
+            type="transaction",
+            transaction_column=transactions
+        )
+
+        GoalNote.objects.all().update(passed_checks=True)
+    
+    def test_portfolio_summary(self):
+        url = reverse_lazy("api:v3:goals-portfolio-summary", args=[self.goal.id]) + "?organization_id=" + str(self.org.id)
+        response = self.client.get(url, content_type="application/json")
+        summary = response.json()
+
+        exp_summary = {
+            'baseline': {
+                'cycle_name': '2001 Annual',
+                'total_kbtu': 44,
+                'total_sqft': 9,
+                'total_transactions': 10,
+                'weighted_eui': 4,
+                'weighted_eui_t': 4
+            },
+            'current': {
+                'cycle_name': '2002 Annual',
+                'total_kbtu': 110,
+                'total_sqft': 15,
+                'total_transactions': 60,
+                'weighted_eui': 7,
+                'weighted_eui_t': 2
+            },
+            'eui_change': -75,
+            'eui_t_change': 50,
+            'passing_committed': None,
+            'passing_shared': 100,
+            'shared_sqft': 15,
+            'sqft_change': 40,
+            'total_new_or_acquired': 0,
+            'total_passing': 2,
+            'total_properties': 2,
+            'transactions_change': 83
+        }
+        
+        assert summary == exp_summary
