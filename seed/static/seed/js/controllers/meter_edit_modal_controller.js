@@ -44,7 +44,7 @@ angular.module('SEED.controller.meter_edit_modal', []).controller('meter_edit_mo
 
     group_fn().then((groups) => {
       $scope.potentialGroups = groups;
-      $scope.group_options = property_id ? groups : groups.filter((g) => $scope.group_id == g.id);
+      $scope.group_options = property_id ? groups : groups.filter((g) => $scope.group_id === g.id);
       $scope.potentialSystems = groups.flatMap((group) => group.systems);
       $scope.system_options = $scope.potentialSystems;
     }).then(() => {
@@ -103,7 +103,7 @@ angular.module('SEED.controller.meter_edit_modal', []).controller('meter_edit_mo
       keys.forEach((key) => { $scope.config[key] = null; });
 
       // if outside, form is complete.
-      if ($scope.config.connection == 'outside') return;
+      if ($scope.config.connection === 'outside') return;
 
       // if a property meter, show all groups. otherwise system_id will dictate group_id
       if (property_id) {
@@ -117,18 +117,18 @@ angular.module('SEED.controller.meter_edit_modal', []).controller('meter_edit_mo
       const keys = ['group_id', 'system_id', 'service_id'];
       keys.forEach((key) => { $scope.config[key] = null; });
       $scope.service_options = [];
+      const group = $scope.potentialGroups.find((g) => g.id === $scope.group_id);
 
       // if this is a *system* meter, we know the group already.
       if (system_id) {
-        group = $scope.potentialGroups.find((g) => g.id == $scope.group_id);
         $scope.group_options = [group];
         $scope.config.group_id = $scope.group_id;
         $scope.group_selected();
       }
 
       // if this meter is *offering*, we already know the group and system
-      if ($scope.config.use == 'offering') {
-        system = group.systems.find((s) => s.id == system_id);
+      if ($scope.config.use === 'offering') {
+        const system = group.systems.find((s) => s.id === system_id);
         $scope.system_options = [system];
         $scope.config.system_id = system.id;
         $scope.system_selected();
