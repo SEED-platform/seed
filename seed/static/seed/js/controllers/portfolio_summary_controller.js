@@ -600,8 +600,7 @@ angular.module('SEED.controller.portfolio_summary', [])
         const baseline_cols = [
           { field: 'baseline_cycle', displayName: 'Cycle' },
           { field: 'baseline_sqft', displayName: `Area (${area_units})`, cellFilter: 'number' },
-          { field: 'baseline_eui', displayName: `EUI (${eui_units})`, cellFilter: 'number' },
-          // ktbu acts as a derived column. Disable sorting filtering
+          // ktbu and eui(t) acts as a derived column. Disable sorting filtering
           {
             field: 'baseline_kbtu',
             displayName: 'kBTU',
@@ -610,12 +609,21 @@ angular.module('SEED.controller.portfolio_summary', [])
             enableSorting: false,
             headerCellClass: 'derived-column-display-name portfolio-summary-baseline-header'
           },
+          { field: 'baseline_transactions', displayName: `Transactions (kBtu/year)`, cellFilter: 'number' },
+          { field: 'baseline_eui', displayName: `EUI(s) (${eui_units})`, cellFilter: 'number' },
+          {
+            field: 'baseline_eui_t',
+            displayName: `EUI(t) (kBtu/year)`,
+            cellFilter: 'number',
+            enableFiltering: false,
+            enableSorting: false,
+            headerCellClass: 'derived-column-display-name portfolio-summary-baseline-header'
+},
           build_label_col_def('baseline-labels', 'baseline')
         ];
         const current_cols = [
           { field: 'current_cycle', displayName: 'Cycle' },
           { field: 'current_sqft', displayName: `Area (${area_units})`, cellFilter: 'number' },
-          { field: 'current_eui', displayName: `EUI (${eui_units})`, cellFilter: 'number' },
           {
             field: 'current_kbtu',
             displayName: 'kBTU',
@@ -624,6 +632,15 @@ angular.module('SEED.controller.portfolio_summary', [])
             enableSorting: false,
             headerCellClass: 'derived-column-display-name portfolio-summary-current-header'
           },
+          { field: 'current_transactions', displayName: `Transactions (kBtu/year)`, cellFilter: 'number' },
+          { field: 'current_eui', displayName: `EUI(s) (${eui_units})`, cellFilter: 'number' },
+          {
+            field: 'current_eui_t',
+            displayName: `EUI(t) (kBtu/year)`,
+            cellFilter: 'number',
+            enableFiltering: false,
+            enableSorting: false,
+            headerCellClass: 'derived-column-display-name portfolio-summary-current-header' },
           build_label_col_def('current-labels', 'current')
         ];
         const summary_cols = [
