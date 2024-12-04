@@ -619,8 +619,14 @@ angular.module('SEED.controller.portfolio_summary', [])
             field: 'sqft_change', displayName: 'Sq Ft % Change', enableFiltering: false, enableSorting: false, headerCellClass: 'derived-column-display-name'
           },
           {
-            field: 'eui_change', displayName: 'EUI % Improvement', enableFiltering: false, enableSorting: false, headerCellClass: 'derived-column-display-name'
-          }
+            field: 'transactions_change', displayName: 'Transactions % Change', enableFiltering: false, enableSorting: false, headerCellClass: 'derived-column-display-name'
+          },
+          {
+            field: 'eui_change', displayName: 'EUI(s) % Improvement', enableFiltering: false, enableSorting: false, headerCellClass: 'derived-column-display-name'
+          },
+          {
+            field: 'eui_t_change', displayName: 'EUI(t) % Change', enableFiltering: false, enableSorting: false, headerCellClass: 'derived-column-display-name'
+          },
         ];
 
         return { baseline_cols, current_cols, summary_cols };
@@ -628,7 +634,20 @@ angular.module('SEED.controller.portfolio_summary', [])
 
       const apply_cycle_sorts_and_filters = (columns) => {
         // Cycle specific columns filters and sorts must be set manually
-        const cycle_columns = ['baseline_cycle', 'baseline_sqft', 'baseline_eui', 'baseline_kbtu', 'current_cycle', 'current_sqft', 'current_eui', 'current_kbtu', 'sqft_change', 'eui_change'];
+        const cycle_columns = [
+          'baseline_cycle', 
+          'baseline_sqft', 
+          'baseline_eui', 
+          'baseline_kbtu', 
+          'baseline_transactions', 
+          'baseline_eui_t',
+          'current_cycle', 
+          'current_sqft', 
+          'current_eui', 
+          'current_kbtu', 
+          'current_transactions',
+          'current_eui_t'
+        ];
 
         for (const column of columns) {
           if (cycle_columns.includes(column.field)) {
@@ -701,8 +720,15 @@ angular.module('SEED.controller.portfolio_summary', [])
           baseline_eui: eui_column.name,
           baseline_sqft: area_column.name,
           current_eui: eui_column.name,
-          current_sqft: area_column.name
+          current_sqft: area_column.name,
         };
+
+        if ($scope.goal.transactions_column) {
+          const transactions_column = $scope.columns.find((col) => col.id === $scope.goal.transactions_column)
+          cycle_column_lookup.baseline_transactions = transactions_column.name
+          cycle_column_lookup.current_transactions = transactions_column.name
+        }
+
         $scope.cycle_columns = [];
 
         for (const column of columns) {
@@ -735,7 +761,6 @@ angular.module('SEED.controller.portfolio_summary', [])
         } else if (includes_current) {
           baseline_first = false;
         }
-
         return grid_columns;
       };
 
@@ -747,9 +772,6 @@ angular.module('SEED.controller.portfolio_summary', [])
         // convert cycle columns to canonical columns
         const formatted_columns = format_cycle_columns(grid_columns);
 
-        // inventory_service.saveGridSettings(`${localStorageKey}.sort`, {
-        //     columns
-        // });
         $scope.column_filters = [];
         // parse the filters and sorts
         for (const column of formatted_columns) {
@@ -801,10 +823,8 @@ angular.module('SEED.controller.portfolio_summary', [])
               display,
               priority: sort.priority
             }];
-            // $scope.column_sorts.sort((a, b) => a.priority > b.priority);
           }
         }
-        // $scope.isModified();
       };
 
       // from inventory_list_controller
