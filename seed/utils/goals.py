@@ -195,20 +195,18 @@ def get_portfolio_summary(org, goal):
         if total_sqft is not None:
             total_sqft = collapse_unit(org, total_sqft)
 
-        cycle_type = "current" if current else "baseline"
+        key = "current" if current else "baseline"
 
-        summary[cycle_type] = {
-            "cycle_name": cycle.name,
-            "total_sqft": total_sqft,
-            "total_kbtu": total_kbtu,
-            "weighted_eui": weighted_eui,
-        }
+        summary[f"{key}_cycle_name"] = cycle.name
+        summary[f"{key}_total_sqft"] = total_sqft
+        summary[f"{key}_total_kbtu"] = total_kbtu
+        summary[f"{key}_weighted_eui"] = weighted_eui
 
         if transaction_goal:
-            set_transaction_summary_cycle_data(property_views, summary[cycle_type], goal, total_kbtu)
+            set_transaction_summary_cycle_data(property_views, summary, key, goal, total_kbtu)
 
-    summary["sqft_change"] = percentage_difference(summary["current"]["total_sqft"], summary["baseline"]["total_sqft"])
-    summary["eui_change"] = percentage_difference(summary["baseline"]["weighted_eui"], summary["current"]["weighted_eui"])
+    summary["sqft_change"] = percentage_difference(summary["current_total_sqft"], summary["baseline_total_sqft"])
+    summary["eui_change"] = percentage_difference(summary["baseline_weighted_eui"], summary["current_weighted_eui"])
 
     if transaction_goal:
         set_transaction_summary_data(summary)
@@ -216,19 +214,19 @@ def get_portfolio_summary(org, goal):
     return summary
 
 
-def set_transaction_summary_cycle_data(property_views, summary, goal, total_kbtu):
+def set_transaction_summary_cycle_data(property_views, summary, key, goal, total_kbtu):
     property_views = property_views.annotate(transactions=get_column_expression(goal.transactions_column))
     total_transactions = property_views.aggregate(total_transactions=Sum("transactions"))["total_transactions"]
-    summary["total_transactions"] = round(total_transactions)
+    summary[f"{key}_total_transactions"] = round(total_transactions) if total_transactions is not None else None
     # hardcoded to always be kBtu/year
-    summary["weighted_eui_t"] = round(total_kbtu / total_transactions) if total_transactions else None
+    summary[f"{key}_weighted_eui_t"] = round(total_kbtu / total_transactions) if total_transactions else None
 
 
 def set_transaction_summary_data(summary):
     summary["transactions_change"] = percentage_difference(
-        summary["current"]["total_transactions"], summary["baseline"]["total_transactions"]
+        summary["current_total_transactions"], summary["baseline_total_transactions"]
     )
-    summary["eui_t_change"] = percentage_difference(summary["baseline"]["weighted_eui_t"], summary["current"]["weighted_eui_t"])
+    summary["eui_t_change"] = percentage_difference(summary["baseline_weighted_eui_t"], summary["current_weighted_eui_t"])
 
 
 def get_state_pairs(property_ids, goal_id):

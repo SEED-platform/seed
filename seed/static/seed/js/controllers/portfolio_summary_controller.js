@@ -125,7 +125,6 @@ angular.module('SEED.controller.portfolio_summary', [])
       get_goals();
 
       const reset_data = () => {
-        $scope.valid = true;
         format_goal_details();
         refresh_data();
       };
@@ -134,6 +133,7 @@ angular.module('SEED.controller.portfolio_summary', [])
       $scope.$watch('goal', (cur, old) => {
         if ($scope.gridApi) $scope.reset_sorts_filters();
         $scope.data_valid = false;
+        $scope.valid = true;
         if (_.isEmpty($scope.goal)) {
           $scope.valid = false;
           $scope.summary_valid = false;
@@ -176,7 +176,7 @@ angular.module('SEED.controller.portfolio_summary', [])
       };
 
       const get_goal_stats = (summary) => {
-        const passing_sqft = summary.current ? summary.current.total_sqft : null;
+        const passing_sqft = summary.current_total_sqft;
         // show help text if less than {50}% of properties are passing checks
         $scope.show_help = summary.total_passing <= summary.total_properties * 0.5;
         $scope.goal_stats = [
@@ -618,7 +618,7 @@ angular.module('SEED.controller.portfolio_summary', [])
             enableFiltering: false,
             enableSorting: false,
             headerCellClass: 'derived-column-display-name portfolio-summary-baseline-header'
-},
+          },
           build_label_col_def('baseline-labels', 'baseline')
         ];
         const current_cols = [
@@ -1064,13 +1064,13 @@ angular.module('SEED.controller.portfolio_summary', [])
 
       const summary_standard_cols = () => {
         const baseline_cols = [
-          { field: 'baseline_cycle', displayName: 'Cycle' },
+          { field: 'baseline_cycle_name', displayName: 'Cycle' },
           { field: 'baseline_total_sqft', displayName: `Total Area (${area_units})`, cellFilter: 'number' },
           { field: 'baseline_total_kbtu', displayName: 'Total kBTU', cellFilter: 'number' },
           { field: 'baseline_weighted_eui', displayName: `EUI (${eui_units})`, cellFilter: 'number' }
         ];
         const current_cols = [
-          { field: 'current_cycle', displayName: 'Cycle' },
+          { field: 'current_cycle_name', displayName: 'Cycle' },
           { field: 'current_total_sqft', displayName: `Total Area (${area_units})`, cellFilter: 'number' },
           { field: 'current_total_kbtu', displayName: 'Total kBTU', cellFilter: 'number' },
           { field: 'current_weighted_eui', displayName: `EUI (${eui_units})`, cellFilter: 'number' }
@@ -1088,7 +1088,7 @@ angular.module('SEED.controller.portfolio_summary', [])
 
       const summary_transaction_cols = () => {
         const baseline_cols = [
-          { field: 'baseline_cycle', displayName: 'Cycle' },
+          { field: 'baseline_cycle_name', displayName: 'Cycle' },
           { field: 'baseline_total_sqft', displayName: `Total Area (${area_units})`, cellFilter: 'number' },
           { field: 'baseline_total_kbtu', displayName: 'Total kBTU', cellFilter: 'number' },
           { field: 'baseline_total_transactions', displayName: 'Total Transactions', cellFilter: 'number'},
@@ -1097,7 +1097,7 @@ angular.module('SEED.controller.portfolio_summary', [])
 
         ];
         const current_cols = [
-          { field: 'current_cycle', displayName: 'Cycle' },
+          { field: 'current_cycle_name', displayName: 'Cycle' },
           { field: 'current_total_sqft', displayName: `Total Area (${area_units})`, cellFilter: 'number' },
           { field: 'current_total_kbtu', displayName: 'Total kBTU', cellFilter: 'number' },
           { field: 'current_total_transactions', displayName: 'Total Transactions', cellFilter: 'number' },
@@ -1121,42 +1121,10 @@ angular.module('SEED.controller.portfolio_summary', [])
         return {baseline_cols, current_cols, calc_cols}
       }
 
-      const format_summary = (summary) => {
+      const set_summary_grid_options = (summary) => {
         $scope.goal_details[0]['Total Properties'] = summary.total_properties.toLocaleString();
         get_goal_stats(summary);
-        const baseline = summary.baseline;
-        const current = summary.current;
-
-        data = [{
-          baseline_cycle: baseline.cycle_name,
-          baseline_total_sqft: baseline.total_sqft,
-          baseline_total_kbtu: baseline.total_kbtu,
-          baseline_weighted_eui: baseline.weighted_eui,
-          current_cycle: current.cycle_name,
-          current_total_sqft: current.total_sqft,
-          current_total_kbtu: current.total_kbtu,
-          current_weighted_eui: current.weighted_eui,
-          sqft_change: summary.sqft_change,
-          eui_change: summary.eui_change
-        }];
-
-        if ($scope.goal.type == 'transaction') {
-          transaction_data = {
-            baseline_weighted_eui_t: baseline.weighted_eui_t,
-            baseline_total_transactions: baseline.total_transactions,
-            current_weighted_eui_t: current.weighted_eui_t,
-            current_total_transactions: current.total_transactions,
-            eui_t_change: summary.eui_t_change,
-            transactions_change: summary.transactions_change,
-          }
-          data[0] = {...data[0], ...transaction_data}
-        }
-
-        return data
-      };
-
-      const set_summary_grid_options = (summary) => {
-        $scope.summary_data = format_summary(summary);
+        $scope.summary_data = [summary];
         $scope.summaryGridOptions = {
           data: 'summary_data',
           columnDefs: summary_selected_columns(),
