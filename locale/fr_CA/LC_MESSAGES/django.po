@@ -120,9 +120,8 @@ msgstr "L'analyse BETTER s'appuie sur better.lbl.gov pour calculer les économie
 msgid "ANALYSIS_DESCRIPTION_BSyncr"
 msgstr "L'analyse BSyncr exploite l'analyse de consommation d'énergie normalisée mesurée (NMEC) pour calculer un modèle de point de changement. Les données sont transmises à l'analyse à l'aide de BuildingSync. Le résultat de l'analyse sont les coefficients du modèle de point de changement."
 
-#, fuzzy
 msgid "ANALYSIS_DESCRIPTION_BuildingUpgradeRecommendation"
-msgstr "Cette analyse met en œuvre un flux de travail pour identifier les bâtiments qui peuvent nécessiter une rénovation énergétique en profondeur, un remplacement ou un réajustement de l'équipement en fonction des attributs du bâtiment tels que la consommation d'énergie, l'année de construction et la superficie en pieds carrés."
+msgstr "L'analyse des recommandations de mise à niveau des bâtiments met en œuvre un flux de travail pour identifier les bâtiments qui peuvent nécessiter une rénovation énergétique approfondie, un remplacement de l'équipement ou un réajustement en fonction des attributs du bâtiment tels que la consommation d'énergie, l'année de construction et la superficie en pieds carrés. Si votre organisation contient des éléments, l'analyse des statistiques des éléments doit être exécutée avant d'exécuter cette analyse."
 
 msgid "ANALYSIS_DESCRIPTION_CO2"
 msgstr "Cette analyse calcule les émissions annuelles moyennes de CO2 pour les données des compteurs de la propriété. L’analyse nécessite la définition d’une sous-région eGRID afin de déterminer avec précision les taux d’émission."
@@ -135,7 +134,7 @@ msgid "ANALYSIS_DESCRIPTION_EUI"
 msgstr "L'analyse EUI additionnera les relevés de compteurs de la propriété au cours des douze derniers mois pour calculer la consommation d'énergie par pied carré et par an. S'il manque des relevés de compteur, l'analyse renvoie une couverture inférieure à 100 % pour alerter l'utilisateur qu'il manque un relevé de compteur."
 
 msgid "ANALYSIS_DESCRIPTION_ElementStatistics"
-msgstr "Cette analyse examine les données des éléments d'une propriété (le cas échéant) pour compter le nombre d'éléments de type « Panneau de configuration DDC » et enregistre cette quantité dans la propriété"
+msgstr "L'analyse des statistiques des éléments examine les données des éléments d'une propriété (le cas échéant) pour compter le nombre d'éléments de type « Panneau de contrôle DDC ». Elle génère également les valeurs d'indice de condition agrégées (moyennes) pour les éléments d'émission de portée 1 et enregistre ces quantités dans la propriété."
 
 msgid "AND"
 msgstr "ET"
@@ -523,6 +522,9 @@ msgstr "Assistance au parcours de conformité aux normes de performance des bât
 msgid "Building Square Footage Threshold"
 msgstr "Seuil de superficie en pieds carrés du bâtiment"
 
+msgid "Building has BAS field"
+msgstr "Le bâtiment dispose d'un champ SAB"
+
 msgid "BuildingSync Recommended Measures"
 msgstr "Mesures recommandées par BuildingSync"
 
@@ -893,6 +895,9 @@ msgstr "Créer un ensemble de données"
 msgid "Create Filter Group"
 msgstr "Créer un groupe de filtres"
 
+msgid "Create Group"
+msgstr "Créer un groupe"
+
 msgid "Create New Sub-Organization"
 msgstr "Créer nouvelle sous-organisation"
 
@@ -1115,8 +1120,14 @@ msgstr "Qualité des données"
 msgid "Data Quality Check"
 msgstr "Vérification de la qualité des données"
 
+msgid "Data Quality Checks can be configured in"
+msgstr "Les contrôles de qualité des données peuvent être configurés dans"
+
 msgid "Data Quality Results"
 msgstr "Résultats de la qualité des données"
+
+msgid "Data Quality Settings"
+msgstr "Paramètres de qualité des données"
 
 msgid "Data Set"
 msgstr "Jeu de données"
@@ -1772,6 +1783,10 @@ msgstr "Configurez un ou plusieurs objectifs de réduction de l'intensité de l'
 msgid "GREENBUTTON_CONTENTS_TITLE"
 msgstr "Confirmer le contenu du fichier GreenButton"
 
+#, fuzzy
+msgid "GROUPS_DESC_TEXT"
+msgstr "SEED supports the creation of groups. Groups can include one or more buildings as well as systems such as Batteries, District Energy Systems (DES) or Electric Vehicle Supply Equipment (EVSE). Services can be associated with the systems and meters associated with those services."
+
 msgid "GSA SFTool Guidance"
 msgstr "Guide de l'outil SFTool de la GSA"
 
@@ -1829,6 +1844,9 @@ msgstr "Configuration des objectifs"
 
 msgid "Gross Floor Area"
 msgstr "Surface brute"
+
+msgid "HAS_BAS_HELP"
+msgstr "Sélectionnez le champ qui indique si le bâtiment est équipé ou non d'un système d'automatisation de bâtiment (SAB). Cette analyse attend un champ booléen."
 
 msgid "HOW THE SYSTEM AUTO-MATCHES YOUR PROPERTIES AND TAX LOTS:"
 msgstr "COMMENT LE SYSTÈME ADAPTE AUTOMATIQUEMENT VOS PROPRIETES ET LOTS D'IMPÔT:"
@@ -2872,6 +2890,9 @@ msgstr "Remplissez les en-têtes SEED avec les correspondances les plus connues"
 msgid "Portfolio Summary"
 msgstr "Résumé du portefeuille"
 
+msgid "Portfolio Summary calculations only include properties that have \"Passed Checks\" and are not \"New Build or Acquired\" (see far right columns below)."
+msgstr "Les calculs du résumé du portefeuille incluent uniquement les propriétés qui ont « passé les contrôles » et qui ne sont pas « nouvellement construites ou acquises » (voir les colonnes à l'extrême droite ci-dessous)."
+
 msgid "Portfolio Summary will only include properties belonging to this Access Level Instance."
 msgstr "Le résumé du portefeuille inclura uniquement les propriétés appartenant à cette instance de niveau d'accès."
 
@@ -3248,6 +3269,9 @@ msgstr "Exécuter l'auteur"
 
 msgid "Run Cycle"
 msgstr "Cycle d'exécution"
+
+msgid "Run Data Quality Check, available in the Actions dropdown, to auto-populate the \"Passed Checks\" column."
+msgstr "Exécutez le contrôle de la qualité des données, disponible dans la liste déroulante Actions, pour remplir automatiquement la colonne « Contrôles réussis »."
 
 msgid "Run Date"
 msgstr "Date d'exécution"
@@ -4199,6 +4223,9 @@ msgstr "Options d'URL"
 #, fuzzy
 msgid "USING_DEFAULT_UNITS_WARNING"
 msgstr "Pour les colonnes avec des paramètres d'unité, les unités par défaut seront utilisées pour les conversions."
+
+msgid "Unexpected Portfolio Summary Calculations?"
+msgstr "Calculs de résumé de portefeuille inattendus ?"
 
 msgid "Uniformat Category"
 msgstr "Catégorie Uniformat"

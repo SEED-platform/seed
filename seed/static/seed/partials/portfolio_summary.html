@@ -61,22 +61,27 @@
         <i class="ui-grid-icon-info-circled" ng-mouseenter="toggle_help(true)"></i>
       </div>
       <div class="alert alert-warning portfolio-summary-help-text" ng-show="show_help">
-        <h4>Unexpected Portfolio Summary Calculations?</h4>
+        <div style="display: flex; justify-content: space-between;">
+          <h4>Unexpected Portfolio Summary Calculations? 
+            <button class="btn btn-light" ng-click="run_data_quality_check()">Run Data Quality Check</button>
+          </h4>
+          <i ng-click="toggle_help(false)" class="fa-solid fa-xmark"></i>
+        </div>
         <div>
-          Run "<a ng-click="run_data_quality_check()">Data Quality Check</a>" from the Actions dropdown to auto populate the "Passed Checks" column.<br /><br />
-          Portfolio Summary calculations only include properties that have "Passed Checks" and are not "New Build or Acquired" (see far right columns below).<br />
+          <span transalate>Portfolio Summary calculations only include properties that have "Passed Checks" and are not "New Build or Acquired"
+          (see far right columns below).</span><br/>
+          <span translate>Run Data Quality Check, available in the Actions dropdown, to auto-populate the "Passed Checks" column.</span><br/><br/>
           <div ng-if="::organization.is_parent && auth.requires_owner">
-            <i>Data Quality Checks can be configured in</i>
+            <i translate>Data Quality Checks can be configured in</i>
             <a ui-sref="organization_data_quality(::{organization_id: organization.id, rule_type: 'goals'})" ng-class="::{active: state.name === 'organization_data_quality'}" translate
-              >Data Quality Settings </a
+              ><span translate>Data Quality Settings</span></a
             >.
           </div>
         </div>
-        <button class="btn btn-light" ng-click="toggle_help(false)" style="margin-top: 20px">Hide</button>
       </div>
       <div ng-if="summary_valid" ui-grid="summaryGridOptions" ui-grid-resize-columns style="margin-bottom: 30px"></div>
       <div class="portfolio-summary-loading" ng-if="summary_loading">
-        <h4>{$:: 'Loading Summary Data...' | translate $}</h4>
+        <h4 translate>Loading Summary Data...</h4>
         <uib-progress class="progress-striped active">
           <uib-bar value="100" type="info"></uib-bar>
         </uib-progress>
