@@ -11,11 +11,12 @@ from django.dispatch import receiver
 
 from seed.models import AccessLevelInstance, Column, Cycle, Organization, Property
 
-
 GOAL_TYPE_CHOICES = (
     ("standard", "standard"),
     ("transaction", "transaction"),
 )
+
+
 class Goal(models.Model):
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
     baseline_cycle = models.ForeignKey(Cycle, on_delete=models.CASCADE, related_name="goal_baseline_cycles")
@@ -30,8 +31,9 @@ class Goal(models.Model):
     commitment_sqft = models.IntegerField(blank=True, null=True, validators=[MinValueValidator(0)])
     name = models.CharField(max_length=255, unique=True)
     type = models.CharField(max_length=255, choices=GOAL_TYPE_CHOICES, default="standard")
-    transactions_column = models.ForeignKey(Column, on_delete=models.CASCADE, related_name="goal_transactions_columns", blank=True, null=True)
-
+    transactions_column = models.ForeignKey(
+        Column, on_delete=models.CASCADE, related_name="goal_transactions_columns", blank=True, null=True
+    )
 
     class Meta:
         ordering = ["name"]

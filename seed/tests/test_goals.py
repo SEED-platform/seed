@@ -475,11 +475,11 @@ class GoalViewTests(AccessLevelBaseTestCase):
         exp_summary = {
             "baseline": {"cycle_name": "2001 Annual", "total_kbtu": 200, "total_sqft": 20, "weighted_eui": 10},
             "current": {"cycle_name": "2003 Annual", "total_kbtu": 5000, "total_sqft": 150, "weighted_eui": 33},
-            "eui_change": -229,
+            "eui_change": -230,
             "passing_committed": None,
             "passing_shared": 100,
             "shared_sqft": 150.0,
-            "sqft_change": 86,
+            "sqft_change": 87,
             "total_new_or_acquired": 0,
             "total_passing": 2,
             "total_properties": 2,
@@ -598,6 +598,7 @@ class GoalViewTests(AccessLevelBaseTestCase):
         passed_checks = [p["goal_note"]["passed_checks"] for p in response["properties"]]
         assert passed_checks == [False, True, True]
 
+
 class TransactionGoalViewTests(AccessLevelBaseTestCase):
     def setUp(self):
         super().setUp()
@@ -656,7 +657,6 @@ class TransactionGoalViewTests(AccessLevelBaseTestCase):
         self.view21 = self.property_view_factory.get_property_view(prprty=self.property2, state=self.state_21, cycle=self.cycle1)
         self.view22 = self.property_view_factory.get_property_view(prprty=self.property2, state=self.state_22, cycle=self.cycle2)
 
-
         self.goal = Goal.objects.create(
             organization=self.org,
             baseline_cycle=self.cycle1,
@@ -669,43 +669,44 @@ class TransactionGoalViewTests(AccessLevelBaseTestCase):
             target_percentage=20,
             name="transaction goal",
             type="transaction",
-            transactions_column=transactions
+            transactions_column=transactions,
         )
 
         GoalNote.objects.all().update(passed_checks=True)
-    
+
     def test_portfolio_summary(self):
         url = reverse_lazy("api:v3:goals-portfolio-summary", args=[self.goal.id]) + "?organization_id=" + str(self.org.id)
         response = self.client.get(url, content_type="application/json")
         summary = response.json()
 
         exp_summary = {
-            'baseline': {
-                'cycle_name': '2001 Annual',
-                'total_kbtu': 1120,
-                'total_sqft': 9,
-                'total_transactions': 10,
-                'weighted_eui': 124,
-                'weighted_eui_t': 112
+            "baseline": {
+                "cycle_name": "2001 Annual",
+                "total_kbtu": 1120,
+                "total_sqft": 9,
+                "total_transactions": 10,
+                "weighted_eui": 124,
+                "weighted_eui_t": 112,
             },
-            'current': {
-                'cycle_name': '2002 Annual',
-                'total_kbtu': 1650,
-                'total_sqft': 15,
-                'total_transactions': 60,
-                'weighted_eui': 110,
-                'weighted_eui_t': 28
+            "current": {
+                "cycle_name": "2002 Annual",
+                "total_kbtu": 1650,
+                "total_sqft": 15,
+                "total_transactions": 60,
+                "weighted_eui": 110,
+                "weighted_eui_t": 28,
             },
-            'eui_change': 11,
-            'eui_t_change': 75,
-            'passing_committed': None,
-            'passing_shared': 100,
-            'shared_sqft': 15,
-            'sqft_change': 40,
-            'total_new_or_acquired': 0,
-            'total_passing': 2,
-            'total_properties': 2,
-            'transactions_change': 83} 
+            "eui_change": 11,
+            "eui_t_change": 75,
+            "passing_committed": None,
+            "passing_shared": 100,
+            "shared_sqft": 15,
+            "sqft_change": 40,
+            "total_new_or_acquired": 0,
+            "total_passing": 2,
+            "total_properties": 2,
+            "transactions_change": 83,
+        }
 
         assert summary == exp_summary
 
@@ -724,20 +725,17 @@ class TransactionGoalViewTests(AccessLevelBaseTestCase):
         data = response.json()
         assert list(data.keys()) == ["pagination", "properties", "property_lookup"]
         properties = data["properties"]
+        # breakpoint()
+        assert properties[0]["baseline_eui_t"] == 28
+        assert properties[0]["baseline_transactions"] == 10
+        assert properties[0]["current_eui_t"] == 32
+        assert properties[0]["current_transactions"] == 20
+        assert properties[0]["eui_t_change"] == 12
+        assert properties[0]["transactions_change"] == 50
 
-        assert properties[0]['baseline_eui_t'] == 28
-        assert properties[0]['baseline_transactions'] == 10
-        assert properties[0]['current_eui_t'] == 32
-        assert properties[0]['current_transactions'] == 20
-        assert properties[0]['eui_t_change'] == 12
-        assert properties[0]['transactions_change'] == 50
-
-        assert properties[1]['baseline_eui_t'] == None
-        assert properties[1]['baseline_transactions'] == None
-        assert properties[1]['current_eui_t'] == 25
-        assert properties[1]['current_transactions'] == 40
-        assert properties[1]['eui_t_change'] == None
-        assert properties[1]['transactions_change'] == None
-
-
-
+        assert properties[1]["baseline_eui_t"] is None
+        assert properties[1]["baseline_transactions"] is None
+        assert properties[1]["current_eui_t"] == 25
+        assert properties[1]["current_transactions"] == 40
+        assert properties[1]["eui_t_change"] is None
+        assert properties[1]["transactions_change"] is None

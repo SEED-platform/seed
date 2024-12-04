@@ -3,6 +3,8 @@ SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and othe
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
+import math
+
 from django.db.models import Case, F, FloatField, IntegerField, Prefetch, Sum, Value, When
 from django.db.models.fields.json import KeyTextTransform
 from django.db.models.functions import Cast, Coalesce
@@ -11,7 +13,6 @@ from quantityfield.units import ureg
 from seed.models import Goal, GoalNote, Property, PropertyView
 from seed.serializers.pint import collapse_unit
 from seed.utils.generic import get_int
-
 
 
 def get_eui_expression(goal):
@@ -53,7 +54,8 @@ def get_area_expression(goal):
         return extra_data_expression(goal.area_column, 0.0)
     else:
         return Cast(F(f"state__{goal.area_column.column_name}"), output_field=IntegerField())
-    
+
+
 def get_column_expression(column):
     """
     retrieves an expression to be used in annotation to return a specific columns value.
@@ -81,7 +83,9 @@ def get_area_value(property_state, goal):
     """
     Return the area valuef or a given property and goal
     """
-    property_view = PropertyView.objects.filter(state__id=property_state.id).annotate(area_value=get_column_expression(goal.area_column)).first()
+    property_view = (
+        PropertyView.objects.filter(state__id=property_state.id).annotate(area_value=get_column_expression(goal.area_column)).first()
+    )
     return property_view.area_value
 
 
@@ -102,11 +106,12 @@ def extra_data_expression(column, default_value):
 
 def percentage_difference(a, b):
     """
-    Returns 100 - percentage
+    Returns 100 minus percentage
     """
-    if not a or not b:
+    if not a or b is None:
         return None
-    return round((a - b) / a * 100) or 0
+    value = round(((a - b) / a) * 100)
+    return None if math.isnan(value) else value
 
 
 def percentage(a, b):
@@ -216,11 +221,13 @@ def set_transaction_summary_cycle_data(property_views, summary, goal, total_kbtu
     total_transactions = property_views.aggregate(total_transactions=Sum("transactions"))["total_transactions"]
     summary["total_transactions"] = round(total_transactions)
     # hardcoded to always be kBtu/year
-    summary['weighted_eui_t'] = round(total_kbtu / total_transactions) if total_transactions else None 
+    summary["weighted_eui_t"] = round(total_kbtu / total_transactions) if total_transactions else None
 
 
 def set_transaction_summary_data(summary):
-    summary["transactions_change"] = percentage_difference(summary["current"]["total_transactions"], summary["baseline"]["total_transactions"])
+    summary["transactions_change"] = percentage_difference(
+        summary["current"]["total_transactions"], summary["baseline"]["total_transactions"]
+    )
     summary["eui_t_change"] = percentage_difference(summary["baseline"]["weighted_eui_t"], summary["current"]["weighted_eui_t"])
 
 
@@ -259,9 +266,41 @@ def set_transaction_data(goal, prop, p1, p2, key1, key2):
 
     prop[f"{key1}_transactions"] = p1_transactions
     prop[f"{key2}_transactions"] = p2_transactions
-    prop[f"{key1}_eui_t"] = round(prop.get(f"{key1}_kbtu") / p1_transactions) if p1_transactions else None
-    prop[f"{key2}_eui_t"] = round(prop.get(f"{key2}_kbtu") / p2_transactions) if p2_transactions else None
+    prop[f"{key1}_eui_t"] = get_eui_t(prop, key1, p1_transactions)
+    prop[f"{key2}_eui_t"] = get_eui_t(prop, key2, p2_transactions)
     prop["transactions_change"] = percentage_difference(prop["current_transactions"], prop["baseline_transactions"])
     prop["eui_t_change"] = percentage_difference(prop["current_eui_t"], prop["baseline_eui_t"])
 
     return prop
+
+
+def get_eui_t(prop, key, transactions):
+    kbtu = prop.get(f"{key}_kbtu")
+    if kbtu is None or not transactions:
+        return None
+
+    return round(kbtu / transactions) if prop else None
+
+
+def combine_properties(p1, p2):
+    if not p2:
+        return p1
+    combined = p1.copy()
+    for key, value in p2.items():
+        if value is not None:
+            combined[key] = value
+    return combined
+
+
+def get_preferred(prop, columns):
+    if not prop:
+        return
+    for col in columns:
+        quantity = get_int(prop[col])
+        if quantity is not None:
+            return quantity
+
+
+def get_kbtu(prop, key):
+    if prop[f"{key}_sqft"] is not None and prop[f"{key}_eui"] is not None:
+        return round(prop[f"{key}_sqft"] * prop[f"{key}_eui"])

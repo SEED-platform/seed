@@ -395,43 +395,49 @@ angular.module('SEED.controller.portfolio_summary', [])
         const default_styles = { headerCellFilter: 'translate', minWidth: 75, width: 150 };
         const default_no_edit = { enableCellEdit: false };
 
-        const baseline_cols = [
-          { field: 'baseline_cycle', displayName: 'Cycle' },
-          { field: 'baseline_sqft', displayName: `Area (${area_units})`, cellFilter: 'number' },
-          { field: 'baseline_eui', displayName: `EUI (${eui_units})`, cellFilter: 'number' },
-          // ktbu acts as a derived column. Disable sorting filtering
-          {
-            field: 'baseline_kbtu',
-            displayName: 'kBTU',
-            cellFilter: 'number',
-            enableFiltering: false,
-            enableSorting: false,
-            headerCellClass: 'derived-column-display-name portfolio-summary-baseline-header'
-          },
-          build_label_col_def('baseline-labels', 'baseline')
-        ];
-        const current_cols = [
-          { field: 'current_cycle', displayName: 'Cycle' },
-          { field: 'current_sqft', displayName: `Area (${area_units})`, cellFilter: 'number' },
-          { field: 'current_eui', displayName: `EUI (${eui_units})`, cellFilter: 'number' },
-          {
-            field: 'current_kbtu',
-            displayName: 'kBTU',
-            cellFilter: 'number',
-            enableFiltering: false,
-            enableSorting: false,
-            headerCellClass: 'derived-column-display-name portfolio-summary-current-header'
-          },
-          build_label_col_def('current-labels', 'current')
-        ];
-        const summary_cols = [
-          {
-            field: 'sqft_change', displayName: 'Sq Ft % Change', enableFiltering: false, enableSorting: false, headerCellClass: 'derived-column-display-name'
-          },
-          {
-            field: 'eui_change', displayName: 'EUI % Improvement', enableFiltering: false, enableSorting: false, headerCellClass: 'derived-column-display-name'
-          }
-        ];
+        const { baseline_cols, current_cols, summary_cols } = $scope.goal.type === 'transaction' ?
+          transaction_cols() :
+          standard_cols();
+
+
+
+        // const baseline_cols = [
+        //   { field: 'baseline_cycle', displayName: 'Cycle' },
+        //   { field: 'baseline_sqft', displayName: `Area (${area_units})`, cellFilter: 'number' },
+        //   { field: 'baseline_eui', displayName: `EUI (${eui_units})`, cellFilter: 'number' },
+        //   // ktbu acts as a derived column. Disable sorting filtering
+        //   {
+        //     field: 'baseline_kbtu',
+        //     displayName: 'kBTU',
+        //     cellFilter: 'number',
+        //     enableFiltering: false,
+        //     enableSorting: false,
+        //     headerCellClass: 'derived-column-display-name portfolio-summary-baseline-header'
+        //   },
+        //   build_label_col_def('baseline-labels', 'baseline')
+        // ];
+        // const current_cols = [
+        //   { field: 'current_cycle', displayName: 'Cycle' },
+        //   { field: 'current_sqft', displayName: `Area (${area_units})`, cellFilter: 'number' },
+        //   { field: 'current_eui', displayName: `EUI (${eui_units})`, cellFilter: 'number' },
+        //   {
+        //     field: 'current_kbtu',
+        //     displayName: 'kBTU',
+        //     cellFilter: 'number',
+        //     enableFiltering: false,
+        //     enableSorting: false,
+        //     headerCellClass: 'derived-column-display-name portfolio-summary-current-header'
+        //   },
+        //   build_label_col_def('current-labels', 'current')
+        // ];
+        // const summary_cols = [
+        //   {
+        //     field: 'sqft_change', displayName: 'Sq Ft % Change', enableFiltering: false, enableSorting: false, headerCellClass: 'derived-column-display-name'
+        //   },
+        //   {
+        //     field: 'eui_change', displayName: 'EUI % Improvement', enableFiltering: false, enableSorting: false, headerCellClass: 'derived-column-display-name'
+        //   }
+        // ];
 
         const goal_note_cols = [
           {
@@ -547,6 +553,90 @@ angular.module('SEED.controller.portfolio_summary', [])
         add_access_level_names(cols);
         return cols;
       };
+
+      const standard_cols = () => {
+        const baseline_cols = [
+          { field: 'baseline_cycle', displayName: 'Cycle' },
+          { field: 'baseline_sqft', displayName: `Area (${area_units})`, cellFilter: 'number' },
+          { field: 'baseline_eui', displayName: `EUI (${eui_units})`, cellFilter: 'number' },
+          // ktbu acts as a derived column. Disable sorting filtering
+          {
+            field: 'baseline_kbtu',
+            displayName: 'kBTU',
+            cellFilter: 'number',
+            enableFiltering: false,
+            enableSorting: false,
+            headerCellClass: 'derived-column-display-name portfolio-summary-baseline-header'
+          },
+          build_label_col_def('baseline-labels', 'baseline')
+        ];
+        const current_cols = [
+          { field: 'current_cycle', displayName: 'Cycle' },
+          { field: 'current_sqft', displayName: `Area (${area_units})`, cellFilter: 'number' },
+          { field: 'current_eui', displayName: `EUI (${eui_units})`, cellFilter: 'number' },
+          {
+            field: 'current_kbtu',
+            displayName: 'kBTU',
+            cellFilter: 'number',
+            enableFiltering: false,
+            enableSorting: false,
+            headerCellClass: 'derived-column-display-name portfolio-summary-current-header'
+          },
+          build_label_col_def('current-labels', 'current')
+        ];
+        const summary_cols = [
+          {
+            field: 'sqft_change', displayName: 'Sq Ft % Change', enableFiltering: false, enableSorting: false, headerCellClass: 'derived-column-display-name'
+          },
+          {
+            field: 'eui_change', displayName: 'EUI % Improvement', enableFiltering: false, enableSorting: false, headerCellClass: 'derived-column-display-name'
+          }
+        ];
+
+        return { baseline_cols, current_cols, summary_cols }
+      }
+
+      const transaction_cols = () => {
+        const baseline_cols = [
+          { field: 'baseline_cycle', displayName: 'Cycle' },
+          { field: 'baseline_sqft', displayName: `Area (${area_units})`, cellFilter: 'number' },
+          { field: 'baseline_eui', displayName: `EUI (${eui_units})`, cellFilter: 'number' },
+          // ktbu acts as a derived column. Disable sorting filtering
+          {
+            field: 'baseline_kbtu',
+            displayName: 'kBTU',
+            cellFilter: 'number',
+            enableFiltering: false,
+            enableSorting: false,
+            headerCellClass: 'derived-column-display-name portfolio-summary-baseline-header'
+          },
+          build_label_col_def('baseline-labels', 'baseline')
+        ];
+        const current_cols = [
+          { field: 'current_cycle', displayName: 'Cycle' },
+          { field: 'current_sqft', displayName: `Area (${area_units})`, cellFilter: 'number' },
+          { field: 'current_eui', displayName: `EUI (${eui_units})`, cellFilter: 'number' },
+          {
+            field: 'current_kbtu',
+            displayName: 'kBTU',
+            cellFilter: 'number',
+            enableFiltering: false,
+            enableSorting: false,
+            headerCellClass: 'derived-column-display-name portfolio-summary-current-header'
+          },
+          build_label_col_def('current-labels', 'current')
+        ];
+        const summary_cols = [
+          {
+            field: 'sqft_change', displayName: 'Sq Ft % Change', enableFiltering: false, enableSorting: false, headerCellClass: 'derived-column-display-name'
+          },
+          {
+            field: 'eui_change', displayName: 'EUI % Improvement', enableFiltering: false, enableSorting: false, headerCellClass: 'derived-column-display-name'
+          }
+        ];
+
+        return { baseline_cols, current_cols, summary_cols }
+      }
 
       const apply_cycle_sorts_and_filters = (columns) => {
         // Cycle specific columns filters and sorts must be set manually
@@ -943,7 +1033,7 @@ angular.module('SEED.controller.portfolio_summary', [])
         const default_current = { headerCellClass: 'portfolio-summary-current-header', cellClass: 'portfolio-summary-current-cell' };
         const default_styles = { headerCellFilter: 'translate' };
 
-        const {baseline_cols, current_cols, calc_cols} = $scope.goal.type === 'transaction' ? transaction_cols() : standard_cols();
+        const {baseline_cols, current_cols, calc_cols} = $scope.goal.type === 'transaction' ? summary_transaction_cols() : summary_standard_cols();
 
         apply_defaults(baseline_cols, default_baseline, default_styles);
         apply_defaults(current_cols, default_current, default_styles);
@@ -955,7 +1045,7 @@ angular.module('SEED.controller.portfolio_summary', [])
         }));
       };
 
-      const standard_cols = () => {
+      const summary_standard_cols = () => {
         const baseline_cols = [
           { field: 'baseline_cycle', displayName: 'Cycle' },
           { field: 'baseline_total_sqft', displayName: `Total Area (${area_units})`, cellFilter: 'number' },
@@ -976,10 +1066,10 @@ angular.module('SEED.controller.portfolio_summary', [])
             cellClass: (grid, row) => (row.entity.eui_change >= $scope.goal.target_percentage ? 'above-target' : 'below-target')
           }
         ];
-        return {baseline_cols, current_cols, calc_cols}
+        return { baseline_cols, current_cols, calc_cols }
       }
 
-      const transaction_cols = () => {
+      const summary_transaction_cols = () => {
         const baseline_cols = [
           { field: 'baseline_cycle', displayName: 'Cycle' },
           { field: 'baseline_total_sqft', displayName: `Total Area (${area_units})`, cellFilter: 'number' },
@@ -987,7 +1077,7 @@ angular.module('SEED.controller.portfolio_summary', [])
           { field: 'baseline_total_transactions', displayName: 'Total Transactions', cellFilter: 'number'},
           { field: 'baseline_weighted_eui', displayName: `EUI (s) (${eui_units})`, cellFilter: 'number' },
           { field: 'baseline_weighted_eui_t', displayName: `EUI (t) (kBtu/year)`, cellFilter: 'number' }
-          
+
         ];
         const current_cols = [
           { field: 'current_cycle', displayName: 'Cycle' },

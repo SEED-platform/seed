@@ -158,8 +158,6 @@ def _add_states_to_data(base_url, state_class, view_string, page, per_page, labe
     return data, len(states)
 
 
-
-
 def get_request_cycles(org, request):
     params = request.query_params
     cycles = params.get("cycles", None)

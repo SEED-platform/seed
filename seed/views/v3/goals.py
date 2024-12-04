@@ -3,13 +3,10 @@ SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and othe
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
-import math
-
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.db.utils import DataError
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
-from pint import Quantity
 from rest_framework import status
 from rest_framework.decorators import action
 
@@ -20,8 +17,17 @@ from seed.serializers.goals import GoalSerializer
 from seed.serializers.pint import apply_display_unit_preferences
 from seed.utils.api import OrgMixin
 from seed.utils.api_schema import swagger_auto_schema_org_query_param
+from seed.utils.generic import get_int
 from seed.utils.goal_notes import get_permission_data
-from seed.utils.goals import get_or_create_goal_notes, get_portfolio_summary, set_transaction_data
+from seed.utils.goals import (
+    combine_properties,
+    get_kbtu,
+    get_or_create_goal_notes,
+    get_portfolio_summary,
+    get_preferred,
+    percentage_difference,
+    set_transaction_data,
+)
 from seed.utils.search import FilterError, build_view_filters_and_sorts, filter_views_on_related
 from seed.utils.viewsets import ModelViewSetWithoutPatch
 
@@ -267,16 +273,16 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
             # add cycle specific and aggregated goal stats
             property[f"{key1}_cycle"] = cycle1.name
             property[f"{key2}_cycle"] = cycle2.name
-            property[f"{key1}_sqft"] = convert_quantity(sqft1)
-            property[f"{key2}_sqft"] = convert_quantity(sqft2)
+            property[f"{key1}_sqft"] = get_int(sqft1)
+            property[f"{key2}_sqft"] = get_int(sqft2)
             property[f"{key1}_eui"] = get_preferred(p1, eui_columns)
             property[f"{key2}_eui"] = get_preferred(p2, eui_columns)
             property["baseline_kbtu"] = get_kbtu(property, "baseline")
             property["current_kbtu"] = get_kbtu(property, "current")
-            property["sqft_change"] = percentage(property["current_sqft"], property["baseline_sqft"])
-            property["eui_change"] = percentage(property["baseline_eui"], property["current_eui"])
+            property["sqft_change"] = percentage_difference(property["current_sqft"], property["baseline_sqft"])
+            property["eui_change"] = percentage_difference(property["baseline_eui"], property["current_eui"])
 
-            if goal.type == "transaction":
+            if goal.type == "transaction" and goal.transactions_column:
                 set_transaction_data(goal, property, p1, p2, key1, key2)
 
             properties.append(property)
@@ -296,40 +302,3 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
                 "property_lookup": property_lookup,
             }
         )
-
-
-def combine_properties(p1, p2):
-    if not p2:
-        return p1
-    combined = p1.copy()
-    for key, value in p2.items():
-        if value is not None:
-            combined[key] = value
-    return combined
-
-
-def percentage(a, b):
-    if not a or b is None:
-        return None
-    value = round(((a - b) / a) * 100)
-    return None if math.isnan(value) else value
-
-
-def get_preferred(prop, columns):
-    if not prop:
-        return
-    for col in columns:
-        quantity = convert_quantity(prop[col])
-        if quantity is not None:
-            return quantity
-
-
-def convert_quantity(value):
-    if isinstance(value, Quantity):
-        value = value.m
-    return value
-
-
-def get_kbtu(prop, key):
-    if prop[f"{key}_sqft"] is not None and prop[f"{key}_eui"] is not None:
-        return round(prop[f"{key}_sqft"] * prop[f"{key}_eui"])
