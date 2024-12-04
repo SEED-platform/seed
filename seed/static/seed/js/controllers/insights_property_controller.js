@@ -307,7 +307,7 @@ angular.module('SEED.controller.insights_property', []).controller('insights_pro
       $scope.annotations = {};
 
       _.forEach($scope.data.properties_by_cycles[$scope.configs.chart_cycle], (prop) => {
-        const item = { id: prop.property_view_id };
+        const item = { id: prop.id };
         item.name = _.find(prop, (v, k) => k.startsWith($scope.organization.property_display_field));
         // x axis is easy
         item.x = _.find(prop, (v, k) => k.endsWith(`_${String($scope.configs.chart_xaxis)}`));
@@ -333,10 +333,10 @@ angular.module('SEED.controller.insights_property', []).controller('insights_pro
         }
 
         // place in appropriate dataset
-        if (_.includes($scope.data.results_by_cycles[$scope.configs.chart_cycle].y, prop.property_view_id)) {
+        if (_.includes($scope.data.results_by_cycles[$scope.configs.chart_cycle].y, prop.id)) {
           // compliant dataset
           datasets[0].data.push(item);
-        } else if (_.includes($scope.data.results_by_cycles[$scope.configs.chart_cycle].n, prop.property_view_id)) {
+        } else if (_.includes($scope.data.results_by_cycles[$scope.configs.chart_cycle].n, prop.id)) {
           // non-compliant dataset
           datasets[1].data.push(item);
         } else {
