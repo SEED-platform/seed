@@ -55,20 +55,10 @@ angular.module('SEED.controller.goal_editor_modal', [])
       if (!eui_columns.find((col) => col.id === null && col.displayName === '')) {
         $scope.eui_columns.unshift({ id: null, displayName: '' });
       }
-      const default_goal = () => { // RP - useful for testing
-        return {
-          type: 'standard',
-          baseline_cycle: $scope.cycles.at(0).id,
-          current_cycle: $scope.cycles.at(-1).id,
-          level_name_index: $scope.level_names.at(-1).index,
-          area_column: $scope.area_columns.find(c => c.column_name === 'gross_floor_area').id,
-          eui_column1: $scope.eui_columns.find(c => c.column_name === 'site_eui').id,
-          target_percentage: 20,
-        }
-      }
-      $scope.goal = goal || default_goal();
+
+      $scope.goal = goal || {};
       $scope.valid = false;
-      $scope.goal_types = ['standard', 'transaction']
+      $scope.goal_types = ['standard', 'transaction'];
 
       const sort_goals = (goals) => goals.sort((a, b) => (a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 1));
       const get_goals = () => {
@@ -87,9 +77,6 @@ angular.module('SEED.controller.goal_editor_modal', [])
       $scope.change_selected_level_index = () => {
         const new_level_instance_depth = parseInt($scope.goal.level_name_index, 10) + 1;
         $scope.potential_level_instances = access_level_instances_by_depth[new_level_instance_depth];
-        if (!$scope.goal.access_level_instance) { // RP
-          $scope.goal.access_level_instance = $scope.potential_level_instances.at(-1).id
-        }
       };
       $scope.change_selected_level_index();
 

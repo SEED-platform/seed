@@ -23,11 +23,13 @@ class GoalSerializer(serializers.ModelSerializer):
             "level_name": obj.organization.access_level_names[level_index],
             "baseline_cycle_name": obj.baseline_cycle.name,
             "current_cycle_name": obj.current_cycle.name,
-            "eui_column1_name": obj.eui_column1.display_name,
-            "eui_column2_name": obj.eui_column2.display_name if obj.eui_column2 else None,
-            "eui_column3_name": obj.eui_column3.display_name if obj.eui_column3 else None,
-            "area_column_name": obj.area_column.display_name,
+            "eui_column1_name": self.get_column_name(obj.eui_column1),
+            "eui_column2_name": self.get_column_name(obj.eui_column2),
+            "eui_column3_name": self.get_column_name(obj.eui_column3),
+            "area_column_name": self.get_column_name(obj.area_column)
         }
+        if obj.type == 'transaction':
+            details["transactions_column_name"] = self.get_column_name(obj.transactions_column)
         result.update(details)
 
         return result
@@ -61,3 +63,11 @@ class GoalSerializer(serializers.ModelSerializer):
             raise ValidationError("Columns must be unique.")
 
         return data
+    
+    def get_column_name(self, column):
+        if not column:
+            return None 
+        elif column.display_name:
+            return column.display_name 
+        else:
+            return column.column_name

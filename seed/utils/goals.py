@@ -223,9 +223,7 @@ def set_transaction_summary_cycle_data(property_views, summary, key, goal, total
 
 
 def set_transaction_summary_data(summary):
-    summary["transactions_change"] = percentage_difference(
-        summary["current_total_transactions"], summary["baseline_total_transactions"]
-    )
+    summary["transactions_change"] = percentage_difference(summary["current_total_transactions"], summary["baseline_total_transactions"])
     summary["eui_t_change"] = percentage_difference(summary["baseline_weighted_eui_t"], summary["current_weighted_eui_t"])
 
 
