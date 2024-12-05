@@ -38,6 +38,11 @@ class Goal(models.Model):
     class Meta:
         ordering = ["name"]
 
+    def save(self, *args, **kwargs):
+        if self.type == "standard":
+            self.transactions_column = None
+        super().save(*args, **kwargs)
+
     def __str__(self):
         return f"Goal - {self.name}"
 

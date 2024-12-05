@@ -48,7 +48,7 @@ angular.module('SEED.controller.goal_editor_modal', [])
         name: level
       }));
       $scope.cycles = cycles;
-      $scope.columns = columns;
+      $scope.columns = columns.sort((a, b) => (a.displayName.toLowerCase() < b.displayName.toLowerCase() ? -1 : 1));
       $scope.area_columns = area_columns;
       $scope.eui_columns = eui_columns;
       // allow "none" as an option

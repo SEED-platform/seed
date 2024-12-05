@@ -264,7 +264,7 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
 
         properties = []
         for p1 in properties1:
-            p2 = next((p for p in properties2 if p["id"] == p1["id"]), None)
+            p2 = next((p for p in properties2 if p["id"] == p1["id"]), {})
             property = combine_properties(p1, p2)
 
             sqft1 = p1.get(area_name)
@@ -283,8 +283,6 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
             property["eui_change"] = percentage_difference(property["baseline_eui"], property["current_eui"])
 
             if goal.type == "transaction" and goal.transactions_column:
-                p1 = p1 or {}
-                p2 = p2 or {}
                 set_transaction_data(goal, property, p1, p2, key1, key2)
 
             properties.append(property)

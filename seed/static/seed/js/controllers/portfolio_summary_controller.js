@@ -150,12 +150,12 @@ angular.module('SEED.controller.portfolio_summary', [])
         const commitment_sqft = $scope.goal.commitment_sqft?.toLocaleString() || 'n/a';
         $scope.goal_details = [
           { // column 1
-            'Type': capitalize($scope.goal.type),
+            Type: capitalize($scope.goal.type),
             'Baseline Cycle': $scope.goal.baseline_cycle_name,
             'Current Cycle': $scope.goal.current_cycle_name,
             [$scope.goal.level_name]: access_level_instance,
             'Total Properties': null,
-            'Portfolio Target': `${$scope.goal.target_percentage} %`,
+            'Portfolio Target': `${$scope.goal.target_percentage} %`
           },
           { // column 2
             'Commitment Sq. Ft': commitment_sqft,
@@ -169,16 +169,15 @@ angular.module('SEED.controller.portfolio_summary', [])
         if ($scope.goal.eui_column3) {
           $scope.goal_details[1]['Tertiary EUI'] = $scope.goal.eui_column3_name;
         }
-        if ($scope.goal.type == 'transaction') {
-          $scope.goal_details[1]['Transactions'] = $scope.goal.transactions_column_name;
+        if ($scope.goal.type === 'transaction') {
+          $scope.goal_details[1].Transactions = $scope.goal.transactions_column_name;
         }
       };
-
 
       const capitalize = (word) => {
         if (!word) return word;
         return word.charAt(0).toUpperCase() + word.slice(1);
-      }
+      };
 
       $scope.toggle_help = (bool) => {
         $scope.show_help = bool;
@@ -626,7 +625,7 @@ angular.module('SEED.controller.portfolio_summary', [])
           },
           {
             field: 'eui_t_change', displayName: 'EUI(t) % Change', enableFiltering: false, enableSorting: false, headerCellClass: 'derived-column-display-name'
-          },
+          }
         ];
 
         return { baseline_cols, current_cols, summary_cols };
@@ -635,16 +634,16 @@ angular.module('SEED.controller.portfolio_summary', [])
       const apply_cycle_sorts_and_filters = (columns) => {
         // Cycle specific columns filters and sorts must be set manually
         const cycle_columns = [
-          'baseline_cycle', 
-          'baseline_sqft', 
-          'baseline_eui', 
-          'baseline_kbtu', 
-          'baseline_transactions', 
+          'baseline_cycle',
+          'baseline_sqft',
+          'baseline_eui',
+          'baseline_kbtu',
+          'baseline_transactions',
           'baseline_eui_t',
-          'current_cycle', 
-          'current_sqft', 
-          'current_eui', 
-          'current_kbtu', 
+          'current_cycle',
+          'current_sqft',
+          'current_eui',
+          'current_kbtu',
           'current_transactions',
           'current_eui_t'
         ];
@@ -720,13 +719,13 @@ angular.module('SEED.controller.portfolio_summary', [])
           baseline_eui: eui_column.name,
           baseline_sqft: area_column.name,
           current_eui: eui_column.name,
-          current_sqft: area_column.name,
+          current_sqft: area_column.name
         };
 
         if ($scope.goal.transactions_column) {
-          const transactions_column = $scope.columns.find((col) => col.id === $scope.goal.transactions_column)
-          cycle_column_lookup.baseline_transactions = transactions_column.name
-          cycle_column_lookup.current_transactions = transactions_column.name
+          const transactions_column = $scope.columns.find((col) => col.id === $scope.goal.transactions_column);
+          cycle_column_lookup.baseline_transactions = transactions_column.name;
+          cycle_column_lookup.current_transactions = transactions_column.name;
         }
 
         $scope.cycle_columns = [];
