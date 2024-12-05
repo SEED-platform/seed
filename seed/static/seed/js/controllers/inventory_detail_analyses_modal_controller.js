@@ -14,19 +14,19 @@ angular.module('SEED.controller.inventory_detail_analyses_modal', []).controller
   'Notification',
   'analyses_service',
   'inventory_ids',
-  'all_columns',
+  'property_columns',
   'current_cycle',
   'cycles',
   'user',
   // eslint-disable-next-line func-names
-  function ($scope, $sce, $log, $uibModalInstance, Notification, analyses_service, inventory_ids, all_columns, current_cycle, cycles, user) {
+  function ($scope, $sce, $log, $uibModalInstance, Notification, analyses_service, inventory_ids, property_columns, current_cycle, cycles, user) {
     $scope.inventory_count = inventory_ids.length;
     // used to disable buttons on submit
     $scope.waiting_for_server = false;
     $scope.cycles = cycles;
     $scope.user = user;
-    $scope.all_columns = all_columns;
-    $scope.eui_columns = $scope.all_columns.filter((o) => o.data_type === 'eui');
+    $scope.property_columns = property_columns;
+    $scope.eui_columns = $scope.property_columns.filter((o) => o.data_type === 'eui');
 
     $scope.new_analysis = {
       name: null,
@@ -125,7 +125,8 @@ angular.module('SEED.controller.inventory_detail_analyses_modal', []).controller
               electric_eui: null,
               target_gas_eui: null,
               target_electric_eui: null,
-              condition_index: null
+              condition_index: null,
+              has_bas: null
             },
             total_eui_goal: null,
             ff_eui_goal: null,

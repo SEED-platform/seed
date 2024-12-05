@@ -1643,9 +1643,9 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
         controller: 'inventory_detail_analyses_modal_controller',
         resolve: {
           inventory_ids: () => ($scope.inventory_type === 'properties' ? selectedViewIds : []),
-          all_columns: () => all_columns.filter((x) => x.table_name === 'PropertyState'),
-          cycles: () => cycles.cycles,
+          property_columns: () => all_columns.filter((x) => x.table_name === 'PropertyState'),
           current_cycle: () => $scope.cycle.selected_cycle,
+          cycles: () => cycles.cycles,
           user: () => $scope.menu.user
         }
       });
