@@ -6,16 +6,24 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 import json
 import logging
 import time
-from datetime import datetime
+import urllib3
 
 import requests
-import xmltodict
-from django.http import HttpResponse, JsonResponse
-from drf_yasg.utils import swagger_auto_schema
-from rest_framework import serializers, status
+from django.utils import timezone
+from rest_framework import status, viewsets
 from rest_framework.decorators import action
+from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
+from seed.decorators import ajax_request_class
+from seed.lib.superperms.orgs.decorators import has_perm_class
+from seed.models import Column, PropertyView
+from seed.utils.api import api_endpoint_class
+
+import xmltodict
+from datetime import datetime
+from drf_yasg.utils import swagger_auto_schema
+from rest_framework import serializers
 from seed.utils.api_schema import AutoSchemaHelper
 
 _log = logging.getLogger(__name__)
@@ -263,20 +271,26 @@ class PortfolioManagerViewSet(GenericViewSet):
             {
                 "username": "string",
                 "password": "string",
-                "property_ids": "string",
+                "property_ids": ['string'],
             },
-            description="ESPM account credentials.",
+            description="ESPM (Energy Star Portfolio Manager) account credentials and property IDs to generate report for.",
             required=["username", "password", "property_ids"],
         ),
         responses={
-            200: AutoSchemaHelper.schema_factory(
+            200: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            400: AutoSchemaHelper.schema_factory(
                 {
                     "status": "string",
-                    "content": [
-                        {"filename": "string"},
-                    ],
                     "message": "string",
-                }
+                },
+                description="Returned when request validation fails or required fields are missing"
+            ),
+            500: AutoSchemaHelper.schema_factory(
+                {
+                    "status": "string",
+                    "message": "string",
+                },
+                description="Returned when an unexpected error occurs"
             ),
         },
     )
@@ -355,6 +369,7 @@ class PortfolioManagerImport:
         self.username = m_username
         self.password = m_password
         self.authenticated_headers = None
+        self.session = None
         _log.debug("Created PortfolioManagerManager for username: %s" % self.username)
 
         # vars for the URLs if they are used in more than one place.
@@ -374,30 +389,165 @@ class PortfolioManagerImport:
         :return: None
         """
 
-        # First we need to log in to Portfolio Manager
+        # Create a session to maintain cookies
+        session = requests.Session()
+        
+        # First we need to get the login page to get any CSRF tokens
+        try:
+            login_page = session.get("https://portfoliomanager.energystar.gov/pm/login", timeout=300)
+            if login_page.status_code != 200:
+                raise PMError(f"Failed to load login page: {login_page.status_code}")
+        except requests.exceptions.RequestException as e:
+            raise PMError(f"Error accessing login page: {str(e)}")
+
+        # Now log in to Portfolio Manager
         login_url = "https://portfoliomanager.energystar.gov/pm/j_spring_security_check"
         payload = {"j_username": self.username, "j_password": self.password}
         try:
-            response = requests.post(login_url, data=payload, timeout=300)
+            response = session.post(login_url, data=payload, timeout=300, allow_redirects=True)
         except requests.exceptions.SSLError:
             raise PMError("SSL Error in Portfolio Manager Query; check VPN/Network/Proxy.")
+        except requests.exceptions.RequestException as e:
+            raise PMError(f"Error during login: {str(e)}")
 
-        # This returns a 200 even if the credentials are bad, so I'm having to check some text in the response
-        if "The username and/or password you entered is not correct. Please try again." in response.content.decode("utf-8"):
-            raise PMError("Unsuccessful response from login attempt; aborting.  Check credentials.")
+        # Check for failed login
+        if "The username and/or password you entered is not correct" in response.text:
+            raise PMError("Login failed: Invalid credentials")
+            
+        # Verify we're actually logged in by checking the response URL or content
+        if "/pm/login" in response.url or "Sign In to ENERGY STAR Portfolio Manager" in response.text:
+            raise PMError("Login failed: Redirected back to login page")
 
-        # Upon successful logging in, we should have received a cookie header that we can reuse later
-        if "Cookie" not in response.request.headers:
-            raise PMError("Could not find Cookie key in response headers; aborting.")
-        cookie_header = response.request.headers["Cookie"]
-        if "=" not in cookie_header:
-            raise PMError("Malformed Cookie key in response headers; aborting.")
-        cookie = cookie_header.split("=")[1]
+        # Get all cookies from the session
+        cookies = "; ".join([f"{cookie.name}={cookie.value}" for cookie in session.cookies])
+        if not cookies:
+            raise PMError("No cookies received after login")
 
-        # Prepare the fully authenticated headers
+        # Store the cookies and session for future requests
         self.authenticated_headers = {
-            "Cookie": "JSESSIONID=" + cookie + "; org.springframework.web.servlet.i18n.CookieLocaleResolver.LOCALE=en"
+            "Cookie": cookies,
+            "User-Agent": "Mozilla/5.0",
+            "Accept": "application/json, text/javascript, */*; q=0.01",
+            "X-Requested-With": "XMLHttpRequest"
         }
+        self.session = session
+
+    def _make_request_with_retry(self, method, url, **kwargs):
+        """Make a request with retry logic for connection issues.
+
+        Args:
+            method: HTTP method (GET, POST, etc.)
+            url: URL to request
+            **kwargs: Additional arguments to pass to requests
+
+        Returns:
+            requests.Response object
+
+        Raises:
+            PMError: If the request fails after retries
+        """
+        max_retries = 3
+        retry_delay = 2
+        session = requests.Session()
+
+        # Configure retries with backoff
+        retry_strategy = urllib3.util.Retry(
+            total=3,
+            backoff_factor=1,
+            status_forcelist=[429, 500, 502, 503, 504],
+            allowed_methods=["HEAD", "GET", "POST", "PUT", "DELETE", "OPTIONS", "TRACE"],
+            raise_on_status=False
+        )
+
+        # Use more conservative connection settings
+        adapter = requests.adapters.HTTPAdapter(
+            max_retries=retry_strategy,
+            pool_connections=1,
+            pool_maxsize=1,
+            pool_block=True
+        )
+        session.mount('https://', adapter)
+        session.mount('http://', adapter)
+
+        # Add conservative request headers
+        default_headers = {
+            'Connection': 'close',  # Don't keep connections alive
+            'Accept-Encoding': 'identity',  # Disable compression
+        }
+        if 'headers' in kwargs:
+            kwargs['headers'].update(default_headers)
+        else:
+            kwargs['headers'] = default_headers
+
+        for attempt in range(max_retries):
+            try:
+                response = session.request(method, url, **kwargs)
+
+                # Check if we got redirected to login
+                if "/pm/login" in response.url:
+                    session.close()
+                    if attempt < max_retries - 1:
+                        _log.debug("Session expired, attempting to re-login")
+                        self.login_and_set_cookie_header()
+                        continue
+                    else:
+                        raise PMError("Session expired and re-login attempts failed")
+
+                # For streaming responses, we need to read the content before checking status
+                if kwargs.get('stream', False):
+                    try:
+                        # First try with streaming
+                        content = []
+                        for chunk in response.iter_content(chunk_size=8192, decode_unicode=False):
+                            if chunk:
+                                content.append(chunk)
+                        response._content = b''.join(content)
+                    except (requests.exceptions.ChunkedEncodingError, requests.exceptions.ConnectionError) as e:
+                        # If streaming fails, try to get the content directly
+                        try:
+                            response.raw.decode_content = True
+                            content = response.raw.read()
+                            if content:
+                                response._content = content
+                                return response
+                        except Exception as raw_e:
+                            _log.warning(f"Failed to read raw content: {raw_e}")
+
+                        session.close()
+                        if attempt < max_retries - 1:
+                            _log.debug(f"Streaming failed with {str(e)}, retrying in {retry_delay} seconds")
+                            # Disable streaming for retry attempts
+                            kwargs['stream'] = False
+                            time.sleep(retry_delay)
+                            retry_delay *= 2
+                            continue
+                        raise PMError(f"Streaming failed after {max_retries} attempts: {str(e)}")
+
+                # Check response status
+                if response.status_code >= 400:
+                    session.close()
+                    if attempt < max_retries - 1 and response.status_code in retry_strategy.status_forcelist:
+                        _log.debug(f"Request failed with status {response.status_code}, retrying in {retry_delay} seconds")
+                        time.sleep(retry_delay)
+                        retry_delay *= 2
+                        continue
+                    raise PMError(f"Request failed with status {response.status_code}: {response.text}")
+
+                return response
+
+            except requests.exceptions.RequestException as e:
+                session.close()
+                if attempt < max_retries - 1:
+                    _log.debug(f"Request failed with {str(e)}, retrying in {retry_delay} seconds")
+                    # Disable streaming for retry attempts if it was a streaming error
+                    if isinstance(e, (requests.exceptions.ChunkedEncodingError, requests.exceptions.ConnectionError)):
+                        kwargs['stream'] = False
+                    time.sleep(retry_delay)
+                    retry_delay *= 2
+                    continue
+                raise PMError(f"Request failed after {max_retries} attempts: {str(e)}")
+            finally:
+                session.close()
 
     def get_list_of_report_templates(self):
         """New method to support update to ESPM
@@ -414,7 +564,7 @@ class PortfolioManagerImport:
             json_authenticated_headers = self.authenticated_headers.copy()
             json_authenticated_headers["Accept"] = "application/json"
             json_authenticated_headers["Content-Type"] = "application/json"
-            response = requests.get(self.REPORT_URL, headers=json_authenticated_headers, timeout=300)
+            response = self._make_request_with_retry("GET", self.REPORT_URL, headers=json_authenticated_headers, timeout=300)
 
         except requests.exceptions.SSLError:
             raise PMError("SSL Error in Portfolio Manager Query; check VPN/Network/Proxy.")
@@ -443,7 +593,7 @@ class PortfolioManagerImport:
                 children_url = f'https://portfoliomanager.energystar.gov/pm/reports/templateChildrenRows/TEMPLATE/{t["id"]}'
 
                 # SSL errors would have been caught earlier in this function and raised, so this should be ok
-                children_response = requests.get(children_url, headers=self.authenticated_headers, timeout=300)
+                children_response = self._make_request_with_retry("GET", children_url, headers=self.authenticated_headers, timeout=300)
                 if not children_response.status_code == status.HTTP_200_OK:
                     raise PMError("Unsuccessful response from child row template lookup; aborting.")
                 try:
@@ -474,7 +624,6 @@ class PortfolioManagerImport:
                     template_response.append(child_row)
         return template_response
 
-    @staticmethod
     def get_template_by_name(templates, template_name):
         """
         This method searches through a list of templates for a template that matches the specific template name
@@ -514,7 +663,7 @@ class PortfolioManagerImport:
         new_authenticated_headers["Content-Type"] = "application/x-www-form-urlencoded"
 
         try:
-            response = requests.post(update_report_url, headers=self.authenticated_headers, timeout=300)
+            response = self._make_request_with_retry("POST", update_report_url, headers=self.authenticated_headers, timeout=300)
         except requests.exceptions.SSLError:
             raise PMError("SSL Error in Portfolio Manager Query; check VPN/Network/Proxy.")
         if not response.status_code == status.HTTP_200_OK:
@@ -546,7 +695,7 @@ class PortfolioManagerImport:
         template_report_id = matched_template["id"]
         generation_url = f"https://portfoliomanager.energystar.gov/pm/reports/generateData/{template_report_id}"
         try:
-            response = requests.post(generation_url, headers=self.authenticated_headers, timeout=300)
+            response = self._make_request_with_retry("POST", generation_url, headers=self.authenticated_headers, timeout=300)
         except requests.exceptions.SSLError:
             raise PMError("SSL Error in Portfolio Manager Query; check VPN/Network/Proxy.")
         if not response.status_code == status.HTTP_200_OK:
@@ -564,7 +713,7 @@ class PortfolioManagerImport:
                 json_authenticated_headers = self.authenticated_headers.copy()
                 json_authenticated_headers["Accept"] = "application/json"
                 json_authenticated_headers["Content-Type"] = "application/json"
-                response = requests.get(self.REPORT_URL, headers=json_authenticated_headers, timeout=300)
+                response = self._make_request_with_retry("GET", self.REPORT_URL, headers=json_authenticated_headers, timeout=300)
             except requests.exceptions.SSLError:
                 raise PMError("SSL Error in Portfolio Manager Query; check VPN/Network/Proxy.")
             if not response.status_code == status.HTTP_200_OK:
@@ -593,7 +742,7 @@ class PortfolioManagerImport:
 
         # Finally we can download the generated report
         try:
-            response = requests.get(self.download_url(template_report_id, report_format), headers=self.authenticated_headers, timeout=300)
+            response = self._make_request_with_retry("GET", self.download_url(template_report_id, report_format), headers=self.authenticated_headers, timeout=300)
         except requests.exceptions.SSLError:
             raise PMError("SSL Error in Portfolio Manager Query; check VPN/Network/Proxy.")
         if response.status_code != status.HTTP_200_OK:
@@ -625,7 +774,8 @@ class PortfolioManagerImport:
 
         # Generate the url to download this file
         try:
-            response = requests.get(
+            response = self._make_request_with_retry(
+                "GET",
                 self.download_url(matched_data_request["id"], report_format),
                 headers=self.authenticated_headers,
                 allow_redirects=True,
@@ -659,7 +809,8 @@ class PortfolioManagerImport:
 
         # Generate the url to download this file
         try:
-            response = requests.get(
+            response = self._make_request_with_retry(
+                "GET",
                 self.download_url_single_report(pm_property_id), headers=self.authenticated_headers, allow_redirects=True, timeout=300
             )
 
@@ -676,75 +827,251 @@ class PortfolioManagerImport:
         This method calls out to ESPM to trigger generation of a custom download of energy and water meter data for the supplied list of property ids.  The process requires
         calling out to the createCustomDownloadSubmit/ endpoint on ESPM, followed by a waiting period for the custom download status to be
         updated to complete.  Once complete, a download URL allows download of the meter data in XML or EXCEL format.
+        TODO: Add start and end date parameters
 
-        This response content can be enormous, so ...
-        TODO: Evaluate whether we should just download this XML to file here.  It would require re-reading the file
-        TODO: afterwards, but it would 1) be downloaded and available for inspection/debugging, and 2) reduce the size
-        TODO: of data coming through in memory during these calls, which seems to have been problematic at times
 
         :param property_ids: list of property ids to include in custom download
-        TODO: Add start and end date parameters
-        :return: Full XML data report from ESPM custom download generation and download process
+        :param download_format: Format to download the data in (XML or EXCEL)
+        :return: Full data report from ESPM custom download generation and download process
+        :raises PMError: If the download fails or times out
         """
+        if not property_ids:
+            raise PMError("No property IDs provided for meter data download")
 
-        # login if needed
-        if not self.authenticated_headers:
-            self.login_and_set_cookie_header()
-
-        # We should then trigger generation of the custom download for the selected property ids
-        generation_url = "https://portfoliomanager.energystar.gov/pm/property/createCustomDownloadSubmit/"
-        payload = "proID=&numberOfPropertiesWithinLimit=true&basicPropertyInfoCount=0&propertyIdentifierCount=0&propertyUseCount=0&propertyUseDetailCount=0&meterCount=0&meterDataCount=29403&onsiteCount=0&offsiteCount=0&energyProjectsCount=0&designDataCount=0&targetAndBaselineCount=0&maxPropertiesCountAsyncDownload=12000&selectionType=MULTIPLE&_basicPropertyInfo=on&_propertyIds=on&_propertyUses=on&_propertyUseDetails=on&_meterType=on&_energyMeter=on&_waterMeter=on&_wasteMeter=on&_itEnergyMeter=on&_plantFlowMeter=on&_aggregateMeter=on&meterEntries=true&_meterEntries=on&energyMeterEntries=true&_energyMeterEntries=on&waterMeterEntries=true&_waterMeterEntries=on&_wasteMeterEntries=on&_itEnergyMeterEntries=on&_plantFlowMeterEntries=on&customDownloadStartDate=01%2F01%2F2007&customDownloadEndDate=12%2F31%2F2023&includeInactiveMeters=true&includeUnassociatedMeters=false&_onsiteRecOwnership=on&_offsitePurchase=on&_energyProjects=on&_designData=on&_designUseDesignData=on&_designUseDetailDesignData=on&_energyDesignData=on&_designTargetsDesignData=on&_targetAndBaseline=on"
-        payload += "&selectedPropertyIdsAsString=" + "%".join([str(p_id) for p_id in property_ids])
+        # Force a fresh login to ensure we have a valid session
+        self.login_and_set_cookie_header()
 
         try:
-            response = requests.post(
-                generation_url,
-                headers={**self.authenticated_headers, "Content-Type": "application/x-www-form-urlencoded"},
+            # Initial page load - no streaming needed
+            download_page = self._make_request_with_retry(
+                "GET",
+                "https://portfoliomanager.energystar.gov/pm/property/reports/dataRequest/create",
+                headers=self.authenticated_headers,
                 timeout=300,
-                data=payload,
+                stream=False
             )
-        except requests.exceptions.SSLError:
-            raise PMError("SSL Error in Portfolio Manager Query; check VPN/Network/Proxy.")
-        if not response.status_code == status.HTTP_200_OK:
-            raise PMError("Unsuccessful response from POST to trigger report generation; aborting.")
-        _log.debug(f"Triggered report generation,\n status code={response.status_code}\n response headers={response.headers!s}")
 
-        # Now we need to wait while the report is being generated
-        attempt_count = 0
-        while attempt_count < 90:
-            attempt_count += 1
+            # Build the payload with proper URL encoding
+            payload = {
+                "proID": "",
+                "numberOfPropertiesWithinLimit": "true",
+                "basicPropertyInfoCount": "0",
+                "propertyIdentifierCount": "0",
+                "propertyUseCount": "0",
+                "propertyUseDetailCount": "0",
+                "meterCount": "0",
+                "meterDataCount": "29403",
+                "onsiteCount": "0",
+                "offsiteCount": "0",
+                "energyProjectsCount": "0",
+                "designDataCount": "0",
+                "targetAndBaselineCount": "0",
+                "maxPropertiesCountAsyncDownload": "12000",
+                "selectionType": "MULTIPLE",
+                "_basicPropertyInfo": "on",
+                "_propertyIds": "on",
+                "_propertyUses": "on",
+                "_propertyUseDetails": "on",
+                "_meterType": "on",
+                "_energyMeter": "on",
+                "_waterMeter": "on",
+                "_wasteMeter": "on",
+                "_itEnergyMeter": "on",
+                "_plantFlowMeter": "on",
+                "_aggregateMeter": "on",
+                "meterEntries": "true",
+                "_meterEntries": "on",
+                "energyMeterEntries": "true",
+                "_energyMeterEntries": "on",
+                "waterMeterEntries": "true",
+                "_waterMeterEntries": "on",
+                "_wasteMeterEntries": "on",
+                "_itEnergyMeterEntries": "on",
+                "_plantFlowMeterEntries": "on",
+                "customDownloadStartDate": "01/01/2007",
+                "customDownloadEndDate": "12/31/2023",
+                "includeInactiveMeters": "true",
+                "includeUnassociatedMeters": "false",
+                "_onsiteRecOwnership": "on",
+                "_offsitePurchase": "on",
+                "_energyProjects": "on",
+                "_designData": "on",
+                "_designUseDesignData": "on",
+                "_designUseDetailDesignData": "on",
+                "_energyDesignData": "on",
+                "_designTargetsDesignData": "on",
+                "_targetAndBaseline": "on",
+                "selectedPropertyIdsAsString": "%".join([str(p_id) for p_id in property_ids])
+            }
 
-            # get the report data
-            notifications_url = "https://portfoliomanager.energystar.gov/pm/notifications.json"
-            notifications_json = '{"page":1,"pageSize":100,"sort":{"column":"CREATE_DATE","ascending":true},"type":"Notices"}'
+            # Submit custom download request - no streaming needed
+            generation_url = "https://portfoliomanager.energystar.gov/pm/property/createCustomDownloadSubmit/"
+            response = self._make_request_with_retry(
+                "POST",
+                generation_url,
+                headers={
+                    **self.authenticated_headers,
+                    "Content-Type": "application/x-www-form-urlencoded",
+                    "Referer": "https://portfoliomanager.energystar.gov/pm/property/reports/dataRequest/create",
+                    "Accept": "application/json, text/plain, */*"
+                },
+                data=payload,
+                timeout=300,
+                stream=False
+            )
 
+            if response.status_code == 500:
+                error_msg = "Portfolio Manager server error (500)."
+                if response.text:
+                    if "<!DOCTYPE html>" in response.text:
+                        raise PMError("Authentication error. Please try logging in again.")
+                    else:
+                        error_msg += f" Details: {response.text[:200]}"
+                raise PMError(error_msg)
+
+            if response.status_code != status.HTTP_200_OK:
+                raise PMError(f"Failed to generate report: {response.status_code} - {response.text}")
+
+            # Poll for report completion - no streaming needed
+            max_attempts = 90
+            attempt_count = 0
+            poll_interval = 5
+
+            while attempt_count < max_attempts:
+                attempt_count += 1
+                
+                try:
+                    # Poll notifications - no streaming needed
+                    notifications_response = self._make_request_with_retry(
+                        "POST",
+                        "https://portfoliomanager.energystar.gov/pm/notifications.json",
+                        headers={
+                            **self.authenticated_headers,
+                            "Content-Type": "application/json",
+                        },
+                        data='{"page":1,"pageSize":100,"sort":{"column":"CREATE_DATE","ascending":true},"type":"Notices"}',
+                        timeout=30,
+                        stream=False
+                    )
+
+                    if notifications_response.status_code != status.HTTP_200_OK:
+                        _log.warning(f"Failed to get notifications: {notifications_response.status_code}")
+                        time.sleep(poll_interval)
+                        continue
+
+                    try:
+                        notifications_data = notifications_response.json()
+                        if not notifications_data.get("result", {}).get("items"):
+                            time.sleep(poll_interval)
+                            continue
+
+                        latest_notification = notifications_data["result"]["items"][-1]
+                        if latest_notification["notificationTypeCode"]["code"] == "CUSTOMPORTFOLIODOWNLOAD":
+                            break
+                    except (ValueError, KeyError) as e:
+                        _log.warning(f"Failed to parse notifications response: {e}")
+                        time.sleep(poll_interval)
+                        continue
+
+                except requests.exceptions.RequestException as e:
+                    _log.warning(f"Request failed: {e}")
+                    time.sleep(poll_interval)
+                    continue
+
+            if attempt_count >= max_attempts:
+                raise PMError("Timed out waiting for report generation to complete")
+
+            # Download the final report with multiple strategies
+            custom_download_url = "https://portfoliomanager.energystar.gov/pm" + latest_notification["notificationParameters"][1]["url"]
+            
+            # Try direct download first without streaming
             try:
-                json_authenticated_headers = self.authenticated_headers.copy()
-                json_authenticated_headers["Accept"] = "application/json"
-                json_authenticated_headers["Content-Type"] = "application/json"
-                response = requests.post(notifications_url, headers=json_authenticated_headers, timeout=300, data=notifications_json)
-            except requests.exceptions.SSLError:
-                raise PMError("SSL Error in Portfolio Manager Query; check VPN/Network/Proxy.")
-            if not response.status_code == status.HTTP_200_OK:
-                raise PMError("Unsuccessful response from report template rows query; aborting.")
-
-            notifications = response.json()["result"]["items"]
-            if len(notifications) == 0:
-                time.sleep(2)
-                continue
-
-            latest_notification = notifications[-1]
-            if latest_notification["notificationTypeCode"]["code"] == "CUSTOMPORTFOLIODOWNLOAD":
-                break
-
-            else:
-                time.sleep(2)
-                continue
-
-        custom_download_url = "https://portfoliomanager.energystar.gov/pm" + latest_notification["notificationParameters"][1]["url"]
-        response = requests.request("GET", custom_download_url, headers=json_authenticated_headers)
-        return response.content
-
+                _log.debug("Attempting direct download without streaming")
+                response = self._make_request_with_retry(
+                    "GET",
+                    custom_download_url,
+                    headers={
+                        **self.authenticated_headers,
+                        'Connection': 'close',
+                        'Accept-Encoding': 'identity',
+                        'Accept': '*/*',
+                        'User-Agent': 'SEED Platform'
+                    },
+                    stream=False,
+                    timeout=300
+                )
+                try:
+                    return response.content
+                except (requests.exceptions.ChunkedEncodingError, requests.exceptions.ConnectionError) as e:
+                    _log.warning(f"Direct content access failed: {e}")
+                    # Try to read the raw response
+                    try:
+                        response.raw.decode_content = True
+                        return response.raw.read()
+                    except Exception as raw_e:
+                        _log.warning(f"Raw content access failed: {raw_e}")
+            except Exception as e:
+                _log.warning(f"Direct download failed: {e}")
+            
+            time.sleep(5)  # Wait before trying streaming
+            
+            # Try with very conservative streaming
+            try:
+                _log.debug("Attempting conservative streaming download")
+                response = self._make_request_with_retry(
+                    "GET",
+                    custom_download_url,
+                    headers={
+                        **self.authenticated_headers,
+                        'Connection': 'close',
+                        'Accept-Encoding': 'identity',
+                        'Accept': '*/*',
+                        'User-Agent': 'SEED Platform'
+                    },
+                    stream=True,
+                    timeout=300
+                )
+                
+                # Read the entire response into memory first
+                response.raw.decode_content = True
+                content = response.raw.read()
+                if content:
+                    return content
+                
+                # If raw read fails, try manual chunking
+                content = []
+                chunk_size = 1024  # Start with very small chunks
+                for chunk in response.iter_content(chunk_size=chunk_size, decode_unicode=False):
+                    if chunk:
+                        content.append(chunk)
+                        if len(content) * chunk_size > 100 * 1024 * 1024:  # 100MB limit
+                            raise PMError("Download size exceeded safety limit")
+                return b''.join(content)
+            except Exception as e:
+                _log.warning(f"Streaming download failed: {e}")
+                time.sleep(5)
+            
+            # Final attempt with minimal configuration
+            try:
+                _log.debug("Final attempt: direct download with minimal headers")
+                response = requests.get(
+                    custom_download_url,
+                    headers={
+                        **self.authenticated_headers,
+                        'Connection': 'close',
+                        'Accept-Encoding': 'identity',
+                        'Accept': '*/*'
+                    },
+                    timeout=300,
+                    verify=True,
+                    allow_redirects=True
+                )
+                response.raise_for_status()
+                return response.content
+            except Exception as e:
+                raise PMError(f"All download attempts failed. Last error: {str(e)}")
+        except PMError as e:
+            raise e
     def _parse_properties_v1(self, xml):
         """Parse the XML (in dict format) response from the ESPM API and return a list of
         properties. This version was implemented prior to 02/13/2023

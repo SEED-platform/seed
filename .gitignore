@@ -3,6 +3,7 @@
 .cspell.txt
 .DS_Store
 .env
+.envrc
 .hypothesis
 .idea
 .project

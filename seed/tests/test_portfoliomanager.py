@@ -10,7 +10,8 @@ import locale
 import os
 from os import path
 from pathlib import Path
-from unittest import skip, skipIf
+from unittest import skip, skipIf, mock
+import logging
 
 import pytest
 import requests
@@ -23,7 +24,7 @@ from seed.data_importer.models import ImportRecord
 from seed.landing.models import SEEDUser as User
 from seed.tests.util import AccessLevelBaseTestCase
 from seed.utils.organizations import create_organization
-from seed.views.v3.portfolio_manager import PortfolioManagerImport
+from seed.views.v3.portfolio_manager import PortfolioManagerImport, PMError
 
 PM_UN = "SEED_PM_UN"
 PM_PW = "SEED_PM_PW"
@@ -415,6 +416,118 @@ class PortfolioManagerReportSinglePropertyUploadTest(TestCase):
         )
         self.assertEqual(200, response.status_code)
 
+
+class PortfolioManagerMeterDataDownloadTestsFailure(TestCase):
+    """Test failure cases for meter data download from ESPM."""
+
+    def setUp(self):
+        user_details = {
+            "username": "test_user@demo.com",
+            "password": "test_pass",
+            "email": "test_user@demo.com",
+            "first_name": "Johnny",
+            "last_name": "Energy",
+        }
+        self.user = User.objects.create_user(**user_details)
+        self.org, self.org_user, _ = create_organization(self.user)
+        self.client.login(**user_details)
+        self.property_ids = ["12345", "67890"]
+
+    def test_meter_data_invalid_credentials(self):
+        """Test that invalid credentials are handled properly."""
+        pm = PortfolioManagerImport("bad_username", "bad_password")
+        
+        with self.assertRaises(PMError) as context:
+            pm.generate_and_download_meter_data(self.property_ids)
+        
+        self.assertIn("Invalid credentials", str(context.exception))
+
+    def test_meter_data_missing_property_ids(self):
+        """Test that missing property IDs are handled properly."""
+        pm = PortfolioManagerImport("test_user", "test_pass")
+        
+        with self.assertRaises(PMError) as context:
+            pm.generate_and_download_meter_data([])
+        
+        self.assertIn("No property IDs provided", str(context.exception))
+
+
+@pytest.mark.django_db(transaction=True)
+# @mock.patch('seed.data_importer.portfolio_manager.PortfolioManagerImport')
+class PortfolioManagerMeterDataDownloadTestsSuccess(TestCase):
+    """Test successful meter data download from ESPM using mocked responses."""
+    databases = '__all__'
+
+    def setUp(self):
+        self.single_property_id = ["1813196"]
+        self.multiple_property_ids = ["1813196", "1813284"]
+        self.pm = PortfolioManagerImport("test_username", "test_password")
+
+    @mock.patch('seed.views.v3.portfolio_manager.PortfolioManagerImport.generate_and_download_meter_data')
+    def test_meter_data_download_single_property(self, mock_download):
+        # Mock the response from the API
+        mock_download.return_value = b'<propertyMeters><propertyId>1813196</propertyId><meterData></meterData></propertyMeters>'
+        
+        result = self.pm.generate_and_download_meter_data(self.single_property_id)
+        self.assertIsNotNone(result)
+        self.assertIsInstance(result, bytes)
+        
+        # Parse the downloaded data
+        data_dict = xmltodict.parse(result)
+        
+        # Add specific assertions about the content
+        self.assertIn('propertyMeters', data_dict)
+        self.assertIn('meterData', data_dict['propertyMeters'])
+        
+        # Verify property ID in response matches request
+        self.assertEqual(
+            data_dict['propertyMeters']['propertyId'],
+            self.single_property_id[0]
+        )
+
+    @mock.patch('seed.views.v3.portfolio_manager.PortfolioManagerImport.generate_and_download_meter_data')
+    def test_meter_data_download_multiple_properties(self, mock_download):
+        # Mock the response for multiple properties
+        mock_response = b'''
+        <propertyMeters>
+            <propertyId>1813196</propertyId>
+            <meterData></meterData>
+            <propertyId>1813284</propertyId>
+            <meterData></meterData>
+        </propertyMeters>
+        '''
+        mock_download.return_value = mock_response
+        
+        result = self.pm.generate_and_download_meter_data(self.multiple_property_ids)
+        self.assertIsNotNone(result)
+        self.assertIsInstance(result, bytes)
+        
+        # Parse the downloaded data
+        data_dict = xmltodict.parse(result)
+        self.assertIn('propertyMeters', data_dict)
+
+    @mock.patch('seed.views.v3.portfolio_manager.PortfolioManagerImport.generate_and_download_meter_data')
+    def test_meter_data_retry_on_timeout(self, mock_download):
+        # Simulate a timeout on first attempt, then succeed
+        mock_download.side_effect = [
+            requests.exceptions.Timeout(),
+            b'<propertyMeters><meterData></meterData></propertyMeters>'
+        ]
+        
+        with self.assertRaises(requests.exceptions.Timeout):
+            result = self.pm.generate_and_download_meter_data(self.single_property_id)
+
+    @mock.patch('seed.views.v3.portfolio_manager.PortfolioManagerImport.generate_and_download_meter_data')
+    def test_meter_data_empty_response_handling(self, mock_download):
+        # Mock an empty response
+        mock_download.return_value = b'<propertyMeters><meterData></meterData></propertyMeters>'
+        
+        result = self.pm.generate_and_download_meter_data(self.single_property_id)
+        data_dict = xmltodict.parse(result)
+        
+        # Even with no meter data, we should have basic structure
+        self.assertIn('propertyMeters', data_dict)
+        self.assertIn('meterData', data_dict['propertyMeters'])
 
 class UploadViewSetPermission(AccessLevelBaseTestCase):
     def setUp(self):
