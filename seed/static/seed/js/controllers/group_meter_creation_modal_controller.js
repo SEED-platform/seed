@@ -14,7 +14,6 @@ angular.module('SEED.controller.group_meter_creation_modal', []).controller('gro
   'systems',
   'group_id',
   'refresh_meters_and_readings',
-  'inventory_group_service',
   // eslint-disable-next-line func-names
   function (
     $scope,
@@ -27,8 +26,7 @@ angular.module('SEED.controller.group_meter_creation_modal', []).controller('gro
     organization_id,
     systems,
     group_id,
-    refresh_meters_and_readings,
-    inventory_group_service,
+    refresh_meters_and_readings
   ) {
     $scope.systems = systems;
     $scope.types = ['Coal (anthracite)',
@@ -60,24 +58,24 @@ angular.module('SEED.controller.group_meter_creation_modal', []).controller('gro
       'Custom Meter',
       'Potable Indoor',
       'Potable Outdoor',
-      'Potable: Mixed Indoor/Outdoor',
+      'Potable: Mixed Indoor/Outdoor'
     ];
 
-    $scope.meter = {}
+    $scope.meter = {};
 
     $scope.$watchCollection('meter', () => {
       $scope.form_valid = (
         $scope.meter.type !== undefined &&
         $scope.meter.alias !== undefined &&
         $scope.meter.system_id !== undefined
-      )
+      );
     });
 
     $scope.create_meter = () => {
       inventory_group_service.create_group_meter(group_id, $scope.meter).then((response) => {
-        console.log(response)
+        console.log(response);
         if (response.status === 200) {
-          console.log("response")
+          console.log('response');
           refresh_meters_and_readings();
           spinner_utility.show();
           $uibModalInstance.dismiss('cancel');
