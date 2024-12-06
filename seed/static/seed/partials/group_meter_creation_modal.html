@@ -11,12 +11,16 @@
   </div>
 
   <div class="meter-config-selection-container">
-    <label class="control-label" for="on_system" tooltip-placement="right" uib-tooltip="Select the meter type from the list"> <span translate>Type</span> <i class="ui-grid-icon-info-circled"></i> </label>
+    <label class="control-label" for="on_system" tooltip-placement="right" uib-tooltip="Select the meter type from the list">
+      <span translate>Type</span> <i class="ui-grid-icon-info-circled"></i>
+    </label>
     <select class="form-control" id="on_system" ng-model="meter.type" ng-options="type for type in types"></select>
   </div>
 
   <div class="meter-config-selection-container">
-    <label class="control-label" for="on_system" tooltip-placement="right" uib-tooltip="Enter an identifying name for this meter"> <span translate>Alias</span> <i class="ui-grid-icon-info-circled"></i> </label>
+    <label class="control-label" for="on_system" tooltip-placement="right" uib-tooltip="Enter an identifying name for this meter">
+      <span translate>Alias</span> <i class="ui-grid-icon-info-circled"></i>
+    </label>
     <input type="text" class="form-control" ng-model="meter.alias" />
   </div>
 </div>

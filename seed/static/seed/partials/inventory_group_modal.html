@@ -2,7 +2,7 @@
   <h4 class="modal-title" ng-switch-when="edit" translate>Rename Group</h4>
   <h4 class="modal-title" ng-switch-when="remove" translate>Delete Group</h4>
   <h4 class="modal-title" ng-switch-when="error" translate>Delete Group</h4>
-  <h4 class="modal-title" ng-switch-when="create" translate>Create  Group</h4>
+  <h4 class="modal-title" ng-switch-when="create" translate>Create Group</h4>
 </div>
 <div class="modal-body no_bottom_padding row form-horizontal" ng-switch="::action" style="margin: 10px">
   <div class="form-group" ng-switch-when="edit">
@@ -12,9 +12,7 @@
     </div>
   </div>
   <div class="col-sm-12" style="padding-bottom: 15px" ng-switch-when="remove">{$:: 'Are you sure you want to delete the group' | translate $}, <strong>{$:: data.name $}</strong>?</div>
-  <div class="col-sm-12" style="padding-bottom: 15px" ng-switch-when="error">
-    {$:: 'Could not delete the group' | translate $}
-  </div>
+  <div class="col-sm-12" style="padding-bottom: 15px" ng-switch-when="error">{$:: 'Could not delete the group' | translate $}</div>
   <div class="form-group" id="group-create" ng-switch-when="create">
     <div>
       <label for="inputNew" translate>Group Name</label>
