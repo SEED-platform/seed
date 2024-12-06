@@ -1,22 +1,22 @@
 <div class="modal-header">
-  <h4>Configure {$ meter_parent $} Meter Details</h4>
+  <h4 translate>Create Meter</h4>
 </div>
 
 <div class="modal-body">
   <div class="meter-config-selection-container">
-    <label class="control-label" for="on_system" tooltip-placement="right" uib-tooltip="Is the meter using a service, or offering a service?">
-      What systems is this meter on?: <i class="ui-grid-icon-info-circled"></i>
+    <label class="control-label" for="on_system" tooltip-placement="right" uib-tooltip="Select the system associated with the meter">
+      <span translate>What system is this meter associated with?</span> <i class="ui-grid-icon-info-circled"></i>
     </label>
     <select class="form-control" id="on_system" ng-model="meter.system_id" ng-options="system.id as system.name for system in systems"></select>
   </div>
 
   <div class="meter-config-selection-container">
-    <label class="control-label" for="on_system" tooltip-placement="right" uib-tooltip="Is the meter using a service, or offering a service?"> Type: <i class="ui-grid-icon-info-circled"></i> </label>
+    <label class="control-label" for="on_system" tooltip-placement="right" uib-tooltip="Select the meter type from the list"> <span translate>Type</span> <i class="ui-grid-icon-info-circled"></i> </label>
     <select class="form-control" id="on_system" ng-model="meter.type" ng-options="type for type in types"></select>
   </div>
 
   <div class="meter-config-selection-container">
-    <label class="control-label" for="on_system" tooltip-placement="right" uib-tooltip="Is the meter using a service, or offering a service?"> Alias: <i class="ui-grid-icon-info-circled"></i> </label>
+    <label class="control-label" for="on_system" tooltip-placement="right" uib-tooltip="Enter an identifying name for this meter"> <span translate>Alias</span> <i class="ui-grid-icon-info-circled"></i> </label>
     <input type="text" class="form-control" ng-model="meter.alias" />
   </div>
 </div>

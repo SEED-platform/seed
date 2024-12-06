@@ -10,6 +10,7 @@ angular.module('SEED.controller.group_meter_creation_modal', []).controller('gro
   'inventory_service',
   'meter_service',
   'spinner_utility',
+  'Notification',
   'organization_id',
   'systems',
   'group_id',
@@ -24,6 +25,7 @@ angular.module('SEED.controller.group_meter_creation_modal', []).controller('gro
     inventory_service,
     meter_service,
     spinner_utility,
+    Notification,
     organization_id,
     systems,
     group_id,
@@ -75,9 +77,8 @@ angular.module('SEED.controller.group_meter_creation_modal', []).controller('gro
 
     $scope.create_meter = () => {
       inventory_group_service.create_group_meter(group_id, $scope.meter).then((response) => {
-        console.log(response)
         if (response.status === 200) {
-          console.log("response")
+          Notification.info('Meter created! Click on the pencil icon next to your meter to further configure its connections.');
           refresh_meters_and_readings();
           spinner_utility.show();
           $uibModalInstance.dismiss('cancel');

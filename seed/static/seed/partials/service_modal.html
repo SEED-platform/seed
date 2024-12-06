@@ -1,7 +1,7 @@
 <div class="modal-header">
-  <h4 class="modal-title" ng-if="action === 'create'">Create Service for System {$ system.name $}</h4>
-  <h4 class="modal-title" ng-if="action === 'remove'">Remove Service for System {$ system.name $}</h4>
-  <h4 class="modal-title" ng-if="action === 'edit'">Edit Service for System {$ system.name $}</h4>
+  <h4 class="modal-title" ng-if="action === 'create'"><span translate>Create Service for System</span> {$ system.name $}</h4>
+  <h4 class="modal-title" ng-if="action === 'remove'"><span translate>Remove Service for System</span> {$ system.name $}</h4>
+  <h4 class="modal-title" ng-if="action === 'edit'"><span translate>Edit Service for System</span> {$ system.name $}</h4>
 </div>
 <div class="modal-body">
   <form id="sericeForm" name="serviceForm" role="form" ng-submit="submitServiceForm(sericeForm)" novalidate>
