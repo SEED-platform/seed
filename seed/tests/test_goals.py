@@ -429,8 +429,14 @@ class GoalViewTests(AccessLevelBaseTestCase):
         summary = response.json()
         # only properties with passed_checks and not new_or_acquired are included in calc
         exp_summary = {
-            "baseline": {"cycle_name": "2001 Annual", "total_sqft": None, "total_kbtu": None, "weighted_eui": None},
-            "current": {"cycle_name": "2003 Annual", "total_sqft": None, "total_kbtu": None, "weighted_eui": None},
+            "baseline_cycle_name": "2001 Annual",
+            "baseline_total_kbtu": None,
+            "baseline_total_sqft": None,
+            "baseline_weighted_eui": None,
+            "current_cycle_name": "2003 Annual",
+            "current_total_kbtu": None,
+            "current_total_sqft": None,
+            "current_weighted_eui": None,
             "eui_change": None,
             "passing_committed": None,
             "passing_shared": None,
@@ -450,8 +456,14 @@ class GoalViewTests(AccessLevelBaseTestCase):
         summary = response.json()
 
         exp_summary = {
-            "baseline": {"cycle_name": "2001 Annual", "total_kbtu": 44, "total_sqft": 9, "weighted_eui": 4},
-            "current": {"cycle_name": "2003 Annual", "total_kbtu": 110, "total_sqft": 15, "weighted_eui": 7},
+            "baseline_cycle_name": "2001 Annual",
+            "baseline_total_kbtu": 44,
+            "baseline_total_sqft": 9,
+            "baseline_weighted_eui": 4,
+            "current_cycle_name": "2003 Annual",
+            "current_total_kbtu": 110,
+            "current_total_sqft": 15,
+            "current_weighted_eui": 7,
             "eui_change": -75,
             "passing_committed": None,
             "passing_shared": 100,
@@ -473,8 +485,14 @@ class GoalViewTests(AccessLevelBaseTestCase):
         response = self.client.get(url, content_type="application/json")
         summary = response.json()
         exp_summary = {
-            "baseline": {"cycle_name": "2001 Annual", "total_kbtu": 200, "total_sqft": 20, "weighted_eui": 10},
-            "current": {"cycle_name": "2003 Annual", "total_kbtu": 5000, "total_sqft": 150, "weighted_eui": 33},
+            "baseline_cycle_name": "2001 Annual",
+            "baseline_total_kbtu": 200,
+            "baseline_total_sqft": 20.0,
+            "baseline_weighted_eui": 10,
+            "current_cycle_name": "2003 Annual",
+            "current_total_kbtu": 5000,
+            "current_total_sqft": 150.0,
+            "current_weighted_eui": 33,
             "eui_change": -230,
             "passing_committed": None,
             "passing_shared": 100,
@@ -680,22 +698,18 @@ class TransactionGoalViewTests(AccessLevelBaseTestCase):
         summary = response.json()
 
         exp_summary = {
-            "baseline": {
-                "cycle_name": "2001 Annual",
-                "total_kbtu": 1120,
-                "total_sqft": 9,
-                "total_transactions": 10,
-                "weighted_eui": 124,
-                "weighted_eui_t": 112,
-            },
-            "current": {
-                "cycle_name": "2002 Annual",
-                "total_kbtu": 1650,
-                "total_sqft": 15,
-                "total_transactions": 60,
-                "weighted_eui": 110,
-                "weighted_eui_t": 28,
-            },
+            "baseline_cycle_name": "2001 Annual",
+            "baseline_total_kbtu": 1120,
+            "baseline_total_sqft": 9,
+            "baseline_total_transactions": 10,
+            "baseline_weighted_eui": 124,
+            "baseline_weighted_eui_t": 112,
+            "current_cycle_name": "2002 Annual",
+            "current_total_kbtu": 1650,
+            "current_total_sqft": 15,
+            "current_total_transactions": 60,
+            "current_weighted_eui": 110,
+            "current_weighted_eui_t": 28,
             "eui_change": 11,
             "eui_t_change": 75,
             "passing_committed": None,
@@ -725,7 +739,7 @@ class TransactionGoalViewTests(AccessLevelBaseTestCase):
         data = response.json()
         assert list(data.keys()) == ["pagination", "properties", "property_lookup"]
         properties = data["properties"]
-        # breakpoint()
+
         assert properties[0]["baseline_eui_t"] == 28
         assert properties[0]["baseline_transactions"] == 10
         assert properties[0]["current_eui_t"] == 32
