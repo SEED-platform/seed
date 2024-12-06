@@ -31,6 +31,8 @@ from seed.models import (
     PropertyAuditLog,
     PropertyState,
     PropertyView,
+    PropertyViewLabel,
+    StatusLabel,
     TaxLotAuditLog,
     TaxLotState,
     TaxLotView,
@@ -755,7 +757,7 @@ def states_to_views(unmatched_state_ids, org, access_level_instance, cycle, Stat
     )
 
 
-def link_states(states, ViewClass, cycle, highest_ali, sub_progress_key, tuple_values, view_lookup, match_lookup, check_jaccard):  # noqa: N803
+def link_states(states, ViewClass, cycle, highest_ali, sub_progress_key, tuple_values, view_lookup, match_lookup, check_jaccard):  # noqa: N803    
     class_name = "property" if ViewClass == PropertyView else "taxlot"
 
     # set up the progress bar
@@ -792,6 +794,15 @@ def link_states(states, ViewClass, cycle, highest_ali, sub_progress_key, tuple_v
         if view is None:
             state.raw_access_level_instance = ali
             view = state.promote(cycle=cycle)
+
+        # Add labels
+        if view and state.extra_data.get("Property Labels"):
+            incoming_label_names = state.extra_data.get("Property Labels")
+            incoming_label_names = incoming_label_names.split(',')
+            for incoming_label_name in incoming_label_names:
+                incoming_label, created = StatusLabel.objects.get_or_create(name=incoming_label_name, super_organization=cycle.organization)
+                PropertyViewLabel.objects.get_or_create(statuslabel=incoming_label, propertyview=view)
+
 
         # link state
         link_count = _link_matches([*existing_views_matches, view], cycle.organization_id, view, ViewClass)
