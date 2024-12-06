@@ -5,7 +5,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: lokalise.com\n"
 "Project-Id-Version: SEED Platform\n"
-"PO-Revision-Date: 2024-11-25 06:35\n"
+"PO-Revision-Date: 2024-12-05 18:44\n"
 "Last-Translator: lokalise.com\n"
 "Language-Team: lokalise.com\n\n"
 "Language: es\n"
@@ -1151,6 +1151,9 @@ msgstr "Crear conjunto de datos"
 msgid "Create Filter Group"
 msgstr "Crear grupo de filtros"
 
+msgid "Create Group"
+msgstr "Crear grupo"
+
 #, fuzzy
 msgid "Create New Sub-Organization"
 msgstr "Crear nueva suborganización"
@@ -1441,9 +1444,15 @@ msgstr "Calidad de los datos"
 msgid "Data Quality Check"
 msgstr "Comprobación de la calidad de los datos"
 
+msgid "Data Quality Checks can be configured in"
+msgstr "Los controles de calidad de datos se pueden configurar en"
+
 #, fuzzy
 msgid "Data Quality Results"
 msgstr "Resultados sobre la calidad de los datos"
+
+msgid "Data Quality Settings"
+msgstr "Configuración de calidad de datos"
 
 #, fuzzy
 msgid "Data Set"
@@ -2294,6 +2303,10 @@ msgstr "Configure a continuación uno o varios objetivos de reducción de la Int
 #, fuzzy
 msgid "GREENBUTTON_CONTENTS_TITLE"
 msgstr "Confirmar contenido del archivo GreenButton"
+
+#, fuzzy
+msgid "GROUPS_DESC_TEXT"
+msgstr "SEED supports the creation of groups. Groups can include one or more buildings as well as systems such as Batteries, District Energy Systems (DES) or Electric Vehicle Supply Equipment (EVSE). Services can be associated with the systems and meters associated with those services."
 
 #, fuzzy
 msgid "GSA SFTool Guidance"
@@ -3737,6 +3750,9 @@ msgstr "Rellenar las cabeceras de SEED con las coincidencias más conocidas"
 msgid "Portfolio Summary"
 msgstr "Resumen de la cartera"
 
+msgid "Portfolio Summary calculations only include properties that have \"Passed Checks\" and are not \"New Build or Acquired\" (see far right columns below)."
+msgstr "Los cálculos del Resumen de cartera solo incluyen propiedades que han \"pasado los controles\" y no son \"de nueva construcción o adquiridas\" (consulte las columnas del extremo derecho a continuación)."
+
 #, fuzzy
 msgid "Portfolio Summary will only include properties belonging to this Access Level Instance."
 msgstr "El Resumen de Cartera sólo incluirá propiedades pertenecientes a esta Instancia de Nivel de Acceso."
@@ -4227,6 +4243,9 @@ msgstr "Ejecutar Autor"
 
 msgid "Run Cycle"
 msgstr "Ciclo de ejecución"
+
+msgid "Run Data Quality Check, available in the Actions dropdown, to auto-populate the \"Passed Checks\" column."
+msgstr "Ejecute la verificación de calidad de datos, disponible en el menú desplegable Acciones, para completar automáticamente la columna \"Verificaciones aprobadas\"."
 
 #, fuzzy
 msgid "Run Date"
@@ -5455,6 +5474,9 @@ msgstr "Opciones de URL"
 #, fuzzy
 msgid "USING_DEFAULT_UNITS_WARNING"
 msgstr "Para las columnas con configuración de unidades, se utilizarán las unidades por defecto para las conversiones."
+
+msgid "Unexpected Portfolio Summary Calculations?"
+msgstr "¿Cálculos de resumen de cartera inesperados?"
 
 #, fuzzy
 msgid "Uniformat Category"

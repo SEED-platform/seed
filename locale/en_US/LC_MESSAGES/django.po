@@ -885,6 +885,9 @@ msgstr "Create Data Set"
 msgid "Create Filter Group"
 msgstr "Create Filter Group"
 
+msgid "Create Group"
+msgstr "Create Group"
+
 msgid "Create New Sub-Organization"
 msgstr "Create New Sub-Organization"
 
@@ -1106,8 +1109,14 @@ msgstr "Data Quality"
 msgid "Data Quality Check"
 msgstr "Data Quality Check"
 
+msgid "Data Quality Checks can be configured in"
+msgstr "Data Quality Checks can be configured in"
+
 msgid "Data Quality Results"
 msgstr "Data Quality Results"
+
+msgid "Data Quality Settings"
+msgstr "Data Quality Settings"
 
 msgid "Data Set"
 msgstr "Data Set"
@@ -1758,6 +1767,9 @@ msgstr "Configure one or more portfolio Energy Use Intensity (EUI) reduction goa
 
 msgid "GREENBUTTON_CONTENTS_TITLE"
 msgstr "Confirm GreenButton File Contents"
+
+msgid "GROUPS_DESC_TEXT"
+msgstr "SEED supports the creation of groups. Groups can include one or more buildings as well as systems such as Batteries, District Energy Systems (DES) or Electric Vehicle Supply Equipment (EVSE). Services can be associated with the systems and meters associated with those services."
 
 msgid "GSA SFTool Guidance"
 msgstr "GSA SFTool Guidance"
@@ -2859,6 +2871,9 @@ msgstr "Populate SEED Headers with best known matches"
 msgid "Portfolio Summary"
 msgstr "Portfolio Summary"
 
+msgid "Portfolio Summary calculations only include properties that have \"Passed Checks\" and are not \"New Build or Acquired\" (see far right columns below)."
+msgstr "Portfolio Summary calculations only include properties that have \"Passed Checks\" and are not \"New Build or Acquired\" (see far right columns below)."
+
 msgid "Portfolio Summary will only include properties belonging to this Access Level Instance."
 msgstr "Portfolio Summary will only include properties belonging to this Access Level Instance."
 
@@ -3230,6 +3245,9 @@ msgstr "Run Author"
 
 msgid "Run Cycle"
 msgstr "Run Cycle"
+
+msgid "Run Data Quality Check, available in the Actions dropdown, to auto-populate the \"Passed Checks\" column."
+msgstr "Run Data Quality Check, available in the Actions dropdown, to auto-populate the \"Passed Checks\" column."
 
 msgid "Run Date"
 msgstr "Run Date"
@@ -4170,6 +4188,9 @@ msgstr "URL Options"
 
 msgid "USING_DEFAULT_UNITS_WARNING"
 msgstr "For columns with unit settings, default units will be used for conversions."
+
+msgid "Unexpected Portfolio Summary Calculations?"
+msgstr "Unexpected Portfolio Summary Calculations?"
 
 msgid "Uniformat Category"
 msgstr "Uniformat Category"
