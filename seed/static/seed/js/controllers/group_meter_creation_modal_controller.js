@@ -85,5 +85,9 @@ angular.module('SEED.controller.group_meter_creation_modal', []).controller('gro
         }
       });
     };
+
+    $scope.cancel = () => {
+      $uibModalInstance.close();
+    };
   }
 ]);
