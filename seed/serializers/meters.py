@@ -21,7 +21,7 @@ class MeterSerializer(serializers.ModelSerializer, OrgMixin):
     source = ChoiceField(choices=Meter.SOURCES)
     source_id = serializers.CharField(required=False, allow_blank=True)
     property_id = serializers.IntegerField(required=False, allow_null=True)
-    system_id = serializers.IntegerField(source="system.id", required=False, allow_null=True)
+    system_id = serializers.IntegerField(required=False, allow_null=True)
     system_name = serializers.CharField(source="system.name", required=False, allow_null=True)
     scenario_id = serializers.IntegerField(required=False, allow_null=True)
 
