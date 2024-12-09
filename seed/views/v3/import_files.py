@@ -1103,6 +1103,14 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
                 _kbtu_thermal_conversion_factors,
                 _kgal_water_conversion_factors,
             )
+            if conversion_factor is None:
+                return JsonResponse(
+                    {
+                        "status": "error",
+                        "message": f"meter type {Meter.ENERGY_TYPE_BY_METER_TYPE[meter.type]} cannot be converted to {raw_reading['Usage Units']}.",
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
 
             _, created = MeterReading.objects.get_or_create(
                 start_time=raw_reading["Start Date"],
@@ -1129,7 +1137,5 @@ def get_conversion_factor(type_name, unit, _kbtu_thermal_conversion_factors, _kg
 
     thermal_conversion_factor = _kbtu_thermal_conversion_factors.get(type_name, {}).get(unit, None)
     water_conversion_factor = _kgal_water_conversion_factors.get(type_name, {}).get(unit, None)
-    if thermal_conversion_factor is None and water_conversion_factor is None:
-        raise Exception
 
     return thermal_conversion_factor or water_conversion_factor
