@@ -193,7 +193,7 @@ angular.module('SEED.controller.insights_property', []).controller('insights_pro
       localStorage.setItem(localStorageALIndex, JSON.stringify($scope.level_name_index));
       localStorage.setItem(localStorageALIID, JSON.stringify($scope.access_level_instance_id));
       _load_data();
-    }
+    };
 
     // load data
     const _load_data = () => {
@@ -211,11 +211,9 @@ angular.module('SEED.controller.insights_property', []).controller('insights_pro
         .then(() => {
           // if there's +3k properties, dont even bother charting them.
           $scope.chartStatusMessage = '';
-          const num_properties = Object.values($scope.data.properties_by_cycles).reduce((acc, curr) => acc + curr.length, 0)
-          if (num_properties > 3000){
-            $scope.data.properties_by_cycles = Object.keys($scope.data.properties_by_cycles).reduce((acc, k) => {
-              return {...acc, [k]: []}
-            }, {});
+          const num_properties = Object.values($scope.data.properties_by_cycles).reduce((acc, curr) => acc + curr.length, 0);
+          if (num_properties > 3000) {
+            $scope.data.properties_by_cycles = Object.keys($scope.data.properties_by_cycles).reduce((acc, k) => ({ ...acc, [k]: [] }), {});
             $scope.chartStatusMessage = 'Too much data, try a different ali';
           }
 
@@ -657,8 +655,8 @@ angular.module('SEED.controller.insights_property', []).controller('insights_pro
       $scope.configs.annotation_visibility = $scope.display_annotation;
     };
 
-    const localStorageALIndex = `insights.property.configs.ALIndex`;
-    const localStorageALIID = `insights.property.configs.ALIID`;
+    const localStorageALIndex = 'insights.property.configs.ALIndex';
+    const localStorageALIID = 'insights.property.configs.ALIID';
     $scope.level_name_index = JSON.parse(localStorage.getItem(localStorageALIndex)) || '0';
     const new_level_instance_depth = parseInt($scope.level_name_index, 10) + parseInt(users_depth, 10);
     $scope.potential_level_instances = access_level_instances_by_depth[new_level_instance_depth];

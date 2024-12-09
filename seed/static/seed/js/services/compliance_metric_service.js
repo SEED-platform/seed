@@ -47,8 +47,8 @@ angular.module('SEED.service.compliance_metric', []).factory('compliance_metric_
     const evaluate_compliance_metric = (metric_id, organization_id = user_service.get_organization().id, access_level_instance_id) => $http
       .get(`/api/v3/compliance_metrics/${metric_id}/evaluate/`, {
         params: {
-          organization_id: organization_id,
-          access_level_instance_id: access_level_instance_id,
+          organization_id,
+          access_level_instance_id
         }
       })
       .then((response) => response.data.data)
