@@ -14,6 +14,9 @@ angular.module('SEED.controller.insights_property', []).controller('insights_pro
   'filter_groups',
   'property_columns',
   'cycles',
+  'access_level_tree',
+  'user_service',
+  'ah_service',
   'spinner_utility',
   'auth_payload',
   // eslint-disable-next-line func-names
@@ -29,6 +32,9 @@ angular.module('SEED.controller.insights_property', []).controller('insights_pro
     filter_groups,
     property_columns,
     cycles,
+    access_level_tree,
+    user_service,
+    ah_service,
     spinner_utility,
     auth_payload
   ) {
@@ -36,6 +42,13 @@ angular.module('SEED.controller.insights_property', []).controller('insights_pro
     $scope.static_url = urls.static_url;
     $scope.organization = organization_payload.organization;
     $scope.auth = auth_payload.auth;
+
+    $scope.access_level_tree = access_level_tree.access_level_tree;
+    $scope.level_names = access_level_tree.access_level_names;
+    $scope.level_name_index = null;
+    $scope.potential_level_instances = [];
+    $scope.access_level_instance_id = null;
+    $scope.users_access_level_instance_id = user_service.get_access_level_instance().id;
 
     // used by modal
     $scope.filter_groups = filter_groups;
@@ -46,6 +59,28 @@ angular.module('SEED.controller.insights_property', []).controller('insights_pro
     $scope.show_help = false;
     $scope.toggle_help = () => {
       $scope.show_help = !$scope.show_help;
+    };
+
+    function path_to_string(path) {
+      const orderedPath = [];
+      for (const i in $scope.level_names) {
+        if (Object.prototype.hasOwnProperty.call(path, $scope.level_names[i])) {
+          orderedPath.push(path[$scope.level_names[i]]);
+        }
+      }
+      return orderedPath.join(' : ');
+    }
+
+    const access_level_instances_by_depth = ah_service.calculate_access_level_instances_by_depth($scope.access_level_tree);
+    // cannot select parents alis
+    const [users_depth] = Object.entries(access_level_instances_by_depth).find(([, x]) => x.length === 1 && x[0].id === parseInt($scope.users_access_level_instance_id, 10));
+    $scope.change_selected_level_index = () => {
+      const new_level_instance_depth = parseInt($scope.level_name_index, 10) + parseInt(users_depth, 10);
+      $scope.potential_level_instances = access_level_instances_by_depth[new_level_instance_depth];
+      for (const key in $scope.potential_level_instances) {
+        $scope.potential_level_instances[key].name = path_to_string($scope.potential_level_instances[key].path);
+      }
+      $scope.access_level_instance_id = null;
     };
 
     // configs ($scope.configs set to saved_configs where still applies.
@@ -154,6 +189,12 @@ angular.module('SEED.controller.insights_property', []).controller('insights_pro
       true
     );
 
+    $scope.change_ali = () => {
+      localStorage.setItem(localStorageALIndex, JSON.stringify($scope.level_name_index));
+      localStorage.setItem(localStorageALIID, JSON.stringify($scope.access_level_instance_id));
+      _load_data();
+    };
+
     // load data
     const _load_data = () => {
       if (_.isEmpty($scope.configs.compliance_metric)) {
@@ -163,11 +204,19 @@ angular.module('SEED.controller.insights_property', []).controller('insights_pro
       }
       spinner_utility.show();
       compliance_metric_service
-        .evaluate_compliance_metric($scope.configs.compliance_metric.id)
+        .evaluate_compliance_metric($scope.configs.compliance_metric.id, $scope.organization.id, $scope.access_level_instance_id)
         .then((data) => {
           $scope.data = data;
         })
         .then(() => {
+          // if there's +3k properties, dont even bother charting them.
+          $scope.chartStatusMessage = '';
+          const num_properties = Object.values($scope.data.properties_by_cycles).reduce((acc, curr) => acc + curr.length, 0);
+          if (num_properties > 3000) {
+            $scope.data.properties_by_cycles = Object.keys($scope.data.properties_by_cycles).reduce((acc, k) => ({ ...acc, [k]: [] }), {});
+            $scope.chartStatusMessage = 'Too much data, try a different ali';
+          }
+
           if ($scope.data) {
             // set options
             // cycles
@@ -307,7 +356,7 @@ angular.module('SEED.controller.insights_property', []).controller('insights_pro
       $scope.annotations = {};
 
       _.forEach($scope.data.properties_by_cycles[$scope.configs.chart_cycle], (prop) => {
-        const item = { id: prop.property_view_id };
+        const item = { id: prop.id };
         item.name = _.find(prop, (v, k) => k.startsWith($scope.organization.property_display_field));
         // x axis is easy
         item.x = _.find(prop, (v, k) => k.endsWith(`_${String($scope.configs.chart_xaxis)}`));
@@ -333,10 +382,10 @@ angular.module('SEED.controller.insights_property', []).controller('insights_pro
         }
 
         // place in appropriate dataset
-        if (_.includes($scope.data.results_by_cycles[$scope.configs.chart_cycle].y, prop.property_view_id)) {
+        if (_.includes($scope.data.results_by_cycles[$scope.configs.chart_cycle].y, prop.id)) {
           // compliant dataset
           datasets[0].data.push(item);
-        } else if (_.includes($scope.data.results_by_cycles[$scope.configs.chart_cycle].n, prop.property_view_id)) {
+        } else if (_.includes($scope.data.results_by_cycles[$scope.configs.chart_cycle].n, prop.id)) {
           // non-compliant dataset
           datasets[1].data.push(item);
         } else {
@@ -605,6 +654,13 @@ angular.module('SEED.controller.insights_property', []).controller('insights_pro
 
       $scope.configs.annotation_visibility = $scope.display_annotation;
     };
+
+    const localStorageALIndex = 'insights.property.configs.ALIndex';
+    const localStorageALIID = 'insights.property.configs.ALIID';
+    $scope.level_name_index = JSON.parse(localStorage.getItem(localStorageALIndex)) || '0';
+    const new_level_instance_depth = parseInt($scope.level_name_index, 10) + parseInt(users_depth, 10);
+    $scope.potential_level_instances = access_level_instances_by_depth[new_level_instance_depth];
+    $scope.access_level_instance_id = JSON.parse(localStorage.getItem(localStorageALIID)) || parseInt($scope.users_access_level_instance_id, 10);
 
     setTimeout(_load_data, 0); // avoid race condition with route transition spinner.
 

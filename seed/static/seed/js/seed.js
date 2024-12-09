@@ -2586,7 +2586,15 @@
                 return inventory_service.get_property_columns_for_org(organization_id);
               }
             ],
-            cycles: ['cycle_service', (cycle_service) => cycle_service.get_cycles()]
+            cycles: ['cycle_service', (cycle_service) => cycle_service.get_cycles()],
+            access_level_tree: [
+              'organization_service',
+              'user_service',
+              (organization_service, user_service) => {
+                const organization_id = user_service.get_organization().id;
+                return organization_service.get_organization_access_level_tree(organization_id);
+              }
+            ]
           }
         })
         .state({
