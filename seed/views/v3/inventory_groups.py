@@ -145,28 +145,18 @@ class InventoryGroupViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
 
     @swagger_auto_schema_org_query_param
     @has_perm_class("requires_viewer")
+    @has_hierarchy_access(inventory_group_id_kwarg="pk")
     @action(detail=True, methods=["POST"])
     def meter_usage(self, request, pk):
         """
         Returns meter usage for a group
         """
-        try:
-            group = InventoryGroup.objects.get(pk=pk)
-            group = InventoryGroupSerializer(group).data
-            # ali = AccessLevelInstance.objects.get(pk=request.access_level_instance_id) # ?
-            org_id = self.get_organization(request)
-            interval = request.data.get("interval", "Exact")
-        except ObjectDoesNotExist:
-            return [], JsonResponse({"status": "erorr", "message": "No such resource."})
+        org_id = self.get_organization(request)
+        interval = request.data.get("interval", "Exact")
 
-        data = {"column_defs": [], "readings": []}
-        for property_id in group["inventory_list"]:
-            property_view = PropertyView.objects.filter(property=property_id).first()
-            scenario_ids = [s.id for s in property_view.state.scenarios.all()]
-            exporter = PropertyMeterReadingsExporter(property_id, org_id, [], scenario_ids=scenario_ids)
-            usage = exporter.readings_and_column_defs(interval)
-            data["readings"].extend(usage["readings"])
-            data["column_defs"].extend(usage["column_defs"])
+        meters = Meter.objects.filter(Q(system__group_id=pk) | Q(property__group_mappings__group_id=pk))
+        exporter = PropertyMeterReadingsExporter(meters, org_id)
+        data = exporter.readings_and_column_defs(interval)
 
         # Remove duplicate dicts by converting to a set of tuples, then back to dicts
         data["column_defs"] = [dict(t) for t in {tuple(d.items()) for d in data["column_defs"]}]

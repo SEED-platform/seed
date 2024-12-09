@@ -300,7 +300,8 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         property_id = property_view.property.id
         scenario_ids = [s.id for s in property_view.state.scenarios.all()]
 
-        exporter = PropertyMeterReadingsExporter(property_id, org_id, excluded_meter_ids, scenario_ids=scenario_ids)
+        meters = Meter.objects.filter(Q(property_id=property_id) | Q(scenario_id__in=scenario_ids)).exclude(pk__in=excluded_meter_ids)
+        exporter = PropertyMeterReadingsExporter(meters, org_id)
 
         return exporter.readings_and_column_defs(interval)
 
