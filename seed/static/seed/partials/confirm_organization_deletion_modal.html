@@ -38,9 +38,9 @@
       <div ng-switch-when="done">{$ result $}</div>
     </div>
   </div>
-   <div class="modal-footer" ng-if="state !== 'pending' && state !== 'running' && state !== 'evaluating'">
-      <button type="button" class="btn btn-default" ng-click="cancel()" ng-if="state !== 'done'" ng-disabled="state === 'running'">Cancel</button>
-      <button type="button" class="btn btn-info" ng-click="confirm_and_delete_org()" ng-if="state !== 'done'" ng-disabled="state === 'running'" autofocus>Confirm</button>
-      <button type="button" class="btn btn-info" ng-click="refresh()" ng-if="state === 'done'" autofocus>Refresh</button>
-    </div>
+  <div class="modal-footer" ng-if="state !== 'pending' && state !== 'running' && state !== 'evaluating'">
+    <button type="button" class="btn btn-default" ng-click="cancel()" ng-if="state !== 'done'" ng-disabled="state === 'running'">Cancel</button>
+    <button type="button" class="btn btn-info" ng-click="confirm_and_delete_org()" ng-if="state !== 'done'" ng-disabled="state === 'running'" autofocus>Confirm</button>
+    <button type="button" class="btn btn-info" ng-click="refresh()" ng-if="state === 'done'" autofocus>Refresh</button>
+  </div>
 </div>
