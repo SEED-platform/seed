@@ -524,6 +524,15 @@ class PortfolioManagerReportParsingTest(TestCase):
     """Test the parsing of the resulting PM XML file. This is only for the
     version 2 parsing"""
 
+    def setUp(self):
+        user_details = {
+            "username": "test_user@demo.com",
+            "password": "test_pass",
+        }
+        self.user = User.objects.create_superuser(email="test_user@demo.com", **user_details)
+        self.org, _, _ = create_organization(self.user)
+        self.client.login(**user_details)
+
     def test_parse_pm_report(self):
         pm = PortfolioManagerImport("not_a_real_password", "not_a_real_password")
         xml_path = Path(__file__).parent.absolute() / "data" / "portfolio-manager-report.xml"
@@ -537,3 +546,93 @@ class PortfolioManagerReportParsingTest(TestCase):
             self.assertEqual(properties[0]["portfolioManagerPropertyId"], "22178843")
             self.assertIsNone(properties[0]["parentPropertyId"])
             self.assertEqual(properties[0]["propertyFloorAreaBuildingsAndParking"], "89250.0")
+
+    def test_hannah_1(self):
+        pm = PortfolioManagerImport()  # removed
+        ids = []  # removed
+        excel_b = pm.generate_and_download_meter_data(ids)
+
+        import pandas as pd
+
+        df = pd.read_excel(excel_b, header=5)
+
+        self.assertListEqual(
+            list(df.columns),
+            [
+                "Property Name",
+                "Portfolio Manager ID",
+                "Portfolio Manager Meter ID",
+                "Meter Name",
+                "Meter Type",
+                "Meter Consumption ID",
+                "Start Date",
+                "End Date",
+                "Delivery Date",
+                "Usage/Quantity",
+                "Usage Units",
+                "Cost ($)",
+                "Estimation?",
+                "Demand (kW)",
+                "Demand Cost ($)",
+                "Last Modified Date",
+                "Last Modified By",
+                "Onsite Renewable System Energy Used Onsite",
+                "Onsite Renewable System Energy Used Onsite -Units",
+                "Onsite Renewable System Energy Exported Offsite",
+                "Onsite Renewable System Energy Exported Offsite- Units",
+                "Disposed Waste - Landfill %",
+                "Disposed Waste - Incineration %",
+                "Disposed Waste - Waste to Energy %",
+                "Disposed Waste - Don't Know %",
+            ],
+        )
+
+    def test_hannah(self):
+        ids = []  # removed
+        resp = self.client.post(
+            reverse_lazy("api:v3:portfolio_manager-custom-download"),
+            json.dumps(
+                {
+                    "username": "", # removed
+                    "password": "", # removed
+                    "property_ids": ids,
+                }
+            ),
+            content_type="application/json",
+        )
+        assert resp.status_code == 200
+
+        import pandas as pd
+
+        df = pd.read_excel(resp.content, header=5)
+
+        self.assertListEqual(
+            list(df.columns),
+            [
+                "Property Name",
+                "Portfolio Manager ID",
+                "Portfolio Manager Meter ID",
+                "Meter Name",
+                "Meter Type",
+                "Meter Consumption ID",
+                "Start Date",
+                "End Date",
+                "Delivery Date",
+                "Usage/Quantity",
+                "Usage Units",
+                "Cost ($)",
+                "Estimation?",
+                "Demand (kW)",
+                "Demand Cost ($)",
+                "Last Modified Date",
+                "Last Modified By",
+                "Onsite Renewable System Energy Used Onsite",
+                "Onsite Renewable System Energy Used Onsite -Units",
+                "Onsite Renewable System Energy Exported Offsite",
+                "Onsite Renewable System Energy Exported Offsite- Units",
+                "Disposed Waste - Landfill %",
+                "Disposed Waste - Incineration %",
+                "Disposed Waste - Waste to Energy %",
+                "Disposed Waste - Don't Know %",
+            ],
+        )
