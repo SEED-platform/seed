@@ -605,8 +605,8 @@ class PortfolioManagerCustomDownloadTest(TestCase):
             reverse_lazy("api:v3:portfolio_manager-custom-download"),
             json.dumps(
                 {
-                    "username": self.pm_un,  # removed
-                    "password": self.pm_pw,  # removed
+                    "username": self.pm_un,
+                    "password": self.pm_pw,
                     "property_ids": ids,
                 }
             ),
