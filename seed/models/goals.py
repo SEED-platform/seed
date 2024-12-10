@@ -43,9 +43,6 @@ class Goal(models.Model):
             self.transactions_column = None
         super().save(*args, **kwargs)
 
-    class Meta:
-        ordering = ["name"]
-
     def __str__(self):
         return f"Goal - {self.name}"
 
