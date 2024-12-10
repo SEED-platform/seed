@@ -91,7 +91,7 @@ class GoalViewTests(AccessLevelBaseTestCase):
         self.view11 = self.property_view_factory.get_property_view(prprty=self.property1, state=self.state_11, cycle=self.cycle1)
         self.view13 = self.property_view_factory.get_property_view(prprty=self.property1, state=self.state_13, cycle=self.cycle3)
         self.view2 = self.property_view_factory.get_property_view(prprty=self.property2, state=self.state_2, cycle=self.cycle2)
-        self.view21 = self.property_view_factory.get_property_view(prprty=self.property3, state=self.state_31, cycle=self.cycle1)
+        self.view31 = self.property_view_factory.get_property_view(prprty=self.property3, state=self.state_31, cycle=self.cycle1)
         self.view33 = self.property_view_factory.get_property_view(prprty=self.property3, state=self.state_33, cycle=self.cycle3)
         self.view41 = self.property_view_factory.get_property_view(prprty=self.property4, state=self.state_41, cycle=self.cycle1)
 
@@ -486,3 +486,114 @@ class GoalViewTests(AccessLevelBaseTestCase):
         }
 
         assert summary == exp_summary
+
+    def test_goal_data(self):
+        self.login_as_root_member()
+        url = reverse_lazy("api:v3:goals-data", args=[self.root_goal.id]) + "?organization_id=" + str(self.org.id)
+        data = {
+            "goal_id": self.root_goal.id,
+            "page": 1,
+            "per_page": 50,
+            "baseline_first": True,
+            "access_level_instance_id": self.org.root.id,
+            "related_model_sort": False,
+        }
+        response = self.client.put(url, data=json.dumps(data), content_type="application/json")
+        assert response.status_code == 200
+        data = response.json()
+        assert list(data.keys()) == ["pagination", "properties", "property_lookup"]
+
+        data = {
+            "goal_id": self.root_goal.id,
+            "page": 2,
+            "per_page": 1,
+            "baseline_first": True,
+            "access_level_instance_id": self.org.root.id,
+            "related_model_sort": False,
+        }
+        response = self.client.put(url, data=json.dumps(data), content_type="application/json")
+        data = response.json()
+        assert len(data["properties"]) == 1
+        assert data["property_lookup"] == {str(self.view31.id): self.property3.id, str(self.view33.id): self.property3.id}
+
+    def test_related_filter(self):
+        alphabet = ["a", "c", "b"]
+        questions = ["Is this value correct?", "Are these values correct?", "Other or multiple flags; explain in Additional Notes field"]
+        booleans = [True, False, True]
+        for idx, goal_note in enumerate(self.root_goal.goalnote_set.all()):
+            goal_note.resolution = alphabet[idx]
+            goal_note.question = questions[idx]
+            goal_note.passed_checks = booleans[idx]
+            goal_note.new_or_acquired = booleans[idx]
+            goal_note.save()
+
+        for idx, historical_note in enumerate(HistoricalNote.objects.filter(property__in=self.root_goal.properties())):
+            historical_note.text = alphabet[idx]
+            historical_note.save()
+
+        goal_note = self.root_goal.goalnote_set.first()
+        goal_note.new_or_acquired = True
+        goal_note.passed_checks = True
+        goal_note.save()
+
+        # sort resolution ascending
+        params = f"?organization_id={self.org.id}&order_by=property__goal_note__resolution"
+        path = reverse_lazy("api:v3:goals-data", args=[self.root_goal.id])
+        url = path + params
+        data = {
+            "goal_id": self.root_goal.id,
+            "page": 1,
+            "per_page": 50,
+            "baseline_first": True,
+            "access_level_instance_id": self.org.root.id,
+            "related_model_sort": True,
+        }
+        response = self.client.put(url, data=json.dumps(data), content_type="application/json")
+        assert response.status_code == 200
+        response = response.json()
+        resolutions = [p["goal_note"]["resolution"] for p in response["properties"]]
+        assert resolutions == ["a", "b", "c"]
+
+        # sort resolution descending
+        params = f"?organization_id={self.org.id}&order_by=-property__goal_note__resolution"
+        url = path + params
+        response = self.client.put(url, data=json.dumps(data), content_type="application/json")
+        response = response.json()
+        resolutions = [p["goal_note"]["resolution"] for p in response["properties"]]
+        assert resolutions == ["c", "b", "a"]
+
+        # sort historical note text
+        params = f"?organization_id={self.org.id}&order_by=property__historical_note__text"
+        url = path + params
+        response = self.client.put(url, data=json.dumps(data), content_type="application/json")
+        response = response.json()
+        historical_notes = [p["historical_note"]["text"] for p in response["properties"]]
+        assert historical_notes == ["a", "b", "c"]
+
+        # sort question
+        params = f"?organization_id={self.org.id}&order_by=property__goal_note__question"
+        url = path + params
+        response = self.client.put(url, data=json.dumps(data), content_type="application/json")
+        response = response.json()
+        questions = [p["goal_note"]["question"] for p in response["properties"]]
+        assert questions == [
+            "Are these values correct?",
+            "Is this value correct?",
+            "Other or multiple flags; explain in Additional Notes field",
+        ]
+
+        # sort passsed checks
+        params = f"?organization_id={self.org.id}&order_by=property__goal_note__passed_checks"
+        url = path + params
+        response = self.client.put(url, data=json.dumps(data), content_type="application/json")
+        response = response.json()
+        passed_checks = [p["goal_note"]["passed_checks"] for p in response["properties"]]
+        assert passed_checks == [True, True, False]
+
+        # sort new or acquired desc
+        params = f"?organization_id={self.org.id}&order_by=-property__goal_note__new_or_acquired"
+        url = path + params
+        response = self.client.put(url, data=json.dumps(data), content_type="application/json")
+        response = response.json()
+        passed_checks = [p["goal_note"]["passed_checks"] for p in response["properties"]]
+        assert passed_checks == [False, True, True]
