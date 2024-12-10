@@ -790,23 +790,6 @@ angular.module('SEED.controller.mapping', []).controller('mapping_controller', [
           $scope.propertiesGridOptions = angular.copy(gridOptions);
           $scope.propertiesGridOptions.data = _.map(data.properties, (prop) => _.defaults(prop, prop.extra_data));
           $scope.propertiesGridOptions.columnDefs = $scope.property_columns;
-          $scope.propertiesGridOptions.columnDefs.unshift({
-            name: property_labels,
-            displayName: "Property Labels",
-            enableColumnMenu: true,
-            enableColumnMoving: false,
-            enableColumnResizing: true,
-            enableFiltering: true,
-            enableHiding: true,
-            enableSorting: true,
-            enablePinning: false,
-            exporterSuppressExport: true,
-            pinnedLeft: true,
-            visible: true,
-            width: 100,
-            cellClass: 'label-cell',
-            headerCellClass: 'label-header'
-          });
           // Add access level instances to grid
           ['raw_access_level_instance_error', ...$scope.organization.access_level_names].reverse().forEach((level) => {
             $scope.propertiesGridOptions.columnDefs.unshift({

@@ -203,6 +203,8 @@ def _dict_org_brief(request, organizations):
             "salesforce_enabled": o.salesforce_enabled,
             "access_level_names": o.access_level_names,
             "audit_template_conditional_import": o.audit_template_conditional_import,
+            "property_display_field": o.property_display_field,
+            "taxlot_display_field": o.taxlot_display_field,
         }
         orgs.append(org)
 
@@ -363,7 +365,7 @@ class OrganizationViewSet(viewsets.ViewSet):
         Starts a background task to delete an organization and all related data.
         """
 
-        return JsonResponse(tasks.delete_organization(pk))
+        return JsonResponse(tasks.delete_organization_and_inventory(pk))
 
     @api_endpoint_class
     @ajax_request_class

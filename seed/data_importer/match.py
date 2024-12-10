@@ -796,9 +796,9 @@ def link_states(states, ViewClass, cycle, highest_ali, sub_progress_key, tuple_v
             view = state.promote(cycle=cycle)
 
         # Add labels RP
+        # WHAT ABOUT TAX LOTS.
         if view and state.incoming_property_labels:
-            incoming_label_names = state.incoming_property_labels
-            incoming_label_names = incoming_label_names.split(',')
+            incoming_label_names = state.incoming_property_labels.split(',')
             for incoming_label_name in incoming_label_names:
                 incoming_label, _ = StatusLabel.objects.get_or_create(name=incoming_label_name, super_organization=cycle.organization)
                 PropertyViewLabel.objects.get_or_create(statuslabel=incoming_label, propertyview=view)
@@ -813,6 +813,9 @@ def link_states(states, ViewClass, cycle, highest_ali, sub_progress_key, tuple_v
 
         if batch_size > 0 and idx % batch_size == 0:
             sub_progress_data.step("Matching Data (6/6): Merging Views")
+    
+    # Remove temporary extra data column Property Labels brought in from data upload
+    # Column.objects.filter(organization=cycle.organization, is_extra_data=True, column_name="Property Labels").delete()
 
     sub_progress_data.finish_with_success()
 
@@ -894,6 +897,11 @@ def save_state_match(state1, state2, priorities):
 
     # Set the merged_state to merged
     merged_state.merge_state = MERGE_STATE_MERGED
+    # Handle Property Labels included in data upload
+    if incoming_label_names := merged_state.extra_data.get("Property Labels"):
+        merged_state.incoming_property_labels = incoming_label_names
+        del merged_state.extra_data["Property Labels"]
+
     merged_state.save()
 
     return merged_state
