@@ -2357,6 +2357,23 @@
 
                 return promise;
               }
+            ],
+            columns: [
+              '$stateParams',
+              'inventory_service',
+              ($stateParams, inventory_service) => {
+                if ($stateParams.inventory_type === 'properties') {
+                  return inventory_service.get_property_columns().then((columns) => {
+                    _.remove(columns, 'related');
+                    _.remove(columns, { column_name: 'lot_number', table_name: 'PropertyState' });
+                    return _.map(columns, (col) => _.omit(col, ['pinnedLeft', 'related']));
+                  });
+                }
+                return inventory_service.get_taxlot_columns().then((columns) => {
+                  _.remove(columns, 'related');
+                  return _.map(columns, (col) => _.omit(col, ['pinnedLeft', 'related']));
+                });
+              }
             ]
           }
         })

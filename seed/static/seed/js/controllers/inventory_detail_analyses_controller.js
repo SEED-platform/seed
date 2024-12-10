@@ -18,6 +18,7 @@ angular.module('SEED.controller.inventory_detail_analyses', []).controller('inve
   'Notification',
   'uploader_service',
   'cycle_service',
+  'columns',
   // eslint-disable-next-line func-names
   function (
     $state,
@@ -34,7 +35,8 @@ angular.module('SEED.controller.inventory_detail_analyses', []).controller('inve
     analyses_service,
     Notification,
     uploader_service,
-    cycle_service
+    cycle_service,
+    columns
   ) {
     $scope.item_state = inventory_payload.state;
     $scope.inventory_type = $stateParams.inventory_type;
@@ -139,8 +141,9 @@ angular.module('SEED.controller.inventory_detail_analyses', []).controller('inve
           controller: 'inventory_detail_analyses_modal_controller',
           resolve: {
             inventory_ids: () => [$scope.inventory.view_id],
-            cycles: () => cycle_service.get_cycles().then((result) => result.cycles),
+            property_columns: () => columns.filter((x) => x.table_name === 'PropertyState'),
             current_cycle: () => $scope.cycle,
+            cycles: () => cycle_service.get_cycles().then((result) => result.cycles),
             user: () => $scope.menu.user
           }
         })

@@ -5674,7 +5674,7 @@ tags-input .tags .tag-item {
   }
 
   .bold {
-    font-size: bold;
+    font-weight: bold;
   }
 }
 
@@ -5682,4 +5682,10 @@ tags-input .tags .tag-item {
   word-wrap: break-word;
   white-space: normal;
   min-width: 350px;
+}
+
+.no-lr-pad {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  padding-top: 0 !important;
 }

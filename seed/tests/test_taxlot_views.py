@@ -788,8 +788,33 @@ class TaxLotMergeUnmergeViewTests(DataMappingBaseTestCase):
         url = reverse("api:v3:taxlots-unmerge", args=[view.id]) + f"?organization_id={self.org.pk}"
         self.client.post(url, content_type="application/json")
 
-        self.assertFalse(TaxLot.objects.filter(pk=taxlot_id).exists())
+        self.assertTrue(TaxLot.objects.filter(pk=taxlot_id).exists())
         self.assertEqual(TaxLot.objects.count(), 2)
+
+    def test_unmerging_two_taxlots_with_notes(self):
+        # Merge the taxlots
+        url = reverse("api:v3:taxlots-merge") + f"?organization_id={self.org.pk}"
+        post_params = json.dumps(
+            {
+                "taxlot_view_ids": [self.view_2.pk, self.view_1.pk]  # priority given to state_1
+            }
+        )
+        self.client.post(url, post_params, content_type="application/json")
+        view = TaxLotView.objects.first()  # There's only one PropertyView
+
+        # add note
+        note_factory = FakeNoteFactory(organization=self.org, user=self.user)
+        note1 = note_factory.get_note(name="non_default_name_1")
+        view.notes.add(note1)
+
+        # Unmerge the taxlots
+        url = reverse("api:v3:taxlots-unmerge", args=[view.id]) + f"?organization_id={self.org.pk}"
+        self.client.post(url, content_type="application/json")
+        view_1, view_2 = TaxLotView.objects.all()
+
+        assert view_1.notes.count() == 1
+        assert view_2.notes.count() == 2
+        assert view_2.notes.first().text == f"This TaxLotView was unmerged from TaxLotView id {view_1.id}"
 
     def test_unmerge_results_in_the_persistence_of_old_canonical_state_if_related_to_any_views(self):
         # Merge the taxlots
@@ -814,7 +839,7 @@ class TaxLotMergeUnmergeViewTests(DataMappingBaseTestCase):
         self.client.post(url, content_type="application/json")
 
         self.assertTrue(TaxLot.objects.filter(pk=view.taxlot_id).exists())
-        self.assertEqual(TaxLot.objects.count(), 3)
+        self.assertEqual(TaxLot.objects.count(), 2)
 
 
 class TaxLotUpdateCausesMergesAndLinkTests(AccessLevelBaseTestCase):
