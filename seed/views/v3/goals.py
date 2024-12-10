@@ -7,6 +7,7 @@ from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.db.utils import DataError
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
+from pint import Quantity
 from rest_framework import status
 from rest_framework.decorators import action
 

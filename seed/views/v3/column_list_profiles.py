@@ -190,7 +190,7 @@ class ColumnListProfileViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelV
 
         return results
 
-    @has_perm_class("requires_root_member")
+    @has_perm_class("requires_root_member_access")
     @action(detail=True, methods=["PUT"])
     def show_populated(self, request, pk):
         column_list_profile = ColumnListProfile.objects.get(pk=pk)
