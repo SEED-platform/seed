@@ -65,15 +65,25 @@ angular.module('SEED.controller.inventory_reports', []).controller('inventory_re
     $scope.filter_groups = filter_groups;
     $scope.report_configurations = report_configurations;
     $scope.filter_group_id = null;
-    function path_to_string(path) {
-      const orderedPath = [];
-      for (const i in $scope.level_names) {
-        if (Object.prototype.hasOwnProperty.call(path, $scope.level_names[i])) {
-          orderedPath.push(path[$scope.level_names[i]]);
-        }
+
+    $scope.has_children = (obj) => {
+      // check if the access level selected has children levels for stats table
+      let children = false;
+      if ('children' in obj && Object.keys(obj.children).length > 0) {
+        children = true;
       }
-      return orderedPath.join(' : ');
-    }
+      return children;
+    };
+
+    // function path_to_string(path) {
+    //   const orderedPath = [];
+    //   for (const i in $scope.level_names) {
+    //     if (Object.prototype.hasOwnProperty.call(path, $scope.level_names[i])) {
+    //       orderedPath.push(path[$scope.level_names[i]]);
+    //     }
+    //   }
+    //   return orderedPath.join(' : ');
+    // }
     const access_level_instances_by_depth = ah_service.calculate_access_level_instances_by_depth($scope.access_level_tree);
     // cannot select parents alis
     const [users_depth] = Object.entries(access_level_instances_by_depth).find(([, x]) => x.length === 1 && x[0].id === parseInt($scope.users_access_level_instance_id, 10));
@@ -81,9 +91,9 @@ angular.module('SEED.controller.inventory_reports', []).controller('inventory_re
     $scope.change_selected_level_index = () => {
       const new_level_instance_depth = parseInt($scope.level_name_index, 10) + parseInt(users_depth, 10);
       $scope.potential_level_instances = access_level_instances_by_depth[new_level_instance_depth];
-      for (const key in $scope.potential_level_instances) {
-        $scope.potential_level_instances[key].name = path_to_string($scope.potential_level_instances[key].path);
-      }
+      // for (const key in $scope.potential_level_instances) {
+      //   $scope.potential_level_instances[key].name = path_to_string($scope.potential_level_instances[key].path);
+      // }
       $scope.access_level_instance_id = null;
       $scope.setModified();
     };
@@ -380,7 +390,7 @@ angular.module('SEED.controller.inventory_reports', []).controller('inventory_re
                   return ctx[0]?.raw.display_name;
                 },
                 label: (ctx) => [
-                  `${$scope.xAxisSelectedItem.label}: ${type === 'bar' ? ctx.label : ctx.parsed.x}`,
+                  `${$scope.xAxisSelectedItem.label}: ${type === 'bar' ? ctx.label : ctx.raw.x}`,
                   `${$scope.yAxisSelectedItem.label}: ${type === 'bar' ? ctx.raw : ctx.parsed.y}`
                 ]
               }
@@ -621,9 +631,14 @@ angular.module('SEED.controller.inventory_reports', []).controller('inventory_re
                 $scope.scatterChart.options.scales.x.ticks.callback = (value) => String(value);
               }
             } else {
+              // restore title text as this syntax overwrites it
               $scope.scatterChart.options.scales.x = {
                 type: 'category',
-                labels: Array.from([...new Set($scope.chartData.chartData.map((d) => d.x))]).sort()
+                labels: Array.from([...new Set($scope.chartData.chartData.map((d) => d.x))]).sort(),
+                title: {
+                  display: true,
+                  text: $scope.xAxisSelectedItem.label
+                }
               };
             }
             if ($scope.yAxisSelectedItem.varName === 'year_built') {
@@ -717,6 +732,18 @@ angular.module('SEED.controller.inventory_reports', []).controller('inventory_re
           $scope.aggChartIsLoading = false;
         });
     }
+
+    $scope.downloadChart = () => {
+      const a = document.createElement('a');
+      a.href = $scope.barChart.toBase64Image();
+      a.download = 'default_report_bar.png';
+      a.click();
+
+      const b = document.createElement('a');
+      b.href = $scope.scatterChart.toBase64Image();
+      b.download = 'default_report_scatter.png';
+      b.click();
+    };
 
     function updateStorage() {
       // Save axis and cycle selections

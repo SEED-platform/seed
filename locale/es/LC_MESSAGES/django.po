@@ -5,7 +5,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: lokalise.com\n"
 "Project-Id-Version: SEED Platform\n"
-"PO-Revision-Date: 2024-10-31 19:47\n"
+"PO-Revision-Date: 2024-11-25 06:35\n"
 "Last-Translator: lokalise.com\n"
 "Language-Team: lokalise.com\n\n"
 "Language: es\n"
@@ -153,9 +153,8 @@ msgstr "El análisis BETTER aprovecha better.lbl.gov para calcular el ahorro de 
 msgid "ANALYSIS_DESCRIPTION_BSyncr"
 msgstr "El análisis BSyncr aprovecha el análisis de consumo energético medido normalizado (NMEC) para calcular un modelo de punto de cambio. Los datos se transmiten al análisis mediante BuildingSync. El resultado del análisis son los coeficientes del modelo de punto de cambio."
 
-#, fuzzy
 msgid "ANALYSIS_DESCRIPTION_BuildingUpgradeRecommendation"
-msgstr "El análisis de recomendaciones de mejora de edificios implementa un flujo de trabajo para identificar los edificios que pueden necesitar una profunda modernización energética, la sustitución de equipos o una nueva puesta a punto basada en atributos del edificio como el uso de la energía, el año de construcción y los metros cuadrados."
+msgstr "El análisis de recomendación de mejora de edificios implementa un flujo de trabajo para identificar los edificios que pueden necesitar una renovación energética profunda, el reemplazo o la puesta a punto de equipos en función de los atributos del edificio, como el uso de energía, el año de construcción y la superficie en metros cuadrados. Si su organización contiene elementos, se debe ejecutar el análisis de estadísticas de elementos antes de ejecutar este análisis."
 
 #, fuzzy
 msgid "ANALYSIS_DESCRIPTION_CO2"
@@ -169,9 +168,8 @@ msgstr "El análisis EEEJ utiliza la dirección de cada propiedad para identific
 msgid "ANALYSIS_DESCRIPTION_EUI"
 msgstr "El análisis EUI sumará las lecturas de los contadores de la propiedad de los últimos doce meses para calcular el consumo de energía por metro cuadrado al año. Si faltan lecturas de contadores, el análisis devolverá una cobertura inferior al 100% para alertar al usuario de que falta una lectura de contador."
 
-#, fuzzy
 msgid "ANALYSIS_DESCRIPTION_ElementStatistics"
-msgstr "El análisis de estadísticas de elementos examina los datos de los elementos de una propiedad (si los hay) para contar el número de elementos de tipo \"Panel de control D.D.C.\" y guarda esa cantidad en la propiedad"
+msgstr "El análisis de estadísticas de elementos analiza los datos de elementos de una propiedad (si los hay) para contar la cantidad de elementos del tipo \"Panel de control DDC\". También genera los valores de índice de condición agregados (promedio) para los elementos de emisión de alcance 1 y guarda esas cantidades en la propiedad."
 
 #, fuzzy
 msgid "AND"
@@ -509,6 +507,9 @@ msgstr "¿Está seguro de que desea deshacer la fusión de estas propiedades y, 
 msgid "Are you sure you want to unmerge these tax lots and then merge with the selected tax lots?"
 msgstr "¿Está seguro de que desea deshacer la fusión de estos lotes fiscales y, a continuación, fusionarlos con los lotes fiscales seleccionados?"
 
+msgid "Are you sure you want to unmerge these tax lots?"
+msgstr "¿Está seguro de que desea separar estos lotes de impuestos?"
+
 #, fuzzy
 msgid "Area"
 msgstr "Zona"
@@ -668,6 +669,9 @@ msgstr "Apoyo para el cumplimiento de las normas de rendimiento de edificios (BP
 #, fuzzy
 msgid "Building Square Footage Threshold"
 msgstr "Umbral de metros cuadrados del edificio"
+
+msgid "Building has BAS field"
+msgstr "El edificio tiene campo BAS"
 
 #, fuzzy
 msgid "BuildingSync Recommended Measures"
@@ -2367,6 +2371,9 @@ msgstr "Configuración de la meta"
 msgid "Gross Floor Area"
 msgstr "Superficie bruta"
 
+msgid "HAS_BAS_HELP"
+msgstr "Seleccione el campo que indica si el edificio tiene o no un sistema de automatización de edificios (BAS). Este análisis espera un campo booleano."
+
 #, fuzzy
 msgid "HOW THE SYSTEM AUTO-MATCHES YOUR PROPERTIES AND TAX LOTS:"
 msgstr "CÓMO EL SISTEMA EMPAREJA AUTOMÁTICAMENTE SUS PROPIEDADES Y LOTES FISCALES:"
@@ -2403,6 +2410,9 @@ msgstr "Hola %(first_name)s, "
 #, fuzzy
 msgid "Hexagonal Bins"
 msgstr "Cubos hexagonales"
+
+msgid "Hide All Labels"
+msgstr "Ocultar todas las etiquetas"
 
 #, fuzzy
 msgid "Highlights of SEED Platform™"
@@ -3876,6 +3886,9 @@ msgstr "Propiedades actualizadas:"
 msgid "Properties with Data"
 msgstr "Propiedades con datos"
 
+msgid "Properties with elements cannot be unmerged."
+msgstr "Las propiedades con elementos no se pueden separar."
+
 #, fuzzy
 msgid "Property"
 msgstr "Propiedad"
@@ -4767,6 +4780,9 @@ msgstr "Compartir sus datos"
 msgid "Show All"
 msgstr "Mostrar todo"
 
+msgid "Show All Labels"
+msgstr "Mostrar todas las etiquetas"
+
 #, fuzzy
 msgid "Show Matched"
 msgstr "Mostrar emparejados"
@@ -5202,7 +5218,7 @@ msgstr "Esta contraseña debe contener al menos %(quantity)d %(type)s caracteres
 
 #, fuzzy
 msgid "This will reset your visible columns and column order to only columns that contain data. Are you sure you want to continue?"
-msgstr "Esto restablecerá las columnas visibles y el orden de las columnas a sólo las columnas no derivadas que contengan datos. ¿Está seguro de que desea continuar?"
+msgstr "Esto restablecerá las columnas visibles y el orden de las columnas a sólo las columnas que contengan datos. ¿Está seguro de que desea continuar?"
 
 #, fuzzy
 msgid "Time Period"
@@ -5355,6 +5371,9 @@ msgstr "Resultado de la comparación de UBID:"
 #, fuzzy
 msgid "UBID thresholds are between 0.0 and 1.0"
 msgstr "Los umbrales UBID se sitúan entre 0,0 y 1,0"
+
+msgid "UNMERGE_PROPERTIES_MODAL"
+msgstr "¿Está seguro de que desea desvincular estas propiedades? La acción de desvincular conservará los datos del medidor en ambas propiedades. Revise los datos del medidor en ambas propiedades una vez que se hayan desvinculado."
 
 #, fuzzy
 msgid "UPDATE_DERIVED_DATA_TEXT_1"
