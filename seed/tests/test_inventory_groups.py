@@ -238,6 +238,6 @@ class GroupMeterTests(AccessLevelBaseTestCase):
         data = response.json()
         assert data["status"] == "success"
         data = data["data"]
-        assert list(data.keys()) == ["column_defs", "readings"]
+        assert sorted(data.keys()) == ["column_defs", "readings"]
         # assert 4 columns: start, end, meter 1, meter 2
         assert len(data["column_defs"]) == 4

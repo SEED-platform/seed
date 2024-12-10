@@ -4,15 +4,16 @@ import logging
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import IntegrityError
-from django.db.models import Case, Count, F, Q, Sum, Value, When
+from django.db.models import Count, F, Q, Sum
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
+from pint import Quantity
 from rest_framework import response, status
 from rest_framework.decorators import action
 
 from seed.filters import ColumnListProfileFilterBackend
 from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm_class
-from seed.models import AccessLevelInstance, Cycle, InventoryGroup, Meter, MeterReading, Organization, PropertyView, Service, System
+from seed.models import AccessLevelInstance, Cycle, InventoryGroup, Meter, MeterReading, Organization, PropertyView
 from seed.serializers.inventory_groups import InventoryGroupSerializer
 from seed.serializers.meters import MeterSerializer
 from seed.utils.api_schema import swagger_auto_schema_org_query_param
@@ -102,88 +103,60 @@ class InventoryGroupViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
 
         # add view based info
         views = PropertyView.objects.filter(property__group_mappings__group=pk, cycle_id=cycle.id)
-        data = views.aggregate(
+        view_data = views.aggregate(
             gross_floor_area=Sum("state__gross_floor_area"),
             site_eui=Sum("state__site_eui"),
             number_of_view=Count("id"),
             number_of_view_missing_site_eui=Count("id", filter=Q(state__site_eui__isnull=True)),
             number_of_view_missing_gross_floor_area=Count("id", filter=Q(state__gross_floor_area__isnull=True)),
         )
-        if type(data["gross_floor_area"]).__name__ == "Quantity":
-            data["gross_floor_area"] = int(data["gross_floor_area"].to_base_units().magnitude)
-        if type(data["site_eui"]).__name__ == "Quantity":
-            data["site_eui"] = int(data["site_eui"].to_base_units().magnitude)
+        if isinstance(view_data["gross_floor_area"], Quantity):
+            view_data["gross_floor_area"] = int(view_data["gross_floor_area"].to_base_units().magnitude)
+        if isinstance(view_data["site_eui"], Quantity):
+            view_data["site_eui"] = int(view_data["site_eui"].to_base_units().magnitude)
 
-        # add meter based info
-        systems = System.objects.filter(group_id=pk)
-        system_import_meters = Meter.objects.filter(system__in=systems, connection_type=Meter.IMPORTED)
-        system_import_meters_readings_in_cycle = MeterReading.objects.filter(
-            meter__in=system_import_meters, start_time__gte=cycle.start, end_time__lte=cycle.end
-        )
-        total_import_by_system_type_for_cycle = (
-            system_import_meters_readings_in_cycle.annotate(
-                type=Case(
-                    When(meter__system__evsesystem__isnull=False, then=Value("evsesystem")),
-                    When(meter__system__batterysystem__isnull=False, then=Value("batterysystem")),
-                    When(meter__system__dessystem__isnull=False, then=Value("dessystem")),
-                    default=Value("none"),
-                )
-            )
-            .annotate(total_import=Sum("reading"))
-            .values_list("type", "total_import")
-        )
-        data["total_import_by_system_type"] = dict(total_import_by_system_type_for_cycle)
+        # calculate total export / import
+        group_meters = Meter.objects.filter(Q(system__group_id=pk) | Q(property__group_mappings__group_id=pk))
 
-        # add service based info
-        services = Service.objects.filter(system__in=systems)
-        service_total_meters = Meter.objects.filter(service__in=services, connection_type=Meter.TOTAL_TO_USERS)
-        service_total_meter_readings = MeterReading.objects.filter(
-            meter__in=service_total_meters, start_time__gte=cycle.start, end_time__lte=cycle.end
+        importing_meters = group_meters.filter(connection_type=Meter.IMPORTED)
+        importing_readings = MeterReading.objects.filter(meter__in=importing_meters, start_time__gte=cycle.start, end_time__lte=cycle.end)
+        importing_total = (
+            importing_readings.annotate(type=F("meter__type")).values("type").annotate(total=Sum("reading")).values("type", "total")
         )
-        service_total_meter_readings = (
-            service_total_meter_readings.values("meter_id")
-            .annotate(
-                service_name=F("meter__service__name"),
-                meter_alias=F("meter__alias"),
-                total_service_export=Sum("reading"),
-            )
-            .values("service_name", "meter_id", "meter_alias", "total_service_export")
+        importing_total = {Meter.ENERGY_TYPE_BY_METER_TYPE[d["type"]]: d["total"] for d in importing_total}
+
+        exporting_meters = group_meters.filter(connection_type=Meter.EXPORTED)
+        exporting_readings = MeterReading.objects.filter(meter__in=exporting_meters, start_time__gte=cycle.start, end_time__lte=cycle.end)
+        exporting_total = (
+            exporting_readings.annotate(type=F("meter__type")).values("type").annotate(total=Sum("reading")).values("type", "total")
         )
-        data["service export totals"] = list(service_total_meter_readings)
+        exporting_total = {Meter.ENERGY_TYPE_BY_METER_TYPE[d["type"]]: d["total"] for d in exporting_total}
 
         readable_data = {
-            "Gross Floor Area": data["gross_floor_area"],
-            "Site EUI": data["site_eui"],
-            "Views Count": data["number_of_view"],
-            "Views Missing Site EUI": data["number_of_view_missing_site_eui"],
-            "Views Missing Gross Floor Area": data["number_of_view_missing_gross_floor_area"],
+            "Gross Floor Area": view_data["gross_floor_area"],
+            "Site EUI": view_data["site_eui"],
+            "Views Count": view_data["number_of_view"],
+            "Views Missing Site EUI": view_data["number_of_view_missing_site_eui"],
+            "Views Missing Gross Floor Area": view_data["number_of_view_missing_gross_floor_area"],
+            "importing_total": importing_total,
+            "exporting_total": exporting_total,
         }
         return JsonResponse({"status": "success", "data": readable_data})
 
     @swagger_auto_schema_org_query_param
     @has_perm_class("requires_viewer")
+    @has_hierarchy_access(inventory_group_id_kwarg="pk")
     @action(detail=True, methods=["POST"])
     def meter_usage(self, request, pk):
         """
         Returns meter usage for a group
         """
-        try:
-            group = InventoryGroup.objects.get(pk=pk)
-            group = InventoryGroupSerializer(group).data
-            # ali = AccessLevelInstance.objects.get(pk=request.access_level_instance_id) # ?
-            org_id = self.get_organization(request)
-            interval = request.data.get("interval", "Exact")
-        except ObjectDoesNotExist:
-            return [], JsonResponse({"status": "erorr", "message": "No such resource."})
+        org_id = self.get_organization(request)
+        interval = request.data.get("interval", "Exact")
 
-        data = {"column_defs": [], "readings": []}
-        for property_id in group["inventory_list"]:
-            property_view = PropertyView.objects.filter(property=property_id).first()
-            scenario_ids = [s.id for s in property_view.state.scenarios.all()]
-            exporter = PropertyMeterReadingsExporter(property_id, org_id, [], scenario_ids=scenario_ids)
-            usage = exporter.readings_and_column_defs(interval)
-            data["readings"].extend(usage["readings"])
-            data["column_defs"].extend(usage["column_defs"])
+        meters = Meter.objects.filter(Q(system__group_id=pk) | Q(property__group_mappings__group_id=pk))
+        exporter = PropertyMeterReadingsExporter(meters, org_id)
+        data = exporter.readings_and_column_defs(interval)
 
         # Remove duplicate dicts by converting to a set of tuples, then back to dicts
         data["column_defs"] = [dict(t) for t in {tuple(d.items()) for d in data["column_defs"]}]
@@ -210,6 +183,7 @@ class InventoryGroupMetersViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
 
         return Meter.objects.filter(
             Q(property_id__in=group["inventory_list"]) | Q(system__group_id=inventory_group_pk),
+            Q(service__isnull=True) | Q(service__system__group_id=inventory_group_pk),
         )
 
     @swagger_auto_schema_org_query_param
@@ -237,3 +211,28 @@ class InventoryGroupMetersViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
             return JsonResponse({"status": "error", "message": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
         return JsonResponse({}, status=status.HTTP_200_OK)
+
+    @swagger_auto_schema_org_query_param
+    @has_perm_class("requires_viewer")
+    @has_hierarchy_access(inventory_group_id_kwarg="inventory_group_pk")
+    def create(self, request, inventory_group_pk):
+        meter_serializer = MeterSerializer(
+            data={
+                **request.data,
+                "connection_type": "Imported",
+                "source": "Manual Entry",
+            }
+        )
+
+        if not meter_serializer.is_valid():
+            return JsonResponse(
+                {
+                    "status": "error",
+                    "errors": meter_serializer.errors,
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        meter = meter_serializer.save()
+        data = MeterSerializer(meter).data
+        return JsonResponse(data)

@@ -10,6 +10,7 @@ angular.module('SEED.controller.inventory_group_detail_meters', [])
     '$uibModal',
     '$window',
     'spinner_utility',
+    'Notification',
     'dataset_service',
     'inventory_service',
     'meter_service',
@@ -29,6 +30,7 @@ angular.module('SEED.controller.inventory_group_detail_meters', [])
       $uibModal,
       $window,
       spinner_utility,
+      Notification,
       dataset_service,
       inventory_service,
       meter_service,
@@ -97,6 +99,7 @@ angular.module('SEED.controller.inventory_group_detail_meters', [])
         '<div class="meters-table-actions" style="display: flex; flex-direction=column">' +
         ' <button type="button" ng-show="grid.appScope.menu.user.organization.user_role !== \'viewer\'" class="btn-primary" style="border-radius: 4px;" ng-click="grid.appScope.open_meter_connection_edit_modal(row.entity)" title="Edit Meter Connection"><i class="fa-solid fa-pencil"></i></button>' +
         ' <button type="button" ng-show="grid.appScope.menu.user.organization.user_role !== \'viewer\'" class="btn-danger" style="border-radius: 4px;" ng-click="grid.appScope.open_meter_deletion_modal(row.entity)" title="Delete Meter"><i class="fa-solid fa-xmark"></i></button>' +
+        ' <button type="button" ng-show="grid.appScope.menu.user.organization.user_role !== \'viewer\'" class="btn-primary" style="border-radius: 4px;" ng-click="grid.appScope.open_create_meter_readings_modal(row.entity)" title="Edit Meter Connection"><i class="fa-solid fa-plus"></i></button>' +
         '</div>'
       );
 
@@ -201,7 +204,7 @@ angular.module('SEED.controller.inventory_group_detail_meters', [])
           controller: 'meter_deletion_modal_controller',
           resolve: {
             organization_id: () => $scope.organization.id,
-            group_id: () => meter.service_group,
+            group_id: () => meter.config.group_id,
             meter: () => meter,
             view_id: () => view_id,
             refresh_meters_and_readings: () => $scope.refresh_meters_and_readings
@@ -220,6 +223,21 @@ angular.module('SEED.controller.inventory_group_detail_meters', [])
             property_id: () => meter.property_id,
             system_id: () => meter.system_id,
             view_id: () => null, // gonna need this.
+            refresh_meters_and_readings: () => $scope.refresh_meters_and_readings
+          }
+        });
+      };
+
+      $scope.open_create_meter_readings_modal = (meter) => {
+        // get view if property_id
+        $uibModal.open({
+          templateUrl: `${urls.static_url}seed/partials/system_meter_readings_upload_modal.html`,
+          controller: 'system_meter_readings_upload_modal_controller',
+          resolve: {
+            organization: () => $scope.organization,
+            meter: () => meter,
+            datasets: () => dataset_service.get_datasets().then((result) => result.datasets),
+            filler_cycle: () => $scope.filler_cycle,
             refresh_meters_and_readings: () => $scope.refresh_meters_and_readings
           }
         });
@@ -311,15 +329,15 @@ angular.module('SEED.controller.inventory_group_detail_meters', [])
           });
       };
 
-      $scope.open_green_button_upload_modal = () => {
+      $scope.open_group_meter_create_modal = () => {
         $uibModal.open({
-          templateUrl: `${urls.static_url}seed/partials/green_button_upload_modal.html`,
-          controller: 'green_button_upload_modal_controller',
+          templateUrl: `${urls.static_url}seed/partials/group_meter_creation_modal.html`,
+          controller: 'group_meter_creation_modal_controller',
           resolve: {
-            filler_cycle: () => $scope.filler_cycle,
             organization_id: () => $scope.organization.id,
-            view_id: () => $scope.inventory.view_id,
-            datasets: () => dataset_service.get_datasets().then((result) => result.datasets)
+            systems: () => $scope.group.systems,
+            group_id: () => $scope.group.id,
+            refresh_meters_and_readings: () => $scope.refresh_meters_and_readings
           }
         });
       };

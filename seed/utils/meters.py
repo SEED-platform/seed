@@ -7,7 +7,6 @@ from calendar import monthrange
 from collections import defaultdict
 from datetime import datetime, time, timedelta
 
-from django.db.models import Q
 from django.utils.timezone import make_aware
 from pytz import timezone
 
@@ -26,13 +25,12 @@ class PropertyMeterReadingsExporter:
     settings are considered/used when returning actual reading magnitudes.
     """
 
-    def __init__(self, property_id, org_id, excluded_meter_ids, scenario_ids=None):
+    def __init__(self, meters, org_id):
         self._cache_thermal_factors = None
         self._cache_water_factors = None
         self._cache_org_country = None
 
-        scenario_ids = scenario_ids if scenario_ids is not None else []
-        self.meters = Meter.objects.filter(Q(property_id=property_id) | Q(scenario_id__in=scenario_ids)).exclude(pk__in=excluded_meter_ids)
+        self.meters = meters
         self.org_id = org_id
         org = Organization.objects.get(pk=org_id)
         self.org_meter_display_settings = org.display_meter_units
