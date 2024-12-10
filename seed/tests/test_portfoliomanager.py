@@ -12,6 +12,7 @@ from os import path
 from pathlib import Path
 from unittest import skip, skipIf
 
+import pandas as pd
 import pytest
 import requests
 import xmltodict
@@ -524,15 +525,6 @@ class PortfolioManagerReportParsingTest(TestCase):
     """Test the parsing of the resulting PM XML file. This is only for the
     version 2 parsing"""
 
-    def setUp(self):
-        user_details = {
-            "username": "test_user@demo.com",
-            "password": "test_pass",
-        }
-        self.user = User.objects.create_superuser(email="test_user@demo.com", **user_details)
-        self.org, _, _ = create_organization(self.user)
-        self.client.login(**user_details)
-
     def test_parse_pm_report(self):
         pm = PortfolioManagerImport("not_a_real_password", "not_a_real_password")
         xml_path = Path(__file__).parent.absolute() / "data" / "portfolio-manager-report.xml"
@@ -547,17 +539,34 @@ class PortfolioManagerReportParsingTest(TestCase):
             self.assertIsNone(properties[0]["parentPropertyId"])
             self.assertEqual(properties[0]["propertyFloorAreaBuildingsAndParking"], "89250.0")
 
-    def test_hannah_1(self):
-        pm = PortfolioManagerImport()  # removed
-        ids = []  # removed
+
+class PortfolioManagerCustomDownloadTest(TestCase):
+    def setUp(self):
+        user_details = {
+            "username": "test_user@demo.com",
+            "password": "test_pass",
+        }
+        self.user = User.objects.create_superuser(email="test_user@demo.com", **user_details)
+        self.org, _, _ = create_organization(self.user)
+        self.client.login(**user_details)
+
+        self.pm_un = os.environ.get(PM_UN, False)
+        self.pm_pw = os.environ.get(PM_PW, False)
+        if not self.pm_un or not self.pm_pw:
+            self.fail(f"Somehow PM test was initiated without {PM_UN} or {PM_PW} in the environment")
+
+    def test_generate_and_download_meter_data(self):
+        # SetUp
+        pm = PortfolioManagerImport(self.pm_un, self.pm_pw)
+        ids = ["16731961"]
+
+        # Action
         excel_b = pm.generate_and_download_meter_data(ids)
 
-        import pandas as pd
-
-        df = pd.read_excel(excel_b, header=5)
-
+        # Assert
+        meter_data = pd.read_excel(excel_b, header=5)
         self.assertListEqual(
-            list(df.columns),
+            list(meter_data.columns),
             [
                 "Property Name",
                 "Portfolio Manager ID",
@@ -587,27 +596,28 @@ class PortfolioManagerReportParsingTest(TestCase):
             ],
         )
 
-    def test_hannah(self):
-        ids = []  # removed
+    def test_custom_download(self):
+        # SetUp
+        ids = ["16731961"]
+
+        # Action
         resp = self.client.post(
             reverse_lazy("api:v3:portfolio_manager-custom-download"),
             json.dumps(
                 {
-                    "username": "", # removed
-                    "password": "", # removed
+                    "username": self.pm_un,  # removed
+                    "password": self.pm_pw,  # removed
                     "property_ids": ids,
                 }
             ),
             content_type="application/json",
         )
+
+        # Assert
         assert resp.status_code == 200
-
-        import pandas as pd
-
-        df = pd.read_excel(resp.content, header=5)
-
+        meter_data = pd.read_excel(resp.content, header=5)
         self.assertListEqual(
-            list(df.columns),
+            list(meter_data.columns),
             [
                 "Property Name",
                 "Portfolio Manager ID",
