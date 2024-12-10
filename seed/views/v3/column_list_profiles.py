@@ -9,6 +9,7 @@ from django.http import JsonResponse
 from django.utils.decorators import method_decorator
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
+from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from seed.filters import ColumnListProfileFilterBackend
@@ -21,7 +22,12 @@ from seed.models import (
     Column,
     ColumnListProfile,
     Organization,
+    PropertyState,
+    PropertyView,
+    TaxLotState,
+    TaxLotView,
 )
+from seed.models.columns import EXCLUDED_API_FIELDS
 from seed.serializers.column_list_profiles import ColumnListProfileSerializer
 from seed.utils.api import OrgValidateMixin
 from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema_org_query_param
@@ -183,3 +189,34 @@ class ColumnListProfileViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelV
             )
 
         return results
+
+    @has_perm_class("requires_root_member_access")
+    @action(detail=True, methods=["PUT"])
+    def show_populated(self, request, pk):
+        column_list_profile = ColumnListProfile.objects.get(pk=pk)
+        org_id = self.get_organization(self.request)
+        cycle_id = request.data.get("cycle_id")
+        inventory_type = request.data.get("inventory_type")
+        StateTable = PropertyState if inventory_type == "Property" else TaxLotState
+        ViewTable = PropertyView if inventory_type == "Property" else TaxLotView
+
+        # get all the columns and states we need to query
+        all_columns = (
+            Column.objects.filter(organization_id=org_id, derived_column=None, table_name=StateTable.__name__)
+            .exclude(column_name__in=EXCLUDED_API_FIELDS)
+            .only("is_extra_data", "column_name")
+        )
+        state_ids = ViewTable.objects.filter(
+            cycle_id=cycle_id,
+        ).values_list("state_id", flat=True)
+
+        # filter for only the populated columns
+        num_of_nonnulls_by_column_name = Column.get_num_of_nonnulls_by_column_name(state_ids, StateTable, all_columns)
+        needed_column_names = [col for col, count in num_of_nonnulls_by_column_name.items() if count > 0]
+        needed_columns = Column.objects.filter(column_name__in=needed_column_names, table_name=StateTable.__name__, organization=org_id)
+
+        # set needed columns in there
+        column_list_profile.columns.set(needed_columns)
+        column_list_profile.save()
+
+        return JsonResponse({"status": "success", "data": self.get_serializer(column_list_profile).data}, status=status.HTTP_200_OK)
