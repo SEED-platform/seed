@@ -68,7 +68,7 @@ angular.module('SEED.controller.system_meter_readings_upload_modal', []).control
             })
             .catch((error) => {
               $scope.state = 'confirmation';
-              $scope.confirmation_message = "Failuare: " + error.data.message;
+              $scope.confirmation_message = `Failure: ${error.data.message}`;
             });
           break;
       }

@@ -33,8 +33,9 @@
     <uib-progressbar class="progress-striped active" value="100" type="info"></uib-progressbar>
   </div>
 
-  <div class="modal-body" ng-switch-when="confirmation">
-    {$ confirmation_message $}
+  <div class="modal-body" ng-switch-when="confirmation">{$ confirmation_message $}</div>
+
+  <div class="modal-footer" ng-switch-when="confirmation">
     <button type="button" class="btn btn-default" ng-click="dismiss()" translate>Dismiss</button>
   </div>
 </div>
