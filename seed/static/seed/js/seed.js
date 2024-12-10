@@ -131,6 +131,7 @@
     'SEED.controller.qr_code_scan_modal',
     'SEED.controller.record_match_merge_link_modal',
     'SEED.controller.rename_column_modal',
+    'SEED.controller.report_configuration_modal',
     'SEED.controller.reset_modal',
     'SEED.controller.sample_data_modal',
     'SEED.controller.security',
@@ -212,6 +213,7 @@
     'SEED.service.pairing',
     'SEED.service.postoffice',
     'SEED.service.property_measure',
+    'SEED.service.report_configurations',
     'SEED.service.salesforce_config',
     'SEED.service.salesforce_mapping',
     'SEED.service.scenario',
@@ -633,6 +635,7 @@
             ],
             cycles: ['cycle_service', (cycle_service) => cycle_service.get_cycles()],
             filter_groups: ['filter_groups_service', (filter_service) => filter_service.get_filter_groups('Property')],
+            report_configurations: ['report_configurations_service', (report_configurations_service) => report_configurations_service.get_report_configurations()],
             organization_payload: [
               'organization_service',
               'user_service',
@@ -2354,6 +2357,23 @@
                 else if ($stateParams.inventory_type === 'taxlots') promise = inventory_service.get_taxlot_views(organization_id, inventory_payload.taxlot.id);
 
                 return promise;
+              }
+            ],
+            columns: [
+              '$stateParams',
+              'inventory_service',
+              ($stateParams, inventory_service) => {
+                if ($stateParams.inventory_type === 'properties') {
+                  return inventory_service.get_property_columns().then((columns) => {
+                    _.remove(columns, 'related');
+                    _.remove(columns, { column_name: 'lot_number', table_name: 'PropertyState' });
+                    return _.map(columns, (col) => _.omit(col, ['pinnedLeft', 'related']));
+                  });
+                }
+                return inventory_service.get_taxlot_columns().then((columns) => {
+                  _.remove(columns, 'related');
+                  return _.map(columns, (col) => _.omit(col, ['pinnedLeft', 'related']));
+                });
               }
             ]
           }

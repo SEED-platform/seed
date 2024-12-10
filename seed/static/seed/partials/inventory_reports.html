@@ -16,8 +16,55 @@
       <div class="row">
         <div class="col-md-12">
           <div class="row">
-            <div class="col-md-2">
+            <div class="col-md-4">
               <h2 class="property-report-header"><i class="fa-solid fa-bar-chart pull-left"></i> {$:: 'Property Reports' | translate $}</h2>
+            </div>
+            <div class="col-md-2 pad-top-10 pad-bottom-10">
+              <label>{$:: 'Report Configuration' | translate $}:</label>
+            </div>
+            <div class="col-md-3 pad-top-10 pad-bottom-10">
+              <select id="select-report-config" class="form-control input-sm" ng-model="selected_report_config_id" ng-change="change_report_config()">
+                <option ng-repeat="config in report_configurations track by config.id" ng-value="config.id">{$ config.name $}</option>
+              </select>
+            </div>
+            <div class="col-md-3 pad-top-10 pad-botom-10">
+              <div class="btn-group" ng-if="report_config_editable">
+                <button
+                  class="btn btn-success"
+                  type="button"
+                  ng-click="save_report_config()"
+                  ng-disabled="!currentReportConfig.id || !reportModified || currentReportConfig.id === -1"
+                  tooltip-placement="bottom"
+                  uib-tooltip="Save"
+                >
+                  <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
+                </button>
+                <button
+                  class="btn btn-primary"
+                  type="button"
+                  ng-click="rename_report_configuration()"
+                  ng-disabled="!currentReportConfig || currentReportConfig.id === -1"
+                  tooltip-placement="bottom"
+                  uib-tooltip="Rename"
+                >
+                  <span class="glyphicon glyphicon-erase" aria-hidden="true"></span>
+                </button>
+                <button
+                  class="btn btn-danger"
+                  type="button"
+                  ng-click="remove_report_configuration()"
+                  ng-model="currentReportConfig"
+                  ng-change="check_for_report_configuration_changes(currentReportConfig, {$currentReportConfig$})"
+                  ng-disabled="!currentReportConfig || currentReportConfig.id === -1"
+                  tooltip-placement="bottom"
+                  uib-tooltip="Delete"
+                >
+                  <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+                </button>
+                <button class="btn btn-info" type="button" ng-click="new_report_configuration()" tooltip-placement="bottom" uib-tooltip="New">
+                  <span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -35,6 +82,7 @@
                   <label class="control-label col-sm-4" translate>Access Level Instance:</label>
                   <select
                     class="form-control col-sm-8"
+                    ng-change="setModified()"
                     ng-model="access_level_instance_id"
                     ng-options="potential_level_instance.id as potential_level_instance.name for potential_level_instance in potential_level_instances"
                   ></select>
@@ -72,12 +120,11 @@
               <div style="display: flex; flex-direction: column; flex: 1 1 0">
                 <div class="form-group pad-bottom-10">
                   <label for="xAxisSelector">{$:: 'X Axis' | translate $}:</label>
-                  <select class="form-control" id="xAxisSelector" ng-model="xAxisSelectedItem" ng-options="x.name for x in xAxisVars track by x.varName"></select>
+                  <select class="form-control" id="xAxisSelector" ng-change="setModified()" ng-model="xAxisSelectedItem" ng-options="x.name for x in xAxisVars track by x.varName"></select>
                 </div>
-
                 <div class="form-group">
                   <label for="yAxisSelector">{$:: 'Y Axis' | translate $}:</label>
-                  <select class="form-control" id="yAxisSelector" ng-model="yAxisSelectedItem" ng-options="y.name for y in yAxisVars track by y.varName"></select>
+                  <select class="form-control" id="yAxisSelector" ng-model="yAxisSelectedItem" ng-change="setModified()" ng-options="y.name for y in yAxisVars track by y.varName"></select>
                 </div>
                 <div class="form-group pad-top-10">
                   <p>
@@ -86,13 +133,10 @@
                     <span translate>CONFIGURE_XY_AXES</span>
                   </p>
                 </div>
-              </div>
-              <div style="display: flex; flex-direction: column; align-self: flex-end">
-                <div class="form-group" style="padding-bottom: 20px; text-align: right">
-                  <button type="submit" class="btn btn-info" ng-click="open_export_modal()" ng-disabled="!chartData.chartData.length" translate>Export Data</button>
-                </div>
                 <div class="form-group" style="text-align: right">
-                  <button type="submit" class="btn btn-primary" ng-disabled="access_level_instance_id == null" ng-click="updateChartData()" translate>Update Charts</button>
+                  <div style="margin-top: 30px">
+                    <button type="submit" class="btn btn-primary" ng-disabled="access_level_instance_id == null" ng-click="updateChartData()" translate>Update Charts</button>
+                  </div>
                 </div>
               </div>
             </form>
@@ -105,6 +149,14 @@
       <!-- ./container -->
     </div>
 
+    <div class="row" style="text-align: right; padding-right: 30px; padding-bottom: 10px">
+      <div class="col-md-12">
+        <button type="submit" class="btn btn-info" ng-click="open_export_modal()" ng-disabled="!chartData.chartData.length">
+          <i class="fa-solid fa-table" aria-hidden="true"></i> <span translate> Export Data</span>
+        </button>
+        <button type="button" class="btn btn-info" ng-click="downloadChart()"><i class="fa-solid fa-share-from-square" aria-hidden="true"></i> <span translate>Export Charts</span></button>
+      </div>
+    </div>
     <!-- new chart library! -->
     <div class="content_block row" style="padding: 0 20px">
       <div class="col-sm-6">
@@ -119,6 +171,9 @@
               <div class="progress-bar" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%"></div>
             </div>
           </div>
+        </div>
+        <div>
+          <button ng-click="reset_scatter_chart_zoom()">Reset Zoom</button>
         </div>
         <div class="reportingTableHolder">
           <table class="table">
@@ -156,7 +211,9 @@
             </div>
           </div>
         </div>
-
+        <div>
+          <button ng-click="reset_agg_chart_zoom()">Reset Zoom</button>
+        </div>
         <div class="reportingTableHolder">
           <table class="table">
             <thead>
@@ -179,28 +236,77 @@
       <!-- ./ col-md-6 -->
     </div>
     <div class="col-md-12">
-      <table class="table table-striped">
-        <thead>
-          <tr>
-            <th translate>Axis</th>
-            <th translate>Access Level Instance</th>
-            <th translate>Sum</th>
-            <th translate>Min</th>
-            <th translate>5th Percentile</th>
-            <th translate>25th Percentile</th>
-            <th translate>Mean</th>
-            <th translate>Median</th>
-            <th translate>75 Percentile</th>
-            <th translate>95th Percentile</th>
-            <th translate>Max</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr ng-repeat="row in axisData track by $index">
-            <td ng-repeat="item in row track by $index">{$ item $}</td>
-          </tr>
-        </tbody>
-      </table>
+      <h4 class="chartTitle">Statistics</h4>
+
+      <div ng-repeat="(cycle, vals) in axisData track by $index" ng-init="parentIndex = $index" class="pad-bottom-10">
+        <button
+          id="collapse-button-{$ $index $}"
+          type="button"
+          class="accordion-header"
+          data-toggle="collapse"
+          aria-expanded="true"
+          aria-controls="cycles-{$ $index $}"
+          data-target="#cycle-{$ $index $}"
+        >
+          {$ cycle $} &nbsp; <i class="fa-solid fa-chevron-right"></i>
+        </button>
+        <div id="cycle-{$ $index $}" class="collapse in">
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th translate width="20%">Axis</th>
+                <th translate width="20%">Access Level Instance</th>
+                <th translate width="5%">Sum</th>
+                <th translate width="5%">Min</th>
+                <th translate width="5%">5th Percentile</th>
+                <th translate width="5%">25th Percentile</th>
+                <th translate width="5%">Mean</th>
+                <th translate width="5%">Median</th>
+                <th translate width="5%">75 Percentile</th>
+                <th translate width="5%">95th Percentile</th>
+                <th translate width="5%">Max</th>
+              </tr>
+            </thead>
+            <tbody ng-repeat="(key, values) in vals track by $index" ng-init="childIndex = $index;">
+              <tr>
+                <td style="font-weight: bold">{$ key $}</td>
+                <td style="font-weight: bold" ng-repeat="item in values['values'] track by $index" ngInit="colIndex = $index">
+                  <span ng-if="key === 'Year Built'"> {$ item $} </span>
+                  <span ng-if="key != 'Year Built'"> {$ item | tolerantNumber:2 $} </span>
+                  <span ng-if="$index === 0 && has_children(values)">
+                    <button
+                      id="collapse-{$ parentIndex $}-{$ $index $}"
+                      type="button"
+                      class="accordion-header"
+                      data-toggle="collapse"
+                      aria-expanded="false"
+                      aria-description="toggle children elements"
+                      aria-controls="children{$ parentIndex $}-{$ childIndex $}"
+                      data-target="#children-{$ parentIndex $}-{$ childIndex $}"
+                    >
+                      <i class="fa-solid fa-chevron-right"></i>
+                    </button>
+                  </span>
+                </td>
+              </tr>
+              <tr *ngIf="'children' in values && values['children']" id="children-{$ parentIndex $}-{$ childIndex $}" class="collapse">
+                <td colspan="11" class="no-lr-pad">
+                  <table class="table table-striped">
+                    <tr ng-repeat="(key2, values2) in values['children']">
+                      <td width="20%">&nbsp;</td>
+                      <td width="20%">{$ key2 $}</td>
+                      <td width="5%" ng-repeat="item in values2 track by $index" ng-if="$index > 0">
+                        <span ng-if="key === 'Year Built'"> {$ item $} </span>
+                        <span ng-if="key != 'Year Built'"> {$ item | tolerantNumber:2 $} </span>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
     <!-- ./ content_block row -->
   </div>

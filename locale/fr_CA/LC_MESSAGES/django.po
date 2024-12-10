@@ -120,9 +120,8 @@ msgstr "L'analyse BETTER s'appuie sur better.lbl.gov pour calculer les économie
 msgid "ANALYSIS_DESCRIPTION_BSyncr"
 msgstr "L'analyse BSyncr exploite l'analyse de consommation d'énergie normalisée mesurée (NMEC) pour calculer un modèle de point de changement. Les données sont transmises à l'analyse à l'aide de BuildingSync. Le résultat de l'analyse sont les coefficients du modèle de point de changement."
 
-#, fuzzy
 msgid "ANALYSIS_DESCRIPTION_BuildingUpgradeRecommendation"
-msgstr "Cette analyse met en œuvre un flux de travail pour identifier les bâtiments qui peuvent nécessiter une rénovation énergétique en profondeur, un remplacement ou un réajustement de l'équipement en fonction des attributs du bâtiment tels que la consommation d'énergie, l'année de construction et la superficie en pieds carrés."
+msgstr "L'analyse des recommandations de mise à niveau des bâtiments met en œuvre un flux de travail pour identifier les bâtiments qui peuvent nécessiter une rénovation énergétique approfondie, un remplacement de l'équipement ou un réajustement en fonction des attributs du bâtiment tels que la consommation d'énergie, l'année de construction et la superficie en pieds carrés. Si votre organisation contient des éléments, l'analyse des statistiques des éléments doit être exécutée avant d'exécuter cette analyse."
 
 msgid "ANALYSIS_DESCRIPTION_CO2"
 msgstr "Cette analyse calcule les émissions annuelles moyennes de CO2 pour les données des compteurs de la propriété. L’analyse nécessite la définition d’une sous-région eGRID afin de déterminer avec précision les taux d’émission."
@@ -135,7 +134,7 @@ msgid "ANALYSIS_DESCRIPTION_EUI"
 msgstr "L'analyse EUI additionnera les relevés de compteurs de la propriété au cours des douze derniers mois pour calculer la consommation d'énergie par pied carré et par an. S'il manque des relevés de compteur, l'analyse renvoie une couverture inférieure à 100 % pour alerter l'utilisateur qu'il manque un relevé de compteur."
 
 msgid "ANALYSIS_DESCRIPTION_ElementStatistics"
-msgstr "Cette analyse examine les données des éléments d'une propriété (le cas échéant) pour compter le nombre d'éléments de type « Panneau de configuration DDC » et enregistre cette quantité dans la propriété"
+msgstr "L'analyse des statistiques des éléments examine les données des éléments d'une propriété (le cas échéant) pour compter le nombre d'éléments de type « Panneau de contrôle DDC ». Elle génère également les valeurs d'indice de condition agrégées (moyennes) pour les éléments d'émission de portée 1 et enregistre ces quantités dans la propriété."
 
 msgid "AND"
 msgstr "ET"
@@ -395,6 +394,9 @@ msgstr "Êtes-vous sûr de vouloir annuler la fusion de ces propriétés et fusi
 msgid "Are you sure you want to unmerge these tax lots and then merge with the selected tax lots?"
 msgstr "Êtes-vous sûr de vouloir annuler la fusion de ces lots fiscaux pour ensuite fusionner avec les lots d'impôt sélectionnés?"
 
+msgid "Are you sure you want to unmerge these tax lots?"
+msgstr "Êtes-vous sûr de vouloir dissocier ces lots fiscaux ?"
+
 msgid "Area"
 msgstr "Superficie"
 
@@ -519,6 +521,9 @@ msgstr "Assistance au parcours de conformité aux normes de performance des bât
 
 msgid "Building Square Footage Threshold"
 msgstr "Seuil de superficie en pieds carrés du bâtiment"
+
+msgid "Building has BAS field"
+msgstr "Le bâtiment dispose d'un champ SAB"
 
 msgid "BuildingSync Recommended Measures"
 msgstr "Mesures recommandées par BuildingSync"
@@ -1570,7 +1575,7 @@ msgid "FILE_TYPES_SUPPORTED"
 msgstr "Types de fichiers pris en charge: <strong>.csv</strong>, <strong>.xls</strong>, <strong>.xlsx</strong>, <strong>.xml</strong>, <strong>.zip</strong>, <strong>.geojson</strong>, et <strong>.json</strong>."
 
 msgid "FOSSIL_FUEL_EUI_HELP"
-msgstr "Objectif d'IEC en matière de combustibles fossiles pour le bâtiment (y compris le gaz, etc.)"
+msgstr "Le seuil d'IEC en matière de combustibles fossiles pour le bâtiment (y compris le gaz, etc.)"
 
 msgid "Failed to delete inventory"
 msgstr "Échec de la suppression de l'inventaire"
@@ -1668,8 +1673,8 @@ msgstr "Pour obtenir une aide directe sur un problème spécifique, veuillez rem
 msgid "Forgot password?"
 msgstr "mot de passe oublié?"
 
-msgid "Fossil Fuel EUI Goal"
-msgstr "Objectif de l'UEI sur les combustibles fossiles"
+msgid "Fossil Fuel EUI Threshold"
+msgstr "Le seuil de l'UEI sur les combustibles fossiles"
 
 msgid "Fossil Fuel-Fired Equipment RSL Threshold"
 msgstr "Seuil RSL pour les équipements alimentés aux combustibles fossiles"
@@ -1827,6 +1832,9 @@ msgstr "Configuration des objectifs"
 msgid "Gross Floor Area"
 msgstr "Surface brute"
 
+msgid "HAS_BAS_HELP"
+msgstr "Sélectionnez le champ qui indique si le bâtiment est équipé ou non d'un système d'automatisation de bâtiment (SAB). Cette analyse attend un champ booléen."
+
 msgid "HOW THE SYSTEM AUTO-MATCHES YOUR PROPERTIES AND TAX LOTS:"
 msgstr "COMMENT LE SYSTÈME ADAPTE AUTOMATIQUEMENT VOS PROPRIETES ET LOTS D'IMPÔT:"
 
@@ -1854,6 +1862,9 @@ msgstr "Bonjour% (first_name) s,"
 
 msgid "Hexagonal Bins"
 msgstr "Bacs Hexagonaux"
+
+msgid "Hide All Labels"
+msgstr "Masquer toutes les étiquettes"
 
 msgid "Highlights of SEED Platform™"
 msgstr "Points forts de la Plate-Forme SEED™"
@@ -2979,6 +2990,9 @@ msgstr "Propriétés mises à jour :"
 msgid "Properties with Data"
 msgstr "Propriétés avec données"
 
+msgid "Properties with elements cannot be unmerged."
+msgstr "Les propriétés avec des éléments ne peuvent pas être dissociées."
+
 msgid "Property"
 msgstr "Propriété"
 
@@ -3667,6 +3681,9 @@ msgstr "Partage de vos données"
 msgid "Show All"
 msgstr "Montrer tout"
 
+msgid "Show All Labels"
+msgstr "Afficher toutes les étiquettes"
+
 msgid "Show Matched"
 msgstr "Montrer Appariés"
 
@@ -3785,7 +3802,7 @@ msgid "THERMAL_CONV_ASSUMPTION_TITLE"
 msgstr "Choix de Conversion Thermique"
 
 msgid "TOTAL_EUI_HELP"
-msgstr "Objectif EUI total pour le bâtiment (comprend l'électricité, le gaz, etc.)"
+msgstr "Le seuil EUI total pour le bâtiment (comprend l'électricité, le gaz, etc.)"
 
 msgid "TWO_FACTOR_DISABLED_TEXT"
 msgstr "Choisir cette option désactivera l’authentification à deux facteurs pour votre compte, le rendant moins sécurisé."
@@ -4001,8 +4018,9 @@ msgstr "Ce nom d'étiquette est déjà pris."
 msgid "This password must contain at least %(quantity)d %(type)s characters."
 msgstr "Ce mot de passe doit contenir au moins% (quantité) d% (type) s caractères."
 
+#, fuzzy
 msgid "This will reset your visible columns and column order to only columns that contain data. Are you sure you want to continue?"
-msgstr "Cela réinitialisera vos colonnes visibles et l'ordre des colonnes aux seules colonnes non dérivées contenant des données. Es-tu sur de vouloir continuer?"
+msgstr "Cela réinitialisera vos colonnes visibles et l'ordre des colonnes à seulement celles contenant des données. Êtes-vous sur de vouloir continuer?"
 
 msgid "Time Period"
 msgstr "Période de temps"
@@ -4066,8 +4084,8 @@ msgstr "Générateur de jetons"
 msgid "Total EUI Field"
 msgstr "Champ de l'UEI totale"
 
-msgid "Total EUI Goal"
-msgstr "Objectif total de l'UEI"
+msgid "Total EUI Threshold"
+msgstr "Le seuil total de l'UEI"
 
 msgid "Total Properties"
 msgstr "Total des propriétés"
@@ -4120,6 +4138,9 @@ msgstr "Résultat de la comparaison UBID :"
 
 msgid "UBID thresholds are between 0.0 and 1.0"
 msgstr "Les seuils UBID sont compris entre 0,0 et 1,0"
+
+msgid "UNMERGE_PROPERTIES_MODAL"
+msgstr "Êtes-vous sûr de vouloir dissocier ces propriétés? L'action de dissociation conservera les données de compteur sur les deux propriétés. Vérifiez les données de compteur sur les deux propriétés une fois qu'elles sont dissociées."
 
 msgid "UPDATE_DERIVED_DATA_TEXT_1"
 msgstr "Appuyez sur le bouton « Démarrer la mise à jour » ci-dessous pour commencer le processus de recalcul des données stockées dans les colonnes dérivées pour les propriétés et les lots fiscaux sélectionnés. Les colonnes dérivées apparaîtront en jaune pour indiquer que la mise à jour est en cours."
@@ -4459,6 +4480,7 @@ msgstr "Texte accentée. <script>alert(\"XSS FAIL IN BASE TRANSLATION STRING\");
 msgid "X_VERSUS_Y"
 msgstr "{x_axis_label} contre {y_axis_label}"
 
+#, fuzzy
 msgid "X_VERSUS_Y_AGGREGATED"
 msgstr "{x_axis_label} contre {y_axis_label} (agrégé)"
 

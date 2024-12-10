@@ -120,7 +120,7 @@ msgid "ANALYSIS_DESCRIPTION_BSyncr"
 msgstr "The BSyncr analysis leverages the Normalized Metered Energy Consumption (NMEC) analysis to calculate a change point model. The data are passed to the analysis using BuildingSync. The result of the analysis are the coefficients of the change point model."
 
 msgid "ANALYSIS_DESCRIPTION_BuildingUpgradeRecommendation"
-msgstr "The Building Upgrade Recommendation analysis implements a workflow to identify buildings that may need a deep energy retrofit, equipment replaced or re-tuning based on building attributes such as energy use, year built, and square footage."
+msgstr "The Building Upgrade Recommendation analysis implements a workflow to identify buildings that may need a deep energy retrofit, equipment replaced or re-tuning based on building attributes such as energy use, year built, and square footage. If your organization contains elements, the Element Statistics Analysis should be run prior to running this analysis."
 
 msgid "ANALYSIS_DESCRIPTION_CO2"
 msgstr "This analysis calculates the average annual CO2 emissions for the property's meter data. The analysis requires an eGRID Subregion to be defined in order to accurately determine the emission rates."
@@ -132,7 +132,7 @@ msgid "ANALYSIS_DESCRIPTION_EUI"
 msgstr "The EUI analysis will sum the property's meter readings for the last twelve months to calculate the energy use per square footage per year. If there are missing meter readings, then the analysis will return a less that 100% coverage to alert the user that there is a missing meter reading."
 
 msgid "ANALYSIS_DESCRIPTION_ElementStatistics"
-msgstr "The Element Statistics analysis looks through a property's element data (if any) to count the number of elements of type 'D.D.C. Control Panel' and saves that quantity to the property"
+msgstr "The Element Statistics analysis looks through a property's element data (if any) to count the number of elements of type 'D.D.C. Control Panel'. It also generates the aggregated (average) condition index values for scope 1 emission elements and saves those quantities to the property."
 
 msgid "AND"
 msgstr "AND"
@@ -390,6 +390,9 @@ msgstr "Are you sure you want to unmerge these properties and then merge with th
 msgid "Are you sure you want to unmerge these tax lots and then merge with the selected tax lots?"
 msgstr "Are you sure you want to unmerge these tax lots and then merge with the selected tax lots?"
 
+msgid "Are you sure you want to unmerge these tax lots?"
+msgstr "Are you sure you want to unmerge these tax lots?"
+
 msgid "Area"
 msgstr "Area"
 
@@ -513,6 +516,9 @@ msgstr "Building Performance Standard (BPS) Compliance Pathway Support"
 
 msgid "Building Square Footage Threshold"
 msgstr "Building Square Footage Threshold"
+
+msgid "Building has BAS field"
+msgstr "Building has BAS field"
 
 msgid "BuildingSync Recommended Measures"
 msgstr "BuildingSync Recommended Measures"
@@ -1556,7 +1562,7 @@ msgid "FILE_TYPES_SUPPORTED"
 msgstr "File types supported: <strong>.csv</strong>, <strong>.xls</strong>, <strong>.xlsx</strong>, <strong>.xml</strong>, <strong>.zip</strong>, <strong>.geojson</strong>, and <strong>.json</strong>."
 
 msgid "FOSSIL_FUEL_EUI_HELP"
-msgstr "Fossil Fuel EUI Goal for the building (includes Gas, Etc.)"
+msgstr "Fossil Fuel EUI Threshold for the building (includes Gas, Etc.)"
 
 msgid "Failed to delete inventory"
 msgstr "Failed to delete inventory"
@@ -1653,8 +1659,8 @@ msgstr "For direct help on a specific problem, please fill out a request on the 
 msgid "Forgot password?"
 msgstr "Forgot password?"
 
-msgid "Fossil Fuel EUI Goal"
-msgstr "Fossil Fuel EUI Goal"
+msgid "Fossil Fuel EUI Threshold"
+msgstr "Fossil Fuel EUI Threshold"
 
 msgid "Fossil Fuel-Fired Equipment RSL Threshold"
 msgstr "Fossil Fuel-Fired Equipment RSL Threshold"
@@ -1811,6 +1817,9 @@ msgstr "Goal Setup"
 msgid "Gross Floor Area"
 msgstr "Gross Floor Area"
 
+msgid "HAS_BAS_HELP"
+msgstr "Select the field that indicates whether or not the building has a Building Automation System (BAS). This analysis expects a boolean field."
+
 msgid "HOW THE SYSTEM AUTO-MATCHES YOUR PROPERTIES AND TAX LOTS:"
 msgstr "HOW THE SYSTEM AUTO-MATCHES YOUR PROPERTIES AND TAX LOTS:"
 
@@ -1838,6 +1847,9 @@ msgstr "Hello %(first_name)s, "
 
 msgid "Hexagonal Bins"
 msgstr "Hexagonal Bins"
+
+msgid "Hide All Labels"
+msgstr "Hide All Labels"
 
 msgid "Highlights of SEED Platform™"
 msgstr "Highlights of SEED Platform™"
@@ -2959,6 +2971,9 @@ msgstr "Properties updated:"
 msgid "Properties with Data"
 msgstr "Properties with Data"
 
+msgid "Properties with elements cannot be unmerged."
+msgstr "Properties with elements cannot be unmerged."
+
 msgid "Property"
 msgstr "Property"
 
@@ -3637,6 +3652,9 @@ msgstr "Sharing Your Data"
 msgid "Show All"
 msgstr "Show All"
 
+msgid "Show All Labels"
+msgstr "Show All Labels"
+
 msgid "Show Matched"
 msgstr "Show Matched"
 
@@ -3755,7 +3773,7 @@ msgid "THERMAL_CONV_ASSUMPTION_TITLE"
 msgstr "Thermal Conversion Assumption"
 
 msgid "TOTAL_EUI_HELP"
-msgstr "Total EUI Goal for the building (includes Electricity, Gas, etc.)"
+msgstr "Total EUI Threshold for the building (includes Electricity, Gas, etc.)"
 
 msgid "TWO_FACTOR_DISABLED_TEXT"
 msgstr "Choosing this option will disable two-factor authentication for your account, making it less secure."
@@ -3970,7 +3988,7 @@ msgid "This password must contain at least %(quantity)d %(type)s characters."
 msgstr "This password must contain at least %(quantity)d %(type)s characters."
 
 msgid "This will reset your visible columns and column order to only columns that contain data. Are you sure you want to continue?"
-msgstr "This will reset your visible columns and column order to only non-derived columns that contain data. Are you sure you want to continue?"
+msgstr "This will reset your visible columns and column order to show only columns that contain data. Are you sure you want to continue?"
 
 msgid "Time Period"
 msgstr "Time Period"
@@ -4034,8 +4052,8 @@ msgstr "Token Generator"
 msgid "Total EUI Field"
 msgstr "Total EUI Field"
 
-msgid "Total EUI Goal"
-msgstr "Total EUI Goal"
+msgid "Total EUI Threshold"
+msgstr "Total EUI Threshold"
 
 msgid "Total Properties"
 msgstr "Total Properties"
@@ -4088,6 +4106,9 @@ msgstr "UBID comparison result:"
 
 msgid "UBID thresholds are between 0.0 and 1.0"
 msgstr "UBID thresholds are between 0.0 and 1.0"
+
+msgid "UNMERGE_PROPERTIES_MODAL"
+msgstr "Are you sure you want to unmerge these properties? The unmerge action will keep meter data on both properties. Review meter data on both properties once they are unmerged."
 
 msgid "UPDATE_DERIVED_DATA_TEXT_1"
 msgstr "Press the 'Begin Update' button below to begin the process of recalculating the data stored in derived columns for the selected properties and tax lots. The derived columns will appear yellow to indicate that the update is in progress."
@@ -4424,7 +4445,7 @@ msgid "X_VERSUS_Y"
 msgstr "{x_axis_label} vs. {y_axis_label}"
 
 msgid "X_VERSUS_Y_AGGREGATED"
-msgstr "{x_axis_label} vs. {y_axis_label} (Aggregated)"
+msgstr "{x_axis_label} vs. {y_axis_label} (Averaged)"
 
 msgid "Y Axis"
 msgstr "Y Axis"
