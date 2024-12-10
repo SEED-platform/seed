@@ -203,6 +203,8 @@ def _dict_org_brief(request, organizations):
             "salesforce_enabled": o.salesforce_enabled,
             "access_level_names": o.access_level_names,
             "audit_template_conditional_import": o.audit_template_conditional_import,
+            "property_display_field": o.property_display_field,
+            "taxlot_display_field": o.taxlot_display_field,
         }
         orgs.append(org)
 
