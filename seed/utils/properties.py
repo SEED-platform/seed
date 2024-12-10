@@ -7,6 +7,8 @@ import itertools
 import json
 import logging
 
+from django.db.models import F
+
 # Imports from Django
 from django.http import JsonResponse
 from rest_framework import status
@@ -24,7 +26,6 @@ from seed.models import (
     TaxLotView,
 )
 from seed.serializers.pint import apply_display_unit_preferences
-from seed.utils.search import build_view_filters_and_sorts
 
 logging.basicConfig(format="%(asctime)s %(levelname)-8s %(message)s", level=logging.ERROR, datefmt="%Y-%m-%d %H:%M:%S")
 
@@ -170,41 +171,50 @@ def properties_across_cycles(org_id, ali, profile_id, cycle_ids=[]):
     return results
 
 
-def properties_across_cycles_with_filters(org_id, user_ali, cycle_ids=[], query_dict={}, column_ids=[]):
-    # Identify column preferences to be used to scope fields/values
-    columns_from_database = Column.retrieve_all(org_id, "property", False)
-    org = Organization.objects.get(pk=org_id)
+def properties_across_cycles_with_filters(org_id, user_ali, cycle_ids=[], query_dict={}, columns=[]):
+    # get relevant views
+    views_list = PropertyView.objects.select_related("property", "state", "cycle").filter(
+        property__organization_id=org_id,
+        cycle_id__in=cycle_ids,
+        property__access_level_instance__lft__gte=user_ali.lft,
+        property__access_level_instance__rgt__lte=user_ali.rgt,
+    )
+    views_list = _serialize_views(views_list, columns, org_id)
 
+    # group by cycle
     results = {cycle_id: [] for cycle_id in cycle_ids}
-    property_views = _get_filter_group_views(org_id, cycle_ids, query_dict, user_ali)
-    views_cycle_ids = [v.cycle_id for v in property_views]
-    related_results = TaxLotProperty.serialize(property_views, column_ids, columns_from_database, include_related=False)
-    unit_collapsed_results = [apply_display_unit_preferences(org, x) for x in related_results]
-
-    for cycle_id, unit_collapsed_result in zip(views_cycle_ids, unit_collapsed_results):
-        results[cycle_id].append(unit_collapsed_result)
+    for view in views_list:
+        cycle_id = view["cycle_id"]
+        del view["cycle_id"]
+        results[cycle_id].append(view)
 
     return results
 
 
-# helper function for getting filtered properties
-def _get_filter_group_views(org_id, cycles, query_dict, user_ali):
-    columns = Column.retrieve_all(org_id=org_id, inventory_type="property", only_used=False, include_related=False)
+def _serialize_views(views_list, columns, org_id):
+    org = Organization.objects.get(pk=org_id)
 
+    # build annotations
     annotations = {}
-    try:
-        filters, annotations, _order_by = build_view_filters_and_sorts(query_dict, columns, "property")
-    except Exception:
-        return JsonResponse({"status": "error", "message": "error with filter group"}, status=status.HTTP_404_NOT_FOUND)
+    values_list = ["id", "cycle_id"]  # django readable names
+    returned_name = ["id", "cycle_id"]  # actual api names
+    for column in columns:
+        if column.is_extra_data:
+            anno_value = F("state__extra_data__" + column.column_name)
+        elif column.derived_column:
+            anno_value = F("state__derived_data__" + column.column_name)
+        else:
+            anno_value = F("state__" + column.column_name)
 
-    views_list = PropertyView.objects.select_related("property", "state", "cycle").filter(
-        property__organization_id=org_id,
-        cycle__in=cycles,
-        property__access_level_instance__lft__gte=user_ali.lft,
-        property__access_level_instance__rgt__lte=user_ali.rgt,
-    )
+        name = f"{column.column_name.replace(' ', '_')}_{column.id}"  # django readable name
+        annotations[name] = anno_value
+        values_list.append(name)
+        returned_name.append(f"{column.column_name}_{column.id}")
 
-    views_list = views_list.annotate(**annotations).filter(filters).order_by("id")
+    # use api names and add units
+    views_list = views_list.annotate(**annotations).values_list(*values_list)
+    views_list = [dict(zip(returned_name, view)) for view in views_list]  # replace django readable name with api name
+    views_list = [apply_display_unit_preferences(org, view) for view in views_list]
 
     return views_list
 
