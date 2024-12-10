@@ -795,12 +795,12 @@ def link_states(states, ViewClass, cycle, highest_ali, sub_progress_key, tuple_v
             state.raw_access_level_instance = ali
             view = state.promote(cycle=cycle)
 
-        # Add labels
-        if view and state.extra_data.get("Property Labels"):
-            incoming_label_names = state.extra_data.get("Property Labels")
+        # Add labels RP
+        if view and state.incoming_property_labels:
+            incoming_label_names = state.incoming_property_labels
             incoming_label_names = incoming_label_names.split(',')
             for incoming_label_name in incoming_label_names:
-                incoming_label, created = StatusLabel.objects.get_or_create(name=incoming_label_name, super_organization=cycle.organization)
+                incoming_label, _ = StatusLabel.objects.get_or_create(name=incoming_label_name, super_organization=cycle.organization)
                 PropertyViewLabel.objects.get_or_create(statuslabel=incoming_label, propertyview=view)
 
 
