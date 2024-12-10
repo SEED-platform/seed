@@ -365,7 +365,7 @@ class OrganizationViewSet(viewsets.ViewSet):
         Starts a background task to delete an organization and all related data.
         """
 
-        return JsonResponse(tasks.delete_organization(pk))
+        return JsonResponse(tasks.delete_organization_and_inventory(pk))
 
     @api_endpoint_class
     @ajax_request_class

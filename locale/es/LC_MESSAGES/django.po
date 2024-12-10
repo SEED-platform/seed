@@ -5,7 +5,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: lokalise.com\n"
 "Project-Id-Version: SEED Platform\n"
-"PO-Revision-Date: 2024-12-05 18:44\n"
+"PO-Revision-Date: 2024-12-10 22:01\n"
 "Last-Translator: lokalise.com\n"
 "Language-Team: lokalise.com\n\n"
 "Language: es\n"
@@ -120,6 +120,12 @@ msgstr "Guardando instancias de nivel de acceso en curso... Este proceso depende
 #, fuzzy
 msgid "ADD_FILES_TO"
 msgstr "Añadir archivos a {dataset_name}."
+
+msgid "ADD_REMOVE_GROUPS_FROM_PROPERTIES"
+msgstr "Agregar o eliminar {num,plural,one{ 1 propiedad seleccionada } other{# propiedades seleccionadas }} a/de grupos"
+
+msgid "ADD_REMOVE_GROUPS_FROM_TAXLOTS"
+msgstr "Agregar o eliminar {num,plural,one{ 1 lote de impuestos seleccionado } other{# lotes de impuestos seleccionados }} a/de grupos"
 
 #, fuzzy
 msgid "ADD_REMOVE_LABELS_FROM_PROPERTIES"
@@ -348,6 +354,9 @@ msgstr "Añadir niveles al árbol de estructura organizativa"
 msgid "Add Mapping"
 msgstr "Añadir cartografía"
 
+msgid "Add Meter Readings to"
+msgstr "Agregar lecturas del medidor a"
+
 #, fuzzy
 msgid "Add Shared Properties"
 msgstr "Añadir propiedades compartidas"
@@ -383,6 +392,9 @@ msgstr "Añadir más archivos de datos"
 msgid "Add program information."
 msgstr "Añada información sobre el programa."
 
+msgid "Add to/Remove from Groups"
+msgstr "Agregar a/Quitar de grupos"
+
 #, fuzzy
 msgid "Add user"
 msgstr "Añadir usuario"
@@ -394,6 +406,9 @@ msgstr "Añadir usuario a la organización"
 #, fuzzy
 msgid "Add user to organization:"
 msgstr "Añadir usuario a la organización:"
+
+msgid "Add/Remove Groups"
+msgstr "Agregar o quitar grupos"
 
 #, fuzzy
 msgid "Add/Remove Labels"
@@ -442,6 +457,9 @@ msgstr "Admin"
 #, fuzzy
 msgid "Advanced Settings"
 msgstr "Configuración avanzada"
+
+msgid "Alias"
+msgstr "Alias"
 
 #, fuzzy
 msgid "An Audit Template organization token, user email and password are required"
@@ -498,6 +516,15 @@ msgstr "¿Está seguro de que desea eliminar el conjunto de datos"
 #, fuzzy
 msgid "Are you sure you want to delete the filter group"
 msgstr "¿Está seguro de que desea eliminar el grupo de filtros?"
+
+msgid "Are you sure you want to delete the group"
+msgstr "¿Estás seguro de que deseas eliminar el grupo?"
+
+msgid "Are you sure you want to delete the service"
+msgstr "¿Estás seguro de que deseas eliminar el servicio?"
+
+msgid "Are you sure you want to delete the system"
+msgstr "¿Estás seguro de que deseas eliminar el sistema?"
 
 #, fuzzy
 msgid "Are you sure you want to unmerge these properties and then merge with the selected properties?"
@@ -797,6 +824,12 @@ msgstr "¿Está seguro de que desea eliminar este nivel de acceso? Esta acción 
 msgid "CONFIRM_AND_START_MATCHING"
 msgstr "Confirmar correspondencias & iniciar correspondencia"
 
+msgid "CONFIRM_DELETE_TEXT_1"
+msgstr "Al eliminar esta organización también se eliminarán todas las propiedades y lotes de impuestos afiliados a la organización."
+
+msgid "CONFIRM_DELETE_TEXT_2"
+msgstr "Dependiendo de la cantidad de inventario que tenga esta organización, el proceso de eliminación puede tardar algún tiempo."
+
 msgid "CONTACT_GITHUB"
 msgstr "El código de fuente abierta está disponible en la organización GitHub de seed-platform y contiene varios repositorios para los distintos componentes de la plataforma, como la aplicación principal de SEED, un cliente Python para comunicarse con la API de SEED y varios conjuntos de datos de ejemplo."
 
@@ -1059,6 +1092,9 @@ msgstr "Configuración"
 msgid "Configure Goals"
 msgstr "Configurar objetivos"
 
+msgid "Configure Meter Details"
+msgstr "Configurar detalles del medidor"
+
 #: seed/landing/templates/landing/password_reset_confirm.html:64
 #: seed/landing/templates/landing/signup.html:63
 #, fuzzy
@@ -1112,6 +1148,9 @@ msgstr "Continuar con el mapeo de datos"
 msgid "Continue to data matching"
 msgstr "Continuar con el cotejo de datos"
 
+msgid "Cooling Capacity (Ton)"
+msgstr "Capacidad de enfriamiento (toneladas)"
+
 #, fuzzy
 msgid "Copy Buildings"
 msgstr "Copiar edificios"
@@ -1123,6 +1162,9 @@ msgstr "Copiar cabeceras de archivos de datos directamente en cabeceras de SEED"
 #, fuzzy
 msgid "Copy into Data File Headers"
 msgstr "Copiar en cabeceras de ficheros de datos"
+
+msgid "Could not delete the group"
+msgstr "No se pudo eliminar el grupo"
 
 #, fuzzy
 msgid "Count #"
@@ -1154,6 +1196,9 @@ msgstr "Crear grupo de filtros"
 msgid "Create Group"
 msgstr "Crear grupo"
 
+msgid "Create Meter"
+msgstr "Crear medidor"
+
 #, fuzzy
 msgid "Create New Sub-Organization"
 msgstr "Crear nueva suborganización"
@@ -1165,6 +1210,12 @@ msgstr "Crear perfil"
 #, fuzzy
 msgid "Create Project"
 msgstr "Crear proyecto"
+
+msgid "Create Service for System"
+msgstr "Crear servicio para el sistema"
+
+msgid "Create System"
+msgstr "Crear sistema"
 
 #, fuzzy
 msgid "Create UBID"
@@ -1381,6 +1432,9 @@ msgstr "Esta acción no se puede deshacer. Esto eliminará permanentemente esta 
 msgid "DELETE_SUB_ORG_WARNING"
 msgstr "Esta acción no se puede deshacer. Esto eliminará permanentemente esta organización y todas las cargas asociadas, propiedades, lotes fiscales, ciclos, reglas de calidad de datos, suborganizaciones, y eliminará todas las asociaciones de miembros."
 
+msgid "DES Type"
+msgstr "Tipo DES"
+
 msgid "DEVELOPERS_FORUM"
 msgstr "El Foro de Desarrolladores de SEED contiene varios temas y unirse a él le permite conectar con otros desarrolladores. Se recomienda unirse a este foro para enviar preguntas de desarrolladores, solicitudes de características y reportar problemas según sea necesario. También se recomienda enviar problemas a GitHub."
 
@@ -1528,6 +1582,9 @@ msgstr "Borrar instancia de nivel de acceso"
 #, fuzzy
 msgid "Delete All Mappings"
 msgstr "Borrar todas las asignaciones"
+
+msgid "Delete Group"
+msgstr "Eliminar grupo"
 
 #, fuzzy
 msgid "Delete Indication Label After Successful Salesforce Update"
@@ -1748,6 +1805,9 @@ msgstr "EUI"
 msgid "EUI Target Columns"
 msgstr "EUI Columnas objetivo"
 
+msgid "EVSE Type"
+msgstr "Tipo EVSE"
+
 #, fuzzy
 msgid "EXCLUDE"
 msgstr "EXCLUIR"
@@ -1768,9 +1828,18 @@ msgstr "Editar nivel de acceso Nombre de instancia"
 msgid "Edit Fields for Selected"
 msgstr "Editar campos para seleccionados"
 
+msgid "Edit Group"
+msgstr "Editar grupo"
+
 #, fuzzy
 msgid "Edit Name"
 msgstr "Editar nombre"
+
+msgid "Edit Service for System"
+msgstr "Editar servicio para el sistema"
+
+msgid "Edit System"
+msgstr "Sistema de edición"
 
 #, fuzzy
 msgid "Edit UBIDs"
@@ -1778,6 +1847,9 @@ msgstr "Editar UBIDs"
 
 msgid "Edit/Add Access Levels"
 msgstr "Editar/Agregar niveles de acceso"
+
+msgid "Efficiency (%)"
+msgstr "Eficiencia (%)"
 
 #, fuzzy
 msgid "Elapsed:"
@@ -1804,6 +1876,9 @@ msgstr "Dirección de correo electrónico:"
 #, fuzzy
 msgid "Email Templates"
 msgstr "Plantillas de correo electrónico"
+
+msgid "Emission Factor"
+msgstr "Factor de emisión"
 
 #, fuzzy
 msgid "Emission Metric"
@@ -1844,6 +1919,9 @@ msgstr "Energía"
 #, fuzzy
 msgid "Energy Alerts"
 msgstr "Alertas de energía"
+
+msgid "Energy Capacity (kWh)"
+msgstr "Capacidad energética (kWh)"
 
 #, fuzzy
 msgid "Energy Metric"
@@ -2143,6 +2221,9 @@ msgstr "El nombre es obligatorio."
 msgid "Float"
 msgstr "Flotador"
 
+msgid "Flow Direction"
+msgstr "Dirección del flujo"
+
 #, fuzzy
 msgid "For Portfolio Manager files, SEED has a default set of field names which can be used without extra user editing unless desired."
 msgstr "Para los archivos de Portfolio Manager, SEED tiene un conjunto predeterminado de nombres de campo que se pueden utilizar sin edición adicional por parte del usuario, a menos que se desee."
@@ -2304,9 +2385,8 @@ msgstr "Configure a continuación uno o varios objetivos de reducción de la Int
 msgid "GREENBUTTON_CONTENTS_TITLE"
 msgstr "Confirmar contenido del archivo GreenButton"
 
-#, fuzzy
 msgid "GROUPS_DESC_TEXT"
-msgstr "SEED supports the creation of groups. Groups can include one or more buildings as well as systems such as Batteries, District Energy Systems (DES) or Electric Vehicle Supply Equipment (EVSE). Services can be associated with the systems and meters associated with those services."
+msgstr "SEED permite la creación de grupos. Los grupos pueden incluir uno o más edificios, así como sistemas como baterías, sistemas de energía urbana (DES) o equipos de suministro de vehículos eléctricos (EVSE). Los servicios se pueden asociar a los sistemas y los medidores asociados a esos servicios."
 
 #, fuzzy
 msgid "GSA SFTool Guidance"
@@ -2384,6 +2464,18 @@ msgstr "Configuración de la meta"
 msgid "Gross Floor Area"
 msgstr "Superficie bruta"
 
+msgid "Group"
+msgstr "Grupo"
+
+msgid "Group - Systems & Services"
+msgstr "Grupo - Sistemas y Servicios"
+
+msgid "Group Name"
+msgstr "Nombre del grupo"
+
+msgid "Groups"
+msgstr "Grupos"
+
 msgid "HAS_BAS_HELP"
 msgstr "Seleccione el campo que indica si el edificio tiene o no un sistema de automatización de edificios (BAS). Este análisis espera un campo booleano."
 
@@ -2414,6 +2506,9 @@ msgstr "Haga que el propietario de su organización actualice el tipo de datos d
 #, fuzzy
 msgid "Have your organization owner update the data type of the column to \"EUI\""
 msgstr "Haga que el propietario de su organización actualice el tipo de datos de la columna a \"EUI\""
+
+msgid "Heating Capacity (MMBtu)"
+msgstr "Capacidad de calentamiento (MMBtu)"
 
 #: seed/templates/seed/account_create_email.html:2
 #, fuzzy
@@ -3126,6 +3221,9 @@ msgstr "Fusión de lotes fiscales en el fichero de importación"
 msgid "Meter Data"
 msgstr "Datos del contador"
 
+msgid "Meter Usage"
+msgstr "Uso del medidor"
+
 #, fuzzy
 msgid "Meters"
 msgstr "Metros"
@@ -3777,6 +3875,12 @@ msgstr "Código postal (lote fiscal)"
 msgid "Potential Matches from Source"
 msgstr "Posibles coincidencias de origen"
 
+msgid "Power (kW)"
+msgstr "Potencia (kW)"
+
+msgid "Power Capacity (kW)"
+msgstr "Capacidad de potencia (kW)"
+
 #, fuzzy
 msgid "Preferred"
 msgstr "Preferido"
@@ -4082,6 +4186,12 @@ msgstr "Eliminar del proyecto"
 msgid "Remove Inventory"
 msgstr "Eliminar inventario"
 
+msgid "Remove Service for System"
+msgstr "Quitar servicio del sistema"
+
+msgid "Remove System"
+msgstr "Quitar sistema"
+
 #, fuzzy
 msgid "Remove User"
 msgstr "Eliminar usuario"
@@ -4105,6 +4215,9 @@ msgstr "Cambie el nombre de"
 #, fuzzy
 msgid "Rename Filter Group"
 msgstr "Renombrar grupo de filtros"
+
+msgid "Rename Group"
+msgstr "Cambiar nombre de grupo"
 
 #, fuzzy
 msgid "Rename Profile"
@@ -4750,6 +4863,9 @@ msgstr "Envía el correo electrónico de restablecimiento de contraseña a todos
 msgid "Sensors"
 msgstr "Sensores"
 
+msgid "Service"
+msgstr "Servicio"
+
 #, fuzzy
 msgid "Set UBID Threshold"
 msgstr "Establecer umbral UBID"
@@ -4949,6 +5065,12 @@ msgstr "Resumen"
 #, fuzzy
 msgid "Switch Profiles"
 msgstr "Perfiles de los interruptores"
+
+msgid "System"
+msgstr "Sistema"
+
+msgid "System Type"
+msgstr "Tipo de sistema"
 
 #, fuzzy
 msgid "TAXLOT_MATCHING_FIELDS_REQUIREMENT"
@@ -5724,6 +5846,9 @@ msgstr "Visite el sitio web de BETTER para realizar un análisis de cartera"
 msgid "Visualization Settings"
 msgstr "Ajustes de visualización"
 
+msgid "Voltage (V)"
+msgstr "Voltaje (V)"
+
 #, fuzzy
 msgid "WAIT_TEXT_1"
 msgstr "Por favor espere, buscando registros afectados..."
@@ -5793,6 +5918,9 @@ msgstr "¡Bienvenido a SEED!"
 #, fuzzy
 msgid "What is a Custom Report?"
 msgstr "¿Qué es un informe personalizado?"
+
+msgid "What system is this meter associated with?"
+msgstr "¿A qué sistema está asociado este medidor?"
 
 #, fuzzy
 msgid "What type of file would you like to upload?"
@@ -5902,6 +6030,9 @@ msgstr "Sí, Borrar usuario"
 #, fuzzy
 msgid "Yes, Remove Filter Group"
 msgstr "Sí, eliminar grupo de filtros"
+
+msgid "Yes, Remove Group"
+msgstr "Sí, eliminar grupo"
 
 #, fuzzy
 msgid "You can review and edit each individual match by clicking one of the linked IDs in the table. This will open a new table that shows the source data for the individual record you are attempting to match. Underneath this record is a searchable list of all potential existing matches. Use this table to explore all your records and to select single or multiple records to match your source data to."

@@ -95,6 +95,12 @@ msgstr "Saving access level instances in progress... This process depends on the
 msgid "ADD_FILES_TO"
 msgstr "Add files to {dataset_name}."
 
+msgid "ADD_REMOVE_GROUPS_FROM_PROPERTIES"
+msgstr "Add or remove {num,plural,one{1 selected property} other{# selected properties}} to/from groups"
+
+msgid "ADD_REMOVE_GROUPS_FROM_TAXLOTS"
+msgstr "Add or remove {num,plural,one{1 selected tax lot} other{# selected tax lots}} to/from groups"
+
 msgid "ADD_REMOVE_LABELS_FROM_PROPERTIES"
 msgstr "Add or remove labels from {num, plural, one{1 selected property} other{# selected properties}}"
 
@@ -270,6 +276,9 @@ msgstr "Add Levels to the Organizational Structure Tree"
 msgid "Add Mapping"
 msgstr "Add Mapping"
 
+msgid "Add Meter Readings to"
+msgstr "Add Meter Readings to"
+
 msgid "Add Shared Properties"
 msgstr "Add Shared Properties"
 
@@ -297,6 +306,9 @@ msgstr "Add more data files"
 msgid "Add program information."
 msgstr "Add program information."
 
+msgid "Add to/Remove from Groups"
+msgstr "Add to/Remove from Groups"
+
 msgid "Add user"
 msgstr "Add user"
 
@@ -305,6 +317,9 @@ msgstr "Add user to organization"
 
 msgid "Add user to organization:"
 msgstr "Add user to organization:"
+
+msgid "Add/Remove Groups"
+msgstr "Add/Remove Groups"
 
 msgid "Add/Remove Labels"
 msgstr "Add/Remove Labels"
@@ -341,6 +356,9 @@ msgstr "Admin"
 
 msgid "Advanced Settings"
 msgstr "Advanced Settings"
+
+msgid "Alias"
+msgstr "Alias"
 
 msgid "An Audit Template organization token, user email and password are required"
 msgstr "An Audit Template organization token, user email and password are required"
@@ -383,6 +401,15 @@ msgstr "Are you sure you want to delete the data set"
 
 msgid "Are you sure you want to delete the filter group"
 msgstr "Are you sure you want to delete the filter group"
+
+msgid "Are you sure you want to delete the group"
+msgstr "Are you sure you want to delete the group"
+
+msgid "Are you sure you want to delete the service"
+msgstr "Are you sure you want to delete the service"
+
+msgid "Are you sure you want to delete the system"
+msgstr "Are you sure you want to delete the system"
 
 msgid "Are you sure you want to unmerge these properties and then merge with the selected properties?"
 msgstr "Are you sure you want to unmerge these properties and then merge with the selected properties?"
@@ -613,6 +640,12 @@ msgstr "Are you sure you want to delete this access level? This action will also
 msgid "CONFIRM_AND_START_MATCHING"
 msgstr "Confirm mappings &amp; start matching"
 
+msgid "CONFIRM_DELETE_TEXT_1"
+msgstr "Deleting this organization will also remove all Properties and Tax Lots affiliated with the organization."
+
+msgid "CONFIRM_DELETE_TEXT_2"
+msgstr "Depending on how much inventory this organization has, the delete process may take some time."
+
 msgid "CONTACT_GITHUB"
 msgstr "The open-source code is available on the GitHub organization of seed-platform and contains various repositories for the different components of the platform such as the main SEED application, a Python client to communicate to SEED's API and various example datasets."
 
@@ -814,6 +847,9 @@ msgstr "Configuration"
 msgid "Configure Goals"
 msgstr "Configure Goals"
 
+msgid "Configure Meter Details"
+msgstr "Configure Meter Details"
+
 #: seed/landing/templates/landing/password_reset_confirm.html:64
 #: seed/landing/templates/landing/signup.html:63
 msgid "Confirm"
@@ -855,6 +891,9 @@ msgstr "Continue to data mapping"
 msgid "Continue to data matching"
 msgstr "Continue to data matching"
 
+msgid "Cooling Capacity (Ton)"
+msgstr "Cooling Capacity (Ton)"
+
 msgid "Copy Buildings"
 msgstr "Copy Buildings"
 
@@ -863,6 +902,9 @@ msgstr "Copy Data File Headers directly to SEED Headers"
 
 msgid "Copy into Data File Headers"
 msgstr "Copy into Data File Headers"
+
+msgid "Could not delete the group"
+msgstr "Could not delete the group"
 
 msgid "Count #"
 msgstr "Count #"
@@ -888,6 +930,9 @@ msgstr "Create Filter Group"
 msgid "Create Group"
 msgstr "Create Group"
 
+msgid "Create Meter"
+msgstr "Create Meter"
+
 msgid "Create New Sub-Organization"
 msgstr "Create New Sub-Organization"
 
@@ -896,6 +941,12 @@ msgstr "Create Profile"
 
 msgid "Create Project"
 msgstr "Create Project"
+
+msgid "Create Service for System"
+msgstr "Create Service for System"
+
+msgid "Create System"
+msgstr "Create System"
 
 msgid "Create UBID"
 msgstr "Create UBID"
@@ -1061,6 +1112,9 @@ msgstr "This action cannot be undone. This will permanently delete this organiza
 msgid "DELETE_SUB_ORG_WARNING"
 msgstr "This action cannot be undone. This will permanently delete this organization and all associated uploads, properties, taxlots, cycles, data quality rules, sub-organizations, and remove all member associations."
 
+msgid "DES Type"
+msgstr "DES Type"
+
 msgid "DEVELOPERS_FORUM"
 msgstr "The SEED Developers Forum contains various topics and joining enables you to connect with other developers. It is recommended to join this forum to submit developer questions, feature requests, and report issues as needed. Also, submitting issues on GitHub is encouraged."
 
@@ -1174,6 +1228,9 @@ msgstr "Delete Access Level Instance"
 
 msgid "Delete All Mappings"
 msgstr "Delete All Mappings"
+
+msgid "Delete Group"
+msgstr "Delete Group"
 
 msgid "Delete Indication Label After Successful Salesforce Update"
 msgstr "Delete Indication Label After Successful Salesforce Update"
@@ -1342,6 +1399,9 @@ msgstr "EUI"
 msgid "EUI Target Columns"
 msgstr "EUI Target Columns"
 
+msgid "EVSE Type"
+msgstr "EVSE Type"
+
 msgid "EXCLUDE"
 msgstr "EXCLUDE"
 
@@ -1357,14 +1417,26 @@ msgstr "Edit Access Level Instance Name"
 msgid "Edit Fields for Selected"
 msgstr "Edit Fields for Selected"
 
+msgid "Edit Group"
+msgstr "Edit Group"
+
 msgid "Edit Name"
 msgstr "Edit Name"
+
+msgid "Edit Service for System"
+msgstr "Edit Service for System"
+
+msgid "Edit System"
+msgstr "Edit System"
 
 msgid "Edit UBIDs"
 msgstr "Edit UBIDs"
 
 msgid "Edit/Add Access Levels"
 msgstr "Edit/Add Access Levels"
+
+msgid "Efficiency (%)"
+msgstr "Efficiency (%)"
 
 msgid "Elapsed:"
 msgstr "Elapsed:"
@@ -1385,6 +1457,9 @@ msgstr "Email Address:"
 
 msgid "Email Templates"
 msgstr "Email Templates"
+
+msgid "Emission Factor"
+msgstr "Emission Factor"
 
 msgid "Emission Metric"
 msgstr "Emission Metric"
@@ -1415,6 +1490,9 @@ msgstr "Energy"
 
 msgid "Energy Alerts"
 msgstr "Energy Alerts"
+
+msgid "Energy Capacity (kWh)"
+msgstr "Energy Capacity (kWh)"
 
 msgid "Energy Metric"
 msgstr "Energy Metric"
@@ -1642,6 +1720,9 @@ msgstr "First name is required."
 msgid "Float"
 msgstr "Float"
 
+msgid "Flow Direction"
+msgstr "Flow Direction"
+
 msgid "For Portfolio Manager files, SEED has a default set of field names which can be used without extra user editing unless desired."
 msgstr "For Portfolio Manager files, SEED has a default set of field names which can be used without extra user editing unless desired."
 
@@ -1829,6 +1910,18 @@ msgstr "Goal Setup"
 msgid "Gross Floor Area"
 msgstr "Gross Floor Area"
 
+msgid "Group"
+msgstr "Group"
+
+msgid "Group - Systems & Services"
+msgstr "Group - Systems & Services"
+
+msgid "Group Name"
+msgstr "Group Name"
+
+msgid "Groups"
+msgstr "Groups"
+
 msgid "HAS_BAS_HELP"
 msgstr "Select the field that indicates whether or not the building has a Building Automation System (BAS). This analysis expects a boolean field."
 
@@ -1852,6 +1945,9 @@ msgstr "Have your organization owner update the column's data type to \"Area\""
 
 msgid "Have your organization owner update the data type of the column to \"EUI\""
 msgstr "Have your organization owner update the data type of the column to \"EUI\""
+
+msgid "Heating Capacity (MMBtu)"
+msgstr "Heating Capacity (MMBtu)"
 
 #: seed/templates/seed/account_create_email.html:2
 msgid "Hello %(first_name)s, "
@@ -2395,6 +2491,9 @@ msgstr "Merged tax lots within import file"
 msgid "Meter Data"
 msgstr "Meter Data"
 
+msgid "Meter Usage"
+msgstr "Meter Usage"
+
 msgid "Meters"
 msgstr "Meters"
 
@@ -2892,6 +2991,12 @@ msgstr "Postal Code (Tax Lot)"
 msgid "Potential Matches from Source"
 msgstr "Potential Matches from Source"
 
+msgid "Power (kW)"
+msgstr "Power (kW)"
+
+msgid "Power Capacity (kW)"
+msgstr "Power Capacity (kW)"
+
 msgid "Preferred"
 msgstr "Preferred"
 
@@ -3122,6 +3227,12 @@ msgstr "Remove From Project"
 msgid "Remove Inventory"
 msgstr "Remove Inventory"
 
+msgid "Remove Service for System"
+msgstr "Remove Service for System"
+
+msgid "Remove System"
+msgstr "Remove System"
+
 msgid "Remove User"
 msgstr "Remove User"
 
@@ -3139,6 +3250,9 @@ msgstr "Rename"
 
 msgid "Rename Filter Group"
 msgstr "Rename Filter Group"
+
+msgid "Rename Group"
+msgstr "Rename Group"
 
 msgid "Rename Profile"
 msgstr "Rename Profile"
@@ -3632,6 +3746,9 @@ msgstr "Sends the reset password email to all users"
 msgid "Sensors"
 msgstr "Sensors"
 
+msgid "Service"
+msgstr "Service"
+
 msgid "Set UBID Threshold"
 msgstr "Set UBID Threshold"
 
@@ -3783,6 +3900,12 @@ msgstr "Summary"
 
 msgid "Switch Profiles"
 msgstr "Switch Profiles"
+
+msgid "System"
+msgstr "System"
+
+msgid "System Type"
+msgstr "System Type"
 
 msgid "TAXLOT_MATCHING_FIELDS_REQUIREMENT"
 msgstr "At least one of the following Tax Lot fields is required"
@@ -4379,6 +4502,9 @@ msgstr "Visit the BETTER website to run a portfolio analysis"
 msgid "Visualization Settings"
 msgstr "Visualization Settings"
 
+msgid "Voltage (V)"
+msgstr "Voltage (V)"
+
 msgid "WAIT_TEXT_1"
 msgstr "Please wait, scanning for affected records..."
 
@@ -4433,6 +4559,9 @@ msgstr "Welcome to SEED!"
 
 msgid "What is a Custom Report?"
 msgstr "What is a Custom Report?"
+
+msgid "What system is this meter associated with?"
+msgstr "What system is this meter associated with?"
 
 msgid "What type of file would you like to upload?"
 msgstr "What type of file would you like to upload?"
@@ -4515,6 +4644,9 @@ msgstr "Yes, Delete User"
 
 msgid "Yes, Remove Filter Group"
 msgstr "Yes, Remove Filter Group"
+
+msgid "Yes, Remove Group"
+msgstr "Yes, Remove Group"
 
 msgid "You can review and edit each individual match by clicking one of the linked IDs in the table. This will open a new table that shows the source data for the individual record you are attempting to match. Underneath this record is a searchable list of all potential existing matches. Use this table to explore all your records and to select single or multiple records to match your source data to."
 msgstr "You can review and edit each individual match by clicking one of the linked IDs in the table. This will open a new table that shows the source data for the individual record you are attempting to match. Underneath this record is a searchable list of all potential existing matches. Use this table to explore all your records and to select single or multiple records to match your source data to."
