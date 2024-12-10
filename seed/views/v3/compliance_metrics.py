@@ -212,12 +212,20 @@ class ComplianceMetricViewSet(viewsets.ViewSet, OrgMixin):
         organization = self.get_organization(request)
         deepcopy(request.data)
 
+        user_ali = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
+        requested_ali_id = request.query_params.get("access_level_instance_id")
+        if requested_ali_id:
+            requested_ali = AccessLevelInstance.objects.get(pk=requested_ali_id)
+            if not (user_ali == requested_ali or requested_ali.is_descendant_of(user_ali)):
+                return JsonResponse({"status": "error", "message": "No such resource."}, status=status.HTTP_404_NOT_FOUND)
+        else:
+            requested_ali = user_ali
+
         try:
             compliance_metric = ComplianceMetric.objects.get(id=pk, organization=organization)
         except Exception:
             return JsonResponse({"status": "error", "message": "ComplianceMetric does not exist"}, status=status.HTTP_404_NOT_FOUND)
 
-        user_ali = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
-        response = compliance_metric.evaluate(user_ali)
+        response = compliance_metric.evaluate(requested_ali)
 
         return JsonResponse({"status": "success", "data": response})

@@ -44,6 +44,7 @@
     'SEED.controller.column_mappings',
     'SEED.controller.column_settings',
     'SEED.controller.confirm_column_settings_modal',
+    'SEED.controller.confirm_organization_deletion_modal',
     'SEED.controller.create_column_modal',
     'SEED.controller.create_organization_modal',
     'SEED.controller.create_sub_organization_modal',
@@ -2586,7 +2587,15 @@
                 return inventory_service.get_property_columns_for_org(organization_id);
               }
             ],
-            cycles: ['cycle_service', (cycle_service) => cycle_service.get_cycles()]
+            cycles: ['cycle_service', (cycle_service) => cycle_service.get_cycles()],
+            access_level_tree: [
+              'organization_service',
+              'user_service',
+              (organization_service, user_service) => {
+                const organization_id = user_service.get_organization().id;
+                return organization_service.get_organization_access_level_tree(organization_id);
+              }
+            ]
           }
         })
         .state({
