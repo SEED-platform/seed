@@ -466,7 +466,6 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
         if not import_file.exists():
             return {"status": "error", "message": f"ImportFile {pk} does not exist"}
 
-        # return remap_data(import_file_id)
         return JsonResponse(map_data(pk, remap, mark_as_done))
 
     @swagger_auto_schema_org_query_param

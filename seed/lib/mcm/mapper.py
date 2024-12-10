@@ -282,7 +282,7 @@ def map_row(row, mapping, model_class, extra_data_fields=[], cleaner=None, **kwa
     # concat = _set_default_concat_config(concat)
 
     for raw_field, value in row.items():
-        is_extra_data = raw_field in extra_data_fields
+        is_extra_data = raw_field in extra_data_fields # RP - extra data fields does not include ali info
 
         # Save the value if it is not None, keep empty fields.
         if value is not None:
