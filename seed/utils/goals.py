@@ -215,8 +215,13 @@ def get_portfolio_summary(org, goal):
 
 
 def set_transaction_summary_cycle_data(property_views, summary, key, goal, total_kbtu):
-    property_views = property_views.annotate(transactions=get_column_expression(goal.transactions_column))
-    total_transactions = property_views.aggregate(total_transactions=Sum("transactions"))["total_transactions"]
+    try:
+        property_views = property_views.annotate(transactions=get_column_expression(goal.transactions_column))
+        total_transactions = property_views.aggregate(total_transactions=Sum("transactions"))["total_transactions"]
+    except:
+        total_transactions = None
+
+
     summary[f"{key}_total_transactions"] = round(total_transactions) if total_transactions is not None else None
     # hardcoded to always be kBtu/year
     summary[f"{key}_weighted_eui_t"] = round(total_kbtu / total_transactions) if total_transactions else None
