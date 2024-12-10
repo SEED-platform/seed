@@ -30,7 +30,13 @@ angular.module('SEED.controller.meter_deletion_modal', []).controller('meter_del
 
     $scope.delete_meter = () => {
       spinner_utility.show();
-      meter_service.delete_meter(organization_id, meter.id, view_id, group_id).then(() => {
+      let delete_promise;
+      if (view_id) {
+        delete_promise = meter_service.delete_property_meter(organization_id, meter.id, view_id);
+      } else {
+        delete_promise = meter_service.delete_group_meter(organization_id, meter.id, group_id);
+      }
+      delete_promise.then(() => {
         refresh_meters_and_readings();
         spinner_utility.show();
         $uibModalInstance.dismiss('cancel');

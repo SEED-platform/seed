@@ -29,6 +29,7 @@
         <select class="form-control" ng-model="interval.selected" ng-change="refresh_readings()" ng-options="option for option in interval.options"></select>
       </div>
     </div>
+    <button ng-show="menu.user.organization.user_role !== 'viewer'" type="button" class="btn btn-primary" ng-click="open_group_meter_create_modal()">Create Meter</button>
 
     <div class="column grow">
       <div class="text-info row pull-right">

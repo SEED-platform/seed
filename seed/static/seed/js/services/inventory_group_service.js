@@ -133,5 +133,15 @@ angular.module('SEED.service.inventory_group', []).factory('inventory_group_serv
         }
       ).then((response) => response.data.data);
 
+    group_factory.create_group_meter = (group_id, meter_info) => $http
+      .post(
+        `/api/v3/inventory_groups/${group_id}/meters/`,
+        {
+          ...meter_info
+        },
+        {
+          params: { organization_id: user_service.get_organization().id }
+        }
+      ).then((response) => response);
     return group_factory;
   }]);

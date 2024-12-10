@@ -14,9 +14,9 @@
 
       <!-- system selection -->
       <div class="form-group">
-        <label class="control-label sectionLabel">System Type</label>
+        <label class="control-label sectionLabel" translate>System Type</label>
         <select class="form-control" ng-model="system.type" ng-dropdown ng-change="initializeSystem()" ng-disabled="system.id" required>
-          <option ng-option value="DES" selected="selected">DES</option>
+          <option ng-option value="DES" selected="selected">District Energy System (DES)</option>
           <option ng-option value="EVSE" selected="selected">EVSE</option>
           <option ng-option value="Battery" selected="selected">Battery</option>
         </select>
@@ -24,25 +24,25 @@
 
       <!-- DES -->
       <div class="form-group system-container" ng-if="system.type == 'DES'">
-        <label class="control-label sectionLabel">DES Type</label>
+        <label class="control-label sectionLabel" translate>DES Type</label>
         <select class="form-control" ng-model="system.des_type" ng-dropdown ng-change="change_des_type()" required>
           <option ng-repeat="des_type in des_types" selected="selected" ng-value="des_type">{$:: des_type $}</option>
         </select>
         <div ng-if="system.des_type && system.des_type !== 'Chiller'">
-          <label class="control-label sectionLabel">Heating Capacity (MMBtu)</label>
+          <label class="control-label sectionLabel" translate>Heating Capacity (MMBtu)</label>
           <input id="heating_capacity" type="number" name="heating_capacity" class="form-control" ng-model="system.heating_capacity" placeholder="{$:: '2.5' | translate $}" required />
         </div>
         <div ng-if="system.des_type && system.des_type === 'Chiller'">
-          <label class="control-label sectionLabel">Cooling apacity (Ton)</label>
+          <label class="control-label sectionLabel" translate>Cooling Capacity (Ton)</label>
           <input id="cooling_capacity" type="number" name="cooling_capacity" class="form-control" ng-model="system.cooling_capacity" placeholder="{$:: '250' | translate $}" required />
         </div>
         <label class="control-label sectionLabel" translate>Count</label>
-        <input id="count" type="number" name="count" class="form-control" ng-model="system.count" placeholder="{$:: 'Count' | translate $}" required />
+        <input id="count" type="number" name="count" class="form-control" ng-model="system.count" placeholder="1" required />
       </div>
 
       <!-- EVSE -->
       <div class="form-group system-container" ng-if="system.type == 'EVSE'">
-        <label class="control-label sectionLabel">EVSE Type</label>
+        <label class="control-label sectionLabel" translate>EVSE Type</label>
         <select class="form-control" ng-model="system.evse_type" ng-dropdown required>
           <option ng-repeat="evse_type in evse_types" selected="selected" ng-value="evse_type">{$:: evse_type $}</option>
         </select>
@@ -51,7 +51,7 @@
         <label class="control-label sectionLabel" translate>Voltage (V)</label>
         <input id="voltage" type="number" name="voltage" class="form-control" ng-model="system.voltage" placeholder="{$:: '240' | translate $}" required />
         <label class="control-label sectionLabel" translate>Count</label>
-        <input id="count" type="number" name="count" class="form-control" ng-model="system.count" placeholder="{$:: 'Count' | translate $}" required />
+        <input id="count" type="number" name="count" class="form-control" ng-model="system.count" placeholder="1" required />
       </div>
 
       <!-- Battery -->

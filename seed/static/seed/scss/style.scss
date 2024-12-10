@@ -5796,7 +5796,13 @@ tags-input .tags .tag-item {
 .meter-config-container {
   .meter-config-selection-container {
     margin: 10px;
+    padding-bottom: 10px;
   }
+}
+
+.meter-config-selection-container {
+  margin: 10px;
+  padding-bottom: 10px;
 }
 
 .meters-table-actions {
@@ -5825,4 +5831,8 @@ tags-input .tags .tag-item {
   select {
     margin-bottom: 15px;
   }
+}
+
+.text-center {
+  margin: auto;
 }
