@@ -5,7 +5,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: lokalise.com\n"
 "Project-Id-Version: SEED Platform\n"
-"PO-Revision-Date: 2024-12-10 22:01\n"
+"PO-Revision-Date: 2024-12-11 18:12\n"
 "Last-Translator: lokalise.com\n"
 "Language-Team: lokalise.com\n\n"
 "Language: es\n"
@@ -4639,6 +4639,9 @@ msgstr "Mostrando {start} a {end} de {total} propiedades"
 #, fuzzy
 msgid "SHOWING_UNFILTERED_TAXLOTS"
 msgstr "Mostrando {start} a {end} de {total} lotes fiscales"
+
+msgid "SHOW_ALL_LABELS_TEXT"
+msgstr "Haga clic en los botones de edición para editar etiquetas individuales. Utilice el botón de acceso directo a la derecha para configurar todas las etiquetas para que se muestren en la página de lista de inventario o para configurarlas para que se oculten."
 
 #, fuzzy
 msgid "SQUARE_FOOTAGE_THRESHOLD_HELP"

@@ -3604,6 +3604,9 @@ msgstr "Affichage {start} à {end} des {total} propriétés en tout"
 msgid "SHOWING_UNFILTERED_TAXLOTS"
 msgstr "Affichage {start} à {end} des {total} lots d'impôt en tout"
 
+msgid "SHOW_ALL_LABELS_TEXT"
+msgstr "Cliquez sur les boutons d'édition pour modifier les étiquettes individuelles. Utilisez le bouton de raccourci à droite pour définir l'affichage de toutes les étiquettes sur la page de liste d'inventaire ou pour les masquer toutes."
+
 msgid "SQUARE_FOOTAGE_THRESHOLD_HELP"
 msgstr "La superficie brute à utiliser comme seuil de comparaison dans les calculs"
 
