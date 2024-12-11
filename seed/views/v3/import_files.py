@@ -365,7 +365,6 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
                 if prop.raw_access_level_instance is not None:
                     prop_dict.update(prop.raw_access_level_instance.path)
                 prop_dict["raw_access_level_instance_error"] = prop.raw_access_level_instance_error
-                # prop_dict["property_labels"] = prop.incoming_property_labels  # RP
                 prop_dict = apply_display_unit_preferences(org, prop_dict)
                 property_results.append(prop_dict)
 
