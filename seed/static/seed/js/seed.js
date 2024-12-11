@@ -44,6 +44,7 @@
     'SEED.controller.column_mappings',
     'SEED.controller.column_settings',
     'SEED.controller.confirm_column_settings_modal',
+    'SEED.controller.confirm_organization_deletion_modal',
     'SEED.controller.create_column_modal',
     'SEED.controller.service_modal',
     'SEED.controller.system_modal',
@@ -140,6 +141,7 @@
     'SEED.controller.qr_code_scan_modal',
     'SEED.controller.record_match_merge_link_modal',
     'SEED.controller.rename_column_modal',
+    'SEED.controller.report_configuration_modal',
     'SEED.controller.reset_modal',
     'SEED.controller.sample_data_modal',
     'SEED.controller.security',
@@ -223,6 +225,7 @@
     'SEED.service.pairing',
     'SEED.service.postoffice',
     'SEED.service.property_measure',
+    'SEED.service.report_configurations',
     'SEED.service.salesforce_config',
     'SEED.service.salesforce_mapping',
     'SEED.service.scenario',
@@ -646,6 +649,7 @@
             ],
             cycles: ['cycle_service', (cycle_service) => cycle_service.get_cycles()],
             filter_groups: ['filter_groups_service', (filter_service) => filter_service.get_filter_groups('Property')],
+            report_configurations: ['report_configurations_service', (report_configurations_service) => report_configurations_service.get_report_configurations()],
             organization_payload: [
               'organization_service',
               'user_service',
@@ -2616,6 +2620,23 @@
 
                 return promise;
               }
+            ],
+            columns: [
+              '$stateParams',
+              'inventory_service',
+              ($stateParams, inventory_service) => {
+                if ($stateParams.inventory_type === 'properties') {
+                  return inventory_service.get_property_columns().then((columns) => {
+                    _.remove(columns, 'related');
+                    _.remove(columns, { column_name: 'lot_number', table_name: 'PropertyState' });
+                    return _.map(columns, (col) => _.omit(col, ['pinnedLeft', 'related']));
+                  });
+                }
+                return inventory_service.get_taxlot_columns().then((columns) => {
+                  _.remove(columns, 'related');
+                  return _.map(columns, (col) => _.omit(col, ['pinnedLeft', 'related']));
+                });
+              }
             ]
           }
         })
@@ -2828,7 +2849,15 @@
                 return inventory_service.get_property_columns_for_org(organization_id);
               }
             ],
-            cycles: ['cycle_service', (cycle_service) => cycle_service.get_cycles()]
+            cycles: ['cycle_service', (cycle_service) => cycle_service.get_cycles()],
+            access_level_tree: [
+              'organization_service',
+              'user_service',
+              (organization_service, user_service) => {
+                const organization_id = user_service.get_organization().id;
+                return organization_service.get_organization_access_level_tree(organization_id);
+              }
+            ]
           }
         })
         .state({

@@ -66,29 +66,26 @@ class ComplianceMetric(models.Model):
         # get properties (no filter)
         # property_response = properties_across_cycles(self.organization_id, -1, cycle_ids)
         # get properties (applies filter group)
-        display_field_id = Column.objects.get(
+        display_field = Column.objects.get(
             table_name="PropertyState", column_name=self.organization.property_display_field, organization=self.organization
-        ).id
+        )
         # array of columns to return
-        column_ids = [display_field_id]
+        columns = [display_field]
 
         if self.actual_energy_column is not None:
-            column_ids.append(self.actual_energy_column.id)
+            columns.append(self.actual_energy_column)
             if self.target_energy_column is not None:
-                column_ids.append(self.target_energy_column.id)
+                columns.append(self.target_energy_column)
 
         if self.actual_emission_column is not None:
-            column_ids.append(self.actual_emission_column.id)
+            columns.append(self.actual_emission_column)
             if self.target_emission_column is not None:
-                column_ids.append(self.target_emission_column.id)
+                columns.append(self.target_emission_column)
 
         for col in self.x_axis_columns.all():
-            column_ids.append(col.id)
+            columns.append(col)
 
-        # Unique ids
-        column_ids = [*set(column_ids)]
-
-        property_response = properties_across_cycles_with_filters(self.organization_id, user_ali, cycle_ids, query_dict, column_ids)
+        property_response = properties_across_cycles_with_filters(self.organization_id, user_ali, cycle_ids, query_dict, columns)
 
         datasets = {
             "y": {"data": [], "label": "compliant"},
@@ -141,24 +138,24 @@ class ComplianceMetric(models.Model):
 
             for p in property_response[cyc]:
                 # initialize
-                properties[p["property_view_id"]] = None
+                properties[p["id"]] = None
                 # energy metric
                 if metric["energy_metric"]:
-                    properties[p["property_view_id"]] = self._calculate_compliance(p, metric["energy_bool"], "energy")
+                    properties[p["id"]] = self._calculate_compliance(p, metric["energy_bool"], "energy")
                 # emission metric
-                if metric["emission_metric"] and properties[p["property_view_id"]] != "u":
+                if metric["emission_metric"] and properties[p["id"]] != "u":
                     temp_val = self._calculate_compliance(p, metric["emission_bool"], "emission")
 
                     # reconcile
                     if temp_val == "u":
                         # unknown stays unknown (missing data)
-                        properties[p["property_view_id"]] = "u"
-                    elif properties[p["property_view_id"]] is None:
+                        properties[p["id"]] = "u"
+                    elif properties[p["id"]] is None:
                         # only emission metric (not energy metric)
-                        properties[p["property_view_id"]] = temp_val
+                        properties[p["id"]] = temp_val
                     else:
                         # compliant if both are compliant
-                        properties[p["property_view_id"]] = temp_val if temp_val == "n" else properties[p["property_view_id"]]
+                        properties[p["id"]] = temp_val if temp_val == "n" else properties[p["id"]]
 
             # count compliant, non-compliant, unknown for each property with data
             for key in cnts:
@@ -195,6 +192,11 @@ class ComplianceMetric(models.Model):
         actual_col = self.actual_energy_column if metric_type == "energy" else self.actual_emission_column
         target_col = self.target_energy_column if metric_type == "energy" else self.target_emission_column
         actual_val = self._get_column_data(the_property, actual_col)
+        try:
+            actual_val = float(actual_val)
+        except Exception:
+            return "u"
+
         if not isinstance(actual_val, numbers.Number):
             return "u"
 
@@ -202,6 +204,11 @@ class ComplianceMetric(models.Model):
             return "y" if bool(actual_val) else "n"
 
         target_val = self._get_column_data(the_property, target_col)
+        try:
+            target_val = float(target_val)
+        except Exception:
+            return "u"
+
         if not isinstance(target_val, numbers.Number):
             return "u"
 

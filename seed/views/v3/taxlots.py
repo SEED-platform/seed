@@ -300,20 +300,13 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
 
         # Clone the taxlot record twice
         old_taxlot = old_view.taxlot
-        new_taxlot = old_taxlot
-        new_taxlot.id = None
-        new_taxlot.save()
 
-        new_taxlot_2 = TaxLot.objects.get(pk=new_taxlot.pk)
+        new_taxlot_2 = TaxLot.objects.get(pk=old_taxlot.pk)
         new_taxlot_2.id = None
         new_taxlot_2.save()
 
-        # If the canonical TaxLot is NOT associated to another -View
-        if not TaxLotView.objects.filter(taxlot_id=old_view.taxlot_id).exclude(pk=old_view.id).exists():
-            TaxLot.objects.get(pk=old_view.taxlot_id).delete()
-
         # Create the views
-        new_view1 = TaxLotView(cycle_id=cycle_id, taxlot_id=new_taxlot.id, state=state1)
+        new_view1 = TaxLotView(cycle_id=cycle_id, taxlot_id=old_taxlot.id, state=state1)
         new_view2 = TaxLotView(cycle_id=cycle_id, taxlot_id=new_taxlot_2.id, state=state2)
 
         # Mark the merged state as deleted
@@ -368,6 +361,15 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
         for group in list(groupings):
             InventoryGroupMapping(tax_lot=new_view1.taxlot, group_id=group).save()
             InventoryGroupMapping(tax_lot=new_view2.taxlot, group_id=group).save()
+
+        Note.objects.create(
+            organization=old_taxlot.organization,
+            note_type=Note.LOG,
+            name="Unmerged Taxlot",
+            text=f"This TaxLotView was unmerged from TaxLotView id {new_view1.id}",
+            user=request.user,
+            taxlot_view=new_view2,
+        )
 
         for paired_view_id in paired_view_ids:
             TaxLotProperty(primary=True, cycle_id=cycle_id, taxlot_view_id=new_view1.id, property_view_id=paired_view_id).save()

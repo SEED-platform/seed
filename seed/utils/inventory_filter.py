@@ -37,7 +37,6 @@ def get_filtered_results(request: Request, inventory_type: Literal["property", "
     # check if there is a query parameter for the profile_id. If so, then use that one
     profile_id = request.query_params.get("profile_id", profile_id)
     shown_column_ids = request.query_params.get("shown_column_ids")
-    goal_id = request.data.get("goal_id")
 
     if not org_id:
         return JsonResponse(
@@ -232,7 +231,7 @@ def get_filtered_results(request: Request, inventory_type: Literal["property", "
             show_columns = None
 
     try:
-        related_results = TaxLotProperty.serialize(views, show_columns, columns_from_database, include_related, goal_id)
+        related_results = TaxLotProperty.serialize(views, show_columns, columns_from_database, include_related)
     except DataError as e:
         return JsonResponse(
             {

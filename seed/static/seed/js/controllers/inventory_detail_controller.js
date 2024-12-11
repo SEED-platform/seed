@@ -260,7 +260,7 @@ angular.module('SEED.controller.inventory_detail', []).controller('inventory_det
         resolve: {
           columns: () => columns,
           currentProfile: () => $scope.currentProfile,
-          cycle: () => null,
+          cycle: () => $scope.cycle,
           inventory_type: () => $stateParams.inventory_type,
           provided_inventory() {
             const provided_inventory = [];
@@ -586,6 +586,7 @@ angular.module('SEED.controller.inventory_detail', []).controller('inventory_det
         controller: 'inventory_detail_analyses_modal_controller',
         resolve: {
           inventory_ids: () => [$scope.inventory.view_id],
+          property_columns: () => columns.filter((x) => x.table_name === 'PropertyState'),
           current_cycle: () => $scope.cycle,
           cycles: () => cycle_service.get_cycles().then((result) => result.cycles),
           user: () => $scope.menu.user

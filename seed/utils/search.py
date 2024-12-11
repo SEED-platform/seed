@@ -13,7 +13,7 @@ from functools import reduce
 from typing import Any, Union
 
 from django.db import models
-from django.db.models import Q
+from django.db.models import Case, IntegerField, Q, Value, When
 from django.db.models.fields.json import KeyTextTransform
 from django.db.models.functions import Cast, Coalesce, Collate, Replace
 from django.http.request import QueryDict
@@ -507,3 +507,46 @@ def build_view_filters_and_sorts(
             annotations.update(parsed_annotations)
 
     return new_filters, annotations, order_by
+
+
+def filter_views_on_related(views1, goal, filters, cycle1):
+    p_ids = views1.values_list("property_id", flat=True)
+    order_by = filters.get("order_by").replace("property__", "")
+    direction = "-" if order_by.startswith("-") else ""
+    order_by = order_by.lstrip("-")
+    goal_note = "goal_note" in order_by
+    historical_note = "historical_note" in order_by
+    order_by = order_by.replace("goal_note__", "").replace("historical_note__", "")
+    boolean_column = order_by in ["passed_checks", "new_or_acquired"]
+    target = False if boolean_column else ""
+    blanks_last = Case(When(**{order_by: target}, then=Value(1)), default=Value(0), output_field=IntegerField())
+
+    views = []
+    if goal_note:
+        goal_notes = (
+            goal.goalnote_set.filter(property__in=p_ids)
+            .annotate(custom_order=blanks_last)
+            .order_by(direction + "custom_order", direction + order_by)
+        )
+        for goal_note in goal_notes:
+            view = goal_note.property.views.filter(cycle=cycle1).first()
+            if view:
+                views.append(view)
+
+    elif historical_note:
+        from seed.models.notes import HistoricalNote
+
+        historical_notes = (
+            HistoricalNote.objects.filter(property__in=p_ids)
+            .annotate(custom_order=blanks_last)
+            .order_by(direction + "custom_order", direction + order_by)
+        )
+        for historical_note in historical_notes:
+            view = historical_note.property.views.filter(cycle=cycle1).first()
+            if view:
+                views.append(view)
+
+    else:
+        views = views1
+
+    return views

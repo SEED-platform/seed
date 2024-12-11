@@ -6,7 +6,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("seed", "0232_inventorygroup_inventorygroupmapping"),
+        ("seed", "0234_inventorygroup_inventorygroupmapping"),
     ]
 
     operations = [

@@ -648,6 +648,12 @@ msgstr "Êtes-vous sûr de vouloir supprimer ce niveau d'accès? Cette action su
 msgid "CONFIRM_AND_START_MATCHING"
 msgstr "Confirmer et commencer l'appariement"
 
+msgid "CONFIRM_DELETE_TEXT_1"
+msgstr "La suppression de cette organisation supprimera également toutes les propriétés et tous les lots fiscaux affiliés à l'organisation."
+
+msgid "CONFIRM_DELETE_TEXT_2"
+msgstr "Selon la quantité de stock dont dispose cette organisation, le processus de suppression peut prendre un certain temps."
+
 msgid "CONTACT_GITHUB"
 msgstr "Le code open-source est disponible sur l'organisation GitHub de seed-platform et contient divers dépôts pour les différents composants de la plateforme tels que l'application SEED principale, un client Python pour communiquer avec l'API de SEED et divers ensembles de données d'exemple."
 

@@ -5,7 +5,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: lokalise.com\n"
 "Project-Id-Version: SEED Platform\n"
-"PO-Revision-Date: 2024-12-06 21:53\n"
+"PO-Revision-Date: 2024-12-10 22:01\n"
 "Last-Translator: lokalise.com\n"
 "Language-Team: lokalise.com\n\n"
 "Language: es\n"
@@ -823,6 +823,12 @@ msgstr "¿Está seguro de que desea eliminar este nivel de acceso? Esta acción 
 #, fuzzy
 msgid "CONFIRM_AND_START_MATCHING"
 msgstr "Confirmar correspondencias & iniciar correspondencia"
+
+msgid "CONFIRM_DELETE_TEXT_1"
+msgstr "Al eliminar esta organización también se eliminarán todas las propiedades y lotes de impuestos afiliados a la organización."
+
+msgid "CONFIRM_DELETE_TEXT_2"
+msgstr "Dependiendo de la cantidad de inventario que tenga esta organización, el proceso de eliminación puede tardar algún tiempo."
 
 msgid "CONTACT_GITHUB"
 msgstr "El código de fuente abierta está disponible en la organización GitHub de seed-platform y contiene varios repositorios para los distintos componentes de la plataforma, como la aplicación principal de SEED, un cliente Python para comunicarse con la API de SEED y varios conjuntos de datos de ejemplo."

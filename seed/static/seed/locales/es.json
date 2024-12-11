@@ -206,6 +206,8 @@
     "CONFIRMING_DELETE_PROFILE": "¿Está seguro de que desea eliminar el perfil",
     "CONFIRM_ACCESS_LEVEL_DELETE": "¿Está seguro de que desea eliminar este nivel de acceso? Esta acción también eliminará las instancias de nivel de acceso de {num_access_levels}.",
     "CONFIRM_AND_START_MATCHING": "Confirmar correspondencias & iniciar correspondencia",
+    "CONFIRM_DELETE_TEXT_1": "Al eliminar esta organización también se eliminarán todas las propiedades y lotes de impuestos afiliados a la organización.",
+    "CONFIRM_DELETE_TEXT_2": "Dependiendo de la cantidad de inventario que tenga esta organización, el proceso de eliminación puede tardar algún tiempo.",
     "CONTACT_GITHUB": "El código de fuente abierta está disponible en la organización GitHub de seed-platform y contiene varios repositorios para los distintos componentes de la plataforma, como la aplicación principal de SEED, un cliente Python para comunicarse con la API de SEED y varios conjuntos de datos de ejemplo.",
     "CONTINUE": "Continúe en",
     "CONTINUE_QUESTION": "¿Seguro que quieres continuar?",

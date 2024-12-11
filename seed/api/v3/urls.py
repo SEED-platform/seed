@@ -59,6 +59,7 @@ from seed.views.v3.property_scenarios import PropertyScenarioViewSet
 from seed.views.v3.property_view_labels import PropertyViewLabelViewSet
 from seed.views.v3.property_views import PropertyViewViewSet
 from seed.views.v3.public import PublicCycleViewSet, PublicOrganizationViewSet
+from seed.views.v3.report_configurations import ReportConfigurationViewSet
 from seed.views.v3.salesforce_configs import SalesforceConfigViewSet
 from seed.views.v3.salesforce_mappings import SalesforceMappingViewSet
 from seed.views.v3.sensors import SensorViewSet
@@ -110,6 +111,7 @@ api_v3_router.register(r"progress", ProgressViewSet, basename="progress")
 api_v3_router.register(r"properties", PropertyViewSet, basename="properties")
 api_v3_router.register(r"property_view_labels", PropertyViewLabelViewSet, basename="property_view_labels")
 api_v3_router.register(r"property_views", PropertyViewViewSet, basename="property_views")
+api_v3_router.register(r"report_configurations", ReportConfigurationViewSet, basename="report_configurations")
 api_v3_router.register(r"salesforce_configs", SalesforceConfigViewSet, basename="salesforce_configs")
 api_v3_router.register(r"salesforce_mappings", SalesforceMappingViewSet, basename="salesforce_mappings")
 api_v3_router.register(r"tax_lot_properties", TaxLotPropertyViewSet, basename="tax_lot_properties")

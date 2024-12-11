@@ -87,7 +87,7 @@ class TestTasks(TestCase):
         self.assertTrue(ImportRecord.objects.filter(pk=self.import_record.pk).exists())
         self.assertTrue(ImportFile.objects.filter(pk=self.import_file.pk).exists())
 
-        tasks.delete_organization(self.fake_org.pk)
+        tasks.delete_organization_and_inventory(self.fake_org.pk)
 
         self.assertTrue(User.objects.filter(pk=self.fake_user.pk).exists())
         self.assertFalse(Organization.objects.filter(pk=self.fake_org.pk).exists())

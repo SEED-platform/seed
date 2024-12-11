@@ -977,10 +977,6 @@ class DataQualityCheck(models.Model):
                         self.add_result_range_error(row["current"].id, rule, data_type, value)
                         self.update_status_label(PropertyViewLabel, rule, current_view.id, row["current"].id)
 
-                # other rule condition types
-                else:
-                    logging.error(">>> OTHER")
-
             else:  # Within Cycle
                 for cycle_key in ["baseline", "current"]:
                     state = row["baseline"] if cycle_key == "baseline" else row["current"]
@@ -989,7 +985,7 @@ class DataQualityCheck(models.Model):
                         return
                     value = baseline if cycle_key == "baseline" else current
                     if rule.condition == rule.RULE_RANGE:
-                        if value:
+                        if value is not None:
                             result = check_range()
                             results.append(result)
                             append_to_apply_labels()
@@ -1004,10 +1000,6 @@ class DataQualityCheck(models.Model):
                         if not result:
                             self.add_result_is_null(state.id, rule, data_type, value)
                             self.update_status_label(PropertyViewLabel, rule, view.id, state.id)
-
-                    # other rule condition types.
-                    else:
-                        logging.error(">>> OTHER")
 
             goal_note.passed_checks = all(results)
 

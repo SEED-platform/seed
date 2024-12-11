@@ -206,6 +206,8 @@
     "CONFIRMING_DELETE_PROFILE": "Are you sure you want to delete the profile",
     "CONFIRM_ACCESS_LEVEL_DELETE": "Are you sure you want to delete this access level? This action will also delete {num_access_levels} access level instances.",
     "CONFIRM_AND_START_MATCHING": "Confirm mappings &amp; start matching",
+    "CONFIRM_DELETE_TEXT_1": "Deleting this organization will also remove all Properties and Tax Lots affiliated with the organization.",
+    "CONFIRM_DELETE_TEXT_2": "Depending on how much inventory this organization has, the delete process may take some time.",
     "CONTACT_GITHUB": "The open-source code is available on the GitHub organization of seed-platform and contains various repositories for the different components of the platform such as the main SEED application, a Python client to communicate to SEED's API and various example datasets.",
     "CONTINUE": "Continue",
     "CONTINUE_QUESTION": "Are you sure you want to continue?",

@@ -5725,7 +5725,7 @@ tags-input .tags .tag-item {
   }
 
   .bold {
-    font-size: bold;
+    font-weight: bold;
   }
 }
 
@@ -5835,4 +5835,10 @@ tags-input .tags .tag-item {
 
 .text-center {
   margin: auto;
+}
+
+.no-lr-pad {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  padding-top: 0 !important;
 }

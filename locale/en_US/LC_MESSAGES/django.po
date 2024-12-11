@@ -640,6 +640,12 @@ msgstr "Are you sure you want to delete this access level? This action will also
 msgid "CONFIRM_AND_START_MATCHING"
 msgstr "Confirm mappings &amp; start matching"
 
+msgid "CONFIRM_DELETE_TEXT_1"
+msgstr "Deleting this organization will also remove all Properties and Tax Lots affiliated with the organization."
+
+msgid "CONFIRM_DELETE_TEXT_2"
+msgstr "Depending on how much inventory this organization has, the delete process may take some time."
+
 msgid "CONTACT_GITHUB"
 msgstr "The open-source code is available on the GitHub organization of seed-platform and contains various repositories for the different components of the platform such as the main SEED application, a Python client to communicate to SEED's API and various example datasets."
 

@@ -38,13 +38,13 @@ class FilterGroup(models.Model):
             )
         if not columns:
             columns = Column.retrieve_all(org_id=self.organization_id, inventory_type=related_model, only_used=False, include_related=False)
-
         if self.query_dict:
             qd = QueryDict(mutable=True)
             qd.update(self.query_dict)
 
-            filters, _annotations, _order_by = build_view_filters_and_sorts(qd, columns, related_model)
-            filtered_views = views.filter(filters)
+            filters, annotations, _order_by = build_view_filters_and_sorts(qd, columns, related_model, self.organization.access_level_names)
+
+            filtered_views = views.annotate(**annotations).filter(filters)
         else:
             filtered_views = views
 
