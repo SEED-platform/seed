@@ -1169,6 +1169,7 @@
     "SHOWING_PAIRED_UNPAIRED_TAXLOTS": "Mostrando {paired_count} {paired_count,plural,one{ Parcela fiscal} other{Parcelas fiscales}} ({unpaired_count} sin emparejar)",
     "SHOWING_UNFILTERED_PROPERTIES": "Mostrando {start} a {end} de {total} propiedades",
     "SHOWING_UNFILTERED_TAXLOTS": "Mostrando {start} a {end} de {total} lotes fiscales",
+    "SHOW_ALL_LABELS_TEXT": "Haga clic en los botones de edición para editar etiquetas individuales. Utilice el botón de acceso directo a la derecha para configurar todas las etiquetas para que se muestren en la página de lista de inventario o para configurarlas para que se oculten.",
     "SQUARE_FOOTAGE_THRESHOLD_HELP": "Los metros cuadrados brutos que se utilizarán como umbral de comparación en los cálculos",
     "STEP 1: Map Your Data": "PASO 1: Mapee sus datos",
     "STEP 2: Review Your Data Mappings": "PASO 2: Revise sus asignaciones de datos",

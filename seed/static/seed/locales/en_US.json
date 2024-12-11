@@ -1169,6 +1169,7 @@
     "SHOWING_PAIRED_UNPAIRED_TAXLOTS": "Showing {paired_count} {paired_count,plural,one{Tax Lot} other{Tax Lots}} ({unpaired_count} unpaired)",
     "SHOWING_UNFILTERED_PROPERTIES": "Showing {start} to {end} of {total} properties",
     "SHOWING_UNFILTERED_TAXLOTS": "Showing {start} to {end} of {total} tax lots",
+    "SHOW_ALL_LABELS_TEXT": "Click the edit buttons to edit individual labels. Use the shortcut button on the right to set all labels to be displayed on the inventory list page or to set them all to be hidden.",
     "SQUARE_FOOTAGE_THRESHOLD_HELP": "The gross square footage to use as a comparison threshold in the calculations",
     "STEP 1: Map Your Data": "STEP 1: Map Your Data",
     "STEP 2: Review Your Data Mappings": "STEP 2: Review Your Data Mappings",

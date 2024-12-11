@@ -1169,6 +1169,7 @@
     "SHOWING_PAIRED_UNPAIRED_TAXLOTS": "Affichage {paired_count} {paired_count, plural, one{Lot d'impôt} other{Lots d'impôt}} ({unpaired_count} non apparié)",
     "SHOWING_UNFILTERED_PROPERTIES": "Affichage {start} à {end} des {total} propriétés en tout",
     "SHOWING_UNFILTERED_TAXLOTS": "Affichage {start} à {end} des {total} lots d'impôt en tout",
+    "SHOW_ALL_LABELS_TEXT": "Cliquez sur les boutons d'édition pour modifier les étiquettes individuelles. Utilisez le bouton de raccourci à droite pour définir l'affichage de toutes les étiquettes sur la page de liste d'inventaire ou pour les masquer toutes.",
     "SQUARE_FOOTAGE_THRESHOLD_HELP": "La superficie brute à utiliser comme seuil de comparaison dans les calculs",
     "STEP 1: Map Your Data": "ÉTAPE 1: Mappez vos données",
     "STEP 2: Review Your Data Mappings": "ÉTAPE 2: Consultez vos mappages de données",
