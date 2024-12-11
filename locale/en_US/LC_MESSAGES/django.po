@@ -3576,6 +3576,9 @@ msgstr "Showing {start} to {end} of {total} properties"
 msgid "SHOWING_UNFILTERED_TAXLOTS"
 msgstr "Showing {start} to {end} of {total} tax lots"
 
+msgid "SHOW_ALL_LABELS_TEXT"
+msgstr "Click the edit buttons to edit individual labels. Use the shortcut button on the right to set all labels to be displayed on the inventory list page or to set them all to be hidden."
+
 msgid "SQUARE_FOOTAGE_THRESHOLD_HELP"
 msgstr "The gross square footage to use as a comparison threshold in the calculations"
 
