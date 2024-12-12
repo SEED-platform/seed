@@ -254,7 +254,6 @@ def _build_cleaner(org):
     return cleaners.Cleaner(ontology)
 
 
-
 @shared_task(ignore_result=True)
 def map_row_chunk(ids, file_pk, source_type, prog_key, **kwargs):
     """Does the work of matching a mapping to a source type and saving

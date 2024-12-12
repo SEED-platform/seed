@@ -2,7 +2,7 @@
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
-from django.apps import apps
+
 import datetime as dt
 import math
 from collections import defaultdict
@@ -10,6 +10,7 @@ from typing import Union
 
 from celery import shared_task
 from celery.utils.log import get_task_logger
+from django.apps import apps
 from django.contrib.postgres.aggregates.general import ArrayAgg
 from django.db import IntegrityError, transaction
 from django.db.models import Subquery
@@ -797,7 +798,7 @@ def link_states(states, ViewClass, cycle, highest_ali, sub_progress_key, tuple_v
 
         # assign incoming labels to view
         if view and state.incoming_labels:
-            incoming_label_names = state.incoming_labels.split(',')
+            incoming_label_names = state.incoming_labels.split(",")
             for incoming_label_name in incoming_label_names:
                 incoming_label, _ = StatusLabel.objects.get_or_create(name=incoming_label_name, super_organization=cycle.organization)
                 if isinstance(view, PropertyView):
@@ -815,11 +816,7 @@ def link_states(states, ViewClass, cycle, highest_ali, sub_progress_key, tuple_v
 
         if batch_size > 0 and idx % batch_size == 0:
             sub_progress_data.step("Matching Data (6/6): Merging Views")
-    
-    # Remove temporary extra data column Property Labels brought in from data upload
-    # Column.objects.filter(organization=cycle.organization, is_extra_data=True, column_name="Property Labels").delete()
 
-    
     sub_progress_data.finish_with_success()
 
     return linked_views, unlinked_views, invalid_link_states, unlinked_states
@@ -835,8 +832,6 @@ def save_state_match(state1, state2, priorities):
     all of the priorities for the columns, not just the priorities for the selected taxlotstate.
     :return: state1, after merge
     """
-    import logging
-    logging.error(">>> save state match")
     merged_state = type(state1).objects.create(organization=state1.organization)
 
     merged_state = merging.merge_state(merged_state, state1, state2, priorities[merged_state.__class__.__name__])
@@ -902,10 +897,6 @@ def save_state_match(state1, state2, priorities):
 
     # Set the merged_state to merged
     merged_state.merge_state = MERGE_STATE_MERGED
-    # Handle Property Labels included in data upload
-    # if incoming_label_names := merged_state.extra_data.get("Property Labels"):
-    #     merged_state.incoming_labels = incoming_label_names
-    #     del merged_state.extra_data["Property Labels"]
 
     merged_state.save()
 
