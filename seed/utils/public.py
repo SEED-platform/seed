@@ -10,6 +10,7 @@ from django.db.models import Q
 from django.db.models.functions import Lower
 
 from seed.models import Column, PropertyState, TaxLotState
+from seed.utils.generic import get_int
 from seed.utils.geocode import bounding_box_wkt, long_lat_wkt
 from seed.utils.ubid import centroid_wkt
 from seed.views.v3.tax_lot_properties import TaxLotPropertyViewSet
@@ -21,8 +22,8 @@ def public_feed(org, request, cycles, endpoint="feed"):
     """
     base_url = request.build_absolute_uri("/")
     params = request.query_params
-    page = _get_int(params.get("page"), 1)
-    per_page = _get_int(params.get("per_page"), 100)
+    page = get_int(params.get("page"), 1)
+    per_page = get_int(params.get("per_page"), 100)
     properties_param = params.get("properties", "true").lower() == "true"
     taxlots_param = params.get("taxlots", "true").lower() == "true"
     if not org.public_feed_labels:
@@ -155,14 +156,6 @@ def _add_states_to_data(base_url, state_class, view_string, page, per_page, labe
         data.append(state_data)
 
     return data, len(states)
-
-
-def _get_int(value, default):
-    try:
-        result = int(float(value))
-        return result if result > 0 else default
-    except (ValueError, TypeError):
-        return default
 
 
 def get_request_cycles(org, request):

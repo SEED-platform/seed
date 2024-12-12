@@ -429,8 +429,14 @@ class GoalViewTests(AccessLevelBaseTestCase):
         summary = response.json()
         # only properties with passed_checks and not new_or_acquired are included in calc
         exp_summary = {
-            "baseline": {"cycle_name": "2001 Annual", "total_sqft": None, "total_kbtu": None, "weighted_eui": None},
-            "current": {"cycle_name": "2003 Annual", "total_sqft": None, "total_kbtu": None, "weighted_eui": None},
+            "baseline_cycle_name": "2001 Annual",
+            "baseline_total_kbtu": None,
+            "baseline_total_sqft": None,
+            "baseline_weighted_eui": None,
+            "current_cycle_name": "2003 Annual",
+            "current_total_kbtu": None,
+            "current_total_sqft": None,
+            "current_weighted_eui": None,
             "eui_change": None,
             "passing_committed": None,
             "passing_shared": None,
@@ -450,8 +456,14 @@ class GoalViewTests(AccessLevelBaseTestCase):
         summary = response.json()
 
         exp_summary = {
-            "baseline": {"cycle_name": "2001 Annual", "total_kbtu": 44, "total_sqft": 9, "weighted_eui": 4},
-            "current": {"cycle_name": "2003 Annual", "total_kbtu": 110, "total_sqft": 15, "weighted_eui": 7},
+            "baseline_cycle_name": "2001 Annual",
+            "baseline_total_kbtu": 44,
+            "baseline_total_sqft": 9,
+            "baseline_weighted_eui": 4,
+            "current_cycle_name": "2003 Annual",
+            "current_total_kbtu": 110,
+            "current_total_sqft": 15,
+            "current_weighted_eui": 7,
             "eui_change": -75,
             "passing_committed": None,
             "passing_shared": 100,
@@ -473,13 +485,19 @@ class GoalViewTests(AccessLevelBaseTestCase):
         response = self.client.get(url, content_type="application/json")
         summary = response.json()
         exp_summary = {
-            "baseline": {"cycle_name": "2001 Annual", "total_kbtu": 200, "total_sqft": 20, "weighted_eui": 10},
-            "current": {"cycle_name": "2003 Annual", "total_kbtu": 5000, "total_sqft": 150, "weighted_eui": 33},
-            "eui_change": -229,
+            "baseline_cycle_name": "2001 Annual",
+            "baseline_total_kbtu": 200,
+            "baseline_total_sqft": 20.0,
+            "baseline_weighted_eui": 10,
+            "current_cycle_name": "2003 Annual",
+            "current_total_kbtu": 5000,
+            "current_total_sqft": 150.0,
+            "current_weighted_eui": 33,
+            "eui_change": -230,
             "passing_committed": None,
             "passing_shared": 100,
             "shared_sqft": 150.0,
-            "sqft_change": 86,
+            "sqft_change": 87,
             "total_new_or_acquired": 0,
             "total_passing": 2,
             "total_properties": 2,
@@ -597,3 +615,141 @@ class GoalViewTests(AccessLevelBaseTestCase):
         response = response.json()
         passed_checks = [p["goal_note"]["passed_checks"] for p in response["properties"]]
         assert passed_checks == [False, True, True]
+
+
+class TransactionGoalViewTests(AccessLevelBaseTestCase):
+    def setUp(self):
+        super().setUp()
+        self.cycle_factory = FakeCycleFactory(organization=self.org, user=self.root_owner_user)
+        self.column_factory = FakeColumnFactory(organization=self.org)
+        self.property_factory = FakePropertyFactory(organization=self.org)
+        self.property_view_factory = FakePropertyViewFactory(organization=self.org)
+        self.property_state_factory = FakePropertyStateFactory(organization=self.org)
+
+        # cycles
+        self.cycle1 = self.cycle_factory.get_cycle(start=datetime(2001, 1, 1), end=datetime(2002, 1, 1))
+        self.cycle2 = self.cycle_factory.get_cycle(start=datetime(2002, 1, 1), end=datetime(2003, 1, 1))
+
+        self.root_ali = self.org.root
+
+        # columns
+        transactions = Column.objects.create(
+            table_name="PropertyState",
+            column_name="transactions",
+            organization=self.org,
+            is_extra_data=True,
+        )
+
+        # properties
+        # property_details_{property}{cycle}
+        property_details_11 = self.property_state_factory.get_details()
+        property_details_11["source_eui"] = 140
+        property_details_11["gross_floor_area"] = 2
+        property_details_11["extra_data"] = {"transactions": "10"}
+
+        property_details_12 = self.property_state_factory.get_details()
+        property_details_12["source_eui"] = 130
+        property_details_12["gross_floor_area"] = 5
+        property_details_12["extra_data"] = {"transactions": 20}
+
+        property_details_21 = self.property_state_factory.get_details()
+        property_details_21["source_eui"] = 120
+        property_details_21["gross_floor_area"] = 7
+        property_details_21["extra_data"] = {"transactions": "abcd"}
+
+        property_details_22 = self.property_state_factory.get_details()
+        property_details_22["source_eui"] = 100
+        property_details_22["gross_floor_area"] = 10
+        property_details_22["extra_data"] = {"transactions": 40}
+
+        self.property1 = self.property_factory.get_property(access_level_instance=self.root_ali)
+        self.property2 = self.property_factory.get_property(access_level_instance=self.root_ali)
+
+        self.state_11 = self.property_state_factory.get_property_state(**property_details_11)
+        self.state_12 = self.property_state_factory.get_property_state(**property_details_12)
+        self.state_21 = self.property_state_factory.get_property_state(**property_details_21)
+        self.state_22 = self.property_state_factory.get_property_state(**property_details_22)
+
+        self.view11 = self.property_view_factory.get_property_view(prprty=self.property1, state=self.state_11, cycle=self.cycle1)
+        self.view12 = self.property_view_factory.get_property_view(prprty=self.property1, state=self.state_12, cycle=self.cycle2)
+        self.view21 = self.property_view_factory.get_property_view(prprty=self.property2, state=self.state_21, cycle=self.cycle1)
+        self.view22 = self.property_view_factory.get_property_view(prprty=self.property2, state=self.state_22, cycle=self.cycle2)
+
+        self.goal = Goal.objects.create(
+            organization=self.org,
+            baseline_cycle=self.cycle1,
+            current_cycle=self.cycle2,
+            access_level_instance=self.root_ali,
+            eui_column1=Column.objects.get(organization=self.org.id, column_name="source_eui_weather_normalized"),
+            eui_column2=Column.objects.get(organization=self.org.id, column_name="source_eui"),
+            eui_column3=Column.objects.get(organization=self.org.id, column_name="site_eui"),
+            area_column=Column.objects.get(organization=self.org.id, column_name="gross_floor_area"),
+            target_percentage=20,
+            name="transaction goal",
+            type="transaction",
+            transactions_column=transactions,
+        )
+
+        GoalNote.objects.all().update(passed_checks=True)
+
+    def test_portfolio_summary(self):
+        url = reverse_lazy("api:v3:goals-portfolio-summary", args=[self.goal.id]) + "?organization_id=" + str(self.org.id)
+        response = self.client.get(url, content_type="application/json")
+        summary = response.json()
+
+        exp_summary = {
+            "baseline_cycle_name": "2001 Annual",
+            "baseline_total_kbtu": 1120,
+            "baseline_total_sqft": 9,
+            "baseline_total_transactions": 10,
+            "baseline_weighted_eui": 124,
+            "baseline_weighted_eui_t": 112,
+            "current_cycle_name": "2002 Annual",
+            "current_total_kbtu": 1650,
+            "current_total_sqft": 15,
+            "current_total_transactions": 60,
+            "current_weighted_eui": 110,
+            "current_weighted_eui_t": 28,
+            "eui_change": 11,
+            "eui_t_change": 75,
+            "passing_committed": None,
+            "passing_shared": 100,
+            "shared_sqft": 15,
+            "sqft_change": 40,
+            "total_new_or_acquired": 0,
+            "total_passing": 2,
+            "total_properties": 2,
+            "transactions_change": 83,
+        }
+
+        assert summary == exp_summary
+
+    def test_goal_data(self):
+        url = reverse_lazy("api:v3:goals-data", args=[self.goal.id]) + "?organization_id=" + str(self.org.id)
+        data = {
+            "goal_id": self.goal.id,
+            "page": 1,
+            "per_page": 50,
+            "baseline_first": True,
+            "access_level_instance_id": self.org.root.id,
+            "related_model_sort": False,
+        }
+        response = self.client.put(url, data=json.dumps(data), content_type="application/json")
+        assert response.status_code == 200
+        data = response.json()
+        assert list(data.keys()) == ["pagination", "properties", "property_lookup"]
+        properties = data["properties"]
+
+        assert properties[0]["baseline_eui_t"] == 28
+        assert properties[0]["baseline_transactions"] == 10
+        assert properties[0]["current_eui_t"] == 32
+        assert properties[0]["current_transactions"] == 20
+        assert properties[0]["eui_t_change"] == 12
+        assert properties[0]["transactions_change"] == 50
+
+        assert properties[1]["baseline_eui_t"] is None
+        assert properties[1]["baseline_transactions"] is None
+        assert properties[1]["current_eui_t"] == 25
+        assert properties[1]["current_transactions"] == 40
+        assert properties[1]["eui_t_change"] is None
+        assert properties[1]["transactions_change"] is None

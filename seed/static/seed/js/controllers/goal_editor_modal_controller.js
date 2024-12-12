@@ -14,6 +14,7 @@ angular.module('SEED.controller.goal_editor_modal', [])
     'access_level_tree',
     'area_columns',
     'auth_payload',
+    'columns',
     'cycles',
     'eui_columns',
     'goal',
@@ -31,6 +32,7 @@ angular.module('SEED.controller.goal_editor_modal', [])
       access_level_tree,
       area_columns,
       auth_payload,
+      columns,
       cycles,
       eui_columns,
       goal,
@@ -40,20 +42,23 @@ angular.module('SEED.controller.goal_editor_modal', [])
       $scope.auth = auth_payload.auth;
       $scope.organization = organization;
       $scope.write_permission = write_permission;
-      $scope.goal = goal || {};
       $scope.access_level_tree = access_level_tree.access_level_tree;
       $scope.level_names = access_level_tree.access_level_names.map((level, i) => ({
         index: i,
         name: level
       }));
       $scope.cycles = cycles;
+      $scope.columns = columns.sort((a, b) => (a.displayName.toLowerCase() < b.displayName.toLowerCase() ? -1 : 1));
       $scope.area_columns = area_columns;
       $scope.eui_columns = eui_columns;
       // allow "none" as an option
       if (!eui_columns.find((col) => col.id === null && col.displayName === '')) {
         $scope.eui_columns.unshift({ id: null, displayName: '' });
       }
+
+      $scope.goal = goal || {};
       $scope.valid = false;
+      $scope.goal_types = ['standard', 'transaction'];
 
       const sort_goals = (goals) => goals.sort((a, b) => (a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 1));
       const get_goals = () => {
