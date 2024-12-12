@@ -10,6 +10,10 @@ from datetime import datetime
 
 from django.core import serializers
 from django.db import IntegrityError, models
+from pint import UnitRegistry
+
+ureg = UnitRegistry()
+Quantity = ureg.Quantity
 
 
 class MarkdownPackageDebugFilter(logging.Filter):
@@ -128,3 +132,13 @@ def compare_orgs_between_label_and_target(sender, pk_set, instance, model, actio
                 f"Label with super_organization_id={label.super_organization_id} cannot be applied to a record with parent "
                 f"organization_id={instance.cycle.organization.get_parent().id}."
             )
+
+
+def get_int(value, default=None):
+    if isinstance(value, Quantity):
+        value = value.magnitude
+    try:
+        result = int(float(value))
+        return result if result > 0 else default
+    except (ValueError, TypeError):
+        return default

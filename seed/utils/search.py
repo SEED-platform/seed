@@ -511,7 +511,11 @@ def build_view_filters_and_sorts(
 
 def filter_views_on_related(views1, goal, filters, cycle1):
     p_ids = views1.values_list("property_id", flat=True)
-    order_by = filters.get("order_by").replace("property__", "")
+    order_by = filters.get("order_by")
+    if not order_by:
+        return views1
+
+    order_by = order_by.replace("property__", "")
     direction = "-" if order_by.startswith("-") else ""
     order_by = order_by.lstrip("-")
     goal_note = "goal_note" in order_by

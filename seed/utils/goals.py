@@ -3,6 +3,8 @@ SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and othe
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
+import math
+
 from django.db.models import Case, F, FloatField, IntegerField, Prefetch, Sum, Value, When
 from django.db.models.fields.json import KeyTextTransform
 from django.db.models.functions import Cast, Coalesce
@@ -10,6 +12,7 @@ from quantityfield.units import ureg
 
 from seed.models import Goal, GoalNote, Property, PropertyView
 from seed.serializers.pint import collapse_unit
+from seed.utils.generic import get_int
 
 
 def get_eui_expression(goal):
@@ -53,6 +56,21 @@ def get_area_expression(goal):
         return Cast(F(f"state__{goal.area_column.column_name}"), output_field=IntegerField())
 
 
+def get_column_expression(column):
+    """
+    retrieves an expression to be used in annotation to return a specific columns value.
+
+    goal.area_column is designed to only accept columns of data_type=area (columns like gross_foor_area)
+    however the user may choose to use an extra_data column that has been typed on the frontend as 'area'.
+    This frontend change does not effect the db, and extra_data fields are stored as JSON objects
+    extra_data = {Name: value} where value can be any type.
+    """
+    if column.is_extra_data:
+        return extra_data_expression(column, 0.0)
+    else:
+        return Cast(F(f"state__{column.column_name}"), output_field=IntegerField())
+
+
 def get_eui_value(property_state, goal):
     """
     Return the eui valuef or a given property and goal
@@ -65,7 +83,9 @@ def get_area_value(property_state, goal):
     """
     Return the area valuef or a given property and goal
     """
-    property_view = PropertyView.objects.filter(state__id=property_state.id).annotate(area_value=get_area_expression(goal)).first()
+    property_view = (
+        PropertyView.objects.filter(state__id=property_state.id).annotate(area_value=get_column_expression(goal.area_column)).first()
+    )
     return property_view.area_value
 
 
@@ -86,11 +106,12 @@ def extra_data_expression(column, default_value):
 
 def percentage_difference(a, b):
     """
-    Returns 100 - percentage
+    Returns 100 minus percentage
     """
-    if not a or not b:
+    if not a or b is None:
         return None
-    return int((a - b) / a * 100) or 0
+    value = round(((a - b) / a) * 100)
+    return None if math.isnan(value) else value
 
 
 def percentage(a, b):
@@ -118,6 +139,7 @@ def get_portfolio_summary(org, goal):
     Gets a Portfolio Summary dictionary given a goal
     """
     summary = {}
+    transaction_goal = goal.type == "transaction"
 
     for current, cycle in enumerate([goal.baseline_cycle, goal.current_cycle]):
         # Return all properties
@@ -129,7 +151,7 @@ def get_portfolio_summary(org, goal):
             property__goalnote__goal__id=goal.id,
         )
         # Shared area is area of all properties regardless of valid status
-        property_views = property_views.annotate(area=get_area_expression(goal))
+        property_views = property_views.annotate(area=get_column_expression(goal.area_column))
         if current:
             summary["total_properties"] = property_views.count()
             summary["shared_sqft"] = property_views.aggregate(shared_sqft=Sum("area"))["shared_sqft"]
@@ -173,19 +195,40 @@ def get_portfolio_summary(org, goal):
         if total_sqft is not None:
             total_sqft = collapse_unit(org, total_sqft)
 
-        cycle_type = "current" if current else "baseline"
+        key = "current" if current else "baseline"
 
-        summary[cycle_type] = {
-            "cycle_name": cycle.name,
-            "total_sqft": total_sqft,
-            "total_kbtu": total_kbtu,
-            "weighted_eui": weighted_eui,
-        }
+        summary[f"{key}_cycle_name"] = cycle.name
+        summary[f"{key}_total_sqft"] = total_sqft
+        summary[f"{key}_total_kbtu"] = total_kbtu
+        summary[f"{key}_weighted_eui"] = weighted_eui
 
-    summary["sqft_change"] = percentage_difference(summary["current"]["total_sqft"], summary["baseline"]["total_sqft"])
-    summary["eui_change"] = percentage_difference(summary["baseline"]["weighted_eui"], summary["current"]["weighted_eui"])
+        if transaction_goal:
+            set_transaction_summary_cycle_data(property_views, summary, key, goal, total_kbtu)
+
+    summary["sqft_change"] = percentage_difference(summary["current_total_sqft"], summary["baseline_total_sqft"])
+    summary["eui_change"] = percentage_difference(summary["baseline_weighted_eui"], summary["current_weighted_eui"])
+
+    if transaction_goal:
+        set_transaction_summary_data(summary)
 
     return summary
+
+
+def set_transaction_summary_cycle_data(property_views, summary, key, goal, total_kbtu):
+    try:
+        property_views = property_views.annotate(transactions=get_column_expression(goal.transactions_column))
+        total_transactions = property_views.aggregate(total_transactions=Sum("transactions"))["total_transactions"]
+    except Exception:
+        total_transactions = None
+
+    summary[f"{key}_total_transactions"] = round(total_transactions) if total_transactions is not None else None
+    # hardcoded to always be kBtu/year
+    summary[f"{key}_weighted_eui_t"] = round(total_kbtu / total_transactions) if total_transactions else None
+
+
+def set_transaction_summary_data(summary):
+    summary["transactions_change"] = percentage_difference(summary["current_total_transactions"], summary["baseline_total_transactions"])
+    summary["eui_t_change"] = percentage_difference(summary["baseline_weighted_eui_t"], summary["current_weighted_eui_t"])
 
 
 def get_state_pairs(property_ids, goal_id):
@@ -214,3 +257,50 @@ def get_state_pairs(property_ids, goal_id):
         state_pairs.append({"property": property, "baseline": baseline_state, "current": current_state})
 
     return state_pairs
+
+
+def set_transaction_data(goal, prop, p1, p2, key1, key2):
+    transaction_column = f"{goal.transactions_column.column_name}_{goal.transactions_column.id}"
+    p1_transactions = get_int(p1.get(transaction_column))
+    p2_transactions = get_int(p2.get(transaction_column))
+
+    prop[f"{key1}_transactions"] = p1_transactions
+    prop[f"{key2}_transactions"] = p2_transactions
+    prop[f"{key1}_eui_t"] = get_eui_t(prop, key1, p1_transactions)
+    prop[f"{key2}_eui_t"] = get_eui_t(prop, key2, p2_transactions)
+    prop["transactions_change"] = percentage_difference(prop["current_transactions"], prop["baseline_transactions"])
+    prop["eui_t_change"] = percentage_difference(prop["current_eui_t"], prop["baseline_eui_t"])
+
+    return prop
+
+
+def get_eui_t(prop, key, transactions):
+    kbtu = prop.get(f"{key}_kbtu")
+    if kbtu is None or not transactions:
+        return None
+
+    return round(kbtu / transactions) if prop else None
+
+
+def combine_properties(p1, p2):
+    if not p2:
+        return p1
+    combined = p1.copy()
+    for key, value in p2.items():
+        if value is not None:
+            combined[key] = value
+    return combined
+
+
+def get_preferred(prop, columns):
+    if not prop:
+        return
+    for col in columns:
+        quantity = get_int(prop[col])
+        if quantity is not None:
+            return quantity
+
+
+def get_kbtu(prop, key):
+    if prop[f"{key}_sqft"] is not None and prop[f"{key}_eui"] is not None:
+        return round(prop[f"{key}_sqft"] * prop[f"{key}_eui"])
