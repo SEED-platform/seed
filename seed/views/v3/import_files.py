@@ -7,11 +7,16 @@ import logging
 
 import xlrd
 from django.core.exceptions import ObjectDoesNotExist
+from datetime import datetime
 from django.http import JsonResponse
+from django.utils.timezone import make_aware
+from pytz import AmbiguousTimeError, NonExistentTimeError, timezone
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import serializers, status, viewsets
 from rest_framework.decorators import action
 
+
+from config.settings.common import TIME_ZONE
 from seed.data_importer.meters_parser import MetersParser
 from seed.data_importer.models import ROW_DELIMITER, ImportRecord
 from seed.data_importer.sensor_readings_parser import SensorsReadingsParser
@@ -1112,9 +1117,34 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
+            # process dates
+            the_tz = timezone(TIME_ZONE)
+            unaware_start = datetime.strptime(raw_reading["Start Date"], "%Y-%m-%d %H:%M:%S")
+            unaware_end = datetime.strptime(raw_reading["End Date"], "%Y-%m-%d %H:%M:%S")
+
+            try:
+                start_time = make_aware(unaware_start, timezone=the_tz)
+            except AmbiguousTimeError:
+                # Handle timestamp that occurs twice due to "falling back" to standard time
+                start_time = make_aware(unaware_start, timezone=the_tz, is_dst=False)
+            except NonExistentTimeError:
+                # Handle timestamp that doesn't exist due to "springing forward" to dst
+                start_time = make_aware(unaware_start, timezone=the_tz, is_dst=True)
+
+            try:
+                end_time = make_aware(unaware_end, timezone=the_tz)
+            except AmbiguousTimeError:
+                # Handle timestamp that occurs twice due to "falling back" to standard time
+                end_time = make_aware(unaware_end, timezone=the_tz, is_dst=False)
+            except NonExistentTimeError:
+                # Handle timestamp that doesn't exist due to "springing forward" to dst
+                end_time = make_aware(unaware_end, timezone=the_tz, is_dst=True)
+
+
+
             _, created = MeterReading.objects.get_or_create(
-                start_time=raw_reading["Start Date"],
-                end_time=raw_reading["End Date"],
+                start_time=start_time,
+                end_time=end_time,
                 meter_id=meter.id,
                 defaults={
                     "reading": float(raw_reading["Reading"]) * conversion_factor,
