@@ -241,6 +241,7 @@ class PropertyStatePromoteWritableSerializer(serializers.ModelSerializer):
     import_file_id = serializers.IntegerField(allow_null=True, read_only=True)
     organization_id = serializers.IntegerField()
     raw_access_level_instance_id = serializers.IntegerField()
+    incoming_labels = serializers.IntegerField(read_only=True)
 
     # read-only core fields
     id = serializers.IntegerField(read_only=True)
