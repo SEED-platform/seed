@@ -2,7 +2,7 @@
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
-
+from django.apps import apps
 import datetime as dt
 import math
 from collections import defaultdict
@@ -795,26 +795,16 @@ def link_states(states, ViewClass, cycle, highest_ali, sub_progress_key, tuple_v
             state.raw_access_level_instance = ali
             view = state.promote(cycle=cycle)
 
-        # Add labels RP
-        # WHAT ABOUT TAX LOTS.
-
-        if view:
-            if view and class_name == "property" and state.extra_data.get("Property Labels"):
-            # if view and class_name == "property" and state.incoming_labels:
-                incoming_label_names = state.extra_data.get("Property Labels").split(',')
-                # incoming_label_names = state.incoming_labels.split(',')
-                del state.extra_data["Property Labels"]
-                state.save()
-                import logging
-                logging.error('>>> incoming_label_names %s', incoming_label_names)
-                for incoming_label_name in incoming_label_names:
-                    incoming_label, _ = StatusLabel.objects.get_or_create(name=incoming_label_name, super_organization=cycle.organization)
+        # assign incoming labels to view
+        if view and state.incoming_labels:
+            incoming_label_names = state.incoming_labels.split(',')
+            for incoming_label_name in incoming_label_names:
+                incoming_label, _ = StatusLabel.objects.get_or_create(name=incoming_label_name, super_organization=cycle.organization)
+                if isinstance(view, PropertyView):
                     PropertyViewLabel.objects.get_or_create(statuslabel=incoming_label, propertyview=view)
-
-            elif view and class_name == "taxlot" and state.incoming_labels:
-                import logging
-                logging.error("TAXLOTS")
-
+                elif isinstance(view, TaxLotView):
+                    TaxLotViewLabel = apps.get_model("seed", "TaxLotView_labels")
+                    TaxLotViewLabel.objects.get_or_create(statuslabel=incoming_label, taxlotview=view)
 
         # link state
         link_count = _link_matches([*existing_views_matches, view], cycle.organization_id, view, ViewClass)

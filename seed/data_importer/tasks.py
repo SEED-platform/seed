@@ -409,7 +409,11 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, **kwargs):
                         if footprint_details.get("obj_field") and getattr(map_model_obj, footprint_details["obj_field"]) is None:
                             _store_raw_footprint_and_create_rule(footprint_details, table, org, import_file, original_row, map_model_obj)
 
-                        # There was an error with a field being too long [> 255 chars].
+                        # Store the incoming label names in state.incoming_labels. -ViewLabels will be created once a view is attatched
+                        label_key = "Property Labels" if isinstance(map_model_obj, PropertyState) else "Tax Lot Labels"
+                        if incoming_labels := map_model_obj.extra_data.pop(label_key, None):
+                            map_model_obj.incoming_labels = incoming_labels
+
                         map_model_obj.save()
 
                         # if importing BuildingSync create a BuildingFile for the property
