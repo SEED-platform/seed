@@ -107,6 +107,7 @@ class Column(models.Model):
         "geocoding_confidence",
         "id",
         "import_file",
+        "incoming_labels",
         "long_lat",
         "merge_state",
         "raw_access_level_instance_error",
