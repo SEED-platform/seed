@@ -4,20 +4,19 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('seed', '0234_transaction_goals'),
+        ("seed", "0234_transaction_goals"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='propertystate',
-            name='incoming_labels',
+            model_name="propertystate",
+            name="incoming_labels",
             field=models.TextField(blank=True, null=True),
         ),
         migrations.AddField(
-            model_name='taxlotstate',
-            name='incoming_labels',
+            model_name="taxlotstate",
+            name="incoming_labels",
             field=models.TextField(blank=True, null=True),
         ),
     ]
