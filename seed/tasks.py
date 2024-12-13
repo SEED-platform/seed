@@ -33,6 +33,7 @@ from seed.models import (
     ColumnMapping,
     Cycle,
     DerivedColumn,
+    InventoryGroup,
     Property,
     PropertyState,
     PropertyView,
@@ -181,6 +182,7 @@ def _evaluate_delete_organization_and_inventory(prog_key, org_pk, delete_org=Fal
     property_state_ids = list(PropertyState.objects.filter(organization_id=org_pk).values_list("id", flat=True))
     taxlot_ids = list(TaxLot.objects.filter(organization_id=org_pk).values_list("id", flat=True))
     taxlot_state_ids = list(TaxLotState.objects.filter(organization_id=org_pk).values_list("id", flat=True))
+    group_ids = list(InventoryGroup.objects.filter(organization_id=org_pk).values_list("id", flat=True))
 
     total = len(property_ids) + len(property_state_ids) + len(taxlot_ids) + len(taxlot_state_ids)
     progress_data.total = total / float(chunk_size) + 1
@@ -197,6 +199,8 @@ def _evaluate_delete_organization_and_inventory(prog_key, org_pk, delete_org=Fal
             _delete_organization_children(chunk_ids, TaxLot, progress_data.key)
         for chunk_ids in batch(taxlot_state_ids, chunk_size):
             _delete_organization_children(chunk_ids, TaxLotState, progress_data.key)
+        for chunk_ids in batch(group_ids, chunk_size):
+            _delete_organization_children(chunk_ids, InventoryGroup, progress_data.key)
     else:
         progress_data.step()
 
@@ -474,6 +478,14 @@ def _delete_organization_taxlot_chunk(del_ids, prog_key, org_pk, *args, **kwargs
 def _delete_organization_taxlot_state_chunk(del_ids, prog_key, org_pk, *args, **kwargs):
     """deletes a list of ``del_ids`` and increments the cache"""
     TaxLotState.objects.filter(organization_id=org_pk, pk__in=del_ids).delete()
+    progress_data = ProgressData.from_key(prog_key)
+    progress_data.step()
+
+
+@shared_task
+def _delete_organization_group_chunk(del_ids, prog_key, org_pk, *args, **kwargs):
+    """deletes a list of ``del_ids`` and increments the cache"""
+    InventoryGroup.objects.filter(organization_id=org_pk, pk__in=del_ids).delete()
     progress_data = ProgressData.from_key(prog_key)
     progress_data.step()
 

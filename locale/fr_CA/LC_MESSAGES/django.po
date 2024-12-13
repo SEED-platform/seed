@@ -1867,6 +1867,9 @@ msgstr "Confirmer le contenu du fichier GreenButton"
 msgid "GROUPS_DESC_TEXT"
 msgstr "SEED prend en charge la création de groupes. Les groupes peuvent inclure un ou plusieurs bâtiments ainsi que des systèmes tels que des batteries, des systèmes énergétiques urbains (DES) ou des équipements d'alimentation de véhicules électriques (EVSE). Les services peuvent être associés aux systèmes et aux compteurs associés à ces services."
 
+msgid "GROUP_METERS_DESC"
+msgstr "Le tableau ci-dessous présente tous les compteurs de propriété et de système liés au groupe. Cependant, seuls les compteurs de système peuvent être créés à partir de cette page. Pour créer un compteur de propriété, accédez à la page du compteur de la propriété (pour le format GreenButton) ou accédez à la page de données, ajoutez un fichier de données et cliquez sur l'onglet Données du compteur dans la fenêtre modale qui s'ouvre (pour le format Portfolio Manager)."
+
 msgid "GSA SFTool Guidance"
 msgstr "Guide de l'outil SFTool de la GSA"
 
@@ -3717,6 +3720,9 @@ msgstr "Sélectionnez les propriétés à mettre à jour"
 
 msgid "Select a Custom Report to get started!"
 msgstr "Sélectionnez un rapport personnalisé pour commencer !"
+
+msgid "Select a Goal Type. A Standard goal will calculate a standard EUI per sqft. A Transaction goal will also calculate an EUI per transaction."
+msgstr "Sélectionnez un type d'objectif. Un objectif standard calculera un EUI standard par pied carré. Un objectif de transaction calculera également un EUI par transaction."
 
 msgid "Select a Program to get started!"
 msgstr "Sélectionnez un programme pour commencer !"

@@ -15,11 +15,15 @@ angular.module('SEED.controller.inventory_map', []).controller('inventory_map_co
   'user_service',
   'organization_service',
   'labels',
+  'group',
   'urls',
   // eslint-disable-next-line func-names
-  function ($scope, $stateParams, $state, $log, $uibModal, cycles, inventory_service, map_service, user_service, organization_service, labels, urls) {
+  function ($scope, $stateParams, $state, $log, $uibModal, cycles, inventory_service, map_service, user_service, organization_service, labels, group, urls) {
     $scope.inventory_type = $stateParams.inventory_type;
     const isPropertiesTab = $scope.inventory_type === 'properties';
+    if ($stateParams.group_id) {
+      $scope.inventory_display_name = group.name;
+    }
 
     $scope.data = [];
     $scope.geocoded_data = [];
@@ -31,6 +35,9 @@ angular.module('SEED.controller.inventory_map', []).controller('inventory_map_co
     organization_service.get_organization(org_id).then((data) => {
       $scope.default_field = data.organization[isPropertiesTab ? 'property_display_field' : 'taxlot_display_field'];
     });
+
+    $scope.group = group;
+    if ($scope.group) $scope.group_id = group.id;
 
     const lastCycleId = inventory_service.get_last_cycle();
     $scope.cycle = {
@@ -45,12 +52,14 @@ angular.module('SEED.controller.inventory_map', []).controller('inventory_map_co
 
     const chunk = 250;
     const fetchRecords = async (fn) => {
-      const pagination = await fn(1, chunk, $scope.cycle.selected_cycle, undefined).then((data) => data.pagination);
+      const include_ids = $scope.group ? $scope.group.views_list : [];
+
+      const pagination = await fn(1, chunk, $scope.cycle.selected_cycle, undefined, include_ids).then((data) => data.pagination);
 
       $scope.progress = { current: 0, total: pagination.total, percent: 0 };
 
       const page_numbers = [...Array(pagination.num_pages).keys()];
-      const page_promises = page_numbers.map((page) => fn(page, chunk, undefined, undefined).then((data) => {
+      const page_promises = page_numbers.map((page) => fn(page, chunk, undefined, undefined, include_ids).then((data) => {
         const num_data = data.pagination.end - data.pagination.start + 1;
         $scope.progress.current += num_data;
         $scope.progress.percent += Math.round((num_data / data.pagination.total) * 100);

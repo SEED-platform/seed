@@ -3,8 +3,12 @@ SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and othe
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
+from django.db import IntegrityError
+from django.http import JsonResponse
 from django.utils.decorators import method_decorator
 from drf_yasg.utils import swagger_auto_schema
+from rest_framework import status
+from rest_framework.decorators import action
 from rest_framework.parsers import FormParser, JSONParser
 from rest_framework.renderers import JSONRenderer
 
@@ -12,6 +16,7 @@ from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm_c
 from seed.models import Meter, PropertyView
 from seed.serializers.meters import MeterSerializer
 from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema_org_query_param
+from seed.utils.meters import update_meter_connection
 from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
 
 
@@ -111,3 +116,16 @@ class MeterViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
             serializer.save(property_id=self.property_pk)
         else:
             raise Exception("No property_pk (property view id) provided in URL to create the meter")
+
+    @action(detail=True, methods=["PUT"])
+    @has_perm_class("can_modify_data")
+    @has_hierarchy_access(property_view_id_kwarg="property_pk")
+    def update_connection(self, request, property_pk, pk):
+        meter = self.get_queryset().filter(pk=pk).first()
+        meter_config = request.data.get("meter_config")
+        try:
+            update_meter_connection(meter, meter_config)
+        except IntegrityError as e:
+            return JsonResponse({"status": "error", "message": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+        return JsonResponse({}, status=status.HTTP_200_OK)
