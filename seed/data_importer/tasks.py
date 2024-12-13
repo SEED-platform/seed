@@ -13,6 +13,7 @@ import tempfile
 import time
 import traceback
 import zipfile
+from _csv import Error
 from bisect import bisect_left
 from collections import defaultdict, namedtuple
 from datetime import date, datetime
@@ -20,7 +21,6 @@ from itertools import chain
 from math import ceil
 from typing import Optional, Union
 
-from _csv import Error
 from celery import chain as celery_chain
 from celery import chord, group, shared_task
 from celery.utils.log import get_task_logger
@@ -1876,7 +1876,7 @@ def pair_new_states(merged_property_views, merged_taxlot_views, sub_progress_key
     # now. The logic that is being missed is a pretty extreme corner
     # case.
 
-    # NA: I should generate one key for each property for each thing in it's lot number state.
+    # NA: I should generate one key for each property for each thing in its lot number state.
 
     # property_keys = {property_m2m_keygen.calculate_comparison_key(p): p.pk for p in property_objects}
     # taxlot_keys = [taxlot_m2m_keygen.calculate_comparison_key(tl): tl.pk for tl in taxlot_objects}
@@ -1890,16 +1890,16 @@ def pair_new_states(merged_property_views, merged_taxlot_views, sub_progress_key
     sub_progress_data.step("Pairing Data")
     # Do this inelegant step to make sure we are correctly splitting.
     property_keys = collections.defaultdict(list)
-    for k in property_keys_orig:
+    for k, item in property_keys_orig.items():
         if k[0] and ";" in k[0]:
             for lotnum in (x.strip() for x in k[0].split(";")):
                 k_copy = list(copy.deepcopy(k))
                 k_copy[0] = lotnum
-                property_keys[tuple(k_copy)] = property_keys_orig[k]
+                property_keys[tuple(k_copy)] = item
         else:
-            property_keys[k] = property_keys_orig[k]
+            property_keys[k] = item
 
-    taxlot_keys = {taxlot_m2m_keygen.calculate_comparison_key(p): p.pk for p in taxlot_objects}
+    taxlot_keys = {taxlot_m2m_keygen.calculate_comparison_key(t): t.pk for t in taxlot_objects}
 
     # property_comparison_keys = {property_m2m_keygen.calculate_comparison_key_key(p): p.pk for p in property_objects}
     # property_canonical_keys = {property_m2m_keygen.calculate_canonical_key(p): p.pk for p in property_objects}
@@ -1913,16 +1913,16 @@ def pair_new_states(merged_property_views, merged_taxlot_views, sub_progress_key
 
         pv_key = property_m2m_keygen.calculate_comparison_key(pv.state)
         # TODO: Refactor pronto.  Iterating over the tax lot is bad implementation.
-        for tlk in taxlot_keys:
+        for tlk, item in taxlot_keys.items():
             if pv_key[0] and ";" in pv_key[0]:
                 for lotnum in (x.strip() for x in pv_key[0].split(";")):
                     pv_key_copy = list(copy.deepcopy(pv_key))
                     pv_key_copy[0] = lotnum
                     pv_key_copy = tuple(pv_key_copy)
                     if property_m2m_keygen.calculate_key_equivalence(pv_key_copy, tlk):
-                        possible_merges.append((property_keys[pv_key_copy], taxlot_keys[tlk]))
+                        possible_merges.append((property_keys[pv_key_copy], item))
             elif property_m2m_keygen.calculate_key_equivalence(pv_key, tlk):
-                possible_merges.append((property_keys[pv_key], taxlot_keys[tlk]))
+                possible_merges.append((property_keys[pv_key], item))
 
     sub_progress_data.step("Pairing Data")
     for tlv in merged_taxlot_views:

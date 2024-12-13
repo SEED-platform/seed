@@ -1872,12 +1872,9 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         response["Content-Disposition"] = f'attachment; filename="{filename}"'
 
         with tempfile.TemporaryDirectory() as tmpdir:
-            # Since `building_sync_to_cts` takes a filename and not a file object we can't create the temp file inside a `with` context
-            # This is because of how Windows handles file locking
-            output_file = tempfile.NamedTemporaryFile(delete=False)
-            output_filename = Path(output_file.name)
-            # Close the temp file to release the lock
-            output_file.close()
+            # Since `building_sync_to_cts` takes a filename and not a file object we have to ensure the temp file lock is released before using it (because Windows)
+            with tempfile.NamedTemporaryFile(delete=False) as output_file:
+                output_filename = Path(output_file.name)
 
             bsync_files = []
             for i, f in enumerate(building_files):

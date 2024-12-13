@@ -67,7 +67,7 @@ def _run_analysis(self, analysis_property_view_ids, analysis_id):
     existing_columns_names_by_code = _create_element_columns(analysis)
     ddc_count_column = _create_ddc_count_column(analysis)
 
-    # creates a dict where the first key is a property we are analyzing, the second key is a scope_one_emission_code in that property (should there in )
+    # creates a dict where the first key is a property we are analyzing, the second key is a scope_one_emission_code in that property
     query = f"""
     SELECT
         "seed_element"."property_id", "seed_uniformat"."code", AVG("seed_element"."condition_index") AS "mean_condition_index"
@@ -76,7 +76,7 @@ def _run_analysis(self, analysis_property_view_ids, analysis_id):
     INNER JOIN
         "seed_uniformat" ON ("seed_element"."code_id" = "seed_uniformat"."id")
     WHERE (
-        "seed_uniformat"."code" IN ({", ".join("'" + str(x) + "'" for x in existing_columns_names_by_code)})
+        "seed_uniformat"."code" IN ({", ".join(f"'{x}'" for x in existing_columns_names_by_code)})
         AND
         "seed_element"."property_id" IN (
             SELECT
@@ -84,12 +84,12 @@ def _run_analysis(self, analysis_property_view_ids, analysis_id):
             FROM
                 "seed_analysispropertyview" U0
             WHERE
-                U0."id" IN ({", ".join("'" + str(x) + "'" for x in  analysis_property_view_ids)})
+                U0."id" IN ({", ".join(f"'{x}'" for x in analysis_property_view_ids)})
         )
     )
     GROUP BY
         "seed_element"."property_id", "seed_uniformat"."code"
-    """
+    """  # noqa: S608
     with connection.cursor() as cursor:
         cursor.execute(query)
         result = cursor.fetchall()

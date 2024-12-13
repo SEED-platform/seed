@@ -269,13 +269,14 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
         to a lot of storage space.
         """
         if not hasattr(self, "_local_file"):
-            temp_file = tempfile.NamedTemporaryFile(mode="w+b", delete=False)
-            for chunk in self.file.chunks(1024):
-                temp_file.write(chunk)
-            temp_file.flush()
-            temp_file.close()
+            with tempfile.NamedTemporaryFile(mode="w+b", delete=False) as temp_file:
+                for chunk in self.file.chunks(1024):
+                    temp_file.write(chunk)
+                temp_file.flush()
+                temp_file_name = temp_file.name
+
             self.file.close()
-            self._local_file = open(temp_file.name, newline=None, encoding=locale.getpreferredencoding(False))  # noqa: SIM115
+            self._local_file = open(temp_file_name, newline=None, encoding=locale.getpreferredencoding(False))  # noqa: SIM115
 
         self._local_file.seek(0)
         return self._local_file
@@ -404,8 +405,7 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
     @property
     def num_mapping_complete(self):
         num = (self.num_mapping_total or self.num_mapping_remaining) - self.num_mapping_remaining
-        if num < 0:
-            num = 0
+        num = max(num, 0)
         return num
 
     @property
@@ -419,8 +419,7 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
     @property
     def num_cleaning_complete(self):
         num = self.num_cleaning_total - self.num_cleaning_remaining
-        if num < 0:
-            num = 0
+        num = max(num, 0)
         return num
 
     @property

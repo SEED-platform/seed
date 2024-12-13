@@ -4,7 +4,6 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
 from collections import OrderedDict
-from typing import Tuple
 
 import dateutil.parser
 from django.core.exceptions import ValidationError
@@ -40,7 +39,7 @@ class MeterReadingBulkCreateUpdateSerializer(serializers.ListSerializer):
         )
 
         with connection.cursor() as cursor:
-            results: list[Tuple] = execute_values(
+            results: list[tuple] = execute_values(
                 cursor,
                 upsert_sql,
                 validated_data,
@@ -101,7 +100,7 @@ class MeterReadingSerializer(serializers.ModelSerializer):
 
         with connection.cursor() as cursor:
             cursor.execute(upsert_sql, validated_data)
-            result: Tuple = cursor.fetchone()
+            result: tuple = cursor.fetchone()
 
         # Convert tuple to MeterReading for response
         updated_reading = MeterReading(**{field: result[i] for i, field in enumerate(meter_fields)})

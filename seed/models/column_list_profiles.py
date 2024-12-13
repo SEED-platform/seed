@@ -4,7 +4,6 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
 from collections import OrderedDict
-from typing import List, Tuple
 
 from django.apps import apps
 from django.db import models
@@ -22,7 +21,7 @@ VIEW_LOCATION_TYPES = [
 
 VIEW_LIST_PROPERTY = 0
 VIEW_LIST_TAXLOT = 1
-VIEW_LIST_INVENTORY_TYPE: List[Tuple[int, str]] = [
+VIEW_LIST_INVENTORY_TYPE: list[tuple[int, str]] = [
     (VIEW_LIST_PROPERTY, "Property"),
     (VIEW_LIST_TAXLOT, "Tax Lot"),
 ]

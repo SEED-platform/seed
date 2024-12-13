@@ -1261,9 +1261,9 @@ class OrganizationViewSet(viewsets.ViewSet):
         for cycle in cycles:
             axis_data[cycle.name] = {}
 
-        for axis in axes:
-            if axes[axis] != "Count":
-                columns = Column.objects.filter(organization_id=organization_id, column_name=axes[axis], table_name="PropertyState")
+        for axis, axis_var in axes.items():
+            if axis_var != "Count":
+                columns = Column.objects.filter(organization_id=organization_id, column_name=axis_var, table_name="PropertyState")
                 if not columns:
                     return {}
 
@@ -1281,14 +1281,14 @@ class OrganizationViewSet(viewsets.ViewSet):
                         serialized_column["display_name"] if serialized_column["display_name"] != "" else serialized_column["column_name"]
                     )
                     axis_data[cycle.name][name_to_display] = {}
-                    stats = self.get_axis_stats(organization, cycle, axis, axes[axis], all_property_views, access_level_instance)
+                    stats = self.get_axis_stats(organization, cycle, axis, axis_var, all_property_views, access_level_instance)
                     axis_data[cycle.name][name_to_display]["values"] = self.clean_axis_data(data_type, stats)
 
                     children = access_level_instance.get_children()
                     if len(children):
                         axis_data[cycle.name][name_to_display]["children"] = {}
                         for child_ali in children:
-                            stats = self.get_axis_stats(organization, cycle, axis, axes[axis], all_property_views, child_ali)
+                            stats = self.get_axis_stats(organization, cycle, axis, axis_var, all_property_views, child_ali)
                             axis_data[cycle.name][name_to_display]["children"][child_ali.name] = self.clean_axis_data(data_type, stats)
 
         return axis_data

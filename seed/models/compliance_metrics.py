@@ -158,7 +158,7 @@ class ComplianceMetric(models.Model):
                         properties[p["id"]] = temp_val if temp_val == "n" else properties[p["id"]]
 
             # count compliant, non-compliant, unknown for each property with data
-            for key in cnts:
+            for key in cnts:  # noqa: PLC0206
                 cnts[key] = sum(map((key).__eq__, properties.values()))
                 # add to dataset
                 datasets[key]["data"].append(cnts[key])
@@ -173,8 +173,8 @@ class ComplianceMetric(models.Model):
         response["properties_by_cycles"] = property_response
         response["metric"] = metric
 
-        for key in datasets:
-            response["graph_data"]["datasets"].append(datasets[key])
+        for key, dataset in datasets.items():
+            response["graph_data"]["datasets"].append(dataset)
 
         return response
 

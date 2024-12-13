@@ -25,7 +25,7 @@ class PasswordBaseCharacterQuantityValidator:
             )
 
     def get_help_text(self):
-        return _("Your password must contain at least %(quantity)d %(type)s characters." % {"quantity": self.quantity, "type": self.TYPE})
+        return _(f"Your password must contain at least {self.quantity:d} {self.TYPE} characters.")
 
 
 class PasswordUppercaseCharacterValidator(PasswordBaseCharacterQuantityValidator):
