@@ -2,15 +2,19 @@
 
 import logging
 
+from datetime import datetime
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import IntegrityError
 from django.db.models import Count, F, Q, Sum
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
+from django.utils.timezone import make_aware
 from pint import Quantity
+from pytz import timezone
 from rest_framework import response, status
 from rest_framework.decorators import action
 
+from config.settings.common import TIME_ZONE
 from seed.filters import ColumnListProfileFilterBackend
 from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm_class
 from seed.models import AccessLevelInstance, Cycle, InventoryGroup, Meter, MeterReading, Organization, PropertyView
@@ -118,15 +122,20 @@ class InventoryGroupViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
         # calculate total export / import
         group_meters = Meter.objects.filter(Q(system__group_id=pk) | Q(property__group_mappings__group_id=pk))
 
+        # make cycle start/end timezone aware to query MeterReading table
+        the_tz = timezone(TIME_ZONE)
+        start_time = make_aware(datetime.combine(cycle.start, datetime.min.time()), timezone=the_tz)
+        end_time = make_aware(datetime.combine(cycle.end, datetime.min.time()), timezone=the_tz)
+
         importing_meters = group_meters.filter(connection_type=Meter.IMPORTED)
-        importing_readings = MeterReading.objects.filter(meter__in=importing_meters, start_time__gte=cycle.start, end_time__lte=cycle.end)
+        importing_readings = MeterReading.objects.filter(meter__in=importing_meters, start_time__gte=start_time, end_time__lte=end_time)
         importing_total = (
             importing_readings.annotate(type=F("meter__type")).values("type").annotate(total=Sum("reading")).values("type", "total")
         )
         importing_total = {Meter.ENERGY_TYPE_BY_METER_TYPE[d["type"]]: d["total"] for d in importing_total}
 
         exporting_meters = group_meters.filter(connection_type=Meter.EXPORTED)
-        exporting_readings = MeterReading.objects.filter(meter__in=exporting_meters, start_time__gte=cycle.start, end_time__lte=cycle.end)
+        exporting_readings = MeterReading.objects.filter(meter__in=exporting_meters, start_time__gte=start_time, end_time__lte=end_time)
         exporting_total = (
             exporting_readings.annotate(type=F("meter__type")).values("type").annotate(total=Sum("reading")).values("type", "total")
         )
