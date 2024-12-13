@@ -53,7 +53,7 @@ class Meter(models.Model):
     FUEL_OIL_NO_1 = 14
     FUEL_OIL_NO_2 = 15
     FUEL_OIL_NO_4 = 16
-    FUEL_OIL_NO_5_AND_NO_6 = 13
+    FUEL_OIL_NO_5_AND_NO_6 = 17
     KEROSENE = 18
     NATURAL_GAS = 19
     OTHER = 20

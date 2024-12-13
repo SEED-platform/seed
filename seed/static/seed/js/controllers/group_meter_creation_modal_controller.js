@@ -31,7 +31,8 @@ angular.module('SEED.controller.group_meter_creation_modal', []).controller('gro
     refresh_meters_and_readings
   ) {
     $scope.systems = systems;
-    $scope.types = ['Coal (anthracite)',
+    $scope.types = [
+      'Coal (anthracite)',
       'Coal (bituminous)',
       'Coke',
       'Diesel',
@@ -52,7 +53,7 @@ angular.module('SEED.controller.group_meter_creation_modal', []).controller('gro
       'Fuel Oil (No. 5 and No. 6)',
       'Kerosene',
       'Natural Gas',
-      'Other:',
+      'Other',
       'Propane',
       'Wood',
       'Cost',
@@ -83,6 +84,8 @@ angular.module('SEED.controller.group_meter_creation_modal', []).controller('gro
         } else {
           $scope.error = response.data.message;
         }
+      }).catch((response) => {
+        $scope.error = response.data.errors;
       });
     };
 
