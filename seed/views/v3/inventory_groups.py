@@ -1,8 +1,8 @@
 # !/usr/bin/env python
 
 import logging
-
 from datetime import datetime
+
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import IntegrityError
 from django.db.models import Count, F, Q, Sum
