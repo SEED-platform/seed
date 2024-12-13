@@ -4,17 +4,16 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
 import logging
+from datetime import datetime
 
 import xlrd
 from django.core.exceptions import ObjectDoesNotExist
-from datetime import datetime
 from django.http import JsonResponse
 from django.utils.timezone import make_aware
-from pytz import AmbiguousTimeError, NonExistentTimeError, timezone
 from drf_yasg.utils import swagger_auto_schema
+from pytz import AmbiguousTimeError, NonExistentTimeError, timezone
 from rest_framework import serializers, status, viewsets
 from rest_framework.decorators import action
-
 
 from config.settings.common import TIME_ZONE
 from seed.data_importer.meters_parser import MetersParser
@@ -1139,8 +1138,6 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
             except NonExistentTimeError:
                 # Handle timestamp that doesn't exist due to "springing forward" to dst
                 end_time = make_aware(unaware_end, timezone=the_tz, is_dst=True)
-
-
 
             _, created = MeterReading.objects.get_or_create(
                 start_time=start_time,
