@@ -85,7 +85,7 @@ class InventoryGroupViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
             org = Organization.objects.get(pk=org_id)
         except Organization.DoesNotExist:
             return JsonResponse(
-                {"status": "error", "message": "organization with id %s does not exist" % org_id}, status=status.HTTP_404_NOT_FOUND
+                {"status": "error", "message": f"organization with id {org_id} does not exist"}, status=status.HTTP_404_NOT_FOUND
             )
 
         group = InventoryGroup.objects.filter(organization_id=org.id, pk=pk).first()
