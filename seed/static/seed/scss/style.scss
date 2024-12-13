@@ -5842,3 +5842,12 @@ tags-input .tags .tag-item {
   padding-right: 0 !important;
   padding-top: 0 !important;
 }
+
+.description-section {
+  display: flex;
+  justify-content: center;
+}
+
+.description-text {
+  max-width: 1000px;
+}
