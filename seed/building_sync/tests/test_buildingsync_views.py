@@ -52,7 +52,7 @@ class InventoryViewTests(DeleteModelsTestCase):
         params = {"organization_id": self.org.pk, "profile_id": self.default_bsync_profile.id}
         url = reverse("api:v3:properties-building-sync", args=[pv.id])
         response = self.client.get(url, params)
-        self.assertIn("<auc:FloorAreaValue>%s.0</auc:FloorAreaValue>" % state.gross_floor_area, response.content.decode("utf-8"))
+        self.assertIn(f"<auc:FloorAreaValue>{state.gross_floor_area}.0</auc:FloorAreaValue>", response.content.decode("utf-8"))
 
     def test_upload_and_get_building_sync(self):
         filename = path.join(path.dirname(__file__), "data", "ex_1.xml")

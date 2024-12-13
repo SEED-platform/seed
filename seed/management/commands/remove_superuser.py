@@ -34,7 +34,7 @@ class Command(BaseCommand):
             try:
                 user = User.objects.get(pk=options["user_id"])
             except AttributeError:
-                print("No user with id={} was found.  Run with --stats to display all the users.".format(options["user_id"]))
+                print(f"No user with id={options['user_id']} was found.  Run with --stats to display all the users.")
                 return
 
         user.is_superuser = False

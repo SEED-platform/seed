@@ -36,7 +36,7 @@ class BETTERClient:
         }
 
         try:
-            response = requests.request("GET", url, headers=headers)
+            response = requests.request("GET", url, headers=headers, timeout=60)
             valid = response.status_code == 200
             if not valid:
                 message = response.json()
@@ -61,7 +61,7 @@ class BETTERClient:
         }
 
         try:
-            response = requests.request("GET", url, headers=headers)
+            response = requests.request("GET", url, headers=headers, timeout=60)
             if response.status_code != 200:
                 return None, [f"Expected 200 response from BETTER but got {response.status_code}: {response.content}"]
         except Exception as e:
@@ -83,7 +83,7 @@ class BETTERClient:
         }
 
         try:
-            response = requests.request("POST", url, headers=headers, data=data)
+            response = requests.request("POST", url, headers=headers, data=data, timeout=60)
             if response.status_code == 201:
                 data = response.json()
                 portfolio_id = data["id"]
@@ -111,7 +111,7 @@ class BETTERClient:
         }
 
         try:
-            response = requests.request("POST", url, headers=headers, data=data)
+            response = requests.request("POST", url, headers=headers, data=data, timeout=60)
             if response.status_code == 201:
                 data = response.json()
                 logger.info(f"CREATED Analysis: {data}")
@@ -138,7 +138,7 @@ class BETTERClient:
         }
 
         try:
-            response = requests.request("GET", url, headers=headers)
+            response = requests.request("GET", url, headers=headers, timeout=60)
             if response.status_code not in {200, 202}:
                 return None, [f"Expected 200 or 202 response from BETTER but got {response.status_code}: {response.content}"]
         except Exception as e:
@@ -161,7 +161,7 @@ class BETTERClient:
         }
 
         try:
-            response = requests.request("GET", url, headers=headers)
+            response = requests.request("GET", url, headers=headers, timeout=60)
             if response.status_code != 200:
                 return None, [f"Expected 200 response from BETTER but got {response.status_code}: {response.content}"]
         except Exception as e:
@@ -183,7 +183,7 @@ class BETTERClient:
         }
 
         try:
-            response = requests.request("GET", url, headers=headers)
+            response = requests.request("GET", url, headers=headers, timeout=60)
             if response.status_code != 200:
                 return [f"Expected 200 response from BETTER but got {response.status_code}: {response.content}"]
         except Exception as e:
@@ -239,7 +239,7 @@ class BETTERClient:
         params = {"unit": "IP"}
 
         try:
-            response = requests.request("GET", url, headers=headers, params=params)
+            response = requests.request("GET", url, headers=headers, params=params, timeout=60)
             if response.status_code != 200:
                 return None, [f"Expected 200 response from BETTER but got {response.status_code}: {response.content}"]
 
@@ -277,7 +277,7 @@ class BETTERClient:
             "Content-Type": "buildingsync/xml",
         }
         try:
-            response = requests.request("POST", url, headers=headers, data=bsync_content)
+            response = requests.request("POST", url, headers=headers, data=bsync_content, timeout=60)
             if response.status_code == 201:
                 data = response.json()
                 building_id = data["id"]
@@ -306,7 +306,7 @@ class BETTERClient:
         }
 
         try:
-            response = requests.request("POST", url, headers=headers, data=json.dumps(config))
+            response = requests.request("POST", url, headers=headers, data=json.dumps(config), timeout=60)
         except ConnectionError:
             message = "BETTER service could not create analytics for this building"
             raise AnalysisPipelineError(message)
@@ -327,7 +327,7 @@ class BETTERClient:
         params = {"unit": "IP"}
 
         try:
-            response = requests.request("GET", url, headers=headers, params=params)
+            response = requests.request("GET", url, headers=headers, params=params, timeout=60)
             standalone_html = response.text.encode("utf8").decode()
 
         except ConnectionError:
@@ -357,7 +357,7 @@ class BETTERClient:
             "Authorization": self._token,
         }
         try:
-            response = requests.request("GET", url, headers=headers)
+            response = requests.request("GET", url, headers=headers, timeout=60)
             if response.status_code == 404:
                 return None, [f'BETTER analysis could not be fetched: Status Code: 404 {response.json()["detail"]}']
             if response.status_code != 200:
@@ -402,7 +402,9 @@ class BETTERClient:
             return generation_result in {"COMPLETE", "FAILED"}
 
         try:
-            response = polling.poll(lambda: requests.request("GET", url, headers=headers), check_success=is_ready, timeout=300, step=5)
+            response = polling.poll(
+                lambda: requests.request("GET", url, headers=headers, timeout=60), check_success=is_ready, timeout=300, step=5
+            )
         except TimeoutError:
             return None, ["BETTER analysis timed out"]
 

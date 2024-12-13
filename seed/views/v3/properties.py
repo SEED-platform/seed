@@ -1303,7 +1303,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             property_view = PropertyView.objects.select_related("state").get(pk=pk, cycle__organization_id=org_id)
         except PropertyView.DoesNotExist:
             return JsonResponse(
-                {"success": False, "message": "Cannot match a PropertyView with pk=%s" % pk}, status=status.HTTP_400_BAD_REQUEST
+                {"success": False, "message": f"Cannot match a PropertyView with pk={pk}"}, status=status.HTTP_400_BAD_REQUEST
             )
 
         bs = BuildingSync()
@@ -1330,7 +1330,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         try:
             property_view = PropertyView.objects.select_related("state").get(pk=pk, cycle__organization_id=org_id)
         except PropertyView.DoesNotExist:
-            return JsonResponse({"success": False, "message": "Cannot match a PropertyView with pk=%s" % pk})
+            return JsonResponse({"success": False, "message": f"Cannot match a PropertyView with pk={pk}"})
 
         hpxml = HPXML()
         # Check if there is an existing BuildingSync XML file to merge

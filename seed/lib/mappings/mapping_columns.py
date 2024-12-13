@@ -145,7 +145,7 @@ class MappingColumns:
         if mappings and len(mappings) > 0:
             return self.data[raw_column]["mappings"][0]
         else:
-            _log.debug("There are no suggested mappings for the column %s, setting to field name" % raw_column)
+            _log.debug(f"There are no suggested mappings for the column {raw_column}, setting to field name")
             return "PropertyState", raw_column, 100
 
     @property
@@ -199,7 +199,7 @@ class MappingColumns:
         :return: None
 
         """
-        _log.debug("resolving duplicate field for %s" % dup_map_field)
+        _log.debug(f"resolving duplicate field for {dup_map_field}")
 
         # decide which raw_column should "win"
         raw_columns = sorted(raw_columns, key=cmp_to_key(sort_duplicates))

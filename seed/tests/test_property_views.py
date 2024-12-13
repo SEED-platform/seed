@@ -598,7 +598,7 @@ class PropertyViewTests(DataMappingBaseTestCase):
         self.assertEqual(len(results), 5)
 
         # check for 2 items with 123
-        query_params = "?cycle={}&organization_id={}&identifier={}".format(self.cycle.pk, self.org.pk, "123")
+        query_params = f"?cycle={self.cycle.pk}&organization_id={self.org.pk}&identifier={'123'}"
         url = reverse("api:v3:properties-search") + query_params
         response = self.client.get(url)
         results = json.loads(response.content)
@@ -611,7 +611,7 @@ class PropertyViewTests(DataMappingBaseTestCase):
         self.assertEqual(len(results), 2)
 
         # check the combination of both the identifier and the analysis state
-        query_params = "?cycle={}&organization_id={}&identifier={}".format(self.cycle.pk, self.org.pk, "Long")
+        query_params = f"?cycle={self.cycle.pk}&organization_id={self.org.pk}&identifier={'Long'}"
         url = reverse("api:v3:properties-search") + query_params
         response = self.client.get(url)
         results = json.loads(response.content)

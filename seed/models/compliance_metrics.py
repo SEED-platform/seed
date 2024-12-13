@@ -41,7 +41,7 @@ class ComplianceMetric(models.Model):
     cycles = models.ManyToManyField(Cycle, related_name="cycles", blank=True)
 
     def __str__(self):
-        return "Program Metric - %s" % self.name
+        return f"Program Metric - {self.name}"
 
     def evaluate(self, user_ali):
         response = {

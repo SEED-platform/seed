@@ -63,7 +63,7 @@ class GeocodeViewTests(TestCase):
 
         post_params = {"property_view_ids": [property_view.id], "taxlot_view_ids": []}
 
-        url = reverse("api:v3:geocode-geocode-by-ids") + "?organization_id=%s" % self.org.pk
+        url = reverse("api:v3:geocode-geocode-by-ids") + f"?organization_id={self.org.pk}"
         self.client.post(url, post_params)
 
         refreshed_property = PropertyState.objects.get(pk=property.id)
@@ -89,7 +89,7 @@ class GeocodeViewTests(TestCase):
 
             post_params = {"property_view_ids": [property_view.id], "taxlot_view_ids": []}
 
-            url = reverse("api:v3:geocode-geocode-by-ids") + "?organization_id=%s" % self.org.pk
+            url = reverse("api:v3:geocode-geocode-by-ids") + f"?organization_id={self.org.pk}"
             response = self.client.post(url, post_params)
             self.assertEqual(response.status_code, status.HTTP_200_OK)
 
@@ -107,7 +107,7 @@ class GeocodeViewTests(TestCase):
 
             post_params = {"property_view_ids": [property_view.id], "taxlot_view_ids": []}
 
-            url = reverse("api:v3:geocode-geocode-by-ids") + "?organization_id=%s" % self.org.pk
+            url = reverse("api:v3:geocode-geocode-by-ids") + f"?organization_id={self.org.pk}"
             response = self.client.post(url, post_params)
             self.assertEqual(response.status_code, status.HTTP_412_PRECONDITION_FAILED)
 
@@ -328,7 +328,7 @@ class GeocodeViewPermissionsTest(AccessLevelBaseTestCase):
         assert sum(result.json()["tax_lots"].values()) == 1
 
     def test_geocode_endpoint(self):
-        url = reverse("api:v3:geocode-geocode-by-ids") + "?organization_id=%s" % self.org.pk
+        url = reverse("api:v3:geocode-geocode-by-ids") + f"?organization_id={self.org.pk}"
 
         self.login_as_child_member()
         self.client.post(url, self.post_params)

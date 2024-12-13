@@ -26,12 +26,12 @@ class Command(BaseCommand):
         # verify that the user exists
         org = Organization.objects.filter(name=options["organization_name"]).first()
         if not org:
-            self.stdout.write("No organization found for %s" % options["organization_name"])
+            self.stdout.write(f"No organization found for {options['organization_name']}")
             sys.exit(1)
 
         u = User.objects.filter(username=options["username"]).first()
         if not u:
-            self.stdout.write("No user found for %s" % options["username"])
+            self.stdout.write(f"No user found for {options['username']}")
             sys.exit(1)
 
         ou, _ = OrganizationUser.objects.get_or_create(user=u, organization=org)
