@@ -49,11 +49,9 @@ angular.module('SEED.controller.meter_edit_modal', []).controller('meter_edit_mo
       $scope.system_options = $scope.potentialSystems;
     }).then(() => {
       set_config();
-      if ($scope.config.system_id)
-      {
+      if ($scope.config.system_id) {
         $scope.service_options = $scope.system_options.find((system) => system.id === $scope.config.system_id).services;
       }
-
     });
 
     if (property_id && !view_id) {
