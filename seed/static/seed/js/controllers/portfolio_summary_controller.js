@@ -244,7 +244,7 @@ angular.module('SEED.controller.portfolio_summary', [])
 
       const load_summary = () => {
         $scope.summary_loading = true;
-        $scope.show_access_level_instances = true;
+        $scope.show_access_level_instances = false;
         $scope.summary_valid = false;
 
         goal_service.get_portfolio_summary($scope.goal.id).then((result) => {
@@ -670,7 +670,7 @@ angular.module('SEED.controller.portfolio_summary', [])
             enablePinning: false,
             exporterSuppressExport: true,
             pinnedLeft: true,
-            visible: true,
+            visible: false,
             width: 100,
             cellClass: 'ali-cell',
             headerCellClass: 'ali-header'
