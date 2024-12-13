@@ -649,6 +649,7 @@ angular.module('SEED.controller.organization_settings', []).controller('organiza
     $scope.audit_template_report_types = [
       'ASHRAE Level 2 Report',
       'Atlanta Report',
+      'Baltimore Energy Audit Report',
       'Berkeley Report',
       'BRICR Phase 0/1',
       'Brisbane Energy Audit Report',
@@ -656,10 +657,16 @@ angular.module('SEED.controller.organization_settings', []).controller('organiza
       'DC BEPS RCx Report',
       'Demo City Report',
       'Denver Energy Audit Report',
+      'EE-RLF Template',
       'Energy Trust of Oregon Report',
+      'Los Angeles Report',
       'Minneapolis Energy Evaluation Report',
+      'New York City Energy Efficiency Report',
+      'Office of Recapitalization Energy Audit Report',
       'Open Efficiency Report',
       'San Francisco Report',
+      'St. Louis RCx Report',
+      'St. Louis Report',
       'WA Commerce Clean Buildings - Form D Report',
       'WA Commerce Grants Report'
     ];
