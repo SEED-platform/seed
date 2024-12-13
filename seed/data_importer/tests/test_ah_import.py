@@ -35,8 +35,8 @@ class TestAHImportFile(AssertDictSubsetMixin, DataMappingBaseTestCase):
             "data_state": DATA_STATE_MAPPING,
         }
 
-        progress_data = ProgressData(func_name="match_buildings", unique_id=self.import_file)
-        sub_progress_data = ProgressData(func_name="match_sub_progress", unique_id=self.import_file)
+        progress_data = ProgressData(func_name="match_buildings", unique_id=self.import_file.id)
+        sub_progress_data = ProgressData(func_name="match_sub_progress", unique_id=self.import_file.id)
         self.action_args = [self.import_file.id, progress_data.key, sub_progress_data.key]
 
         self.blank_result = {
