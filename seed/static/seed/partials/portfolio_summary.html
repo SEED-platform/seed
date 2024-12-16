@@ -21,8 +21,27 @@
       <!-- GOAL SELECT -->
       <div class="goal-select-wrapper">
         <label class="goal-select-label" for="goal-select" ng-show="goal" translate>GOAL</label>
-        <div class="goal-selection" ng-show="goal">
-          <select name="goal-select" id="goal-select" ng-options="goal as goal.name for goal in goals" ng-model="goal"></select>
+        <div uib-dropdown class="dropdown-search">
+          <button id="" type="button" class="btn dropdown-search-toggle" uib-dropdown-toggle>
+            <span>{$ goal.name || 'Goals' $}</span>
+            <i class="fa-solid fa-chevron-down"></i>
+          </button>
+          <ul uib-dropdown-menu class="dropdown-menu" role="menu">
+            <li>
+              <input
+                class="form-control"
+                type="text"
+                placeholder="Search Goals..."
+                ng-model="search_query"
+                ng-click="$event.stopPropagation()"
+                ng-change="search_for_goals(search_query)"
+                aria-label="Search options"
+              />
+            </li>
+            <li class="drowndown-option" ng-repeat="goal in goal_options">
+              <a class="option-name" ng-click="select_goal(goal)">{$ goal.name $}</a>
+            </li>
+          </ul>
         </div>
         <button class="btn btn-primary portfolio-summary-btn" type="submit" ng-click="open_goal_editor_modal()" ng-if="write_permission">{$:: 'Configure Goals' | translate $}</button>
       </div>
@@ -145,7 +164,7 @@
   <!-- Data Table -->
   <div id="portfolio-summary-grid" ng-if="data_valid">
     <div id="portfolioSummary-gridOptions-wrapper" class="wide-900">
-      <div ui-grid="gridOptions" ui-grid-save-state ui-grid-pinning ui-grid-resize-columns ui-grid-exporter ui-grid-edit ui-grid-selection style="display: flex; width: 100%; overflow:auto;"></div>
+      <div ui-grid="gridOptions" ui-grid-save-state ui-grid-pinning ui-grid-resize-columns ui-grid-exporter ui-grid-edit ui-grid-selection style="display: flex; width: 100%; overflow: auto"></div>
     </div>
   </div>
   <div class="portfolio-summary-loading" ng-if="data_loading && !data_valid" style="margin: 100px 20px">

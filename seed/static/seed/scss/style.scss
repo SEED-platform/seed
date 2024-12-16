@@ -5689,3 +5689,41 @@ tags-input .tags .tag-item {
   padding-right: 0 !important;
   padding-top: 0 !important;
 }
+
+.dropdown-search {
+  background: #f5f5f5;
+  border-radius: 5px;
+  padding: 1px;
+
+  .dropdown-search-toggle {
+    display: flex;
+    justify-content: space-between;
+    width: 30vw;
+    max-width: 512px;
+    background: none;
+
+    span {
+      text-overflow: ellipsis;
+      overflow: hidden;
+    }
+  }
+
+  .dropdown-menu {
+    background: $gray;
+    max-height: 600px;
+    overflow-y: auto;
+    min-width: 400px;
+    max-width: 750px;
+
+    .option-name {
+      color: #fff;
+      text-overflow: ellipsis;
+      overflow: hidden;
+    }
+
+    .option-name:hover {
+      background: $darkBlue;
+      color: #fff;
+    }
+  }
+}

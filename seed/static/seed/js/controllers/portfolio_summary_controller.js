@@ -65,15 +65,22 @@ angular.module('SEED.controller.portfolio_summary', [])
       const table_column_ids = [];
       $scope.selected_count = 0;
       $scope.selected_option = 'none';
+      $scope.search_query = '';
+
+      $scope.search_for_goals = (query) => {
+        const pattern = query.split('').join('.*');
+        const regex = new RegExp(pattern, 'i');
+        $scope.goal_options = $scope.goals.filter((goal) => regex.test(goal.name));
+      };
 
       const initialize_columns = () => {
         $scope.columns.forEach((col) => {
-          const matching = ["pm_property_id", "property_name"].includes(col.column_name);
+          const matching = ['pm_property_id', 'property_name'].includes(col.column_name);
           const area = col.data_type === 'area';
           const eui = col.data_type === 'eui';
           const other = ['property_name', 'property_type', 'year_built'].includes(col.column_name);
 
-          if ( matching || eui || area || other) table_column_ids.push(col.id);
+          if (matching || eui || area || other) table_column_ids.push(col.id);
           if (eui) $scope.eui_columns.push(col);
           if (area) $scope.area_columns.push(col);
           if (matching) matching_column_names.push(col.column_name);
@@ -113,6 +120,7 @@ angular.module('SEED.controller.portfolio_summary', [])
       const get_goals = (goal_name = false) => {
         goal_service.get_goals().then((result) => {
           $scope.goals = result.goals;
+          $scope.goal_options = result.goals;
           $scope.goal = goal_name ?
             $scope.goals.find((goal) => goal.name === goal_name) :
             $scope.goals[0];
@@ -126,6 +134,10 @@ angular.module('SEED.controller.portfolio_summary', [])
       const reset_data = () => {
         format_goal_details();
         refresh_data();
+      };
+
+      $scope.select_goal = (selected_goal) => {
+        $scope.goal = selected_goal;
       };
 
       // If goal changes, reset grid filters and repopulate ui-grids
