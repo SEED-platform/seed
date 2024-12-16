@@ -503,7 +503,7 @@ class PortfolioManagerImport:
                 break
 
         if report_generation_complete:
-            _log.debug("Report appears to have been generated successfully (attempt_count=" + str(attempt_count) + ")")
+            _log.debug(f"Report appears to have been generated successfully (attempt_count={attempt_count})")
         else:
             raise PMError("Template report not generated successfully; aborting.")
 
