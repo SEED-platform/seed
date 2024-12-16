@@ -1172,7 +1172,7 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
       if (_.isUndefined(data)) data = $scope.data;
       const visibleColumns = [
         ..._.map($scope.columns, 'name'),
-        ...['$$treeLevel', 'notes_count', 'meters_exist_indicator', 'groups_exist', 'merged_indicator', 'id', 'property_state_id', 'property_view_id', 'taxlot_state_id', 'taxlot_view_id'],
+        ...['$$treeLevel', 'notes_count', 'meters_exist_indicator', 'groups_indicator', 'merged_indicator', 'id', 'property_state_id', 'property_view_id', 'taxlot_state_id', 'taxlot_view_id'],
         ...$scope.organization.access_level_names
       ];
 
