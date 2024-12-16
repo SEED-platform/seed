@@ -4,7 +4,7 @@
   <h4 class="modal-title" ng-if="action === 'edit'"><span translate>Edit Service for System</span> {$ system.name $}</h4>
 </div>
 <div class="modal-body">
-  <form id="sericeForm" name="serviceForm" role="form" ng-submit="submitServiceForm(sericeForm)" novalidate>
+  <form id="serviceForm" name="serviceForm" role="form" ng-submit="submitServiceForm(serviceForm)" novalidate>
     <div ng-if="action !== 'remove'">
       <!-- Name input -->
       <div class="form-group">
@@ -24,5 +24,5 @@
 </div>
 <div class="modal-footer">
   <button type="button" class="btn btn-default" style="min-width: 90px" ng-click="cancel()" translate>Cancel</button>
-  <button type="submit" class="btn btn-primary" form="sericeForm" ng-disabled="sericeForm.$invalid">{$ capitalize(action) $} Service</button>
+  <button type="submit" class="btn btn-primary" form="serviceForm" ng-disabled="serviceForm.$invalid">{$ capitalize(action) $} Service</button>
 </div>

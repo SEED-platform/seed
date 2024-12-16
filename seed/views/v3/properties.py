@@ -1787,7 +1787,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         manual_parameters=[
             AutoSchemaHelper.query_org_id_field(),
             AutoSchemaHelper.query_integer_field(
-                name="access_leevl_instance_id", required=True, description="Access Level Instance to move properties to"
+                name="access_level_instance_id", required=True, description="Access Level Instance to move properties to"
             ),
         ],
         request_body=AutoSchemaHelper.schema_factory(

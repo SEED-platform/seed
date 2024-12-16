@@ -11,7 +11,7 @@ import jellyfish
 def sort_scores(a, b):
     """
     Custom sort method in order to create a bias around the use of PropertyState over TaxLotState. This just works
-    because the extra string comparison concats the table name with the field name. Since P is < T, it returns
+    because the extra string comparison concatenates the table name with the field name. Since P is < T, it returns
     the correct order.
     """
     if a[2] > b[2]:

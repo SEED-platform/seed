@@ -203,4 +203,4 @@ def get_user(user_email, org_id):
         user = User.objects.get(email=user_email, orgs=org_id)
         return user, None
     except User.DoesNotExist:
-        return None, JsonResponse({"status": "erorr", "message": "No such resource."})
+        return None, JsonResponse({"status": "error", "message": "No such resource."})

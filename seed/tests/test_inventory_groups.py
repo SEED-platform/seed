@@ -195,7 +195,7 @@ class GroupMeterTests(AccessLevelBaseTestCase):
             name="test2", organization=self.org, inventory_type=VIEW_LIST_TAXLOT, access_level_instance=self.org.root
         )
 
-        # setup: create 3 properties with 2 meters each. Each mmeter has 2 readings
+        # setup: create 3 properties with 2 meters each. Each meter has 2 readings
         view1 = self.property_view_factory.get_property_view()
         view2 = self.property_view_factory.get_property_view()
         view3 = self.property_view_factory.get_property_view()

@@ -113,7 +113,7 @@ def get_filtered_results(request: Request, inventory_type: Literal["property", "
     except ValueError as e:
         return JsonResponse({"status": "error", "message": f"Error filtering: {e!s}"}, status=status.HTTP_400_BAD_REQUEST)
 
-    # If we are returning the children, build the childrens filters.
+    # If we are returning the children, build the child filters.
     if include_related:
         other_inventory_type: Literal["property", "taxlot"] = "taxlot" if inventory_type == "property" else "property"
 
