@@ -123,7 +123,7 @@ def check_progress(main_url, header, progress_key):
     print(f"checking progress {progress_key}")
     try:
         progress_result = requests.get(main_url + f"/api/v3/progress/{progress_key}/", headers=header, timeout=300)
-        print("... {} ...".format(progress_result.json()["progress"]))
+        print(f"... {progress_result.json()['progress']} ...")
     except (urllib3.exceptions.ProtocolError, RemoteDisconnected, requests.exceptions.ConnectionError):
         print("Server is not responding... trying again in a few seconds")
         progress_result = None

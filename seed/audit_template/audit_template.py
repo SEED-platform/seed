@@ -138,7 +138,7 @@ class AuditTemplate:
 
         url = f"{self.API_URL}/rp/submissions/{audit_template_submission_id}.{report_format}?token={self.token}"
         try:
-            response = requests.request("GET", url, headers=headers)
+            response = requests.request("GET", url, headers=headers, timeout=60)
 
             if response.status_code != 200:
                 return (
@@ -171,7 +171,7 @@ class AuditTemplate:
                 # AT submissions are paginated (max per_page = 100). Loop through all pages to return all submissions
                 while True:
                     params["page"] = idx
-                    response = requests.request("GET", url, headers=headers, params=params)
+                    response = requests.request("GET", url, headers=headers, params=params, timeout=60)
                     # Raise an exception for non 2XX responses
                     response.raise_for_status()
 
@@ -200,7 +200,7 @@ class AuditTemplate:
         headers = {"Accept": "application/xml"}
 
         try:
-            response = requests.request("POST", url, headers=headers, files=form_data)
+            response = requests.request("POST", url, headers=headers, files=form_data, timeout=60)
             if response.status_code != 200:
                 return None, f"Expected 200 response from Audit Template get_api_token but got {response.status_code}: {response.content}"
         except Exception as e:
@@ -242,7 +242,7 @@ class AuditTemplate:
         try:
             files = {"audit_file": ("at_export.xml", xml_string)}
             body = {"token": token}
-            response = requests.request("POST", url, data=body, files=files)
+            response = requests.request("POST", url, data=body, files=files, timeout=60)
             if response.status_code != 200:
                 return None, [
                     "error",

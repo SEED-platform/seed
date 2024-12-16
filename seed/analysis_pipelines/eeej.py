@@ -158,7 +158,7 @@ def _fetch_census_tract(pv_data):
     headers = {"accept": "application/json"}
 
     try:
-        response = requests.request("GET", url, headers=headers)
+        response = requests.request("GET", url, headers=headers, timeout=60)
         if response.status_code != 200:
             logger.error(
                 f"EEEJ Analysis: Expected 200 response from CENSUS GEOCODER service but got {response.status_code}: {response.content} for location: {pv_data['location']}"

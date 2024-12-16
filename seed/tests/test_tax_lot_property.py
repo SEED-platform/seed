@@ -135,7 +135,7 @@ class TestTaxLotProperty(DataMappingBaseTestCase):
         # call the API
         url = reverse_lazy("api:v3:tax_lot_properties-export")
         response = self.client.post(
-            url + "?{}={}&{}={}".format("organization_id", self.org.pk, "inventory_type", "properties"),
+            f"{url}?organization_id={self.org.pk}&inventory_type=properties",
             data=json.dumps({"columns": columns, "export_type": "csv"}),
             content_type="application/json",
         )
@@ -163,7 +163,7 @@ class TestTaxLotProperty(DataMappingBaseTestCase):
         # call the API
         url = reverse_lazy("api:v3:tax_lot_properties-export")
         response = self.client.post(
-            url + "?{}={}&{}={}".format("organization_id", self.org.pk, "inventory_type", "properties"),
+            f"{url}?organization_id={self.org.pk}&inventory_type=properties",
             data=json.dumps({"columns": columns, "export_type": "csv"}),
             content_type="application/json",
         )
@@ -197,7 +197,7 @@ class TestTaxLotProperty(DataMappingBaseTestCase):
         # call the API
         url = reverse_lazy("api:v3:tax_lot_properties-export")
         response = self.client.post(
-            url + "?{}={}&{}={}".format("organization_id", self.org.pk, "inventory_type", "properties"),
+            f"{url}?organization_id={self.org.pk}&inventory_type=properties",
             data=json.dumps({"columns": columns, "export_type": "xlsx"}),
             content_type="application/json",
         )
@@ -225,7 +225,7 @@ class TestTaxLotProperty(DataMappingBaseTestCase):
         # call the API
         url = reverse_lazy("api:v3:tax_lot_properties-export")
         response = self.client.post(
-            url + "?{}={}&{}={}".format("organization_id", self.org.pk, "inventory_type", "properties"),
+            f"{url}?organization_id={self.org.pk}&inventory_type=properties",
             data=json.dumps({"columns": columns, "export_type": "geojson"}),
             content_type="application/json",
         )

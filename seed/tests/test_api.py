@@ -49,7 +49,7 @@ class TestApi(TestCase):
             end=date(2015, 12, 31),
         )
         auth_string = base64.urlsafe_b64encode(bytes(f"{self.user.username}:{self.user.api_key}", "utf-8"))
-        self.auth_string = "Basic {}".format(auth_string.decode("utf-8"))
+        self.auth_string = f"Basic {auth_string.decode('utf-8')}"
         self.headers = {"Authorization": self.auth_string}
 
         self.default_reports_x_axis_options = Column.objects.filter(organization=self.org, table_name="PropertyState")[0:3]
@@ -287,13 +287,13 @@ class TestApi(TestCase):
         )
         self.assertEqual(r.status_code, 200)
 
-        r = self.client.get("/api/v3/organizations/%s/" % organization_id, follow=True, **self.headers)
+        r = self.client.get(f"/api/v3/organizations/{organization_id}/", follow=True, **self.headers)
         self.assertEqual(r.status_code, 200)
         r = json.loads(r.content)
         self.assertEqual(r["organization"]["number_of_users"], 2)
 
         # get org users
-        r = self.client.get("/api/v3/organizations/%s/users/" % organization_id, content_type="application/json", **self.headers)
+        r = self.client.get(f"/api/v3/organizations/{organization_id}/users/", content_type="application/json", **self.headers)
         self.assertEqual(r.status_code, 200)
         # {
         #     "status": "success",
@@ -335,7 +335,7 @@ class TestApi(TestCase):
         r = json.loads(r.content)
         self.assertEqual(r["status"], "success")
 
-        r = self.client.get("/api/v3/organizations/%s/users/" % organization_id, content_type="application/json", **self.headers)
+        r = self.client.get(f"/api/v3/organizations/{organization_id}/users/", content_type="application/json", **self.headers)
         self.assertEqual(r.status_code, 200)
         r = json.loads(r.content)
         new_user = next(i for i in r["users"] if i["last_name"] == "Tarth")
@@ -346,7 +346,7 @@ class TestApi(TestCase):
         r = json.loads(r.content)
         organization_id = self.get_org_id(r, self.user.username)
 
-        r = self.client.get("/api/v3/organizations/%s/query_threshold/" % organization_id, follow=True, **self.headers)
+        r = self.client.get(f"/api/v3/organizations/{organization_id}/query_threshold/", follow=True, **self.headers)
         self.assertEqual(r.status_code, 200)
         r = json.loads(r.content)
         self.assertEqual(r["status"], "success")
@@ -357,7 +357,7 @@ class TestApi(TestCase):
         r = json.loads(r.content)
         organization_id = self.get_org_id(r, self.user.username)
 
-        r = self.client.get("/api/v3/organizations/%s/shared_fields/" % organization_id, follow=True, **self.headers)
+        r = self.client.get(f"/api/v3/organizations/{organization_id}/shared_fields/", follow=True, **self.headers)
 
         self.assertEqual(r.status_code, 200)
         r = json.loads(r.content)

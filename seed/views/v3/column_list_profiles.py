@@ -93,7 +93,7 @@ class ColumnListProfileViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelV
             org = Organization.objects.get(pk=org_id)
         except Organization.DoesNotExist:
             return JsonResponse(
-                {"status": "error", "message": "organization with id %s does not exist" % org_id}, status=status.HTTP_404_NOT_FOUND
+                {"status": "error", "message": f"organization with id {org_id} does not exist"}, status=status.HTTP_404_NOT_FOUND
             )
 
         if org.comstock_enabled and kwargs["pk"] == "null":
@@ -118,7 +118,7 @@ class ColumnListProfileViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelV
         )
         if clp is None:
             return JsonResponse(
-                {"status": "error", "message": "column list profile with id {} does not exist".format(kwargs["pk"])},
+                {"status": "error", "message": f"column list profile with id {kwargs['pk']} does not exist"},
                 status=status.HTTP_404_NOT_FOUND,
             )
 
@@ -144,7 +144,7 @@ class ColumnListProfileViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelV
             org = Organization.objects.get(pk=org_id)
         except Organization.DoesNotExist:
             return JsonResponse(
-                {"status": "error", "message": "organization with id %s does not exist" % org_id}, status=status.HTTP_404_NOT_FOUND
+                {"status": "error", "message": f"organization with id {org_id} does not exist"}, status=status.HTTP_404_NOT_FOUND
             )
 
         inventory_type = request.query_params.get("inventory_type")

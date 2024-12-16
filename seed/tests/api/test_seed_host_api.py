@@ -58,7 +58,7 @@ if "--standalone" in sys.argv:
     time.sleep(5)
 
 if "--noinput" in sys.argv:
-    print("Path to json is: {}".format(os.path.join(location, "api_test_user.json")))
+    print(f"Path to json is: {os.path.join(location, 'api_test_user.json')}")
     with open(os.path.join(location, "api_test_user.json"), encoding=locale.getpreferredencoding(False)) as f:
         j_data = json.load(f)
         hostname = j_data["name"]
@@ -89,7 +89,7 @@ else:
 # API is now used basic auth with base64 encoding.
 # NOTE: The header only accepts lower case usernames.
 encoded_credentials = base64.urlsafe_b64encode(bytes(f"{username.lower()}:{api_key}", "utf-8"))
-auth_string = "Basic {}".format(encoded_credentials.decode("utf-8"))
+auth_string = f"Basic {encoded_credentials.decode('utf-8')}"
 header = {
     "Authorization": auth_string,
     # "Content-Type": "application/json"

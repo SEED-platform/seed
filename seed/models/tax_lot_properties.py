@@ -7,8 +7,9 @@ from __future__ import annotations
 
 import logging
 from collections import defaultdict
+from collections.abc import Sequence
 from itertools import chain
-from typing import TYPE_CHECKING, Sequence
+from typing import TYPE_CHECKING
 
 from django.apps import apps
 from django.contrib.gis.db.models import GeometryField

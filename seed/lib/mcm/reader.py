@@ -155,8 +155,8 @@ class GreenButtonParser:
                         href = links[0]["@href"]
                         source_id = re.sub(r"/v./", "", href)
 
-                        # pass in the reading ID to determing meter_type etc.
-                        res = re.findall("MeterReading\/\d*", href)
+                        # pass in the reading ID to determining meter_type etc.
+                        res = re.findall("MeterReading/\d*", href)
                         meter_reading = None
                         if res:
                             meter_reading = res[0]

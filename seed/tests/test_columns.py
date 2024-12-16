@@ -291,7 +291,7 @@ class TestRenameColumns(TestCase):
         # create the test data and assemble the expected data result
         expected_data = []
         for i in range(20):
-            state = self.property_state_factory.get_property_state(data_state=DATA_STATE_MATCHING, extra_data={"string": "abc %s" % i})
+            state = self.property_state_factory.get_property_state(data_state=DATA_STATE_MATCHING, extra_data={"string": f"abc {i}"})
             expected_data.append({"string": state.extra_data["string"], "new_address_line_1": state.address_line_1})
 
         result = address_column.rename_column("new_address_line_1")
@@ -309,7 +309,7 @@ class TestRenameColumns(TestCase):
         expected_data = []
         for i in range(20):
             state = self.property_state_factory.get_property_state(
-                data_state=DATA_STATE_MATCHING, extra_data={self.extra_data_column.column_name: "abc %s" % i, "skip": "value"}
+                data_state=DATA_STATE_MATCHING, extra_data={self.extra_data_column.column_name: f"abc {i}", "skip": "value"}
             )
             expected_data.append(state.extra_data[self.extra_data_column.column_name])
 
@@ -328,7 +328,7 @@ class TestRenameColumns(TestCase):
         expected_data = []
         for i in range(20):
             state = self.property_state_factory.get_property_state(
-                data_state=DATA_STATE_MATCHING, extra_data={self.extra_data_column.column_name: "abc %s" % i, "skip": "value"}
+                data_state=DATA_STATE_MATCHING, extra_data={self.extra_data_column.column_name: f"abc {i}", "skip": "value"}
             )
             expected_data.append(state.extra_data[self.extra_data_column.column_name])
 
@@ -1183,7 +1183,7 @@ class TestColumnsByInventory(TestCase):
             if found:
                 continue
             else:
-                errors.append("Could not find column_name/table_name/data_type in Column.DATABASE_COLUMNS: %s" % column)
+                errors.append(f"Could not find column_name/table_name/data_type in Column.DATABASE_COLUMNS: {column}")
 
         self.assertEqual(errors, [])
 

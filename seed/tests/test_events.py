@@ -30,7 +30,7 @@ class EventTests(TransactionTestCase):
         self.other_org, _, _ = create_organization(self.user)
 
         auth_string = base64.urlsafe_b64encode(bytes(f"{self.user.username}:{self.user.api_key}", "utf-8"))
-        self.auth_string = "Basic {}".format(auth_string.decode("utf-8"))
+        self.auth_string = f"Basic {auth_string.decode('utf-8')}"
         self.headers = {"Authorization": self.auth_string}
 
         self.property_factory = FakePropertyFactory(organization=self.org)

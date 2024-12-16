@@ -1303,7 +1303,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             property_view = PropertyView.objects.select_related("state").get(pk=pk, cycle__organization_id=org_id)
         except PropertyView.DoesNotExist:
             return JsonResponse(
-                {"success": False, "message": "Cannot match a PropertyView with pk=%s" % pk}, status=status.HTTP_400_BAD_REQUEST
+                {"success": False, "message": f"Cannot match a PropertyView with pk={pk}"}, status=status.HTTP_400_BAD_REQUEST
             )
 
         bs = BuildingSync()
@@ -1330,7 +1330,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         try:
             property_view = PropertyView.objects.select_related("state").get(pk=pk, cycle__organization_id=org_id)
         except PropertyView.DoesNotExist:
-            return JsonResponse({"success": False, "message": "Cannot match a PropertyView with pk=%s" % pk})
+            return JsonResponse({"success": False, "message": f"Cannot match a PropertyView with pk={pk}"})
 
         hpxml = HPXML()
         # Check if there is an existing BuildingSync XML file to merge
@@ -1787,7 +1787,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         manual_parameters=[
             AutoSchemaHelper.query_org_id_field(),
             AutoSchemaHelper.query_integer_field(
-                name="access_leevl_instance_id", required=True, description="Access Level Instance to move properties to"
+                name="access_level_instance_id", required=True, description="Access Level Instance to move properties to"
             ),
         ],
         request_body=AutoSchemaHelper.schema_factory(
@@ -1872,12 +1872,9 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         response["Content-Disposition"] = f'attachment; filename="{filename}"'
 
         with tempfile.TemporaryDirectory() as tmpdir:
-            # Since `building_sync_to_cts` takes a filename and not a file object we can't create the temp file inside a `with` context
-            # This is because of how Windows handles file locking
-            output_file = tempfile.NamedTemporaryFile(delete=False)
-            output_filename = Path(output_file.name)
-            # Close the temp file to release the lock
-            output_file.close()
+            # Since `building_sync_to_cts` takes a filename and not a file object we have to ensure the temp file lock is released before using it (because Windows)
+            with tempfile.NamedTemporaryFile(delete=False) as output_file:
+                output_filename = Path(output_file.name)
 
             bsync_files = []
             for i, f in enumerate(building_files):

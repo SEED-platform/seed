@@ -165,8 +165,7 @@ class PropertyMeterReadingsExporter:
             end_of_month = make_aware(
                 datetime.combine(start.replace(day=monthrange(start.year, start.month)[1]), time.max), timezone=self.tz
             )
-            if end_of_month >= et:
-                end_of_month = et
+            end_of_month = min(et, end_of_month)
             ranges.append([start, end_of_month])
             start = end_of_month + timedelta(microseconds=1)
         return ranges

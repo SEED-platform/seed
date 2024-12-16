@@ -34,7 +34,7 @@ class Command(BaseCommand):
         # verify that the user exists
         org = Organization.objects.filter(name=options["organization_name"]).first()
         if not org:
-            self.stdout.write("No organization found for %s" % options["organization_name"])
+            self.stdout.write(f"No organization found for {options['organization_name']}")
             sys.exit(1)
 
         if not os.path.exists(options["csv_file"]):

@@ -99,26 +99,26 @@
             <i class="fa-solid fa-chevron-down"></i>
           </button>
           <ul uib-dropdown-menu class="dropdown-menu" role="menu">
-            <li class="drowndown-header goal-action">
+            <li class="dropdown-header goal-action">
               <a ng-if="selected_count !== inventory_pagination.total" ng-click="select_all()" translate>Select All</a>
               <span ng-if="selected_count === inventory_pagination.total" class="disabled-action" translate>Select All</span>
             </li>
-            <li class="drowndown-header goal-action">
+            <li class="dropdown-header goal-action">
               <a ng-if="!selected_count < 1" ng-click="select_none()" translate>Select None</a>
               <span ng-if="selected_count < 1" class="disabled-action" translate>Select None</span>
             </li>
-            <li class="drowndown-header goal-action">
+            <li class="dropdown-header goal-action">
               <a ng-if="!selected_count < 1" ng-click="open_update_labels_modal()" translate>Add/Remove Labels</a>
               <span ng-if="selected_count < 1" class="disabled-action" translate>Add/Remove Labels</span>
             </li>
-            <li class="drowndown-header goal-action">
+            <li class="dropdown-header goal-action">
               <a ng-if="!selected_count < 1" ng-click="open_bulk_edit_goalnotes_modal()" translate>Edit Fields for Selected</a>
               <span ng-if="selected_count < 1" class="disabled-action" translate>Edit Fields for Selected</span>
             </li>
-            <li class="drowndown-header goal-action">
+            <li class="dropdown-header goal-action">
               <a ng-click="run_data_quality_check()">Data Quality Check</a>
             </li>
-            <li class="drowndown-header goal-action">
+            <li class="dropdown-header goal-action">
               <a ng-if="!level_names.count < 2" ng-click="toggle_show_access_level_instances()">{$ show_access_level_instances ? 'Hide': 'Show' $} Access Levels</a>
               <span ng-if="level_names.count < 2" class="disabled-action">{$ show_access_level_instances ? 'Hide': 'Show' $} Access Levels</span>
             </li>
