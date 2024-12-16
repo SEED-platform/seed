@@ -5848,6 +5848,11 @@ tags-input .tags .tag-item {
   border-radius: 5px;
   padding: 1px;
 
+  .dropdown-search-input {
+    width: 98%;
+    margin: 0 1%;
+  }
+
   .dropdown-search-toggle {
     display: flex;
     justify-content: space-between;

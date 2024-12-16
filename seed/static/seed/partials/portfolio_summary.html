@@ -21,15 +21,15 @@
       <!-- GOAL SELECT -->
       <div class="goal-select-wrapper">
         <label class="goal-select-label" for="goal-select" ng-show="goal" translate>GOAL</label>
-        <div uib-dropdown class="dropdown-search">
+        <div uib-dropdown class="dropdown-search" ng-if="goal">
           <button id="" type="button" class="btn dropdown-search-toggle" uib-dropdown-toggle>
-            <span>{$ goal.name || 'Goals' $}</span>
+            <span>{$ goal.name $}</span>
             <i class="fa-solid fa-chevron-down"></i>
           </button>
           <ul uib-dropdown-menu class="dropdown-menu" role="menu">
             <li>
               <input
-                class="form-control"
+                class="form-control dropdown-search-input"
                 type="text"
                 placeholder="Search Goals..."
                 ng-model="search_query"
