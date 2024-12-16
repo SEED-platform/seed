@@ -339,6 +339,7 @@ class PortfolioManagerViewSet(GenericViewSet):
             _log.error("Unexpected error: %s" % str(e))
             return JsonResponse({"status": "error", "message": "An unexpected error occurred"}, status=500)
 
+
 # TODO: Move this object to /seed/utils/portfolio_manager.py
 class PortfolioManagerImport:
     """This class is essentially a wrapper around the ESPM login/template/report operations"""
@@ -556,7 +557,7 @@ class PortfolioManagerImport:
         # Now we need to wait while the report is being generated
         attempt_count = 0
         report_generation_complete = False
-        while attempt_count < 90:
+        while attempt_count < 24:
             attempt_count += 1
 
             # get the report data
@@ -580,7 +581,7 @@ class PortfolioManagerImport:
             if not this_matched_template:
                 raise PMError("Could not find a match for this report template id... odd at this point")
             if this_matched_template["pending"] == 1:
-                time.sleep(2)
+                time.sleep(5)
                 continue
             else:
                 report_generation_complete = True
@@ -711,7 +712,8 @@ class PortfolioManagerImport:
 
         # Now we need to wait while the report is being generated
         attempt_count = 0
-        while attempt_count < 90:
+        custom_download_found = False
+        while attempt_count < 24:
             attempt_count += 1
 
             # get the report data
@@ -730,17 +732,20 @@ class PortfolioManagerImport:
 
             notifications = response.json()["result"]["items"]
             if len(notifications) == 0:
-                time.sleep(2)
+                time.sleep(5)
                 continue
 
             latest_notification = notifications[-1]
             if latest_notification["notificationTypeCode"]["code"] == "CUSTOMPORTFOLIODOWNLOAD":
+                custom_download_found = True
                 break
 
             else:
-                time.sleep(2)
+                time.sleep(5)
                 continue
 
+        if not custom_download_found:
+            raise PMError("custom report not generated successfully; aborting.")
         custom_download_url = "https://portfoliomanager.energystar.gov/pm" + latest_notification["notificationParameters"][1]["url"]
         response = requests.request("GET", custom_download_url, headers=json_authenticated_headers)
         return response.content
