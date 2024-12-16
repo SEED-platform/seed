@@ -46,6 +46,8 @@
     'SEED.controller.confirm_column_settings_modal',
     'SEED.controller.confirm_organization_deletion_modal',
     'SEED.controller.create_column_modal',
+    'SEED.controller.service_modal',
+    'SEED.controller.system_modal',
     'SEED.controller.create_organization_modal',
     'SEED.controller.create_sub_organization_modal',
     'SEED.controller.cycle_admin',
@@ -93,6 +95,11 @@
     'SEED.controller.inventory_detail_analyses_modal',
     'SEED.controller.inventory_detail_column_list_profiles',
     'SEED.controller.inventory_detail_cycles',
+    'SEED.controller.inventory_group_list',
+    'SEED.controller.inventory_group_detail_dashboard',
+    'SEED.controller.inventory_group_detail_meters',
+    'SEED.controller.inventory_group_detail_systems',
+    'SEED.controller.inventory_group_modal',
     'SEED.controller.inventory_detail_map',
     'SEED.controller.inventory_detail_meters',
     'SEED.controller.inventory_detail_notes_modal',
@@ -110,6 +117,9 @@
     'SEED.controller.menu',
     'SEED.controller.merge_modal',
     'SEED.controller.meter_deletion_modal',
+    'SEED.controller.meter_edit_modal',
+    'SEED.controller.system_meter_readings_upload_modal',
+    'SEED.controller.group_meter_creation_modal',
     'SEED.controller.modified_modal',
     'SEED.controller.move_inventory_modal',
     'SEED.controller.new_member_modal',
@@ -149,6 +159,7 @@
     'SEED.controller.ubid_editor_modal',
     'SEED.controller.ubid_jaccard_index_modal',
     'SEED.controller.unmerge_modal',
+    'SEED.controller.update_inventory_groups_modal',
     'SEED.controller.update_item_labels_modal'
   ]);
   angular.module('SEED.filters', [
@@ -199,6 +210,7 @@
     'SEED.service.goal',
     'SEED.service.httpParamSerializerSeed',
     'SEED.service.inventory',
+    'SEED.service.inventory_group',
     'SEED.service.inventory_reports',
     'SEED.service.label',
     'SEED.service.main',
@@ -219,6 +231,8 @@
     'SEED.service.scenario',
     'SEED.service.search',
     'SEED.service.sensor',
+    'SEED.service.service',
+    'SEED.service.system',
     'SEED.service.simple_modal',
     'SEED.service.two_factor',
     'SEED.service.ubid',
@@ -1910,11 +1924,52 @@
           }
         })
         .state({
+          name: 'inventory_groups',
+          url: '/{inventory_type:properties|taxlots}/groups',
+          templateUrl: `${static_url}seed/partials/inventory_groups_list.html`,
+          controller: 'inventory_group_list_controller',
+          resolve: {
+            access_level_tree: [
+              'organization_service', 'user_service',
+              (organization_service, user_service) => {
+                const organization_id = user_service.get_organization().id;
+                return organization_service.get_descendant_access_level_tree(organization_id);
+              }
+            ],
+            inventory_groups: ['$stateParams', 'inventory_group_service', ($stateParams, inventory_group_service) => {
+              const inventory_type = $stateParams.inventory_type === 'properties' ? 'Property' : 'Tax Lot';
+              return inventory_group_service.get_groups(inventory_type);
+            }],
+            current_inventory_group: ['$stateParams', 'inventory_group_service', 'inventory_groups', 'inventory_service', ($stateParams, inventory_group_service, inventory_groups, inventory_service) => {
+              const validGroupIds = _.map(inventory_groups, 'id');
+              const lastGroupId = inventory_service.get_last_inventory_group($stateParams.inventory_type);
+              if (_.includes(validGroupIds, lastGroupId)) {
+                return _.find(inventory_groups, { id: lastGroupId });
+              }
+              const currentInventoryGroup = _.first(inventory_groups);
+              if (currentInventoryGroup) inventory_service.save_last_inventory_group(currentInventoryGroup.id, $stateParams.inventory_type);
+              return currentInventoryGroup;
+            }],
+            organization_payload: [
+              'user_service',
+              'organization_service',
+              (user_service, organization_service) => organization_service.get_organization(user_service.get_organization().id)
+            ]
+          }
+        })
+        .state({
           name: 'inventory_list',
           url: '/{inventory_type:properties|taxlots}',
           templateUrl: `${static_url}seed/partials/inventory_list.html`,
           controller: 'inventory_list_controller',
           resolve: {
+            access_level_tree: [
+              'organization_service', 'user_service',
+              (organization_service, user_service) => {
+                const organization_id = user_service.get_organization().id;
+                return organization_service.get_organization_access_level_tree(organization_id);
+              }
+            ],
             cycles: ['cycle_service', (cycle_service) => cycle_service.get_cycles()],
             profiles: [
               '$stateParams',
@@ -1973,7 +2028,125 @@
                 return inventory_service.get_taxlot_columns();
               }
             ],
-            organization_payload: ['user_service', 'organization_service', (user_service, organization_service) => organization_service.get_organization_brief(user_service.get_organization().id)]
+            organization_payload: ['user_service', 'organization_service', (user_service, organization_service) => organization_service.get_organization_brief(user_service.get_organization().id)],
+            inventory_groups: [
+              '$stateParams',
+              'inventory_group_service',
+              ($stateParams, inventory_group_service) => inventory_group_service.get_groups_for_inventory($stateParams.inventory_type, [])
+            ],
+            inventory_group_tab: [
+              '$stateParams',
+              'inventory_service',
+              ($stateParams, inventory_service) => {
+                inventory_service.save_last_inventory_group(-1);
+                return -1;
+              }
+            ],
+            group: () => null
+          }
+        })
+        .state({
+          name: 'inventory_groups_inventory_list',
+          url: '/{inventory_type:properties|taxlots}/groups/{group_id:int}/inventory',
+          templateUrl: `${static_url}seed/partials/inventory_list.html`,
+          controller: 'inventory_list_controller',
+          resolve: {
+            access_level_tree: [
+              'organization_service', 'user_service',
+              (organization_service, user_service) => {
+                const organization_id = user_service.get_organization().id;
+                return organization_service.get_organization_access_level_tree(organization_id);
+              }
+            ],
+            cycles: [
+              'cycle_service',
+              (cycle_service) => cycle_service.get_cycles()
+            ],
+            profiles: [
+              '$stateParams',
+              'inventory_service',
+              ($stateParams, inventory_service) => {
+                const inventory_type = $stateParams.inventory_type === 'properties' ? 'Property' : 'Tax Lot';
+                return inventory_service.get_column_list_profiles('List View Profile', inventory_type, true);
+              }
+            ],
+            current_profile: [
+              '$stateParams',
+              'inventory_service',
+              'profiles',
+              ($stateParams, inventory_service, profiles) => {
+                const validProfileIds = _.map(profiles, 'id');
+                const lastProfileId = inventory_service.get_last_profile($stateParams.inventory_type);
+                if (_.includes(validProfileIds, lastProfileId)) {
+                  return inventory_service.get_column_list_profile(lastProfileId);
+                }
+                const currentProfileId = _.first(profiles)?.id;
+                if (currentProfileId) {
+                  inventory_service.save_last_profile(currentProfileId, $stateParams.inventory_type);
+                  return inventory_service.get_column_list_profile(currentProfileId);
+                }
+                return null;
+              }
+            ],
+            filter_groups: [
+              '$stateParams',
+              'filter_groups_service',
+              ($stateParams, filter_groups_service) => {
+                const inventory_type = $stateParams.inventory_type === 'properties' ? 'Property' : 'Tax Lot';
+                return filter_groups_service.get_filter_groups(inventory_type);
+              }
+            ],
+            current_filter_group: [
+              '$stateParams',
+              'filter_groups_service',
+              'filter_groups',
+              ($stateParams, filter_groups_service, filter_groups) => {
+                const validFilterGroupIds = _.map(filter_groups, 'id');
+                const lastFilterGroupId = filter_groups_service.get_last_filter_group($stateParams.inventory_type);
+                if (_.includes(validFilterGroupIds, lastFilterGroupId)) {
+                  return filter_groups_service.get_filter_group(lastFilterGroupId);
+                }
+                return null;
+              }
+            ],
+            all_columns: [
+              '$stateParams',
+              'inventory_service',
+              ($stateParams, inventory_service) => {
+                if ($stateParams.inventory_type === 'properties') {
+                  return inventory_service.get_property_columns();
+                }
+                return inventory_service.get_taxlot_columns();
+              }
+            ],
+            organization_payload: [
+              'user_service',
+              'organization_service',
+              (user_service, organization_service) => organization_service.get_organization_brief(user_service.get_organization().id)
+            ],
+            derived_columns_payload: [
+              '$stateParams',
+              'derived_columns_service',
+              'organization_payload',
+              ($stateParams, derived_columns_service, organization_payload) => derived_columns_service.get_derived_columns(organization_payload.organization.id, $stateParams.inventory_type)
+            ],
+            inventory_groups: [
+              '$stateParams',
+              'inventory_group_service',
+              ($stateParams, inventory_group_service) => inventory_group_service.get_groups_for_inventory($stateParams.inventory_type, [])
+            ],
+            inventory_group_tab: [
+              '$stateParams',
+              'inventory_service',
+              ($stateParams, inventory_service) => {
+                inventory_service.save_last_inventory_group(-1);
+                return -1;
+              }
+            ],
+            group: [
+              '$stateParams', 'inventory_group_service', 'user_service',
+              ($stateParams, inventory_group_service, user_service) => inventory_group_service.get_group(user_service.get_organization().id, $stateParams.group_id)
+            ]
           }
         })
         .state({
@@ -1987,6 +2160,25 @@
               '$stateParams',
               'label_service',
               ($stateParams, label_service) => label_service.get_labels($stateParams.inventory_type).then((labels) => _.filter(labels, (label) => !_.isEmpty(label.is_applied)))
+            ],
+            group: () => null
+          }
+        })
+        .state({
+          name: 'inventory_group_map',
+          url: '/{inventory_type:properties|taxlots}/groups/{group_id:int}/map',
+          templateUrl: `${static_url}seed/partials/inventory_map.html`,
+          controller: 'inventory_map_controller',
+          resolve: {
+            cycles: ['cycle_service', (cycle_service) => cycle_service.get_cycles()],
+            labels: [
+              '$stateParams',
+              'label_service',
+              ($stateParams, label_service) => label_service.get_labels($stateParams.inventory_type).then((labels) => _.filter(labels, (label) => !_.isEmpty(label.is_applied)))
+            ],
+            group: [
+              '$stateParams', 'inventory_group_service', 'user_service',
+              ($stateParams, inventory_group_service, user_service) => inventory_group_service.get_group(user_service.get_organization().id, $stateParams.group_id)
             ]
           }
         })
@@ -2113,6 +2305,76 @@
               }
             ],
             organization_payload: ['user_service', 'organization_service', (user_service, organization_service) => organization_service.get_organization(user_service.get_organization().id)]
+          }
+        })
+        .state({
+          name: 'inventory_group_detail_dashboard',
+          url: '/{inventory_type:properties|taxlots}/groups/{group_id:int}',
+          templateUrl: `${static_url}seed/partials/inventory_group_detail_dashboard.html`,
+          controller: 'inventory_group_detail_dashboard_controller',
+          resolve: {
+            cycles: ['cycle_service', (cycle_service) => cycle_service.get_cycles()],
+            group: [
+              '$stateParams', 'inventory_group_service', 'user_service',
+              ($stateParams, inventory_group_service, user_service) => inventory_group_service.get_group(user_service.get_organization().id, $stateParams.group_id)
+            ]
+          }
+        })
+        .state({
+          name: 'inventory_group_detail_meters',
+          url: '/{inventory_type:properties|taxlots}/groups/{group_id:int}/meters',
+          templateUrl: `${static_url}seed/partials/inventory_group_detail_meters.html`,
+          controller: 'inventory_group_detail_meters_controller',
+          resolve: {
+            inventory_payload: () => null,
+            property_meter_usage: [
+              '$stateParams',
+              'inventory_group_service',
+              ($stateParams, inventory_group_service) => inventory_group_service.get_meter_usage($stateParams.group_id, 'Exact')
+            ],
+            meters: [
+              '$stateParams',
+              'inventory_group_service',
+              ($stateParams, inventory_group_service) => inventory_group_service.get_meters_for_group($stateParams.group_id)
+            ],
+            cycles: ['cycle_service', (cycle_service) => cycle_service.get_cycles()],
+            organization_payload: ['user_service', 'organization_service', (user_service, organization_service) => organization_service.get_organization(user_service.get_organization().id)],
+            group: [
+              '$stateParams', 'inventory_group_service', 'user_service',
+              ($stateParams, inventory_group_service, user_service) => inventory_group_service.get_group(user_service.get_organization().id, $stateParams.group_id)
+            ],
+            columns: [
+              '$stateParams',
+              'inventory_service',
+              'user_service',
+              ($stateParams, inventory_service, user_service) => {
+                const org_id = user_service.get_organization().id;
+                return inventory_service.get_property_column_names_for_org(org_id);
+              }
+            ]
+          }
+        })
+        .state({
+          name: 'inventory_group_detail_systems',
+          url: '/{inventory_type:properties|taxlots}/groups/{group_id:int}/systems',
+          templateUrl: `${static_url}seed/partials/inventory_group_detail_systems.html`,
+          controller: 'inventory_group_detail_systems_controller',
+          resolve: {
+            systems: ['$stateParams', 'system_service', 'user_service', ($stateParams, system_service, user_service) => {
+              const organization_id = user_service.get_organization().id;
+              const { group_id } = $stateParams;
+              return system_service.get_systems_by_type(organization_id, group_id);
+            }],
+            organization_payload: [
+              'user_service',
+              'organization_service',
+              (user_service, organization_service) => organization_service.get_organization(user_service.get_organization().id)
+            ],
+            cycles: ['cycle_service', (cycle_service) => cycle_service.get_cycles()],
+            group: [
+              '$stateParams', 'inventory_group_service', 'user_service',
+              ($stateParams, inventory_group_service, user_service) => inventory_group_service.get_group(user_service.get_organization().id, $stateParams.group_id)
+            ]
           }
         })
         .state({
@@ -2667,7 +2929,7 @@
               'organization_service',
               (organization_payload, organization_service) => {
                 const organization_id = organization_payload.organization.id;
-                return organization_service.get_organization_access_level_tree(organization_id);
+                return organization_service.get_descendant_access_level_tree(organization_id);
               }
             ],
             auth_payload: [

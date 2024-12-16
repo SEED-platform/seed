@@ -7,14 +7,13 @@ from calendar import monthrange
 from collections import defaultdict
 from datetime import datetime, time, timedelta
 
-from django.db.models import Q
 from django.utils.timezone import make_aware
 from pytz import timezone
 
 from config.settings.common import TIME_ZONE
 from seed.data_importer.utils import kbtu_thermal_conversion_factors, kgal_water_conversion_factors, usage_point_id
 from seed.lib.superperms.orgs.models import Organization
-from seed.models import Meter
+from seed.models import Meter, Service
 
 
 class PropertyMeterReadingsExporter:
@@ -26,13 +25,12 @@ class PropertyMeterReadingsExporter:
     settings are considered/used when returning actual reading magnitudes.
     """
 
-    def __init__(self, property_id, org_id, excluded_meter_ids, scenario_ids=None):
+    def __init__(self, meters, org_id):
         self._cache_thermal_factors = None
         self._cache_water_factors = None
         self._cache_org_country = None
 
-        scenario_ids = scenario_ids if scenario_ids is not None else []
-        self.meters = Meter.objects.filter(Q(property_id=property_id) | Q(scenario_id__in=scenario_ids)).exclude(pk__in=excluded_meter_ids)
+        self.meters = meters
         self.org_id = org_id
         org = Organization.objects.get(pk=org_id)
         self.org_meter_display_settings = org.display_meter_units
@@ -308,3 +306,22 @@ class PropertyMeterReadingsExporter:
             running_max[i] = max(curr_max, running_max[i - 1])
 
         return running_max[n - 1]
+
+
+def update_meter_connection(meter, meter_config):
+    service_id = meter_config.get("service_id")
+    meter.service = Service.objects.get(pk=service_id) if service_id else None
+
+    connection_lookup = {
+        "imported using": Meter.RECEIVING_SERVICE,
+        "imported offering": Meter.TOTAL_FROM_USERS,
+        "imported outside": Meter.IMPORTED,
+        "exported using": Meter.RETURNING_TO_SERVICE,
+        "exported offering": Meter.TOTAL_TO_USERS,
+        "exported outside": Meter.EXPORTED,
+    }
+    direction = meter_config.get("direction")
+    use = meter_config.get("use") or "outside"
+    meter.connection_type = connection_lookup[f"{direction} {use}"]
+
+    meter.save()

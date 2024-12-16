@@ -39,6 +39,8 @@ from seed.views.v3.green_assessment_urls import GreenAssessmentURLViewSet
 from seed.views.v3.green_assessments import GreenAssessmentViewSet
 from seed.views.v3.historical_notes import HistoricalNoteViewSet
 from seed.views.v3.import_files import ImportFileViewSet
+from seed.views.v3.inventory_group_mappings import InventoryGroupMappingViewSet
+from seed.views.v3.inventory_groups import InventoryGroupMetersViewSet, InventoryGroupViewSet
 from seed.views.v3.label_inventories import LabelInventoryViewSet
 from seed.views.v3.labels import LabelViewSet
 from seed.views.v3.measures import MeasureViewSet
@@ -61,6 +63,8 @@ from seed.views.v3.report_configurations import ReportConfigurationViewSet
 from seed.views.v3.salesforce_configs import SalesforceConfigViewSet
 from seed.views.v3.salesforce_mappings import SalesforceMappingViewSet
 from seed.views.v3.sensors import SensorViewSet
+from seed.views.v3.services import ServiceViewSet
+from seed.views.v3.systems import SystemViewSet
 from seed.views.v3.tax_lot_properties import TaxLotPropertyViewSet
 from seed.views.v3.taxlot_views import TaxlotViewViewSet
 from seed.views.v3.taxlots import TaxlotViewSet
@@ -95,6 +99,8 @@ api_v3_router.register(r"green_assessment_properties", GreenAssessmentPropertyVi
 api_v3_router.register(r"green_assessment_urls", GreenAssessmentURLViewSet, basename="green_assessment_urls")
 api_v3_router.register(r"green_assessments", GreenAssessmentViewSet, basename="green_assessments")
 api_v3_router.register(r"import_files", ImportFileViewSet, basename="import_files")
+api_v3_router.register(r"inventory_groups", InventoryGroupViewSet, basename="inventory_groups")
+api_v3_router.register(r"inventory_group_mappings", InventoryGroupMappingViewSet, basename="inventory_group_mappings")
 api_v3_router.register(r"labels", LabelViewSet, basename="labels")
 api_v3_router.register(r"measures", MeasureViewSet, basename="measures")
 api_v3_router.register(r"organizations", OrganizationViewSet, basename="organizations")
@@ -143,6 +149,13 @@ properties_router.register(r"goal_notes", GoalNoteViewSet, basename="property-go
 properties_router.register(r"historical_notes", HistoricalNoteViewSet, basename="property-historical-notes")
 properties_router.register(r"sensors", SensorViewSet, basename="property-sensors")
 
+inventory_group_router = nested_routers.NestedSimpleRouter(api_v3_router, r"inventory_groups", lookup="inventory_group")
+inventory_group_router.register(r"systems", SystemViewSet, basename="inventory_group-systems")
+inventory_group_router.register(r"meters", InventoryGroupMetersViewSet, basename="inventory_group-meters")
+
+system_router = nested_routers.NestedSimpleRouter(inventory_group_router, r"systems", lookup="system")
+system_router.register(r"services", ServiceViewSet, basename="system-services")
+
 # This is a third level router, so we need to register it with the second level router
 meters_router = nested_routers.NestedSimpleRouter(properties_router, r"meters", lookup="meter")
 meters_router.register(r"readings", MeterReadingViewSet, basename="property-meter-readings")
@@ -185,6 +198,8 @@ urlpatterns = [
     re_path(r"^", include(meters_router.urls)),
     re_path(r"^", include(property_measures_router.urls)),
     re_path(r"^", include(taxlots_router.urls)),
+    re_path(r"^", include(inventory_group_router.urls)),
+    re_path(r"^", include(system_router.urls)),
     re_path(r"^", include(public_organizations_router.urls)),
     re_path(r"^", include(public_cycles_router.urls)),
     re_path(r"^celery_queue/$", celery_queue, name="celery_queue"),

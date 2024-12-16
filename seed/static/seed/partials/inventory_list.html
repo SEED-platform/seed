@@ -7,16 +7,27 @@
 
 <div class="page_header_container" ng-cloak>
   <div class="page_header">
-    <div class="left page_action_container"></div>
+    <div class="left page_action_container">
+      <a ng-show="group_id != null" ui-sref="inventory_groups(::{inventory_type: inventory_type})" class="page_action">
+        <i class="fa-solid fa-chevron-left"></i>
+        {$:: 'Groups' | translate $}
+      </a>
+    </div>
     <div class="page_title">
-      <h1>{$:: (inventory_type === 'taxlots' ? 'Tax Lots' : 'Properties') | translate $}</h1>
+      <h1>{$:: (group_id? 'Group - ': '')$}{$:: (inventory_type === 'taxlots' ? 'Tax Lots' : 'Properties') | translate $}</h1>
     </div>
     <div class="right page_action_container"></div>
   </div>
 </div>
 
 <div class="section_nav_container">
-  <div class="section_nav" ng-include="::urls.static_url + 'seed/partials/inventory_nav.html'"></div>
+  <div ng-show="group_id == null" class="section_nav" ng-include="::urls.static_url + 'seed/partials/inventory_nav.html'"></div>
+  <div ng-show="group_id != null" class="section_nav" ng-include="::urls.static_url + 'seed/partials/inventory_group_detail_nav.html'"></div>
+</div>
+<div class="section_header_container" ng-if="group_id">
+  <div class="section_header fixed_height_short has_no_padding">
+    <div ng-include="::urls.static_url + 'seed/partials/inventory_detail_header.html'"></div>
+  </div>
 </div>
 
 <div class="inventory-list-controls columns">
@@ -41,10 +52,15 @@
         <option value="select_all" ng-disabled="selectedCount === inventory_pagination.total">{$:: 'Select All' | translate $} ({$ inventory_pagination.total | number:0 $})</option>
         <option value="select_none" ng-disabled="selectedCount < 1">{$:: 'Select None' | translate $}</option>
         <optgroup label="{$:: 'Selected ' + (inventory_type === 'properties' ? 'Properties' : 'Taxlots') | translate $} ({$ selected_display $})">
-          <option ng-show="menu.user.organization.user_role !== 'viewer'" value="open_merge_modal" ng-disabled="selectedParentCount < 2" translate>Merge</option>
-          <option ng-show="menu.user.organization.user_role !== 'viewer'" value="open_delete_modal" ng-disabled="selectedCount === 0" translate>Delete</option>
+          <option ng-show="menu.user.organization.user_role !== 'viewer'" value="open_update_labels_modal" ng-disabled="selectedCount === 0" translate>Add/Remove Labels</option>
+          <option ng-show="menu.user.organization.user_role !== 'viewer'" value="open_ubid_admin_modal" ng-disabled="selectedCount !== 1" translate>Add/Update UBID</option>
+          <option ng-show="menu.user.organization.user_role !== 'viewer'" value="open_update_inventory_groups_modal" ng-disabled="selectedCount === 0" translate>Add to/Remove from Groups</option>
+          <option ng-show="menu.user.organization.user_role !== 'viewer'" value="open_move_inventory_modal" ng-disabled="selectedCount === 0" translate>Change Inventory Access Level</option>
+          <option value="open_ubid_jaccard_index_modal" ng-disabled="selectedCount > 2" translate>Compare UBIDs</option>
+          <option ng-show="menu.user.organization.user_role !== 'viewer'" value="run_data_quality_check" ng-disabled="selectedCount === 0" translate>Data Quality Check</option>
+          <option ng-show="menu.user.organization.user_role !== 'viewer'" value="open_ubid_decode_modal" ng-disabled="selectedCount === 0" translate>Decode UBID</option>
+          <option ng-show="menu.user.organization.user_role !== 'viewer'" value="open_postoffice_modal" ng-disabled="selectedCount === 0" translate>Email</option>
           <option ng-show="menu.user.organization.user_role !== 'viewer'" value="open_export_modal" ng-disabled="selectedCount === 0" translate>Export</option>
-          <option ng-show="menu.user.organization.user_role !== 'viewer'" value="update_derived_columns" ng-disabled="selectedCount === 0" translate>Update Derived Data</option>
           <option
             ng-show="menu.user.organization.user_role !== 'viewer'"
             value="open_export_to_audit_template_modal"
@@ -57,20 +73,16 @@
           <option ng-show="menu.user.organization.user_role !== 'viewer'" value="open_export_cts_modal" ng-if="::inventory_type === 'properties'" ng-disabled="selectedCount === 0" translate>
             FEMP CTS Reporting Export
           </option>
-          <option ng-show="menu.user.organization.user_role !== 'viewer'" value="open_at_submission_import_modal" ng-disabled="selectedCount === 0" translate>Update with Audit Template</option>
-          <option ng-show="menu.user.organization.user_role !== 'viewer'" value="open_update_labels_modal" ng-disabled="selectedCount === 0" translate>Add/Remove Labels</option>
-          <option ng-show="menu.user.organization.user_role !== 'viewer'" value="run_data_quality_check" ng-disabled="selectedCount === 0" translate>Data Quality Check</option>
-          <option ng-show="menu.user.organization.user_role !== 'viewer'" value="open_postoffice_modal" ng-disabled="selectedCount === 0" translate>Email</option>
+          <option ng-show="menu.user.organization.user_role !== 'viewer'" value="open_geocode_modal" ng-disabled="selectedCount === 0" translate>Geocode</option>
+          <option ng-show="menu.user.organization.user_role !== 'viewer'" value="open_delete_modal" ng-disabled="selectedCount === 0" translate>Delete</option>
+          <option ng-show="menu.user.organization.user_role !== 'viewer'" value="open_merge_modal" ng-disabled="selectedParentCount < 2" translate>Merge</option>
           <option ng-show="menu.user.organization.user_role !== 'viewer'" value="open_analyses_modal" ng-disabled="selectedCount === 0" translate>Run Analysis</option>
           <option ng-show="menu.user.organization.user_role !== 'viewer'" value="open_set_update_to_now_modal" ng-disabled="selectedCount === 0" translate>Set Update Time to Now</option>
-          <option ng-show="menu.user.organization.user_role !== 'viewer'" value="open_geocode_modal" ng-disabled="selectedCount === 0" translate>Geocode</option>
-          <option ng-show="menu.user.organization.user_role !== 'viewer'" value="open_ubid_decode_modal" ng-disabled="selectedCount === 0" translate>Decode UBID</option>
-          <option value="open_ubid_jaccard_index_modal" ng-disabled="selectedCount > 2" translate>Compare UBIDs</option>
-          <option ng-show="menu.user.organization.user_role !== 'viewer'" value="open_ubid_admin_modal" ng-disabled="selectedCount !== 1" translate>Add/Update UBID</option>
+          <option ng-show="menu.user.organization.user_role !== 'viewer'" value="update_derived_columns" ng-disabled="selectedCount === 0" translate>Update Derived Data</option>
           <option ng-show="menu.user.organization.user_role !== 'viewer'" value="update_salesforce" ng-disabled="!organization.salesforce_enabled || selectedCount === 0" translate>
             Update Salesforce
           </option>
-          <option ng-show="menu.user.organization.user_role !== 'viewer'" value="open_move_inventory_modal" ng-disabled="selectedCount === 0" translate>Change Inventory Access Level</option>
+          <option ng-show="menu.user.organization.user_role !== 'viewer'" value="open_at_submission_import_modal" ng-disabled="selectedCount === 0" translate>Update with Audit Template</option>
         </optgroup>
         <optgroup label="{$:: 'Options' | translate $}">
           <option ng-show="menu.user.organization.user_role !== 'viewer'" value="open_show_populated_columns_modal" ng-if="menu.user.is_ali_root" ng-disabled="data.length === 0" translate>
@@ -223,14 +235,16 @@
   </form>
 </div>
 <div class="inventory-list-tab-container">
-  <ul class="nav nav-tabs" style="pointer-events: none">
-    <li ng-class="::{active: inventory_type==='properties'}" heading="View by Property" style="pointer-events: all">
+  <ul ng-show="group_id == null" class="nav nav-tabs" style="pointer-events: none">
+    <li ng-class="{active: inventory_type==='properties' && inventory_group_tab === -1}" ng-click="change_tab(-1,'Property')" heading="View by Property" style="pointer-events: all">
       <a ui-sref="inventory_list(::{inventory_type: 'properties'})" translate>View by Property</a>
     </li>
-    <li ng-class="::{active: inventory_type==='taxlots'}" heading="View by Tax Lot" style="pointer-events: all">
+    <li ng-class="{active: inventory_type==='taxlots' && inventory_group_tab === -1}" ng-click="change_tab(-1,'Tax Lot')" heading="View by Tax Lot" style="pointer-events: all">
       <a ui-sref="inventory_list(::{inventory_type: 'taxlots'})" translate>View by Tax Lot</a>
     </li>
   </ul>
+  <div ng-show="group_id != null"></div>
+  <!-- empty element for styling -->
   <div class="item-count">
     {$ inventory_pagination.start $}-{$ inventory_pagination.end $}<span ng-if="inventory_pagination.num_pages > 1"> of {$ inventory_pagination.total | number:0 $}</span>
     <i ng-if="selectedCount > 0">
