@@ -1,6 +1,8 @@
 FROM node:20-alpine3.16 AS node
+# Use a multi-stage build to first get uv
+FROM ghcr.io/astral-sh/uv:0.2.12 as uv
 
-FROM alpine:3.14
+FROM alpine:3.16
 
 COPY --from=node /usr/lib /usr/lib
 COPY --from=node /usr/local/lib /usr/local/lib
@@ -41,10 +43,23 @@ RUN apk add --no-cache \
 
 ### Install python requirements
 WORKDIR /seed
+# Create a virtual environment with uv inside the container
+RUN --mount=from=uv,source=/uv,target=./uv \
+    ./uv venv /opt/venv
+# We need to set this environment variable so that uv knows where
+# the virtual environment is to install packages
+ENV VIRTUAL_ENV=/opt/venv
+# Make sure that the virtual environment is in the PATH so
+# we can use the binaries of packages that we install such as pip
+# without needing to activate the virtual environment explicitly
+ENV PATH="/opt/venv/bin:$PATH"
 COPY ./requirements.txt /seed/requirements.txt
 COPY ./requirements/*.txt /seed/requirements/
 RUN pip uninstall -y enum34
-RUN pip install -r requirements/local.txt
+# Install the packages with uv using --mount=type=cache to cache the downloaded packages
+RUN --mount=type=cache,target=/root/.cache/uv \
+    --mount=from=uv,source=/uv,target=./uv \
+    ./uv pip install  -r requirements/local.txt
 # for remote debugging
 RUN pip install remote-pdb
 # for live reloading celery
@@ -57,7 +72,8 @@ COPY ./package.json /seed/package.json
 COPY ./vendors/package.json /seed/vendors/package.json
 COPY ./README.md /seed/README.md
 # unsafe-perm allows the package.json postinstall script to run with the elevated permissions
-RUN npm install --unsafe-perm
+RUN npm install -g pnpm
+RUN pnpm install --unsafe-perm
 
 ### Copy over the remaining part of the SEED application and some helpers
 WORKDIR /seed
