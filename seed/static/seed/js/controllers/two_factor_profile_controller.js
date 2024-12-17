@@ -6,6 +6,7 @@ angular.module('SEED.controller.two_factor_profile', []).controller('two_factor_
   '$scope',
   '$uibModal',
   'urls',
+  'modified_service',
   'Notification',
   'two_factor_service',
   'user_service',
@@ -18,6 +19,7 @@ angular.module('SEED.controller.two_factor_profile', []).controller('two_factor_
     $scope,
     $uibModal,
     urls,
+    modified_service,
     Notification,
     two_factor_service,
     user_service,
@@ -31,6 +33,8 @@ angular.module('SEED.controller.two_factor_profile', []).controller('two_factor_
     $scope.orgs_require_2fa = $scope.organizations.filter((org) => org.require_2fa).map((org) => org.name).join(', ');
     $scope.user = user_profile_payload;
     $scope.temp_user = { ...$scope.user };
+    $scope.$watch('temp_user', (a, b) => (a !== b ? modified_service.setModified() : null), true);
+
     $scope.settings_unchanged = () => _.isEqual($scope.temp_user, $scope.user);
 
     const email = $scope.user.email;
@@ -58,6 +62,7 @@ angular.module('SEED.controller.two_factor_profile', []).controller('two_factor_
         // refetch user payload
         user_service.get_user_profile().then((user) => {
           $scope.user = user;
+          modified_service.resetModified();
           if (response.qr_code) {
             $scope.qr_code_img = `data:image/png;base64,${response.qr_code}`;
             open_qr_code_scan_modal();
