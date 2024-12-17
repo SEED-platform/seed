@@ -51,7 +51,7 @@ for loc in ENV_VARS + OPTIONAL_ENV_VARS:
 
 for loc in ENV_VARS:
     if not locals().get(loc):
-        raise Exception("%s Not defined as env variables" % loc)
+        raise Exception(f"{loc} Not defined as env variables")
 
 
 DEBUG = env_var("Debug", False)

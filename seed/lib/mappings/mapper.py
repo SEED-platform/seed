@@ -162,7 +162,7 @@ def get_pm_mapping(raw_columns, mapping_data=None, resolve_duplicates=True):
 
         if not column_found:
             # if we get here then the columns was never found
-            _log.debug("Could not find applicable mappings, resorting to raw field ({}) in PropertyState".format(c["raw"]))
+            _log.debug(f"Could not find applicable mappings, resorting to raw field ({c['raw']}) in PropertyState")
             final_mappings[c["raw"]] = ("PropertyState", c["raw"], 100)
 
     # verify that there are no duplicate mappings

@@ -236,7 +236,7 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet, Org
         result = column.rename_column(new_column_name, overwrite)
         if not result[0]:
             return JsonResponse(
-                {"success": False, "message": 'Unable to rename column with message: "%s"' % result[1]}, status=status.HTTP_400_BAD_REQUEST
+                {"success": False, "message": f'Unable to rename column with message: "{result[1]}"'}, status=status.HTTP_400_BAD_REQUEST
             )
         else:
             return JsonResponse({"success": True, "message": result[1]})

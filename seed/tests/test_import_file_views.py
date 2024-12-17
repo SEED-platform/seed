@@ -219,7 +219,7 @@ class TestMeterViewSet(DataMappingBaseTestCase):
         url = reverse("api:v3:import_files-pm-meters-preview", kwargs={"pk": self.import_file.id})
         url += f"?organization_id={self.org.pk}"
         result = self.client.get(url)
-        result_dict = literal_eval(result.content.decode("utf-8"))
+        result_dict = result.json()
 
         expectation = [
             {
@@ -249,7 +249,7 @@ class TestMeterViewSet(DataMappingBaseTestCase):
         url = reverse("api:v3:import_files-pm-meters-preview", kwargs={"pk": import_file_with_invalids.id})
         url += f"?organization_id={self.org.pk}"
         result = self.client.get(url)
-        result_dict = literal_eval(result.content.decode("utf-8"))
+        result_dict = result.json()
 
         expectation = [
             {
@@ -268,11 +268,12 @@ class TestMeterViewSet(DataMappingBaseTestCase):
         url = reverse("api:v3:import_files-pm-meters-preview", kwargs={"pk": self.import_file.id})
         url += f"?organization_id={self.org.pk}"
         result = self.client.get(url)
-        result_dict = literal_eval(result.content.decode("utf-8"))
+        result_dict = result.json()
 
         expectation = [
             {
                 "property_id": self.property_1.id,
+                "system_id": None,
                 "cycles": self.cycle.name,
                 "pm_property_id": "5766973",
                 "source_id": "5766973-0",
@@ -281,6 +282,7 @@ class TestMeterViewSet(DataMappingBaseTestCase):
             },
             {
                 "property_id": self.property_1.id,
+                "system_id": None,
                 "cycles": self.cycle.name,
                 "pm_property_id": "5766973",
                 "source_id": "5766973-1",
@@ -289,6 +291,7 @@ class TestMeterViewSet(DataMappingBaseTestCase):
             },
             {
                 "property_id": self.property_2.id,
+                "system_id": None,
                 "cycles": self.cycle.name,
                 "pm_property_id": "5766975",
                 "source_id": "5766975-0",
@@ -297,6 +300,7 @@ class TestMeterViewSet(DataMappingBaseTestCase):
             },
             {
                 "property_id": self.property_2.id,
+                "system_id": None,
                 "cycles": self.cycle.name,
                 "pm_property_id": "5766975",
                 "source_id": "5766975-1",
@@ -322,7 +326,7 @@ class TestMeterViewSet(DataMappingBaseTestCase):
         url = reverse("api:v3:import_files-pm-meters-preview", kwargs={"pk": cost_import_file.id})
         url += f"?organization_id={self.org.pk}"
         result = self.client.get(url)
-        result_dict = literal_eval(result.content.decode("utf-8"))
+        result_dict = result.json()
 
         validated_type_units = [
             {
@@ -344,6 +348,7 @@ class TestMeterViewSet(DataMappingBaseTestCase):
         proposed_imports = [
             {
                 "property_id": self.property_1.id,
+                "system_id": None,
                 "cycles": self.cycle.name,
                 "pm_property_id": "5766973",
                 "source_id": "5766973-0",
@@ -352,6 +357,7 @@ class TestMeterViewSet(DataMappingBaseTestCase):
             },
             {
                 "property_id": self.property_1.id,
+                "system_id": None,
                 "cycles": self.cycle.name,
                 "pm_property_id": "5766973",
                 "source_id": "5766973-1",
@@ -360,6 +366,7 @@ class TestMeterViewSet(DataMappingBaseTestCase):
             },
             {
                 "property_id": self.property_1.id,
+                "system_id": None,
                 "cycles": self.cycle.name,
                 "pm_property_id": "5766973",
                 "source_id": "5766973-0",
@@ -368,6 +375,7 @@ class TestMeterViewSet(DataMappingBaseTestCase):
             },
             {
                 "property_id": self.property_1.id,
+                "system_id": None,
                 "cycles": self.cycle.name,
                 "pm_property_id": "5766973",
                 "source_id": "5766973-1",
@@ -376,6 +384,7 @@ class TestMeterViewSet(DataMappingBaseTestCase):
             },
             {
                 "property_id": self.property_2.id,
+                "system_id": None,
                 "cycles": self.cycle.name,
                 "pm_property_id": "5766975",
                 "source_id": "5766975-0",
@@ -384,6 +393,7 @@ class TestMeterViewSet(DataMappingBaseTestCase):
             },
             {
                 "property_id": self.property_2.id,
+                "system_id": None,
                 "cycles": self.cycle.name,
                 "pm_property_id": "5766975",
                 "source_id": "5766975-1",
@@ -399,7 +409,7 @@ class TestMeterViewSet(DataMappingBaseTestCase):
         self.org.save()
 
         can_result = self.client.get(url)
-        can_result_dict = literal_eval(can_result.content.decode("utf-8"))
+        can_result_dict = can_result.json()
 
         validated_type_units[2] = {
             "parsed_type": "Cost",
@@ -425,12 +435,13 @@ class TestMeterViewSet(DataMappingBaseTestCase):
         url = reverse("api:v3:import_files-greenbutton-meters-preview", kwargs={"pk": xml_import_file.id})
         url += f"?organization_id={self.org.pk}&view_id={self.property_view_1.id}"
         result = self.client.get(url)
-        result_dict = literal_eval(result.content.decode("utf-8"))
+        result_dict = result.json()
 
         proposed_imports = [
             {
                 "source_id": "409483",
                 "property_id": self.property_1.id,
+                "system_id": None,
                 "type": "Electric - Grid",
                 "incoming": 2,
             },
@@ -447,7 +458,7 @@ class TestMeterViewSet(DataMappingBaseTestCase):
         self.assertEqual(result_dict["validated_type_units"], validated_type_units)
 
         refreshed_import_file = ImportFile.objects.get(pk=xml_import_file.id)
-        self.assertEqual(refreshed_import_file.matching_results_data, {"property_id": self.property_view_1.property_id})
+        self.assertEqual(refreshed_import_file.matching_results_data, {"property_id": self.property_view_1.property_id, "system_id": None})
 
     def test_parsed_meters_confirmation_returns_unlinkable_pm_property_ids(self):
         PropertyState.objects.all().delete()
@@ -455,7 +466,7 @@ class TestMeterViewSet(DataMappingBaseTestCase):
         url = reverse("api:v3:import_files-pm-meters-preview", kwargs={"pk": self.import_file.id})
         url += f"?organization_id={self.org.pk}"
         result = self.client.get(url)
-        result_dict = literal_eval(result.content.decode("utf-8"))
+        result_dict = result.json()
 
         expectation = [
             {

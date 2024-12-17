@@ -17,10 +17,14 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
   'data_quality_service',
   'geocode_service',
   'user_service',
+  'inventory_group_service',
   'Notification',
+  'access_level_tree',
   'cycles',
   'profiles',
   'current_profile',
+  'inventory_groups',
+  'inventory_group_tab',
   'filter_groups',
   'current_filter_group',
   'filter_groups_service',
@@ -34,6 +38,7 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
   'organization_payload',
   'gridUtil',
   'uiGridGridMenuService',
+  'group',
   // eslint-disable-next-line func-names
   function (
     $scope,
@@ -50,10 +55,14 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
     data_quality_service,
     geocode_service,
     user_service,
+    inventory_group_service,
     Notification,
+    access_level_tree,
     cycles,
     profiles,
     current_profile,
+    inventory_groups,
+    inventory_group_tab,
     filter_groups,
     current_filter_group,
     filter_groups_service,
@@ -66,7 +75,8 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
     i18nService,
     organization_payload,
     gridUtil,
-    uiGridGridMenuService
+    uiGridGridMenuService,
+    group
   ) {
     spinner_utility.show();
     $scope.selectedCount = 0;
@@ -78,6 +88,11 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
     }
 
     $scope.inventory_type = $stateParams.inventory_type;
+    if ($stateParams.group_id) {
+      $scope.group_id = $stateParams.group_id;
+      $scope.group = group;
+      $scope.inventory_display_name = group.name;
+    }
     $scope.data = [];
     const lastCycleId = inventory_service.get_last_cycle();
     $scope.cycle = {
@@ -88,6 +103,17 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
 
     // $scope.menu.user.is_ali_root not always populated (on redirects); force it
     $scope.menu.user.is_ali_root = window.SEED.is_ali_root;
+
+    $scope.inventory_groups = inventory_groups;
+    $scope.inventory_group_tab = inventory_group_tab;
+    $scope.change_tab = (id, inv_type) => {
+    // Switches to new tab (either viewing all or viewing by group)
+      $scope.inventory_group_tab = id;
+      if ($scope.inventory_type === (inv_type === 'Property' ? 'properties' : 'taxlots')) {
+        $scope.load_inventory(1);
+      }
+      inventory_service.save_last_inventory_group(id);
+    };
 
     // set up i18n
     //
@@ -630,6 +656,28 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
       });
     };
 
+    /**
+       Opens the update building groups modal.
+     */
+    $scope.open_update_inventory_groups_modal = (selectedViewIds) => {
+      const modalInstance = $uibModal.open({
+        templateUrl: `${urls.static_url}seed/partials/update_inventory_groups_modal.html`,
+        controller: 'update_inventory_groups_modal_controller',
+        size: 'lg',
+        resolve: {
+          access_level_tree: () => access_level_tree,
+          view_ids: () => selectedViewIds,
+          inventory_type: () => $scope.inventory_type,
+          org_id: () => $scope.organization.id
+        }
+      });
+      modalInstance.result.then(() => {
+        // dialog was closed with 'Done' button.
+        $state.reload();
+        get_inventory_groups();
+      });
+    };
+
     $scope.open_merge_modal = (selectedViewIds) => {
       spinner_utility.show();
       selectedViewIds.reverse();
@@ -685,7 +733,7 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
       modalInstance.result.then(() => {
         // dialog was closed with 'Merge' button.
         $scope.selectedOrder = [];
-        $scope.load_inventory(1);
+        get_inventory_groups(); // refreshes groups, then runs load_inventory(1), which will update the group's ids correctly
       });
     };
 
@@ -941,6 +989,27 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
           width: 30
         },
         {
+          name: 'groups_indicator',
+          displayName: '',
+          headerCellTemplate: '<span></span>',
+          cellTemplate:
+            '<div class="ui-grid-row-header-link">' +
+            '<div class="groups-indicator" title="Group Member">' +
+                '<i class="fa fa-circle-nodes text-info" ng-if="row.entity.groups_indicator" ></i>' +
+              '</div>' +
+            '</div>',
+          enableColumnMenu: false,
+          enableColumnMoving: false,
+          enableColumnResizing: false,
+          enableFiltering: false,
+          enableHiding: false,
+          enableSorting: false,
+          exporterSuppressExport: true,
+          pinnedLeft: true,
+          visible: true,
+          width: 30
+        },
+        {
           name: 'labels',
           displayName: '',
           headerCellTemplate: '<i ng-click="grid.appScope.toggle_labels()" class="ui-grid-cell-contents fas fa-chevron-circle-right" id="label-header-icon" style="margin:2px; float:right;"></i>',
@@ -1039,6 +1108,27 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
           width: 30
         },
         {
+          name: 'groups_indicator',
+          displayName: '',
+          headerCellTemplate: '<span></span>',
+          cellTemplate:
+            '<div class="ui-grid-row-header-link">' +
+            '<div class="groups-indicator" title="Group Member">' +
+            '<i class="fa fa-circle-nodes text-info" ng-if="row.entity.groups_indicator" ></i>' +
+            '</div>' +
+            '</div>',
+          enableColumnMenu: false,
+          enableColumnMoving: false,
+          enableColumnResizing: false,
+          enableFiltering: false,
+          enableHiding: false,
+          enableSorting: false,
+          exporterSuppressExport: true,
+          pinnedLeft: true,
+          visible: true,
+          width: 30
+        },
+        {
           name: 'labels',
           displayName: '',
           headerCellTemplate: '<i ng-click="grid.appScope.toggle_labels()" class="ui-grid-cell-contents fas fa-chevron-circle-right" id="label-header-icon" style="margin:2px; float:right;"></i>',
@@ -1082,7 +1172,7 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
       if (_.isUndefined(data)) data = $scope.data;
       const visibleColumns = [
         ..._.map($scope.columns, 'name'),
-        ...['$$treeLevel', 'notes_count', 'meters_exist_indicator', 'merged_indicator', 'id', 'property_state_id', 'property_view_id', 'taxlot_state_id', 'taxlot_view_id'],
+        ...['$$treeLevel', 'notes_count', 'meters_exist_indicator', 'groups_indicator', 'merged_indicator', 'id', 'property_state_id', 'property_view_id', 'taxlot_state_id', 'taxlot_view_id'],
         ...$scope.organization.access_level_names
       ];
 
@@ -1170,6 +1260,17 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
         exclude_ids = _.union.apply(null, _.map($scope.selected_exclude_labels, 'is_applied'));
       }
 
+      if ($scope.group_id) {
+        const group_view_ids = _.filter($scope.inventory_groups, { id: $scope.group_id })[0].views_list;
+        if (typeof include_ids !== 'undefined' && group_view_ids.length && include_ids[0] !== 0) { // if there's a sort
+          include_ids = _.intersection(include_ids, group_view_ids);
+        } else if (!group_view_ids.length) {
+          include_ids = [0];
+        } else if (typeof include_ids === 'undefined') { // if there's no sort & there are group_view_ids
+          include_ids = group_view_ids;
+        }
+      }
+
       return fn(
         page,
         chunk,
@@ -1240,6 +1341,13 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
       inventory_service.save_last_cycle(cycle.id);
       $scope.cycle.selected_cycle = cycle;
       get_and_filter_by_labels();
+    };
+
+    const get_inventory_groups = () => {
+      inventory_group_service.get_groups_for_inventory($stateParams.inventory_type, []).then((inventory_groups) => {
+        $scope.inventory_groups = inventory_groups;
+        $scope.load_inventory(1);
+      });
     };
 
     $scope.open_ubid_decode_modal = (selectedViewIds) => {
@@ -1576,6 +1684,9 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
         case 'update_salesforce':
           $scope.update_salesforce(selectedViewIds);
           break;
+        case 'open_update_inventory_groups_modal':
+          $scope.open_update_inventory_groups_modal(selectedViewIds);
+          break;
         case 'update_derived_columns':
           $scope.open_update_derived_data_modal(selectedViewIds);
           break;
@@ -1708,7 +1819,7 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
       // Save all columns except first 3 and Access Level Instances
       let gridCols = _.filter(
         $scope.gridApi.grid.columns,
-        (col) => !_.includes(['treeBaseRowHeaderCol', 'selectionRowHeaderCol', 'notes_count', 'meters_exist_indicator', 'merged_indicator', 'id', 'labels'], col.name) &&
+        (col) => !_.includes(['treeBaseRowHeaderCol', 'selectionRowHeaderCol', 'notes_count', 'meters_exist_indicator', 'merged_indicator', 'groups_indicator', 'id', 'labels'], col.name) &&
           col.visible &&
           !col.colDef.is_derived_column &&
           col.colDef.group !== 'access_level_instance'
@@ -2021,6 +2132,12 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
             col = $scope.gridApi.grid.columns[staticColIndex];
             $scope.gridApi.grid.columns.splice(staticColIndex, 1);
             $scope.gridApi.grid.columns.splice(5, 0, col);
+          }
+          staticColIndex = _.findIndex($scope.gridApi.grid.columns, { name: 'groups_indicator' });
+          if (staticColIndex !== 6) {
+            col = $scope.gridApi.grid.columns[staticColIndex];
+            $scope.gridApi.grid.columns.splice(staticColIndex, 1);
+            $scope.gridApi.grid.columns.splice(6, 0, col);
           }
           saveSettings();
         });

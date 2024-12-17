@@ -600,7 +600,7 @@ class GoalViewTests(AccessLevelBaseTestCase):
             "Other or multiple flags; explain in Additional Notes field",
         ]
 
-        # sort passsed checks
+        # sort passed checks
         params = f"?organization_id={self.org.id}&order_by=property__goal_note__passed_checks"
         url = path + params
         response = self.client.put(url, data=json.dumps(data), content_type="application/json")

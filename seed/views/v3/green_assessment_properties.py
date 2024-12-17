@@ -92,7 +92,7 @@ class GreenAssessmentPropertyViewSet(SEEDOrgModelViewSet):
     serializer_class = GreenAssessmentPropertySerializer
     model = GreenAssessmentProperty
     orgfilter = "assessment__organization_id"
-    filter_class = GAPropertyFilterSet
+    filterset_class = GAPropertyFilterSet
 
     @action(detail=True, methods=["get"])
     @has_perm_class("requires_root_member_access")

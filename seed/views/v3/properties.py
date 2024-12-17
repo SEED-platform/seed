@@ -60,6 +60,7 @@ from seed.models import (
     Cycle,
     DerivedColumn,
     InventoryDocument,
+    InventoryGroupMapping,
     Meter,
     Note,
     Organization,
@@ -299,7 +300,8 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         property_id = property_view.property.id
         scenario_ids = [s.id for s in property_view.state.scenarios.all()]
 
-        exporter = PropertyMeterReadingsExporter(property_id, org_id, excluded_meter_ids, scenario_ids=scenario_ids)
+        meters = Meter.objects.filter(Q(property_id=property_id) | Q(scenario_id__in=scenario_ids)).exclude(pk__in=excluded_meter_ids)
+        exporter = PropertyMeterReadingsExporter(meters, org_id)
 
         return exporter.readings_and_column_defs(interval)
 
@@ -568,6 +570,8 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         # Capture previous associated labels
         label_ids = list(old_view.labels.all().values_list("id", flat=True))
 
+        groupings = set(old_view.property.group_mappings.all().values_list("group_id", flat=True))
+
         notes = old_view.notes.all()
         for note in notes:
             note.property_view = None
@@ -646,6 +650,10 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             ids.append(note.id)
             # Correct the created and updated times to match the original note
             Note.objects.filter(id__in=ids).update(created=created, updated=updated)
+
+        for group in list(groupings):
+            InventoryGroupMapping(property=new_view1.property, group_id=group).save()
+            InventoryGroupMapping(property=new_view2.property, group_id=group).save()
 
         Note.objects.create(
             organization=old_property.organization,
@@ -810,6 +818,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         ali = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
 
         property_view_ids = request.data.get("property_view_ids", [])
+        group_mapping_ids = list(InventoryGroupMapping.objects.filter(property__views__in=property_view_ids).values_list("id", flat=True))
         property_state_ids = PropertyView.objects.filter(
             id__in=property_view_ids,
             property__access_level_instance__lft__gte=ali.lft,
@@ -820,6 +829,9 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
 
         if resp[0] == 0:
             return JsonResponse({"status": "warning", "message": "No action was taken"})
+
+        # Delete orphaned mappings
+        InventoryGroupMapping.objects.filter(id__in=group_mapping_ids, property__views__isnull=True).delete()
 
         return JsonResponse({"status": "success", "properties": resp[1]["seed.PropertyState"]})
 
@@ -1291,7 +1303,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             property_view = PropertyView.objects.select_related("state").get(pk=pk, cycle__organization_id=org_id)
         except PropertyView.DoesNotExist:
             return JsonResponse(
-                {"success": False, "message": "Cannot match a PropertyView with pk=%s" % pk}, status=status.HTTP_400_BAD_REQUEST
+                {"success": False, "message": f"Cannot match a PropertyView with pk={pk}"}, status=status.HTTP_400_BAD_REQUEST
             )
 
         bs = BuildingSync()
@@ -1318,7 +1330,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         try:
             property_view = PropertyView.objects.select_related("state").get(pk=pk, cycle__organization_id=org_id)
         except PropertyView.DoesNotExist:
-            return JsonResponse({"success": False, "message": "Cannot match a PropertyView with pk=%s" % pk})
+            return JsonResponse({"success": False, "message": f"Cannot match a PropertyView with pk={pk}"})
 
         hpxml = HPXML()
         # Check if there is an existing BuildingSync XML file to merge
@@ -1775,7 +1787,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         manual_parameters=[
             AutoSchemaHelper.query_org_id_field(),
             AutoSchemaHelper.query_integer_field(
-                name="access_leevl_instance_id", required=True, description="Access Level Instance to move properties to"
+                name="access_level_instance_id", required=True, description="Access Level Instance to move properties to"
             ),
         ],
         request_body=AutoSchemaHelper.schema_factory(
@@ -1860,12 +1872,9 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         response["Content-Disposition"] = f'attachment; filename="{filename}"'
 
         with tempfile.TemporaryDirectory() as tmpdir:
-            # Since `building_sync_to_cts` takes a filename and not a file object we can't create the temp file inside a `with` context
-            # This is because of how Windows handles file locking
-            output_file = tempfile.NamedTemporaryFile(delete=False)
-            output_filename = Path(output_file.name)
-            # Close the temp file to release the lock
-            output_file.close()
+            # Since `building_sync_to_cts` takes a filename and not a file object we have to ensure the temp file lock is released before using it (because Windows)
+            with tempfile.NamedTemporaryFile(delete=False) as output_file:
+                output_filename = Path(output_file.name)
 
             bsync_files = []
             for i, f in enumerate(building_files):
@@ -1987,7 +1996,7 @@ def _row_from_views(views):
     # Number of Buildings Metered for Water
     data["Number of Buildings Metered for Water"] = sum([v.has_water_meters for v in views])
     # Annual Facility Energy Use
-    data["Annual Facility Energy Use"] = sum([v.state.extra_data.get("Sum of Modeled/MDMS Total Energy Usage", 0) for v in views])
+    data["Annual Facility Energy Use"] = sum([v.state.extra_data.get("Total of Modeled/MDMS Total Energy Usage", 0) for v in views])
     # Annual Facility Water Use
     data["Annual Facility Energy Use"] = sum([v.state.extra_data.get("Sum of Modeled/MDMS Total Water Usage", 0) for v in views])
 

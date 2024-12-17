@@ -5,7 +5,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: lokalise.com\n"
 "Project-Id-Version: SEED Platform\n"
-"PO-Revision-Date: 2024-12-11 18:12\n"
+"PO-Revision-Date: 2024-12-14 00:26\n"
 "Last-Translator: lokalise.com\n"
 "Language-Team: lokalise.com\n\n"
 "Language: es\n"
@@ -2387,6 +2387,9 @@ msgstr "Confirmar contenido del archivo GreenButton"
 
 msgid "GROUPS_DESC_TEXT"
 msgstr "SEED permite la creación de grupos. Los grupos pueden incluir uno o más edificios, así como sistemas como baterías, sistemas de energía urbana (DES) o equipos de suministro de vehículos eléctricos (EVSE). Los servicios se pueden asociar a los sistemas y los medidores asociados a esos servicios."
+
+msgid "GROUP_METERS_DESC"
+msgstr "La siguiente tabla muestra todos los medidores de propiedades y sistemas relacionados con el grupo. Sin embargo, solo se pueden crear medidores de sistemas desde esta página. Para crear un medidor de propiedades, vaya a la página de medidores de la propiedad (para el formato GreenButton) o vaya a la página de datos, agregue un archivo de datos y haga clic en la pestaña Datos de medidor en el modal que se abrirá (para el formato Portfolio Manager)."
 
 #, fuzzy
 msgid "GSA SFTool Guidance"
@@ -4787,6 +4790,9 @@ msgstr "Seleccione las propiedades que desea actualizar"
 #, fuzzy
 msgid "Select a Custom Report to get started!"
 msgstr "Seleccione un informe personalizado para empezar"
+
+msgid "Select a Goal Type. A Standard goal will calculate a standard EUI per sqft. A Transaction goal will also calculate an EUI per transaction."
+msgstr "Seleccione un tipo de objetivo. Un objetivo estándar calculará un EUI estándar por pie cuadrado. Un objetivo de transacción también calculará un EUI por transacción."
 
 #, fuzzy
 msgid "Select a Program to get started!"

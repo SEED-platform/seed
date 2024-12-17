@@ -2,36 +2,31 @@
 -r base.txt
 
 # general
-coverage==4.5.4
-coveralls==1.9.2
-tox==3.14.3
-psutil==5.6.7
+coverage==7.6.1
+coveralls==4.0.1
+tox==4.20.0  # Keep this in sync with ci.yml
+psutil==6.0.0
 
 # python testing
-Faker==0.9.3
-mock==2.0.0
-vcrpy==4.2.1
-pytest==7.4.4
-pytest-django==4.7.0
-# Lock urllib3 to v1 until vcrpy supports it
-urllib3<2
+Faker==29.0.0
+mock==5.1.0
+vcrpy==6.0.1
+pytest==8.3.3
+pytest-django==4.9.0
+urllib3==1.26.20  # TODO update after vcrpy supports v2
 
 # static code analysis
-pycodestyle==2.11.1
-pre-commit==3.7.0
-ruff==0.3.4
+pre-commit==3.8.0
+ruff==0.8.3
 
 # documentation and spelling
-Sphinx==7.2.6
+Sphinx==7.4.7  # TODO update after python 3.9
 sphinxcontrib-spelling==8.0.0
 sphinx_rtd_theme==2.0.0
 docutils==0.20.1
 
 # property-based testing
-hypothesis==6.94.0
-
-# For running the server
-uWSGI==2.0.23; sys_platform != "win32"
+hypothesis==6.112.1
 
 # static type checking
-mypy==1.9.0
+mypy==1.11.2

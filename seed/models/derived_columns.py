@@ -100,7 +100,7 @@ class ExpressionEvaluator:
             try:
                 return self.params[name]
             except KeyError:
-                raise KeyError("Parameter not found: %s" % name)
+                raise KeyError(f"Parameter not found: {name}")
 
         def set_params(self, params):
             """Set the parameters available when parsing

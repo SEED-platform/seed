@@ -52,7 +52,7 @@ class UbidViewTests(TestCase):
 
         property_view = self.property_view_factory.get_property_view(state=property)
 
-        url = reverse("api:v3:ubid-decode-by-ids") + "?organization_id=%s" % self.org.pk
+        url = reverse("api:v3:ubid-decode-by-ids") + f"?organization_id={self.org.pk}"
         post_params = {"property_view_ids": [property_view.id]}
 
         self.client.post(url, post_params)
@@ -132,7 +132,7 @@ class UbidViewTests(TestCase):
 
         property_not_decoded_view = self.property_view_factory.get_property_view(state=property_not_decoded)
 
-        url = reverse("api:v3:ubid-decode-results") + "?organization_id=%s" % self.org.pk
+        url = reverse("api:v3:ubid-decode-results") + f"?organization_id={self.org.pk}"
         post_params = {"property_view_ids": [property_none_view.id, property_correctly_populated_view.id, property_not_decoded_view.id]}
 
         result = self.client.post(url, post_params)
@@ -193,7 +193,7 @@ class UbidViewTests(TestCase):
 
         taxlot_not_decoded_view = self.taxlot_view_factory.get_taxlot_view(state=taxlot_not_decoded)
 
-        url = reverse("api:v3:ubid-decode-results") + "?organization_id=%s" % self.org.pk
+        url = reverse("api:v3:ubid-decode-results") + f"?organization_id={self.org.pk}"
         post_params = {"taxlot_view_ids": [taxlot_none_view.id, taxlot_correctly_populated_view.id, taxlot_not_decoded_view.id]}
 
         result = self.client.post(url, post_params)
@@ -823,7 +823,7 @@ class UbidViewPermissionTests(AccessLevelBaseTestCase, DeleteModelsTestCase):
         assert len(response.json()["data"]) == 6
 
     def test_ubids_decode_results(self):
-        url = reverse("api:v3:ubid-decode-results") + "?organization_id=%s" % self.org.pk
+        url = reverse("api:v3:ubid-decode-results") + f"?organization_id={self.org.pk}"
         # properties
         params = {"property_view_ids": [self.root_property_view.id, self.child_property_view.id, self.child_property_view2.id]}
 
@@ -855,7 +855,7 @@ class UbidViewPermissionTests(AccessLevelBaseTestCase, DeleteModelsTestCase):
         assert ubid_count == 3
 
     def test_ubids_by_view(self):
-        url = reverse("api:v3:ubid-ubids-by-view") + "?organization_id=%s" % self.org.pk
+        url = reverse("api:v3:ubid-ubids-by-view") + f"?organization_id={self.org.pk}"
 
         # properties
         self.login_as_child_member()

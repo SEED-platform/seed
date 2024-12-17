@@ -5,18 +5,18 @@ repos:
       - id: check-added-large-files
         args: ["--maxkb=2000"]
       - id: check-ast
+      - id: check-builtin-literals
       - id: check-case-conflict
       - id: check-json
       - id: check-merge-conflict
+      - id: check-toml
       - id: check-xml
       - id: check-yaml
-        exclude: .*/templates
       - id: debug-statements
       - id: end-of-file-fixer
         exclude: seed/static/seed/locales/
       - id: fix-byte-order-marker
       - id: mixed-line-ending
-        exclude: seed/static/seed/locales/
       - id: pretty-format-json
         args: ["--autofix", "--no-sort-keys", "--no-ensure-ascii"]
         exclude: seed/static/seed/locales/
@@ -29,7 +29,7 @@ repos:
         types_or: [yaml, markdown, css, scss]
   # https://docs.astral.sh/ruff/integrations/#pre-commit
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.4.1
+    rev: v0.8.3
     hooks:
       # Run the linter
       - id: ruff

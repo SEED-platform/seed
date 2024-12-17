@@ -27,7 +27,7 @@ class ProgressLogger:
         self._completed = self._completed + 1
         if update:
             self._updated = self._updated + 1
-        if self._completed % 10000 == 0:
+        if self._completed % 10_000 == 0:
             print(f"... {self._completed:,} / {self._total:,} ({self._updated:,} updated in {datetime.now() - self._start}) ...")
 
 
@@ -41,13 +41,13 @@ class Command(BaseCommand):
                 "seed_taxlotstate": TaxLotState,
             }
 
-            for table in model:
-                count = model[table].objects.count()
+            for table, state_model in model.items():
+                count = state_model.objects.count()
                 if count > 0:
                     print(f"Re-hashing {table} ({count:,})")
                     cursor.execute(f"PREPARE update_hash (integer, text) AS UPDATE {table} SET hash_object = $2 WHERE id = $1;")  # noqa: S608
                     progress = ProgressLogger(count)
-                    for idx, state in enumerate(model[table].objects.iterator(chunk_size=1000)):
+                    for idx, state in enumerate(state_model.objects.iterator(chunk_size=1_000)):
                         old_hash = state.hash_object
                         new_hash = hash_state_object(state)
 

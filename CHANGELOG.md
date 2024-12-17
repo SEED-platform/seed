@@ -1,3 +1,34 @@
+# SEED Version 3.2.2
+
+<!-- Release notes generated using configuration in .github/release.yml at 3.2.2-release-prep -->
+
+## What's Changed
+### New Features 🎉
+* Add button to show or hide all labels by @perryr16 in https://github.com/SEED-platform/seed/pull/4875
+* Add transactions template to portfolio summary by @perryr16 in https://github.com/SEED-platform/seed/pull/4891
+* Add building groups functionality by @haneslinger in https://github.com/SEED-platform/seed/pull/4899
+### Improvements 📈
+* Add derived columns to program setup by @haneslinger in https://github.com/SEED-platform/seed/pull/4888
+* Fix Default Reports and Analyses by @kflemin in https://github.com/SEED-platform/seed/pull/4887
+* Portfolio summary move to backend by @perryr16 in https://github.com/SEED-platform/seed/pull/4885
+* Speed up program and property insight pages by @haneslinger in https://github.com/SEED-platform/seed/pull/4890
+* Add show all labels description text and translation by @kflemin in https://github.com/SEED-platform/seed/pull/4896
+* Update list of possible Audit Template reports in org settings by @kflemin in https://github.com/SEED-platform/seed/pull/4903
+### Maintenance 🧹
+* Remove obsolete scope 1 emission codes by @anchapin in https://github.com/SEED-platform/seed/pull/4897
+* Major dependency update by @axelstudios in https://github.com/SEED-platform/seed/pull/4806
+### Bug Fixes 🐛
+* Display current access level instance names in default reports by @kflemin in https://github.com/SEED-platform/seed/pull/4882
+* Include derived columns in y axis for default reports by @kflemin in https://github.com/SEED-platform/seed/pull/4883
+* Change CTS export column name by @haneslinger in https://github.com/SEED-platform/seed/pull/4884
+* Fix invalid permission class by @axelstudios in https://github.com/SEED-platform/seed/pull/4894
+* Fix notes modal by @haneslinger in https://github.com/SEED-platform/seed/pull/4874
+* Fix organization deletion by @crutan in https://github.com/SEED-platform/seed/pull/4851
+* Mapping review and line length bug fixes by @axelstudios in https://github.com/SEED-platform/seed/pull/4906
+
+
+**Full Changelog**: https://github.com/SEED-platform/seed/compare/v3.2.1...v3.2.2
+
 # SEED Version 3.2.1
 
 <!-- Release notes generated using configuration in .github/release.yml at 3.2.1-release-prep -->

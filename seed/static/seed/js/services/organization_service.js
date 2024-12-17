@@ -53,6 +53,8 @@ angular.module('SEED.service.organization', []).factory('organization_service', 
 
     organization_factory.get_organization_access_level_tree = (org_id) => $http.get(`/api/v3/organizations/${org_id}/access_levels/tree`).then((response) => response.data);
 
+    organization_factory.get_descendant_access_level_tree = (org_id) => $http.get(`/api/v3/organizations/${org_id}/access_levels/descendant_tree`).then((response) => response.data);
+
     organization_factory.update_organization_access_level_names = (org_id, new_access_level_names) => $http.post(
       `/api/v3/organizations/${org_id}/access_levels/access_level_names/`,
       { access_level_names: new_access_level_names }
@@ -71,6 +73,18 @@ angular.module('SEED.service.organization', []).factory('organization_service', 
       `/api/v3/organizations/${org_id}/access_levels/${instance_id}/edit_instance/`,
       { name }
     ).then((response) => response.data);
+
+    organization_factory.get_lowest_common_ancestor = (org_id, inventory_type, inventory_ids) => $http.post(
+      `/api/v3/organizations/${org_id}/access_levels/lowest_common_ancestor/`,
+      { inventory_type, inventory_ids }
+    ).then((response) => response.data);
+
+    organization_factory.filter_access_levels_by_inventory = (org_id, inventory_type, inventory_ids) => $http.post(
+      `/api/v3/organizations/${org_id}/access_levels/filter_by_inventory/`,
+      { inventory_type, inventory_ids }
+    ).then((response) => response.data).catch((data) => {
+      console.log(data);
+    });
 
     /**
      * updates the role for a user within an org

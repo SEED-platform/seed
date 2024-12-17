@@ -206,7 +206,7 @@ class TestOrgValidateMixin(TestCase):
     def test_validate_raises_exception(self):
         """
         Test to ensure validate fails if org_validators is not set
-        on the class usind this mixin.
+        on the class using this mixin.
         """
 
         class OrgValidateClass(OrgValidateMixin):

@@ -1852,6 +1852,9 @@ msgstr "Confirm GreenButton File Contents"
 msgid "GROUPS_DESC_TEXT"
 msgstr "SEED supports the creation of groups. Groups can include one or more buildings as well as systems such as Batteries, District Energy Systems (DES) or Electric Vehicle Supply Equipment (EVSE). Services can be associated with the systems and meters associated with those services."
 
+msgid "GROUP_METERS_DESC"
+msgstr "The table below shows all property and system meters related to the group. However, only system meters can be created from this page. To create a property meter, go to the property's meter page (for GreenButton format) or go to the data page, add a data file, and click the Meter Data tab in the modal that will open (for Portfolio Manager format)."
+
 msgid "GSA SFTool Guidance"
 msgstr "GSA SFTool Guidance"
 
@@ -3688,6 +3691,9 @@ msgstr "Select Properties to Update"
 
 msgid "Select a Custom Report to get started!"
 msgstr "Select a Custom Report to get started!"
+
+msgid "Select a Goal Type. A Standard goal will calculate a standard EUI per sqft. A Transaction goal will also calculate an EUI per transaction."
+msgstr "Select a Goal Type. A Standard goal will calculate a standard EUI per sqft. A Transaction goal will also calculate an EUI per transaction."
 
 msgid "Select a Program to get started!"
 msgstr "Select a Program to get started!"

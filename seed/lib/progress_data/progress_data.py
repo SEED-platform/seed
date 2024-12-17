@@ -4,6 +4,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
 import logging
+from typing import Union
 
 from seed.decorators import get_prog_key
 from seed.utils.cache import delete_cache, get_cache, set_cache
@@ -12,11 +13,11 @@ _log = logging.getLogger(__name__)
 
 
 class ProgressData:
-    def __init__(self, func_name, unique_id, init_data=None):
+    def __init__(self, func_name, unique_id: Union[str, int], init_data=None):
         self.func_name = func_name
         self.unique_id = unique_id
         self.key = get_prog_key(func_name, unique_id)
-        self.total = None
+        self.total: Union[int, None] = None
         self.increment_by = None
 
         # Load in the initialized data, some of this may be overloaded based
@@ -30,16 +31,17 @@ class ProgressData:
         if init_data:
             self.data = init_data
         else:
-            self.data = {}
-            self.data["status"] = "not-started"
-            self.data["status_message"] = ""
-            self.data["progress"] = 0
-            self.data["progress_key"] = self.key
-            self.data["unique_id"] = self.unique_id
-            self.data["func_name"] = self.func_name
-            self.data["message"] = None
-            self.data["stacktrace"] = None
-            self.data["summary"] = None
+            self.data = {
+                "status": "not-started",
+                "status_message": "",
+                "progress": 0,
+                "progress_key": self.key,
+                "unique_id": self.unique_id,
+                "func_name": self.func_name,
+                "message": None,
+                "stacktrace": None,
+                "summary": None,
+            }
             self.total = None
             self.increment_by = None
 

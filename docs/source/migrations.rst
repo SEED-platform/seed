@@ -38,6 +38,10 @@ local_untracked.py file
         ),
     )
 
+Version 3.2.2
+-------------
+- There are no special migrations needed for this version. Simply run ``./manage.py migrate``.
+
 Version 3.2.1
 -------------
 - There are no special migrations needed for this version. Simply run ``./manage.py migrate``.
@@ -62,7 +66,7 @@ Version 2.22.0
 --------------
 - Run ``./manage.py migrate``.
 - There is a Redis dependency update in this release that requires users and deployments to modify their settings' ``CACHES`` config.
-   #. Update your dependencies with pip install -r requirements/base.txt
+   #. Update your dependencies with ``pip install -r requirements/base.txt``
    #. Update the CACHES BACKEND property to ``django_redis.cache.RedisCache``
    #. Update the CACHES LOCATION property to match the redis-py native URL notation for connection strings, including the redis protocol and database number. e.g. ``redis://localhost:6379/1``
 

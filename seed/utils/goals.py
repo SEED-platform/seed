@@ -45,9 +45,9 @@ def get_eui_expression(goal):
 
 def get_area_expression(goal):
     """
-    goal.area_column is designed to only accept columns of data_type=area (columns like gross_foor_area)
+    goal.area_column is designed to only accept columns of data_type=area (columns like gross_floor_area)
     however the user may choose to use an extra_data column that has been typed on the frontend as 'area'.
-    This frontend change does not effect the db, and extra_data fields are stored as JSON objects
+    This frontend change does not affect the db, and extra_data fields are stored as JSON objects
     extra_data = {Name: value} where value can be any type.
     """
     if goal.area_column.is_extra_data:
@@ -60,9 +60,9 @@ def get_column_expression(column):
     """
     retrieves an expression to be used in annotation to return a specific columns value.
 
-    goal.area_column is designed to only accept columns of data_type=area (columns like gross_foor_area)
+    goal.area_column is designed to only accept columns of data_type=area (columns like gross_floor_area)
     however the user may choose to use an extra_data column that has been typed on the frontend as 'area'.
-    This frontend change does not effect the db, and extra_data fields are stored as JSON objects
+    This frontend change does not affect the db, and extra_data fields are stored as JSON objects
     extra_data = {Name: value} where value can be any type.
     """
     if column.is_extra_data:
@@ -73,7 +73,7 @@ def get_column_expression(column):
 
 def get_eui_value(property_state, goal):
     """
-    Return the eui valuef or a given property and goal
+    Return the eui value for a given property and goal
     """
     property_view = PropertyView.objects.filter(state__id=property_state.id).annotate(eui_value=get_eui_expression(goal)).first()
     return property_view.eui_value
@@ -81,7 +81,7 @@ def get_eui_value(property_state, goal):
 
 def get_area_value(property_state, goal):
     """
-    Return the area valuef or a given property and goal
+    Return the area value for a given property and goal
     """
     property_view = (
         PropertyView.objects.filter(state__id=property_state.id).annotate(area_value=get_column_expression(goal.area_column)).first()

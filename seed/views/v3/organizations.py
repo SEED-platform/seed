@@ -776,7 +776,7 @@ class OrganizationViewSet(viewsets.ViewSet):
             user = User.objects.get(username=email)
         except User.DoesNotExist:
             return JsonResponse(
-                {"status": "error", "message": "User with email address (%s) does not exist" % email}, status=status.HTTP_400_BAD_REQUEST
+                {"status": "error", "message": f"User with email address ({email}) does not exist"}, status=status.HTTP_400_BAD_REQUEST
             )
 
         created, mess_or_org, _ = create_suborganization(user, org, body["sub_org_name"], ROLE_OWNER)
@@ -945,7 +945,7 @@ class OrganizationViewSet(viewsets.ViewSet):
         missing_params = [p for p in excepted_params if p not in params]
         if missing_params:
             return Response(
-                {"status": "error", "message": "Missing params: {}".format(", ".join(missing_params))}, status=status.HTTP_400_BAD_REQUEST
+                {"status": "error", "message": f"Missing params: {', '.join(missing_params)}"}, status=status.HTTP_400_BAD_REQUEST
             )
 
         cycles = Cycle.objects.filter(id__in=params["cycle_ids"])
@@ -1010,7 +1010,7 @@ class OrganizationViewSet(viewsets.ViewSet):
         missing_params = [p for (p, v) in params.items() if v is None]
         if missing_params:
             return Response(
-                {"status": "error", "message": "Missing params: {}".format(", ".join(missing_params))}, status=status.HTTP_400_BAD_REQUEST
+                {"status": "error", "message": f"Missing params: {', '.join(missing_params)}"}, status=status.HTTP_400_BAD_REQUEST
             )
 
         # get data
@@ -1121,7 +1121,7 @@ class OrganizationViewSet(viewsets.ViewSet):
         missing_params = [p for p in excepted_params if p not in params]
         if missing_params:
             return Response(
-                {"status": "error", "message": "Missing params: {}".format(", ".join(missing_params))}, status=status.HTTP_400_BAD_REQUEST
+                {"status": "error", "message": f"Missing params: {', '.join(missing_params)}"}, status=status.HTTP_400_BAD_REQUEST
             )
 
         response = HttpResponse(content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
@@ -1261,9 +1261,9 @@ class OrganizationViewSet(viewsets.ViewSet):
         for cycle in cycles:
             axis_data[cycle.name] = {}
 
-        for axis in axes:
-            if axes[axis] != "Count":
-                columns = Column.objects.filter(organization_id=organization_id, column_name=axes[axis], table_name="PropertyState")
+        for axis, axis_var in axes.items():
+            if axis_var != "Count":
+                columns = Column.objects.filter(organization_id=organization_id, column_name=axis_var, table_name="PropertyState")
                 if not columns:
                     return {}
 
@@ -1281,14 +1281,14 @@ class OrganizationViewSet(viewsets.ViewSet):
                         serialized_column["display_name"] if serialized_column["display_name"] != "" else serialized_column["column_name"]
                     )
                     axis_data[cycle.name][name_to_display] = {}
-                    stats = self.get_axis_stats(organization, cycle, axis, axes[axis], all_property_views, access_level_instance)
+                    stats = self.get_axis_stats(organization, cycle, axis, axis_var, all_property_views, access_level_instance)
                     axis_data[cycle.name][name_to_display]["values"] = self.clean_axis_data(data_type, stats)
 
                     children = access_level_instance.get_children()
                     if len(children):
                         axis_data[cycle.name][name_to_display]["children"] = {}
                         for child_ali in children:
-                            stats = self.get_axis_stats(organization, cycle, axis, axes[axis], all_property_views, child_ali)
+                            stats = self.get_axis_stats(organization, cycle, axis, axis_var, all_property_views, child_ali)
                             axis_data[cycle.name][name_to_display]["children"][child_ali.name] = self.clean_axis_data(data_type, stats)
 
         return axis_data
@@ -1470,7 +1470,7 @@ class OrganizationViewSet(viewsets.ViewSet):
         :query_param labels: comma separated list of case sensitive label names. Results will include inventory that has any of the listed labels. Default is all inventory
         :query_param cycles: comma separated list of cycle ids. Results include inventory from the listed cycles. Default is all cycles
         :query_param properties: boolean to return properties. Default is True
-        :query_param taxlots: boolan to return taxlots. Default is True
+        :query_param taxlots: boolean to return taxlots. Default is True
         :query_param page: integer page number
         :query_param per_page: integer results per page
 
@@ -1482,7 +1482,7 @@ class OrganizationViewSet(viewsets.ViewSet):
         try:
             org = Organization.objects.get(pk=pk)
         except Organization.DoesNotExist:
-            return JsonResponse({"erorr": "Organization does not exist"}, status=status.HTTP_404_NOT_FOUND)
+            return JsonResponse({"error": "Organization does not exist"}, status=status.HTTP_404_NOT_FOUND)
 
         feed = public_feed(org, request)
 

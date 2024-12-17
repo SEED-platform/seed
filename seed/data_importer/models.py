@@ -225,7 +225,7 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
         )
 
     def __str__(self):
-        return "%s" % self.file.name
+        return self.file.name
 
     def save(self, in_validation=False, *args, **kwargs):
         super().save(*args, **kwargs)
@@ -269,13 +269,14 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
         to a lot of storage space.
         """
         if not hasattr(self, "_local_file"):
-            temp_file = tempfile.NamedTemporaryFile(mode="w+b", delete=False)
-            for chunk in self.file.chunks(1024):
-                temp_file.write(chunk)
-            temp_file.flush()
-            temp_file.close()
+            with tempfile.NamedTemporaryFile(mode="w+b", delete=False) as temp_file:
+                for chunk in self.file.chunks(1024):
+                    temp_file.write(chunk)
+                temp_file.flush()
+                temp_file_name = temp_file.name
+
             self.file.close()
-            self._local_file = open(temp_file.name, newline=None, encoding=locale.getpreferredencoding(False))  # noqa: SIM115
+            self._local_file = open(temp_file_name, newline=None, encoding=locale.getpreferredencoding(False))  # noqa: SIM115
 
         self._local_file.seek(0)
         return self._local_file
@@ -296,7 +297,7 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
         for row in self.data_rows:
             cleaned_row = []
             for tcm in self.tablecolumnmappings:
-                val = "%s" % row[tcm.order - 1]
+                val = row[tcm.order - 1]
                 try:
                     if tcm.datacoercions.all().filter(source_string=val).count() > 0:
                         cleaned_row.append(tcm.datacoercions.all().filter(source_string=val)[0].destination_value)
@@ -325,7 +326,7 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
                     self.cached_first_row = ROW_DELIMITER.join(row)
                     self.cached_second_to_fifth_row = ""
                 else:
-                    self.cached_second_to_fifth_row += "%s\n" % ROW_DELIMITER.join(row)
+                    self.cached_second_to_fifth_row += f"{ROW_DELIMITER.join(row)}\n"
 
         self.num_rows = counter
         if self.has_header_row:
@@ -404,8 +405,7 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
     @property
     def num_mapping_complete(self):
         num = (self.num_mapping_total or self.num_mapping_remaining) - self.num_mapping_remaining
-        if num < 0:
-            num = 0
+        num = max(num, 0)
         return num
 
     @property
@@ -419,8 +419,7 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
     @property
     def num_cleaning_complete(self):
         num = self.num_cleaning_total - self.num_cleaning_remaining
-        if num < 0:
-            num = 0
+        num = max(num, 0)
         return num
 
     @property

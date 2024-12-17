@@ -13,12 +13,12 @@ angular.module('SEED.controller.inventory_detail_meters', []).controller('invent
   'cycles',
   'dataset_service',
   'inventory_service',
+  'inventory_group_service',
   'inventory_payload',
   'meters',
   'property_meter_usage',
   'spinner_utility',
   'urls',
-  // 'user_service',
   'organization_payload',
   // eslint-disable-next-line func-names
   function (
@@ -32,17 +32,22 @@ angular.module('SEED.controller.inventory_detail_meters', []).controller('invent
     cycles,
     dataset_service,
     inventory_service,
+    inventory_group_service,
     inventory_payload,
     meters,
     property_meter_usage,
     spinner_utility,
     urls,
-    // user_service,
     organization_payload
   ) {
     spinner_utility.show();
-    $scope.item_state = inventory_payload.state;
     $scope.inventory_type = $stateParams.inventory_type;
+    $scope.item_state = inventory_payload.state;
+
+    inventory_group_service.get_groups_for_inventory('properties', [inventory_payload.property.id]).then((groups) => {
+      $scope.groups = groups;
+    });
+
     $scope.organization = organization_payload.organization;
     $scope.filler_cycle = cycles.cycles[0].id;
 
@@ -63,7 +68,19 @@ angular.module('SEED.controller.inventory_detail_meters', []).controller('invent
 
     resetSelections();
 
-    const deleteButton = '<button type="button" ng-show="grid.appScope.menu.user.organization.user_role !== \'viewer\'" class="btn-primary" style="border-radius: 4px;" ng-click="grid.appScope.open_meter_deletion_modal(row.entity)" translate>Delete</button>';
+    // dont show edit if disabled?
+    const buttons = (
+      '<div class="meters-table-actions" style="display: flex; flex-direction=column">' +
+      ' <button type="button" ng-show="grid.appScope.menu.user.organization.user_role !== \'viewer\' && grid.appScope.groups.length" class="btn-primary" style="border-radius: 4px;" ng-click="grid.appScope.open_meter_connection_edit_modal(row.entity)" title="Edit Meter Connection"><i class="fa-solid fa-pencil"></i></button>' +
+      // ' <button type="button" ng-show="grid.appScope.menu.user.organization.user_role !== \'viewer\' && !grid.appScope.groups.length" class="btn-gray" style="border-radius: 4px;" ng-click="grid.appScope.open_meter_connection_edit_modal(row.entity)" title="To Edit Connection, a meter must be part of an inventory group" ng-disabled="true"><i class="fa-solid fa-pencil"></i></button>' +
+      ' <button type="button" ng-show="grid.appScope.menu.user.organization.user_role !== \'viewer\'" class="btn-danger" style="border-radius: 4px;" ng-click="grid.appScope.open_meter_deletion_modal(row.entity)" title="Delete Meter"><i class="fa-solid fa-xmark"></i></button>' +
+      '</div>'
+    );
+
+    $scope.serviceLink = (entity) => {
+      if (entity.service_name === null) return;
+      return `<a id="inventory-summary" ui-sref="inventory_list(::{inventory_type: inventory_type})" ui-sref-active="active">${entity.service_name}</a>`;
+    };
 
     $scope.meterGridOptions = {
       data: 'sorted_meters',
@@ -74,9 +91,11 @@ angular.module('SEED.controller.inventory_detail_meters', []).controller('invent
         { field: 'source' },
         { field: 'source_id' },
         { field: 'scenario_id' },
+        { field: 'connection_type' },
+        { field: 'service_name', displayName: 'Connection', cellTemplate: '<a id="inventory-summary" ui-sref="inventory_group_detail_systems(::{inventory_type: grid.appScope.inventory_type, group_id: row.entity.service_group})" ui-sref-active="active">{$ row.entity.service_name $}</a>' },
         { field: 'is_virtual' },
         { field: 'scenario_name' },
-        { field: 'actions', cellTemplate: deleteButton }
+        { field: 'actions', cellTemplate: buttons }
       ],
       enableGridMenu: true,
       enableSelectAll: true,
@@ -147,7 +166,23 @@ angular.module('SEED.controller.inventory_detail_meters', []).controller('invent
         controller: 'meter_deletion_modal_controller',
         resolve: {
           organization_id: () => $scope.organization.id,
+          group_id: () => null,
           meter: () => meter,
+          view_id: () => $scope.inventory.view_id,
+          refresh_meters_and_readings: () => $scope.refresh_meters_and_readings
+        }
+      });
+    };
+
+    $scope.open_meter_connection_edit_modal = (meter) => {
+      $uibModal.open({
+        templateUrl: `${urls.static_url}seed/partials/meter_edit_modal.html`,
+        controller: 'meter_edit_modal_controller',
+        resolve: {
+          organization_id: () => $scope.organization.id,
+          meter: () => meter,
+          property_id: () => inventory_payload.property.id,
+          system_id: () => null,
           view_id: () => $scope.inventory.view_id,
           refresh_meters_and_readings: () => $scope.refresh_meters_and_readings
         }
@@ -215,23 +250,8 @@ angular.module('SEED.controller.inventory_detail_meters', []).controller('invent
     // refresh_readings make an API call to refresh the base readings data
     // according to the selected interval
     $scope.refresh_meters_and_readings = () => {
-      spinner_utility.show();
-      const get_meters_Promise = meter_service.get_meters($scope.inventory.view_id, $scope.organization.id);
-      const get_readings_Promise = meter_service.property_meter_usage(
-        $scope.inventory.view_id,
-        $scope.organization.id,
-        $scope.interval.selected,
-        [] // Not excluding any meters from the query
-      );
-      Promise.all([get_meters_Promise, get_readings_Promise]).then((data) => {
-        // update the base data and reset filters
-        [meters, property_meter_usage] = data;
-
-        resetSelections();
-        $scope.meterGridApi.core.refresh();
-        $scope.applyFilters();
-        spinner_utility.hide();
-      });
+      // Any reason we can't just reload? Solves issues with null group_ids
+      $state.reload();
     };
 
     // refresh_readings make an API call to refresh the base readings data
@@ -263,6 +283,7 @@ angular.module('SEED.controller.inventory_detail_meters', []).controller('invent
           filler_cycle: () => $scope.filler_cycle,
           organization_id: () => $scope.organization.id,
           view_id: () => $scope.inventory.view_id,
+          system_id: () => null,
           datasets: () => dataset_service.get_datasets().then((result) => result.datasets)
         }
       });

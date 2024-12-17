@@ -218,7 +218,7 @@ class BuildingFile(models.Model):
         for s in data.get("scenarios", []):
             # If the scenario does not have a name then log a warning and continue
             if not s.get("name"):
-                messages["warnings"].append("Skipping scenario because it does not have a name. ID = %s" % s.get("id"))
+                messages["warnings"].append(f"Skipping scenario because it does not have a name. ID = {s.get('id')}")
                 continue
 
             scenario, _ = Scenario.objects.get_or_create(

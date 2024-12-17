@@ -21,8 +21,9 @@ from seed.decorators import ajax_request_class
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.lib.superperms.orgs.models import AccessLevelInstance, Organization, OrganizationUser
 from seed.models import Analysis, Property, PropertyState, TaxLot, TaxLotState
+from seed.serializers.access_level_instances import AccessLevelInstanceSerializer
 from seed.utils.api import api_endpoint_class
-from seed.utils.api_schema import AutoSchemaHelper
+from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema_org_query_param
 from seed.views.v3.uploads import get_upload_path
 
 _log = logging.getLogger(__name__)
@@ -66,6 +67,41 @@ class AccessLevelViewSet(viewsets.ViewSet):
         return Response(
             {
                 "access_level_names": org.access_level_names,
+                "access_level_tree": access_level_tree,
+            },
+            status=status.HTTP_200_OK,
+        )
+
+    @swagger_auto_schema_org_query_param
+    @api_endpoint_class
+    @has_perm_class("requires_viewer")
+    @action(detail=False, methods=["GET"])
+    def descendant_tree(self, request, organization_pk=None):
+        """
+        Retrieve Access Level Tree data for a Access Level Instance and its descendants.
+        """
+        try:
+            org = Organization.objects.get(pk=organization_pk)
+            user_ali = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
+        except ObjectDoesNotExist:
+            return JsonResponse(
+                {"status": "error", "message": "No such resource."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        access_level_tree = org.get_access_tree(from_ali=user_ali)
+        # find level names for current node and descendants
+        descendants = user_ali.get_descendants()
+        if descendants:
+            end_depth = max(descendant.get_depth() for descendant in descendants)
+        else:
+            end_depth = user_ali.get_depth()
+        start_depth = user_ali.get_depth() - 1
+        level_names = org.access_level_names[start_depth:end_depth]
+
+        return Response(
+            {
+                "access_level_names": level_names,
                 "access_level_tree": access_level_tree,
             },
             status=status.HTTP_200_OK,
@@ -249,7 +285,7 @@ class AccessLevelViewSet(viewsets.ViewSet):
                     pass
 
             if all_sheets_empty:
-                return JsonResponse({"success": False, "message": "Import File %s was empty" % the_file.name})
+                return JsonResponse({"success": False, "message": f"Import File {the_file.name} was empty"})
 
             # compare headers with access levels
             # we can accept if headers are a subset of access levels
@@ -272,8 +308,7 @@ class AccessLevelViewSet(viewsets.ViewSet):
                 return JsonResponse(
                     {
                         "success": False,
-                        "message": "Import File %s's headers did not match the Access Level names defined in SEED. Click the 'Edit/Add Access Levels' button to review your defined access levels before uploading the file. "
-                        % the_file.name,
+                        "message": f"Import File {the_file.name}'s headers did not match the Access Level names defined in SEED. Click the 'Edit/Add Access Levels' button to review your defined access levels before uploading the file. ",
                     }
                 )
 
@@ -491,3 +526,63 @@ class AccessLevelViewSet(viewsets.ViewSet):
         instance.delete()
 
         return JsonResponse({"status": "success"}, status=status.HTTP_204_NO_CONTENT)
+
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class("requires_viewer")
+    @action(detail=False, methods=["POST"])
+    def lowest_common_ancestor(self, request, organization_pk=None):
+        """
+        * THIS IS NOT IN USE, but could be useful in future development
+
+
+        Given a list of inventory, find the least common ancestor between multiple properties within a group
+
+        Example ALI tree:
+             A
+           /   \
+          B     C
+         /\
+        D  E
+
+        least common ancestor:
+        if A and D -> A
+        if B and C -> A
+        if B and D -> B
+        if D and E -> B
+        """
+        inventory_type = request.data.get("inventory_type")
+        inventory_ids = request.data.get("inventory_ids")
+        if not inventory_ids:
+            return JsonResponse({"status": "success", "data": None})
+
+        inventory_type, InventoryClass = ("taxlot", TaxLot) if inventory_type == 1 else ("property", Property)
+        inventory = InventoryClass.objects.filter(id__in=inventory_ids)
+        alis = [i.access_level_instance for i in list(inventory)]
+
+        left_most = min([ali.lft for ali in alis])
+        right_most = max([ali.lft for ali in alis])
+        shared_ancestors = AccessLevelInstance.objects.filter(lft__lte=left_most, rgt__gte=right_most)
+        lowest_common = shared_ancestors.order_by("depth").last()
+
+        serialized_ali = AccessLevelInstanceSerializer(lowest_common).data
+        return JsonResponse({"status": "success", "data": serialized_ali})
+
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class("requires_viewer")
+    @action(detail=False, methods=["POST"])
+    def filter_by_inventory(self, request, organization_pk=None):
+        """
+        Return a distinct list of access_level_instance_ids for a group of inventory_ids
+        """
+        inventory_type = request.data.get("inventory_type", 0)
+        inventory_ids = request.data.get("inventory_ids")
+        if not inventory_ids:
+            return JsonResponse({"status": "success", "access_level_instance_ids": []})
+
+        inventory_type, InventoryClass = ("taxlot", TaxLot) if inventory_type == 1 else ("property", Property)
+        inventory_ids = InventoryClass.objects.filter(id__in=inventory_ids).values_list("id", flat=True)
+        access_level_instance_ids = AccessLevelInstance.objects.filter(properties__in=inventory_ids).distinct().values_list("id", flat=True)
+
+        return JsonResponse({"status": "success", "access_level_instance_ids": list(access_level_instance_ids)})

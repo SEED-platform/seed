@@ -68,7 +68,7 @@ class TestCaseMultipleDuplicateMatching(DataMappingBaseTestCase):
         # large PropertyState objects -- make sure size is still 32 (why wouldn't it be?)
         extra_data = {}
         for i in range(1000):
-            extra_data["entry_%s" % i] = "Value as string %s" % i
+            extra_data[f"entry_{i}"] = f"Value as string {i}"
 
         ps6 = PropertyState(address_line_1="123 fake st", extra_data=extra_data)
         hash_res = tasks.hash_state_object(ps6)
