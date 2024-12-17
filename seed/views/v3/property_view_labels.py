@@ -24,9 +24,9 @@ class PropertyViewLabelViewSet(ModelViewSetWithoutPatch, OrgMixin):
     @action(detail=False, methods=["GET"])
     def list_by_goal(self, request):
         """
-        Return property view labels that are attatched to the passed cycle and
-        a. unattatched to any goal
-        b. or attatched to the passed goal
+        Return property view labels that are attached to the passed cycle and
+        a. unattached to any goal
+        b. or attached to the passed goal
         """
         goal_id = request.GET.get("goal_id")
         try:
@@ -39,7 +39,7 @@ class PropertyViewLabelViewSet(ModelViewSetWithoutPatch, OrgMixin):
         elif cycle == "current":
             cycle = goal.current_cycle
         else:
-            return JsonResponse({"stutus": "error", "message": "invalid cycle, must be 'baseline' or 'current'"})
+            return JsonResponse({"status": "error", "message": "invalid cycle, must be 'baseline' or 'current'"})
         pvls = PropertyViewLabel.objects.filter(Q(propertyview__cycle=cycle) & (Q(goal=goal_id) | Q(goal__isnull=True)))
         pvls = self.serializer_class(pvls, many=True).data
 

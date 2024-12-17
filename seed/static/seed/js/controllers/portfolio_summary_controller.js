@@ -1167,7 +1167,7 @@ angular.module('SEED.controller.portfolio_summary', [])
           })
           .catch(() => {
             spinner_utility.hide();
-            Notification.erorr('Unexpected Error');
+            Notification.error('Unexpected Error');
           });
       };
     }]);

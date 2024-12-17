@@ -367,9 +367,9 @@ class UserViewSet(viewsets.ViewSet, OrgMixin):
             return content
 
         two_factor_devices = list(devices_for_user(user))
-        if two_factor_devices and type(two_factor_devices[0]) == EmailDevice:
+        if two_factor_devices and isinstance(two_factor_devices[0], EmailDevice):
             two_factor_method = "email"
-        elif two_factor_devices and type(two_factor_devices[0]) == TOTPDevice:
+        elif two_factor_devices and isinstance(two_factor_devices[0], TOTPDevice):
             two_factor_method = "token"
         else:
             two_factor_method = "disabled"

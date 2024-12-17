@@ -3,7 +3,7 @@ SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and othe
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
-from django.urls import include, re_path
+from django.urls import include, path
 from rest_framework import routers
 from rest_framework_nested import routers as nested_routers
 
@@ -178,30 +178,30 @@ public_cycles_router = nested_routers.NestedSimpleRouter(public_organizations_ro
 public_cycles_router.register(r"cycles", PublicCycleViewSet, basename="public-organizations-cycles")
 
 urlpatterns = [
-    re_path(r"^", include(api_v3_router.urls)),
-    re_path(r"^", include(data_quality_checks_router.urls)),
-    re_path(
-        r"^labels_property/$",
+    path("", include(api_v3_router.urls)),
+    path("", include(data_quality_checks_router.urls)),
+    path(
+        "labels_property/",
         LabelInventoryViewSet.as_view(),
         {"inventory_type": "property"},
     ),
-    re_path(
-        r"^labels_taxlot/$",
+    path(
+        "labels_taxlot/",
         LabelInventoryViewSet.as_view(),
         {"inventory_type": "taxlot"},
     ),
-    re_path(r"^", include(organizations_router.urls)),
-    re_path(r"^", include(analysis_views_router.urls)),
-    re_path(r"^", include(analysis_messages_router.urls)),
-    re_path(r"^", include(analysis_view_messages_router.urls)),
-    re_path(r"^", include(properties_router.urls)),
-    re_path(r"^", include(meters_router.urls)),
-    re_path(r"^", include(property_measures_router.urls)),
-    re_path(r"^", include(taxlots_router.urls)),
-    re_path(r"^", include(inventory_group_router.urls)),
-    re_path(r"^", include(system_router.urls)),
-    re_path(r"^", include(public_organizations_router.urls)),
-    re_path(r"^", include(public_cycles_router.urls)),
-    re_path(r"^celery_queue/$", celery_queue, name="celery_queue"),
-    re_path(r"media/(?P<filepath>.*)$", MediaViewSet.as_view()),
+    path("", include(organizations_router.urls)),
+    path("", include(analysis_views_router.urls)),
+    path("", include(analysis_messages_router.urls)),
+    path("", include(analysis_view_messages_router.urls)),
+    path("", include(properties_router.urls)),
+    path("", include(meters_router.urls)),
+    path("", include(property_measures_router.urls)),
+    path("", include(taxlots_router.urls)),
+    path("", include(inventory_group_router.urls)),
+    path("", include(system_router.urls)),
+    path("", include(public_organizations_router.urls)),
+    path("", include(public_cycles_router.urls)),
+    path("celery_queue/", celery_queue, name="celery_queue"),
+    path("media/<path:filepath>", MediaViewSet.as_view()),
 ]

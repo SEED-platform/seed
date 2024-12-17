@@ -33,7 +33,7 @@ class Command(BaseCommand):
             raise Exception(f"Unknown type of Geometry in GeoJSON of {geom['type']}")
 
     def handle(self, *args, **options):
-        self.stdout.write("Parsing geojson files in %s" % (options["path"]), ending="\n")
+        self.stdout.write(f"Parsing geojson files in {options['path']}", ending="\n")
 
         # one-to-one
         # taxlot
@@ -170,8 +170,8 @@ class Command(BaseCommand):
 
         parcels = None
         properties = None
-        parcel_filename = "%s/CoveredParcels_GeoJSON.json" % options["path"]
-        property_filename = "%s/CoveredBuildings_GeoJSON.json" % options["path"]
+        parcel_filename = f"{options['path']}/CoveredParcels_GeoJSON.json"
+        property_filename = f"{options['path']}/CoveredBuildings_GeoJSON.json"
         if os.path.exists(parcel_filename):
             with open(parcel_filename, "rb") as f:
                 parcels = geojson.loads(f.read())

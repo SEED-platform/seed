@@ -89,7 +89,7 @@ class PropertyViewViewSet(SEEDOrgModelViewSet):
     serializer_class = BriefPropertyViewSerializer
     pagination_class = None
     model = PropertyView
-    filter_class = PropertyViewFilterSet
+    filterset_class = PropertyViewFilterSet
     orgfilter = "property__organization_id"
     data_name = "property_views"
     queryset = PropertyView.objects.all()

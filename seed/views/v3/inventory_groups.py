@@ -85,7 +85,7 @@ class InventoryGroupViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
             org = Organization.objects.get(pk=org_id)
         except Organization.DoesNotExist:
             return JsonResponse(
-                {"status": "error", "message": "organization with id %s does not exist" % org_id}, status=status.HTTP_404_NOT_FOUND
+                {"status": "error", "message": f"organization with id {org_id} does not exist"}, status=status.HTTP_404_NOT_FOUND
             )
 
         group = InventoryGroup.objects.filter(organization_id=org.id, pk=pk).first()
@@ -184,11 +184,11 @@ class InventoryGroupMetersViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
             group = InventoryGroup.objects.get(pk=inventory_group_pk)
             group = InventoryGroupSerializer(group).data
         except ObjectDoesNotExist:
-            return [], JsonResponse({"status": "erorr", "message": "No such resource."})
+            return [], JsonResponse({"status": "error", "message": "No such resource."})
 
         # taxlots do not support meters
         if group["inventory_type"] != "Property":
-            return [], JsonResponse({"stauts": "success", "data": []})
+            return [], JsonResponse({"status": "success", "data": []})
 
         return Meter.objects.filter(
             Q(property_id__in=group["inventory_list"]) | Q(system__group_id=inventory_group_pk),

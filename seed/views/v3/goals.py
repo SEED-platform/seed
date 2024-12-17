@@ -250,7 +250,7 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
 
         properties1 = TaxLotProperty.serialize(views1, show_columns, columns_from_database, False, pk)
         properties2 = TaxLotProperty.serialize(views2, show_columns, columns_from_database, False, pk)
-        # collapse pint Qunatity units to their magnitudes
+        # collapse pint quantity units to their magnitudes
         properties1 = [apply_display_unit_preferences(org, x) for x in properties1]
         properties2 = [apply_display_unit_preferences(org, x) for x in properties2]
 

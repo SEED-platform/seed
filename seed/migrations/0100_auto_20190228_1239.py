@@ -116,7 +116,7 @@ def forwards(apps, schema_editor):
                 c = columns.first()
                 if c.display_name is None or c.display_name == "":
                     c.display_name = new_db_field["display_name"]
-                if c.data_type is None or c.data_type == "" or c.data_type == "None":
+                if c.data_type is None or c.data_type in ("", "None"):
                     c.data_type = new_db_field["data_type"]
                 c.save()
             else:

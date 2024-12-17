@@ -27,7 +27,7 @@ def forwards(apps, schema_editor):
     # Go through all the organizatoins
     for org in Organization.objects.all():
         # for org in Organization.objects.filter(id=1):
-        print("Checking for missing columns for %s" % org.id)
+        print(f"Checking for missing columns for {org.id}")
         # if org.id != 20:
         #     continue
         details = {
@@ -50,7 +50,7 @@ def forwards(apps, schema_editor):
                 # update the display name and data_type if it is not already defined
                 if c.display_name is None or c.display_name == "":
                     c.display_name = field["display_name"]
-                if c.data_type is None or c.data_type == "" or c.data_type == "None":
+                if c.data_type is None or c.data_type in ("", "None"):
                     c.data_type = field["data_type"]
                 c.save()
             else:
@@ -97,7 +97,7 @@ def forwards(apps, schema_editor):
                         dup_cms = ColumnMapping.objects.filter(Q(column_raw=dup) | Q(column_mapped=dup))
                         if exist_cm:
                             # remove the other mappings if the mapping already exists
-                            print("    Column Mapping exists, removing duplicate column mapping: Count - %s" % dup_cms.count())
+                            print(f"    Column Mapping exists, removing duplicate column mapping: Count - {dup_cms.count()}")
                             for dup_cm in dup_cms:
                                 print(dup_cm)
                             dup_cms.delete()

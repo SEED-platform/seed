@@ -285,7 +285,7 @@ class AccessLevelViewSet(viewsets.ViewSet):
                     pass
 
             if all_sheets_empty:
-                return JsonResponse({"success": False, "message": "Import File %s was empty" % the_file.name})
+                return JsonResponse({"success": False, "message": f"Import File {the_file.name} was empty"})
 
             # compare headers with access levels
             # we can accept if headers are a subset of access levels
@@ -308,8 +308,7 @@ class AccessLevelViewSet(viewsets.ViewSet):
                 return JsonResponse(
                     {
                         "success": False,
-                        "message": "Import File %s's headers did not match the Access Level names defined in SEED. Click the 'Edit/Add Access Levels' button to review your defined access levels before uploading the file. "
-                        % the_file.name,
+                        "message": f"Import File {the_file.name}'s headers did not match the Access Level names defined in SEED. Click the 'Edit/Add Access Levels' button to review your defined access levels before uploading the file. ",
                     }
                 )
 

@@ -62,7 +62,7 @@ class ServiceViewTests(AccessLevelBaseTestCase):
         )
         response = self.client.delete(url, content_type="application/json")
         assert response.status_code == 404
-        assert response.json() == {"detail": "Not found."}
+        assert response.json() == {"detail": "No Service matches the given query."}
 
     def test_service_list(self):
         url = reverse_lazy("api:v3:system-services-list", args=[self.group1.id, self.system11.id]) + f"?organization_id={self.org.id}"
@@ -96,7 +96,7 @@ class ServiceViewTests(AccessLevelBaseTestCase):
         )
         response = self.client.get(url, content_type="application/json")
         assert response.status_code == 404
-        assert response.json() == {"detail": "Not found."}
+        assert response.json() == {"detail": "No Service matches the given query."}
 
     def test_service_update(self):
         service = self.service_factory.get_service(system=self.system11, name="original name", emission_factor=1)
@@ -120,4 +120,4 @@ class ServiceViewTests(AccessLevelBaseTestCase):
         )
         response = self.client.put(url, data=json.dumps(service_details), content_type="application/json")
         assert response.status_code == 404
-        assert response.json() == {"detail": "Not found."}
+        assert response.json() == {"detail": "No Service matches the given query."}

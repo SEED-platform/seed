@@ -23,7 +23,7 @@ class Command(BaseCommand):
             orgs = Organization.objects.all().order_by("id")
 
         for org in orgs:
-            self.stdout.write("Checking if organization %s has any columns" % org.id)
+            self.stdout.write(f"Checking if organization {org.id} has any columns")
             if Column.objects.filter(organization=org).count() == 0:
                 self.stdout.write("  Organization has no columns, adding")
                 _create_default_columns(org.id)

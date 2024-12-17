@@ -178,7 +178,7 @@ class InventoryGroupMappingViewSet(viewsets.ViewSet):
             try:
                 added = self.add_groups(qs, inventory_type, inventory_ids, add_group_ids)
             except IntegrityError as e:
-                return JsonResponse({"staus": "error", "message": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+                return JsonResponse({"status": "error", "message": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
             num_updated = len(set(added).union(removed))
             groups = self.combine_group_ids(add_group_ids, remove_group_ids)

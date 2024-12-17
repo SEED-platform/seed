@@ -106,7 +106,7 @@ class UploadViewSet(viewsets.ViewSet, OrgMixin):
                     pass
 
             if all_sheets_empty:
-                return JsonResponse({"success": False, "message": "Import %s was empty" % the_file.name})
+                return JsonResponse({"success": False, "message": f"Import {the_file.name} was empty"})
 
         # save the file
         with open(path, "wb+") as temp_file:
@@ -119,7 +119,7 @@ class UploadViewSet(viewsets.ViewSet, OrgMixin):
         except ImportRecord.DoesNotExist:
             # clean up the uploaded file
             os.unlink(path)
-            return JsonResponse({"success": False, "message": "Import Record %s not found" % import_record_pk})
+            return JsonResponse({"success": False, "message": f"Import Record {import_record_pk} not found"})
 
         source_type = request.POST.get("source_type", request.GET.get("source_type"))
 
@@ -139,7 +139,7 @@ class UploadViewSet(viewsets.ViewSet, OrgMixin):
             try:
                 float_value = float(string_value)
             except ValueError:
-                return {"success": False, "message": 'Could not cast value to float: "%s"' % string_value}
+                return {"success": False, "message": f'Could not cast value to float: "{string_value}"'}
             original_unit_string = pm_value["@uom"]
             if original_unit_string == "kBtu":
                 pint_val = float_value * units.kBTU
@@ -150,7 +150,7 @@ class UploadViewSet(viewsets.ViewSet, OrgMixin):
             elif original_unit_string == "kgCO2e/ft²":
                 pint_val = float_value * units.kilogram / units.sq_ft
             else:
-                return {"success": False, "message": 'Unsupported units string: "%s"' % original_unit_string}
+                return {"success": False, "message": f'Unsupported units string: "{original_unit_string}"'}
             return {"success": True, "pint_value": pint_val}
 
     @swagger_auto_schema(
@@ -200,7 +200,7 @@ class UploadViewSet(viewsets.ViewSet, OrgMixin):
 
         # base file name (will be appended with a random string to ensure uniqueness if multiple on the same day)
         today_date = datetime.datetime.today().strftime("%Y-%m-%d")
-        file_name = "pm_import_%s.csv" % today_date
+        file_name = f"pm_import_{today_date}.csv"
 
         # create a folder to keep pm_import files
         path = os.path.join(settings.MEDIA_ROOT, "uploads", "pm_imports", file_name)
@@ -256,8 +256,8 @@ class UploadViewSet(viewsets.ViewSet, OrgMixin):
         num_properties = len(request.data["properties"])
         last_time = datetime.datetime.now()
 
-        _log.debug("About to try to import %s properties from ESPM" % num_properties)
-        _log.debug("Starting at %s" % last_time)
+        _log.debug(f"About to try to import {num_properties} properties from ESPM")
+        _log.debug(f"Starting at {last_time}")
 
         # Create a single row for each building
         for property_num, pm_property in enumerate(request.data["properties"], 1):
@@ -328,7 +328,7 @@ class UploadViewSet(viewsets.ViewSet, OrgMixin):
         except ImportRecord.DoesNotExist:
             # clean up the uploaded file
             os.unlink(path)
-            return JsonResponse({"success": False, "message": "Import Record %s not found" % import_record_pk})
+            return JsonResponse({"success": False, "message": f"Import Record {import_record_pk} not found"})
 
         # Create a new import file object in the database
         f = ImportFile.objects.create(

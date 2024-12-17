@@ -116,19 +116,19 @@ class PortfolioManagerViewSet(GenericViewSet):
         """
 
         if "username" not in request.data:
-            _log.debug("Invalid call to PM worker: missing username for PM account: %s" % str(request.data))
+            _log.debug(f"Invalid call to PM worker: missing username for PM account: {request.data!s}")
             return JsonResponse(
                 {"status": "error", "message": "Invalid call to PM worker: missing username for PM account"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
         if "password" not in request.data:
-            _log.debug("Invalid call to PM worker: missing password for PM account: %s" % str(request.data))
+            _log.debug(f"Invalid call to PM worker: missing password for PM account: {request.data!s}")
             return JsonResponse(
                 {"status": "error", "message": "Invalid call to PM worker: missing password for PM account"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
         if "template" not in request.data:
-            _log.debug("Invalid call to PM worker: missing template for PM account: %s" % str(request.data))
+            _log.debug(f"Invalid call to PM worker: missing template for PM account: {request.data!s}")
             return JsonResponse(
                 {"status": "error", "message": "Invalid call to PM worker: missing template for PM account"},
                 status=status.HTTP_400_BAD_REQUEST,
@@ -144,7 +144,7 @@ class PortfolioManagerViewSet(GenericViewSet):
         try:
             try:
                 if "z_seed_child_row" not in template:
-                    _log.debug("Invalid template formulation during portfolio manager data import: %s" % str(template))
+                    _log.debug(f"Invalid template formulation during portfolio manager data import: {template!s}")
                     return JsonResponse(
                         {"status": "error", "message": "Invalid template formulation during portfolio manager data import"},
                         status=status.HTTP_400_BAD_REQUEST,
@@ -167,7 +167,7 @@ class PortfolioManagerViewSet(GenericViewSet):
                     return response
 
                 except Exception as e:
-                    _log.debug("ERROR downloading EXCEL report: %s" % str(e))
+                    _log.debug(f"ERROR downloading EXCEL report: {e!s}")
                     return JsonResponse(
                         {"status": "error", "message": "Malformed XML from template download"}, status=status.HTTP_400_BAD_REQUEST
                     )
@@ -177,7 +177,7 @@ class PortfolioManagerViewSet(GenericViewSet):
                 content_object = xmltodict.parse(content, dict_constructor=dict)
 
             except Exception:  # catch all because xmltodict doesn't specify a class of Exceptions
-                _log.debug("Malformed XML from template download: %s" % str(content))
+                _log.debug(f"Malformed XML from template download: {content!s}")
                 return JsonResponse(
                     {"status": "error", "message": "Malformed XML from template download"}, status=status.HTTP_400_BAD_REQUEST
                 )
@@ -192,8 +192,7 @@ class PortfolioManagerViewSet(GenericViewSet):
 
             except (KeyError, TypeError):
                 _log.debug(
-                    "Processed template successfully, but missing keys -- is the report empty on Portfolio Manager?: %s"
-                    % str(content_object)
+                    f"Processed template successfully, but missing keys -- is the report empty on Portfolio Manager?: {content_object!s}"
                 )
                 return JsonResponse(
                     {
@@ -225,13 +224,13 @@ class PortfolioManagerViewSet(GenericViewSet):
         """Download a single property report from Portfolio Manager. The PK is the
         PM property ID that is on ESPM"""
         if "username" not in request.data:
-            _log.debug("Invalid call to PM worker: missing username for PM account: %s" % str(request.data))
+            _log.debug(f"Invalid call to PM worker: missing username for PM account: {request.data!s}")
             return JsonResponse(
                 {"status": "error", "message": "Invalid call to PM worker: missing username for PM account"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
         if "password" not in request.data:
-            _log.debug("Invalid call to PM worker: missing password for PM account: %s" % str(request.data))
+            _log.debug(f"Invalid call to PM worker: missing password for PM account: {request.data!s}")
             return JsonResponse(
                 {"status": "error", "message": "Invalid call to PM worker: missing password for PM account"},
                 status=status.HTTP_400_BAD_REQUEST,
@@ -275,7 +274,7 @@ class PortfolioManagerImport:
         self.username = m_username
         self.password = m_password
         self.authenticated_headers = None
-        _log.debug("Created PortfolioManagerManager for username: %s" % self.username)
+        _log.debug(f"Created PortfolioManagerManager for username: {self.username}")
 
         # vars for the URLs if they are used in more than one place.
         self.REPORT_URL = "https://portfoliomanager.energystar.gov/pm/reports/reportData/MY_REPORTS_AND_TEMPLATES"
@@ -504,7 +503,7 @@ class PortfolioManagerImport:
                 break
 
         if report_generation_complete:
-            _log.debug("Report appears to have been generated successfully (attempt_count=" + str(attempt_count) + ")")
+            _log.debug(f"Report appears to have been generated successfully (attempt_count={attempt_count})")
         else:
             raise PMError("Template report not generated successfully; aborting.")
 
@@ -605,10 +604,10 @@ class PortfolioManagerImport:
             elif isinstance(possible_properties, dict):
                 properties = [possible_properties]
             else:  # OrderedDict hints that a 'preview' report was generated, anything else is an unhandled case
-                _log.debug("Property list was not a list...was a preview report template used on accident?: %s" % str(possible_properties))
+                _log.debug(f"Property list was not a list...was a preview report template used on accident?: {possible_properties!s}")
                 return False, "Property list was not a list...was a preview report template used on accident?"
         except (KeyError, TypeError):
-            _log.debug("Processed template successfully, but missing keys -- is the report empty on Portfolio Manager?: %s" % str(xml))
+            _log.debug(f"Processed template successfully, but missing keys -- is the report empty on Portfolio Manager?: {xml!s}")
             return False, "Processed template successfully, but missing keys -- is the report empty on Portfolio Manager?"
 
         return True, properties
@@ -645,13 +644,13 @@ class PortfolioManagerImport:
             elif isinstance(possible_properties, dict):
                 properties = [possible_properties]
             else:  # OrderedDict hints that a 'preview' report was generated, anything else is an unhandled case
-                _log.debug("Property list was not a list...was a preview report template used on accident?: %s" % str(possible_properties))
+                _log.debug(f"Property list was not a list...was a preview report template used on accident?: {possible_properties!s}")
                 return False, "Property list was not a list...was a preview report template used on accident?"
 
             for p in properties:
                 return_data.append(_flatten_property_metrics(p))
         except (KeyError, TypeError):
-            _log.debug("Processed template successfully, but missing keys -- is the report empty on Portfolio Manager?: %s" % str(xml))
+            _log.debug(f"Processed template successfully, but missing keys -- is the report empty on Portfolio Manager?: {xml!s}")
             return False, "Processed template successfully, but missing keys -- is the report empty on Portfolio Manager?"
 
         return True, return_data

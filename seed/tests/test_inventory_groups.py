@@ -62,7 +62,7 @@ class InventoryGroupViewTests(AccessLevelBaseTestCase):
             name="test2", organization=self.org, inventory_type=VIEW_LIST_TAXLOT, access_level_instance=self.org.root
         )
 
-        # create 3 properties with 2 meters each. Each mmeter has 2 readings
+        # create 3 properties with 2 meters each. Each meter has 2 readings
         self.view1 = self.property_view_factory.get_property_view()
         self.view2 = self.property_view_factory.get_property_view()
         self.view3 = self.property_view_factory.get_property_view()
@@ -95,25 +95,25 @@ class InventoryGroupViewTests(AccessLevelBaseTestCase):
         return self.client.put(url, data=json.dumps(data), content_type="application/json")
 
     def test_group_constraints(self):
-        url = reverse_lazy("api:v3:inventory_groups-list")
+        url = reverse_lazy("api:v3:inventory_groups-list") + f"?organization_id={self.org.id}"
         data = {"name": "test1", "organization": self.org.id, "access_level_instance": self.org.root.id, "inventory_type": "Property"}
         response = self.client.post(url, data=json.dumps(data), content_type="application/json")
         assert response.status_code == 400
         response = response.json()
-        assert response == {"status": "error", "message": {"non_field_errors": ["Inventory Group Name must be unique."]}}
+        assert response == {"status": "error", "message": {"non_field_errors": ["The fields name, organization must make a unique set."]}}
 
         data["name"] = "test3"
         response = self.client.post(url, data=json.dumps(data), content_type="application/json")
         assert response.status_code == 201
 
-        url = reverse_lazy("api:v3:inventory_groups-detail", args=[self.property_group.id])
+        url = reverse_lazy("api:v3:inventory_groups-detail", args=[self.property_group.id]) + f"?organization_id={self.org.id}"
         response = self.client.put(url, data=json.dumps(data), content_type="application/json")
 
         assert response.status_code == 400
         response = response.json()
-        assert response == {"status": "error", "message": {"non_field_errors": ["Inventory Group Name must be unique."]}}
+        assert response == {"status": "error", "message": {"non_field_errors": ["The fields name, organization must make a unique set."]}}
 
-    def test_group_mapping_contraints(self):
+    def test_group_mapping_constraints(self):
         self.property_factory = FakePropertyFactory(organization=self.org)
         self.view_factory = FakePropertyViewFactory(organization=self.org)
 
@@ -195,7 +195,7 @@ class GroupMeterTests(AccessLevelBaseTestCase):
             name="test2", organization=self.org, inventory_type=VIEW_LIST_TAXLOT, access_level_instance=self.org.root
         )
 
-        # setup: create 3 properties with 2 meters each. Each mmeter has 2 readings
+        # setup: create 3 properties with 2 meters each. Each meter has 2 readings
         view1 = self.property_view_factory.get_property_view()
         view2 = self.property_view_factory.get_property_view()
         view3 = self.property_view_factory.get_property_view()

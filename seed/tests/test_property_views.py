@@ -173,7 +173,7 @@ class PropertyViewTests(DataMappingBaseTestCase):
         url = reverse("api:v3:properties-list") + f"?organization_id={org_2.pk}"
         response = self.client.post(url, params, content_type="application/json")
         self.assertEqual(response.status_code, 403)
-        self.assertEqual(response.json()["detail"], "You do not have permission to perform this action.")
+        self.assertEqual(response.json()["detail"], "Incorrect org id.")
 
     def test_create_property_with_protected_fields(self):
         state = self.property_state_factory.get_property_state()
@@ -598,7 +598,7 @@ class PropertyViewTests(DataMappingBaseTestCase):
         self.assertEqual(len(results), 5)
 
         # check for 2 items with 123
-        query_params = "?cycle={}&organization_id={}&identifier={}".format(self.cycle.pk, self.org.pk, "123")
+        query_params = f"?cycle={self.cycle.pk}&organization_id={self.org.pk}&identifier={'123'}"
         url = reverse("api:v3:properties-search") + query_params
         response = self.client.get(url)
         results = json.loads(response.content)
@@ -611,7 +611,7 @@ class PropertyViewTests(DataMappingBaseTestCase):
         self.assertEqual(len(results), 2)
 
         # check the combination of both the identifier and the analysis state
-        query_params = "?cycle={}&organization_id={}&identifier={}".format(self.cycle.pk, self.org.pk, "Long")
+        query_params = f"?cycle={self.cycle.pk}&organization_id={self.org.pk}&identifier={'Long'}"
         url = reverse("api:v3:properties-search") + query_params
         response = self.client.get(url)
         results = json.loads(response.content)
