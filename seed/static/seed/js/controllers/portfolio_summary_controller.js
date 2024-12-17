@@ -65,16 +65,22 @@ angular.module('SEED.controller.portfolio_summary', [])
       const table_column_ids = [];
       $scope.selected_count = 0;
       $scope.selected_option = 'none';
+      $scope.search_query = '';
+
+      $scope.search_for_goals = (query) => {
+        const pattern = query.split('').join('.*');
+        const regex = new RegExp(pattern, 'i');
+        $scope.goal_options = $scope.goals.filter((goal) => regex.test(goal.name));
+      };
 
       const initialize_columns = () => {
         $scope.columns.forEach((col) => {
-          const default_display = col.column_name === $scope.organization.property_display_field;
-          const matching = col.is_matching_criteria;
+          const matching = ['pm_property_id', 'property_name'].includes(col.column_name);
           const area = col.data_type === 'area';
           const eui = col.data_type === 'eui';
           const other = ['property_name', 'property_type', 'year_built'].includes(col.column_name);
 
-          if (default_display || matching || eui || area || other) table_column_ids.push(col.id);
+          if (matching || eui || area || other) table_column_ids.push(col.id);
           if (eui) $scope.eui_columns.push(col);
           if (area) $scope.area_columns.push(col);
           if (matching) matching_column_names.push(col.column_name);
@@ -114,6 +120,7 @@ angular.module('SEED.controller.portfolio_summary', [])
       const get_goals = (goal_name = false) => {
         goal_service.get_goals().then((result) => {
           $scope.goals = result.goals;
+          $scope.goal_options = result.goals;
           $scope.goal = goal_name ?
             $scope.goals.find((goal) => goal.name === goal_name) :
             $scope.goals[0];
@@ -127,6 +134,10 @@ angular.module('SEED.controller.portfolio_summary', [])
       const reset_data = () => {
         format_goal_details();
         refresh_data();
+      };
+
+      $scope.select_goal = (selected_goal) => {
+        $scope.goal = selected_goal;
       };
 
       // If goal changes, reset grid filters and repopulate ui-grids
@@ -245,7 +256,7 @@ angular.module('SEED.controller.portfolio_summary', [])
 
       const load_summary = () => {
         $scope.summary_loading = true;
-        $scope.show_access_level_instances = true;
+        $scope.show_access_level_instances = false;
         $scope.summary_valid = false;
 
         goal_service.get_portfolio_summary($scope.goal.id).then((result) => {
@@ -380,8 +391,7 @@ angular.module('SEED.controller.portfolio_summary', [])
 
       const property_column_names = [...new Set(
         [
-          $scope.organization.property_display_field,
-          ...matching_column_names,
+          'pm_property_id',
           'property_name',
           'property_type',
           'year_built'
@@ -399,6 +409,9 @@ angular.module('SEED.controller.portfolio_summary', [])
       // handle cycle specific columns
       const selected_columns = () => {
         let cols = property_column_names.map((name) => $scope.columns.find((col) => col.column_name === name));
+        // pin pm_property id and property name
+        cols[0].pinnedLeft = true;
+        cols[1].pinnedLeft = true;
         const default_baseline = { headerCellClass: 'portfolio-summary-baseline-header', cellClass: 'portfolio-summary-baseline-cell' };
         const default_current = { headerCellClass: 'portfolio-summary-current-header', cellClass: 'portfolio-summary-current-cell' };
         const default_styles = { headerCellFilter: 'translate', minWidth: 75, width: 150 };
@@ -499,9 +512,6 @@ angular.module('SEED.controller.portfolio_summary', [])
         // from inventory_list_controller
         _.map(cols, (col) => {
           const options = {};
-          if (col.pinnedLeft) {
-            col.pinnedLeft = false;
-          }
           // not an ideal solution. How is this done on the inventory list
           if (col.column_name === 'pm_property_id') {
             col.type = 'number';
@@ -672,7 +682,7 @@ angular.module('SEED.controller.portfolio_summary', [])
             enablePinning: false,
             exporterSuppressExport: true,
             pinnedLeft: true,
-            visible: true,
+            visible: false,
             width: 100,
             cellClass: 'ali-cell',
             headerCellClass: 'ali-header'
