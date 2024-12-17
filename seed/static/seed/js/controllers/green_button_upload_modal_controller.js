@@ -12,13 +12,15 @@ angular.module('SEED.controller.green_button_upload_modal', []).controller('gree
   'organization_id',
   'uploader_service',
   'view_id',
+  'system_id',
   'datasets',
   // eslint-disable-next-line func-names
-  function ($scope, $state, $uibModalInstance, uiGridConstants, filler_cycle, dataset_service, organization_id, uploader_service, view_id, datasets) {
+  function ($scope, $state, $uibModalInstance, uiGridConstants, filler_cycle, dataset_service, organization_id, uploader_service, view_id, system_id, datasets) {
     $scope.step = {
       number: 1
     };
     $scope.view_id = view_id;
+    $scope.system_id = system_id;
     $scope.selectedCycle = filler_cycle;
     $scope.organization_id = organization_id;
     $scope.datasets = datasets;
@@ -106,7 +108,7 @@ angular.module('SEED.controller.green_button_upload_modal', []).controller('gree
 
     const show_confirmation_info = () => {
       uploader_service
-        .greenbutton_meters_preview($scope.file_id, $scope.organization_id, $scope.view_id)
+        .greenbutton_meters_preview($scope.file_id, $scope.organization_id, $scope.view_id, $scope.system_id)
         .then((result) => {
           $scope.proposed_meters_count = result.proposed_imports.length;
           $scope.proposed_meters_count_string = $scope.proposed_meters_count > 1 ? `${$scope.proposed_meters_count} Meters` : `${$scope.proposed_meters_count} Meter`;

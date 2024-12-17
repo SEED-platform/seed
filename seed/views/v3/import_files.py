@@ -4,25 +4,30 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
 import logging
+from datetime import datetime
 
 import xlrd
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import JsonResponse
+from django.utils.timezone import make_aware
 from drf_yasg.utils import swagger_auto_schema
+from pytz import AmbiguousTimeError, NonExistentTimeError, timezone
 from rest_framework import serializers, status, viewsets
 from rest_framework.decorators import action
 
+from config.settings.common import TIME_ZONE
 from seed.data_importer.meters_parser import MetersParser
 from seed.data_importer.models import ROW_DELIMITER, ImportRecord
 from seed.data_importer.sensor_readings_parser import SensorsReadingsParser
 from seed.data_importer.tasks import do_checks, geocode_and_match_buildings_task, map_data
 from seed.data_importer.tasks import save_raw_data as task_save_raw
 from seed.data_importer.tasks import validate_use_cases as task_validate_use_cases
+from seed.data_importer.utils import kbtu_thermal_conversion_factors, kgal_water_conversion_factors
 from seed.decorators import ajax_request_class
 from seed.lib.mappings import mapper as simple_mapper
 from seed.lib.mcm import mapper, reader
 from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm_class
-from seed.lib.superperms.orgs.models import OrganizationUser
+from seed.lib.superperms.orgs.models import AccessLevelInstance, OrganizationUser
 from seed.lib.xml_mapping import mapper as xml_mapper
 from seed.models import (
     ASSESSED_RAW,
@@ -38,10 +43,12 @@ from seed.models import (
     Cycle,
     ImportFile,
     Meter,
+    MeterReading,
     Organization,
     PropertyAuditLog,
     PropertyState,
     PropertyView,
+    System,
     TaxLotAuditLog,
     TaxLotProperty,
     TaxLotState,
@@ -922,7 +929,6 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
     )
     @ajax_request_class
     @has_perm_class("requires_member")
-    @has_hierarchy_access(param_property_view_id="view_id")
     @action(detail=True, methods=["GET"])
     def greenbutton_meters_preview(self, request, pk):
         """
@@ -930,6 +936,8 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
         """
         org_id = self.get_organization(request)
         view_id = request.query_params.get("view_id")
+        system_id = request.query_params.get("system_id")
+        access_level_instance = AccessLevelInstance.objects.get(pk=self.request.access_level_instance_id)
 
         try:
             import_file = ImportFile.objects.get(pk=pk, import_record__super_organization_id=org_id)
@@ -938,20 +946,46 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
                 {"status": "error", "message": "Could not find import file with pk=" + str(pk)}, status=status.HTTP_400_BAD_REQUEST
             )
 
-        try:
-            property_id = PropertyView.objects.get(pk=view_id, cycle__organization_id=org_id).property_id
-        except PropertyView.DoesNotExist:
+        if view_id is not None and system_id is not None:
             return JsonResponse(
-                {"status": "error", "message": "Could not find property with pk=" + str(view_id)}, status=status.HTTP_400_BAD_REQUEST
+                {"status": "error", "message": "Must pass either view_id or system_id, not both"}, status=status.HTTP_400_BAD_REQUEST
             )
-
-        meters_parser = MetersParser.factory(import_file.local_file, org_id, source_type=Meter.GREENBUTTON, property_id=property_id)
+        elif view_id is not None:
+            try:
+                property_id = PropertyView.objects.get(
+                    pk=view_id,
+                    cycle__organization_id=org_id,
+                    property__access_level_instance__lft__gte=access_level_instance.lft,
+                    property__access_level_instance__rgt__lte=access_level_instance.rgt,
+                ).property_id
+            except PropertyView.DoesNotExist:
+                return JsonResponse(
+                    {"status": "error", "message": "Could not find property with pk=" + str(view_id)}, status=status.HTTP_404_NOT_FOUND
+                )
+        elif system_id is not None:
+            try:
+                system_id = System.objects.get(
+                    pk=system_id,
+                    group__access_level_instance__lft__gte=access_level_instance.lft,
+                    group__access_level_instance__rgt__lte=access_level_instance.rgt,
+                ).id
+            except System.DoesNotExist:
+                return JsonResponse(
+                    {"status": "error", "message": "Could not find system with pk=" + str(view_id)}, status=status.HTTP_400_BAD_REQUEST
+                )
+            property_id = None
+        else:
+            return JsonResponse({"status": "error", "message": "Must pass view_id or system_id"}, status=status.HTTP_400_BAD_REQUEST)
 
         result = {}
+        meters_parser = MetersParser.factory(
+            import_file.local_file, org_id, source_type=Meter.GREENBUTTON, property_id=property_id, system_id=system_id
+        )
         result["validated_type_units"] = meters_parser.validated_type_units()
         result["proposed_imports"] = meters_parser.proposed_imports
 
         import_file.matching_results_data["property_id"] = property_id
+        import_file.matching_results_data["system_id"] = system_id
         import_file.save()
 
         return result
@@ -1045,3 +1079,89 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
         result["unlinkable_pm_ids"] = meters_parser.unlinkable_pm_ids
 
         return result
+
+    @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_org_id_field()])
+    @ajax_request_class
+    @has_perm_class("requires_member")
+    @has_hierarchy_access(import_file_id_kwarg="pk")
+    @action(detail=True, methods=["POST"])
+    def system_meter_upload(self, request, pk):
+        org_id = self.get_organization(request)
+        org = Organization.objects.get(pk=org_id)
+        meter_id = request.data.get("meter_id")
+        meter = Meter.objects.get(pk=meter_id)
+
+        import_file = ImportFile.objects.get(pk=pk, import_record__super_organization_id=org_id)
+        parser = reader.MCMParser(import_file.local_file)
+
+        _kbtu_thermal_conversion_factors = kbtu_thermal_conversion_factors(org.get_thermal_conversion_assumption_display())
+        _kgal_water_conversion_factors = kgal_water_conversion_factors(org.get_thermal_conversion_assumption_display())
+
+        num_total_readings = 0
+        num_readings_created = 0
+        for raw_reading in parser.data:
+            conversion_factor = get_conversion_factor(
+                Meter.ENERGY_TYPE_BY_METER_TYPE[meter.type],
+                raw_reading["Usage Units"],
+                _kbtu_thermal_conversion_factors,
+                _kgal_water_conversion_factors,
+            )
+            if conversion_factor is None:
+                return JsonResponse(
+                    {
+                        "status": "error",
+                        "message": f"meter type {Meter.ENERGY_TYPE_BY_METER_TYPE[meter.type]} cannot be converted to {raw_reading['Usage Units']}.",
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            # process dates
+            the_tz = timezone(TIME_ZONE)
+            unaware_start = datetime.strptime(raw_reading["Start Date"], "%Y-%m-%d %H:%M:%S")
+            unaware_end = datetime.strptime(raw_reading["End Date"], "%Y-%m-%d %H:%M:%S")
+
+            try:
+                start_time = make_aware(unaware_start, timezone=the_tz)
+            except AmbiguousTimeError:
+                # Handle timestamp that occurs twice due to "falling back" to standard time
+                start_time = make_aware(unaware_start, timezone=the_tz, is_dst=False)
+            except NonExistentTimeError:
+                # Handle timestamp that doesn't exist due to "springing forward" to dst
+                start_time = make_aware(unaware_start, timezone=the_tz, is_dst=True)
+
+            try:
+                end_time = make_aware(unaware_end, timezone=the_tz)
+            except AmbiguousTimeError:
+                # Handle timestamp that occurs twice due to "falling back" to standard time
+                end_time = make_aware(unaware_end, timezone=the_tz, is_dst=False)
+            except NonExistentTimeError:
+                # Handle timestamp that doesn't exist due to "springing forward" to dst
+                end_time = make_aware(unaware_end, timezone=the_tz, is_dst=True)
+
+            _, created = MeterReading.objects.get_or_create(
+                start_time=start_time,
+                end_time=end_time,
+                meter_id=meter.id,
+                defaults={
+                    "reading": float(raw_reading["Reading"]) * conversion_factor,
+                    "conversion_factor": conversion_factor,
+                },
+            )
+
+            num_total_readings += 1
+            if created:
+                num_readings_created += 1
+
+        return JsonResponse(
+            {"status": "success", "message": f"{num_readings_created} new readings created from the {num_total_readings} readings found."},
+            status=status.HTTP_200_OK,
+        )
+
+
+def get_conversion_factor(type_name, unit, _kbtu_thermal_conversion_factors, _kgal_water_conversion_factors):
+    _log.error(type_name + ", " + unit)
+
+    thermal_conversion_factor = _kbtu_thermal_conversion_factors.get(type_name, {}).get(unit, None)
+    water_conversion_factor = _kgal_water_conversion_factors.get(type_name, {}).get(unit, None)
+
+    return thermal_conversion_factor or water_conversion_factor

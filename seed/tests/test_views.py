@@ -554,7 +554,7 @@ class InventoryViewTests(AssertDictSubsetMixin, DeleteModelsTestCase):
                 column_name_mappings[c["column_name"]] = c["name"]
 
         response = self.client.post(
-            "/api/v3/properties/filter/?{}={}&{}={}&{}={}".format("organization_id", self.org.pk, "page", 1, "per_page", 999999999),
+            f"/api/v3/properties/filter/?organization_id={self.org.pk}&page=1&per_page=999999999",
             data={},
             content_type="application/json",
         )
@@ -579,7 +579,7 @@ class InventoryViewTests(AssertDictSubsetMixin, DeleteModelsTestCase):
                 column_name_mappings[c["column_name"]] = c["name"]
 
         response = self.client.post(
-            "/api/v3/properties/filter/?{}={}&{}={}&{}={}".format("organization_id", self.org.pk, "page", 1, "per_page", 999999999),
+            f"/api/v3/properties/filter/?organization_id={self.org.pk}&page=1&per_page=999999999",
             data={"profile_id": columnlistprofile.pk},
             content_type="application/json",
         )
@@ -591,16 +591,7 @@ class InventoryViewTests(AssertDictSubsetMixin, DeleteModelsTestCase):
         # test with queryparam
 
         response = self.client.post(
-            "/api/v3/properties/filter/?{}={}&{}={}&{}={}&{}={}".format(
-                "organization_id",
-                self.org.pk,
-                "page",
-                1,
-                "per_page",
-                999999999,
-                "profile_id",
-                columnlistprofile.pk,
-            ),
+            f"/api/v3/properties/filter/?organization_id={self.org.pk}&page=1&per_page=999999999&profile_id={columnlistprofile.pk}",
             content_type="application/json",
         )
         result = response.json()
@@ -619,7 +610,7 @@ class InventoryViewTests(AssertDictSubsetMixin, DeleteModelsTestCase):
                 column_name_mappings[c["column_name"]] = c["name"]
 
         response = self.client.post(
-            "/api/v3/properties/filter/?{}={}&{}={}&{}={}".format("organization_id", self.org.pk, "page", 1, "per_page", 999999999),
+            f"/api/v3/properties/filter/?organization_id={self.org.pk}&page=1&per_page=999999999",
             data={},
             content_type="application/json",
         )
@@ -638,7 +629,7 @@ class InventoryViewTests(AssertDictSubsetMixin, DeleteModelsTestCase):
         prprty = self.property_factory.get_property()
         PropertyView.objects.create(property=prprty, cycle=self.cycle, state=state)
         response = self.client.post(
-            "/api/v3/properties/filter/?{}={}&{}={}&{}={}".format("organization_id", self.org.pk, "page", 1, "per_page", 999999999),
+            f"/api/v3/properties/filter/?organization_id={self.org.pk}&page=1&per_page=999999999",
             data={},
             content_type="application/json",
         )
@@ -677,12 +668,7 @@ class InventoryViewTests(AssertDictSubsetMixin, DeleteModelsTestCase):
                 column_name_mappings[c["column_name"]] = c["name"]
 
         response = self.client.post(
-            "/api/v3/properties/filter/?{}={}&{}={}".format(
-                "organization_id",
-                self.org.pk,
-                "ids_only",
-                "true",
-            ),
+            f"/api/v3/properties/filter/?organization_id={self.org.pk}&ids_only=true",
             data={},
             content_type="application/json",
         )
@@ -692,12 +678,7 @@ class InventoryViewTests(AssertDictSubsetMixin, DeleteModelsTestCase):
         self.assertEqual(results, [1001, 1002, 1003, 1004])
 
         response = self.client.post(
-            "/api/v3/properties/filter/?{}={}&{}={}".format(
-                "organization_id",
-                self.org.pk,
-                "ids_only",
-                "TrUE",
-            ),
+            f"/api/v3/properties/filter/?organization_id={self.org.pk}&ids_only=TrUE",
             data={},
             content_type="application/json",
         )
@@ -707,9 +688,7 @@ class InventoryViewTests(AssertDictSubsetMixin, DeleteModelsTestCase):
         self.assertEqual(results, [1001, 1002, 1003, 1004])
 
         response = self.client.post(
-            "/api/v3/properties/filter/?{}={}&{}={}&{}={}&{}={}".format(
-                "organization_id", self.org.pk, "page", 1, "per_page", 999999999, "ids_only", "not_true"
-            ),
+            f"/api/v3/properties/filter/?organization_id={self.org.pk}&page=1&per_page=999999999&ids_only=not_true",
             data={},
             content_type="application/json",
         )
@@ -719,14 +698,7 @@ class InventoryViewTests(AssertDictSubsetMixin, DeleteModelsTestCase):
         self.assertEqual(results[column_name_mappings["address_line_1"]], state1.address_line_1)
 
         response = self.client.post(
-            "/api/v3/properties/filter/?{}={}&{}={}&{}={}".format(
-                "organization_id",
-                self.org.pk,
-                "page",
-                1,
-                "per_page",
-                999999999,
-            ),
+            f"/api/v3/properties/filter/?organization_id={self.org.pk}&page=1&per_page=999999999",
             data={},
             content_type="application/json",
         )
@@ -741,9 +713,7 @@ class InventoryViewTests(AssertDictSubsetMixin, DeleteModelsTestCase):
         PropertyView.objects.create(property=prprty, cycle=self.cycle, state=state1, id=1001)
 
         response = self.client.post(
-            "/api/v3/properties/filter/?{}={}&{}={}&{}={}&{}={}".format(
-                "organization_id", self.org.pk, "page", 1, "per_page", 999999999, "ids_only", "true"
-            ),
+            f"/api/v3/properties/filter/?organization_id={self.org.pk}&page=1&per_page=999999999&ids_only=true",
             data={},
             content_type="application/json",
         )
@@ -753,16 +723,14 @@ class InventoryViewTests(AssertDictSubsetMixin, DeleteModelsTestCase):
         self.assertEqual(result["message"], 'Cannot pass query parameter "ids_only" with "per_page" or "page"')
 
         response = self.client.post(
-            "/api/v3/properties/filter/?{}={}&{}={}&{}={}&{}={}".format(
-                "organization_id", self.org.pk, "page", 9999, "per_page", 1, "ids_only", "true"
-            ),
+            f"/api/v3/properties/filter/?organization_id={self.org.pk}&page=9999&per_page=1&ids_only=true",
             data={},
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 400)
 
         response = self.client.post(
-            "/api/v3/properties/filter/?{}={}&{}={}&{}={}".format("organization_id", self.org.pk, "page", "dog", "ids_only", "true"),
+            f"/api/v3/properties/filter/?organization_id={self.org.pk}&page=dog&ids_only=true",
             data={},
             content_type="application/json",
         )
@@ -781,7 +749,7 @@ class InventoryViewTests(AssertDictSubsetMixin, DeleteModelsTestCase):
         self.assertEqual(result["state"]["gross_floor_area"], 3.14)
 
         # test writing the field -- does not work for pint fields, but other fields should persist fine
-        url = reverse("api:v3:properties-detail", args=[pv.id]) + "?organization_id=%s" % (self.org.id)
+        url = reverse("api:v3:properties-detail", args=[pv.id]) + f"?organization_id={self.org.id}"
         params = {
             "state": {
                 "gross_floor_area": 11235,
@@ -802,7 +770,7 @@ class InventoryViewTests(AssertDictSubsetMixin, DeleteModelsTestCase):
         prprty = self.property_factory.get_property()
         pv = PropertyView.objects.create(property=prprty, cycle=self.cycle, state=state)
 
-        url = reverse("api:v3:properties-detail", args=[pv.id]) + "?organization_id=%s" % (self.org.id)
+        url = reverse("api:v3:properties-detail", args=[pv.id]) + f"?organization_id={self.org.id}"
         params = {
             "state": {
                 "gross_floor_area": 11235,
@@ -825,7 +793,7 @@ class InventoryViewTests(AssertDictSubsetMixin, DeleteModelsTestCase):
         taxlot_view = TaxLotView.objects.create(taxlot=taxlot, state=taxlot_state, cycle=self.cycle)
         TaxLotProperty.objects.create(property_view=property_view, taxlot_view=taxlot_view, cycle=self.cycle)
         response = self.client.post(
-            "/api/v3/properties/filter/?{}={}&{}={}&{}={}".format("organization_id", self.org.pk, "page", 1, "per_page", 999999999),
+            f"/api/v3/properties/filter/?organization_id={self.org.pk}&page=1&per_page=999999999",
             data={},
             content_type="application/json",
         )
@@ -860,7 +828,7 @@ class InventoryViewTests(AssertDictSubsetMixin, DeleteModelsTestCase):
         taxlot_view = TaxLotView.objects.create(taxlot=taxlot, state=taxlot_state, cycle=self.cycle)
         TaxLotProperty.objects.create(property_view=property_view, taxlot_view=taxlot_view, cycle=self.cycle)
         response = self.client.post(
-            "/api/v3/properties/filter/?{}={}&{}={}&{}={}".format("organization_id", self.org.pk, "page", 1, "per_page", 999999999),
+            f"/api/v3/properties/filter/?organization_id={self.org.pk}&page=1&per_page=999999999",
             data={},
             content_type="application/json",
         )
@@ -897,7 +865,7 @@ class InventoryViewTests(AssertDictSubsetMixin, DeleteModelsTestCase):
         taxlot_view = TaxLotView.objects.create(taxlot=taxlot, state=taxlot_state, cycle=self.cycle)
         TaxLotProperty.objects.create(property_view=property_view, taxlot_view=taxlot_view, cycle=self.cycle)
         response = self.client.post(
-            "/api/v3/properties/filter/?{}={}&{}={}&{}={}".format("organization_id", self.org.pk, "page", 1, "per_page", 999999999),
+            f"/api/v3/properties/filter/?organization_id={self.org.pk}&page=1&per_page=999999999",
             data={},
             content_type="application/json",
         )
@@ -924,7 +892,7 @@ class InventoryViewTests(AssertDictSubsetMixin, DeleteModelsTestCase):
         prprty = self.property_factory.get_property()
         PropertyView.objects.create(property=prprty, cycle=self.cycle, state=state)
         response = self.client.post(
-            "/api/v3/properties/filter/?{}={}&{}={}&{}={}".format("organization_id", self.org.pk, "page", "one", "per_page", 999999999),
+            f"/api/v3/properties/filter/?organization_id={self.org.pk}&page=one&per_page=999999999",
             data={},
             content_type="application/json",
         )
@@ -941,10 +909,11 @@ class InventoryViewTests(AssertDictSubsetMixin, DeleteModelsTestCase):
         self.assertEqual(pagination["total"], 1)
 
     def test_get_properties_empty_page(self):
-        filter_properties_url = "/api/v3/properties/filter/?{}={}&{}={}&{}={}".format(
-            "organization_id", self.org.pk, "page", 10, "per_page", 999999999
+        response = self.client.post(
+            f"/api/v3/properties/filter/?organization_id={self.org.pk}&page=10&per_page=999999999",
+            data={},
+            content_type="application/json",
         )
-        response = self.client.post(filter_properties_url, data={}, content_type="application/json")
         result = response.json()
         self.assertEqual(len(result["results"]), 0)
         pagination = result["pagination"]
@@ -1091,9 +1060,7 @@ class InventoryViewTests(AssertDictSubsetMixin, DeleteModelsTestCase):
         taxlot_view = TaxLotView.objects.create(taxlot=taxlot, state=taxlot_state, cycle=self.cycle)
         TaxLotProperty.objects.create(property_view=property_view, taxlot_view=taxlot_view, cycle=self.cycle)
         response = self.client.post(
-            "/api/v3/taxlots/filter/?{}={}&{}={}&{}={}&{}={}".format(
-                "organization_id", self.org.pk, "page", 1, "per_page", 999999999, "cycle", self.cycle.pk
-            ),
+            f"/api/v3/taxlots/filter/?organization_id={self.org.pk}&page=1&per_page=999999999&cycle={self.cycle.pk}",
             data={},
             content_type="application/json",
         )
@@ -1138,7 +1105,7 @@ class InventoryViewTests(AssertDictSubsetMixin, DeleteModelsTestCase):
                 column_name_mappings[c["column_name"]] = c["name"]
 
         response = self.client.post(
-            "/api/v3/taxlots/filter/?{}={}&{}={}&{}={}".format("organization_id", self.org.pk, "page", 1, "per_page", 999999999),
+            f"/api/v3/taxlots/filter/?organization_id={self.org.pk}&page=1&per_page=999999999",
             data={"profile_id": columnlistprofile.pk},
             content_type="application/json",
         )
@@ -1150,16 +1117,7 @@ class InventoryViewTests(AssertDictSubsetMixin, DeleteModelsTestCase):
         # test with queryparam
 
         response = self.client.post(
-            "/api/v3/taxlots/filter/?{}={}&{}={}&{}={}&{}={}".format(
-                "organization_id",
-                self.org.pk,
-                "page",
-                1,
-                "per_page",
-                999999999,
-                "profile_id",
-                columnlistprofile.pk,
-            ),
+            f"/api/v3/taxlots/filter/?organization_id={self.org.pk}&page=1&per_page=999999999&profile_id={columnlistprofile.pk}",
             content_type="application/json",
         )
         result = response.json()
@@ -1175,15 +1133,11 @@ class InventoryViewTests(AssertDictSubsetMixin, DeleteModelsTestCase):
         taxlot = TaxLot.objects.create(organization=self.org)
         taxlot_view = TaxLotView.objects.create(taxlot=taxlot, state=taxlot_state, cycle=self.cycle)
         TaxLotProperty.objects.create(property_view=property_view, taxlot_view=taxlot_view, cycle=self.cycle)
-        url = "/api/v3/taxlots/filter/?{}={}&{}={}&{}={}".format(
-            "organization_id",
-            self.org.pk,
-            "page",
-            1,
-            "per_page",
-            999999999,
+        response = self.client.post(
+            f"/api/v3/taxlots/filter/?organization_id={self.org.pk}&page=1&per_page=999999999",
+            data={},
+            content_type="application/json",
         )
-        response = self.client.post(url, data={}, content_type="application/json")
         results = response.json()["results"]
 
         self.assertEqual(len(results), 1)
@@ -1192,9 +1146,11 @@ class InventoryViewTests(AssertDictSubsetMixin, DeleteModelsTestCase):
         property_1 = self.property_factory.get_property()
         property_view_1 = PropertyView.objects.create(property=property_1, cycle=self.cycle, state=property_state_1)
         TaxLotProperty.objects.create(property_view=property_view_1, taxlot_view=taxlot_view, cycle=self.cycle)
-        url = "/api/v3/taxlots/filter/?{}={}&{}={}&{}={}".format("organization_id", self.org.pk, "page", 1, "per_page", 999999999)
-        data = {}
-        response = self.client.post(url, data=data, content_type="application/json")
+        response = self.client.post(
+            f"/api/v3/taxlots/filter/?organization_id={self.org.pk}&page=1&per_page=999999999",
+            data={},
+            content_type="application/json",
+        )
         result = response.json()
 
         column_name_mappings_related = {}
@@ -1228,9 +1184,7 @@ class InventoryViewTests(AssertDictSubsetMixin, DeleteModelsTestCase):
         taxlot_view_2 = TaxLotView.objects.create(taxlot=taxlot_2, state=taxlot_state_2, cycle=self.cycle)
         TaxLotProperty.objects.create(property_view=property_view, taxlot_view=taxlot_view_2, cycle=self.cycle)
         response = self.client.post(
-            "/api/v3/taxlots/filter/?{}={}&{}={}&{}={}&{}={}".format(
-                "organization_id", self.org.pk, "cycle", self.cycle.pk, "page", 1, "per_page", 999999999
-            ),
+            f"/api/v3/taxlots/filter/?organization_id={self.org.pk}&cycle={self.cycle.pk}&page=1&per_page=999999999",
             data={},
             content_type="application/json",
         )
@@ -1286,16 +1240,7 @@ class InventoryViewTests(AssertDictSubsetMixin, DeleteModelsTestCase):
         taxlot_view = TaxLotView.objects.create(taxlot=taxlot, state=taxlot_state, cycle=self.cycle)
         TaxLotProperty.objects.create(property_view=property_view, taxlot_view=taxlot_view, cycle=self.cycle)
         response = self.client.post(
-            "/api/v3/taxlots/filter/?{}={}&{}={}&{}={}&{}={}".format(
-                "organization_id",
-                self.org.pk,
-                "cycle",
-                self.cycle.pk,
-                "page",
-                1,
-                "per_page",
-                999999999,
-            ),
+            f"/api/v3/taxlots/filter/?organization_id={self.org.pk}&cycle={self.cycle.pk}&page=1&per_page=999999999",
             data={},
             content_type="application/json",
         )
@@ -1323,16 +1268,7 @@ class InventoryViewTests(AssertDictSubsetMixin, DeleteModelsTestCase):
         taxlot_view = TaxLotView.objects.create(taxlot=taxlot, state=taxlot_state, cycle=self.cycle)
         TaxLotProperty.objects.create(property_view=property_view, taxlot_view=taxlot_view, cycle=self.cycle)
         response = self.client.post(
-            "/api/v3/taxlots/filter/?{}={}&{}={}&{}={}&{}={}".format(
-                "organization_id",
-                self.org.pk,
-                "cycle",
-                self.cycle.pk,
-                "page",
-                "bad",
-                "per_page",
-                999999999,
-            ),
+            f"/api/v3/taxlots/filter/?organization_id={self.org.pk}&cycle={self.cycle.pk}&page=bad&per_page=999999999",
             data={},
             content_type="application/json",
         )
@@ -1357,16 +1293,7 @@ class InventoryViewTests(AssertDictSubsetMixin, DeleteModelsTestCase):
         taxlot_view = TaxLotView.objects.create(taxlot=taxlot, state=taxlot_state, cycle=self.cycle)
         TaxLotProperty.objects.create(property_view=property_view, taxlot_view=taxlot_view, cycle=self.cycle)
         response = self.client.post(
-            "/api/v3/taxlots/filter/?{}={}&{}={}&{}={}&{}={}".format(
-                "organization_id",
-                self.org.pk,
-                "cycle",
-                self.cycle.pk,
-                "page",
-                1,
-                "per_page",
-                999999999,
-            ),
+            f"/api/v3/taxlots/filter/?organization_id={self.org.pk}&cycle={self.cycle.pk}&page=1&per_page=999999999",
             data={},
             content_type="application/json",
         )

@@ -313,7 +313,7 @@ class DefaultColumnsViewTests(DeleteModelsTestCase):
         self.assertEqual(response.status_code, 404)
         result = response.json()
         self.assertFalse(result["success"])
-        self.assertEqual(result["message"], "Cannot find column in org=%s with pk=-999" % self.org.id)
+        self.assertEqual(result["message"], f"Cannot find column in org={self.org.id} with pk=-999")
 
 
 class ColumnsViewPermissionsTests(AccessLevelBaseTestCase, DeleteModelsTestCase):

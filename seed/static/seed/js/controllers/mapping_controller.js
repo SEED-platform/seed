@@ -870,7 +870,7 @@ angular.module('SEED.controller.mapping', []).controller('mapping_controller', [
     const display_cached_column_mappings = () => {
       const cached_mappings = JSON.parse($scope.import_file.cached_mapped_columns);
       _.forEach($scope.mappings, (col) => {
-        const cached_col = _.find(cached_mappings, { from_field: col.name });
+        const cached_col = cached_mappings.find((mapping) => mapping.from_field === col.name) ?? {};
         col.suggestion_column_name = cached_col.to_field;
         col.suggestion_table_name = cached_col.to_table_name;
         col.from_units = cached_col.from_units;

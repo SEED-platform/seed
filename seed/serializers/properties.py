@@ -29,6 +29,7 @@ from seed.serializers.access_level_instances import AccessLevelInstanceSerialize
 from seed.serializers.building_file import BuildingFileSerializer
 from seed.serializers.certification import GreenAssessmentPropertyReadOnlySerializer
 from seed.serializers.inventory_document import InventoryDocumentSerializer
+from seed.serializers.inventory_groups import InventoryGroupMappingSerializer
 from seed.serializers.measures import PropertyMeasureSerializer
 from seed.serializers.pint import PintQuantitySerializerField
 from seed.serializers.scenarios import ScenarioSerializer
@@ -104,6 +105,7 @@ class PropertySerializer(serializers.ModelSerializer):
 
     inventory_documents = InventoryDocumentSerializer(many=True, read_only=True)
     access_level_instance = AccessLevelInstanceSerializer(many=False, read_only=True)
+    group_mappings = InventoryGroupMappingSerializer(many=True, read_only=True)
 
     class Meta:
         model = Property
@@ -526,14 +528,14 @@ class PropertyViewAsStateSerializer(serializers.ModelSerializer):
             else:
                 query = PropertyView.objects.filter(**field_vals)
             if query.exists():
-                unique.append("({})".format(", ".join(fields)))
+                unique.append(f"({', '.join(fields)})")
         errors = {}
         if missing:
-            msg = "Required fields are missing: {}".format(", ".join(missing))
+            msg = f"Required fields are missing: {', '.join(missing)}"
             errors["missing"] = msg
         if wrong_type:
-            wrong_type = ["{}({})".format(field, "json dict/int" if field == "state" else "int") for field in wrong_type]
-            msg = "Fields are wrong type: {}".format(", ".join(wrong_type))
+            wrong_type = [f"{field}({'json dict/int' if field == 'state' else 'int'})" for field in wrong_type]
+            msg = f"Fields are wrong type: {', '.join(wrong_type)}"
             errors["wrong_type"] = msg
         if unique:
             msg = f"Unique together constraint violated for: {unique}"

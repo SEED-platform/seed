@@ -131,7 +131,7 @@ class PropertySensorReadingsExporter:
             )
 
             for reading in readings_avg_by_month:
-                month_year = "{} {}".format(month_name[reading["month"].month], reading["month"].year)
+                month_year = f"{month_name[reading['month'].month]} {reading['month'].year}"
 
                 monthly_readings[month_year]["month"] = month_year
                 monthly_readings[month_year][field_name] = reading["avg"]

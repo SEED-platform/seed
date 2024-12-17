@@ -57,7 +57,7 @@ _log = get_task_logger(__name__)
 
 
 def log_debug(message):
-    _log.debug("{}: {}".format(message, dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
+    _log.debug(f"{message}: {dt.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
 
 
 @shared_task
@@ -742,7 +742,7 @@ def states_to_views(unmatched_state_ids, org, access_level_instance, cycle, Stat
             sub_progress_data.finish_with_success()
 
     except IntegrityError as e:
-        raise IntegrityError("Could not merge results with error: %s" % (e))
+        raise IntegrityError(f"Could not merge results with error: {e}")
 
     # update merge_state while excluding any states that were a product of a previous, file-inclusive merge
     StateClass.objects.filter(pk__in=promoted_state_ids).exclude(merge_state=MERGE_STATE_MERGED).update(merge_state=MERGE_STATE_NEW)

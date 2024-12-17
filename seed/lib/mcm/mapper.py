@@ -269,7 +269,7 @@ def map_row(row, mapping, model_class, extra_data_fields=[], cleaner=None, **kwa
     :rtype: list of model instances that were created
 
     """
-    initial_data = kwargs.get("initial_data", None)
+    initial_data = kwargs.get("initial_data")
     model = model_class()
 
     # _log.debug("map_row's mappings {}".format(mapping))

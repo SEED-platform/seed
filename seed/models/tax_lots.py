@@ -39,7 +39,7 @@ class TaxLot(models.Model):
     updated = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return "TaxLot - %s" % self.pk
+        return f"TaxLot - {self.pk}"
 
 
 @receiver(pre_save, sender=TaxLot)
@@ -111,7 +111,7 @@ class TaxLotState(models.Model):
         index_together = [["hash_object"], ["import_file", "data_state"], ["import_file", "data_state", "merge_state"]]
 
     def __str__(self):
-        return "TaxLot State - %s" % self.pk
+        return f"TaxLot State - {self.pk}"
 
     def promote(self, cycle):
         """
@@ -160,7 +160,7 @@ class TaxLotState(models.Model):
 
             return tlvs[0]
         else:
-            _log.error("Found %s PropertyView" % len(tlvs))
+            _log.error(f"Found {len(tlvs)} PropertyView")
             _log.error("This should never occur, famous last words?")
 
             return None
@@ -418,7 +418,7 @@ class TaxLotView(models.Model):
     labels = models.ManyToManyField(StatusLabel)
 
     def __str__(self):
-        return "TaxLot View - %s" % self.pk
+        return f"TaxLot View - {self.pk}"
 
     class Meta:
         unique_together = (

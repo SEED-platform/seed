@@ -29,7 +29,7 @@ EUI_DIMENSIONALITY = "[mass] / [time] ** 3"
 GHG_DIMENSIONALITY = "[mass] / [time]"
 GHG_INTENSITY_DIMENSIONALITY = "[mass] / [length] ** 2 / [time]"
 WUI_DIMENSIONALITY = "[length] / [time]"  # kgal/ft2/year => length3/length2/time => length/time3
-WATER_USE_DIMENSONALITY = "[length] ** 3 / [time]"
+WATER_USE_DIMENSIONALITY = "[length] ** 3 / [time]"
 
 AREA_DEFAULT_UNITS = "ft**2"
 EUI_DEFAULT_UNITS = "kBtu/ft**2/year"
@@ -71,12 +71,13 @@ def collapse_unit(org, x):
         GHG_DIMENSIONALITY: org.display_units_ghg or GHG_DEFAULT_UNITS,
         GHG_INTENSITY_DIMENSIONALITY: org.display_units_ghg_intensity or GHG_INTENSITY_DEFAULT_UNITS,
         WUI_DIMENSIONALITY: org.display_units_wui or WUI_DEFAULT_UNITS,
-        WATER_USE_DIMENSONALITY: org.display_units_water_use or WATER_USE_DEFAULT_UNITS,
+        WATER_USE_DIMENSIONALITY: org.display_units_water_use or WATER_USE_DEFAULT_UNITS,
     }
 
     if isinstance(x, ureg.Quantity):
         dimensionality = get_dimensionality(x)
-        pint_spec = pint_specs[dimensionality]
+        # default to quantity's units if not found
+        pint_spec = pint_specs.get(dimensionality, x.units)
         converted_value = x.to(pint_spec).magnitude
         return round(converted_value, org.display_decimal_places)
     elif isinstance(x, list):

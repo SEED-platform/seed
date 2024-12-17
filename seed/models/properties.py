@@ -403,20 +403,20 @@ class PropertyState(models.Model):
 
             return pvs[0]
         else:
-            _log.error("Found %s PropertyView" % len(pvs))
+            _log.error(f"Found {len(pvs)} PropertyView")
             _log.error("This should never occur, famous last words?")
 
             return None
 
     def __str__(self):
-        return "Property State - %s" % self.pk
+        return f"Property State - {self.pk}"
 
     def clean(self):
         date_field_names = ("year_ending", "generation_date", "release_date", "recent_sale_date")
         for field in date_field_names:
             value = getattr(self, field)
             if value and isinstance(value, str):
-                _log.info("Saving %s which is a date time" % field)
+                _log.info(f"Saving {field} which is a date time")
                 _log.info(convert_datestr(value))
                 _log.info(date_cleaner(value))
 

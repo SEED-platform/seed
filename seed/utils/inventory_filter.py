@@ -3,7 +3,7 @@ SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and othe
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
-from typing import Literal, Optional, Type, Union
+from typing import Literal, Optional, Union
 
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.db.utils import DataError
@@ -113,7 +113,7 @@ def get_filtered_results(request: Request, inventory_type: Literal["property", "
     except ValueError as e:
         return JsonResponse({"status": "error", "message": f"Error filtering: {e!s}"}, status=status.HTTP_400_BAD_REQUEST)
 
-    # If we are returning the children, build the childrens filters.
+    # If we are returning the children, build the child filters.
     if include_related:
         other_inventory_type: Literal["property", "taxlot"] = "taxlot" if inventory_type == "property" else "property"
 
@@ -138,7 +138,7 @@ def get_filtered_results(request: Request, inventory_type: Literal["property", "
 
         # If the children have filters, filter views_list by their children.
         if len(filters) > 0 or len(annotations) > 0:
-            other_inventory_type_class: Union[Type[TaxLotView], Type[PropertyView]] = (
+            other_inventory_type_class: Union[type[TaxLotView], type[PropertyView]] = (
                 TaxLotView if inventory_type == "property" else PropertyView
             )
             other_views_list = other_inventory_type_class.objects.select_related(other_inventory_type, "state", "cycle").filter(

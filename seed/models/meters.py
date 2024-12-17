@@ -3,13 +3,38 @@ SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and othe
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
-from django.db import connection, models
+from django.db import IntegrityError, connection, models
+from django.db.models.signals import pre_save
+from django.dispatch import receiver
 from psycopg2.extras import execute_values
 
 from seed.models import Property, Scenario
+from seed.models.inventory_groups import InventoryGroupMapping
 
 
 class Meter(models.Model):
+    ## CONNECTION TYPES
+    # These connection types do not require services. May be on a property or system
+    IMPORTED = 1  # tracks what is received via an unknown source
+    EXPORTED = 2  # tracks what is expelled via an unknown source
+
+    # These connection types require services. May be on a property or system
+    RECEIVING_SERVICE = 3  # tracks what is received via my service
+    RETURNING_TO_SERVICE = 4  # tracks what is expelled via my service
+
+    # These connection types require services and may only be on Systems
+    TOTAL_FROM_USERS = 5  # tracks everything that this system expelled via my service
+    TOTAL_TO_USERS = 6  # tracks everything that this system received via my service
+
+    CONNECTION_TYPES = (
+        (IMPORTED, "Imported"),
+        (EXPORTED, "Exported"),
+        (RECEIVING_SERVICE, "Receiving Service"),
+        (RETURNING_TO_SERVICE, "Returning To Service"),
+        (TOTAL_FROM_USERS, "Total From Users"),
+        (TOTAL_TO_USERS, "Total To Users"),
+    )
+
     COAL_ANTHRACITE = 1
     COAL_BITUMINOUS = 2
     COKE = 3
@@ -28,7 +53,7 @@ class Meter(models.Model):
     FUEL_OIL_NO_1 = 14
     FUEL_OIL_NO_2 = 15
     FUEL_OIL_NO_4 = 16
-    FUEL_OIL_NO_5_AND_NO_6 = 13
+    FUEL_OIL_NO_5_AND_NO_6 = 17
     KEROSENE = 18
     NATURAL_GAS = 19
     OTHER = 20
@@ -131,13 +156,16 @@ class Meter(models.Model):
     is_virtual = models.BooleanField(default=False)
 
     property = models.ForeignKey(Property, on_delete=models.CASCADE, related_name="meters", null=True, blank=True)
+    scenario = models.ForeignKey(Scenario, on_delete=models.CASCADE, null=True, blank=True)
+    system = models.ForeignKey("System", on_delete=models.CASCADE, related_name="meters", null=True, blank=True)
 
     source = models.IntegerField(choices=SOURCES, default=None, null=True)
     source_id = models.CharField(max_length=255, null=True, blank=True)
 
     type = models.IntegerField(choices=ENERGY_TYPES, default=None, null=True)
 
-    scenario = models.ForeignKey(Scenario, on_delete=models.CASCADE, null=True, blank=True)
+    service = models.ForeignKey("Service", on_delete=models.SET_NULL, related_name="meters", null=True, blank=True)
+    connection_type = models.IntegerField(choices=CONNECTION_TYPES, default=IMPORTED, null=False)
 
     def copy_readings(self, source_meter, overlaps_possible=True):
         """
@@ -176,6 +204,54 @@ class Meter(models.Model):
             }
 
             MeterReading.objects.bulk_create(readings)
+
+
+@receiver(pre_save, sender=Meter)
+def presave_meter(sender, instance, **kwargs):
+    property = instance.property
+    system = instance.system
+    connection_type = instance.connection_type
+    service = instance.service
+    connection_string = dict(Meter.CONNECTION_TYPES).get(connection_type)
+
+    # must be connected to either a system or a property
+    if property is not None and system is not None:
+        raise IntegrityError(f"Meter {instance.id} has both a property and a system. It must only have one.")
+
+    outside_connection = connection_type in [Meter.IMPORTED, Meter.EXPORTED]
+    if outside_connection:
+        # outside connections don't have services
+        if instance.service is not None:
+            raise IntegrityError(f"Meter {instance.id} has connection_type '{connection_string}', but also is connected to a service")
+    else:
+        # inside connections _do_ have services
+        if service is None:
+            raise IntegrityError(f"Meter {instance.id} has connection_type '{connection_string}', but is not connected to a service")
+
+        total_connections = connection_type in [Meter.TOTAL_FROM_USERS, Meter.TOTAL_TO_USERS]
+        if total_connections:
+            # Only systems have connection type "total"
+            if system is None:
+                raise IntegrityError(f"Meter {instance.id} has connection_type '{connection_string}', but is not connected to a system")
+
+            # Total connections must have a service owned by system
+            if system.id != service.system_id:
+                raise IntegrityError(
+                    f"Meters with connection_type '{connection_string}' must have a service on the system the meter is connected to"
+                    # f"Meter {instance.id} on system {system.name} has connection_type '{connection_string}', but is also connected to service {service.name}, which is on a different system, {service.system.name}. Meters with connection_type '{connection_string}' must have a service on the system the meter is connected to"
+                )
+
+            # Service should only have one meter of each "total" connection type
+            if Meter.objects.filter(service=service, connection_type=connection_type).exclude(pk=instance.pk).exists():
+                raise IntegrityError(f"Service {service.id} already has a meter with connection type '{connection_string}'")
+
+        elif property:  # Meter.RETURNING_TO_SERVICE and Meter.RECEIVING_SERVICE
+            # service must be within the meter's property's group
+            property_groups = InventoryGroupMapping.objects.filter(property=property).values_list("group_id", flat=True)
+            if service is not None and service.system.group.id not in property_groups:
+                raise IntegrityError(
+                    f"Meter {instance.id} on property {property.id} and has service {service.name}, but meter and property are not in the service's group"
+                )
 
 
 class MeterReading(models.Model):

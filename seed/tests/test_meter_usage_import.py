@@ -459,6 +459,7 @@ class MeterUsageImportTest(TestCase):
         expectation = [
             {
                 "property_id": self.property_1.id,
+                "system_id": None,
                 "cycles": self.cycle.name,
                 "pm_property_id": "5766973",
                 "source_id": "5766973-0",
@@ -468,6 +469,7 @@ class MeterUsageImportTest(TestCase):
             },
             {
                 "property_id": self.property_1.id,
+                "system_id": None,
                 "cycles": self.cycle.name,
                 "pm_property_id": "5766973",
                 "source_id": "5766973-1",
@@ -477,6 +479,7 @@ class MeterUsageImportTest(TestCase):
             },
             {
                 "property_id": self.property_2.id,
+                "system_id": None,
                 "cycles": self.cycle.name,
                 "pm_property_id": "5766975",
                 "source_id": "5766975-0",
@@ -486,6 +489,7 @@ class MeterUsageImportTest(TestCase):
             },
             {
                 "property_id": self.property_2.id,
+                "system_id": None,
                 "cycles": self.cycle.name,
                 "pm_property_id": "5766975",
                 "source_id": "5766975-1",
@@ -523,6 +527,7 @@ class MeterUsageImportTest(TestCase):
         expectation = [
             {
                 "property_id": self.property_1.id,
+                "system_id": None,
                 "cycles": self.cycle.name + ", " + new_cycle.name,
                 "pm_property_id": "5766973",
                 "source_id": "5766973-0",
@@ -532,6 +537,7 @@ class MeterUsageImportTest(TestCase):
             },
             {
                 "property_id": self.property_1.id,
+                "system_id": None,
                 "cycles": self.cycle.name + ", " + new_cycle.name,
                 "pm_property_id": "5766973",
                 "source_id": "5766973-1",
@@ -541,6 +547,7 @@ class MeterUsageImportTest(TestCase):
             },
             {
                 "property_id": self.property_2.id,
+                "system_id": None,
                 "cycles": self.cycle.name,
                 "pm_property_id": "5766975",
                 "source_id": "5766975-0",
@@ -550,6 +557,7 @@ class MeterUsageImportTest(TestCase):
             },
             {
                 "property_id": self.property_2.id,
+                "system_id": None,
                 "cycles": self.cycle.name,
                 "pm_property_id": "5766975",
                 "source_id": "5766975-1",
@@ -588,6 +596,7 @@ class MeterUsageImportTest(TestCase):
         expectation = [
             {
                 "property_id": self.property_1.id,
+                "system_id": None,
                 "cycles": self.cycle.name,
                 "pm_property_id": "5766973",
                 "source_id": "5766973-0",
@@ -597,6 +606,7 @@ class MeterUsageImportTest(TestCase):
             },
             {
                 "property_id": property_3.id,
+                "system_id": None,
                 "cycles": self.cycle.name,
                 "pm_property_id": "5766973",
                 "source_id": "5766973-0",
@@ -606,6 +616,7 @@ class MeterUsageImportTest(TestCase):
             },
             {
                 "property_id": self.property_1.id,
+                "system_id": None,
                 "cycles": self.cycle.name,
                 "pm_property_id": "5766973",
                 "source_id": "5766973-1",
@@ -615,6 +626,7 @@ class MeterUsageImportTest(TestCase):
             },
             {
                 "property_id": property_3.id,
+                "system_id": None,
                 "cycles": self.cycle.name,
                 "pm_property_id": "5766973",
                 "source_id": "5766973-1",
@@ -624,6 +636,7 @@ class MeterUsageImportTest(TestCase):
             },
             {
                 "property_id": self.property_2.id,
+                "system_id": None,
                 "cycles": self.cycle.name,
                 "pm_property_id": "5766975",
                 "source_id": "5766975-0",
@@ -633,6 +646,7 @@ class MeterUsageImportTest(TestCase):
             },
             {
                 "property_id": self.property_2.id,
+                "system_id": None,
                 "cycles": self.cycle.name,
                 "pm_property_id": "5766975",
                 "source_id": "5766975-1",
@@ -668,6 +682,7 @@ class MeterUsageImportTest(TestCase):
         expectation = [
             {
                 "property_id": self.property_1.id,
+                "system_id": None,
                 "cycles": self.cycle.name,
                 "pm_property_id": "5766973",
                 "source_id": "5766973-0",
@@ -677,6 +692,7 @@ class MeterUsageImportTest(TestCase):
             },
             {
                 "property_id": self.property_1.id,
+                "system_id": None,
                 "cycles": self.cycle.name,
                 "pm_property_id": "5766973",
                 "source_id": "5766973-1",
@@ -686,6 +702,7 @@ class MeterUsageImportTest(TestCase):
             },
             {
                 "property_id": self.property_1.id,
+                "system_id": None,
                 "cycles": self.cycle.name,
                 "pm_property_id": "5766973",
                 "source_id": "5766973-0",
@@ -695,6 +712,7 @@ class MeterUsageImportTest(TestCase):
             },
             {
                 "property_id": self.property_1.id,
+                "system_id": None,
                 "cycles": self.cycle.name,
                 "pm_property_id": "5766973",
                 "source_id": "5766973-1",
@@ -704,6 +722,7 @@ class MeterUsageImportTest(TestCase):
             },
             {
                 "property_id": self.property_2.id,
+                "system_id": None,
                 "cycles": self.cycle.name,
                 "pm_property_id": "5766975",
                 "source_id": "5766975-0",
@@ -713,6 +732,7 @@ class MeterUsageImportTest(TestCase):
             },
             {
                 "property_id": self.property_2.id,
+                "system_id": None,
                 "cycles": self.cycle.name,
                 "pm_property_id": "5766975",
                 "source_id": "5766975-1",
@@ -761,6 +781,7 @@ class MeterUsageImportTest(TestCase):
         expected_import_summary = [
             {
                 "property_id": self.property_1.id,
+                "system_id": None,
                 "cycles": self.cycle.name,
                 "pm_property_id": "5766973",
                 "source_id": "5766973-0",
@@ -771,6 +792,7 @@ class MeterUsageImportTest(TestCase):
             },
             {
                 "property_id": self.property_1.id,
+                "system_id": None,
                 "cycles": self.cycle.name,
                 "pm_property_id": "5766973",
                 "source_id": "5766973-1",
@@ -781,6 +803,7 @@ class MeterUsageImportTest(TestCase):
             },
             {
                 "property_id": self.property_2.id,
+                "system_id": None,
                 "cycles": self.cycle.name,
                 "pm_property_id": "5766975",
                 "source_id": "5766975-0",
@@ -791,6 +814,7 @@ class MeterUsageImportTest(TestCase):
             },
             {
                 "property_id": self.property_2.id,
+                "system_id": None,
                 "cycles": self.cycle.name,
                 "pm_property_id": "5766975",
                 "source_id": "5766975-1",

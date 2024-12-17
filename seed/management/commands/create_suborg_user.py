@@ -26,13 +26,13 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         if not User.objects.filter(username=options["username"]).exists():
-            self.stdout.write("User '%s' does not exist, cannot create suborg" % options["username"], ending="\n")
+            self.stdout.write(f"User '{options['username']}' does not exist, cannot create suborg", ending="\n")
             sys.exit(1)
         else:
             u = User.objects.get(username=options["username"])
 
         if not Organization.objects.filter(name=options["parent_org"]).exists():
-            self.stdout.write("Parent organization '%s' does not exist, cannot create suborg" % options["parent_org"], ending="\n")
+            self.stdout.write(f"Parent organization '{options['parent_org']}' does not exist, cannot create suborg", ending="\n")
             sys.exit(1)
         else:
             org = Organization.objects.get(name=options["parent_org"])

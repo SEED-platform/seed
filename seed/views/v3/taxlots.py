@@ -25,6 +25,7 @@ from seed.models import (
     MERGE_STATE_NEW,
     Column,
     DerivedColumn,
+    InventoryGroupMapping,
     Note,
     PropertyView,
     StatusLabel,
@@ -282,6 +283,8 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
         for note in notes:
             note.taxlot_view = None
 
+        groupings = set(old_view.taxlot.group_mappings.all().values_list("group_id", flat=True))
+
         merged_state = old_view.state
         if merged_state.data_state != DATA_STATE_MATCHING or merged_state.merge_state != MERGE_STATE_MERGED:
             return {"status": "error", "message": f"taxlot view with id {pk} is not a merged taxlot view"}
@@ -354,6 +357,10 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
             ids.append(note.id)
             # Correct the created and updated times to match the original note
             Note.objects.filter(id__in=ids).update(created=created, updated=updated)
+
+        for group in list(groupings):
+            InventoryGroupMapping(tax_lot=new_view1.taxlot, group_id=group).save()
+            InventoryGroupMapping(tax_lot=new_view2.taxlot, group_id=group).save()
 
         Note.objects.create(
             organization=old_taxlot.organization,
@@ -502,6 +509,7 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
         ali = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
 
         taxlot_view_ids = request.data.get("taxlot_view_ids", [])
+        group_mapping_ids = list(InventoryGroupMapping.objects.filter(taxlot__views__in=taxlot_view_ids).values_list("id", flat=True))
         taxlot_state_ids = TaxLotView.objects.filter(
             id__in=taxlot_view_ids,
             taxlot__access_level_instance__lft__gte=ali.lft,
@@ -512,6 +520,9 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
 
         if resp[0] == 0:
             return JsonResponse({"status": "warning", "message": "No action was taken"})
+
+        # Delete orphaned mappings
+        InventoryGroupMapping.objects.filter(id__in=group_mapping_ids, taxlot__views__isnull=True).delete()
 
         return JsonResponse({"status": "success", "taxlots": resp[1]["seed.TaxLotState"]})
 

@@ -173,7 +173,7 @@ class PropertyViewTests(DataMappingBaseTestCase):
         url = reverse("api:v3:properties-list") + f"?organization_id={org_2.pk}"
         response = self.client.post(url, params, content_type="application/json")
         self.assertEqual(response.status_code, 403)
-        self.assertEqual(response.json()["detail"], "You do not have permission to perform this action.")
+        self.assertEqual(response.json()["detail"], "Incorrect org id.")
 
     def test_create_property_with_protected_fields(self):
         state = self.property_state_factory.get_property_state()
@@ -598,7 +598,7 @@ class PropertyViewTests(DataMappingBaseTestCase):
         self.assertEqual(len(results), 5)
 
         # check for 2 items with 123
-        query_params = "?cycle={}&organization_id={}&identifier={}".format(self.cycle.pk, self.org.pk, "123")
+        query_params = f"?cycle={self.cycle.pk}&organization_id={self.org.pk}&identifier={'123'}"
         url = reverse("api:v3:properties-search") + query_params
         response = self.client.get(url)
         results = json.loads(response.content)
@@ -611,7 +611,7 @@ class PropertyViewTests(DataMappingBaseTestCase):
         self.assertEqual(len(results), 2)
 
         # check the combination of both the identifier and the analysis state
-        query_params = "?cycle={}&organization_id={}&identifier={}".format(self.cycle.pk, self.org.pk, "Long")
+        query_params = f"?cycle={self.cycle.pk}&organization_id={self.org.pk}&identifier={'Long'}"
         url = reverse("api:v3:properties-search") + query_params
         response = self.client.get(url)
         results = json.loads(response.content)
@@ -1980,6 +1980,9 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
         expectation = [
             {
                 "id": electric_meter.id,
+                "property_id": self.property_view_1.property_id,
+                "system_id": None,
+                "system_name": None,
                 "type": "Electric - Grid",
                 "source": "Portfolio Manager",
                 "source_id": "5766973-0",
@@ -1987,9 +1990,25 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
                 "scenario_name": None,
                 "is_virtual": False,
                 "alias": "Electric - Grid - Portfolio Manager - 5766973-0",
+                "config": {
+                    "connection": "outside",
+                    "direction": "imported",
+                    "group_id": None,
+                    "service_id": None,
+                    "system_id": None,
+                    "use": "outside",
+                },
+                "connection_type": "Imported",
+                "service_name": None,
+                "service_group": None,
+                "service_id": None,
+                "property_display_field": self.property_view_1.state.address_line_1,
             },
             {
                 "id": gas_meter.id,
+                "property_id": self.property_view_1.property_id,
+                "system_id": None,
+                "system_name": None,
                 "type": "Natural Gas",
                 "source": "Portfolio Manager",
                 "source_id": "5766973-1",
@@ -1997,9 +2016,25 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
                 "scenario_name": None,
                 "is_virtual": False,
                 "alias": "Natural Gas - Portfolio Manager - 5766973-1",
+                "config": {
+                    "connection": "outside",
+                    "direction": "imported",
+                    "group_id": None,
+                    "service_id": None,
+                    "system_id": None,
+                    "use": "outside",
+                },
+                "connection_type": "Imported",
+                "service_name": None,
+                "service_group": None,
+                "service_id": None,
+                "property_display_field": self.property_view_1.state.address_line_1,
             },
             {
                 "id": gb_gas_meter.id,
+                "property_id": self.property_view_1.property_id,
+                "system_id": None,
+                "system_name": None,
                 "type": "Natural Gas",
                 "source": "GreenButton",
                 "source_id": "123fakeID",
@@ -2007,6 +2042,19 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
                 "scenario_name": None,
                 "is_virtual": False,
                 "alias": "Natural Gas - GreenButton - 123fakeID",
+                "config": {
+                    "connection": "outside",
+                    "direction": "imported",
+                    "group_id": None,
+                    "service_id": None,
+                    "system_id": None,
+                    "use": "outside",
+                },
+                "connection_type": "Imported",
+                "service_name": None,
+                "service_group": None,
+                "service_id": None,
+                "property_display_field": self.property_view_1.state.address_line_1,
             },
         ]
 

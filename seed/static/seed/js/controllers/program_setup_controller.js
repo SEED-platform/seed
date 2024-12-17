@@ -44,14 +44,12 @@ angular.module('SEED.controller.program_setup', []).controller('program_setup_co
     $scope.valid_column_data_types = ['number', 'float', 'integer', 'ghg', 'ghg_intensity', 'area', 'eui', 'boolean'];
     $scope.valid_x_axis_data_types = ['number', 'string', 'float', 'integer', 'ghg', 'ghg_intensity', 'area', 'eui', 'boolean'];
 
-    $scope.property_columns = _.reject(property_columns, (item) => (
-      (item.related || !$scope.valid_column_data_types.includes(item.data_type)) &&
-      item.derived_column == null
-    )).sort((a, b) => naturalSort(a.displayName, b.displayName));
-    $scope.x_axis_columns = _.reject(property_columns, (item) => (
-      (item.related || !$scope.valid_x_axis_data_types.includes(item.data_type)) &&
-      item.derived_column == null
-    )).sort((a, b) => naturalSort(a.displayName, b.displayName));
+    $scope.property_columns = property_columns
+      .filter((col) => !((col.related || !$scope.valid_column_data_types.includes(col.data_type)) && col.derived_column == null))
+      .sort((a, b) => naturalSort(a.displayName, b.displayName));
+    $scope.x_axis_columns = property_columns
+      .filter((col) => !((col.related || !$scope.valid_x_axis_data_types.includes(col.data_type)) && col.derived_column == null))
+      .sort((a, b) => naturalSort(a.displayName, b.displayName));
     $scope.x_axis_selection = '';
     $scope.cycle_selection = '';
     $scope.compliance_metrics_error = [];

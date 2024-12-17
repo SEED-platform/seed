@@ -917,11 +917,11 @@ class Column(models.Model):
 
         # restricted columns to rename to or from
         if new_column_name in self.EXCLUDED_RENAME_TO_FIELDS:
-            return [False, "Column name '%s' is a reserved name. Choose another." % new_column_name]
+            return [False, f"Column name '{new_column_name}' is a reserved name. Choose another."]
 
         # Do not allow moving data out of the property based columns
         if self.column_name in self.EXCLUDED_RENAME_FROM_FIELDS or self.table_name in {"Property", "TaxLot"}:
-            return [False, "Can't move data out of reserved column '%s'" % self.column_name]
+            return [False, f"Can't move data out of reserved column '{self.column_name}'"]
 
         try:
             with transaction.atomic():
@@ -986,7 +986,7 @@ class Column(models.Model):
                         setattr(datum, new_column.column_name, getattr(datum, self.column_name))
                         setattr(datum, self.column_name, None)
                         datum.save()
-        except (ValidationError, DataError):
+        except (ValidationError, DataError, ValueError):
             return [
                 False,
                 "The column data aren't formatted properly for the new column due to type constraints (e.g., Datatime, Quantities, etc.).",
@@ -1340,7 +1340,7 @@ class Column(models.Model):
             try:
                 types[c["column_name"]] = Column.DB_TYPES[c["data_type"]]
             except KeyError:
-                _log.error("could not find data_type for %s" % c)
+                _log.error(f"could not find data_type for {c}")
                 types[c["column_name"]] = ""
 
         return {"types": types}
@@ -1576,7 +1576,7 @@ class Column(models.Model):
                 c["related"] = inventory_type.lower() not in c["table_name"].lower()
                 if c["related"]:
                     # if it is related then have the display name show the other table
-                    c["display_name"] = c["display_name"] + " (%s)" % INVENTORY_DISPLAY[c["table_name"]]
+                    c["display_name"] = f"{c['display_name']} ({INVENTORY_DISPLAY[c['table_name']]})"
 
             include_column = True
             if only_used:
@@ -1594,7 +1594,7 @@ class Column(models.Model):
         uniq = set()
         for c in columns:
             if (c["table_name"], c["column_name"]) in uniq:
-                raise Exception("Duplicate name '{}' found in columns".format(c["name"]))
+                raise Exception(f"Duplicate name '{c['name']}' found in columns")
             else:
                 uniq.add((c["table_name"], c["column_name"]))
 

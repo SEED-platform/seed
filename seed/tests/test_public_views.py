@@ -119,11 +119,11 @@ class TestPublicViews(DataMappingBaseTestCase):
         url = reverse_lazy("api:v3:public-organizations-cycles-geojson", args=[-1, self.cycle1.id])
         response = self.client.get(url, content_type="application/json")
         assert response.status_code == 404
-        assert response.json() == {"erorr": "Organization does not exist"}
+        assert response.json() == {"error": "Organization does not exist"}
         url = reverse_lazy("api:v3:public-organizations-cycles-geojson", args=[self.org.id, -1])
         response = self.client.get(url, content_type="application/json")
         assert response.status_code == 404
-        assert response.json() == {"erorr": "Cycle does not exist"}
+        assert response.json() == {"error": "Cycle does not exist"}
 
         url = reverse_lazy("api:v3:public-organizations-cycles-geojson", args=[self.org.id, self.cycle2.id])
         response = self.client.get(url, content_type="application/json")

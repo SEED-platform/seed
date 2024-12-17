@@ -32,7 +32,7 @@ class PublicOrganizationViewSet(viewsets.ViewSet):
         :query_param labels: comma separated list of case sensitive label names. Results will include inventory that has any of the listed labels. Default is all inventory
         :query_param cycles: comma separated list of cycle ids. Results include inventory from the listed cycles. Default is all cycles
         :query_param properties: boolean to return properties. Default is True
-        :query_param taxlots: boolan to return taxlots. Default is True
+        :query_param taxlots: boolean to return taxlots. Default is True
         :query_param page: integer page number
         :query_param per_page: integer results per page
 
@@ -45,7 +45,7 @@ class PublicOrganizationViewSet(viewsets.ViewSet):
         try:
             org = Organization.objects.get(pk=pk)
         except Organization.DoesNotExist:
-            return JsonResponse({"erorr": "Organization does not exist"}, status=status.HTTP_404_NOT_FOUND)
+            return JsonResponse({"error": "Organization does not exist"}, status=status.HTTP_404_NOT_FOUND)
 
         if not org.public_feed_enabled:
             return JsonResponse(
@@ -66,7 +66,7 @@ class PublicOrganizationViewSet(viewsets.ViewSet):
         :query_param labels: comma separated list of case sensitive label names. Results will include inventory that has any of the listed labels. Default is all inventory
         :query_param cycles: comma separated list of cycle ids. Results include inventory from the listed cycles. Default is all cycles
         :query_param properties: boolean to return properties. Default is True
-        :query_param taxlots: boolan to return taxlots. Default is True
+        :query_param taxlots: boolean to return taxlots. Default is True
         :query_param page: integer page number
         :query_param per_page: integer results per page
 
@@ -79,7 +79,7 @@ class PublicOrganizationViewSet(viewsets.ViewSet):
         try:
             org = Organization.objects.get(pk=pk)
         except Organization.DoesNotExist:
-            return JsonResponse({"erorr": "Organization does not exist"}, status=status.HTTP_404_NOT_FOUND)
+            return JsonResponse({"error": "Organization does not exist"}, status=status.HTTP_404_NOT_FOUND)
 
         if not org.public_feed_enabled:
             return HttpResponse(PUBLIC_HTML_DISABLED.format(org.name, org.id))
@@ -157,9 +157,9 @@ class PublicCycleViewSet(viewsets.ViewSet):
             org = Organization.objects.get(pk=organization_pk)
             cycle = Cycle.objects.get(organization_id=organization_pk, pk=pk)
         except Organization.DoesNotExist:
-            return JsonResponse({"erorr": "Organization does not exist"}, status=status.HTTP_404_NOT_FOUND)
+            return JsonResponse({"error": "Organization does not exist"}, status=status.HTTP_404_NOT_FOUND)
         except Cycle.DoesNotExist:
-            return JsonResponse({"erorr": "Cycle does not exist"}, status=status.HTTP_404_NOT_FOUND)
+            return JsonResponse({"error": "Cycle does not exist"}, status=status.HTTP_404_NOT_FOUND)
 
         if not org.public_feed_enabled or not org.public_geojson_enabled:
             return JsonResponse(

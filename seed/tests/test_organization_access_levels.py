@@ -10,7 +10,7 @@ import time
 from django.urls import reverse_lazy
 
 from seed.lib.superperms.orgs.models import AccessLevelInstance
-from seed.models import Organization, TaxLot
+from seed.models import Organization, Property, TaxLot
 from seed.tests.util import AccessLevelBaseTestCase
 
 
@@ -23,6 +23,7 @@ class TestOrganizationViews(AccessLevelBaseTestCase):
             "api:v3:organization-access_levels-tree",
             args=[self.org.id],
         )
+        url_descendant = reverse_lazy("api:v3:organization-access_levels-descendant-tree", args=[self.org.id])
         sibling = self.org.add_new_access_level_instance(self.org.root.id, "sibling")
         child_dict = {
             "id": self.child_level_instance.pk,
@@ -44,9 +45,15 @@ class TestOrganizationViews(AccessLevelBaseTestCase):
             "path": {"root": "root"},
         }
 
-        # get tree
+        # get tree & descendant tree
         self.login_as_root_member()
         raw_result = self.client.get(url)
+        result = json.loads(raw_result.content)
+        assert result == {
+            "access_level_names": ["root", "child"],
+            "access_level_tree": [{**root_dict, "children": [child_dict, sibling_dict]}],
+        }
+        raw_result = self.client.get(url_descendant)
         result = json.loads(raw_result.content)
         assert result == {
             "access_level_names": ["root", "child"],
@@ -59,6 +66,12 @@ class TestOrganizationViews(AccessLevelBaseTestCase):
         assert result == {
             "access_level_names": ["root", "child"],
             "access_level_tree": [{**root_dict, "children": [child_dict]}],
+        }
+        raw_result = self.client.get(url_descendant)
+        result = json.loads(raw_result.content)
+        assert result == {
+            "access_level_names": ["child"],
+            "access_level_tree": [child_dict],
         }
 
     def test_edit_access_level_names(self):
@@ -333,3 +346,84 @@ class TestOrganizationViews(AccessLevelBaseTestCase):
         result = self.client.delete(url)
 
         assert result.status_code == 400
+
+    def test_lowest_common_ancestor(self):
+        """
+        find the lowest common ALI in a group.
+
+        ALI Tree:
+                          root
+                        /      \
+                     child     sibling
+                    /    \
+        grandchild a     grandchild b
+        """
+        self.org.access_level_names += ["grand_child"]
+
+        self.sibling_level_instance = self.org.add_new_access_level_instance(self.org.root.id, "sibling")
+        self.grand_child_a_level_instance = self.org.add_new_access_level_instance(self.child_level_instance.id, "grandchild a")
+        self.grand_child_b_level_instance = self.org.add_new_access_level_instance(self.child_level_instance.id, "grandchild b")
+        self.org.save()
+
+        self.p1 = Property.objects.create(organization=self.org, access_level_instance=self.org.root)
+        self.p2 = Property.objects.create(organization=self.org, access_level_instance=self.child_level_instance)
+        self.p3 = Property.objects.create(organization=self.org, access_level_instance=self.sibling_level_instance)
+        self.p4 = Property.objects.create(organization=self.org, access_level_instance=self.grand_child_a_level_instance)
+        self.p5 = Property.objects.create(organization=self.org, access_level_instance=self.grand_child_b_level_instance)
+
+        url = reverse_lazy(
+            "api:v3:organization-access_levels-lowest-common-ancestor",
+            args=[self.org.id],
+        )
+        data = {"inventory_type": "property", "inventory_ids": [self.p1.id, self.p2.id, self.p3.id, self.p4.id, self.p5.id]}
+
+        result = self.client.post(url, data=json.dumps(data), content_type="application/json")
+        result = result.json()["data"]
+        assert self.org.root.id == result["id"]
+        assert self.org.root.name == result["name"]
+
+        data["inventory_ids"] = [self.p2.id, self.p4.id, self.p5.id]
+        result = self.client.post(url, data=json.dumps(data), content_type="application/json")
+        result = result.json()["data"]
+        assert self.child_level_instance.id == result["id"]
+        assert self.child_level_instance.name == result["name"]
+
+        data["inventory_ids"] = [self.p5.id]
+        result = self.client.post(url, data=json.dumps(data), content_type="application/json")
+        result = result.json()["data"]
+        assert self.grand_child_b_level_instance.id == result["id"]
+        assert self.grand_child_b_level_instance.name == result["name"]
+
+    def test_ali_filter_by_inventory(self):
+        self.sibling_level_instance = self.org.add_new_access_level_instance(self.org.root.id, "sibling")
+        self.org.save()
+
+        self.p1a = Property.objects.create(organization=self.org, access_level_instance=self.org.root)
+        self.p1b = Property.objects.create(organization=self.org, access_level_instance=self.org.root)
+        self.p2a = Property.objects.create(organization=self.org, access_level_instance=self.child_level_instance)
+        self.p2b = Property.objects.create(organization=self.org, access_level_instance=self.child_level_instance)
+        self.p3a = Property.objects.create(organization=self.org, access_level_instance=self.sibling_level_instance)
+        self.p3b = Property.objects.create(organization=self.org, access_level_instance=self.sibling_level_instance)
+
+        url = reverse_lazy(
+            "api:v3:organization-access_levels-filter-by-inventory",
+            args=[self.org.id],
+        )
+        data = {
+            "inventory_type": "property",
+            "inventory_ids": [self.p1a.id, self.p1b.id, self.p2a.id, self.p2b.id, self.p3a.id, self.p3b.id],
+        }
+        result = self.client.post(url, data=json.dumps(data), content_type="application/json")
+        alis = result.json()["access_level_instance_ids"]
+        assert len(alis) == 3
+
+        data["inventory_ids"] = [self.p2a.id, self.p2b.id, self.p3a.id, self.p3b.id]
+        result = self.client.post(url, data=json.dumps(data), content_type="application/json")
+        alis = result.json()["access_level_instance_ids"]
+        assert len(alis) == 2
+
+        data["inventory_ids"] = [self.p3a.id, self.p3b.id]
+        result = self.client.post(url, data=json.dumps(data), content_type="application/json")
+        alis = result.json()["access_level_instance_ids"]
+        assert len(alis) == 1
+        assert alis == [self.sibling_level_instance.id]

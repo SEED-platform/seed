@@ -7,8 +7,9 @@ from __future__ import annotations
 
 import logging
 from collections import defaultdict
+from collections.abc import Sequence
 from itertools import chain
-from typing import TYPE_CHECKING, Sequence
+from typing import TYPE_CHECKING
 
 from django.apps import apps
 from django.contrib.gis.db.models import GeometryField
@@ -299,8 +300,10 @@ class TaxLotProperty(models.Model):
             if this_cls == "Property":
                 obj_dict.update(ali_path_by_id[obj.property.access_level_instance_id])
                 obj_dict["meters_exist_indicator"] = obj_meter_counts.get(obj.property_id, 0) > 0
+                obj_dict["groups_indicator"] = obj.property.group_mappings.count() > 0
             else:
                 obj_dict.update(ali_path_by_id[obj.taxlot.access_level_instance_id])
+                obj_dict["groups_indicator"] = obj.taxlot.group_mappings.count() > 0
 
             # bring in GIS data
             obj_dict[lookups["bounding_box"]] = bounding_box_wkt(obj.state)
