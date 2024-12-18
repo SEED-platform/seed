@@ -45,6 +45,7 @@ angular.module('SEED.controller.inventory_create', []).controller('inventory_cre
                 if (!c.is_extra_data && !c.derived_column) $scope.canonical_columns.push(c);
             }
         });
+        // create a copy, not a reference
         $scope.inventory.form_columns =[...$scope.matching_columns];
         $scope.form_values = [];
 

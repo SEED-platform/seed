@@ -90,7 +90,7 @@ from seed.utils.api import OrgMixin, ProfileIdMixin, api_endpoint_class
 from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema_org_query_param
 from seed.utils.inventory_filter import get_filtered_results
 from seed.utils.labels import get_labels
-from seed.utils.match import MergeLinkPairError, match_merge_link
+from seed.utils.match import MergeLinkPairError, match_merge_link, get_matching_criteria_column_names
 from seed.utils.merge import merge_properties
 from seed.utils.meters import PropertyMeterReadingsExporter
 from seed.utils.properties import get_changed_fields, pair_unpair_property_taxlot, properties_across_cycles, update_result_with_master
@@ -1950,6 +1950,60 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
 
         return response
 
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class("requires_member")
+    @action(detail=False, methods=["POST"])
+    def form_create(self, request):
+        org_id = self.get_organization(request)
+        data = request.data
+        access_level_instance = data.get("access_level_instance")
+        cycle = data.get("cycle")
+        columns = data.get("form_columns")
+        matching_columns = get_matching_criteria_column_names(org_id, "PropertyState")
+
+
+        state_data = { "organization_id": org_id, "extra_data": {} }
+        for col in columns:
+            if not col.get("id"):
+                Column.objects.create(
+                    is_extra_data=True,
+                    column_name=col["displayName"],
+                    organization_id=org_id,
+                    table_name="PropertyState", 
+                )
+                state_data["extra_data"][col["displayName"]] = col["value"]
+            else:
+                column_name = col.get("column_name", col.get("displayName"))
+                state_data[column_name] = col["value"]
+        
+        # find matching states
+        filter_query = {col.get("column_name"): col.get("value") for col in columns if col.get("column_name") in matching_columns}
+        matching_states = list(PropertyState.objects.filter(**filter_query, propertyview__isnull=False))
+
+        # always create a new state
+        state = PropertyState.objects.create(**state_data)
+
+        # create a new property view
+        if not matching_states:
+            property = Property.objects.create(organization_id=org_id, access_level_instance_id=access_level_instance)
+            PropertyView.objects.create(property=property, cycle_id=cycle, state=state)
+        else:
+            parent_property = matching_states[0].propertyview_set.first().property
+            views = parent_property.views.all()
+
+            # out of cycle views
+            views_out = parent_property.views.exclude(cycle=cycle) 
+            # in cycle 
+            views_in = parent_property.views.filter(cycle=cycle) 
+            
+            breakpoint()
+            
+        # create new extra data columns
+        # is it new or existing view?
+        
+        # breakpoint()
+        return JsonResponse({"status": "success"})
 
 def _row_from_views(views):
     data = pd.Series()

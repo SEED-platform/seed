@@ -47,6 +47,7 @@ from seed.models import (
     TaxLotProperty,
     TaxLotView,
 )
+from seed.serializers.columns import ColumnSerializer
 from seed.serializers.properties import PropertyStatePromoteWritableSerializer, PropertyStateSerializer
 from seed.test_helpers.fake import (
     FakeColumnFactory,
@@ -657,6 +658,52 @@ class PropertyViewTests(DataMappingBaseTestCase):
         false_post_params = json.dumps({"property_view_ids": [property_view_2.pk]})
         false_result = self.client.post(url, false_post_params, content_type="application/json")
         self.assertEqual(b"false", false_result.content)
+
+    def test_property_form_create(self):
+        original_state_count = PropertyState.objects.count()
+        original_view_count = PropertyView.objects.count()
+        original_property_count = Property.objects.count()
+
+        url = reverse("api:v3:properties-form-create") + f"?organization_id={self.org.pk}"
+        pm_property_id = Column.objects.get(column_name="pm_property_id", organization=self.org)
+        pm_property_id = ColumnSerializer(pm_property_id).data 
+        custom_id_1 = Column.objects.get(column_name="custom_id_1", table_name="PropertyState", organization=self.org)
+        custom_id_1 = ColumnSerializer(custom_id_1).data 
+        extra = {"displayName": "Extra Data Column", "value": "XYZ"}
+        data = {
+            "access_level_instance": self.org.root.id,
+            "cycle": self.cycle.id,
+            "form_columns": [
+                {**pm_property_id, "value": "123"},
+                {**custom_id_1, "value": "ABC"},
+                extra
+            ]
+        }
+
+        self.client.post(url, json.dumps(data), content_type="application/json")
+        assert PropertyState.objects.count() == original_state_count + 1
+        assert PropertyView.objects.count() == original_view_count + 1
+        assert Property.objects.count() == original_property_count + 1
+
+        # # verify with existing matches 
+        cycle2 = self.cycle_factory.get_cycle(start=datetime(2000, 10, 10, tzinfo=get_current_timezone()))
+        cycle3 = self.cycle_factory.get_cycle(start=datetime(2020, 10, 10, tzinfo=get_current_timezone()))
+        view = self.property_view_factory.get_property_view(cycle=cycle2, pm_property_id="456", custom_id_1="DEF")
+
+        data = {
+            "access_level_instance": self.org.root.id,
+            "cycle": self.cycle.id,
+            "form_columns": [
+                {**pm_property_id, "value": "456"},
+                {**custom_id_1, "value": "DEF"},
+                {"displayName": "Column2", "value": "GHI"}
+            ]
+        }
+
+        self.client.post(url, json.dumps(data), content_type="application/json")
+
+
+        assert True
 
 
 class PropertyViewTestsPermissions(AccessLevelBaseTestCase):
@@ -2708,3 +2755,4 @@ class PropertyViewUpdateWithESPMTests(DataMappingBaseTestCase):
 
         # verify that the property has meters too, which came from the XLSX file
         self.assertEqual(pv.property.meters.count(), 2)
+
