@@ -89,6 +89,7 @@
     'SEED.controller.insights_program',
     'SEED.controller.insights_property',
     'SEED.controller.inventory_column_list_profiles',
+    'SEED.controller.inventory_create',
     'SEED.controller.inventory_cycles',
     'SEED.controller.inventory_detail',
     'SEED.controller.inventory_detail_analyses',
@@ -2241,6 +2242,41 @@
               'organization_payload',
               ($stateParams, derived_columns_service, organization_payload) => derived_columns_service.get_derived_columns(organization_payload.organization.id, $stateParams.inventory_type)
             ]
+          }
+        })
+        .state({
+          name: 'inventory_create',
+          url: '/{inventory_type:properties|taxlots}/create',
+          templateUrl: `${static_url}seed/partials/inventory_create.html`,
+          controller: 'inventory_create_controller',
+          resolve: {
+            access_level_tree: [
+              'organization_service', 'user_service',
+              (organization_service, user_service) => {
+                const organization_id = user_service.get_organization().id;
+                return organization_service.get_descendant_access_level_tree(organization_id);
+              }
+            ],
+            all_columns: [
+              '$stateParams',
+              'inventory_service',
+              ($stateParams, inventory_service) => {
+                if ($stateParams.inventory_type === 'properties') {
+                  return inventory_service.get_property_columns();
+                }
+                return inventory_service.get_taxlot_columns();
+              }
+            ],
+            cycles: ['cycle_service', (cycle_service) => cycle_service.get_cycles()],
+            profiles: [
+              '$stateParams',
+              'inventory_service',
+              ($stateParams, inventory_service) => {
+                const inventory_type = $stateParams.inventory_type === 'properties' ? 'Property' : 'Tax Lot';
+                return inventory_service.get_column_list_profiles('List View Profile', inventory_type);
+              }
+            ],
+            organization_payload: ['user_service', 'organization_service', (user_service, organization_service) => organization_service.get_organization(user_service.get_organization().id)]
           }
         })
         .state({
