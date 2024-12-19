@@ -6,26 +6,16 @@
 
 <div class="page_header_container" ng-cloak>
     <div class="page_header">
-        <div class="left page_action_container">
-            <a ng-show="group_id != null" ui-sref="inventory_groups(::{inventory_type: inventory_type})"
-                class="page_action">
-                <i class="fa-solid fa-chevron-left"></i>
-                {$:: 'Groups' | translate $}
-            </a>
-        </div>
+        <div class="left page_action_container"></div>
         <div class="page_title">
-            <h1>{$:: (group_id? 'Group - ': '')$}{$:: (inventory_type === 'taxlots' ? 'Tax Lots' : 'Properties') |
-                translate $}</h1>
+            <h1>{$:: (inventory_type === 'taxlots' ? 'Tax Lots' : 'Properties') | translate $}</h1>
         </div>
         <div class="right page_action_container"></div>
     </div>
 </div>
 
 <div class="section_nav_container">
-    <div ng-show="group_id == null" class="section_nav"
-        ng-include="::urls.static_url + 'seed/partials/inventory_nav.html'"></div>
-    <div ng-show="group_id != null" class="section_nav"
-        ng-include="::urls.static_url + 'seed/partials/inventory_group_detail_nav.html'"></div>
+    <div class="section_nav" ng-include="::urls.static_url + 'seed/partials/inventory_nav.html'"></div>
 </div>
 
 <div class="section_header_container">
@@ -34,7 +24,7 @@
             <h2><i class="fa-regular fa-building"></i><span>Create a {$ inventory_type === 'properties' ? 'Property' : 'Tax Lot'$}</span></h2>
         </div>
         <div class="section_action_container right_40 section_action_btn pull-right">
-            <button class="btn btn-primary" ng-click="save_inventory()">Save {$ inventory_type == 'taxlots' ? 'TaxLot' : 'Property' $}</button>
+            <button class="btn btn-primary" ng-disabled="!valid" ng-click="save_inventory()">Save {$ inventory_type == 'taxlots' ? 'TaxLot' : 'Property' $}</button>
         </div>
     </div>
 </div>
@@ -46,13 +36,13 @@
                 <label for="select-level-name" translate>Access Level</label>
                 <select id="select-level-name" class="form-control "
                 ng-options="level.index as level.name for level in level_names" ng-change="change_selected_level_index()"
-                ng-model="inventory.level_name_index" required></select>
+                ng-model="data.level_name_index"></select>
             </div>
             <div class="col-sm-4">
                 <label for="select-level-instance" translate>Level Instance</label>
                 <select id="select-level-instance" class="form-control" ng-change=""
                 ng-options="potential_level_instance.id as potential_level_instance.name for potential_level_instance in potential_level_instances"
-                ng-model="inventory.access_level_instance" required></select>
+                ng-model="data.access_level_instance"></select>
             </div>
         </div>
         <div class="content-row">
@@ -60,7 +50,7 @@
                 <label for="cycle" translate>Cycle</label>
                 <select id="select-cycle" class="form-control" ng-change=""
                     ng-options="cycle.id as cycle.name for cycle in cycles"
-                    ng-model="inventory.cycle" required></select>
+                    ng-model="data.cycle"></select>
             </div>
         </div>
         <div class="content-row">
@@ -91,7 +81,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr ng-repeat="column in inventory.form_columns track by $index">
+                    <tr ng-repeat="column in form_columns track by $index">
                         <td>{$ column.table_name.slice(0, -5) $}</td>
                         <!-- <td style="max-width:200px;">{$ column.displayName $}</td> -->
                         <td ng-attr-id="row-input-{$:: $index $}">
@@ -116,13 +106,13 @@
                                 aria-label="New column name" />
                         </td>
                         <td>
-                            <input type="text" class="form-control" ng-model="column.value" ng-change="change_value(column.value, $index)" />
+                            <input type="text" class="form-control" ng-model="column.value" ng-change="change_value(column, $index)" />
                         </td>
                         <td>{$ column.is_matching_criteria $}</td>
                         <td>{$ column.is_extra_data $}</td>
                         <td style="width: 100px;" >{$ column.data_type $}</td>
                         <td>
-                            <button class="btn btn-danger" type="button" ng-click="remove_column($index)">
+                            <button class="btn btn-danger" type="button" ng-click="remove_column($index, column)">
                                 <i class="fa-solid fa-xmark"></i>
                             </button>
                         </td>

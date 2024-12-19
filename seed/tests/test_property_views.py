@@ -665,45 +665,46 @@ class PropertyViewTests(DataMappingBaseTestCase):
         original_property_count = Property.objects.count()
 
         url = reverse("api:v3:properties-form-create") + f"?organization_id={self.org.pk}"
-        pm_property_id = Column.objects.get(column_name="pm_property_id", organization=self.org)
-        pm_property_id = ColumnSerializer(pm_property_id).data 
-        custom_id_1 = Column.objects.get(column_name="custom_id_1", table_name="PropertyState", organization=self.org)
-        custom_id_1 = ColumnSerializer(custom_id_1).data 
-        extra = {"displayName": "Extra Data Column", "value": "XYZ"}
+
+        state_data = {
+            "pm_property_id": "123",
+            "custom_id_1": "ABC",
+            "extra_data": {"Extra Data Column": "456"},
+        }
+
         data = {
             "access_level_instance": self.org.root.id,
             "cycle": self.cycle.id,
-            "form_columns": [
-                {**pm_property_id, "value": "123"},
-                {**custom_id_1, "value": "ABC"},
-                extra
-            ]
+            "state": state_data
         }
 
         self.client.post(url, json.dumps(data), content_type="application/json")
+        # For a new property, counts should only increase by 1
         assert PropertyState.objects.count() == original_state_count + 1
         assert PropertyView.objects.count() == original_view_count + 1
         assert Property.objects.count() == original_property_count + 1
 
-        # # verify with existing matches 
-        cycle2 = self.cycle_factory.get_cycle(start=datetime(2000, 10, 10, tzinfo=get_current_timezone()))
-        cycle3 = self.cycle_factory.get_cycle(start=datetime(2020, 10, 10, tzinfo=get_current_timezone()))
-        view = self.property_view_factory.get_property_view(cycle=cycle2, pm_property_id="456", custom_id_1="DEF")
 
+        # verify with existing matches 
+        cycle2 = self.cycle_factory.get_cycle(start=datetime(2000, 10, 10, tzinfo=get_current_timezone()))
+        self.property_view_factory.get_property_view(cycle=cycle2, pm_property_id="456", custom_id_1="DEF")
+
+        state_data = {
+            "pm_property_id": "456",
+            "custom_id_1": "DEF",
+            "extra_data": {"Extra Data Column": "GHI"},
+        }
         data = {
             "access_level_instance": self.org.root.id,
             "cycle": self.cycle.id,
-            "form_columns": [
-                {**pm_property_id, "value": "456"},
-                {**custom_id_1, "value": "DEF"},
-                {"displayName": "Column2", "value": "GHI"}
-            ]
+            "state": state_data
         }
 
         self.client.post(url, json.dumps(data), content_type="application/json")
-
-
-        assert True
+        # For property merges, counts should increase by 2 (new property, and merged property)
+        assert PropertyState.objects.count() == original_state_count + 3
+        assert PropertyView.objects.count() == original_view_count + 3
+        assert Property.objects.count() == original_property_count + 3
 
 
 class PropertyViewTestsPermissions(AccessLevelBaseTestCase):

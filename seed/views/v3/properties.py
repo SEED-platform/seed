@@ -1194,7 +1194,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
 
                 log = PropertyAuditLog.objects.select_related().filter(state=property_view.state).order_by("-id").first()
 
-                if log.name in {"Manual Edit", "Manual Match", "System Match", "Merge current state in migration"}:
+                if log.name in {"Manual Edit", "Manual Match", "System Match", "Merge current state in migration", "Form Creation"}:
                     # Convert this to using the serializer to save the data. This will override the previous values
                     # in the state object.
 
@@ -1957,55 +1957,40 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
     def form_create(self, request):
         org_id = self.get_organization(request)
         data = request.data
-        access_level_instance = data.get("access_level_instance")
-        cycle = data.get("cycle")
-        columns = data.get("form_columns")
+        access_level_instance_id = data.get("access_level_instance")
+        cycle_id = data.get("cycle")
+        new_state_data = data.get("state")
+
+        # Create extra data columns if necessary
+        extra_data = new_state_data.get("extra_data", {})
+        for column in extra_data:
+            Column.objects.get_or_create(
+                is_extra_data=True,
+                column_name=column,
+                organization_id=org_id,
+                table_name="PropertyState",
+            )
+            
+        # Create stub state  
+        state = PropertyState.objects.create(organization_id=org_id)
+        # get_or_create existing property and view
         matching_columns = get_matching_criteria_column_names(org_id, "PropertyState")
-
-
-        state_data = { "organization_id": org_id, "extra_data": {} }
-        for col in columns:
-            if not col.get("id"):
-                Column.objects.create(
-                    is_extra_data=True,
-                    column_name=col["displayName"],
-                    organization_id=org_id,
-                    table_name="PropertyState", 
-                )
-                state_data["extra_data"][col["displayName"]] = col["value"]
-            else:
-                column_name = col.get("column_name", col.get("displayName"))
-                state_data[column_name] = col["value"]
-        
-        # find matching states
-        filter_query = {col.get("column_name"): col.get("value") for col in columns if col.get("column_name") in matching_columns}
-        matching_states = list(PropertyState.objects.filter(**filter_query, propertyview__isnull=False))
-
-        # always create a new state
-        state = PropertyState.objects.create(**state_data)
-
-        # create a new property view
-        if not matching_states:
-            property = Property.objects.create(organization_id=org_id, access_level_instance_id=access_level_instance)
-            PropertyView.objects.create(property=property, cycle_id=cycle, state=state)
+        filter_query = {col: new_state_data.get(col) for col in matching_columns if col in new_state_data}
+        matching_state = PropertyState.objects.filter(**filter_query, organization=org_id, propertyview__cycle=cycle_id).first()
+        if matching_state:
+            view = matching_state.propertyview_set.first()
+            property = view.property
         else:
-            parent_property = matching_states[0].propertyview_set.first().property
-            views = parent_property.views.all()
+            property = Property.objects.create(organization_id=org_id, access_level_instance_id=access_level_instance_id)
+            view = PropertyView.objects.create(cycle_id=cycle_id, property=property, state=state)
 
-            # out of cycle views
-            views_out = parent_property.views.exclude(cycle=cycle) 
-            # in cycle 
-            views_in = parent_property.views.filter(cycle=cycle) 
-            
-            breakpoint()
-            
-        # create new extra data columns
-        # is it new or existing view?
-        
-        # breakpoint()
-        return JsonResponse({"status": "success"})
+        PropertyAuditLog.objects.create(organization_id=org_id, state=state, view=view, name="Form Creation")
+        # Use existing view endpoint to ensure matching, merging, and linking.
+        return self.update(request, pk=view.id)
 
 def _row_from_views(views):
+
+
     data = pd.Series()
 
     def mode(field, extra_data=False):

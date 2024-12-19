@@ -2276,7 +2276,6 @@
                 return inventory_service.get_column_list_profiles('List View Profile', inventory_type);
               }
             ],
-            organization_payload: ['user_service', 'organization_service', (user_service, organization_service) => organization_service.get_organization(user_service.get_organization().id)]
           }
         })
         .state({
