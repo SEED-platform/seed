@@ -59,7 +59,7 @@
         <select id="select-cycle" class="form-control" ng-change="" ng-options="cycle.id as cycle.name for cycle in cycles" ng-model="data.cycle"></select>
       </div>
     </div>
-    <div class="content-row">
+    <div class="content-row" style="border-top: 1px solid #e0e0e0; margin-top: 20px; padding: 10px 0">
       <div class="col-sm-4">
         <label for="profile" translate>Column List Profile</label>
         <select id="select-profile" class="form-control" ng-change="change_profile()" ng-options="profile as profile.name for profile in profiles" ng-model="profile"></select>
@@ -70,7 +70,7 @@
         <button class="btn btn-default" style="margin: auto 0 0 20px" ng-click="set_columns('reset')">Reset</button>
       </div>
     </div>
-    <div style="margin-top: 40px; border-top: 1px solid #e0e0e0">
+    <div style="border-top: 1px solid #e0e0e0">
       <table class="table table-striped">
         <thead>
           <tr>
