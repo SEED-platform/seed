@@ -1294,13 +1294,11 @@ angular.module('SEED.service.inventory', []).factory('inventory_service', [
       taxlot_view_ids
     }).then((response) => response.data);
 
-    inventory_service.create_inventory = (data, inventory_type) => {
-      return $http.post(`/api/v3/${inventory_type}/form_create/`, data, {
-        params: {
-          organization_id: user_service.get_organization().id
-        }
-      });
-    }
+    inventory_service.create_inventory = (data, inventory_type) => $http.post(`/api/v3/${inventory_type}/form_create/`, data, {
+      params: {
+        organization_id: user_service.get_organization().id
+      }
+    });
 
     return inventory_service;
   }

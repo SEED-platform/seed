@@ -47,7 +47,6 @@ from seed.models import (
     TaxLotProperty,
     TaxLotView,
 )
-from seed.serializers.columns import ColumnSerializer
 from seed.serializers.properties import PropertyStatePromoteWritableSerializer, PropertyStateSerializer
 from seed.test_helpers.fake import (
     FakeColumnFactory,
@@ -672,11 +671,7 @@ class PropertyViewTests(DataMappingBaseTestCase):
             "extra_data": {"Extra Data Column": "456"},
         }
 
-        data = {
-            "access_level_instance": self.org.root.id,
-            "cycle": self.cycle.id,
-            "state": state_data
-        }
+        data = {"access_level_instance": self.org.root.id, "cycle": self.cycle.id, "state": state_data}
 
         self.client.post(url, json.dumps(data), content_type="application/json")
         # For a new property, counts should only increase by 1
@@ -684,8 +679,7 @@ class PropertyViewTests(DataMappingBaseTestCase):
         assert PropertyView.objects.count() == original_view_count + 1
         assert Property.objects.count() == original_property_count + 1
 
-
-        # verify with existing matches 
+        # verify with existing matches
         cycle2 = self.cycle_factory.get_cycle(start=datetime(2000, 10, 10, tzinfo=get_current_timezone()))
         self.property_view_factory.get_property_view(cycle=cycle2, pm_property_id="456", custom_id_1="DEF")
 
@@ -694,11 +688,7 @@ class PropertyViewTests(DataMappingBaseTestCase):
             "custom_id_1": "DEF",
             "extra_data": {"Extra Data Column": "GHI"},
         }
-        data = {
-            "access_level_instance": self.org.root.id,
-            "cycle": self.cycle.id,
-            "state": state_data
-        }
+        data = {"access_level_instance": self.org.root.id, "cycle": self.cycle.id, "state": state_data}
 
         self.client.post(url, json.dumps(data), content_type="application/json")
         # For property merges, counts should increase by 2 (new property, and merged property)
@@ -2756,4 +2746,3 @@ class PropertyViewUpdateWithESPMTests(DataMappingBaseTestCase):
 
         # verify that the property has meters too, which came from the XLSX file
         self.assertEqual(pv.property.meters.count(), 2)
-

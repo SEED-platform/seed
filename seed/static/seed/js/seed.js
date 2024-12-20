@@ -2275,7 +2275,7 @@
                 const inventory_type = $stateParams.inventory_type === 'properties' ? 'Property' : 'Tax Lot';
                 return inventory_service.get_column_list_profiles('List View Profile', inventory_type);
               }
-            ],
+            ]
           }
         })
         .state({
