@@ -97,7 +97,7 @@ def _get_views_upgrade_recommendation_category(property_view, config):
 
     # check if this is a pint, if so get value
     if isinstance(gross_floor_area, Quantity):
-        gross_floor_area = gross_floor_area.to_base_units().magnitude
+        gross_floor_area = gross_floor_area.magnitude
 
     # calc eui
     if total_eui:
