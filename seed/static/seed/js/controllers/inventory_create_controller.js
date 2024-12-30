@@ -30,6 +30,7 @@ angular.module('SEED.controller.inventory_create', []).controller('inventory_cre
     cycles,
     profiles
   ) {
+    // INIT
     $scope.data = { state: { extra_data: {} } };
     $scope.inventory_type = $stateParams.inventory_type;
     $scope.inventory_types = ['Property', 'TaxLot'];
@@ -38,6 +39,7 @@ angular.module('SEED.controller.inventory_create', []).controller('inventory_cre
     $scope.profiles = profiles;
     $scope.profile = [];
     $scope.columns = all_columns;
+    $scope.form_errors = []
 
     $scope.matching_columns = [];
     $scope.extra_columns = [];
@@ -54,9 +56,40 @@ angular.module('SEED.controller.inventory_create', []).controller('inventory_cre
     // form_values allows value persistance
     $scope.form_values = [];
 
+    // DATA VALIDATION
     $scope.$watch('data', () => {
       $scope.valid = $scope.data.cycle && $scope.data.access_level_instance && !_.isEqual($scope.data.state, { extra_data: {} });
+      check_form_errors();
     }, true);
+
+    $scope.$watch('form_columns', () => {
+      check_form_errors();
+    }, true);
+
+    const check_form_errors = () => {
+      $scope.form_errors = [];
+      if (!$scope.data.cycle) $scope.form_errors.push('Cycle is required');
+      check_duplicates();
+      check_matching_criteria();
+    };
+
+    const check_duplicates = () => {
+      const display_name_counts = {};
+      let has_duplicates = false;
+      $scope.form_columns.forEach((col) => {
+        display_name_counts[col.displayName] = (display_name_counts[col.displayName] || 0) + 1;
+      });
+      $scope.form_columns.forEach(col => {
+        col.is_duplicate = display_name_counts[col.displayName] > 1;
+        if (col.is_duplicate) has_duplicates = true
+      });
+      has_duplicates && $scope.form_errors.push('Duplicate columns are not allowed');
+    };
+
+    const check_matching_criteria = () => {
+      const error = !$scope.form_columns.some(c => c.is_matching_criteria && c.value !== undefined)
+      if (error) $scope.form_errors.push('At least one matching criteria must have a value');
+    }
 
     // ACCESS LEVEL TREE
     $scope.access_level_tree = access_level_tree.access_level_tree;
@@ -85,16 +118,17 @@ angular.module('SEED.controller.inventory_create', []).controller('inventory_cre
           break;
         default:
           $scope.form_columns = [...$scope.matching_columns];
-          $scope.form_columns = $scope.form_columns.map((c) => ({ ...c, value: null }));
+          $scope.form_columns = $scope.form_columns.map((c) => ({ ...c, value: 'null', is_duplicate: false }));
           $scope.form_values = [];
       }
     };
 
     // FORM LOGIC
-    $scope.remove_column = (column, index) => {
+    $scope.remove_column = (index, column) => {
       $scope.form_columns.splice(index, 1);
       $scope.form_values[index] = null;
       set_column_value(column, null);
+      check_form_errors();
     };
 
     $scope.add_column = () => $scope.form_columns.push({ displayName: '', table_name });
@@ -111,6 +145,8 @@ angular.module('SEED.controller.inventory_create', []).controller('inventory_cre
     };
 
     $scope.select_column = (column, index) => {
+      // preserve value if column is duplicate
+      if ($scope.form_columns.includes(column)) return;
       column.value = $scope.form_values.at(index);
       $scope.form_columns[index] = column;
     };
@@ -124,7 +160,6 @@ angular.module('SEED.controller.inventory_create', []).controller('inventory_cre
       };
       let column = $scope.columns.find((c) => c.displayName === displayName) || { displayName };
       column = { ...defaults, ...column };
-
       column.value = $scope.form_values.at(index);
       $scope.form_columns[index] = column;
     };

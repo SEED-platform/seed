@@ -24,13 +24,16 @@
       <h2><i class="fa-regular fa-building"></i><span>Create a {$ inventory_type === 'properties' ? 'Property' : 'Tax Lot'$}</span></h2>
     </div>
     <div class="section_action_container right_40 section_action_btn pull-right">
-      <button class="btn btn-primary" ng-disabled="!valid" ng-click="save_inventory()">Save {$ inventory_type == 'taxlots' ? 'TaxLot' : 'Property' $}</button>
+      <button class="btn btn-primary" ng-disabled="!valid || form_errors.length" ng-click="save_inventory()">Save {$ inventory_type == 'taxlots' ? 'TaxLot' : 'Property' $}</button>
     </div>
   </div>
 </div>
 
 <div class="section_content_container" style="padding: 20px">
   <div class="section_content">
+    <div class="alert alert-danger" ng-show="form_errors.length">
+      <ul><li ng-repeat="message in form_errors">{$ message $}</li></ul>
+    </div>
     <div class="content-row">
       <div class="col-sm-4">
         <label for="select-level-name" translate>Access Level</label>
@@ -70,7 +73,7 @@
         <button class="btn btn-default" style="margin: auto 0 0 20px" ng-click="set_columns('reset')">Reset</button>
       </div>
     </div>
-    <div style="border-top: 1px solid #e0e0e0">
+    <div class="table_list_container" style="border-top: 1px solid #e0e0e0">
       <table class="table table-striped">
         <thead>
           <tr>
@@ -84,7 +87,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr ng-repeat="column in form_columns track by $index">
+          <tr ng-repeat="column in form_columns track by $index" ng-class="{'danger': column.is_duplicate}">
             <td>{$ column.table_name.slice(0, -5) $}</td>
             <!-- <td style="max-width:200px;">{$ column.displayName $}</td> -->
             <td ng-attr-id="row-input-{$:: $index $}">
@@ -113,8 +116,8 @@
             <td>
               <input type="text" class="form-control" ng-model="column.value" ng-change="change_value(column, $index)" />
             </td>
-            <td>{$ column.is_matching_criteria $}</td>
-            <td>{$ column.is_extra_data $}</td>
+            <td style="text-align: center"><input type="checkbox" ng-model="column.is_matching_criteria" disabled/></td>
+            <td style="text-align: center"><input type="checkbox" ng-model="column.is_extra_data" disabled /></td>
             <td style="width: 100px">{$ column.data_type $}</td>
             <td>
               <button class="btn btn-danger" type="button" ng-click="remove_column($index, column)">
