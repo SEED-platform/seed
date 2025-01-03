@@ -696,6 +696,16 @@ class PropertyViewTests(DataMappingBaseTestCase):
         assert PropertyView.objects.count() == original_view_count + 3
         assert Property.objects.count() == original_property_count + 3
 
+        # # RP - how to pass taxlot data?
+        # state_data = {
+        #     "pm_property_id": "888",
+        #     "jursidiction_tax_lot_id": "999",
+        #     "extra_data": {"Extra Data Column": "GHI"},
+        # }
+        # data = {"access_level_instance": self.org.root.id, "cycle": self.cycle.id, "state": state_data}
+        # self.client.post(url, json.dumps(data), content_type="application/json")
+        # breakpoint()
+
 
 class PropertyViewTestsPermissions(AccessLevelBaseTestCase):
     def setUp(self):

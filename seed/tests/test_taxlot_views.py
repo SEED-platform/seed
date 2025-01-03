@@ -11,7 +11,7 @@ from django.utils.timezone import get_current_timezone
 
 from seed.data_importer.tasks import geocode_and_match_buildings_task
 from seed.landing.models import SEEDUser as User
-from seed.models import DATA_STATE_MAPPING, VIEW_LIST_TAXLOT, Column, Note, PropertyView, StatusLabel, TaxLot, TaxLotProperty, TaxLotView
+from seed.models import DATA_STATE_MAPPING, VIEW_LIST_TAXLOT, Column, Note, PropertyView, StatusLabel, TaxLot, TaxLotProperty, TaxLotState, TaxLotView
 from seed.test_helpers.fake import (
     FakeColumnListProfileFactory,
     FakeCycleFactory,
@@ -330,6 +330,29 @@ class TaxLotViewTests(DataMappingBaseTestCase):
         self.assertEqual(result_2[0][address_line_1_key], state_2.address_line_1)
         self.assertEqual(result_2[0][field_1_key], "value_2")
         self.assertEqual(result_2[0]["id"], taxlot_2.id)
+
+    def test_taxlot_form_create(self):
+        original_state_count = TaxLotState.objects.count()
+        original_view_count = TaxLotView.objects.count()
+        original_property_count = TaxLot.objects.count()
+
+        url = reverse("api:v3:taxlots-form-create") + f"?organization_id={self.org.pk}"
+
+        state_data = {
+            "jurisdiction_tax_lot_id": "123",
+            "custom_id_1": "ABC",
+            "extra_data": {"Extra Data Column": "456"},
+        }
+
+        data = {"access_level_instance": self.org.root.id, "cycle": self.cycle.id, "state": state_data}
+
+        self.client.post(url, json.dumps(data), content_type="application/json")
+        # For a new property, counts should only increase by 1
+        assert TaxLotState.objects.count() == original_state_count + 1
+        assert TaxLotView.objects.count() == original_view_count + 1
+        assert TaxLot.objects.count() == original_property_count + 1
+        breakpoint()
+
 
 
 class TaxLotViewTestPermissions(AccessLevelBaseTestCase):

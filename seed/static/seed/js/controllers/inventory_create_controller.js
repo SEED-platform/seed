@@ -15,6 +15,7 @@ angular.module('SEED.controller.inventory_create', []).controller('inventory_cre
   'all_columns',
   'cycles',
   'profiles',
+  'matching_criteria_columns_payload',
   // eslint-disable-next-line func-names
   function (
     $scope,
@@ -28,10 +29,11 @@ angular.module('SEED.controller.inventory_create', []).controller('inventory_cre
     access_level_tree,
     all_columns,
     cycles,
-    profiles
+    profiles,
+    matching_criteria_columns_payload
   ) {
     // INIT
-    $scope.data = { state: { extra_data: {} } };
+    $scope.data = { cycle: $scope.cycles[0].id, state: { extra_data: {} } };
     $scope.inventory_type = $stateParams.inventory_type;
     $scope.inventory_types = ['Property', 'TaxLot'];
     const table_name = $scope.inventory_type === 'taxlots' ? 'TaxLotState' : 'PropertyState';
@@ -40,6 +42,8 @@ angular.module('SEED.controller.inventory_create', []).controller('inventory_cre
     $scope.profile = [];
     $scope.columns = all_columns;
     $scope.form_errors = []
+    const matching_property_column_names = matching_criteria_columns_payload.PropertyState.join(', ')
+    const matching_taxlot_column_names = matching_criteria_columns_payload.TaxLotState.join(', ')
 
     $scope.matching_columns = [];
     $scope.extra_columns = [];
@@ -57,18 +61,14 @@ angular.module('SEED.controller.inventory_create', []).controller('inventory_cre
     $scope.form_values = [];
 
     // DATA VALIDATION
-    $scope.$watch('data', () => {
-      $scope.valid = $scope.data.cycle && $scope.data.access_level_instance && !_.isEqual($scope.data.state, { extra_data: {} });
+    $scope.$watch(() => ({data: $scope.data, form_columns: $scope.form_columns}), () => {
       check_form_errors();
-    }, true);
-
-    $scope.$watch('form_columns', () => {
-      check_form_errors();
-    }, true);
+    }, true)
 
     const check_form_errors = () => {
       $scope.form_errors = [];
-      if (!$scope.data.cycle) $scope.form_errors.push('Cycle is required');
+      $scope.valid = $scope.data.cycle && $scope.data.access_level_instance;
+      !$scope.data.cycle && $scope.form_errors.push('Cycle is required');
       check_duplicates();
       check_matching_criteria();
     };
@@ -87,8 +87,23 @@ angular.module('SEED.controller.inventory_create', []).controller('inventory_cre
     };
 
     const check_matching_criteria = () => {
-      const error = !$scope.form_columns.some(c => c.is_matching_criteria && c.value !== undefined)
-      if (error) $scope.form_errors.push('At least one matching criteria must have a value');
+      const tables_present = {"PropertyState": 0, "TaxLotState": 0}
+      const matching_values = {"PropertyState": 0, "TaxLotState": 0}
+      $scope.form_columns.forEach(c => {
+        tables_present[c.table_name] += 1
+        if (c.is_matching_criteria && c.value) {
+          matching_values[c.table_name] += 1
+        }
+      })
+      const property_present = $scope.inventory_type === 'properties' || tables_present.PropertyState;
+      const taxlot_present = $scope.inventory_type === 'taxlots' || tables_present.TaxLotState;
+
+      if (property_present && !matching_values.PropertyState) {
+        $scope.form_errors.push(`At least one of the following Property fields is required: ${matching_property_column_names}`);
+      }
+      if (taxlot_present && !matching_values.TaxLotState) {
+        $scope.form_errors.push(`At least one of the following TaxLot fields is required: ${matching_taxlot_column_names}`);
+      }
     }
 
     // ACCESS LEVEL TREE
@@ -102,6 +117,7 @@ angular.module('SEED.controller.inventory_create', []).controller('inventory_cre
       const new_level_instance_depth = parseInt($scope.data.level_name_index, 10) + 1;
       $scope.potential_level_instances = access_level_instances_by_depth[new_level_instance_depth];
     };
+    // default selection of ali info
     $scope.data.level_name_index = $scope.level_names.at(-1).index;
     $scope.change_selected_level_index();
     $scope.data.access_level_instance = $scope.potential_level_instances.at(0).id;
@@ -172,8 +188,9 @@ angular.module('SEED.controller.inventory_create', []).controller('inventory_cre
     const set_column_value = (column, value) => {
       const column_name = column.column_name || column.displayName;
       if (!column_name) return;
+      // assign to either data's PropertyState or TaxLotState data
       const target = column.is_extra_data ? $scope.data.state.extra_data : $scope.data.state;
-      target[column_name] = value;
+      target[column_name] = value === '' ? undefined : value;
     };
 
     $scope.save_inventory = () => {
@@ -206,6 +223,7 @@ angular.module('SEED.controller.inventory_create', []).controller('inventory_cre
           });
         }).catch(() => {
           Notification.error(`Failed to create ${type_name}`);
+          spinner_utility.hide();
         });
       });
     };

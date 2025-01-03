@@ -42,7 +42,7 @@ from seed.utils.api import OrgMixin, ProfileIdMixin, api_endpoint_class
 from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema_org_query_param
 from seed.utils.inventory_filter import get_filtered_results
 from seed.utils.labels import get_labels
-from seed.utils.match import MergeLinkPairError, match_merge_link
+from seed.utils.match import MergeLinkPairError, get_matching_criteria_column_names, match_merge_link
 from seed.utils.merge import merge_taxlots
 from seed.utils.properties import get_changed_fields, pair_unpair_property_taxlot, update_result_with_master
 from seed.utils.taxlots import taxlots_across_cycles
@@ -730,6 +730,44 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
                     return JsonResponse(result, status=status.HTTP_204_NO_CONTENT)
         else:
             return JsonResponse(result, status=status.HTTP_404_NOT_FOUND)
+        
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class("requires_member")
+    @action(detail=False, methods=["POST"])
+    def form_create(self, request):
+        org_id = self.get_organization(request)
+        data = request.data
+        access_level_instance_id = data.get("access_level_instance")
+        cycle_id = data.get("cycle")
+        new_state_data = data.get("state")
+
+        # Create extra data columns if necessary
+        extra_data = new_state_data.get("extra_data", {})
+        for column in extra_data:
+            Column.objects.get_or_create(
+                is_extra_data=True,
+                column_name=column,
+                organization_id=org_id,
+                table_name="TaxLotState",
+            )
+        
+        # Create stub state
+        state = TaxLotState.objects.create(organization_id=org_id , **new_state_data)
+        # get_or_create existing taxlot and view
+        matching_columns = get_matching_criteria_column_names(org_id, "TaxLotState")
+        filter_query = {col: new_state_data.get(col) for col in matching_columns if col in new_state_data}
+        matching_state = TaxLotState.objects.filter(**filter_query, organization=org_id, taxlotview__cycle=cycle_id).first()
+        if matching_state:
+            view = matching_state.taxlotview_set.first()
+            taxlot = view.taxlot
+        else:
+            taxlot = TaxLot.objects.create(organization_id=org_id, access_level_instance_id=access_level_instance_id)
+            view = TaxLotView.objects.create(cycle_id=cycle_id, taxlot=taxlot, state=state)
+
+        TaxLotAuditLog.objects.create(organization_id=org_id, state=state, view=view, name="Form Creation")
+        # Use existing view endpoint to ensure matching, merging, and linking.
+        return self.update(request, pk=view.id)
 
 
 def update_derived_data(state_ids, org_id):

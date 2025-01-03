@@ -33,7 +33,7 @@ from styleframe import StyleFrame
 
 from seed.building_sync.building_sync import BuildingSync
 from seed.data_importer import tasks
-from seed.data_importer.match import save_state_match
+from seed.data_importer.match import save_state_match, get_matching_criteria_column_names
 from seed.data_importer.meters_parser import MetersParser
 from seed.data_importer.models import ImportFile, ImportRecord
 from seed.data_importer.tasks import _save_pm_meter_usage_data_task
@@ -90,7 +90,7 @@ from seed.utils.api import OrgMixin, ProfileIdMixin, api_endpoint_class
 from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema_org_query_param
 from seed.utils.inventory_filter import get_filtered_results
 from seed.utils.labels import get_labels
-from seed.utils.match import MergeLinkPairError, get_matching_criteria_column_names, match_merge_link
+from seed.utils.match import MergeLinkPairError, match_merge_link
 from seed.utils.merge import merge_properties
 from seed.utils.meters import PropertyMeterReadingsExporter
 from seed.utils.properties import get_changed_fields, pair_unpair_property_taxlot, properties_across_cycles, update_result_with_master
@@ -1972,7 +1972,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             )
 
         # Create stub state
-        state = PropertyState.objects.create(organization_id=org_id)
+        state = PropertyState.objects.create(organization_id=org_id, **new_state_data)
         # get_or_create existing property and view
         matching_columns = get_matching_criteria_column_names(org_id, "PropertyState")
         filter_query = {col: new_state_data.get(col) for col in matching_columns if col in new_state_data}
