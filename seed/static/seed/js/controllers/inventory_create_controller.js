@@ -33,7 +33,6 @@ angular.module('SEED.controller.inventory_create', []).controller('inventory_cre
     matching_criteria_columns_payload
   ) {
     // INIT
-    $scope.data = { cycle: $scope.cycles[0].id, state: { extra_data: {} } };
     $scope.inventory_type = $stateParams.inventory_type;
     $scope.inventory_types = ['Property', 'TaxLot'];
     const table_name = $scope.inventory_type === 'taxlots' ? 'TaxLotState' : 'PropertyState';
@@ -42,6 +41,11 @@ angular.module('SEED.controller.inventory_create', []).controller('inventory_cre
     $scope.profile = [];
     $scope.columns = all_columns;
     $scope.form_errors = []
+    $scope.data = { 
+      cycle: $scope.cycles[0].id, 
+      PropertyState: { extra_data: {} }, 
+      TaxLotState: { extra_data: {} }
+    };
     const matching_property_column_names = matching_criteria_columns_payload.PropertyState.join(', ')
     const matching_taxlot_column_names = matching_criteria_columns_payload.TaxLotState.join(', ')
 
@@ -189,11 +193,18 @@ angular.module('SEED.controller.inventory_create', []).controller('inventory_cre
       const column_name = column.column_name || column.displayName;
       if (!column_name) return;
       // assign to either data's PropertyState or TaxLotState data
-      const target = column.is_extra_data ? $scope.data.state.extra_data : $scope.data.state;
+      const target = column.is_extra_data ? $scope.data[column.table_name].extra_data : $scope.data[column.table_name]; 
       target[column_name] = value === '' ? undefined : value;
     };
+    const format_data = () => { 
+      // backend requires primary inventory to be keyed as 'state'
+      let key = $scope.inventory_type === 'taxlots' ? 'TaxLotState' : 'PropertyState';
+      $scope.data.state = $scope.data[key];
+      delete $scope.data[key];
+    }
 
     $scope.save_inventory = () => {
+      format_data();
       const type_name = $scope.inventory_type === 'taxlots' ? 'Tax Lot' : 'Property';
       const cycle_name = $scope.cycles.find((c) => c.id === $scope.data.cycle).name;
       const ali_name = $scope.access_level_tree.find((ali) => ali.id === $scope.data.access_level_instance).name;

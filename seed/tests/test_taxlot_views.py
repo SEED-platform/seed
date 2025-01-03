@@ -346,12 +346,15 @@ class TaxLotViewTests(DataMappingBaseTestCase):
 
         data = {"access_level_instance": self.org.root.id, "cycle": self.cycle.id, "state": state_data}
 
-        self.client.post(url, json.dumps(data), content_type="application/json")
+        response = self.client.post(url, json.dumps(data), content_type="application/json")
+        assert response.status_code == 200
+        assert response.json().get('view_id')
+
         # For a new property, counts should only increase by 1
         assert TaxLotState.objects.count() == original_state_count + 1
         assert TaxLotView.objects.count() == original_view_count + 1
         assert TaxLot.objects.count() == original_property_count + 1
-        breakpoint()
+
 
 
 

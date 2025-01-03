@@ -1959,10 +1959,11 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         data = request.data
         access_level_instance_id = data.get("access_level_instance")
         cycle_id = data.get("cycle")
-        new_state_data = data.get("state")
+        property_data = data.get("state")
+        taxlot_data = data.get("taxlot_state") # rp - need to tie in.
 
         # Create extra data columns if necessary
-        extra_data = new_state_data.get("extra_data", {})
+        extra_data = property_data.get("extra_data", {})
         for column in extra_data:
             Column.objects.get_or_create(
                 is_extra_data=True,
@@ -1971,11 +1972,11 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
                 table_name="PropertyState",
             )
 
-        # Create stub state
-        state = PropertyState.objects.create(organization_id=org_id, **new_state_data)
+        # Create stub state - rp - why? why cant we assign data
+        state = PropertyState.objects.create(organization_id=org_id)
         # get_or_create existing property and view
         matching_columns = get_matching_criteria_column_names(org_id, "PropertyState")
-        filter_query = {col: new_state_data.get(col) for col in matching_columns if col in new_state_data}
+        filter_query = {col: property_data.get(col) for col in matching_columns if col in property_data}
         matching_state = PropertyState.objects.filter(**filter_query, organization=org_id, propertyview__cycle=cycle_id).first()
         if matching_state:
             view = matching_state.propertyview_set.first()
@@ -1983,6 +1984,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         else:
             property = Property.objects.create(organization_id=org_id, access_level_instance_id=access_level_instance_id)
             view = PropertyView.objects.create(cycle_id=cycle_id, property=property, state=state)
+            
 
         PropertyAuditLog.objects.create(organization_id=org_id, state=state, view=view, name="Form Creation")
         # Use existing view endpoint to ensure matching, merging, and linking.

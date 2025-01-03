@@ -666,14 +666,19 @@ class PropertyViewTests(DataMappingBaseTestCase):
         url = reverse("api:v3:properties-form-create") + f"?organization_id={self.org.pk}"
 
         state_data = {
-            "pm_property_id": "123",
-            "custom_id_1": "ABC",
-            "extra_data": {"Extra Data Column": "456"},
+            "state": {
+                "pm_property_id": "123",
+                "custom_id_1": "ABC",
+                "extra_data": {"Extra Data Column": "456"},
+            },
+            "taxlot_state": {}
         }
 
-        data = {"access_level_instance": self.org.root.id, "cycle": self.cycle.id, "state": state_data}
+        data = {"access_level_instance": self.org.root.id, "cycle": self.cycle.id, **state_data}
 
-        self.client.post(url, json.dumps(data), content_type="application/json")
+        response = self.client.post(url, json.dumps(data), content_type="application/json")
+        assert response.status_code == 200
+        assert response.json().get('view_id')
         # For a new property, counts should only increase by 1
         assert PropertyState.objects.count() == original_state_count + 1
         assert PropertyView.objects.count() == original_view_count + 1
@@ -684,11 +689,14 @@ class PropertyViewTests(DataMappingBaseTestCase):
         self.property_view_factory.get_property_view(cycle=cycle2, pm_property_id="456", custom_id_1="DEF")
 
         state_data = {
-            "pm_property_id": "456",
-            "custom_id_1": "DEF",
-            "extra_data": {"Extra Data Column": "GHI"},
+            "state": {
+                "pm_property_id": "456",
+                "custom_id_1": "DEF",
+                "extra_data": {"Extra Data Column": "GHI"},
+            },
+            "taxlot_state": {}
         }
-        data = {"access_level_instance": self.org.root.id, "cycle": self.cycle.id, "state": state_data}
+        data = {"access_level_instance": self.org.root.id, "cycle": self.cycle.id, **state_data}
 
         self.client.post(url, json.dumps(data), content_type="application/json")
         # For property merges, counts should increase by 2 (new property, and merged property)

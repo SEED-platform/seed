@@ -676,7 +676,7 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
 
                 log = TaxLotAuditLog.objects.select_related().filter(state=taxlot_view.state).order_by("-id").first()
 
-                if log.name in {"Manual Edit", "Manual Match", "System Match", "Merge current state in migration"}:
+                if log.name in {"Manual Edit", "Manual Match", "System Match", "Merge current state in migration", "Form Creation"}:
                     # Convert this to using the serializer to save the data. This will override the
                     # previous values in the state object.
 
@@ -741,6 +741,7 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
         access_level_instance_id = data.get("access_level_instance")
         cycle_id = data.get("cycle")
         new_state_data = data.get("state")
+        property_data = data.get("PropertyState") # rp - need to tie in
 
         # Create extra data columns if necessary
         extra_data = new_state_data.get("extra_data", {})
@@ -753,7 +754,7 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
             )
         
         # Create stub state
-        state = TaxLotState.objects.create(organization_id=org_id , **new_state_data)
+        state = TaxLotState.objects.create(organization_id=org_id)
         # get_or_create existing taxlot and view
         matching_columns = get_matching_criteria_column_names(org_id, "TaxLotState")
         filter_query = {col: new_state_data.get(col) for col in matching_columns if col in new_state_data}
