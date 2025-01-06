@@ -14,7 +14,12 @@ from django.utils.timezone import make_aware
 from pytz import AmbiguousTimeError, NonExistentTimeError, timezone
 
 from config.settings.common import TIME_ZONE
-from seed.data_importer.utils import kbtu_thermal_conversion_factors, kgal_water_conversion_factors, usage_point_id
+from seed.data_importer.utils import (
+    fahrenheit_temperature_conversion_factors,
+    kbtu_thermal_conversion_factors,
+    kgal_water_conversion_factors,
+    usage_point_id,
+)
 from seed.lib.mcm import reader
 from seed.lib.superperms.orgs.models import Organization
 from seed.models import Meter, Property, PropertyView
@@ -63,6 +68,7 @@ class MetersParser:
         self._cache_org_country = None
         self._cache_kbtu_thermal_conversion_factors = None
         self._cache_kgal_water_conversion_factors = None
+        self._cache_fahrenheit_temperature_conversion_factors = None
 
         self._meters_and_readings_details = meters_and_readings_details
         self._org_id = org_id
@@ -119,6 +125,13 @@ class MetersParser:
             self._cache_kgal_water_conversion_factors = kgal_water_conversion_factors(self._org_country)
 
         return self._cache_kgal_water_conversion_factors
+
+    @property
+    def _fahrenheit_temperature_conversion_factors(self):
+        if self._cache_fahrenheit_temperature_conversion_factors is None:
+            self._cache_fahrenheit_temperature_conversion_factors = fahrenheit_temperature_conversion_factors(self._org_country)
+
+        return self._cache_fahrenheit_temperature_conversion_factors
 
     @property
     def _org_country(self):
@@ -351,9 +364,11 @@ class MetersParser:
         unit = raw_details["Usage Units"]
         thermal_conversion_factor = self._kbtu_thermal_conversion_factors.get(type_name, {}).get(unit, None)
         water_conversion_factor = self._kgal_water_conversion_factors.get(type_name, {}).get(unit, None)
-        if thermal_conversion_factor is None and water_conversion_factor is None:
+        temperature_conversion_factor = self._fahrenheit_temperature_conversion_factors.get(type_name, {}).get(unit, None)
+
+        conversion_factor = thermal_conversion_factor or water_conversion_factor or temperature_conversion_factor
+        if conversion_factor is None:
             return False
-        conversion_factor = thermal_conversion_factor or water_conversion_factor
 
         meter_details["type"] = Meter.type_lookup[type_name]
 

@@ -64,6 +64,9 @@ class Meter(models.Model):
     POTABLE_INDOOR = 27
     POTABLE_MIXED = 28
     POTABLE_OUTDOOR = 29
+    HEATING_DEGREE_DAY = 30
+    COOLING_DEGREE_DAY = 31
+    TEMPERATURE = 32
     CUSTOM_METER = 99
 
     # Taken from EnergyStar Portfolio Manager
@@ -98,6 +101,9 @@ class Meter(models.Model):
         (POTABLE_INDOOR, "Potable Indoor"),
         (POTABLE_OUTDOOR, "Potable Outdoor"),
         (POTABLE_MIXED, "Potable: Mixed Indoor/Outdoor"),
+        (HEATING_DEGREE_DAY, "Heating Degree Day"),
+        (COOLING_DEGREE_DAY, "Cooling Degree Day"),
+        (TEMPERATURE, "Temperature"),
     )
     ENERGY_TYPE_BY_METER_TYPE = dict(ENERGY_TYPES)
 
