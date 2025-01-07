@@ -33,7 +33,7 @@ from styleframe import StyleFrame
 
 from seed.building_sync.building_sync import BuildingSync
 from seed.data_importer import tasks
-from seed.data_importer.match import save_state_match, get_matching_criteria_column_names
+from seed.data_importer.match import save_state_match
 from seed.data_importer.meters_parser import MetersParser
 from seed.data_importer.models import ImportFile, ImportRecord
 from seed.data_importer.tasks import _save_pm_meter_usage_data_task
@@ -88,6 +88,7 @@ from seed.serializers.taxlots import TaxLotViewSerializer
 from seed.tasks import update_state_derived_data
 from seed.utils.api import OrgMixin, ProfileIdMixin, api_endpoint_class
 from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema_org_query_param
+from seed.utils.inventory import create_inventory
 from seed.utils.inventory_filter import get_filtered_results
 from seed.utils.labels import get_labels
 from seed.utils.match import MergeLinkPairError, match_merge_link
@@ -1959,35 +1960,16 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         data = request.data
         access_level_instance_id = data.get("access_level_instance")
         cycle_id = data.get("cycle")
-        property_data = data.get("state")
-        taxlot_data = data.get("taxlot_state") # rp - need to tie in.
+        new_state_data = data.get("state")
 
-        # Create extra data columns if necessary
-        extra_data = property_data.get("extra_data", {})
-        for column in extra_data:
-            Column.objects.get_or_create(
-                is_extra_data=True,
-                column_name=column,
-                organization_id=org_id,
-                table_name="PropertyState",
-            )
+        if new_state_data == {"extra_data": {}}:
+            return JsonResponse({"status": "error", "message": "No data provided"}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Create stub state - rp - why? why cant we assign data
-        state = PropertyState.objects.create(organization_id=org_id)
-        # get_or_create existing property and view
-        matching_columns = get_matching_criteria_column_names(org_id, "PropertyState")
-        filter_query = {col: property_data.get(col) for col in matching_columns if col in property_data}
-        matching_state = PropertyState.objects.filter(**filter_query, organization=org_id, propertyview__cycle=cycle_id).first()
-        if matching_state:
-            view = matching_state.propertyview_set.first()
-            property = view.property
-        else:
-            property = Property.objects.create(organization_id=org_id, access_level_instance_id=access_level_instance_id)
-            view = PropertyView.objects.create(cycle_id=cycle_id, property=property, state=state)
-            
+        view = create_inventory("property", org_id, cycle_id, access_level_instance_id, new_state_data)
+        # if taxlot_view_id passed, link property and taxlot
+        if taxlot_view_id := request.query_params.get("related_view_id"):
+            TaxLotProperty.objects.get_or_create(property_view_id=view.id, taxlot_view_id=taxlot_view_id, cycle_id=cycle_id)
 
-        PropertyAuditLog.objects.create(organization_id=org_id, state=state, view=view, name="Form Creation")
-        # Use existing view endpoint to ensure matching, merging, and linking.
         return self.update(request, pk=view.id)
 
 

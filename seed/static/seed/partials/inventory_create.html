@@ -32,7 +32,9 @@
 <div class="section_content_container" style="padding: 20px">
   <div class="section_content">
     <div class="alert alert-danger" ng-show="form_errors.length">
-      <ul><li ng-repeat="message in form_errors">{$ message $}</li></ul>
+      <ul>
+        <li ng-repeat="message in form_errors">{$ message $}</li>
+      </ul>
     </div>
     <div class="content-row">
       <div class="col-sm-4">
@@ -42,7 +44,7 @@
           class="form-control"
           ng-options="level.index as level.name for level in level_names"
           ng-change="change_selected_level_index()"
-          ng-model="data.level_name_index"
+          ng-model="config.level_name_index"
         ></select>
       </div>
       <div class="col-sm-4">
@@ -52,14 +54,14 @@
           class="form-control"
           ng-change=""
           ng-options="potential_level_instance.id as potential_level_instance.name for potential_level_instance in potential_level_instances"
-          ng-model="data.access_level_instance"
+          ng-model="config.access_level_instance"
         ></select>
       </div>
     </div>
     <div class="content-row">
       <div class="col-sm-4">
         <label for="cycle" translate>Cycle</label>
-        <select id="select-cycle" class="form-control" ng-change="" ng-options="cycle.id as cycle.name for cycle in cycles" ng-model="data.cycle"></select>
+        <select id="select-cycle" class="form-control" ng-change="" ng-options="cycle.id as cycle.name for cycle in cycles" ng-model="config.cycle"></select>
       </div>
     </div>
     <div class="content-row" style="border-top: 1px solid #e0e0e0; margin-top: 20px; padding: 10px 0">
@@ -116,7 +118,7 @@
             <td>
               <input type="text" class="form-control" ng-model="column.value" ng-change="change_value(column, $index)" />
             </td>
-            <td style="text-align: center"><input type="checkbox" ng-model="column.is_matching_criteria" disabled/></td>
+            <td style="text-align: center"><input type="checkbox" ng-model="column.is_matching_criteria" disabled /></td>
             <td style="text-align: center"><input type="checkbox" ng-model="column.is_extra_data" disabled /></td>
             <td style="width: 100px">{$ column.data_type $}</td>
             <td>

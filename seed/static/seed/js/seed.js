@@ -2280,7 +2280,7 @@
               'organization_service',
               'user_service',
               (organization_service, user_service) => organization_service.matching_criteria_columns(user_service.get_organization().id)
-            ],
+            ]
           }
         })
         .state({

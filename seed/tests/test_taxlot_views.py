@@ -11,7 +11,18 @@ from django.utils.timezone import get_current_timezone
 
 from seed.data_importer.tasks import geocode_and_match_buildings_task
 from seed.landing.models import SEEDUser as User
-from seed.models import DATA_STATE_MAPPING, VIEW_LIST_TAXLOT, Column, Note, PropertyView, StatusLabel, TaxLot, TaxLotProperty, TaxLotState, TaxLotView
+from seed.models import (
+    DATA_STATE_MAPPING,
+    VIEW_LIST_TAXLOT,
+    Column,
+    Note,
+    PropertyView,
+    StatusLabel,
+    TaxLot,
+    TaxLotProperty,
+    TaxLotState,
+    TaxLotView,
+)
 from seed.test_helpers.fake import (
     FakeColumnListProfileFactory,
     FakeCycleFactory,
@@ -334,28 +345,60 @@ class TaxLotViewTests(DataMappingBaseTestCase):
     def test_taxlot_form_create(self):
         original_state_count = TaxLotState.objects.count()
         original_view_count = TaxLotView.objects.count()
-        original_property_count = TaxLot.objects.count()
+        original_taxlot_count = TaxLot.objects.count()
+        original_property_view_count = PropertyView.objects.count()
 
         url = reverse("api:v3:taxlots-form-create") + f"?organization_id={self.org.pk}"
 
         state_data = {
-            "jurisdiction_tax_lot_id": "123",
-            "custom_id_1": "ABC",
-            "extra_data": {"Extra Data Column": "456"},
+            "jurisdiction_tax_lot_id": "1",
+            "custom_id_1": "2",
+            "extra_data": {"Extra Data Column": "3"},
         }
 
         data = {"access_level_instance": self.org.root.id, "cycle": self.cycle.id, "state": state_data}
 
         response = self.client.post(url, json.dumps(data), content_type="application/json")
         assert response.status_code == 200
-        assert response.json().get('view_id')
+        assert response.json().get("view_id")
 
         # For a new property, counts should only increase by 1
         assert TaxLotState.objects.count() == original_state_count + 1
         assert TaxLotView.objects.count() == original_view_count + 1
-        assert TaxLot.objects.count() == original_property_count + 1
+        assert TaxLot.objects.count() == original_taxlot_count + 1
 
+        # taxlot associated with a property
+        taxlot_data = {
+            "acess_level_instance": self.org.root.id,
+            "cycle": self.cycle.id,
+            "state": {"jurisdiction_tax_lot_id": "10", "address_line_1": "A"},
+        }
+        property_data = {
+            "acess_level_instance": self.org.root.id,
+            "cycle": self.cycle.id,
+            "state": {"pm_property_id": "7", "custom_id_1": "8", "extra_data": {"Extra Data Column": "9"}, "lot_number": "10"},
+        }
 
+        t_response = self.client.post(url, json.dumps(taxlot_data), content_type="application/json")
+        assert t_response.status_code == 200
+        view_id = t_response.json().get("view_id")
+        property_url = reverse("api:v3:properties-form-create") + f"?organization_id={self.org.pk}&related_view_id={view_id}"
+        p_response = self.client.post(property_url, json.dumps(property_data), content_type="application/json")
+        assert p_response.status_code == 200
+
+        taxlot_view = TaxLotView.objects.get(pk=view_id)
+        taxlot_state = taxlot_view.state
+        property_view = taxlot_view.taxlotproperty_set.first().property_view
+        property_state = property_view.state
+        assert property_state.pm_property_id == "7"
+        assert property_state.lot_number == "10"
+        assert taxlot_state.jurisdiction_tax_lot_id == "10"
+        assert taxlot_state.address_line_1 == "A"
+
+        assert TaxLotState.objects.count() == original_state_count + 2
+        assert TaxLotView.objects.count() == original_view_count + 2
+        assert TaxLot.objects.count() == original_taxlot_count + 2
+        assert PropertyView.objects.count() == original_property_view_count + 1
 
 
 class TaxLotViewTestPermissions(AccessLevelBaseTestCase):
