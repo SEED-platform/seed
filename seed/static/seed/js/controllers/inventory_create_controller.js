@@ -144,7 +144,7 @@ angular.module('SEED.controller.inventory_create', []).controller('inventory_cre
           break;
         default:
           $scope.form_columns = [...$scope.matching_columns];
-          $scope.form_columns = $scope.form_columns.map((c) => ({ ...c, value: 'null', is_duplicate: false }));
+          $scope.form_columns = $scope.form_columns.map((c) => ({ ...c, value: null, is_duplicate: false }));
           $scope.form_values = [];
       }
     };
@@ -179,7 +179,7 @@ angular.module('SEED.controller.inventory_create', []).controller('inventory_cre
 
     $scope.change_column = (displayName, index) => {
       const defaults = {
-        primary,
+        table_name: primary,
         is_extra_data: true,
         is_matching_criteria: false,
         data_type: 'string'
