@@ -21,10 +21,10 @@
 <div class="section_header_container">
   <div class="section_header has_no_padding fixed_height_short">
     <div class="section_action_container left_40">
-      <h2><i class="fa-regular fa-building"></i><span>Create a {$ inventory_type === 'properties' ? 'Property' : 'Tax Lot'$}</span></h2>
+      <h2><i class="fa-regular fa-building"></i><span>{$ inventory_type === 'taxlots' ? 'Create a Tax Lot' : 'Create a Property' | translate $}</span></h2>
     </div>
     <div class="section_action_container right_40 section_action_btn pull-right">
-      <button class="btn btn-primary" ng-disabled="!valid || form_errors.length" ng-click="save_inventory()">Save {$ inventory_type == 'taxlots' ? 'TaxLot' : 'Property' $}</button>
+      <button class="btn btn-primary" ng-disabled="!valid || form_errors.length" ng-click="save_inventory()" translate>Save</button>
     </div>
   </div>
 </div>
@@ -70,27 +70,27 @@
         <select id="select-profile" class="form-control" ng-change="change_profile()" ng-options="profile as profile.name for profile in profiles" ng-model="profile"></select>
       </div>
       <div style="display: flex">
-        <button class="btn btn-default" style="margin: auto 0 0 20px" ng-click="set_columns('canonical')">All Canonical Fields</button>
-        <button class="btn btn-default" style="margin: auto 0 0 20px" ng-click="set_columns('extra')">All Extra Data Fields</button>
-        <button class="btn btn-default" style="margin: auto 0 0 20px" ng-click="set_columns('reset')">Reset</button>
+        <button class="btn btn-default" style="margin: auto 0 0 20px" ng-click="set_columns('canonical')" translate>All Canonical Fields</button>
+        <button class="btn btn-default" style="margin: auto 0 0 20px" ng-click="set_columns('extra')" translate>All Extra Data Fields</button>
+        <button class="btn btn-default" style="margin: auto 0 0 20px" ng-click="set_columns('reset')" translate>Reset</button>
       </div>
     </div>
     <div class="table_list_container" style="border-top: 1px solid #e0e0e0">
       <table class="table table-striped">
         <thead>
           <tr>
-            <th>Inventory Type</th>
-            <th>Column</th>
-            <th>Value</th>
-            <th>Matching Criteria</th>
-            <th>Extra Data</th>
-            <th>Data Type</th>
+            <th translate>Inventory Type</th>
+            <th translate>Column</th>
+            <th translate>Value</th>
+            <th translate>Matching Criteria</th>
+            <th translate>Extra Data</th>
+            <th translate>Data Type</th>
             <th></th>
           </tr>
         </thead>
         <tbody>
           <tr ng-repeat="column in form_columns track by $index" ng-class="{'danger': column.is_duplicate}">
-            <td>{$ column.table_name.slice(0, -5) $}</td>
+            <td>{$ column.table_name.slice(0, -5) | translate $}</td>
             <!-- <td style="max-width:200px;">{$ column.displayName $}</td> -->
             <td ng-attr-id="row-input-{$:: $index $}">
               <input
@@ -120,7 +120,7 @@
             </td>
             <td style="text-align: center"><input type="checkbox" ng-model="column.is_matching_criteria" disabled /></td>
             <td style="text-align: center"><input type="checkbox" ng-model="column.is_extra_data" disabled /></td>
-            <td style="width: 100px">{$ column.data_type $}</td>
+            <td style="width: 100px">{$ column.data_type | translate $}</td>
             <td>
               <button class="btn btn-danger" type="button" ng-click="remove_column($index, column)">
                 <i class="fa-solid fa-xmark"></i>
@@ -129,7 +129,7 @@
           </tr>
         </tbody>
       </table>
-      <button class="btn btn-default" ng-click="add_column()">Add Column</button>
+      <button class="btn btn-default" ng-click="add_column()" translate>Add Column</button>
     </div>
   </div>
 </div>
