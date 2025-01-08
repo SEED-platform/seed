@@ -6,4 +6,5 @@
 <a id="inventory-map" ui-sref="inventory_map(::{inventory_type: inventory_type})" ui-sref-active="active" translate>Map</a>
 <a id="inventory-data" ui-sref="custom_reports(::{inventory_type: inventory_type})" ui-sref-active="active" translate>Data</a>
 <a id="inventory-summary" ui-sref="inventory_summary(::{inventory_type: inventory_type})" ui-sref-active="active" translate>Summary</a>
-<a id="inventory-create" ui-sref="inventory_create(::{inventory_type: inventory_type})" ui-sref-active="active">Create a {$ inventory_type == 'taxlots' ? 'Tax Lot' : 'Property' $}</a>
+<a ng-if="inventory_type === 'taxlots'" id="inventory-create" ui-sref="inventory_create(::{inventory_type: inventory_type})" ui-sref-active="active" translate>Create a Tax Lot</a>
+<a ng-if="inventory_type === 'properties'" id="inventory-create" ui-sref="inventory_create(::{inventory_type: inventory_type})" ui-sref-active="active" translate>Create a Property</a>

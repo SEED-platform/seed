@@ -362,7 +362,7 @@ class TaxLotViewTests(DataMappingBaseTestCase):
         assert response.status_code == 200
         assert response.json().get("view_id")
 
-        # For a new property, counts should only increase by 1
+        # For a new tax lot, counts should only increase by 1
         assert TaxLotState.objects.count() == original_state_count + 1
         assert TaxLotView.objects.count() == original_view_count + 1
         assert TaxLot.objects.count() == original_taxlot_count + 1

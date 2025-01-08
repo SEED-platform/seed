@@ -2,7 +2,7 @@ from seed.models import Column, Property, PropertyAuditLog, PropertyState, Prope
 from seed.utils.match import get_matching_criteria_column_names
 
 
-def create_inventory(inventory_type, org_id, cycle_id, access_level_instance_id, new_state_data, related=False):
+def create_inventory(inventory_type, org_id, cycle_id, access_level_instance_id, new_state_data):
     inventory_class, view_class, state_class, auditlog_class, cycle_query, viewset = _inventorty_config(inventory_type)
 
     # Create extra data columns if necessary
@@ -11,10 +11,7 @@ def create_inventory(inventory_type, org_id, cycle_id, access_level_instance_id,
         Column.objects.get_or_create(is_extra_data=True, column_name=column, organization_id=org_id, table_name=state_class.__name__)
 
     # Create stub state
-    if related:
-        state = state_class.objects.create(organization_id=org_id, **new_state_data)
-    else:
-        state = state_class.objects.create(organization_id=org_id)
+    state = state_class.objects.create(organization_id=org_id)
     # get_or_create existing inventory and view
     matching_columns = get_matching_criteria_column_names(org_id, state_class.__name__)
     filter_query = {col: new_state_data.get(col) for col in matching_columns if col in new_state_data}
