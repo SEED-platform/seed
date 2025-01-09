@@ -11,10 +11,13 @@ from django.conf import settings
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
+from django.utils import timezone as tz
+from lxml import etree
 
 # from seed.audit_template.audit_template import build_xml
 from seed.audit_template.audit_template import AuditTemplate
 from seed.landing.models import SEEDUser as User
+from seed.models import Meter, MeterReading
 from seed.test_helpers.fake import FakeCycleFactory, FakePropertyFactory, FakePropertyStateFactory, FakePropertyViewFactory
 from seed.utils.organizations import create_organization
 
@@ -162,6 +165,72 @@ class ExportToAuditTemplate(TestCase):
         exp_error = f"Validation Error. {self.state3.pm_property_id} must have address_line_1, property_name"
         self.assertEqual("error", messages[0])
         self.assertEqual(exp_error, messages[1])
+
+    def test_build_xml_from_property_with_meter(self):
+        # Set Up
+        self.meter = Meter.objects.create(property_id=self.view1.property_id, type=Meter.ELECTRICITY_GRID)
+
+        # Action
+        at = AuditTemplate(self.org.id)
+        response = at.build_xml(self.state1, "Demo City Report", self.state1.pm_property_id)
+
+        # Assert
+        # # is tree
+        self.assertEqual(tuple, type(response))
+        tree = etree.XML(response[0])
+
+        # # has 1 scenario
+        scenarios = tree.findall("auc:Facilities/auc:Facility/auc:Reports/auc:Report/auc:Scenarios/auc:Scenario", namespaces=tree.nsmap)
+        self.assertEqual(1, len(scenarios))
+        scenario = scenarios[0]
+
+        # # scenario has 1 meter
+        meters = scenario.findall("auc:ResourceUses/auc:ResourceUse", namespaces=tree.nsmap)
+        self.assertEqual(1, len(meters))
+        meter = meters[0]
+
+        # # meter type
+        meter_type = meter.find("auc:EnergyResource", namespaces=tree.nsmap)
+        meter_unit = meter.find("auc:ResourceUnits", namespaces=tree.nsmap)
+        self.assertEqual(meter_type.text, "Electricity")
+        self.assertEqual(meter_unit.text, "kBtu")
+
+    def test_build_xml_from_property_with_meter_readings(self):
+        # Set Up
+        self.meter = Meter.objects.create(property_id=self.view1.property_id, type=Meter.ELECTRICITY_GRID)
+        MeterReading.objects.create(
+            start_time=datetime(2019, 1, 1, 0, 0, 0, tzinfo=tz.utc),
+            end_time=datetime(2019, 2, 1, 0, 0, 0, tzinfo=tz.utc),
+            reading=123,
+            meter_id=self.meter.id,
+            conversion_factor=1,
+        )
+
+        # Action
+        at = AuditTemplate(self.org.id)
+        response = at.build_xml(self.state1, "Demo City Report", self.state1.pm_property_id)
+
+        # Assert
+        # # is tree
+        self.assertEqual(tuple, type(response))
+        tree = etree.XML(response[0])
+
+        # # has 1 scenario
+        scenarios = tree.findall("auc:Facilities/auc:Facility/auc:Reports/auc:Report/auc:Scenarios/auc:Scenario", namespaces=tree.nsmap)
+        self.assertEqual(1, len(scenarios))
+        scenario = scenarios[0]
+
+        # # scenario has 1 meter reading
+        meter_readings = scenario.findall("auc:TimeSeriesData/auc:TimeSeries", namespaces=tree.nsmap)
+        self.assertEqual(1, len(meter_readings))
+        meter_reading = meter_readings[0]
+
+        start_time = meter_reading.find("auc:StartTimestamp", namespaces=tree.nsmap)
+        end_time = meter_reading.find("auc:EndTimestamp", namespaces=tree.nsmap)
+        reading = meter_reading.find("auc:IntervalReading", namespaces=tree.nsmap)
+        self.assertEqual(start_time.text, datetime(2019, 1, 1, 0, 0, 0, tzinfo=tz.utc).isoformat())
+        self.assertEqual(end_time.text, datetime(2019, 2, 1, 0, 0, 0, tzinfo=tz.utc).isoformat())
+        self.assertEqual(float(reading.text), 123)
 
     @mock.patch("requests.request")
     def test_export_to_audit_template(self, mock_request):

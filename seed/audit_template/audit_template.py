@@ -17,11 +17,12 @@ from lxml import etree
 from lxml.builder import ElementMaker
 from quantityfield.units import ureg
 
+from seed.analysis_pipelines.better.buildingsync import SEED_TO_BSYNC_RESOURCE_TYPE
 from seed.building_sync import validation_client
 from seed.building_sync.mappings import BUILDINGSYNC_URI, NAMESPACES
 from seed.lib.progress_data.progress_data import ProgressData
 from seed.lib.superperms.orgs.models import Organization
-from seed.models import PropertyView
+from seed.models import Meter, MeterReading, PropertyView
 from seed.utils.encrypt import decrypt
 
 _log = logging.getLogger(__name__)
@@ -334,6 +335,42 @@ class AuditTemplate:
                     ),
                     E.Reports(
                         E.Report(
+                            E.Scenarios(
+                                {},
+                                E.Scenario(
+                                    {"ID": "ScenarioType-69817879941680"},
+                                    E.ResourceUses(
+                                        {},
+                                        *[
+                                            E.ResourceUse(
+                                                {"ID": f"ResourceUseType-{meter.id}"},
+                                                E.EnergyResource(SEED_TO_BSYNC_RESOURCE_TYPE.get(meter.type, "Other")),
+                                                E.ResourceUnits(
+                                                    "kBtu"
+                                                    if Meter.ENERGY_TYPE_BY_METER_TYPE.get(meter.type)
+                                                    in Organization._default_display_meter_units
+                                                    else "Gallons"
+                                                ),
+                                            )
+                                            for meter in Meter.objects.filter(property_id=view.property_id)
+                                        ],
+                                    ),
+                                    E.TimeSeriesData(
+                                        {},
+                                        *[
+                                            E.TimeSeries(
+                                                {"ID": f"TimeSeriesType-{i}"},
+                                                E.StartTimestamp(meter_reading.start_time.isoformat()),
+                                                E.EndTimestamp(meter_reading.end_time.isoformat()),
+                                                E.IntervalReading(str(meter_reading.reading)),
+                                            )
+                                            for i, meter_reading in enumerate(
+                                                MeterReading.objects.filter(meter__property_id=view.property_id)
+                                            )
+                                        ],
+                                    ),
+                                ),
+                            ),
                             {"ID": "ReportType-69909846999993"},
                             E.LinkedPremisesOrSystem(
                                 E.Building(E.LinkedBuildingID({"IDref": "BuildingType-69909846999992"})),
