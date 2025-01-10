@@ -135,7 +135,13 @@ def _prepare_all_properties(self, analysis_view_ids_by_property_view_id, analysi
     for analysis_property_view in analysis_property_views:
         meters = Meter.objects.annotate(readings_count=Count("meter_readings")).filter(
             property=analysis_property_view.property,
-            type__in=[Meter.ELECTRICITY_GRID, Meter.ELECTRICITY_SOLAR, Meter.ELECTRICITY_WIND, Meter.ELECTRICITY_UNKNOWN],
+            type__in=[
+                Meter.ELECTRICITY,
+                Meter.ELECTRICITY_GRID,
+                Meter.ELECTRICITY_SOLAR,
+                Meter.ELECTRICITY_WIND,
+                Meter.ELECTRICITY_UNKNOWN,
+            ],
             readings_count__gte=12,
         )
         if meters.count() == 0:
