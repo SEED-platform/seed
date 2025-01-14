@@ -9,6 +9,7 @@ from django.db.models import Count, F, Q, Sum
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
 from django.utils.timezone import make_aware
+from drf_yasg.utils import swagger_auto_schema
 from pint import Quantity
 from pytz import timezone
 from rest_framework import response, status
@@ -21,7 +22,7 @@ from seed.models import AccessLevelInstance, Cycle, InventoryGroup, Meter, Meter
 from seed.serializers.inventory_groups import InventoryGroupSerializer
 from seed.serializers.meters import MeterSerializer
 from seed.utils.api import OrgMixin
-from seed.utils.api_schema import swagger_auto_schema_org_query_param
+from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema_org_query_param
 from seed.utils.meters import PropertyMeterReadingsExporter, update_meter_connection
 from seed.utils.viewsets import ModelViewSetWithoutPatch, SEEDOrgNoPatchOrOrgCreateModelViewSet
 
@@ -67,6 +68,16 @@ class InventoryGroupViewSet(ModelViewSetWithoutPatch, OrgMixin):
         status_code = status.HTTP_200_OK
         return response.Response(results, status=status_code)
 
+    @swagger_auto_schema(
+        manual_parameters=[
+            AutoSchemaHelper.query_org_id_field(),
+            AutoSchemaHelper.query_string_field("inventory_type", required=True, description="property or tax_lot"),
+        ],
+        request_body=AutoSchemaHelper.schema_factory(
+            {"selected": ["integer"]},
+            description="selected: optional list of inventory ids. [] returns all groups.",
+        ),
+    )
     @has_perm_class("requires_viewer")
     @action(detail=False, methods=["POST"])
     def filter(self, request):
