@@ -16,3 +16,9 @@ class AnalysisPropertyViewSerializer(serializers.ModelSerializer):
     class Meta:
         model = AnalysisPropertyView
         fields = "__all__"
+
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+        state = instance.property_state
+        ret["display_name"] = state.default_display_value() if state else None
+        return ret
