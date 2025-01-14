@@ -20,9 +20,10 @@ from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm_c
 from seed.models import AccessLevelInstance, Cycle, InventoryGroup, Meter, MeterReading, Organization, PropertyView
 from seed.serializers.inventory_groups import InventoryGroupSerializer
 from seed.serializers.meters import MeterSerializer
+from seed.utils.api import OrgMixin
 from seed.utils.api_schema import swagger_auto_schema_org_query_param
 from seed.utils.meters import PropertyMeterReadingsExporter, update_meter_connection
-from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
+from seed.utils.viewsets import ModelViewSetWithoutPatch, SEEDOrgNoPatchOrOrgCreateModelViewSet
 
 logger = logging.getLogger()
 
@@ -30,7 +31,7 @@ logger = logging.getLogger()
 @method_decorator(name="list", decorator=[swagger_auto_schema_org_query_param, has_perm_class("requires_viewer")])
 @method_decorator(name="create", decorator=[swagger_auto_schema_org_query_param, has_perm_class("requires_member")])
 @method_decorator(name="update", decorator=[swagger_auto_schema_org_query_param, has_perm_class("requires_member")])
-class InventoryGroupViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
+class InventoryGroupViewSet(ModelViewSetWithoutPatch, OrgMixin):
     serializer_class = InventoryGroupSerializer
     model = InventoryGroup
     filter_backends = (ColumnListProfileFilterBackend,)
@@ -222,7 +223,7 @@ class InventoryGroupMetersViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
         return JsonResponse({}, status=status.HTTP_200_OK)
 
     @swagger_auto_schema_org_query_param
-    @has_perm_class("requires_viewer")
+    @has_perm_class("requires_member")
     @has_hierarchy_access(inventory_group_id_kwarg="inventory_group_pk")
     def create(self, request, inventory_group_pk):
         meter_serializer = MeterSerializer(
