@@ -101,6 +101,7 @@ DJANGO_CORE_APPS = (
     "two_factor.plugins.phonenumber",  # <- if you want phone number capability.
     "two_factor.plugins.email",  # <- if you want email capability.
     # "two_factor.plugins.yubikey",  # <- for yubikey capability.
+    "rest_framework_simplejwt",
 )
 
 
@@ -268,6 +269,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 # Django Rest Framework
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
         "rest_framework.authentication.SessionAuthentication",
         "seed.authentication.SEEDAuthentication",
     ),
@@ -283,6 +285,7 @@ REST_FRAMEWORK = {
     "DATETIME_INPUT_FORMATS": ("%Y:%m:%d", "iso-8601", "%Y-%m-%d"),
     "EXCEPTION_HANDLER": "seed.exception_handler.custom_exception_handler",
 }
+
 
 SWAGGER_SETTINGS = {
     "TAGS_SORTER": "alpha",
@@ -302,6 +305,10 @@ SWAGGER_SETTINGS = {
     ],
     "DOC_EXPANSION": "none",
     "LOGOUT_URL": "/accounts/logout",
+}
+
+SIMPLE_JWT = {
+    "AUTH_HEADER_TYPES": ("Bearer",),
 }
 
 try:

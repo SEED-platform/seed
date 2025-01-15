@@ -6,6 +6,10 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 from django.conf import settings
 from django.contrib.auth.views import LogoutView, PasswordChangeDoneView, PasswordChangeView
 from django.urls import path, re_path
+from rest_framework_simplejwt.views import (
+    TokenObtainPairView,
+    TokenRefreshView,
+)
 
 from seed.landing.views import (
     account_activation_sent,
@@ -32,6 +36,8 @@ urlpatterns = [
     re_path(r"^accounts/setup/(?P<uidb64>[0-9A-Za-z_\-]+)/(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,32})/$", signup, name="signup"),
     path("password_change/", PasswordChangeView.as_view(), {"template_name": "landing/password_change_form.html"}, name="password_change"),
     path("password_change/done/", PasswordChangeDoneView.as_view(), {"template_name": "landing/password_change_done.html"}),
+    path("api/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
+    path("api/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
 ]
 
 if settings.INCLUDE_ACCT_REG:
