@@ -5,22 +5,8 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
-from django.utils.translation import gettext_lazy as _
 
 from seed.landing.models import SEEDUser
-
-
-class LoginForm(forms.Form):
-    email = forms.EmailField(
-        label=_("Email"),
-        help_text=_("ex: joe@company.com"),
-        widget=forms.TextInput(attrs={"class": "field", "placeholder": _("Email Address")}),
-    )
-    password = forms.CharField(
-        label=_("Password"),
-        widget=forms.PasswordInput(attrs={"class": "field", "placeholder": _("Password"), "autocomplete": "off"}),
-        required=True,
-    )
 
 
 class CustomCreateUserForm(UserCreationForm):
