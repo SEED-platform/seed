@@ -95,7 +95,7 @@ class SEEDUser(AbstractBaseUser, PermissionsMixin):
                 user = SEEDUser.objects.get(api_key=api_key, username=username)
                 return user
             elif auth_header.startswith("Bearer"):
-                at = AccessToken(auth_header.removeprefix("Bearer: "))
+                at = AccessToken(auth_header.removeprefix("Bearer "))
                 user = SEEDUser.objects.get(pk=at["user_id"])
                 return user
             else:
