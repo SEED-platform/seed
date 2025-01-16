@@ -16,16 +16,15 @@ from seed.utils.api_schema import AutoSchemaHelper
 
 # This read-only endpoint doesn't require any org or AH restrictions
 @method_decorator(
-    name="list",
-    decorator=[
+    [
         swagger_auto_schema(
             responses={200: UniformatSerializer(many=True)},
         )
     ],
+    name="list",
 )
 @method_decorator(
-    name="retrieve",
-    decorator=[
+    [
         swagger_auto_schema(
             manual_parameters=[
                 AutoSchemaHelper.path_enum_field(
@@ -40,6 +39,7 @@ from seed.utils.api_schema import AutoSchemaHelper
             responses={200: UniformatSerializer()},
         ),
     ],
+    name="retrieve",
 )
 class UniformatViewSet(DRFEndpointMixin, ReadOnlyModelViewSet):
     """Uniformat API Endpoint

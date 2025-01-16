@@ -7,18 +7,46 @@ from django.http import JsonResponse
 from django.utils.decorators import method_decorator
 from rest_framework import status
 
-from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm_class
+from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm
 from seed.lib.superperms.orgs.models import AccessLevelInstance, Organization
 from seed.models import Property as PropertyModel
 from seed.serializers.properties import CreatePropertySerializer, PropertySerializer
 from seed.utils.viewsets import SEEDOrgCreateUpdateModelViewSet
 
 
-@method_decorator(name="list", decorator=[has_perm_class("requires_viewer")])
-@method_decorator(name="retrieve", decorator=[has_perm_class("requires_viewer"), has_hierarchy_access(property_id_kwarg="pk")])
-@method_decorator(name="destroy", decorator=[has_perm_class("requires_member"), has_hierarchy_access(property_id_kwarg="pk")])
-@method_decorator(name="update", decorator=[has_perm_class("requires_member"), has_hierarchy_access(property_id_kwarg="pk")])
-@method_decorator(name="create", decorator=[has_perm_class("requires_member")])
+@method_decorator(
+    [
+        has_perm("requires_viewer"),
+    ],
+    name="list",
+)
+@method_decorator(
+    [
+        has_perm("requires_viewer"),
+        has_hierarchy_access(property_id_kwarg="pk"),
+    ],
+    name="retrieve",
+)
+@method_decorator(
+    [
+        has_perm("requires_member"),
+        has_hierarchy_access(property_id_kwarg="pk"),
+    ],
+    name="destroy",
+)
+@method_decorator(
+    [
+        has_perm("requires_member"),
+        has_hierarchy_access(property_id_kwarg="pk"),
+    ],
+    name="update",
+)
+@method_decorator(
+    [
+        has_perm("requires_member"),
+    ],
+    name="create",
+)
 class GBRPropertyViewSet(SEEDOrgCreateUpdateModelViewSet):
     """Properties API Endpoint
 

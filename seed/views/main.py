@@ -19,7 +19,7 @@ from rest_framework.decorators import api_view
 
 from seed.celery import app
 from seed.decorators import ajax_request
-from seed.lib.superperms.orgs.decorators import has_perm_class
+from seed.lib.superperms.orgs.decorators import has_perm
 from seed.utils.api import api_endpoint
 from seed.utils.users import get_js_role
 
@@ -85,8 +85,8 @@ def home(request):
 
 @api_endpoint
 @ajax_request
+@has_perm("requires_superuser", False)
 @api_view(["GET"])
-@has_perm_class("requires_superuser", False)
 def celery_queue(request):
     """
     Returns the number of running and queued celery tasks. This action can only be performed by superusers
