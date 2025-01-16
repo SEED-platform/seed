@@ -60,6 +60,7 @@ TEMPLATES = [
     },
 ]
 MIDDLEWARE = (
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.gzip.GZipMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.locale.LocaleMiddleware",
@@ -86,6 +87,7 @@ DJANGO_CORE_APPS = (
     "django.contrib.staticfiles",
     "django.contrib.gis",
     "compressor",
+    "corsheaders",
     "django_extensions",
     "django_filters",
     "rest_framework",
@@ -309,7 +311,10 @@ SWAGGER_SETTINGS = {
 
 SIMPLE_JWT = {
     "AUTH_HEADER_TYPES": ("Bearer",),
+    "TOKEN_OBTAIN_SERIALIZER": "seed.landing.serializers.SeedTokenObtainPairSerializer",
 }
+
+CORS_ALLOW_ALL_ORIGINS = True
 
 try:
     EEEJ_LOAD_SMALL_TEST_DATASET = bool(strtobool(os.environ.get("EEEJ_LOAD_SMALL_TEST_DATASET", "False")))
