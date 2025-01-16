@@ -18,7 +18,7 @@ from seed.lib.superperms.orgs.models import AccessLevelInstance, Organization, O
 from seed.models import obj_to_dict
 from seed.utils.api import OrgMixin, api_endpoint_class
 from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema_org_query_param
-from seed.utils.time import convert_to_js_timestamp
+from seed.utils.time_utils import convert_to_js_timestamp
 
 _log = logging.getLogger(__name__)
 

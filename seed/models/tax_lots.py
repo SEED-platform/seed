@@ -20,7 +20,7 @@ from seed.models.models import DATA_STATE, DATA_STATE_MATCHING, DATA_STATE_UNKNO
 from seed.models.tax_lot_properties import TaxLotProperty
 from seed.utils.address import normalize_address_str
 from seed.utils.generic import compare_orgs_between_label_and_target, obj_to_dict, split_model_fields
-from seed.utils.time import convert_to_js_timestamp
+from seed.utils.time_utils import convert_to_js_timestamp
 from seed.utils.ubid import generate_ubidmodels_for_state
 
 from .auditlog import AUDIT_IMPORT, DATA_UPDATE_TYPE
