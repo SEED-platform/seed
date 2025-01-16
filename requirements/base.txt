@@ -25,8 +25,8 @@ django-pint==0.7.3
 # API
 djangorestframework==3.15.2
 django-post-office==3.9.0
-drf-yasg==1.21.7
-django-filter==22.1
+drf-yasg==1.21.8
+django-filter==22.1  # Update after drf-spectacular
 drf-nested-routers==0.94.1
 
 # Server monitoring
