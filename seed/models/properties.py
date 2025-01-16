@@ -338,11 +338,11 @@ class PropertyState(models.Model):
     updated = models.DateTimeField(auto_now=True)
 
     class Meta:
-        index_together = [
-            ["hash_object"],
-            ["import_file", "data_state"],
-            ["import_file", "data_state", "merge_state"],
-            ["import_file", "data_state", "source_type"],
+        indexes = [
+            models.Index(fields=["hash_object"]),
+            models.Index(fields=["import_file", "data_state"]),
+            models.Index(fields=["import_file", "data_state", "merge_state"]),
+            models.Index(fields=["import_file", "data_state", "source_type"]),
         ]
 
     def promote(self, cycle, property_id=None):
@@ -889,7 +889,7 @@ class PropertyView(models.Model):
             "property",
             "cycle",
         )
-        index_together = [["state", "cycle"]]
+        indexes = [models.Index(fields=["state", "cycle"])]
 
     def __init__(self, *args, **kwargs):
         self._import_filename = kwargs.pop("import_filename", None)
@@ -981,7 +981,7 @@ class PropertyAuditLog(models.Model):
     created = models.DateTimeField(auto_now_add=True, null=True)
 
     class Meta:
-        index_together = [["state", "name"], ["parent_state1", "parent_state2"]]
+        indexes = [models.Index(fields=["state", "name"]), models.Index(fields=["parent_state1", "parent_state2"])]
 
 
 @receiver(pre_save, sender=PropertyState)

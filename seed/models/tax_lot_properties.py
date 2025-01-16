@@ -53,7 +53,11 @@ class TaxLotProperty(models.Model):
             "property_view",
             "taxlot_view",
         )
-        index_together = [["cycle", "property_view"], ["cycle", "taxlot_view"], ["property_view", "taxlot_view"]]
+        indexes = [
+            models.Index(fields=["cycle", "property_view"]),
+            models.Index(fields=["cycle", "taxlot_view"]),
+            models.Index(fields=["property_view", "taxlot_view"]),
+        ]
 
     @classmethod
     def extra_data_to_dict_with_mapping(cls, instance, mappings, fields=None, units={}):
