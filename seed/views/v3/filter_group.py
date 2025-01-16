@@ -125,7 +125,7 @@ class FilterGroupViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
             )
             if bad_label_ids:
                 return JsonResponse(
-                    {"success": False, "message": f'invalid label ids: {", ".join([str(i) for i in set(bad_label_ids)])}'},
+                    {"success": False, "message": f"invalid label ids: {', '.join([str(i) for i in set(bad_label_ids)])}"},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 

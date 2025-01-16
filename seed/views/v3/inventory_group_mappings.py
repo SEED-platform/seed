@@ -47,7 +47,7 @@ class InventoryGroupMappingViewSet(viewsets.ViewSet):
 
         if inventory_org_id != group_org_id:
             raise IntegrityError(
-                f"Group with organization_id={group_org_id} cannot be applied to a record with " f"organization_id={inventory_org_id}."
+                f"Group with organization_id={group_org_id} cannot be applied to a record with organization_id={inventory_org_id}."
             )
         elif inventory_ali_id != group_ali_id:
             raise IntegrityError("Access Level mismatch between group and inventory.")

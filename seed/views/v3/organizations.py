@@ -333,7 +333,7 @@ class OrganizationViewSet(viewsets.ViewSet):
                 return JsonResponse(
                     {
                         "status": "error",
-                        "message": "Your SEED account is not associated with any organizations. " "Please contact a SEED administrator.",
+                        "message": "Your SEED account is not associated with any organizations. Please contact a SEED administrator.",
                     },
                     status=status.HTTP_401_UNAUTHORIZED,
                 )
@@ -350,7 +350,7 @@ class OrganizationViewSet(viewsets.ViewSet):
                 return JsonResponse(
                     {
                         "status": "error",
-                        "message": "Your SEED account is not associated with any organizations. " "Please contact a SEED administrator.",
+                        "message": "Your SEED account is not associated with any organizations. Please contact a SEED administrator.",
                     },
                     status=status.HTTP_401_UNAUTHORIZED,
                 )
@@ -1058,7 +1058,7 @@ class OrganizationViewSet(viewsets.ViewSet):
 
         results = []
         for i in range(len(bins) - 1):
-            bin = f"{round(bins[i], 2)} - {round(bins[i+1], 2)}"
+            bin = f"{round(bins[i], 2)} - {round(bins[i + 1], 2)}"
             values = np.array(xs)[np.where(binplace == i + 1)]
             x = sum(values) if count else np.average(values).item()
             results.append({"y": bin, "x": None if np.isnan(x) else x, "yr_e": yr_e})

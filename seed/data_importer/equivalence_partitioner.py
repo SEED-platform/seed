@@ -70,7 +70,7 @@ class EquivalencePartitioner:
         elif equivalence_type == TaxLotState:
             return cls.make_taxlotstate_equivalence()
         else:
-            err_msg = f"Type '{equivalence_type.__class__.__name__}' does not have a default " "EquivalencePartitioner set."
+            err_msg = f"Type '{equivalence_type.__class__.__name__}' does not have a default EquivalencePartitioner set."
             raise ValueError(err_msg)
 
     @classmethod

@@ -166,7 +166,7 @@ def _validate_permissions(perm_name, request, requires_org):
     if not requires_org:
         if perm_name not in {"requires_superuser", "requires_owner_or_superuser_without_org"}:
             raise AssertionError(
-                "requires_org=False can only be combined with requires_superuser or " "requires_owner_or_superuser_without_org"
+                "requires_org=False can only be combined with requires_superuser or requires_owner_or_superuser_without_org"
             )
         if request.user.is_superuser:
             return

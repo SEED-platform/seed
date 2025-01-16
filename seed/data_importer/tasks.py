@@ -1038,11 +1038,11 @@ def _save_sensor_readings_task(readings_tuples, data_logger_id, sensor_column_na
                     reading_strings.append(f"({sensor.id}, '{timestamp}', '{value}', '{is_occupied}')")
 
                 sql = (
-                    f'INSERT INTO seed_sensorreading(sensor_id, timestamp, reading, is_occupied)'  # noqa: S608
-                    f' VALUES {", ".join(reading_strings)}'
-                    f' ON CONFLICT (sensor_id, timestamp)'
-                    f' DO UPDATE SET reading = EXCLUDED.reading'
-                    f' RETURNING reading;'
+                    f"INSERT INTO seed_sensorreading(sensor_id, timestamp, reading, is_occupied)"  # noqa: S608
+                    f" VALUES {', '.join(reading_strings)}"
+                    f" ON CONFLICT (sensor_id, timestamp)"
+                    f" DO UPDATE SET reading = EXCLUDED.reading"
+                    f" RETURNING reading;"
                 )
                 with connection.cursor() as cursor:
                     cursor.execute(sql)
@@ -1193,11 +1193,11 @@ def _save_greenbutton_data_task(readings, meter_id, meter_usage_point_id, progre
             ]
 
             sql = (
-                f'INSERT INTO seed_meterreading(meter_id, start_time, end_time, reading, source_unit, conversion_factor)'  # noqa: S608
-                f' VALUES {", ".join(reading_strings)}'
-                f' ON CONFLICT (meter_id, start_time, end_time)'
-                f' DO UPDATE SET reading = EXCLUDED.reading, source_unit = EXCLUDED.source_unit, conversion_factor = EXCLUDED.conversion_factor'
-                f' RETURNING reading;'
+                f"INSERT INTO seed_meterreading(meter_id, start_time, end_time, reading, source_unit, conversion_factor)"  # noqa: S608
+                f" VALUES {', '.join(reading_strings)}"
+                f" ON CONFLICT (meter_id, start_time, end_time)"
+                f" DO UPDATE SET reading = EXCLUDED.reading, source_unit = EXCLUDED.source_unit, conversion_factor = EXCLUDED.conversion_factor"
+                f" RETURNING reading;"
             )
             with connection.cursor() as cursor:
                 cursor.execute(sql)
@@ -1250,11 +1250,11 @@ def _save_pm_meter_usage_data_task(meter_readings, file_pk, progress_key):
             ]
 
             sql = (
-                f'INSERT INTO seed_meterreading(meter_id, start_time, end_time, reading, source_unit, conversion_factor)'  # noqa: S608
-                f' VALUES {", ".join(reading_strings)}'
-                f' ON CONFLICT (meter_id, start_time, end_time)'
-                f' DO UPDATE SET reading = EXCLUDED.reading, source_unit = EXCLUDED.source_unit, conversion_factor = EXCLUDED.conversion_factor'
-                f' RETURNING reading;'
+                f"INSERT INTO seed_meterreading(meter_id, start_time, end_time, reading, source_unit, conversion_factor)"  # noqa: S608
+                f" VALUES {', '.join(reading_strings)}"
+                f" ON CONFLICT (meter_id, start_time, end_time)"
+                f" DO UPDATE SET reading = EXCLUDED.reading, source_unit = EXCLUDED.source_unit, conversion_factor = EXCLUDED.conversion_factor"
+                f" RETURNING reading;"
             )
             with connection.cursor() as cursor:
                 cursor.execute(sql)

@@ -194,7 +194,7 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
         request_body=AutoSchemaHelper.schema_factory(
             {"taxlot_view_ids": ["integer"]},
             required=["taxlot_view_ids"],
-            description="Properties:\n" "- taxlot_view_ids: Array containing tax lot state ids to merge",
+            description="Properties:\n- taxlot_view_ids: Array containing tax lot state ids to merge",
         ),
     )
     @api_endpoint_class
