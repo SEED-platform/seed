@@ -4,6 +4,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
 import os
+from datetime import timedelta
 from distutils.util import strtobool
 
 from django.utils.translation import gettext_lazy as _
@@ -310,8 +311,10 @@ SWAGGER_SETTINGS = {
 }
 
 SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=5),
     "AUTH_HEADER_TYPES": ("Bearer",),
     "TOKEN_OBTAIN_SERIALIZER": "seed.landing.serializers.SeedTokenObtainPairSerializer",
+    "ROTATE_REFRESH_TOKENS": True,
 }
 
 CORS_ALLOW_ALL_ORIGINS = True
