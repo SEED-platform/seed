@@ -36,6 +36,8 @@ CELERY_TASK_EAGER_PROPAGATES = True
 # this celery log level is currently not overridden.
 CELERY_LOG_LEVEL = LOG_LEVELS["WARNING"]
 
+TESTING_MAPQUEST_API_KEY = os.environ.get("TESTING_MAPQUEST_API_KEY", "<your_key_here>")
+
 REQUIRE_UNIQUE_EMAIL = False
 
 INTERNAL_IPS = ("127.0.0.1",)
