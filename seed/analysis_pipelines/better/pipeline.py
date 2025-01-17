@@ -96,7 +96,7 @@ class BETTERPipeline(AnalysisPipeline):
         # validate the configuration
         validation_errors = _validate_better_config(analysis)
         if validation_errors:
-            raise AnalysisPipelineError(f'Analysis configuration is invalid: {"; ".join(validation_errors)}')
+            raise AnalysisPipelineError(f"Analysis configuration is invalid: {'; '.join(validation_errors)}")
 
         progress_data = self.get_progress_data(analysis)
 
@@ -380,10 +380,10 @@ def _process_results(self, analysis_id):
 
     ee_measure_column_data_paths = [
         ExtraDataColumnPath(
-            f'better_recommendation_{ee_measure_name["name"].lower().replace(" ", "_")}',
-            f'BETTER Recommendation: {ee_measure_name["name"]}',
+            f"better_recommendation_{ee_measure_name['name'].lower().replace(' ', '_')}",
+            f"BETTER Recommendation: {ee_measure_name['name']}",
             1,
-            f'assessment.ee_measures.{ee_measure_name["token"]}',
+            f"assessment.ee_measures.{ee_measure_name['token']}",
         )
         for ee_measure_name in ee_measure_names
     ]

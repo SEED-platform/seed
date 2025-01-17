@@ -3,15 +3,16 @@ from collections import namedtuple
 
 from django.db import IntegrityError
 from django.http import JsonResponse
+from django.utils.decorators import method_decorator
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import response, status, viewsets
 from rest_framework.decorators import action
 
-from seed.decorators import ajax_request_class
-from seed.lib.superperms.orgs.decorators import has_perm_class
+from seed.decorators import ajax_request
+from seed.lib.superperms.orgs.decorators import has_perm
 from seed.models import InventoryGroup, InventoryGroupMapping, Property, PropertyView, TaxLot, TaxLotView
 from seed.serializers.inventory_groups import InventoryGroupMappingSerializer
-from seed.utils.api import api_endpoint_class
+from seed.utils.api import api_endpoint
 from seed.utils.api_schema import AutoSchemaHelper
 
 ErrorState = namedtuple("ErrorState", ["status_code", "message"])
@@ -47,7 +48,7 @@ class InventoryGroupMappingViewSet(viewsets.ViewSet):
 
         if inventory_org_id != group_org_id:
             raise IntegrityError(
-                f"Group with organization_id={group_org_id} cannot be applied to a record with " f"organization_id={inventory_org_id}."
+                f"Group with organization_id={group_org_id} cannot be applied to a record with organization_id={inventory_org_id}."
             )
         elif inventory_ali_id != group_ali_id:
             raise IntegrityError("Access Level mismatch between group and inventory.")
@@ -145,9 +146,13 @@ class InventoryGroupMappingViewSet(viewsets.ViewSet):
             )
         },
     )
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("can_modify_data")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("can_modify_data"),
+        ]
+    )
     @action(detail=False, methods=["PUT"])
     def put(self, request):
         """

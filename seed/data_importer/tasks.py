@@ -17,6 +17,7 @@ from _csv import Error
 from bisect import bisect_left
 from collections import defaultdict, namedtuple
 from datetime import date, datetime
+from datetime import timezone as tz
 from itertools import chain
 from math import ceil
 from typing import Optional, Union
@@ -31,7 +32,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import DataError, IntegrityError, connection, transaction
 from django.db.models import Q
 from django.db.utils import ProgrammingError
-from django.utils import timezone as tz
+from django.utils import timezone as django_tz
 from django.utils.timezone import make_naive
 
 from seed.building_sync import validation_client
@@ -199,7 +200,7 @@ def finish_mapping(import_file_id, mark_as_done, progress_key):
                 value = True
             setattr(import_record, f"{action}_{state}", value)
 
-    import_record.finish_time = tz.now()
+    import_record.finish_time = django_tz.now()
     import_record.status = STATUS_READY_TO_MERGE
     import_record.save()
 
@@ -1038,11 +1039,11 @@ def _save_sensor_readings_task(readings_tuples, data_logger_id, sensor_column_na
                     reading_strings.append(f"({sensor.id}, '{timestamp}', '{value}', '{is_occupied}')")
 
                 sql = (
-                    f'INSERT INTO seed_sensorreading(sensor_id, timestamp, reading, is_occupied)'  # noqa: S608
-                    f' VALUES {", ".join(reading_strings)}'
-                    f' ON CONFLICT (sensor_id, timestamp)'
-                    f' DO UPDATE SET reading = EXCLUDED.reading'
-                    f' RETURNING reading;'
+                    f"INSERT INTO seed_sensorreading(sensor_id, timestamp, reading, is_occupied)"  # noqa: S608
+                    f" VALUES {', '.join(reading_strings)}"
+                    f" ON CONFLICT (sensor_id, timestamp)"
+                    f" DO UPDATE SET reading = EXCLUDED.reading"
+                    f" RETURNING reading;"
                 )
                 with connection.cursor() as cursor:
                     cursor.execute(sql)
@@ -1193,11 +1194,11 @@ def _save_greenbutton_data_task(readings, meter_id, meter_usage_point_id, progre
             ]
 
             sql = (
-                f'INSERT INTO seed_meterreading(meter_id, start_time, end_time, reading, source_unit, conversion_factor)'  # noqa: S608
-                f' VALUES {", ".join(reading_strings)}'
-                f' ON CONFLICT (meter_id, start_time, end_time)'
-                f' DO UPDATE SET reading = EXCLUDED.reading, source_unit = EXCLUDED.source_unit, conversion_factor = EXCLUDED.conversion_factor'
-                f' RETURNING reading;'
+                f"INSERT INTO seed_meterreading(meter_id, start_time, end_time, reading, source_unit, conversion_factor)"  # noqa: S608
+                f" VALUES {', '.join(reading_strings)}"
+                f" ON CONFLICT (meter_id, start_time, end_time)"
+                f" DO UPDATE SET reading = EXCLUDED.reading, source_unit = EXCLUDED.source_unit, conversion_factor = EXCLUDED.conversion_factor"
+                f" RETURNING reading;"
             )
             with connection.cursor() as cursor:
                 cursor.execute(sql)
@@ -1250,11 +1251,11 @@ def _save_pm_meter_usage_data_task(meter_readings, file_pk, progress_key):
             ]
 
             sql = (
-                f'INSERT INTO seed_meterreading(meter_id, start_time, end_time, reading, source_unit, conversion_factor)'  # noqa: S608
-                f' VALUES {", ".join(reading_strings)}'
-                f' ON CONFLICT (meter_id, start_time, end_time)'
-                f' DO UPDATE SET reading = EXCLUDED.reading, source_unit = EXCLUDED.source_unit, conversion_factor = EXCLUDED.conversion_factor'
-                f' RETURNING reading;'
+                f"INSERT INTO seed_meterreading(meter_id, start_time, end_time, reading, source_unit, conversion_factor)"  # noqa: S608
+                f" VALUES {', '.join(reading_strings)}"
+                f" ON CONFLICT (meter_id, start_time, end_time)"
+                f" DO UPDATE SET reading = EXCLUDED.reading, source_unit = EXCLUDED.source_unit, conversion_factor = EXCLUDED.conversion_factor"
+                f" RETURNING reading;"
             )
             with connection.cursor() as cursor:
                 cursor.execute(sql)

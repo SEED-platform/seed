@@ -9,7 +9,7 @@ from drf_yasg.utils import swagger_auto_schema
 from rest_framework.parsers import FormParser, JSONParser
 from rest_framework.renderers import JSONRenderer
 
-from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm_class
+from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm
 from seed.models import MeterReading, PropertyView
 from seed.serializers.meter_readings import MeterReadingSerializer
 from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema_org_query_param
@@ -17,26 +17,23 @@ from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
 
 
 @method_decorator(
+    [
+        swagger_auto_schema_org_query_param,
+        has_perm("requires_viewer"),
+        has_hierarchy_access(property_view_id_kwarg="property_pk"),
+    ],
     name="list",
-    decorator=[
-        swagger_auto_schema_org_query_param,
-        has_perm_class("requires_viewer"),
-        has_hierarchy_access(property_view_id_kwarg="property_pk"),
-    ],
 )
 @method_decorator(
+    [
+        swagger_auto_schema_org_query_param,
+        has_perm("requires_viewer"),
+        has_hierarchy_access(property_view_id_kwarg="property_pk"),
+    ],
     name="retrieve",
-    decorator=[
-        swagger_auto_schema_org_query_param,
-        has_perm_class("requires_viewer"),
-        has_hierarchy_access(property_view_id_kwarg="property_pk"),
-    ],
 )
 @method_decorator(
-    name="create",
-    decorator=[
-        has_perm_class("requires_member"),
-        has_hierarchy_access(property_view_id_kwarg="property_pk"),
+    [
         swagger_auto_schema(
             manual_parameters=[
                 AutoSchemaHelper.query_org_id_field(),
@@ -70,13 +67,13 @@ from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
                 description="Dictionary or list of dictionaries of meter readings to add.",
             ),
         ),
+        has_perm("requires_member"),
+        has_hierarchy_access(property_view_id_kwarg="property_pk"),
     ],
+    name="create",
 )
 @method_decorator(
-    name="update",
-    decorator=[
-        has_perm_class("requires_member"),
-        has_hierarchy_access(property_view_id_kwarg="property_pk"),
+    [
         swagger_auto_schema(
             manual_parameters=[
                 AutoSchemaHelper.query_org_id_field(),
@@ -107,15 +104,18 @@ from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
             ),
             description="Meter reading to update.",
         ),
-    ],
-)
-@method_decorator(
-    name="destroy",
-    decorator=[
-        swagger_auto_schema_org_query_param,
-        has_perm_class("requires_member"),
+        has_perm("requires_member"),
         has_hierarchy_access(property_view_id_kwarg="property_pk"),
     ],
+    name="update",
+)
+@method_decorator(
+    [
+        swagger_auto_schema_org_query_param,
+        has_perm("requires_member"),
+        has_hierarchy_access(property_view_id_kwarg="property_pk"),
+    ],
+    name="destroy",
 )
 class MeterReadingViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
     """API endpoint for managing meters."""

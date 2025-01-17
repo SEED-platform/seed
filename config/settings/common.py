@@ -4,7 +4,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
 import os
-from distutils.util import strtobool
+from typing import Union
 
 from django.utils.translation import gettext_lazy as _
 from kombu.serialization import register
@@ -26,17 +26,21 @@ SITE_ID = 1
 
 USE_I18N = True
 LANGUAGES = (
-    ("en", _("English")),
+    ("en-us", _("English")),
     ("fr-ca", _("French (Canada)")),
+    ("es", _("Spanish")),
 )
 LOCALE_PATHS = ("locale",)
 LANGUAGE_CODE = "en-us"
 
 SECRET_KEY = os.environ.get("SECRET_KEY", "default-ns=nb-w)#2ue-mtu!s&2krzfee1-t)^z7y8gyrp6mx^d*weifh")
 
+CSRF_COOKIE_SAMESITE = "Strict"
+
 SESSION_ENGINE = "django.contrib.sessions.backends.signed_cookies"
 # Default to expiring cookies after 2 weeks
 SESSION_COOKIE_AGE = int(os.environ.get("COOKIE_EXPIRATION", 1_209_600))
+SESSION_COOKIE_SAMESITE = "Strict"
 
 TEMPLATES = [
     {
@@ -89,7 +93,6 @@ DJANGO_CORE_APPS = (
     "django_extensions",
     "django_filters",
     "rest_framework",
-    "crispy_forms",  # needed to squash warnings around collectstatic with rest_framework
     "post_office",
     "django_celery_beat",
     "treebeard",
@@ -202,9 +205,7 @@ LOGGING = {
     },
 }
 
-# LOGIN_URL = "two_factor:login"
-LOGIN_REDIRECT_URL = "two_factor:profile"
-# LOGIN_REDIRECT_URL = "/app/"
+LOGIN_REDIRECT_URL = "/app/#/profile/two_factor_profile"
 
 APPEND_SLASH = True
 
@@ -218,6 +219,7 @@ register(
 )
 CELERY_WORKER_MAX_TASKS_PER_CHILD = 1
 CELERY_ACCEPT_CONTENT = ["seed_json", "pickle"]
+CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
 CELERY_TASK_SERIALIZER = "seed_json"
 CELERY_RESULT_SERIALIZER = "seed_json"
 CELERY_RESULT_EXPIRES = 86400  # 24 hours
@@ -304,10 +306,16 @@ SWAGGER_SETTINGS = {
     "LOGOUT_URL": "/accounts/logout",
 }
 
-try:
-    EEEJ_LOAD_SMALL_TEST_DATASET = bool(strtobool(os.environ.get("EEEJ_LOAD_SMALL_TEST_DATASET", "False")))
-except Exception:
-    EEEJ_LOAD_SMALL_TEST_DATASET = False
+
+def yn(s: Union[bool, str]) -> bool:
+    if isinstance(s, bool):
+        return s
+    if isinstance(s, str):
+        return s.lower() in ["y", "yes", "t", "true", "on", "1"]
+    return False
+
+
+EEEJ_LOAD_SMALL_TEST_DATASET = yn(os.environ.get("EEEJ_LOAD_SMALL_TEST_DATASET", "False"))
 
 BSYNCR_SERVER_HOST = os.environ.get("BSYNCR_SERVER_HOST")
 BSYNCR_SERVER_PORT = os.environ.get("BSYNCR_SERVER_PORT", "80")

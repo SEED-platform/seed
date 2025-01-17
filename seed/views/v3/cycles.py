@@ -11,28 +11,38 @@ from django.utils.decorators import method_decorator
 from rest_framework.status import HTTP_404_NOT_FOUND, HTTP_409_CONFLICT
 
 from seed import tasks
-from seed.lib.superperms.orgs.decorators import has_perm_class
+from seed.lib.superperms.orgs.decorators import has_perm
 from seed.models import Cycle, PropertyView, TaxLotView
 from seed.serializers.cycles import CycleSerializer
 from seed.utils.api_schema import swagger_auto_schema_org_query_param
 from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
 
 
-@method_decorator(name="list", decorator=swagger_auto_schema_org_query_param)
 @method_decorator(
-    name="create",
-    decorator=[
+    [
         swagger_auto_schema_org_query_param,
-        has_perm_class("requires_root_member_access"),
     ],
+    name="list",
 )
-@method_decorator(name="retrieve", decorator=swagger_auto_schema_org_query_param)
 @method_decorator(
-    name="update",
-    decorator=[
+    [
         swagger_auto_schema_org_query_param,
-        has_perm_class("requires_root_member_access"),
+        has_perm("requires_root_member_access"),
     ],
+    name="create",
+)
+@method_decorator(
+    [
+        swagger_auto_schema_org_query_param,
+    ],
+    name="retrieve",
+)
+@method_decorator(
+    [
+        swagger_auto_schema_org_query_param,
+        has_perm("requires_root_member_access"),
+    ],
+    name="update",
 )
 class CycleViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
     """API endpoint for viewing and creating cycles (time periods).
@@ -90,7 +100,11 @@ class CycleViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
         serializer.save(organization_id=org_id, user=user)
 
     @swagger_auto_schema_org_query_param
-    @has_perm_class("requires_owner")
+    @method_decorator(
+        [
+            has_perm("requires_owner"),
+        ]
+    )
     def destroy(self, request, pk):
         organization_id = self.get_organization(request)
         try:

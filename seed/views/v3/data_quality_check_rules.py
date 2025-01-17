@@ -9,12 +9,12 @@ from django.utils.decorators import method_decorator
 from drf_yasg.utils import no_body, swagger_auto_schema
 from rest_framework.decorators import action
 
-from seed.decorators import ajax_request_class
-from seed.lib.superperms.orgs.decorators import has_perm_class
+from seed.decorators import ajax_request
+from seed.lib.superperms.orgs.decorators import has_perm
 from seed.lib.superperms.orgs.permissions import SEEDOrgPermissions
 from seed.models.data_quality import DataQualityCheck, Rule
 from seed.serializers.rules import RuleSerializer
-from seed.utils.api import api_endpoint_class
+from seed.utils.api import api_endpoint
 from seed.utils.api_schema import AutoSchemaHelper
 from seed.utils.viewsets import ModelViewSetWithoutPatch
 
@@ -30,18 +30,18 @@ nested_org_id_path_field = AutoSchemaHelper.base_field(
 )
 
 
-@method_decorator(name="list", decorator=swagger_auto_schema(manual_parameters=[nested_org_id_path_field]))
-@method_decorator(name="retrieve", decorator=swagger_auto_schema(manual_parameters=[nested_org_id_path_field]))
-@method_decorator(name="update", decorator=swagger_auto_schema(manual_parameters=[nested_org_id_path_field]))
-@method_decorator(name="destroy", decorator=swagger_auto_schema(manual_parameters=[nested_org_id_path_field]))
-@method_decorator(name="create", decorator=swagger_auto_schema(manual_parameters=[nested_org_id_path_field]))
+@method_decorator([swagger_auto_schema(manual_parameters=[nested_org_id_path_field])], name="list")
+@method_decorator([swagger_auto_schema(manual_parameters=[nested_org_id_path_field])], name="retrieve")
+@method_decorator([swagger_auto_schema(manual_parameters=[nested_org_id_path_field])], name="update")
+@method_decorator([swagger_auto_schema(manual_parameters=[nested_org_id_path_field])], name="destroy")
+@method_decorator([swagger_auto_schema(manual_parameters=[nested_org_id_path_field])], name="create")
 class DataQualityCheckRuleViewSet(ModelViewSetWithoutPatch):
     serializer_class = RuleSerializer
     model = Rule
     pagination_class = None
     permission_classes = (SEEDOrgPermissions,)
 
-    # allow nested_organization_id to be used for authorization (i.e., in has_perm_class)
+    # allow nested_organization_id to be used for authorization (i.e., in has_perm)
     authz_org_id_kwarg = "nested_organization_id"
 
     def get_queryset(self):
@@ -58,9 +58,13 @@ class DataQualityCheckRuleViewSet(ModelViewSetWithoutPatch):
             return DataQualityCheck.retrieve(org_id).rules.filter(id=rule_id)
 
     @swagger_auto_schema(manual_parameters=[nested_org_id_path_field], request_body=no_body, responses={200: RuleSerializer(many=True)})
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_owner")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_owner"),
+        ]
+    )
     @action(detail=False, methods=["PUT"])
     def reset(self, request, nested_organization_id=None):
         """

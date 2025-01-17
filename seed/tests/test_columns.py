@@ -736,7 +736,7 @@ class TestColumnsByInventory(TestCase):
         columns = Column.retrieve_all(self.fake_org.pk, "property", False)
         for c in columns:
             if c["column_name"] == "PropertyState":
-                self.assertEqual(c["name"], f'{c["column_name"]}_{c["id"]}')
+                self.assertEqual(c["name"], f"{c['column_name']}_{c['id']}")
 
     def test_column_retrieve_all(self):
         columns = Column.retrieve_all(self.fake_org.pk, "property", False)

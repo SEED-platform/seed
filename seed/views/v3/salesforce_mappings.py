@@ -8,16 +8,17 @@ from copy import deepcopy
 import django.core.exceptions
 from django.db import IntegrityError
 from django.http import JsonResponse
+from django.utils.decorators import method_decorator
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 
-from seed.decorators import ajax_request_class, require_organization_id_class
-from seed.lib.superperms.orgs.decorators import has_perm_class
+from seed.decorators import ajax_request, require_organization_id
+from seed.lib.superperms.orgs.decorators import has_perm
 from seed.lib.superperms.orgs.models import Organization
 from seed.models.salesforce_mappings import SalesforceMapping
 from seed.serializers.salesforce_mappings import SalesforceMappingSerializer
-from seed.utils.api import OrgMixin, api_endpoint_class
+from seed.utils.api import OrgMixin, api_endpoint
 from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema_org_query_param
 
 
@@ -26,10 +27,14 @@ class SalesforceMappingViewSet(viewsets.ViewSet, OrgMixin):
     model = SalesforceMapping
 
     @swagger_auto_schema_org_query_param
-    @require_organization_id_class
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_owner")
+    @method_decorator(
+        [
+            require_organization_id,
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_owner"),
+        ]
+    )
     def list(self, request):
         organization_id = self.get_organization(request)
         salesforce_mappings = SalesforceMapping.objects.filter(organization=organization_id)
@@ -40,10 +45,14 @@ class SalesforceMappingViewSet(viewsets.ViewSet, OrgMixin):
         )
 
     @swagger_auto_schema_org_query_param
-    @require_organization_id_class
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_owner")
+    @method_decorator(
+        [
+            require_organization_id,
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_owner"),
+        ]
+    )
     def retrieve(self, request, pk=0):
         organization = self.get_organization(request)
         if pk == 0:
@@ -78,10 +87,14 @@ class SalesforceMappingViewSet(viewsets.ViewSet, OrgMixin):
                 )
 
     @swagger_auto_schema_org_query_param
-    @require_organization_id_class
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_owner")
+    @method_decorator(
+        [
+            require_organization_id,
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_owner"),
+        ]
+    )
     def destroy(self, request, pk):
         organization_id = self.get_organization(request)
 
@@ -103,10 +116,14 @@ class SalesforceMappingViewSet(viewsets.ViewSet, OrgMixin):
             },
         ),
     )
-    @require_organization_id_class
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_owner")
+    @method_decorator(
+        [
+            require_organization_id,
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_owner"),
+        ]
+    )
     def create(self, request):
         org_id = int(self.get_organization(request))
         try:
@@ -139,10 +156,14 @@ class SalesforceMappingViewSet(viewsets.ViewSet, OrgMixin):
             },
         ),
     )
-    @require_organization_id_class
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_owner")
+    @method_decorator(
+        [
+            require_organization_id,
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_owner"),
+        ]
+    )
     def update(self, request, pk):
         org_id = self.get_organization(request)
         try:
@@ -194,10 +215,14 @@ class SalesforceMappingViewSet(viewsets.ViewSet, OrgMixin):
             )
 
     @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_org_id_field()])
-    @require_organization_id_class
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_owner")
+    @method_decorator(
+        [
+            require_organization_id,
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_owner"),
+        ]
+    )
     @action(detail=True, methods=["GET"])
     def evaluate(self, request, pk):
         organization = self.get_organization(request)

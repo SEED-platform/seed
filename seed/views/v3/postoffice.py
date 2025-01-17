@@ -8,17 +8,42 @@ from django.forms.models import model_to_dict
 from django.utils.decorators import method_decorator
 from post_office import mail
 
-from seed.lib.superperms.orgs.decorators import has_perm_class
+from seed.lib.superperms.orgs.decorators import has_perm
 from seed.models import PostOfficeEmail, PostOfficeEmailTemplate, PropertyState, TaxLotState
 from seed.serializers.postoffice import PostOfficeEmailSerializer, PostOfficeSerializer
 from seed.utils.viewsets import SEEDOrgModelViewSet
 
 
-@method_decorator(name="list", decorator=[has_perm_class("requires_owner")])
-@method_decorator(name="retrieve", decorator=[has_perm_class("requires_owner")])
-@method_decorator(name="update", decorator=[has_perm_class("requires_owner")])
-@method_decorator(name="destroy", decorator=[has_perm_class("requires_owner")])
-@method_decorator(name="create", decorator=[has_perm_class("requires_owner")])
+@method_decorator(
+    [
+        has_perm("requires_owner"),
+    ],
+    name="list",
+)
+@method_decorator(
+    [
+        has_perm("requires_owner"),
+    ],
+    name="retrieve",
+)
+@method_decorator(
+    [
+        has_perm("requires_owner"),
+    ],
+    name="update",
+)
+@method_decorator(
+    [
+        has_perm("requires_owner"),
+    ],
+    name="destroy",
+)
+@method_decorator(
+    [
+        has_perm("requires_owner"),
+    ],
+    name="create",
+)
 class PostOfficeViewSet(SEEDOrgModelViewSet):
     model = PostOfficeEmailTemplate
     serializer_class = PostOfficeSerializer
@@ -33,11 +58,36 @@ class PostOfficeViewSet(SEEDOrgModelViewSet):
         serializer.save(organization_id=org_id, user=user)
 
 
-@method_decorator(name="list", decorator=[has_perm_class("requires_owner")])
-@method_decorator(name="retrieve", decorator=[has_perm_class("requires_owner")])
-@method_decorator(name="update", decorator=[has_perm_class("requires_owner")])
-@method_decorator(name="destroy", decorator=[has_perm_class("requires_owner")])
-@method_decorator(name="create", decorator=[has_perm_class("requires_owner")])
+@method_decorator(
+    [
+        has_perm("requires_owner"),
+    ],
+    name="list",
+)
+@method_decorator(
+    [
+        has_perm("requires_owner"),
+    ],
+    name="retrieve",
+)
+@method_decorator(
+    [
+        has_perm("requires_owner"),
+    ],
+    name="update",
+)
+@method_decorator(
+    [
+        has_perm("requires_owner"),
+    ],
+    name="destroy",
+)
+@method_decorator(
+    [
+        has_perm("requires_owner"),
+    ],
+    name="create",
+)
 class PostOfficeEmailViewSet(SEEDOrgModelViewSet):
     model = PostOfficeEmail
     serializer_class = PostOfficeEmailSerializer

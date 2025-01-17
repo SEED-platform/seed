@@ -20,7 +20,7 @@ def custom_exception_handler(exc, context):
     if response is None and isinstance(exc, ProtectedError):
         # provides handling of ProtectError from use of models
         # ForeignKey on_delete=PROTECT argument.
-        msg = _("Cannot delete protected objects while " "related objects still exist")
+        msg = _("Cannot delete protected objects while related objects still exist")
         data = {"detail": str(msg)}
 
         # Set Rollback removed in https://www.django-rest-framework.org/community/release-notes/#374. The

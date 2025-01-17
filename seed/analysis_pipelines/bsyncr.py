@@ -58,7 +58,7 @@ def _validate_bsyncr_config(analysis):
     if model_type not in BSYNCR_MODEL_TYPE_MAP:
         return [
             f'Analysis configuration.model_type "{model_type}" is invalid. '
-            f'Must be one of the following: {", ".join(BSYNCR_MODEL_TYPE_MAP.keys())}'
+            f"Must be one of the following: {', '.join(BSYNCR_MODEL_TYPE_MAP.keys())}"
         ]
 
     return []
@@ -80,7 +80,7 @@ class BsyncrPipeline(AnalysisPipeline):
 
         validation_errors = _validate_bsyncr_config(Analysis.objects.get(id=self._analysis_id))
         if validation_errors:
-            raise AnalysisPipelineError(f'Unexpected error(s) while validating analysis configuration: {"; ".join(validation_errors)}')
+            raise AnalysisPipelineError(f"Unexpected error(s) while validating analysis configuration: {'; '.join(validation_errors)}")
 
         progress_data = self.get_progress_data()
 

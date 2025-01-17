@@ -19,7 +19,7 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.utils.decorators import method_decorator
-from django.utils.encoding import force_text
+from django.utils.encoding import force_str
 from django.utils.http import urlsafe_base64_decode
 from django.views.decorators.csrf import csrf_protect
 from django_otp import devices_for_user
@@ -135,7 +135,7 @@ def account_activation_sent(request):
 
 def activate(request, uidb64, token):
     try:
-        uid = force_text(urlsafe_base64_decode(uidb64))
+        uid = force_str(urlsafe_base64_decode(uidb64))
         user = SEEDUser.objects.get(pk=uid)
     except (TypeError, ValueError, OverflowError, SEEDUser.DoesNotExist):
         user = None

@@ -6,10 +6,11 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import IntegrityError
 from django.http import JsonResponse
+from django.utils.decorators import method_decorator
 from rest_framework import status
 
-from seed.decorators import ajax_request_class
-from seed.lib.superperms.orgs.decorators import has_perm_class
+from seed.decorators import ajax_request
+from seed.lib.superperms.orgs.decorators import has_perm
 from seed.lib.superperms.orgs.models import AccessLevelInstance
 from seed.models import Cycle, FilterGroup, ReportConfiguration
 from seed.serializers.report_configurations import ReportConfigurationSerializer
@@ -22,8 +23,12 @@ class ReportConfigurationViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
     serializer_class = ReportConfigurationSerializer
 
     @swagger_auto_schema_org_query_param
-    @has_perm_class("requires_root_member_access")
-    @ajax_request_class
+    @method_decorator(
+        [
+            ajax_request,
+            has_perm("requires_root_member_access"),
+        ]
+    )
     def create(self, request):
         org_id = self.get_organization(request)
 
@@ -63,8 +68,12 @@ class ReportConfigurationViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
         return JsonResponse(result, status=status.HTTP_201_CREATED)
 
     @swagger_auto_schema_org_query_param
-    @ajax_request_class
-    @has_perm_class("requires_root_member_access")
+    @method_decorator(
+        [
+            ajax_request,
+            has_perm("requires_root_member_access"),
+        ]
+    )
     def update(self, request, pk=None):
         rc = ReportConfiguration.objects.get(pk=pk)
 
@@ -115,8 +124,12 @@ class ReportConfigurationViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
         return JsonResponse(result, status=status.HTTP_200_OK)
 
     @swagger_auto_schema_org_query_param
-    @ajax_request_class
-    @has_perm_class("requires_root_member_access")
+    @method_decorator(
+        [
+            ajax_request,
+            has_perm("requires_root_member_access"),
+        ]
+    )
     def destroy(self, request, pk=None):
         try:
             ReportConfiguration.objects.get(pk=pk).delete()

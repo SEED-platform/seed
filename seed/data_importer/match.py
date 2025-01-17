@@ -452,7 +452,7 @@ def filter_duplicate_states(unmatched_states, sub_progress_key):
     sub_progress_data.step("Matching Data (1/6): Filtering Duplicate States")
 
     states_grouped_by_hash = unmatched_states.values("hash_object").annotate(
-        duplicate_sets=ArrayAgg("id"), duplicate_sets_ali=ArrayAgg("raw_access_level_instance_id")
+        duplicate_sets=ArrayAgg("id", default=[]), duplicate_sets_ali=ArrayAgg("raw_access_level_instance_id", default=[])
     )
 
     sub_progress_data.step("Matching Data (1/6): Filtering Duplicate States")
@@ -521,7 +521,7 @@ def inclusive_match_and_merge(unmatched_state_ids, org, StateClass, sub_progress
     matched_id_groups = (
         StateClass.objects.filter(id__in=unmatched_state_ids)
         .values(*column_names)
-        .annotate(matched_ids=ArrayAgg("id"))
+        .annotate(matched_ids=ArrayAgg("id", default=[]))
         .values_list("matched_ids", flat=True)
     )
 

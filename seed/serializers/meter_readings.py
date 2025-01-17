@@ -9,7 +9,6 @@ import dateutil.parser
 from django.core.exceptions import ValidationError
 from django.db import connection
 from django.utils.timezone import make_aware
-from psycopg2.extras import execute_values
 from pytz import timezone
 from rest_framework import serializers
 
@@ -32,20 +31,15 @@ class MeterReadingBulkCreateUpdateSerializer(serializers.ListSerializer):
     def create(self, validated_data) -> list[MeterReading]:
         upsert_sql = (
             f"INSERT INTO seed_meterreading({', '.join(meter_fields)}) "  # noqa: S608
-            "VALUES %s "
+            "VALUES (%(meter_id)s, %(start_time)s, %(end_time)s, %(reading)s, %(source_unit)s, %(conversion_factor)s) "
             "ON CONFLICT (meter_id, start_time, end_time) "
             "DO UPDATE SET reading=excluded.reading, source_unit=excluded.source_unit, conversion_factor=excluded.conversion_factor "
             f"RETURNING {', '.join(meter_fields)}"
         )
 
         with connection.cursor() as cursor:
-            results: list[tuple] = execute_values(
-                cursor,
-                upsert_sql,
-                validated_data,
-                template="(%(meter_id)s, %(start_time)s, %(end_time)s, %(reading)s, %(source_unit)s, %(conversion_factor)s)",
-                fetch=True,
-            )
+            cursor.executemany(upsert_sql, validated_data)
+            results = cursor.fetchall()
 
         # Convert list of tuples to list of MeterReadings for response
         updated_readings = [MeterReading(**{field: result[i] for i, field in enumerate(meter_fields)}) for result in results]

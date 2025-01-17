@@ -1677,11 +1677,11 @@ class Column(models.Model):
         with connection.cursor() as cursor:
             table_name = "seed_propertystate" if inventory_class.__name__ == "PropertyState" else "seed_taxlotstate"
             non_null_extra_data_counts_query = (
-                f'SELECT key, COUNT(*)\n'
-                f'FROM {table_name}, LATERAL JSONB_EACH_TEXT(extra_data) AS each_entry(key, value)\n'
-                f'WHERE id IN ({", ".join(map(str, state_ids))})\n'
-                f'  AND value IS NOT NULL\n'
-                f'GROUP BY key;'
+                f"SELECT key, COUNT(*)\n"
+                f"FROM {table_name}, LATERAL JSONB_EACH_TEXT(extra_data) AS each_entry(key, value)\n"
+                f"WHERE id IN ({', '.join(map(str, state_ids))})\n"
+                f"  AND value IS NOT NULL\n"
+                f"GROUP BY key;"
             )
             cursor.execute(non_null_extra_data_counts_query)
             extra_data_counts = dict(cursor.fetchall())
@@ -1691,11 +1691,11 @@ class Column(models.Model):
         with connection.cursor() as cursor:
             table_name = "seed_propertystate" if inventory_class.__name__ == "PropertyState" else "seed_taxlotstate"
             non_null_derived_data_counts_query = (
-                f'SELECT key, COUNT(*)\n'
-                f'FROM {table_name}, LATERAL JSONB_EACH_TEXT(derived_data) AS each_entry(key, value)\n'
-                f'WHERE id IN ({", ".join(map(str, state_ids))})\n'
-                f'  AND value IS NOT NULL\n'
-                f'GROUP BY key;'
+                f"SELECT key, COUNT(*)\n"
+                f"FROM {table_name}, LATERAL JSONB_EACH_TEXT(derived_data) AS each_entry(key, value)\n"
+                f"WHERE id IN ({', '.join(map(str, state_ids))})\n"
+                f"  AND value IS NOT NULL\n"
+                f"GROUP BY key;"
             )
             cursor.execute(non_null_derived_data_counts_query)
             derived_data_counts = dict(cursor.fetchall())

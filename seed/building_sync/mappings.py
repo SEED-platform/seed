@@ -130,7 +130,7 @@ def apply_mapping(element, mapping, messages, namespaces, xpaths_as_keys=False):
         try:
             selection = element.xpath(value_map["xpath"], namespaces=namespaces)
         except Exception as e:
-            raise Exception(f'Error on {value_map["xpath"]}: {e}')
+            raise Exception(f"Error on {value_map['xpath']}: {e}")
 
         if len(selection) == 0:
             if value_map["type"] == "value":
