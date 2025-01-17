@@ -17,6 +17,7 @@ from _csv import Error
 from bisect import bisect_left
 from collections import defaultdict, namedtuple
 from datetime import date, datetime
+from datetime import timezone as tz
 from itertools import chain
 from math import ceil
 from typing import Optional, Union
@@ -31,7 +32,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import DataError, IntegrityError, connection, transaction
 from django.db.models import Q
 from django.db.utils import ProgrammingError
-from django.utils import timezone as tz
+from django.utils import timezone as django_tz
 from django.utils.timezone import make_naive
 
 from seed.building_sync import validation_client
@@ -199,7 +200,7 @@ def finish_mapping(import_file_id, mark_as_done, progress_key):
                 value = True
             setattr(import_record, f"{action}_{state}", value)
 
-    import_record.finish_time = tz.now()
+    import_record.finish_time = django_tz.now()
     import_record.status = STATUS_READY_TO_MERGE
     import_record.save()
 
