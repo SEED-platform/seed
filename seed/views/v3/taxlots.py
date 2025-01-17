@@ -44,7 +44,7 @@ from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema_org_quer
 from seed.utils.inventory import create_inventory
 from seed.utils.inventory_filter import get_filtered_results
 from seed.utils.labels import get_labels
-from seed.utils.match import MergeLinkPairError, match_merge_link, get_matching_criteria_column_names
+from seed.utils.match import MergeLinkPairError, get_matching_criteria_column_names, match_merge_link
 from seed.utils.merge import merge_taxlots
 from seed.utils.properties import get_changed_fields, pair_unpair_property_taxlot, update_result_with_master
 from seed.utils.taxlots import taxlots_across_cycles
@@ -758,7 +758,7 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
             cycle = Cycle.objects.get(pk=data.get("cycle"), organization_id=org_id)
         except AccessLevelInstance.DoesNotExist:
             return JsonResponse({"status": "error", "message": "Access Level Instance does not exist"}, status=status.HTTP_404_NOT_FOUND)
-        except  Cycle.DoesNotExist:
+        except Cycle.DoesNotExist:
             return JsonResponse({"status": "error", "message": "Cycle does not exist"}, status=status.HTTP_404_NOT_FOUND)
 
         matching_columns = get_matching_criteria_column_names(org_id, "TaxLotState")

@@ -369,12 +369,12 @@ class TaxLotViewTests(DataMappingBaseTestCase):
 
         # taxlot associated with a property
         taxlot_data = {
-            "acess_level_instance": self.org.root.id,
+            "access_level_instance": self.org.root.id,
             "cycle": self.cycle.id,
             "state": {"jurisdiction_tax_lot_id": "10", "address_line_1": "A"},
         }
         property_data = {
-            "acess_level_instance": self.org.root.id,
+            "access_level_instance": self.org.root.id,
             "cycle": self.cycle.id,
             "state": {"pm_property_id": "7", "custom_id_1": "8", "extra_data": {"Extra Data Column": "9"}, "lot_number": "10"},
         }
