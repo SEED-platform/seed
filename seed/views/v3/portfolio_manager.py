@@ -309,15 +309,31 @@ class PortfolioManagerViewSet(GenericViewSet):
                 {"status": "error", "message": "Invalid call to PM worker: missing property ids for PM account"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+        if "start_date" not in request.data:
+            _log.debug("Invalid call to PM worker: missing start date for PM account: %s" % str(request.data))
+            return JsonResponse(
+                {"status": "error", "message": "Invalid call to PM worker: missing start date for PM account"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if "end_date" not in request.data:
+            _log.debug("Invalid call to PM worker: missing end date for PM account: %s" % str(request.data))
+            return JsonResponse(
+                {"status": "error", "message": "Invalid call to PM worker: missing end date for PM account"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         username = request.data["username"]
         password = request.data["password"]
         property_ids = request.data["property_ids"]
+        start_date = request.data.get("start_date")
+        end_date = request.data.get("end_date")
 
         pm = PortfolioManagerImport(username, password)
         try:
             try:
-                content = pm.generate_and_download_meter_data(property_ids)
+                content = pm.generate_and_download_meter_data(
+                    property_ids, start_date, end_date
+                )
             except PMError as pme:
                 _log.debug(f"{pme!s}: {property_ids!s}")
                 return JsonResponse({"status": "error", "message": str(pme)}, status=status.HTTP_400_BAD_REQUEST)
@@ -378,6 +394,7 @@ class PortfolioManagerImport:
         # First we need to log in to Portfolio Manager
         login_url = "https://portfoliomanager.energystar.gov/pm/j_spring_security_check"
         payload = {"j_username": self.username, "j_password": self.password}
+        _log.debug(f"Attempting to login to {login_url}")
         try:
             response = requests.post(login_url, data=payload, timeout=300)
         except requests.exceptions.SSLError:
@@ -672,7 +689,7 @@ class PortfolioManagerImport:
         except requests.exceptions.SSLError:
             raise PMError("SSL Error in Portfolio Manager Query; check VPN/Network/Proxy.")
 
-    def generate_and_download_meter_data(self, property_ids, download_format="XML"):
+    def generate_and_download_meter_data(self, property_ids, start_date, end_date, download_format="XML"):
         """
         This method calls out to ESPM to trigger generation of a custom download of energy and water meter data for the supplied list of property ids.  The process requires
         calling out to the createCustomDownloadSubmit/ endpoint on ESPM, followed by a waiting period for the custom download status to be
@@ -684,7 +701,9 @@ class PortfolioManagerImport:
         TODO: of data coming through in memory during these calls, which seems to have been problematic at times
 
         :param property_ids: list of property ids to include in custom download
-        TODO: Add start and end date parameters
+        :param start_date: Required start date for meter data in YYYY-MM-DD format
+        :param end_date: Required end date for meter data in YYYY-MM-DD format  
+        :param download_format: Format of download (XML or EXCEL)
         :return: Full XML data report from ESPM custom download generation and download process
         """
 
@@ -692,12 +711,25 @@ class PortfolioManagerImport:
         if not self.authenticated_headers:
             self.login_and_set_cookie_header()
 
+        # Validate required date parameters
+        if not start_date:
+            raise PMError("start_date is required")
+        if not end_date:
+            raise PMError("end_date is required") 
+
         # We should then trigger generation of the custom download for the selected property ids
         generation_url = "https://portfoliomanager.energystar.gov/pm/property/createCustomDownloadSubmit/"
-        payload = "proID=&numberOfPropertiesWithinLimit=true&basicPropertyInfoCount=0&propertyIdentifierCount=0&propertyUseCount=0&propertyUseDetailCount=0&meterCount=0&meterDataCount=29403&onsiteCount=0&offsiteCount=0&energyProjectsCount=0&designDataCount=0&targetAndBaselineCount=0&maxPropertiesCountAsyncDownload=12000&selectionType=MULTIPLE&_basicPropertyInfo=on&_propertyIds=on&_propertyUses=on&_propertyUseDetails=on&_meterType=on&_energyMeter=on&_waterMeter=on&_wasteMeter=on&_itEnergyMeter=on&_plantFlowMeter=on&_aggregateMeter=on&meterEntries=true&_meterEntries=on&energyMeterEntries=true&_energyMeterEntries=on&waterMeterEntries=true&_waterMeterEntries=on&_wasteMeterEntries=on&_itEnergyMeterEntries=on&_plantFlowMeterEntries=on&customDownloadStartDate=01%2F01%2F2007&customDownloadEndDate=12%2F31%2F2023&includeInactiveMeters=true&includeUnassociatedMeters=false&_onsiteRecOwnership=on&_offsitePurchase=on&_energyProjects=on&_designData=on&_designUseDesignData=on&_designUseDetailDesignData=on&_energyDesignData=on&_designTargetsDesignData=on&_targetAndBaseline=on"
+        
+        payload = "proID=&numberOfPropertiesWithinLimit=true&basicPropertyInfoCount=0&propertyIdentifierCount=0&propertyUseCount=0&propertyUseDetailCount=0&meterCount=0&meterDataCount=29403&onsiteCount=0&offsiteCount=0&energyProjectsCount=0&designDataCount=0&targetAndBaselineCount=0&maxPropertiesCountAsyncDownload=12000&selectionType=MULTIPLE&_basicPropertyInfo=on&_propertyIds=on&_propertyUses=on&_propertyUseDetails=on&_meterType=on&_energyMeter=on&_waterMeter=on&_wasteMeter=on&_itEnergyMeter=on&_plantFlowMeter=on&_aggregateMeter=on&meterEntries=true&_meterEntries=on&energyMeterEntries=true&_energyMeterEntries=on&waterMeterEntries=true&_waterMeterEntries=on&_wasteMeterEntries=on&_itEnergyMeterEntries=on&_plantFlowMeterEntries=on"
+        payload += "&customDownloadStartDate=" + "%".join([str(date_component) for date_component in start_date])
+        payload += "&customDownloadEndDate=" + "%".join([str(date_component) for date_component in end_date])
+        payload += "&includeInactiveMeters=true&includeUnassociatedMeters=false&_onsiteRecOwnership=on&_offsitePurchase=on&_energyProjects=on&_designData=on&_designUseDesignData=on&_designUseDetailDesignData=on&_energyDesignData=on&_designTargetsDesignData=on&_targetAndBaseline=on"
         payload += "&selectedPropertyIdsAsString=" + "%".join([str(p_id) for p_id in property_ids])
+        # print out payload
+        _log.debug(f"Payload: {payload}")
 
         try:
+            _log.debug(f"Making POST request to generate custom download for property IDs: {property_ids}...")
             response = requests.post(
                 generation_url,
                 headers={**self.authenticated_headers, "Content-Type": "application/x-www-form-urlencoded"},

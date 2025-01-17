@@ -557,11 +557,23 @@ class PortfolioManagerCustomDownloadTest(TestCase):
 
     def test_generate_and_download_meter_data(self):
         # SetUp
-        pm = PortfolioManagerImport(self.pm_un, self.pm_pw)
-        ids = ["16731961"]
+        log_file = Path("portfolio_manager_test.log")
+        with open(log_file, "w") as f:
+            f.write("Starting test_generate_and_download_meter_data\n")
+            f.write(f"Using credentials: {self.pm_un}, {self.pm_pw}\n")
+            
+            pm = PortfolioManagerImport(self.pm_un, self.pm_pw)
+            ids = ["16731961"]
+            start_date = "2019-01-01"
+            end_date = "2019-12-31"
 
-        # Action
-        excel_b = pm.generate_and_download_meter_data(ids)
+            try:
+                # Action
+                excel_b = pm.generate_and_download_meter_data(ids, start_date, end_date)
+                f.write("Successfully downloaded meter data\n")
+            except Exception as e:
+                f.write(f"Failed to download meter data: {str(e)}\n")
+                raise
 
         # Assert
         meter_data = pd.read_excel(excel_b, header=5)
@@ -599,50 +611,46 @@ class PortfolioManagerCustomDownloadTest(TestCase):
     def test_custom_download(self):
         # SetUp
         ids = ["16731961"]
+        start_date = "2019-01-01"
+        end_date = "2019-12-31"
 
-        # Action
-        resp = self.client.post(
-            reverse_lazy("api:v3:portfolio_manager-custom-download"),
-            json.dumps(
-                {
-                    "username": self.pm_un,
-                    "password": self.pm_pw,
-                    "property_ids": ids,
-                }
-            ),
-            content_type="application/json",
-        )
+        try:
+            log_file = Path("portfolio_manager_test.log")
+            with open(log_file, "w") as f:
+                f.write("Starting test_custom_download\n")
+                f.write(f"Using credentials: {self.pm_un}, {self.pm_pw}\n")
+                # Get reference data
+                pm = PortfolioManagerImport(self.pm_un, self.pm_pw)
+                f.write("Initialized PortfolioManagerImport\n")
+                try:
+                    reference_data = pm.generate_and_download_meter_data(ids, start_date, end_date)
+                    f.write("Successfully downloaded meter data\n")
+                except Exception as e:
+                    f.write(f"Failed to download meter data: {str(e)}\n")
+                    raise
 
-        # Assert
-        assert resp.status_code == 200
-        meter_data = pd.read_excel(resp.content, header=5)
-        self.assertListEqual(
-            list(meter_data.columns),
-            [
-                "Property Name",
-                "Portfolio Manager ID",
-                "Portfolio Manager Meter ID",
-                "Meter Name",
-                "Meter Type",
-                "Meter Consumption ID",
-                "Start Date",
-                "End Date",
-                "Delivery Date",
-                "Usage/Quantity",
-                "Usage Units",
-                "Cost ($)",
-                "Estimation?",
-                "Demand (kW)",
-                "Demand Cost ($)",
-                "Last Modified Date",
-                "Last Modified By",
-                "Onsite Renewable System Energy Used Onsite",
-                "Onsite Renewable System Energy Used Onsite -Units",
-                "Onsite Renewable System Energy Exported Offsite",
-                "Onsite Renewable System Energy Exported Offsite- Units",
-                "Disposed Waste - Landfill %",
-                "Disposed Waste - Incineration %",
-                "Disposed Waste - Waste to Energy %",
-                "Disposed Waste - Don't Know %",
-            ],
-        )
+                # API call
+                resp = self.client.post(
+                    reverse_lazy("api:v3:portfolio_manager-custom-download"),
+                    json.dumps({
+                        "username": self.pm_un,
+                        "password": self.pm_pw,
+                        "property_ids": ids,
+                        "start_date": start_date,
+                        "end_date": end_date
+                    }),
+                    content_type="application/json",
+                )
+
+                # Verify response
+                self.assertEqual(resp.status_code, 200)
+                self.assertEqual(resp['Content-Type'], 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+                
+                # Compare data
+                reference_df = pd.read_excel(reference_data, header=5)
+                test_df = pd.read_excel(resp.content, header=5)
+                
+                pd.testing.assert_frame_equal(reference_df, test_df)
+
+        except Exception as e:
+            self.fail(f"Test failed: {str(e)}")
