@@ -2385,7 +2385,7 @@ Accepted External Pull Requests: 11
 
 # SEED Version 2.0.0 (2016-06-11 to 2016-10-01)
 
-losed Issues: 21
+Closed Issues: 21
 - Fixed [#30]( https://github.com/SEED-platform/seed/issues/30 ), Multiple Data Files per Building Record
 - Fixed [#59]( https://github.com/SEED-platform/seed/issues/59 ), Column Reordering allowed in Matching Edit Columns view
 - Fixed [#66]( https://github.com/SEED-platform/seed/issues/66 ), Add Ability to handle multiple years of data
