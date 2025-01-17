@@ -6,7 +6,6 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 from django.db import IntegrityError, connection, models
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
-from psycopg2.extras import execute_values
 
 from seed.models import Property, Scenario
 from seed.models.inventory_groups import InventoryGroupMapping
@@ -183,19 +182,26 @@ class Meter(models.Model):
         if overlaps_possible:
             sql = (
                 "INSERT INTO seed_meterreading(meter_id, start_time, end_time, reading, source_unit, conversion_factor) "
-                "VALUES %s "
+                "VALUES (%s, %s, %s, %s, %s, %s) "
                 "ON CONFLICT (meter_id, start_time, end_time) "
-                "DO UPDATE SET reading=excluded.reading, source_unit=excluded.source_unit, conversion_factor=excluded.conversion_factor "
+                "DO UPDATE SET reading=excluded.reading, source_unit = excluded.source_unit, conversion_factor = excluded.conversion_factor "
                 "RETURNING reading"
             )
 
-            with connection.cursor() as cursor:
-                execute_values(
-                    cursor,
-                    sql,
-                    source_meter.meter_readings.values(),
-                    template=f"({self.id}, %(start_time)s, %(end_time)s, %(reading)s, %(source_unit)s, %(conversion_factor)s)",
+            data = [
+                (
+                    self.id,
+                    reading["start_time"],
+                    reading["end_time"],
+                    reading["reading"],
+                    reading["source_unit"],
+                    reading["conversion_factor"],
                 )
+                for reading in source_meter.meter_readings.values()
+            ]
+
+            with connection.cursor() as cursor:
+                cursor.executemany(sql, data)
         else:
             readings = {
                 MeterReading(

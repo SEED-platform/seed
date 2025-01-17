@@ -8,6 +8,7 @@ import logging
 
 from django.db.models import F
 from django.http import JsonResponse
+from django.utils.decorators import method_decorator
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import serializers, status, viewsets
 from rest_framework.decorators import action
@@ -15,8 +16,8 @@ from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_409_CONFLICT
 
 from seed.analysis_pipelines.better.client import BETTERClient
 from seed.analysis_pipelines.pipeline import AnalysisPipeline, AnalysisPipelineError
-from seed.decorators import ajax_request_class, require_organization_id_class
-from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm_class
+from seed.decorators import ajax_request, require_organization_id
+from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm
 from seed.lib.superperms.orgs.models import AccessLevelInstance
 from seed.models import (
     Analysis,
@@ -32,7 +33,7 @@ from seed.models import (
 )
 from seed.models.columns import EXCLUDED_API_FIELDS
 from seed.serializers.analyses import AnalysisSerializer
-from seed.utils.api import OrgMixin, api_endpoint_class
+from seed.utils.api import OrgMixin, api_endpoint
 from seed.utils.api_schema import AutoSchemaHelper
 
 logger = logging.getLogger(__name__)
@@ -72,11 +73,15 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
         ],
         request_body=CreateAnalysisSerializer,
     )
-    @require_organization_id_class
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_member")
-    @has_hierarchy_access(body_ali_id="access_level_instance_id")
+    @method_decorator(
+        [
+            require_organization_id,
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_member"),
+            has_hierarchy_access(body_ali_id="access_level_instance_id"),
+        ]
+    )
     def create(self, request):
         serializer = CreateAnalysisSerializer(data=request.data)
         if not serializer.is_valid():
@@ -112,10 +117,14 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
             AutoSchemaHelper.query_integer_field("property_id", False, "Property ID"),
         ]
     )
-    @require_organization_id_class
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_member")
+    @method_decorator(
+        [
+            require_organization_id,
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_member"),
+        ]
+    )
     def list(self, request):
         organization_id = self.get_organization(request)
         access_level_instance = AccessLevelInstance.objects.get(pk=self.request.access_level_instance_id)
@@ -172,11 +181,15 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
         return JsonResponse(results)
 
     @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_org_id_field(True)])
-    @require_organization_id_class
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_member")
-    @has_hierarchy_access(analysis_id_kwarg="pk")
+    @method_decorator(
+        [
+            require_organization_id,
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_member"),
+            has_hierarchy_access(analysis_id_kwarg="pk"),
+        ]
+    )
     def retrieve(self, request, pk):
         organization_id = int(self.get_organization(request))
         try:
@@ -192,12 +205,16 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
         return JsonResponse({"status": "success", "analysis": serialized_analysis})
 
     @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_org_id_field()])
-    @require_organization_id_class
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_member")
+    @method_decorator(
+        [
+            require_organization_id,
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_member"),
+            has_hierarchy_access(analysis_id_kwarg="pk"),
+        ]
+    )
     @action(detail=True, methods=["post"])
-    @has_hierarchy_access(analysis_id_kwarg="pk")
     def start(self, request, pk):
         organization_id = int(self.get_organization(request))
         try:
@@ -219,11 +236,15 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
             return JsonResponse({"status": "error", "message": str(e)}, status=HTTP_409_CONFLICT)
 
     @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_org_id_field()])
-    @require_organization_id_class
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_member")
-    @has_hierarchy_access(analysis_id_kwarg="pk")
+    @method_decorator(
+        [
+            require_organization_id,
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_member"),
+            has_hierarchy_access(analysis_id_kwarg="pk"),
+        ]
+    )
     @action(detail=True, methods=["post"])
     def stop(self, request, pk):
         organization_id = int(self.get_organization(request))
@@ -242,11 +263,15 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
             )
 
     @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_org_id_field()])
-    @require_organization_id_class
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_member")
-    @has_hierarchy_access(analysis_id_kwarg="pk")
+    @method_decorator(
+        [
+            require_organization_id,
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_member"),
+            has_hierarchy_access(analysis_id_kwarg="pk"),
+        ]
+    )
     def destroy(self, request, pk):
         organization_id = int(self.get_organization(request))
         try:
@@ -264,11 +289,15 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
             )
 
     @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_org_id_field()])
-    @require_organization_id_class
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_member")
-    @has_hierarchy_access(analysis_id_kwarg="pk")
+    @method_decorator(
+        [
+            require_organization_id,
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_member"),
+            has_hierarchy_access(analysis_id_kwarg="pk"),
+        ]
+    )
     @action(detail=True, methods=["get"])
     def progress_key(self, request, pk):
         organization_id = int(self.get_organization(request))
@@ -291,9 +320,13 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
                 {"status": "error", "message": "Requested analysis doesn't exist in this organization."}, status=HTTP_409_CONFLICT
             )
 
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_viewer")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_viewer"),
+        ]
+    )
     @action(detail=False, methods=["get"])
     def stats(self, request):
         org_id = self.get_organization(request)
@@ -338,9 +371,13 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
 
     """ Get all property and taxlot columns that have data in them for an org """
 
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_viewer")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_viewer"),
+        ]
+    )
     @action(detail=False, methods=["get"])
     def used_columns(self, request):
         org_id = self.get_organization(request)
@@ -409,8 +446,12 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
             AutoSchemaHelper.query_org_id_field(),
         ]
     )
-    @api_endpoint_class
-    @ajax_request_class
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+        ]
+    )
     @action(detail=False, methods=["get"])
     def verify_better_token(self, request):
         """Check the validity of a BETTER API token"""

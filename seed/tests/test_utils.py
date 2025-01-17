@@ -12,7 +12,7 @@ from django.utils.timezone import make_aware
 from seed.lib.mcm.cleaners import date_cleaner
 from seed.utils.generic import split_model_fields
 from seed.utils.strings import titlecase
-from seed.utils.time import convert_datestr
+from seed.utils.time_utils import convert_datestr
 
 
 class DummyClass:

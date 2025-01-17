@@ -1,4 +1,4 @@
 -r base.txt
-boto3==1.35.21
-django-ses==4.1.1
-uWSGI==2.0.26; sys_platform != "win32"
+boto3==1.36.1
+django-ses==4.3.2
+uWSGI==2.0.28; sys_platform != "win32"

@@ -285,6 +285,10 @@ angular.module('SEED.controller.menu', []).controller('menu_controller', [
       $scope.http_error = false;
     };
 
+    $scope.logout = () => {
+      auth_service.logout();
+    };
+
     init();
     init_menu();
   }

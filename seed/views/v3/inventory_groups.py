@@ -16,7 +16,7 @@ from rest_framework.decorators import action
 
 from config.settings.common import TIME_ZONE
 from seed.filters import ColumnListProfileFilterBackend
-from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm_class
+from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm
 from seed.models import AccessLevelInstance, Cycle, InventoryGroup, Meter, MeterReading, Organization, PropertyView
 from seed.serializers.inventory_groups import InventoryGroupSerializer
 from seed.serializers.meters import MeterSerializer
@@ -27,9 +27,27 @@ from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
 logger = logging.getLogger()
 
 
-@method_decorator(name="list", decorator=[swagger_auto_schema_org_query_param, has_perm_class("requires_viewer")])
-@method_decorator(name="create", decorator=[swagger_auto_schema_org_query_param, has_perm_class("requires_member")])
-@method_decorator(name="update", decorator=[swagger_auto_schema_org_query_param, has_perm_class("requires_member")])
+@method_decorator(
+    [
+        swagger_auto_schema_org_query_param,
+        has_perm("requires_viewer"),
+    ],
+    name="list",
+)
+@method_decorator(
+    [
+        swagger_auto_schema_org_query_param,
+        has_perm("requires_member"),
+    ],
+    name="create",
+)
+@method_decorator(
+    [
+        swagger_auto_schema_org_query_param,
+        has_perm("requires_member"),
+    ],
+    name="update",
+)
 class InventoryGroupViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
     serializer_class = InventoryGroupSerializer
     model = InventoryGroup
@@ -66,7 +84,11 @@ class InventoryGroupViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
         status_code = status.HTTP_200_OK
         return response.Response(results, status=status_code)
 
-    @has_perm_class("requires_viewer")
+    @method_decorator(
+        [
+            has_perm("requires_viewer"),
+        ]
+    )
     @action(detail=False, methods=["POST"])
     def filter(self, request):
         # Given inventory ids, return group info & inventory ids that are in those groups
@@ -77,7 +99,11 @@ class InventoryGroupViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
             return self._get_taxlot_groups(request)
 
     @swagger_auto_schema_org_query_param
-    @has_perm_class("requires_viewer")
+    @method_decorator(
+        [
+            has_perm("requires_viewer"),
+        ]
+    )
     def retrieve(self, request, pk):
         org_id = self.get_organization(self.request)
 
@@ -99,9 +125,13 @@ class InventoryGroupViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
         )
 
     @swagger_auto_schema_org_query_param
-    @has_perm_class("requires_viewer")
+    @method_decorator(
+        [
+            has_perm("requires_viewer"),
+            has_hierarchy_access(inventory_group_id_kwarg="pk"),
+        ]
+    )
     @action(detail=True, methods=["GET"])
-    @has_hierarchy_access(inventory_group_id_kwarg="pk")
     def dashboard(self, request, pk):
         cycle = Cycle.objects.get(pk=request.query_params.get("cycle_id"))
 
@@ -153,8 +183,12 @@ class InventoryGroupViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
         return JsonResponse({"status": "success", "data": readable_data})
 
     @swagger_auto_schema_org_query_param
-    @has_perm_class("requires_viewer")
-    @has_hierarchy_access(inventory_group_id_kwarg="pk")
+    @method_decorator(
+        [
+            has_perm("requires_viewer"),
+            has_hierarchy_access(inventory_group_id_kwarg="pk"),
+        ]
+    )
     @action(detail=True, methods=["POST"])
     def meter_usage(self, request, pk):
         """
@@ -196,8 +230,12 @@ class InventoryGroupMetersViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
         )
 
     @swagger_auto_schema_org_query_param
-    @has_perm_class("requires_viewer")
-    @has_hierarchy_access(inventory_group_id_kwarg="inventory_group_pk")
+    @method_decorator(
+        [
+            has_perm("requires_viewer"),
+            has_hierarchy_access(inventory_group_id_kwarg="inventory_group_pk"),
+        ]
+    )
     def list(self, request, inventory_group_pk):
         """
         Return meters for a group
@@ -207,9 +245,13 @@ class InventoryGroupMetersViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
 
         return JsonResponse({"status": "success", "data": data})
 
+    @method_decorator(
+        [
+            has_perm("can_modify_data"),
+            has_hierarchy_access(inventory_group_id_kwarg="inventory_group_pk"),
+        ]
+    )
     @action(detail=True, methods=["PUT"])
-    @has_perm_class("can_modify_data")
-    @has_hierarchy_access(inventory_group_id_kwarg="inventory_group_pk")
     def update_connection(self, request, inventory_group_pk, pk):
         meter = self.get_queryset().filter(pk=pk).first()
         meter_config = request.data.get("meter_config")
@@ -222,8 +264,12 @@ class InventoryGroupMetersViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
         return JsonResponse({}, status=status.HTTP_200_OK)
 
     @swagger_auto_schema_org_query_param
-    @has_perm_class("requires_viewer")
-    @has_hierarchy_access(inventory_group_id_kwarg="inventory_group_pk")
+    @method_decorator(
+        [
+            has_perm("requires_viewer"),
+            has_hierarchy_access(inventory_group_id_kwarg="inventory_group_pk"),
+        ]
+    )
     def create(self, request, inventory_group_pk):
         meter_serializer = MeterSerializer(
             data={

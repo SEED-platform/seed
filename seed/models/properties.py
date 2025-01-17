@@ -35,7 +35,7 @@ from seed.models.models import (
 from seed.models.tax_lot_properties import TaxLotProperty
 from seed.utils.address import normalize_address_str
 from seed.utils.generic import compare_orgs_between_label_and_target, obj_to_dict, split_model_fields
-from seed.utils.time import convert_datestr, convert_to_js_timestamp
+from seed.utils.time_utils import convert_datestr, convert_to_js_timestamp
 from seed.utils.ubid import generate_ubidmodels_for_state
 
 from .auditlog import AUDIT_IMPORT, DATA_UPDATE_TYPE
@@ -123,18 +123,18 @@ class Property(models.Model):
 
 @receiver(pre_save, sender=Property)
 def set_default_access_level_instance(sender, instance, **kwargs):
-    """If ALI not set, put this Property as the root."""
+    """If ALI not set, put this Property at the root."""
     if instance.access_level_instance_id is None:
         root = AccessLevelInstance.objects.get(organization_id=instance.organization_id, depth=1)
         instance.access_level_instance_id = root.id
 
     bad_taxlotproperty = (
-        TaxLotProperty.objects.filter(property_view__property=instance)
-        .exclude(taxlot_view__taxlot__access_level_instance=instance.access_level_instance)
+        TaxLotProperty.objects.filter(property_view__property_id=instance.id)
+        .exclude(taxlot_view__taxlot__access_level_instance_id=instance.access_level_instance_id)
         .exists()
     )
     if bad_taxlotproperty:
-        raise ValidationError("cannot change property's ALI to AlI different than related taxlots.")
+        raise ValidationError("cannot change property's ALI to ALI different than related taxlots.")
 
 
 @receiver(post_save, sender=Property)
@@ -338,11 +338,11 @@ class PropertyState(models.Model):
     updated = models.DateTimeField(auto_now=True)
 
     class Meta:
-        index_together = [
-            ["hash_object"],
-            ["import_file", "data_state"],
-            ["import_file", "data_state", "merge_state"],
-            ["import_file", "data_state", "source_type"],
+        indexes = [
+            models.Index(fields=["hash_object"]),
+            models.Index(fields=["import_file", "data_state"]),
+            models.Index(fields=["import_file", "data_state", "merge_state"]),
+            models.Index(fields=["import_file", "data_state", "source_type"]),
         ]
 
     def promote(self, cycle, property_id=None):
@@ -896,7 +896,7 @@ class PropertyView(models.Model):
             "property",
             "cycle",
         )
-        index_together = [["state", "cycle"]]
+        indexes = [models.Index(fields=["state", "cycle"])]
 
     def __init__(self, *args, **kwargs):
         self._import_filename = kwargs.pop("import_filename", None)
@@ -988,7 +988,7 @@ class PropertyAuditLog(models.Model):
     created = models.DateTimeField(auto_now_add=True, null=True)
 
     class Meta:
-        index_together = [["state", "name"], ["parent_state1", "parent_state2"]]
+        indexes = [models.Index(fields=["state", "name"]), models.Index(fields=["parent_state1", "parent_state2"])]
 
 
 @receiver(pre_save, sender=PropertyState)

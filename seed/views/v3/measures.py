@@ -11,7 +11,7 @@ from rest_framework.decorators import action
 from rest_framework.parsers import FormParser, JSONParser
 from rest_framework.renderers import JSONRenderer
 
-from seed.lib.superperms.orgs.decorators import has_perm_class
+from seed.lib.superperms.orgs.decorators import has_perm
 from seed.models import Measure
 from seed.serializers.measures import MeasureSerializer
 from seed.utils.api import OrgMixin
@@ -19,18 +19,18 @@ from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema_org_quer
 
 
 @method_decorator(
-    name="retrieve",
-    decorator=[
-        has_perm_class("can_view_data"),
+    [
         swagger_auto_schema_org_query_param,
+        has_perm("can_view_data"),
     ],
+    name="retrieve",
 )
 @method_decorator(
-    name="list",
-    decorator=[
-        has_perm_class("can_view_data"),
+    [
         swagger_auto_schema_org_query_param,
+        has_perm("can_view_data"),
     ],
+    name="list",
 )
 class MeasureViewSet(viewsets.ReadOnlyModelViewSet, OrgMixin):
     """
@@ -57,7 +57,11 @@ class MeasureViewSet(viewsets.ReadOnlyModelViewSet, OrgMixin):
         return Measure.objects.filter(organization_id=org_id, schema_version="2.6.0")
 
     @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_org_id_field()], request_body=no_body)
-    @has_perm_class("can_modify_data")
+    @method_decorator(
+        [
+            has_perm("can_modify_data"),
+        ]
+    )
     @action(detail=False, methods=["POST"])
     def reset(self, request):
         """

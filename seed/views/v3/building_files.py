@@ -14,7 +14,7 @@ from drf_yasg.utils import swagger_auto_schema
 from rest_framework import serializers, status
 from rest_framework.parsers import MultiPartParser
 
-from seed.lib.superperms.orgs.decorators import has_perm_class
+from seed.lib.superperms.orgs.decorators import has_perm
 from seed.lib.superperms.orgs.models import AccessLevelInstance
 from seed.models import BuildingFile, Cycle
 from seed.serializers.building_file import BuildingFileSerializer
@@ -23,8 +23,8 @@ from seed.utils.api_schema import AutoSchemaHelper
 from seed.utils.viewsets import SEEDOrgReadOnlyModelViewSet
 
 
-@method_decorator(name="list", decorator=[has_perm_class("requires_viewer")])
-@method_decorator(name="retrieve", decorator=[has_perm_class("requires_viewer")])
+@method_decorator([has_perm("requires_viewer")], name="list")
+@method_decorator([has_perm("requires_viewer")], name="retrieve")
 class BuildingFileViewSet(SEEDOrgReadOnlyModelViewSet):
     model = BuildingFile
     orgfilter = "property_state__organization"
@@ -64,7 +64,11 @@ class BuildingFileViewSet(SEEDOrgReadOnlyModelViewSet):
             ),
         ],
     )
-    @has_perm_class("can_modify_data")
+    @method_decorator(
+        [
+            has_perm("can_modify_data"),
+        ]
+    )
     def create(self, request):
         """
         Create a new property from a building file

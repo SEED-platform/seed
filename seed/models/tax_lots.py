@@ -20,7 +20,7 @@ from seed.models.models import DATA_STATE, DATA_STATE_MATCHING, DATA_STATE_UNKNO
 from seed.models.tax_lot_properties import TaxLotProperty
 from seed.utils.address import normalize_address_str
 from seed.utils.generic import compare_orgs_between_label_and_target, obj_to_dict, split_model_fields
-from seed.utils.time import convert_to_js_timestamp
+from seed.utils.time_utils import convert_to_js_timestamp
 from seed.utils.ubid import generate_ubidmodels_for_state
 
 from .auditlog import AUDIT_IMPORT, DATA_UPDATE_TYPE
@@ -50,8 +50,8 @@ def set_default_access_level_instance(sender, instance, **kwargs):
         instance.access_level_instance_id = root.id
 
     bad_taxlotproperty = (
-        TaxLotProperty.objects.filter(taxlot_view__taxlot=instance)
-        .exclude(property_view__property__access_level_instance=instance.access_level_instance)
+        TaxLotProperty.objects.filter(taxlot_view__taxlot_id=instance.id)
+        .exclude(property_view__property__access_level_instance_id=instance.access_level_instance_id)
         .exists()
     )
     if bad_taxlotproperty:
@@ -107,7 +107,11 @@ class TaxLotState(models.Model):
     updated = models.DateTimeField(auto_now=True)
 
     class Meta:
-        index_together = [["hash_object"], ["import_file", "data_state"], ["import_file", "data_state", "merge_state"]]
+        indexes = [
+            models.Index(fields=["hash_object"]),
+            models.Index(fields=["import_file", "data_state"]),
+            models.Index(fields=["import_file", "data_state", "merge_state"]),
+        ]
 
     def __str__(self):
         return f"TaxLot State - {self.pk}"
@@ -424,7 +428,7 @@ class TaxLotView(models.Model):
             "taxlot",
             "cycle",
         )
-        index_together = [["state", "cycle"]]
+        indexes = [models.Index(fields=["state", "cycle"])]
 
     def __init__(self, *args, **kwargs):
         self._import_filename = kwargs.pop("import_filename", None)
@@ -510,7 +514,7 @@ class TaxLotAuditLog(models.Model):
     created = models.DateTimeField(auto_now_add=True, null=True)
 
     class Meta:
-        index_together = [["state", "name"], ["parent_state1", "parent_state2"]]
+        indexes = [models.Index(fields=["state", "name"]), models.Index(fields=["parent_state1", "parent_state2"])]
 
 
 @receiver(pre_save, sender=TaxLotState)

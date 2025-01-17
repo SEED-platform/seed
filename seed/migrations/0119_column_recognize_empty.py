@@ -10,7 +10,7 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.RunSQL(
-            "ALTER TABLE seed_column    ADD COLUMN IF NOT EXISTS recognize_empty BOOLEAN NOT NULL DEFAULT FALSE;",
+            "ALTER TABLE seed_column ADD COLUMN IF NOT EXISTS recognize_empty BOOLEAN NOT NULL DEFAULT FALSE;",
             reverse_sql="ALTER TABLE seed_column DROP COLUMN recognize_empty",
             state_operations=[
                 migrations.AddField(

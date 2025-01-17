@@ -15,7 +15,7 @@ from rest_framework.parsers import FormParser, JSONParser
 from rest_framework.renderers import JSONRenderer
 
 from seed.filters import LabelFilterBackend
-from seed.lib.superperms.orgs.decorators import has_perm_class
+from seed.lib.superperms.orgs.decorators import has_perm
 from seed.models import StatusLabel as Label
 from seed.serializers.labels import LabelSerializer
 from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema_org_query_param
@@ -23,28 +23,31 @@ from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
 
 
 @method_decorator(
+    [
+        swagger_auto_schema(
+            manual_parameters=[
+                AutoSchemaHelper.query_org_id_field(
+                    required=False, description="Optional org id which overrides the users (default) current org id"
+                )
+            ]
+        ),
+    ],
     name="retrieve",
-    decorator=swagger_auto_schema(
-        manual_parameters=[
-            AutoSchemaHelper.query_org_id_field(
-                required=False, description="Optional org id which overrides the users (default) current org id"
-            )
-        ]
-    ),
 )
 @method_decorator(
+    [
+        swagger_auto_schema(
+            manual_parameters=[
+                AutoSchemaHelper.query_org_id_field(
+                    required=False, description="Optional org id which overrides the users (default) current org id"
+                )
+            ]
+        )
+    ],
     name="list",
-    decorator=swagger_auto_schema(
-        manual_parameters=[
-            AutoSchemaHelper.query_org_id_field(
-                required=False, description="Optional org id which overrides the users (default) current org id"
-            )
-        ]
-    ),
 )
 @method_decorator(
-    name="create",
-    decorator=[
+    [
         swagger_auto_schema(
             manual_parameters=[
                 AutoSchemaHelper.query_org_id_field(
@@ -60,12 +63,12 @@ from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
                 description="An object containing meta data for a new label",
             ),
         ),
-        has_perm_class("requires_root_member_access"),
+        has_perm("requires_root_member_access"),
     ],
+    name="create",
 )
 @method_decorator(
-    name="destroy",
-    decorator=[
+    [
         swagger_auto_schema(
             manual_parameters=[
                 AutoSchemaHelper.query_org_id_field(
@@ -73,13 +76,12 @@ from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
                 )
             ]
         ),
-        has_perm_class("requires_root_member_access"),
+        has_perm("requires_root_member_access"),
     ],
+    name="destroy",
 )
 @method_decorator(
-    name="update",
-    decorator=[
-        has_perm_class("requires_root_member_access"),
+    [
         swagger_auto_schema(
             manual_parameters=[
                 AutoSchemaHelper.query_org_id_field(
@@ -95,7 +97,9 @@ from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
                 description="An object containing meta data for updating a label",
             ),
         ),
+        has_perm("requires_root_member_access"),
     ],
+    name="update",
 )
 class LabelViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
     """
@@ -132,7 +136,11 @@ class LabelViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
         return super().get_serializer(*args, **kwargs)
 
     @swagger_auto_schema_org_query_param
-    @has_perm_class("requires_root_member_access")
+    @method_decorator(
+        [
+            has_perm("requires_root_member_access"),
+        ]
+    )
     @action(detail=False, methods=["PUT"])
     def bulk_update(self, request):
         organization_id = self.get_parent_org(self.request)

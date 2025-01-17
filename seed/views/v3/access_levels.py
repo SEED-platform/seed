@@ -9,6 +9,7 @@ import os
 import xlrd
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import JsonResponse
+from django.utils.decorators import method_decorator
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
@@ -17,12 +18,12 @@ from rest_framework.response import Response
 
 from seed.data_importer.models import ImportRecord
 from seed.data_importer.tasks import save_raw_access_level_instances_data as task_save_raw
-from seed.decorators import ajax_request_class
-from seed.lib.superperms.orgs.decorators import has_perm_class
+from seed.decorators import ajax_request
+from seed.lib.superperms.orgs.decorators import has_perm
 from seed.lib.superperms.orgs.models import AccessLevelInstance, Organization, OrganizationUser
 from seed.models import Analysis, Property, PropertyState, TaxLot, TaxLotState
 from seed.serializers.access_level_instances import AccessLevelInstanceSerializer
-from seed.utils.api import api_endpoint_class
+from seed.utils.api import api_endpoint
 from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema_org_query_param
 from seed.views.v3.uploads import get_upload_path
 
@@ -30,8 +31,12 @@ _log = logging.getLogger(__name__)
 
 
 class AccessLevelViewSet(viewsets.ViewSet):
-    @api_endpoint_class
-    @has_perm_class("requires_viewer")
+    @method_decorator(
+        [
+            api_endpoint,
+            has_perm("requires_viewer"),
+        ]
+    )
     @action(detail=False, methods=["GET"])
     def tree(self, request, organization_pk=None):
         try:
@@ -73,8 +78,12 @@ class AccessLevelViewSet(viewsets.ViewSet):
         )
 
     @swagger_auto_schema_org_query_param
-    @api_endpoint_class
-    @has_perm_class("requires_viewer")
+    @method_decorator(
+        [
+            api_endpoint,
+            has_perm("requires_viewer"),
+        ]
+    )
     @action(detail=False, methods=["GET"])
     def descendant_tree(self, request, organization_pk=None):
         """
@@ -107,8 +116,12 @@ class AccessLevelViewSet(viewsets.ViewSet):
             status=status.HTTP_200_OK,
         )
 
-    @api_endpoint_class
-    @has_perm_class("requires_owner")
+    @method_decorator(
+        [
+            api_endpoint,
+            has_perm("requires_owner"),
+        ]
+    )
     @action(detail=False, methods=["POST"])
     @swagger_auto_schema(
         request_body=AutoSchemaHelper.schema_factory(
@@ -174,9 +187,13 @@ class AccessLevelViewSet(viewsets.ViewSet):
         status_code = status.HTTP_201_CREATED
         return JsonResponse(result, status=status_code)
 
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_owner")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_owner"),
+        ]
+    )
     @action(detail=False, methods=["POST"])
     @swagger_auto_schema(
         request_body=AutoSchemaHelper.schema_factory(
@@ -231,9 +248,13 @@ class AccessLevelViewSet(viewsets.ViewSet):
 
         return org.access_level_names
 
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_owner")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_owner"),
+        ]
+    )
     @action(detail=False, methods=["PUT"], parser_classes=(MultiPartParser,))
     @swagger_auto_schema(
         manual_parameters=[
@@ -319,9 +340,13 @@ class AccessLevelViewSet(viewsets.ViewSet):
     @swagger_auto_schema(
         request_body=AutoSchemaHelper.schema_factory({"filename": "string"}),
     )
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_owner")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_owner"),
+        ]
+    )
     @action(detail=False, methods=["POST"])
     def start_save_data(self, request, organization_pk=None):
         """
@@ -345,9 +370,13 @@ class AccessLevelViewSet(viewsets.ViewSet):
 
         return JsonResponse(task_save_raw(filename, org.id))
 
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_owner")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_owner"),
+        ]
+    )
     @action(detail=True, methods=["PUT"])
     @swagger_auto_schema(
         request_body=AutoSchemaHelper.schema_factory(
@@ -383,9 +412,13 @@ class AccessLevelViewSet(viewsets.ViewSet):
         instance.save()
         return JsonResponse({"status": "success"})
 
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_owner")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_owner"),
+        ]
+    )
     @action(detail=True, methods=["GET"])
     def can_delete_instance(self, request, organization_pk=None, pk=None):
         # get org
@@ -488,9 +521,13 @@ class AccessLevelViewSet(viewsets.ViewSet):
                 status=status.HTTP_200_OK,
             )
 
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_owner")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_owner"),
+        ]
+    )
     @action(detail=True, methods=["DElETE"])
     def delete_instance(self, request, organization_pk=None, pk=None):
         # get org
@@ -518,9 +555,13 @@ class AccessLevelViewSet(viewsets.ViewSet):
 
         return JsonResponse({"status": "success"}, status=status.HTTP_204_NO_CONTENT)
 
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_viewer")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_viewer"),
+        ]
+    )
     @action(detail=False, methods=["POST"])
     def lowest_common_ancestor(self, request, organization_pk=None):
         """
@@ -562,9 +603,13 @@ class AccessLevelViewSet(viewsets.ViewSet):
     @swagger_auto_schema(
         request_body=AutoSchemaHelper.schema_factory({"view_ids": ["number"]}),
     )
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_viewer")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_viewer"),
+        ]
+    )
     @action(detail=False, methods=["POST"])
     def filter_by_views(self, request, organization_pk=None):
         """

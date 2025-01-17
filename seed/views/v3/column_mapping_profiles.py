@@ -6,17 +6,18 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 import csv
 
 from django.http import HttpResponse, JsonResponse
+from django.utils.decorators import method_decorator
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework.decorators import action
 from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST
 from rest_framework.viewsets import ViewSet
 
 from seed.lib.mcm import mapper
-from seed.lib.superperms.orgs.decorators import has_perm_class
+from seed.lib.superperms.orgs.decorators import has_perm
 from seed.lib.superperms.orgs.permissions import SEEDOrgPermissions
 from seed.models import Column, ColumnMappingProfile
 from seed.serializers.column_mapping_profiles import ColumnMappingProfileSerializer
-from seed.utils.api import OrgMixin, api_endpoint_class
+from seed.utils.api import OrgMixin, api_endpoint
 from seed.utils.api_schema import AutoSchemaHelper
 
 mappings_description = (
@@ -45,7 +46,11 @@ class ColumnMappingProfileViewSet(OrgMixin, ViewSet):
             {"profile_type": ["string"]}, description="Possible Types: 'Normal', 'BuildingSync Default', BuildingSync Custom'"
         ),
     )
-    @api_endpoint_class
+    @method_decorator(
+        [
+            api_endpoint,
+        ]
+    )
     @action(detail=False, methods=["POST"])  # POST in order to provide array/list
     def filter(self, request):
         """
@@ -97,8 +102,12 @@ class ColumnMappingProfileViewSet(OrgMixin, ViewSet):
             description="Optional 'name' or 'mappings'.\n" + mappings_description,
         ),
     )
-    @has_perm_class("requires_root_member_access")
-    @api_endpoint_class
+    @method_decorator(
+        [
+            api_endpoint,
+            has_perm("requires_root_member_access"),
+        ]
+    )
     def update(self, request, pk=None):
         """
         Updates a profile given appropriate request data. The body should contain
@@ -156,7 +165,11 @@ class ColumnMappingProfileViewSet(OrgMixin, ViewSet):
             )
         ]
     )
-    @api_endpoint_class
+    @method_decorator(
+        [
+            api_endpoint,
+        ]
+    )
     @action(detail=True, methods=["GET"])
     def csv(self, request, pk=None):
         """Export a column list profile in a CSV format. This format is supported in the py-seed library when setting up
@@ -203,8 +216,12 @@ class ColumnMappingProfileViewSet(OrgMixin, ViewSet):
             required=["name", "mappings"],
         ),
     )
-    @has_perm_class("requires_root_member_access")
-    @api_endpoint_class
+    @method_decorator(
+        [
+            api_endpoint,
+            has_perm("requires_root_member_access"),
+        ]
+    )
     def create(self, request, pk=None):
         """
         Creates a new profile given appropriate request data. The body should
@@ -248,8 +265,12 @@ class ColumnMappingProfileViewSet(OrgMixin, ViewSet):
             )
         ]
     )
-    @has_perm_class("requires_root_member_access")
-    @api_endpoint_class
+    @method_decorator(
+        [
+            api_endpoint,
+            has_perm("requires_root_member_access"),
+        ]
+    )
     def destroy(self, request, pk=None):
         """
         Deletes a specific profile.
@@ -289,7 +310,11 @@ class ColumnMappingProfileViewSet(OrgMixin, ViewSet):
             {"headers": ["string"]}, description="Raw headers - the exact headers for columns in an import file.", required=["headers"]
         ),
     )
-    @api_endpoint_class
+    @method_decorator(
+        [
+            api_endpoint,
+        ]
+    )
     @action(detail=False, methods=["POST"])
     def suggestions(self, request):
         """

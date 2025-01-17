@@ -11,21 +11,43 @@ from rest_framework import status
 from rest_framework.parsers import FormParser, JSONParser
 from rest_framework.renderers import JSONRenderer
 
-from seed.decorators import ajax_request_class
-from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm_class
+from seed.decorators import ajax_request
+from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm
 from seed.models import Scenario
 from seed.serializers.scenarios import ScenarioSerializer
-from seed.utils.api import api_endpoint_class
+from seed.utils.api import api_endpoint
 from seed.utils.api_schema import AutoSchemaHelper
 from seed.utils.viewsets import SEEDOrgNoPatchNoCreateModelViewSet
 
 
 @method_decorator(
-    name="retrieve", decorator=[has_perm_class("requires_viewer"), has_hierarchy_access(property_view_id_kwarg="property_pk")]
+    [
+        has_perm("requires_viewer"),
+        has_hierarchy_access(property_view_id_kwarg="property_pk"),
+    ],
+    name="retrieve",
 )
-@method_decorator(name="list", decorator=[has_perm_class("requires_viewer"), has_hierarchy_access(property_view_id_kwarg="property_pk")])
-@method_decorator(name="update", decorator=[has_perm_class("requires_viewer"), has_hierarchy_access(property_view_id_kwarg="property_pk")])
-@method_decorator(name="destroy", decorator=[has_perm_class("requires_viewer"), has_hierarchy_access(property_view_id_kwarg="property_pk")])
+@method_decorator(
+    [
+        has_perm("requires_viewer"),
+        has_hierarchy_access(property_view_id_kwarg="property_pk"),
+    ],
+    name="list",
+)
+@method_decorator(
+    [
+        has_perm("requires_viewer"),
+        has_hierarchy_access(property_view_id_kwarg="property_pk"),
+    ],
+    name="update",
+)
+@method_decorator(
+    [
+        has_perm("requires_viewer"),
+        has_hierarchy_access(property_view_id_kwarg="property_pk"),
+    ],
+    name="destroy",
+)
 class PropertyScenarioViewSet(SEEDOrgNoPatchNoCreateModelViewSet):
     """
     API View for Scenarios.
@@ -81,8 +103,12 @@ class PropertyScenarioViewSet(SEEDOrgNoPatchNoCreateModelViewSet):
             }
         )
     )
-    @api_endpoint_class
-    @ajax_request_class
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+        ]
+    )
     def update(self, request, property_pk=None, pk=None):
         """
         Where property_pk is the associated PropertyView.id
@@ -118,8 +144,12 @@ class PropertyScenarioViewSet(SEEDOrgNoPatchNoCreateModelViewSet):
 
         return JsonResponse(result, status=status.HTTP_200_OK)
 
-    @api_endpoint_class
-    @ajax_request_class
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+        ]
+    )
     def destroy(self, request, property_pk=None, pk=None):
         try:
             scenario = Scenario.objects.get(pk=pk)
