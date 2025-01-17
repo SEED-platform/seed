@@ -2,9 +2,9 @@
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
-from __future__ import annotations
 
 import os
+from typing import Union
 
 from django.utils.translation import gettext_lazy as _
 from kombu.serialization import register
@@ -307,7 +307,7 @@ SWAGGER_SETTINGS = {
 }
 
 
-def yn(s: bool | str) -> bool:
+def yn(s: Union[bool, str]) -> bool:
     if isinstance(s, bool):
         return s
     if isinstance(s, str):

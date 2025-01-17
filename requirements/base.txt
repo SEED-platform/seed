@@ -2,7 +2,7 @@
 django==4.2.18
 
 # Persistence stores
-psycopg[binary]==3.2.4
+psycopg2-binary==2.9.10
 
 # Background process management
 celery==5.4.0
