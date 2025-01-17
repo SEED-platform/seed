@@ -50,8 +50,8 @@ def set_default_access_level_instance(sender, instance, **kwargs):
         instance.access_level_instance_id = root.id
 
     bad_taxlotproperty = (
-        TaxLotProperty.objects.filter(taxlot_view__taxlot=instance)
-        .exclude(property_view__property__access_level_instance=instance.access_level_instance)
+        TaxLotProperty.objects.filter(taxlot_view__taxlot_id=instance.id)
+        .exclude(property_view__property__access_level_instance_id=instance.access_level_instance_id)
         .exists()
     )
     if bad_taxlotproperty:
