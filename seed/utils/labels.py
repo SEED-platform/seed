@@ -64,7 +64,9 @@ def get_labels(request, qs, super_organization, inv_type):
 
     # "is_applied" is a list of views with the label, but only the views that are in inventory.
     qs = qs.annotate(
-        is_applied=ArrayAgg(f"{inv_type[:-5]}view", filter=Q(**{f"{inv_type[:-5]}view__in": inventory.values_list("id", flat=True)}))
+        is_applied=ArrayAgg(
+            f"{inv_type[:-5]}view", filter=Q(**{f"{inv_type[:-5]}view__in": inventory.values_list("id", flat=True)}), default=[]
+        )
     )
 
     results = LabelSerializer(qs, super_organization=super_organization, many=True).data

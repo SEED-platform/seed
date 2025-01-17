@@ -852,7 +852,7 @@ class OrganizationViewSet(viewsets.ViewSet):
         matching_criteria_column_names = dict(
             org.column_set.filter(is_matching_criteria=True)
             .values("table_name")
-            .annotate(column_names=ArrayAgg("column_name"))
+            .annotate(column_names=ArrayAgg("column_name", default=[]))
             .values_list("table_name", "column_names")
         )
 
