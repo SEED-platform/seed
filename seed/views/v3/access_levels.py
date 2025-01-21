@@ -575,7 +575,7 @@ class AccessLevelViewSet(viewsets.ViewSet):
         if not view_ids:
             return JsonResponse({"status": "success", "access_level_instance_ids": []})
 
-        inventory_type, InventoryClass = ("taxlot", TaxLot) if inventory_type == "taxlots" else ("property", Property)
+        InventoryClass = TaxLot if inventory_type == "taxlots" else Property
         inventory_ids = InventoryClass.objects.filter(views__id__in=view_ids, organization_id=organization_pk).values_list("id", flat=True)
         access_level_instance_ids = AccessLevelInstance.objects.filter(properties__in=inventory_ids).distinct().values_list("id", flat=True)
 
