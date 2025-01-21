@@ -10,6 +10,7 @@ from django.urls import include, path, re_path
 from drf_yasg import openapi
 from drf_yasg.views import get_schema_view
 from rest_framework import permissions
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from two_factor.urls import urlpatterns as tf_urls
 
 from config.views import robots_txt
@@ -54,6 +55,8 @@ urlpatterns = [
     # API
     re_path(r"^api/health_check/$", health_check, name="health_check"),
     re_path(r"^api/swagger/$", schema_view.with_ui("swagger", cache_timeout=0), name="schema-swagger-ui"),
+    re_path(r"^api/token/$", TokenObtainPairView.as_view(), name="token_obtain_pair"),
+    re_path(r"^api/token/refresh/$", TokenRefreshView.as_view(), name="token_refresh"),
     re_path(r"^api/version/$", version, name="version"),
     re_path(r"^api/", include((api, "seed"), namespace="api")),
     re_path(r"^account/login", CustomLoginView.as_view(), name="login"),
