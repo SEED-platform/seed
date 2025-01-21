@@ -14,6 +14,7 @@ angular.module('SEED.controller.column_mappings', []).controller('column_mapping
   'inventory_service',
   'mappable_property_columns_payload',
   'mappable_taxlot_columns_payload',
+  'modified_service',
   'organization_payload',
   'urls',
   'COLUMN_MAPPING_PROFILE_TYPE_NORMAL',
@@ -32,6 +33,7 @@ angular.module('SEED.controller.column_mappings', []).controller('column_mapping
     inventory_service,
     mappable_property_columns_payload,
     mappable_taxlot_columns_payload,
+    modified_service,
     organization_payload,
     urls,
     COLUMN_MAPPING_PROFILE_TYPE_NORMAL,
@@ -88,6 +90,9 @@ angular.module('SEED.controller.column_mappings', []).controller('column_mapping
 
     $scope.current_profile = $scope.profiles[0] ?? {};
     $scope.dropdown_selected_profile = $scope.current_profile;
+    $scope.$watch('dropdown_selected_profile.mappings', (a, b) => {
+      if (a !== b && !$scope.saved) modified_service.setModified();
+    }, true);
 
     // Inventory Types
     $scope.setAllFields = '';
@@ -257,6 +262,8 @@ angular.module('SEED.controller.column_mappings', []).controller('column_mapping
 
         $scope.changes_possible = false;
         Notification.primary(`Saved ${$scope.current_profile.name}`);
+        modified_service.resetModified();
+        $scope.saved = true;
       });
     };
 
