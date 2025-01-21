@@ -111,7 +111,6 @@ class AccessLevelViewSet(viewsets.ViewSet):
     @has_perm_class("requires_owner")
     @action(detail=False, methods=["POST"])
     @swagger_auto_schema(
-        manual_parameters=[AutoSchemaHelper.query_org_id_field()],
         request_body=AutoSchemaHelper.schema_factory(
             {
                 "parent_id": ["integer"],
@@ -180,7 +179,6 @@ class AccessLevelViewSet(viewsets.ViewSet):
     @has_perm_class("requires_owner")
     @action(detail=False, methods=["POST"])
     @swagger_auto_schema(
-        manual_parameters=[AutoSchemaHelper.query_org_id_field()],
         request_body=AutoSchemaHelper.schema_factory(
             {"access_level_names": ["string"]}, required=["access_level_names"], description="A list of level names"
         ),
@@ -239,7 +237,6 @@ class AccessLevelViewSet(viewsets.ViewSet):
     @action(detail=False, methods=["PUT"], parser_classes=(MultiPartParser,))
     @swagger_auto_schema(
         manual_parameters=[
-            AutoSchemaHelper.query_org_id_field(),
             AutoSchemaHelper.upload_file_field(name="file", required=True, description="File to Upload"),
         ]
     )
@@ -320,9 +317,6 @@ class AccessLevelViewSet(viewsets.ViewSet):
         return JsonResponse({"success": True, "tempfile": temp_file.name})
 
     @swagger_auto_schema(
-        manual_parameters=[
-            AutoSchemaHelper.query_org_id_field(),
-        ],
         request_body=AutoSchemaHelper.schema_factory({"filename": "string"}),
     )
     @api_endpoint_class
@@ -356,9 +350,6 @@ class AccessLevelViewSet(viewsets.ViewSet):
     @has_perm_class("requires_owner")
     @action(detail=True, methods=["PUT"])
     @swagger_auto_schema(
-        manual_parameters=[
-            AutoSchemaHelper.query_org_id_field(),
-        ],
         request_body=AutoSchemaHelper.schema_factory(
             {"name": ["string"]}, required=["name"], description="Edited access level instance name"
         ),
@@ -568,21 +559,24 @@ class AccessLevelViewSet(viewsets.ViewSet):
         serialized_ali = AccessLevelInstanceSerializer(lowest_common).data
         return JsonResponse({"status": "success", "data": serialized_ali})
 
+    @swagger_auto_schema(
+        request_body=AutoSchemaHelper.schema_factory({"view_ids": ["number"]}),
+    )
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class("requires_viewer")
     @action(detail=False, methods=["POST"])
-    def filter_by_inventory(self, request, organization_pk=None):
+    def filter_by_views(self, request, organization_pk=None):
         """
         Return a distinct list of access_level_instance_ids for a group of inventory_ids
         """
         inventory_type = request.data.get("inventory_type", 0)
-        inventory_ids = request.data.get("inventory_ids")
-        if not inventory_ids:
+        view_ids = request.data.get("view_ids")
+        if not view_ids:
             return JsonResponse({"status": "success", "access_level_instance_ids": []})
 
-        inventory_type, InventoryClass = ("taxlot", TaxLot) if inventory_type == 1 else ("property", Property)
-        inventory_ids = InventoryClass.objects.filter(id__in=inventory_ids).values_list("id", flat=True)
+        inventory_type, InventoryClass = ("taxlot", TaxLot) if inventory_type == "taxlots" else ("property", Property)
+        inventory_ids = InventoryClass.objects.filter(views__id__in=view_ids, organization_id=organization_pk).values_list("id", flat=True)
         access_level_instance_ids = AccessLevelInstance.objects.filter(properties__in=inventory_ids).distinct().values_list("id", flat=True)
 
         return JsonResponse({"status": "success", "access_level_instance_ids": list(access_level_instance_ids)})
