@@ -582,29 +582,28 @@ class PortfolioManagerCustomDownloadTest(TestCase):
             [
                 "Property Name",
                 "Portfolio Manager ID",
-                "Portfolio Manager Meter ID",
-                "Meter Name",
-                "Meter Type",
-                "Meter Consumption ID",
-                "Start Date",
-                "End Date",
-                "Delivery Date",
-                "Usage/Quantity",
-                "Usage Units",
-                "Cost ($)",
-                "Estimation?",
-                "Demand (kW)",
-                "Demand Cost ($)",
-                "Last Modified Date",
-                "Last Modified By",
-                "Onsite Renewable System Energy Used Onsite",
-                "Onsite Renewable System Energy Used Onsite -Units",
-                "Onsite Renewable System Energy Exported Offsite",
-                "Onsite Renewable System Energy Exported Offsite- Units",
-                "Disposed Waste - Landfill %",
-                "Disposed Waste - Incineration %",
-                "Disposed Waste - Waste to Energy %",
-                "Disposed Waste - Don't Know %",
+                "Street Address",
+                "Street Address 2",
+                "City/Municipality",
+                "State/Province",
+                "Other State/Province",
+                "Postal Code",
+                "Country",
+                "Year Built",
+                "Property Type - Self-Selected",
+                "Construction Status",
+                "Gross Floor Area",
+                "GFA Units",
+                "Occupancy (%)",
+                "Number of Buildings",
+                "How Many Buildings?",
+                "Parent Property Name (if Applicable)",
+                "Parent Property ID",
+                "Is this Property Owned or Operated by the US or Canadian Federal Government?",
+                "Federal Agency/Department",
+                "Irrigated Area",
+                "Irrigated Area Units",
+                "Is this an Institutional Property? (Applicable only for Canadian properties)",
             ],
         )
 
@@ -618,6 +617,53 @@ class PortfolioManagerCustomDownloadTest(TestCase):
             log_file = Path("portfolio_manager_test.log")
             with open(log_file, "w") as f:
                 f.write("Starting test_custom_download\n")
+                f.write(f"Using credentials: {self.pm_un}, {self.pm_pw}\n")
+                # Get reference data
+                pm = PortfolioManagerImport(self.pm_un, self.pm_pw)
+                f.write("Initialized PortfolioManagerImport\n")
+                try:
+                    reference_data = pm.generate_and_download_meter_data(ids, start_date, end_date)
+                    f.write("Successfully downloaded meter data\n")
+                except Exception as e:
+                    f.write(f"Failed to download meter data: {str(e)}\n")
+                    raise
+
+                # API call
+                resp = self.client.post(
+                    reverse_lazy("api:v3:portfolio_manager-custom-download"),
+                    json.dumps({
+                        "username": self.pm_un,
+                        "password": self.pm_pw,
+                        "property_ids": ids,
+                        "start_date": start_date,
+                        "end_date": end_date
+                    }),
+                    content_type="application/json",
+                )
+
+                # Verify response
+                self.assertEqual(resp.status_code, 200)
+                self.assertEqual(resp['Content-Type'], 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+                
+                # Compare data
+                reference_df = pd.read_excel(reference_data, header=5)
+                test_df = pd.read_excel(resp.content, header=5)
+                
+                pd.testing.assert_frame_equal(reference_df, test_df)
+
+        except Exception as e:
+            self.fail(f"Test failed: {str(e)}")
+
+    def test_custom_download_multiple(self):
+        # SetUp
+        ids = ["16731961", "22178849"]
+        start_date = "2019-01-01"
+        end_date = "2019-12-31"
+
+        try:
+            log_file = Path("portfolio_manager_test.log")
+            with open(log_file, "w") as f:
+                f.write("Starting test_custom_download_multiple\n")
                 f.write(f"Using credentials: {self.pm_un}, {self.pm_pw}\n")
                 # Get reference data
                 pm = PortfolioManagerImport(self.pm_un, self.pm_pw)

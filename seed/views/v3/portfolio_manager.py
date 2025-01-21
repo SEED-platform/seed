@@ -722,11 +722,11 @@ class PortfolioManagerImport:
         # We should then trigger generation of the custom download for the selected property ids
         generation_url = "https://portfoliomanager.energystar.gov/pm/property/createCustomDownloadSubmit/"
         
-        payload = "proID=&numberOfPropertiesWithinLimit=true&basicPropertyInfoCount=0&propertyIdentifierCount=0&propertyUseCount=0&propertyUseDetailCount=0&meterCount=0&meterDataCount=29403&onsiteCount=0&offsiteCount=0&energyProjectsCount=0&designDataCount=0&targetAndBaselineCount=0&maxPropertiesCountAsyncDownload=12000&selectionType=MULTIPLE&_basicPropertyInfo=on&_propertyIds=on&_propertyUses=on&_propertyUseDetails=on&_meterType=on&_energyMeter=on&_waterMeter=on&_wasteMeter=on&_itEnergyMeter=on&_plantFlowMeter=on&_aggregateMeter=on&meterEntries=true&_meterEntries=on&energyMeterEntries=true&_energyMeterEntries=on&waterMeterEntries=true&_waterMeterEntries=on&_wasteMeterEntries=on&_itEnergyMeterEntries=on&_plantFlowMeterEntries=on"
-        payload += "&customDownloadStartDate=" + "%2".join([str(date_component) for date_component in start_date])
-        payload += "&customDownloadEndDate=" + "%2".join([str(date_component) for date_component in end_date])
+        payload = "proID=&numberOfPropertiesWithinLimit=true&basicPropertyInfoCount=0&propertyIdentifierCount=0&propertyUseCount=0&propertyUseDetailCount=0&meterCount=0&onsiteCount=0&offsiteCount=0&energyProjectsCount=0&designDataCount=0&targetAndBaselineCount=0&maxPropertiesCountAsyncDownload=12000&selectionType=MULTIPLE&basicPropertyInfo=true&_basicPropertyInfo=on&_propertyIds=on&_propertyUses=on&_propertyUseDetails=on&meterType=true&_meterType=on&energyMeter=true&_energyMeter=on&waterMeter=true&_waterMeter=on&wasteMeter=true&_wasteMeter=on&_itEnergyMeter=on&_plantFlowMeter=on&_aggregateMeter=on&meterEntries=true&_meterEntries=on&energyMeterEntries=true&_energyMeterEntries=on&waterMeterEntries=true&_waterMeterEntries=on&wasteMeterEntries=true&_wasteMeterEntries=on&_itEnergyMeterEntries=on&_plantFlowMeterEntries=on&"
+        payload += "&customDownloadEndDate=" + end_date.replace('-', '%2F')
+        payload += "&customDownloadStartDate=" + start_date.replace('-', '%2F')
         payload += "&includeInactiveMeters=true&includeUnassociatedMeters=false&_onsiteRecOwnership=on&_offsitePurchase=on&_energyProjects=on&_designData=on&_designUseDesignData=on&_designUseDetailDesignData=on&_energyDesignData=on&_designTargetsDesignData=on&_targetAndBaseline=on"
-        payload += "&selectedPropertyIdsAsString=" + "%2".join([str(p_id) for p_id in property_ids])
+        payload += "&selectedPropertyIdsAsString=" + "%2C".join([str(p_id) for p_id in property_ids])
         # print out payload
         _log.debug(f"Payload: {payload}")
 

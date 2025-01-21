@@ -19,6 +19,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile-dev
+    env_file:
+      - .env
     command: python3 manage.py runserver --settings=config.settings.docker_dev 0.0.0.0:80
     environment:
       - DJANGO_SETTINGS_MODULE=config.settings.docker_dev
