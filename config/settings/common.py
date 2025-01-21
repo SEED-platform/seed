@@ -61,7 +61,6 @@ TEMPLATES = [
     },
 ]
 MIDDLEWARE = (
-    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.gzip.GZipMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.locale.LocaleMiddleware",
@@ -88,7 +87,6 @@ DJANGO_CORE_APPS = (
     "django.contrib.staticfiles",
     "django.contrib.gis",
     "compressor",
-    "corsheaders",
     "django_extensions",
     "django_filters",
     "rest_framework",
@@ -289,7 +287,6 @@ REST_FRAMEWORK = {
     "EXCEPTION_HANDLER": "seed.exception_handler.custom_exception_handler",
 }
 
-
 SWAGGER_SETTINGS = {
     "TAGS_SORTER": "alpha",
     "DEFAULT_FIELD_INSPECTORS": [
@@ -316,8 +313,6 @@ SIMPLE_JWT = {
     "TOKEN_OBTAIN_SERIALIZER": "seed.landing.serializers.SeedTokenObtainPairSerializer",
     "ROTATE_REFRESH_TOKENS": True,
 }
-
-CORS_ALLOW_ALL_ORIGINS = True
 
 try:
     EEEJ_LOAD_SMALL_TEST_DATASET = bool(strtobool(os.environ.get("EEEJ_LOAD_SMALL_TEST_DATASET", "False")))
