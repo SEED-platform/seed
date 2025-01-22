@@ -951,7 +951,17 @@ class OrganizationViewSet(viewsets.ViewSet):
         cycles = Cycle.objects.filter(id__in=params["cycle_ids"])
         x_var = Column.objects.get(column_name=params["x_var"], organization=pk, table_name="PropertyState")
         y_var = Column.objects.get(column_name=params["y_var"], organization=pk, table_name="PropertyState")
-        report_data = self.setup_report_data(pk, ali, cycles, x_var, y_var, filter_group_id)
+        report_data = self.setup_report_data(
+            pk,
+            ali,
+            cycles,
+            x_var,
+            y_var,
+            filter_group_id,
+            additional_columns=[
+                Column.objects.get(column_name=user_ali.organization.property_display_field, table_name="PropertyState", organization_id=pk)
+            ],
+        )
         data = self.get_raw_report_data(pk, cycles, report_data["all_property_views"], report_data["field_data"])
         axis_data = self.get_axis_data(
             pk, ali, cycles, params["x_var"], params["y_var"], report_data["all_property_views"], report_data["field_data"]
