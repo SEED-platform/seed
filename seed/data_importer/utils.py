@@ -448,7 +448,7 @@ def fahrenheit_temperature_conversion_factors(coutry):
 
     # should country be considered?
     """
-    meter_types = ["Heating Degree Day", "Cooling Degree Day", "Temperature"]
+    meter_types = ["Heating Degree Days", "Cooling Degree Days", "Average Temperature"]
 
     return {meter_type: {"F (Fahrenheit)": 1.00} for meter_type in meter_types}
 

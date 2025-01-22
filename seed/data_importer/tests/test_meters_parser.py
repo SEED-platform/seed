@@ -875,7 +875,7 @@ class MeterUtilTests(TestCase):
             "Portfolio Manager Meter ID": "1-PMMeterID",
             "Start Date": "2016-02-01 00:00:00",
             "End Date": "2016-03-01 00:00:00",
-            "Meter Type": "Temperature",
+            "Meter Type": "Average Temperature",
             "Usage Units": "",
             "Usage/Quantity": 1,
         }
@@ -946,9 +946,9 @@ class MeterUtilTests(TestCase):
         }
 
         meter_types = [
-            "Heating Degree Day",
-            "Cooling Degree Day",
-            "Temperature",
+            "Heating Degree Days",
+            "Cooling Degree Days",
+            "Average Temperature",
             # invalid types
             "Potable Invalid",
             "Other Indoor",
