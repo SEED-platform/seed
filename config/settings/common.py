@@ -4,6 +4,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
 import os
+from datetime import timedelta
 from distutils.util import strtobool
 
 from django.utils.translation import gettext_lazy as _
@@ -101,6 +102,7 @@ DJANGO_CORE_APPS = (
     "two_factor.plugins.phonenumber",  # <- if you want phone number capability.
     "two_factor.plugins.email",  # <- if you want email capability.
     # "two_factor.plugins.yubikey",  # <- for yubikey capability.
+    "rest_framework_simplejwt",
 )
 
 
@@ -268,6 +270,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 # Django Rest Framework
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
         "rest_framework.authentication.SessionAuthentication",
         "seed.authentication.SEEDAuthentication",
     ),
@@ -302,6 +305,13 @@ SWAGGER_SETTINGS = {
     ],
     "DOC_EXPANSION": "none",
     "LOGOUT_URL": "/accounts/logout",
+}
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=5),
+    "AUTH_HEADER_TYPES": ("Bearer",),
+    "TOKEN_OBTAIN_SERIALIZER": "seed.landing.serializers.SeedTokenObtainPairSerializer",
+    "ROTATE_REFRESH_TOKENS": True,
 }
 
 try:
