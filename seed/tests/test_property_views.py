@@ -658,6 +658,86 @@ class PropertyViewTests(DataMappingBaseTestCase):
         false_result = self.client.post(url, false_post_params, content_type="application/json")
         self.assertEqual(b"false", false_result.content)
 
+    def test_property_form_create(self):
+        original_state_count = PropertyState.objects.count()
+        original_view_count = PropertyView.objects.count()
+        original_property_count = Property.objects.count()
+        original_taxlot_view_count = TaxLotView.objects.count()
+
+        url = reverse("api:v3:properties-form-create") + f"?organization_id={self.org.pk}"
+
+        state_data = {
+            "state": {
+                "pm_property_id": "1",
+                "custom_id_1": "2",
+                "extra_data": {"Extra Data Column": "3"},
+            },
+            "taxlot_state": {},
+        }
+
+        data = {"access_level_instance": self.org.root.id, "cycle": self.cycle.id, **state_data}
+
+        response = self.client.post(url, json.dumps(data), content_type="application/json")
+        assert response.status_code == 200
+        assert response.json().get("view_id")
+        # For a new property, counts should only increase by 1
+        assert PropertyState.objects.count() == original_state_count + 1
+        assert PropertyView.objects.count() == original_view_count + 1
+        assert Property.objects.count() == original_property_count + 1
+
+        # verify with existing matches
+        cycle2 = self.cycle_factory.get_cycle(start=datetime(2000, 10, 10, tzinfo=get_current_timezone()))
+        self.property_view_factory.get_property_view(cycle=cycle2, pm_property_id="4", custom_id_1="5")
+
+        state_data = {
+            "state": {
+                "pm_property_id": "4",
+                "custom_id_1": "5",
+                "extra_data": {"Extra Data Column": "6"},
+            },
+            "taxlot_state": {},
+        }
+        data = {"access_level_instance": self.org.root.id, "cycle": self.cycle.id, **state_data}
+
+        self.client.post(url, json.dumps(data), content_type="application/json")
+        # For property merges, counts should increase by 2 (new property, and merged property)
+        assert PropertyState.objects.count() == original_state_count + 3
+        assert PropertyView.objects.count() == original_view_count + 3
+        assert Property.objects.count() == original_property_count + 3
+
+        # property associated with a taxlot
+        property_data = {
+            "access_level_instance": self.org.root.id,
+            "cycle": self.cycle.id,
+            "state": {"pm_property_id": "7", "custom_id_1": "8", "extra_data": {"Extra Data Column": "9"}, "lot_number": "10"},
+        }
+        taxlot_data = {
+            "access_level_instance": self.org.root.id,
+            "cycle": self.cycle.id,
+            "state": {"jurisdiction_tax_lot_id": "10", "address_line_1": "A"},
+        }
+
+        p_response = self.client.post(url, json.dumps(property_data), content_type="application/json")
+        assert p_response.status_code == 200
+        view_id = p_response.json().get("view_id")
+        taxlot_url = reverse("api:v3:taxlots-form-create") + f"?organization_id={self.org.pk}&related_view_id={view_id}"
+        t_response = self.client.post(taxlot_url, json.dumps(taxlot_data), content_type="application/json")
+        assert t_response.status_code == 200
+
+        property_view = PropertyView.objects.get(pk=view_id)
+        property_state = property_view.state
+        taxlot_view = property_view.taxlotproperty_set.first().taxlot_view
+        taxlot_state = taxlot_view.state
+        assert property_state.pm_property_id == "7"
+        assert property_state.lot_number == "10"
+        assert taxlot_state.jurisdiction_tax_lot_id == "10"
+        assert taxlot_state.address_line_1 == "A"
+
+        assert PropertyState.objects.count() == original_state_count + 4
+        assert PropertyView.objects.count() == original_view_count + 4
+        assert Property.objects.count() == original_property_count + 4
+        assert TaxLotView.objects.count() == original_taxlot_view_count + 1
+
 
 class PropertyViewTestsPermissions(AccessLevelBaseTestCase):
     def setUp(self):

@@ -88,9 +88,10 @@ from seed.serializers.taxlots import TaxLotViewSerializer
 from seed.tasks import update_state_derived_data
 from seed.utils.api import OrgMixin, ProfileIdMixin, api_endpoint_class
 from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema_org_query_param
+from seed.utils.inventory import create_inventory
 from seed.utils.inventory_filter import get_filtered_results
 from seed.utils.labels import get_labels
-from seed.utils.match import MergeLinkPairError, match_merge_link
+from seed.utils.match import MergeLinkPairError, get_matching_criteria_column_names, match_merge_link
 from seed.utils.merge import merge_properties
 from seed.utils.meters import PropertyMeterReadingsExporter
 from seed.utils.properties import get_changed_fields, pair_unpair_property_taxlot, properties_across_cycles, update_result_with_master
@@ -1194,7 +1195,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
 
                 log = PropertyAuditLog.objects.select_related().filter(state=property_view.state).order_by("-id").first()
 
-                if log.name in {"Manual Edit", "Manual Match", "System Match", "Merge current state in migration"}:
+                if log.name in {"Manual Edit", "Manual Match", "System Match", "Merge current state in migration", "Form Creation"}:
                     # Convert this to using the serializer to save the data. This will override the previous values
                     # in the state object.
 
@@ -1949,6 +1950,49 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         response.write(xlsx_data)
 
         return response
+
+    @swagger_auto_schema(
+        manual_parameters=[AutoSchemaHelper.query_org_id_field()],
+        request_body=AutoSchemaHelper.schema_factory(
+            {
+                "access_level_instance": "integer",
+                "cycle": "integer",
+                "state": "object",
+            },
+            description="state object represpents a PropertySstate's data",
+        ),
+    )
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class("requires_member")
+    @action(detail=False, methods=["POST"])
+    def form_create(self, request):
+        """Manaully create a property"""
+        org_id = self.get_organization(request)
+        data = request.data
+        new_state_data = data.get("state")
+
+        try:
+            access_level_instance = AccessLevelInstance.objects.get(pk=data.get("access_level_instance"), organization_id=org_id)
+            cycle = Cycle.objects.get(pk=data.get("cycle"), organization_id=org_id)
+        except AccessLevelInstance.DoesNotExist:
+            return JsonResponse({"status": "error", "message": "Access Level Instance does not exist"}, status=status.HTTP_404_NOT_FOUND)
+        except Cycle.DoesNotExist:
+            return JsonResponse({"status": "error", "message": "Cycle does not exist"}, status=status.HTTP_404_NOT_FOUND)
+
+        matching_columns = get_matching_criteria_column_names(org_id, "PropertyState")
+        if not (matching_columns & new_state_data.keys()):
+            return JsonResponse(
+                {"status": "error", "message": f"At least one of the following matching fields are required: {matching_columns}"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        view = create_inventory("property", org_id, cycle.id, access_level_instance.id, new_state_data)
+        # if taxlot_view_id passed, link property and taxlot
+        if taxlot_view_id := request.query_params.get("related_view_id"):
+            TaxLotProperty.objects.get_or_create(property_view_id=view.id, taxlot_view_id=taxlot_view_id, cycle_id=cycle.id)
+
+        return self.update(request, pk=view.id)
 
 
 def _row_from_views(views):

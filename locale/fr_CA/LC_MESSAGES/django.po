@@ -364,6 +364,12 @@ msgstr "Réglages avancés"
 msgid "Alias"
 msgstr "Alias"
 
+msgid "All Canonical Fields"
+msgstr "Tous les champs canoniques"
+
+msgid "All Extra Data Fields"
+msgstr "Tous les champs de données supplémentaires"
+
 msgid "An Audit Template organization token, user email and password are required"
 msgstr "Un jeton d'organisation Audit Template, un e-mail d'utilisateur et un mot de passe sont requis"
 
@@ -979,6 +985,12 @@ msgstr "Créer une nouvelle sous-organisation"
 
 msgid "Create a Program to get started!"
 msgstr "Créez un programme pour commencer !"
+
+msgid "Create a Property"
+msgstr "Créer une propriété"
+
+msgid "Create a Tax Lot"
+msgstr "Créer un lot fiscal"
 
 msgid "Create a new rule"
 msgstr "Créer une nouvelle règle"

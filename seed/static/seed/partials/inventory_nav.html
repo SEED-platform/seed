@@ -5,3 +5,5 @@
 <a id="inventory-cycles" ui-sref="inventory_cycles(::{inventory_type: inventory_type})" ui-sref-active="active" translate>Cross-Cycles</a>
 <a id="inventory-map" ui-sref="inventory_map(::{inventory_type: inventory_type})" ui-sref-active="active" translate>Map</a>
 <a id="inventory-summary" ui-sref="inventory_summary(::{inventory_type: inventory_type})" ui-sref-active="active" translate>Summary</a>
+<a ng-if="inventory_type === 'taxlots'" id="inventory-create" ui-sref="inventory_create(::{inventory_type: inventory_type})" ui-sref-active="active" translate>Create a Tax Lot</a>
+<a ng-if="inventory_type === 'properties'" id="inventory-create" ui-sref="inventory_create(::{inventory_type: inventory_type})" ui-sref-active="active" translate>Create a Property</a>
