@@ -156,6 +156,7 @@ def health_check(request):
         status=(200 if success else 418),
     )
 
+
 @api_endpoint
 @ajax_request
 @api_view(["GET"])
