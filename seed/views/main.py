@@ -14,6 +14,7 @@ from django.core.cache import cache
 from django.db import connection
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
+from django.views.decorators.http import require_GET
 from rest_framework import status
 from rest_framework.decorators import api_view
 
@@ -157,17 +158,16 @@ def health_check(request):
     )
 
 
-@api_endpoint
 @ajax_request
-@api_view(["GET"])
-def noauth_settings(request):
+@require_GET
+def config(request):
     """
-    Returns django settings needed to render no-auth pages
+    Returns readonly django settings
     """
-    # include sign-up page?
-    enable_sign_up = settings.INCLUDE_ACCT_REG
 
-    return JsonResponse({"include_signup": enable_sign_up})
+    return {
+        "allow_signup": settings.INCLUDE_ACCT_REG,
+    }
 
 
 @api_endpoint

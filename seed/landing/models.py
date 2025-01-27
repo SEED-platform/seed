@@ -15,6 +15,7 @@ from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from rest_framework import exceptions
+from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.tokens import AccessToken
 
 from seed.lib.superperms.orgs.models import Organization
@@ -102,6 +103,8 @@ class SEEDUser(AbstractBaseUser, PermissionsMixin):
                 raise exceptions.AuthenticationFailed("Only Basic HTTP_AUTHORIZATION or BEARER Tokens are supported")
         except ValueError:
             raise exceptions.AuthenticationFailed("Invalid HTTP_AUTHORIZATION Header")
+        except TokenError:
+            raise exceptions.AuthenticationFailed("Invalid Bearer Token")
         except SEEDUser.DoesNotExist:
             raise exceptions.AuthenticationFailed("Invalid API key or Bearer Token")
 
