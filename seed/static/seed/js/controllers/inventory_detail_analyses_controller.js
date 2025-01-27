@@ -165,6 +165,5 @@ angular.module('SEED.controller.inventory_detail_analyses', []).controller('inve
           }
         });
     };
-    $scope.has_children = (value) => typeof value === 'object';
   }
 ]);
