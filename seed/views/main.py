@@ -156,6 +156,18 @@ def health_check(request):
         status=(200 if success else 418),
     )
 
+@api_endpoint
+@ajax_request
+@api_view(["GET"])
+def noauth_settings(request):
+    """
+    Returns django settings needed to render no-auth pages
+    """
+    # include sign-up page?
+    enable_sign_up = settings.INCLUDE_ACCT_REG
+
+    return JsonResponse({"include_signup": enable_sign_up})
+
 
 @api_endpoint
 @ajax_request
