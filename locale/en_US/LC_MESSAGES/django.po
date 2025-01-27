@@ -360,6 +360,12 @@ msgstr "Advanced Settings"
 msgid "Alias"
 msgstr "Alias"
 
+msgid "All Canonical Fields"
+msgstr "All Canonical Fields"
+
+msgid "All Extra Data Fields"
+msgstr "All Extra Data Fields"
+
 msgid "An Audit Template organization token, user email and password are required"
 msgstr "An Audit Template organization token, user email and password are required"
 
@@ -969,6 +975,12 @@ msgstr "Create a New Sub-Organization"
 
 msgid "Create a Program to get started!"
 msgstr "Create a Program to get started!"
+
+msgid "Create a Property"
+msgstr "Create a Property"
+
+msgid "Create a Tax Lot"
+msgstr "Create a Tax Lot"
 
 msgid "Create a new rule"
 msgstr "Create a new rule"

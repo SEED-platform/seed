@@ -848,6 +848,13 @@ class PropertyState(models.Model):
 
         return merged_state
 
+    def default_display_value(self):
+        try:
+            field = self.organization.property_display_field
+            return self.extra_data.get(field) or getattr(self, field)
+        except AttributeError:
+            return None
+
 
 @receiver(pre_delete, sender=PropertyState)
 def pre_delete_state(sender, **kwargs):

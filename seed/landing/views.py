@@ -222,7 +222,8 @@ class CustomLoginView(LoginView):
             user.save()
         return HttpResponseRedirect("/app/#/profile/two_factor_profile")
 
-    def get(self, request, *args, **kwargs):
-        # add env var to session for conditional frontend display
-        request.session["include_acct_reg"] = settings.INCLUDE_ACCT_REG
-        return super().get(request, *args, **kwargs)
+    def render(self, form=None, **kwargs):
+        # Conditionally show the `Create my Account` button
+        kwargs.setdefault("context", {})["self_registration"] = settings.INCLUDE_ACCT_REG
+
+        return super().render(form, **kwargs)

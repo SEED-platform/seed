@@ -80,7 +80,7 @@
     {% if wizard.steps.current == 'auth' %}
 
     <a class="forgot_password" href="{% url "landing:password_reset" %}">{% trans "Forgot password?" %}</a>
-      {% if request.session.include_acct_reg%}
+      {% if context.self_registration %}
       <div>
         <a class="create_account btn btn-secondary" href="{% url "landing:create_account" %}">{% trans "Create my Account" %}</a>
       </div>
@@ -107,13 +107,10 @@
 
 {% block js %}
   <script>
-    const toggleTerms = function () {
+    const toggleTerms = () => {
       const terms = document.getElementById('terms-and-conditions');
       const hidden = ['', 'none'].includes(terms.style.display);
       terms.style.display = hidden ? 'block' : 'none';
-    }
-    const resendToken = function () {
-      console.log('yup')
     }
   </script>
 {% endblock %}

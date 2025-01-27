@@ -5,7 +5,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: lokalise.com\n"
 "Project-Id-Version: SEED Platform\n"
-"PO-Revision-Date: 2024-12-14 00:26\n"
+"PO-Revision-Date: 2025-01-24 01:19\n"
 "Last-Translator: lokalise.com\n"
 "Language-Team: lokalise.com\n\n"
 "Language: es\n"
@@ -460,6 +460,12 @@ msgstr "Configuración avanzada"
 
 msgid "Alias"
 msgstr "Alias"
+
+msgid "All Canonical Fields"
+msgstr "Todos los campos canónicos"
+
+msgid "All Extra Data Fields"
+msgstr "Todos los campos de datos adicionales"
 
 #, fuzzy
 msgid "An Audit Template organization token, user email and password are required"
@@ -1244,6 +1250,12 @@ msgstr "Crear una nueva suborganización"
 #, fuzzy
 msgid "Create a Program to get started!"
 msgstr "Cree un programa para empezar"
+
+msgid "Create a Property"
+msgstr "Crear una propiedad"
+
+msgid "Create a Tax Lot"
+msgstr "Crear un lote de impuestos"
 
 #, fuzzy
 msgid "Create a new rule"

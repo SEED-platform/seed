@@ -11,12 +11,15 @@ from django.urls import reverse_lazy
 
 from seed.lib.superperms.orgs.models import AccessLevelInstance
 from seed.models import Organization, Property, TaxLot
+from seed.test_helpers.fake import FakePropertyFactory, FakePropertyViewFactory
 from seed.tests.util import AccessLevelBaseTestCase
 
 
 class TestOrganizationViews(AccessLevelBaseTestCase):
     def setUp(self):
         super().setUp()
+        self.property_factory = FakePropertyFactory(organization=self.org)
+        self.property_view_factory = FakePropertyViewFactory(organization=self.org)
 
     def test_access_level_tree(self):
         url = reverse_lazy(
@@ -394,35 +397,40 @@ class TestOrganizationViews(AccessLevelBaseTestCase):
         assert self.grand_child_b_level_instance.id == result["id"]
         assert self.grand_child_b_level_instance.name == result["name"]
 
-    def test_ali_filter_by_inventory(self):
+    def test_ali_filter_by_views(self):
         self.sibling_level_instance = self.org.add_new_access_level_instance(self.org.root.id, "sibling")
         self.org.save()
 
-        self.p1a = Property.objects.create(organization=self.org, access_level_instance=self.org.root)
-        self.p1b = Property.objects.create(organization=self.org, access_level_instance=self.org.root)
-        self.p2a = Property.objects.create(organization=self.org, access_level_instance=self.child_level_instance)
-        self.p2b = Property.objects.create(organization=self.org, access_level_instance=self.child_level_instance)
-        self.p3a = Property.objects.create(organization=self.org, access_level_instance=self.sibling_level_instance)
-        self.p3b = Property.objects.create(organization=self.org, access_level_instance=self.sibling_level_instance)
+        p2a = self.property_factory.get_property(organization=self.org, access_level_instance=self.child_level_instance)
+        p2b = self.property_factory.get_property(organization=self.org, access_level_instance=self.child_level_instance)
+        p3a = self.property_factory.get_property(organization=self.org, access_level_instance=self.sibling_level_instance)
+        p3b = self.property_factory.get_property(organization=self.org, access_level_instance=self.sibling_level_instance)
+
+        self.v1a = self.property_view_factory.get_property_view()
+        self.v1b = self.property_view_factory.get_property_view()
+        self.v2a = self.property_view_factory.get_property_view(prprty=p2a)
+        self.v2b = self.property_view_factory.get_property_view(prprty=p2b)
+        self.v3a = self.property_view_factory.get_property_view(prprty=p3a)
+        self.v3b = self.property_view_factory.get_property_view(prprty=p3b)
 
         url = reverse_lazy(
-            "api:v3:organization-access_levels-filter-by-inventory",
+            "api:v3:organization-access_levels-filter-by-views",
             args=[self.org.id],
         )
         data = {
             "inventory_type": "property",
-            "inventory_ids": [self.p1a.id, self.p1b.id, self.p2a.id, self.p2b.id, self.p3a.id, self.p3b.id],
+            "view_ids": [self.v1a.id, self.v1b.id, self.v2a.id, self.v2b.id, self.v3a.id, self.v3b.id],
         }
         result = self.client.post(url, data=json.dumps(data), content_type="application/json")
         alis = result.json()["access_level_instance_ids"]
         assert len(alis) == 3
 
-        data["inventory_ids"] = [self.p2a.id, self.p2b.id, self.p3a.id, self.p3b.id]
+        data["view_ids"] = [self.v2a.id, self.v2b.id, self.v3a.id, self.v3b.id]
         result = self.client.post(url, data=json.dumps(data), content_type="application/json")
         alis = result.json()["access_level_instance_ids"]
         assert len(alis) == 2
 
-        data["inventory_ids"] = [self.p3a.id, self.p3b.id]
+        data["view_ids"] = [self.v3a.id, self.v3b.id]
         result = self.client.post(url, data=json.dumps(data), content_type="application/json")
         alis = result.json()["access_level_instance_ids"]
         assert len(alis) == 1

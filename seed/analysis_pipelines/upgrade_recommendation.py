@@ -97,7 +97,7 @@ def _get_views_upgrade_recommendation_category(property_view, config):
 
     # check if this is a pint, if so get value
     if isinstance(gross_floor_area, Quantity):
-        gross_floor_area = gross_floor_area.to_base_units().magnitude
+        gross_floor_area = gross_floor_area.magnitude
 
     # calc eui
     if total_eui:
@@ -119,7 +119,7 @@ def _get_views_upgrade_recommendation_category(property_view, config):
     if target_gas_eui is None or target_electric_eui is None:
         return "Missing Data (ASHRAE Target Gas EUI/ASHRAE Target Electric EUI)"
     else:
-        benchmark = (float(target_gas_eui) + float(target_electric_eui)) / 0.8
+        total_target_eui = float(target_gas_eui) + float(target_electric_eui)
 
     # if young building:
     retrofit_threshold_year = config.get("year_built_threshold")
@@ -134,7 +134,7 @@ def _get_views_upgrade_recommendation_category(property_view, config):
         #     has_bas = ddc_control_panel_count.order_by("ddc_control_panel_count").first().ddc_control_panel_count > 0
 
         fair_actual_to_benchmark_eui_ratio = config.get("fair_actual_to_benchmark_eui_ratio")
-        if ((eui / benchmark) > fair_actual_to_benchmark_eui_ratio) and has_bas is True:
+        if ((eui / total_target_eui) > fair_actual_to_benchmark_eui_ratio) and has_bas is True:
             return "Re-tuning"
         else:
             return "NO DER project recommended"
@@ -146,7 +146,7 @@ def _get_views_upgrade_recommendation_category(property_view, config):
     # if big and actual to benchmark eui ratio is "poor"
     poor_actual_to_benchmark_eui_ratio = config.get("poor_actual_to_benchmark_eui_ratio")
     building_sqft_threshold = config.get("building_sqft_threshold")
-    if ((eui / benchmark) > poor_actual_to_benchmark_eui_ratio) and gross_floor_area > building_sqft_threshold:
+    if ((eui / total_target_eui) > poor_actual_to_benchmark_eui_ratio) and gross_floor_area > building_sqft_threshold:
         return "Deep Energy Retrofit"
 
     # for this next step, we will need condition_index
