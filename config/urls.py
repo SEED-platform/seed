@@ -16,7 +16,7 @@ from two_factor.urls import urlpatterns as tf_urls
 from config.views import robots_txt
 from seed.api.base.urls import urlpatterns as api
 from seed.landing.views import CustomLoginView, password_reset_complete, password_reset_confirm, password_reset_done
-from seed.views.main import angular_js_tests, health_check, version
+from seed.views.main import angular_js_tests, config, health_check, version
 
 schema_view = get_schema_view(
     openapi.Info(
@@ -52,8 +52,10 @@ urlpatterns = [
     # root configuration items
     re_path(r"^i18n/", include("django.conf.urls.i18n")),
     re_path(r"^robots\.txt", robots_txt, name="robots_txt"),
-    # API
+    # API (explicit no-auth)
+    re_path(r"^api/config/$", config, name="config"),
     re_path(r"^api/health_check/$", health_check, name="health_check"),
+    # API
     re_path(r"^api/swagger/$", schema_view.with_ui("swagger", cache_timeout=0), name="schema-swagger-ui"),
     re_path(r"^api/token/$", TokenObtainPairView.as_view(), name="token_obtain_pair"),
     re_path(r"^api/token/refresh/$", TokenRefreshView.as_view(), name="token_refresh"),
