@@ -17,8 +17,14 @@ from lxml import etree
 # from seed.audit_template.audit_template import build_xml
 from seed.audit_template.audit_template import AuditTemplate
 from seed.landing.models import SEEDUser as User
-from seed.models import Meter, MeterReading
-from seed.test_helpers.fake import FakeCycleFactory, FakePropertyFactory, FakePropertyStateFactory, FakePropertyViewFactory
+from seed.models import Meter, MeterReading, Uniformat
+from seed.test_helpers.fake import (
+    FakeCycleFactory,
+    FakeElementFactory,
+    FakePropertyFactory,
+    FakePropertyStateFactory,
+    FakePropertyViewFactory,
+)
 from seed.utils.organizations import create_organization
 
 # from seed.utils.encrypt import encrypt
@@ -93,6 +99,7 @@ class ExportToAuditTemplate(TestCase):
         self.property_factory = FakePropertyFactory(organization=self.org)
         self.view_factory = FakePropertyViewFactory(organization=self.org)
         self.state_factory = FakePropertyStateFactory(organization=self.org)
+        self.element_factory = FakeElementFactory(organization=self.org)
 
         self.state1 = self.state_factory.get_property_state(
             property_name="property1",
@@ -231,6 +238,52 @@ class ExportToAuditTemplate(TestCase):
         self.assertEqual(start_time.text, datetime(2019, 1, 1, 0, 0, 0, tzinfo=tz.utc).isoformat())
         self.assertEqual(end_time.text, datetime(2019, 2, 1, 0, 0, 0, tzinfo=tz.utc).isoformat())
         self.assertEqual(float(reading.text), 123)
+
+    def test_build_xml_from_property_with_measures(self):
+        from seed.lib.tkbl.tkbl import SCOPE_ONE_EMISSION_CODES
+
+        # Set Up
+        self.element1 = self.element_factory.get_element(
+            property=self.view1.property, code=Uniformat.objects.filter(code__in=SCOPE_ONE_EMISSION_CODES)[1]
+        )
+        self.element2 = self.element_factory.get_element(
+            property=self.view1.property, code=Uniformat.objects.filter(code__in=SCOPE_ONE_EMISSION_CODES)[2]
+        )
+
+        # Action
+        at = AuditTemplate(self.org.id)
+        response = at.build_xml(self.state1, "Demo City Report", self.state1.pm_property_id)
+
+        # Assert
+        # # is tree
+        self.assertEqual(tuple, type(response))
+        tree = etree.XML(response[0])
+
+        measures = tree.find("auc:Facilities/auc:Facility/auc:Measures", namespaces=tree.nsmap)
+        service_hot_water_systems = measures.findall(
+            "auc:Measure/auc:TechnologyCategories/auc:TechnologyCategory/auc:ServiceHotWaterSystems", namespaces=tree.nsmap
+        )
+        chilled_water_hot_water_and_steam_distribution_systems = measures.findall(
+            "auc:Measure/auc:TechnologyCategories/auc:TechnologyCategory/auc:ChilledWaterHotWaterAndSteamDistributionSystems",
+            namespaces=tree.nsmap,
+        )
+
+        self.assertSetEqual(
+            {
+                "Separate SHW from heating",
+                "Install heat pump SHW system",
+                "Upgrade SHW boiler",
+                "Insulate SHW tank",
+                "Replace tankless coil",
+                "Install tankless water heaters",
+            },
+            {m.find("auc:MeasureName", namespaces=tree.nsmap).text for m in service_hot_water_systems},
+        )
+
+        self.assertSetEqual(
+            {"Replace or upgrade water heater"},
+            {m.find("auc:MeasureName", namespaces=tree.nsmap).text for m in chilled_water_hot_water_and_steam_distribution_systems},
+        )
 
     @mock.patch("requests.request")
     def test_export_to_audit_template(self, mock_request):

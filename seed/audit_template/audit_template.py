@@ -16,13 +16,15 @@ from django_celery_beat.models import CrontabSchedule, PeriodicTask
 from lxml import etree
 from lxml.builder import ElementMaker
 from quantityfield.units import ureg
+from tkbl import bsync_by_uniformat_code
 
 from seed.analysis_pipelines.better.buildingsync import SEED_TO_BSYNC_RESOURCE_TYPE
 from seed.building_sync import validation_client
 from seed.building_sync.mappings import BUILDINGSYNC_URI, NAMESPACES
 from seed.lib.progress_data.progress_data import ProgressData
 from seed.lib.superperms.orgs.models import Organization
-from seed.models import Meter, MeterReading, PropertyView
+from seed.lib.tkbl.tkbl import SCOPE_ONE_EMISSION_CODES
+from seed.models import Element, Measure, Meter, MeterReading, PropertyView
 from seed.utils.encrypt import decrypt
 
 _log = logging.getLogger(__name__)
@@ -333,42 +335,15 @@ class AuditTemplate:
                             ),
                         )
                     ),
+                    *_build_measures_element(E, view.property),
                     E.Reports(
                         E.Report(
                             E.Scenarios(
                                 {},
                                 E.Scenario(
                                     {"ID": "ScenarioType-69817879941680"},
-                                    E.ResourceUses(
-                                        {},
-                                        *[
-                                            E.ResourceUse(
-                                                {"ID": f"ResourceUseType-{meter.id}"},
-                                                E.EnergyResource(SEED_TO_BSYNC_RESOURCE_TYPE.get(meter.type, "Other")),
-                                                E.ResourceUnits(
-                                                    "kBtu"
-                                                    if Meter.ENERGY_TYPE_BY_METER_TYPE.get(meter.type)
-                                                    in Organization._default_display_meter_units
-                                                    else "Gallons"
-                                                ),
-                                            )
-                                            for meter in Meter.objects.filter(property_id=view.property_id)
-                                        ],
-                                    ),
-                                    E.TimeSeriesData(
-                                        {},
-                                        *[
-                                            E.TimeSeries(
-                                                {"ID": f"TimeSeriesType-{i}"},
-                                                E.StartTimestamp(meter_reading.start_time.isoformat()),
-                                                E.EndTimestamp(meter_reading.end_time.isoformat()),
-                                                E.IntervalReading(str(meter_reading.reading)),
-                                            )
-                                            for i, meter_reading in enumerate(
-                                                MeterReading.objects.filter(meter__property_id=view.property_id)
-                                            )
-                                        ],
-                                    ),
+                                    *_build_resource_uses(E, view.property),
+                                    *build_time_series_data(E, view.property),
                                 ),
                             ),
                             {"ID": "ReportType-69909846999993"},
@@ -393,6 +368,94 @@ class AuditTemplate:
         results.setdefault(status, {"count": 0, "details": []})
         results[status]["count"] += 1
         results[status]["details"].append({"view_id": view_id, **extra_fields})
+
+
+def build_time_series_data(E, property):
+    meter_readings = MeterReading.objects.filter(meter__property=property)
+    if len(meter_readings) == 0:
+        return []
+
+    return [
+        E.TimeSeriesData(
+            {},
+            *[
+                E.TimeSeries(
+                    {"ID": f"TimeSeriesType-{i}"},
+                    E.StartTimestamp(meter_reading.start_time.isoformat()),
+                    E.EndTimestamp(meter_reading.end_time.isoformat()),
+                    E.IntervalReading(str(meter_reading.reading)),
+                )
+                for i, meter_reading in enumerate(MeterReading.objects.filter(meter__property_id=property))
+            ],
+        )
+    ]
+
+
+def _build_resource_uses(E, property):
+    meters = Meter.objects.filter(property=property)
+    if len(meters) == 0:
+        return []
+
+    return [
+        E.ResourceUses(
+            {},
+            *[
+                E.ResourceUse(
+                    {"ID": f"ResourceUseType-{meter.id}"},
+                    E.EnergyResource(SEED_TO_BSYNC_RESOURCE_TYPE.get(meter.type, "Other")),
+                    E.ResourceUnits(
+                        "kBtu"
+                        if Meter.ENERGY_TYPE_BY_METER_TYPE.get(meter.type) in Organization._default_display_meter_units
+                        else "Gallons"
+                    ),
+                )
+                for meter in Meter.objects.filter(property=property)
+            ],
+        )
+    ]
+
+
+def _build_measures_element(E, property):
+    measure_tuples = _get_measures(property)
+    if len(measure_tuples) == 0:
+        return []
+
+    return [
+        E.Measures(
+            {},
+            *[
+                E.Measure(
+                    {"ID": f"MeasureType-{i}"},
+                    E.TechnologyCategories(
+                        {},
+                        E.TechnologyCategory(
+                            getattr(E, tc)(
+                                {},
+                                E.MeasureName(mn),
+                            )
+                        ),
+                    ),
+                )
+                for i, (tc, mn) in enumerate(_get_measures(property))
+            ],
+        )
+    ]
+
+
+def _get_measures(property):
+    tkbl_elements = Element.objects.filter(property=property, code__code__in=SCOPE_ONE_EMISSION_CODES).order_by("remaining_service_life")[
+        :3
+    ]
+    bsync_measure_dicts = [x for e in tkbl_elements for x in bsync_by_uniformat_code(e.code.code)]
+
+    bsync_measure_tuples = set()
+    for bsync_measure_dict in bsync_measure_dicts:
+        category = Measure.objects.filter(category_display_name=bsync_measure_dict["cat_lev1"]).first().category
+        category = "".join(word.capitalize() for word in category.split("_"))
+
+        bsync_measure_tuples.add((category, bsync_measure_dict["eem_name"]))
+
+    return bsync_measure_tuples
 
 
 @shared_task
