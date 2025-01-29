@@ -32,7 +32,5 @@ angular.module('SEED.controller.analysis_run', []).controller('analysis_run_cont
     $scope.original_view = view_payload.original_view;
     $scope.original_views = {};
     $scope.original_views[view_payload.view.id] = view_payload.original_view;
-
-    $scope.has_children = (value) => typeof value === 'object';
   }
 ]);

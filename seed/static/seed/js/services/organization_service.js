@@ -79,9 +79,9 @@ angular.module('SEED.service.organization', []).factory('organization_service', 
       { inventory_type, inventory_ids }
     ).then((response) => response.data);
 
-    organization_factory.filter_access_levels_by_inventory = (org_id, inventory_type, inventory_ids) => $http.post(
-      `/api/v3/organizations/${org_id}/access_levels/filter_by_inventory/`,
-      { inventory_type, inventory_ids }
+    organization_factory.filter_access_levels_by_views = (org_id, inventory_type, view_ids) => $http.post(
+      `/api/v3/organizations/${org_id}/access_levels/filter_by_views/`,
+      { inventory_type, view_ids }
     ).then((response) => response.data).catch((data) => {
       console.log(data);
     });
