@@ -313,14 +313,14 @@ angular.module('SEED.controller.inventory_group_detail_meters', [])
       $scope.refresh_readings = () => {
         spinner_utility.show();
         inventory_group_service.get_meter_usage($stateParams.group_id, $scope.interval.selected)
-        .then((usage) => {
-          // update the base data and reset filters
-          property_meter_usage = usage;
+          .then((usage) => {
+            // update the base data and reset filters
+            property_meter_usage = usage;
 
-          resetSelections();
-          $scope.applyFilters();
-          spinner_utility.hide();
-        });
+            resetSelections();
+            $scope.applyFilters();
+            spinner_utility.hide();
+          });
       };
 
       $scope.open_group_meter_create_modal = () => {
