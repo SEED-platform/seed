@@ -28,6 +28,7 @@ from seed.utils.api import OrgMixin, api_endpoint_class
 from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema_org_query_param
 from seed.utils.organizations import create_organization
 from seed.utils.users import get_role_from_js
+from seed.views.main import _get_default_org as get_default_org_for_user
 
 _log = logging.getLogger(__name__)
 
@@ -258,7 +259,23 @@ class UserViewSet(viewsets.ViewSet, OrgMixin):
                 required: true
                 type: string
         """
-        return JsonResponse({"pk": request.user.id})
+        response = dict(
+            list(
+                zip(
+                    ("org_id", "org_name", "org_role", "ali_name", "ali_id", "is_ali_root", "is_ali_leaf"),
+                    get_default_org_for_user(request.user),
+                )
+            )
+        )
+        response["pk"] = request.user.id
+        response["id"] = request.user.id
+        response["first_name"] = request.user.first_name
+        response["last_name"] = request.user.last_name
+        response["email"] = request.user.email
+        response["username"] = request.user.username
+        response["is_superuser"] = request.user.is_superuser
+        response["api_key"] = request.user.api_key
+        return JsonResponse(response)
 
     @swagger_auto_schema(
         manual_parameters=[AutoSchemaHelper.query_org_id_field()],
